@@ -102,6 +102,8 @@ int CountApps(const WebAppRegistrar::AppSet& app_set) {
 
 }  // namespace
 
+using ::testing::ElementsAre;
+
 class WebAppRegistrarTest : public WebAppTest {
  public:
   void SetUp() override {
@@ -1265,6 +1267,56 @@ TEST_F(WebAppRegistrarTest, DefaultNotActivelyInstalled) {
   EXPECT_FALSE(registrar().IsActivelyInstalled(app_id));
 }
 
+TEST_F(WebAppRegistrarTest, AppsOverlapIfSharesScope) {
+  InitSyncBridge();
+
+  // Initialize 2 apps, both having the same scope, and set the second
+  // app to capture links. If app1 is passed as an input, then
+  // app2 is returned as an overlapping app that matches the scope and
+  // is set by the user to handle links.
+  auto web_app1 =
+      test::CreateWebApp(GURL("https://example.com"), WebAppManagement::kSync);
+  web_app1->SetScope(GURL("https://example_scope.com"));
+
+  auto web_app2 = test::CreateWebApp(GURL("https://example.com/def"),
+                                     WebAppManagement::kDefault);
+  web_app2->SetScope(GURL("https://example_scope.com"));
+  web_app2->SetIsUserSelectedAppForSupportedLinks(
+      /*is_user_selected_app_for_capturing_links=*/true);
+
+  const AppId app_id1 = web_app1->app_id();
+  const AppId app_id2 = web_app2->app_id();
+  RegisterApp(std::move(web_app1));
+  RegisterApp(std::move(web_app2));
+
+  EXPECT_THAT(registrar().GetOverlappingAppsMatchingScope(app_id1),
+              ElementsAre(app_id2));
+}
+
+TEST_F(WebAppRegistrarTest, AppsDoNotOverlapIfNestedScope) {
+  InitSyncBridge();
+
+  // Initialize 2 apps, with app2 having a scope with the same origin as app1
+  // but is nested. If app1 is passed as an input, then app2 is not returned as
+  // an overlapping app since nested scopes are not considered overlapping.
+  auto web_app1 =
+      test::CreateWebApp(GURL("https://example.com"), WebAppManagement::kSync);
+  web_app1->SetScope(GURL("https://example_scope.com"));
+
+  auto web_app2 = test::CreateWebApp(GURL("https://example.com/def"),
+                                     WebAppManagement::kDefault);
+  web_app2->SetScope(GURL("https://example_scope.com/nested"));
+  web_app2->SetIsUserSelectedAppForSupportedLinks(
+      /*is_user_selected_app_for_capturing_links=*/true);
+
+  const AppId app_id1 = web_app1->app_id();
+  const AppId app_id2 = web_app2->app_id();
+  RegisterApp(std::move(web_app1));
+  RegisterApp(std::move(web_app2));
+
+  EXPECT_TRUE(registrar().GetOverlappingAppsMatchingScope(app_id1).empty());
+}
+
 class WebAppRegistrarTest_ScopeExtensions : public WebAppRegistrarTest {
  public:
   WebAppRegistrarTest_ScopeExtensions() = default;
@@ -1359,11 +1411,7 @@ TEST_F(WebAppRegistrarTest_TabStrip, TabbedAppAutoNewTabUrl) {
   auto web_app = test::CreateWebApp(GURL("https://example.com/path"));
   AppId app_id = web_app->app_id();
 
-  TabStrip tab_strip;
-  tab_strip.new_tab_button = TabStrip::Visibility::kAuto;
-
   web_app->SetDisplayMode(DisplayMode::kTabbed);
-  web_app->SetTabStrip(tab_strip);
   RegisterApp(std::move(web_app));
 
   EXPECT_EQ(registrar().GetAppNewTabUrl(app_id),

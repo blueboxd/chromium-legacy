@@ -62,7 +62,8 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
     // </if>
   }
 
-  if (loadTimeData.getBoolean('showPreloadingSubPage')) {
+  if (!loadTimeData.getBoolean(
+          'isPerformanceSettingsPreloadingSubpageEnabled')) {
     r.PRELOADING = r.COOKIES.createChild('/preloading');
   }
 
@@ -78,6 +79,10 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
   r.SITE_SETTINGS_AR = r.SITE_SETTINGS.createChild('ar');
   r.SITE_SETTINGS_AUTOMATIC_DOWNLOADS =
       r.SITE_SETTINGS.createChild('automaticDownloads');
+  if (loadTimeData.getBoolean('autoPictureInPictureEnabled')) {
+    r.SITE_SETTINGS_AUTO_PICTURE_IN_PICTURE =
+        r.SITE_SETTINGS.createChild('autoPictureInPicture');
+  }
   if (loadTimeData.getBoolean('privateStateTokensEnabled')) {
     r.SITE_SETTINGS_AUTO_VERIFY = r.SITE_SETTINGS.createChild('autoVerify');
   }

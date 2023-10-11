@@ -35,6 +35,7 @@
 #include <queue>
 
 #include "base/auto_reset.h"
+#include "base/containers/contains.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/numerics/safe_conversions.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -49,6 +50,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/css_toggle_inference.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -79,7 +81,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
-#include "third_party/blink/renderer/core/html/forms/html_select_menu_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_list_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/forms/labels_node_list.h"
 #include "third_party/blink/renderer/core/html/forms/radio_input_type.h"
@@ -703,13 +705,14 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
           ax::mojom::blink::Role::kSplitter,
           ax::mojom::blink::Role::kSubscript,
           ax::mojom::blink::Role::kSuperscript,
+          ax::mojom::blink::Role::kTerm,
           ax::mojom::blink::Role::kTime,
           ax::mojom::blink::Role::kVideo,
       });
 
-  if (always_included_computed_roles.find(RoleValue()) !=
-      always_included_computed_roles.end())
+  if (base::Contains(always_included_computed_roles, RoleValue())) {
     return kIncludeObject;
+  }
 
   // Using the title or accessibility description (so we
   // check if there's some kind of accessible name for the element)
@@ -1259,16 +1262,16 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->IsTextNode())
     return ax::mojom::blink::Role::kStaticText;
 
-  const HTMLSelectMenuElement* owner_select_menu =
-      HTMLSelectMenuElement::OwnerSelectMenu(GetNode());
-  if (owner_select_menu) {
-    HTMLSelectMenuElement::PartType part_type =
-        owner_select_menu->AssignedPartType(GetNode());
-    if (part_type == HTMLSelectMenuElement::PartType::kButton) {
+  const HTMLSelectListElement* owner_select_list =
+      HTMLSelectListElement::OwnerSelectList(GetNode());
+  if (owner_select_list) {
+    HTMLSelectListElement::PartType part_type =
+        owner_select_list->AssignedPartType(GetNode());
+    if (part_type == HTMLSelectListElement::PartType::kButton) {
       return ax::mojom::blink::Role::kComboBoxMenuButton;
-    } else if (part_type == HTMLSelectMenuElement::PartType::kListBox) {
+    } else if (part_type == HTMLSelectListElement::PartType::kListBox) {
       return ax::mojom::blink::Role::kListBox;
-    } else if (part_type == HTMLSelectMenuElement::PartType::kOption) {
+    } else if (part_type == HTMLSelectListElement::PartType::kOption) {
       return ax::mojom::blink::Role::kListBoxOption;
     }
   }
@@ -1433,6 +1436,9 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->HasTagName(html_names::kDdTag))
     return ax::mojom::blink::Role::kDescriptionListDetail;
 
+  if (GetNode()->HasTagName(html_names::kDfnTag))
+    return ax::mojom::blink::Role::kTerm;
+
   if (GetNode()->HasTagName(html_names::kDtTag))
     return ax::mojom::blink::Role::kDescriptionListTerm;
 
@@ -1522,6 +1528,10 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   if (GetNode()->HasTagName(html_names::kStrongTag))
     return ax::mojom::blink::Role::kStrong;
+
+  if (GetNode()->HasTagName(html_names::kSearchTag)) {
+    return ax::mojom::blink::Role::kSearch;
+  }
 
   if (GetNode()->HasTagName(html_names::kDelTag) ||
       GetNode()->HasTagName(html_names::kSTag)) {
@@ -1689,7 +1699,8 @@ ax::mojom::blink::Role AXNodeObject::DetermineAccessibilityRole() {
 #endif
 
   if (IsDetached()) {
-    NOTREACHED();
+    NOTREACHED() << "Do not compute role on detached object: "
+                 << ToString(true, true);
     return ax::mojom::blink::Role::kUnknown;
   }
 
@@ -2237,10 +2248,10 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
   if (!element)
     return kExpandedUndefined;
 
-  if (HTMLSelectMenuElement* select_menu =
-          HTMLSelectMenuElement::OwnerSelectMenu(element)) {
-    if (select_menu->ButtonPart() == element) {
-      return select_menu->open() ? kExpandedExpanded : kExpandedCollapsed;
+  if (HTMLSelectListElement* select_list =
+          HTMLSelectListElement::OwnerSelectList(element)) {
+    if (select_list->ButtonPart() == element) {
+      return select_list->open() ? kExpandedExpanded : kExpandedCollapsed;
     }
   }
 
@@ -3185,6 +3196,7 @@ bool AXNodeObject::ValueForRange(float* out_value) const {
   }
 
   // In ARIA 1.1, default values for aria-valuenow were changed as below.
+  // - meter: A value matching the implicit or explicitly set aria-valuemin.
   // - scrollbar, slider : half way between aria-valuemin and aria-valuemax
   // - separator : 50
   // - spinbutton : 0
@@ -3201,6 +3213,14 @@ bool AXNodeObject::ValueForRange(float* out_value) const {
     case ax::mojom::blink::Role::kSplitter: {
       *out_value = 50.0f;
       return true;
+    }
+    case ax::mojom::blink::Role::kMeter: {
+      float min_value;
+      if (MinValueForRange(&min_value)) {
+        *out_value = min_value;
+        return true;
+      }
+      [[fallthrough]];
     }
     case ax::mojom::blink::Role::kSpinButton: {
       *out_value = 0.0f;
@@ -3234,6 +3254,7 @@ bool AXNodeObject::MaxValueForRange(float* out_value) const {
   // for aria-valuemax were changed to 100. This change was made for
   // progressbar in ARIA 1.2.
   switch (AriaRoleAttribute()) {
+    case ax::mojom::blink::Role::kMeter:
     case ax::mojom::blink::Role::kProgressIndicator:
     case ax::mojom::blink::Role::kScrollBar:
     case ax::mojom::blink::Role::kSplitter:
@@ -3269,6 +3290,7 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
   // for aria-valuemin were changed to 0. This change was made for
   // progressbar in ARIA 1.2.
   switch (AriaRoleAttribute()) {
+    case ax::mojom::blink::Role::kMeter:
     case ax::mojom::blink::Role::kProgressIndicator:
     case ax::mojom::blink::Role::kScrollBar:
     case ax::mojom::blink::Role::kSplitter:
@@ -3482,10 +3504,10 @@ String AXNodeObject::GetValueForControl() const {
   }
 
   if (RoleValue() == ax::mojom::blink::Role::kComboBoxMenuButton) {
-    // An HTML <selectmenu> gets its value from the selected option.
-    if (auto* select_menu = HTMLSelectMenuElement::OwnerSelectMenu(node)) {
-      DCHECK(RuntimeEnabledFeatures::HTMLSelectMenuElementEnabled());
-      if (HTMLOptionElement* selected = select_menu->selectedOption()) {
+    // An HTML <selectlist> gets its value from the selected option.
+    if (auto* select_list = HTMLSelectListElement::OwnerSelectList(node)) {
+      DCHECK(RuntimeEnabledFeatures::HTMLSelectListElementEnabled());
+      if (HTMLOptionElement* selected = select_list->selectedOption()) {
         // TODO(accessibility) Because these <option> elements can contain
         // anything, we need to create an AXObject for the selected option, and
         // use ax_selected_option->ComputedName(). However, for now, the
@@ -3493,7 +3515,7 @@ String AXNodeObject::GetValueForControl() const {
         // returns false for the invisible slot parent. Also, strangely,
         // selected->innerText()/GetInnerTextWithoutUpdate() are returning "".
         // See the following content_browsertest:
-        // All/DumpAccessibilityTreeTest.AccessibilitySelectMenu/blink.
+        // All/DumpAccessibilityTreeTest.AccessibilitySelectList/blink.
         // TODO(crbug.com/1401767): DCHECK fails with synchronous serialization.
         DCHECK(selected->firstChild())
             << "There is a selected option but it has no DOM children.";
@@ -5102,7 +5124,7 @@ bool AXNodeObject::OnNativeFocusAction() {
     }
   }
 
-  element->Focus();
+  element->Focus(FocusParams(FocusTrigger::kUserGesture));
 
   // Calling NotifyUserActivation here allows the browser to activate features
   // that need user activation, such as showing an autofill suggestion.
@@ -5264,10 +5286,9 @@ AXObject::AXObjectVector AXNodeObject::ErrorMessageFromAria() const {
     return AXObjectVector();
   }
 
-  Vector<String> ignored;
   HeapVector<Member<Element>> elements_from_attribute;
   if (!ElementsFromAttribute(el, elements_from_attribute,
-                             html_names::kAriaErrormessageAttr, ignored)) {
+                             html_names::kAriaErrormessageAttr)) {
     return AXObjectVector();
   }
 
@@ -5966,10 +5987,9 @@ String AXNodeObject::Description(
   if (!element)
     return String();
 
-  Vector<String> ids;
   HeapVector<Member<Element>> elements_from_attribute;
   if (ElementsFromAttribute(element, elements_from_attribute,
-                            html_names::kAriaDescribedbyAttr, ids)) {
+                            html_names::kAriaDescribedbyAttr)) {
     // TODO(meredithl): Determine description sources when |aria_describedby| is
     // the empty string, in order to make devtools work with attr-associated
     // elements.
@@ -5980,12 +6000,6 @@ String AXNodeObject::Description(
     AXObjectSet visited;
     description = TextFromElements(true, visited, elements_from_attribute,
                                    related_objects);
-
-    for (auto& member_element : elements_from_attribute)
-      ids.push_back(member_element->GetIdAttribute());
-
-    TokenVectorFromAttribute(element, ids, html_names::kAriaDescribedbyAttr);
-    AXObjectCache().UpdateReverseTextRelations(this, ids);
 
     if (!description.IsNull()) {
       if (description_sources) {

@@ -20,6 +20,7 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_wallpaper_controller.h"
+#include "ash/wm/raster_scale/raster_scale_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -34,6 +35,8 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/presentation_time_recorder.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -52,10 +55,12 @@ constexpr base::TimeDelta kOcclusionPauseDurationForStart =
 constexpr base::TimeDelta kOcclusionPauseDurationForEnd =
     base::Milliseconds(500);
 
+constexpr base::TimeDelta kEnterExitPresentationMaxLatency = base::Seconds(2);
+
 bool IsSplitViewDividerDraggedOrAnimated() {
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
-  return split_view_controller->is_resizing_with_divider() ||
+  return split_view_controller->IsResizingWithDivider() ||
          split_view_controller->IsDividerAnimating();
 }
 
@@ -292,6 +297,11 @@ OverviewController::GetWindowsListInOverviewGridsForTest() {
 }
 
 void OverviewController::ToggleOverview(OverviewEnterExitType type) {
+  // Pause raster scale updates while the overview is being toggled. This is to
+  // handle the case where a mirror view is deleted then recreated when
+  // cancelling an overview exit animation, for example.
+  ScopedPauseRasterScaleUpdates scoped_pause;
+
   // Hide the virtual keyboard as it obstructs the overview mode.
   // Don't need to hide if it's the a11y keyboard, as overview mode
   // can accept text input and it resizes correctly with the a11y keyboard.
@@ -335,6 +345,12 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
     DCHECK(CanEndOverview(type));
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui", "OverviewController::ExitOverview",
                                       this);
+
+    auto presentation_time_recorder = CreatePresentationTimeHistogramRecorder(
+        Shell::GetPrimaryRootWindow()->layer()->GetCompositor(),
+        kExitOverviewPresentationHistogram, "",
+        kEnterExitPresentationMaxLatency);
+    presentation_time_recorder->RequestNext();
 
     // Suspend occlusion tracker until the exit animation is complete.
     PauseOcclusionTracker();
@@ -395,6 +411,13 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
     DCHECK(CanEnterOverview());
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui", "OverviewController::EnterOverview",
                                       this);
+
+    auto presentation_time_recorder = CreatePresentationTimeHistogramRecorder(
+        Shell::GetPrimaryRootWindow()->layer()->GetCompositor(),
+        kEnterOverviewPresentationHistogram, "",
+        kEnterExitPresentationMaxLatency);
+    presentation_time_recorder->RequestNext();
+
     if (auto* active_window = window_util::GetActiveWindow(); active_window) {
       auto* active_widget =
           views::Widget::GetWidgetForNativeView(active_window);

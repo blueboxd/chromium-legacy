@@ -14,11 +14,11 @@
 #include "base/test/task_environment.h"
 #include "base/time/clock.h"
 #include "chromeos/ash/components/nearby/common/scheduling/fake_nearby_scheduler_factory.h"
+#include "chromeos/ash/components/nearby/presence/conversions/proto_conversions.h"
 #include "chromeos/ash/components/nearby/presence/credentials/fake_local_device_data_provider.h"
 #include "chromeos/ash/components/nearby/presence/credentials/fake_nearby_presence_server_client.h"
 #include "chromeos/ash/components/nearby/presence/credentials/nearby_presence_credential_manager.h"
 #include "chromeos/ash/components/nearby/presence/credentials/prefs.h"
-#include "chromeos/ash/components/nearby/presence/credentials/proto_conversions.h"
 #include "chromeos/ash/services/nearby/public/cpp/fake_nearby_presence.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -140,7 +140,7 @@ class NearbyPresenceCredentialManagerImplTest : public testing::Test {
 
     // Simulate the credentials being generated in the NP library.
     fake_nearby_presence_.SetGenerateCredentialsResponse(
-        BuildSharedCredentials(), mojom::StatusCode::kOk);
+        BuildSharedCredentials(), mojo_base::mojom::AbslStatusCode::kOk);
   }
 
   void TearDown() override {
@@ -153,7 +153,7 @@ class NearbyPresenceCredentialManagerImplTest : public testing::Test {
   void TriggerFirstTimeRegistrationSuccess() {
     // Simulate the scheduler notifying the CredentialManager that the task is
     // ready when it has network connectivity.
-    const raw_ptr<FakeNearbyScheduler, ExperimentalAsh>
+    const raw_ptr<FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
         first_time_registration_scheduler =
             scheduler_factory_.pref_name_to_on_demand_instance()
                 .find(
@@ -173,10 +173,11 @@ class NearbyPresenceCredentialManagerImplTest : public testing::Test {
   void TriggerLocalCredentialUploadSuccess() {
     // Simulate the scheduler notifying the CredentialManager that the upload
     // task is ready when it has network connectivity.
-    const raw_ptr<FakeNearbyScheduler, ExperimentalAsh> upload_scheduler =
-        scheduler_factory_.pref_name_to_on_demand_instance()
-            .find(prefs::kNearbyPresenceSchedulingUploadPrefName)
-            ->second.fake_scheduler;
+    const raw_ptr<FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
+        upload_scheduler =
+            scheduler_factory_.pref_name_to_on_demand_instance()
+                .find(prefs::kNearbyPresenceSchedulingUploadPrefName)
+                ->second.fake_scheduler;
     upload_scheduler->InvokeRequestCallback();
 
     // Mock and return the server response.
@@ -188,10 +189,11 @@ class NearbyPresenceCredentialManagerImplTest : public testing::Test {
   void TriggerDownloadRemoteCredentialSuccess() {
     // Simulate the scheduler notifying the CredentialManager that the download
     // task is ready when it has network connectivity.
-    const raw_ptr<FakeNearbyScheduler, ExperimentalAsh> download_scheduler =
-        scheduler_factory_.pref_name_to_on_demand_instance()
-            .find(prefs::kNearbyPresenceSchedulingDownloadPrefName)
-            ->second.fake_scheduler;
+    const raw_ptr<FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
+        download_scheduler =
+            scheduler_factory_.pref_name_to_on_demand_instance()
+                .find(prefs::kNearbyPresenceSchedulingDownloadPrefName)
+                ->second.fake_scheduler;
     download_scheduler->InvokeRequestCallback();
 
     // Next, mock and return the server response for fetching remote device
@@ -241,17 +243,17 @@ class NearbyPresenceCredentialManagerImplTest : public testing::Test {
       // Simulate the local device credentials stored in the NP library and
       // retrieved successfully.
       fake_nearby_presence_.SetLocalSharedCredentialsResponse(
-          BuildSharedCredentials(), mojom::StatusCode::kOk);
+          BuildSharedCredentials(), mojo_base::mojom::AbslStatusCode::kOk);
     } else {
       // Simulate the local device credentials retrieved unsuccessfully.
       fake_nearby_presence_.SetLocalSharedCredentialsResponse(
-          /*credentials=*/{}, mojom::StatusCode::kFailure);
+          /*credentials=*/{}, mojo_base::mojom::AbslStatusCode::kUnknown);
     }
 
     // Simulate the remote device credentials being successfully set in the
     // NP library.
     fake_nearby_presence_.SetUpdateRemoteCredentialsStatus(
-        mojom::StatusCode::kOk);
+        mojo_base::mojom::AbslStatusCode::kOk);
 
     base::RunLoop update_local_device_metadata_run_loop;
     fake_nearby_presence_.SetUpdateLocalDeviceMetadataCallback(
@@ -321,7 +323,8 @@ class NearbyPresenceCredentialManagerImplTest : public testing::Test {
   signin::IdentityTestEnvironment identity_test_env_;
   raw_ptr<FakeLocalDeviceDataProvider> fake_local_device_data_provider_ =
       nullptr;
-  raw_ptr<FakeNearbyScheduler, ExperimentalAsh> daily_sync_scheduler_ = nullptr;
+  raw_ptr<FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
+      daily_sync_scheduler_ = nullptr;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   std::unique_ptr<LocalDeviceDataProvider> local_device_data_provider_;
   std::unique_ptr<NearbyPresenceCredentialManager> credential_manager_;
@@ -386,12 +389,38 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, RegistrationSuccess) {
   EXPECT_TRUE(credential_manager_);
   EXPECT_TRUE(credential_manager_->IsLocalDeviceRegistered());
   histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.FirstTimeRegistration.Result",
+      /*bucket: kSuccess=*/0, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.FirstTimeServerRegistration.FailureReason",
+      0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.FirstTimeServerRegistration."
+      "AttemptsNeededCount",
+      /*bucket: attempt_count=*/1, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.FirstTimeServerRegistration."
+      "ServerRequestDuration",
+      1);
+  histogram_tester_.ExpectBucketCount(
       "Nearby.Presence.Credentials.Upload.Result", /*bucket: success=*/true, 1);
   histogram_tester_.ExpectTotalCount(
       "Nearby.Presence.Credentials.Upload.FailureReason", 0);
   histogram_tester_.ExpectBucketCount(
       "Nearby.Presence.Credentials.Upload.AttemptsNeededCount",
       /*bucket: attempt_count=*/1, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.ServerRequestDuration", 1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/true,
+      1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.FailureReason", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.AttemptsNeededCount",
+      /*bucket: attempt_count=*/1, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.ServerRequestDuration", 1);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest, ServerRegistrationTimeout) {
@@ -399,7 +428,7 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, ServerRegistrationTimeout) {
   CreateCredentialManager(create_credential_manager_run_loop.QuitClosure());
 
   // Simulate the max number of failures caused by a server response timeout.
-  const raw_ptr<FakeNearbyScheduler, ExperimentalAsh>
+  const raw_ptr<FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
       first_time_registration_scheduler =
           scheduler_factory_.pref_name_to_on_demand_instance()
               .find(
@@ -412,6 +441,17 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, ServerRegistrationTimeout) {
 
   create_credential_manager_run_loop.Run();
   EXPECT_FALSE(credential_manager_);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.FirstTimeRegistration.Result",
+      /*bucket: kRegistrationWithServerFailure=*/1, 1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.FirstTimeServerRegistration.FailureReason",
+      /*bucket: NearbyHttpResult::kTimeout*/
+      ash::nearby::NearbyHttpResult::kTimeout, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.FirstTimeServerRegistration."
+      "ServerRequestDuration",
+      0);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest, ServerRegistrationFailure) {
@@ -419,7 +459,7 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, ServerRegistrationFailure) {
   CreateCredentialManager(create_credential_manager_run_loop.QuitClosure());
 
   // Simulate the max number of failures caused by a RPC failure.
-  const raw_ptr<FakeNearbyScheduler, ExperimentalAsh>
+  const raw_ptr<FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
       first_time_registration_scheduler =
           scheduler_factory_.pref_name_to_on_demand_instance()
               .find(
@@ -433,12 +473,23 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, ServerRegistrationFailure) {
 
   create_credential_manager_run_loop.Run();
   EXPECT_FALSE(credential_manager_);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.FirstTimeRegistration.Result",
+      /*bucket: kRegistrationWithServerFailure=*/1, 1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.FirstTimeServerRegistration.FailureReason",
+      /*bucket: NearbyHttpResult::kHttpErrorInternalServerError*/
+      ash::nearby::NearbyHttpResult::kHttpErrorInternalServerError, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.FirstTimeServerRegistration."
+      "ServerRequestDuration",
+      0);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest, CredentialGenerationFailure) {
   // Simulate the credentials being failed to be generated in the NP library.
   fake_nearby_presence_.SetGenerateCredentialsResponse(
-      {}, mojom::StatusCode::kFailure);
+      {}, mojo_base::mojom::AbslStatusCode::kFailedPrecondition);
 
   base::RunLoop create_credential_manager_run_loop;
   CreateCredentialManager(create_credential_manager_run_loop.QuitClosure());
@@ -447,6 +498,13 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, CredentialGenerationFailure) {
 
   create_credential_manager_run_loop.Run();
   EXPECT_FALSE(credential_manager_);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.FirstTimeRegistration.Result",
+      /*bucket: kLocalCredentialGenerationFailure=*/2, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.FirstTimeServerRegistration."
+      "ServerRequestDuration",
+      1);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest,
@@ -466,7 +524,7 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
 
   // Simulate the scheduler notifying the CredentialManager that the task is
   // ready when it has network connectivity.
-  const raw_ptr<FakeNearbyScheduler, ExperimentalAsh>
+  const raw_ptr<FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
       first_time_upload_scheduler =
           scheduler_factory_.pref_name_to_on_demand_instance()
               .find(prefs::kNearbyPresenceSchedulingUploadPrefName)
@@ -487,6 +545,8 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
       "Nearby.Presence.Credentials.Upload.FailureReason",
       /*bucket: NearbyHttpResult::kTimeout*/
       ash::nearby::NearbyHttpResult::kTimeout, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.ServerRequestDuration", 0);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest, UploadCredentialsFailure) {
@@ -505,7 +565,7 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, UploadCredentialsFailure) {
 
   // Simulate the scheduler notifying the CredentialManager that the upload
   // task is ready when it has network connectivity.
-  const raw_ptr<FakeNearbyScheduler, ExperimentalAsh>
+  const raw_ptr<FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
       first_time_upload_scheduler =
           scheduler_factory_.pref_name_to_on_demand_instance()
               .find(prefs::kNearbyPresenceSchedulingUploadPrefName)
@@ -527,6 +587,8 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, UploadCredentialsFailure) {
       "Nearby.Presence.Credentials.Upload.FailureReason",
       /*bucket: NearbyHttpResult::kHttpErrorInternalServerError*/
       ash::nearby::NearbyHttpResult::kHttpErrorInternalServerError, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.ServerRequestDuration", 0);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest, DownloadCredentialsFailure) {
@@ -546,7 +608,7 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, DownloadCredentialsFailure) {
 
   // Simulate the scheduler notifying the CredentialManager that the download
   // task is ready when it has network connectivity.
-  const raw_ptr<FakeNearbyScheduler, ExperimentalAsh>
+  const raw_ptr<FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
       first_time_download_scheduler =
           scheduler_factory_.pref_name_to_on_demand_instance()
               .find(prefs::kNearbyPresenceSchedulingDownloadPrefName)
@@ -563,6 +625,13 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, DownloadCredentialsFailure) {
 
   create_credential_manager_run_loop.Run();
   EXPECT_FALSE(credential_manager_);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/false,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.FailureReason",
+      /*bucket: NearbyHttpResult::kHttpErrorInternalServerError*/
+      ash::nearby::NearbyHttpResult::kHttpErrorInternalServerError, 1);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest, DownloadCredentialsTimeout) {
@@ -583,7 +652,7 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, DownloadCredentialsTimeout) {
 
   // Simulate the scheduler notifying the CredentialManager that the download
   // task is ready when it has network connectivity.
-  const raw_ptr<FakeNearbyScheduler, ExperimentalAsh>
+  const raw_ptr<FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
       first_time_download_scheduler =
           scheduler_factory_.pref_name_to_on_demand_instance()
               .find(prefs::kNearbyPresenceSchedulingDownloadPrefName)
@@ -597,6 +666,13 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, DownloadCredentialsTimeout) {
 
   create_credential_manager_run_loop.Run();
   EXPECT_FALSE(credential_manager_);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/false,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.FailureReason",
+      /*bucket: NearbyHttpResult::kTimeout*/
+      ash::nearby::NearbyHttpResult::kTimeout, 1);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest,
@@ -609,7 +685,7 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
   // Simulate the remote device credentials being unsuccessfully set in the
   // NP library.
   fake_nearby_presence_.SetUpdateRemoteCredentialsStatus(
-      mojom::StatusCode::kFailure);
+      mojo_base::mojom::AbslStatusCode::kDeadlineExceeded);
 
   base::RunLoop create_credential_manager_run_loop;
   CreateCredentialManager(create_credential_manager_run_loop.QuitClosure());
@@ -666,6 +742,18 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
   histogram_tester_.ExpectBucketCount(
       "Nearby.Presence.Credentials.Upload.AttemptsNeededCount",
       /*bucket: attempt_count=*/1, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.ServerRequestDuration", 1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/true,
+      1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.FailureReason", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.AttemptsNeededCount",
+      /*bucket: attempt_count=*/1, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.ServerRequestDuration", 1);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest,
@@ -705,6 +793,18 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
       "Nearby.Presence.Credentials.Upload.FailureReason", 0);
   histogram_tester_.ExpectTotalCount(
       "Nearby.Presence.Credentials.Upload.AttemptsNeededCount", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.ServerRequestDuration", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/true,
+      1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.FailureReason", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.AttemptsNeededCount",
+      /*bucket: attempt_count=*/1, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.ServerRequestDuration", 1);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest,
@@ -737,10 +837,11 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
   get_local_creds_run_loop.Run();
 
   // Simulate failure to upload credentials to the server.
-  const raw_ptr<FakeNearbyScheduler, ExperimentalAsh> upload_scheduler =
-      scheduler_factory_.pref_name_to_on_demand_instance()
-          .find(prefs::kNearbyPresenceSchedulingUploadPrefName)
-          ->second.fake_scheduler;
+  const raw_ptr<FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
+      upload_scheduler =
+          scheduler_factory_.pref_name_to_on_demand_instance()
+              .find(prefs::kNearbyPresenceSchedulingUploadPrefName)
+              ->second.fake_scheduler;
   upload_scheduler->SetNumConsecutiveFailures(kServerCommunicationMaxAttempts);
   upload_scheduler->InvokeRequestCallback();
   server_client_factory_.fake_server_client()->InvokeUpdateDeviceErrorCallback(
@@ -757,6 +858,8 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
       ash::nearby::NearbyHttpResult::kHttpErrorInternalServerError, 1);
   histogram_tester_.ExpectTotalCount(
       "Nearby.Presence.Credentials.Upload.AttemptsNeededCount", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.ServerRequestDuration", 0);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest,
@@ -771,10 +874,11 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
   get_local_creds_run_loop.Run();
 
   // Simulate failure to download credentials from the server.
-  const raw_ptr<FakeNearbyScheduler, ExperimentalAsh> upload_scheduler =
-      scheduler_factory_.pref_name_to_on_demand_instance()
-          .find(prefs::kNearbyPresenceSchedulingDownloadPrefName)
-          ->second.fake_scheduler;
+  const raw_ptr<FakeNearbyScheduler, DanglingUntriaged | ExperimentalAsh>
+      upload_scheduler =
+          scheduler_factory_.pref_name_to_on_demand_instance()
+              .find(prefs::kNearbyPresenceSchedulingDownloadPrefName)
+              ->second.fake_scheduler;
   upload_scheduler->SetNumConsecutiveFailures(kServerCommunicationMaxAttempts);
   upload_scheduler->InvokeRequestCallback();
   server_client_factory_.fake_server_client()
@@ -782,6 +886,17 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
           ash::nearby::NearbyHttpError::kInternalServerError);
 
   EXPECT_FALSE(daily_sync_scheduler_->handled_results().front());
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/false,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.FailureReason",
+      /*bucket: NearbyHttpResult::kHttpErrorInternalServerError*/
+      ash::nearby::NearbyHttpResult::kHttpErrorInternalServerError, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.AttemptsNeededCount", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.ServerRequestDuration", 0);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest,
@@ -804,7 +919,7 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
   // Simulate the remote device credentials being unsuccessfully set in the
   // NP library.
   fake_nearby_presence_.SetUpdateRemoteCredentialsStatus(
-      mojom::StatusCode::kFailure);
+      mojo_base::mojom::AbslStatusCode::kUnknown);
 
   // Simulate a successful download of credentials from the server.
   TriggerDownloadRemoteCredentialSuccess();
@@ -833,13 +948,26 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
     EXPECT_EQ(expected_num_requests,
               daily_sync_scheduler_->num_immediate_requests());
     EXPECT_TRUE(daily_sync_scheduler_->handled_results().front());
-    histogram_tester_.ExpectTotalCount(
-        "Nearby.Presence.Credentials.Upload.Result", 0);
-    histogram_tester_.ExpectTotalCount(
-        "Nearby.Presence.Credentials.Upload.FailureReason", 0);
-    histogram_tester_.ExpectTotalCount(
-        "Nearby.Presence.Credentials.Upload.AttemptsNeededCount", 0);
   }
+
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.Result", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.FailureReason", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.AttemptsNeededCount", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.ServerRequestDuration", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/true,
+      7);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.FailureReason", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.AttemptsNeededCount",
+      /*bucket: attempt_count=*/1, 7);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.ServerRequestDuration", 7);
 }
 
 }  // namespace ash::nearby::presence

@@ -7,7 +7,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/sharing/recipients_fetcher.h"
 
-@implementation RecipientInfo
+@implementation RecipientInfoForIOSDisplay
 
 - (instancetype)initWithRecipientInfo:
     (const password_manager::RecipientInfo&)recipient {
@@ -15,6 +15,7 @@
   if (self) {
     _fullName = base::SysUTF8ToNSString(recipient.user_name);
     _email = base::SysUTF8ToNSString(recipient.email);
+    _isEligible = !recipient.public_key.key.empty();
   }
   return self;
 }

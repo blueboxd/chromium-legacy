@@ -16,11 +16,10 @@ import 'chrome://resources/cr_elements/md_select.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import './display_layout.js';
 import './display_overscan_dialog.js';
-import '../settings_scheduler_slider/settings_scheduler_slider.js';
+import './display_night_light.js';
 import '/shared/settings/controls/settings_slider.js';
 import '../settings_shared.css.js';
 import '../settings_vars.css.js';
-import '/shared/settings/controls/settings_dropdown_menu.js';
 import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 
@@ -36,6 +35,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertExists, cast, castExists} from '../assert_extras.js';
+import {isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
@@ -64,16 +64,6 @@ interface DisplayResolutionPrefObject {
   }|null;
 }
 
-/**
- * The types of Night Light automatic schedule. The values of the enum values
- * are synced with the pref "prefs.ash.night_light.schedule_type".
- */
-enum NightLightScheduleType {
-  NEVER = 0,
-  SUNSET_TO_SUNRISE = 1,
-  CUSTOM = 2,
-}
-
 interface SettingsDisplayElement {
   $: {
     displayOverscan: SettingsDisplayOverscanDialogElement,
@@ -95,6 +85,13 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
 
   static get properties() {
     return {
+      isRevampWayfindingEnabled_: {
+        type: Boolean,
+        value: () => {
+          return isRevampWayfindingEnabled();
+        },
+      },
+
       selectedModePref_: {
         type: Object,
         value() {
@@ -196,34 +193,6 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
         },
       },
 
-      scheduleTypesList_: {
-        type: Array,
-        value() {
-          return [
-            {
-              name: loadTimeData.getString('displayNightLightScheduleNever'),
-              value: NightLightScheduleType.NEVER,
-            },
-            {
-              name: loadTimeData.getString(
-                  'displayNightLightScheduleSunsetToSunRise'),
-              value: NightLightScheduleType.SUNSET_TO_SUNRISE,
-            },
-            {
-              name: loadTimeData.getString('displayNightLightScheduleCustom'),
-              value: NightLightScheduleType.CUSTOM,
-            },
-          ];
-        },
-      },
-
-      shouldOpenCustomScheduleCollapse_: {
-        type: Boolean,
-        value: false,
-      },
-
-      nightLightScheduleSubLabel_: String,
-
       logicalResolutionText_: String,
 
       displayTabNames_: Array,
@@ -246,7 +215,6 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
         type: Object,
         value: () => new Set<Setting>([
           Setting.kDisplaySize,
-          Setting.kNightLight,
           Setting.kDisplayOrientation,
           Setting.kDisplayArrangement,
           Setting.kDisplayResolution,
@@ -255,7 +223,6 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
           Setting.kAllowWindowsToSpanDisplays,
           Setting.kAmbientColors,
           Setting.kTouchscreenCalibration,
-          Setting.kNightLightColorTemperature,
           Setting.kDisplayOverscan,
         ]),
       },
@@ -264,8 +231,6 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
 
   static get observers() {
     return [
-      'updateNightLightScheduleSettings_(prefs.ash.night_light.schedule_type.*,' +
-          ' prefs.ash.night_light.enabled.*)',
       'onSelectedModeChange_(selectedModePref_.value)',
       'onSelectedParentModeChange_(selectedParentModePref_.value)',
       'onSelectedZoomChange_(selectedZoomPref_.value)',
@@ -289,11 +254,11 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
   private displayModeList_: DropdownMenuOptionList;
   private displayTabNames_: string[];
   private invalidDisplayId_: string;
+  private isRevampWayfindingEnabled_: boolean;
   private listAllDisplayModes_: boolean;
   private logicalResolutionText_: string;
   private modeToParentModeMap_: Map<number, number>;
   private modeValues_: number[];
-  private nightLightScheduleSubLabel_: string;
   private parentModeToRefreshRateMap_: Map<number, DropdownMenuOptionList>;
   private pendingSettingId_: Setting|null;
   private refreshRateList_: DropdownMenuOptionList;
@@ -301,7 +266,6 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
   private selectedParentModePref_: chrome.settingsPrivate.PrefObject;
   private selectedTab_: number;
   private selectedZoomPref_: chrome.settingsPrivate.PrefObject;
-  private shouldOpenCustomScheduleCollapse_: boolean;
   private unifiedDesktopMode_: boolean;
   private zoomValues_: SliderTick[];
 
@@ -1305,26 +1269,6 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
     if (chrome.runtime.lastError) {
       console.error(
           'setDisplayProperties Error: ' + chrome.runtime.lastError.message);
-    }
-  }
-
-  /**
-   * Invoked when the status of Night Light or its schedule type are changed,
-   * in order to update the schedule settings, such as whether to show the
-   * custom schedule slider, and the schedule sub label.
-   */
-  private updateNightLightScheduleSettings_() {
-    const scheduleType = this.getPref('ash.night_light.schedule_type').value;
-    this.shouldOpenCustomScheduleCollapse_ =
-        scheduleType === NightLightScheduleType.CUSTOM;
-
-    if (scheduleType === NightLightScheduleType.SUNSET_TO_SUNRISE) {
-      const nightLightStatus = this.getPref('ash.night_light.enabled').value;
-      this.nightLightScheduleSubLabel_ = nightLightStatus ?
-          this.i18n('displayNightLightOffAtSunrise') :
-          this.i18n('displayNightLightOnAtSunset');
-    } else {
-      this.nightLightScheduleSubLabel_ = '';
     }
   }
 

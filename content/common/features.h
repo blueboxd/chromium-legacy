@@ -18,10 +18,6 @@ namespace content {
 // navigation network responses in a kHigh priority queue.
 BASE_DECLARE_FEATURE(kBeforeUnloadBrowserResponseQueue);
 
-// When enabled, RenderFrameHostManager::CommitPending will also update the
-// visibility of all child views, not just that of the main frame.
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kNavigationUpdatesChildViewsVisibility);
-
 #if BUILDFLAG(IS_ANDROID)
 // Enables skipping of calls to hideSoftInputFromWindow when there is not a
 // keyboard currently visible.
@@ -49,6 +45,17 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kGpuInfoCollectionSeparatePrefetch);
 // https://crbug.com/1286501.
 BASE_DECLARE_FEATURE(kRestrictCanAccessDataForOriginToUIThread);
 
+// Enables auto preloading for fetch requests before invoking the fetch handler
+// in ServiceWorker. The fetch request inside the fetch handler is resolved with
+// this preload response. If the fetch handler result is fallback, uses this
+// preload request as a fallback network request.
+//
+// Unlike navigation preload, this preloading is applied to subresources. Also,
+// it doesn't require a developer opt-in.
+//
+// crbug.com/1472634 for more details.
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kServiceWorkerAutoPreload);
+
 // (crbug.com/1371756): When enabled, the static routing API starts
 // ServiceWorker when the routing result of a main resource request was network
 // fallback.
@@ -61,6 +68,9 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kSiteIsolationCitadelEnforcement);
 
 // (crbug/1377753): Speculatively start service worker before BeforeUnload runs.
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSpeculativeServiceWorkerStartup);
+
+// Flag guard for fix for crbug.com/1414936.
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kWindowOpenFileSelectFix);
 
 // Please keep features in alphabetical order.
 

@@ -45,7 +45,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_MAC)
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #endif
 
 namespace autofill {
@@ -95,7 +95,7 @@ std::vector<base::FilePath> GetTestFiles() {
   std::sort(files.begin(), files.end());
 
 #if BUILDFLAG(IS_MAC)
-  base::mac::ClearAmIBundledCache();
+  base::apple::ClearAmIBundledCache();
 #endif  // BUILDFLAG(IS_MAC)
 
   return files;
@@ -211,8 +211,6 @@ FormStructureBrowserTest::FormStructureBrowserTest()
        features::kAutofillPageLanguageDetection,
        // TODO(crbug.com/1165780): Remove once shared labels are launched.
        features::kAutofillEnableSupportForParsingWithSharedLabels,
-       // TODO(crbug.com/1335549): Remove once launched.
-       features::kAutofillParseIBANFields,
        // TODO(crbug.com/1341387): Remove once launched.
        features::kAutofillParseVcnCardOnFileStandaloneCvcFields,
        // TODO(crbug.com/1311937): Remove once launched.

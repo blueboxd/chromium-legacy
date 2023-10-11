@@ -80,6 +80,10 @@ WGPUStorageTextureAccess AsDawnEnum(
   switch (webgpu_enum.AsEnum()) {
     case V8GPUStorageTextureAccess::Enum::kWriteOnly:
       return WGPUStorageTextureAccess_WriteOnly;
+    case V8GPUStorageTextureAccess::Enum::kReadOnly:
+      return WGPUStorageTextureAccess_ReadOnly;
+    case V8GPUStorageTextureAccess::Enum::kReadWrite:
+      return WGPUStorageTextureAccess_ReadWrite;
   }
 }
 
@@ -686,6 +690,13 @@ WGPUFeatureName AsDawnEnum(const V8GPUFeatureName& webgpu_enum) {
       return WGPUFeatureName_IndirectFirstInstance;
     case V8GPUFeatureName::Enum::kChromiumExperimentalDp4A:
       return WGPUFeatureName_ChromiumExperimentalDp4a;
+    case V8GPUFeatureName::Enum::kChromiumExperimentalReadWriteStorageTexture:
+      return WGPUFeatureName_ChromiumExperimentalReadWriteStorageTexture;
+    case V8GPUFeatureName::Enum::kChromiumExperimentalSubgroups:
+      return WGPUFeatureName_ChromiumExperimentalSubgroups;
+    case V8GPUFeatureName::Enum::
+        kChromiumExperimentalSubgroupUniformControlFlow:
+      return WGPUFeatureName_ChromiumExperimentalSubgroupUniformControlFlow;
     case V8GPUFeatureName::Enum::kRg11B10UfloatRenderable:
       return WGPUFeatureName_RG11B10UfloatRenderable;
     case V8GPUFeatureName::Enum::kBgra8UnormStorage:

@@ -11,9 +11,11 @@
 #include "base/functional/callback.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
+#include "chrome/browser/ash/file_system_provider/provider_interface.h"
 #include "chrome/browser/platform_util.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -51,6 +53,15 @@ constexpr char kGoogleDriveUploadResultMetricName[] =
     "FileBrowser.OfficeFiles.Open.UploadResult.GoogleDrive";
 constexpr char kOneDriveUploadResultMetricName[] =
     "FileBrowser.OfficeFiles.Open.UploadResult.OneDrive";
+
+constexpr char kGoogleDriveMoveErrorMetricName[] =
+    "FileBrowser.OfficeFiles.Open.IOTaskError.GoogleDrive.Move";
+constexpr char kGoogleDriveCopyErrorMetricName[] =
+    "FileBrowser.OfficeFiles.Open.IOTaskError.GoogleDrive.Copy";
+constexpr char kOneDriveMoveErrorMetricName[] =
+    "FileBrowser.OfficeFiles.Open.IOTaskError.OneDrive.Move";
+constexpr char kOneDriveCopyErrorMetricName[] =
+    "FileBrowser.OfficeFiles.Open.IOTaskError.OneDrive.Copy";
 
 // List of UMA enum value for Web Drive Office task results. The enum values
 // must be kept in sync with OfficeTaskResult in
@@ -134,6 +145,11 @@ SourceType GetSourceType(Profile* profile,
 UploadType GetUploadType(Profile* profile,
                          const storage::FileSystemURL& source_path);
 
+// Request ODFS be mounted. If there is an existing mount, ODFS will unmount
+// that one after authentication of the new mount.
+void RequestODFSMount(Profile* profile,
+                      file_system_provider::RequestMountCallback callback);
+
 // Get information of the currently provided ODFS. Expect there to be exactly
 // one ODFS.
 absl::optional<file_system_provider::ProvidedFileSystemInfo> GetODFSInfo(
@@ -142,12 +158,20 @@ absl::optional<file_system_provider::ProvidedFileSystemInfo> GetODFSInfo(
 // Get currently provided ODFS, or null if not mounted.
 file_system_provider::ProvidedFileSystemInterface* GetODFS(Profile* profile);
 
+bool IsODFSMounted(Profile* profile);
+bool IsODFSInstalled(Profile* profile);
+bool IsOfficeWebAppInstalled(Profile* profile);
+
 // Get ODFS metadata as actions by doing a special GetActions request (for the
 // root directory) and return the actions to |OnODFSMetadataActions| which will
 // be converted to |ODFSMetadata| and passed to |callback|.
 void GetODFSMetadata(
     file_system_provider::ProvidedFileSystemInterface* file_system,
     GetODFSMetadataCallback callback);
+
+// Get the first task error that is not `base::File::Error::FILE_OK`.
+absl::optional<base::File::Error> GetFirstTaskError(
+    const ::file_manager::io_task::ProgressStatus& status);
 
 }  // namespace ash::cloud_upload
 

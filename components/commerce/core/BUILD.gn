@@ -73,9 +73,12 @@ static_library("metrics") {
 proto_library("proto") {
   proto_in_dir = "//"
   sources = [
+    "proto/discounts.proto",
     "proto/merchant_trust.proto",
+    "proto/parcel.proto",
     "proto/price_insights.proto",
     "proto/price_tracking.proto",
+    "proto/shopping_page_types.proto",
   ]
 }
 
@@ -99,6 +102,12 @@ if (is_android) {
     proto_in_dir = "//"
     sources = [ "proto/coupon_db_content.proto" ]
   }
+}
+
+proto_library("parcel_tracking_db_content_proto") {
+  proto_in_dir = "//"
+  sources = [ "proto/parcel_tracking_db_content.proto" ]
+  deps = [ ":proto" ]
 }
 
 proto_library("persisted_state_db_content_proto") {
@@ -217,6 +226,7 @@ static_library("shopping_service") {
   ]
 
   public_deps = [
+    ":commerce_types",
     "//components/commerce/core/subscriptions:subscriptions",
     "//services/data_decoder/public/cpp",
   ]
@@ -379,4 +389,10 @@ source_set("commerce_constants") {
     "commerce_constants.cc",
     "commerce_constants.h",
   ]
+}
+
+source_set("commerce_types") {
+  sources = [ "commerce_types.h" ]
+
+  deps = [ "//url" ]
 }

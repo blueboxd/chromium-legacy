@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
-#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -79,6 +78,9 @@ PriceTrackingIconView::PriceTrackingIconView(
   SetAccessibilityProperties(
       /*role*/ absl::nullopt,
       l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE));
+
+  SetUseTonalColorsWhenExpanded(
+      base::FeatureList::IsEnabled(commerce::kPriceTrackingIconColors));
 }
 
 PriceTrackingIconView::~PriceTrackingIconView() = default;
@@ -307,22 +309,16 @@ bool PriceTrackingIconView::ShouldShowFirstUseExperienceBubble() const {
 }
 
 void PriceTrackingIconView::MaybeShowPageActionLabel() {
-  auto* tracker =
-      feature_engagement::TrackerFactory::GetForBrowserContext(profile_);
-  if (!tracker ||
-      !tracker->ShouldTriggerHelpUI(
-          feature_engagement::kIPHPriceTrackingPageActionIconLabelFeature)) {
+  auto* tab_helper =
+      commerce::ShoppingListUiTabHelper::FromWebContents(GetWebContents());
+
+  if (!tab_helper || tab_helper->GetPageActionToExpand() !=
+                         PageActionIconType::kPriceTracking) {
     return;
   }
 
   should_extend_label_shown_duration_ = true;
   AnimateIn(absl::nullopt);
-
-  // Note that `Dismiss()` in this case does not dismiss the UI. It's telling
-  // the FE backend that the promo is done so that other promos can run. Showing
-  // the label should not block other promos from displaying.
-  tracker->Dismissed(
-      feature_engagement::kIPHPriceTrackingPageActionIconLabelFeature);
 }
 
 void PriceTrackingIconView::HidePageActionLabel() {

@@ -41,6 +41,7 @@
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/vulkan/vulkan_image.h"
+#include "third_party/skia/include/gpu/ganesh/vk/GrVkBackendSurface.h"
 #include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 #include "ui/gfx/android/android_surface_control_compat.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -267,8 +268,8 @@ class SkiaVkAHBImageRepresentation : public SkiaVkAndroidImageRepresentation {
     // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
     // if the vk_info stays the same on subsequent calls.
     promise_texture_ = GrPromiseImageTexture::Make(
-        GrBackendTexture(size().width(), size().height(),
-                         CreateGrVkImageInfo(vulkan_image_.get())));
+        GrBackendTextures::MakeVk(size().width(), size().height(),
+                                  CreateGrVkImageInfo(vulkan_image_.get())));
     DCHECK(promise_texture_);
   }
 };
@@ -576,9 +577,11 @@ AHardwareBufferImageBackingFactory::FormatInfoForSupportedFormat(
   // Check if AHB backed GL texture can be created using this format and
   // gather GL related format info.
   // TODO(vikassoni): Add vulkan related information in future.
-  GLuint internal_format = GLInternalFormat(format);
-  GLenum gl_format = GLDataFormat(format);
-  GLenum gl_type = GLDataType(format);
+  GLFormatDesc format_desc = ToGLFormatDesc(format, /*plane_index=*/0,
+                                            /*use_angle_rgbx_format=*/false);
+  GLuint internal_format = format_desc.image_internal_format;
+  GLenum gl_format = format_desc.data_format;
+  GLenum gl_type = format_desc.data_type;
 
   // AHardwareBufferImageBacking supports internal format GL_RGBA and GL_RGB.
   if (internal_format != GL_RGBA && internal_format != GL_RGB) {
@@ -905,7 +908,8 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
     return nullptr;
   }
 
-  return CreateSharedImage(mailbox, viz::GetSharedImageFormat(buffer_format),
+  return CreateSharedImage(mailbox,
+                           viz::GetSinglePlaneSharedImageFormat(buffer_format),
                            size, color_space, surface_origin, alpha_type, usage,
                            debug_label, std::move(handle));
 }

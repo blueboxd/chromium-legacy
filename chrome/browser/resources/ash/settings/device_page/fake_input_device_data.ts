@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AcceleratorAction, ActionChoice, GraphicsTablet, Keyboard, MetaKey, ModifierKey, Mouse, PointingStick, SimulateRightClickModifier, SixPackKeyInfo, SixPackShortcutModifier, Stylus, Touchpad, Vkey} from './input_device_settings_types.js';
+import {AcceleratorAction, ActionChoice, CustomizableButton, GraphicsTablet, Keyboard, MetaKey, ModifierKey, Mouse, PointingStick, SimulateRightClickModifier, SixPackKeyInfo, SixPackShortcutModifier, Stylus, Touchpad, Vkey} from './input_device_settings_types.js';
 
 const defaultSixPackKeyRemappings: SixPackKeyInfo = {
   pageDown: SixPackShortcutModifier.kSearch,
@@ -79,6 +79,37 @@ export const fakeKeyboards: Keyboard[] = [
       topRowAreFkeys: true,
       suppressMetaFkeyRewrites: false,
       sixPackKeyRemappings: defaultSixPackKeyRemappings,
+    },
+  },
+  {
+    id: 9,
+    deviceKey: 'test:key',
+    name: 'Fake ERGO K861',
+    isExternal: true,
+    metaKey: MetaKey.kCommand,
+    modifierKeys: [
+      ModifierKey.kAlt,
+      ModifierKey.kBackspace,
+      ModifierKey.kCapsLock,
+      ModifierKey.kControl,
+      ModifierKey.kEscape,
+      ModifierKey.kMeta,
+    ],
+    settings: {
+      modifierRemappings: {
+        [ModifierKey.kControl]: ModifierKey.kCapsLock,
+        [ModifierKey.kCapsLock]: ModifierKey.kAssistant,
+      },
+      topRowAreFkeys: false,
+      suppressMetaFkeyRewrites: false,
+      sixPackKeyRemappings: {
+        pageDown: SixPackShortcutModifier.kSearch,
+        pageUp: SixPackShortcutModifier.kSearch,
+        del: SixPackShortcutModifier.kAlt,
+        insert: SixPackShortcutModifier.kSearch,
+        home: SixPackShortcutModifier.kAlt,
+        end: SixPackShortcutModifier.kAlt,
+      },
     },
   },
 ];
@@ -210,6 +241,56 @@ export const fakeMice: Mouse[] = [
       accelerationEnabled: true,
       scrollSensitivity: 5,
       scrollAcceleration: true,
+      buttonRemappings: [
+        {
+          name: 'Back Button',
+          button: {
+            customizableButton: CustomizableButton.kBack,
+          },
+          remappingAction: {
+            action: AcceleratorAction.kCycleBackwardMru,
+          },
+        },
+        {
+          name: 'Forward Button',
+          button: {
+            customizableButton: CustomizableButton.kForward,
+          },
+          remappingAction: {
+            action: AcceleratorAction.kCycleForwardMru,
+          },
+        },
+        {
+          name: 'Undo',
+          button: {
+            customizableButton: CustomizableButton.kExtra,
+          },
+          remappingAction: {
+            keyEvent: {
+              vkey: Vkey.kKeyZ,
+              domCode: 0,
+              domKey: 0,
+              modifiers: 4,
+              keyDisplay: 'z',
+            },
+          },
+        },
+        {
+          name: 'Redo',
+          button: {
+            customizableButton: CustomizableButton.kSide,
+          },
+          remappingAction: {
+            keyEvent: {
+              vkey: Vkey.kKeyZ,
+              domCode: 0,
+              domKey: 0,
+              modifiers: 6,
+              keyDisplay: 'z',
+            },
+          },
+        },
+      ],
     },
   },
   {
@@ -224,6 +305,32 @@ export const fakeMice: Mouse[] = [
       accelerationEnabled: false,
       scrollSensitivity: 1,
       scrollAcceleration: false,
+      buttonRemappings: [
+        {
+          name: 'Chrome Vox',
+          button: {
+            customizableButton: CustomizableButton.kSide,
+          },
+          remappingAction: {
+            keyEvent: {
+              vkey: Vkey.kKeyZ,
+              domCode: 0,
+              domKey: 0,
+              modifiers: 10,
+              keyDisplay: 'z',
+            },
+          },
+        },
+        {
+          name: 'Open Clipboard',
+          button: {
+            customizableButton: CustomizableButton.kMiddle,
+          },
+          remappingAction: {
+            action: AcceleratorAction.kToggleClipboardHistory,
+          },
+        },
+      ],
     },
   },
 ];
@@ -241,6 +348,7 @@ export const fakeMice2: Mouse[] = [
       accelerationEnabled: true,
       scrollSensitivity: 5,
       scrollAcceleration: true,
+      buttonRemappings: [],
     },
   },
 ];
@@ -335,6 +443,7 @@ export const fakeGraphicsTablets: GraphicsTablet[] = [
               domCode: 0,
               domKey: 0,
               modifiers: 4,
+              keyDisplay: 'z',
             },
           },
         },
@@ -349,6 +458,7 @@ export const fakeGraphicsTablets: GraphicsTablet[] = [
               domCode: 0,
               domKey: 0,
               modifiers: 6,
+              keyDisplay: 'z',
             },
           },
         },
@@ -392,6 +502,7 @@ export const fakeGraphicsTablets: GraphicsTablet[] = [
               domCode: 0,
               domKey: 0,
               modifiers: 4,
+              keyDisplay: 'c',
             },
           },
         },
@@ -406,6 +517,7 @@ export const fakeGraphicsTablets: GraphicsTablet[] = [
               domCode: 0,
               domKey: 0,
               modifiers: 4,
+              keyDisplay: 'v',
             },
           },
         },

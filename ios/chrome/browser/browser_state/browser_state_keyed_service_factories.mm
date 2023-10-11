@@ -5,14 +5,14 @@
 #import "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 
 #import "base/feature_list.h"
-#import "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#import "ios/chrome/browser/autocomplete/in_memory_url_index_factory.h"
-#import "ios/chrome/browser/autocomplete/shortcuts_backend_factory.h"
+#import "ios/chrome/browser/autocomplete/model/autocomplete_classifier_factory.h"
+#import "ios/chrome/browser/autocomplete/model/in_memory_url_index_factory.h"
+#import "ios/chrome/browser/autocomplete/model/shortcuts_backend_factory.h"
 #import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
-#import "ios/chrome/browser/bookmarks/account_bookmark_model_factory.h"
-#import "ios/chrome/browser/bookmarks/bookmark_undo_service_factory.h"
-#import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
-#import "ios/chrome/browser/bookmarks/managed_bookmark_service_factory.h"
+#import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_undo_service_factory.h"
+#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/managed_bookmark_service_factory.h"
 #import "ios/chrome/browser/bring_android_tabs/bring_android_tabs_to_ios_service_factory.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #import "ios/chrome/browser/commerce/shopping_service_factory.h"
@@ -48,6 +48,7 @@
 #import "ios/chrome/browser/passwords/ios_chrome_account_password_store_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/photos/photos_service_factory.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #import "ios/chrome/browser/policy_url_blocking/policy_url_blocking_service.h"
 #import "ios/chrome/browser/promos_manager/promos_manager_event_exporter_factory.h"
@@ -167,6 +168,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ModelTypeStoreServiceFactory::GetInstance();
   OptimizationGuideServiceFactory::GetInstance();
   policy::UserPolicySigninServiceFactory::GetInstance();
+  PhotosServiceFactory::GetInstance();
   TabsSearchServiceFactory::GetInstance();
   PushNotificationBrowserStateServiceFactory::GetInstance();
   SyncServiceFactory::GetInstance();

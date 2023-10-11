@@ -8,8 +8,8 @@ import {FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {Crostini} from '../../externs/background/crostini.js';
-import {addUiEntry, removeUiEntry} from '../../state/actions/ui_entries.js';
-import {crostiniPlaceHolderKey} from '../../state/reducers/volumes.js';
+import {addUiEntry, removeUiEntry} from '../../state/ducks/ui_entries.js';
+import {crostiniPlaceHolderKey} from '../../state/ducks/volumes.js';
 import {getStore} from '../../state/store.js';
 
 import {constants} from './constants.js';

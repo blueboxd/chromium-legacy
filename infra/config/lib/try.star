@@ -93,11 +93,11 @@ SOURCELESS_BUILDER_CACHES = [
 
 defaults = args.defaults(
     extends = builders.defaults,
-    check_for_flakiness = False,
+    check_for_flakiness = True,
     # TODO(crbug/1456545) - Once we've migrated to the ResultDB-based solution
     # this should be deprecated in favor for the original check_for_flakiness
     # argument.
-    check_for_flakiness_with_resultdb = False,
+    check_for_flakiness_with_resultdb = True,
     cq_group = None,
     main_list_view = None,
     subproject_list_view = None,
@@ -211,7 +211,7 @@ def try_builder(
           chrome-luci-data.gpu_try_test_results
     """
     if not branches.matches(branch_selector):
-        return
+        return None
 
     experiments = experiments or {}
 
@@ -263,27 +263,6 @@ def try_builder(
     properties = kwargs.pop("properties", {})
     properties = dict(properties)
 
-    check_for_flakiness = defaults.get_value(
-        "check_for_flakiness",
-        check_for_flakiness,
-    )
-    if check_for_flakiness:
-        properties["$build/flakiness"] = {
-            "check_for_flakiness": True,
-        }
-
-    # TODO(crbug/1456545) - Once we've migrated to the ResultDB-based solution
-    # check_for_flakiness_with_resultdb should be deprecated in favor for the
-    # original check_for_flakiness argument.
-    check_for_flakiness_with_resultdb = defaults.get_value(
-        "check_for_flakiness_with_resultdb",
-        check_for_flakiness_with_resultdb,
-    )
-    if check_for_flakiness_with_resultdb:
-        properties["$build/flakiness"] = {
-            "check_for_flakiness_with_resultdb": True,
-        }
-
     # Populate "cq" property if builder is a required or path-based CQ builder.
     # This is useful for bigquery analysis.
     if "cq" in properties:
@@ -293,9 +272,26 @@ def try_builder(
         cq = "required" if not tryjob.location_filters else "path-based"
         properties["cq"] = cq
 
+        # TODO(crbug/1456545) - Once we've migrated to the ResultDB-based solution
+        # check_for_flakiness_with_resultdb should be deprecated in favor for the
+        # original check_for_flakiness argument.
+        check_for_flakiness = defaults.get_value(
+            "check_for_flakiness",
+            check_for_flakiness,
+        )
+        check_for_flakiness_with_resultdb = defaults.get_value(
+            "check_for_flakiness_with_resultdb",
+            check_for_flakiness_with_resultdb,
+        )
+
+        properties["$build/flakiness"] = {
+            "check_for_flakiness": check_for_flakiness,
+            "check_for_flakiness_with_resultdb": check_for_flakiness_with_resultdb,
+        }
+
     # Define the builder first so that any validation of luci.builder arguments
     # (e.g. bucket) occurs before we try to use it
-    builders.builder(
+    ret = builders.builder(
         name = name,
         branch_selector = branch_selector,
         list_view = list_view,
@@ -329,6 +325,8 @@ def try_builder(
             cq_group = cq_group,
             includable_only = True,
         )
+
+    return ret
 
 def _orchestrator_builder(
         *,
@@ -392,10 +390,10 @@ def _orchestrator_builder(
     kwargs.setdefault("ssd", None)
 
     ret = try_.builder(name = name, **kwargs)
+    if ret:
+        bucket = defaults.get_value_from_kwargs("bucket", kwargs)
 
-    bucket = defaults.get_value_from_kwargs("bucket", kwargs)
-
-    register_orchestrator(bucket, name, builder_group, compilator)
+        register_orchestrator(bucket, name, builder_group, compilator)
 
     return ret
 
@@ -435,10 +433,10 @@ def _compilator_builder(*, name, **kwargs):
     kwargs.setdefault("ssd", True)
 
     ret = try_.builder(name = name, **kwargs)
+    if ret:
+        bucket = defaults.get_value_from_kwargs("bucket", kwargs)
 
-    bucket = defaults.get_value_from_kwargs("bucket", kwargs)
-
-    register_compilator(bucket, name)
+        register_compilator(bucket, name)
 
     return ret
 

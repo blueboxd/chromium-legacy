@@ -223,8 +223,8 @@ bool HasClipPathPaintWorklet(Node* node) {
 }
 
 StyleDifference AdjustForCompositableAnimationPaint(
-    scoped_refptr<const ComputedStyle> old_style,
-    scoped_refptr<const ComputedStyle> new_style,
+    const ComputedStyle* old_style,
+    const ComputedStyle* new_style,
     Node* node,
     StyleDifference diff) {
   DCHECK(new_style);
@@ -320,7 +320,7 @@ struct SameSizeAsLayoutObject : public GarbageCollected<SameSizeAsLayoutObject>,
   unsigned bitfields_;
   unsigned bitfields2_;
   unsigned bitfields3_;
-  void* pointers[1];
+  subtle::UncompressedMember<void*> uncompressed_member;
   Member<void*> members[5];
 #if DCHECK_IS_ON()
   bool is_destroyed_;
@@ -374,11 +374,9 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kInline:
       return MakeGarbageCollected<LayoutInline>(element);
     case EDisplay::kInlineListItem:
-      DCHECK(RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled());
       return MakeGarbageCollected<LayoutNGInlineListItem>(element);
     case EDisplay::kFlowRootListItem:
     case EDisplay::kInlineFlowRootListItem:
-      DCHECK(RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled());
       [[fallthrough]];
     case EDisplay::kBlock:
     case EDisplay::kFlowRoot:
@@ -446,7 +444,7 @@ LayoutBlockFlow* LayoutObject::CreateBlockFlowOrListItem(
 }
 
 LayoutObject::LayoutObject(Node* node)
-    : full_paint_invalidation_reason_(
+    : paint_invalidation_reason_for_pre_paint_(
           static_cast<unsigned>(PaintInvalidationReason::kNone)),
       positioned_state_(kIsStaticallyPositioned),
       selection_state_(static_cast<unsigned>(SelectionState::kNone)),
@@ -1451,13 +1449,11 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout) {
   LayoutObject* object = Container();
   LayoutObject* last = this;
 
-  bool simplified_normal_flow_layout = NeedsSimplifiedNormalFlowLayout() &&
-                                       !SelfNeedsLayout() &&
-                                       !NormalChildNeedsLayout();
-
+  bool simplified_normal_flow_layout = NeedsSimplifiedLayoutOnly();
   while (object) {
-    if (object->SelfNeedsLayout())
+    if (object->SelfNeedsFullLayout()) {
       return;
+    }
 
     // Note that if the last element we processed was blocked by a display lock,
     // and the reason we're propagating a change is that a subtree needed layout
@@ -1466,7 +1462,8 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout) {
     // it's not enough to check |object|, since the element that is actually
     // locked needs its child bits set properly, we need to go one more
     // iteration after that.
-    if (!last->SelfNeedsLayout() && last->ChildLayoutBlockedByDisplayLock() &&
+    if (!last->SelfNeedsFullLayout() &&
+        last->ChildLayoutBlockedByDisplayLock() &&
         !HasPropagatedLayoutObjects(last)) {
       return;
     }
@@ -1484,13 +1481,15 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout) {
     }
 
     if (simplified_normal_flow_layout) {
-      if (object->NeedsSimplifiedNormalFlowLayout())
+      if (object->NeedsSimplifiedLayout()) {
         return;
-      object->SetNeedsSimplifiedNormalFlowLayout(true);
+      }
+      object->SetNeedsSimplifiedLayout(true);
     } else {
-      if (object->NormalChildNeedsLayout())
+      if (object->ChildNeedsFullLayout()) {
         return;
-      object->SetNormalChildNeedsLayout(true);
+      }
+      object->SetChildNeedsFullLayout(true);
     }
 #if DCHECK_IS_ON()
     DCHECK(!object->IsSetNeedsLayoutForbidden());
@@ -2480,9 +2479,8 @@ StyleDifference LayoutObject::AdjustStyleDifference(
   return diff;
 }
 
-void LayoutObject::SetPseudoElementStyle(
-    scoped_refptr<const ComputedStyle> pseudo_style,
-    bool match_parent_size) {
+void LayoutObject::SetPseudoElementStyle(const ComputedStyle* pseudo_style,
+                                         bool match_parent_size) {
   NOT_DESTROYED();
   DCHECK(pseudo_style->StyleType() == kPseudoIdBefore ||
          pseudo_style->StyleType() == kPseudoIdAfter ||
@@ -2516,7 +2514,7 @@ void LayoutObject::SetPseudoElementStyle(
   if (IsText() && Parent() && UNLIKELY(Parent()->IsInitialLetterBox())) {
     // Note: `Parent()` can be null for text for generated contents.
     // See "accessibility/css-generated-content.html"
-    scoped_refptr<const ComputedStyle> initial_letter_text_style =
+    const ComputedStyle* initial_letter_text_style =
         GetDocument().GetStyleResolver().StyleForInitialLetterText(
             *pseudo_style, Parent()->ContainingBlock()->StyleRef());
     SetStyle(std::move(initial_letter_text_style));
@@ -2538,7 +2536,7 @@ void LayoutObject::SetPseudoElementStyle(
 }
 
 DISABLE_CFI_PERF
-void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
+void LayoutObject::SetStyle(const ComputedStyle* style,
                             ApplyStyleChanges apply_changes) {
   NOT_DESTROYED();
   if (style_ == style)
@@ -2573,11 +2571,9 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
       if (style_->HasPseudoElementStyle(pseudo) ||
           style->HasPseudoElementStyle(pseudo)) {
         const ComputedStyle* pseudo_old_style =
-            style_->HighlightData() ? style_->HighlightData()->Style(pseudo)
-                                    : nullptr;
+            style_->HighlightData().Style(pseudo);
         const ComputedStyle* pseudo_new_style =
-            style->HighlightData() ? style->HighlightData()->Style(pseudo)
-                                   : nullptr;
+            style->HighlightData().Style(pseudo);
 
         if (pseudo_old_style && pseudo_new_style) {
           diff.Merge(pseudo_old_style->VisualInvalidationDiff(
@@ -2612,17 +2608,17 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
 
   StyleWillChange(diff, *style);
 
-  scoped_refptr<const ComputedStyle> old_style = std::move(style_);
+  const ComputedStyle* old_style = std::move(style_);
   SetStyleInternal(std::move(style));
 
   if (!IsText())
-    UpdateImageObservers(old_style.get(), style_.get());
+    UpdateImageObservers(old_style, style_.Get());
 
-  CheckCounterChanges(old_style.get(), style_.get());
+  CheckCounterChanges(old_style, style_.Get());
 
   bool does_not_need_layout_or_paint_invalidation = !parent_;
 
-  StyleDidChange(diff, old_style.get());
+  StyleDidChange(diff, old_style);
 
   // FIXME: |this| might be destroyed here. This can currently happen for a
   // LayoutTextFragment when its first-letter block gets an update in
@@ -2734,8 +2730,8 @@ void LayoutObject::UpdateFirstLineImageObservers(
       !has_new_first_line_style)
     return;
 
-  using FirstLineStyleMap = HeapHashMap<WeakMember<const LayoutObject>,
-                                        scoped_refptr<const ComputedStyle>>;
+  using FirstLineStyleMap =
+      HeapHashMap<WeakMember<const LayoutObject>, Member<const ComputedStyle>>;
   DEFINE_STATIC_LOCAL(Persistent<FirstLineStyleMap>, first_line_style_map,
                       (MakeGarbageCollected<FirstLineStyleMap>()));
   DCHECK_EQ(bitfields_.RegisteredAsFirstLineImageObserver(),
@@ -2748,7 +2744,7 @@ void LayoutObject::UpdateFirstLineImageObservers(
   // UpdateFillImages() may indirectly call LayoutBlock::ImageChanged() which
   // will invalidate the first line style cache and remove a reference to
   // new_first_line_style, so hold a reference here.
-  scoped_refptr<const ComputedStyle> new_first_line_style =
+  const ComputedStyle* new_first_line_style =
       has_new_first_line_style ? FirstLineStyleWithoutFallback() : nullptr;
 
   if (new_first_line_style && !new_first_line_style->HasBackgroundImage())
@@ -3098,6 +3094,12 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
       (old_style->ToggleTrigger() != StyleRef().ToggleTrigger() ||
        old_style->ToggleVisibility() != StyleRef().ToggleVisibility())) {
     GetDocument().EnsureCSSToggleInference().MarkNeedsRebuild();
+  }
+
+  if (old_style &&
+      old_style->UsedPointerEvents() != StyleRef().UsedPointerEvents()) {
+    // UsedPointerEvents affects hit test opaqueness.
+    SetShouldInvalidatePaintForHitTest();
   }
 
   if (StyleRef().AnchorName())
@@ -3685,7 +3687,7 @@ void LayoutObject::WillBeDestroyed() {
 
   // Remove this object as ImageResourceObserver.
   if (style_ && !IsText())
-    UpdateImageObservers(style_.get(), nullptr);
+    UpdateImageObservers(style_.Get(), nullptr);
 
   // We must have removed all image observers.
   SECURITY_CHECK(!bitfields_.RegisteredAsFirstLineImageObserver());
@@ -3924,7 +3926,7 @@ void LayoutObject::DestroyAndCleanupAnonymousWrappers(
     // RubyBase should be kept if RubyText exists
     if (destroy_root_parent->IsRubyBase()) {
       auto* ruby_run =
-          DynamicTo<LayoutNGRubyRun>(destroy_root_parent->Parent());
+          DynamicTo<LayoutRubyColumn>(destroy_root_parent->Parent());
       if (ruby_run && ruby_run->HasRubyText())
         break;
     }
@@ -4130,7 +4132,7 @@ const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
       // it's based on first_line_block's style. We need to get the uncached
       // first line style based on this object's style and cache the result in
       // it.
-      if (scoped_refptr<const ComputedStyle> first_line_style =
+      if (const ComputedStyle* first_line_style =
               first_line_block->GetUncachedPseudoElementStyle(
                   StyleRequest(kPseudoIdFirstLine, Style()))) {
         return StyleRef().ReplaceCachedPseudoElementStyle(
@@ -4147,7 +4149,7 @@ const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
             Parent()->FirstLineStyleWithoutFallback()) {
       // A first-line style is in effect. Get uncached first line style based on
       // parent_first_line_style and cache the result in this object's style.
-      if (scoped_refptr<const ComputedStyle> first_line_style =
+      if (const ComputedStyle* first_line_style =
               GetUncachedPseudoElementStyle(StyleRequest(
                   kPseudoIdFirstLineInherited, parent_first_line_style))) {
         return StyleRef().AddCachedPseudoElementStyle(
@@ -4174,7 +4176,7 @@ const ComputedStyle* LayoutObject::GetCachedPseudoElementStyle(
   return element->CachedStyleForPseudoElement(pseudo);
 }
 
-scoped_refptr<const ComputedStyle> LayoutObject::GetUncachedPseudoElementStyle(
+const ComputedStyle* LayoutObject::GetUncachedPseudoElementStyle(
     const StyleRequest& request) const {
   NOT_DESTROYED();
   DCHECK_NE(request.pseudo_id, kPseudoIdBefore);
@@ -4194,10 +4196,7 @@ scoped_refptr<const ComputedStyle> LayoutObject::GetUncachedPseudoElementStyle(
 
 const ComputedStyle* LayoutObject::GetSelectionStyle() const {
   if (UsesHighlightPseudoInheritance(kPseudoIdSelection)) {
-    if (!StyleRef().HighlightData()) {
-      return nullptr;
-    }
-    return StyleRef().HighlightData()->Selection();
+    return StyleRef().HighlightData().Selection();
   }
   return GetCachedPseudoElementStyle(kPseudoIdSelection);
 }
@@ -4293,7 +4292,7 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
   if (IsFixedPositioned())
     return nullptr;
 
-  HashSet<Member<TreeScope>> ancestor_tree_scopes;
+  HeapHashSet<Member<TreeScope>> ancestor_tree_scopes;
   if (base)
     ancestor_tree_scopes = base->GetAncestorTreeScopes();
 
@@ -4542,10 +4541,21 @@ void LayoutObject::SetShouldDoFullPaintInvalidationWithoutLayoutChangeInternal(
   // Only full invalidation reasons are allowed.
   DCHECK(IsFullPaintInvalidationReason(reason));
   bitfields_.SetShouldDelayFullPaintInvalidation(false);
-  if (reason > FullPaintInvalidationReason()) {
+  if (reason > PaintInvalidationReasonForPrePaint()) {
     SetShouldCheckForPaintInvalidationWithoutLayoutChange();
-    full_paint_invalidation_reason_ = static_cast<unsigned>(reason);
-    DCHECK_EQ(reason, FullPaintInvalidationReason());
+    paint_invalidation_reason_for_pre_paint_ = static_cast<unsigned>(reason);
+    DCHECK_EQ(reason, PaintInvalidationReasonForPrePaint());
+  }
+}
+
+void LayoutObject::SetShouldInvalidatePaintForHitTest() {
+  NOT_DESTROYED();
+  if (PaintInvalidationReasonForPrePaint() <
+      PaintInvalidationReason::kHitTest) {
+    SetShouldCheckForPaintInvalidationWithoutLayoutChange();
+    paint_invalidation_reason_for_pre_paint_ =
+        static_cast<unsigned>(PaintInvalidationReason::kHitTest);
+    DCHECK(ShouldInvalidatePaintForHitTestOnly());
   }
 }
 
@@ -4613,7 +4623,7 @@ void LayoutObject::SetMayNeedPaintInvalidationAnimatedBackgroundImage() {
 void LayoutObject::SetShouldDelayFullPaintInvalidation() {
   NOT_DESTROYED();
   // Should have already set a full paint invalidation reason.
-  DCHECK(IsFullPaintInvalidationReason(FullPaintInvalidationReason()));
+  DCHECK(IsFullPaintInvalidationReason(PaintInvalidationReasonForPrePaint()));
   // Subtree full paint invalidation can't be delayed.
   if (bitfields_.SubtreeShouldDoFullPaintInvalidation()) {
     return;
@@ -4634,7 +4644,7 @@ void LayoutObject::SetShouldDelayFullPaintInvalidation() {
 void LayoutObject::ClearShouldDelayFullPaintInvalidation() {
   // This will clear ShouldDelayFullPaintInvalidation() flag.
   SetShouldDoFullPaintInvalidationWithoutLayoutChangeInternal(
-      FullPaintInvalidationReason());
+      PaintInvalidationReasonForPrePaint());
 }
 
 void LayoutObject::ClearPaintInvalidationFlags() {
@@ -4645,7 +4655,7 @@ void LayoutObject::ClearPaintInvalidationFlags() {
   DCHECK(!ShouldCheckForPaintInvalidation() || PaintInvalidationStateIsDirty());
 #endif
   if (!ShouldDelayFullPaintInvalidation()) {
-    full_paint_invalidation_reason_ =
+    paint_invalidation_reason_for_pre_paint_ =
         static_cast<unsigned>(PaintInvalidationReason::kNone);
     bitfields_.SetBackgroundNeedsFullPaintInvalidation(false);
   }
@@ -4944,7 +4954,7 @@ Vector<PhysicalRect> LayoutObject::OutlineRects(
 }
 
 void LayoutObject::SetModifiedStyleOutsideStyleRecalc(
-    scoped_refptr<const ComputedStyle> style,
+    const ComputedStyle* style,
     ApplyStyleChanges apply_changes) {
   NOT_DESTROYED();
   SetStyle(style, apply_changes);

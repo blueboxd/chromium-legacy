@@ -43,6 +43,7 @@
 #include "components/sync/protocol/data_type_progress_marker.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/model_type_state_helper.h"
+#include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 #include "components/sync/protocol/sync_entity.pb.h"
 
@@ -164,7 +165,11 @@ std::string GetEncryptionKeyName(const sync_pb::SyncEntity& entity) {
 bool DecryptSpecifics(const Cryptographer& cryptographer,
                       const sync_pb::EntitySpecifics& in,
                       sync_pb::EntitySpecifics* out) {
+  // Passwords and password sharing invitations have their own encryption
+  // schemes and they are handled in different helpers.
+  CHECK(!in.has_incoming_password_sharing_invitation());
   DCHECK(!in.has_password());
+
   DCHECK(in.has_encrypted());
   DCHECK(cryptographer.CanDecrypt(in.encrypted()));
 
@@ -177,7 +182,7 @@ bool DecryptSpecifics(const Cryptographer& cryptographer,
 
 // Attempts to decrypt the given password specifics and return them in the
 // |out| parameter. The cryptographer must know the decryption key, i.e.
-// cryptographer.CanDecrypt(in.password().encrypted()) must return true.
+// cryptographer.CanDecrypt(in.encrypted()) must return true.
 //
 // Returns false if the decryption failed. There are no guarantees about the
 // contents of |out| when that happens.
@@ -186,25 +191,22 @@ bool DecryptSpecifics(const Cryptographer& cryptographer,
 // cause this to fail, and no clients are known to create such entries. The
 // failure case is an attempt to be defensive against bad input.
 bool DecryptPasswordSpecifics(const Cryptographer& cryptographer,
-                              const sync_pb::EntitySpecifics& in,
-                              sync_pb::EntitySpecifics* out) {
-  DCHECK(in.has_password());
-  DCHECK(in.password().has_encrypted());
-  DCHECK(cryptographer.CanDecrypt(in.password().encrypted()));
+                              const sync_pb::PasswordSpecifics& in,
+                              sync_pb::PasswordSpecificsData* out) {
+  CHECK(in.has_encrypted());
+  CHECK(cryptographer.CanDecrypt(in.encrypted()));
 
-  if (!cryptographer.Decrypt(
-          in.password().encrypted(),
-          out->mutable_password()->mutable_client_only_encrypted_data())) {
+  if (!cryptographer.Decrypt(in.encrypted(), out)) {
     DLOG(ERROR) << "Failed to decrypt a decryptable password";
     return false;
   }
   // The `notes` field in the PasswordSpecificsData is the authoritative value.
   // When set, it disregards whatever `encrypted_notes_backup` contains.
-  if (out->password().client_only_encrypted_data().has_notes()) {
+  if (out->has_notes()) {
     LogPasswordNotesState(PasswordNotesStateForUMA::kSetInSpecificsData);
     return true;
   }
-  if (!in.password().has_encrypted_notes_backup()) {
+  if (!in.has_encrypted_notes_backup()) {
     LogPasswordNotesState(PasswordNotesStateForUMA::kUnset);
     return true;
   }
@@ -214,10 +216,8 @@ bool DecryptPasswordSpecifics(const Cryptographer& cryptographer,
   // It is guaranteed that if `encrypted()` is decryptable, then
   // `encrypted_notes_backup()` must be decryptable too. Failure to decrypt
   // `encrypted_notes_backup()` indicates a data corruption.
-  if (!cryptographer.Decrypt(in.password().encrypted_notes_backup(),
-                             out->mutable_password()
-                                 ->mutable_client_only_encrypted_data()
-                                 ->mutable_notes())) {
+  if (!cryptographer.Decrypt(in.encrypted_notes_backup(),
+                             out->mutable_notes())) {
     LogPasswordNotesState(
         PasswordNotesStateForUMA::kSetOnlyInBackupButCorrupted);
     return false;
@@ -227,6 +227,39 @@ bool DecryptPasswordSpecifics(const Cryptographer& cryptographer,
   // decryptable but with different keys. Ideally the password should be
   // re-uploaded potentially by setting needs_reupload boolean in
   // UpdateResponseData or EntityData.
+  return true;
+}
+
+bool DecryptIncomingPasswordSharingInvitationSpecifics(
+    const Cryptographer& cryptographer,
+    const sync_pb::IncomingPasswordSharingInvitationSpecifics& invitation,
+    sync_pb::PasswordSharingInvitationData* unencrypted_invitation_data) {
+  if (!invitation.has_encrypted_password_sharing_invitation_data() ||
+      !invitation.sender_info().has_cross_user_sharing_public_key()) {
+    DLOG(ERROR)
+        << "Incoming password sharing invitation missing required fields";
+    return false;
+  }
+
+  absl::optional<std::vector<uint8_t>> decrypted =
+      cryptographer.AuthDecryptForCrossUserSharing(
+          base::as_bytes(base::make_span(
+              invitation.encrypted_password_sharing_invitation_data())),
+          base::as_bytes(base::make_span(invitation.sender_info()
+                                             .cross_user_sharing_public_key()
+                                             .x25519_public_key())),
+          invitation.recipient_key_version());
+  if (!decrypted) {
+    DLOG(ERROR) << "Failed to decrypt an incoming password sharing invitation";
+    return false;
+  }
+
+  if (!unencrypted_invitation_data->ParseFromArray(decrypted->data(),
+                                                   decrypted->size())) {
+    DLOG(ERROR) << "Failed to parse password sharing invitation";
+    return false;
+  }
+
   return true;
 }
 
@@ -554,10 +587,31 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     if (!cryptographer.CanDecrypt(specifics.password().encrypted())) {
       return DECRYPTION_PENDING;
     }
-    if (!DecryptPasswordSpecifics(cryptographer, specifics, &data.specifics)) {
+    if (!DecryptPasswordSpecifics(cryptographer, specifics.password(),
+                                  data.specifics.mutable_password()
+                                      ->mutable_client_only_encrypted_data())) {
       return FAILED_TO_DECRYPT;
     }
     specifics_were_encrypted = true;
+  } else if (specifics.has_incoming_password_sharing_invitation()) {
+    // IncomingPasswordSharingInvitationSpecifics contains a mix of encrypted
+    // and unencrypted fields. We start by copying over everything to make sure
+    // all unecrypted fields are carried over to the UpdateResponseData, and
+    // then decrypt the encrypted part.
+    *data.specifics.mutable_incoming_password_sharing_invitation() =
+        specifics.incoming_password_sharing_invitation();
+    // Password sharing invitations use their own encryption scheme.
+    // DECRYPTION_PENDING is not used for sharing invitations since the password
+    // should be encrypted using recipient's public key (i.e. it's committed to
+    // the server), and hence it's expected to be present.
+    if (!DecryptIncomingPasswordSharingInvitationSpecifics(
+            cryptographer, specifics.incoming_password_sharing_invitation(),
+            data.specifics.mutable_incoming_password_sharing_invitation()
+                ->mutable_client_only_unencrypted_data())) {
+      return FAILED_TO_DECRYPT;
+    }
+    data.specifics.mutable_incoming_password_sharing_invitation()
+        ->clear_encrypted_password_sharing_invitation_data();
   } else if (specifics.has_encrypted()) {
     DCHECK(!update_entity.deleted()) << "Tombstones shouldn't be encrypted";
     if (!cryptographer.CanDecrypt(specifics.encrypted())) {
@@ -776,10 +830,19 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     has_local_changes_state_ = kAllNudgedLocalChangesInFlight;
   }
 
+  if (type_ == OUTGOING_PASSWORD_SHARING_INVITATION) {
+    // Password sharing invitation types have different encryption scheme and
+    // are handled separately.
+    EncryptOutgoingPasswordSharingInvitations(&response);
+  } else if (type_ == PASSWORDS) {
+    EncryptPasswordSpecificsData(&response);
+  }
+
   DCHECK(!AlwaysEncryptedUserTypes().Has(type_) || encryption_enabled_);
   DCHECK(!encryption_enabled_ ||
          (model_type_state_.encryption_key_name() ==
           cryptographer_->GetDefaultEncryptionKeyName()));
+
   return std::make_unique<CommitContributionImpl>(
       type_, model_type_state_.type_context(), std::move(response),
       base::BindOnce(&ModelTypeWorker::OnCommitResponse,
@@ -1250,6 +1313,89 @@ void ModelTypeWorker::UpdateModelTypeStateInvalidations() {
     invalidation_to_store->set_hint(invalidation->GetPayload());
     if (!invalidation->IsUnknownVersion()) {
       invalidation_to_store->set_version(invalidation->GetVersion());
+    }
+  }
+}
+
+void ModelTypeWorker::EncryptPasswordSpecificsData(
+    CommitRequestDataList* request_data_list) {
+  CHECK(cryptographer_);
+  CHECK(encryption_enabled_);
+
+  for (std::unique_ptr<CommitRequestData>& request_data : *request_data_list) {
+    EntityData* entity_data = request_data->entity.get();
+    if (entity_data->is_deleted()) {
+      continue;
+    }
+
+    const sync_pb::PasswordSpecifics& password_specifics =
+        entity_data->specifics.password();
+    const sync_pb::PasswordSpecificsData& password_data =
+        password_specifics.client_only_encrypted_data();
+    sync_pb::EntitySpecifics encrypted_password;
+
+    // Keep the unencrypted metadata for non-custom passphrase users.
+    if (!IsExplicitPassphrase(passphrase_type_)) {
+      *encrypted_password.mutable_password()->mutable_unencrypted_metadata() =
+          password_specifics.unencrypted_metadata();
+    }
+
+    bool result = cryptographer_->Encrypt(
+        password_data,
+        encrypted_password.mutable_password()->mutable_encrypted());
+    DCHECK(result);
+    if (base::FeatureList::IsEnabled(syncer::kPasswordNotesWithBackup)) {
+      // `encrypted_notes_backup` field needs to be populated regardless of
+      // whether or not there are any notes.
+      result = cryptographer_->Encrypt(password_data.notes(),
+                                       encrypted_password.mutable_password()
+                                           ->mutable_encrypted_notes_backup());
+      DCHECK(result);
+      // When encrypting both blobs succeeds, both encrypted blobs must use the
+      // key name.
+      DCHECK_EQ(
+          encrypted_password.password().encrypted().key_name(),
+          encrypted_password.password().encrypted_notes_backup().key_name());
+    }
+    // Replace the entire specifics, among other things to ensure that any
+    // client-only fields are cleared.
+    entity_data->specifics = std::move(encrypted_password);
+    entity_data->name = "encrypted";
+  }
+}
+
+void ModelTypeWorker::EncryptOutgoingPasswordSharingInvitations(
+    CommitRequestDataList* request_data_list) {
+  CHECK(cryptographer_);
+
+  for (std::unique_ptr<CommitRequestData>& request_data : *request_data_list) {
+    EntityData* entity_data = request_data->entity.get();
+    sync_pb::OutgoingPasswordSharingInvitationSpecifics* specifics =
+        entity_data->specifics.mutable_outgoing_password_sharing_invitation();
+
+    CHECK(specifics->has_client_only_unencrypted_data());
+    std::string serialized_password_data;
+    bool success = specifics->client_only_unencrypted_data().SerializeToString(
+        &serialized_password_data);
+    specifics->clear_client_only_unencrypted_data();
+    CHECK(success);
+
+    absl::optional<std::vector<uint8_t>> encrypted_data =
+        cryptographer_->AuthEncryptForCrossUserSharing(
+            base::as_bytes(base::make_span(serialized_password_data)),
+            base::as_bytes(base::make_span(
+                entity_data->recipient_public_key.x25519_public_key())));
+    // There should not be encryption failure but DCHECK is not used because
+    // it's not guaranteed. In the worst case, the entity will be committed with
+    // empty specifics (no unencrypted data will be committed to the server).
+    // TODO(crbug.com/1468523): add a metric to record encryption failures.
+    if (encrypted_data) {
+      specifics->set_encrypted_password_sharing_invitation_data(
+          encrypted_data->data(), encrypted_data->size());
+      specifics->set_recipient_key_version(
+          entity_data->recipient_public_key.version());
+    } else {
+      DLOG(ERROR) << "Failed to encrypt outgoing password sharing invitation";
     }
   }
 }

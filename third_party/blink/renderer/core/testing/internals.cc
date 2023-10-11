@@ -105,7 +105,7 @@
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
-#include "third_party/blink/renderer/core/html/forms/html_select_menu_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_list_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_inner_elements.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -2547,7 +2547,7 @@ bool Internals::isPageBoxVisible(Document* document, int page_number) {
   DCHECK(document);
   // Named pages aren't supported here, because this function may be called
   // without laying out first.
-  scoped_refptr<const ComputedStyle> style =
+  const ComputedStyle* style =
       document->StyleForPage(page_number, /* page_name */ AtomicString());
   return style->Visibility() !=
          EVisibility::kHidden;  // display property doesn't apply to @page.
@@ -3392,10 +3392,10 @@ void Internals::resetTypeAheadSession(HTMLSelectElement* select) {
   select->ResetTypeAheadSessionForTesting();
 }
 
-void Internals::resetSelectMenuTypeAheadSession(
-    HTMLSelectMenuElement* selectmenu) {
-  DCHECK(selectmenu);
-  selectmenu->ResetTypeAheadSessionForTesting();
+void Internals::resetSelectListTypeAheadSession(
+    HTMLSelectListElement* selectlist) {
+  DCHECK(selectlist);
+  selectlist->ResetTypeAheadSessionForTesting();
 }
 
 void Internals::forceCompositingUpdate(Document* document,
@@ -4044,6 +4044,11 @@ void Internals::setBackForwardCacheRestorationBufferSize(unsigned int maxSize) {
   WindowPerformance& perf =
       *DOMWindowPerformance::performance(*document_->domWindow());
   perf.setBackForwardCacheRestorationBufferSizeForTest(maxSize);
+}
+
+Vector<String> Internals::getCreatorScripts(HTMLImageElement* img) {
+  DCHECK(img);
+  return Vector<String>(img->creator_scripts());
 }
 
 }  // namespace blink

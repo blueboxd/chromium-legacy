@@ -1,6 +1,19 @@
 <style include="shortcut-customization-shared">
-  :host(:not([is-add-view_])) #container {
+  :host {
+    --error-info-text-color: var(--cros-color-alert);
+    --edit-border-error-color: var(--cros-color-alert);
+    --button-fill-color: var(--cros-button-icon-color-secondary);
+  }
+
+  :host-context(body.jelly-enabled) {
+    --error-info-text-color: var(--cros-sys-error);
+    --edit-border-error-color: var(--cros-sys-error);
+    --button-fill-color: var(--cros-sys-on_surface);
+  }
+
+  :host(:not([is-edit-view])) #container {
     border-bottom: var(--cr-separator-line);
+    padding-block: 8px;
   }
 
   hr {
@@ -38,8 +51,7 @@
   }
 
   #cancelButtonContainer {
-    margin-block: 10px;
-    margin-inline-end: 8px;
+    align-self: center;
     margin-inline-start: 10px;
   }
 
@@ -56,26 +68,40 @@
   }
 
   :host([has-error]) #acceleratorInfoText {
-    color: var(--cros-color-alert);
-  }
-
-  #editButton {
-    --cr-icon-button-icon-start-offset: 3px;
-    padding-top: 3px;
+    color: var(--error-info-text-color);
   }
 
   .clickable-button {
-    --cr-icon-button-fill-color: var(--cros-button-icon-color-secondary);
+    --cr-icon-button-fill-color: var(--button-fill-color);
+    --cr-icon-button-size: 40px;
+    border-radius: 12px;
+  }
+
+  :host-context(body.jelly-enabled) .clickable-button {
+    background-color: var(--cros-sys-surface_variant);
+  }
+
+  :host-context(body.jelly-enabled) .clickable-button:hover {
+    background-color: var(--cros-sys-ripple_neutral_on_subtle);
+  }
+
+  #cancelButton, #deleteButton {
+    --cr-icon-button-icon-start-offset: 0.5px;
   }
 
   :host([is-edit-view]) #acceleratorView {
+    background-color: var(--cros-sys-input_field_on_base);
     border-color: var(--cros-sys-focus_ring);
     border-radius: 10px;
     border-style: solid;
-    border-width: thin;
+    border-width: 2px;
     height: 52px;
     margin: 0;
     padding-inline: 10px;
+  }
+
+  :host([is-edit-view][has-error]) #acceleratorView {
+    border-color: var(--edit-border-error-color);
   }
 </style>
 

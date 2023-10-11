@@ -196,7 +196,7 @@ class OverflowMenuOrdererTest : public PlatformTest {
                                                 DestinationRanking ranking) {
     InitializeOverflowMenuOrderer(isIncognito);
     destination_provider_.baseDestinations = ranking;
-    [overflow_menu_orderer_ updateDestinations];
+    [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   }
 
   // Create pref registry for tests.
@@ -209,6 +209,8 @@ class OverflowMenuOrdererTest : public PlatformTest {
     prefs_->registry()->RegisterListPref(prefs::kOverflowMenuDestinationsOrder);
     prefs_->registry()->RegisterListPref(
         prefs::kOverflowMenuHiddenDestinations);
+    prefs_->registry()->RegisterDictionaryPref(
+        prefs::kOverflowMenuDestinationBadgeData);
     prefs_->registry()->RegisterDictionaryPref(
         prefs::kOverflowMenuActionsOrder);
     prefs_->registry()->RegisterBooleanPref(
@@ -264,7 +266,7 @@ TEST_F(OverflowMenuOrdererTest, StoresInitialDestinationRanking) {
   InitializeOverflowMenuOrderer(NO);
   DestinationRanking sample_destinations = SampleDestinations();
   destination_provider_.baseDestinations = sample_destinations;
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   const base::Value::List& stored_ranking =
       prefs_->GetList(prefs::kOverflowMenuDestinationsOrder);
@@ -341,7 +343,7 @@ TEST_F(OverflowMenuOrdererTest, InsertsNewDestinationInMiddleOfRanking) {
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(static_cast<overflow_menu::Destination>(
                 overflow_menu_model_.destinations[3].destination),
@@ -376,7 +378,7 @@ TEST_F(OverflowMenuOrdererTest, InsertsNewDestinationsInMiddleOfRanking) {
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(
       static_cast<overflow_menu::Destination>(
@@ -416,7 +418,7 @@ TEST_F(OverflowMenuOrdererTest, InsertsAndRemovesNewDestinationsInRanking) {
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(static_cast<overflow_menu::Destination>(
                 overflow_menu_model_.destinations[0].destination),
@@ -467,7 +469,7 @@ TEST_F(OverflowMenuOrdererTest, MoveBadgedDestinationsInRanking) {
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(
       static_cast<overflow_menu::Destination>(
@@ -508,7 +510,7 @@ TEST_F(OverflowMenuOrdererTest, PriorityToErrorBadgeOverOtherBadges) {
   InitializeOverflowMenuOrderer(NO);
 
   // Set the initial ranking to `current_destinations`.
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(
       static_cast<overflow_menu::Destination>(
@@ -543,7 +545,7 @@ TEST_F(OverflowMenuOrdererTest, DontMoveBadgedDestinationWithGoodRanking) {
   InitializeOverflowMenuOrderer(NO);
 
   // Set the initial ranking to `current_destinations`.
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   // Verify that the destination with a badge and with a better ranking than
   // kNewDestinationsInsertionIndex wasn't moved.
@@ -585,7 +587,7 @@ TEST_F(OverflowMenuOrdererTest, PriorityToBadgeOverNewDestinationStatus) {
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(
       static_cast<overflow_menu::Destination>(
@@ -650,7 +652,7 @@ TEST_F(OverflowMenuOrdererTest, PriorityToNewDestinationWithBadge) {
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(
       static_cast<overflow_menu::Destination>(
@@ -711,7 +713,7 @@ TEST_F(OverflowMenuOrdererTest, TestNewDestinationsWhenNoHistoryUsageRanking) {
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(static_cast<overflow_menu::Destination>(
                 overflow_menu_model_.destinations[3].destination),
@@ -748,7 +750,7 @@ TEST_F(OverflowMenuOrdererTest, MovesBadgedDestinationsWithNoUsageHistory) {
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   DestinationRanking updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
@@ -981,7 +983,7 @@ TEST_F(OverflowMenuOrdererTest, NoDestinationUsageHistoryWithBadge) {
     [overflow_menu_orderer_ recordClickForDestination:tapped_destination];
   }
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   DestinationRanking updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
@@ -990,27 +992,31 @@ TEST_F(OverflowMenuOrdererTest, NoDestinationUsageHistoryWithBadge) {
   EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex],
             badged_destination);
   EXPECT_EQ(updated_ranking[updated_ranking.size() - 1], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
   // After 2 more impressions, the badge will no longer affect ordering.
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
   EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex],
             badged_destination);
   EXPECT_EQ(updated_ranking[updated_ranking.size() - 1], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
   EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex],
             badged_destination);
   EXPECT_EQ(updated_ranking[updated_ranking.size() - 1], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
   // Now, on the next reordering, destination usage history should take effect.
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
   EXPECT_EQ(updated_ranking[0], tapped_destination);
 }
 
@@ -1033,7 +1039,7 @@ TEST_F(OverflowMenuOrdererTest, NewItemOnlyHasBadgeForShortTime) {
   };
   destination_provider_.baseDestinations = ranking_with_new;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   // The new item should be moved up.
   EXPECT_EQ(
@@ -1043,22 +1049,26 @@ TEST_F(OverflowMenuOrdererTest, NewItemOnlyHasBadgeForShortTime) {
   EXPECT_EQ(
       overflow_menu_model_.destinations[kNewDestinationsInsertionIndex].badge,
       BadgeTypeNew);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
   // For the next 2 impressions, the destination should still have a badge
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   EXPECT_EQ(
       overflow_menu_model_.destinations[kNewDestinationsInsertionIndex].badge,
       BadgeTypeNew);
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ updateForMenuDisappearance];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   EXPECT_EQ(
       overflow_menu_model_.destinations[kNewDestinationsInsertionIndex].badge,
       BadgeTypeNew);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
   // Now, on the next reordering, destination should no longer have a badge.
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   EXPECT_EQ(
       overflow_menu_model_.destinations[kNewDestinationsInsertionIndex].badge,
       BadgeTypeNone);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 }
 
 // Tests that if two items are badged, with one being below the threshold, its
@@ -1096,7 +1106,7 @@ TEST_F(OverflowMenuOrdererTest, TwoBadgesOnlyOneCountsImpressions) {
     [overflow_menu_orderer_ recordClickForDestination:tapped_destination];
   }
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   DestinationRanking updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
@@ -1107,9 +1117,10 @@ TEST_F(OverflowMenuOrdererTest, TwoBadgesOnlyOneCountsImpressions) {
   EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex + 1],
             badged_destination1);
   EXPECT_EQ(updated_ranking[updated_ranking.size() - 1], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
   // After 2 more impressions, the first badge will no longer affect ordering.
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
   EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex],
@@ -1117,8 +1128,9 @@ TEST_F(OverflowMenuOrdererTest, TwoBadgesOnlyOneCountsImpressions) {
   EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex + 1],
             badged_destination1);
   EXPECT_EQ(updated_ranking[updated_ranking.size() - 1], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
   EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex],
@@ -1126,10 +1138,11 @@ TEST_F(OverflowMenuOrdererTest, TwoBadgesOnlyOneCountsImpressions) {
   EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex + 1],
             badged_destination1);
   EXPECT_EQ(updated_ranking[updated_ranking.size() - 1], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
   // Now, on the next reordering, the second badged item should be in prime
   // position.
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
@@ -1138,8 +1151,9 @@ TEST_F(OverflowMenuOrdererTest, TwoBadgesOnlyOneCountsImpressions) {
   EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex + 1],
             badged_destination2);
   EXPECT_EQ(updated_ranking[updated_ranking.size() - 1], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
   EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex],
@@ -1147,8 +1161,9 @@ TEST_F(OverflowMenuOrdererTest, TwoBadgesOnlyOneCountsImpressions) {
   EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex + 1],
             badged_destination2);
   EXPECT_EQ(updated_ranking[updated_ranking.size() - 1], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
   EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex],
@@ -1156,12 +1171,14 @@ TEST_F(OverflowMenuOrdererTest, TwoBadgesOnlyOneCountsImpressions) {
   EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex + 1],
             badged_destination2);
   EXPECT_EQ(updated_ranking[updated_ranking.size() - 1], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
   // Finally, now that 6 impressions have happened, the tapped item will move.
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
   EXPECT_EQ(updated_ranking[0], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 }
 
 // Tests that if two items are badged at the front of the list, their impression
@@ -1199,7 +1216,7 @@ TEST_F(OverflowMenuOrdererTest, TwoBadgesAtBeginningCountTogether) {
     [overflow_menu_orderer_ recordClickForDestination:tapped_destination];
   }
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   DestinationRanking updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
@@ -1209,28 +1226,32 @@ TEST_F(OverflowMenuOrdererTest, TwoBadgesAtBeginningCountTogether) {
   EXPECT_EQ(updated_ranking[0], badged_destination1);
   EXPECT_EQ(updated_ranking[1], badged_destination2);
   EXPECT_EQ(updated_ranking[updated_ranking.size() - 1], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
   // After 2 more impressions, the badges will no longer affect ordering.
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
   EXPECT_EQ(updated_ranking[0], badged_destination1);
   EXPECT_EQ(updated_ranking[1], badged_destination2);
   EXPECT_EQ(updated_ranking[updated_ranking.size() - 1], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
   EXPECT_EQ(updated_ranking[0], badged_destination1);
   EXPECT_EQ(updated_ranking[1], badged_destination2);
   EXPECT_EQ(updated_ranking[updated_ranking.size() - 1], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 
   // Finally, now that all badges have run out of impressions, the tapped item
   // will move.
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
   EXPECT_EQ(updated_ranking[0], tapped_destination);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
 }
 
 // Tests that if an item has a new badge and the destinations are customized,
@@ -1269,7 +1290,7 @@ TEST_F(OverflowMenuOrdererTest, CustomizingDestinationsClearsBadgeImpressions) {
                                          initial_ranking[6], new_destination};
   destination_provider_.baseDestinations = ranking_with_new;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   DestinationRanking updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
@@ -1283,7 +1304,7 @@ TEST_F(OverflowMenuOrdererTest, CustomizingDestinationsClearsBadgeImpressions) {
 
   // Edit the menu, which should clear the badge impressions remaining.
   [overflow_menu_orderer_ commitDestinationsUpdate];
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
   updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
   // With badges cleared, the tapped item should move again
@@ -1325,7 +1346,7 @@ TEST_F(OverflowMenuOrdererTest,
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(static_cast<overflow_menu::Destination>(
                 overflow_menu_model_.destinations[3].destination),
@@ -1364,7 +1385,7 @@ TEST_F(OverflowMenuOrdererTest,
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(
       static_cast<overflow_menu::Destination>(
@@ -1408,7 +1429,7 @@ TEST_F(OverflowMenuOrdererTest,
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(static_cast<overflow_menu::Destination>(
                 overflow_menu_model_.destinations[0].destination),
@@ -1461,7 +1482,7 @@ TEST_F(OverflowMenuOrdererTest, Customization_MoveBadgedDestinationsInRanking) {
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(
       static_cast<overflow_menu::Destination>(
@@ -1505,7 +1526,7 @@ TEST_F(OverflowMenuOrdererTest,
   InitializeOverflowMenuOrderer(NO);
 
   // Set the initial ranking to `current_destinations`.
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(
       static_cast<overflow_menu::Destination>(
@@ -1544,7 +1565,7 @@ TEST_F(OverflowMenuOrdererTest,
   InitializeOverflowMenuOrderer(NO);
 
   // Set the initial ranking to `current_destinations`.
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   // Verify that the destination with a badge and with a better ranking than
   // kNewDestinationsInsertionIndex wasn't moved.
@@ -1588,7 +1609,7 @@ TEST_F(OverflowMenuOrdererTest,
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   ASSERT_EQ(static_cast<overflow_menu::Destination>(
                 overflow_menu_model_.destinations[3].destination),
@@ -1629,7 +1650,7 @@ TEST_F(OverflowMenuOrdererTest,
 
   destination_provider_.baseDestinations = updated_destinations;
 
-  [overflow_menu_orderer_ updateDestinations];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
 
   DestinationRanking updated_ranking =
       RankingFromDestinationArray(overflow_menu_model_.destinations);
@@ -1638,4 +1659,197 @@ TEST_F(OverflowMenuOrdererTest,
             all_destinations[4]);
   ASSERT_EQ(updated_ranking[kNewDestinationsInsertionIndex + 1],
             all_destinations[6]);
+}
+
+// Tests that calling the simple `-updateDestinations` method doesn't reorder
+// the menu.
+TEST_F(OverflowMenuOrdererTest, UpdateDoesntReorderMenu) {
+  base::test::ScopedFeatureList features(kOverflowMenuCustomization);
+  DestinationRanking all_destinations = SampleDestinations();
+  DestinationRanking current_destinations = {
+      all_destinations[0], all_destinations[1], all_destinations[2],
+      all_destinations[3], all_destinations[4], all_destinations[5],
+  };
+
+  // Initializes `OverflowMenuOrderer` with initial ranking
+  // `current_destinations`.
+  InitializeOverflowMenuOrdererWithRanking(NO, current_destinations);
+
+  OverflowMenuDestination* destination =
+      CreateOverflowMenuDestination(all_destinations[5]);
+  destination.badge = BadgeTypeError;
+  [destination_provider_ storeCustomDestination:destination
+                             forDestinationType:all_destinations[5]];
+
+  [overflow_menu_orderer_ updateDestinations];
+
+  // The badged destination should not have changed position.
+  ASSERT_EQ(static_cast<overflow_menu::Destination>(
+                overflow_menu_model_.destinations[5].destination),
+            all_destinations[5]);
+}
+
+// Tests that if a hidden destination gets an error badge, that badge appears on
+// settings instead.
+TEST_F(OverflowMenuOrdererTest, HiddenDestinationPropagatesErrorBadge) {
+  base::test::ScopedFeatureList features(kOverflowMenuCustomization);
+
+  DestinationRanking all_destinations = SampleDestinations();
+  DestinationRanking current_destinations = {
+      overflow_menu::Destination::Settings,
+      all_destinations[1],
+      all_destinations[2],
+      all_destinations[3],
+      all_destinations[4],
+      all_destinations[5],
+  };
+
+  InitializeOverflowMenuOrdererWithRanking(NO, current_destinations);
+
+  // Hide destination 5.
+  DestinationCustomizationModel* destinationModel =
+      overflow_menu_orderer_.destinationCustomizationModel;
+  destinationModel.shownDestinations[5].shown = NO;
+  [overflow_menu_orderer_ commitDestinationsUpdate];
+
+  // Add error badge to destination 5
+  OverflowMenuDestination* destination =
+      CreateOverflowMenuDestination(all_destinations[5]);
+  destination.badge = BadgeTypeError;
+  [destination_provider_ storeCustomDestination:destination
+                             forDestinationType:all_destinations[5]];
+
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
+
+  // The badge on the hidden destination 5 should propagate to the settings
+  // destination.
+  ASSERT_EQ(overflow_menu_model_.destinations[0].badge, BadgeTypeError);
+
+  // Removing the badge on hidden destination 5 should also propagate to the
+  // settings destination
+  destination.badge = BadgeTypeNone;
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
+  ASSERT_EQ(overflow_menu_model_.destinations[0].badge, BadgeTypeNone);
+}
+
+// Tests that the overflow menu order loads badge data from prefs.
+TEST_F(OverflowMenuOrdererTest, LoadBadgeDataFromPrefs) {
+  base::test::ScopedFeatureList features(kOverflowMenuCustomization);
+
+  CreatePrefs();
+
+  base::Value::Dict badge_data =
+      base::Value::Dict().Set(overflow_menu::StringNameForDestination(
+                                  overflow_menu::Destination::Bookmarks),
+                              base::Value::Dict()
+                                  .Set("impressions_remaining", 2)
+                                  .Set("badge_type", "error")
+                                  .Set("is_feature_driven_badge", false));
+
+  prefs_->SetDict(prefs::kOverflowMenuDestinationBadgeData,
+                  std::move(badge_data));
+
+  DestinationRanking all_destinations = SampleDestinations();
+  DestinationRanking current_destinations = {
+      all_destinations[1], all_destinations[2],
+      all_destinations[3], all_destinations[4],
+      all_destinations[5], overflow_menu::Destination::Bookmarks,
+  };
+
+  InitializeOverflowMenuOrdererWithRanking(NO, current_destinations);
+
+  DestinationRanking updated_ranking =
+      RankingFromDestinationArray(overflow_menu_model_.destinations);
+  EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex],
+            overflow_menu::Destination::Bookmarks);
+
+  // Adding another new destination should cause Bookmarks to hold the 4th slot
+  // until its impression timer is up
+  DestinationRanking new_destinations = {
+      all_destinations[1], all_destinations[2],
+      all_destinations[3], all_destinations[4],
+      all_destinations[5], overflow_menu::Destination::Bookmarks,
+      all_destinations[6],
+  };
+  destination_provider_.baseDestinations = new_destinations;
+
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
+  updated_ranking =
+      RankingFromDestinationArray(overflow_menu_model_.destinations);
+  EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex],
+            overflow_menu::Destination::Bookmarks);
+  EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex + 1],
+            all_destinations[6]);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
+
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
+  updated_ranking =
+      RankingFromDestinationArray(overflow_menu_model_.destinations);
+  EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex],
+            overflow_menu::Destination::Bookmarks);
+  EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex + 1],
+            all_destinations[6]);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
+
+  // After the 2 impressions, the new item should be promoted, while the
+  // originally-badged item should fall back.
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
+  updated_ranking =
+      RankingFromDestinationArray(overflow_menu_model_.destinations);
+  EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex],
+            all_destinations[6]);
+  EXPECT_EQ(updated_ranking[kNewDestinationsInsertionIndex + 1],
+            overflow_menu::Destination::Bookmarks);
+  [overflow_menu_orderer_ updateForMenuDisappearance];
+}
+
+// Tests that the overflow menu order saves badge data to prefs.
+TEST_F(OverflowMenuOrdererTest, SaveBadgeDataToPrefs) {
+  base::test::ScopedFeatureList features(kOverflowMenuCustomization);
+
+  DestinationRanking all_destinations = SampleDestinations();
+  DestinationRanking current_destinations = {
+      all_destinations[0], all_destinations[1], all_destinations[2],
+      all_destinations[3], all_destinations[4], all_destinations[5],
+      all_destinations[6],
+  };
+
+  // Creates `OverflowMenuOrderer` with initial ranking
+  // `current_destinations`.
+  InitializeOverflowMenuOrdererWithRanking(NO, current_destinations);
+
+  // Same as `current_destinations`, but has a new element,
+  // `all_destinations[7]`.
+  DestinationRanking updated_destinations = {
+      all_destinations[0],
+      all_destinations[1],
+      all_destinations[2],
+      all_destinations[3],
+      all_destinations[4],
+      all_destinations[5],
+      all_destinations[6],
+      // New destination
+      all_destinations[7],
+  };
+
+  destination_provider_.baseDestinations = updated_destinations;
+
+  [overflow_menu_orderer_ reorderDestinationsForInitialMenu];
+
+  const base::Value::Dict& badge_data =
+      prefs_->GetDict(prefs::kOverflowMenuDestinationBadgeData);
+
+  std::string new_destination_string =
+      overflow_menu::StringNameForDestination(all_destinations[7]);
+
+  ASSERT_TRUE(badge_data.contains(new_destination_string));
+
+  EXPECT_EQ(3, badge_data.FindDict(new_destination_string)
+                   ->FindInt("impressions_remaining"));
+  EXPECT_EQ(
+      "new",
+      *badge_data.FindDict(new_destination_string)->FindString("badge_type"));
+  EXPECT_EQ(false, badge_data.FindDict(new_destination_string)
+                       ->FindBool("is_feature_driven_badge"));
 }

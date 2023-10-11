@@ -472,7 +472,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OOBE.ErrorScreensTime.{OOBEScreenShownBeforeNetworkError}.{OOBENetworkError}"
-    units="ms" expires_after="2023-11-01">
+    units="ms" expires_after="2024-02-20">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oobe@google.com</owner>
   <summary>
@@ -557,7 +557,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OOBE.GestureNavigationScreen.PageShownTime.{OOBEGestureNavigationPage}"
-    units="ms" expires_after="2023-11-01">
+    units="ms" expires_after="2024-02-20">
   <owner>mmourgos@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>
@@ -573,7 +573,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OOBE.HidDetectionScreen.BluetoothPairing.Duration.{PairingResult}"
-    units="ms" expires_after="2023-11-01">
+    units="ms" expires_after="2024-02-20">
   <owner>gordonseto@google.com</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -660,7 +660,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OOBE.MarketingOptInScreen.BackendConnector.{OOBEMarketingCountry}"
-    enum="MarketingOptInBackendConnectorEvent" expires_after="2023-11-01">
+    enum="MarketingOptInBackendConnectorEvent" expires_after="2024-02-20">
   <owner>rrsilva@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -673,7 +673,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.MarketingOptInScreen.Event.{OOBEMarketingCountry}"
-    enum="MarketingOptInScreenEvent" expires_after="2023-11-01">
+    enum="MarketingOptInScreenEvent" expires_after="2024-02-20">
   <owner>rrsilva@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -693,7 +693,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.NetworkErrorShown.{OOBEScreenShownBeforeNetworkError}"
-    enum="NetworkErrorType" expires_after="2023-11-01">
+    enum="NetworkErrorType" expires_after="2024-02-20">
   <owner>achuith@google.com</owner>
   <owner>cros-oobe@google.com</owner>
   <summary>
@@ -714,14 +714,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="OOBE.RecommendApps.Fetcher.AppCount" units="apps"
-    expires_after="2023-12-01">
-  <owner>dkuzmin@google.com</owner>
-  <owner>cros-oac@google.com</owner>
-  <owner>chromesky-eng@google.com</owner>
-  <summary>The number of recommended apps.</summary>
-</histogram>
-
 <histogram name="OOBE.RecommendApps.Fetcher.DownloadTime" units="ms"
     expires_after="2024-02-04">
   <owner>dkuzmin@google.com</owner>
@@ -736,14 +728,6 @@ chromium-metrics-reviews@google.com.
   <owner>cros-oac@google.com</owner>
   <owner>chromesky-eng@google.com</owner>
   <summary>The response code of fetching the recommended apps.</summary>
-</histogram>
-
-<histogram name="OOBE.RecommendApps.Fetcher.ResponseParseResult"
-    enum="RecommendAppsResponseParseResult" expires_after="2023-12-01">
-  <owner>dkuzmin@google.com</owner>
-  <owner>cros-oac@google.com</owner>
-  <owner>chromesky-eng@google.com</owner>
-  <summary>The result of parsing the recommend-apps response.</summary>
 </histogram>
 
 <histogram name="OOBE.RecommendApps.Screen.Action"
@@ -792,7 +776,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OOBE.StepCompletionTimeByExitReason.{OOBEScreenName_ExitReason}"
-    units="ms" expires_after="2023-12-01">
+    units="ms" expires_after="2024-02-20">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>Time spent on specific OOBE screen grouped by exit reason.</summary>
@@ -935,7 +919,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.UpdateScreen.StageTime.{UpdateStage}" units="ms"
-    expires_after="2023-11-01">
+    expires_after="2024-02-20">
   <owner>dkuzmin@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -967,7 +951,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.WebViewLoader.FirstLoadResult.{WebViewID}"
-    enum="OobeWebViewLoadResult" expires_after="2023-11-01">
+    enum="OobeWebViewLoadResult" expires_after="2024-02-20">
   <owner>osamafathy@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>

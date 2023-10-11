@@ -27,15 +27,16 @@
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
-#include "ash/style/ash_color_provider.h"
 #include "ash/style/typography.h"
 #include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
+#include "base/trace_event/trace_event.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -902,11 +903,13 @@ void SearchResultView::UpdateBadgeIcon() {
     return;
   }
 
+  const auto* color_provider = GetColorProvider();
   gfx::ImageSkia badge_icon_skia =
-      result()->badge_icon().Rasterize(GetColorProvider());
+      result()->badge_icon().Rasterize(color_provider);
 
   if (result()->use_badge_icon_background()) {
-    badge_icon_skia = CreateIconWithCircleBackground(badge_icon_skia);
+    badge_icon_skia =
+        CreateIconWithCircleBackground(badge_icon_skia, color_provider);
   }
 
   gfx::ImageSkia resized_badge_icon(
@@ -1425,6 +1428,7 @@ void SearchResultView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void SearchResultView::OnMetadataChanged() {
+  TRACE_EVENT0("ui", "SearchResultView::OnMetadataChanged");
   if (view_type_ == SearchResultViewType::kAnswerCard) {
     UpdateBigTitleContainer();
     UpdateBigTitleSuperscriptContainer();
@@ -1472,6 +1476,7 @@ void SearchResultView::OnButtonPressed(const ui::Event& event) {
 void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
                                     views::ImageView* const icon,
                                     const gfx::Size& size) {
+  TRACE_EVENT0("ui", "SearchResultView::SetIconImage");
   gfx::ImageSkia image(source);
   image = gfx::ImageSkiaOperations::CreateResizedImage(
       source, skia::ImageOperations::RESIZE_BEST, size);

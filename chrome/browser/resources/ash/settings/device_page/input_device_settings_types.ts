@@ -46,7 +46,9 @@ export const PolicyStatus = InputDeviceSettingsTypes.PolicyStatus;
 
 export type Keyboard = InputDeviceSettingsTypes.Keyboard;
 export type Touchpad = InputDeviceSettingsTypes.Touchpad;
-export type Mouse = InputDeviceSettingsTypes.Mouse;
+export type Mouse = Omit<InputDeviceSettingsTypes.Mouse, 'settings'>&{
+  settings: MouseSettings,
+};
 export type PointingStick = InputDeviceSettingsTypes.PointingStick;
 
 export interface Stylus {
@@ -75,11 +77,15 @@ export interface GraphicsTabletSettings {
 
 export type KeyboardSettings = InputDeviceSettingsTypes.KeyboardSettings;
 export type TouchpadSettings = InputDeviceSettingsTypes.TouchpadSettings;
-export type MouseSettings = InputDeviceSettingsTypes.MouseSettings;
+export type MouseSettings =
+    Omit<InputDeviceSettingsTypes.MouseSettings, 'buttonRemappings'>&{
+      buttonRemappings: ButtonRemapping[],
+    };
 export type PointingStickSettings =
     InputDeviceSettingsTypes.PointingStickSettings;
 export type DeviceSettings =
     KeyboardSettings|TouchpadSettings|MouseSettings|PointingStickSettings;
+export type InputDeviceType = Keyboard|Touchpad|Mouse|PointingStick;
 
 export type InputDeviceSettingsPolicy =
     InputDeviceSettingsTypes.InputDeviceSettingsPolicy;
@@ -98,9 +104,26 @@ export const Vkey = AcceleratorKeysTypes.VKey;
 export type AcceleratorAction = AcceleratorActionTypes.AcceleratorAction;
 export const AcceleratorAction = AcceleratorActionTypes.AcceleratorAction;
 
-export type ButtonRemapping = InputDeviceSettingsTypes.ButtonRemapping;
-export type RemappingAction = InputDeviceSettingsTypes.RemappingAction;
-export type KeyEvent = InputDeviceSettingsTypes.KeyEvent;
+export interface FakeKeyEvent {
+  vkey: AcceleratorKeysTypes.VKey;
+  domCode: number;
+  domKey: number;
+  modifiers: number;
+  keyDisplay: string;
+}
+
+export type ButtonRemapping =
+    Omit<InputDeviceSettingsTypes.ButtonRemapping, 'remappingAction'>&{
+      remappingAction?: RemappingAction,
+    };
+
+export type RemappingAction =
+    Omit<InputDeviceSettingsTypes.RemappingAction, 'keyEvent'>&{
+      keyEvent?: KeyEvent,
+    };
+
+export type KeyEvent =
+    Required<InputDeviceSettingsTypes.KeyEvent>&Partial<FakeKeyEvent>;
 
 export type CustomizableButton = InputDeviceSettingsTypes.CustomizableButton;
 export const CustomizableButton = InputDeviceSettingsTypes.CustomizableButton;
@@ -142,6 +165,8 @@ interface FakeInputDeviceSettingsProviderInterface extends
   setMouseSettings(id: number, settings: MouseSettings): void;
   setTouchpadSettings(id: number, settings: TouchpadSettings): void;
   setPointingStickSettings(id: number, settings: PointingStickSettings): void;
+  getActionsForMouseButtonCustomization(): Promise<ActionChoice[]>;
+  getActionsForGraphicsTabletButtonCustomization(): Promise<ActionChoice[]>;
 }
 
 // Type alias to enable use of in-progress InputDeviceSettingsProvider api.

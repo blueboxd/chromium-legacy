@@ -27,6 +27,14 @@ COMPONENT_EXPORT(UI_BASE) extern const char kShowMacOverlayBorders[];
 COMPONENT_EXPORT(UI_BASE) extern const char kEnableResourcesFileSharing[];
 #endif
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+COMPONENT_EXPORT(UI_BASE) extern const char kSystemFontFamily[];
+#endif
+
+#if BUILDFLAG(IS_LINUX)
+COMPONENT_EXPORT(UI_BASE) extern const char kUiToolkitFlag[];
+#endif
+
 COMPONENT_EXPORT(UI_BASE) extern const char kDisableCompositedAntialiasing[];
 COMPONENT_EXPORT(UI_BASE) extern const char kDisableTouchDragDrop[];
 COMPONENT_EXPORT(UI_BASE) extern const char kDRMVirtualConnectorIsExternal[];

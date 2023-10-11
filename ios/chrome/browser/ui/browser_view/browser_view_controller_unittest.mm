@@ -10,13 +10,13 @@
 
 #import <memory>
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/content_settings/core/browser/host_content_settings_map.h"
 #import "components/open_from_clipboard/fake_clipboard_recent_content.h"
 #import "components/search_engines/template_url_service.h"
 #import "components/supervised_user/core/common/features.h"
-#import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
@@ -391,7 +391,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         OCMClassMock([ForegroundTabAnimationView class]);
 
     if (animated) {
-      OCMExpect([mock_animation_view_class alloc]);
+      OCMExpect([mock_animation_view_class alloc]).andReturn(nil);
     } else {
       [[mock_animation_view_class reject] alloc];
     }
@@ -406,7 +406,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   id OCMArgWithContentView(UIView* (^expected_view)()) {
     return [OCMArg checkWithBlock:^(UIView* view) {
       UIView* content_view =
-          base::mac::ObjCCast<ForegroundTabAnimationView>(view).contentView;
+          base::apple::ObjCCast<ForegroundTabAnimationView>(view).contentView;
       return content_view == expected_view();
     }];
   }

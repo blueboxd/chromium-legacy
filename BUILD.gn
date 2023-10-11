@@ -134,6 +134,7 @@ group("gn_all") {
     if (!is_ios && !is_android && !is_castos) {
       deps += [
         "//chrome",
+        "//chrome/browser/ui/actions:dump_actions",
         "//chrome/browser/ui/color:dump_colors",
         "//chrome/test:browser_tests",
         "//components/subresource_filter/tools:subresource_filter_tools",
@@ -147,6 +148,7 @@ group("gn_all") {
         "//tools/polymer:polymer_tools_python_unittests",
         "//tools/privacy_budget:privacy_budget_tools",
         "//ui/accessibility/extensions:extensions",
+        "//ui/actions:actions_unittests",
       ]
     }
 
@@ -229,14 +231,6 @@ group("gn_all") {
         "//net:net_perftests",
         "//ui/events:events_unittests",
         "//url/ipc:url_ipc_unittests",
-      ]
-    }
-
-    if (is_android) {
-      deps += [
-        "//weblayer/browser/android/javatests:webengine_support_instrumentation_test_apk",
-        "//weblayer/browser/java:weblayer_junit_tests",
-        "//weblayer/test:weblayer_browsertests",
       ]
     }
 
@@ -361,7 +355,6 @@ group("gn_all") {
     if (is_android) {
       deps += [
         "//base:base_junit_tests",
-        "//base/android/jni_generator:jni_generator_tests",
         "//base/android/linker:chromium_android_linker",
         "//build/android/gyp/test:hello_world",
         "//build/android/stacktrace:java_deobfuscate",
@@ -383,6 +376,7 @@ group("gn_all") {
         "//third_party/android_build_tools/lint:custom_lint_java",
         "//third_party/androidx_javascriptengine",
         "//third_party/catapult/devil",
+        "//third_party/jni_zero/samples:jni_generator_tests",
         "//third_party/r8:custom_d8_java",
         "//tools/android:android_tools",
         "//tools/android:memconsumer",
@@ -402,6 +396,7 @@ group("gn_all") {
           "//android_webview:empty_group",
           "//android_webview/test",
           "//android_webview/tools/automated_ui_tests:webview_ui_test_app",
+          "//android_webview/tools/captured_sites_tests:captured_sites_test_app",
           "//android_webview/tools/system_webview_shell",
           "//chrome/android:chrome_junit_tests",
           "//chrome/android:chrome_public_apk",
@@ -1046,7 +1041,7 @@ if (is_chromeos_ash) {
   }
 }
 
-if (!is_ios && !is_cronet_build) {
+if (use_blink && !is_cronet_build) {
   group("chromedriver_group") {
     testonly = true
 
@@ -1061,7 +1056,7 @@ if (!is_ios && !is_cronet_build) {
       if (is_android && !is_cast_android) {
         deps += [ "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk" ]
       }
-    } else if (!is_castos) {
+    } else if (!is_castos && !is_ios) {
       deps = [
         "//chrome/test/chromedriver:chromedriver_server",
         "//chrome/test/chromedriver:chromedriver_unittests",

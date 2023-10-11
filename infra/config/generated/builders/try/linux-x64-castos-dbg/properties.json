@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Cast Linux Debug",
-              "project": "chromium-m117"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-linux-archive",
@@ -32,10 +32,14 @@
         {
           "bucket": "ci",
           "builder": "Cast Linux Debug",
-          "project": "chromium-m117"
+          "project": "chromium"
         }
       ]
     }
+  },
+  "$build/flakiness": {
+    "check_for_flakiness": true,
+    "check_for_flakiness_with_resultdb": true
   },
   "$build/reclient": {
     "instance": "rbe-chromium-untrusted",

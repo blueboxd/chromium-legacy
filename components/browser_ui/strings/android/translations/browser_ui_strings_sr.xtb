@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Дозволите да сајт чува податке на уређају</translation>
 <translation id="1383876407941801731">Претражи</translation>
 <translation id="1384959399684842514">Преузимање је паузирано</translation>
-<translation id="1409426117486808224">Поједностављен приказ отворених картица</translation>
 <translation id="1415402041810619267">URL је скраћен</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="1446450296470737166">Пуна контрола над MIDI уређајима</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Дозвољени, осим треће стране</translation>
 <translation id="1989112275319619282">Прегледај</translation>
 <translation id="1994173015038366702">URL сајта</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Истиче за 1 дан}one{Истиче за # дан}few{Истиче за # дана}other{Истиче за # дана}}</translation>
 <translation id="2004697686368036666">Функције на неким сајтовима могу да не раде</translation>
 <translation id="2025115093177348061">Проширена реалност</translation>
 <translation id="2030769033451695672">Додирните да бисте се вратили на <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Наслов</translation>
 <translation id="4008040567710660924">Омогућава колачиће за одређени сајт.</translation>
 <translation id="4046123991198612571">Следећа песма</translation>
+<translation id="4053720452172726777">Прилагодите и контролишите Google Chrome</translation>
 <translation id="4149994727733219643">Поједностављен приказ веб-страница</translation>
 <translation id="4151930093518524179">Подразумевани зум</translation>
 <translation id="4165986682804962316">Подешавања сајта</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Сајтови не могу да користе колачиће да би видели ваше активности прегледања на различитим сајтовима, на пример, за персонализацију огласа. Функције на неким сајтовима могу да не раде.</translation>
 <translation id="5553374991681107062">Најновије</translation>
 <translation id="5556459405103347317">Учитај поново</translation>
-<translation id="5596627076506792578">Још опција</translation>
 <translation id="5649053991847567735">Аутоматска преузимања</translation>
 <translation id="5668404140385795438">Одбијање захтева веб-сајта да се спречи увећавање</translation>
 <translation id="5677928146339483299">Блокирано</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Искључено је у Android подешавањима</translation>
 <translation id="7016516562562142042">Дозвољено је за актуелни претраживач</translation>
 <translation id="702275896380648118">Овај сајт одређује ствари које вам се свиђају, а затим предлаже огласе за друге сајтове. Овај сајт такође прима податке о вашим темама огласа из Chrome-а да би вам приказивао релевантније огласе.</translation>
-<translation id="702463548815491781">Препоручујемо вам када укључите TalkBack или приступ помоћу прекидача</translation>
 <translation id="7053983685419859001">Блокирај</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Изабрано: 1}one{Изабрано: #}few{Изабрано: #}other{Изабрано: #}}</translation>
 <translation id="7087918508125750058">Изабрали сте <ph name="ITEM_COUNT" />. Опције су доступне при врху екрана</translation>

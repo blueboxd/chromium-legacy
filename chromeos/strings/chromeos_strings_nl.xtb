@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">Ga naar de <ph name="BEGIN_LINK1" />juridische Help-pagina<ph name="END_LINK1" /> om contentwijzigingen om juridische redenen aan te vragen. Bepaalde account- en systeemgegevens worden mogelijk naar Google gestuurd. We gebruiken deze gegevens om technische problemen op te lossen en onze services te verbeteren, in overeenstemming met ons <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> en onze <ph name="BEGIN_LINK3" />Servicevoorwaarden<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">media vooruitspoelen</translation>
 <translation id="1887850431809612466">Hardwarerevisie</translation>
+<translation id="1897672602657312171">Sneltoets zonder zoektoets kan conflicteren met de sneltoets van bepaalde apps. Druk opnieuw op deze sneltoets om die te blijven gebruiken of druk op een nieuwe sneltoets met de zoektoets.</translation>
 <translation id="1904932688895783618">Een paar andere nuttige bronnen:</translation>
 <translation id="1905710495812624430">Maximumaantal toegestane pogingen overschreden.</translation>
 <translation id="1908234395526491708">Mislukte UDP-verzoeken</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">Opnieuw opstarten…</translation>
 <translation id="2533048460510040082">Voorgestelde Help-content</translation>
 <translation id="2536159006530886390">Kan geen verbinding met internet maken.</translation>
-<translation id="2555662516429796509">Druk op 1-4 functietoetsen en 1 andere toets op je toetsenbord</translation>
 <translation id="2570743873672969996">Test <ph name="TEST_NAME" /> wordt uitgevoerd...</translation>
 <translation id="2584559707064218956">Ga naar Instellingen om het netwerk in te stellen</translation>
 <translation id="2597774443162333062">Bestanden worden naar Google gestuurd voor foutopsporing</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">TLS-verificatiesleutel</translation>
 <translation id="2713444072780614174">Wit</translation>
 <translation id="2717139507051041123">Modus voor donkere kleuren aanzetten</translation>
+<translation id="2728460467788544679">Hele afdrukgeschiedenis wissen</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2744221223678373668">Gedeeld</translation>
 <translation id="2751739896257479635">EAP Phase 2-verificatie</translation>
 <translation id="2783010256799387990">GESLAAGD</translation>
 <translation id="2787435249130282949">toetsenbord helderder</translation>
-<translation id="2789486458103222910">OK</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="28232023175184696">Kan geen verbinding maken met internet. Klik om het opnieuw te proberen.</translation>
 <translation id="2859243502336719778">Kritieke update</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">Screensaver Wolkenstroom</translation>
 <translation id="2926057806159140518">Geef je gebruikersnaam en wachtwoord op of scan je QR-code</translation>
 <translation id="2940811910881150316">Kan apparaat niet testen. Open de klep opnieuw om te testen.</translation>
+<translation id="2941112035454246133">Laag</translation>
 <translation id="3008341117444806826">VERNIEUWEN</translation>
 <translation id="3009958530611748826">Selecteer een map voor opslaan</translation>
 <translation id="3017079585324758401">Achtergrond</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">Kan host niet omzetten</translation>
 <translation id="3942420633017001071">Diagnose</translation>
 <translation id="3954678691475912818">Apparaattype is onbekend.</translation>
+<translation id="3959413315969265597">Kan deze APN niet aanzetten. Voeg een standaard APN toe.</translation>
 <translation id="3966286471246132217">Sluit voor nauwkeurigere resultaten alle apps totdat de test is afgerond.</translation>
 <translation id="3967822245660637423">Downloaden voltooid</translation>
 <translation id="3969602104473960991">Wachtwoord voor Chrome OS geüpdatet</translation>
@@ -391,7 +393,7 @@
 <translation id="4111761024568264522">USB-touchpad</translation>
 <translation id="4113067922640381334">Je hebt nu toegang tot nieuwe <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />achtergronden<ph name="END_LINK_WALLPAPER_SUBPAGE" /></translation>
 <translation id="4117637339509843559">Donkere modus</translation>
-<translation id="4130035430755296270">Plaats de cursor voor meer lay-outopties.</translation>
+<translation id="4130035430755296270">Plaats de muisaanwijzer voor meer lay-outopties.</translation>
 <translation id="4131410914670010031">Zwart/wit</translation>
 <translation id="4145784616224233563">HTTP-firewall</translation>
 <translation id="4147897805161313378">Google Foto's</translation>
@@ -436,7 +438,7 @@
 <translation id="4429881212383817840">Kerberos-ticket verloopt binnenkort</translation>
 <translation id="4431821876790500265">Rapport bekijken</translation>
 <translation id="445059817448385655">Oud wachtwoord</translation>
-<translation id="4453205916657964690">Netmask</translation>
+<translation id="4453205916657964690">Subnetmasker</translation>
 <translation id="4454245904991689773">Scannen naar</translation>
 <translation id="4469288414739283461">Screensaver Aardestroom</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -574,7 +576,7 @@
 <translation id="5400907029458559844">Apparaat maakt verbinding.</translation>
 <translation id="5401938042319910061">Alle routines uitvoeren</translation>
 <translation id="5423849171846380976">Geactiveerd</translation>
-<translation id="5430931332414098647">Instant tethering</translation>
+<translation id="5430931332414098647">Instant-tethering</translation>
 <translation id="5431318178759467895">Kleur</translation>
 <translation id="5457599981699367932">Gebruiken als gast</translation>
 <translation id="54609108002486618">Beheerd</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">volume omlaag</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> van <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" /> updaten</translation>
+<translation id="574392208103952083">Gemiddeld</translation>
 <translation id="5757187557809630523">volgend nummer</translation>
 <translation id="5760715441271661976">Status van portal</translation>
 <translation id="576835345334454681">Helderheid van scherm verhogen</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">Kunstgalerie-album</translation>
 <translation id="5860033963881614850">Uit</translation>
 <translation id="5860491529813859533">Aanzetten</translation>
-<translation id="5866840822086176774">Zeer sterk</translation>
 <translation id="5876385649737594562">Aanzetten om opties te selecteren</translation>
 <translation id="588258955323874662">Volledig scherm</translation>
 <translation id="5895138241574237353">Opnieuw starten</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Zwak (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Naar Accountinstellingen gaan</translation>
-<translation id="6456394469623773452">Goed</translation>
+<translation id="6461047516875166066">Meer informatie</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Pagina opnieuw scannen?}=1{Pagina {PAGE_NUMBER} opnieuw scannen?}other{Pagina {PAGE_NUMBER} opnieuw scannen?}}</translation>
 <translation id="6472207088655375767">Eenmalig wachtwoord</translation>
 <translation id="6480327114083866287">Beheerd door <ph name="MANAGER" /></translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">Alle sneltoetsen resetten naar standaardinstellingen?</translation>
 <translation id="7058278511608979688">Stoppen en opslaan</translation>
 <translation id="7059230779847288458">Opladen, vol over <ph name="TIME_VALUE" /></translation>
+<translation id="7066538517128343186">de <ph name="KEY" />-toets</translation>
 <translation id="7068619307603204412">Je apparaat voorbereiden</translation>
 <translation id="708426984172631313">GESTOPT</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">Maak verbinding met een netwerk en laad de pagina opnieuw om de achtergrond te bekijken.</translation>
 <translation id="8291967909914612644">Land thuisprovider</translation>
 <translation id="8294431847097064396">Bron</translation>
-<translation id="8297006494302853456">Zwak</translation>
 <translation id="8302368968391049045">HTTPS-firewall</translation>
 <translation id="8312330582793120272">media afspelen</translation>
 <translation id="8318753676953949627">Geen afbeeldingen</translation>
 <translation id="8329018942023753850">rekenmachine-app</translation>
 <translation id="8336739000755212683">Accountafbeelding van apparaat wijzigen</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> of <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Afdruktaken</translation>
 <translation id="8351855506390808906">Aanraakpunt voor toetstoewijzing</translation>
 <translation id="8352772353338965963">Een account toevoegen aan Toegang tot meerdere accounts. Alle ingelogde accounts zijn toegankelijk zonder wachtwoord, dus deze functie moet alleen worden gebruikt voor vertrouwde accounts.</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">Ga naar Instellingen als je weer verbinding wilt maken</translation>
 <translation id="9126720536733509015">Meerdere pagina's opslaan in 1 pdf-bestand</translation>
 <translation id="9133104754938025929">De screensaver werkt alleen tijdens het opladen om de batterij te sparen.</translation>
+<translation id="9133772297793293778">Druk op 1-4 functietoetsen en 1 andere toets op je toetsenbord. Druk op Alt + Esc om de bewerkingsmodus te sluiten.</translation>
 <translation id="9137526406337347448">Google-services</translation>
 <translation id="9138630967333032450">Shift links</translation>
 <translation id="9143347780818904997">gedurende <ph name="MINUTES" /> minuten</translation>

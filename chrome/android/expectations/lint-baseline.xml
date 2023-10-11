@@ -1680,17 +1680,6 @@
 
     <issue
         id="WrongConstant"
-        message="Must be one of: ActionType.DISMISSED_CANCEL_BUTTON, ActionType.DISMISSED_SYSTEM_BACK, ActionType.OK_CHANGE_LANGUAGE, ActionType.OK_SAME_LANGUAGE, ActionType.OTHER"
-        errorLine1="                &quot;LanguageSettings.AppLanguagePrompt.Action&quot;, actionType, ActionType.NUM_ENTRIES);"
-        errorLine2="                                                                                    ~~~~~~~~~~~">
-        <location
-            file="../../chrome/browser/language/android/java/src/org/chromium/chrome/browser/language/AppLanguagePromoDialog.java"
-            line="625"
-            column="85"/>
-    </issue>
-
-    <issue
-        id="WrongConstant"
         message="Must be one of: Status.PENDING, Status.RUNNING, Status.FINISHED"
         errorLine1="                    GET_STATUS_UMA_HISTOGRAM, status, Status.NUM_ENTRIES);"
         errorLine2="                                                             ~~~~~~~~~~~">
@@ -4601,17 +4590,6 @@
         <location
             file="../../android_webview/nonembedded/java/res_devui/layout/persistent_error_message.xml"
             line="26"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="UseCompatTextViewDrawableXml"
-        message="Use `app:drawableStartCompat` instead of `android:drawableStart`"
-        errorLine1="        android:drawableStart=&quot;@drawable/ic_error&quot;"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/browser/share/android/java/res/layout/qrcode_camera_error_layout.xml"
-            line="25"
             column="9"/>
     </issue>
 

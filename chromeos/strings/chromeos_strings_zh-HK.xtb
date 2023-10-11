@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">如因法律理由而需要變更內容，請於<ph name="BEGIN_LINK1" />「法律說明」頁面<ph name="END_LINK1" />提出要求。部分帳戶及系統資料可能會傳送予 Google。我們會根據《<ph name="BEGIN_LINK2" />私隱權政策<ph name="END_LINK2" />》及《<ph name="BEGIN_LINK3" />服務條款<ph name="END_LINK3" />》，利用您提供的資料以解決技術問題和改善服務。</translation>
 <translation id="1885577615937958993">向前快播媒體</translation>
 <translation id="1887850431809612466">硬件版本</translation>
+<translation id="1897672602657312171">使用快速鍵時如未按下搜尋鍵，可能會與部分應用程式的快速鍵發生衝突。再按下此快速鍵即可繼續使用，或按下搜尋鍵重新輸入快速鍵。</translation>
 <translation id="1904932688895783618">其他實用資源如下：</translation>
 <translation id="1905710495812624430">允許的嘗試次數超過上限。</translation>
 <translation id="1908234395526491708">UDP 要求失敗</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">正在重新啟動…</translation>
 <translation id="2533048460510040082">建議的說明內容</translation>
 <translation id="2536159006530886390">無法連線至互聯網。</translation>
-<translation id="2555662516429796509">按下鍵盤上的 1 至 4 個輔助鍵和 1 個其他按鍵。</translation>
 <translation id="2570743873672969996">正在執行<ph name="TEST_NAME" />測試…</translation>
 <translation id="2584559707064218956">如要進行設定，請前往「設定」頁面</translation>
 <translation id="2597774443162333062">檔案將傳送至 Google 執行偵錯</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">傳輸層安全性 (TLS) 驗證金鑰</translation>
 <translation id="2713444072780614174">白色</translation>
 <translation id="2717139507051041123">啟用深色模式</translation>
+<translation id="2728460467788544679">清除所有列印記錄</translation>
 <translation id="2740531572673183784">確定</translation>
 <translation id="2744221223678373668">已分享</translation>
 <translation id="2751739896257479635">EAP 第 2 階段驗證</translation>
 <translation id="2783010256799387990">已通過</translation>
 <translation id="2787435249130282949">調亮鍵盤</translation>
-<translation id="2789486458103222910">確定</translation>
 <translation id="2805756323405976993">應用程式</translation>
 <translation id="28232023175184696">連接唔到互聯網。㩒一下就可以試多次。</translation>
 <translation id="2859243502336719778">重大更新</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">雲朵動態螢幕保護程式</translation>
 <translation id="2926057806159140518">輸入使用者名稱和密碼，或掃瞄 QR 碼</translation>
 <translation id="2940811910881150316">無法測試裝置。請重新打開機蓋以進行測試。</translation>
+<translation id="2941112035454246133">低</translation>
 <translation id="3008341117444806826">更新</translation>
 <translation id="3009958530611748826">選取儲存的資料夾</translation>
 <translation id="3017079585324758401">背景</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">無法解析主機</translation>
 <translation id="3942420633017001071">診斷</translation>
 <translation id="3954678691475912818">裝置類型不明。</translation>
+<translation id="3959413315969265597">無法啟用此 APN，請確保已新增預設的 APN。</translation>
 <translation id="3966286471246132217">如要取得更準確的結果，請關閉所有應用程式，直到測試完成為止。</translation>
 <translation id="3967822245660637423">下載完成</translation>
 <translation id="3969602104473960991">已更新 Chrome OS 密碼</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">調低音量</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" />/<ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">更新 <ph name="DEVICE_NAME" /></translation>
+<translation id="574392208103952083">中</translation>
 <translation id="5757187557809630523">下一首歌</translation>
 <translation id="5760715441271661976">入口網站狀態</translation>
 <translation id="576835345334454681">顯示屏校光亮度</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">藝術圖庫中的相簿</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5860491529813859533">開啟</translation>
-<translation id="5866840822086176774">非常強</translation>
 <translation id="5876385649737594562">開啟即可選取選項</translation>
 <translation id="588258955323874662">全螢幕</translation>
 <translation id="5895138241574237353">重新啟動</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">弱 (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">去帳戶設定</translation>
-<translation id="6456394469623773452">良好</translation>
+<translation id="6461047516875166066">瞭解詳情</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{要重新掃瞄頁面嗎？}=1{要重新掃瞄第 {PAGE_NUMBER} 頁嗎？}other{要重新掃瞄第 {PAGE_NUMBER} 頁嗎？}}</translation>
 <translation id="6472207088655375767">一次性密碼</translation>
 <translation id="6480327114083866287">由 <ph name="MANAGER" /> 管理</translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">要將所有快速鍵重設為預設值嗎？</translation>
 <translation id="7058278511608979688">結束並儲存</translation>
 <translation id="7059230779847288458">充電中，<ph name="TIME_VALUE" />後完成充電</translation>
+<translation id="7066538517128343186"><ph name="KEY" /> 鍵</translation>
 <translation id="7068619307603204412">準備裝置</translation>
 <translation id="708426984172631313">已停止</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">如要查看桌布，請連線至網絡，然後重新整理頁面。</translation>
 <translation id="8291967909914612644">家庭網絡供應商的國家/地區</translation>
 <translation id="8294431847097064396">來源</translation>
-<translation id="8297006494302853456">弱</translation>
 <translation id="8302368968391049045">HTTPS 防火牆</translation>
 <translation id="8312330582793120272">播媒體</translation>
 <translation id="8318753676953949627">沒有圖片</translation>
 <translation id="8329018942023753850">計算機應用程式</translation>
 <translation id="8336739000755212683">變更裝置的帳戶圖片</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> 或 <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">列印工作</translation>
 <translation id="8351855506390808906">對應緊接觸點</translation>
 <translation id="8352772353338965963">新增可多重登入的帳戶。這些帳戶的使用者不需提供密碼即可存取所有已登入的帳戶。因此，建議您只讓信任的帳戶使用這項功能。</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">如要重新連線，請前往「設定」頁面</translation>
 <translation id="9126720536733509015">將多頁儲存成一個 PDF　檔案</translation>
 <translation id="9133104754938025929">為節省電量，螢幕保護程式只會在充電時運作。</translation>
+<translation id="9133772297793293778">按下鍵盤上的 1 至 4 個輔助鍵和 1 個其他按鍵。如要退出編輯模式，請按下 Alt + Esc 鍵。</translation>
 <translation id="9137526406337347448">Google 服務</translation>
 <translation id="9138630967333032450">左邊 Shift</translation>
 <translation id="9143347780818904997"><ph name="MINUTES" /> 分鐘</translation>

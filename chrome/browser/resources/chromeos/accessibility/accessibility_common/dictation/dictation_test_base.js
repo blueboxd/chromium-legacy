@@ -101,21 +101,22 @@ DictationE2ETestBase = class extends E2ETestBase {
     await super.setUpDeferred();
 
     // Wait for the Dictation module to load and set the Dictation locale.
-    await importModule(
-        'Dictation', '/accessibility_common/dictation/dictation.js');
+    await Promise.all([
+      importModule('Dictation', '/accessibility_common/dictation/dictation.js'),
+      importModule(
+          'LocaleInfo', '/accessibility_common/dictation/locale_info.js'),
+      new Promise(
+          resolve => chrome.accessibilityFeatures.dictation.set(
+              {value: true}, resolve)),
+    ]);
     assertNotNullNorUndefined(Dictation);
-    await importModule(
-        'LocaleInfo', '/accessibility_common/dictation/locale_info.js');
-    await new Promise(resolve => {
-      chrome.accessibilityFeatures.dictation.set({value: true}, resolve);
-    });
     await this.setPref(Dictation.DICTATION_LOCALE_PREF, 'en-US');
 
     // By default, Dictation JS tests should use regex parsing.
     accessibilityCommon.dictation_.disablePumpkinForTesting();
     // Increase Dictation's NO_FOCUSED_IME timeout to reduce flakiness on slower
     // builds.
-    accessibilityCommon.dictation_.increaseNoFocusedImeTimeoutForTesting();
+    accessibilityCommon.dictation_.setNoFocusedImeTimeoutForTesting(20 * 1000);
   }
 
   /** @override */

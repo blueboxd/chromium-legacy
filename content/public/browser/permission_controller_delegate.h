@@ -26,6 +26,7 @@ namespace content {
 class RenderFrameHost;
 class RenderProcessHost;
 class WebContents;
+struct PermissionRequestDescription;
 
 class CONTENT_EXPORT PermissionControllerDelegate {
  public:
@@ -34,30 +35,19 @@ class CONTENT_EXPORT PermissionControllerDelegate {
 
   virtual ~PermissionControllerDelegate() = default;
 
-  // Requests a permission on behalf of a frame identified by
-  // render_frame_host.
-  // When the permission request is handled, whether it failed, timed out or
-  // succeeded, the |callback| will be run.
-  virtual void RequestPermission(
-      blink::PermissionType permission,
-      RenderFrameHost* render_frame_host,
-      const GURL& requesting_origin,
-      bool user_gesture,
-      base::OnceCallback<void(blink::mojom::PermissionStatus)> callback) = 0;
-
   // Requests multiple permissions on behalf of a frame identified by
-  // render_frame_host.
-  // When the permission request is handled, whether it failed, timed out or
-  // succeeded, the |callback| will be run. The order of statuses in the
-  // returned vector will correspond to the order of requested permission
-  // types.
+  // |render_frame_host|. When the permission request is handled, whether it
+  // failed, timed out or succeeded, the |callback| will be run. The order of
+  // statuses in the returned vector will correspond to the order of requested
+  // permission types.
+  // TODO(crbug.com/1462930): `RequestPermissions` and
+  // `RequestPermissionsFromCurrentDocument` do exactly the same things. Merge
+  // them together.
   virtual void RequestPermissions(
-      const std::vector<blink::PermissionType>& permission,
       RenderFrameHost* render_frame_host,
-      const GURL& requesting_origin,
-      bool user_gesture,
-      base::OnceCallback<void(
-          const std::vector<blink::mojom::PermissionStatus>&)> callback) = 0;
+      const PermissionRequestDescription& request_description,
+      base::OnceCallback<void(const std::vector<PermissionStatus>&)>
+          callback) = 0;
 
   // Requests permissions from the current document in the given
   // RenderFrameHost. Use this over `RequestPermission` whenever possible as
@@ -65,17 +55,16 @@ class CONTENT_EXPORT PermissionControllerDelegate {
   // whether it's in back-forward cache or being prerendered) in addition to its
   // origin.
   virtual void RequestPermissionsFromCurrentDocument(
-      const std::vector<blink::PermissionType>& permissions,
       RenderFrameHost* render_frame_host,
-      bool user_gesture,
-      base::OnceCallback<void(
-          const std::vector<blink::mojom::PermissionStatus>&)> callback) = 0;
+      const PermissionRequestDescription& request_description,
+      base::OnceCallback<void(const std::vector<PermissionStatus>&)>
+          callback) = 0;
 
   // Returns the permission status of a given requesting_origin/embedding_origin
   // tuple. This is not taking a RenderFrameHost because the call might happen
   // outside of a frame context. Prefer GetPermissionStatusForCurrentDocument
   // (below) whenever possible.
-  virtual blink::mojom::PermissionStatus GetPermissionStatus(
+  virtual PermissionStatus GetPermissionStatus(
       blink::PermissionType permission,
       const GURL& requesting_origin,
       const GURL& embedding_origin) = 0;
@@ -90,7 +79,7 @@ class CONTENT_EXPORT PermissionControllerDelegate {
   // this API takes into account the lifecycle state of a given document (i.e.
   // whether it's in back-forward cache or being prerendered) in addition to its
   // origin.
-  virtual blink::mojom::PermissionStatus GetPermissionStatusForCurrentDocument(
+  virtual PermissionStatus GetPermissionStatusForCurrentDocument(
       blink::PermissionType permission,
       RenderFrameHost* render_frame_host) = 0;
 
@@ -104,7 +93,7 @@ class CONTENT_EXPORT PermissionControllerDelegate {
   // `worker_origin` running in `render_process_host`, also performing
   // additional checks such as Permission Policy.  Use this over
   // GetPermissionStatus whenever possible.
-  virtual blink::mojom::PermissionStatus GetPermissionStatusForWorker(
+  virtual PermissionStatus GetPermissionStatusForWorker(
       blink::PermissionType permission,
       RenderProcessHost* render_process_host,
       const GURL& worker_origin) = 0;
@@ -115,8 +104,7 @@ class CONTENT_EXPORT PermissionControllerDelegate {
   // `requesting_origin` as a separate parameter because it does not equal the
   // last committed origin of the requesting frame.  It is designed to be used
   // only for `TOP_LEVEL_STORAGE_ACCESS`.
-  virtual blink::mojom::PermissionStatus
-  GetPermissionStatusForEmbeddedRequester(
+  virtual PermissionStatus GetPermissionStatusForEmbeddedRequester(
       blink::PermissionType permission,
       RenderFrameHost* render_frame_host,
       const url::Origin& requesting_origin) = 0;
@@ -138,8 +126,7 @@ class CONTENT_EXPORT PermissionControllerDelegate {
       content::RenderProcessHost* render_process_host,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      base::RepeatingCallback<void(blink::mojom::PermissionStatus)>
-          callback) = 0;
+      base::RepeatingCallback<void(PermissionStatus)> callback) = 0;
 
   // Unregisters from permission status change notifications. The
   // |subscription_id| must match the value returned by the

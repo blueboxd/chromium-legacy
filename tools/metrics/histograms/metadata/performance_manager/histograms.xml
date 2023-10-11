@@ -15,7 +15,7 @@ each histogram.
 <histograms>
 
 <histogram name="PerformanceManager.Experimental.AccessibilityModeFlag"
-    enum="AccessibilityModeFlagEnum" expires_after="2023-12-24">
+    enum="AccessibilityModeFlagEnum" expires_after="2024-02-25">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -25,7 +25,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.Experimental.HasAccessibilityModeFlag"
-    enum="Boolean" expires_after="2023-12-24">
+    enum="Boolean" expires_after="2024-02-25">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -35,7 +35,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.SiteDB.DatabaseInit"
-    enum="LocalSiteCharacteristicsDBInitStatus" expires_after="2023-09-28">
+    enum="LocalSiteCharacteristicsDBInitStatus" expires_after="2023-12-28">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -46,7 +46,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.SiteDB.DatabaseInitAfterDelete"
-    enum="LocalSiteCharacteristicsDBInitStatus" expires_after="2023-09-28">
+    enum="LocalSiteCharacteristicsDBInitStatus" expires_after="2023-12-28">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -57,7 +57,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.SiteDB.DatabaseInitAfterRepair"
-    enum="LocalSiteCharacteristicsDBInitStatus" expires_after="2023-09-28">
+    enum="LocalSiteCharacteristicsDBInitStatus" expires_after="2023-12-28">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -69,7 +69,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.SiteDB.DatabaseRepair"
-    enum="BooleanSuccess" expires_after="2023-09-28">
+    enum="BooleanSuccess" expires_after="2023-12-28">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -81,7 +81,7 @@ each histogram.
 
 <histogram
     name="PerformanceManager.SiteDB.ObservationTimeBeforeFirstUse.{Feature}"
-    units="ms" expires_after="2023-09-28">
+    units="ms" expires_after="2023-12-28">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -97,7 +97,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.SiteDB.OnDiskSize" units="KB"
-    expires_after="2023-09-28">
+    expires_after="2023-12-28">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -108,13 +108,33 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.SiteDB.ReadHasCompletedBeforeQuery"
-    enum="Boolean" expires_after="2023-09-28">
+    enum="Boolean" expires_after="2023-12-28">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
     Boolean indicating if the read operation from the Local Site Characteristics
     database has completed when we query for the characteristics of a site.
     Reported every time the database is queried.
+  </summary>
+</histogram>
+
+<histogram name="PerformanceManager.TabRevisitTracker.TimeToClose2"
+    units="seconds" expires_after="2024-08-09">
+  <owner>anthonyvd@chromium.org</owner>
+  <owner>chrome-catan@google.com</owner>
+  <summary>
+    Logged everytime a background tab is closed. Records the time in seconds
+    that the tab has spent in the background since it was last active.
+  </summary>
+</histogram>
+
+<histogram name="PerformanceManager.TabRevisitTracker.TimeToRevisit2"
+    units="seconds" expires_after="2024-08-09">
+  <owner>anthonyvd@chromium.org</owner>
+  <owner>chrome-catan@google.com</owner>
+  <summary>
+    Logged everytime a background tab is revisited. Records the time in seconds
+    that the tab has spent in the background since it was last active.
   </summary>
 </histogram>
 
@@ -150,32 +170,6 @@ each histogram.
     Recorded every UMA upload, this histogram represents the percentage of the
     interval since the last upload that was spent with Memory Saver enabled.
   </summary>
-</histogram>
-
-<histogram
-    name="PerformanceManager.V8DetailedMemory.{Destination}.MeasurementMode"
-    enum="V8DetailedMemoryMeasurementMode" expires_after="2023-08-23">
-  <owner>joenotcharles@google.com</owner>
-  <owner>chrome-catan@google.com</owner>
-  <summary>
-    Logged every time V8DetailedMemoryReporter.GetV8MemoryUsage is sent to a
-    renderer, with the measurement mode. This can be used to find the volume of
-    measurement requests to track their performance overhead.
-
-    {Destination}
-  </summary>
-  <token key="Destination">
-    <variant name="AllRenderers"
-        summary="This metric records measurement requests stemming from
-                 V8DetailedMemoryRequest::StartMeasurement, which are sent to
-                 all renderer processes. Scale all counts by the number of
-                 renderer processes when comparing between subpopulations."/>
-    <variant name="SingleRenderer"
-        summary="This metric records measurement requests stemming from
-                 V8DetailedMemoryRequest::StartMeasurementForProcess, which
-                 are sent to a single renderer process. Counts don't need to
-                 be scaled."/>
-  </token>
 </histogram>
 
 </histograms>

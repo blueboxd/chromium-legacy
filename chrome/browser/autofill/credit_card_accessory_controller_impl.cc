@@ -39,7 +39,7 @@ namespace {
 // art is only supported for Capital One virtual cards. For other cards, we show
 // the default network icon.
 GURL GetCardArtUrl(const CreditCard& card) {
-  return card.record_type() == CreditCard::VIRTUAL_CARD &&
+  return card.record_type() == CreditCard::RecordType::kVirtualCard &&
                  card.card_art_url().spec() == kCapitalOneCardArtUrl
              ? card.card_art_url()
              : GURL();
@@ -197,11 +197,8 @@ CreditCardAccessoryControllerImpl::GetSheetData() const {
       AccessoryTabType::CREDIT_CARDS, GetTitle(has_suggestions),
       std::move(info_to_add), std::move(footer_commands));
 
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillFillMerchantPromoCodeFields)) {
-    for (auto* offer : GetPromoCodeOffers()) {
-      data.add_promo_code_info(TranslateOffer(offer));
-    }
+  for (auto* offer : GetPromoCodeOffers()) {
+    data.add_promo_code_info(TranslateOffer(offer));
   }
 
   if (has_suggestions && !allow_filling && autofill_manager) {
@@ -331,8 +328,7 @@ void CreditCardAccessoryControllerImpl::OnPersonalDataChanged() {
 
 void CreditCardAccessoryControllerImpl::OnCreditCardFetched(
     CreditCardFetchResult result,
-    const CreditCard* credit_card,
-    const std::u16string& cvc) {
+    const CreditCard* credit_card) {
   if (result != CreditCardFetchResult::kSuccess)
     return;
   content::RenderFrameHost* rfh = GetWebContents().GetFocusedFrame();
@@ -423,7 +419,8 @@ CreditCardAccessoryControllerImpl::GetUnmaskedCreditCards() const {
   // Show unmasked virtual cards in the manual filling view if they exist. All
   // other cards are dropped.
   auto not_virtual_card = [](const CachedServerCardInfo* card_info) {
-    return card_info->card.record_type() != CreditCard::VIRTUAL_CARD;
+    return card_info->card.record_type() !=
+           CreditCard::RecordType::kVirtualCard;
   };
   base::EraseIf(unmasked_cards, not_virtual_card);
   return unmasked_cards;

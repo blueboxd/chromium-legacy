@@ -7,10 +7,10 @@
 #include <memory>
 #include <dlfcn.h>
 
+#include "base/apple/foundation_util.h"
+#include "base/apple/osstatus_logging.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -122,7 +122,7 @@ VideoEncoderInfo GetVideoEncoderInfo(VTSessionRef compression_session,
 #if BUILDFLAG(IS_MAC)
   info.is_hardware_accelerated = false;
 
-  base::ScopedCFTypeRef<CFBooleanRef> cf_using_hardware;
+  base::apple::ScopedCFTypeRef<CFBooleanRef> cf_using_hardware;
   if (VTSessionCopyProperty(
           compression_session,
           kVTCompressionPropertyKey_UsingHardwareAcceleratedVideoEncoder,
@@ -135,7 +135,7 @@ VideoEncoderInfo GetVideoEncoderInfo(VTSessionRef compression_session,
 #endif
 
   absl::optional<int> max_frame_delay_property;
-  base::ScopedCFTypeRef<CFNumberRef> max_frame_delay_count;
+  base::apple::ScopedCFTypeRef<CFNumberRef> max_frame_delay_count;
   if (VTSessionCopyProperty(
           compression_session, kVTCompressionPropertyKey_MaxFrameDelayCount,
           kCFAllocatorDefault, max_frame_delay_count.InitializeInto()) == 0) {
@@ -195,7 +195,7 @@ struct VTVideoEncodeAccelerator::EncodeOutput {
   EncodeOutput& operator=(const EncodeOutput&) = delete;
 
   const VTEncodeInfoFlags info;
-  const base::ScopedCFTypeRef<CMSampleBufferRef> sample_buffer;
+  const base::apple::ScopedCFTypeRef<CMSampleBufferRef> sample_buffer;
   const base::TimeDelta capture_timestamp;
   const gfx::ColorSpace encoded_color_space;
 };
@@ -449,7 +449,7 @@ void VTVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
     }
   }
 
-  base::ScopedCFTypeRef<CFDictionaryRef> frame_props =
+  base::apple::ScopedCFTypeRef<CFDictionaryRef> frame_props =
       video_toolbox::DictionaryWithKeyValue(
           kVTEncodeFrameOptionKey_ForceKeyFrame,
           force_keyframe ? kCFBooleanTrue : kCFBooleanFalse);
@@ -535,10 +535,19 @@ void VTVideoEncodeAccelerator::RequestEncodingParametersChange(
   frame_rate_ = framerate;
   video_toolbox::SessionPropertySetter session_property_setter(
       compression_session_);
-  session_property_setter.Set(kVTCompressionPropertyKey_ExpectedFrameRate,
-                              frame_rate_);
-  session_property_setter.Set(kVTCompressionPropertyKey_AverageBitRate,
-                              static_cast<int32_t>(bitrate.target_bps()));
+  if (!session_property_setter.Set(kVTCompressionPropertyKey_ExpectedFrameRate,
+                                   frame_rate_)) {
+    NotifyErrorStatus(
+        {EncoderStatus::Codes::kSystemAPICallError, "Can't change frame rate"});
+    return;
+  }
+  if (!session_property_setter.Set(
+          kVTCompressionPropertyKey_AverageBitRate,
+          static_cast<int32_t>(bitrate.target_bps()))) {
+    NotifyErrorStatus({EncoderStatus::Codes::kSystemAPICallError,
+                       "Can't change average bitrate"});
+    return;
+  }
   // Here in case of VBR we'd like to set more relaxed bitrate constraints.
   // It looks like setting VTCompressionPropertyKey_DataRateLimits should be
   // appropriate her, but it is NOT compatible with
@@ -665,8 +674,10 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
   const bool keyframe = !CFDictionaryContainsKey(
       sample_attachments, kCMSampleAttachmentKey_NotSync);
   bool belongs_to_base_layer = true;
-  if (CFBooleanRef value_ptr = base::mac::GetValueFromDictionary<CFBooleanRef>(
-          sample_attachments, kCMSampleAttachmentKey_IsDependedOnByOthers)) {
+  if (CFBooleanRef value_ptr =
+          base::apple::GetValueFromDictionary<CFBooleanRef>(
+              sample_attachments,
+              kCMSampleAttachmentKey_IsDependedOnByOthers)) {
     belongs_to_base_layer = static_cast<bool>(CFBooleanGetValue(value_ptr));
   }
 
@@ -754,7 +765,7 @@ bool VTVideoEncodeAccelerator::CreateCompressionSession(
       encoder_values.push_back(kCFBooleanTrue);
     }
   }
-  base::ScopedCFTypeRef<CFDictionaryRef> encoder_spec =
+  base::apple::ScopedCFTypeRef<CFDictionaryRef> encoder_spec =
       video_toolbox::DictionaryWithKeysAndValues(
           encoder_keys.data(), encoder_values.data(), encoder_keys.size());
 

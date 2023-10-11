@@ -9,9 +9,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -27,7 +27,7 @@
 #include "components/policy/core/common/preferences_mock_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::ScopedCFTypeRef;
+using base::apple::ScopedCFTypeRef;
 
 namespace policy {
 

@@ -151,7 +151,7 @@ template <int C>
 void ToneEstimation::ComputeClipMask(const ClipMaskOptions& options,
                                      const cv::Mat& frame,
                                      ClipMask<C>* clip_mask) {
-  CHECK(clip_mask != nullptr);
+  ABSL_CHECK(clip_mask != nullptr);
   ABSL_CHECK_EQ(frame.channels(), C);
 
   // Over / Underexposure handling.
@@ -224,7 +224,7 @@ void ToneEstimation::ComputeToneMatches(
     const ClipMask<C>& curr_clip_mask,  // Optional.
     const ClipMask<C>& prev_clip_mask,  // Optional.
     ColorToneMatches* color_tone_matches, cv::Mat* debug_output) {
-  CHECK(color_tone_matches != nullptr);
+  ABSL_CHECK(color_tone_matches != nullptr);
   ABSL_CHECK_EQ(curr_frame.channels(), C);
   ABSL_CHECK_EQ(prev_frame.channels(), C);
 

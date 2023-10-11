@@ -523,18 +523,25 @@ void Mp4MuxerDelegate::BuildAudioFragment(base::StringPiece encoded_data) {
   AddDataToMdat(*fragment, *audio_track_index_, encoded_data);
 }
 
-void Mp4MuxerDelegate::Flush() {
+bool Mp4MuxerDelegate::Flush() {
   if (!video_track_index_.has_value() && !audio_track_index_.has_value()) {
     Reset();
-    return;
+    return false;
   }
+
+  size_t written_offset = 0;
+  // Build and write `FTYP` box.
+  mp4::writable_boxes::FileType mp4_file_type_box;
+  BuildFileTypeBox(mp4_file_type_box);
+  Mp4FileTypeBoxWriter file_type_box_writer(*context_, mp4_file_type_box);
+  written_offset += file_type_box_writer.WriteAndFlush();
 
   // Finish movie box and write.
   BuildMovieBox();
 
   // Write `moov` box and its children.
-  Mp4MovieBoxWriter box_writer(*context_, *moov_);
-  box_writer.WriteAndFlush();
+  Mp4MovieBoxWriter movie_box_writer(*context_, *moov_);
+  written_offset += movie_box_writer.WriteAndFlush();
 
   // Finish fragment and write.
   if (video_track_index_.has_value()) {
@@ -551,7 +558,12 @@ void Mp4MuxerDelegate::Flush() {
   }
 
   // Write `moof` box and its children as well as `mdat` box.
+  mp4::writable_boxes::TrackFragmentRandomAccess video_track_random_access;
   for (auto& fragment : fragments_) {
+    if (video_track_index_.has_value()) {
+      BuildVideoTrackFragmentRandomAccess(video_track_random_access, *fragment,
+                                          written_offset);
+    }
     // `moof` and `mdat` should use same `BoxByteStream` as `moof`
     // has a dependency of `mdat` offset.
     Mp4MovieFragmentBoxWriter fragment_box_writer(*context_, fragment->moof);
@@ -561,10 +573,41 @@ void Mp4MuxerDelegate::Flush() {
     // Write `mdat` box with `moof` boxes writer object.
     Mp4MediaDataBoxWriter mdat_box_writer(*context_, fragment->mdat);
 
-    mdat_box_writer.WriteAndFlush(box_byte_stream);
+    written_offset += mdat_box_writer.WriteAndFlush(box_byte_stream);
+  }
+
+  // Write `mfra` box as a last box for mp4 file.
+  if (video_track_index_.has_value()) {
+    mp4::writable_boxes::FragmentRandomAccess fragment_random_access;
+    if (*video_track_index_ != 0) {
+      // Add empty audio random access by its index position.
+      mp4::writable_boxes::TrackFragmentRandomAccess audio_random_access;
+
+      fragment_random_access.tracks.emplace_back(
+          std::move(audio_random_access));
+    }
+
+    video_track_random_access.track_id = *video_track_index_ + 1;
+    fragment_random_access.tracks.emplace_back(
+        std::move(video_track_random_access));
+
+    // Flush at requested.
+    Mp4FragmentRandomAccessBoxWriter fragment_random_access_box_writer(
+        *context_, fragment_random_access);
+    fragment_random_access_box_writer.WriteAndFlush();
   }
 
   Reset();
+
+  return true;
+}
+
+void Mp4MuxerDelegate::BuildFileTypeBox(
+    mp4::writable_boxes::FileType& mp4_file_type_box) {
+  mp4_file_type_box.major_brand = mp4::FOURCC_MP41;
+  mp4_file_type_box.minor_version = 0;
+  mp4_file_type_box.compatible_brands.emplace_back(mp4::FOURCC_ISOM);
+  mp4_file_type_box.compatible_brands.emplace_back(mp4::FOURCC_AVC1);
 }
 
 void Mp4MuxerDelegate::BuildMovieBox() {
@@ -579,8 +622,11 @@ void Mp4MuxerDelegate::BuildMovieBox() {
   base::TimeDelta video_track_duration = base::Seconds(0);
   if (video_track_index_.has_value()) {
     CHECK_NE(video_frame_rate_, 0);
-    video_track_duration = std::max(base::Seconds(1 / video_frame_rate_),
-                                    last_video_time_ - start_video_time_);
+    base::TimeTicks last_video_time_include_last_sample =
+        last_video_time_ +
+        base::Milliseconds(kMillisecondsTimeScale / video_frame_rate_);
+    video_track_duration =
+        last_video_time_include_last_sample - start_video_time_;
     CopyCreationTimeAndDuration(moov_->tracks[*video_track_index_],
                                 moov_->header, video_track_duration);
   }
@@ -589,8 +635,13 @@ void Mp4MuxerDelegate::BuildMovieBox() {
   base::TimeDelta audio_track_duration = base::Seconds(0);
   if (audio_track_index_.has_value()) {
     CHECK_NE(audio_sample_rate_, 0);
-    audio_track_duration = std::max(base::Seconds(1 / audio_sample_rate_),
-                                    last_audio_time_ - start_audio_time_);
+
+    int audio_frame_rate = audio_sample_rate_ / kAudioSamplesPerFrame;
+    base::TimeTicks last_audio_time_include_last_sample =
+        last_audio_time_ +
+        base::Milliseconds(kMillisecondsTimeScale / audio_frame_rate);
+    audio_track_duration =
+        last_audio_time_include_last_sample - start_audio_time_;
     CopyCreationTimeAndDuration(moov_->tracks[*audio_track_index_],
                                 moov_->header, audio_track_duration);
   }
@@ -602,6 +653,35 @@ void Mp4MuxerDelegate::BuildMovieBox() {
   // next_track_id indicates a value to use for the track ID of the next
   // track to be added to this presentation.
   moov_->header.next_track_id = GetNextTrackIndex() + 1;
+}
+
+void Mp4MuxerDelegate::BuildVideoTrackFragmentRandomAccess(
+    mp4::writable_boxes::TrackFragmentRandomAccess&
+        fragment_random_access_box_writer,
+    Fragment& fragment,
+    size_t written_offset) {
+  if (*video_track_index_ >=
+      static_cast<int>(fragment.moof.track_fragments.size())) {
+    // The front fragments could have only audio samples.
+    return;
+  }
+
+  auto& run = fragment.moof.track_fragments[*video_track_index_].run;
+  if (run.sample_count == 0) {
+    // We don't add an entry if there is no sample in the fragment.
+    return;
+  }
+
+  CHECK(!run.sample_timestamps.empty());
+  mp4::writable_boxes::TrackFragmentRandomAccessEntry entry;
+  // `time` is a duration since its target track's start until the
+  // previous fragment.
+  entry.time = run.sample_timestamps[0] - start_video_time_;
+  entry.moof_offset = written_offset;
+  entry.traf_number = 1;
+  entry.trun_number = 1;
+  entry.sample_number = 1;
+  fragment_random_access_box_writer.entries.emplace_back(std::move(entry));
 }
 
 void Mp4MuxerDelegate::AddLastSampleTimestamp(int track_index,
@@ -645,6 +725,7 @@ void Mp4MuxerDelegate::Reset() {
   fragments_.clear();
 
   video_track_index_.reset();
+  audio_track_index_.reset();
   next_track_index_ = 0;
   start_video_time_ = base::TimeTicks();
   start_audio_time_ = base::TimeTicks();

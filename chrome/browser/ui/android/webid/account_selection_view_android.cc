@@ -38,7 +38,6 @@ ScopedJavaLocalRef<jobject> ConvertToJavaAccount(JNIEnv* env,
       ConvertUTF8ToJavaString(env, account.name),
       ConvertUTF8ToJavaString(env, account.given_name),
       url::GURLAndroid::FromNativeGURL(env, account.picture),
-      base::android::ToJavaArrayOfStrings(env, account.login_hints),
       account.login_state == Account::LoginState::kSignIn);
 }
 
@@ -84,7 +83,6 @@ Account ConvertFieldsToAccount(
     JNIEnv* env,
     const JavaParamRef<jobjectArray>& string_fields_obj,
     const JavaParamRef<jobject>& picture_url_obj,
-    const JavaParamRef<jobjectArray>& account_hints,
     bool is_sign_in) {
   std::vector<std::string> string_fields;
   AppendJavaStringArrayToStringVector(env, string_fields_obj, &string_fields);
@@ -98,9 +96,11 @@ Account ConvertFieldsToAccount(
 
   GURL picture_url = *url::GURLAndroid::ToNativeGURL(env, picture_url_obj);
 
+  // The login hints and hosted domains are only used before account selection.
   std::vector<std::string> login_hints;
-  AppendJavaStringArrayToStringVector(env, account_hints, &login_hints);
-  return Account(account_id, email, name, given_name, picture_url, login_hints,
+  std::vector<std::string> hosted_domains;
+  return Account(account_id, email, name, given_name, picture_url,
+                 std::move(login_hints), std::move(hosted_domains),
                  login_state);
 }
 
@@ -201,6 +201,16 @@ void AccountSelectionViewAndroid::ShowFailureDialog(
       ConvertRpContextToJavaString(env, rp_context));
 }
 
+void AccountSelectionViewAndroid::ShowErrorDialog(
+    const std::string& top_frame_for_display,
+    const absl::optional<std::string>& iframe_for_display,
+    const std::string& idp_for_display,
+    const blink::mojom::RpContext& rp_context,
+    const content::IdentityProviderMetadata& idp_metadata,
+    const absl::optional<TokenError>& error) {
+  // TODO(crbug.com/1420642): Implement error dialog on Android.
+}
+
 std::string AccountSelectionViewAndroid::GetTitle() const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> title =
@@ -243,13 +253,11 @@ void AccountSelectionViewAndroid::OnAccountSelected(
     const JavaParamRef<jobject>& idp_config_url,
     const JavaParamRef<jobjectArray>& account_string_fields,
     const JavaParamRef<jobject>& account_picture_url,
-    const JavaParamRef<jobjectArray>& account_hints,
     bool is_sign_in) {
   GURL config_url = *url::GURLAndroid::ToNativeGURL(env, idp_config_url);
   delegate_->OnAccountSelected(
-      config_url,
-      ConvertFieldsToAccount(env, account_string_fields, account_picture_url,
-                             account_hints, is_sign_in));
+      config_url, ConvertFieldsToAccount(env, account_string_fields,
+                                         account_picture_url, is_sign_in));
   // The AccountSelectionViewAndroid may be destroyed.
   // AccountSelectionView::Delegate::OnAccountSelected() might delete this.
   // See https://crbug.com/1393650 for details.

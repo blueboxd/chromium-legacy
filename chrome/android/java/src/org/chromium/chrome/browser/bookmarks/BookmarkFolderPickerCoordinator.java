@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.bookmarks;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,11 +17,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowDisplayPref;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.widget.FadingShadow;
 import org.chromium.components.browser_ui.widget.FadingShadowView;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
+import org.chromium.components.commerce.core.ShoppingService;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -35,24 +37,29 @@ public class BookmarkFolderPickerCoordinator implements BackPressHandler {
     private final ObservableSupplierImpl<Boolean> mBackPressStateSupplier =
             new ObservableSupplierImpl<>();
     private final ModelList mModelList = new ModelList();
+    private final SelectionDelegate mEmptySelectionDelegate = new SelectionDelegate();
     private final Context mContext;
     private final View mView;
     private final View mMoveButton;
     private final RecyclerView mRecyclerView;
     private final BookmarkFolderPickerMediator mMediator;
+    private final BookmarkUiPrefs mBookmarkUiPrefs;
 
     private final SimpleRecyclerViewAdapter mAdapter = new SimpleRecyclerViewAdapter(mModelList) {
         @Override
         public void onViewRecycled(SimpleRecyclerViewAdapter.ViewHolder holder) {
             super.onViewRecycled(holder);
             if (holder == null || holder.model == null) return;
-            holder.model.get(BookmarkFolderPickerRowProperties.ROW_COORDINATOR).setView(null);
+            holder.model.get(ImprovedBookmarkRowProperties.FOLDER_COORDINATOR).setView(null);
         }
     };
 
     public BookmarkFolderPickerCoordinator(Context context, BookmarkModel bookmarkModel,
             BookmarkImageFetcher bookmarkImageFetcher, List<BookmarkId> bookmarkIds,
-            Runnable finishRunnable, BookmarkAddNewFolderCoordinator addNewFolderCoordinator) {
+            Runnable finishRunnable, BookmarkAddNewFolderCoordinator addNewFolderCoordinator,
+            BookmarkUiPrefs bookmarkUiPrefs,
+            ImprovedBookmarkRowCoordinator improvedBookmarkRowCoordinator,
+            ShoppingService shoppingService) {
         mContext = context;
         mView = LayoutInflater.from(mContext).inflate(R.layout.bookmark_folder_picker, null);
         mMoveButton = mView.findViewById(R.id.move_button);
@@ -62,7 +69,7 @@ public class BookmarkFolderPickerCoordinator implements BackPressHandler {
                 new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
         mRecyclerView.setAdapter(mAdapter);
         mAdapter.registerType(BookmarkFolderPickerMediator.FOLDER_ROW, this::buildFolderRow,
-                BookmarkFolderPickerViewBinder::bindFolderRow);
+                ImprovedBookmarkRowViewBinder::bind);
 
         PropertyModel model = new PropertyModel(BookmarkFolderPickerProperties.ALL_KEYS);
         PropertyModelChangeProcessor.create(model, mView, BookmarkFolderPickerViewBinder::bind);
@@ -70,7 +77,7 @@ public class BookmarkFolderPickerCoordinator implements BackPressHandler {
         mMediator = new BookmarkFolderPickerMediator(context, bookmarkModel, bookmarkImageFetcher,
                 bookmarkIds, finishRunnable,
                 new BookmarkUiPrefs(SharedPreferencesManager.getInstance()), model, mModelList,
-                addNewFolderCoordinator);
+                addNewFolderCoordinator, improvedBookmarkRowCoordinator, shoppingService);
 
         FadingShadowView shadow = (FadingShadowView) mView.findViewById(R.id.shadow);
         shadow.init(mContext.getColor(R.color.toolbar_shadow_color), FadingShadow.POSITION_TOP);
@@ -90,6 +97,8 @@ public class BookmarkFolderPickerCoordinator implements BackPressHandler {
 
         // Back presses are always handled.
         mBackPressStateSupplier.set(true);
+
+        mBookmarkUiPrefs = bookmarkUiPrefs;
     }
 
     /** Destroys the coordinator. */
@@ -107,16 +116,15 @@ public class BookmarkFolderPickerCoordinator implements BackPressHandler {
         return (Toolbar) mView.findViewById(R.id.toolbar);
     }
 
-    // Delegate setup methods.
-
-    /** Create the options menu. */
-    public void createOptionsMenu(Menu menu) {
-        mMediator.createOptionsMenu(menu);
+    public void updateToolbarButtons() {
+        mMediator.updateToolbarButtons();
     }
+
+    // Delegate setup methods.
 
     /** Handle option menu selections. */
     public boolean optionsItemSelected(MenuItem item) {
-        return mMediator.optionsItemSelected(item);
+        return mMediator.optionsItemSelected(item.getItemId());
     }
 
     public boolean onBackPressed() {
@@ -126,8 +134,10 @@ public class BookmarkFolderPickerCoordinator implements BackPressHandler {
     // Building rows for the recycler view.
 
     View buildFolderRow(ViewGroup parent) {
-        return LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.improved_bookmark_folder_select_layout, null);
+        ImprovedBookmarkRow row = ImprovedBookmarkRow.buildView(parent.getContext(),
+                mBookmarkUiPrefs.getBookmarkRowDisplayPref() == BookmarkRowDisplayPref.VISUAL);
+        row.setSelectionDelegate(mEmptySelectionDelegate);
+        return row;
     }
 
     // BackPressHandler implementation.

@@ -11,7 +11,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "fuchsia-x64-cast-receiver-rel",
-              "project": "chromium-m117"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-linux-archive",
@@ -40,7 +40,7 @@
         {
           "bucket": "ci",
           "builder": "fuchsia-x64-cast-receiver-rel",
-          "project": "chromium-m117"
+          "project": "chromium"
         }
       ]
     }
@@ -51,6 +51,10 @@
       "overall"
     ],
     "use_clang_coverage": true
+  },
+  "$build/flakiness": {
+    "check_for_flakiness": true,
+    "check_for_flakiness_with_resultdb": true
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],

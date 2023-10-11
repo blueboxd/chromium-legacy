@@ -464,8 +464,6 @@ SwapChainPresenter::SwapChainPresenter(
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device)
     : layer_tree_(layer_tree),
-      swap_chain_buffer_count_(BufferCount(
-          layer_tree->force_dcomp_triple_buffer_video_swap_chain())),
       switched_to_BGRA8888_time_tick_(base::TimeTicks::Now()),
       d3d11_device_(d3d11_device),
       dcomp_device_(dcomp_device),
@@ -664,9 +662,8 @@ gfx::Size SwapChainPresenter::GetMonitorSize() const {
   }
 }
 
-void SwapChainPresenter::SetTargetToFullScreen(
-    gfx::Transform* visual_transform,
-    gfx::Rect* visual_clip_rect) const {
+void SwapChainPresenter::SetTargetToFullScreen(gfx::Transform* visual_transform,
+                                               gfx::Rect* visual_clip_rect) {
   // Reset the horizontal/vertical shift according to the visual clip and
   // original transform, since DWM will do the positioning in case of overlay.
   visual_transform->set_rc(
@@ -680,6 +677,8 @@ void SwapChainPresenter::SetTargetToFullScreen(
 
   // Expand the clip rect for swap chain to the whole screen.
   *visual_clip_rect = gfx::Rect(GetMonitorSize());
+
+  last_desktop_plane_removed_ = true;
 }
 
 void SwapChainPresenter::AdjustTargetToOptimalSizeIfNeeded(
@@ -1071,7 +1070,7 @@ gfx::Size SwapChainPresenter::CalculateSwapChainSize(
   // the video processor can do the minimal amount of work and the overlay has
   // to read the minimal amount of data. DWM is also less likely to promote a
   // surface to an overlay if it's much larger than its area on-screen.
-  gfx::Size swap_chain_size = params.content_rect.size();
+  gfx::Size swap_chain_size = gfx::ToNearestRect(params.content_rect).size();
   if (swap_chain_size.IsEmpty())
     return gfx::Size();
   if (params.quad_rect.IsEmpty())
@@ -1342,6 +1341,7 @@ bool SwapChainPresenter::PresentToSwapChain(DCLayerOverlayParams& params,
   DCHECK(params.overlay_image);
   DCHECK_NE(params.overlay_image->type(),
             gl::DCLayerOverlayType::kDCompVisualContent);
+  CHECK(gfx::IsNearestRectWithinDistance(params.content_rect, 0.01f));
 
   gl::DCLayerOverlayType overlay_type = params.overlay_image->type();
 
@@ -1419,6 +1419,12 @@ bool SwapChainPresenter::PresentToSwapChain(DCLayerOverlayParams& params,
     // The swap chain is presenting the same images as last swap, which means
     // that the images were never returned to the video decoder and should
     // have the same contents as last time. It shouldn't need to be redrawn.
+    // But the visual transform and clip rectangle for DCLayerTree update need
+    // to keep the same as the last presentation when desktop plane was removed.
+    if (last_desktop_plane_removed_) {
+      SetTargetToFullScreen(visual_transform, visual_clip_rect);
+    }
+
     return true;
   }
 
@@ -1427,14 +1433,16 @@ bool SwapChainPresenter::PresentToSwapChain(DCLayerOverlayParams& params,
   unsigned input_level = params.overlay_image->texture_array_slice();
 
   if (TryPresentToDecodeSwapChain(input_texture, input_level, input_color_space,
-                                  params.content_rect, swap_chain_size,
-                                  swap_chain_format, params.transform,
-                                  dest_size, target_rect)) {
+                                  gfx::ToNearestRect(params.content_rect),
+                                  swap_chain_size, swap_chain_format,
+                                  params.transform, dest_size, target_rect)) {
     last_overlay_image_ = std::move(params.overlay_image);
     // Only NV12 format is supported in zero copy presentation path.
     if (dest_size.has_value() && target_rect.has_value() &&
         params.z_order > 0) {
       SetTargetToFullScreen(visual_transform, visual_clip_rect);
+    } else {
+      last_desktop_plane_removed_ = false;
     }
 
     return true;
@@ -1470,8 +1478,8 @@ bool SwapChainPresenter::PresentToSwapChain(DCLayerOverlayParams& params,
   }
 
   if (!VideoProcessorBlt(std::move(input_texture), input_level,
-                         params.content_rect, input_color_space,
-                         stream_metadata, use_vp_auto_hdr)) {
+                         gfx::ToNearestRect(params.content_rect),
+                         input_color_space, stream_metadata, use_vp_auto_hdr)) {
     return false;
   }
 
@@ -1479,32 +1487,30 @@ bool SwapChainPresenter::PresentToSwapChain(DCLayerOverlayParams& params,
   if (first_present_) {
     first_present_ = false;
     UINT flags = DXGI_PRESENT_USE_DURATION;
-    // DirectComposition can display black for a swap chain between the first
-    // and second time it's presented to - maybe the first Present can get lost
-    // somehow and it shows the wrong buffer. In that case copy the buffers so
-    // all have the correct contents, which seems to help. The first Present()
-    // after this needs to have SyncInterval > 0, or else the workaround doesn't
-    // help.
-    for (size_t i = 0; i < swap_chain_buffer_count_ - 1; ++i) {
-      hr = swap_chain_->Present(0, flags);
-      // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only
-      // indicates that the window is occluded and we can stop rendering.
-      if (FAILED(hr) && hr != DXGI_STATUS_OCCLUDED) {
-        DLOG(ERROR) << "Present failed with error 0x" << std::hex << hr;
-        return false;
-      }
-
-      Microsoft::WRL::ComPtr<ID3D11Texture2D> dest_texture;
-      swap_chain_->GetBuffer(0, IID_PPV_ARGS(&dest_texture));
-      DCHECK(dest_texture);
-      Microsoft::WRL::ComPtr<ID3D11Texture2D> src_texture;
-      hr = swap_chain_->GetBuffer(1, IID_PPV_ARGS(&src_texture));
-      DCHECK(src_texture);
-      Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
-      d3d11_device_->GetImmediateContext(&context);
-      DCHECK(context);
-      context->CopyResource(dest_texture.Get(), src_texture.Get());
+    hr = swap_chain_->Present(0, flags);
+    // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only indicates
+    // that the window is occluded and we can stop rendering.
+    if (FAILED(hr) && hr != DXGI_STATUS_OCCLUDED) {
+      DLOG(ERROR) << "Present failed with error 0x" << std::hex << hr;
+      return false;
     }
+
+    // DirectComposition can display black for a swap chain between the first
+    // and second time it's presented to - maybe the first Present can get
+    // lost somehow and it shows the wrong buffer. In that case copy the
+    // buffers so both have the correct contents, which seems to help. The
+    // first Present() after this needs to have SyncInterval > 0, or else the
+    // workaround doesn't help.
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> dest_texture;
+    swap_chain_->GetBuffer(0, IID_PPV_ARGS(&dest_texture));
+    DCHECK(dest_texture);
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> src_texture;
+    hr = swap_chain_->GetBuffer(1, IID_PPV_ARGS(&src_texture));
+    DCHECK(src_texture);
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+    d3d11_device_->GetImmediateContext(&context);
+    DCHECK(context);
+    context->CopyResource(dest_texture.Get(), src_texture.Get());
 
     // Additionally wait for the GPU to finish executing its commands, or
     // there still may be a black flicker when presenting expensive content
@@ -1578,6 +1584,8 @@ bool SwapChainPresenter::PresentToSwapChain(DCLayerOverlayParams& params,
   // letterboxing overlay presentation.
   if (is_letterboxing_overlay_ready) {
     SetTargetToFullScreen(visual_transform, visual_clip_rect);
+  } else {
+    last_desktop_plane_removed_ = false;
   }
 
   last_overlay_image_ = std::move(params.overlay_image);
@@ -1742,8 +1750,8 @@ bool SwapChainPresenter::VideoProcessorBlt(
   gfx::ColorSpace output_color_space =
       GetOutputColorSpace(src_color_space, is_yuv_swapchain);
   VideoProcessorWrapper* video_processor_wrapper =
-      layer_tree_->InitializeVideoProcessor(
-          content_rect.size(), swap_chain_size_, output_color_space.IsHDR());
+      layer_tree_->InitializeVideoProcessor(content_rect.size(),
+                                            swap_chain_size_);
   if (!video_processor_wrapper)
     return false;
 
@@ -2032,7 +2040,8 @@ bool SwapChainPresenter::ReallocateSwapChain(
   desc.Format = swap_chain_format;
   desc.Stereo = FALSE;
   desc.SampleDesc.Count = 1;
-  desc.BufferCount = swap_chain_buffer_count_;
+  desc.BufferCount =
+      BufferCount(layer_tree_->force_dcomp_triple_buffer_video_swap_chain());
   desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
   desc.Scaling = DXGI_SCALING_STRETCH;
   desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;

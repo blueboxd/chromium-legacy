@@ -10,10 +10,10 @@
 
 #include <string>
 
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "components/policy/policy_constants.h"
@@ -76,9 +76,9 @@ base::FilePath::StringType ExpandPathVariables(
   position = result.find(kMachineNamePolicyVarName);
   if (position != std::string::npos) {
     SCDynamicStoreContext context = {0, nullptr, nullptr, nullptr};
-    base::ScopedCFTypeRef<SCDynamicStoreRef> store(SCDynamicStoreCreate(
+    base::apple::ScopedCFTypeRef<SCDynamicStoreRef> store(SCDynamicStoreCreate(
         kCFAllocatorDefault, CFSTR("policy_subsystem"), nullptr, &context));
-    base::ScopedCFTypeRef<CFStringRef> machine_name(
+    base::apple::ScopedCFTypeRef<CFStringRef> machine_name(
         SCDynamicStoreCopyLocalHostName(store));
     if (machine_name) {
       result.replace(position, strlen(kMachineNamePolicyVarName),
@@ -103,18 +103,18 @@ void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {
   // policies.
   CFStringRef bundle_id = CFSTR("com.google.Chrome");
 #else
-  base::ScopedCFTypeRef<CFStringRef> bundle_id(
-      base::SysUTF8ToCFStringRef(base::mac::BaseBundleID()));
+  base::apple::ScopedCFTypeRef<CFStringRef> bundle_id(
+      base::SysUTF8ToCFStringRef(base::apple::BaseBundleID()));
 #endif
 
-  base::ScopedCFTypeRef<CFStringRef> key(
+  base::apple::ScopedCFTypeRef<CFStringRef> key(
       base::SysUTF8ToCFStringRef(policy::key::kUserDataDir));
-  base::ScopedCFTypeRef<CFPropertyListRef> value(
+  base::apple::ScopedCFTypeRef<CFPropertyListRef> value(
       CFPreferencesCopyAppValue(key, bundle_id));
 
   if (!value || !CFPreferencesAppValueIsForced(key, bundle_id))
     return;
-  CFStringRef value_string = base::mac::CFCast<CFStringRef>(value);
+  CFStringRef value_string = base::apple::CFCast<CFStringRef>(value);
   if (!value_string)
     return;
 

@@ -14,7 +14,10 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.metrics.TimingMetric;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
+import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
+import org.chromium.chrome.browser.omnibox.OmniboxMetrics;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxDrawableState;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxImageSupplier;
@@ -73,6 +76,13 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
      */
     protected int getDecorationImageSize() {
         return mDecorationImageSizePx;
+    }
+
+    /**
+     * Return whether this suggestion can host OmniboxAction chips.
+     */
+    protected boolean allowOmniboxActions() {
+        return true;
     }
 
     @Override
@@ -157,10 +167,21 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
      * Process the long-click event.
      *
      * @param suggestion Selected suggestion.
-     * @param position Position of the suggestion on the list.
      */
-    protected void onSuggestionLongClicked(@NonNull AutocompleteMatch suggestion, int position) {
-        mSuggestionHost.onDeleteMatch(suggestion, suggestion.getDisplayText(), position);
+    protected void onSuggestionLongClicked(@NonNull AutocompleteMatch suggestion) {
+        mSuggestionHost.onDeleteMatch(suggestion, suggestion.getDisplayText());
+    }
+
+    /**
+     * Process the touch down event. Only handles search suggestions.
+     *
+     * @param suggestion Selected suggestion.
+     * @param position Position of the suggesiton on the list.
+     */
+    protected void onSuggestionTouchDownEvent(@NonNull AutocompleteMatch suggestion, int position) {
+        try (TimingMetric metric = OmniboxMetrics.recordTouchDownProcessTime()) {
+            mSuggestionHost.onSuggestionTouchDown(suggestion, position);
+        }
     }
 
     @Override
@@ -168,10 +189,16 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
         model.set(BaseSuggestionViewProperties.ON_CLICK,
                 () -> onSuggestionClicked(suggestion, position));
         model.set(BaseSuggestionViewProperties.ON_LONG_CLICK,
-                () -> onSuggestionLongClicked(suggestion, position));
+                () -> onSuggestionLongClicked(suggestion));
         model.set(BaseSuggestionViewProperties.ON_FOCUS_VIA_SELECTION,
                 () -> mSuggestionHost.setOmniboxEditingText(suggestion.getFillIntoEdit()));
         setActionButtons(model, null);
+
+        if (OmniboxFeatures.isTouchDownTriggerForPrefetchEnabled()
+                && !OmniboxFeatures.isLowMemoryDevice() && suggestion.isSearchSuggestion()) {
+            model.set(BaseSuggestionViewProperties.ON_TOUCH_DOWN_EVENT,
+                    () -> onSuggestionTouchDownEvent(suggestion, position));
+        }
 
         if (allowOmniboxActions()) {
             mActionChipsProcessor.populateModel(suggestion, model, position);
@@ -187,8 +214,8 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
 
     @Override
     @CallSuper
-    public void onUrlFocusChange(boolean hasFocus) {
-        mActionChipsProcessor.onUrlFocusChange(hasFocus);
+    public void onOmniboxSessionStateChange(boolean activated) {
+        mActionChipsProcessor.onOmniboxSessionStateChange(activated);
     }
 
     @Override

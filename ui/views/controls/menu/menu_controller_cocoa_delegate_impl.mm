@@ -5,10 +5,11 @@
 #import "ui/views/controls/menu/menu_controller_cocoa_delegate_impl.h"
 
 #include "base/apple/bridging.h"
+#include "base/apple/foundation_util.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #include "base/mac/mac_util.h"
-#import "base/message_loop/message_pump_mac.h"
+#import "base/message_loop/message_pump_apple.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/interaction/element_tracker_mac.h"
@@ -81,59 +82,58 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
 
   if (@available(macOS 10.8, *)) {
     return [NSImage
-     imageWithSize:badge_size
-           flipped:NO
-      drawingHandler:^(NSRect dest_rect) {
-        NSRect badge_frame = NSInsetRect(
-            dest_rect, views::BadgePainter::kBadgeHorizontalMargin, 0);
-        const int badge_radius =
-            views::LayoutProvider::Get()->GetCornerRadiusMetric(
-                views::ShapeContextTokens::kBadgeRadius);
-        NSBezierPath* rounded_badge_rect =
-            [NSBezierPath bezierPathWithRoundedRect:badge_frame
-                                            xRadius:badge_radius
-                                            yRadius:badge_radius];
-        DCHECK(color_provider);
-        NSColor* badge_color = skia::SkColorToSRGBNSColor(
-            color_provider->GetColor(ui::kColorBadgeInCocoaMenuBackground));
+         imageWithSize:badge_size
+               flipped:NO
+        drawingHandler:^(NSRect dest_rect) {
+          NSRect badge_frame = NSInsetRect(
+              dest_rect, views::BadgePainter::kBadgeHorizontalMargin, 0);
+          const int badge_radius =
+              views::LayoutProvider::Get()->GetCornerRadiusMetric(
+                  views::ShapeContextTokens::kBadgeRadius);
+          NSBezierPath* rounded_badge_rect =
+              [NSBezierPath bezierPathWithRoundedRect:badge_frame
+                                              xRadius:badge_radius
+                                              yRadius:badge_radius];
+          DCHECK(color_provider);
+          NSColor* badge_color = skia::SkColorToSRGBNSColor(
+              color_provider->GetColor(ui::kColorBadgeInCocoaMenuBackground));
 
-        [badge_color set];
-        [rounded_badge_rect fill];
+          [badge_color set];
+          [rounded_badge_rect fill];
 
-        NSPoint badge_text_location = NSMakePoint(
-            NSMinX(badge_frame) + views::BadgePainter::kBadgeInternalPadding,
-            NSMinY(badge_frame) +
-                views::BadgePainter::kBadgeInternalPaddingTopMac);
-        [badge_attr_string drawAtPoint:badge_text_location];
+          NSPoint badge_text_location = NSMakePoint(
+              NSMinX(badge_frame) + views::BadgePainter::kBadgeInternalPadding,
+              NSMinY(badge_frame) +
+                  views::BadgePainter::kBadgeInternalPaddingTopMac);
+          [badge_attr_string drawAtPoint:badge_text_location];
 
-        return YES;
-      }];
-    } else {
-      NSImage *badge_image = [[NSImage alloc] initWithSize:badge_size];
-      NSRect dest_rect = NSMakeRect(0, 0, badge_size.width, badge_size.height);
-      [badge_image lockFocus];
-      NSRect badge_frame = NSInsetRect(
-          dest_rect, views::BadgePainter::kBadgeHorizontalMargin, 0);
-      const int badge_radius =
-          views::LayoutProvider::Get()->GetCornerRadiusMetric(
-                views::ShapeContextTokens::kBadgeRadius);
-      NSBezierPath* rounded_badge_rect = [NSBezierPath
-          bezierPathWithRoundedRect:badge_frame
-                            xRadius:badge_radius
-                            yRadius:badge_radius];
-      NSColor* badge_color = skia::SkColorToSRGBNSColor(
-          color_provider->GetColor(ui::kColorButtonBackgroundProminent));
-      [badge_color set];
-      [rounded_badge_rect fill];
+          return YES;
+        }];
+  } else {
+    NSImage* badge_image = [[NSImage alloc] initWithSize:badge_size];
+    NSRect dest_rect = NSMakeRect(0, 0, badge_size.width, badge_size.height);
+    [badge_image lockFocus];
+    NSRect badge_frame =
+        NSInsetRect(dest_rect, views::BadgePainter::kBadgeHorizontalMargin, 0);
+    const int badge_radius =
+        views::LayoutProvider::Get()->GetCornerRadiusMetric(
+            views::ShapeContextTokens::kBadgeRadius);
+    NSBezierPath* rounded_badge_rect =
+        [NSBezierPath bezierPathWithRoundedRect:badge_frame
+                                        xRadius:badge_radius
+                                        yRadius:badge_radius];
+    NSColor* badge_color = skia::SkColorToSRGBNSColor(
+        color_provider->GetColor(ui::kColorButtonBackgroundProminent));
+    [badge_color set];
+    [rounded_badge_rect fill];
 
-      NSPoint badge_text_location = NSMakePoint(
-          NSMinX(badge_frame) + views::BadgePainter::kBadgeInternalPadding,
-          NSMinY(badge_frame) +
-              views::BadgePainter::kBadgeInternalPaddingTopMac);
-      [badge_attr_string drawAtPoint:badge_text_location];
-      [badge_image unlockFocus];
-      return badge_image;
-    }
+    NSPoint badge_text_location = NSMakePoint(
+        NSMinX(badge_frame) + views::BadgePainter::kBadgeInternalPadding,
+        NSMinY(badge_frame) + views::BadgePainter::kBadgeInternalPaddingTopMac);
+    [badge_attr_string drawAtPoint:badge_text_location];
+    [badge_image unlockFocus];
+    return badge_image;
+  }
 }
 
 NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
@@ -145,17 +145,18 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
                flipped:NO
         drawingHandler:^(NSRect dest_rect) {
           NSBezierPath* dot_path = [NSBezierPath
-              bezierPathWithOvalInRect:NSMakeRect(kIPHDotSize / 2, 0, kIPHDotSize,
-                                                  kIPHDotSize)];
+              bezierPathWithOvalInRect:NSMakeRect(kIPHDotSize / 2, 0,
+                                                  kIPHDotSize, kIPHDotSize)];
           NSColor* dot_color = skia::SkColorToSRGBNSColor(
               color_provider->GetColor(ui::kColorButtonBackgroundProminent));
           [dot_color set];
           [dot_path fill];
 
-        return YES;
-      }];
+          return YES;
+        }];
   } else {
-    NSImage *dot_image = [[NSImage alloc] initWithSize:NSMakeSize(2 * kIPHDotSize, kIPHDotSize)];
+    NSImage* dot_image =
+        [[NSImage alloc] initWithSize:NSMakeSize(2 * kIPHDotSize, kIPHDotSize)];
     [dot_image lockFocus];
     NSBezierPath* dot_path = [NSBezierPath
         bezierPathWithOvalInRect:NSMakeRect(kIPHDotSize / 2, 0, kIPHDotSize,
@@ -257,16 +258,15 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
                       atIndex:(size_t)index
             withColorProvider:(const ui::ColorProvider*)colorProvider {
   if (model->IsNewFeatureAt(index)) {
-    NSMutableAttributedString* attrTitle = [[NSMutableAttributedString alloc]
-        initWithString:menuItem.title];
+    NSMutableAttributedString* attrTitle =
+        [[NSMutableAttributedString alloc] initWithString:menuItem.title];
 
     // /!\ WARNING /!\ Do not update this to use NSTextAttachment.image until
     // macOS 10.15 is the minimum required OS. See the details on the class
     // comment above.
-    NSTextAttachment* attachment =
-        [[NSTextAttachment alloc] init];
-    attachment.attachmentCell = [[NewTagAttachmentCell alloc]
-        initWithColorProvider:colorProvider];
+    NSTextAttachment* attachment = [[NSTextAttachment alloc] init];
+    attachment.attachmentCell =
+        [[NewTagAttachmentCell alloc] initWithColorProvider:colorProvider];
 
     [attrTitle
         appendAttributedString:[NSAttributedString

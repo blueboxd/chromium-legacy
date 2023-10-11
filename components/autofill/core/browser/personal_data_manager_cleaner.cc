@@ -45,8 +45,6 @@ void PersonalDataManagerCleaner::CleanupDataAndNotifyPersonalDataObservers() {
   // defer the insertion to when the observers are notified.
   if (!alternative_state_name_map_updater_
            ->is_alternative_state_name_map_populated() &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillUseAlternativeStateNameMap) &&
       is_autofill_profile_cleanup_pending_) {
     alternative_state_name_map_updater_->PopulateAlternativeStateNameMap(
         base::BindOnce(&PersonalDataManagerCleaner::
@@ -57,8 +55,10 @@ void PersonalDataManagerCleaner::CleanupDataAndNotifyPersonalDataObservers() {
 
   // If sync is enabled for autofill, defer running cleanups until address
   // sync and card sync have started; otherwise, do it now.
-  if (!personal_data_manager_->IsSyncEnabledFor(
-          syncer::UserSelectableType::kAutofill)) {
+  // TODO(crbug.com/1477292): This should also cover Sync-the-transport (not
+  // only Sync-the-feature), and for the credit card fixes, it should check
+  // whether Payments specifically is enabled, not the overall Autofill.
+  if (!personal_data_manager_->IsSyncFeatureEnabledForAutofill()) {
     ApplyAddressFixesAndCleanups();
     ApplyCardFixesAndCleanups();
   }
@@ -81,13 +81,9 @@ void PersonalDataManagerCleaner::SyncStarted(syncer::ModelType model_type) {
   // `autofill_profile_sync_started` and `contact_info_sync_started`.
   autofill_profile_sync_started |= model_type == syncer::AUTOFILL_PROFILE;
   contact_info_sync_started |= model_type == syncer::CONTACT_INFO;
-  if (autofill_profile_sync_started &&
-      (contact_info_sync_started ||
-       !base::FeatureList::IsEnabled(syncer::kSyncEnableContactInfoDataType)) &&
+  if (autofill_profile_sync_started && contact_info_sync_started &&
       !alternative_state_name_map_updater_
            ->is_alternative_state_name_map_populated() &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillUseAlternativeStateNameMap) &&
       is_autofill_profile_cleanup_pending_) {
     alternative_state_name_map_updater_->PopulateAlternativeStateNameMap(
         base::BindOnce(&PersonalDataManagerCleaner::SyncStarted,
@@ -342,11 +338,12 @@ void PersonalDataManagerCleaner::UpdateCardsBillingAddressReference(
 
     // If the card was modified, apply the changes to the database.
     if (was_modified) {
-      if (credit_card->record_type() == CreditCard::LOCAL_CARD)
+      if (credit_card->record_type() == CreditCard::RecordType::kLocalCard) {
         personal_data_manager_->GetLocalDatabase()->UpdateCreditCard(
             *credit_card);
-      else
+      } else {
         server_cards_to_be_updated.push_back(*credit_card);
+      }
     }
   }
 

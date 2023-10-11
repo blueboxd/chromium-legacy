@@ -26,6 +26,7 @@
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_service.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/apps/app_service/publishers/shortcut_publisher.h"
+#include "chrome/browser/apps/app_service/publishers/standalone_browser_apps.h"
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_limit_interface.h"
@@ -46,7 +47,6 @@
 #include "components/grit/components_resources.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/preferred_apps_impl.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut_registry_cache.h"
@@ -191,6 +191,10 @@ AppServiceProxyAsh::BrowserAppInstanceRegistry() {
   return browser_app_instance_registry_.get();
 }
 
+apps::StandaloneBrowserApps* AppServiceProxyAsh::StandaloneBrowserApps() {
+  return publisher_host_ ? publisher_host_->StandaloneBrowserApps() : nullptr;
+}
+
 void AppServiceProxyAsh::RegisterCrosApiSubScriber(
     SubscriberCrosapi* subscriber) {
   crosapi_subscriber_ = subscriber;
@@ -214,30 +218,28 @@ void AppServiceProxyAsh::Uninstall(const std::string& app_id,
 void AppServiceProxyAsh::OnApps(std::vector<AppPtr> deltas,
                                 AppType app_type,
                                 bool should_notify_initialized) {
-  if (base::FeatureList::IsEnabled(kUnifiedAppServiceIconLoading)) {
-    // Delete app icon folders for uninstalled apps or the icon updated app.
-    std::vector<std::string> app_ids;
-    for (const auto& delta : deltas) {
-      if ((delta->readiness != Readiness::kUnknown &&
-           !apps_util::IsInstalled(delta->readiness)) ||
-          (delta->icon_key.has_value() && delta->icon_key->raw_icon_updated)) {
-        // If there's already a deletion in progress, skip the deletion request.
-        if (base::Contains(pending_read_icon_requests_, delta->app_id)) {
-          continue;
-        }
-
-        app_ids.push_back(delta->app_id);
-        pending_read_icon_requests_[delta->app_id] =
-            std::vector<base::OnceCallback<void()>>();
+  // Delete app icon folders for uninstalled apps or the icon updated app.
+  std::vector<std::string> app_ids;
+  for (const auto& delta : deltas) {
+    if ((delta->readiness != Readiness::kUnknown &&
+         !apps_util::IsInstalled(delta->readiness)) ||
+        (delta->icon_key.has_value() && delta->icon_key->raw_icon_updated)) {
+      // If there's already a deletion in progress, skip the deletion request.
+      if (base::Contains(pending_read_icon_requests_, delta->app_id)) {
+        continue;
       }
-    }
 
-    if (!app_ids.empty()) {
-      ScheduleIconFoldersDeletion(
-          profile_->GetPath(), app_ids,
-          base::BindOnce(&AppServiceProxyAsh::PostIconFoldersDeletion,
-                         weak_ptr_factory_.GetWeakPtr(), app_ids));
+      app_ids.push_back(delta->app_id);
+      pending_read_icon_requests_[delta->app_id] =
+          std::vector<base::OnceCallback<void()>>();
     }
+  }
+
+  if (!app_ids.empty()) {
+    ScheduleIconFoldersDeletion(
+        profile_->GetPath(), app_ids,
+        base::BindOnce(&AppServiceProxyAsh::PostIconFoldersDeletion,
+                       weak_ptr_factory_.GetWeakPtr(), app_ids));
   }
 
   // Close uninstall dialogs for any uninstalled apps.
@@ -434,12 +436,42 @@ void AppServiceProxyAsh::RegisterShortcutPublisher(
   shortcut_publishers_[app_type] = publisher;
 }
 
-void AppServiceProxyAsh::UpdateShortcut(ShortcutPtr delta) {
-  ShortcutRegistryCache()->UpdateShortcut(std::move(delta));
-}
-
 apps::ShortcutRegistryCache* AppServiceProxyAsh::ShortcutRegistryCache() {
   return shortcut_registry_cache_ ? shortcut_registry_cache_.get() : nullptr;
+}
+
+void AppServiceProxyAsh::LaunchShortcut(const ShortcutId& id,
+                                        int64_t display_id) {
+  std::string host_app_id = ShortcutRegistryCache()->GetShortcutHostAppId(id);
+  std::string local_id = ShortcutRegistryCache()->GetShortcutLocalId(id);
+
+  AppType app_type = AppRegistryCache().GetAppType(host_app_id);
+
+  auto* shortcut_publisher = GetShortcutPublisher(app_type);
+  if (!shortcut_publisher) {
+    return;
+  }
+  shortcut_publisher->LaunchShortcut(host_app_id, local_id, display_id);
+
+  // TODO(crbug.com/1412708): Add new launch source for shortcut and record
+  // metrics.
+  // TODO(crbug.com/1412708): Add callback to make launch async to support
+  // Lacros.
+}
+
+void AppServiceProxyAsh::RemoveShortcut(const ShortcutId& id,
+                                        UninstallSource uninstall_source,
+                                        gfx::NativeWindow parent_window) {
+  std::string host_app_id = ShortcutRegistryCache()->GetShortcutHostAppId(id);
+  std::string local_id = ShortcutRegistryCache()->GetShortcutLocalId(id);
+  AppType app_type = AppRegistryCache().GetAppType(host_app_id);
+
+  auto* shortcut_publisher = GetShortcutPublisher(app_type);
+  if (!shortcut_publisher) {
+    return;
+  }
+  shortcut_publisher->RemoveShortcut(host_app_id, local_id, uninstall_source);
+  // TODO(crbug.com/1412708): Add remove confirmation dialog.
 }
 
 void AppServiceProxyAsh::Shutdown() {
@@ -777,8 +809,7 @@ bool AppServiceProxyAsh::ShouldReadIcons(AppType app_type) {
   // Exclude the remote apps, because remote apps regenerate app id for each
   // user login session. So we can't save the remote app icon image files in the
   // app id directories.
-  return base::FeatureList::IsEnabled(kUnifiedAppServiceIconLoading) &&
-         app_type != AppType::kRemote;
+  return app_type != AppType::kRemote;
 }
 
 void AppServiceProxyAsh::ReadIcons(AppType app_type,
@@ -887,6 +918,11 @@ IntentLaunchInfo AppServiceProxyAsh::CreateIntentLaunchInfo(
     entry.is_dlp_blocked = files_controller->IsLaunchBlocked(update, intent);
   }
   return entry;
+}
+
+ShortcutPublisher* AppServiceProxyAsh::GetShortcutPublisher(AppType app_type) {
+  auto it = shortcut_publishers_.find(app_type);
+  return it == shortcut_publishers_.end() ? nullptr : it->second;
 }
 
 }  // namespace apps

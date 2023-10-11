@@ -617,6 +617,178 @@ TEST_P(CompositingTest, FullPACUpdateOnScrollWithSyntheticClipAcrossScroller) {
   EXPECT_TRUE(paint_artifact_compositor()->NeedsUpdate());
 }
 
+TEST_P(CompositingTest, HitTestOpaqueness) {
+  if (!RuntimeEnabledFeatures::HitTestOpaquenessEnabled()) {
+    return;
+  }
+
+  InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
+    <div id="transparent1" style="pointer-events: none; will-change: transform;
+                                  width: 100px; height: 50px">
+    </div>
+    <div id="transparent2" style="pointer-events: none; will-change: transform;
+                                  width: 100px; height: 50px; background: red">
+    </div>
+
+    <!-- Transparent parent with a small opaque child. -->
+    <div id="mixed1" style="pointer-events: none; will-change: transform;
+                            width: 200px; height: 50px">
+      Transparent parent
+      <div style="pointer-events: auto">Opaque child</div>
+    </div>
+    <!-- Layer with mixed opaque areas and transparent gaps. -->
+    <div id="mixed2" style="will-change: transform; width: 0">
+      <div style="margin: 10px; width: 200px; height: 50px">Opaque child1</div>
+      <div style="margin: 10px; width: 200px; height: 50px">Opaque child2</div>
+    </div>
+    <div id="mixed3" style="will-change: transform; border-radius: 10px;
+                            width: 50px; height: 50px">
+    </div>
+
+    <div id="opaque1" style="will-change: transform; width: 50px; height: 50px">
+       Opaque
+    </div>
+    <!-- Two adjacent opaque children fills the layer, making the layer
+         opaque. -->
+    <div id="opaque2" style="will-change: transform; width: 0">
+      <div style="width: 100px; height: 50px">Opaque child1</div>
+      <div style="width: 100px; height: 50px">Opaque child2</div>
+    </div>
+    <!-- Child pointer-events:none doesn't affect opaqueness of parent. -->
+    <div id="opaque3"
+         style="will-change: transform; width: 100px; height: 100px">
+      <div style="width: 50px; height: 50px; pointer-events: none"></div>
+    </div>
+    <!-- An opaque child fills the transparent parent, making the layer
+         opaque. -->
+    <div id="opaque4" style="will-change: transform; pointer-events: none">
+      <div style="height: 50px; pointer-events: auto"></div>
+    </div>
+    <!-- An opaque child fills the mixed layer, making the layer opaque. -->
+    <div id="opaque5" style="will-change: transform; border-radius: 10px;
+                             width: 50px; height; 50px">
+      <div style="height: 50px"></div>
+    </div>
+    <!-- This is opaque because the svg element (opaque to hit test) fully
+         contains the circle (mixed opaqueness to hit test). -->
+    <svg id="opaque6" style="will-change: transform">
+      <circle cx="20" cy="20" r="20"/>
+    </svg>
+  )HTML");
+
+  EXPECT_EQ(RuntimeEnabledFeatures::HitTestTransparencyEnabled()
+                ? cc::HitTestOpaqueness::kTransparent
+                : cc::HitTestOpaqueness::kMixed,
+            CcLayersByDOMElementId(RootCcLayer(), "transparent1")[0]
+                ->hit_test_opaqueness());
+  EXPECT_EQ(RuntimeEnabledFeatures::HitTestTransparencyEnabled()
+                ? cc::HitTestOpaqueness::kTransparent
+                : cc::HitTestOpaqueness::kMixed,
+            CcLayersByDOMElementId(RootCcLayer(), "transparent2")[0]
+                ->hit_test_opaqueness());
+  EXPECT_EQ(cc::HitTestOpaqueness::kMixed,
+            CcLayersByDOMElementId(RootCcLayer(), "mixed1")[0]
+                ->hit_test_opaqueness());
+  EXPECT_EQ(cc::HitTestOpaqueness::kMixed,
+            CcLayersByDOMElementId(RootCcLayer(), "mixed2")[0]
+                ->hit_test_opaqueness());
+  EXPECT_EQ(cc::HitTestOpaqueness::kMixed,
+            CcLayersByDOMElementId(RootCcLayer(), "mixed3")[0]
+                ->hit_test_opaqueness());
+  EXPECT_EQ(cc::HitTestOpaqueness::kOpaque,
+            CcLayersByDOMElementId(RootCcLayer(), "opaque1")[0]
+                ->hit_test_opaqueness());
+  EXPECT_EQ(cc::HitTestOpaqueness::kOpaque,
+            CcLayersByDOMElementId(RootCcLayer(), "opaque2")[0]
+                ->hit_test_opaqueness());
+  EXPECT_EQ(cc::HitTestOpaqueness::kOpaque,
+            CcLayersByDOMElementId(RootCcLayer(), "opaque3")[0]
+                ->hit_test_opaqueness());
+  EXPECT_EQ(cc::HitTestOpaqueness::kOpaque,
+            CcLayersByDOMElementId(RootCcLayer(), "opaque4")[0]
+                ->hit_test_opaqueness());
+  EXPECT_EQ(cc::HitTestOpaqueness::kOpaque,
+            CcLayersByDOMElementId(RootCcLayer(), "opaque5")[0]
+                ->hit_test_opaqueness());
+  EXPECT_EQ(cc::HitTestOpaqueness::kOpaque,
+            CcLayersByDOMElementId(RootCcLayer(), "opaque6")[0]
+                ->hit_test_opaqueness());
+}
+
+TEST_P(CompositingTest, HitTestOpaquenessOnChangeOfUsedPointerEvents) {
+  if (!RuntimeEnabledFeatures::HitTestOpaquenessEnabled()) {
+    return;
+  }
+
+  InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
+    <div id="parent">
+      <div id="target" style="will-change: transform; width: 50px; height: 50px;
+                              background: blue">
+      </div>
+    </div>
+  )HTML");
+
+  Element* parent = GetElementById("parent");
+  Element* target = GetElementById("target");
+  const LayoutBox* target_box = target->GetLayoutBox();
+  EXPECT_EQ(EPointerEvents::kAuto, target_box->StyleRef().UsedPointerEvents());
+  ASSERT_FALSE(target_box->Layer()->SelfNeedsRepaint());
+  auto* display_item_client = static_cast<const DisplayItemClient*>(target_box);
+  ASSERT_TRUE(display_item_client->IsValid());
+  const cc::Layer* target_layer =
+      CcLayersByDOMElementId(RootCcLayer(), "target")[0];
+  EXPECT_EQ(cc::HitTestOpaqueness::kOpaque,
+            target_layer->hit_test_opaqueness());
+
+  target->SetInlineStyleProperty(CSSPropertyID::kPointerEvents, "none");
+  GetLocalFrameView()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
+  // Change of PointerEvents should not invalidate the painting layer, but not
+  // the display item client.
+  EXPECT_EQ(EPointerEvents::kNone, target_box->StyleRef().UsedPointerEvents());
+  EXPECT_TRUE(target_box->Layer()->SelfNeedsRepaint());
+  EXPECT_TRUE(display_item_client->IsValid());
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(RuntimeEnabledFeatures::HitTestTransparencyEnabled()
+                ? cc::HitTestOpaqueness::kTransparent
+                : cc::HitTestOpaqueness::kMixed,
+            target_layer->hit_test_opaqueness());
+
+  target->RemoveInlineStyleProperty(CSSPropertyID::kPointerEvents);
+  GetLocalFrameView()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
+  EXPECT_EQ(EPointerEvents::kAuto, target_box->StyleRef().UsedPointerEvents());
+  EXPECT_TRUE(target_box->Layer()->SelfNeedsRepaint());
+  EXPECT_TRUE(display_item_client->IsValid());
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(cc::HitTestOpaqueness::kOpaque,
+            target_layer->hit_test_opaqueness());
+
+  parent->setAttribute(html_names::kInertAttr, AtomicString(""));
+  GetLocalFrameView()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
+  EXPECT_EQ(EPointerEvents::kNone, target_box->StyleRef().UsedPointerEvents());
+  // Change of parent inert attribute (affecting target's used pointer events)
+  // should invalidate the painting layer but not the display item client.
+  EXPECT_TRUE(target_box->Layer()->SelfNeedsRepaint());
+  EXPECT_TRUE(display_item_client->IsValid());
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(RuntimeEnabledFeatures::HitTestTransparencyEnabled()
+                ? cc::HitTestOpaqueness::kTransparent
+                : cc::HitTestOpaqueness::kMixed,
+            target_layer->hit_test_opaqueness());
+
+  parent->removeAttribute(html_names::kInertAttr);
+  GetLocalFrameView()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
+  EXPECT_EQ(EPointerEvents::kAuto, target_box->StyleRef().UsedPointerEvents());
+  EXPECT_TRUE(target_box->Layer()->SelfNeedsRepaint());
+  EXPECT_TRUE(display_item_client->IsValid());
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(cc::HitTestOpaqueness::kOpaque,
+            target_layer->hit_test_opaqueness());
+}
+
 class CompositingSimTest : public PaintTestConfigurations, public SimTest {
  public:
   void InitializeWithHTML(const String& html) {

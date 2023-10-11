@@ -21,7 +21,6 @@
 #include "ash/system/tray/tray_container.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 
 namespace ash {
@@ -135,6 +134,10 @@ void NotificationCenterTray::HideBubbleWithView(
   if (bubble_->GetBubbleView() == bubble_view) {
     CloseBubble();
   }
+}
+
+void NotificationCenterTray::HideBubble(const TrayBubbleView* bubble_view) {
+  CloseBubble();
 }
 
 void NotificationCenterTray::ClickedOutsideBubble() {

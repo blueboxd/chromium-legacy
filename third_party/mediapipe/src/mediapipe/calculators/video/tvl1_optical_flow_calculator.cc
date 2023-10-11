@@ -159,7 +159,7 @@ absl::Status Tvl1OpticalFlowCalculator::Process(CalculatorContext* cc) {
 absl::Status Tvl1OpticalFlowCalculator::CalculateOpticalFlow(
     const ImageFrame& current_frame, const ImageFrame& next_frame,
     OpticalFlowField* flow) {
-  CHECK(flow);
+  ABSL_CHECK(flow);
   if (!ImageSizesMatch(current_frame, next_frame)) {
     return tool::StatusInvalid("Images are different sizes.");
   }

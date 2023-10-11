@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
+#include "third_party/blink/renderer/core/css/properties/css_color_function_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
@@ -948,7 +949,8 @@ class MathFunctionParser {
       const CSSParserContext& context,
       CSSPrimitiveValue::ValueRange value_range,
       const bool is_percentage_allowed = true,
-      CSSAnchorQueryTypes allowed_anchor_queries = kCSSAnchorQueryTypesNone)
+      CSSAnchorQueryTypes allowed_anchor_queries = kCSSAnchorQueryTypesNone,
+      HashMap<CSSValueID, double> color_channel_keyword_values = {})
       : source_range_(range), range_(range) {
     const CSSParserToken& token = range.Peek();
     if (token.GetType() == kFunctionToken) {
@@ -1433,28 +1435,6 @@ CSSPrimitiveValue* ConsumeAngle(
   return ConsumeMathFunctionAngle(range, context);
 }
 
-// ConsumeHue takes an angle as input (as angle in radians or in degrees, or as
-// plain number in degrees) and returns a plain number in degrees.
-CSSPrimitiveValue* ConsumeHue(
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    absl::optional<WebFeature> unitless_zero_feature) {
-  CSSPrimitiveValue* value = ConsumeAngle(range, context, absl::nullopt);
-  double angle_value;
-  if (!value) {
-    value = ConsumeNumber(range, context, CSSPrimitiveValue::ValueRange::kAll);
-    if (!value) {
-      return nullptr;
-    }
-    angle_value = value->GetDoubleValue();
-  } else {
-    angle_value = value->ComputeDegrees();
-  }
-  return CSSNumericLiteralValue::Create(
-      fmod(fmod(angle_value, 360.0) + 360.0, 360.0),
-      CSSPrimitiveValue::UnitType::kNumber);
-}
-
 CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange& range,
                                const CSSParserContext& context,
                                CSSPrimitiveValue::ValueRange value_range) {
@@ -1641,7 +1621,7 @@ cssvalue::CSSURIValue* ConsumeUrl(CSSParserTokenRange& range,
   }
   AtomicString url_string = url.ToAtomicString();
   return MakeGarbageCollected<cssvalue::CSSURIValue>(
-      url_string, context.CompleteURL(url_string));
+      url_string, context.CompleteNonEmptyURL(url_string));
 }
 
 static bool ConsumeColorInterpolationSpace(
@@ -1827,274 +1807,6 @@ static bool ParseHexColor(CSSParserTokenRange& range,
   return true;
 }
 
-static Color::ColorSpace CSSValueIDToColorSpace(const CSSValueID& id) {
-  switch (id) {
-    case CSSValueID::kRgb:
-    case CSSValueID::kRgba:
-      return Color::ColorSpace::kSRGBLegacy;
-    case CSSValueID::kHsl:
-    case CSSValueID::kHsla:
-      return Color::ColorSpace::kHSL;
-    case CSSValueID::kHwb:
-      return Color::ColorSpace::kHWB;
-    case CSSValueID::kLab:
-      return Color::ColorSpace::kLab;
-    case CSSValueID::kOklab:
-      return Color::ColorSpace::kOklab;
-    case CSSValueID::kLch:
-      return Color::ColorSpace::kLch;
-    case CSSValueID::kOklch:
-      return Color::ColorSpace::kOklch;
-    case CSSValueID::kSRGB:
-      return Color::ColorSpace::kSRGB;
-    case CSSValueID::kRec2020:
-      return Color::ColorSpace::kRec2020;
-    case CSSValueID::kSRGBLinear:
-      return Color::ColorSpace::kSRGBLinear;
-    case CSSValueID::kDisplayP3:
-      return Color::ColorSpace::kDisplayP3;
-    case CSSValueID::kA98Rgb:
-      return Color::ColorSpace::kA98RGB;
-    case CSSValueID::kProphotoRgb:
-      return Color::ColorSpace::kProPhotoRGB;
-    case CSSValueID::kXyzD50:
-      return Color::ColorSpace::kXYZD50;
-    case CSSValueID::kXyz:
-    case CSSValueID::kXyzD65:
-      return Color::ColorSpace::kXYZD65;
-    default:
-      return Color::ColorSpace::kNone;
-  }
-}
-
-static bool ColorChannelIsHue(Color::ColorSpace color_space, int channel) {
-  if (color_space == Color::ColorSpace::kHSL ||
-      color_space == Color::ColorSpace::kHWB) {
-    if (channel == 0) {
-      return true;
-    }
-  }
-  if (color_space == Color::ColorSpace::kLch ||
-      color_space == Color::ColorSpace::kOklch) {
-    if (channel == 2) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Parses the color inputs rgb(), rgba(), hsl(), hsla(), hwb(), lab(), oklab(),
-// lch(), oklch() and color(). https://www.w3.org/TR/css-color-4/
-static bool ParseFunctionalSyntaxColor(CSSParserTokenRange& input_range,
-                                       const CSSParserContext& context,
-                                       Color& result) {
-  // Copy the range so that it is not consumed if the parsing fails.
-  CSSParserTokenRange consumed_range = input_range;
-
-  // Get the color space. This will either be the name of the function, or it
-  // will be the first argument of the "color" function.
-  CSSValueID function_id = input_range.Peek().FunctionId();
-  Color::ColorSpace color_space = CSSValueIDToColorSpace(function_id);
-  if (color_space == Color::ColorSpace::kNone &&
-      function_id != CSSValueID::kColor) {
-    return false;
-  }
-  CSSParserTokenRange args = ConsumeFunction(consumed_range);
-  if (function_id == CSSValueID::kColor) {
-    color_space =
-        CSSValueIDToColorSpace(args.ConsumeIncludingWhitespace().Id());
-    if (!Color::IsPredefinedColorSpace(color_space)) {
-      return false;
-    }
-  }
-
-  // Parse the three color channel params.
-  absl::optional<double> params[3];
-  bool is_percentage[3] = {false, false, false};
-  bool has_commas = false;
-  bool has_none = false;
-  CSSPrimitiveValue* temp;
-  for (int i = 0; i < 3; i++) {
-    if (has_commas && !ConsumeCommaIncludingWhitespace(args)) {
-      // Commas must be consistent.
-      return false;
-    }
-    if (ConsumeCommaIncludingWhitespace(args)) {
-      has_commas = true;
-    }
-    if (ConsumeIdent<CSSValueID::kNone>(args)) {
-      has_none = true;
-      continue;
-    }
-
-    if (ColorChannelIsHue(color_space, i)) {
-      temp = ConsumeHue(args, context, absl::nullopt);
-      if (temp) {
-        params[i] = temp->GetDoubleValue();
-        continue;
-      } else {
-        return false;
-      }
-    }
-
-    if ((temp = ConsumeNumber(args, context,
-                              CSSPrimitiveValue::ValueRange::kAll))) {
-      params[i] = temp->GetDoubleValueWithoutClamping();
-      continue;
-    }
-
-    if ((temp = ConsumePercent(args, context,
-                               CSSPrimitiveValue::ValueRange::kAll))) {
-      params[i] = temp->GetDoubleValue() / 100.0;
-      is_percentage[i] = true;
-      continue;
-    }
-
-    // Missing components should not parse.
-    return false;
-  }
-
-  // Parse alpha.
-  absl::optional<double> alpha = 1.0;
-  bool expect_alpha = false;
-  if (ConsumeSlashIncludingWhitespace(args)) {
-    expect_alpha = true;
-    if (has_commas) {
-      return false;
-    }
-  } else if (Color::IsLegacyColorSpace(color_space) && has_commas &&
-             ConsumeCommaIncludingWhitespace(args)) {
-    expect_alpha = true;
-  }
-  if (expect_alpha) {
-    if ((temp = ConsumeNumber(args, context,
-                              CSSPrimitiveValue::ValueRange::kAll))) {
-      alpha = temp->GetDoubleValueWithoutClamping();
-      if (isfinite(alpha.value())) {
-        alpha = ClampTo<double>(alpha.value(), 0.0, 1.0);
-      }
-    } else {
-      if ((temp = ConsumePercent(args, context,
-                                 CSSPrimitiveValue::ValueRange::kAll))) {
-        alpha = temp->GetDoubleValue() / 100.0;
-      } else if (ConsumeIdent<CSSValueID::kNone>(args)) {
-        has_none = true;
-        alpha.reset();
-      } else {
-        return false;
-      }
-    }
-  }
-
-  // "None" is not a part of the legacy syntax.
-  if (has_commas && has_none) {
-    return false;
-  }
-
-  // Legacy rgb needs percentage consistency. Non-percentages need to be mapped
-  // from the range [0, 255] to the [0, 1] that we store internally.
-  if (color_space == Color::ColorSpace::kSRGBLegacy) {
-    bool uses_percentage = false;
-    bool uses_bare_numbers = false;
-    for (int i = 0; i < 3; i++) {
-      if (params[i].has_value()) {
-        if (is_percentage[i]) {
-          if (uses_bare_numbers) {
-            return false;
-          }
-          uses_percentage = true;
-        } else {
-          if (uses_percentage) {
-            return false;
-          }
-          uses_bare_numbers = true;
-          params[i].value() /= 255.0;
-        }
-      }
-    }
-    // TODO(crbug.com/1399566): There are many code paths that still compress
-    // alpha to be an 8-bit integer. If it is not explicitly compressed here,
-    // tests will fail due to some paths doing this compression and others not.
-    // See compositing/background-color/background-color-alpha.html for example.
-    // Ideally we would allow alpha to be any float value, but we have to clean
-    // up all spots where this compression happens before this is possible.
-    if (alpha && isfinite(alpha.value())) {
-      alpha = round(alpha.value() * 255.0) / 255.0;
-    }
-  }
-
-  // Legacy syntax is not allowed for hwb().
-  if (has_commas && color_space == Color::ColorSpace::kHWB) {
-    return false;
-  }
-
-  if (color_space == Color::ColorSpace::kHSL) {
-    // 2nd and 3rd parameters of hsl() must be percentages or "none" and clamped
-    // to the range [0, 1].
-    for (int i : {1, 2}) {
-      if (params[i].has_value()) {
-        if (!is_percentage[i]) {
-          return false;
-        }
-        params[i] = ClampTo<double>(params[i].value(), 0.0, 1.0);
-      }
-    }
-  }
-
-  // For historical reasons, the "hue" of hwb() and hsl() are stored in the
-  // range [0, 6].
-  if ((color_space == Color::ColorSpace::kHSL ||
-       color_space == Color::ColorSpace::kHWB) &&
-      params[0].has_value()) {
-    params[0].value() /= 60.0;
-  }
-
-  // Lightness is stored in the range [0, 100] for lab(), oklab(), lch() and
-  // oklch(). For oklab() and oklch() input for lightness is in the range [0,
-  // 1].
-  if (Color::IsLightnessFirstComponent(color_space)) {
-    if (params[0].has_value()) {
-      if (is_percentage[0]) {
-        params[0].value() *= 100.0;
-      } else if (color_space == Color::ColorSpace::kOklab ||
-                 color_space == Color::ColorSpace::kOklch) {
-        params[0].value() *= 100.0;
-      }
-    }
-
-    // For lab() and oklab() percentage inputs for a or b need to be mapped onto
-    // the correct ranges. https://www.w3.org/TR/css-color-4/#specifying-lab-lch
-    if (!Color::IsChromaSecondComponent(color_space)) {
-      const double ab_coefficient_for_percentages =
-          (color_space == Color::ColorSpace::kLab) ? 125 : 0.4;
-
-      if (params[1].has_value() && is_percentage[1]) {
-        params[1].value() *= ab_coefficient_for_percentages;
-      }
-      if (params[2].has_value() && is_percentage[2]) {
-        params[2].value() *= ab_coefficient_for_percentages;
-      }
-    } else {
-      // Same as above, mapping percentage values for chroma in lch()/oklch().
-      const double chroma_coefficient_for_percentages =
-          (color_space == Color::ColorSpace::kLch) ? 150 : 0.4;
-      if (params[1].has_value() && is_percentage[1]) {
-        params[1].value() *= chroma_coefficient_for_percentages;
-      }
-    }
-  }
-
-  if (!args.AtEnd()) {
-    return false;
-  }
-
-  result = Color::FromColorSpace(color_space, params[0], params[1], params[2],
-                                 alpha);
-  // The parsing was successful, so we need to consume the input.
-  input_range = consumed_range;
-  return true;
-}
-
 namespace {
 
 // TODO(crbug.com/1111385): Remove this when we move color-contrast()
@@ -2248,12 +1960,19 @@ CSSValue* ConsumeColor(CSSParserTokenRange& range,
   }
 
   Color color = Color::kTransparent;
-  if (!ParseHexColor(range, color, accept_quirky_colors) &&
-      !ParseFunctionalSyntaxColor(range, context, color)) {
-    return ConsumeInternalLightDark(ConsumeColor, range, context,
-                                    accept_quirky_colors, allowed_keywords);
+  if (ParseHexColor(range, color, accept_quirky_colors)) {
+    return cssvalue::CSSColor::Create(color);
   }
-  return cssvalue::CSSColor::Create(color);
+
+  // Parses the color inputs rgb(), rgba(), hsl(), hsla(), hwb(), lab(),
+  // oklab(), lch(), oklch() and color(). https://www.w3.org/TR/css-color-4/
+  ColorFunctionParser parser;
+  if (parser.ConsumeFunctionalSyntaxColor(range, context, color)) {
+    return cssvalue::CSSColor::Create(color);
+  }
+
+  return ConsumeInternalLightDark(ConsumeColor, range, context,
+                                  accept_quirky_colors, allowed_keywords);
 }
 
 CSSValue* ConsumeLineWidth(CSSParserTokenRange& range,
@@ -3286,7 +3005,7 @@ static CSSImageValue* CreateCSSImageValueWithReferrer(
     const CSSParserContext& context) {
   AtomicString raw_value = uri.ToAtomicString();
   auto* image_value = MakeGarbageCollected<CSSImageValue>(
-      raw_value, context.CompleteURL(raw_value), context.GetReferrer(),
+      raw_value, context.CompleteNonEmptyURL(raw_value), context.GetReferrer(),
       context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
       context.IsAdRelated());
   if (context.Mode() == kUASheetMode) {
@@ -3440,6 +3159,14 @@ CSSIdentifierValue* ConsumeCoordBox(CSSParserTokenRange& range) {
                       CSSValueID::kStrokeBox, CSSValueID::kViewBox>(range);
 }
 
+// https://drafts.fxtf.org/css-masking/#typedef-geometry-box
+CSSIdentifierValue* ConsumeGeometryBox(CSSParserTokenRange& range) {
+  return ConsumeIdent<CSSValueID::kBorderBox, CSSValueID::kPaddingBox,
+                      CSSValueID::kContentBox, CSSValueID::kMarginBox,
+                      CSSValueID::kFillBox, CSSValueID::kStrokeBox,
+                      CSSValueID::kViewBox>(range);
+}
+
 void AddProperty(CSSPropertyID resolved_property,
                  CSSPropertyID current_shorthand,
                  const CSSValue& value,
@@ -3507,21 +3234,16 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
   }
   switch (property) {
     case CSSPropertyID::kAppearance:
-      // TODO(crbug.com/924486): Remove CSS value slider-vertical
-      // and the associated warnings.
-      if (value_id == CSSValueID::kSliderVertical ||
-          (!RuntimeEnabledFeatures::RemoveNonStandardAppearanceValueEnabled() &&
-           (value_id == CSSValueID::kInnerSpinButton ||
-            value_id == CSSValueID::kMediaSlider ||
-            value_id == CSSValueID::kMediaSliderthumb ||
-            value_id == CSSValueID::kMediaVolumeSlider ||
-            value_id == CSSValueID::kMediaVolumeSliderthumb ||
-            value_id == CSSValueID::kPushButton ||
-            value_id == CSSValueID::kSquareButton ||
-            value_id == CSSValueID::kSliderHorizontal ||
-            value_id == CSSValueID::kSliderthumbHorizontal ||
-            value_id == CSSValueID::kSliderthumbVertical ||
-            value_id == CSSValueID::kSearchfieldCancelButton))) {
+    case CSSPropertyID::kAliasWebkitAppearance: {
+      // TODO(crbug.com/924486): Remove warnings after shipping.
+      if ((RuntimeEnabledFeatures::
+               NonStandardAppearanceValuesHighUsageEnabled() &&
+           CSSParserFastPaths::IsNonStandardAppearanceValuesHighUsage(
+               value_id)) ||
+          (RuntimeEnabledFeatures::
+               NonStandardAppearanceValuesLowUsageEnabled() &&
+           CSSParserFastPaths::IsNonStandardAppearanceValuesLowUsage(
+               value_id))) {
         if (const auto* document = context.GetDocument()) {
           document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
               mojom::blink::ConsoleMessageSource::kDeprecation,
@@ -3533,12 +3255,31 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
               document->GetExecutionContext(),
               WebFeature::kCSSValueAppearanceNonStandard);
         }
+        // We make sure feature is counted even without document context.
+        context.Count(WebFeature::kCSSValueAppearanceNonStandard);
       }
-      [[fallthrough]];
-      // This function distinguishes 'appearance' and '-webkit-appearance'
-      // though other property aliases are handles as their aliased properties.
-      // See Appearance::ParseSingleValue().
-    case CSSPropertyID::kAliasWebkitAppearance: {
+      // TODO(crbug.com/1426629): Remove warning after shipping.
+      if (RuntimeEnabledFeatures::
+              NonStandardAppearanceValueSliderVerticalEnabled() &&
+          value_id == CSSValueID::kSliderVertical) {
+        if (const auto* document = context.GetDocument()) {
+          // TODO(crbug.com/681917): Remove "currently experimental" note when
+          // feature FormControlsVerticalWritingModeSupport is in stable.
+          document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+              mojom::blink::ConsoleMessageSource::kDeprecation,
+              mojom::blink::ConsoleMessageLevel::kWarning,
+              "The keyword 'slider-vertical' specified to an 'appearance' "
+              "property is not standardized. It will be removed in the future "
+              "and replaced by vertical writing-mode (currently "
+              "experimental)."));
+          Deprecation::CountDeprecation(
+              document->GetExecutionContext(),
+              WebFeature::kCSSValueAppearanceSliderVertical);
+        }
+        // We make double-sure the feature kCSSValueAppearanceSliderVertical is
+        // counted here. It should also be counted below.
+        context.Count(WebFeature::kCSSValueAppearanceSliderVertical);
+      }
       WebFeature feature;
       if (value_id == CSSValueID::kNone) {
         feature = WebFeature::kCSSValueAppearanceNone;
@@ -3630,19 +3371,61 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
   }
 }
 
+void WarnInvalidKeywordPropertyUsage(CSSPropertyID property,
+                                     const CSSParserContext& context,
+                                     CSSValueID value_id) {
+  if (!context.IsUseCounterRecordingEnabled()) {
+    return;
+  }
+  switch (property) {
+    case CSSPropertyID::kAppearance:
+    case CSSPropertyID::kAliasWebkitAppearance: {
+      // TODO(crbug.com/924486, crbug.com/1426629): Remove warnings after
+      // shipping.
+      if ((!RuntimeEnabledFeatures::
+               NonStandardAppearanceValuesHighUsageEnabled() &&
+           CSSParserFastPaths::IsNonStandardAppearanceValuesHighUsage(
+               value_id)) ||
+          (!RuntimeEnabledFeatures::
+               NonStandardAppearanceValuesLowUsageEnabled() &&
+           CSSParserFastPaths::IsNonStandardAppearanceValuesLowUsage(
+               value_id)) ||
+          (!RuntimeEnabledFeatures::
+               NonStandardAppearanceValueSliderVerticalEnabled() &&
+           value_id == CSSValueID::kSliderVertical)) {
+        if (const auto* document = context.GetDocument()) {
+          document->AddConsoleMessage(
+              MakeGarbageCollected<ConsoleMessage>(
+                  mojom::blink::ConsoleMessageSource::kOther,
+                  mojom::blink::ConsoleMessageLevel::kWarning,
+                  String("The keyword '") + getValueName(value_id) +
+                      "' used on the 'appearance' property was deprecated and "
+                      "has now been removed. It will no longer have any "
+                      "effect."),
+              true);
+        }
+      }
+      break;
+    }
+    default:
+      break;
+  }
+}
+
 const CSSValue* ParseLonghand(CSSPropertyID unresolved_property,
                               CSSPropertyID current_shorthand,
                               const CSSParserContext& context,
                               CSSParserTokenRange& range) {
   CSSPropertyID property_id = ResolveCSSPropertyID(unresolved_property);
+  CSSValueID value_id = range.Peek().Id();
   DCHECK(!CSSProperty::Get(property_id).IsShorthand());
   if (CSSParserFastPaths::IsHandledByKeywordFastPath(property_id)) {
     if (CSSParserFastPaths::IsValidKeywordPropertyAndValue(
             property_id, range.Peek().Id(), context.Mode())) {
-      CountKeywordOnlyPropertyUsage(property_id, context, range.Peek().Id());
+      CountKeywordOnlyPropertyUsage(property_id, context, value_id);
       return ConsumeIdent(range);
     }
-
+    WarnInvalidKeywordPropertyUsage(property_id, context, value_id);
     return nullptr;
   }
 
@@ -5586,13 +5369,13 @@ CSSValue* ConsumeGridBreadth(CSSParserTokenRange& range,
     return ConsumeIdent(range);
   }
   if (token.GetType() == kDimensionToken &&
-      token.GetUnitType() == CSSPrimitiveValue::UnitType::kFraction) {
+      token.GetUnitType() == CSSPrimitiveValue::UnitType::kFlex) {
     if (token.NumericValue() < 0) {
       return nullptr;
     }
     return CSSNumericLiteralValue::Create(
         range.ConsumeIncludingWhitespace().NumericValue(),
-        CSSPrimitiveValue::UnitType::kFraction);
+        CSSPrimitiveValue::UnitType::kFlex);
   }
   return ConsumeLengthOrPercent(range, context,
                                 CSSPrimitiveValue::ValueRange::kNonNegative,
@@ -7229,13 +7012,14 @@ CSSValue* ConsumeContainerName(CSSParserTokenRange& range,
 }
 
 CSSValue* ConsumeContainerType(CSSParserTokenRange& range) {
-  // container-type: normal | [ [ size | inline-size ] || sticky ]
+  // container-type: normal | [ [ size | inline-size ] || sticky || snap ]
   if (CSSValue* value = ConsumeIdent<CSSValueID::kNormal>(range)) {
     return value;
   }
 
   CSSValue* size_value = nullptr;
   CSSValue* sticky_value = nullptr;
+  CSSValue* snap_value = nullptr;
 
   do {
     if (!size_value) {
@@ -7252,6 +7036,13 @@ CSSValue* ConsumeContainerType(CSSParserTokenRange& range) {
         continue;
       }
     }
+    if (!snap_value &&
+        RuntimeEnabledFeatures::CSSSnapContainerQueriesEnabled()) {
+      snap_value = ConsumeIdent<CSSValueID::kSnap>(range);
+      if (snap_value) {
+        continue;
+      }
+    }
     return nullptr;
   } while (!range.AtEnd());
 
@@ -7261,6 +7052,9 @@ CSSValue* ConsumeContainerType(CSSParserTokenRange& range) {
   }
   if (sticky_value) {
     list->Append(*sticky_value);
+  }
+  if (snap_value) {
+    list->Append(*snap_value);
   }
   return list;
 }

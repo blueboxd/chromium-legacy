@@ -27,7 +27,7 @@ namespace web_app {
 class AbstractWebAppDatabaseFactory;
 class ExternallyManagedAppManager;
 class FileUtilsWrapper;
-class IsolatedWebAppCommandLineInstallManager;
+class IsolatedWebAppInstallationManager;
 class IsolatedWebAppUpdateManager;
 class OsIntegrationManager;
 class PreinstalledWebAppManager;
@@ -148,9 +148,9 @@ class FakeWebAppProvider : public WebAppProvider {
   void SetWebAppUiManager(std::unique_ptr<WebAppUiManager> ui_manager);
   void SetWebAppPolicyManager(
       std::unique_ptr<WebAppPolicyManager> web_app_policy_manager);
-  void SetIsolatedWebAppCommandLineInstallManager(
-      std::unique_ptr<IsolatedWebAppCommandLineInstallManager>
-          iwa_command_line_install_manager);
+  void SetIsolatedWebAppInstallationManager(
+      std::unique_ptr<IsolatedWebAppInstallationManager>
+          isolated_web_app_installation_manager);
 #if BUILDFLAG(IS_CHROMEOS)
   void SetIsolatedWebAppUpdateManager(
       std::unique_ptr<IsolatedWebAppUpdateManager> iwa_update_manager);
@@ -179,9 +179,6 @@ class FakeWebAppProvider : public WebAppProvider {
   WebAppUiManager& GetUiManager() const;
   WebAppInstallManager& GetInstallManager() const;
   OsIntegrationManager& GetOsIntegrationManager() const;
-#if BUILDFLAG(IS_CHROMEOS)
-  WebAppRunOnOsLoginManager& GetWebAppRunOnOsLoginManager() const;
-#endif
 
   // Starts this WebAppProvider and its subsystems. It does not wait for systems
   // to be ready.

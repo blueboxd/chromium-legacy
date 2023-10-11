@@ -18,6 +18,7 @@
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -47,6 +48,7 @@
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/render_text_test_api.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/touch_selection/touch_selection_metrics.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/textfield/textfield_model.h"
@@ -3834,7 +3836,6 @@ TEST_F(TextfieldTest, LongPressSelection) {
   // Perform a long press.
   const gfx::Point kLongPressPoint = views::View::ConvertPointToScreen(
       textfield_, {GetCursorPositionX(2), GetCursorYForTesting()});
-  event_generator_->PressTouch(kLongPressPoint);
   ui::GestureEvent long_press = CreateTestGestureEvent(
       kLongPressPoint.x(), kLongPressPoint.y(),
       ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
@@ -3849,7 +3850,10 @@ TEST_F(TextfieldTest, LongPressSelection) {
   EXPECT_FALSE(test_api_->touch_selection_controller());
 
   // Check that touch selection is activated after the long press is released.
-  event_generator_->ReleaseTouch();
+  ui::GestureEvent long_tap =
+      CreateTestGestureEvent(kLongPressPoint.x(), kLongPressPoint.y(),
+                             ui::GestureEventDetails(ui::ET_GESTURE_LONG_TAP));
+  event_generator_->Dispatch(&long_tap);
   EXPECT_TRUE(test_api_->touch_selection_controller());
 }
 
@@ -4032,7 +4036,57 @@ TEST_F(TextfieldTest, DoublePressDragSelection) {
   EXPECT_EQ(range, gfx::Range(0, 12));
   EXPECT_EQ(textfield_->GetSelectedText(), u"Hello string");
 }
-#endif
+
+TEST_F(TextfieldTest, TouchSelectionDraggingMetrics) {
+  base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{::features::kTouchTextEditingRedesign},
+      /*disabled_features=*/{});
+
+  InitTextfield();
+  textfield_->SetText(u"Text in a textfield");
+  const gfx::Point kDragStart = views::View::ConvertPointToScreen(
+      textfield_, {GetCursorPositionX(2), GetCursorYForTesting()});
+  const gfx::Point kDragEnd = views::View::ConvertPointToScreen(
+      textfield_, {GetCursorPositionX(10), GetCursorYForTesting()});
+
+  // Double press drag selection.
+  event_generator_->GestureTapAt(kDragStart);
+  event_generator_->GestureScrollSequence(kDragStart, kDragEnd,
+                                          /*duration=*/base::Milliseconds(50),
+                                          /*steps=*/5);
+  histogram_tester.ExpectBucketCount(
+      ui::kTouchSelectionDragTypeHistogramName,
+      ui::TouchSelectionDragType::kDoublePressDrag, 1);
+  histogram_tester.ExpectTotalCount(ui::kTouchSelectionDragTypeHistogramName,
+                                    1);
+
+  // Swipe to move cursor.
+  event_generator_->GestureScrollSequence(kDragStart, kDragEnd,
+                                          /*duration=*/base::Milliseconds(50),
+                                          /*steps=*/5);
+  histogram_tester.ExpectBucketCount(ui::kTouchSelectionDragTypeHistogramName,
+                                     ui::TouchSelectionDragType::kCursorDrag,
+                                     1);
+  histogram_tester.ExpectTotalCount(ui::kTouchSelectionDragTypeHistogramName,
+                                    2);
+
+  // Long press drag selection.
+  event_generator_->PressTouch(kDragStart);
+  ui::GestureEvent long_press = CreateTestGestureEvent(
+      kDragStart.x(), kDragStart.y(),
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+  event_generator_->Dispatch(&long_press);
+  event_generator_->MoveTouchBy(25, 0);
+  event_generator_->ReleaseTouch();
+  histogram_tester.ExpectBucketCount(ui::kTouchSelectionDragTypeHistogramName,
+                                     ui::TouchSelectionDragType::kLongPressDrag,
+                                     1);
+  histogram_tester.ExpectTotalCount(ui::kTouchSelectionDragTypeHistogramName,
+                                    3);
+}
+#endif  // !BUILDFLAG(IS_MAC)
 
 TEST_F(TextfieldTest, GetTextfieldBaseline_FontFallbackTest) {
   InitTextfield();

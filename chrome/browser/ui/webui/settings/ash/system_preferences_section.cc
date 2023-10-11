@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/webui/settings/ash/system_preferences_section.h"
 
+#include "chrome/browser/ui/webui/settings/ash/date_time_section.h"
+#include "chrome/browser/ui/webui/settings/ash/languages_section.h"
+#include "chrome/browser/ui/webui/settings/ash/reset_section.h"
+#include "chrome/browser/ui/webui/settings/ash/search_section.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -19,22 +23,36 @@ using ::chromeos::settings::mojom::Subpage;
 
 SystemPreferencesSection::SystemPreferencesSection(
     Profile* profile,
-    SearchTagRegistry* search_tag_registry)
-    : OsSettingsSection(profile, search_tag_registry) {}
+    SearchTagRegistry* search_tag_registry,
+    PrefService* pref_service)
+    : OsSettingsSection(profile, search_tag_registry),
+      date_time_subsection_(profile, search_tag_registry),
+      languages_subsection_(profile, search_tag_registry, pref_service),
+      reset_subsection_(profile, search_tag_registry),
+      search_subsection_(profile, search_tag_registry) {}
 
-SystemPreferencesSection::~SystemPreferencesSection() {}
+SystemPreferencesSection::~SystemPreferencesSection() = default;
 
 void SystemPreferencesSection::AddLoadTimeData(
     content::WebUIDataSource* html_source) {
+  date_time_subsection_.AddLoadTimeData(html_source);
+  languages_subsection_.AddLoadTimeData(html_source);
+  reset_subsection_.AddLoadTimeData(html_source);
+  search_subsection_.AddLoadTimeData(html_source);
+
   webui::LocalizedString kLocalizedStrings[] = {
+      {"storageAndPowerTitle",
+       IDS_OS_SETTINGS_SYSTEM_PREFERENCES_STORAGE_AND_POWER_TITLE},
       {"systemPreferencesTitle", IDS_OS_SETTINGS_SYSTEM_PREFERENCES_TITLE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 
 void SystemPreferencesSection::AddHandlers(content::WebUI* web_ui) {
-  // TODO(b/292678609) Register handlers.
-  NOTIMPLEMENTED();
+  date_time_subsection_.AddHandlers(web_ui);
+  languages_subsection_.AddHandlers(web_ui);
+  reset_subsection_.AddHandlers(web_ui);
+  search_subsection_.AddHandlers(web_ui);
 }
 
 int SystemPreferencesSection::GetSectionNameMessageId() const {
@@ -55,14 +73,18 @@ const char* SystemPreferencesSection::GetSectionPath() const {
 
 bool SystemPreferencesSection::LogMetric(mojom::Setting setting,
                                          base::Value& value) const {
-  return false;
+  return date_time_subsection_.LogMetric(setting, value) ||
+         languages_subsection_.LogMetric(setting, value) ||
+         reset_subsection_.LogMetric(setting, value) ||
+         search_subsection_.LogMetric(setting, value);
 }
 
 void SystemPreferencesSection::RegisterHierarchy(
     HierarchyGenerator* generator) const {
-  // TODO(b/292678609) Register subpages and list of settings contained in
-  // this Section.
-  NOTIMPLEMENTED();
+  date_time_subsection_.RegisterHierarchy(generator);
+  languages_subsection_.RegisterHierarchy(generator);
+  reset_subsection_.RegisterHierarchy(generator);
+  search_subsection_.RegisterHierarchy(generator);
 }
 
 }  // namespace ash::settings

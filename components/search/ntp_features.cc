@@ -30,6 +30,17 @@ BASE_FEATURE(kCustomizeChromeColorExtraction,
              "CustomizeChromeColorExtraction",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// If enabled, shows an extension card within the Customize Chrome Side
+// Panel for access to the Chrome Web Store extensions.
+BASE_FEATURE(kCustomizeChromeSidePanelExtensionsCard,
+             "CustomizeChromeSidePanelExtensionsCard",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, shows wallpaper search within the Cusotmize Chrome Side Panel.
+BASE_FEATURE(kCustomizeChromeWallpaperSearch,
+             "CustomizeChromeWallpaperSearch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Forces a dark Google logo for a specific subset of Chrome Web Store themes
 // (see crbug.com/1329552). This is enabled by default to allow finch to disable
 // this NTP treatment in the case of unexpected regressions.
@@ -157,11 +168,6 @@ BASE_FEATURE(kNtpModulesMaxColumnCount,
              "NtpModulesMaxColumnCount",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Dummy feature to set param "NtpModulesLoadedWithOtherModulesMaxInstanceCount"
-BASE_FEATURE(kNtpModulesLoadedWithOtherModulesMaxInstanceCount,
-             "NtpModulesLoadedWithOtherModulesMaxInstanceCount",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // If true, displays a horizontal scrollbar on overflowing modules.
 BASE_FEATURE(kNtpModulesOverflowScrollbar,
              "NtpModulesOverflowScrollbar",
@@ -246,11 +252,6 @@ BASE_FEATURE(kNtpRecipeTasksModule,
              "NtpRecipeTasksModule",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Controls whether the scrim is removed.
-BASE_FEATURE(kNtpRemoveScrim,
-             "NtpRemoveScrim",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, SafeBrowsing module will be shown to a target user.
 BASE_FEATURE(kNtpSafeBrowsingModule,
              "NtpSafeBrowsingModule",
@@ -311,6 +312,12 @@ BASE_FEATURE(kNtpHistoryClustersModuleSuggestionChipHeader,
              "NtpHistoryClustersModuleSuggestionChipHeader",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, Discounts badge will show on the visit tile in the History
+// clusters module when available.
+BASE_FEATURE(kNtpHistoryClustersModuleDiscounts,
+             "NtpHistoryClustersModuleDiscounts",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, ChromeCart tile will show in the History clusters module when
 // available.
 BASE_FEATURE(kNtpChromeCartInHistoryClusterModule,
@@ -350,18 +357,10 @@ BASE_FEATURE(kNtpHistoryClustersModuleEnableContentClustering,
              "HistoryClustersModuleEnableContentClustering",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-const base::FeatureParam<std::string> kNtpOgbButtonSelectorParam{
-    &kNtpRemoveScrim, "NtpOgbButtonSelectorParam", ".gb_A"};
-
-const base::FeatureParam<std::string> kNtpOgbUnprotectedTextSelectorParam{
-    &kNtpRemoveScrim, "NtpOgbUnprotectedTextSelectorParam", ".gb_d"};
-
 const char kNtpModulesEligibleForHappinessTrackingSurveyParam[] =
     "NtpModulesEligibleForHappinessTrackingSurveyParam";
 const char kNtpModulesLoadTimeoutMillisecondsParam[] =
     "NtpModulesLoadTimeoutMillisecondsParam";
-const char kNtpModulesLoadedWithOtherModulesMaxInstanceCountParam[] =
-    "NtpModulesLoadedWithOtherModulesMaxInstanceCountParam";
 const char kNtpModulesMaxColumnCountParam[] = "NtpModulesMaxColumnCountParam";
 const char kNtpModulesOrderParam[] = "NtpModulesOrderParam";
 const char kNtpChromeCartModuleDataParam[] = "NtpChromeCartModuleDataParam";
@@ -430,12 +429,6 @@ base::TimeDelta GetModulesLoadTimeout() {
 int GetModulesMaxColumnCount() {
   return base::GetFieldTrialParamByFeatureAsInt(
       kNtpModulesMaxColumnCount, kNtpModulesMaxColumnCountParam, 3);
-}
-
-int GetMultipleLoadedModulesMaxModuleInstanceCount() {
-  return base::GetFieldTrialParamByFeatureAsInt(
-      kNtpModulesLoadedWithOtherModulesMaxInstanceCount,
-      kNtpModulesLoadedWithOtherModulesMaxInstanceCountParam, 2);
 }
 
 std::vector<std::string> GetModulesOrder() {

@@ -27,7 +27,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -176,10 +175,6 @@ bool ContentAutofillDriver::CanShowAutofillUi() const {
   // ignore the calls from inactive RFH as the renderer is not expecting a reply
   // and it doesn't lead to browser-renderer consistency issues.
   return render_frame_host_->IsActive();
-}
-
-ui::AXTreeID ContentAutofillDriver::GetAxTreeId() const {
-  return render_frame_host_->GetAXTreeID();
 }
 
 bool ContentAutofillDriver::RendererIsAvailable() {
@@ -529,11 +524,6 @@ void ContentAutofillDriver::HidePopup() {
   });
 }
 
-void ContentAutofillDriver::FocusNoLongerOnFormCallback(
-    bool had_interacted_form) {
-  autofill_manager_->OnFocusNoLongerOnForm(had_interacted_form);
-}
-
 void ContentAutofillDriver::FocusNoLongerOnForm(bool had_interacted_form) {
   if (!bad_message::CheckFrameNotPrerendering(render_frame_host())) {
     return;
@@ -541,7 +531,7 @@ void ContentAutofillDriver::FocusNoLongerOnForm(bool had_interacted_form) {
   autofill_router().FocusNoLongerOnForm(
       this, had_interacted_form,
       [](ContentAutofillDriver* target, bool had_interacted_form) {
-        target->FocusNoLongerOnFormCallback(had_interacted_form);
+        target->autofill_manager_->OnFocusNoLongerOnForm(had_interacted_form);
       });
 }
 
@@ -561,6 +551,9 @@ void ContentAutofillDriver::FocusOnFormField(const FormData& raw_form,
          const FormFieldData& field, const gfx::RectF& bounding_box) {
         target->autofill_manager_->OnFocusOnFormField(WithNewVersion(form),
                                                       field, bounding_box);
+      },
+      [](ContentAutofillDriver* target) {
+        target->autofill_manager_->OnFocusNoLongerOnForm(true);
       });
 }
 
@@ -578,16 +571,6 @@ void ContentAutofillDriver::DidFillAutofillFormData(const FormData& raw_form,
       });
 }
 
-void ContentAutofillDriver::DidPreviewAutofillFormData() {
-  if (!bad_message::CheckFrameNotPrerendering(render_frame_host())) {
-    return;
-  }
-  autofill_router().DidPreviewAutofillFormData(
-      this, [](ContentAutofillDriver* target) {
-        target->autofill_manager_->OnDidPreviewAutofillFormData();
-      });
-}
-
 void ContentAutofillDriver::DidEndTextFieldEditing() {
   if (!bad_message::CheckFrameNotPrerendering(render_frame_host())) {
     return;
@@ -598,15 +581,15 @@ void ContentAutofillDriver::DidEndTextFieldEditing() {
       });
 }
 
-void ContentAutofillDriver::SelectOrSelectMenuFieldOptionsDidChange(
+void ContentAutofillDriver::SelectOrSelectListFieldOptionsDidChange(
     const FormData& raw_form) {
   if (!bad_message::CheckFrameNotPrerendering(render_frame_host())) {
     return;
   }
-  autofill_router().SelectOrSelectMenuFieldOptionsDidChange(
+  autofill_router().SelectOrSelectListFieldOptionsDidChange(
       this, GetFormWithFrameAndFormMetaData(raw_form),
       [](ContentAutofillDriver* target, const FormData& form) {
-        target->autofill_manager_->OnSelectOrSelectMenuFieldOptionsDidChange(
+        target->autofill_manager_->OnSelectOrSelectListFieldOptionsDidChange(
             WithNewVersion(form));
       });
 }
@@ -630,12 +613,6 @@ void ContentAutofillDriver::JavaScriptChangedAutofilledValue(
       });
 }
 
-void ContentAutofillDriver::OnContextMenuShownInFieldCallback(
-    const FormGlobalId& form_global_id,
-    const FieldGlobalId& field_global_id) {
-  autofill_manager_->OnContextMenuShownInField(form_global_id, field_global_id);
-}
-
 void ContentAutofillDriver::OnContextMenuShownInField(
     const FormGlobalId& form_global_id,
     const FieldGlobalId& field_global_id) {
@@ -643,8 +620,8 @@ void ContentAutofillDriver::OnContextMenuShownInField(
       this, form_global_id, field_global_id,
       [](ContentAutofillDriver* target, const FormGlobalId& form_global_id,
          const FieldGlobalId& field_global_id) {
-        target->OnContextMenuShownInFieldCallback(form_global_id,
-                                                  field_global_id);
+        target->autofill_manager_->OnContextMenuShownInField(form_global_id,
+                                                             field_global_id);
       });
 }
 
@@ -665,34 +642,6 @@ ContentAutofillDriver::GetAutofillAgent() {
         &autofill_agent_);
   }
   return autofill_agent_;
-}
-
-void ContentAutofillDriver::UnsetKeyPressHandlerCallback() {
-  if (key_press_handler_.is_null())
-    return;
-  render_frame_host_->GetRenderWidgetHost()->RemoveKeyPressEventCallback(
-      key_press_handler_);
-  key_press_handler_.Reset();
-}
-
-void ContentAutofillDriver::SetKeyPressHandler(
-    const content::RenderWidgetHost::KeyPressEventCallback& handler) {
-  autofill_router().SetKeyPressHandler(
-      this, handler,
-      [](ContentAutofillDriver* target,
-         const content::RenderWidgetHost::KeyPressEventCallback& handler) {
-        target->UnsetKeyPressHandlerCallback();
-        target->render_frame_host_->GetRenderWidgetHost()
-            ->AddKeyPressEventCallback(handler);
-        target->key_press_handler_ = handler;
-      });
-}
-
-void ContentAutofillDriver::UnsetKeyPressHandler() {
-  autofill_router().UnsetKeyPressHandler(
-      this, [](ContentAutofillDriver* target) {
-        target->UnsetKeyPressHandlerCallback();
-      });
 }
 
 void ContentAutofillDriver::SetFrameAndFormMetaData(

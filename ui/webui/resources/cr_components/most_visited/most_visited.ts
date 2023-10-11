@@ -25,7 +25,7 @@ import {hasKeyModifiers} from 'chrome://resources/js/util_ts.js';
 import {TextDirection} from 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-webui.js';
 import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
-import {DomRepeat, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, DomRepeat, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {MostVisitedBrowserProxy} from './browser_proxy.js';
 import {getTemplate} from './most_visited.html.js';
@@ -116,15 +116,6 @@ export class MostVisitedElement extends MostVisitedElementBase {
         type: Boolean,
         reflectToAttribute: true,
         computed: `computeUseWhiteTileIcon_(theme)`,
-      },
-
-      /**
-       * If true wraps the tile titles in white pills.
-       */
-      useTitlePill_: {
-        type: Boolean,
-        reflectToAttribute: true,
-        computed: `computeUseTitlePill_(theme)`,
       },
 
       columnCount_: {
@@ -226,7 +217,6 @@ export class MostVisitedElement extends MostVisitedElementBase {
   public reflowOnOverflow: boolean;
   public singleRow: boolean;
   private useWhiteTileIcon_: boolean;
-  private useTitlePill_: boolean;
   private columnCount_: number;
   private rowCount_: number;
   private customLinksEnabled_: boolean;
@@ -427,10 +417,6 @@ export class MostVisitedElement extends MostVisitedElementBase {
 
   private computeUseWhiteTileIcon_(): boolean {
     return this.theme ? this.theme.useWhiteTileIcon : false;
-  }
-
-  private computeUseTitlePill_(): boolean {
-    return this.theme ? this.theme.useTitlePill : false;
   }
 
   /**
@@ -825,11 +811,11 @@ export class MostVisitedElement extends MostVisitedElementBase {
       return;
     }
 
-    // TODO(https://crbug.com/1462832): add prerender cancellation timer upon
-    // TileExit.
     if (this.preloadingTimer_) {
       clearTimeout(this.preloadingTimer_);
     }
+
+    this.pageHandler_.cancelPrerender();
   }
 
   private onUndoClick_() {
@@ -875,7 +861,7 @@ export class MostVisitedElement extends MostVisitedElementBase {
     }
     const tileElements = this.tileElements_;
     if (index < tileElements.length) {
-      tileElements[index].focus();
+      (tileElements[index] as HTMLElement).querySelector('a')!.focus();
     } else if (this.showAdd_ && index === tileElements.length) {
       this.$.addShortcut.focus();
     }
@@ -895,7 +881,9 @@ export class MostVisitedElement extends MostVisitedElementBase {
     this.toast_(
         'linkRemovedMsg',
         /* showButtons= */ this.customLinksEnabled_ || !isQueryTile);
-    this.tileFocus_(index);
+
+    // Move focus after the next render so that tileElements_ is updated.
+    afterNextRender(this, () => this.tileFocus_(index));
   }
 
   private onTilesRendered_() {

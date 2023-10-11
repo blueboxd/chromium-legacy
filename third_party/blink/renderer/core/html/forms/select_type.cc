@@ -94,7 +94,7 @@ class MenuListSelectType final : public SelectType {
   void UpdateTextStyleAndContent() override;
   HTMLOptionElement* OptionToBeShown() const override;
   const ComputedStyle* OptionStyle() const override {
-    return option_style_.get();
+    return option_style_.Get();
   }
   void MaximumOptionWidthMightBeChanged() const override;
 
@@ -123,7 +123,7 @@ class MenuListSelectType final : public SelectType {
 
   Member<PopupMenu> popup_;
   Member<PopupUpdater> popup_updater_;
-  scoped_refptr<const ComputedStyle> option_style_;
+  Member<const ComputedStyle> option_style_;
   int ax_menulist_last_active_index_ = -1;
   bool has_updated_menulist_active_option_ = false;
   bool popup_is_visible_ = false;
@@ -133,6 +133,7 @@ class MenuListSelectType final : public SelectType {
 void MenuListSelectType::Trace(Visitor* visitor) const {
   visitor->Trace(popup_);
   visitor->Trace(popup_updater_);
+  visitor->Trace(option_style_);
   SelectType::Trace(visitor);
 }
 
@@ -236,7 +237,8 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
             ->FiresTouchEvents(mouse_event->FromTouch());
     select_->Focus(FocusParams(SelectionBehaviorOnFocus::kRestore,
                                mojom::blink::FocusType::kMouse,
-                               source_capabilities));
+                               source_capabilities, FocusOptions::Create(),
+                               FocusTrigger::kUserGesture));
     if (select_->GetLayoutObject() && !will_be_destroyed_ &&
         !select_->IsDisabledFormControl()) {
       if (PopupIsVisible()) {
@@ -283,7 +285,7 @@ bool MenuListSelectType::ShouldOpenPopupForKeyPressEvent(
 }
 
 bool MenuListSelectType::HandlePopupOpenKeyboardEvent() {
-  select_->Focus();
+  select_->Focus(FocusParams(FocusTrigger::kUserGesture));
   // Calling focus() may cause us to lose our LayoutObject. Return true so
   // that our caller doesn't process the event further, but don't set
   // the event as handled.
@@ -515,10 +517,10 @@ String MenuListSelectType::UpdateTextStyleInternal() {
     builder.SetDirection(option_style->Direction());
     builder.SetUnicodeBidi(option_style->GetUnicodeBidi());
     builder.SetTextAlign(option_style->GetTextAlign(true));
-    scoped_refptr<const ComputedStyle> new_style = builder.TakeStyle();
+    const ComputedStyle* new_style = builder.TakeStyle();
     if (auto* inner_layout = inner_element.GetLayoutObject()) {
       inner_layout->SetModifiedStyleOutsideStyleRecalc(
-          std::move(new_style), LayoutObject::ApplyStyleChanges::kYes);
+          new_style, LayoutObject::ApplyStyleChanges::kYes);
     } else {
       inner_element.SetComputedStyle(std::move(new_style));
     }
@@ -718,7 +720,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
   const auto* mouse_event = DynamicTo<MouseEvent>(event);
   const auto* gesture_event = DynamicTo<GestureEvent>(event);
   if (event.type() == event_type_names::kGesturetap && gesture_event) {
-    select_->Focus();
+    select_->Focus(FocusParams(FocusTrigger::kUserGesture));
     // Calling focus() may cause us to lose our layoutObject or change the
     // layoutObject type, in which case do not want to handle the event.
     if (!select_->GetLayoutObject() || will_be_destroyed_)
@@ -740,7 +742,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
   if (event.type() == event_type_names::kMousedown && mouse_event &&
       mouse_event->button() ==
           static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
-    select_->Focus();
+    select_->Focus(FocusParams(FocusTrigger::kUserGesture));
     // Calling focus() may cause us to lose our layoutObject, in which case
     // do not want to handle the event.
     if (!select_->GetLayoutObject() || will_be_destroyed_ ||

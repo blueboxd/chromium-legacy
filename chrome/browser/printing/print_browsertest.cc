@@ -435,15 +435,25 @@ PrintBrowserTest::WorkerHelper::WorkerHelper(
 PrintBrowserTest::WorkerHelper::~WorkerHelper() = default;
 
 void PrintBrowserTest::WorkerHelper::OnNewDocument(
+#if BUILDFLAG(IS_MAC)
+    bool destination_is_preview,
+#endif
     const PrintSettings& settings) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     content::GetUIThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&WorkerHelper::OnNewDocument, this, settings));
+        FROM_HERE, base::BindOnce(&WorkerHelper::OnNewDocument, this,
+#if BUILDFLAG(IS_MAC)
+                                  destination_is_preview,
+#endif
+                                  settings));
     return;
   }
   if (owner_) {
-    owner_->OnNewDocument(settings);
+    owner_->OnNewDocument(
+#if BUILDFLAG(IS_MAC)
+        destination_is_preview,
+#endif
+        settings);
   }
 }
 
@@ -474,6 +484,12 @@ void PrintBrowserTest::SetUpOnMainThread() {
   host_resolver()->AddRule("*", "127.0.0.1");
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
+
+  // `run_loop_` and `quit_callback_` are initialized here to avoid having a
+  // race between the last expected `CheckForQuit()` call and
+  // `WaitUntilCallbackReceived()` being called.
+  run_loop_ = std::make_unique<base::RunLoop>();
+  quit_callback_ = run_loop_->QuitClosure();
 }
 
 void PrintBrowserTest::TearDownOnMainThread() {
@@ -589,9 +605,9 @@ void PrintBrowserTest::ResetNumReceivedMessages() {
 
 void PrintBrowserTest::WaitUntilCallbackReceived() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::RunLoop run_loop;
-  quit_callback_ = run_loop.QuitClosure();
-  run_loop.Run();
+
+  ASSERT_TRUE(run_loop_);
+  run_loop_->Run();
 }
 
 void PrintBrowserTest::CheckForQuit() {
@@ -652,12 +668,19 @@ void PrintBrowserTest::OverrideBinderForTesting(
           base::Unretained(GetFrameContent(render_frame_host))));
 }
 
-void PrintBrowserTest::OnNewDocument(const PrintSettings& settings) {
+void PrintBrowserTest::OnNewDocument(
+#if BUILDFLAG(IS_MAC)
+    bool destination_is_preview,
+#endif
+    const PrintSettings& settings) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DVLOG(1) << " Observed: new document";
   new_document_called_count_++;
   document_print_settings_ = settings;
+#if BUILDFLAG(IS_MAC)
+  destination_is_preview_ = destination_is_preview;
+#endif
 }
 
 void PrintBrowserTest::ShowPrintErrorDialog() {
@@ -1880,6 +1903,26 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest,
   ASSERT_TRUE(content::ExecJs(iframe_rfh, "window.print()"));
 }
 
+IN_PROC_BROWSER_TEST_F(PrintBrowserTest, NoResizeEvent) {
+  const GURL kUrl(
+      embedded_test_server()->GetURL("/printing/resize_event_counter.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kUrl));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
+
+  // In case there's some resizing taking place before printing, keep track of
+  // it.
+  int before = content::EvalJs(rfh, "resizeCount").ExtractInt();
+
+  // Printing itself should not trigger window resize events.
+  PrintAndWaitUntilPreviewIsReadyAndLoaded();
+
+  int after = content::EvalJs(rfh, "resizeCount").ExtractInt();
+  EXPECT_EQ(before, after);
+}
+
 class PrintPrerenderBrowserTest : public PrintBrowserTest {
  public:
   PrintPrerenderBrowserTest()
@@ -1893,7 +1936,7 @@ class PrintPrerenderBrowserTest : public PrintBrowserTest {
   }
 
   void SetUp() override {
-    prerender_helper_.SetUp(embedded_test_server());
+    prerender_helper_.RegisterServerRequestMonitor(embedded_test_server());
     PrintBrowserTest::SetUp();
   }
 

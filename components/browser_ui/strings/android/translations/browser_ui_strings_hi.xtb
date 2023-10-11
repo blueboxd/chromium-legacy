@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">किसी साइट को, आपके डिवाइस पर डेटा सेव करने की अनुमति दें</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1384959399684842514">डाउनलोड रोका गया</translation>
-<translation id="1409426117486808224">खुले टैब के लिए सरल बनाया गया व्यू</translation>
 <translation id="1415402041810619267">यूआरएल छोटा हो गया</translation>
 <translation id="1426410128494586442">हां</translation>
 <translation id="1446450296470737166">MIDI डिवाइस के पूरे नियंत्रण की अनुमति दें</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">तृतीय-पक्ष को छोड़कर अनुमति है</translation>
 <translation id="1989112275319619282">ब्राउज़ करें</translation>
 <translation id="1994173015038366702">साइट URL</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{समयसीमा 1 दिन में खत्म हो जाएगी}one{समयसीमा # दिन में खत्म हो जाएगी}other{समयसीमा # दिन में खत्म हो जाएगी}}</translation>
 <translation id="2004697686368036666">हो सकता है कि कुछ साइटों पर खास सुविधाएं काम न करें</translation>
 <translation id="2025115093177348061">ऑगमेंटेड रिएलिटी (एआर)</translation>
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> पर वापस जाने के लिए टैप करें</translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">टाइटल</translation>
 <translation id="4008040567710660924">किसी खास साइट के लिए कुकी की मंज़ूरी दें.</translation>
 <translation id="4046123991198612571">अगला ट्रैक</translation>
+<translation id="4053720452172726777">Google Chrome को पसंद के मुताबिक बनाएं और कंट्रोल करें</translation>
 <translation id="4149994727733219643">वेब पेजों के लिए सरल बनाया गया व्यू</translation>
 <translation id="4151930093518524179">डिफ़ॉल्ट ज़ूम</translation>
 <translation id="4165986682804962316">साइट सेटिंग</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">अलग-अलग साइटों पर की गई आपकी ब्राउज़िंग गतिविधि देखने के लिए साइटें कुकी का इस्तेमाल नहीं कर सकतीं. जैसे, लोगों के हिसाब से विज्ञापन दिखाने के लिए. हो सकता है कि कुछ साइटों पर खास सुविधाएं काम न करें.</translation>
 <translation id="5553374991681107062">नए विकल्प</translation>
 <translation id="5556459405103347317">फिर लोड करें</translation>
-<translation id="5596627076506792578">ज़्यादा विकल्प</translation>
 <translation id="5649053991847567735">अपने-आप होने वाले डाउनलोड</translation>
 <translation id="5668404140385795438">किसी वेबसाइट के वेबपेज ज़ूम इन न करने के नियम को बदल देता है</translation>
 <translation id="5677928146339483299">ब्लॉक किया गया है</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Android सेटिंग में बंद कर दिया गया है</translation>
 <translation id="7016516562562142042">मौजूदा सर्च इंजन के लिए अनुमति दी गई है</translation>
 <translation id="702275896380648118">यह साइट, आपकी पसंद के विषयों का पता लगाती है और फिर दूसरी साइटों पर, उनके हिसाब से विज्ञापन के सुझाव देती है. यह साइट आपके पसंदीदा, विज्ञापन के विषयों के बारे में जानने के लिए Chrome की भी मदद लेती है, ताकि आपको ज़्यादा काम के विज्ञापन दिखाए जा सकें.</translation>
-<translation id="702463548815491781">उस समय के लिए सुझाया गया जब 'TalkBack' या 'ऐक्सेस करने का तरीका बदलें' चालू हों</translation>
 <translation id="7053983685419859001">ब्लॉक करें</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 चुना गया}one{# चुने गए}other{# चुने गए}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> चुने गए.  विकल्प, स्क्रीन के ऊपरी भाग के पास उपलब्ध हैं</translation>

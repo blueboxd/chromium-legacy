@@ -77,14 +77,12 @@ public class AccountSelectionIntegrationTest {
     private static final String EXAMPLE_ETLD_PLUS_ONE = "example.com";
     private static final String TEST_ETLD_PLUS_ONE_1 = "one.com";
     private static final String TEST_ETLD_PLUS_ONE_2 = "two.com";
-    private static final GURL TEST_PROFILE_PIC =
-            JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1_WITH_PATH);
-    private static final GURL TEST_URL = JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1);
+    private static final GURL TEST_PROFILE_PIC = JUnitTestGURLs.URL_1_WITH_PATH;
+    private static final GURL TEST_URL = JUnitTestGURLs.URL_1;
 
-    private static final Account ANA = new Account("Ana", "ana@one.test", "Ana Doe", "Ana",
-            TEST_PROFILE_PIC, /*loginHints=*/new String[0], true);
-    private static final Account BOB = new Account(
-            "Bob", "", "Bob", "", TEST_PROFILE_PIC, /*loginHints=*/new String[0], false);
+    private static final Account ANA =
+            new Account("Ana", "ana@one.test", "Ana Doe", "Ana", TEST_PROFILE_PIC, true);
+    private static final Account BOB = new Account("Bob", "", "Bob", "", TEST_PROFILE_PIC, false);
 
     private static final IdentityProviderMetadata IDP_METADATA =
             new IdentityProviderMetadata(Color.BLACK, Color.BLACK, null, null);

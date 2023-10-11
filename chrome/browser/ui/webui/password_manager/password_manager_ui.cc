@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/password_manager/password_manager_ui.h"
 
+#include "base/feature_list.h"
 #include "base/i18n/message_formatter.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -39,6 +40,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "device/fido/features.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -87,9 +89,11 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
       base::make_span(kSettingsSharedResources, kSettingsSharedResourcesSize));
 #endif
 
-  static constexpr webui::LocalizedString kStrings[] = {
+  static const webui::LocalizedString kStrings[] = {
     {"accountStorageToggleLabel",
-     IDS_PASSWORD_MANAGER_UI_ACCOUNT_STORAGE_TOGGLE_LABEL},
+     base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials)
+         ? IDS_PASSWORD_MANAGER_UI_ACCOUNT_STORAGE_WITH_PASSKEYS_TOGGLE_LABEL
+         : IDS_PASSWORD_MANAGER_UI_ACCOUNT_STORAGE_TOGGLE_LABEL},
     {"addPassword", IDS_PASSWORD_MANAGER_UI_ADD_PASSWORD_BUTTON},
     {"addPasswordFooter", IDS_PASSWORD_MANAGER_UI_ADD_PASSWORD_FOOTNOTE},
     {"addPasswordStoreOptionAccount",
@@ -167,12 +171,12 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
      IDS_PASSWORD_MANAGER_UI_DISPLAY_NAME_PLACEHOLDER},
     {"downloadFile", IDS_PASSWORD_MANAGER_UI_DOWNLOAD_FILE},
     {"downloadLinkShow", IDS_DOWNLOAD_LINK_SHOW},
-    {"edit", IDS_EDIT},
+    {"edit", IDS_EDIT2},
     {"editDisclaimerDescription",
      IDS_PASSWORD_MANAGER_UI_EDIT_DISCLAIMER_DESCRIPTION},
     {"editDisclaimerTitle", IDS_PASSWORD_MANAGER_UI_EDIT_DISCLAIMER_TITLE},
     {"editPasskeyTitle", IDS_PASSWORD_MANAGER_UI_EDIT_PASSKEY},
-    {"editPassword", IDS_EDIT},
+    {"editPassword", IDS_EDIT2},
     {"editPasswordFootnote", IDS_PASSWORD_MANAGER_UI_PASSWORD_EDIT_FOOTNOTE},
     {"editPasswordTitle", IDS_PASSWORD_MANAGER_UI_EDIT_PASSWORD},
     {"emptyNote", IDS_PASSWORD_MANAGER_UI_NO_NOTE_ADDED},
@@ -242,8 +246,15 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
     {"localPasswordManager",
      IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE},
     {"manage", IDS_SETTINGS_MANAGE},
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN)
     {"managePasskeysLabel", IDS_PASSWORD_MANAGER_UI_MANAGE_PASSKEYS_LABEL},
+#elif BUILDFLAG(IS_MAC)
+    {"createPasskeysInICloudKeychainLabel",
+     IDS_PASSWORD_MANAGER_UI_CREATE_PASSKEYS_IN_ICLOUD_KEYCHAIN_LABEL},
+    {"createPasskeysInICloudKeychainSubLabel",
+     IDS_PASSWORD_MANAGER_UI_CREATE_PASSKEYS_IN_ICLOUD_KEYCHAIN_SUBLABEL},
+    {"managePasskeysLabel",
+     IDS_PASSWORD_MANAGER_UI_MANAGE_PASSKEYS_FROM_PROFILE_LABEL},
 #endif
     {"menu", IDS_MENU},
     {"menuButtonLabel", IDS_SETTINGS_MENU_BUTTON_LABEL},
@@ -306,6 +317,14 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
      IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_CANCELED_TITLE},
     {"sharePasswordFamilyPickerDescription",
      IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_FAMILY_PICKER_DESCRIPTION},
+    {"sharePasswordConfirmationDescriptionSingleRecipient",
+     IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_CONFIRMATION_DESCRIPTION_SINGLE},
+    {"sharePasswordConfirmationDescriptionMultipleRecipients",
+     IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_CONFIRMATION_DESCRIPTION_MULTIPLE},
+    {"sharePasswordConfirmationFooterWebsite",
+     IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_CONFIRMATION_FOOTER_WEBSITE},
+    {"sharePasswordConfirmationFooterAndroidApp",
+     IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_CONFIRMATION_FOOTER_ANDROID_APP},
     {"sharePasswordManageFamily",
      IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_MANAGE_FAMILY},
     {"sharePasswordMemeberUnavailable",
@@ -394,6 +413,11 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
                      password_manager_util::
                          ShouldBiometricAuthenticationForFillingToggleBeVisible(
                              g_browser_process->local_state()));
+#endif
+#if BUILDFLAG(IS_MAC)
+  source->AddBoolean(
+      "createPasskeysInICloudKeychainToggleVisible",
+      base::FeatureList::IsEnabled(device::kWebAuthnICloudKeychain));
 #endif
 
   source->AddBoolean("enablePasswordsImportM2",

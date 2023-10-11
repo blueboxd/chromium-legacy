@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">Vyhledávání mobilních sítí</translation>
 <translation id="1293556467332435079">Soubory</translation>
 <translation id="1297922636971898492">Disk Google aktuálně není k dispozici. Jakmile bude Disk Google opět dostupný, nahrávání se automaticky obnoví.</translation>
+<translation id="1306130176943817227">Smazání se nezdařilo. Položka se používá.</translation>
 <translation id="1307931752636661898">Soubory systému Linux nelze zobrazit</translation>
 <translation id="1313405956111467313">Automatické nastavení proxy serveru</translation>
 <translation id="134645005685694099">V zařízení není dostatek úložného prostoru k tomu, aby synchronizace souborů mohla zůstat zapnutá. Nové soubory se již nebudou automaticky synchronizovat.</translation>
@@ -115,7 +116,6 @@
 <translation id="1920798810075583923">Meloun</translation>
 <translation id="1924372192547904021">Disk <ph name="DRIVE_NAME" /> byl naformátován</translation>
 <translation id="1931134289871235022">slovenština</translation>
-<translation id="1933345018156373194">Přesunutí se nezdařilo, neočekávaná chyba: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">finština</translation>
 <translation id="1942765061641586207">Rozlišení obrázku</translation>
 <translation id="1972984168337863910">Rozbalit panely zpětné vazby k souborům</translation>
@@ -502,7 +502,6 @@
 <translation id="4969785127455456148">Album</translation>
 <translation id="4972330214479971536">Nastavení synchronizace souborů se nepodařilo dokončit</translation>
 <translation id="4973523518332075481">Název nesmí být delší než <ph name="MAX_LENGTH" /> znaků</translation>
-<translation id="4973970068702235170">Komprimace se nezdařila, neočekávaná chyba: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">japonština</translation>
 <translation id="4987699874727873250">Angličtina (Indie)‎</translation>
 <translation id="4988205478593450158">Opravdu soubor <ph name="FILE_NAME" /> chcete odstranit?</translation>
@@ -543,6 +542,7 @@
 <translation id="5218183485292899140">Švýcarská klávesnice (francouzština)</translation>
 <translation id="5234764350956374838">Zavřít</translation>
 <translation id="5253070652067921974">Autor</translation>
+<translation id="5254207638927440400">Soubor nelze přesunout. Používá se.</translation>
 <translation id="5257456363153333584">Vážka</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Získejte k souborům přístup odkudkoli, dokonce i v režimu offline.<ph name="MARKUP_2" />
     Soubory na Disku Google jsou aktuální a dostupné z libovolného zařízení.<ph name="MARKUP_3" />
@@ -637,7 +637,6 @@
 <translation id="5896749729057314184">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, neaktivováno, síla signálu <ph name="SIGNAL_STRENGTH" /> %, podrobnosti</translation>
 <translation id="5911887972742538906">Při instalaci aplikace pro Linux došlo k chybě.</translation>
 <translation id="5912396950572065471">Formát</translation>
-<translation id="5913638992615760742">Kopírování se nezdařilo, neočekávaná chyba: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">K dispozici jsou nové funkce vyhledávání</translation>
 <translation id="5926082595146149752">nizozemština (Nizozemsko) s klávesnicí USA – mezinárodní (PC)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -645,7 +644,6 @@
 <translation id="5955954492236143329">Počet položek: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5957366693331451795">Chromebox</translation>
 <translation id="5982621672636444458">Možnosti řazení</translation>
-<translation id="6007237601604674381">Přesun se nezdařil. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">Síť Ethernet</translation>
 <translation id="60357267506638014">Česká klávesnice QWERTY</translation>
 <translation id="603895874132768835">Tuto síť budete moci používat až poté, co si nastavíte nový PIN</translation>
@@ -862,6 +860,7 @@
 <translation id="76959938259365003">Koš se nepodařilo vysypat.</translation>
 <translation id="770015031906360009">řečtina</translation>
 <translation id="7705251383879779343">Položka <ph name="FILE_NAME" /> byla zkopírována.</translation>
+<translation id="7707941139430559579">Soubor nelze přesunout. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">Pokud chcete tuto síť používat, je nutné zadat osmimístný klíč PUK, který vám poskytl operátor.</translation>
 <translation id="7711920809702896782">Informace o obrázku</translation>
 <translation id="7724603315864178912">Vyjmout</translation>
@@ -1049,6 +1048,7 @@
 <translation id="9038620279323455325">Soubor s názvem „<ph name="FILE_NAME" />“ již existuje. Zvolte jiný název.</translation>
 <translation id="9046895021617826162">Připojení selhalo</translation>
 <translation id="9065512565307033593">Pokud se vám nepodaří provést ověření, bude vám zakázán přístup k síti.</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 upozornění.}few{<ph name="COUNT" /> upozornění.}many{<ph name="COUNT" /> upozornění.}other{<ph name="COUNT" /> upozornění.}}</translation>
 <translation id="908378762078012445">ruština s fonetickou klávesnicí AATSEEL</translation>
 <translation id="9086302186042011942">Synchronizace</translation>
 <translation id="9099674669267916096">Počet stránek</translation>

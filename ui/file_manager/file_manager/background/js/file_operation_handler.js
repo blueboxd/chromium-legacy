@@ -149,6 +149,12 @@ export class FileOperationHandler {
                 getPolicyErrorFromIOTaskPolicyError_(event.policyError.type);
             item.policyFileCount = event.policyError.policyFileCount;
             item.policyFileName = event.policyError.fileName;
+            item.dismissCallback = () => {
+              // For policy errors, we keep track of the task's info since it
+              // might be required to review the details. Notify when dismissed
+              // that this can be cleared.
+              chrome.fileManagerPrivate.dismissIOTask(event.taskId);
+            };
             const extraButtonText = getPolicyExtraButtonText_(event);
             if (event.policyError.type !==
                     PolicyErrorType.DLP_WARNING_TIMEOUT &&
@@ -273,9 +279,22 @@ function getTypeFromIOTaskType_(type) {
  * @private
  */
 function getMessageFromProgressEvent_(event) {
-  // All the non-error states text is managed directly in the
+  // The non-error states text is managed directly in the
   // ProgressCenterPanel.
-  if (event.state === chrome.fileManagerPrivate.IOTaskState.ERROR) {
+  if (event.state !== chrome.fileManagerPrivate.IOTaskState.ERROR) {
+    return '';
+  }
+  // TODO(b/295438773): Remove this special case for the "in use" error once
+  // the files app error strings are made consistent and an "in use" string is
+  // properly added.
+  if (event.errorName == 'InUseError' && event.itemCount == 1) {
+    switch (event.type) {
+      case chrome.fileManagerPrivate.IOTaskType.MOVE:
+        return str('MOVE_IN_USE_ERROR');
+      case chrome.fileManagerPrivate.IOTaskType.DELETE:
+        return str('DELETE_IN_USE_ERROR');
+    }
+  }
     const detail = util.getFileErrorString(event.errorName);
     switch (event.type) {
       case chrome.fileManagerPrivate.IOTaskType.COPY:
@@ -299,9 +318,6 @@ function getMessageFromProgressEvent_(event) {
         console.warn(`Unexpected operation type: ${event.type}`);
         return strf('FILE_ERROR_GENERIC');
     }
-  }
-
-  return '';
 }
 
 /**
@@ -348,6 +364,7 @@ function getPolicyExtraButtonText_(event) {
       case chrome.fileManagerPrivate.IOTaskType.COPY:
         return str('DLP_FILES_COPY_WARN_CONTINUE_BUTTON');
       case chrome.fileManagerPrivate.IOTaskType.MOVE:
+      case chrome.fileManagerPrivate.IOTaskType.RESTORE_TO_DESTINATION:
         return str('DLP_FILES_MOVE_WARN_CONTINUE_BUTTON');
       default:
         console.error('Unexpected operation type: ' + event.type);

@@ -107,6 +107,11 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
       (override));
 
   MOCK_METHOD(void,
+              ClearOfflineFiles,
+              (drivefs::mojom::DriveFs::ClearOfflineFilesCallback callback),
+              (override));
+
+  MOCK_METHOD(void,
               ImmediatelyUpload,
               (const base::FilePath& path,
                drivefs::mojom::DriveFs::ImmediatelyUploadCallback callback),
@@ -254,14 +259,13 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
 
   void PollHostedFilePinStates() override;
 
-  void CancelUploadByPath(const base::FilePath& path) override;
+  void CancelUploadByPath(
+      const base::FilePath& path,
+      drivefs::mojom::DriveFs::CancelUploadMode cancel_mode) override;
 
   void SetDocsOfflineEnabled(
       bool enabled,
       drivefs::mojom::DriveFs::SetDocsOfflineEnabledCallback callback) override;
-
-  void ClearOfflineFiles(
-      drivefs::mojom::DriveFs::ClearOfflineFilesCallback) override;
 
   void GetDocsOfflineStats(
       drivefs::mojom::DriveFs::GetDocsOfflineStatsCallback) override;

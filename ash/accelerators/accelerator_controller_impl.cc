@@ -4,29 +4,23 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 
-#include <algorithm>
-#include <cmath>
 #include <string>
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
+#include "ash/accelerators/accelerator_launcher_state_machine.h"
 #include "ash/accelerators/accelerator_notifications.h"
 #include "ash/accelerators/debug_commands.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/accessibility/ui/accessibility_confirmation_dialog.h"
-#include "ash/app_list/app_list_metrics.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/devicetype.h"
 #include "ash/debug.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/ime_switch_type.h"
-#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/public/cpp/accelerator_actions.h"
-#include "ash/public/cpp/accelerator_configuration.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/shell.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -34,6 +28,7 @@
 #include "ash/wm/window_state.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -44,11 +39,10 @@
 #include "ui/aura/env.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/display/manager/managed_display_info.h"
 #include "ui/events/ash/keyboard_layout_util.h"
 #include "ui/events/event_constants.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 namespace ash {
 
@@ -201,17 +195,6 @@ void RecordNewTab(const ui::Accelerator& accelerator) {
     base::RecordAction(UserMetricsAction("Accel_NewTab_T"));
 }
 
-// Check if accelerator should trigger ToggleAssistant action.
-bool ShouldToggleAssistant(const ui::Accelerator& accelerator) {
-  // Search+A shortcut is disabled on device with an assistant key.
-  // Currently only Google branded device has the key. Some external keyboard
-  // may report it has the key but actually not.  This would cause keyboard
-  // shortcut stops working.  So we only check the key on these branded
-  // devices.
-  return !(accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_A &&
-           IsGoogleBrandedDevice() && ui::DeviceKeyboardHasAssistantKey());
-}
-
 void HandleSwitchToLastUsedIme(const ui::Accelerator& accelerator) {
   base::RecordAction(UserMetricsAction("Accel_Previous_Ime"));
   if (accelerator.key_state() == ui::Accelerator::KeyState::PRESSED) {
@@ -235,12 +218,18 @@ void HandleSwitchIme(const ui::Accelerator& accelerator) {
 bool CanHandleToggleAppList(
     const ui::Accelerator& accelerator,
     const ui::Accelerator& previous_accelerator,
-    const std::set<ui::KeyboardCode>& currently_pressed_keys) {
+    const std::set<ui::KeyboardCode>& currently_pressed_keys,
+    const AcceleratorLauncherStateMachine* launcher_state_machine) {
   // Check if the accelerator pressed is a RWIN/LWIN, if so perform a
   // secondary check.
   if (accelerator.key_code() != ui::VKEY_LWIN &&
       accelerator.key_code() != ui::VKEY_RWIN) {
     return true;
+  }
+
+  if (base::FeatureList::IsEnabled(features::kShortcutStateMachines)) {
+    CHECK(launcher_state_machine);
+    return launcher_state_machine->CanHandleLauncher();
   }
 
   for (auto key : currently_pressed_keys) {
@@ -269,9 +258,11 @@ bool CanHandleToggleAppList(
     // When spoken feedback is enabled, we should neither toggle the list nor
     // consume the key since Search+Shift is one of the shortcuts the a11y
     // feature uses. crbug.com/132296
-    if (Shell::Get()->accessibility_controller()->spoken_feedback().enabled())
+    if (Shell::Get()->accessibility_controller()->spoken_feedback().enabled()) {
       return false;
+    }
   }
+
   return true;
 }
 
@@ -353,13 +344,13 @@ void AcceleratorControllerImpl::TestApi::RegisterAccelerators(
   // Initializing accelerators will register them.
   controller_->accelerator_configuration()->Initialize(accelerators);
   // If customization is not available, register the accelerators manually.
-  if (!::features::IsShortcutCustomizationEnabled()) {
+  if (!Shell::Get()->accelerator_prefs()->IsCustomizationAllowed()) {
     controller_->RegisterAccelerators(accelerators);
   }
 }
 
 void AcceleratorControllerImpl::TestApi::ObserveAcceleratorUpdates() {
-  DCHECK(::features::IsShortcutCustomizationEnabled());
+  CHECK(Shell::Get()->accelerator_prefs()->IsCustomizationAllowed());
   controller_->accelerator_configuration()->AddObserver(controller_);
 }
 
@@ -405,6 +396,8 @@ AcceleratorControllerImpl::AcceleratorControllerImpl(
     AshAcceleratorConfiguration* config)
     : accelerator_manager_(std::make_unique<ui::AcceleratorManager>()),
       accelerator_history_(std::make_unique<AcceleratorHistoryImpl>()),
+      launcher_state_machine_(std::make_unique<AcceleratorLauncherStateMachine>(
+          ui::OzonePlatform::GetInstance()->GetInputController())),
       accelerator_configuration_(config),
       output_volume_metric_delay_timer_(
           FROM_HERE,
@@ -424,12 +417,20 @@ AcceleratorControllerImpl::AcceleratorControllerImpl(
     accelerator_configuration_->AddObserver(this);
   }
 
+  // Observe shortcut policy changes.
+  Shell::Get()->accelerator_prefs()->AddObserver(this);
+
   // Let AcceleratorHistory be a PreTargetHandler on aura::Env to ensure that it
   // receives KeyEvents and MouseEvents. In some cases Shell PreTargetHandlers
   // will handle Events before AcceleratorHistory gets to see them. This
   // interferes with Accelerator processing. See https://crbug.com/1174603.
   aura::Env::GetInstance()->AddPreTargetHandler(
       accelerator_history_.get(), ui::EventTarget::Priority::kAccessibility);
+  if (base::FeatureList::IsEnabled(features::kShortcutStateMachines)) {
+    aura::Env::GetInstance()->AddPreTargetHandler(
+        launcher_state_machine_.get(),
+        ui::EventTarget::Priority::kAccessibility);
+  }
 }
 
 AcceleratorControllerImpl::~AcceleratorControllerImpl() {
@@ -441,7 +442,15 @@ AcceleratorControllerImpl::~AcceleratorControllerImpl() {
   if (::features::IsShortcutCustomizationEnabled()) {
     accelerator_configuration_->RemoveObserver(this);
   }
+  // In unit tests, the Shell instance may already be deleted at this point.
+  if (Shell::HasInstance()) {
+    Shell::Get()->accelerator_prefs()->RemoveObserver(this);
+  }
   aura::Env::GetInstance()->RemovePreTargetHandler(accelerator_history_.get());
+  if (base::FeatureList::IsEnabled(features::kShortcutStateMachines)) {
+    aura::Env::GetInstance()->RemovePreTargetHandler(
+        launcher_state_machine_.get());
+  }
 }
 
 void AcceleratorControllerImpl::InputMethodChanged(InputMethodManager* manager,
@@ -460,12 +469,20 @@ void AcceleratorControllerImpl::InputMethodChanged(InputMethodManager* manager,
 }
 
 void AcceleratorControllerImpl::OnAcceleratorsUpdated() {
-  DCHECK(::features::IsShortcutCustomizationEnabled());
+  CHECK(Shell::Get()->accelerator_prefs()->IsCustomizationAllowed());
 
   // Accelerators have been updated, unregister all accelerators and re-register
   // them.
   UnregisterAll(this);
   RegisterAccelerators(accelerator_configuration_->GetAllAccelerators());
+}
+
+void AcceleratorControllerImpl::OnShortcutPolicyUpdated() {
+  // Remove accelerator_configuration_ observer when customization is disabled
+  // by policy.
+  if (!Shell::Get()->accelerator_prefs()->IsCustomizationAllowed()) {
+    accelerator_configuration_->RemoveObserver(this);
+  }
 }
 
 void AcceleratorControllerImpl::Register(
@@ -761,7 +778,8 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case AcceleratorAction::kToggleAppList:
       return CanHandleToggleAppList(
           accelerator, previous_accelerator,
-          accelerator_history_->currently_pressed_keys());
+          accelerator_history_->currently_pressed_keys(),
+          launcher_state_machine_.get());
     case AcceleratorAction::kToggleCalendar:
       return true;
     case AcceleratorAction::kToggleCapsLock:
@@ -1251,11 +1269,8 @@ void AcceleratorControllerImpl::PerformAction(
       accelerators::ShowTaskManager();
       break;
     case AcceleratorAction::kStartAssistant:
-      // TODO(longbowei): Move this to CanToggleAssistant().
-      if (ShouldToggleAssistant(accelerator)) {
-        RecordToggleAssistant(accelerator);
-        accelerators::ToggleAssistant();
-      }
+      RecordToggleAssistant(accelerator);
+      accelerators::ToggleAssistant();
       break;
     case AcceleratorAction::kSuspend:
       base::RecordAction(UserMetricsAction("Accel_Suspend"));
@@ -1371,7 +1386,7 @@ void AcceleratorControllerImpl::PerformAction(
     case AcceleratorAction::kToggleSnapGroupWindowsMinimizeAndRestore:
       base::RecordAction(base::UserMetricsAction(
           "Accel_Toggle_Snap_Group_Windows_Minimize_Restore"));
-      accelerators::MinimizeWindowsInSnapGroup();
+      accelerators::ToggleSnapGroupsMinimize();
       break;
     case AcceleratorAction::kToggleResizeLockMenu:
       base::RecordAction(

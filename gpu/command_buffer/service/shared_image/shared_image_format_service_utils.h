@@ -73,19 +73,6 @@ ToGLFormatDescExternalSampler(viz::SharedImageFormat format);
 GPU_GLES2_EXPORT GLFormatDesc ToGLFormatDesc(viz::SharedImageFormat format,
                                              int plane_index,
                                              bool use_angle_rgbx_format);
-// Returns GL data type for given `format`.
-GPU_GLES2_EXPORT GLenum GLDataType(viz::SharedImageFormat format);
-// Returns GL data format for given `format`.
-GPU_GLES2_EXPORT GLenum GLDataFormat(viz::SharedImageFormat format,
-                                     int plane_index = 0);
-// Returns the GL format used internally for matching with the texture format
-// for a given `format`.
-GPU_GLES2_EXPORT GLenum GLInternalFormat(viz::SharedImageFormat format,
-                                         int plane_index = 0);
-// Returns texture storage format for given `format`.
-GPU_GLES2_EXPORT GLenum TextureStorageFormat(viz::SharedImageFormat format,
-                                             bool use_angle_rgbx_format,
-                                             int plane_index = 0);
 
 // Following functions return the appropriate Vulkan format for a
 // SharedImageFormat.
@@ -120,6 +107,11 @@ GPU_GLES2_EXPORT WGPUTextureFormat ToWGPUFormat(viz::SharedImageFormat format,
 wgpu::TextureUsage GetSupportedDawnTextureUsage(viz::SharedImageFormat format,
                                                 bool is_yuv_plane = false,
                                                 bool is_dcomp_surface = false);
+
+// Returns wgpu::TextureAspect corresponding to `plane_index` of a particular
+// `format`.
+wgpu::TextureAspect GetDawnTextureAspect(viz::SharedImageFormat format,
+                                         int plane_index);
 
 // Following function return the appropriate Metal format for a
 // SharedImageFormat.

@@ -20,6 +20,7 @@
 #import "components/segmentation_platform/public/segmentation_platform_service.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #import "components/sync_preferences/testing_pref_service_syncable.h"
+#import "ios/chrome/browser/default_browser/utils_test_support.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/first_run/first_run.h"
@@ -41,6 +42,7 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
@@ -54,13 +56,14 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
+#import "ios/chrome/browser/ui/content_suggestions/set_up_list/utils.h"
+#import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/ntp/metrics/new_tab_page_metrics_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_metrics_delegate.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
 #import "ios/chrome/browser/url_loading/fake_url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
-#import "ios/chrome/test/testing_application_context.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -69,6 +72,7 @@
 #import "third_party/ocmock/gtest_support.h"
 
 using set_up_list_prefs::SetUpListItemState;
+using startup_metric_utils::FirstRunSentinelCreationResult;
 
 @protocol ContentSuggestionsMediatorDispatcher <BrowserCoordinatorCommands,
                                                 SnackbarCommands>
@@ -81,7 +85,7 @@ using set_up_list_prefs::SetUpListItemState;
 // Testing Suite for ContentSuggestionsMediator
 class ContentSuggestionsMediatorTest : public PlatformTest {
  public:
-  ContentSuggestionsMediatorTest() {
+  void SetUp() override {
     // Need to initialize features before constructing
     // SegmentationPlatformServiceFactory.
     scoped_feature_list_.InitWithFeaturesAndParameters(
@@ -116,11 +120,9 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
     chrome_browser_state_ = test_cbs_builder.Build();
 
     // Necessary set up for kIOSSetUpList.
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    FirstRun::RemoveSentinel();
-    base::File::Error fileError;
-    FirstRun::CreateSentinel(&fileError);
-    FirstRun::LoadSentinelInfo();
+    local_state_.Get()->ClearPref(set_up_list_prefs::kDisabled);
+    ClearDefaultBrowserPromoData();
+    WriteFirstRunSentinel();
 
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
         chrome_browser_state_.get(),
@@ -136,7 +138,6 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
     dispatcher_ =
         OCMProtocolMock(@protocol(ContentSuggestionsMediatorDispatcher));
     consumer_ = OCMProtocolMock(@protocol(ContentSuggestionsConsumer));
-    TestingApplicationContext::GetGlobal()->SetLocalState(local_state_.Get());
     scene_state_ = [[SceneState alloc] initWithAppState:nil];
     SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
 
@@ -182,11 +183,14 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
     mediator_.webState = fake_web_state_.get();
 
     metrics_recorder_ = [[ContentSuggestionsMetricsRecorder alloc]
-        initWithLocalState:chrome_browser_state_.get()->GetPrefs()];
+        initWithLocalState:local_state_.Get()];
     mediator_.contentSuggestionsMetricsRecorder = metrics_recorder_;
 
     promos_manager_ = std::make_unique<MockPromosManager>();
     mediator_.promosManager = promos_manager_.get();
+
+    mediator_.NTPMetricsDelegate =
+        OCMProtocolMock(@protocol(NewTabPageMetricsDelegate));
 
     StartSurfaceRecentTabBrowserAgent::CreateForBrowser(browser_.get());
     UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser_.get());
@@ -199,6 +203,24 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
   ~ContentSuggestionsMediatorTest() override { [mediator_ disconnect]; }
 
  protected:
+  // Clears and re-writes the FirstRun sentinel file, in order to allow Set Up
+  // List to display.
+  void WriteFirstRunSentinel() {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    FirstRun::RemoveSentinel();
+    base::File::Error file_error = base::File::FILE_OK;
+    FirstRunSentinelCreationResult sentinel_created =
+        FirstRun::CreateSentinel(&file_error);
+    ASSERT_EQ(sentinel_created, FirstRunSentinelCreationResult::kSuccess)
+        << "Error creating FirstRun sentinel: "
+        << base::File::ErrorToString(file_error);
+    FirstRun::LoadSentinelInfo();
+    FirstRun::ClearStateForTesting();
+    EXPECT_FALSE(set_up_list_prefs::IsSetUpListDisabled(local_state_.Get()));
+    EXPECT_FALSE(FirstRun::IsChromeFirstRun());
+    EXPECT_TRUE(set_up_list_utils::IsSetUpListActive(local_state_.Get()));
+  }
+
   std::unique_ptr<web::FakeWebState> CreateWebState(const char* url) {
     auto test_web_state = std::make_unique<web::FakeWebState>();
     NewTabPageTabHelper::CreateForWebState(test_web_state.get());
@@ -350,8 +372,50 @@ TEST_F(ContentSuggestionsMediatorTest, TestMagicStackConsumerCall) {
 
 // Tests that the -setMagicStackOrder: consumer call is executed with the
 // correct order when fetching from the SegmentationPlatformService.
+// NOTE: do not add new module features to this test, this one ensures the
+// mediator can handle the fetched module order and filter out any extra modules
+// that aren't enabled/valid for a client. Add new modules to
+// TestMagicStackOrderSegmentationServiceCallWithNewFeatures.
 TEST_F(ContentSuggestionsMediatorTest,
        TestMagicStackOrderSegmentationServiceCall) {
+  consumer_ = OCMProtocolMock(@protocol(ContentSuggestionsConsumer));
+  mediator_.segmentationService =
+      segmentation_platform::SegmentationPlatformServiceFactory::
+          GetForBrowserState(chrome_browser_state_.get());
+
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeaturesAndParameters(
+      {
+          {segmentation_platform::features::kSegmentationPlatformFeature, {}},
+          {segmentation_platform::features::
+               kSegmentationPlatformIosModuleRanker,
+           {{segmentation_platform::kDefaultModelEnabledParam, "true"}}},
+          {kMagicStack, {}},
+      },
+      {});
+  OCMExpect(
+      [consumer_ setMagicStackOrder:[OCMArg checkWithBlock:^BOOL(id value) {
+                   NSArray<NSNumber*>* magicStackOrder = (NSArray*)value;
+                   // Ensure MVT and Shortcuts are returned in that order.
+                   return [magicStackOrder count] == 2 &&
+                          0 == [magicStackOrder[0] intValue] &&
+                          1 == [magicStackOrder[1] intValue];
+                 }]]);
+  mediator_.consumer = consumer_;
+
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      TestTimeouts::action_timeout(), true, ^bool() {
+        base::RunLoop().RunUntilIdle();
+        return mediator_.hasReceivedMagicStackResponse;
+      }));
+  EXPECT_OCMOCK_VERIFY(consumer_);
+}
+
+// Tests that the -setMagicStackOrder: consumer call is executed with the
+// correct order INCLUDING new modules when fetching from the
+// SegmentationPlatformService.
+TEST_F(ContentSuggestionsMediatorTest,
+       TestMagicStackOrderSegmentationServiceCallWithNewFeatures) {
   consumer_ = OCMProtocolMock(@protocol(ContentSuggestionsConsumer));
   mediator_.segmentationService =
       segmentation_platform::SegmentationPlatformServiceFactory::
@@ -362,14 +426,18 @@ TEST_F(ContentSuggestionsMediatorTest,
       {{segmentation_platform::features::kSegmentationPlatformFeature, {}},
        {segmentation_platform::features::kSegmentationPlatformIosModuleRanker,
         {{segmentation_platform::kDefaultModelEnabledParam, "true"}}},
-       {kMagicStack, {}}},
+       {kMagicStack, {}},
+       {kSafetyCheckMagicStack, {}}},
       {});
   OCMExpect(
       [consumer_ setMagicStackOrder:[OCMArg checkWithBlock:^BOOL(id value) {
                    NSArray<NSNumber*>* magicStackOrder = (NSArray*)value;
-                   return [magicStackOrder count] == 2 &&
+                   // Ensure MVT, Shortcuts, and Safety Check are returned in
+                   // that order.
+                   return [magicStackOrder count] == 3 &&
                           0 == [magicStackOrder[0] intValue] &&
-                          1 == [magicStackOrder[1] intValue];
+                          1 == [magicStackOrder[1] intValue] &&
+                          7 == [magicStackOrder[2] intValue];
                  }]]);
   mediator_.consumer = consumer_;
 

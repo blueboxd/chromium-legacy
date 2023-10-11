@@ -5,9 +5,12 @@
 #ifndef ASH_GAME_DASHBOARD_GAME_DASHBOARD_CONTEXT_H_
 #define ASH_GAME_DASHBOARD_GAME_DASHBOARD_CONTEXT_H_
 
+#include <memory>
+
 #include "ash/game_dashboard/game_dashboard_widget.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
 
@@ -22,7 +25,7 @@ class GameDashboardToolbarView;
 
 // This class manages Game Dashboard related UI for a given `aura::Window`, and
 // its instance is managed by the `GameDashboardController`.
-class GameDashboardContext {
+class ASH_EXPORT GameDashboardContext {
  public:
   // Indicator for the 4 quadrants that the toolbar is able to be placed.
   enum class ToolbarSnapLocation {
@@ -43,6 +46,10 @@ class GameDashboardContext {
     return main_menu_button_widget_.get();
   }
 
+  ToolbarSnapLocation toolbar_snap_location() const {
+    return toolbar_snap_location_;
+  }
+
   // Reassigns the new `toolbar_snap_location_` and performs an animation as the
   // toolbar moves to its new location.
   void SetToolbarSnapLocation(ToolbarSnapLocation new_location);
@@ -58,6 +65,8 @@ class GameDashboardContext {
 
   // Closes the main menu. Clears `main_menu_widget_` and `main_menu_view_`.
   void CloseMainMenu();
+
+  bool IsMainMenuOpen() const { return main_menu_view_; }
 
   // Toggles the creation/deletion of the toolbar within the game window.
   // Returns the toolbar visibility state.
@@ -104,6 +113,10 @@ class GameDashboardContext {
   // it transfers from the previous location.
   void AnimateToolbarWidgetBoundsChange(const gfx::Rect& target_screen_bounds);
 
+  // Repeating timer callback that notifies `main_menu_view_` of the video
+  // recording session duration.
+  void OnUpdateRecordingTimer();
+
   const raw_ptr<aura::Window, ExperimentalAsh> game_window_;
 
   // Main menu button widget for the Game Dashboard.
@@ -120,11 +133,21 @@ class GameDashboardContext {
 
   // The `GameDashboardMainMenuView` when the user presses the main menu button.
   // Owned by the views hierarchy.
-  raw_ptr<GameDashboardMainMenuView, ExperimentalAsh> main_menu_view_ = nullptr;
+  raw_ptr<GameDashboardMainMenuView, DanglingUntriaged | ExperimentalAsh>
+      main_menu_view_ = nullptr;
 
   // The `GameDashboardToolbarView` when the user makes the toolbar visible.
   // Owned by the views hierarchy.
   raw_ptr<GameDashboardToolbarView, ExperimentalAsh> toolbar_view_ = nullptr;
+
+  // A repeating timer to keep track of the recording session duration.
+  base::RepeatingTimer recording_timer_;
+
+  // Start time of when `recording_timer_` started.
+  base::Time recording_start_time_;
+
+  // Duration since `recording_timer_` started.
+  std::u16string recording_duration_;
 
   base::WeakPtrFactory<GameDashboardContext> weak_ptr_factory_{this};
 };

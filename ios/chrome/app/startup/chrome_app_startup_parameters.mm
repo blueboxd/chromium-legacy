@@ -5,13 +5,14 @@
 #import "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 
 #import "base/apple/bundle_locations.h"
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
+#import "components/password_manager/core/browser/manage_passwords_referrer.h"
 #import "ios/chrome/app/startup/app_launch_metrics.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
@@ -414,7 +415,7 @@ TabOpeningPostOpeningAction XCallbackPoaToPostOpeningAction(
 
   NSString* commandDictionaryPreference =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandPreference);
-  NSDictionary* commandDictionary = base::mac::ObjCCast<NSDictionary>(
+  NSDictionary* commandDictionary = base::apple::ObjCCast<NSDictionary>(
       [sharedDefaults objectForKey:commandDictionaryPreference]);
 
   [sharedDefaults removeObjectForKey:commandDictionaryPreference];
@@ -429,32 +430,32 @@ TabOpeningPostOpeningAction XCallbackPoaToPostOpeningAction(
 
   NSString* commandCallerPreference =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandAppPreference);
-  NSString* commandCaller = base::mac::ObjCCast<NSString>(
+  NSString* commandCaller = base::apple::ObjCCast<NSString>(
       [commandDictionary objectForKey:commandCallerPreference]);
 
   NSString* commandPreference = base::SysUTF8ToNSString(
       app_group::kChromeAppGroupCommandCommandPreference);
-  NSString* command = base::mac::ObjCCast<NSString>(
+  NSString* command = base::apple::ObjCCast<NSString>(
       [commandDictionary objectForKey:commandPreference]);
 
   NSString* commandTimePreference =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandTimePreference);
-  id commandTime = base::mac::ObjCCast<NSDate>(
+  id commandTime = base::apple::ObjCCast<NSDate>(
       [commandDictionary objectForKey:commandTimePreference]);
 
   NSString* commandTextPreference =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandTextPreference);
-  NSString* externalText = base::mac::ObjCCast<NSString>(
+  NSString* externalText = base::apple::ObjCCast<NSString>(
       [commandDictionary objectForKey:commandTextPreference]);
 
   NSString* commandDataPreference =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandDataPreference);
-  NSData* externalData = base::mac::ObjCCast<NSData>(
+  NSData* externalData = base::apple::ObjCCast<NSData>(
       [commandDictionary objectForKey:commandDataPreference]);
 
   NSString* commandIndexPreference =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandIndexPreference);
-  NSNumber* index = base::mac::ObjCCast<NSNumber>(
+  NSNumber* index = base::apple::ObjCCast<NSNumber>(
       [commandDictionary objectForKey:commandIndexPreference]);
 
   if (!commandCaller || !command || !commandTimePreference) {
@@ -725,6 +726,11 @@ TabOpeningPostOpeningAction XCallbackPoaToPostOpeningAction(
   if ([secureSourceApp isEqualToString:kWidgetKitHostSearchPasswordsWidget]) {
     LogWidgetKitAction(WidgetKitExtensionAction::
                            ACTION_SEARCH_PASSWORDS_WIDGET_SEARCH_PASSWORDS);
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordManager.ManagePasswordsReferrer",
+        password_manager::ManagePasswordsReferrer::kSearchPasswordsWidget);
+    base::RecordAction(base::UserMetricsAction(
+        "MobileSearchPasswordsWidgetOpenPasswordManager"));
   }
   return params;
 }

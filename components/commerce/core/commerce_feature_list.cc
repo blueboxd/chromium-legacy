@@ -48,6 +48,8 @@ const CountryLocaleMap& GetAllowedCountryToLocaleMap() {
     map[&kCommerceMerchantViewerRegionLaunched] = {{"us", {"en-us"}}};
     map[&kCommercePriceTrackingRegionLaunched] = {{"us", {"en-us"}}};
     map[&kPriceInsightsRegionLaunched] = {{"us", {"en-us"}}};
+    map[&kShowDiscountOnNavigationRegionLaunched] = {{"us", {"en-us"}}};
+    map[&kShoppingPageTypesRegionLaunched] = {{"us", {"en-us"}}};
 
     return map;
   }());
@@ -180,6 +182,19 @@ const char kPriceInsightsShowFeedbackParam[] = "price-insights-show-feedback";
 const base::FeatureParam<bool> kPriceInsightsShowFeedback{
     &commerce::kPriceInsights, kPriceInsightsShowFeedbackParam, false};
 
+// Tonal colors for the expanded state of the price tracking chip on desktop.
+BASE_FEATURE(kPriceTrackingIconColors,
+             "PriceTrackingIconColors",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Discount on navigation
+BASE_FEATURE(kShowDiscountOnNavigation,
+             "ShowDiscountOnNavigation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kShowDiscountOnNavigationRegionLaunched,
+             "ShowDiscountOnNavigationRegionLaunched",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 const base::FeatureParam<bool> kDeleteAllMerchantsOnClearBrowsingHistory{
     &kCommerceMerchantViewer, "delete_all_merchants_on_clear_history", false};
 
@@ -203,6 +218,10 @@ BASE_FEATURE(kShoppingListTrackByDefault,
              "ShoppingListTrackByDefault",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kShoppingListWAARestrictionRemoval,
+             "ShoppingListWAARestrictionRemoval",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kShoppingPDPMetrics,
              "ShoppingPDPMetrics",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -210,6 +229,14 @@ BASE_FEATURE(kShoppingPDPMetrics,
 BASE_FEATURE(kShoppingPDPMetricsRegionLaunched,
              "ShoppingPDPMetricsRegionLaunched",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kShoppingPageTypes,
+             "ShoppingPageTypes",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kShoppingPageTypesRegionLaunched,
+             "ShoppingPageTypesRegionLaunched",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRetailCoupons, "RetailCoupons", base::FEATURE_ENABLED_BY_DEFAULT);
 

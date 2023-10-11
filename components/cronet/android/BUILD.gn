@@ -25,19 +25,6 @@ _gn_path = "//buildtools/linux64/gn"
 assert(!is_component_build)
 assert(is_cronet_build)
 
-declare_args() {
-  # In integrated mode, CronetEngine will use the shared network task runner by
-  # other Chromium-based clients like webview without self-initialization.
-  # Besides, the native library would be compiled and loaded together with the
-  # native library of host. This mode is only for Android.
-  integrated_mode = false
-}
-
-buildflag_header("buildflags") {
-  header = "buildflags.h"
-  flags = [ "INTEGRATED_MODE=$integrated_mode" ]
-}
-
 generate_jni("cronet_jni_headers") {
   sources = [
     "java/src/org/chromium/net/impl/CronetBidirectionalStream.java",
@@ -89,13 +76,6 @@ java_cpp_template("load_states_list") {
   inputs = [ "//net/base/load_states_list.h" ]
 }
 
-java_cpp_template("integrated_mode_state") {
-  sources = [ "java/src/org/chromium/net/impl/IntegratedModeState.template" ]
-  if (integrated_mode) {
-    defines = [ "INTEGRATED_MODE" ]
-  }
-}
-
 _generated_interface_api_version_java =
     "$_templates_dir/org/chromium/net/ApiVersion.java"
 _interface_api_level = read_file("interface_api_version.txt", "value")
@@ -134,6 +114,11 @@ process_version("implementation_api_version") {
 
 _cronet_version_header_include_dir = "$target_gen_dir/cronet_version_header"
 
+proto_java_library("flags_java_proto") {
+  proto_path = "."
+  sources = [ "proto/flags.proto" ]
+}
+
 proto_library("request_context_config_proto") {
   sources = [ "proto/request_context_config.proto" ]
 }
@@ -145,7 +130,6 @@ proto_java_library("request_context_config_java_proto") {
 
 source_set("cronet_static") {
   deps = [
-    ":buildflags",
     ":cronet_jni_headers",
     ":cronet_jni_registration",
     ":request_context_config_proto",
@@ -167,6 +151,7 @@ source_set("cronet_static") {
     "//components/cronet/android/cronet_context_adapter.cc",
     "//components/cronet/android/cronet_context_adapter.h",
     "//components/cronet/android/cronet_library_loader.cc",
+    "//components/cronet/android/cronet_library_loader.h",
     "//components/cronet/android/cronet_upload_data_stream_adapter.cc",
     "//components/cronet/android/cronet_upload_data_stream_adapter.h",
     "//components/cronet/android/cronet_url_request_adapter.cc",
@@ -176,15 +161,6 @@ source_set("cronet_static") {
     "//components/cronet/android/url_request_error.cc",
     "//components/cronet/android/url_request_error.h",
   ]
-
-  if (integrated_mode) {
-    sources += [
-      "//components/cronet/android/cronet_integrated_mode_state.cc",
-      "//components/cronet/android/cronet_integrated_mode_state.h",
-    ]
-  } else {
-    sources += [ "//components/cronet/android/cronet_library_loader.h" ]
-  }
 
   include_dirs = [ _cronet_version_header_include_dir ]
 
@@ -283,7 +259,6 @@ android_library("cronet_api_java") {
 
 cronet_impl_common_java_srcjar_deps = [
   ":http_cache_type_java",
-  ":integrated_mode_state",
   ":load_states_list",
   ":rtt_throughput_values_java",
   "//net:effective_connection_type_java",
@@ -410,6 +385,7 @@ cronet_impl_native_java_srcjar_deps = [
 
 cronet_impl_native_java_deps_to_package = [
   ":cronet_urlconnection_impl_java",
+  ":flags_java_proto",
   ":request_context_config_java_proto",
   "//base:base_java",
   "//base:jni_java",
@@ -421,6 +397,8 @@ cronet_impl_native_java_deps_to_package = [
 # cronet_impl_native_base_java.jar - native implementation of the Cronet engine.
 android_library("cronet_impl_native_base_java") {
   sources = [
+    "java/src/org/chromium/net/httpflags/HttpFlagsLoader.java",
+    "java/src/org/chromium/net/httpflags/ResolvedFlags.java",
     "java/src/org/chromium/net/impl/BidirectionalStreamBuilderImpl.java",
     "java/src/org/chromium/net/impl/BidirectionalStreamNetworkException.java",
     "java/src/org/chromium/net/impl/CronetBidirectionalStream.java",
@@ -509,7 +487,6 @@ android_library("cronet_sample_apk_java") {
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_fragment_fragment_java",
     "//third_party/androidx:androidx_lifecycle_lifecycle_viewmodel_java",
-    "//third_party/androidx:androidx_multidex_multidex_java",
     "//third_party/androidx:androidx_preference_preference_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
   ]
@@ -530,7 +507,6 @@ android_apk("cronet_sample_apk") {
   # Cronet jars will include this, so don't duplicate.
   generate_buildconfig_java = false
 
-  enable_multidex = true
   if (!is_java_debug) {
     proguard_enabled = true
     proguard_configs = [
@@ -963,7 +939,6 @@ android_library("cronet_test_apk_java") {
     "//net/android:net_java_test_support",
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
-    "//third_party/androidx:androidx_multidex_multidex_java",
     "//third_party/google-truth:google_truth_java",
     "//third_party/junit",
     "//third_party/netty4:netty_all_java",
@@ -1001,12 +976,14 @@ android_library("cronet_common_javatests") {
     "test/javatests/src/org/chromium/net/TestRequestFinishedListener.java",
     "test/javatests/src/org/chromium/net/TestUploadDataProvider.java",
     "test/javatests/src/org/chromium/net/TestUrlRequestCallback.java",
+    "test/javatests/src/org/chromium/net/httpflags/HttpFlagsInterceptor.java",
     "test/javatests/src/org/chromium/net/impl/CronetManifestInterceptor.java",
   ]
   deps = [
            ":cronet_api_java",
            ":cronet_impl_all_java",
            ":cronet_test_apk_java",
+           ":flags_java_proto",
            "//base:base_java",
            "//base:base_java_test_support",
            "//base:jni_java",
@@ -1048,6 +1025,7 @@ cronet_javatests_deps_to_package = [
   ":cronet_common_javatests",
   ":cronet_fake_javatests",
   ":cronet_test_apk_java",
+  ":flags_java_proto",
   "//base:base_java",
   "//base:jni_java",
   "//base:base_java_test_support",
@@ -1089,10 +1067,11 @@ android_library("cronet_javatests") {
     "test/javatests/src/org/chromium/net/ExperimentalOptionsTranslationTest.java",
     "test/javatests/src/org/chromium/net/FileUtils.java",
     "test/javatests/src/org/chromium/net/GetStatusTest.java",
+    "test/javatests/src/org/chromium/net/LogcatCapture.java",
     "test/javatests/src/org/chromium/net/MetricsTestUtil.java",
     "test/javatests/src/org/chromium/net/MockCertVerifierTest.java",
     "test/javatests/src/org/chromium/net/NQETest.java",
-    "test/javatests/src/org/chromium/net/NetworkChangeNotifierTest.java",
+    "test/javatests/src/org/chromium/net/NetworkChangesTest.java",
     "test/javatests/src/org/chromium/net/NetworkErrorLoggingTest.java",
     "test/javatests/src/org/chromium/net/PkpTest.java",
     "test/javatests/src/org/chromium/net/QuicTest.java",
@@ -1104,6 +1083,8 @@ android_library("cronet_javatests") {
     "test/javatests/src/org/chromium/net/UrlResponseInfoTest.java",
     "test/javatests/src/org/chromium/net/apihelpers/ContentTypeParametersParserTest.java",
     "test/javatests/src/org/chromium/net/apihelpers/UploadDataProvidersTest.java",
+    "test/javatests/src/org/chromium/net/httpflags/HttpFlagsLoaderTest.java",
+    "test/javatests/src/org/chromium/net/httpflags/ResolvedFlagsTest.java",
     "test/javatests/src/org/chromium/net/impl/CronetLoggerTest.java",
     "test/javatests/src/org/chromium/net/impl/CronetManifestTest.java",
     "test/javatests/src/org/chromium/net/urlconnection/CronetBufferedOutputStreamTest.java",
@@ -1125,6 +1106,7 @@ android_library("cronet_javatests") {
     ":cronet_impl_all_java",
     ":cronet_urlconnection_impl_java",
     "//third_party/android_deps:guava_android_java",
+    "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/androidx:androidx_test_ext_junit_java",
     "//third_party/androidx:androidx_test_runner_java",
@@ -1144,8 +1126,7 @@ instrumentation_test_apk("cronet_test_instrumentation_apk") {
   lint_baseline_file = "lint-baseline.xml"
   lint_suppressions_file = "lint-suppressions.xml"
 
-  # Still needs to support KitKat. See crbug.com/1042122.
-  lint_min_sdk_version = 19
+  lint_min_sdk_version = 21
 
   apk_name = "CronetTestInstrumentation"
   android_manifest = "test/javatests/AndroidManifest.xml"
@@ -1187,7 +1168,6 @@ instrumentation_test_apk("cronet_test_instrumentation_apk") {
 
   data_deps = [ "//net:test_support" ]
 
-  enable_multidex = true
   if (!is_java_debug) {
     proguard_enabled = true
 
@@ -1231,7 +1211,6 @@ instrumentation_test_apk(
            "//base:base_java_test_support",
            "//third_party/android_sdk:android_test_base_java",
            "//third_party/android_sdk:android_test_mock_java",
-           "//third_party/androidx:androidx_multidex_multidex_java",
            "//third_party/google-truth:google_truth_java",
            "//third_party/junit",
            "//third_party/netty4:netty_all_java",
@@ -1276,7 +1255,6 @@ instrumentation_test_apk(
            "//third_party/netty4:netty_all_java",
          ] + cronet_tests_androidx_common_srcs
 
-  enable_multidex = true
   if (!is_java_debug) {
     proguard_enabled = true
     proguard_configs = [
@@ -1317,7 +1295,6 @@ android_apk("cronet_perf_test_apk") {
     "//third_party/junit",
   ]
 
-  enable_multidex = true
   if (!is_java_debug) {
     proguard_enabled = true
     proguard_configs = [
@@ -1468,6 +1445,7 @@ zip("jar_cronet_sample_source") {
 jar_src("jar_cronet_impl_native_java_source") {
   src_search_dirs = [
     "//base/android/java/src",
+    "//base/test/android/javatests/src/stub",
     "//build/android/java/src",
     "//components/cronet/android/java/src",
     "//net/android/java/src",

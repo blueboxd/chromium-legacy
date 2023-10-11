@@ -26,6 +26,7 @@
 #include "chromeos/ash/components/network/cellular_policy_handler.h"
 #include "chromeos/ash/components/network/client_cert_util.h"
 #include "chromeos/ash/components/network/device_state.h"
+#include "chromeos/ash/components/network/hotspot_controller.h"
 #include "chromeos/ash/components/network/metrics/esim_policy_login_metrics_logger.h"
 #include "chromeos/ash/components/network/metrics/wifi_network_metrics_helper.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
@@ -45,6 +46,7 @@
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/ash/components/network/shill_property_util.h"
 #include "chromeos/ash/components/network/tether_constants.h"
+#include "chromeos/ash/components/network/text_message_suppression_state.h"
 #include "chromeos/components/onc/onc_signature.h"
 #include "chromeos/components/onc/onc_utils.h"
 #include "chromeos/components/onc/onc_validator.h"
@@ -857,6 +859,10 @@ void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied(
     network_device_handler_->SetAllowCellularSimLock(AllowCellularSimLock());
   }
 
+  if (hotspot_controller_) {
+    hotspot_controller_->SetPolicyAllowHotspot(AllowCellularHotspot());
+  }
+
   if (device_policy_applied_ && user_policy_applied_) {
     network_state_handler_->UpdateBlockedWifiNetworks(
         AllowOnlyPolicyWiFiToConnect(),
@@ -967,6 +973,33 @@ bool ManagedNetworkConfigurationHandlerImpl::CanRemoveNetworkConfig(
   return !IsNetworkConfiguredByPolicy(guid, profile_path);
 }
 
+PolicyTextMessageSuppressionState
+ManagedNetworkConfigurationHandlerImpl::GetAllowTextMessages() const {
+  CHECK(features::IsSuppressTextMessagesEnabled());
+  const base::Value::Dict* global_network_config = GetGlobalConfigFromPolicy(
+      std::string() /* no username hash, device policy */);
+
+  if (!global_network_config) {
+    return PolicyTextMessageSuppressionState::kUnset;
+  }
+
+  const std::string* managed_only_value = global_network_config->FindString(
+      ::onc::global_network_config::kAllowTextMessages);
+  if (!managed_only_value) {
+    return PolicyTextMessageSuppressionState::kUnset;
+  }
+
+  if (*managed_only_value == ::onc::cellular::kTextMessagesAllow) {
+    return PolicyTextMessageSuppressionState::kAllow;
+  }
+
+  if (*managed_only_value == ::onc::cellular::kTextMessagesSuppress) {
+    return PolicyTextMessageSuppressionState::kSuppress;
+  }
+
+  return PolicyTextMessageSuppressionState::kUnset;
+}
+
 bool ManagedNetworkConfigurationHandlerImpl::AllowCellularSimLock() const {
   const base::Value::Dict* global_network_config = GetGlobalConfigFromPolicy(
       std::string() /* no username hash, device policy */);
@@ -980,6 +1013,22 @@ bool ManagedNetworkConfigurationHandlerImpl::AllowCellularSimLock() const {
   const absl::optional<bool> managed_only_value =
       global_network_config->FindBool(
           ::onc::global_network_config::kAllowCellularSimLock);
+  return managed_only_value.value_or(true);
+}
+
+bool ManagedNetworkConfigurationHandlerImpl::AllowCellularHotspot() const {
+  const base::Value::Dict* global_network_config = GetGlobalConfigFromPolicy(
+      std::string() /* no username hash, device policy */);
+
+  // If |global_network_config| does not exist, default to allowing cellular
+  // hotspot
+  if (!global_network_config) {
+    return true;
+  }
+
+  const absl::optional<bool> managed_only_value =
+      global_network_config->FindBool(
+          ::onc::global_network_config::kAllowCellularHotspot);
   return managed_only_value.value_or(true);
 }
 
@@ -1113,7 +1162,8 @@ void ManagedNetworkConfigurationHandlerImpl::Init(
     NetworkProfileHandler* network_profile_handler,
     NetworkConfigurationHandler* network_configuration_handler,
     NetworkDeviceHandler* network_device_handler,
-    ProhibitedTechnologiesHandler* prohibited_technologies_handler) {
+    ProhibitedTechnologiesHandler* prohibited_technologies_handler,
+    HotspotController* hotspot_controller) {
   cellular_policy_handler_ = cellular_policy_handler;
   managed_cellular_pref_handler_ = managed_cellular_pref_handler;
   network_state_handler_ = network_state_handler;
@@ -1123,6 +1173,7 @@ void ManagedNetworkConfigurationHandlerImpl::Init(
   if (network_profile_handler_)
     network_profile_handler_->AddObserver(this);
   prohibited_technologies_handler_ = prohibited_technologies_handler;
+  hotspot_controller_ = hotspot_controller;
 }
 
 void ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork(

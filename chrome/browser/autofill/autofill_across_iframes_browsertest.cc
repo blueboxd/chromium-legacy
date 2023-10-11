@@ -30,7 +30,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
@@ -123,11 +122,12 @@ void FillCard(content::RenderFrameHost* rfh,
               const FormData& form,
               const FormFieldData& triggered_field) {
   CreditCard card;
-  test::SetCreditCardInfo(&card, kNameFull, kNumber, kExpMonth, kExpYear, "");
+  test::SetCreditCardInfo(&card, kNameFull, kNumber, kExpMonth, kExpYear, "",
+                          base::ASCIIToUTF16(base::StringPiece(kCvc)));
   auto* manager = TestAutofillManager::GetForRenderFrameHost(rfh);
-  manager->FillCreditCardFormImpl(form, triggered_field, card,
-                                  base::ASCIIToUTF16(base::StringPiece(kCvc)),
-                                  AutofillTriggerSource::kPopup);
+  manager->FillCreditCardFormImpl(
+      form, triggered_field, card, base::ASCIIToUTF16(base::StringPiece(kCvc)),
+      AutofillTriggerDetails(AutofillTriggerSource::kPopup));
 }
 
 // Returns the values of all fields in the  frames of `web_contents`.
@@ -208,11 +208,7 @@ auto HasValue(base::StringPiece value) {
 class AutofillAcrossIframesTest : public InProcessBrowserTest {
  public:
   AutofillAcrossIframesTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{::features::kAutofillSharedAutofill},
-        /*disabled_features=*/{});
-  }
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
@@ -354,7 +350,8 @@ class AutofillAcrossIframesTest : public InProcessBrowserTest {
   static constexpr const char* kMainHostname = kHostnames[0];
 
   test::AutofillBrowserTestEnvironment autofill_test_environment_;
-  base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedFeatureList feature_list_{
+      features::kAutofillSharedAutofill};
   net::EmbeddedTestServer https_server_;
   content::ContentMockCertVerifier cert_verifier_;
   // Maps relative paths to HTML content.
@@ -453,7 +450,7 @@ class AutofillAcrossIframesTest_SharedAutofill
     : public AutofillAcrossIframesTest_Simple {
  private:
   base::test::ScopedFeatureList feature_list_{
-      ::features::kAutofillSharedAutofill};
+      features::kAutofillSharedAutofill};
 };
 
 // Tests that autofilling on a main-origin field also fills cross-origin fields

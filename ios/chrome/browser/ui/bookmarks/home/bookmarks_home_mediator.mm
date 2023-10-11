@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_mediator.h"
 
+#import "base/apple/foundation_util.h"
 #import "base/check.h"
-#import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/bookmark_utils.h"
@@ -19,8 +19,9 @@
 #import "components/sync/base/features.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/sync_service.h"
-#import "ios/chrome/browser/bookmarks/bookmark_model_bridge_observer.h"
-#import "ios/chrome/browser/bookmarks/managed_bookmark_service_factory.h"
+#import "components/sync/service/sync_user_settings.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_bridge_observer.h"
+#import "ios/chrome/browser/bookmarks/model/managed_bookmark_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -31,7 +32,6 @@
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
-#import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
@@ -577,7 +577,7 @@ bool IsABookmarkNodeSectionForIdentifier(
   for (TableViewItem* item in items) {
     if (item.type == BookmarksHomeItemTypeBookmark) {
       BookmarksHomeNodeItem* nodeItem =
-          base::mac::ObjCCastStrict<BookmarksHomeNodeItem>(item);
+          base::apple::ObjCCastStrict<BookmarksHomeNodeItem>(item);
       if (nodeItem.bookmarkNode == bookmarkNode) {
         return nodeItem;
       }
@@ -737,8 +737,9 @@ bool IsABookmarkNodeSectionForIdentifier(
   DCHECK(self.syncService);
   bool syncDisabledPolicy = self.syncService->HasDisableReason(
       syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
-  bool syncTypesDisabledPolicy = IsManagedSyncDataType(
-      self.syncService, syncer::UserSelectableType::kBookmarks);
+  bool syncTypesDisabledPolicy =
+      self.syncService->GetUserSettings()->IsTypeManagedByPolicy(
+          syncer::UserSelectableType::kBookmarks);
   return syncDisabledPolicy || syncTypesDisabledPolicy;
 }
 

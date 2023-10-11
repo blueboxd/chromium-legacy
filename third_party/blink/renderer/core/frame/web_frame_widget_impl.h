@@ -36,6 +36,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/types/pass_key.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/overscroll_behavior.h"
@@ -376,15 +377,19 @@ class CORE_EXPORT WebFrameWidgetImpl
   void PrepareForFinalLifecyclUpdateForTesting() override;
 
   // Called when a drag-n-drop operation should begin.
-  virtual void StartDragging(const WebDragData&,
+  virtual void StartDragging(LocalFrame* source_frame,
+                             const WebDragData&,
                              DragOperationsMask,
                              const SkBitmap& drag_image,
                              const gfx::Vector2d& cursor_offset,
                              const gfx::Rect& drag_obj_rect);
 
   bool DoingDragAndDrop() { return doing_drag_and_drop_; }
-  static void SetIgnoreInputEvents(bool value) { ignore_input_events_ = value; }
-  static bool IgnoreInputEvents() { return ignore_input_events_; }
+  static void SetIgnoreInputEvents(
+      const base::UnguessableToken& browsing_context_group_token,
+      bool value);
+  static bool IgnoreInputEvents(
+      const base::UnguessableToken& browsing_context_group_token);
 
   // Resets the layout tracking steps for the main frame. When
   // `UpdateLifecycle()` is called it generates `WebMeaningfulLayout` events
@@ -590,6 +595,10 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   // Called when the main frame navigates.
   void DidNavigate();
+
+  // Ensures all queued input in the widget has been processed and the queues
+  // emptied.
+  void FlushInputForTesting(base::OnceClosure done_callback);
 
   // Called when the widget should get targeting input.
   void SetMouseCapture(bool capture);
@@ -952,6 +961,9 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   // Satisfy the render blocking condition for cross-document view transitions.
   void NotifyViewTransitionRenderingHasBegun();
+
+  // True when `this` should ignore input events.
+  bool ShouldIgnoreInputEvents();
 
   // Stores the current composition line bounds. These bounds are rectangles
   // which surround each line of text in a currently focused input or textarea

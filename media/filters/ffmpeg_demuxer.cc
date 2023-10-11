@@ -80,7 +80,7 @@ int AVSeekFrame(AVFormatContext* s, int stream_index, int64_t timestamp) {
 static base::Time ExtractTimelineOffset(
     container_names::MediaContainerName container,
     const AVFormatContext* format_context) {
-  if (container == container_names::CONTAINER_WEBM) {
+  if (container == container_names::MediaContainerName::kContainerWEBM) {
     const AVDictionaryEntry* entry =
         av_dict_get(format_context->metadata, "creation_time", nullptr, 0);
 
@@ -137,10 +137,10 @@ static void RecordVideoCodecStats(container_names::MediaContainerName container,
   // TODO(xhwang): Fix these misleading metric names. They should be something
   // like "Media.SRC.Xxxx". See http://crbug.com/716183.
   base::UmaHistogramEnumeration("Media.VideoCodec", video_config.codec());
-  if (container == container_names::CONTAINER_MOV) {
+  if (container == container_names::MediaContainerName::kContainerMOV) {
     base::UmaHistogramEnumeration("Media.SRC.VideoCodec.MP4",
                                   video_config.codec());
-  } else if (container == container_names::CONTAINER_WEBM) {
+  } else if (container == container_names::MediaContainerName::kContainerWEBM) {
     base::UmaHistogramEnumeration("Media.SRC.VideoCodec.WebM",
                                   video_config.codec());
   }
@@ -395,21 +395,8 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   scoped_refptr<DecoderBuffer> buffer;
 
   if (type() == DemuxerStream::TEXT) {
-    size_t id_size = 0;
-    uint8_t* id_data = av_packet_get_side_data(
-        packet.get(), AV_PKT_DATA_WEBVTT_IDENTIFIER, &id_size);
-
-    size_t settings_size = 0;
-    uint8_t* settings_data = av_packet_get_side_data(
-        packet.get(), AV_PKT_DATA_WEBVTT_SETTINGS, &settings_size);
-
-    std::vector<uint8_t> side_data;
-    MakeSideData(id_data, id_data + id_size,
-                 settings_data, settings_data + settings_size,
-                 &side_data);
-
-    buffer = DecoderBuffer::CopyFrom(packet->data, packet->size,
-                                     side_data.data(), side_data.size());
+    // TODO(crbug.com/1471504): This is now broken without side data; remove.
+    buffer = DecoderBuffer::CopyFrom(packet->data, packet->size);
   } else {
     size_t side_data_size = 0;
     uint8_t* side_data = av_packet_get_side_data(
@@ -436,7 +423,8 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     // This behavior may also occur with ADTS streams, but is rarer in practice
     // because ffmpeg's ADTS demuxer does more validation on the packets, so
     // when invalid data is received, av_read_frame() fails and playback ends.
-    if (is_audio && demuxer_->container() == container_names::CONTAINER_MP3) {
+    if (is_audio && demuxer_->container() ==
+                        container_names::MediaContainerName::kContainerMP3) {
       DCHECK(!data_offset);  // Only set for containers supporting encryption...
 
       // MP3 packets may be zero-padded according to ffmpeg, so trim until we
@@ -465,8 +453,9 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     // into memory we control.
     if (side_data_size > 0) {
       buffer = DecoderBuffer::CopyFrom(packet->data + data_offset,
-                                       packet->size - data_offset, side_data,
-                                       side_data_size);
+                                       packet->size - data_offset);
+      buffer->WritableSideData().alpha_data.assign(side_data,
+                                                   side_data + side_data_size);
     } else {
       buffer = DecoderBuffer::CopyFrom(packet->data + data_offset,
                                        packet->size - data_offset);
@@ -1365,7 +1354,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
 
     // Skip disabled tracks. The mov demuxer translates MOV_TKHD_FLAG_ENABLED to
     // AV_DISPOSITION_DEFAULT.
-    if (container() == container_names::CONTAINER_MOV &&
+    if (container() == container_names::MediaContainerName::kContainerMOV &&
         !(stream->disposition & AV_DISPOSITION_DEFAULT)) {
       stream->discard = AVDISCARD_ALL;
       continue;
@@ -1401,8 +1390,10 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
         MediaTrack::Language(streams_[i]->GetMetadata("language"));
 
     // Some metadata is named differently in FFmpeg for webm files.
-    if (glue_->container() == container_names::CONTAINER_WEBM)
+    if (glue_->container() ==
+        container_names::MediaContainerName::kContainerWEBM) {
       track_label = MediaTrack::Label(streams_[i]->GetMetadata("title"));
+    }
 
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
       ++supported_audio_track_count;
@@ -1503,7 +1494,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
 
   // Chained ogg is only allowed on single track audio only opus/vorbis media.
   const bool needs_chained_ogg_fixup =
-      glue_->container() == container_names::CONTAINER_OGG &&
+      glue_->container() ==
+          container_names::MediaContainerName::kContainerOgg &&
       supported_audio_track_count == 1 && !supported_video_track_count &&
       has_opus_or_vorbis_audio;
 
@@ -1540,14 +1532,18 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
 
   // MPEG-4 B-frames cause grief for a simple container like AVI. Enable PTS
   // generation so we always get timestamps, see http://crbug.com/169570
-  if (glue_->container() == container_names::CONTAINER_AVI)
+  if (glue_->container() ==
+      container_names::MediaContainerName::kContainerAVI) {
     format_context->flags |= AVFMT_FLAG_GENPTS;
+  }
 
   // FFmpeg will incorrectly adjust the start time of MP3 files into the future
   // based on discard samples. We were unable to fix this upstream without
   // breaking ffmpeg functionality. https://crbug.com/1062037
-  if (glue_->container() == container_names::CONTAINER_MP3)
+  if (glue_->container() ==
+      container_names::MediaContainerName::kContainerMP3) {
     start_time_ = base::TimeDelta();
+  }
 
   // For testing purposes, don't overwrite the timeline offset if set already.
   if (timeline_offset_.is_null()) {

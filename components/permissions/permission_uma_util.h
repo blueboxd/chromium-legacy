@@ -13,9 +13,9 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_request.h"
-#include "components/permissions/permission_result.h"
 #include "components/permissions/prediction_service/prediction_service_messages.pb.h"
 #include "components/permissions/request_type.h"
+#include "content/public/browser/permission_result.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-forward.h"
 
@@ -220,6 +220,10 @@ enum class PermissionPromptDisposition {
   // Only used on desktop, a chip on the left-hand side of the location bar that
   // automatically shows a bubble.
   LOCATION_BAR_LEFT_CHIP_AUTO_BUBBLE = 12,
+
+  // Only used on desktop, a bubble shown near the embedded permission element,
+  // after the user clicks on the element.
+  ELEMENT_ANCHORED_BUBBLE = 13,
 };
 
 // The reason why the permission prompt disposition was used. Enum used in UKMs,
@@ -483,7 +487,7 @@ class PermissionUmaUtil {
       PermissionEmbargoStatus embargo_status);
 
   static void RecordEmbargoPromptSuppressionFromSource(
-      PermissionStatusSource source);
+      content::PermissionStatusSource source);
 
   static void RecordEmbargoStatus(PermissionEmbargoStatus embargo_status);
 

@@ -11,22 +11,25 @@
 #include "chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
 #include "chrome/browser/segmentation_platform/ukm_data_manager_test_utils.h"
 #include "chrome/browser/segmentation_platform/ukm_database_client.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/chrome_test_utils.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_observer.h"
 #include "components/prefs/pref_service.h"
+#include "components/segmentation_platform/embedder/default_model/optimization_target_segmentation_dummy.h"
 #include "components/segmentation_platform/internal/constants.h"
 #include "components/segmentation_platform/internal/database/client_result_prefs.h"
 #include "components/segmentation_platform/internal/execution/mock_model_provider.h"
+#include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/config.h"
+#include "components/segmentation_platform/public/constants.h"
 #include "components/segmentation_platform/public/features.h"
 #include "components/segmentation_platform/public/model_provider.h"
 #include "components/segmentation_platform/public/segment_selection_result.h"
 #include "components/segmentation_platform/public/segmentation_platform_service.h"
 #include "components/ukm/ukm_service.h"
 #include "content/public/test/browser_test.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace segmentation_platform {
 
@@ -36,12 +39,21 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SaveArg;
 
-constexpr SegmentId kSegmentId =
+constexpr SegmentId kSegmentId1 =
     SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT;
+
+constexpr SegmentId kSegmentId2 =
+    SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_DUMMY;
+
+constexpr SegmentId kSegmentId3 =
+    SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER;
+
+constexpr char kFeatureProcessingHistogram[] =
+    "SegmentationPlatform.FeatureProcessing.Error.";
 
 constexpr char kSqlFeatureQuery[] = "SELECT COUNT(*) from metrics";
 
-class SegmentationPlatformTest : public InProcessBrowserTest {
+class SegmentationPlatformTest : public PlatformBrowserTest {
  public:
   SegmentationPlatformTest() {
     // Low Engagement Segment is used to test segmentation service without multi
@@ -56,7 +68,9 @@ class SegmentationPlatformTest : public InProcessBrowserTest {
              {{"enable_default_model", "true"}}),
          base::test::FeatureRefAndParams(
              features::kSegmentationPlatformSearchUser,
-             {{"enable_default_model", "true"}})},
+             {{"enable_default_model", "true"}}),
+         base::test::FeatureRefAndParams(
+             kSegmentationPlatformOptimizationTargetSegmentationDummy, {})},
         {});
   }
 
@@ -66,7 +80,8 @@ class SegmentationPlatformTest : public InProcessBrowserTest {
 
   bool HasResultPref(base::StringPiece segmentation_key) {
     const base::Value::Dict& dictionary =
-        browser()->profile()->GetPrefs()->GetDict(kSegmentationResultPref);
+        chrome_test_utils::GetProfile(this)->GetPrefs()->GetDict(
+            kSegmentationResultPref);
     return !!dictionary.FindByDottedPath(segmentation_key);
   }
 
@@ -83,7 +98,7 @@ class SegmentationPlatformTest : public InProcessBrowserTest {
 
     base::RunLoop wait_for_pref;
     wait_for_pref_callback_ = wait_for_pref.QuitClosure();
-    pref_registrar_.Init(browser()->profile()->GetPrefs());
+    pref_registrar_.Init(chrome_test_utils::GetProfile(this)->GetPrefs());
     pref_registrar_.Add(
         kSegmentationResultPref,
         base::BindRepeating(&SegmentationPlatformTest::OnResultPrefUpdated,
@@ -94,7 +109,7 @@ class SegmentationPlatformTest : public InProcessBrowserTest {
   }
 
   bool HasClientResultPref(const std::string& segmentation_key) {
-    PrefService* pref_service = browser()->profile()->GetPrefs();
+    PrefService* pref_service = chrome_test_utils::GetProfile(this)->GetPrefs();
     std::unique_ptr<ClientResultPrefs> result_prefs_ =
         std::make_unique<ClientResultPrefs>(pref_service);
     return result_prefs_->ReadClientResultFromPrefs(segmentation_key)
@@ -115,7 +130,7 @@ class SegmentationPlatformTest : public InProcessBrowserTest {
 
     base::RunLoop wait_for_pref;
     wait_for_pref_callback_ = wait_for_pref.QuitClosure();
-    pref_registrar_.Init(browser()->profile()->GetPrefs());
+    pref_registrar_.Init(chrome_test_utils::GetProfile(this)->GetPrefs());
     pref_registrar_.Add(
         kSegmentationClientResultPrefs,
         base::BindRepeating(
@@ -128,8 +143,9 @@ class SegmentationPlatformTest : public InProcessBrowserTest {
 
   void WaitForPlatformInit() {
     base::RunLoop wait_for_init;
-    SegmentationPlatformService* service = segmentation_platform::
-        SegmentationPlatformServiceFactory::GetForProfile(browser()->profile());
+    SegmentationPlatformService* service =
+        segmentation_platform::SegmentationPlatformServiceFactory::
+            GetForProfile(chrome_test_utils::GetProfile(this));
     while (!service->IsPlatformInitialized()) {
       wait_for_init.RunUntilIdle();
     }
@@ -137,8 +153,9 @@ class SegmentationPlatformTest : public InProcessBrowserTest {
 
   void ExpectSegmentSelectionResult(const std::string& segmentation_key,
                                     bool result_expected) {
-    SegmentationPlatformService* service = segmentation_platform::
-        SegmentationPlatformServiceFactory::GetForProfile(browser()->profile());
+    SegmentationPlatformService* service =
+        segmentation_platform::SegmentationPlatformServiceFactory::
+            GetForProfile(chrome_test_utils::GetProfile(this));
     base::RunLoop wait_for_segment;
     service->GetSelectedSegment(
         segmentation_key, base::BindOnce(
@@ -153,10 +170,11 @@ class SegmentationPlatformTest : public InProcessBrowserTest {
 
   void ExpectClassificationResult(const std::string& segmentation_key,
                                   PredictionStatus expected_prediction_status) {
-    SegmentationPlatformService* service = segmentation_platform::
-        SegmentationPlatformServiceFactory::GetForProfile(browser()->profile());
+    SegmentationPlatformService* service =
+        segmentation_platform::SegmentationPlatformServiceFactory::
+            GetForProfile(chrome_test_utils::GetProfile(this));
     PredictionOptions options;
-    options.on_demand_execution = true;
+    options.on_demand_execution = false;
     base::RunLoop wait_for_segment;
     service->GetClassificationResult(
         segmentation_key, options, nullptr,
@@ -175,7 +193,10 @@ class SegmentationPlatformTest : public InProcessBrowserTest {
     std::move(closure).Run();
   }
 
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
+
  protected:
+  base::HistogramTester histogram_tester_;
   base::test::ScopedFeatureList feature_list_;
   PrefChangeRegistrar pref_registrar_;
   base::OnceClosure wait_for_pref_callback_;
@@ -194,14 +215,24 @@ IN_PROC_BROWSER_TEST_F(SegmentationPlatformTest, RunDefaultModel) {
   WaitForPrefUpdate();
 }
 
+// https://crbug.com/1257820 -- Tests using "PRE_" don't work on Android.
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_PRE_CachedClassificationModel \
+  DISABLED_PRE_CachedClassificationModel
+#define MAYBE_CachedClassificationModel DISABLED_CachedClassificationModel
+#else
+#define MAYBE_PRE_CachedClassificationModel PRE_CachedClassificationModel
+#define MAYBE_CachedClassificationModel CachedClassificationModel
+#endif
+
 IN_PROC_BROWSER_TEST_F(SegmentationPlatformTest,
-                       PRE_OnDemandFlowForClassificationModel) {
+                       MAYBE_PRE_CachedClassificationModel) {
   WaitForPlatformInit();
   WaitForClientResultPrefUpdate();
 }
 
 IN_PROC_BROWSER_TEST_F(SegmentationPlatformTest,
-                       OnDemandFlowForClassificationModel) {
+                       MAYBE_CachedClassificationModel) {
   WaitForPlatformInit();
   // Result is available from previous session's prefs.
   ExpectClassificationResult(
@@ -209,16 +240,31 @@ IN_PROC_BROWSER_TEST_F(SegmentationPlatformTest,
       /*expected_prediction_status=*/PredictionStatus::kSucceeded);
 }
 
+IN_PROC_BROWSER_TEST_F(SegmentationPlatformTest, RunCachedModelsOnly) {
+  WaitForPlatformInit();
+  WaitForClientResultPrefUpdate();
+
+  // Feature processing isn't called for ondemand models.
+  // Note: There is no definite way to check if on-demand models do not get
+  // executed. So we wait until the a default model runs and make sure the
+  // on-demand model is not executed.
+  histogram_tester().ExpectUniqueSample(
+      kFeatureProcessingHistogram + SegmentIdToHistogramVariant(kSegmentId3),
+      stats::FeatureProcessingError::kSuccess, 1);
+  histogram_tester().ExpectUniqueSample(
+      kFeatureProcessingHistogram + SegmentIdToHistogramVariant(kSegmentId2),
+      stats::FeatureProcessingError::kSuccess, 0);
+}
+
 class SegmentationPlatformUkmModelTest : public SegmentationPlatformTest {
  public:
   SegmentationPlatformUkmModelTest() : utils_(&ukm_recorder_) {}
 
   void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
-    InProcessBrowserTest::CreatedBrowserMainParts(parts);
+    PlatformBrowserTest::CreatedBrowserMainParts(parts);
     utils_.PreProfileInit(
-        {{kSegmentId, utils_.GetSamplePageLoadMetadata(kSqlFeatureQuery)}});
-
-    MockDefaultModelProvider* provider = utils_.GetDefaultOverride(kSegmentId);
+        {{kSegmentId1, utils_.GetSamplePageLoadMetadata(kSqlFeatureQuery)}});
+    MockDefaultModelProvider* provider = utils_.GetDefaultOverride(kSegmentId1);
     EXPECT_CALL(*provider, ExecuteModelWithInput(_, _))
         .WillRepeatedly(Invoke([&](const ModelProvider::Request& inputs,
                                    ModelProvider::ExecutionCallback callback) {
@@ -230,7 +276,8 @@ class SegmentationPlatformUkmModelTest : public SegmentationPlatformTest {
   void PreRunTestOnMainThread() override {
     SegmentationPlatformTest::PreRunTestOnMainThread();
     utils_.set_history_service(HistoryServiceFactory::GetForProfile(
-        browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS));
+        chrome_test_utils::GetProfile(this),
+        ServiceAccessType::IMPLICIT_ACCESS));
   }
 
  protected:
@@ -244,7 +291,8 @@ class SegmentationPlatformUkmModelTest : public SegmentationPlatformTest {
 // TODO(ssid): Fix this test for CrOS by waiting for signin profile to be
 // deleted at startup before adding metrics.
 // https://crbug.com/1467530 -- Flaky on Mac
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
+// https://crbug.com/1257820 -- Tests using "PRE_" don't work on Android.
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
 #define MAYBE_PRE_RunUkmBasedModel DISABLED_PRE_RunUkmBasedModel
 #define MAYBE_RunUkmBasedModel DISABLED_RunUkmBasedModel
 #else

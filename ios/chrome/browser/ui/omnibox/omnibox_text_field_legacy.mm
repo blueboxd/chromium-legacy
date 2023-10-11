@@ -6,15 +6,15 @@
 
 #import <CoreText/CoreText.h>
 
+#import "base/apple/foundation_util.h"
 #import "base/check_op.h"
 #import "base/command_line.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/grit/components_scaled_resources.h"
 #import "components/omnibox/browser/autocomplete_input.h"
-#import "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
+#import "ios/chrome/browser/autocomplete/model/autocomplete_scheme_classifier_impl.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
@@ -150,11 +150,9 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (void)insertTextWhileEditing:(NSString*)text {
-  // This method should only be called while editing.
-  DCHECK([self isFirstResponder]);
-
-  if ([self markedTextRange] != nil)
+  if ([self markedTextRange] != nil) {
     [self unmarkText];
+  }
 
   NSRange selectedNSRange = [self selectedNSRange];
   if (!self.delegate || [self.delegate textField:self

@@ -5,6 +5,7 @@
 #include "chrome/browser/plus_addresses/plus_address_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_selections.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/plus_addresses/features.h"
 #include "components/plus_addresses/plus_address_service.h"
 
@@ -42,13 +43,13 @@ ProfileSelections PlusAddressServiceFactory::CreateProfileSelections() {
 PlusAddressServiceFactory::PlusAddressServiceFactory()
     : ProfileKeyedServiceFactory("PlusAddressService",
                                  CreateProfileSelections()) {
-  // TODO(crbug.com/1467623): Add identity dependency when it is added to the
-  // `PlusAddressService`.
+  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 PlusAddressServiceFactory::~PlusAddressServiceFactory() = default;
 
-KeyedService* PlusAddressServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+PlusAddressServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
 
@@ -57,5 +58,6 @@ KeyedService* PlusAddressServiceFactory::BuildServiceInstanceFor(
   if (profile->IsGuestSession()) {
     return nullptr;
   }
-  return new plus_addresses::PlusAddressService();
+  return std::make_unique<plus_addresses::PlusAddressService>(
+      IdentityManagerFactory::GetForProfile(profile));
 }

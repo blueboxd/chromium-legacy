@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
@@ -22,7 +21,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.password_manager.PasswordManagerResourceProviderFactory;
 import org.chromium.chrome.browser.password_manager.PasswordMetricsUtil;
-import org.chromium.chrome.browser.password_manager.PasswordMetricsUtil.PasswordMigrationWarningUserActions;
+import org.chromium.chrome.browser.password_manager.PasswordMetricsUtil.PasswordMigrationWarningSheetStateAtClosing;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.ScreenType;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -40,7 +39,7 @@ public class PasswordMigrationWarningView implements BottomSheetContent {
     private Callback<Integer> mDismissHandler;
     private PasswordMigrationWarningOnClickHandler mOnClickHandler;
     private FragmentManager mFragmentManager;
-    private final RelativeLayout mContentView;
+    private final ScrollablePasswordMigrationWarningContent mContentView;
     private Context mContext;
     private String mAccountDisplayName;
     private @ScreenType int mScreenType = ScreenType.NONE;
@@ -59,14 +58,30 @@ public class PasswordMigrationWarningView implements BottomSheetContent {
                 return;
             }
             assert mDismissHandler != null;
-            if (!mSetFragmentWasCalled) {
-                RecordHistogram.recordEnumeratedHistogram(
-                        PasswordMetricsUtil.PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
-                        PasswordMigrationWarningUserActions.DISMISS_EMPTY_SHEET,
-                        PasswordMigrationWarningUserActions.COUNT);
-            }
+            RecordHistogram.recordEnumeratedHistogram(
+                    PasswordMetricsUtil.PASSWORD_MIGRATION_WARNING_SHEET_STATE_AT_CLOSING,
+                    getSheetStateAtClosingBucket(reason),
+                    PasswordMigrationWarningSheetStateAtClosing.COUNT);
             mDismissHandler.onResult(reason);
             mBottomSheetController.removeObserver(mBottomSheetObserver);
+        }
+
+        int getSheetStateAtClosingBucket(@BottomSheetController.StateChangeReason int reason) {
+            if (mSetFragmentWasCalled) {
+                return PasswordMigrationWarningSheetStateAtClosing.FULL_SHEET_CLOSED;
+            }
+            switch (reason) {
+                case StateChangeReason.SWIPE:
+                case StateChangeReason.BACK_PRESS:
+                case StateChangeReason.TAP_SCRIM:
+                case StateChangeReason.NAVIGATION:
+                case StateChangeReason.OMNIBOX_FOCUS:
+                    return PasswordMigrationWarningSheetStateAtClosing
+                            .EMPTY_SHEET_CLOSED_BY_USER_INTERACTION;
+                default:
+                    return PasswordMigrationWarningSheetStateAtClosing
+                            .EMPTY_SHEET_CLOSED_WITHOUT_USER_INTERACTION;
+            }
         }
 
         @Override
@@ -96,8 +111,9 @@ public class PasswordMigrationWarningView implements BottomSheetContent {
         mContext = context;
         mBottomSheetController = bottomSheetController;
         mOnResumeExportFlowCallback = onResumeExportFlowCallback;
-        mContentView = (RelativeLayout) LayoutInflater.from(context).inflate(
-                R.layout.pwd_migration_warning, null);
+        mContentView =
+                (ScrollablePasswordMigrationWarningContent) LayoutInflater.from(context).inflate(
+                        R.layout.pwd_migration_warning, null);
         mSetFragmentWasCalled = false;
         ImageView sheetHeaderImage =
                 mContentView.findViewById(R.id.touch_to_fill_sheet_header_image);
@@ -204,10 +220,7 @@ public class PasswordMigrationWarningView implements BottomSheetContent {
         }
     }
     private @Px int getDesiredSheetHeightPx() {
-        if (mScreenType == ScreenType.INTRO_SCREEN) {
-            return getDimensionPixelSize(R.dimen.pwd_migration_warning_intro_fragment_height);
-        }
-        return getDimensionPixelSize(R.dimen.pwd_migration_warning_options_fragment_height);
+        return getDimensionPixelSize(R.dimen.pwd_migration_warning_fragment_height);
     }
 
     private @Px int getDimensionPixelSize(int id) {
@@ -228,7 +241,7 @@ public class PasswordMigrationWarningView implements BottomSheetContent {
 
     @Override
     public int getVerticalScrollOffset() {
-        return 0;
+        return mContentView.getVerticalScrollOffset();
     }
 
     @Override

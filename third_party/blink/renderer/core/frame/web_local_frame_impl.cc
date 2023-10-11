@@ -657,7 +657,7 @@ class TouchStartEventListener : public NativeEventListener {
                 tap_event, HitTestRequest::kReadOnly | HitTestRequest::kActive)
             .GetHitTestResult();
 
-    result.SetToShadowHostIfInRestrictedShadowRoot();
+    result.SetToShadowHostIfInUAShadowRoot();
 
     callback_.Run(result);
   }
@@ -871,8 +871,10 @@ bool WebLocalFrameImpl::UsePrintingLayout() const {
 }
 
 void WebLocalFrameImpl::CopyToFindPboard() {
+#if BUILDFLAG(IS_MAC)
   if (HasSelection())
     GetFrame()->GetSystemClipboard()->CopyToFindPboard(SelectionAsText());
+#endif
 }
 
 void WebLocalFrameImpl::CenterSelection() {
@@ -1190,7 +1192,7 @@ void WebLocalFrameImpl::ReloadImage(const WebNode& web_node) {
   Node* node = web_node;  // Use implicit WebNode->Node* cast.
   HitTestResult hit_test_result;
   hit_test_result.SetInnerNode(node);
-  hit_test_result.SetToShadowHostIfInRestrictedShadowRoot();
+  hit_test_result.SetToShadowHostIfInUAShadowRoot();
   node = hit_test_result.InnerNodeOrImageMapImage();
   if (auto* image_element = DynamicTo<HTMLImageElement>(*node))
     image_element->ForceReload();
@@ -2619,7 +2621,7 @@ HitTestResult WebLocalFrameImpl::HitTestResultForVisualViewportPos(
       GetFrame()->View()->ConvertFromRootFrame(root_frame_point));
   HitTestResult result = GetFrame()->GetEventHandler().HitTestResultAtLocation(
       location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  result.SetToShadowHostIfInRestrictedShadowRoot();
+  result.SetToShadowHostIfInUAShadowRoot();
   return result;
 }
 
@@ -3236,7 +3238,7 @@ void WebLocalFrameImpl::SetLCPPHint(
   }
 
   if (!hint) {
-    lcpp->set_lcp_element_locators({});
+    lcpp->Reset();
     return;
   }
 
@@ -3255,6 +3257,12 @@ void WebLocalFrameImpl::SetLCPPHint(
     }
   }
   lcpp->set_lcp_element_locators(std::move(lcp_element_locators));
+
+  HashSet<KURL> lcp_influencer_scripts;
+  for (auto& url : hint->lcp_influencer_scripts) {
+    lcp_influencer_scripts.insert(KURL(url));
+  }
+  lcpp->set_lcp_influencer_scripts(std::move(lcp_influencer_scripts));
 }
 
 void WebLocalFrameImpl::AddHitTestOnTouchStartCallback(
@@ -3272,6 +3280,27 @@ void WebLocalFrameImpl::AddHitTestOnTouchStartCallback(
 void WebLocalFrameImpl::SetResourceCacheRemote(
     CrossVariantMojoRemote<mojom::blink::ResourceCacheInterfaceBase> remote) {
   GetFrame()->SetResourceCacheRemote(std::move(remote));
+}
+
+void WebLocalFrameImpl::BlockParserForTesting() {
+  // Avoid blocking for MHTML tests since MHTML archives are loaded
+  // synchronously during commit. WebFrameTestProxy only has a chance to act at
+  // DidCommit after that's happened.
+  if (GetFrame()->Loader().GetDocumentLoader()->Archive()) {
+    return;
+  }
+  GetFrame()->Loader().GetDocumentLoader()->BlockParser();
+}
+
+void WebLocalFrameImpl::ResumeParserForTesting() {
+  if (GetFrame()->Loader().GetDocumentLoader()->Archive()) {
+    return;
+  }
+  GetFrame()->Loader().GetDocumentLoader()->ResumeParser();
+}
+
+void WebLocalFrameImpl::FlushInputForTesting(base::OnceClosure done_callback) {
+  frame_widget_->FlushInputForTesting(std::move(done_callback));
 }
 
 void WebLocalFrameImpl::SetTargetToCurrentHistoryItem(const WebString& target) {

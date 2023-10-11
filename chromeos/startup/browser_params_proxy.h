@@ -108,11 +108,11 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   bool IsFlossAvailable() const;
 
+  bool IsFlossAvailabilityCheckNeeded() const;
+
   bool IsCurrentUserDeviceOwner() const;
 
   bool IsCurrentUserEphemeral() const;
-
-  bool DoNotMuxExtensionAppIds() const;
 
   bool EnableLacrosTtsSupport() const;
 

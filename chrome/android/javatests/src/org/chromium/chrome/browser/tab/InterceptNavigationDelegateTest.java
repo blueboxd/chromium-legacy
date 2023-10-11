@@ -115,10 +115,10 @@ public class InterceptNavigationDelegateTest {
             InterceptNavigationDelegateImpl delegate = new InterceptNavigationDelegateImpl(client) {
                 @Override
                 public boolean shouldIgnoreNavigation(NavigationHandle navigationHandle,
-                        GURL escapedUrl, boolean crossFrame, boolean isSandboxedFrame) {
+                        GURL escapedUrl, boolean hiddenCrossFrame, boolean isSandboxedFrame) {
                     mNavParamHistory.add(navigationHandle);
                     return super.shouldIgnoreNavigation(
-                            navigationHandle, escapedUrl, crossFrame, isSandboxedFrame);
+                            navigationHandle, escapedUrl, hiddenCrossFrame, isSandboxedFrame);
                 }
 
                 @Override
@@ -223,7 +223,7 @@ public class InterceptNavigationDelegateTest {
 
     @Test
     @MediumTest
-    @EnableFeatures({ChromeFeatureList.PRERENDER2})
+    @EnableFeatures(ChromeFeatureList.PRERENDER2)
     public void testExternalAppPrerenderingNavigation() throws TimeoutException {
         // Ensure that a prerendering main frame doesn't call into the delegate.
         sActivityTestRule.loadUrl(mTestServer.getURL(NAVIGATION_FROM_PRERENDERING_PAGE));

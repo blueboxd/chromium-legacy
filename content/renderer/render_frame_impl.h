@@ -129,7 +129,6 @@ class WeakWrapperResourceLoadInfoNotifier;
 class WebComputedAXTree;
 class WebContentDecryptionModule;
 class WebElement;
-class WebFrameRequestBlocker;
 class WebLocalFrame;
 class WebMediaStreamDeviceObserver;
 class WebString;
@@ -597,7 +596,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangePerformanceTiming() override;
   void DidObserveInputDelay(base::TimeDelta input_delay) override;
   void DidObserveUserInteraction(
-      base::TimeDelta max_event_duration,
+      base::TimeTicks max_event_start,
+      base::TimeTicks max_event_end,
       blink::UserInteractionType interaction_type) override;
   void DidChangeCpuTiming(base::TimeDelta time) override;
   void DidObserveLoadingBehavior(blink::LoadingBehaviorFlag behavior) override;
@@ -784,6 +784,8 @@ class CONTENT_EXPORT RenderFrameImpl
   bool IsLocalRoot() const;
   const RenderFrameImpl* GetLocalRoot() const;
 
+  base::WeakPtr<RenderFrameImpl> GetWeakPtr();
+
  private:
   friend class RenderFrameImplTest;
   friend class RenderFrameObserver;
@@ -870,8 +872,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::mojom::RemoteFrameInterfacesFromBrowserPtr remote_frame_interfaces,
       blink::mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces)
       override;
-  void BlockRequests() override;
-  void ResumeBlockedRequests() override;
   void GetInterfaceProvider(
       mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver)
       override;
@@ -1434,8 +1434,6 @@ class CONTENT_EXPORT RenderFrameImpl
   mojom::StorageInfoPtr pending_storage_info_;
   // The storage key which |pending_storage_info_| is associated with.
   blink::StorageKey original_storage_key_;
-
-  scoped_refptr<blink::WebFrameRequestBlocker> frame_request_blocker_;
 
   // AndroidOverlay routing token from the browser, if we have one yet.
   absl::optional<base::UnguessableToken> overlay_routing_token_;

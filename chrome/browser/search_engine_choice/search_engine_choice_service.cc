@@ -4,14 +4,20 @@
 
 #include "chrome/browser/search_engine_choice/search_engine_choice_service.h"
 
+#include "base/check_is_test.h"
 #include "base/containers/contains.h"
-#include "base/feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engine_choice/search_engine_choice_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engines_pref_names.h"
-#include "components/signin/public/base/signin_switches.h"
+#include "components/search_engines/template_url_data.h"
+#include "components/search_engines/template_url_prepopulate_data.h"
+#include "components/search_engines/util.h"
+
+namespace {
+bool g_dialog_disabled_for_testing = false;
+}
 
 SearchEngineChoiceService::BrowserObserver::BrowserObserver(
     SearchEngineChoiceService& service)
@@ -32,9 +38,26 @@ void SearchEngineChoiceService::BrowserObserver::OnBrowserRemoved(
 
 SearchEngineChoiceService::~SearchEngineChoiceService() = default;
 
-SearchEngineChoiceService::SearchEngineChoiceService() = default;
+SearchEngineChoiceService::SearchEngineChoiceService(Profile& profile)
+    : profile_(profile) {}
 
-void SearchEngineChoiceService::NotifyChoiceMade() {
+void SearchEngineChoiceService::NotifyChoiceMade(int prepopulate_id) {
+  // Sets the timestamp and search engine choice preferences.
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetInt64(
+      prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp,
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
+
+  // TODO(b/280753754): Handle custom search engines that do not have a
+  // prepopulate_id
+  std::unique_ptr<TemplateURLData> search_engine =
+      TemplateURLPrepopulateData::GetPrepopulatedEngine(pref_service,
+                                                        prepopulate_id);
+  CHECK(search_engine);
+  SetDefaultSearchProviderPrefValue(*pref_service, search_engine->sync_guid);
+
+  // Closes the dialogs that are open on other browser windows that
+  // have the same profile as the one on which the choice was made.
   for (auto& browsers_with_open_dialog : browsers_with_open_dialogs_) {
     std::move(browsers_with_open_dialog.second).Run();
   }
@@ -55,25 +78,42 @@ void SearchEngineChoiceService::NotifyDialogClosed(Browser* browser) {
   browsers_with_open_dialogs_.erase(browser);
 }
 
+// static
+void SearchEngineChoiceService::SetDialogDisabledForTests(
+    bool dialog_disabled) {
+  CHECK_IS_TEST();
+  g_dialog_disabled_for_testing = dialog_disabled;
+}
+
 bool SearchEngineChoiceService::IsShowingDialog(Browser* browser) {
   return base::Contains(browsers_with_open_dialogs_, browser);
 }
 
-bool SearchEngineChoiceService::ShouldDisplayDialog(Browser& browser) {
-  if (!base::FeatureList::IsEnabled(switches::kSearchEngineChoice)) {
-    return false;
-  }
+std::vector<std::unique_ptr<TemplateURLData>>
+SearchEngineChoiceService::GetSearchEngines() {
+  auto* pref_service = profile_->GetPrefs();
+  return TemplateURLPrepopulateData::GetPrepopulatedEnginesForChoiceScreen(
+      pref_service);
+}
 
-  // Dialog should not be shown if the pref was already set.
-  Profile* profile = browser.profile();
-  PrefService* prefs = profile->GetPrefs();
-  if (prefs->GetInt64(
-          prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp)) {
-    return false;
-  }
+bool SearchEngineChoiceService::CanShowDialog(Browser& browser) {
+  PrefService* prefs = browser.profile()->GetPrefs();
 
-  auto* search_engine_choice_service =
-      SearchEngineChoiceServiceFactory::GetForProfile(browser.profile());
-  return search_engine_choice_service &&
-         !search_engine_choice_service->IsShowingDialog(&browser);
+  // Dialog should not be shown if it is currently displayed or if the pref was
+  // already set.
+  return !prefs->GetInt64(
+             prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp) &&
+         !IsShowingDialog(&browser) && !g_dialog_disabled_for_testing;
+}
+
+bool SearchEngineChoiceService::HasPendingDialog(Browser& browser) {
+  return IsShowingDialog(&browser) || CanShowDialog(browser);
+}
+
+bool SearchEngineChoiceService::IsUrlSuitableForDialog(GURL url) {
+  if (url == chrome::kChromeUINewTabPageURL || url == url::kAboutBlankURL) {
+    return true;
+  }
+  // Don't show the dialog over remaining urls that start with 'chrome://'.
+  return !url.SchemeIs(content::kChromeUIScheme);
 }

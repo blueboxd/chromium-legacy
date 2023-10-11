@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/types/expected_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/tab_groups/tab_groups_util.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
@@ -55,6 +56,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
@@ -241,12 +243,9 @@ base::expected<base::Value::Dict, std::string> ExtensionTabUtil::OpenTab(
 
   GURL url(chrome::kChromeUINewTabURL);
   if (params.url) {
-    auto result = ExtensionTabUtil::PrepareURLForNavigation(
-        *params.url, function->extension(), function->browser_context());
-    if (!result.has_value()) {
-      return base::unexpected(result.error());
-    }
-    url = std::move(*result);
+    ASSIGN_OR_RETURN(url, ExtensionTabUtil::PrepareURLForNavigation(
+                              *params.url, function->extension(),
+                              function->browser_context()));
   }
 
   // Default to foreground for the new tab. The presence of 'active' property
@@ -864,6 +863,16 @@ base::expected<GURL, std::string> ExtensionTabUtil::PrepareURLForNavigation(
   // Don't let the extension navigate directly to chrome-untrusted scheme pages.
   if (url.SchemeIs(content::kChromeUIUntrustedScheme)) {
     return base::unexpected(tabs_constants::kCannotNavigateToChromeUntrusted);
+  }
+
+  // Don't let the extension navigate directly to file scheme pages, unless
+  // they have file access.
+  if (url.SchemeIsFile() &&
+      !util::AllowFileAccess(extension->id(), browser_context) &&
+      base::FeatureList::IsEnabled(
+          extensions_features::kRestrictFileURLNavigation)) {
+    return base::unexpected(
+        tabs_constants::kFileUrlsNotAllowedInExtensionNavigations);
   }
 
   if (extension && browser_context) {

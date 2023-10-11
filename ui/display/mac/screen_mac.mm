@@ -16,12 +16,13 @@
 #include <memory>
 
 #include "base/apple/bridging.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/timer/timer.h"
@@ -84,7 +85,7 @@ const std::vector<Display> DisplaysFromDisplaysMac(
 // wrong display.
 //
 // If no matching screen is found in IOService, this returns null.
-base::ScopedCFTypeRef<CFDictionaryRef> GetDisplayInfoFromIOService(
+base::apple::ScopedCFTypeRef<CFDictionaryRef> GetDisplayInfoFromIOService(
     CGDirectDisplayID display_id) {
   const uint32_t cg_vendor_number = CGDisplayVendorNumber(display_id);
   const uint32_t cg_model_number = CGDisplayModelNumber(display_id);
@@ -93,7 +94,7 @@ base::ScopedCFTypeRef<CFDictionaryRef> GetDisplayInfoFromIOService(
   // string.
   if (cg_vendor_number == kDisplayVendorIDUnknown ||
       cg_vendor_number == 0xFFFFFFFF) {
-    return base::ScopedCFTypeRef<CFDictionaryRef>();
+    return base::apple::ScopedCFTypeRef<CFDictionaryRef>();
   }
 
   // IODisplayConnect is only supported in Intel-powered Macs. On ARM based
@@ -104,19 +105,19 @@ base::ScopedCFTypeRef<CFDictionaryRef> GetDisplayInfoFromIOService(
                                    IOServiceMatching("IODisplayConnect"),
                                    it.InitializeInto()) != 0) {
     // This may happen if a desktop Mac is running headless.
-    return base::ScopedCFTypeRef<CFDictionaryRef>();
+    return base::apple::ScopedCFTypeRef<CFDictionaryRef>();
   }
 
-  base::ScopedCFTypeRef<CFDictionaryRef> found_display;
+  base::apple::ScopedCFTypeRef<CFDictionaryRef> found_display;
   while (auto service = base::mac::ScopedIOObject<io_service_t>(
              IOIteratorNext(it.get()))) {
-    auto info =
-        base::ScopedCFTypeRef<CFDictionaryRef>(IODisplayCreateInfoDictionary(
-            service.get(), kIODisplayOnlyPreferredName));
+    auto info = base::apple::ScopedCFTypeRef<CFDictionaryRef>(
+        IODisplayCreateInfoDictionary(service.get(),
+                                      kIODisplayOnlyPreferredName));
 
-    CFNumberRef vendorIDRef = base::mac::GetValueFromDictionary<CFNumberRef>(
+    CFNumberRef vendorIDRef = base::apple::GetValueFromDictionary<CFNumberRef>(
         info.get(), CFSTR(kDisplayVendorID));
-    CFNumberRef productIDRef = base::mac::GetValueFromDictionary<CFNumberRef>(
+    CFNumberRef productIDRef = base::apple::GetValueFromDictionary<CFNumberRef>(
         info.get(), CFSTR(kDisplayProductID));
     if (!vendorIDRef || !productIDRef)
       continue;
@@ -128,19 +129,19 @@ base::ScopedCFTypeRef<CFDictionaryRef> GetDisplayInfoFromIOService(
       return info;
   }
 
-  return base::ScopedCFTypeRef<CFDictionaryRef>();
+  return base::apple::ScopedCFTypeRef<CFDictionaryRef>();
 }
 
 // Extract the (localized) name from a dictionary created by
 // IODisplayCreateInfoDictionary. If `info` is null, or if no names are found
 // in the dictionary, this returns an empty string.
 std::string DisplayNameFromDisplayInfo(
-    base::ScopedCFTypeRef<CFDictionaryRef> info) {
+    base::apple::ScopedCFTypeRef<CFDictionaryRef> info) {
   if (!info)
     return std::string();
 
   NSDictionary* names = base::apple::CFToNSPtrCast(
-      base::mac::GetValueFromDictionary<CFDictionaryRef>(
+      base::apple::GetValueFromDictionary<CFDictionaryRef>(
           info.get(), CFSTR(kDisplayProductName)));
   if (!names)
     return std::string();
@@ -158,7 +159,7 @@ std::string DisplayNameFromDisplayInfo(
   NSString* name = nil;
   int match_size = -1;
   for (NSString* key in names) {
-    NSString* value = base::mac::ObjCCast<NSString>(names[key]);
+    NSString* value = base::apple::ObjCCast<NSString>(names[key]);
     if (!value) {
       continue;
     }
@@ -225,8 +226,8 @@ DisplayMac BuildDisplayForScreen(NSScreen* screen) {
   {
     CGColorSpaceRef cg_color_space = screen.colorSpace.CGColorSpace;
     if (cg_color_space) {
-      base::ScopedCFTypeRef<CFDataRef> cf_icc_profile(
-          CGColorSpaceCopyICCProfile(cg_color_space));
+      base::apple::ScopedCFTypeRef<CFDataRef> cf_icc_profile(
+          CGColorSpaceCopyICCData(cg_color_space));
       if (cf_icc_profile) {
         icc_profile = gfx::ICCProfile::FromData(
             CFDataGetBytePtr(cf_icc_profile), CFDataGetLength(cf_icc_profile));
@@ -289,8 +290,10 @@ DisplayMac BuildDisplayForScreen(NSScreen* screen) {
   display.SetRotationAsDegree(static_cast<int>(CGDisplayRotation(display_id)));
 
   // TODO(crbug.com/1078903): Support multiple internal displays.
-  if (CGDisplayIsBuiltin(display_id))
+  // CGDisplayIsBuiltin may return -1 on [dis]connect; see crbug.com/1457025.
+  if (CGDisplayIsBuiltin(display_id) == YES) {
     SetInternalDisplayIds({display_id});
+  }
 
   if (@available(macOS 10.15, *)) {
     display.set_label(base::SysNSStringToUTF8(screen.localizedName));
@@ -570,9 +573,8 @@ class ScreenMac : public Screen {
     }
     // In theory, this should not be reached, but in practice, on Catalina, it
     // has been observed that -[NSScreen screens] changes before any
-    // notifications are received.
-    // https://crbug.com/1021340.
-    DLOG(ERROR) << "Value of -[NSScreen screens] changed before notification.";
+    // notifications are received. See crbug.com/1021340 and crbug.com/1352564
+    DISPLAY_LOG(DEBUG) << "-[NSScreen screens] changed before notification.";
     return BuildDisplayForScreen(screen).display;
   }
 

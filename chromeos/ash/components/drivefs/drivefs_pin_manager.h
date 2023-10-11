@@ -180,7 +180,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   PinManager(Path profile_path,
              Path mount_path,
              mojom::DriveFs* drivefs,
-             int64_t max_queue_size);
+             int64_t queue_size);
 
   PinManager(const PinManager&) = delete;
   PinManager& operator=(const PinManager&) = delete;
@@ -457,7 +457,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
 
   // Maximum number of items that can be pinned but not cached yet at the same
   // time.
-  const int64_t max_queue_size_ GUARDED_BY_CONTEXT(sequence_checker_) = 200;
+  const int64_t queue_size_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Is the device connected to a suitable network? Assume it is online for
   // tests.
@@ -511,6 +511,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
 
   // Tracks the remaining seconds for the current syncing operation to complete.
   file_manager::Speedometer speedometer_ GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Tracks the last time a LOG was output indicating the listing files stage is
+  // taking a long time. Used to avoid emitting the WARNING log too frequently.
+  base::Time last_long_listing_files_warning_time_;
 
   base::WeakPtrFactory<PinManager> weak_ptr_factory_{this};
 

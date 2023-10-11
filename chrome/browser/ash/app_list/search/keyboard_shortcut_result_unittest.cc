@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/app_list/search/keyboard_shortcut_result.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -42,16 +43,20 @@ class KeyboardShortcutResultTest : public ChromeAshTestBase {
   }
 
   void PopulateTextVector(TextVector* text_vector,
+                          std::vector<std::u16string>& accessible_name,
                           const ui::Accelerator& accelerator) {
     auto shortcut_result = CreateKeyboardShortcutResult();
-    shortcut_result->PopulateTextVector(text_vector, accelerator);
+    shortcut_result->PopulateTextVector(text_vector, accessible_name,
+                                        accelerator);
   }
 
   void PopulateTextVectorWithText(
       TextVector* text_vector,
+      std::vector<std::u16string>& accessible_name,
       const std::vector<ash::mojom::TextAcceleratorPartPtr>& text_parts) {
     auto shortcut_result = CreateKeyboardShortcutResult();
-    shortcut_result->PopulateTextVectorWithTextParts(text_vector, text_parts);
+    shortcut_result->PopulateTextVectorWithTextParts(
+        text_vector, accessible_name, text_parts);
   }
 
   std::unique_ptr<KeyboardShortcutResult> CreateKeyboardShortcutResult() {
@@ -100,6 +105,15 @@ class KeyboardShortcutResultTest : public ChromeAshTestBase {
           CreateFakeStandardAcceleratorInfo(accelerator));
     }
     return accelerator_info_list;
+  }
+
+  std::string GetCategory(
+      const std::unique_ptr<KeyboardShortcutResult>& result) {
+    return result->accelerator_category_;
+  }
+
+  std::string GetAction(const std::unique_ptr<KeyboardShortcutResult>& result) {
+    return result->accelerator_action_;
   }
 };
 
@@ -206,17 +220,31 @@ TEST_F(KeyboardShortcutResultTest,
 // Test that KeyBoardShortCutResult can take search results with standard
 // accelerators.
 TEST_F(KeyboardShortcutResultTest, StandardAcceleratorToResult) {
-  const auto& search_results =
-      ash::shortcut_ui::fake_search_data::CreateFakeSearchResultList();
-  const auto& search_result0 = search_results[0];
+  std::vector<ui::Accelerator> accelerators;
+  accelerators.emplace_back(/*key_code=*/ui::KeyboardCode::VKEY_F,
+                            /*modifiers=*/0);
+  auto list = CreateFakeAcceleratorInfoList(accelerators);
+
+  SearchResultPtr search_result_ptr = SearchResult::New(
+      /*accelerator_layout_info=*/CreateFakeAcceleratorLayoutInfo(
+          /*description=*/u"first result",
+          /*source=*/ash::mojom::AcceleratorSource::kAsh,
+          /*action=*/
+          ash::shortcut_ui::fake_search_data::FakeActionIds::kAction1,
+          /*style=*/ash::mojom::AcceleratorLayoutStyle::kDefault),
+      /*accelerator_infos=*/
+      CreateFakeAcceleratorInfoList(accelerators),
+      /*relevance_score=*/0.5);
 
   auto result = std::make_unique<KeyboardShortcutResult>(
-      /* profile= */ nullptr, search_result0);
+      /* profile= */ nullptr, search_result_ptr);
 
-  EXPECT_TRUE(search_result0->accelerator_infos.at(0)
+  EXPECT_TRUE(search_result_ptr->accelerator_infos[0]
                   ->layout_properties->is_standard_accelerator());
-
-  EXPECT_EQ("keyboard_shortcut://1", result->id());
+  EXPECT_EQ("1", GetAction(result));
+  EXPECT_EQ("6", GetCategory(result));
+  // 1: kActionId1=1;  6: Category = kDebug.
+  EXPECT_EQ("keyboard_shortcut://1/6", result->id());
   EXPECT_EQ(0.5, result->relevance());
   EXPECT_EQ(u"first result", result->title());
   EXPECT_EQ(KeyboardShortcutResult::ResultType::kKeyboardShortcut,
@@ -226,11 +254,9 @@ TEST_F(KeyboardShortcutResultTest, StandardAcceleratorToResult) {
   EXPECT_EQ(ash::AppListSearchResultCategory::kHelp, result->category());
   EXPECT_EQ(u"Key Shortcuts", result->details());
 
-  // TODO(xiangdongkong): Verify the following checks as they are populated.
-  //   - id
-  //   - accessible name
-  //   - icon
-
+  const std::u16string expected_accessible_name =
+      u"first result, Key Shortcuts,  the f key";
+  EXPECT_EQ(expected_accessible_name, result->accessible_name());
   // Verify TextVector size.
   const TextVector text_vector = result->keyboard_shortcut_text_vector();
   ASSERT_EQ(text_vector.size(), 1u);
@@ -240,25 +266,29 @@ TEST_F(KeyboardShortcutResultTest, PopulateTextVector_One_Key) {
   ui::Accelerator accelerator(/*key_code=*/ui::KeyboardCode::VKEY_SPACE,
                               /*modifiers=*/0);
   TextVector text_vector;
-  PopulateTextVector(&text_vector, accelerator);
+  std::vector<std::u16string> accessible_name;
+  PopulateTextVector(&text_vector, accessible_name, accelerator);
 
   ASSERT_EQ(text_vector.size(), 1u);
   VerifyTextItem(text_vector[0], u"space", TextType::kIconifiedText);
 }
 
+// The shortcuts app uses the following order:
+//  SEARCH, CTRL, ALT, SHIFT.
 TEST_F(KeyboardShortcutResultTest, PopulateTextVector_ModifierKeysOrder) {
   ui::Accelerator accelerator(/*key_code=*/ui::KeyboardCode::VKEY_F,
                               /*modifiers=*/ui::EF_ALT_DOWN |
                                   ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN |
                                   ui::EF_CONTROL_DOWN);
   TextVector text_vector;
-  PopulateTextVector(&text_vector, accelerator);
+  std::vector<std::u16string> accessible_name;
+  PopulateTextVector(&text_vector, accessible_name, accelerator);
 
   ASSERT_EQ(text_vector.size(), 5u);
-  VerifyTextItem(text_vector[0], u"ctrl", TextType::kIconifiedText);
-  VerifyTextItem(text_vector[1], u"alt", TextType::kIconifiedText);
-  VerifyTextItem(text_vector[2], u"shift", TextType::kIconifiedText);
-  VerifyTextItem(text_vector[3], u"search", TextType::kIconifiedText);
+  VerifyTextItem(text_vector[0], u"search", TextType::kIconCode);
+  VerifyTextItem(text_vector[1], u"ctrl", TextType::kIconifiedText);
+  VerifyTextItem(text_vector[2], u"alt", TextType::kIconifiedText);
+  VerifyTextItem(text_vector[3], u"shift", TextType::kIconifiedText);
   VerifyTextItem(text_vector[4], u"f", TextType::kIconifiedText);
 }
 
@@ -291,6 +321,49 @@ TEST_F(KeyboardShortcutResultTest,
   VerifyTextItem(text_vector[2], u" or ", TextType::kString);
   VerifyTextItem(text_vector[3], u"ctrl", TextType::kIconifiedText);
   VerifyTextItem(text_vector[4], u"g", TextType::kIconifiedText);
+
+  std::u16string expected_accessible_name =
+      u"fake action, Key Shortcuts,  the alt key the f key  or  the ctrl key "
+      u"the g key";
+  EXPECT_EQ(expected_accessible_name, result->accessible_name());
+}
+
+TEST_F(KeyboardShortcutResultTest,
+       OneActionWithThreeAccelerators_ShouldDisplayTheFirstTwo) {
+  std::vector<ui::Accelerator> accelerators;
+  accelerators.emplace_back(/*key_code=*/ui::KeyboardCode::VKEY_F,
+                            /*modifiers=*/ui::EF_ALT_DOWN);
+  accelerators.emplace_back(/*key_code=*/ui::KeyboardCode::VKEY_A,
+                            /*modifiers=*/ui::EF_SHIFT_DOWN);
+  accelerators.emplace_back(/*key_code=*/ui::KeyboardCode::VKEY_G,
+                            /*modifiers=*/ui::EF_CONTROL_DOWN);
+  auto list = CreateFakeAcceleratorInfoList(accelerators);
+
+  SearchResultPtr search_result_ptr = SearchResult::New(
+      /*accelerator_layout_info=*/CreateFakeAcceleratorLayoutInfo(
+          /*description=*/u"fake action",
+          /*source=*/ash::mojom::AcceleratorSource::kAsh,
+          /*action=*/
+          ash::shortcut_ui::fake_search_data::FakeActionIds::kAction1,
+          /*style=*/ash::mojom::AcceleratorLayoutStyle::kDefault),
+      /*accelerator_infos=*/
+      CreateFakeAcceleratorInfoList(accelerators),
+      /*relevance_score=*/0.9);
+
+  auto result = std::make_unique<KeyboardShortcutResult>(
+      /* profile= */ nullptr, search_result_ptr);
+  const auto& text_vector = result->keyboard_shortcut_text_vector();
+  ASSERT_EQ(text_vector.size(), 5u);
+  VerifyTextItem(text_vector[0], u"alt", TextType::kIconifiedText);
+  VerifyTextItem(text_vector[1], u"f", TextType::kIconifiedText);
+  VerifyTextItem(text_vector[2], u" or ", TextType::kString);
+  VerifyTextItem(text_vector[3], u"shift", TextType::kIconifiedText);
+  VerifyTextItem(text_vector[4], u"a", TextType::kIconifiedText);
+
+  std::u16string expected_accessible_name =
+      u"fake action, Key Shortcuts,  the alt key the f key  or  the shift key "
+      u"the a key";
+  EXPECT_EQ(expected_accessible_name, result->accessible_name());
 }
 
 TEST_F(KeyboardShortcutResultTest, PopulateTextVectorWithText) {
@@ -309,7 +382,8 @@ TEST_F(KeyboardShortcutResultTest, PopulateTextVectorWithText) {
       u"ArrowLeft", ash::mojom::TextAcceleratorPartType::kKey));
 
   TextVector text_vector;
-  PopulateTextVectorWithText(&text_vector, text_parts);
+  std::vector<std::u16string> accessible_names;
+  PopulateTextVectorWithText(&text_vector, accessible_names, text_parts);
 
   ASSERT_EQ(text_vector.size(), 5u);
   VerifyTextItem(text_vector[0], u"Press ", TextType::kString);
@@ -317,6 +391,10 @@ TEST_F(KeyboardShortcutResultTest, PopulateTextVectorWithText) {
   VerifyTextItem(text_vector[2], u"a", TextType::kIconifiedText);
   VerifyTextItem(text_vector[3], u"Or ", TextType::kString);
   VerifyTextItem(text_vector[4], u"", TextType::kIconCode);
+
+  std::u16string expected_accessible_name =
+      u"Press  the ctrl key the a key Or  the arrow left key";
+  EXPECT_EQ(expected_accessible_name, base::JoinString(accessible_names, u" "));
 }
 
 }  // namespace app_list::test

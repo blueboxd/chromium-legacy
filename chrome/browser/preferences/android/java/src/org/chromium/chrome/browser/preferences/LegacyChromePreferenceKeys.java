@@ -23,7 +23,6 @@ public class LegacyChromePreferenceKeys {
     static List<String> getKeysInUse() {
         // clang-format off
         return Arrays.asList(
-                ChromePreferenceKeys.ACCESSIBILITY_TAB_SWITCHER,
                 ChromePreferenceKeys.APP_LOCALE,
                 ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED,
                 ChromePreferenceKeys.AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED,
@@ -60,9 +59,7 @@ public class LegacyChromePreferenceKeys {
                 ChromePreferenceKeys.FLAGS_CACHED_ADAPTIVE_TOOLBAR_ENABLED,
                 ChromePreferenceKeys.FLAGS_CACHED_COMMAND_LINE_ON_NON_ROOTED_ENABLED,
                 ChromePreferenceKeys.FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED,
-                ChromePreferenceKeys.FLAGS_CACHED_NETWORK_SERVICE_WARM_UP_ENABLED,
                 ChromePreferenceKeys.FLAGS_CACHED_START_SURFACE_ENABLED,
-                ChromePreferenceKeys.FLAGS_CACHED_SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                 ChromePreferenceKeys.FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED,
                 ChromePreferenceKeys.FONT_USER_FONT_SCALE_FACTOR,
                 ChromePreferenceKeys.FONT_USER_SET_FORCE_ENABLE_ZOOM,
@@ -80,7 +77,6 @@ public class LegacyChromePreferenceKeys {
                 ChromePreferenceKeys.LOCALE_MANAGER_SEARCH_ENGINE_PROMO_SHOW_STATE,
                 ChromePreferenceKeys.LOCALE_MANAGER_SEARCH_WIDGET_PRESENT_FIRST_START,
                 ChromePreferenceKeys.LOCALE_MANAGER_SHOULD_REPING_RLZ_FOR_SEARCH_PROMO,
-                ChromePreferenceKeys.LOCALE_MANAGER_USER_TYPE,
                 ChromePreferenceKeys.LOCALE_MANAGER_WAS_IN_SPECIAL_LOCALE,
                 ChromePreferenceKeys.MEDIA_WEBRTC_NOTIFICATION_IDS,
                 ChromePreferenceKeys.METRICS_MAIN_INTENT_LAUNCH_COUNT,

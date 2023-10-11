@@ -682,10 +682,24 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
   event_handling_util::PointerEventTarget pointer_event_target =
       ComputePointerEventTarget(pointer_event);
 
+  bool is_pointer_down = event.GetType() == WebInputEvent::Type::kPointerDown;
+  if (is_pointer_down && discarded_event_.target != kInvalidDOMNodeId &&
+      discarded_event_.target ==
+          DOMNodeIds::IdForNode(pointer_event_target.target_element) &&
+      pointer_event.TimeStamp() - discarded_event_.time <
+          event_handling_util::kDiscardedEventMistakeInterval) {
+    pointer_event_target.target_element->GetDocument().CountUse(
+        WebFeature::kInputEventToRecentlyMovedIframeMistakenlyDiscarded);
+  }
   bool discard = pointer_event_target.target_frame &&
                  event_handling_util::ShouldDiscardEventTargetingFrame(
                      event, *pointer_event_target.target_frame);
   if (discard) {
+    if (is_pointer_down) {
+      discarded_event_.target =
+          DOMNodeIds::IdForNode(pointer_event_target.target_element);
+      discarded_event_.time = pointer_event.TimeStamp();
+    }
     PointerEvent* core_pointer_event = pointer_event_factory_.Create(
         event, coalesced_events, predicted_events,
         pointer_event_target.target_element
@@ -709,6 +723,11 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
         pointer_cancel_event, coalesced_events, pointer_event_target);
 
     return WebInputEventResult::kHandledSuppressed;
+  }
+
+  if (is_pointer_down) {
+    discarded_event_.target = kInvalidDOMNodeId;
+    discarded_event_.time = base::TimeTicks();
   }
 
   if (HandleScrollbarTouchDrag(event, pointer_event_target.scrollbar))
@@ -735,7 +754,7 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
     non_hovering_pointers_canceled_ = false;
   }
   Node* pointerdown_node = nullptr;
-  if (event.GetType() == WebInputEvent::Type::kPointerDown) {
+  if (is_pointer_down) {
     pointerdown_node =
         touch_event_manager_->GetTouchPointerNode(event, pointer_event_target);
   }
@@ -1333,9 +1352,10 @@ void PointerEventManager::RemoveLastMousePosition() {
   pointer_event_factory_.RemoveLastPosition(PointerEventFactory::kMouseId);
 }
 
-int PointerEventManager::GetPointerEventId(
-    const WebPointerProperties& web_pointer_properties) const {
-  return pointer_event_factory_.GetPointerEventId(web_pointer_properties);
+PointerId PointerEventManager::GetPointerIdForTouchGesture(
+    const uint32_t unique_touch_event_id) {
+  return pointer_event_factory_.GetPointerIdForTouchGesture(
+      unique_touch_event_id);
 }
 
 Element* PointerEventManager::CurrentTouchDownElement() {

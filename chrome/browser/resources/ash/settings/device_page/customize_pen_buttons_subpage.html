@@ -14,9 +14,8 @@
   <div id="description">[[selectedTablet.name]]</div>
 </div>
 <div class="subsection">
-  <template is="dom-repeat"
-      items="[[selectedTablet.settings.penButtonRemappings]]"
-      as="remapping">
-    <div>[[remapping.name]]</div>
-  </template>
+  <customize-buttons-subsection
+      button-remapping-list="[[selectedTablet.settings.penButtonRemappings]]"
+      action-list$="[[buttonActionList_]]">
+  </customize-buttons-subsection>
 </div>

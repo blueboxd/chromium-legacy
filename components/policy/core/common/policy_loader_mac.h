@@ -7,9 +7,9 @@
 
 #include <string>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/async_policy_loader.h"
@@ -86,7 +86,7 @@ class POLICY_EXPORT PolicyLoaderMac : public AsyncPolicyLoader {
   base::FilePathWatcher watcher_;
 
   // Application ID to pass into Mac's Preference Utilities API.
-  base::ScopedCFTypeRef<CFStringRef> application_id_;
+  base::apple::ScopedCFTypeRef<CFStringRef> application_id_;
 };
 
 }  // namespace policy

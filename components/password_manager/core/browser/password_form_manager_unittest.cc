@@ -15,6 +15,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -32,6 +33,7 @@
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
+#include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/mock_password_change_success_tracker.h"
 #include "components/password_manager/core/browser/mock_webauthn_credentials_delegate.h"
@@ -79,6 +81,7 @@ using autofill::ServerFieldTypeSet;
 using autofill::SINGLE_USERNAME;
 using autofill::UNKNOWN_TYPE;
 using autofill::password_generation::PasswordGenerationType;
+using base::TestMockTimeTaskRunner;
 using signin::GaiaIdHash;
 using testing::_;
 using testing::AllOf;
@@ -182,6 +185,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD(PrefService*, GetPrefs, (), (const, override));
   MOCK_METHOD(const GURL&, GetLastCommittedURL, (), (const, override));
   MOCK_METHOD(url::Origin, GetLastCommittedOrigin, (), (const, override));
+  MOCK_METHOD(FieldInfoManager*, GetFieldInfoManager, (), (const, override));
   MOCK_METHOD(WebAuthnCredentialsDelegate*,
               GetWebAuthnCredentialsDelegateForDriver,
               (PasswordManagerDriver*),
@@ -323,7 +327,7 @@ class MockFormSaver : public StubFormSaver {
 class PasswordFormManagerTest : public testing::Test,
                                 public testing::WithParamInterface<bool> {
  public:
-  PasswordFormManagerTest() {
+  PasswordFormManagerTest() : task_runner_(new TestMockTimeTaskRunner) {
     pref_service_.registry()->RegisterTimePref(
         prefs::kProfileStoreDateLastUsedForFilling, base::Time());
     pref_service_.registry()->RegisterTimePref(
@@ -452,6 +456,10 @@ class PasswordFormManagerTest : public testing::Test,
             OfferPasskeysFromAnotherDeviceOption)
         .WillByDefault(Return(true));
 
+    field_info_manager_ = std::make_unique<FieldInfoManager>(task_runner_);
+    ON_CALL(client_, GetFieldInfoManager())
+        .WillByDefault(Return(field_info_manager_.get()));
+
     fetcher_ = std::make_unique<FakeFormFetcher>();
     fetcher_->Fetch();
   }
@@ -477,6 +485,8 @@ class PasswordFormManagerTest : public testing::Test,
   NiceMock<MockPasswordManagerClient> client_;
   NiceMock<MockPasswordManagerDriver> driver_;
   NiceMock<MockWebAuthnCredentialsDelegate> webauthn_credentials_delegate_;
+  std::unique_ptr<FieldInfoManager> field_info_manager_;
+  scoped_refptr<TestMockTimeTaskRunner> task_runner_;
   absl::optional<std::vector<PasskeyCredential>> passkeys_;
 
   // Define |fetcher_| before |form_manager_|, because the former needs to
@@ -517,6 +527,36 @@ class PasswordFormManagerTest : public testing::Test,
       const std::vector<const PasswordForm*>& non_federated) {
     fetcher_->SetNonFederated(non_federated);
     fetcher_->NotifyFetchCompleted();
+  }
+
+  void AddFieldInfo(int driver_id,
+                    FieldRendererId field_id,
+                    const GURL& url,
+                    const std::u16string field_value,
+                    FormSignature form_signature,
+                    FieldSignature field_signature,
+                    bool is_likely_otp) {
+    FieldInfo info(driver_id, field_id, GetSignonRealm(url), field_value,
+                   is_likely_otp);
+    FormPredictions predictions;
+    predictions.form_signature = form_signature;
+    predictions.fields.push_back({
+        .renderer_id = field_id,
+        .signature = field_signature,
+        .type = UNKNOWN_TYPE,
+    });
+    field_info_manager_->AddFieldInfo(info, predictions);
+  }
+
+  void ExpectSingleUsernameUpload(
+      FormSignature form_signature,
+      AutofillUploadContents::Field::SingleUsernameVoteType vote_type,
+      autofill::ServerFieldType field_type) {
+    EXPECT_CALL(
+        mock_autofill_download_manager_,
+        StartUploadRequest(AllOf(SignatureIs(form_signature),
+                                 UploadedSingleUsernameVoteTypeIs(vote_type)),
+                           _, ServerFieldTypeSet{field_type}, _, _, _, _));
   }
 };
 
@@ -1192,14 +1232,11 @@ TEST_P(PasswordFormManagerTest, UsernameCorrectionVote) {
     FormFieldData text_field;
     text_field.name = alternative.name;
     text_field.form_control_type = "text";
-    // Uniqueness doesn't matter in this test.
-    text_field.unique_renderer_id = autofill::FieldRendererId();
     saved_match_.form_data.fields.push_back(text_field);
   }
   FormFieldData password_field;
   password_field.name = saved_match_.password_element;
   password_field.form_control_type = "password";
-  password_field.unique_renderer_id = autofill::FieldRendererId();
   saved_match_.form_data.fields.push_back(password_field);
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
@@ -1229,9 +1266,92 @@ TEST_P(PasswordFormManagerTest, UsernameCorrectionVote) {
       autofill::USERNAME;
   expected_types[saved_match_.password_element] =
       autofill::ACCOUNT_CREATION_PASSWORD;
-  EXPECT_CALL(mock_autofill_download_manager_,
-              StartUploadRequest(UploadedAutofillTypesAre(expected_types), _, _,
-                                 _, _, _, _));
+
+  // The first key in the map should be
+  // `saved_match_.form_data.fields[0].unique_renderer_id`, but the new
+  // `unique_renderer_id` of value 1 should be assigned in
+  // `GenerateSyntheticRenderIdsAndAssignThem()` in the flow
+  // of `Save()`.
+  VoteTypeMap expected_vote_types = {
+      {autofill::FieldRendererId(1),
+       AutofillUploadContents::Field::USERNAME_OVERWRITTEN}};
+
+  EXPECT_CALL(
+      mock_autofill_download_manager_,
+      StartUploadRequest(
+          AllOf(SignatureIs(CalculateFormSignature(saved_match_.form_data)),
+                UploadedAutofillTypesAre(expected_types),
+                VoteTypesAre(expected_vote_types)),
+          _, _, _, _, _, _));
+
+  form_manager_->Save();
+}
+
+// Checks votes uploading when user reuses credentials on login form. Simulates
+// the whole flow by saving the same username and password from the sign-up form
+// (`saved_match_`) on a different form (`submitted_form`).
+TEST_P(PasswordFormManagerTest, CredentialsReusedVote) {
+  // The credentials are saved on a sign-up form.
+  saved_match_.username_value = u"username_value";
+  saved_match_.all_alternative_usernames = {
+      {AlternativeElement::Value(u"user@gmail.com"),
+       autofill::FieldRendererId(), AlternativeElement::Name(u"email_field")},
+      {AlternativeElement::Value(u"username_value"),
+       autofill::FieldRendererId(),
+       AlternativeElement::Name(u"username_field")}};
+
+  // Add fields because it is necessary for vote uploading.
+  for (const AlternativeElement& alternative :
+       saved_match_.all_alternative_usernames) {
+    FormFieldData field;
+    field.name = alternative.name;
+    field.form_control_type = "text";
+    saved_match_.form_data.fields.push_back(field);
+  }
+  FormFieldData password_field;
+  password_field.name = saved_match_.password_element;
+  password_field.form_control_type = "password";
+  saved_match_.form_data.fields.push_back(password_field);
+
+  SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
+
+  // On a login form, the user reuses the username value and password value.
+  submitted_form_.fields[kUsernameFieldIndex].value =
+      saved_match_.username_value;
+  submitted_form_.fields[kPasswordFieldIndex].value =
+      saved_match_.password_value;
+
+  ASSERT_TRUE(form_manager_->ProvisionallySave(submitted_form_, &driver_,
+                                               /*possible_username=*/nullptr));
+
+  // Credentials saved on the signup form were reused on a login form. The vote
+  // applies to the first (signup) form.
+  EXPECT_CALL(
+      mock_autofill_download_manager_,
+      StartUploadRequest(
+          AllOf(SignatureIs(CalculateFormSignature(saved_match_.form_data)),
+                VoteTypesAre(
+                    {{saved_match_.form_data.fields[kUsernameFieldIndex]
+                          .unique_renderer_id,
+                      AutofillUploadContents::Field::CREDENTIALS_REUSED},
+                     {saved_match_.form_data.fields[kPasswordFieldIndex]
+                          .unique_renderer_id,
+                      AutofillUploadContents::Field::CREDENTIALS_REUSED}})),
+          _, _, _, _, _, _));
+
+  // Saved credentials from the signup form were used for the first time on a
+  // submitted form. The vote applies to the new form being submitted.
+  EXPECT_CALL(
+      mock_autofill_download_manager_,
+      StartUploadRequest(
+          AllOf(SignatureIs(CalculateFormSignature(submitted_form_)),
+                VoteTypesAre({{submitted_form_.fields[kPasswordFieldIndex]
+                                   .unique_renderer_id,
+                               AutofillUploadContents::Field::FIRST_USE},
+                              {submitted_form_.fields[kUsernameFieldIndex]
+                                   .unique_renderer_id,
+                               AutofillUploadContents::Field::FIRST_USE}})),
+          _, _, _, _, _, _));
 
   form_manager_->Save();
 }
@@ -2419,6 +2539,52 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowSignupForm) {
   EXPECT_TRUE(form_manager_->GetPendingCredentials().username_value.empty());
 }
 
+// Tests that no UFF vote can be sent on the username field when it is in the
+// submitted password form.
+TEST_P(PasswordFormManagerTest, UsernameFirstFlowUsernameInThePasswordForm) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kUsernameFirstFlowFallbackCrowdsourcing},
+      /*disabled_features=*/{});
+
+  CreateFormManager(observed_form_);
+  fetcher_->NotifyFetchCompleted();
+
+  // Create possible username data for a username field from `observed_form_`.
+  autofill::FieldRendererId kUsernameFieldRendererId =
+      observed_form_.fields[1].unique_renderer_id;
+  std::u16string possible_username = u"possible_username";
+  PossibleUsernameData possible_username_data(
+      GetSignonRealm(observed_form_.url), kUsernameFieldRendererId,
+      possible_username, base::Time::Now(),
+      /*driver_id=*/0, /*autocomplete_attribute_has_username=*/false,
+      /*is_likely_otp=*/false);
+  FormPredictions predictions;
+  predictions.form_signature = CalculateFormSignature(observed_form_);
+  PasswordFieldPrediction field_prediction;
+  field_prediction.renderer_id = kUsernameFieldRendererId;
+  field_prediction.signature =
+      CalculateFieldSignatureForField(observed_form_.fields[0]);
+  field_prediction.type = autofill::UNKNOWN_TYPE;
+  predictions.fields.push_back(field_prediction);
+  possible_username_data.form_predictions = predictions;
+
+  // Simulate submitting the form.
+  FormData submitted_form = observed_form_;
+  submitted_form.fields[1].value = possible_username;
+  submitted_form.fields[2].value = u"strongpassword";
+  ASSERT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_,
+                                               &possible_username_data));
+
+  // Check that no SINGLE_USERNAME vote is sent (PASSWORD != SINGLE_USERNAME).
+  auto expected_votes = ServerFieldTypeSet{autofill::PASSWORD};
+  EXPECT_CALL(
+      mock_autofill_download_manager_,
+      StartUploadRequest(SignatureIs(CalculateFormSignature(submitted_form)), _,
+                         expected_votes, _, _, _, _));
+  form_manager_->Save();
+}
+
 // Tests that username is taken and votes are uploaded during username first
 // flow both on password saving and updating.
 TEST_P(PasswordFormManagerTest, UsernameFirstFlow) {
@@ -2480,15 +2646,8 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlow) {
         is_password_update
             ? autofill::AutofillUploadContents::STORED_FOR_CURRENT_DOMAIN
             : autofill::AutofillUploadContents::USERNAME_LIKE);
-// As Android does not allow username editing, |NO_INFORMATION| about prompt
-// edits is uploaded.
-#if !BUILDFLAG(IS_ANDROID)
     expected_single_username_data.set_prompt_edit(
         autofill::AutofillUploadContents::EDITED_POSITIVE);
-#else
-    expected_single_username_data.set_prompt_edit(
-        autofill::AutofillUploadContents::EDIT_UNSPECIFIED);
-#endif  // !BUILDFLAG(IS_ANDROID)
     EXPECT_CALL(
         mock_autofill_download_manager_,
         StartUploadRequest(
@@ -2564,15 +2723,8 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowWithPrefilledUsername) {
       kSingleUsernameFieldSignature.value());
   expected_single_username_data.set_value_type(
       autofill::AutofillUploadContents::VALUE_WITH_NO_WHITESPACE);
-// As Android does not allow username editing, |NO_INFORMATION| about prompt
-// edits is uploaded.
-#if !BUILDFLAG(IS_ANDROID)
   expected_single_username_data.set_prompt_edit(
       autofill::AutofillUploadContents::NOT_EDITED_POSITIVE);
-#else
-  expected_single_username_data.set_prompt_edit(
-      autofill::AutofillUploadContents::EDIT_UNSPECIFIED);
-#endif  // !BUILDFLAG(IS_ANDROID)
   EXPECT_CALL(
       mock_autofill_download_manager_,
       StartUploadRequest(
@@ -2666,15 +2818,8 @@ TEST_P(PasswordFormManagerTest, NegativeUsernameFirstFlowVotes) {
       kUsernameFieldSignature.value());
   expected_single_username_data.set_value_type(
       autofill::AutofillUploadContents::USERNAME_LIKE);
-// As Android does not allow username editing, |NO_INFORMATION| about prompt
-// edits is uploaded.
-#if !BUILDFLAG(IS_ANDROID)
   expected_single_username_data.set_prompt_edit(
       autofill::AutofillUploadContents::EDITED_NEGATIVE);
-#else
-  expected_single_username_data.set_prompt_edit(
-      autofill::AutofillUploadContents::EDIT_UNSPECIFIED);
-#endif  // !BUILDFLAG(IS_ANDROID)
   EXPECT_CALL(
       mock_autofill_download_manager_,
       StartUploadRequest(
@@ -3057,6 +3202,172 @@ TEST_P(PasswordFormManagerTest, ReportSubmittedFormFrameCrossOriginIframe) {
       metrics_util::SubmittedFormFrame::
           IFRAME_WITH_DIFFERENT_AND_NOT_PSL_MATCHED_SIGNON_REALM,
       1);
+}
+
+// Tests that when the user edits the username value in the save prompt
+// manually, a strong positive vote is sent for the form that user has typed the
+// saved value into, and a strong negative vote is sent for the form, into which
+// the user has typed a different value.
+TEST_P(PasswordFormManagerTest, StrongForgotPasswordFormVotes) {
+  CreateFormManager(observed_form_only_password_fields_);
+  fetcher_->NotifyFetchCompleted();
+
+  // Simulate user input in a single text field in a forgot password form.
+  constexpr char16_t kPossibleUsername[] = u"possible_username";
+  AddFieldInfo(/*driver_id=*/0, kSingleUsernameFieldRendererId,
+               observed_form_only_password_fields_.url, kPossibleUsername,
+               kSingleUsernameFormSignature, kSingleUsernameFieldSignature,
+               /*is_likely_otp=*/false);
+
+  // Simulate user input in another single text field form, unrelated to FPF.
+  constexpr FormSignature kOtherFormSignature(2000);
+  constexpr FieldRendererId kOtherFieldRendererId(200);
+  constexpr FieldSignature kOtherFieldSignature(4000);
+  AddFieldInfo(/*driver_id=*/0, kOtherFieldRendererId,
+               observed_form_only_password_fields_.url, u"OTP",
+               kOtherFormSignature, kOtherFieldSignature,
+               /*is_likely_otp=*/false);
+
+  // Simulate submitting a password form.
+  FormData submitted_form = observed_form_only_password_fields_;
+  submitted_form.fields[0].value = u"strongpassword";
+  ASSERT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_,
+                                               /*possible_username=*/nullptr));
+  form_manager_->SaveSuggestedUsernameValueToVotesUploader();
+
+  // Simulate the user modifying the username in the prompt.
+  form_manager_->OnUpdateUsernameFromPrompt(kPossibleUsername);
+
+  // Expect a strong positive vote on the username form.
+  ExpectSingleUsernameUpload(
+      kSingleUsernameFormSignature,
+      AutofillUploadContents::Field::STRONG_FORGOT_PASSWORD,
+      autofill::SINGLE_USERNAME_FORGOT_PASSWORD);
+
+  // Expect a strong negative vote on another single text field form, unrelated
+  // to FPF.
+  ExpectSingleUsernameUpload(
+      kOtherFormSignature,
+      autofill::AutofillUploadContents::Field::STRONG_FORGOT_PASSWORD,
+      autofill::NOT_USERNAME);
+
+  // Expect upload for the password form. This upload is unrelated to FPF: it
+  // is a result of saving a new password on the password form.
+  EXPECT_CALL(
+      mock_autofill_download_manager_,
+      StartUploadRequest(SignatureIs(CalculateFormSignature(submitted_form)), _,
+                         _, _, _, _, _));
+
+  form_manager_->Save();
+}
+
+// Tests that when the user accepts the username value in the save prompt
+// without editing, a weak positive vote is sent for the form that user has
+// typed the saved value into, and a weak negative vote is sent for the form,
+// into which the user has typed a different value.
+TEST_P(PasswordFormManagerTest, WeakForgotPasswordFormVotes) {
+  CreateFormManager(observed_form_only_password_fields_);
+  SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
+
+  // Simulate user input in a single text field in a forgot password form.
+  AddFieldInfo(/*driver_id=*/0, kSingleUsernameFieldRendererId,
+               observed_form_only_password_fields_.url,
+               saved_match_.username_value, kSingleUsernameFormSignature,
+               kSingleUsernameFieldSignature,
+               /*is_likely_otp=*/false);
+
+  // Simulate user input in another single text field form, unrelated to FPF.
+  constexpr FormSignature kOtherFormSignature(2000);
+  constexpr FieldRendererId kOtherFieldRendererId(200);
+  constexpr FieldSignature kOtherFieldSignature(4000);
+  AddFieldInfo(/*driver_id=*/0, kOtherFieldRendererId,
+               observed_form_only_password_fields_.url, u"OTP",
+               kOtherFormSignature, kOtherFieldSignature,
+               /*is_likely_otp=*/false);
+
+  // Simulate submitting a password form. A previously saved username value
+  // (`saved_match_.username_value`) is offered as username in the prompt
+  FormData submitted_form = observed_form_only_password_fields_;
+  submitted_form.fields[0].value = u"strongpassword";
+  ASSERT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_,
+                                               /*possible_username=*/nullptr));
+  form_manager_->SaveSuggestedUsernameValueToVotesUploader();
+
+  // Expect a weak positive vote on the username form.
+  ExpectSingleUsernameUpload(
+      kSingleUsernameFormSignature,
+      AutofillUploadContents::Field::WEAK_FORGOT_PASSWORD,
+      autofill::SINGLE_USERNAME_FORGOT_PASSWORD);
+
+  // Expect a weak negative vote on another single text field form, unrelated to
+  // FPF.
+  ExpectSingleUsernameUpload(
+      kOtherFormSignature,
+      autofill::AutofillUploadContents::Field::WEAK_FORGOT_PASSWORD,
+      autofill::NOT_USERNAME);
+
+  // Expect upload for the password form. This upload is unrelated to FPF: it
+  // is a result of saving a new password on the password form.
+  EXPECT_CALL(
+      mock_autofill_download_manager_,
+      StartUploadRequest(SignatureIs(CalculateFormSignature(submitted_form)), _,
+                         _, _, _, _, _));
+
+  form_manager_->Save();
+}
+
+// Tests a forgot password flow in which the password form has a non-empty
+// username value. A vote will only be sent for a text field, that matches the
+// username in the password form.
+TEST_P(PasswordFormManagerTest,
+       ForgotPasswordFormVotesPasswordFormHasUsername) {
+  CreateFormManager(observed_form_);
+  fetcher_->NotifyFetchCompleted();
+
+  // Simulate user input in a single text field in a forgot password form.
+  constexpr char16_t kPossibleUsername[] = u"possible_username";
+  AddFieldInfo(/*driver_id=*/0, kSingleUsernameFieldRendererId,
+               observed_form_only_password_fields_.url, kPossibleUsername,
+               kSingleUsernameFormSignature, kSingleUsernameFieldSignature,
+               /*is_likely_otp=*/false);
+
+  // Simulate user input in another single text field form, unrelated to FPF.
+  constexpr FormSignature kOtherFormSignature(2000);
+  constexpr FieldRendererId kOtherFieldRendererId(200);
+  constexpr FieldSignature kOtherFieldSignature(4000);
+  AddFieldInfo(/*driver_id=*/0, kOtherFieldRendererId,
+               observed_form_only_password_fields_.url, u"OTP",
+               kOtherFormSignature, kOtherFieldSignature,
+               /*is_likely_otp=*/false);
+
+  // Simulate submitting a password form.
+  FormData submitted_form = observed_form_;
+  submitted_form.fields[1].value = kPossibleUsername;
+  submitted_form.fields[2].value = u"strongpassword";
+  ASSERT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_,
+                                               /*possible_username=*/nullptr));
+  form_manager_->SaveSuggestedUsernameValueToVotesUploader();
+
+  // Expect a weak positive vote on the username form.
+  ExpectSingleUsernameUpload(
+      kSingleUsernameFormSignature,
+      AutofillUploadContents::Field::WEAK_FORGOT_PASSWORD,
+      autofill::SINGLE_USERNAME_FORGOT_PASSWORD);
+
+  // Expect no vote on another single text field form, unrelated to FPF.
+  EXPECT_CALL(
+      mock_autofill_download_manager_,
+      StartUploadRequest(SignatureIs(kOtherFormSignature), _, _, _, _, _, _))
+      .Times(0);
+
+  // Expect upload for the password form. This upload is unrelated to FPF: it
+  // is a result of saving a new password on the password form.
+  EXPECT_CALL(
+      mock_autofill_download_manager_,
+      StartUploadRequest(SignatureIs(CalculateFormSignature(submitted_form)), _,
+                         _, _, _, _, _));
+
+  form_manager_->Save();
 }
 
 #if BUILDFLAG(IS_ANDROID)

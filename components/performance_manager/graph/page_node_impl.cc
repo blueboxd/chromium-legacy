@@ -14,6 +14,7 @@
 #include "components/performance_manager/graph/graph_impl_operations.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/public/graph/graph_operations.h"
+#include "components/performance_manager/public/resource_attribution/resource_contexts.h"
 
 namespace performance_manager {
 
@@ -52,21 +53,20 @@ bool IsValidPageStateTransition(PageState old_state, PageState new_state) {
 PageNodeImpl::PageNodeImpl(const WebContentsProxy& contents_proxy,
                            const std::string& browser_context_id,
                            const GURL& visible_url,
-                           bool is_visible,
-                           bool is_audible,
+                           PagePropertyFlags initial_properties,
                            base::TimeTicks visibility_change_time,
                            PageState page_state)
     : contents_proxy_(contents_proxy),
       visibility_change_time_(visibility_change_time),
       main_frame_url_(visible_url),
       browser_context_id_(browser_context_id),
-      is_visible_(is_visible),
-      is_audible_(is_audible),
+      is_visible_(initial_properties.Has(PagePropertyFlag::kIsVisible)),
+      is_audible_(initial_properties.Has(PagePropertyFlag::kIsAudible)),
       page_state_(page_state) {
   DCHECK(IsValidInitialPageState(page_state));
   weak_this_ = weak_factory_.GetWeakPtr();
 
-  if (is_audible) {
+  if (is_audible_.value()) {
     audible_change_time_ = base::TimeTicks::Now();
   }
 
@@ -249,6 +249,11 @@ FrameNodeImpl* PageNodeImpl::embedder_frame_node() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(embedder_frame_node_ || embedding_type_ == EmbeddingType::kInvalid);
   return embedder_frame_node_;
+}
+
+resource_attribution::PageContext PageNodeImpl::resource_context() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return resource_context_;
 }
 
 PageNodeImpl::EmbeddingType PageNodeImpl::embedding_type() const {
@@ -480,6 +485,11 @@ const FrameNode* PageNodeImpl::GetOpenerFrameNode() const {
 const FrameNode* PageNodeImpl::GetEmbedderFrameNode() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return embedder_frame_node();
+}
+
+resource_attribution::PageContext PageNodeImpl::GetResourceContext() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return resource_context();
 }
 
 PageNodeImpl::EmbeddingType PageNodeImpl::GetEmbeddingType() const {

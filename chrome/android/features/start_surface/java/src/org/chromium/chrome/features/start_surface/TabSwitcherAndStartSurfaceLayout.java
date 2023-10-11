@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.features.start_surface;
 
-import static org.chromium.chrome.browser.device.DeviceClassManager.GTS_ACCESSIBILITY_SUPPORT;
-
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -54,6 +52,7 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
 import org.chromium.components.version_info.VersionInfo;
+import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.interpolators.Interpolators;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -161,16 +160,13 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
                     mFinishedShowingRunnable = () -> {
                         Tab currentTab = mTabModelSelector.getCurrentTab();
                         if (currentTab != null) mTabContentManager.cacheTabThumbnail(currentTab);
-                        mLayoutTabs = null;
+                        resetLayoutTabs();
                         mFinishedShowingRunnable = null;
                     };
                     mHandler.postDelayed(mFinishedShowingRunnable, ZOOMING_DURATION);
                 } else {
-                    // crbug.com/1176548, mLayoutTabs is used to capture thumbnail, null it in a
-                    // post delay handler to avoid creating a new pending surface in native, which
-                    // will hold the thumbnail capturing task.
                     mFinishedShowingRunnable = () -> {
-                        mLayoutTabs = null;
+                        resetLayoutTabs();
                         mFinishedShowingRunnable = null;
                     };
                     mHandler.postDelayed(mFinishedShowingRunnable, ZOOMING_DURATION);
@@ -196,6 +192,17 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
                 // version of the GTS overview in the background while expanding the thumbnail to
                 // the viewport.
                 expandTab(getThumbnailLocationOfCurrentTab());
+            }
+
+            private void resetLayoutTabs() {
+                // Clear the visible IDs. Once mLayoutTabs is empty, tabs will no longer be
+                // captureable and this prevents a thumbnailing request from waiting indefinitely.
+                updateCacheVisibleIds(Collections.emptyList());
+
+                // crbug.com/1176548, mLayoutTabs is used to capture thumbnail, null it in a
+                // post delay handler to avoid creating a new pending surface in native, which
+                // will hold the thumbnail capturing task.
+                mLayoutTabs = null;
             }
         };
 
@@ -302,9 +309,7 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
                 mStartSurface.setStartSurfaceState(StartSurfaceState.SHOWING_TABSWITCHER);
             }
 
-            if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(getContext())
-                    && GTS_ACCESSIBILITY_SUPPORT.getValue()
-                    && ChromeAccessibilityUtil.get().isTouchExplorationEnabled()) {
+            if (AccessibilityState.isTouchExplorationEnabled()) {
                 // Intentionally disable the shrinking animation when touch exploration is enabled.
                 // During the shrinking animation, since the ComponsitorViewHolder is not focusable,
                 // Chrome is in a temporary no "valid" focus target state. This result in focus
@@ -881,8 +886,7 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
 
     @Override
     public boolean canHostBeFocusable() {
-        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(getContext())
-                && ChromeAccessibilityUtil.get().isAccessibilityEnabled()
+        if (ChromeAccessibilityUtil.get().isAccessibilityEnabled()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())) {
             // We don't allow this layout to gain focus when accessibility is enabled so that the
             // CompositorViewHolder doesn't steal focus when entering tab switcher.

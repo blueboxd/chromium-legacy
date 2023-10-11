@@ -225,6 +225,10 @@ namespace developerPrivate {
     // Only populated for extensions that can be affected by the runtime host
     // permissions feature.
     RuntimeHostPermissions? runtimeHostPermissions;
+
+    // True if the extension can access site data through host permissions or
+    // API permissions such as activeTab.
+    boolean canAccessSiteData;
   };
 
   dictionary ExtensionInfo {
@@ -266,6 +270,7 @@ namespace developerPrivate {
     boolean showSafeBrowsingAllowlistWarning;
     boolean showAccessRequestsInToolbar;
     boolean acknowledgeSafetyCheckWarning;
+    boolean? pinnedToToolbar;
   };
 
   dictionary ProfileInfo {
@@ -326,6 +331,7 @@ namespace developerPrivate {
     HostAccess? hostAccess;
     boolean? showAccessRequestsInToolbar;
     boolean? acknowledgeSafetyCheckWarning;
+    boolean? pinnedToToolbar;
   };
 
   dictionary ProfileConfigurationUpdate {
@@ -435,11 +441,14 @@ namespace developerPrivate {
     // - ON_CLICK: The extension requested access to the site but its access is
     //   withheld.
     // - ON_SPECIFIC_SITES: the extension is permitted to run on at least one
-    //   site specified by the queried site but has its access withheld on at
-    //   least one site in its host permissions.
-    // - ON_ALL_SITES: same as above except the extension has no withheld access
-    //   to its specified sites.
+    //   site specified by the queried site but it does not request access to
+    //   all sites or it has its access withheld on at least one site in its
+    //   host permissions.
+    // - ON_ALL_SITES: the extension is permitted to run on all sites.
     HostAccess siteAccess;
+    // Whether the matching extension requests access to all sites in its
+    // host permissions.
+    boolean canRequestAllSites;
   };
 
   dictionary ExtensionSiteAccessUpdate {
@@ -489,7 +498,8 @@ namespace developerPrivate {
     PERMISSIONS_CHANGED,
     SERVICE_WORKER_STARTED,
     SERVICE_WORKER_STOPPED,
-    CONFIGURATION_CHANGED
+    CONFIGURATION_CHANGED,
+    PINNED_ACTIONS_CHANGED
   };
 
   dictionary PackDirectoryResponse {

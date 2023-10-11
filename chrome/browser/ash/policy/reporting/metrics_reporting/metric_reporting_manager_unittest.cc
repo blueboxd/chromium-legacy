@@ -342,14 +342,20 @@ class MetricReportingManagerTest
   }
 
   ::ash::SessionTerminationManager session_termination_manager_;
-  raw_ptr<test::FakeMetricReportQueue, ExperimentalAsh> info_queue_ptr_;
-  raw_ptr<test::FakeMetricReportQueue, ExperimentalAsh> telemetry_queue_ptr_;
-  raw_ptr<test::FakeMetricReportQueue, ExperimentalAsh> event_queue_ptr_;
-  raw_ptr<test::FakeMetricReportQueue, ExperimentalAsh> peripheral_queue_ptr_;
-  raw_ptr<test::FakeMetricReportQueue, ExperimentalAsh>
+  raw_ptr<test::FakeMetricReportQueue, DanglingUntriaged | ExperimentalAsh>
+      info_queue_ptr_;
+  raw_ptr<test::FakeMetricReportQueue, DanglingUntriaged | ExperimentalAsh>
+      telemetry_queue_ptr_;
+  raw_ptr<test::FakeMetricReportQueue, DanglingUntriaged | ExperimentalAsh>
+      event_queue_ptr_;
+  raw_ptr<test::FakeMetricReportQueue, DanglingUntriaged | ExperimentalAsh>
+      peripheral_queue_ptr_;
+  raw_ptr<test::FakeMetricReportQueue, DanglingUntriaged | ExperimentalAsh>
       user_telemetry_queue_ptr_;
-  raw_ptr<test::FakeMetricReportQueue, ExperimentalAsh> user_event_queue_ptr_;
-  raw_ptr<test::FakeMetricReportQueue, ExperimentalAsh> app_event_queue_ptr_;
+  raw_ptr<test::FakeMetricReportQueue, DanglingUntriaged | ExperimentalAsh>
+      user_event_queue_ptr_;
+  raw_ptr<test::FakeMetricReportQueue, DanglingUntriaged | ExperimentalAsh>
+      app_event_queue_ptr_;
 
   std::unique_ptr<::testing::NiceMock<MockDelegate>> mock_delegate_;
 };
@@ -884,18 +890,34 @@ INSTANTIATE_TEST_SUITE_P(
           /*has_init_delay=*/true,
           /*expected_count_before_login=*/0,
           /*expected_count_after_login=*/1},
-         {"RuntimeCountersTelemetry_Unaffiliated", /*enabled_features=*/{},
+         {"RuntimeCountersTelemetry_Unaffiliated_FeatureEnabled",
+          /*enabled_features=*/{kEnableRuntimeCounters},
           /*disabled_features=*/{},
           /*is_affiliated=*/false, runtime_counters_telemetry_settings,
           /*has_init_delay=*/true,
           /*expected_count_before_login=*/1,
           /*expected_count_after_login=*/1},
-         {"RuntimeCountersTelemetry_Default", /*enabled_features=*/{},
+         {"RuntimeCountersTelemetry_Unaffiliated_FeatureUnchanged",
+          /*enabled_features=*/{},
+          /*disabled_features=*/{},
+          /*is_affiliated=*/false, runtime_counters_telemetry_settings,
+          /*has_init_delay=*/true,
+          /*expected_count_before_login=*/0,
+          /*expected_count_after_login=*/0},
+         {"RuntimeCountersTelemetry_Default_FeatureEnabled",
+          /*enabled_features=*/{kEnableRuntimeCounters},
           /*disabled_features=*/{},
           /*is_affiliated=*/true, runtime_counters_telemetry_settings,
           /*has_init_delay=*/true,
           /*expected_count_before_login=*/1,
-          /*expected_count_after_login=*/1}}),
+          /*expected_count_after_login=*/1},
+         {"RuntimeCountersTelemetry_Default_FeatureUnchanged",
+          /*enabled_features=*/{},
+          /*disabled_features=*/{},
+          /*is_affiliated=*/true, runtime_counters_telemetry_settings,
+          /*has_init_delay=*/true,
+          /*expected_count_before_login=*/0,
+          /*expected_count_after_login=*/0}}),
     [](const testing::TestParamInfo<
         MetricReportingManagerTelemetryTest::ParamType>& info) {
       return info.param.test_name;

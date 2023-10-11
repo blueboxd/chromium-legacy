@@ -33,7 +33,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
 
 import androidx.browser.customtabs.CustomTabColorSchemeParams;
@@ -54,6 +53,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.IntentUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
@@ -70,6 +70,7 @@ import java.util.Collections;
 
 /** Tests for {@link CustomTabIntentDataProvider}. */
 @RunWith(BaseRobolectricTestRunner.class)
+@Batch(Batch.UNIT_TESTS)
 @Config(manifest = Config.NONE)
 public class CustomTabIntentDataProviderTest {
     @Rule
@@ -243,7 +244,7 @@ public class CustomTabIntentDataProviderTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES})
+    @EnableFeatures(ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES)
     public void isAllowedThirdParty_noDefaultPolicy() {
         CustomTabIntentDataProvider.DENYLIST_ENTRIES.setForTesting(
                 "com.dc.joker|com.marvel.thanos");
@@ -456,18 +457,18 @@ public class CustomTabIntentDataProviderTest {
     }
 
     @Test
-    public void testGetReferrerPackageName() {
+    public void testGetAppIdFromReferrer() {
         assertEquals("extra.activity.referrer",
-                CustomTabIntentDataProvider.getReferrerPackageName(
+                CustomTabIntentDataProvider.getAppIdFromReferrer(
                         buildMockActivity("android-app://extra.activity.referrer")));
         assertEquals("co.abc.xyz",
-                CustomTabIntentDataProvider.getReferrerPackageName(
+                CustomTabIntentDataProvider.getAppIdFromReferrer(
                         buildMockActivity("android-app://co.abc.xyz")));
 
-        assertReferrerInvalid("");
-        assertReferrerInvalid("invalid");
-        assertReferrerInvalid("android-app://");
-        assertReferrerInvalid(Uri.parse("https://www.one.com").toString());
+        assertNonPackageUriReferrer("");
+        assertNonPackageUriReferrer("invalid");
+        assertNonPackageUriReferrer("android-app://"); // empty host name is invalid.
+        assertNonPackageUriReferrer(Uri.parse("https://www.one.com").toString());
     }
 
     @Test
@@ -526,7 +527,7 @@ public class CustomTabIntentDataProviderTest {
     }
 
     @Test
-    @DisableFeatures({ChromeFeatureList.CCT_AUTO_TRANSLATE})
+    @DisableFeatures(ChromeFeatureList.CCT_AUTO_TRANSLATE)
     public void getTranslateLanguage_autoTranslateFeatureDisabled() {
         CustomTabsConnection connection = Mockito.mock(CustomTabsConnection.class);
         when(connection.getClientPackageNameForSession(any())).thenReturn("com.example.foo");
@@ -543,7 +544,7 @@ public class CustomTabIntentDataProviderTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.CCT_AUTO_TRANSLATE})
+    @EnableFeatures(ChromeFeatureList.CCT_AUTO_TRANSLATE)
     public void getTranslateLanguage_autoTranslateExtraMissing() {
         CustomTabIntentDataProvider.AUTO_TRANSLATE_ALLOW_ALL_FIRST_PARTIES.setForTesting(false);
         CustomTabIntentDataProvider.AUTO_TRANSLATE_PACKAGE_NAME_ALLOWLIST.setForTesting(
@@ -563,7 +564,7 @@ public class CustomTabIntentDataProviderTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.CCT_AUTO_TRANSLATE})
+    @EnableFeatures(ChromeFeatureList.CCT_AUTO_TRANSLATE)
     public void getTranslateLanguage_autoTranslateWithAllowedPackageName() {
         CustomTabIntentDataProvider.AUTO_TRANSLATE_ALLOW_ALL_FIRST_PARTIES.setForTesting(false);
         CustomTabIntentDataProvider.AUTO_TRANSLATE_PACKAGE_NAME_ALLOWLIST.setForTesting(
@@ -584,7 +585,7 @@ public class CustomTabIntentDataProviderTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.CCT_AUTO_TRANSLATE})
+    @EnableFeatures(ChromeFeatureList.CCT_AUTO_TRANSLATE)
     public void getTranslateLanguage_autoTranslateWithoutAllowedPackageName() {
         CustomTabIntentDataProvider.AUTO_TRANSLATE_ALLOW_ALL_FIRST_PARTIES.setForTesting(false);
         CustomTabIntentDataProvider.AUTO_TRANSLATE_PACKAGE_NAME_ALLOWLIST.setForTesting(
@@ -605,7 +606,7 @@ public class CustomTabIntentDataProviderTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.CCT_AUTO_TRANSLATE})
+    @EnableFeatures(ChromeFeatureList.CCT_AUTO_TRANSLATE)
     public void getTranslateLanguage_autoTranslateWithFirstPartyAllowed() {
         CustomTabIntentDataProvider.AUTO_TRANSLATE_ALLOW_ALL_FIRST_PARTIES.setForTesting(true);
         CustomTabIntentDataProvider.AUTO_TRANSLATE_PACKAGE_NAME_ALLOWLIST.setForTesting(
@@ -627,7 +628,7 @@ public class CustomTabIntentDataProviderTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.CCT_AUTO_TRANSLATE})
+    @EnableFeatures(ChromeFeatureList.CCT_AUTO_TRANSLATE)
     public void getTranslateLanguage_autoTranslateWithThirdPartyPackageName() {
         CustomTabIntentDataProvider.AUTO_TRANSLATE_ALLOW_ALL_FIRST_PARTIES.setForTesting(true);
         CustomTabIntentDataProvider.AUTO_TRANSLATE_PACKAGE_NAME_ALLOWLIST.setForTesting(
@@ -659,7 +660,7 @@ public class CustomTabIntentDataProviderTest {
     }
 
     @Test
-    @DisableFeatures({ChromeFeatureList.CCT_BOTTOM_BAR_SWIPE_UP_GESTURE})
+    @DisableFeatures(ChromeFeatureList.CCT_BOTTOM_BAR_SWIPE_UP_GESTURE)
     public void getSecondaryToolbarSwipeUpPendingIntent_featureDisabled() {
         Intent intent = new Intent();
         var pendingIntent = mock(PendingIntent.class);
@@ -783,10 +784,9 @@ public class CustomTabIntentDataProviderTest {
         return Uri.parse("https://www.example.com/");
     }
 
-    private void assertReferrerInvalid(String referrerStr) {
-        assertTrue("Referrer should be invalid for the input: " + referrerStr,
-                TextUtils.isEmpty(CustomTabIntentDataProvider.getReferrerPackageName(
-                        buildMockActivity(referrerStr))));
+    private void assertNonPackageUriReferrer(String referrerStr) {
+        assertEquals(referrerStr,
+                CustomTabIntentDataProvider.getAppIdFromReferrer(buildMockActivity(referrerStr)));
     }
 
     private Activity buildMockActivity(String referrer) {

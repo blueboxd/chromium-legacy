@@ -9,10 +9,10 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/apple/foundation_util.h"
+#include "base/apple/osstatus_logging.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/functional/bind.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/mac_logging.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/device_event_log/device_event_log.h"
@@ -28,7 +28,7 @@
 
 namespace device::fido::mac {
 
-using base::ScopedCFTypeRef;
+using base::apple::ScopedCFTypeRef;
 
 GetAssertionOperation::GetAssertionOperation(
     CtapGetAssertionRequest request,
@@ -156,10 +156,7 @@ GetAssertionOperation::ResponseForCredential(const Credential& credential,
                                              FidoTransportProtocol::kInternal);
   response.credential = PublicKeyCredentialDescriptor(
       CredentialType::kPublicKey, credential.credential_id);
-  if (has_uv) {
-    response.user_entity =
-        credential.metadata.ToPublicKeyCredentialUserEntity();
-  }
+  response.user_entity = credential.metadata.ToPublicKeyCredentialUserEntity();
   return response;
 }
 

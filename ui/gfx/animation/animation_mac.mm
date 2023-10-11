@@ -9,6 +9,11 @@
 #include "base/mac/mac_util.h"
 #include "base/task/current_thread.h"
 
+// Only available since 10.12.
+@interface NSWorkspace (AvailableSinceSierra)
+@property(readonly) BOOL accessibilityDisplayShouldReduceMotion;
+@end
+
 namespace gfx {
 
 // static
@@ -26,8 +31,9 @@ bool Animation::ScrollAnimationsEnabledBySystem() {
   id value = nil;
   value = [NSUserDefaults.standardUserDefaults
       objectForKey:@"NSScrollAnimationEnabled"];
-  if (value)
+  if (value) {
     enabled = [value boolValue];
+  }
   return enabled;
 }
 
@@ -46,4 +52,4 @@ void Animation::UpdatePrefersReducedMotion() {
   }
 }
 
-} // namespace gfx
+}  // namespace gfx

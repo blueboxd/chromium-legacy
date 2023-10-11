@@ -14,7 +14,6 @@ import static org.chromium.chrome.browser.autofill.editors.EditorProperties.Drop
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownFieldProperties.DROPDOWN_KEY_VALUE_LIST;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.EDITOR_FIELDS;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.EDITOR_TITLE;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FORM_VALID;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.IS_REQUIRED;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.LABEL;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.VALIDATOR;
@@ -26,7 +25,9 @@ import static org.chromium.chrome.browser.autofill.editors.EditorProperties.Text
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_FIELD_TYPE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_FORMATTER;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_SUGGESTIONS;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.VALIDATE_ON_SHOW;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.VISIBLE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.scrollToFieldWithErrorMessage;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.validateForm;
 
 import android.app.ProgressDialog;
@@ -38,18 +39,20 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AddressValidationType;
 import org.chromium.chrome.browser.autofill.AutofillAddress;
-import org.chromium.chrome.browser.autofill.AutofillProfile;
 import org.chromium.chrome.browser.autofill.AutofillProfileBridge;
 import org.chromium.chrome.browser.autofill.AutofillProfileBridge.AutofillAddressUiComponent;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.GetSubKeysRequestDelegate;
 import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
+import org.chromium.chrome.browser.autofill.SubKeyRequesterFactory;
 import org.chromium.chrome.browser.autofill.editors.EditorBase;
 import org.chromium.chrome.browser.autofill.editors.EditorDialogViewBinder;
 import org.chromium.chrome.browser.autofill.editors.EditorFieldValidator;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldItem;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.ItemType;
+import org.chromium.components.autofill.AutofillProfile;
 import org.chromium.components.autofill.ServerFieldType;
+import org.chromium.components.autofill.SubKeyRequester;
+import org.chromium.components.autofill.SubKeyRequester.GetSubKeysRequestDelegate;
 import org.chromium.payments.mojom.AddressErrors;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -268,34 +271,26 @@ public class AddressEditor
         // that's being edited.
         mPhoneField.set(VALUE, mProfile.getInfo(ServerFieldType.PHONE_HOME_WHOLE_NUMBER));
 
-        mEditorModel = new PropertyModel.Builder(ALL_KEYS)
-                               .with(EDITOR_TITLE, editTitle)
-                               .with(SHOW_REQUIRED_INDICATOR, true)
-                               .with(EDITOR_FIELDS, new ListModel())
-                               .with(DONE_RUNNABLE, this::onDone)
-                               .with(CANCEL_RUNNABLE, this::onCancel)
-                               .with(FORM_VALID, true)
-                               .with(ALLOW_DELETE, false)
-                               .build();
+        mEditorModel =
+                new PropertyModel.Builder(ALL_KEYS)
+                        .with(EDITOR_TITLE, editTitle)
+                        .with(SHOW_REQUIRED_INDICATOR, true)
+                        .with(EDITOR_FIELDS, new ListModel())
+                        .with(DONE_RUNNABLE, this::onDone)
+                        .with(CANCEL_RUNNABLE, this::onCancel)
+                        .with(ALLOW_DELETE, false)
+                        // Form validation must be performed only for non-empty address profiles.
+                        .with(VALIDATE_ON_SHOW, !mAddressNew)
+                        .build();
         mEditorMCP = PropertyModelChangeProcessor.create(
                 mEditorModel, mEditorDialog, EditorDialogViewBinder::bindEditorDialogView);
 
         loadAdminAreasForCountry(mCountryField.get(VALUE));
-        boolean formValid = mAddressErrors == null;
-        if (!mAddressNew) {
-            // Form validation must be performed only for non-empty address profiles.
-            formValid |= validateForm(mEditorModel);
-        }
-        mEditorModel.set(FORM_VALID, formValid);
     }
 
     private void onDone() {
         if (!validateForm(mEditorModel)) {
-            // Note: triggering editor error messages and focused field update using temporary
-            // property.
-            // TODO(crbug.com/1435314): remove this temporary logic.
-            mEditorModel.set(FORM_VALID, true);
-            mEditorModel.set(FORM_VALID, false);
+            scrollToFieldWithErrorMessage(mEditorModel);
             return;
         }
         mEditorModel.set(VISIBLE, false);
@@ -303,7 +298,7 @@ public class AddressEditor
         // This makes sure that onSubKeysReceived returns early if it's
         // ever called when Done has already occurred.
         mAdminAreasLoaded = true;
-        PersonalDataManager.getInstance().cancelPendingGetSubKeys();
+        SubKeyRequesterFactory.getInstance().cancelPendingGetSubKeys();
 
         // Commit changes to the address and send modified address to the caller.
         commitChanges(mProfile);
@@ -320,7 +315,7 @@ public class AddressEditor
         // This makes sure that onSubKeysReceived returns early if it's
         // ever called when Cancel has already occurred.
         mAdminAreasLoaded = true;
-        PersonalDataManager.getInstance().cancelPendingGetSubKeys();
+        SubKeyRequesterFactory.getInstance().cancelPendingGetSubKeys();
 
         // Send unchanged address to the caller.
         mCancelCallback.onResult(mAddressNew ? null : mAddress);
@@ -344,9 +339,6 @@ public class AddressEditor
 
     /** Saves the edited profile on disk. */
     private void commitChanges(AutofillProfile profile) {
-        // Clear field values that change among countries so that invisible fields
-        // do not get forwarded to the backend.
-        profile.resetDynamicFields();
         // Country code and phone number are always required and are always collected from the
         // editor model.
         profile.setInfo(ServerFieldType.ADDRESS_HOME_COUNTRY, mCountryField.get(VALUE));
@@ -452,14 +444,14 @@ public class AddressEditor
         // For tests, the time-out is set to 0. In this case, we should not
         // fetch the admin-areas, and show a text-field instead.
         // This is to have the tests independent of the network status.
-        if (PersonalDataManager.getRequestTimeoutMS() == 0) {
+        if (SubKeyRequester.getRequestTimeoutMS() == 0) {
             onSubKeysReceived(null, null);
             return;
         }
 
         // In each rule, admin area keys are saved under sub-keys of country.
-        PersonalDataManager.getInstance().loadRulesForSubKeys(countryCode);
-        PersonalDataManager.getInstance().getRegionSubKeys(countryCode, this);
+        SubKeyRequesterFactory.getInstance().loadRulesForSubKeys(countryCode);
+        SubKeyRequesterFactory.getInstance().getRegionSubKeys(countryCode, this);
     }
 
     /**

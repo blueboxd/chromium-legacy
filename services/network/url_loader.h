@@ -177,8 +177,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
           accept_ch_frame_observer,
       net::CookieSettingOverrides cookie_setting_overrides,
       std::unique_ptr<AttributionRequestHelper> attribution_request_helper,
-      std::unique_ptr<SharedStorageRequestHelper>
-          shared_storage_request_helper);
+      bool shared_storage_writable);
 
   URLLoader(const URLLoader&) = delete;
   URLLoader& operator=(const URLLoader&) = delete;
@@ -274,6 +273,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   const absl::optional<std::string>& devtools_request_id() const {
     return devtools_request_id_;
+  }
+
+  SharedStorageRequestHelper* shared_storage_request_helper() const {
+    return shared_storage_request_helper_.get();
   }
 
   void SetEnableReportingRawHeaders(bool enable);
@@ -545,10 +548,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // Whether `force_ignore_site_for_cookies` should be set on net::URLRequest.
   bool ShouldForceIgnoreSiteForCookies(const ResourceRequest& request);
 
-  // Whether `force_ignore_top_frame_party_for_cookies` should be set on
-  // net::URLRequest.
-  bool ShouldForceIgnoreTopFramePartyForCookies() const;
-
   // Applies Private Network Access checks to the current request.
   //
   // Helper for `OnConnected()`.
@@ -721,10 +720,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // request is related to attribution.
   std::unique_ptr<AttributionRequestHelper> attribution_request_helper_;
 
-  // Request helper responsible for processing Shared Storage headers
-  // (https://github.com/WICG/shared-storage#from-response-headers).
-  std::unique_ptr<SharedStorageRequestHelper> shared_storage_request_helper_;
-
   // The `SharedStorageRequestHelper` takes a callback to trigger
   // `ContinueOnReceiveRedirect()`. To prevent re-entrancy, however, this
   // callback is conditionally run only if the helper successfully parses
@@ -757,6 +752,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       url_loader_network_observer_ = nullptr;
   const mojo::Remote<mojom::DevToolsObserver> devtools_observer_remote_;
   const raw_ptr<mojom::DevToolsObserver> devtools_observer_ = nullptr;
+
+  // Request helper responsible for processing Shared Storage headers
+  // (https://github.com/WICG/shared-storage#from-response-headers).
+  std::unique_ptr<SharedStorageRequestHelper> shared_storage_request_helper_;
 
   // Indicates |url_request_| is fetch upload request and that has streaming
   // body.

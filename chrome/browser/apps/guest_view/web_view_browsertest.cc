@@ -62,6 +62,7 @@
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_link_manager.h"
+#include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/browser/db/fake_database_manager.h"
@@ -140,9 +141,13 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/webui/settings/public/constants/routes.mojom.h"  // nogncheck
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"  // nogncheck
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/extensions/extension_keeplist_chromeos.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
@@ -580,6 +585,13 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
                                     "--expose-gc");
 
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // Since LacrosAppsPublisherTest run without Ash, Lacros won't get
+    // the Ash extension keeplist data from Ash (passed via crosapi). Therefore,
+    // set empty ash keeplist for test.
+    extensions::SetEmptyAshKeeplistForTest();
+#endif
   }
 
   // Handles |request| by serving a redirect response if the |User-Agent| is
@@ -6872,4 +6884,35 @@ IN_PROC_BROWSER_TEST_F(WebViewUsbTest, Shim_TestCannotReuseUsbPairedInTab) {
   // attempts to use the paired device. The granted permission should not be
   // available for that context.
   TestHelper("testCannotReuseUsbPairedInTab", "web_view/shim", NO_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestCannotRequestFonts) {
+  TestHelper("testCannotRequestFonts", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestCannotRequestFontsGrantedInTab) {
+  // We start the test server here, instead of in TestHelper, because we need
+  // to know the origin used in both the tab and webview before running the rest
+  // of the test.
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  const GURL url = embedded_test_server()->GetURL("localhost", "/title1.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  content::WebContents* tab_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Grant access to fonts from a tab.
+  permissions::MockPermissionPromptFactory tab_prompt_factory(
+      permissions::PermissionRequestManager::FromWebContents(tab_web_contents));
+  tab_prompt_factory.set_response_type(
+      permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
+  EXPECT_TRUE(content::ExecJs(tab_web_contents,
+                              R"((async () => {
+        await window.queryLocalFonts();
+      })())"));
+
+  // Have the embedder create a webview which navigates to the same origin and
+  // attempts to access fonts. The granted permission should not be
+  // available for that context.
+  TestHelper("testCannotRequestFonts", "web_view/shim", NO_TEST_SERVER);
 }

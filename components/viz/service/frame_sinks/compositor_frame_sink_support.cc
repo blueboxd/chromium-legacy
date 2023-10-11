@@ -356,16 +356,16 @@ void CompositorFrameSinkSupport::ReturnResources(
     return;
 
   // When features::OnBeginFrameAcks is disabled we attempt to return resources
-  // in DidReceiveCompositorFrameAck. However if there is no
-  // `ack_pending_from_surface_count_` then we don't expect that signal soon. In
-  // which case we return the resources to the `client_` now.
+  // in DidReceiveCompositorFrameAck. However if there are no pending frames
+  // then we don't expect that signal soon. In which case we return the
+  // resources to the `client_` now.
   //
   // When features::OnBeginFrameAcks is enabled we attempt to return resources
   // during the next OnBeginFrame. However if we currently do not
   // `needs_begin_frame_` or if we have been disconnected from a
   // `begin_frame_source_` then we don't expect that signal soon. In which case
   // we return the resources to the `client_` now.
-  if (!ack_pending_from_surface_count_ && client_ &&
+  if (pending_frames_.empty() && client_ &&
       (!ShouldMergeBeginFrameWithAcks() ||
        (!needs_begin_frame_ || !begin_frame_source_))) {
     client_->ReclaimResources(std::move(resources));
@@ -522,9 +522,11 @@ void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
   BeginFrameAck modified_ack(ack);
   modified_ack.has_damage = false;
 
+  // If the client doesn't produce a frame, we assume it's no longer interactive
+  // for scheduling.
   if (last_activated_surface_id_.is_valid())
     surface_manager_->SurfaceModified(last_activated_surface_id_, modified_ack,
-                                      false);
+                                      SurfaceObserver::HandleInteraction::kNo);
 
   if (begin_frame_source_) {
     begin_frame_source_->DidFinishFrame(this);
@@ -562,6 +564,34 @@ void CompositorFrameSinkSupport::DidDeleteSharedBitmap(
   owned_bitmaps_.erase(id);
 }
 
+void CompositorFrameSinkSupport::SubmitCompositorFrameLocally(
+    const SurfaceId& surface_id,
+    CompositorFrame frame,
+    const RendererSettings& settings) {
+  CHECK_EQ(surface_id, last_created_surface_id_);
+
+  pending_frames_.push_back(FrameData{.local_frame = true});
+  Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
+
+  auto frame_rejected_callback =
+      base::ScopedClosureRunner(base::BindOnce([] { NOTREACHED(); }));
+  auto frame_index = ++last_frame_index_;
+  Surface::QueueFrameResult result = surface->QueueFrame(
+      std::move(frame), frame_index, std::move(frame_rejected_callback));
+  // Currently, frames are only queued on Android, and we don't need to use
+  // `SubmitCompositorFrameLocally` for evicting resources on Android.
+  CHECK_EQ(result, Surface::QueueFrameResult::ACCEPTED_ACTIVE);
+
+  // Make sure this surface will be stretched to match the display size. If
+  // `auto_resize_output_surface` is false, then swap will not occur meaning
+  // that the content of this compositor frame will not be presented. If it is
+  // not, then we won't properly push out existing resources. A mismatch between
+  // root surface size and display size can happen. For example, there is a race
+  // condition if `Display` is resized after it is set not visible but before
+  // any compositor frame with that new size is submitted.
+  CHECK(settings.auto_resize_output_surface);
+}
+
 SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
@@ -587,7 +617,7 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
   CHECK(callback_received_receive_ack_);
 
   begin_frame_tracker_.ReceivedAck(frame.metadata.begin_frame_ack);
-  ++ack_pending_from_surface_count_;
+  pending_frames_.push_back(FrameData{.local_frame = false});
 
   if (frame.metadata.begin_frame_ack.frame_id.source_id ==
       BeginFrameArgs::kManualSourceId) {
@@ -783,15 +813,25 @@ void CompositorFrameSinkSupport::HandleCallback() {
 }
 
 void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
-  DCHECK_GT(ack_pending_from_surface_count_, 0);
+  DCHECK(!pending_frames_.empty());
   bool was_pending_manual_begin_frame_source_ =
       pending_manual_begin_frame_source_;
-  ack_pending_from_surface_count_--;
-  if (!ack_pending_from_surface_count_) {
+  bool was_local_frame = pending_frames_.front().local_frame;
+  pending_frames_.pop_front();
+
+  if (pending_frames_.empty()) {
     pending_manual_begin_frame_source_ = false;
   }
   if (!client_)
     return;
+
+  // If this frame came from viz directly and not from the client, don't send
+  // the client an ack, since it didn't do anything. Just return the resources.
+  if (was_local_frame) {
+    client_->ReclaimResources(std::move(surface_returned_resources_));
+    surface_returned_resources_.clear();
+    return;
+  }
 
   // If we have a callback, we only return the resource on onBeginFrame.
   if (compositor_frame_callback_) {
@@ -815,6 +855,7 @@ void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
       (!base::FeatureList::IsEnabled(features::kOnBeginFrameAllowLateAcks) ||
        !ack_pending_during_on_begin_frame_)) {
     ack_queued_for_client_count_++;
+    UpdateNeedsBeginFramesInternal();
     return;
   }
 
@@ -827,7 +868,7 @@ void CompositorFrameSinkSupport::DidPresentCompositorFrame(
     base::TimeTicks draw_start_timestamp,
     const gfx::SwapTimings& swap_timings,
     const gfx::PresentationFeedback& feedback) {
-  DCHECK(frame_token);
+  CHECK_NE(frame_token, kInvalidOrLocalFrameToken);
   DCHECK((feedback.flags & gfx::PresentationFeedback::kFailure) ||
          (!draw_start_timestamp.is_null() && !swap_timings.is_null()));
 
@@ -951,7 +992,7 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
     if (ShouldMergeBeginFrameWithAcks()) {
       bool frame_ack = ack_queued_for_client_count_ > 0;
       ack_pending_during_on_begin_frame_ =
-          !frame_ack && ack_pending_from_surface_count_;
+          !frame_ack && !pending_frames_.empty();
       client_->OnBeginFrame(adjusted_args, frame_timing_details_, frame_ack,
                             std::move(surface_returned_resources_));
       if (frame_ack) {
@@ -967,6 +1008,8 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
     frame_sink_manager_->DidBeginFrame(frame_sink_id_, adjusted_args);
     frame_timing_details_.clear();
     UpdateNeedsBeginFramesInternal();
+  } else if (begin_frame_source_) {
+    begin_frame_source_->DidFinishFrame(this);
   }
 }
 
@@ -986,13 +1029,15 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
 
   // We require a begin frame if there's a callback pending, or if the client
   // requested it, or if the client needs to get some frame timing details, or
-  // if there are resources to return.
+  // if the client is waiting for a frame ack, or if there are resources to
+  // return.
   needs_begin_frame_ =
       (client_needs_begin_frame_ || !frame_timing_details_.empty() ||
        !pending_surfaces_.empty() ||
        (compositor_frame_callback_ && !callback_received_begin_frame_) ||
        (ShouldMergeBeginFrameWithAcks() &&
-        !surface_returned_resources_.empty()));
+        (!surface_returned_resources_.empty() ||
+         ack_queued_for_client_count_)));
 
   if (bundle_id_.has_value()) {
     // When bundled with other sinks, observation of BeginFrame notifications is
@@ -1114,7 +1159,9 @@ void CompositorFrameSinkSupport::RequestCopyOfOutput(
   if (last_activated_surface_id_.is_valid()) {
     BeginFrameAck ack;
     ack.has_damage = true;
-    surface_manager_->SurfaceModified(last_activated_surface_id_, ack, false);
+    surface_manager_->SurfaceModified(
+        last_activated_surface_id_, ack,
+        SurfaceObserver::HandleInteraction::kNoChange);
   }
 }
 
@@ -1183,6 +1230,12 @@ bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
   // then the client needs to receive the begin-frame.
   if (!frame_timing_details_.empty() && !should_throttle_as_requested) {
     return RecordShouldSendBeginFrame("SendFrameTiming", true);
+  }
+
+  // If the client is waiting for an ack from a previously submitted frame, then
+  // the client needs to receive the begin-frame.
+  if (ack_queued_for_client_count_ && !should_throttle_as_requested) {
+    return RecordShouldSendBeginFrame("SendFrameAck", true);
   }
 
   if (!client_needs_begin_frame_) {
@@ -1413,6 +1466,11 @@ void CompositorFrameSinkSupport::ClearAllPendingCopyOutputRequests() {
       auto* target_surface = surface_manager_->GetSurfaceForId(target_id);
       if (target_surface) {
         target_surface->RequestCopyOfOutput(std::move(request));
+
+        BeginFrameAck ack;
+        ack.has_damage = true;
+        surface_manager_->SurfaceModified(
+            target_id, ack, SurfaceObserver::HandleInteraction::kNoChange);
       } else {
         // We might not have a `Surface` if the renderer is crashed, or too busy
         // to even submit a CompositorFrame (e.g., low end Android devices). In

@@ -22,10 +22,6 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "ui/gfx/image/image.h"
 
-namespace autofill {
-class AutofillDriver;
-}
-
 namespace favicon_base {
 struct FaviconImageResult;
 }
@@ -54,7 +50,6 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // AutofillPopupDelegate implementation.
   void OnPopupShown() override;
   void OnPopupHidden() override;
-  void OnPopupSuppressed() override;
 
   // The password manager doesn't distinguish between trigger sources and its
   // value is `kPasswordManager` for all password suggestions.
@@ -77,8 +72,6 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
                         autofill::Suggestion::BackendId backend_id) override;
   void ClearPreviewedForm() override;
   autofill::PopupType GetPopupType() const override;
-  absl::variant<autofill::AutofillDriver*, PasswordManagerDriver*> GetDriver()
-      override;
   int32_t GetWebContentsPopupControllerAxId() const override;
   void RegisterDeletionCallback(base::OnceClosure deletion_callback) override;
 
@@ -125,10 +118,6 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
 
   // A public version of PreviewSuggestion(), only for use in tests.
   bool PreviewSuggestionForTest(const std::u16string& username);
-
-  void set_autofill_client_for_test(autofill::AutofillClient* autofill_client) {
-    autofill_client_ = autofill_client;
-  }
 
  private:
   using ForPasswordField = base::StrongAlias<class ForPasswordFieldTag, bool>;
@@ -224,7 +213,7 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // The driver that owns |this|.
   const raw_ptr<PasswordManagerDriver> password_manager_driver_;
 
-  raw_ptr<autofill::AutofillClient> autofill_client_;
+  const raw_ptr<autofill::AutofillClient> autofill_client_;
 
   const raw_ptr<PasswordManagerClient> password_client_;
 

@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
 #include "mediapipe/calculators/tflite/tflite_tensors_to_detections_calculator.pb.h"
@@ -310,7 +311,7 @@ absl::Status TfLiteTensorsToDetectionsCalculator::ProcessCPU(
         const float* raw_anchors = anchor_tensor->data.f;
         ConvertRawValuesToAnchors(raw_anchors, num_boxes_, &anchors_);
       } else if (side_packet_anchors_) {
-        CHECK(!cc->InputSidePackets().Tag("ANCHORS").IsEmpty());
+        ABSL_CHECK(!cc->InputSidePackets().Tag("ANCHORS").IsEmpty());
         anchors_ =
             cc->InputSidePackets().Tag("ANCHORS").Get<std::vector<Anchor>>();
       } else {
@@ -410,7 +411,7 @@ absl::Status TfLiteTensorsToDetectionsCalculator::ProcessGPU(
         CopyBuffer(input_tensors[1], gpu_data_->raw_scores_buffer));
     if (!anchors_init_) {
       if (side_packet_anchors_) {
-        CHECK(!cc->InputSidePackets().Tag("ANCHORS").IsEmpty());
+        ABSL_CHECK(!cc->InputSidePackets().Tag("ANCHORS").IsEmpty());
         const auto& anchors =
             cc->InputSidePackets().Tag("ANCHORS").Get<std::vector<Anchor>>();
         std::vector<float> raw_anchors(num_boxes_ * kNumCoordsPerBox);
@@ -478,7 +479,7 @@ absl::Status TfLiteTensorsToDetectionsCalculator::ProcessGPU(
                     commandBuffer:[gpu_helper_ commandBuffer]];
   if (!anchors_init_) {
     if (side_packet_anchors_) {
-      CHECK(!cc->InputSidePackets().Tag("ANCHORS").IsEmpty());
+      ABSL_CHECK(!cc->InputSidePackets().Tag("ANCHORS").IsEmpty());
       const auto& anchors =
           cc->InputSidePackets().Tag("ANCHORS").Get<std::vector<Anchor>>();
       std::vector<float> raw_anchors(num_boxes_ * kNumCoordsPerBox);
@@ -542,7 +543,7 @@ absl::Status TfLiteTensorsToDetectionsCalculator::ProcessGPU(
                                          output_detections));
 
 #else
-  LOG(ERROR) << "GPU input on non-Android not supported yet.";
+  ABSL_LOG(ERROR) << "GPU input on non-Android not supported yet.";
 #endif  // MEDIAPIPE_TFLITE_GL_INFERENCE
   return absl::OkStatus();
 }

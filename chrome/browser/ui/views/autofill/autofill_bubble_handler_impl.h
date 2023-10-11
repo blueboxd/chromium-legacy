@@ -24,7 +24,6 @@ class AutofillBubbleBase;
 class LocalCardMigrationBubbleController;
 class SaveCardBubbleController;
 class IbanBubbleController;
-class SaveUPIBubble;
 enum class IbanBubbleType;
 
 class AutofillBubbleHandlerImpl : public AutofillBubbleHandler,
@@ -58,9 +57,6 @@ class AutofillBubbleHandlerImpl : public AutofillBubbleHandler,
       content::WebContents* contents,
       OfferNotificationBubbleController* controller,
       bool is_user_gesture) override;
-  SaveUPIBubble* ShowSaveUPIBubble(
-      content::WebContents* web_contents,
-      SaveUPIBubbleController* controller) override;
   AutofillBubbleBase* ShowSaveAddressProfileBubble(
       content::WebContents* web_contents,
       SaveUpdateAddressProfileBubbleController* controller,
@@ -98,10 +94,9 @@ class AutofillBubbleHandlerImpl : public AutofillBubbleHandler,
   // Executes highlight animation on toolbar's avatar icon.
   void ShowAvatarHighlightAnimation();
 
-  raw_ptr<Browser, DanglingUntriaged> browser_ = nullptr;
+  raw_ptr<Browser> browser_ = nullptr;
 
-  raw_ptr<ToolbarButtonProvider, DanglingUntriaged> toolbar_button_provider_ =
-      nullptr;
+  raw_ptr<ToolbarButtonProvider> toolbar_button_provider_ = nullptr;
 
   // Whether a save local card sign in promo bubble could pop up from the avatar
   // button after the highlight animation finishes.

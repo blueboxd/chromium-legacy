@@ -1560,18 +1560,14 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   constexpr double kSamplingFrequency = .01;
   if (!downsample_metrics_ ||
       metrics_subsampler_.ShouldSample(kSamplingFrequency)) {
-    // |client_name| is used for various UMA histograms below.
-    // GetClientNameForMetrics only returns one non-null value over the lifetime
-    // of the process, so the histogram names are runtime constant.
-    const char* client_name = GetClientNameForMetrics();
-    if (client_name) {
+    // These metrics are only for the renderer process.
+    if (!settings().single_thread_proxy_scheduler) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
-          base::StringPrintf("Compositing.%s.NumActiveLayers", client_name),
+          "Compositing.Renderer.NumActiveLayers",
           base::saturated_cast<int>(active_tree_->NumLayers()), 1, 1000, 20);
 
       UMA_HISTOGRAM_CUSTOM_COUNTS(
-          base::StringPrintf("Compositing.%s.NumActivePictureLayers",
-                             client_name),
+          "Compositing.Renderer.NumActivePictureLayers",
           base::saturated_cast<int>(active_tree_->picture_layers().size()), 1,
           1000, 20);
     }
@@ -2326,8 +2322,11 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
         actively_scrolling || mutator_host_->NeedsTickAnimations();
   }
 
-  metadata.is_actively_scrolling =
-      GetActivelyScrollingType() != ActivelyScrollingType::kNone;
+  if (input_delegate_) {
+    metadata.is_handling_interaction =
+        GetActivelyScrollingType() != ActivelyScrollingType::kNone ||
+        input_delegate_->IsHandlingTouchSequence();
+  }
 
   const base::flat_set<viz::SurfaceRange>& referenced_surfaces =
       active_tree_->SurfaceRanges();

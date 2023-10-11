@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">साइटलाई तपाईंको डिभाइसमा जानकारी सेभ गर्ने अनुमति दिइयोस्</translation>
 <translation id="1383876407941801731">खोज्नुहोस्</translation>
 <translation id="1384959399684842514">डाउनलोड रोकिएको छ</translation>
-<translation id="1409426117486808224">खुला ट्याबहरूका लागि सरलीकृत दृश्य</translation>
 <translation id="1415402041810619267">URL छोटो बनाइयो</translation>
 <translation id="1426410128494586442">हो</translation>
 <translation id="1446450296470737166">MIDI डिभाइसहरूको पूर्ण नियन्त्रणलाई अनुमति दिनुहोस्</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">अनुमति छ, तेस्रो-पक्ष बाहेकलाई</translation>
 <translation id="1989112275319619282">ब्राउज गर्नुहोस्</translation>
 <translation id="1994173015038366702">साइट URL</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{१ दिनमा म्याद सकिन्छ}other{# दिनमा म्याद सकिन्छ}}</translation>
 <translation id="2004697686368036666">केही साइटका सुविधाहरूले काम नगर्न सक्छन्</translation>
 <translation id="2025115093177348061">अग्मेन्टेड रियालिटी</translation>
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> मा फर्कन ट्याप गर्नुहोस्</translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4008040567710660924">कुनै खास साइटमा कुकीहरूलाई अनुमति दिनुहोस्।</translation>
 <translation id="4046123991198612571">अर्को ट्र्याक</translation>
+<translation id="4053720452172726777">Google Chrome आफू अनुकूल र नियन्त्रण गर्नुहोस्</translation>
 <translation id="4149994727733219643">वेब पृष्ठहरूका लागि सरलीकृत दृश्य</translation>
 <translation id="4151930093518524179">डिफल्ट जुम</translation>
 <translation id="4165986682804962316">साइट सेटिङहरू</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">साइटहरूले तपाईंका गतिविधिअनुसार विज्ञापन देखाउने जस्ता प्रयोजनका लागि विभिन्न साइटहरूमा तपाईंको ब्राउजिङसम्बन्धी गतिविधि हेर्न तपाईंका कुकीहरू प्रयोग गर्न सक्दैनन्। केही साइटका सुविधाहरूले काम नगर्न सक्छन्।</translation>
 <translation id="5553374991681107062">नवीनतम</translation>
 <translation id="5556459405103347317">पुन: लोड गर्नुहोस्</translation>
-<translation id="5596627076506792578">अन्य विकल्पहरू</translation>
 <translation id="5649053991847567735">स्वचालित डाउनलोडहरू</translation>
 <translation id="5668404140385795438">जूमिङ इनलाई रोक्न वेबसाइटको अनुरोधलाई ओभरराइड गर्नुहोस्</translation>
 <translation id="5677928146339483299">ब्लक गरिएको छ</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Android का सेटिङहरूमा अनुमति निष्क्रिय पारिएको छ</translation>
 <translation id="7016516562562142042">हालको खोज इन्जिनका लागि अनुमति दिइएको</translation>
 <translation id="702275896380648118">यो साइटले तपाईंलाई मन पर्ने कुराहरू निर्धारण गरेर अन्य साइटहरूलाई विज्ञापनहरू सिफारिस गर्छ। यो साइटले तपाईंलाई थप सान्दर्भिक विज्ञापनहरू देखाउने प्रयोजनका लागि तपाईंले Chrome छनौट गर्नुभएका विज्ञापनका विषयसम्बन्धी जानकारी पनि प्राप्त गर्छ।</translation>
-<translation id="702463548815491781">TalkBack वा पहुँच स्विच गर्नुहोस् नामक सुविधा सक्रिय हुँदा मात्र सिफारिस गरिन्छ</translation>
 <translation id="7053983685419859001">रोक्नुहोस्</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{१ चयन गरियो}other{# चयन गरिए}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> चयन गरिए।  विकल्पहरू स्क्रिनको शीर्षभागको नजिकै उपलब्ध छन्</translation>

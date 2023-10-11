@@ -6,7 +6,7 @@
 
 #import "chrome/browser/ui/views/frame/browser_frame_mac.h"
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
@@ -35,7 +35,7 @@
 #include "components/remote_cocoa/common/native_widget_ns_window.mojom.h"
 #include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -56,10 +56,11 @@ bool UsesRemoteCocoaApplicationHost(Browser* browser) {
 }
 
 bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
-  // |event.skip_in_browser| is true when it shouldn't be handled by the browser
-  // if it was ignored by the renderer. See http://crbug.com/25000.
-  if (event.skip_in_browser)
+  // |event.skip_if_unhandled| is true when it shouldn't be handled by the
+  // browser if it was ignored by the renderer. See http://crbug.com/25000.
+  if (event.skip_if_unhandled) {
     return false;
+  }
 
   // Ignore synthesized keyboard events. See http://crbug.com/23221.
   if (event.GetType() == content::NativeWebKeyboardEvent::Type::kChar)
@@ -416,7 +417,7 @@ void BrowserFrameMac::OnWindowDestroying(gfx::NativeWindow native_window) {
   // Clear delegates set in CreateNSWindow() to prevent objects with a reference
   // to |window| attempting to validate commands by looking for a Browser*.
   NativeWidgetMacNSWindow* ns_window =
-      base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(
+      base::apple::ObjCCastStrict<NativeWidgetMacNSWindow>(
           native_window.GetNativeNSWindow());
   [ns_window setWindowTouchBarDelegate:nil];
 }

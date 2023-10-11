@@ -62,11 +62,13 @@ class TestAutocompleteScoringModelExecutor
       scoped_refptr<base::SequencedTaskRunner>,
       scoped_refptr<base::SequencedTaskRunner>) override {}
 
-  void UpdateModelFile(const base::FilePath&) override {}
+  void UpdateModelFile(base::optional_ref<const base::FilePath>) override {}
 
   void UnloadModel() override {}
 
+  // These interfere with the test code which is injecting its own model.
   void SetShouldUnloadModelOnComplete(bool should_auto_unload) override {}
+  void SetShouldPreloadModel(bool should_preload_model) override {}
 };
 
 class AutocompleteScoringModelHandlerTest : public testing::Test {

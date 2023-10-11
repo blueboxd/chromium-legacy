@@ -42,7 +42,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   // PersonalDataManager overrides.  These functions are overridden as needed
   // for various tests, whether to skip calls to uncreated databases/services,
   // or to make things easier in general to toggle.
-  AutofillSyncSigninState GetSyncSigninState() const override;
+  bool IsPaymentsWalletSyncTransportEnabled() const override;
   void RecordUseOf(absl::variant<const AutofillProfile*, const CreditCard*>
                        profile_or_credit_card) override;
   std::string SaveImportedCreditCard(
@@ -53,7 +53,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   void RemoveByGUID(const std::string& guid) override;
   bool IsEligibleForAddressAccountStorage() const override;
   void AddCreditCard(const CreditCard& credit_card) override;
-  std::string AddIBAN(const IBAN& iban) override;
+  std::string AddIban(const Iban& iban) override;
   void DeleteLocalCreditCards(const std::vector<CreditCard>& cards) override;
   void UpdateCreditCard(const CreditCard& credit_card) override;
   void AddFullServerCreditCard(const CreditCard& credit_card) override;
@@ -65,8 +65,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   void LoadProfiles() override;
   void LoadCreditCards() override;
   void LoadCreditCardCloudTokenData() override;
-  void LoadIBANs() override;
-  void LoadUpiIds() override;
+  void LoadIbans() override;
   bool IsAutofillProfileEnabled() const override;
   bool IsAutofillCreditCardEnabled() const override;
   bool IsAutofillWalletImportEnabled() const override;
@@ -156,8 +155,8 @@ class TestPersonalDataManager : public PersonalDataManager {
     payments_customer_data_ = std::move(customer_data);
   }
 
-  void SetSyncAndSignInState(AutofillSyncSigninState sync_and_signin_state) {
-    sync_and_signin_state_ = sync_and_signin_state;
+  void SetIsPaymentsWalletSyncTransportEnabled(bool enabled) {
+    payments_wallet_sync_transport_enabled_ = enabled;
   }
 
   void SetAccountInfoForPayments(const CoreAccountInfo& account_info) {
@@ -176,8 +175,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   absl::optional<bool> autofill_wallet_import_enabled_;
   absl::optional<bool> eligible_for_account_storage_;
   absl::optional<bool> payment_methods_mandatory_reauth_enabled_;
-  AutofillSyncSigninState sync_and_signin_state_ =
-      AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled;
+  absl::optional<bool> payments_wallet_sync_transport_enabled_;
   CoreAccountInfo account_info_;
 
   TestInMemoryStrikeDatabase inmemory_strike_database_;

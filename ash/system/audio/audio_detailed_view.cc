@@ -75,7 +75,7 @@ const int kNbsWarningMinHeight = 80;
 constexpr auto kLiveCaptionContainerMargins = gfx::Insets::TLBR(0, 0, 8, 0);
 constexpr auto kToggleButtonRowLabelPadding = gfx::Insets::TLBR(16, 0, 15, 0);
 constexpr auto kToggleButtonRowViewPadding = gfx::Insets::TLBR(0, 56, 8, 0);
-constexpr auto kQsToggleButtonRowViewPadding = gfx::Insets::VH(0, 32);
+constexpr auto kQsToggleButtonRowViewPadding = gfx::Insets::TLBR(0, 32, 0, 24);
 constexpr auto kQsToggleButtonRowPreferredSize = gfx::Size(0, 32);
 constexpr auto kQsToggleButtonRowLabelPadding = gfx::Insets::VH(8, 12);
 constexpr auto kQsToggleButtonRowMargins = gfx::Insets::VH(4, 0);
@@ -161,7 +161,8 @@ class DeviceNameContainerHighlightPathGenerator
   }
 
   // Owned by views hierarchy.
-  const raw_ptr<QuickSettingsSlider, ExperimentalAsh> slider_;
+  const raw_ptr<QuickSettingsSlider, DanglingUntriaged | ExperimentalAsh>
+      slider_;
 };
 
 std::vector<std::string> GetNamesOfAppsAccessingMic(
@@ -473,6 +474,8 @@ void AudioDetailedView::CreateLiveCaptionView() {
                 IDS_ASH_STATUS_TRAY_LIVE_CAPTION_DISABLED_STATE_TOOLTIP);
   toggle->SetTooltipText(l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_LIVE_CAPTION_TOGGLE_TOOLTIP, toggle_tooltip));
+  toggle->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LIVE_CAPTION));
   live_caption_button_ = toggle.get();
   live_caption_view_->AddRightView(toggle.release());
 
@@ -633,6 +636,7 @@ views::Builder<views::BoxLayoutView> AudioDetailedView::CreateAgcInfoRow(
     const AudioDevice& device) {
   return views::Builder<views::BoxLayoutView>()
       .SetID(AudioDetailedViewID::kAgcInfoRow)
+      .SetFocusBehavior(FocusBehavior::NEVER)
       .SetDefaultFlex(1)
       .SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
@@ -651,6 +655,7 @@ views::Builder<views::BoxLayoutView> AudioDetailedView::CreateAgcInfoRow(
               .SetAutoColorReadabilityEnabled(false)
               .SetSubpixelRenderingEnabled(false)
               .SetBorder(views::CreateEmptyBorder(kToggleButtonRowLabelPadding))
+              .SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY)
               .SetID(AudioDetailedViewID::kAgcInfoLabel))
       .AddChild(views::Builder<views::LabelButton>(
           std::make_unique<views::LabelButton>(
@@ -673,6 +678,9 @@ std::unique_ptr<HoverHighlightView> AudioDetailedView::CreateQsAgcInfoRow(
       std::move(info_icon),
       l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_AUDIO_INPUT_AGC_INFO,
                                  std::u16string()));
+  views::Label* text_label = agc_info_view->text_label();
+  CHECK(text_label);
+  text_label->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
   // Add settings button to link to the audio settings page.
   auto settings = std::make_unique<views::LabelButton>(
@@ -692,6 +700,7 @@ std::unique_ptr<HoverHighlightView> AudioDetailedView::CreateQsAgcInfoRow(
                                       kQsToggleButtonRowLabelPadding));
   agc_info_view->SetPreferredSize(kQsToggleButtonRowPreferredSize);
   agc_info_view->SetProperty(views::kMarginsKey, kQsToggleButtonRowMargins);
+  agc_info_view->SetFocusBehavior(FocusBehavior::NEVER);
 
   return agc_info_view;
 }
@@ -1009,11 +1018,14 @@ void AudioDetailedView::UpdateAgcInfoRow() {
 
   std::vector<std::string> app_names = GetNamesOfAppsAccessingMic(
       app_registry_cache_, app_capability_access_cache_);
-  label->SetText(GetTextForAgcInfo(app_names));
+
+  std::u16string agc_info_text = GetTextForAgcInfo(app_names);
+  label->SetText(agc_info_text);
 
   views::View* agc_info_row =
       scroll_content()->GetViewByID(AudioDetailedViewID::kAgcInfoRow);
   CHECK(agc_info_row);
+  agc_info_row->SetAccessibleName(agc_info_text);
   agc_info_row->SetVisible(ShowAgcInfoRow() && !app_names.empty());
 }
 
@@ -1034,7 +1046,11 @@ void AudioDetailedView::UpdateQsAgcInfoRow() {
 
   std::vector<std::string> app_names = GetNamesOfAppsAccessingMic(
       app_registry_cache_, app_capability_access_cache_);
-  text_label->SetText(GetTextForAgcInfo(app_names));
+
+  std::u16string agc_info_text = GetTextForAgcInfo(app_names);
+  text_label->SetText(agc_info_text);
+
+  agc_info_view->SetAccessibleName(agc_info_text);
   agc_info_view->SetVisible(ShowAgcInfoRow() && !app_names.empty());
 }
 

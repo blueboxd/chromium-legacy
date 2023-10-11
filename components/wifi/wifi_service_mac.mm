@@ -13,9 +13,9 @@
 #include <string>
 #include <utility>
 
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/functional/bind.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/task/sequenced_task_runner.h"
 #import "base/task/single_thread_task_runner.h"
@@ -443,7 +443,7 @@ std::string WiFiServiceMac::GetNetworkConnectionState(
   local_wifi_address.sin_len = sizeof(local_wifi_address);
   local_wifi_address.sin_family = AF_INET;
   local_wifi_address.sin_addr.s_addr = htonl(IN_LINKLOCALNETNUM);
-  base::ScopedCFTypeRef<SCNetworkReachabilityRef> reachability(
+  base::apple::ScopedCFTypeRef<SCNetworkReachabilityRef> reachability(
       SCNetworkReachabilityCreateWithAddress(
           kCFAllocatorDefault,
           reinterpret_cast<const struct sockaddr*>(&local_wifi_address)));

@@ -53,7 +53,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Quota.AvailableDiskSpace2" units="MB"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -143,7 +143,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Quota.EvictedBucketsPerHour" units="buckets"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -153,7 +153,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Quota.EvictedBytesPerRound" units="MB"
-    expires_after="2023-12-17">
+    expires_after="2024-02-20">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -190,7 +190,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Quota.NumberOfEvictedBucketsPerRound" units="units"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>Number of evicted buckets per round.</summary>
@@ -302,13 +302,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Quota.SkippedInvalidOriginUsage" enum="InvalidOriginReason"
-    expires_after="2023-06-24">
+    expires_after="2024-08-24">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
     While accumulating usage information, ClientUsageTracker is encountering
     invalid origins. This enum histogram will capture the type of invalid
     origins that are encountered.
+
+    Histogram expired between 2023/06 and 2023/08.
   </summary>
 </histogram>
 
@@ -353,7 +355,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Quota.TotalDiskSpace" units="MB" expires_after="2023-12-24">
+<histogram name="Quota.TotalDiskSpace" units="MB" expires_after="2024-02-25">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>

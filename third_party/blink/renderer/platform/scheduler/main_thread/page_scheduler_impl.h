@@ -57,6 +57,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // PageScheduler implementation:
   void OnTitleOrFaviconUpdated() override;
   void SetPageVisible(bool page_visible) override;
+  bool IsPageVisible() const override;
   void SetPageFrozen(bool) override;
   void SetPageBackForwardCached(bool) override;
   bool IsMainFrameLocal() const override;
@@ -83,7 +84,6 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // Virtual for testing.
   virtual void ReportIntervention(const String& message);
 
-  bool IsPageVisible() const;
   bool IsFrozen() const;
   bool OptedOutFromAggressiveThrottling() const;
   // Returns whether CPU time is throttled for the page. Note: This is
@@ -111,6 +111,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // Virtual for testing.
   virtual bool IsWaitingForMainFrameContentfulPaint() const;
   virtual bool IsWaitingForMainFrameMeaningfulPaint() const;
+  virtual bool IsMainFrameLoading() const;
 
   // Return a number of child web frame schedulers for this PageScheduler.
   size_t FrameCount() const;
@@ -214,20 +215,17 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // virtual time is disabled.
   bool IsBackgrounded() const;
 
-  // Returns true if the page should be frozen after delay, which happens if
-  // IsBackgrounded() is true and freezing is enabled.
-  bool ShouldFreezePage() const;
-
-  // Callback for freezing the page. Freezing must be enabled and the page must
-  // be freezable.
-  void DoFreezePage();
-
   // Returns true if WakeUpBudgetPools were initialized.
   bool HasWakeUpBudgetPools() const;
 
   // Notify frames to move their task queues to the appropriate
   // WakeUpBudgetPool.
   void MoveTaskQueuesToCorrectWakeUpBudgetPoolAndUpdate();
+
+  // Determines when this page's frozen state should change. If it should change
+  // now, perform the state transition. Otherwise, schedules another call to
+  // this method at the time when it should change.
+  void UpdateFrozenState(NotificationPolicy notification_policy);
 
   // Returns all WakeUpBudgetPools owned by this PageSchedulerImpl.
   static constexpr int kNumWakeUpBudgetPools = 4;
@@ -241,6 +239,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   PageVisibilityState page_visibility_;
   base::TimeTicks page_visibility_changed_time_;
   AudioState audio_state_;
+  base::TimeTicks audio_state_changed_time_;
   bool is_frozen_;
   bool opted_out_from_aggressive_throttling_;
   bool nested_runloop_;
@@ -295,7 +294,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   CancelableClosureHolder do_intensively_throttle_wake_ups_callback_;
   CancelableClosureHolder reset_had_recent_title_or_favicon_update_;
   CancelableClosureHolder on_audio_silent_closure_;
-  CancelableClosureHolder do_freeze_page_callback_;
+  CancelableClosureHolder update_frozen_state_callback_;
   const base::TimeDelta delay_for_background_tab_freezing_;
 
   // Whether foreground timers should be always throttled.

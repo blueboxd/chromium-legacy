@@ -19,9 +19,10 @@
 #include <list>
 #include <memory>
 
-#include "base/functional/callback_forward.h"
+#include "base/apple/scoped_mach_port.h"
 #include "base/functional/callback.h"
-#include "base/mac/scoped_mach_port.h"
+#include "base/functional/callback_forward.h"
+#include "base/apple/scoped_mach_port.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
@@ -230,7 +231,7 @@ class BASE_EXPORT WaitableEvent {
     friend class RefCountedThreadSafe<ReceiveRight>;
     ~ReceiveRight();
 
-    mac::ScopedMachReceiveRight right_;
+    apple::ScopedMachReceiveRight right_;
 
     // This is allocated iff UseSlowWatchList() is true. It is created on the
     // heap to avoid performing initialization when not using the slow path.
@@ -245,7 +246,7 @@ class BASE_EXPORT WaitableEvent {
   // The send right used to signal the event. This can be disposed of with
   // the event, unlike the receive right, since a deleted event cannot be
   // signaled.
-  mac::ScopedMachSendRight send_right_;
+  apple::ScopedMachSendRight send_right_;
 #elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   // On Windows, you must not close a HANDLE which is currently being waited on.
   // The MSDN documentation says that the resulting behaviour is 'undefined'.
@@ -258,8 +259,8 @@ class BASE_EXPORT WaitableEvent {
   // so we have a kernel of the WaitableEvent, which is reference counted.
   // WaitableEventWatchers may then take a reference and thus match the Windows
   // behaviour.
-  struct WaitableEventKernel :
-      public RefCountedThreadSafe<WaitableEventKernel> {
+  struct WaitableEventKernel
+      : public RefCountedThreadSafe<WaitableEventKernel> {
    public:
     WaitableEventKernel(ResetPolicy reset_policy, InitialState initial_state);
 
@@ -283,7 +284,8 @@ class BASE_EXPORT WaitableEvent {
   // second element is the index of the WaitableEvent in the original,
   // unsorted, array.
   static size_t EnqueueMany(WaiterAndIndex* waitables,
-                            size_t count, Waiter* waiter);
+                            size_t count,
+                            Waiter* waiter);
 
   bool SignalAll();
   bool SignalOne();

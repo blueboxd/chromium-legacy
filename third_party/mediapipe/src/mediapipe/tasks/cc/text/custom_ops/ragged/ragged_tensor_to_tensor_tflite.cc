@@ -18,7 +18,6 @@ limitations under the License.
 #include <cstdint>
 #include <memory>
 
-#include "absl/log/absl_check.h"
 #include "flatbuffers/flexbuffers.h"
 #include "tensorflow/core/util/ragged_to_dense_util_common.h"
 #include "tensorflow/lite/c/common.h"

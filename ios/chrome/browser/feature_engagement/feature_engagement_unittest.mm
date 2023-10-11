@@ -32,6 +32,10 @@ const int kMaxTabGridUsedForTabGridIPH = 2;
 // that can allow the history IPH to be triggered.
 const int kMaxHistoryUsedForHistoryIPH = 2;
 
+// The maximum number of times the Password Manager widget promo can be
+// triggered.
+const int kMaxPasswordManagerWidgetPromoIPH = 3;
+
 }  // namespace
 
 // Unittests related to the triggering of In Product Help features. Anything
@@ -144,15 +148,16 @@ class FeatureEngagementTest : public PlatformTest {
     return params;
   }
 
-  std::map<std::string, std::string> TabPinnedTipParams() {
+  std::map<std::string, std::string> PasswordManagerWidgetPromoParams() {
     std::map<std::string, std::string> params;
     params["availability"] = "any";
     params["session_rate"] = "any";
-    params["event_used"] = "name:popup_menu_tip_used;comparator:==0;window:180;"
-                           "storage:180";
-    params["event_trigger"] =
-        "name:tab_pinned_tip_triggered;comparator:==0;window:1825;"
-        "storage:1825";
+    params["event_trigger"] = "name:password_manager_widget_promo_trigger;"
+                              "comparator:<3;window:360;storage:360";
+    params["event_used"] = "name:password_manager_widget_promo_used;comparator:"
+                           "==0;window:360;storage:360";
+    params["event_1"] = "name:password_manager_widget_promo_closed;comparator:="
+                        "=0;window:360;storage:360";
     return params;
   }
 
@@ -553,12 +558,13 @@ TEST_F(FeatureEngagementTest,
       feature_engagement::kIPHDefaultSiteViewFeature));
 }
 
-// Verifies that the IPH for Pinned tab triggers after pinning a tab from
-// the overflow menu.
-TEST_F(FeatureEngagementTest, TestPinTabFromOverflowMenu) {
+// Verifies that the Password Manager widget promo IPH can't be triggered again
+// after being triggered three times.
+TEST_F(FeatureEngagementTest, TestPasswordManagerPromoIPHReachedTriggerLimit) {
   feature_engagement::test::ScopedIphFeatureList list;
   list.InitAndEnableFeaturesWithParameters(
-      {{feature_engagement::kIPHTabPinnedFeature, TabPinnedTipParams()}});
+      {{feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature,
+        PasswordManagerWidgetPromoParams()}});
 
   std::unique_ptr<feature_engagement::Tracker> tracker =
       feature_engagement::CreateTestTracker();
@@ -566,12 +572,67 @@ TEST_F(FeatureEngagementTest, TestPinTabFromOverflowMenu) {
   tracker->AddOnInitializedCallback(BoolArgumentQuitClosure());
   run_loop_.Run();
 
-  // Check that the badge is initially displayed.
-  EXPECT_TRUE(
-      tracker->ShouldTriggerHelpUI(feature_engagement::kIPHTabPinnedFeature));
-  tracker->Dismissed(feature_engagement::kIPHTabPinnedFeature);
+  // Ensure that the Password Manager widget promo has been triggered three
+  // times.
+  for (int index = 0; index < kMaxPasswordManagerWidgetPromoIPH; index++) {
+    tracker->NotifyEvent(
+        feature_engagement::events::kPasswordManagerWidgetPromoTriggered);
+  }
 
-  // Check that the badge is not displayed a second time.
-  EXPECT_FALSE(
-      tracker->ShouldTriggerHelpUI(feature_engagement::kIPHTabPinnedFeature));
+  EXPECT_FALSE(tracker->ShouldTriggerHelpUI(
+      feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature));
+}
+
+// Verifies that the Password Manager widget promo IPH is not triggered again
+// after the widget was used at least once.
+TEST_F(FeatureEngagementTest, TestPasswordManagerPromoIPHReachedUsedLimit) {
+  feature_engagement::test::ScopedIphFeatureList list;
+  list.InitAndEnableFeaturesWithParameters(
+      {{feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature,
+        PasswordManagerWidgetPromoParams()}});
+
+  std::unique_ptr<feature_engagement::Tracker> tracker =
+      feature_engagement::CreateTestTracker();
+  // Make sure tracker is initialized.
+  tracker->AddOnInitializedCallback(BoolArgumentQuitClosure());
+  run_loop_.Run();
+
+  EXPECT_TRUE(tracker->ShouldTriggerHelpUI(
+      feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature));
+  tracker->Dismissed(
+      feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature);
+
+  // Interact with the Password Manager widget.
+  tracker->NotifyEvent(
+      feature_engagement::events::kPasswordManagerWidgetPromoUsed);
+
+  EXPECT_FALSE(tracker->ShouldTriggerHelpUI(
+      feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature));
+}
+
+// Verifies that the Password Manager widget promo IPH is not triggered again
+// after the promo was closed by the user.
+TEST_F(FeatureEngagementTest, TestPasswordManagerPromoIPHWasClosed) {
+  feature_engagement::test::ScopedIphFeatureList list;
+  list.InitAndEnableFeaturesWithParameters(
+      {{feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature,
+        PasswordManagerWidgetPromoParams()}});
+
+  std::unique_ptr<feature_engagement::Tracker> tracker =
+      feature_engagement::CreateTestTracker();
+  // Make sure tracker is initialized.
+  tracker->AddOnInitializedCallback(BoolArgumentQuitClosure());
+  run_loop_.Run();
+
+  EXPECT_TRUE(tracker->ShouldTriggerHelpUI(
+      feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature));
+  tracker->Dismissed(
+      feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature);
+
+  // Close the Password Manager widget promo.
+  tracker->NotifyEvent(
+      feature_engagement::events::kPasswordManagerWidgetPromoClosed);
+
+  EXPECT_FALSE(tracker->ShouldTriggerHelpUI(
+      feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature));
 }

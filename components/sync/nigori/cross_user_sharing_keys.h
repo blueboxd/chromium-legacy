@@ -53,6 +53,10 @@ class CrossUserSharingKeys {
   const CrossUserSharingPublicPrivateKeyPair& GetKeyPair(
       uint32_t version) const;
 
+  // Returns (if exists) the Public-private key-pair version for encryption
+  // purposes.
+  absl::optional<uint32_t> GetEncryptionKeyPairVersion() const;
+
  private:
   CrossUserSharingKeys();
 

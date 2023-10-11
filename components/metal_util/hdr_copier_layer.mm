@@ -10,8 +10,8 @@
 #include <MetalKit/MetalKit.h>
 
 #include "base/apple/bridging.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/metal_util/device.h"
 #include "third_party/skia/modules/skcms/skcms.h"
@@ -226,7 +226,7 @@ id<MTLRenderPipelineState> CreateRenderPipelineState(id<MTLDevice> device) {
     self.opaque = NO;
     self.presentsWithTransaction = YES;
     self.pixelFormat = MTLPixelFormatRGBA16Float;
-    base::ScopedCFTypeRef<CGColorSpaceRef> colorSpace(
+    base::apple::ScopedCFTypeRef<CGColorSpaceRef> colorSpace(
         CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB));
     self.colorspace = colorSpace;
   }
@@ -252,9 +252,9 @@ id<MTLRenderPipelineState> CreateRenderPipelineState(id<MTLDevice> device) {
       CAEDRMetadata* edrMetadata = nil;
       switch (colorSpace.GetTransferID()) {
         case gfx::ColorSpace::TransferID::PQ: {
-          base::ScopedCFTypeRef<CFDataRef> display_info =
+          base::apple::ScopedCFTypeRef<CFDataRef> display_info =
               gfx::GenerateMasteringDisplayColorVolume(hdrMetadata);
-          base::ScopedCFTypeRef<CFDataRef> content_info =
+          base::apple::ScopedCFTypeRef<CFDataRef> content_info =
               gfx::GenerateContentLightLevelInfo(hdrMetadata);
           edrMetadata = [CAEDRMetadata
               HDR10MetadataWithDisplayInfo:base::apple::CFToNSPtrCast(
@@ -406,7 +406,7 @@ void UpdateHDRCopierLayer(
     id<MTLDevice> device,
     const gfx::ColorSpace& color_space,
     const absl::optional<gfx::HDRMetadata>& hdr_metadata) {
-  if (auto* hdr_copier_layer = base::mac::ObjCCast<HDRCopierLayer>(layer)) {
+  if (auto* hdr_copier_layer = base::apple::ObjCCast<HDRCopierLayer>(layer)) {
     [hdr_copier_layer setHDRContents:buffer
                               device:device
                           colorSpace:color_space

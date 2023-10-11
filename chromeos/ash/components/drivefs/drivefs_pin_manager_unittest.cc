@@ -6,8 +6,6 @@
 
 #include <iomanip>
 #include <list>
-#include <memory>
-#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -21,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -34,6 +33,7 @@
 #include "components/drive/file_errors.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
 namespace drivefs::pinning {
 namespace {
 
@@ -1682,7 +1682,7 @@ TEST_F(DriveFsPinManagerTest, OnSyncingStatusUpdate) {
   {
     ProgressEvent event;
     event.stable_id = static_cast<int64_t>(id1);
-    event.path = path1.value();
+    event.file_path = path1;
     event.progress = 20;
     manager.OnItemProgress(event);
   }
@@ -1868,7 +1868,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = static_cast<int64_t>(id1);
-    event.path = path1.value();
+    event.file_path = path1;
     event.progress = 0;
     manager.OnItemProgress(event);
   }
@@ -1901,7 +1901,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = static_cast<int64_t>(id1);
-    event.path = path1.value();
+    event.file_path = path1;
     event.progress = 20;
     manager.OnItemProgress(event);
   }
@@ -1934,7 +1934,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = static_cast<int64_t>(id2);
-    event.path = path2.value();
+    event.file_path = path2;
     event.progress = 50;
     manager.OnItemProgress(event);
   }
@@ -1967,7 +1967,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = static_cast<int64_t>(id1);
-    event.path = path1.value();
+    event.file_path = path1;
     event.progress = 100;
     manager.OnItemProgress(event);
   }
@@ -1993,7 +1993,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = 329;
-    event.path = profile_path_.Append("Path 3").value();
+    event.file_path = profile_path_.Append("Path 3");
     event.progress = 0;
     manager.OnItemProgress(event);
   }
@@ -2014,7 +2014,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = 458;
-    event.path = mount_path_.Append("Path 2").value();
+    event.file_path = mount_path_.Append("Path 2");
     event.progress = 100;
     manager.OnItemProgress(event);
   }
@@ -2070,7 +2070,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = static_cast<int64_t>(id2);
-    event.path = path2.value();
+    event.file_path = path2;
     event.progress = 80;
     manager.OnItemProgress(event);
   }
@@ -2427,6 +2427,7 @@ TEST_F(DriveFsPinManagerTest, CalculateRequiredSpace) {
 }
 
 TEST_F(DriveFsPinManagerTest, JustCheckRequiredSpace) {
+  base::HistogramTester histogram_tester;
   CompletionCallback completion_callback;
   RunLoop run_loop;
 
@@ -2456,6 +2457,9 @@ TEST_F(DriveFsPinManagerTest, JustCheckRequiredSpace) {
   EXPECT_EQ(progress.required_space, 512 << 20);
   EXPECT_EQ(progress.pinned_bytes, 0);
   EXPECT_EQ(progress.pinned_files, 0);
+  histogram_tester.ExpectUniqueTimeSample(
+      "FileBrowser.GoogleDrive.BulkPinning.TimeSpentListing",
+      progress.time_spent_listing_items, 1);
 }
 
 TEST_F(DriveFsPinManagerTest, WhenMoreResultsReturnedNextPageIsAttempted) {
@@ -3129,8 +3133,8 @@ TEST_F(DriveFsPinManagerTest, PinSomeFiles) {
     EXPECT_TRUE(file.in_progress);
   }
 
-  // Add manager.max_queue_size_ + 20 items to pin.
-  for (int i = 0; i < manager.max_queue_size_ + 20; ++i) {
+  // Add manager.queue_size_ + 20 items to pin.
+  for (int i = 0; i < manager.queue_size_ + 20; ++i) {
     FileMetadata md;
     md.stable_id = 200 + i;
     md.type = FileMetadata::Type::kFile;
@@ -3142,17 +3146,17 @@ TEST_F(DriveFsPinManagerTest, PinSomeFiles) {
         manager.Add(md, Path(base::StringPrintf("/root/Path %02d", i))));
   }
 
-  EXPECT_THAT(manager.files_to_pin_, SizeIs(manager.max_queue_size_ + 20));
-  EXPECT_THAT(manager.files_to_track_, SizeIs(manager.max_queue_size_ + 21));
+  EXPECT_THAT(manager.files_to_pin_, SizeIs(manager.queue_size_ + 20));
+  EXPECT_THAT(manager.files_to_track_, SizeIs(manager.queue_size_ + 21));
   EXPECT_EQ(manager.progress_.syncing_files, 1);
 
   EXPECT_CALL(drivefs_, SetPinnedByStableId(_, true, _))
-      .Times(manager.max_queue_size_ - 1);
+      .Times(manager.queue_size_ - 1);
   manager.PinSomeFiles();
   EXPECT_EQ(manager.progress_.stage, Stage::kSyncing);
   EXPECT_THAT(manager.files_to_pin_, SizeIs(21));
-  EXPECT_THAT(manager.files_to_track_, SizeIs(manager.max_queue_size_ + 21));
-  EXPECT_EQ(manager.progress_.syncing_files, manager.max_queue_size_);
+  EXPECT_THAT(manager.files_to_track_, SizeIs(manager.queue_size_ + 21));
+  EXPECT_EQ(manager.progress_.syncing_files, manager.queue_size_);
 
   // Remove 30 files from the set of files to track.
   {
@@ -3164,7 +3168,7 @@ TEST_F(DriveFsPinManagerTest, PinSomeFiles) {
       }
     }
 
-    EXPECT_THAT(pinned_ids, SizeIs(manager.max_queue_size_));
+    EXPECT_THAT(pinned_ids, SizeIs(manager.queue_size_));
     pinned_ids.resize(30);
     for (const Id id : pinned_ids) {
       manager.Remove(id, Path(), 0);
@@ -3172,15 +3176,15 @@ TEST_F(DriveFsPinManagerTest, PinSomeFiles) {
   }
 
   EXPECT_THAT(manager.files_to_pin_, SizeIs(21));
-  EXPECT_THAT(manager.files_to_track_, SizeIs(manager.max_queue_size_ - 9));
-  EXPECT_EQ(manager.progress_.syncing_files, manager.max_queue_size_ - 30);
+  EXPECT_THAT(manager.files_to_track_, SizeIs(manager.queue_size_ - 9));
+  EXPECT_EQ(manager.progress_.syncing_files, manager.queue_size_ - 30);
 
   EXPECT_CALL(drivefs_, SetPinnedByStableId(_, true, _)).Times(21);
   manager.PinSomeFiles();
   EXPECT_EQ(manager.progress_.stage, Stage::kSyncing);
   EXPECT_THAT(manager.files_to_pin_, IsEmpty());
-  EXPECT_THAT(manager.files_to_track_, SizeIs(manager.max_queue_size_ - 9));
-  EXPECT_EQ(manager.progress_.syncing_files, manager.max_queue_size_ - 9);
+  EXPECT_THAT(manager.files_to_track_, SizeIs(manager.queue_size_ - 9));
+  EXPECT_EQ(manager.progress_.syncing_files, manager.queue_size_ - 9);
 
   manager.files_to_track_.clear();
   manager.progress_.syncing_files = 0;

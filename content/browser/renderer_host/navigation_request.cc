@@ -89,6 +89,7 @@
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
+#include "content/browser/shared_storage/shared_storage_header_observer.h"
 #include "content/browser/site_info.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -238,6 +239,8 @@ const char kIsolatedAppCSP[] =
     "font-src 'self' blob: data:;"
     "style-src 'self' 'unsafe-inline';"
     "require-trusted-types-for 'script';";
+
+const char kSharedStorageWritableRequestHeaderKey[] = "Shared-Storage-Writable";
 
 // Denotes the type of user agent string value sent in the User-Agent request
 // header.
@@ -1029,6 +1032,68 @@ bool IsMhtmlMimeType(const std::string& mime_type) {
   return mime_type == "multipart/related" || mime_type == "message/rfc822";
 }
 
+network::mojom::WebSandboxFlags GetSandboxFlagsInitiator(
+    const absl::optional<blink::LocalFrameToken>& frame_token) {
+  if (!frame_token) {
+    return network::mojom::WebSandboxFlags::kNone;
+  }
+
+  // Even if the navigation was initiated from an unload handler and the
+  // RenderFrameHost is gone, its associated PolicyContainerHost should be
+  // available by design.
+  //
+  // Note: See https://crbug.com/1473165. The "design" is currently not 100%
+  // achieved. The PolicyContainer might be missing when the navigation is
+  // initiated from RenderViewContextMenu::ExecuteCommand(...).
+  const auto* policy_container_host =
+      PolicyContainerHost::FromFrameToken(frame_token.value());
+  if (!policy_container_host) {
+    return network::mojom::WebSandboxFlags::kNone;
+  }
+
+  return policy_container_host->policies().sandbox_flags;
+}
+
+bool IsSharedStorageWritableForNavigationRequest(FrameTreeNode* frame_tree_node,
+                                                 const GURL& url) {
+  // False if the <iframe> does not have the "sharedstoragewritable" opt-in
+  // attribute.
+  if (!frame_tree_node->shared_storage_writable()) {
+    return false;
+  }
+
+  // Only child frames should have the `sharedstoragewritable` attribute set to
+  // true.
+  CHECK(!frame_tree_node->IsMainFrame());
+
+  // Apart from fenced frames' frame trees, skip non-primary pages (e.g. portal,
+  // prerendered pages).
+  if (frame_tree_node->fenced_frame_status() !=
+          RenderFrameHostImpl::FencedFrameStatus::
+              kIframeNestedWithinFencedFrame &&
+      (frame_tree_node->frame_tree().type() != FrameTree::Type::kPrimary ||
+       !frame_tree_node->frame_tree().root()->IsOutermostMainFrame())) {
+    return false;
+  }
+
+  url::Origin origin = url::Origin::Create(url);
+  if (origin.opaque()) {
+    return false;
+  }
+
+  if (!network::IsOriginPotentiallyTrustworthy(origin)) {
+    return false;
+  }
+
+  CHECK(frame_tree_node->parent());
+  const blink::PermissionsPolicy* parent_policy =
+      frame_tree_node->parent()->permissions_policy();
+
+  DCHECK(parent_policy);
+  return parent_policy->IsFeatureEnabledForOrigin(
+      blink::mojom::PermissionsPolicyFeature::kSharedStorage, origin);
+}
+
 }  // namespace
 
 NavigationRequest::PrerenderActivationNavigationState::
@@ -1537,6 +1602,8 @@ NavigationRequest::NavigationRequest(
           frame_tree_node->current_frame_host()->GetGlobalId()),
       initiator_frame_token_(begin_params_->initiator_frame_token),
       initiator_process_id_(initiator_process_id),
+      sandbox_flags_initiator_(
+          GetSandboxFlagsInitiator(initiator_frame_token_)),
       was_opener_suppressed_(was_opener_suppressed),
       is_credentialless_(
           IsDocumentToCommitAnonymous(frame_tree_node,
@@ -1641,6 +1708,12 @@ NavigationRequest::NavigationRequest(
   if (frame_tree_node_->IsInFencedFrameTree()) {
     commit_params_->frame_policy.sandbox_flags |=
         blink::kFencedFrameForcedSandboxFlags;
+  }
+
+  if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI) &&
+      base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM118)) {
+    shared_storage_writable_ = IsSharedStorageWritableForNavigationRequest(
+        frame_tree_node_, common_params_->url);
   }
 
   if (from_begin_navigation_) {
@@ -2216,7 +2289,7 @@ bool NavigationRequest::MaybeStartPrerenderingActivationChecks() {
   }
 
   // Run CommitDeferringConditions before activating the prerendered page. See
-  // the comemnt on RunCommitDeferringConditions() for detials.
+  // the comemnt on RunCommitDeferringConditions() for details.
   //
   // The prerendered page can be destroyed while the conditions are running.
   // In that case, this request gives up activating it and instead falls back to
@@ -2651,7 +2724,10 @@ bool NavigationRequest::ShouldAddCookieChangeListener() {
   // (4) the navigation is a primary main frame navigation, as the cookie
   // change information will only be used in the inactive document control
   // logic.
-  return BackForwardCacheImpl::AllowStoringPagesWithCacheControlNoStore() &&
+  return frame_tree_node_->navigator()
+             .controller()
+             .GetBackForwardCache()
+             .should_allow_storing_pages_with_cache_control_no_store() &&
          !IsPageActivation() && !IsSameDocument() && IsInPrimaryMainFrame() &&
          common_params_->url.SchemeIsHTTPOrHTTPS();
 }
@@ -4870,7 +4946,7 @@ void NavigationRequest::OnStartChecksComplete(
           BuildClientSecurityStateForNavigationFetch(),
           devtools_accepted_stream_types, is_pdf_, initiator_document_,
           GetPreviousRenderFrameHostId(), allow_cookies_from_browser_,
-          navigation_id_),
+          navigation_id_, shared_storage_writable_),
       std::move(navigation_ui_data), service_worker_handle_.get(),
       std::move(prefetched_signed_exchange_cache_), this, loader_type,
       CreateCookieAccessObserver(), CreateTrustTokenAccessObserver(),
@@ -4896,6 +4972,10 @@ void NavigationRequest::OnServiceWorkerAccessed(
     const GURL& scope,
     AllowServiceWorkerResult allowed) {
   GetDelegate()->OnServiceWorkerAccessed(this, scope, allowed);
+}
+
+network::mojom::WebSandboxFlags NavigationRequest::SandboxFlagsInitiator() {
+  return sandbox_flags_initiator_;
 }
 
 network::mojom::WebSandboxFlags NavigationRequest::SandboxFlagsInherited() {
@@ -5026,6 +5106,16 @@ void NavigationRequest::OnRedirectChecksComplete(
   if (topics_eligible_) {
     modified_headers.SetHeader(kBrowsingTopicsRequestHeaderKey,
                                *topics_header_value);
+  }
+
+  if (shared_storage_writable_) {
+    // On a redirect, the PermissionsPolicy may change the status of this
+    // request's Shared Storage eligibility, so we need to re-compute it.
+    shared_storage_writable_ = IsSharedStorageWritableForNavigationRequest(
+        frame_tree_node_, common_params_->url);
+    if (!shared_storage_writable_) {
+      removed_headers.push_back(kSharedStorageWritableRequestHeaderKey);
+    }
   }
 
   // Removes all Client Hints from the request, that were passed on from the
@@ -5324,8 +5414,6 @@ void NavigationRequest::OnWillCommitWithoutUrlLoaderChecksComplete(
 }
 
 void NavigationRequest::RunCommitDeferringConditions() {
-  // TODO(nhiroki): Make RegisterDeferringConditions() private and have
-  // ProcessChecks() call it for code cleanup.
   commit_deferrer_->RegisterDeferringConditions(*this);
   commit_deferrer_->ProcessChecks();
   // DO NOT ADD CODE after this. The previous call to ProcessChecks may have
@@ -5782,17 +5870,7 @@ void NavigationRequest::CommitPageActivation() {
     std::unique_ptr<StoredPage> stored_page =
         GetPrerenderHostRegistry().ActivateReservedHost(
             prerender_frame_tree_node_id_.value(), *this);
-
-    // TODO(https://crbug.com/1181712): Determine the best way to handle
-    // navigation when prerendering is cancelled during activation. This
-    // includes the case where a navigation can be restarted.
-    if (!stored_page) {
-      // TODO(https://crbug.com/1126305): Record the final status for activation
-      // failure.
-      NOTIMPLEMENTED()
-          << "The prerendered page was cancelled during activation";
-      return;
-    }
+    CHECK(stored_page);
 
     RenderFrameHostImpl* rfh = stored_page->render_frame_host();
 
@@ -5824,7 +5902,6 @@ void NavigationRequest::CommitPageActivation() {
     if (!weak_self)
       return;
 
-    DCHECK(stored_page);
     // Use std::exchange instead of move, so that we clear out the optional on
     // the commit_params.
     stored_page->SetViewTransitionState(
@@ -6675,8 +6752,10 @@ void NavigationRequest::CancelDeferredNavigationInternal(
   DCHECK(result.action() == NavigationThrottle::CANCEL_AND_IGNORE ||
          result.action() == NavigationThrottle::CANCEL ||
          result.action() == NavigationThrottle::BLOCK_RESPONSE ||
+         result.action() == NavigationThrottle::BLOCK_REQUEST ||
          result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
-  DCHECK(result.action() != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
+  DCHECK((result.action() != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE &&
+          result.action() != NavigationThrottle::BLOCK_REQUEST) ||
          state_ == WILL_START_REQUEST || state_ == WILL_REDIRECT_REQUEST);
 
   EnterChildTraceEvent("CancelDeferredNavigation", this);
@@ -6949,8 +7028,6 @@ void NavigationRequest::DidCommitNavigation(
     frame_tree_node()->SetCollapsed(false);
   }
 
-  UnblockPendingSubframeNavigationRequestsIfNeeded();
-
   if (service_worker_handle_) {
     // Notify the service worker navigation handle that the navigation finished
     // committing.
@@ -6991,6 +7068,11 @@ void NavigationRequest::DidCommitNavigation(
           pending_commit_metrics_.blocked_commit_count);
     }
   }
+
+  // DO NOT ADD CODE after this.
+  // UnblockPendingSubframeNavigationRequestsIfNeeded() resumes throttles, which
+  // may cause the destruction of this NavigationRequest.
+  UnblockPendingSubframeNavigationRequestsIfNeeded();
 }
 
 SiteInfo NavigationRequest::GetSiteInfoForCommonParamsURL() {
@@ -7078,11 +7160,18 @@ void NavigationRequest::UpdatePrivateNetworkRequestPolicy() {
       frame_tree_node_->navigator().controller().GetBrowserContext();
 
   url::Origin origin = GetOriginToCommit().value();
-  if (client->ShouldAllowInsecurePrivateNetworkRequests(context, origin)) {
-    // The content browser client decided to make an exception for this URL.
-    private_network_request_policy_ =
-        network::mojom::PrivateNetworkRequestPolicy::kAllow;
-    return;
+  switch (client->ShouldOverridePrivateNetworkRequestPolicy(context, origin)) {
+    case ContentBrowserClient::PrivateNetworkRequestPolicyOverride::kForceAllow:
+      private_network_request_policy_ =
+          network::mojom::PrivateNetworkRequestPolicy::kAllow;
+      return;
+    case ContentBrowserClient::PrivateNetworkRequestPolicyOverride::
+        kForcePreflightBlock:
+      private_network_request_policy_ =
+          network::mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
+      return;
+    case ContentBrowserClient::PrivateNetworkRequestPolicyOverride::kDefault:
+      break;
   }
 
   const PolicyContainerPolicies& policies =
@@ -9170,9 +9259,13 @@ void NavigationRequest::UnblockPendingSubframeNavigationRequestsIfNeeded() {
   // After a main frame same-document history navigation completes successfully,
   // we can resume any corresponding subframe history navigations that were
   // blocked on it.
+  base::WeakPtr<NavigationRequest> self = GetWeakPtr();
   for (auto& throttle : subframe_history_navigation_throttles_) {
     if (throttle) {
       throttle->Resume();
+      if (!self) {
+        return;
+      }
     }
   }
   subframe_history_navigation_throttles_.clear();

@@ -8,6 +8,7 @@
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_session.h"
+#include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/capture_mode_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -130,6 +131,7 @@ CameraPreviewView::CameraPreviewView(
   RefreshResizeButtonVisibility();
   UpdateResizeButtonTooltip();
   capture_mode_util::MaybeUpdateCaptureModePrivacyIndicators();
+  CaptureModeController::Get()->MaybeUpdateVcPanel();
 }
 
 CameraPreviewView::~CameraPreviewView() {
@@ -137,6 +139,7 @@ CameraPreviewView::~CameraPreviewView() {
   if (controller->IsActive() && !controller->is_recording_in_progress())
     controller->capture_mode_session()->OnCameraPreviewDestroyed();
   capture_mode_util::MaybeUpdateCaptureModePrivacyIndicators();
+  controller->MaybeUpdateVcPanel();
 }
 
 void CameraPreviewView::SetIsCollapsible(bool value) {

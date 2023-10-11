@@ -25,6 +25,9 @@ enum class PopupItemId : int {
   // form. We need it as a separate id from `kAddressEntry` because it has a
   // different UI and for logging.
   kFillEverythingFromAddressProfile,
+  // When triggered from a phone number field this suggestion will fill every
+  // phone number field.
+  kFillFullPhoneNumber,
   kAutocompleteEntry,
   kInsecureContextPaymentDisabledMessage,
   kPasswordEntry,
@@ -40,7 +43,6 @@ enum class PopupItemId : int {
   kGeneratePasswordEntry,
   kShowAccountCards,
   kPasswordAccountStorageOptIn,
-  kUseVirtualCard,
   kPasswordAccountStorageOptInAndGenerate,
   kAccountStoragePasswordEntry,
   kAccountStorageUsernameEntry,
@@ -53,7 +55,10 @@ enum class PopupItemId : int {
   kSeePromoCodeDetails,
   kWebauthnSignInWithAnotherDevice,
   kIbanEntry,
+  kEditAddressProfile,
   kDeleteAddressProfile,
+  kCreateNewPlusAddress,
+  kFillExistingPlusAddress,
 };
 
 // List of `PopupItemId` that trigger filling a value into an input element

@@ -8,9 +8,9 @@
 #include <CoreText/CoreText.h>
 #import <Foundation/Foundation.h>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/base_export.h"
 #include "base/check.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/types/always_false.h"
 #include "build/build_config.h"
 
@@ -191,7 +191,7 @@ inline BASE_EXPORT _Nullable CTFontRef NSToCFPtrCast(NSFont* _Nullable ns_val) {
 namespace base::apple {
 
 template <typename CFT>
-id _Nullable CFToNSOwnershipCast(base::ScopedCFTypeRef<CFT>) {
+id _Nullable CFToNSOwnershipCast(ScopedCFTypeRef<CFT>) {
   static_assert(
       AlwaysFalse<CFT>,
       "Error: Do not pass a ScopedCFTypeRef to CFToNSOwnershipCast. "

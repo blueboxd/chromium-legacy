@@ -180,7 +180,7 @@
 #endif
 
 #if BUILDFLAG(IS_MAC)
-#include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/apple/scoped_nsautorelease_pool.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 #include "content/browser/theme_helper_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -239,7 +239,7 @@
 #endif
 
 #if defined(ENABLE_IPC_FUZZER) && BUILDFLAG(IS_MAC)
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #endif
 
 #if BUILDFLAG(MOJO_RANDOM_DELAYS_ENABLED)
@@ -331,7 +331,7 @@ bool GetBuildDirectory(base::FilePath* result) {
     return false;
 
 #if BUILDFLAG(IS_MAC)
-  if (base::mac::AmIBundled()) {
+  if (base::apple::AmIBundled()) {
     // The bundled app executables (Chromium, TestShell, etc) live three
     // levels down from the build directory, eg:
     // Chromium.app/Contents/MacOS/Chromium
@@ -754,7 +754,8 @@ void BrowserMainLoop::PostCreateMainMessageLoop() {
   {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::Subsystem:BrowserAccessibilityStateImpl");
-    BrowserAccessibilityStateImpl::GetInstance()->InitBackgroundTasks();
+    browser_accessibility_state_ = BrowserAccessibilityStateImpl::Create();
+    browser_accessibility_state_->InitBackgroundTasks();
   }
 }
 

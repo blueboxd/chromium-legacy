@@ -11,7 +11,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Linux TSan Builder",
-              "project": "chromium-m117"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-memory-archive",
@@ -34,7 +34,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Linux TSan Tests",
-              "project": "chromium-m117"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-memory-archive",
@@ -54,7 +54,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Linux TSan Builder",
-                "project": "chromium-m117"
+                "project": "chromium"
               }
             }
           }
@@ -64,17 +64,24 @@
         {
           "bucket": "ci",
           "builder": "Linux TSan Builder",
-          "project": "chromium-m117"
+          "project": "chromium"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "Linux TSan Tests",
-          "project": "chromium-m117"
+          "project": "chromium"
         }
-      ]
+      ],
+      "rts_config": {
+        "condition": "QUICK_RUN_ONLY"
+      }
     }
+  },
+  "$build/flakiness": {
+    "check_for_flakiness": true,
+    "check_for_flakiness_with_resultdb": true
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],

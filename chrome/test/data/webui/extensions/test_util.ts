@@ -98,6 +98,7 @@ export class MockItemDelegate extends ClickMock implements ItemDelegate {
   setItemHostAccess(
       _id: string, _hostAccess: chrome.developerPrivate.HostAccess) {}
   setItemCollectsErrors(_id: string, _collectsErrors: boolean) {}
+  setItemPinnedToToolbar(_id: string, _pinnedToToolbar: boolean) {}
   inspectItemView(_id: string, _view: chrome.developerPrivate.ExtensionView) {}
   openUrl(_url: string) {}
 
@@ -218,7 +219,7 @@ export function createExtensionInfo(
         offlineEnabled: false,
         runtimeErrors: [],
         runtimeWarnings: [],
-        permissions: {simplePermissions: []},
+        permissions: {simplePermissions: [], canAccessSiteData: false},
         state: 'ENABLED',
         type: 'EXTENSION',
         updateUrl: '',

@@ -44,7 +44,7 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "base/apple/bundle_locations.h"
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #endif
 
 #if BUILDFLAG(IS_OZONE)
@@ -344,17 +344,6 @@ void ReportWebGPUAdapterMetrics(dawn::native::Instance* instance) {
 }
 
 void ReportWebGPUSupportMetrics(dawn::native::Instance* instance) {
-  static BASE_FEATURE(kCollectWebGPUSupportMetrics,
-                      "CollectWebGPUSupportMetrics",
-#if BUILDFLAG(IS_ANDROID)
-                      base::FEATURE_DISABLED_BY_DEFAULT);
-#else
-                      base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
-  if (!base::FeatureList::IsEnabled(kCollectWebGPUSupportMetrics)) {
-    return;
-  }
   // Note: These enum values should not change and should match those in
   // //tools/metrics/histograms/enums.xml
   enum class WebGPUSupport {
@@ -821,7 +810,7 @@ void CollectDawnInfo(const gpu::GpuPreferences& gpu_preferences,
   std::string dawn_search_path;
   base::FilePath module_path;
 #if BUILDFLAG(IS_MAC)
-  if (base::mac::AmIBundled()) {
+  if (base::apple::AmIBundled()) {
     dawn_search_path = base::apple::FrameworkBundlePath()
                            .Append("Libraries")
                            .AsEndingWithSeparator()
@@ -840,7 +829,7 @@ void CollectDawnInfo(const gpu::GpuPreferences& gpu_preferences,
   }
   const char* dawn_search_path_c_str = dawn_search_path.c_str();
 
-  wgpu::DawnInstanceDescriptor dawn_instance_desc = {};
+  dawn::native::DawnInstanceDescriptor dawn_instance_desc = {};
   dawn_instance_desc.additionalRuntimeSearchPathsCount =
       dawn_search_path.empty() ? 0u : 1u;
   dawn_instance_desc.additionalRuntimeSearchPaths = &dawn_search_path_c_str;

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #include "base/sequence_checker.h"
 #include "content/browser/font_access/font_enumeration_data_source.h"
 #include "third_party/blink/public/common/font_access/font_enumeration_table.pb.h"
@@ -40,10 +40,10 @@ class CONTENT_EXPORT FontEnumerationDataSourceMac
 
   // Font attributes for a font. Set post-validation. Used only during
   // enumeration.
-  base::ScopedCFTypeRef<CFStringRef> cf_postscript_name_;
-  base::ScopedCFTypeRef<CFStringRef> cf_full_name_;
-  base::ScopedCFTypeRef<CFStringRef> cf_family_;
-  base::ScopedCFTypeRef<CFStringRef> cf_style_;
+  base::apple::ScopedCFTypeRef<CFStringRef> cf_postscript_name_;
+  base::apple::ScopedCFTypeRef<CFStringRef> cf_full_name_;
+  base::apple::ScopedCFTypeRef<CFStringRef> cf_family_;
+  base::apple::ScopedCFTypeRef<CFStringRef> cf_style_;
 };
 
 }  // namespace content

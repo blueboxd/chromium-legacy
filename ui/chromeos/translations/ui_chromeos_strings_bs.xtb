@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">Traženje mobilnih mreža</translation>
 <translation id="1293556467332435079">Fajlovi</translation>
 <translation id="1297922636971898492">Google Disk trenutno nije dostupan. Otpremanje će se automatski ponovo pokrenuti čim Google Disk bude opet na raspolaganju.</translation>
+<translation id="1306130176943817227">Nije moguće izbrisati. Stavka se koristi.</translation>
 <translation id="1307931752636661898">Nije moguće prikazati Linux fajlove</translation>
 <translation id="1313405956111467313">Automatsko konfiguriranje proksi servera</translation>
 <translation id="134645005685694099">Na uređaju nema dovoljno prostora za pohranu da sinhronizacija fajlova ostane uključena. Novi fajlovi se više neće automatski sinhronizirati.</translation>
@@ -115,7 +116,6 @@
 <translation id="1920798810075583923">Lubenica</translation>
 <translation id="1924372192547904021">Disk <ph name="DRIVE_NAME" /> je formatiran</translation>
 <translation id="1931134289871235022">Slovačka</translation>
-<translation id="1933345018156373194">Premještanje nije uspjelo, došlo je do neočekivane greške: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finska</translation>
 <translation id="1942765061641586207">Rezolucija slike</translation>
 <translation id="1972984168337863910">Proširivanje ploča za povratne informacije o fajlovima</translation>
@@ -502,7 +502,6 @@
 <translation id="4969785127455456148">Album</translation>
 <translation id="4972330214479971536">Završavanje postavljanja sinhronizacije fajlova nije uspjelo</translation>
 <translation id="4973523518332075481">Unesite naziv čiji maksimalan broj znakova je <ph name="MAX_LENGTH" /> ili manje</translation>
-<translation id="4973970068702235170">Izrada zip arhive nije uspjelo. Neočekivana greška: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">japanski</translation>
 <translation id="4987699874727873250">engleski (Indija)</translation>
 <translation id="4988205478593450158">Jeste li sigurni da želite izbrisati fajl "<ph name="FILE_NAME" />"?</translation>
@@ -543,6 +542,7 @@
 <translation id="5218183485292899140">Švicarska francuska</translation>
 <translation id="5234764350956374838">Odbaci</translation>
 <translation id="5253070652067921974">Kreirao/la</translation>
+<translation id="5254207638927440400">Nije moguće premjestiti fajl. Fajl se koristi.</translation>
 <translation id="5257456363153333584">Vilin konjic</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Pristupite fajlovima s bilo koje lokacije, čak i offline.<ph name="MARKUP_2" />
     Fajlovi na Google Disku su ažurirani i dostupni s bilo kojeg uređaja.<ph name="MARKUP_3" />
@@ -638,7 +638,6 @@
 <translation id="5896749729057314184">Mreže: <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Deaktivirano, Jačina signala <ph name="SIGNAL_STRENGTH" />%, Detalji</translation>
 <translation id="5911887972742538906">Došlo je do greške prilikom instalacije Linux aplikacije.</translation>
 <translation id="5912396950572065471">Format</translation>
-<translation id="5913638992615760742">Kopiranje nije uspjelo zbog neočekivane greške: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">Nove funkcije pretraživanja su dostupne</translation>
 <translation id="5926082595146149752">nizozemski (Nizozemska) s međunarodnom SAD tastaturom za PC</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -646,7 +645,6 @@
 <translation id="5955954492236143329">Broj stavki: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5957366693331451795">Uređaji Chromebox</translation>
 <translation id="5982621672636444458">Opcije sortiranja</translation>
-<translation id="6007237601604674381">Premještanje nije uspjelo. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">Ethernet mreža</translation>
 <translation id="60357267506638014">Češka QWERTY</translation>
 <translation id="603895874132768835">Nećete moći koristiti ovu mrežu dok ne postavite novi PIN</translation>
@@ -863,6 +861,7 @@
 <translation id="76959938259365003">Pražnjenje korpe za otpad nije uspjelo.</translation>
 <translation id="770015031906360009">Grčka</translation>
 <translation id="7705251383879779343">Fajl <ph name="FILE_NAME" /> je kopiran.</translation>
+<translation id="7707941139430559579">Nije moguće premjestiti fajl. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">Da koristite ovu mrežu, morate unijeti 8-cifreni lični ključ za deblokiranje (PUK) koji ste dobili od operatera.</translation>
 <translation id="7711920809702896782">Informacije o slici</translation>
 <translation id="7724603315864178912">Izreži</translation>
@@ -1050,6 +1049,7 @@
 <translation id="9038620279323455325">Fajl s nazivom "<ph name="FILE_NAME" />" već postoji. Odaberite drugi naziv fajla.</translation>
 <translation id="9046895021617826162">Povezivanje nije uspjelo</translation>
 <translation id="9065512565307033593">Ako ne uspijete potvrditi, onemogućit će vam se pristup mreži.</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 upozorenje.}one{<ph name="COUNT" /> upozorenje.}few{<ph name="COUNT" /> upozorenja.}other{<ph name="COUNT" /> upozorenja.}}</translation>
 <translation id="908378762078012445">ruski s fonetskom tastaturom AATSEEL</translation>
 <translation id="9086302186042011942">Sinhroniziranje</translation>
 <translation id="9099674669267916096">Broj stranica</translation>

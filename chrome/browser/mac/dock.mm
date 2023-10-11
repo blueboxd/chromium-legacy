@@ -15,10 +15,10 @@
 
 #include "base/apple/bridging.h"
 #include "base/apple/bundle_locations.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
 #include "base/mac/launchd.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "build/branding_buildflags.h"
 
 extern "C" {
@@ -52,10 +52,10 @@ NSString* const kDockPersistentAppsKey = @"persistent-apps";
 // A wrapper around _CFURLCopyPropertyListRepresentation that operates on
 // Foundation data types and returns an autoreleased NSDictionary.
 NSDictionary* DockFileDataDictionaryForURL(NSURL* url) {
-  base::ScopedCFTypeRef<CFPropertyListRef> property_list(
+  base::apple::ScopedCFTypeRef<CFPropertyListRef> property_list(
       _CFURLCopyPropertyListRepresentation(base::apple::NSToCFPtrCast(url)));
   CFDictionaryRef dictionary =
-      base::mac::CFCast<CFDictionaryRef>(property_list);
+      base::apple::CFCast<CFDictionaryRef>(property_list);
   if (!dictionary)
     return nil;
 
@@ -66,7 +66,7 @@ NSDictionary* DockFileDataDictionaryForURL(NSURL* url) {
 // A wrapper around _CFURLCreateFromPropertyListRepresentation that operates
 // on Foundation data types and returns an autoreleased NSURL.
 NSURL* URLFromDockFileDataDictionary(NSDictionary* dictionary) {
-  base::ScopedCFTypeRef<CFURLRef> url(
+  base::apple::ScopedCFTypeRef<CFURLRef> url(
       _CFURLCreateFromPropertyListRepresentation(
           kCFAllocatorDefault, base::apple::NSToCFPtrCast(dictionary)));
   if (!url)
@@ -130,7 +130,7 @@ BOOL IsAppAtPathAWebBrowser(NSString* app_path) {
   if (!app_bundle)
     return NO;
 
-  NSArray* activities = base::mac::ObjCCast<NSArray>(
+  NSArray* activities = base::apple::ObjCCast<NSArray>(
       [app_bundle objectForInfoDictionaryKey:@"NSUserActivityTypes"]);
   if (!activities)
     return NO;

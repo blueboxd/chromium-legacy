@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/apple/bridging.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/enterprise_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/sys_string_conversions.h"
@@ -206,9 +206,10 @@ ManagedPreferencePolicyManager::GetAppsWithPolicy() const {
 }
 
 NSDictionary* ReadManagedPreferencePolicyDictionary() {
-  base::ScopedCFTypeRef<CFPropertyListRef> policies(CFPreferencesCopyAppValue(
-      base::apple::NSToCFPtrCast(kManagedPreferencesUpdatePolicies),
-      base::apple::NSToCFPtrCast(kKeystoneSharedPreferenceSuite)));
+  base::apple::ScopedCFTypeRef<CFPropertyListRef> policies(
+      CFPreferencesCopyAppValue(
+          base::apple::NSToCFPtrCast(kManagedPreferencesUpdatePolicies),
+          base::apple::NSToCFPtrCast(kKeystoneSharedPreferenceSuite)));
   if (!policies)
     return nil;
 

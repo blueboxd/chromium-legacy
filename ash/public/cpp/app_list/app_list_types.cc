@@ -3,11 +3,26 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include <string>
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/check.h"
 
 namespace ash {
+
+namespace {
+
+// Search control dictionary pref keys.
+const char kLauncherAppSearchEnabled[] = "app_search_enabled";
+const char kLauncherAppShortcutSearchEnabled[] = "app_shortcut_search_enabled";
+const char kLauncherWebSearchEnabled[] = "web_search_enabled";
+const char kLauncherFileSearchEnabled[] = "file_search_enabled";
+const char kLauncherHelpSearchEnabled[] = "help_search_enabled";
+const char kLauncherPlayStoreSearchEnabled[] = "play_store_search_enabled";
+const char kLauncherGameSearchEnabled[] = "game_search_enabled";
+const char kLauncherImageSearchEnabled[] = "image_search_enabled";
+
+}  // namespace
 
 const char kOemFolderId[] = "ddb1da55-d478-4243-8642-56d3041f0263";
 
@@ -83,6 +98,31 @@ bool IsZeroStateResultType(AppListSearchResultType result_type) {
     case AppListSearchResultType::kImageSearch:
     case AppListSearchResultType::kSystemInfo:
       return false;
+  }
+}
+
+std::string GetAppListControlCategoryName(
+    AppListSearchControlCategory control_category) {
+  switch (control_category) {
+    // Non-toggleable category does not have a pref name is always enabled.
+    case AppListSearchControlCategory::kCannotToggle:
+      return std::string();
+    case AppListSearchControlCategory::kApps:
+      return kLauncherAppSearchEnabled;
+    case AppListSearchControlCategory::kAppShortcuts:
+      return kLauncherAppShortcutSearchEnabled;
+    case AppListSearchControlCategory::kWeb:
+      return kLauncherWebSearchEnabled;
+    case AppListSearchControlCategory::kFiles:
+      return kLauncherFileSearchEnabled;
+    case ash::AppListSearchControlCategory::kHelp:
+      return kLauncherHelpSearchEnabled;
+    case ash::AppListSearchControlCategory::kPlayStore:
+      return kLauncherPlayStoreSearchEnabled;
+    case ash::AppListSearchControlCategory::kGames:
+      return kLauncherGameSearchEnabled;
+    case ash::AppListSearchControlCategory::kImages:
+      return kLauncherImageSearchEnabled;
   }
 }
 
@@ -371,26 +411,52 @@ const gfx::VectorIcon* SearchResultTextItem::GetIconFromCode() const {
   DCHECK_EQ(item_type_, SearchResultTextItemType::kIconCode);
   DCHECK(icon_code_.has_value());
   switch (icon_code_.value()) {
+    // Browser.
     case kKeyboardShortcutBrowserBack:
       return &kKsvBrowserBackIcon;
     case kKeyboardShortcutBrowserForward:
       return &kKsvBrowserForwardIcon;
     case kKeyboardShortcutBrowserRefresh:
       return &kKsvReloadIcon;
+    case kKeyboardShortcutBrowserSearch:
+      return &kKsBrowserSearchIcon;
+    // Emoji picker.
+    case kKeyboardShortcutEmojiPicker:
+      return &kKsEmojiPickerIcon;
+    // Dictation.
+    case kKeyboardShortcutDictationToggle:
+      return &kKsDictationIcon;
+    // Zoom.
     case kKeyboardShortcutZoom:
       return &kKsvFullscreenIcon;
+    // Media.
     case kKeyboardShortcutMediaLaunchApp1:
       return &kKsvOverviewIcon;
+    case kKeyboardShortcutMediaFastForward:
+      return &kKsMediaFastForwardIcon;
+    case kKeyboardShortcutMediaPause:
+      return &kKsMediaPauseIcon;
+    case kKeyboardShortcutMediaPlay:
+      return &kKsMediaPlayIcon;
+    case kKeyboardShortcutMediaPlayPause:
+      return &kKsMediaPlayPauseIcon;
+    case kKeyboardShortcutMediaTrackNext:
+      return &kKsMediaTrackNextIcon;
+    case kKeyboardShortcutMediaTrackPrevious:
+      return &kKsMediaTrackPreviousIcon;
+    // Brightness.
     case kKeyboardShortcutBrightnessDown:
       return &kKsvBrightnessDownIcon;
     case kKeyboardShortcutBrightnessUp:
       return &kKsvBrightnessUpIcon;
+    // Volume.
     case kKeyboardShortcutVolumeMute:
       return &kKsvMuteIcon;
     case kKeyboardShortcutVolumeDown:
       return &kKsvVolumeDownIcon;
     case kKeyboardShortcutVolumeUp:
       return &kKsvVolumeUpIcon;
+    // Arrows.
     case kKeyboardShortcutUp:
       return &kKsvArrowUpIcon;
     case kKeyboardShortcutDown:
@@ -399,10 +465,42 @@ const gfx::VectorIcon* SearchResultTextItem::GetIconFromCode() const {
       return &kKsvArrowLeftIcon;
     case kKeyboardShortcutRight:
       return &kKsvArrowRightIcon;
+    // Privacy.
     case kKeyboardShortcutPrivacyScreenToggle:
       return &kKsvPrivacyScreenToggleIcon;
+    // Settings.
+    case kKeyboardShortcutSettings:
+      return &kKsSettingsIcon;
+    // Snapshot.
     case kKeyboardShortcutSnapshot:
       return &kKsvSnapshotIcon;
+    // Launcher.
+    case kKeyboardShortcutLauncher:
+      return &kKsLauncherIcon;
+    // Search.
+    case kKeyboardShortcutSearch:
+      return &kKsSearchIcon;
+    // Apps.
+    case kKeyboardShortcutAssistant:
+      return &kKsAssistantIcon;
+    case kKeyboardShortcutAllApps:
+      return &kKsAllAppsIcon;
+    case kKeyboardShortcutCalculator:
+      return &kKsCalculatorIcon;
+    case kKeyboardShortcutInputModeChange:
+      return &kKsInputModeChangeIcon;
+    case kKeyboardShortcutMicrophone:
+      return &kKsMicrophoneIcon;
+    // Power.
+    case kKeyboardShortcutPower:
+      return &kKsPowerIcon;
+    // Keyboard brightness.
+    case kKeyboardShortcutKeyboardBrightnessDown:
+      return &kKsKeyboardBrightnessDownIcon;
+    case kKeyboardShortcutKeyboardBrightnessUp:
+      return &kKsKeyboardBrightnessUpIcon;
+    case kKeyboardShortcutKeyboardBacklightToggle:
+      return &kKsKeyboardBrightnessToggleIcon;
     default:
       return nullptr;
   }

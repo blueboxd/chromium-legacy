@@ -49,7 +49,7 @@
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 #if BUILDFLAG(IS_APPLE)
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/scoped_cftyperef.h"
 
 typedef const struct __CFString* CFStringRef;
 #endif
@@ -478,7 +478,7 @@ class WTF_EXPORT StringImpl {
                  wtf_size_t length = UINT_MAX) const;
 
 #if BUILDFLAG(IS_APPLE)
-  base::ScopedCFTypeRef<CFStringRef> CreateCFString();
+  base::apple::ScopedCFTypeRef<CFStringRef> CreateCFString();
 #endif
 #ifdef __OBJC__
   operator NSString*();

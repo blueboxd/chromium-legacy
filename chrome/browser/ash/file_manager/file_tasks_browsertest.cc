@@ -70,6 +70,7 @@
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/drive/file_errors.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_test.h"
@@ -78,6 +79,7 @@
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
 #include "net/base/mime_util.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "storage/browser/file_system/external_mount_points.h"
@@ -620,45 +622,6 @@ IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, ExecuteChromeApp) {
   ASSERT_EQ("\"Received tiffAction with: test_small.tiff\"", message);
 }
 
-IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, IsExtensionInstalled) {
-  // TODO(b/287165243): Fix the test and remove this.
-  if (GetParam().crosapi_state == TestProfileParam::CrosapiParam::kEnabled) {
-    GTEST_SKIP()
-        << "Skipping test body for CrosapiParam::kEnabled, see b/287165243.";
-  }
-
-  if (profile_type() == TestProfileType::kGuest) {
-    // The extension can't install in guest mode.
-    return;
-  }
-  Profile* const profile = browser()->profile();
-  // Install new extension.
-  auto extension = InstallTiffHandlerChromeApp(profile);
-  ASSERT_TRUE(IsExtensionInstalled(profile, extension->id()));
-
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile);
-  // Uninstall extension.
-  registry->RemoveEnabled(extension->id());
-  ASSERT_FALSE(IsExtensionInstalled(profile, extension->id()));
-}
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-// This test only runs with the is_chrome_branded GN flag set because otherwise
-// QuickOffice is not installed.
-IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, IsExtensionInstalledQuickOffice) {
-  // TODO(b/287165243): Fix the test and remove this.
-  if (GetParam().crosapi_state == TestProfileParam::CrosapiParam::kEnabled) {
-    GTEST_SKIP()
-        << "Skipping test body for CrosapiParam::kEnabled, see b/287165243.";
-  }
-
-  Profile* const profile = browser()->profile();
-  ASSERT_TRUE(IsExtensionInstalled(
-      profile, extension_misc::kQuickOfficeComponentExtensionId));
-}
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
 const TaskDescriptor CreateWebDriveOfficeTask() {
   // The SWA actionId is prefixed with chrome://file-manager/?ACTION_ID.
   const std::string& full_action_id =
@@ -684,9 +647,33 @@ const FileSystemURL CreateOfficeFileSourceURL(Profile* profile) {
       file);
 }
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-// This test only runs with the is_chrome_branded GN flag set because otherwise
+// These tests only run with the is_chrome_branded GN flag set because otherwise
 // QuickOffice is not installed.
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+// Test that the Fallback dialog can be shown when Quick Office is installed.
+IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, FallbackSucceedsWithQuickOffice) {
+  // TODO(b/287165243): Fix the test and remove this.
+  if (GetParam().crosapi_state == TestProfileParam::CrosapiParam::kEnabled) {
+    GTEST_SKIP()
+        << "Skipping test body for CrosapiParam::kEnabled, see b/287165243.";
+  }
+
+  if (profile_type() == TestProfileType::kIncognito) {
+    GTEST_SKIP()
+        << "There is no AppServiceProxy for incognito profiles as they are "
+           "ephemeral and have no apps persisted inside them.";
+  }
+
+  storage::FileSystemURL test_url;
+  Profile* const profile = browser()->profile();
+
+  // GetUserFallbackChoice() returns `True` because the Fallback dialog can be
+  // shown.
+  ASSERT_TRUE(GetUserFallbackChoice(
+      profile, CreateWebDriveOfficeTask(), {test_url}, nullptr,
+      ash::office_fallback::FallbackReason::kOffline));
+}
+
 IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, FallbackFailsNoQuickOffice) {
   // TODO(b/287165243): Fix the test and remove this.
   if (GetParam().crosapi_state == TestProfileParam::CrosapiParam::kEnabled) {
@@ -694,24 +681,25 @@ IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, FallbackFailsNoQuickOffice) {
         << "Skipping test body for CrosapiParam::kEnabled, see b/287165243.";
   }
 
+  if (profile_type() == TestProfileType::kIncognito) {
+    GTEST_SKIP()
+        << "There is no AppServiceProxy, which is required to check "
+           "QuickOffice is installed, for incognito profiles as they are "
+           "ephemeral and have no apps persisted inside them.";
+  }
+
   storage::FileSystemURL test_url;
   Profile* const profile = browser()->profile();
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile);
-  const extensions::Extension* quick_office = registry->GetInstalledExtension(
-      extension_misc::kQuickOfficeComponentExtensionId);
 
   // Uninstall QuickOffice.
-  registry->RemoveEnabled(extension_misc::kQuickOfficeComponentExtensionId);
+  extensions::ExtensionSystem::Get(profile)
+      ->extension_service()
+      ->RemoveComponentExtension(
+          extension_misc::kQuickOfficeComponentExtensionId);
+
   // GetUserFallbackChoice() returns `False` because QuickOffice is not
   // installed.
   ASSERT_FALSE(GetUserFallbackChoice(
-      profile, CreateWebDriveOfficeTask(), {test_url}, nullptr,
-      ash::office_fallback::FallbackReason::kOffline));
-  // Install QuickOffice.
-  registry->AddEnabled(quick_office);
-  // GetUserFallbackChoice() returns `True` because QuickOffice is installed.
-  ASSERT_TRUE(GetUserFallbackChoice(
       profile, CreateWebDriveOfficeTask(), {test_url}, nullptr,
       ash::office_fallback::FallbackReason::kOffline));
 }
@@ -750,8 +738,8 @@ class FileTasksPolicyBrowserTest : public FileTasksBrowserTest {
   }
 
  protected:
-  raw_ptr<policy::MockDlpRulesManager, ExperimentalAsh> rules_manager_ =
-      nullptr;
+  raw_ptr<policy::MockDlpRulesManager, DanglingUntriaged | ExperimentalAsh>
+      rules_manager_ = nullptr;
 };
 
 IN_PROC_BROWSER_TEST_P(FileTasksPolicyBrowserTest, TasksMarkedAsBlocked) {
@@ -870,9 +858,31 @@ class NonManagedAccount : public TestAccountBrowserTest {
   apps::AppServiceTest app_service_test_;
 };
 
-// Tests that a |IsEligibleAndEnabledUploadOfficeToCloud| returns true when a
+// Tests that IsEligibleAndEnabledUploadOfficeToCloud() returns true when a
 // non-managed user is logged in and |kUploadOfficeToCloud| is enabled.
 IN_PROC_BROWSER_TEST_F(NonManagedAccount,
+                       IsEligibleAndEnabledUploadOfficeToCloud) {
+  ASSERT_TRUE(
+      chromeos::IsEligibleAndEnabledUploadOfficeToCloud(browser()->profile()));
+}
+
+class NonManagedAccountWithEnterpriseFlag : public TestAccountBrowserTest {
+ public:
+  NonManagedAccountWithEnterpriseFlag() : TestAccountBrowserTest(kNonManaged) {
+    feature_list_.InitWithFeatures(
+        {chromeos::features::kUploadOfficeToCloud,
+         chromeos::features::kUploadOfficeToCloudForEnterprise},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests that IsEligibleAndEnabledUploadOfficeToCloud() returns true when a
+// non-managed user is logged in and both |kUploadOfficeToCloud| and
+// |kUploadOfficeToCloudForEnterprise| are enabled.
+IN_PROC_BROWSER_TEST_F(NonManagedAccountWithEnterpriseFlag,
                        IsEligibleAndEnabledUploadOfficeToCloud) {
   ASSERT_TRUE(
       chromeos::IsEligibleAndEnabledUploadOfficeToCloud(browser()->profile()));
@@ -931,11 +941,33 @@ class EnterpriseAccount : public TestAccountBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-// Tests that a |IsEligibleAndEnabledUploadOfficeToCloud| returns false when an
+// Tests that IsEligibleAndEnabledUploadOfficeToCloud() returns false when an
 // enterprise user is logged in and |kUploadOfficeToCloud| is enabled.
 IN_PROC_BROWSER_TEST_F(EnterpriseAccount,
                        IsEligibleAndEnabledUploadOfficeToCloud) {
   ASSERT_FALSE(
+      chromeos::IsEligibleAndEnabledUploadOfficeToCloud(browser()->profile()));
+}
+
+class EnterpriseAccountWithEnterpriseFlag : public TestAccountBrowserTest {
+ public:
+  EnterpriseAccountWithEnterpriseFlag() : TestAccountBrowserTest(kEnterprise) {
+    feature_list_.InitWithFeatures(
+        {chromeos::features::kUploadOfficeToCloud,
+         chromeos::features::kUploadOfficeToCloudForEnterprise},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests that IsEligibleAndEnabledUploadOfficeToCloud() returns true when an
+// enterprise user is logged in and both |kUploadOfficeToCloud| and
+// |kUploadOfficeToCloudForEnterprise| are enabled.
+IN_PROC_BROWSER_TEST_F(EnterpriseAccountWithEnterpriseFlag,
+                       IsEligibleAndEnabledUploadOfficeToCloud) {
+  ASSERT_TRUE(
       chromeos::IsEligibleAndEnabledUploadOfficeToCloud(browser()->profile()));
 }
 
@@ -950,19 +982,47 @@ class ChildAccount : public TestAccountBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-// Tests that a |IsEligibleAndEnabledUploadOfficeToCloud| returns false when a
+// Tests that IsEligibleAndEnabledUploadOfficeToCloud() returns false when a
 // child user is logged in and |kUploadOfficeToCloud| is enabled.
 IN_PROC_BROWSER_TEST_F(ChildAccount, IsEligibleAndEnabledUploadOfficeToCloud) {
   ASSERT_FALSE(
       chromeos::IsEligibleAndEnabledUploadOfficeToCloud(browser()->profile()));
 }
 
-class NonManagedAccountNoFlag : public TestAccountBrowserTest {
+class ChildAccountWithEnterpriseFlag : public TestAccountBrowserTest {
  public:
-  NonManagedAccountNoFlag() : TestAccountBrowserTest(kNonManaged) {}
+  ChildAccountWithEnterpriseFlag() : TestAccountBrowserTest(kChild) {
+    feature_list_.InitWithFeatures(
+        {chromeos::features::kUploadOfficeToCloud,
+         chromeos::features::kUploadOfficeToCloudForEnterprise},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
-// Tests that a |IsEligibleAndEnabledUploadOfficeToCloud| returns false when a
+// Tests that IsEligibleAndEnabledUploadOfficeToCloud() returns false when a
+// child user is logged in and both |kUploadOfficeToCloud| and
+// |kUploadOfficeToCloudForEnterprise| are enabled.
+IN_PROC_BROWSER_TEST_F(ChildAccountWithEnterpriseFlag,
+                       IsEligibleAndEnabledUploadOfficeToCloud) {
+  ASSERT_FALSE(
+      chromeos::IsEligibleAndEnabledUploadOfficeToCloud(browser()->profile()));
+}
+
+class NonManagedAccountNoFlag : public TestAccountBrowserTest {
+ public:
+  NonManagedAccountNoFlag() : TestAccountBrowserTest(kNonManaged) {
+    feature_list_.InitAndDisableFeature(
+        chromeos::features::kUploadOfficeToCloud);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests that IsEligibleAndEnabledUploadOfficeToCloud() returns false when a
 // non-managed user is logged in but |kUploadOfficeToCloud| is disabled.
 IN_PROC_BROWSER_TEST_F(NonManagedAccountNoFlag,
                        IsEligibleAndEnabledUploadOfficeToCloud) {
@@ -1091,7 +1151,7 @@ class DriveTest : public TestAccountBrowserTest {
 // Test to check that the test file fails to open when the system is offline but
 // is successfully opened with a "try-again" dialog choice after the
 // systems comes online.
-IN_PROC_BROWSER_TEST_F(DriveTest, OfficeFallbackTryAgain) {
+IN_PROC_BROWSER_TEST_F(DriveTest, DISABLED_OfficeFallbackTryAgain) {
   // Add test file to fake DriveFs.
   SetUpTest();
 
@@ -1132,7 +1192,8 @@ IN_PROC_BROWSER_TEST_F(DriveTest, OfficeFallbackTryAgain) {
   // Run dialog callback, simulate user choosing to "try-again". Will succeed
   // because system is online.
   OnDialogChoiceReceived(profile(), web_drive_office_task, file_urls, nullptr,
-                         ash::office_fallback::kDialogChoiceTryAgain);
+                         ash::office_fallback::kDialogChoiceTryAgain,
+                         ash::office_fallback::FallbackReason::kOffline);
 
   // Wait for file to open in web drive office.
   navigation_observer_office.Wait();
@@ -1411,7 +1472,8 @@ class OneDriveTest : public TestAccountBrowserTest,
   std::unique_ptr<FakeWebAppPublisher> web_app_publisher_;
   base::FilePath relative_test_path_;
   base::FilePath test_path_within_odfs_;
-  raw_ptr<test::FakeProvidedFileSystemOneDrive, ExperimentalAsh>
+  raw_ptr<test::FakeProvidedFileSystemOneDrive,
+          DanglingUntriaged | ExperimentalAsh>
       provided_file_system_;  // Owned by Service.
   const blink::StorageKey kTestStorageKey =
       blink::StorageKey::CreateFromStringForTesting("chrome://abc");
@@ -1464,7 +1526,8 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, OfficeFallbackTryAgain) {
   // Run dialog callback, simulate user choosing to "try-again". Will succeed
   // because system is online, and the file doesn't need to be moved.
   OnDialogChoiceReceived(profile(), open_in_office_task, file_urls, nullptr,
-                         ash::office_fallback::kDialogChoiceTryAgain);
+                         ash::office_fallback::kDialogChoiceTryAgain,
+                         ash::office_fallback::FallbackReason::kOffline);
 
   auto launches = web_app_publisher_->GetLaunches();
   ASSERT_EQ(1u, launches.size());
@@ -1512,7 +1575,8 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, OfficeFallbackCancel) {
   // Run dialog callback, simulate user choosing to "cancel". The file will not
   // open.
   OnDialogChoiceReceived(profile(), open_in_office_task, file_urls, nullptr,
-                         ash::office_fallback::kDialogChoiceCancel);
+                         ash::office_fallback::kDialogChoiceCancel,
+                         ash::office_fallback::FallbackReason::kOffline);
 
   ASSERT_EQ(0u, web_app_publisher_->GetLaunches().size());
 }

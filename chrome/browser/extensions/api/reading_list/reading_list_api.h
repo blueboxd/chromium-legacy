@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_API_READING_LIST_READING_LIST_API_H_
 
 #include "base/scoped_observation.h"
-#include "chrome/common/extensions/api/reading_list.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/core/reading_list_model_observer.h"
 #include "extensions/browser/extension_function.h"
@@ -39,6 +38,7 @@ class ReadingListAddEntryFunction : public ExtensionFunction,
   raw_ptr<ReadingListModel> reading_list_model_;
   GURL url_;
   std::string title_;
+  bool has_been_read_;
 };
 
 class ReadingListRemoveEntryFunction : public ExtensionFunction,
@@ -116,9 +116,6 @@ class ReadingListQueryFunction : public ExtensionFunction,
 
   // Returns the entries that match the provided features.
   ResponseValue MatchEntries();
-
-  // Converts from ReadingListEntry to api::reading_list::ReadingListEntry.
-  api::reading_list::ReadingListEntry ParseEntry(const ReadingListEntry& entry);
 
   // ReadingListModelObserver:
   void ReadingListModelLoaded(const ReadingListModel* model) override;

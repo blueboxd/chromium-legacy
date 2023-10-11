@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_ASH_COMPONENTS_SCALABLE_IPH_SCALABLE_IPH_DELEGATE_H_
 #define CHROMEOS_ASH_COMPONENTS_SCALABLE_IPH_SCALABLE_IPH_DELEGATE_H_
 
+#include <ostream>
+
 #include "base/observer_list_types.h"
 #include "chromeos/ash/components/scalable_iph/iph_session.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_constants.h"
@@ -20,14 +22,15 @@ namespace scalable_iph {
 // - Observe events in Ash, e.g. Network state change, etc.
 class ScalableIphDelegate {
  public:
+  enum class SessionState { kUnknownInitialValue, kActive, kLocked, kOther };
+
   // Observer for observing events in Ash.
   class Observer : public base::CheckedObserver {
    public:
     virtual void OnConnectionChanged(bool online) {}
 
-    // Called when the device enables lock screen, and every time the lock state
-    // changes.
-    virtual void OnLockStateChanged(bool locked) {}
+    // Called when `SessionState` is changed.
+    virtual void OnSessionStateChanged(SessionState session_state) {}
 
     // Called when the device does not enables lock screen, and every time the
     // system resumes from suspension.
@@ -35,6 +38,11 @@ class ScalableIphDelegate {
 
     // Called when the visibility of an app list has changed.
     virtual void OnAppListVisibilityChanged(bool shown) {}
+
+    // Called when there is a change in whether there is a saved printer or not.
+    // This method is called only if there is a change in a value. Initial value
+    // is expected to be `false`.
+    virtual void OnHasSavedPrintersChanged(bool has_saved_printers) {}
   };
 
   // Have a virtual destructor as we can put `ScalableIphDelegate` in
@@ -76,9 +84,11 @@ class ScalableIphDelegate {
     ~BubbleParams();
 
     std::string bubble_id;
+    std::string title;
     std::string text;
     BubbleIcon icon = BubbleIcon::kNoIcon;
     Button button;
+    std::string anchor_view_app_id;
 
     bool operator==(const BubbleParams& params) const = default;
   };
@@ -137,6 +147,9 @@ class ScalableIphDelegate {
   // `PerformAction` in `IphSession` or `ScalableIph`.
   virtual void PerformActionForScalableIph(ActionType action_type) = 0;
 };
+
+std::ostream& operator<<(std::ostream& out,
+                         ScalableIphDelegate::SessionState session_state);
 
 }  // namespace scalable_iph
 

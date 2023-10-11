@@ -118,8 +118,8 @@ TouchToFillDelegateAndroidImpl::DryRun(FormGlobalId form_id,
   }
 
   // If the card is enrolled into virtual card number, create a copy of the
-  // card with `CreditCard::VIRTUAL_CARD` as the record type, and insert it
-  // before the actual card.
+  // card with `CreditCard::RecordType::kVirtualCard` as the record type, and
+  // insert it before the actual card.
   std::vector<autofill::CreditCard> real_and_virtual_cards;
   for (const CreditCard& card : cards_to_suggest) {
     if (card.virtual_card_enrollment_state() ==
@@ -227,7 +227,7 @@ void TouchToFillDelegateAndroidImpl::OnCreditCardScanned(
   HideTouchToFill();
   manager_->FillCreditCardFormImpl(
       query_form_, query_field_, card, std::u16string(),
-      AutofillTriggerSource::kTouchToFillCreditCard);
+      {.trigger_source = AutofillTriggerSource::kTouchToFillCreditCard});
 }
 
 void TouchToFillDelegateAndroidImpl::ShowCreditCardSettings() {
@@ -241,14 +241,16 @@ void TouchToFillDelegateAndroidImpl::SuggestionSelected(std::string unique_id,
   if (is_virtual) {
     manager_->FillOrPreviewVirtualCardInformation(
         mojom::AutofillActionPersistence::kFill, unique_id, query_form_,
-        query_field_, AutofillTriggerSource::kTouchToFillCreditCard);
+        query_field_,
+        {.trigger_source = AutofillTriggerSource::kTouchToFillCreditCard});
   } else {
     PersonalDataManager* pdm = manager_->client().GetPersonalDataManager();
     DCHECK(pdm);
     CreditCard* card = pdm->GetCreditCardByGUID(unique_id);
     manager_->FillOrPreviewCreditCardForm(
         mojom::AutofillActionPersistence::kFill, query_form_, query_field_,
-        card, AutofillTriggerSource::kTouchToFillCreditCard);
+        card,
+        {.trigger_source = AutofillTriggerSource::kTouchToFillCreditCard});
   }
 }
 

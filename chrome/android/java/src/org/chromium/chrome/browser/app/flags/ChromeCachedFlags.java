@@ -6,6 +6,13 @@ package org.chromium.chrome.browser.app.flags;
 
 import android.text.TextUtils;
 
+import androidx.annotation.AnyThread;
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.FieldTrialList;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -14,19 +21,21 @@ import org.chromium.chrome.browser.back_press.MinimizeAppAndCloseTabBackPressHan
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.features.branding.BrandingController;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
+import org.chromium.chrome.browser.flags.CachedFlag;
+import org.chromium.chrome.browser.flags.CachedFlagsSafeMode;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.chime.ChimeFeatures;
 import org.chromium.chrome.browser.omaha.VersionNumberGetter;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuidePushNotificationManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.recent_tabs.RestoreTabsFeatureHelper;
 import org.chromium.chrome.browser.tab.state.FilePersistedTabDataStorage;
-import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementFieldTrial;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
@@ -38,9 +47,11 @@ import java.util.List;
  * Caches the flags that Chrome might require before native is loaded in a later next run.
  */
 public class ChromeCachedFlags {
+    private static final ChromeCachedFlags INSTANCE = new ChromeCachedFlags();
+
     private boolean mIsFinishedCachingNativeFlags;
 
-    private static final ChromeCachedFlags INSTANCE = new ChromeCachedFlags();
+    private static String sReachedCodeProfilerTrialGroup;
 
     /**
      * A list of field trial parameters that will be cached when starting minimal browser mode. See
@@ -68,7 +79,7 @@ public class ChromeCachedFlags {
         FirstRunUtils.cacheFirstRunPrefs();
 
         CachedFeatureFlags.cacheNativeFlags(ChromeFeatureList.sFlagsCachedFullBrowser);
-        CachedFeatureFlags.cacheAdditionalNativeFlags();
+        cacheAdditionalNativeFlags();
 
         //clang-format off
         List<CachedFieldTrialParameter> fieldTrialsToCache = List.of(
@@ -76,8 +87,6 @@ public class ChromeCachedFlags {
                 BrandingController.MAX_BLANK_TOOLBAR_TIMEOUT_MS,
                 BrandingController.USE_TEMPORARY_STORAGE,
                 BrandingController.ANIMATE_TOOLBAR_ICON_TRANSITION, ChimeFeatures.ALWAYS_REGISTER,
-                DeviceClassManager.GTS_ACCESSIBILITY_SUPPORT,
-                DeviceClassManager.GTS_LOW_END_SUPPORT,
                 FeedPlaceholderLayout.ENABLE_INSTANT_START_ANIMATION,
                 FilePersistedTabDataStorage.DELAY_SAVES_UNTIL_DEFERRED_STARTUP_PARAM,
                 OptimizationGuidePushNotificationManager.MAX_CACHE_SIZE,
@@ -107,11 +116,9 @@ public class ChromeCachedFlags {
                 StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START,
                 StartSurfaceConfiguration.START_SURFACE_OPEN_START_AS_HOMEPAGE,
                 StartSurfaceConfiguration.SURFACE_POLISH_OMNIBOX_COLOR,
-                StartSurfaceConfiguration.SURFACE_POLISH_OMNIBOX_SIZE,
-                StartSurfaceConfiguration.SURFACE_POLISH_SINGLE_TAB_CARD,
+                StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO,
+                StartSurfaceConfiguration.SURFACE_POLISH_LESS_BRAND_SPACE,
                 StartSurfaceConfiguration.SURFACE_POLISH_USE_MAGIC_SPACE,
-                TabPersistentStore.CRITICAL_PERSISTED_TAB_DATA_SAVE_ONLY_PARAM,
-                TabUiFeatureUtilities.GTS_ACCESSIBILITY_LIST_MODE,
                 TabUiFeatureUtilities.ZOOMING_MIN_MEMORY, TabUiFeatureUtilities.SKIP_SLOW_ZOOMING,
                 TabUiFeatureUtilities.TAB_STRIP_REDESIGN_DISABLE_NTB_ANCHOR,
                 TabUiFeatureUtilities.TAB_STRIP_REDESIGN_DISABLE_BUTTON_STYLE,
@@ -154,8 +161,79 @@ public class ChromeCachedFlags {
      * won't be tagged with their corresponding field trial experiments.
      */
     public void cacheMinimalBrowserFlags() {
-        CachedFeatureFlags.cacheMinimalBrowserFlagsTimeFromNativeTime();
+        cacheMinimalBrowserFlagsTimeFromNativeTime();
         CachedFeatureFlags.cacheNativeFlags(ChromeFeatureList.sFlagsCachedInMinimalBrowser);
         CachedFeatureFlags.cacheFieldTrialParameters(MINIMAL_BROWSER_FIELD_TRIALS);
+    }
+
+    /**
+     * Caches a predetermined list of flags that must take effect on startup but are set via native
+     * code.
+     *
+     * Do not add new simple boolean flags here, add them to {@link #cacheNativeFlags} instead.
+     */
+    public static void cacheAdditionalNativeFlags() {
+        CachedFlagsSafeMode.cacheSafeModeForCachedFlagsEnabled();
+        cacheReachedCodeProfilerTrialGroup();
+
+        // Propagate REACHED_CODE_PROFILER feature value to LibraryLoader. This can't be done in
+        // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
+        LibraryLoader.setReachedCodeProfilerEnabledOnNextRuns(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.REACHED_CODE_PROFILER),
+                ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                        ChromeFeatureList.REACHED_CODE_PROFILER, "sampling_interval_us", 0));
+
+        // Similarly, propagate the BACKGROUND_THREAD_POOL feature value to LibraryLoader.
+        LibraryLoader.setBackgroundThreadPoolEnabledOnNextRuns(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.BACKGROUND_THREAD_POOL));
+
+        // Propagate the CACHE_ACTIVITY_TASKID feature value to ApplicationStatus.
+        ApplicationStatus.setCachingEnabled(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CACHE_ACTIVITY_TASKID));
+    }
+
+    /**
+     * Caches the trial group of the reached code profiler feature to be using on next startup.
+     */
+    private static void cacheReachedCodeProfilerTrialGroup() {
+        // Make sure that the existing value is saved in a static variable before overwriting it.
+        if (sReachedCodeProfilerTrialGroup == null) {
+            getReachedCodeProfilerTrialGroup();
+        }
+
+        SharedPreferencesManager.getInstance().writeString(
+                ChromePreferenceKeys.REACHED_CODE_PROFILER_GROUP,
+                FieldTrialList.findFullName(ChromeFeatureList.REACHED_CODE_PROFILER));
+    }
+
+    /**
+     * @return The trial group of the reached code profiler.
+     */
+    @CalledByNative
+    public static String getReachedCodeProfilerTrialGroup() {
+        if (sReachedCodeProfilerTrialGroup == null) {
+            sReachedCodeProfilerTrialGroup = SharedPreferencesManager.getInstance().readString(
+                    ChromePreferenceKeys.REACHED_CODE_PROFILER_GROUP, "");
+        }
+
+        return sReachedCodeProfilerTrialGroup;
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static void cacheMinimalBrowserFlagsTimeFromNativeTime() {
+        CachedFeatureFlags.cacheMinimalBrowserFlagsTimeFromNativeTime();
+    }
+
+    public static long getLastCachedMinimalBrowserFlagsTimeMillis() {
+        return CachedFeatureFlags.getLastCachedMinimalBrowserFlagsTimeMillis();
+    }
+
+    @CalledByNative
+    @AnyThread
+    static boolean isEnabled(String featureName) {
+        CachedFlag cachedFlag = ChromeFeatureList.sAllCachedFlags.get(featureName);
+        assert cachedFlag != null;
+
+        return cachedFlag.isEnabled();
     }
 }

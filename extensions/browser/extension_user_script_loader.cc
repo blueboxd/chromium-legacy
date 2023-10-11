@@ -420,9 +420,15 @@ UserScriptList ConvertValueToScripts(const Extension& extension,
     // TODO(crbug.com/1385165): Remove handling code for un-prefixed IDs once
     // all UserScript IDs have been migrated to using prefixes.
     bool is_id_prefixed = (*id)[0] == UserScript::kReservedScriptIDPrefix;
-    script->set_id(is_id_prefixed ? *id
-                                  : scripting::CreateDynamicScriptID(*id));
-    script_without_prefix_retrieved |= is_id_prefixed;
+    if (is_id_prefixed) {
+      script->set_id(*id);
+      // TODO(crbug.com/1473082): This is incorrect, it should record when id is
+      // NOT prefixed. Fix and properly update the histogram.
+      script_without_prefix_retrieved = true;
+    } else {
+      script->set_id(scripting::AddPrefixToDynamicScriptId(
+          *id, UserScript::Source::kDynamicContentScript));
+    }
 
     script->set_host_id(
         mojom::HostID(mojom::HostID::HostType::kExtensions, extension.id()));
@@ -646,17 +652,26 @@ void ExtensionUserScriptLoader::RemoveDynamicScripts(
 }
 
 void ExtensionUserScriptLoader::ClearDynamicScripts(
+    UserScript::Source source,
     DynamicScriptsModifiedCallback callback) {
-  RemoveDynamicScripts(GetDynamicScriptIDs(), std::move(callback));
+  RemoveDynamicScripts(GetDynamicScriptIDs(source), std::move(callback));
 }
 
-std::set<std::string> ExtensionUserScriptLoader::GetDynamicScriptIDs() const {
+std::set<std::string> ExtensionUserScriptLoader::GetDynamicScriptIDs(
+    UserScript::Source source) const {
   std::set<std::string> dynamic_script_ids;
-  dynamic_script_ids.insert(pending_dynamic_script_ids_.begin(),
-                            pending_dynamic_script_ids_.end());
 
-  for (const std::unique_ptr<UserScript>& script : loaded_dynamic_scripts_)
-    dynamic_script_ids.insert(script->id());
+  for (std::string pending_id : pending_dynamic_script_ids_) {
+    if (UserScript::GetSourceForScriptID(pending_id) == source) {
+      dynamic_script_ids.insert(pending_id);
+    }
+  }
+
+  for (const std::unique_ptr<UserScript>& script : loaded_dynamic_scripts_) {
+    if (script->GetSource() == source) {
+      dynamic_script_ids.insert(script->id());
+    }
+  }
 
   return dynamic_script_ids;
 }

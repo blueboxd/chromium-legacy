@@ -130,6 +130,7 @@
 <translation id="370962675267501463">{COUNT,plural, =0{管理員要求您重新啟動 Chromium，以套用此更新}=1{管理員要求您重新啟動 Chromium，以套用此更新。您的無痕式視窗不會重新開啟。}other{管理員要求您重新啟動 Chromium，以套用此更新。您的 # 個無痕式視窗不會重新開啟。}}</translation>
 <translation id="3713809861844741608">在 Chromium 的新分頁中開啟連結(&amp;T)</translation>
 <translation id="378917192836375108">Chromium 可讓您按一下網頁上的電話號碼，隨即透過 Skype 撥打電話！</translation>
+<translation id="3790262771324122253">瞭解 Chromium 封鎖部分下載內容的原因</translation>
 <translation id="3830894615770080216">Chromium 作業系統</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="386822487697155367">取得 Chromium 作業系統相關說明</translation>
@@ -155,6 +156,7 @@
 <translation id="4216212958613226427">使用此語言顯示 Chromium 使用者介面</translation>
 <translation id="4222932583846282852">正在取消…</translation>
 <translation id="4230135487732243613">要將您的 Chromium 數據連結至這個帳戶嗎？</translation>
+<translation id="4251772536351901305">此防護機制分析的網站資料比標準保護多，因此即使是 Google 不知道的網站，此防護機制亦能提供危險網站警告。你可選擇略過 Chromium 警告。</translation>
 <translation id="4271805377592243930">取得 Chromium 相關說明</translation>
 <translation id="4281844954008187215">服務條款</translation>
 <translation id="4285930937574705105">不明錯誤導致安裝失敗。如果目前 Chromium 正在執行，請關閉 Chromium，然後再試一次。</translation>
@@ -226,7 +228,6 @@
 <translation id="5988505247484123880">您瀏覽的網站經常會記住您感興趣的項目，以便為您提供個人化體驗。網站亦可將您的興趣相關資訊儲存在 Chromium 中。</translation>
 <translation id="6003112304606738118">正在下載… 剩餘 <ph name="HOURS" /> 小時</translation>
 <translation id="6040143037577758943">關閉</translation>
-<translation id="6055611795418209449">Chromium 會封鎖部分下載內容</translation>
 <translation id="6055895534982063517">新版 Chromium 現已推出，速度更勝從前。</translation>
 <translation id="6063093106622310249">在 Chromium 中開啟</translation>
 <translation id="6072279588547424923">已將 <ph name="EXTENSION_NAME" /> 加到 Chromium</translation>
@@ -270,6 +271,7 @@
 <translation id="6510925080656968729">解除安裝 Chromium</translation>
 <translation id="6539122709674868420">您的機構會在 Chromium 閒置 <ph name="TIMEOUT_DURATION" />後將其關閉。瀏覽資料已刪除，當中可能包括記錄、自動填入資料和下載檔案。</translation>
 <translation id="6542839706527980775">每個設定檔都會保存本身專屬的 Chromium 資料，例如書籤、記錄、密碼等</translation>
+<translation id="6563921047760808519">進一步瞭解 <ph name="BEGIN_LINK" />Chromium 如何確保你的資料保密<ph name="END_LINK" /></translation>
 <translation id="656935081669708576">您可切換查看其他 Chromium 個人檔案的密碼</translation>
 <translation id="6570579332384693436">為修正拼字錯誤，Chromium 會將您在文字欄中輸入的文字傳送給 Google</translation>
 <translation id="6598877126913850652">前往 Chromium 通知設定</translation>

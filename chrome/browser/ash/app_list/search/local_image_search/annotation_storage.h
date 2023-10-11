@@ -11,12 +11,9 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/functional/callback.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_refptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/app_list/search/local_image_search/file_search_result.h"
 
 namespace app_list {
 
@@ -31,36 +28,14 @@ struct ImageInfo {
   base::FilePath path;
   // The image's last modified time.
   base::Time last_modified;
-  // Remove the image from further search.
-  bool is_ignored;
 
   ImageInfo(const std::set<std::string>& annotations,
             const base::FilePath& path,
-            const base::Time& last_modified,
-            bool is_ignored);
+            const base::Time& last_modified);
 
   ~ImageInfo();
   ImageInfo(const ImageInfo&);
   ImageInfo& operator=(const ImageInfo&) = delete;
-};
-
-// A search result with `relevance` to the supplied query.
-struct FileSearchResult {
-  // The full path to the file.
-  base::FilePath file_path;
-  // The file's last modified time.
-  base::Time last_modified;
-  // The file's relevance on the scale from 0-1. It represents how closely a
-  // query matches the file's annotation.
-  double relevance;
-
-  FileSearchResult(const base::FilePath& file_path,
-                   const base::Time& last_modified,
-                   double relevance);
-
-  ~FileSearchResult();
-  FileSearchResult(const FileSearchResult&);
-  FileSearchResult& operator=(const FileSearchResult&) = delete;
 };
 
 // A persistent storage to efficiently store, retrieve and search annotations.
@@ -84,22 +59,25 @@ class AnnotationStorage {
   // Removes an image from the storage. It does nothing if the file does not
   void Remove(const base::FilePath& image_path);
 
-  // TODO(b/260646344): Remove after implementing a more efficient search.
   // Returns all the stored annotations.
   std::vector<ImageInfo> GetAllAnnotations();
 
   // Searches the database for a desired `image_path`.
   std::vector<ImageInfo> FindImagePath(const base::FilePath& image_path);
 
-  // Regex search for annotations using FuzzyTokenizedStringMatch to obtain
-  // relevance for the `query`.
-  std::vector<FileSearchResult> PrefixSearch(const std::u16string& query);
+  // Search for a multi-term query. The results are sorted by `relevance`.
+  std::vector<FileSearchResult> Search(const std::u16string& query,
+                                       size_t max_num_results);
 
  private:
   AnnotationStorage(const base::FilePath& path_to_db,
                     const std::string& histogram_tag,
                     int current_version_number,
                     std::unique_ptr<ImageAnnotationWorker> annotation_worker);
+
+  // Regex search for annotations using FuzzyTokenizedStringMatch to obtain
+  // relevance for the `query_term`. The results are sorted by `file_path`.
+  std::vector<FileSearchResult> PrefixSearch(const std::u16string& query_term);
 
   std::unique_ptr<ImageAnnotationWorker> annotation_worker_;
   std::unique_ptr<SqlDatabase> sql_database_;

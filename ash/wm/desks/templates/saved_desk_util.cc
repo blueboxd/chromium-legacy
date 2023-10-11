@@ -13,6 +13,7 @@
 #include "ash/wm/desks/templates/saved_desk_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "base/containers/adapters.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_properties.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -20,6 +21,10 @@
 
 namespace ash {
 namespace {
+
+// The next activation index to assign to an admin template or floating
+// workspace template window.
+int32_t g_template_next_activation_index = kTemplateStartingActivationIndex;
 
 PrefService* GetPrimaryUserPrefService() {
   return Shell::Get()->session_controller()->GetPrimaryUserPrefService();
@@ -103,11 +108,45 @@ std::string GetAppId(aura::Window* window) {
   return "";
 }
 
-bool IsAdminTemplateWindow(aura::Window* window) {
+bool IsWindowOnTopForTemplate(aura::Window* window) {
   const int32_t* activation_index =
       window->GetProperty(app_restore::kActivationIndexKey);
   return activation_index &&
-         *activation_index <= kAdminTemplateStartingActivationIndex;
+         *activation_index <= kTemplateStartingActivationIndex;
+}
+
+void UpdateTemplateActivationIndices(DeskTemplate& saved_desk) {
+  auto& app_id_to_launch_list =
+      saved_desk.mutable_desk_restore_data()->mutable_app_id_to_launch_list();
+  // Go through the windows as defined in the saved desk in reverse order so
+  // that the window with the lowest id gets the lowest activation index. NB:
+  // for now, we expect admin templates to only contain a single app.
+  for (auto& [app_id, launch_list] : app_id_to_launch_list) {
+    for (auto& [window_id, app_restore_data] : base::Reversed(launch_list)) {
+      app_restore_data->activation_index = g_template_next_activation_index--;
+    }
+  }
+}
+
+void UpdateTemplateActivationIndicesRelativeOrder(DeskTemplate& saved_desk) {
+  auto& app_id_to_launch_list =
+      saved_desk.mutable_desk_restore_data()->mutable_app_id_to_launch_list();
+  std::vector<app_restore::AppRestoreData*> relative_window_stack_order;
+  for (auto& [app_id, launch_list] : app_id_to_launch_list) {
+    for (auto& [window_id, app_restore_data] : launch_list) {
+      relative_window_stack_order.push_back(app_restore_data.get());
+    }
+  }
+  // Sort in descending order so that we maintain the relative window
+  // stacking order.
+  base::ranges::sort(relative_window_stack_order,
+                     [](auto* window1, auto* window2) {
+                       return window1->activation_index.value_or(0) >
+                              window2->activation_index.value_or(0);
+                     });
+  for (auto* app_restore_data : relative_window_stack_order) {
+    app_restore_data->activation_index = g_template_next_activation_index--;
+  }
 }
 
 }  // namespace saved_desk_util

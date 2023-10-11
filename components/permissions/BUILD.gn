@@ -78,14 +78,14 @@ source_set("permissions") {
     "permission_recovery_success_rate_tracker.h",
     "permission_request.cc",
     "permission_request.h",
+    "permission_request_data.cc",
+    "permission_request_data.h",
     "permission_request_id.cc",
     "permission_request_id.h",
     "permission_request_manager.cc",
     "permission_request_manager.h",
     "permission_request_queue.cc",
     "permission_request_queue.h",
-    "permission_result.cc",
-    "permission_result.h",
     "permission_ui_selector.cc",
     "permission_ui_selector.h",
     "permission_uma_util.cc",
@@ -137,6 +137,9 @@ source_set("permissions") {
       "contexts/geolocation_permission_context_system.cc",
       "contexts/geolocation_permission_context_system.h",
     ]
+  }
+  if (!is_android && !is_ios) {
+    deps += [ "//components/guest_view/browser" ]
   }
   if (is_android) {
     sources += [

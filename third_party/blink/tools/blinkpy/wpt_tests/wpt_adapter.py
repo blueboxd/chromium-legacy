@@ -1,9 +1,8 @@
 # Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Run web platform tests for Chromium-related products."""
+r"""Run web platform tests as described in //docs/testing/web_platform_tests_wptrunner.md"""
 
-import argparse
 import contextlib
 import functools
 import json
@@ -20,6 +19,7 @@ from typing import List, Optional
 from blinkpy.common import exit_codes
 from blinkpy.common import path_finder
 from blinkpy.common.host import Host
+from blinkpy.common.system import command_line
 from blinkpy.w3c.wpt_results_processor import WPTResultsProcessor
 from blinkpy.web_tests.controllers.web_test_finder import WebTestFinder
 from blinkpy.web_tests.port.base import Port
@@ -48,6 +48,11 @@ class GroupingFormatter(mozlog.formatters.GroupingFormatter):
         # appears buggy. This default exists as a workaround.
         self.show_logs = True
         self._start = datetime.now()
+
+    def generate_test_name_output(self, subsuite, test_name):
+        if not test_name.startswith('/wpt_internal/'):
+            test_name = '/external/wpt' + test_name
+        return f'virtual/{subsuite}{test_name}' if subsuite else test_name[1:]
 
     def log(self, data):
         offset = datetime.now() - self._start
@@ -135,8 +140,12 @@ class WPTAdapter:
                   port_name: Optional[str] = None):
         options, tests = parse_arguments(args)
         cls._ensure_value(options, 'wpt_only', True)
-        cls._ensure_value(options, 'no_virtual_tests', True)
+        # only run virtual tests for content shell
+        cls._ensure_value(options, 'no_virtual_tests',
+                          options.product != 'content_shell')
         port = host.port_factory.get(port_name, options)
+        if options.product == 'chrome':
+            port.set_option_default('driver_name', port.CHROME_NAME)
         product = make_product(port, options)
         return WPTAdapter(product, port, options, tests)
 
@@ -269,11 +278,13 @@ class WPTAdapter:
         runner_options.binary_args.extend([
             '--host-resolver-rules='
             'MAP nonexistent.*.test ~NOTFOUND, MAP *.test 127.0.0.1',
-            '--enable-experimental-web-platform-features',
-            '--enable-blink-features=MojoJS,MojoJSTest',
-            '--enable-blink-test-features',
-            '--disable-field-trial-config',
         ])
+
+        if self.options.product != 'content_shell':
+            # `content_shell --run-web-tests` already enables "test" and
+            # "experimental" features.
+            runner_options.binary_args.append('--enable-blink-test-features')
+        # Implicitly pass `--enable-blink-features=MojoJS,MojoJSTest` to Chrome.
         runner_options.mojojs_path = self.port.generated_sources_directory()
 
         # TODO: RWT has subtle control on how tests are retried. For example
@@ -534,6 +545,7 @@ class WPTAdapter:
             'flag_specific': self.port.flag_specific_config_name() or '',
             'used_upstream': self.options.use_upstream_wpt,
             'sanitizer_enabled': self.options.enable_sanitizer,
+            'virtual_suite': '',  # Needed for non virtual tests
         }
         if self.options.use_upstream_wpt:
             # `run_wpt_tests` does not run in the upstream checkout's git
@@ -617,10 +629,8 @@ def handle_interrupt_signals():
 
 
 def parse_arguments(argv):
-    parser = argparse.ArgumentParser(
-        usage='%(prog)s [options] [tests]',
-        description=('Runs WPT tests as described in '
-                     '//docs/testing/web_platform_tests_wptrunner.md'))
+    parser = command_line.ArgumentParser(usage='%(prog)s [options] [tests]',
+                                         description=__doc__.splitlines()[0])
     factory.add_configuration_options_group(parser,
                                             rwt=False,
                                             product_choices=list(
@@ -641,7 +651,7 @@ def parse_arguments(argv):
     # server and therefore should never be started in `--no-headless` mode.
     # Conversely, the default headless mode should always start Xvfb.
     options.use_xvfb = options.headless
-    return (options, args)
+    return options, args
 
 
 def main(argv) -> int:

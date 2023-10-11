@@ -26,6 +26,7 @@
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/ash/boot_times_recorder_tab_helper.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen_view.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
@@ -80,6 +81,7 @@
 #include "chrome/browser/ui/webui/ash/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/lacros_data_backward_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/lacros_data_migration_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/local_password_setup_handler.h"
 #include "chrome/browser/ui/webui/ash/login/local_state_error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/locale_switch_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/management_transition_screen_handler.h"
@@ -94,6 +96,7 @@
 #include "chrome/browser/ui/webui/ash/login/os_trial_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/packaged_license_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/parental_handoff_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/password_selection_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/pin_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/quick_start_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/recommend_apps_screen_handler.h"
@@ -323,7 +326,7 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
                      features::IsOobeTouchpadScrollEnabled());
 
   source->AddBoolean("isDrivePinningEnabled",
-                     features::IsOobeDrivePinningEnabled());
+                     drive::util::IsOobeDrivePinningEnabled(profile));
 
   // Whether the timings in oobe_trace.js will be output to the console.
   source->AddBoolean(
@@ -335,6 +338,12 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
 
   source->AddBoolean("isOobeSoftwareUpdateEnabled",
                      features::IsOobeSoftwareUpdateEnabled());
+
+  source->AddBoolean("isPasswordSelectionEnabledInOobe",
+                     features::IsPasswordSelectionEnabledInOobe());
+
+  source->AddBoolean("isOobeConsumersLocalPasswordsEnabled",
+                     features::AreLocalPasswordsEnabledForConsumers());
 
   // Configure shared resources
   AddProductLogoResources(source);
@@ -460,6 +469,10 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<FingerprintSetupScreenHandler>());
 
+  if (features::AreLocalPasswordsEnabledForConsumers()) {
+    AddScreenHandler(std::make_unique<LocalPasswordSetupHandler>());
+  }
+
   AddScreenHandler(std::make_unique<GestureNavigationScreenHandler>());
 
   AddScreenHandler(std::make_unique<MarketingOptInScreenHandler>());
@@ -522,6 +535,10 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<ThemeSelectionScreenHandler>());
 
+  if (features::IsPasswordSelectionEnabledInOobe()) {
+    AddScreenHandler(std::make_unique<PasswordSelectionScreenHandler>());
+  }
+
   if (features::IsOobeChoobeEnabled()) {
     AddScreenHandler(std::make_unique<ChoobeScreenHandler>());
   }
@@ -540,7 +557,8 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<AddChildScreenHandler>());
 
-  if (features::IsOobeDrivePinningEnabled()) {
+  Profile* const profile = Profile::FromWebUI(web_ui());
+  if (drive::util::IsOobeDrivePinningEnabled(profile)) {
     AddScreenHandler(std::make_unique<DrivePinningScreenHandler>());
   }
 
@@ -548,7 +566,6 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<CryptohomeRecoveryScreenHandler>());
 
-  Profile* profile = Profile::FromWebUI(web_ui());
   // Set up the chrome://theme/ source, for Chrome logo.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 

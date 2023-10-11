@@ -7,8 +7,8 @@
 #import <Cocoa/Cocoa.h>
 #include <Foundation/Foundation.h>
 
+#include "base/apple/foundation_util.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/no_destructor.h"
@@ -59,7 +59,7 @@ RoleMap BuildSubroleMap() {
   const RoleMap::value_type subroles[] = {
       {ax::mojom::Role::kAlert, @"AXApplicationAlert"},
       {ax::mojom::Role::kAlertDialog, @"AXApplicationAlertDialog"},
-      {ax::mojom::Role::kApplication, @"AXLandmarkApplication"},
+      {ax::mojom::Role::kApplication, @"AXWebApplication"},
       {ax::mojom::Role::kArticle, @"AXDocumentArticle"},
       {ax::mojom::Role::kBanner, @"AXLandmarkBanner"},
       {ax::mojom::Role::kCode, @"AXCodeStyleGroup"},
@@ -788,6 +788,13 @@ void CollectAncestorRoles(
               leafTextRange.focus()->GetAnchor())
         << "An anchor range should only span a single object.";
 
+    int leafTextLength = leafTextRange.GetText().length();
+    if (static_cast<unsigned long>(anchorStartOffset + leafTextLength) >
+        attributedString.length) {
+      // We've exceeded the maximum text requested by the caller.
+      break;
+    }
+
     ui::AXNode* anchor = leafTextRange.focus()->GetAnchor();
     DCHECK(anchor) << "A non-null position should have a non-null anchor node.";
 
@@ -821,9 +828,6 @@ void CollectAncestorRoles(
     }
 
     // Add annotation information
-    int leafTextLength = leafTextRange.GetText().length();
-    DCHECK_LE(static_cast<unsigned long>(anchorStartOffset + leafTextLength),
-              attributedString.length);
     NSRange leafRange = NSMakeRange(anchorStartOffset, leafTextLength);
 
     CollectAncestorRoles(*anchor, ancestor_roles);
@@ -1362,15 +1366,16 @@ void CollectAncestorRoles(
   if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
     [self setAccessibilityValue:value];
   } else if ([attribute isEqualToString:NSAccessibilitySelectedTextAttribute]) {
-    [self setAccessibilitySelectedText:base::mac::ObjCCastStrict<NSString>(
+    [self setAccessibilitySelectedText:base::apple::ObjCCastStrict<NSString>(
                                            value)];
   } else if ([attribute
                  isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
-    [self setAccessibilitySelectedTextRange:base::mac::ObjCCastStrict<NSValue>(
-                                                value)
-                                                .rangeValue];
+    [self
+        setAccessibilitySelectedTextRange:base::apple::ObjCCastStrict<NSValue>(
+                                              value)
+                                              .rangeValue];
   } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
-    [self setAccessibilityFocused:base::mac::ObjCCastStrict<NSNumber>(value)
+    [self setAccessibilityFocused:base::apple::ObjCCastStrict<NSNumber>(value)
                                       .boolValue];
   }
 }
@@ -1814,7 +1819,7 @@ void CollectAncestorRoles(
   // AXCustomContent is only supported by VoiceOver since macOS 11. In
   // macOS 11 or later we expose the aria description in AXCustomContent,
   // before then we expose the description in AXHelp.
-  if (base::mac::IsAtLeastOS11() &&
+  if (base::mac::MacOSMajorVersion() >= 11 &&
       [[self descriptionIfFromAriaDescription] length]) {
     return nil;
   }
@@ -2086,7 +2091,12 @@ void CollectAncestorRoles(
   if (axRange.IsNull())
     return nil;
 
-  NSString* text = base::SysUTF16ToNSString(axRange.GetText());
+  NSString* text = base::SysUTF16ToNSString(axRange.GetText(
+      ui::AXTextConcatenationBehavior::kWithoutParagraphBreaks,
+      ui::AXEmbeddedObjectBehavior::kExposeCharacterForHypertext,
+      // Constrain the amount of text retrieved for performance.
+      /* max_count =*/200));
+
   if (text.length == 0) {
     return nil;
   }

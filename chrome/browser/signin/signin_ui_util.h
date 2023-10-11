@@ -13,7 +13,7 @@
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/signin/reauth_result.h"
-#include "chrome/browser/ui/signin_reauth_view_controller.h"
+#include "chrome/browser/ui/signin/signin_reauth_view_controller.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 
@@ -51,6 +51,11 @@ void ShowReauthForAccount(Profile* profile,
 void ShowExtensionSigninPrompt(Profile* profile,
                                bool enable_sync,
                                const std::string& email_hint);
+
+// This function is used to sign-in the user into Chrome without offering sync.
+// This function does nothing if the user is already signed in to Chrome.
+void ShowSigninPromptFromPromo(Profile* profile,
+                               signin_metrics::AccessPoint access_point);
 
 // This function is used to enable sync for a given account:
 // * This function does nothing if the user is already signed in to Chrome.

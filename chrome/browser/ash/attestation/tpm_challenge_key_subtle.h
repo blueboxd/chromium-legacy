@@ -233,15 +233,16 @@ class TpmChallengeKeySubtleImpl final : public TpmChallengeKeySubtle {
   void RunCallback(const TpmChallengeKeyResult& result);
 
   std::unique_ptr<AttestationFlow> default_attestation_flow_;
-  raw_ptr<AttestationFlow, ExperimentalAsh> attestation_flow_ = nullptr;
+  raw_ptr<AttestationFlow, LeakedDanglingUntriaged | ExperimentalAsh>
+      attestation_flow_ = nullptr;
   // Can be nullptr.
-  raw_ptr<MachineCertificateUploader, ExperimentalAsh>
+  raw_ptr<MachineCertificateUploader, LeakedDanglingUntriaged | ExperimentalAsh>
       machine_certificate_uploader_ = nullptr;
 
   TpmChallengeKeyCallback callback_;
   // |profile_| may be nullptr if this is an instance that is used device-wide
   // and only intended to work with machine keys.
-  raw_ptr<Profile, ExperimentalAsh> profile_ = nullptr;
+  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> profile_ = nullptr;
 
   ::attestation::VerifiedAccessFlow flow_type_ =
       ::attestation::ENTERPRISE_MACHINE;

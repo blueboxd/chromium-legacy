@@ -106,6 +106,7 @@ static_library("performance_manager") {
     "graph/worker_node_impl_describer.h",
     "graph_features.cc",
     "metrics/metrics_collector.cc",
+    "metrics/tab_revisit_tracker.cc",
     "owned_objects.h",
     "performance_manager.cc",
     "performance_manager_feature_observer_client.cc",
@@ -149,6 +150,7 @@ static_library("performance_manager") {
     "public/graph/system_node.h",
     "public/graph/worker_node.h",
     "public/metrics/metrics_collector.h",
+    "public/metrics/tab_revisit_tracker.h",
     "public/performance_manager.h",
     "public/performance_manager_main_thread_mechanism.h",
     "public/performance_manager_main_thread_observer.h",
@@ -159,6 +161,11 @@ static_library("performance_manager") {
     "public/render_process_host_id.h",
     "public/render_process_host_proxy.h",
     "public/resource_attribution/attribution_helpers.h",
+    "public/resource_attribution/frame_context_registry.h",
+    "public/resource_attribution/page_context_registry.h",
+    "public/resource_attribution/process_context_registry.h",
+    "public/resource_attribution/resource_contexts.h",
+    "public/resource_attribution/type_helpers.h",
     "public/user_tuning/prefs.h",
     "public/v8_memory/v8_detailed_memory.h",
     "public/v8_memory/v8_detailed_memory_any_seq.h",
@@ -171,6 +178,11 @@ static_library("performance_manager") {
     "render_process_user_data.cc",
     "render_process_user_data.h",
     "resource_attribution/attribution_impl_helpers.h",
+    "resource_attribution/frame_context_registry.cc",
+    "resource_attribution/page_context_registry.cc",
+    "resource_attribution/process_context_registry.cc",
+    "resource_attribution/resource_context_registry_storage.cc",
+    "resource_attribution/resource_context_registry_storage.h",
     "service_worker_client.cc",
     "service_worker_client.h",
     "service_worker_context_adapter.cc",
@@ -310,6 +322,7 @@ source_set("unit_tests") {
     "graph/worker_node_impl_unittest.cc",
     "graph_features_unittest.cc",
     "metrics/metrics_collector_unittest.cc",
+    "metrics/tab_revisit_tracker_unittest.cc",
     "owned_objects_unittest.cc",
     "performance_manager_impl_unittest.cc",
     "performance_manager_registry_impl_unittest.cc",
@@ -317,6 +330,8 @@ source_set("unit_tests") {
     "performance_manager_unittest.cc",
     "registered_objects_unittest.cc",
     "render_process_host_id_unittest.cc",
+    "resource_attribution/resource_contexts_unittest.cc",
+    "test_support/mock_graphs_unittest.cc",
     "user_tuning/prefs_unittest.cc",
     "v8_memory/v8_context_tracker_helpers_unittest.cc",
     "v8_memory/v8_context_tracker_internal_unittest.cc",
@@ -344,6 +359,10 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (is_ios) {
+    deps += [ "//components/test:performance_manager_test_bundle_data" ]
+  }
 
   # The site data database isn't supported on Android.
   if (!is_android) {
@@ -383,6 +402,9 @@ source_set("browser_tests") {
     "performance_manager_browsertest.cc",
     "prerendering_browsertest.cc",
     "render_process_host_proxy_browsertest.cc",
+    "resource_attribution/frame_context_registry_browsertest.cc",
+    "resource_attribution/page_context_registry_browsertest.cc",
+    "resource_attribution/process_context_registry_browsertest.cc",
     "v8_memory/v8_context_tracker_browsertest.cc",
   ]
 

@@ -11,6 +11,7 @@
 #include "base/check.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/version.h"
 #include "ui/ozone/common/features.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
@@ -22,7 +23,7 @@ namespace ui {
 
 namespace {
 constexpr uint32_t kMinVersion = 1;
-constexpr uint32_t kMaxVersion = 57;
+constexpr uint32_t kMaxVersion = 58;
 }
 
 // static
@@ -66,12 +67,17 @@ WaylandZAuraShell::WaylandZAuraShell(zaura_shell* aura_shell,
   DCHECK(obj_);
   DCHECK(connection_);
 
-  static constexpr zaura_shell_listener zaura_shell_listener = {
-      &OnLayoutMode,     &OnBugFix,
-      &OnDesksChanged,   &OnDeskActivationChanged,
-      &OnActivated,      &SetOverviewMode,
-      &UnsetOverviewMode};
-  zaura_shell_add_listener(obj_.get(), &zaura_shell_listener, this);
+  static constexpr zaura_shell_listener kZAuraShellListener = {
+      .layout_mode = &OnLayoutMode,
+      .bug_fix = &OnBugFix,
+      .desks_changed = &OnDesksChanged,
+      .desk_activation_changed = &OnDeskActivationChanged,
+      .activated = &OnActivated,
+      .set_overview_mode = &OnSetOverviewMode,
+      .unset_overview_mode = &OnUnsetOverviewMode,
+      .compositor_version = &OnCompositorVersion};
+  zaura_shell_add_listener(obj_.get(), &kZAuraShellListener, this);
+
   if (IsWaylandSurfaceSubmissionInPixelCoordinatesEnabled() &&
       zaura_shell_get_version(wl_object()) >=
           ZAURA_TOPLEVEL_SURFACE_SUBMISSION_IN_PIXEL_COORDINATES_SINCE_VERSION) {
@@ -165,8 +171,8 @@ void WaylandZAuraShell::OnActivated(void* data,
                                     wl_surface* lost_active) {}
 
 // static
-void WaylandZAuraShell::SetOverviewMode(void* data,
-                                        struct zaura_shell* zaura_shell) {
+void WaylandZAuraShell::OnSetOverviewMode(void* data,
+                                          struct zaura_shell* zaura_shell) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   auto* self = static_cast<WaylandZAuraShell*>(data);
   for (auto* window : self->connection_->window_manager()->GetAllWindows()) {
@@ -178,8 +184,8 @@ void WaylandZAuraShell::SetOverviewMode(void* data,
 }
 
 // static
-void WaylandZAuraShell::UnsetOverviewMode(void* data,
-                                          struct zaura_shell* zaura_shell) {
+void WaylandZAuraShell::OnUnsetOverviewMode(void* data,
+                                            struct zaura_shell* zaura_shell) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   auto* self = static_cast<WaylandZAuraShell*>(data);
   for (auto* window : self->connection_->window_manager()->GetAllWindows()) {
@@ -188,6 +194,23 @@ void WaylandZAuraShell::UnsetOverviewMode(void* data,
     }
   }
 #endif
+}
+
+// static
+void WaylandZAuraShell::OnCompositorVersion(void* data,
+                                            struct zaura_shell* zaura_shell,
+                                            const char* version_label) {
+  auto* self = static_cast<WaylandZAuraShell*>(data);
+  base::Version compositor_version(version_label);
+  if (!compositor_version.IsValid()) {
+    LOG(WARNING) << "Invalid compositor version string received.";
+    self->compositor_version_ = {};
+    return;
+  }
+
+  DCHECK_EQ(compositor_version.components().size(), 4u);
+  DVLOG(1) << "Wayland compositor version: " << compositor_version;
+  self->compositor_version_ = compositor_version;
 }
 
 }  // namespace ui

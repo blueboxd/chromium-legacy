@@ -16,7 +16,6 @@
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/stringprintf.h"
@@ -399,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, BackgroundColorChange) {
   }
   content::AwaitDocumentOnLoadCompleted(web_contents);
 
-  // Changing background color should update the toolbar color.
+  // Changing background color should update the active tab color.
   {
     content::BackgroundColorChangeWaiter waiter(web_contents);
     EXPECT_TRUE(content::ExecJs(
@@ -407,10 +406,11 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, BackgroundColorChange) {
     waiter.Wait();
     EXPECT_EQ(app_browser->app_controller()->GetBackgroundColor().value(),
               SK_ColorCYAN);
-    SkColor download_shelf_color;
+    SkColor active_tab_color;
     app_browser->app_controller()->GetThemeSupplier()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR, &download_shelf_color);
-    EXPECT_EQ(download_shelf_color, SK_ColorCYAN);
+        ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE,
+        &active_tab_color);
+    EXPECT_EQ(active_tab_color, SK_ColorCYAN);
   }
 }
 
@@ -510,9 +510,9 @@ IN_PROC_BROWSER_TEST_P(BackgroundColorChangeSystemWebAppBrowserTest,
   }
   content::AwaitDocumentOnLoadCompleted(web_contents);
 
-  // Changing background color should update the toolbar color unless a system
-  // web app prefers manifest background colors over web contents background
-  // colors.
+  // Changing background color should update the active tab color unless a
+  // system web app prefers manifest background colors over web contents
+  // background colors.
   {
     content::BackgroundColorChangeWaiter waiter(web_contents);
     EXPECT_TRUE(content::ExecJs(
@@ -526,10 +526,11 @@ IN_PROC_BROWSER_TEST_P(BackgroundColorChangeSystemWebAppBrowserTest,
       ASSERT_TRUE(background_opt);
       EXPECT_EQ(background_opt.value(), SK_ColorCYAN);
     }
-    SkColor download_shelf_color;
+    SkColor active_tab_color;
     app_browser->app_controller()->GetThemeSupplier()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR, &download_shelf_color);
-    EXPECT_EQ(download_shelf_color,
+        ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE,
+        &active_tab_color);
+    EXPECT_EQ(active_tab_color,
               PreferManifestBackgroundColor()
                   ? (is_dark_mode_state ? SK_ColorBLACK : SK_ColorWHITE)
                   : SK_ColorCYAN);

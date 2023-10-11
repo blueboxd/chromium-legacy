@@ -10,7 +10,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <Security/Security.h>
 
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace enterprise_connectors::test {
@@ -21,11 +21,11 @@ class MockSecureEnclaveHelper : public SecureEnclaveHelper {
   MockSecureEnclaveHelper();
   ~MockSecureEnclaveHelper() override;
 
-  MOCK_METHOD(base::ScopedCFTypeRef<SecKeyRef>,
+  MOCK_METHOD(base::apple::ScopedCFTypeRef<SecKeyRef>,
               CreateSecureKey,
               (CFDictionaryRef, OSStatus*),
               (override));
-  MOCK_METHOD(base::ScopedCFTypeRef<SecKeyRef>,
+  MOCK_METHOD(base::apple::ScopedCFTypeRef<SecKeyRef>,
               CopyKey,
               (CFDictionaryRef, OSStatus*),
               (override));

@@ -32,6 +32,7 @@
 #include "services/device/public/mojom/device_posture_provider.mojom-blink.h"
 #include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/navigation_controls.h"
+#include "third_party/blink/public/common/css/scripting.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
@@ -1459,8 +1460,7 @@ static bool StuckMediaFeatureEval(const MediaQueryExpValue& value,
                                   MediaQueryOperator op,
                                   const MediaValues& media_values) {
   if (!value.IsValid()) {
-    return media_values.StuckHorizontal() != ContainerStuckPhysical::kNo ||
-           media_values.StuckVertical() != ContainerStuckPhysical::kNo;
+    return media_values.Stuck();
   }
 
   switch (value.Id()) {
@@ -1489,6 +1489,25 @@ static bool StuckMediaFeatureEval(const MediaQueryExpValue& value,
   }
 }
 
+static bool SnappedMediaFeatureEval(const MediaQueryExpValue& value,
+                                    MediaQueryOperator op,
+                                    const MediaValues& media_values) {
+  if (!value.IsValid()) {
+    return media_values.Snapped();
+  }
+  switch (value.Id()) {
+    case CSSValueID::kNone:
+      return media_values.Snapped();
+    case CSSValueID::kBlock:
+      return media_values.SnappedBlock();
+    case CSSValueID::kInline:
+      return media_values.SnappedInline();
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
 static bool InvertedColorsMediaFeatureEval(const MediaQueryExpValue& value,
                                            MediaQueryOperator,
                                            const MediaValues& media_values) {
@@ -1505,6 +1524,34 @@ static bool InvertedColorsMediaFeatureEval(const MediaQueryExpValue& value,
   }
 
   return (value.Id() == CSSValueID::kNone) != media_values.InvertedColors();
+}
+
+static bool ScriptingMediaFeatureEval(const MediaQueryExpValue& value,
+                                      MediaQueryOperator,
+                                      const MediaValues& media_values) {
+  MaybeRecordMediaFeatureValue(
+      media_values, IdentifiableSurface::MediaFeatureName::kScripting,
+      media_values.GetScripting());
+
+  if (!value.IsValid()) {
+    return media_values.GetScripting() == Scripting::kEnabled;
+  }
+
+  if (!value.IsId()) {
+    return false;
+  }
+
+  switch (value.Id()) {
+    case CSSValueID::kNone:
+      return media_values.GetScripting() == Scripting::kNone;
+    case CSSValueID::kInitialOnly:
+      return media_values.GetScripting() == Scripting::kInitialOnly;
+    case CSSValueID::kEnabled:
+      return media_values.GetScripting() == Scripting::kEnabled;
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 static MediaQueryOperator ReverseOperator(MediaQueryOperator op) {

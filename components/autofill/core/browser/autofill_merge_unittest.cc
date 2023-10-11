@@ -32,7 +32,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_APPLE)
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #endif
 
 namespace autofill {
@@ -83,7 +83,7 @@ const std::vector<base::FilePath> GetTestFiles() {
   std::sort(files.begin(), files.end());
 
 #if BUILDFLAG(IS_APPLE)
-  base::mac::ClearAmIBundledCache();
+  base::apple::ClearAmIBundledCache();
 #endif  // BUILDFLAG(IS_APPLE)
 
   return files;
@@ -232,7 +232,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
             const_cast<AutofillField*>(form_structure.field(j));
         ServerFieldType type =
             StringToFieldType(base::UTF16ToUTF8(field->name));
-        field->set_heuristic_type(GetActivePatternSource(), type);
+        field->set_heuristic_type(GetActiveHeuristicSource(), type);
       }
 
       // Extract the profile.

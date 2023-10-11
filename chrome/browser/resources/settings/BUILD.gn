@@ -44,22 +44,22 @@ build_webui("build") {
     "images/privacy_guide/horizon_graphic.svg",
     "images/privacy_guide/msbb_graphic_dark_v2.svg",
     "images/privacy_guide/msbb_graphic_v2.svg",
-    "images/privacy_guide/search_suggestions_graphic.svg",
-    "images/privacy_guide/search_suggestions_graphic_dark.svg",
+    "images/privacy_guide/preload_graphic.svg",
+    "images/privacy_guide/preload_graphic_dark.svg",
     "images/privacy_guide/privacy_sandbox_graphic_dark.svg",
     "images/privacy_guide/privacy_sandbox_graphic.svg",
     "images/privacy_guide/promo_banner_dark.svg",
     "images/privacy_guide/promo_banner.svg",
     "images/privacy_guide/safe_browsing_graphic_dark_v2.svg",
     "images/privacy_guide/safe_browsing_graphic_v2.svg",
+    "images/privacy_guide/search_suggestions_graphic.svg",
+    "images/privacy_guide/search_suggestions_graphic_dark.svg",
     "images/privacy_guide/waa_graphic_dark.svg",
     "images/privacy_guide/waa_graphic.svg",
     "images/privacy_guide/welcome_banner_dark.svg",
     "images/privacy_guide/welcome_banner.svg",
     "images/privacy_sandbox_banner_v3_dark.svg",
     "images/privacy_sandbox_banner_v3.svg",
-    "images/privacy_sandbox_floc_banner_dark.svg",
-    "images/privacy_sandbox_floc_banner.svg",
     "images/safe_browsing_banner_dark.svg",
     "images/safe_browsing_banner.svg",
     "images/sync_banner_dark.svg",
@@ -85,7 +85,6 @@ build_webui("build") {
     "autofill_page/iban_list_entry.ts",
     "autofill_page/payments_list.ts",
     "autofill_page/payments_section.ts",
-    "autofill_page/upi_id_list_entry.ts",
     "autofill_page/virtual_card_unenroll_dialog.ts",
     "basic_page/basic_page.ts",
     "clear_browsing_data_dialog/clear_browsing_data_dialog.ts",
@@ -129,6 +128,7 @@ build_webui("build") {
     "privacy_page/privacy_guide/privacy_guide_msbb_fragment.ts",
     "privacy_page/privacy_guide/privacy_guide_page.ts",
     "privacy_page/privacy_guide/privacy_guide_promo.ts",
+    "privacy_page/privacy_guide/privacy_guide_preload_fragment.ts",
     "privacy_page/privacy_guide/privacy_guide_safe_browsing_fragment.ts",
     "privacy_page/privacy_guide/privacy_guide_search_suggestions_fragment.ts",
     "privacy_page/privacy_guide/privacy_guide_welcome_fragment.ts",
@@ -284,6 +284,7 @@ build_webui("build") {
     "on_startup_page/on_startup_browser_proxy.ts",
     "on_startup_page/startup_urls_page_browser_proxy.ts",
     "page_visibility.ts",
+    "performance_page/constants.ts",
     "performance_page/discard_timer_options.ts",
     "performance_page/performance_browser_proxy.ts",
     "performance_page/performance_metrics_proxy.ts",
@@ -340,6 +341,11 @@ build_webui("build") {
   }
   if (is_win || is_mac) {
     non_web_component_files += [ "autofill_page/passkeys_browser_proxy.ts" ]
+  }
+
+  if (is_mac) {
+    non_web_component_files +=
+        [ "a11y_page/mac_system_settings_browser_proxy.ts" ]
   }
 
   # -----------------non_web_component_files end -------------------------------

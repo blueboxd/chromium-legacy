@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Saidil teie seadmesse andmete salvestamise lubamine</translation>
 <translation id="1383876407941801731">Otsi</translation>
 <translation id="1384959399684842514">Allalaadimine peatatud</translation>
-<translation id="1409426117486808224">Avatud vahelehtede lihtsustatud vaade</translation>
 <translation id="1415402041810619267">Lühendatud URL</translation>
 <translation id="1426410128494586442">Jah</translation>
 <translation id="1446450296470737166">MIDI-seadm. täieliku juht. lub.</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Lubatud, välja arvatud kolmanda osapoole küpsised</translation>
 <translation id="1989112275319619282">Sirvi</translation>
 <translation id="1994173015038366702">Saidi URL</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Aegub 1 päeva pärast}other{Aegub # päeva pärast}}</translation>
 <translation id="2004697686368036666">Funktsioonid ei pruugi mõnel saidil toimida</translation>
 <translation id="2025115093177348061">Liitreaalsus</translation>
 <translation id="2030769033451695672">Puudutage vahelehele <ph name="URL_OF_THE_CURRENT_TAB" /> naasmiseks</translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Pealkiri</translation>
 <translation id="4008040567710660924">Lubage konkreetse saidi küpsisefailid.</translation>
 <translation id="4046123991198612571">Järgmine lugu</translation>
+<translation id="4053720452172726777">Google Chrome'i kohandamine ja juhtimine</translation>
 <translation id="4149994727733219643">Veebilehtede lihtsustatud vaade</translation>
 <translation id="4151930093518524179">Vaikesuum</translation>
 <translation id="4165986682804962316">Saidi seaded</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Saidid ei saa reklaamide isikupärastamiseks küpsisefailide abil eri saitidel teie sirvimistegevust jälgida. Funktsioonid ei pruugi mõnel saidil toimida.</translation>
 <translation id="5553374991681107062">Uusimad</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
-<translation id="5596627076506792578">Rohkem valikuid</translation>
 <translation id="5649053991847567735">Automaatsed allalaadimised</translation>
 <translation id="5668404140385795438">Sissesuumimise takistamiseks veebisaidi taotluse alistamine</translation>
 <translation id="5677928146339483299">Blokeeritud</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Androidi seadetes välja lülitatud</translation>
 <translation id="7016516562562142042">Praeguse otsingumootori puhul lubatud</translation>
 <translation id="702275896380648118">See sait tuvastab asjad, mis teile meeldivad, ja soovitab seejärel teistele saitidele reklaame. Samuti hangib see sait Chrome'ist teie reklaamiteemad, et näidata teile asjakohasemaid reklaame.</translation>
-<translation id="702463548815491781">Soovitatav juhul, kui TalkBack või lülitiga juurdepääs on sisse lülitatud</translation>
 <translation id="7053983685419859001">Blokeeri</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 on valitud}other{# on valitud}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> on valitud.  Valikud on saadaval ekraanikuva ülaosas</translation>

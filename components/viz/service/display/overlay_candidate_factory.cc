@@ -110,6 +110,35 @@ OverlayCandidate::CandidateStatus GetReasonForTransformNotAxisAligned(
   return OverlayCandidate::CandidateStatus::kFailNotAxisAligned2dRotation;
 }
 
+// Returns true if the overlay candidate bounds rect overlap with at least one
+// of the rounded corners bounding rects.
+//
+// TODO(crbug.com/1462171): This method shares some logic with
+// DirectRenderer::ShouldApplyRoundedCorner(). Try to move it
+// to a shared location.
+bool ShouldApplyRoundedCorner(OverlayCandidate& candidate,
+                              const SharedQuadState* sqs) {
+  const gfx::MaskFilterInfo& mask_filter_info = sqs->mask_filter_info;
+  if (!mask_filter_info.HasRoundedCorners()) {
+    return false;
+  }
+
+  const gfx::RRectF& rounded_corner_bounds =
+      mask_filter_info.rounded_corner_bounds();
+
+  const gfx::RectF target_rect = candidate.display_rect;
+
+  const gfx::RRectF::Corner corners[] = {
+      gfx::RRectF::Corner::kUpperLeft, gfx::RRectF::Corner::kUpperRight,
+      gfx::RRectF::Corner::kLowerRight, gfx::RRectF::Corner::kLowerLeft};
+  for (auto c : corners) {
+    if (rounded_corner_bounds.CornerBoundingRect(c).Intersects(target_rect)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuad(
@@ -145,42 +174,52 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuad(
     return CandidateStatus::kFailMaskFilterNotSupported;
   }
 
-  candidate.has_mask_filter =
-      !quad->shared_quad_state->mask_filter_info.IsEmpty();
-  candidate.rounded_corners = sqs->mask_filter_info.rounded_corner_bounds();
-
   candidate.requires_overlay = OverlayCandidate::RequiresOverlay(quad);
   candidate.overlay_damage_index =
       sqs->overlay_damage_index.value_or(OverlayCandidate::kInvalidDamageIndex);
 
+  auto status = CandidateStatus::kFailQuadNotSupported;
   switch (quad->material) {
     case DrawQuad::Material::kTextureContent:
-      return FromTextureQuad(TextureDrawQuad::MaterialCast(quad), candidate);
+      status = FromTextureQuad(TextureDrawQuad::MaterialCast(quad), candidate);
+      break;
     case DrawQuad::Material::kVideoHole:
-      return FromVideoHoleQuad(VideoHoleDrawQuad::MaterialCast(quad),
-                               candidate);
+      status =
+          FromVideoHoleQuad(VideoHoleDrawQuad::MaterialCast(quad), candidate);
+      break;
     case DrawQuad::Material::kSolidColor:
-      if (!context_.is_delegated_context) {
-        return CandidateStatus::kFailQuadNotSupported;
+      if (context_.is_delegated_context) {
+        status = FromSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad),
+                                    candidate);
       }
-      return FromSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad),
-                                candidate);
+      break;
     case DrawQuad::Material::kAggregatedRenderPass:
-      if (!context_.is_delegated_context) {
-        return CandidateStatus::kFailQuadNotSupported;
+      if (context_.is_delegated_context) {
+        status = FromAggregateQuad(
+            AggregatedRenderPassDrawQuad::MaterialCast(quad), candidate);
       }
-      return FromAggregateQuad(AggregatedRenderPassDrawQuad::MaterialCast(quad),
-                               candidate);
+      break;
     case DrawQuad::Material::kTiledContent:
-      if (!context_.is_delegated_context) {
-        return CandidateStatus::kFailQuadNotSupported;
+      if (context_.is_delegated_context) {
+        status = FromTileQuad(TileDrawQuad::MaterialCast(quad), candidate);
       }
-      return FromTileQuad(TileDrawQuad::MaterialCast(quad), candidate);
+      break;
     default:
       break;
   }
 
-  return CandidateStatus::kFailQuadNotSupported;
+  candidate.has_mask_filter =
+      !quad->shared_quad_state->mask_filter_info.IsEmpty();
+
+  // Conditionally set the rounded corners once the candidate's |display_rect|
+  // is known.
+  // TODO(https://crbug.com/1462171): Consider moving this code to
+  // FromDrawQuadResource() that covers all of delegated compositing.
+  if (ShouldApplyRoundedCorner(candidate, sqs)) {
+    candidate.rounded_corners = sqs->mask_filter_info.rounded_corner_bounds();
+  }
+
+  return status;
 }
 
 OverlayCandidateFactory::OverlayCandidateFactory(
@@ -359,16 +398,6 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
   if (resource_id != kInvalidResourceId) {
     candidate.resource_size_in_pixels =
         resource_provider_->GetResourceBackedSize(resource_id);
-  } else {
-    // The resource size is used to calculate the damage rect, so we set it here
-    // even if there is no resource. For resource-less overlays it's defined in
-    // a target space.
-    // It is unclear how to support arbitrary transforms in this case, since an
-    // e.g. rotation could make the target space bounds non-axis-aligned.
-    candidate.resource_size_in_pixels =
-        gfx::Size(candidate.display_rect.size().width(),
-                  candidate.display_rect.size().height());
-    candidate.uv_rect = {1, 1};
   }
 
   AssignDamage(quad, candidate);

@@ -6,6 +6,7 @@
 
 #include <sstream>
 
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "ui/gfx/skia_util.h"
@@ -224,6 +225,7 @@ void WebAppShortcutsMenuItemInfo::SetShortcutIconInfosForPurpose(
 }
 
 base::Value WebAppShortcutsMenuItemInfo::AsDebugValue() const {
+  TRACE_EVENT0("ui", "WebAppShortcutsMenuItemInfo::AsDebugValue");
   base::Value::Dict root;
 
   root.Set("name", name);
@@ -253,10 +255,11 @@ namespace web_app {
 // static
 WebAppInstallInfo WebAppInstallInfo::CreateInstallInfoForCreateShortcut(
     const GURL& document_url,
+    const std::u16string& document_title,
     const WebAppInstallInfo& other) {
   WebAppInstallInfo create_shortcut_info(
       web_app::GenerateManifestIdFromStartUrlOnly(document_url));
-  create_shortcut_info.title = other.title;
+  create_shortcut_info.title = document_title;
   create_shortcut_info.description = other.description;
   create_shortcut_info.start_url = document_url;
   create_shortcut_info.manifest_url = other.manifest_url;

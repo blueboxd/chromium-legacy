@@ -100,6 +100,9 @@ void FakeAccessibilityController::
     DisableSwitchAccessDisableConfirmationDialogTesting() {}
 
 void FakeAccessibilityController::
+    DisableSwitchAccessEnableNotificationTesting() {}
+
+void FakeAccessibilityController::
     UpdateDictationButtonOnSpeechRecognitionDownloadChanged(
         int download_progress) {}
 
@@ -114,3 +117,5 @@ void FakeAccessibilityController::UpdateDictationBubble(
     const absl::optional<std::vector<ash::DictationBubbleHintType>>& hints) {}
 
 void FakeAccessibilityController::SilenceSpokenFeedback() {}
+
+void FakeAccessibilityController::ShowToast(ash::AccessibilityToastType type) {}

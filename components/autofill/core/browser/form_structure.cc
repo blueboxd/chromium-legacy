@@ -139,17 +139,19 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-// Returns true iff all form fields autofill types are in |contained_types|.
-bool AllTypesCaptured(const FormStructure& form,
-                      const ServerFieldTypeSet& contained_types) {
+// Returns the first form field type that is not contained in |contained_types|
+// or MAX_VALID_FIELD_TYPE if no such type exists.
+ServerFieldType FirstNonCapturedType(
+    const FormStructure& form,
+    const ServerFieldTypeSet& contained_types) {
   for (const auto& field : form) {
     for (auto type : field->possible_types()) {
       if (type != UNKNOWN_TYPE && type != EMPTY_TYPE &&
           !contained_types.count(type))
-        return false;
+        return type;
     }
   }
-  return true;
+  return MAX_VALID_FIELD_TYPE;
 }
 
 // Encode password attributes and length into |upload|.
@@ -371,6 +373,7 @@ FormStructure::FormStructure(const FormData& form)
   }
 
   form_signature_ = CalculateFormSignature(form);
+  alternative_form_signature_ = CalculateAlternativeFormSignature(form);
   // Do further processing on the fields, as needed.
   ProcessExtractedFields();
   SetFieldTypesFromAutocompleteAttribute();
@@ -408,15 +411,25 @@ void FormStructure::DetermineFieldRanks() {
 }
 
 void FormStructure::DetermineHeuristicTypes(
+    const GeoIpCountryCode& client_country,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
     LogManager* log_manager) {
   SCOPED_UMA_HISTOGRAM_TIMER("Autofill.Timing.DetermineHeuristicTypes");
 
-  ParseFieldTypesWithPatterns(GetActivePatternSource(), log_manager);
+  // The active heuristic source might not be a pattern source.
+  if (absl::optional<PatternSource> pattern_source = GetActivePatternSource()) {
+    ParseFieldTypesWithPatterns(*pattern_source, client_country, log_manager);
+  }
+
   if (!base::FeatureList::IsEnabled(
           features::kAutofillDisableShadowHeuristics)) {
-    for (PatternSource shadow_source : GetNonActivePatternSources())
-      ParseFieldTypesWithPatterns(shadow_source, log_manager);
+    for (HeuristicSource heuristic_source : GetNonActiveHeuristicSources()) {
+      if (auto shadow_source =
+              HeuristicSourceToPatternSource(heuristic_source)) {
+        ParseFieldTypesWithPatterns(*shadow_source, client_country,
+                                    log_manager);
+      }
+    }
   }
 
   UpdateAutofillCount();
@@ -455,7 +468,9 @@ std::vector<AutofillUploadContents> FormStructure::EncodeUploadRequest(
     const base::StringPiece& login_form_signature,
     bool observed_submission,
     bool is_raw_metadata_uploading_enabled) const {
-  DCHECK(AllTypesCaptured(*this, available_field_types));
+  DCHECK_EQ(FirstNonCapturedType(*this, available_field_types),
+            MAX_VALID_FIELD_TYPE);
+
   std::string data_present = EncodeFieldTypes(available_field_types);
 
   AutofillUploadContents upload;
@@ -938,7 +953,7 @@ bool FormStructure::ShouldBeParsed(ShouldBeParsedParams params,
   }
 
   bool has_text_field = base::ranges::any_of(*this, [](const auto& field) {
-    return !field->IsSelectOrSelectMenuElement();
+    return !field->IsSelectOrSelectListElement();
   });
   if (!has_text_field) {
     LOG_AF(log_manager) << LoggingScope::kAbortParsing
@@ -1019,7 +1034,7 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
         // During form parsing (as in "assigning field types to fields")
         // the `value` represents the initial value found at page load and needs
         // to be preserved.
-        if (!field->IsSelectOrSelectMenuElement()) {
+        if (!field->IsSelectOrSelectListElement()) {
           field->value = cached_field->value;
           value_from_dynamic_change_form_ = true;
         }
@@ -1036,7 +1051,7 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
         const bool field_is_neither_state_nor_country =
             field->server_type() != ADDRESS_HOME_COUNTRY &&
             field->server_type() != ADDRESS_HOME_STATE;
-        if (!field->IsSelectOrSelectMenuElement() &&
+        if (!field->IsSelectOrSelectListElement() &&
             same_value_as_on_page_load && field_is_neither_state_nor_country) {
           field->value = std::u16string();
         }
@@ -1084,8 +1099,8 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
     if (reason == RetrieveFromCacheReason::kFormImport) {
       // Transfer attributes of the cached AutofillField to the newly created
       // AutofillField.
-      for (int i = 0; i <= static_cast<int>(PatternSource::kMaxValue); ++i) {
-        PatternSource s = static_cast<PatternSource>(i);
+      for (int i = 0; i <= static_cast<int>(HeuristicSource::kMaxValue); ++i) {
+        HeuristicSource s = static_cast<HeuristicSource>(i);
         field->set_heuristic_type(s, cached_field->heuristic_type(s));
       }
       field->SetHtmlType(cached_field->html_type(), cached_field->html_mode());
@@ -1187,17 +1202,19 @@ bool FormStructure::SetSectionsFromAutocompleteOrReset() {
   return has_autocomplete;
 }
 
-void FormStructure::ParseFieldTypesWithPatterns(PatternSource pattern_source,
-                                                LogManager* log_manager) {
+void FormStructure::ParseFieldTypesWithPatterns(
+    PatternSource pattern_source,
+    const GeoIpCountryCode& client_country,
+    LogManager* log_manager) {
   FieldCandidatesMap field_type_map;
   if (ShouldRunHeuristics()) {
-    FormField::ParseFormFields(fields_, current_page_language_, is_form_tag_,
-                               pattern_source, field_type_map, log_manager);
+    FormField::ParseFormFields(fields_, client_country, current_page_language_,
+                               is_form_tag_, pattern_source, field_type_map,
+                               log_manager);
   } else if (ShouldRunHeuristicsForSingleFieldForms()) {
-    FormField::ParseSingleFieldForms(fields_, current_page_language_,
-                                     is_form_tag_, pattern_source,
-                                     field_type_map, log_manager);
-
+    FormField::ParseSingleFieldForms(
+        fields_, client_country, current_page_language_, is_form_tag_,
+        pattern_source, field_type_map, log_manager);
     FormField::ParseStandaloneCVCFields(fields_, current_page_language_,
                                         pattern_source, field_type_map,
                                         log_manager);
@@ -1213,12 +1230,14 @@ void FormStructure::ParseFieldTypesWithPatterns(PatternSource pattern_source,
     if (iter == field_type_map.end())
       continue;
     const FieldCandidates& candidates = iter->second;
-    field->set_heuristic_type(pattern_source, candidates.BestHeuristicType());
+    field->set_heuristic_type(PatternSourceToHeuristicSource(pattern_source),
+                              candidates.BestHeuristicType());
 
     ++field_rank_map[field->GetFieldSignature()];
     // Log the field type predicted from local heuristics.
     field->AppendLogEventIfNotRepeated(HeuristicPredictionFieldLogEvent{
-        .field_type = field->heuristic_type(pattern_source),
+        .field_type = field->heuristic_type(
+            PatternSourceToHeuristicSource(pattern_source)),
         .pattern_source = pattern_source,
         .is_active_pattern_source = GetActivePatternSource() == pattern_source,
         .rank_in_field_signature_group =
@@ -1289,12 +1308,14 @@ void FormStructure::EncodeFormForQuery(
   // |field| from |fields_| that meets |necessary_condition|. Repeated calls for
   // the same |form| have no effect (early return if |processed_forms| contains
   // |form|).
-  auto AddFormIf = [&](FormSignature form, auto necessary_condition) mutable {
+  auto AddFormIf = [&](FormSignature form, FormSignature alternative_signature,
+                       auto necessary_condition) mutable {
     if (!processed_forms->insert(form).second)
       return;
 
     AutofillPageQueryRequest::Form* query_form = query->add_forms();
     query_form->set_signature(form.value());
+    query_form->set_alternative_signature(alternative_signature.value());
     queried_form_signatures->push_back(form);
 
     for (const auto& field : fields_) {
@@ -1307,13 +1328,15 @@ void FormStructure::EncodeFormForQuery(
     }
   };
 
-  AddFormIf(form_signature(), [](auto& f) { return true; });
+  AddFormIf(form_signature(), alternative_form_signature(),
+            [](auto& f) { return true; });
 
   for (const auto& field : fields_) {
     if (field->host_form_signature) {
-      AddFormIf(field->host_form_signature, [&](const auto& f) {
-        return f->host_form_signature == field->host_form_signature;
-      });
+      AddFormIf(field->host_form_signature, alternative_form_signature(),
+                [&](const auto& f) {
+                  return f->host_form_signature == field->host_form_signature;
+                });
     }
   }
 }
@@ -1462,8 +1485,9 @@ void FormStructure::IdentifySectionsWithNewMethod() {
     // Forms often ask for multiple phone numbers -- e.g. both a daytime and
     // evening phone number.  Our phone number detection is also generally a
     // little off.  Hence, ignore this field type as a signal here.
-    if (AutofillType(current_type).group() == FieldTypeGroup::kPhoneHome)
+    if (AutofillType(current_type).group() == FieldTypeGroup::kPhone) {
       already_saw_current_type = false;
+    }
 
     bool ignored_field = !field->IsFocusable();
 
@@ -1621,8 +1645,9 @@ void FormStructure::IdentifySections(bool ignore_autocomplete) {
       // Forms often ask for multiple phone numbers -- e.g. both a daytime and
       // evening phone number.  Our phone number detection is also generally a
       // little off.  Hence, ignore this field type as a signal here.
-      if (AutofillType(current_type).group() == FieldTypeGroup::kPhoneHome)
+      if (AutofillType(current_type).group() == FieldTypeGroup::kPhone) {
         already_saw_current_type = false;
+      }
 
       bool ignored_field = !field->IsFocusable();
 

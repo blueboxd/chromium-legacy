@@ -35,6 +35,7 @@ OptionButtonBase::OptionButtonBase(int button_width,
                                    /*highlight_on_focus=*/false);
   views::InstallRectHighlightPathGenerator(this);
   auto* focus_ring = views::FocusRing::Get(this);
+  focus_ring->SetOutsetFocusRingDisabled(true);
   focus_ring->SetColorId(ui::kColorAshFocusRing);
 }
 
@@ -49,6 +50,9 @@ void OptionButtonBase::SetSelected(bool selected) {
 
   if (delegate_)
     delegate_->OnButtonSelected(this);
+
+  NotifyAccessibilityEvent(ax::mojom::Event::kCheckedStateChanged,
+                           /*send_native_event=*/true);
 }
 
 void OptionButtonBase::SetLabelStyle(TypographyToken token) {

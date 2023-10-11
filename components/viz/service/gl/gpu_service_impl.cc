@@ -26,6 +26,7 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/startup_metric_utils/gpu/startup_metric_utils.h"
 #include "components/viz/common/features.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/service/dawn_caching_interface.h"
@@ -407,7 +408,8 @@ GpuServiceImpl::GpuServiceImpl(
         },
         base::Unretained(this));
     dawn_context_provider_ = gpu::DawnContextProvider::Create(
-        dawn_caching_interface_factory_.get(), std::move(cache_blob_callback));
+        gpu_preferences, dawn_caching_interface_factory_.get(),
+        std::move(cache_blob_callback));
     if (!dawn_context_provider_) {
       DLOG(ERROR) << "Failed to create Dawn context provider for Graphite.";
     }
@@ -539,7 +541,9 @@ void GpuServiceImpl::UpdateGPUInfo() {
 
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
-  gpu_info_.initialization_time = base::TimeTicks::Now() - start_time_;
+  base::TimeTicks now = base::TimeTicks::Now();
+  gpu_info_.initialization_time = now - start_time_;
+  startup_metric_utils::GetGpu().RecordGpuInitialized(now);
 
   // This metric code may be removed after the following investigation:
   // crbug.com/1350257
@@ -551,7 +555,7 @@ void GpuServiceImpl::UpdateGPUInfo() {
       TRACE_ID_LOCAL(this), start_time_);
   TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
       kGpuInitializationEventCategory, kGpuInitializationEvent,
-      TRACE_ID_LOCAL(this), base::TimeTicks::Now());
+      TRACE_ID_LOCAL(this), now);
 }
 
 void GpuServiceImpl::UpdateGPUInfoGL() {
@@ -562,7 +566,7 @@ void GpuServiceImpl::UpdateGPUInfoGL() {
 
 void GpuServiceImpl::InitializeWithHost(
     mojo::PendingRemote<mojom::GpuHost> pending_gpu_host,
-    gpu::GpuProcessActivityFlags activity_flags,
+    gpu::GpuProcessShmCount use_shader_cache_shm_count,
     scoped_refptr<gl::GLSurface> default_offscreen_surface,
     gpu::SyncPointManager* sync_point_manager,
     gpu::SharedImageManager* shared_image_manager,
@@ -634,7 +638,8 @@ void GpuServiceImpl::InitializeWithHost(
       gpu_preferences_, this, watchdog_thread_.get(), main_runner_, io_runner_,
       scheduler_, sync_point_manager, shared_image_manager,
       gpu_memory_buffer_factory_.get(), gpu_feature_info_,
-      std::move(activity_flags), std::move(default_offscreen_surface),
+      std::move(use_shader_cache_shm_count),
+      std::move(default_offscreen_surface),
       image_decode_accelerator_worker_.get(), vulkan_context_provider(),
       metal_context_provider(), dawn_context_provider(),
       dawn_caching_interface_factory());

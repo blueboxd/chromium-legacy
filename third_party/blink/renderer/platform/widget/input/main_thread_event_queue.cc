@@ -338,7 +338,9 @@ void MainThreadEventQueue::HandleEvent(
   DCHECK(ack_result == mojom::blink::InputEventResultState::kSetNonBlocking ||
          ack_result ==
              mojom::blink::InputEventResultState::kSetNonBlockingDueToFling ||
-         ack_result == mojom::blink::InputEventResultState::kNotConsumed);
+         ack_result == mojom::blink::InputEventResultState::kNotConsumed ||
+         ack_result ==
+             mojom::blink::InputEventResultState::kNotConsumedBlocking);
   if (!AllowedForUnification(event->Event(), allow_main_gesture_scroll)) {
     DCHECK(!base::FeatureList::IsEnabled(::features::kScrollUnification));
   }
@@ -579,6 +581,11 @@ void MainThreadEventQueue::RafFallbackTimerFired() {
 
 void MainThreadEventQueue::ClearRafFallbackTimerForTesting() {
   raf_fallback_timer_.reset();
+}
+
+bool MainThreadEventQueue::IsEmptyForTesting() {
+  base::AutoLock lock(shared_state_lock_);
+  return shared_state_.events_.empty();
 }
 
 void MainThreadEventQueue::DispatchRafAlignedInput(base::TimeTicks frame_time) {

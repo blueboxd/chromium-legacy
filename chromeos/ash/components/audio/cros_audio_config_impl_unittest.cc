@@ -40,6 +40,7 @@ constexpr uint64_t kUsbMicId = 10030;
 constexpr uint64_t kInternalMicFrontId = 10040;
 constexpr uint64_t kInternalMicRearId = 10050;
 constexpr uint64_t kInternalMicId = 10060;
+constexpr uint64_t kBluetoothNbMicId = 10070;
 
 constexpr base::TimeDelta kMetricsDelayTimerInterval = base::Seconds(2);
 
@@ -98,6 +99,10 @@ constexpr AudioNodeInfo kInternalMic[] = {
     {true, kInternalMicId, "Internal Mic", "INTERNAL_MIC", "InternalMic",
      cras::AudioEffectType::EFFECT_TYPE_NOISE_CANCELLATION}};
 
+constexpr AudioNodeInfo kBluetoothNbMic[] = {
+    {true, kBluetoothNbMicId, "Bluetooth Nb Mic", "BLUETOOTH_NB_MIC",
+     "BluetoothNbMic", cras::AudioEffectType::EFFECT_TYPE_HFP_MIC_SR}};
+
 class FakeAudioSystemPropertiesObserver
     : public mojom::AudioSystemPropertiesObserver {
  public:
@@ -150,6 +155,8 @@ class CrosAudioConfigImplTest : public testing::Test {
         /*noise_cancellation_state=*/false);
     audio_pref_handler_->SetForceRespectUiGainsState(
         /*force_respect_ui_gains=*/false);
+    audio_pref_handler_->SetHfpMicSrState(
+        /*hfp_mic_sr_state=*/false);
     cras_audio_handler_->SetPrefHandlerForTesting(audio_pref_handler_);
     cros_audio_config_ = std::make_unique<CrosAudioConfigImpl>();
     ui::MicrophoneMuteSwitchMonitor::Get()->SetMicrophoneMuteSwitchValue(
@@ -217,6 +224,12 @@ class CrosAudioConfigImplTest : public testing::Test {
   void SimulateSetForceRespectUiGainsEnabled(bool enabled) {
     // TODO(eddyhsu): Replace RunUntilIdle with Run and QuitClosure.
     remote_->SetForceRespectUiGainsEnabled(enabled);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SimulateSetHfpMicSrEnabled(bool enabled) {
+    // TODO(ashleydp): Replace RunUntilIdle with Run and QuitClosure.
+    remote_->SetHfpMicSrEnabled(enabled);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -341,6 +354,35 @@ class CrosAudioConfigImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  bool GetHfpMicSrState() {
+    return fake_cras_audio_client_->hfp_mic_sr_enabled();
+  }
+
+  bool GetHfpMicSrStatePref() {
+    return audio_pref_handler_->GetHfpMicSrState();
+  }
+
+  bool GetHfpMicSrSupported() {
+    return cras_audio_handler_->hfp_mic_sr_supported();
+  }
+
+  void SetHfpMicSrStatePref(bool enabled) {
+    audio_pref_handler_->SetHfpMicSrState(
+        /*hfp_mic_sr_state=*/enabled);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetHfpMicSrSupported(bool supported) {
+    cras_audio_handler_->SetHfpMicSrSupportedForTesting(supported);
+  }
+
+  void SetHfpMicSrState(bool hfp_mic_sr_on) {
+    cras_audio_handler_->SetHfpMicSrState(
+        hfp_mic_sr_on,
+        CrasAudioHandler::AudioSettingsChangeSource::kOsSettings);
+    base::RunLoop().RunUntilIdle();
+  }
+
   base::test::TaskEnvironment* task_environment() { return &task_environment_; }
 
   base::HistogramTester histogram_tester_;
@@ -370,12 +412,13 @@ class CrosAudioConfigImplTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
 
-  raw_ptr<CrasAudioHandler, ExperimentalAsh> cras_audio_handler_ =
-      nullptr;  // Not owned.
+  raw_ptr<CrasAudioHandler, DanglingUntriaged | ExperimentalAsh>
+      cras_audio_handler_ = nullptr;  // Not owned.
   std::unique_ptr<CrosAudioConfigImpl> cros_audio_config_;
   mojo::Remote<mojom::CrosAudioConfig> remote_;
   scoped_refptr<AudioDevicesPrefHandlerStub> audio_pref_handler_;
-  raw_ptr<FakeCrasAudioClient, ExperimentalAsh> fake_cras_audio_client_;
+  raw_ptr<FakeCrasAudioClient, DanglingUntriaged | ExperimentalAsh>
+      fake_cras_audio_client_;
 };
 
 TEST_F(CrosAudioConfigImplTest, HandleExternalInputGainUpdate) {
@@ -682,6 +725,59 @@ TEST_F(CrosAudioConfigImplTest, SetForceRespectUiGainsState) {
   ASSERT_EQ(
       mojom::AudioEffectState::kNotEnabled,
       fake_observer->GetInputAudioDevice(1)->force_respect_ui_gains_state);
+}
+
+TEST_F(CrosAudioConfigImplTest, SetHfpMicSrState) {
+  std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+
+  // By default hfp_mic_sr is disabled and not supported in this test.
+  ASSERT_FALSE(GetHfpMicSrSupported());
+  ASSERT_FALSE(GetHfpMicSrState());
+  ASSERT_FALSE(GetHfpMicSrStatePref());
+
+  // Simulate trying to set hfp-mic-sr.
+  SimulateSetHfpMicSrEnabled(/*enabled=*/true);
+
+  // Since hfp_mic_sr is not supported, nothing is set.
+  ASSERT_FALSE(GetHfpMicSrState());
+
+  // Turn on hfp_mic_sr support.
+  SetHfpMicSrSupported(/*supported=*/true);
+  ASSERT_TRUE(GetHfpMicSrSupported());
+
+  // Add input audio nodes.
+  SetAudioNodes({kBluetoothNbMic, kUsbMic});
+  SetActiveInputNodes({kBluetoothNbMicId});
+
+  // Now turning on hfp_mic_sr should work.
+  SimulateSetHfpMicSrEnabled(/*enabled=*/true);
+
+  ASSERT_TRUE(GetHfpMicSrState());
+  ASSERT_TRUE(GetHfpMicSrStatePref());
+  ASSERT_EQ(mojom::AudioEffectState::kEnabled,
+            fake_observer->GetInputAudioDevice(1)->hfp_mic_sr_state);
+
+  // Change active node does not change hfp_mic_sr state.
+  SetActiveInputNodes({kUsbMicId});
+
+  ASSERT_EQ(mojom::AudioEffectState::kEnabled,
+            fake_observer->GetInputAudioDevice(1)->hfp_mic_sr_state);
+
+  // Frontend call to turn off hfp_mic_sr ignored when active input node
+  // does not support hfp_mic_sr.
+  SimulateSetHfpMicSrEnabled(/*enabled=*/false);
+
+  ASSERT_TRUE(GetHfpMicSrState());
+  ASSERT_TRUE(GetHfpMicSrStatePref());
+
+  // Turn hfp_mic_sr off with active input device that supports hfp_mic_sr.
+  SetActiveInputNodes({kBluetoothNbMicId});
+  SimulateSetHfpMicSrEnabled(/*enabled=*/false);
+
+  ASSERT_FALSE(GetHfpMicSrState());
+  ASSERT_FALSE(GetHfpMicSrStatePref());
+  ASSERT_EQ(mojom::AudioEffectState::kNotEnabled,
+            fake_observer->GetInputAudioDevice(1)->hfp_mic_sr_state);
 }
 
 TEST_F(CrosAudioConfigImplTest, GetOutputAudioDevices) {

@@ -55,11 +55,18 @@ export class PrivacyGuideSafeBrowsingFragmentElement extends
         value: SafeBrowsingSetting,
       },
 
-      enableFriendlierSafeBrowsingSettingsStandardProtection_: {
+      enableFriendlierSafeBrowsingSettings_: {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean(
-              'enableFriendlierSafeBrowsingSettingsStandardProtection');
+              'enableFriendlierSafeBrowsingSettings');
+        },
+      },
+
+      enableHashPrefixRealTimeLookups_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('enableHashPrefixRealTimeLookups');
         },
       },
     };
@@ -68,7 +75,8 @@ export class PrivacyGuideSafeBrowsingFragmentElement extends
   private metricsBrowserProxy_: MetricsBrowserProxy =
       MetricsBrowserProxyImpl.getInstance();
   private startStateEnhanced_: boolean;
-  private enableFriendlierSafeBrowsingSettingsStandardProtection_: boolean;
+  private enableFriendlierSafeBrowsingSettings_: boolean;
+  private enableHashPrefixRealTimeLookups_: boolean;
 
   override ready() {
     super.ready();
@@ -120,23 +128,34 @@ export class PrivacyGuideSafeBrowsingFragmentElement extends
         'Settings.PrivacyGuide.ChangeSafeBrowsingStandard');
   }
 
-  private onRadioGroupKeyDown_(event: KeyboardEvent) {
-    switch (event.key) {
-      case 'ArrowLeft':
-      case 'ArrowRight':
-        // This event got consumed by the radio group to change the radio button
-        // selection. Do not propagate further, to not cause a privacy guide
-        // navigation.
-        event.stopPropagation();
-        break;
-    }
+  private getSafeBrowsingEnhancedSubLabel_(): string {
+    return this.i18n(
+        this.enableFriendlierSafeBrowsingSettings_ ?
+            'safeBrowsingEnhancedDescUpdated' :
+            'safeBrowsingEnhancedDesc');
   }
 
   private getSafeBrowsingStandardSubLabel_(): string {
     return this.i18n(
-        this.enableFriendlierSafeBrowsingSettingsStandardProtection_ ?
+        this.enableFriendlierSafeBrowsingSettings_ ?
+            this.enableHashPrefixRealTimeLookups_ ?
+            'safeBrowsingStandardDescUpdatedProxy' :
             'safeBrowsingStandardDescUpdated' :
             'safeBrowsingStandardDesc');
+  }
+
+  private getStandardProtectionFeatureDescription2_(): string {
+    return this.i18n(
+        this.enableHashPrefixRealTimeLookups_ ?
+            'privacyGuideSafeBrowsingCardStandardProtectionFeatureDescription2Proxy' :
+            'privacyGuideSafeBrowsingCardStandardProtectionFeatureDescription2');
+  }
+
+  private getStandardProtectionPrivacyDescription1_(): string {
+    return this.i18n(
+        this.enableHashPrefixRealTimeLookups_ ?
+            'privacyGuideSafeBrowsingCardStandardProtectionPrivacyDescription1Proxy' :
+            'privacyGuideSafeBrowsingCardStandardProtectionPrivacyDescription1');
   }
 }
 

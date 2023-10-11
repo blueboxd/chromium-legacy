@@ -18,18 +18,18 @@
 #include "base/types/cxx23_to_underlying.h"
 #include "chrome/android/chrome_jni_headers/AutofillPopupBridge_jni.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/autofill/autofill_popup_controller_utils.h"
 #include "chrome/browser/ui/android/autofill/autofill_accessibility_utils.h"
 #include "chrome/browser/ui/android/autofill/autofill_keyboard_accessory_view.h"
 #include "chrome/browser/ui/autofill/autofill_keyboard_accessory_adapter.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "components/autofill/core/browser/ui/autofill_resource_utils.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/security_state/core/security_state.h"
-#include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -48,9 +48,10 @@ AutofillPopupViewAndroid::AutofillPopupViewAndroid(
 
 AutofillPopupViewAndroid::~AutofillPopupViewAndroid() {}
 
-void AutofillPopupViewAndroid::Show(
+bool AutofillPopupViewAndroid::Show(
     AutoselectFirstSuggestion autoselect_first_suggestion) {
   OnSuggestionsChanged();
+  return true;
 }
 
 void AutofillPopupViewAndroid::Hide() {
@@ -62,6 +63,10 @@ void AutofillPopupViewAndroid::Hide() {
     // Hide() should delete |this| either via Java dismiss or directly.
     delete this;
   }
+}
+
+bool AutofillPopupViewAndroid::OverlapsWithPictureInPictureWindow() const {
+  return false;
 }
 
 bool AutofillPopupViewAndroid::HandleKeyPressEvent(
@@ -176,7 +181,7 @@ void AutofillPopupViewAndroid::SuggestionSelected(
     return;
   }
 
-  controller_->AcceptSuggestion(list_index);
+  controller_->AcceptSuggestion(list_index, base::TimeTicks::Now());
 }
 
 void AutofillPopupViewAndroid::DeletionRequested(

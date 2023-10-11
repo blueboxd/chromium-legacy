@@ -6,7 +6,7 @@ import 'chrome://os-settings/lazy_load.js';
 import 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
 import {CustomizeButtonRowElement} from 'chrome://os-settings/lazy_load.js';
-import {fakeGraphicsTablets, SettingsDropdownMenuElement} from 'chrome://os-settings/os_settings.js';
+import {fakeGraphicsTabletButtonActions, fakeGraphicsTablets} from 'chrome://os-settings/os_settings.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
@@ -29,17 +29,17 @@ suite('<customize-button-row>', () => {
 
   function initializeCustomizeButtonRow() {
     customizeButtonRow = document.createElement(CustomizeButtonRowElement.is);
+    customizeButtonRow.set('actionList', fakeGraphicsTabletButtonActions);
     document.body.appendChild(customizeButtonRow);
     return flushTasks();
   }
 
   function getSelectedValue(): string {
-    const dropdown: SettingsDropdownMenuElement|null =
-        customizeButtonRow.shadowRoot!.querySelector('#buttonDropdown');
-    const dropdownMenu: HTMLSelectElement|null =
-        dropdown!.shadowRoot!.querySelector('#dropdownMenu');
-    assertTrue(!!dropdownMenu);
-    return dropdownMenu!.value;
+    const dropdown: HTMLSelectElement|null =
+        customizeButtonRow.shadowRoot!.querySelector(
+            '#remappingActionDropdown');
+    assertTrue(!!dropdown);
+    return dropdown!.value;
   }
 
   test('Initialize customize button row', async () => {
@@ -62,10 +62,10 @@ suite('<customize-button-row>', () => {
         expectedRemapping!.remappingAction?.action!.toString());
 
     // Change buttonRemapping data to display.
+    customizeButtonRow.set('remappingIndex', 1);
     customizeButtonRow.set(
         'buttonRemappingList',
         fakeGraphicsTablets[1]!.settings.tabletButtonRemappings);
-    customizeButtonRow.set('remappingIndex', 1);
     await flushTasks();
     expectedRemapping =
         fakeGraphicsTablets[1]!.settings.tabletButtonRemappings[1];
@@ -76,5 +76,27 @@ suite('<customize-button-row>', () => {
     assertEquals(
         getSelectedValue(),
         expectedRemapping!.remappingAction?.action!.toString());
+  });
+
+  test('Initialize key combination string', async () => {
+    await initializeCustomizeButtonRow();
+    customizeButtonRow.set(
+        'buttonRemappingList',
+        fakeGraphicsTablets[0]!.settings.penButtonRemappings);
+    customizeButtonRow.set('remappingIndex', 0);
+    await flushTasks();
+
+    assertEquals(getSelectedValue(), 'key combination');
+    assertEquals(customizeButtonRow.get('keyCombinationLabel_'), 'ctrl + z');
+
+    // Switch to another button remapping.
+    customizeButtonRow.set(
+        'buttonRemappingList',
+        fakeGraphicsTablets[1]!.settings.penButtonRemappings);
+    customizeButtonRow.set('remappingIndex', 1);
+    await flushTasks();
+
+    assertEquals(getSelectedValue(), 'key combination');
+    assertEquals(customizeButtonRow.get('keyCombinationLabel_'), 'ctrl + v');
   });
 });

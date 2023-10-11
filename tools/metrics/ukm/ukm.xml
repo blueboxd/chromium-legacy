@@ -149,6 +149,26 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Accessibility.InaccessiblePDFs">
+  <owner>rhalavati@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records inaccessible PDFs.
+  </summary>
+  <metric name="Seen" enum="Boolean">
+    <summary>
+      A boolean signaling that the PDF was opened by the user.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="Accessibility.PageZoom">
   <owner>aldietz@google.com</owner>
   <owner>mschillaci@google.com</owner>
@@ -7024,7 +7044,6 @@ be describing additional metrics about the same event.
   <owner>enga@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <owner>jdarpinian@chromium.org</owner>
-  <owner>juanmihd@chromium.org</owner>
   <owner>kainino@chromium.org</owner>
   <owner>kbr@chromium.org</owner>
   <owner>shrekshao@google.com</owner>
@@ -12263,12 +12282,12 @@ be describing additional metrics about the same event.
   <owner>huitingyu@google.com</owner>
   <summary>
     Logged when the current page has a valid parcel tracking number in the HTML
-    of the initial page load. As a privacy measure, 80% of logs when a parcel is
-    detected are randomized.
+    of the initial page load.
   </summary>
   <metric name="ParcelCarrier" enum="IOSParcelCarrier">
     <summary>
-      The parcel carrier for the parcel number detected.
+      The parcel carrier for the parcel number detected. As a privacy measure,
+      80% of the time when the event occurs, a random enum value is assigned.
     </summary>
     <aggregation>
       <history>
@@ -15344,6 +15363,12 @@ be describing additional metrics about the same event.
       The index of the anchor element in NavigationPredictor's |top_urls_|.
     </summary>
   </metric>
+  <metric name="EnteredViewportCount">
+    <summary>
+      How many times the anchor element entered the viewport. Exponentially
+      bucketed using GetExponentialBucketMin a value of 1.3.
+    </summary>
+  </metric>
   <metric name="IsInViewport">
     <summary>
       1 if anchor element is in viewport, otherwise 0.
@@ -15366,6 +15391,18 @@ be describing additional metrics about the same event.
       Maximum dwelltime of pointer hovering over the anchor element in
       milliseconds. Exponentially bucketed using GetExponentialBucketMin a value
       of 1.3.
+    </summary>
+  </metric>
+  <metric name="MouseAcceleration">
+    <summary>
+      Mouse acceleration when the OnHover event triggered. Exponentially
+      bucketed using GetExponentialBucketMin a value of 1.3.
+    </summary>
+  </metric>
+  <metric name="MouseVelocity">
+    <summary>
+      Mouse velocity when the OnHover event triggered. Exponentially bucketed
+      using GetExponentialBucketMin a value of 1.3.
     </summary>
   </metric>
   <metric name="PointerHoveringOverCount">
@@ -15938,6 +15975,38 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="OpenerHeuristic.PostPopupCookieAccess">
+  <owner>rtarpine@chromium.org</owner>
+  <owner>amaliev@chromium.org</owner>
+  <owner>dc-komics@google.com</owner>
+  <summary>
+    Recorded by a top-level page that opens a pop-up with opener access, when
+    the user interacts with that pop-up. Recorded by a top-level page that opens
+    a pop-up with opener access, when the pop-up site later tries to access
+    cookies on the opener site.
+  </summary>
+  <metric name="AccessId">
+    <summary>
+      A random integer to identify the top-level site and associate this event
+      with the OpenerHeuristic.TopLevel event that preceded it when the pop-up
+      was opened.
+    </summary>
+  </metric>
+  <metric name="AccessSucceeded">
+    <summary>
+      Whether the cookie access attempt is allowed, or blocked by a third-party
+      cookie block.
+    </summary>
+  </metric>
+  <metric name="HoursSincePopupOpened" enum="PopupProvider">
+    <summary>
+      The number of hours before the cookie access that the initial
+      OpenerHeuristic.TopLevel event was recorded. Bucketized evenly with 120
+      buckets up to 60 days.
+    </summary>
+  </metric>
+</event>
+
 <event name="OpenerHeuristic.TopLevel">
   <owner>rtarpine@chromium.org</owner>
   <owner>dc-komics@google.com</owner>
@@ -15945,6 +16014,13 @@ be describing additional metrics about the same event.
     Recorded by a top-level page that opens a pop-up with opener access, when
     the user interacts with that pop-up.
   </summary>
+  <metric name="AccessId">
+    <summary>
+      A random integer to identify the top-level site and associate this event
+      with any OpenerHeuristic.PostPopupCookieAccess events that follow when the
+      pop-up site attempts to access cookies on the top-level site.
+    </summary>
+  </metric>
   <metric name="HasSameSiteIframe" enum="HasSameSiteIframe">
     <summary>
       &quot;True&quot; iff the top-level page contains an iframe whose URL
@@ -19253,6 +19329,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PerformanceManager.PageResourceUsage">
+  <obsolete>
+    Replaced by PageResourceUsage2 as of 08/2023.
+  </obsolete>
   <owner>anthonyvd@chromium.org</owner>
   <owner>joenotcharles@google.com</owner>
   <summary>
@@ -19274,7 +19353,7 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="RecentCPUUsage">
     <summary>
-      The estimated CPU usage of the page over the last 5 minutes, with 100,000
+      The estimated CPU usage of the page over the last 5 minutes, with 10,000
       as 100% usage of 1 full core. (The same scale as the
       PerformanceMonitor.AverageCPU8.* histograms.)
     </summary>
@@ -19287,7 +19366,50 @@ be describing additional metrics about the same event.
   <metric name="TotalRecentCPUUsageAllPages">
     <summary>
       The sum of the estimated CPU usage of all pages over the last 5 minutes,
-      with 100,000 as 100% usage of 1 full core. (The same scale as the
+      with 10,000 as 100% usage of 1 full core. (The same scale as the
+      PerformanceMonitor.AverageCPU8.* histograms.) RecentCPUUsage can be
+      compared to this to find how the page compares to other open tabs.
+    </summary>
+  </metric>
+</event>
+
+<event name="PerformanceManager.PageResourceUsage2">
+  <owner>anthonyvd@chromium.org</owner>
+  <owner>joenotcharles@google.com</owner>
+  <summary>
+    Metrics detailing the estimated resources used by pages. The resources of a
+    renderer process are allocated to all pages hosted in that process using the
+    algorithm in performance_manager::ProcessMetricsDecorator. An event is
+    collected for each open page every 2 minutes, which is the same frequency as
+    the PerformanceMonitor.AverageCPU8.* histograms.
+  </summary>
+  <metric name="BackgroundState" enum="PageMeasurementBackgroundState">
+    <summary>
+      Whether the page was in the foreground, background, or mixed during the
+      last 2 minutes.
+    </summary>
+  </metric>
+  <metric name="PrivateFootprintEstimate">
+    <summary>
+      The estimated private footprint of the page, in kilobytes.
+    </summary>
+  </metric>
+  <metric name="RecentCPUUsage">
+    <summary>
+      The estimated CPU usage of the page over the last 2 minutes, with 10,000
+      as 100% usage of 1 full core. (The same scale as the
+      PerformanceMonitor.AverageCPU8.* histograms.)
+    </summary>
+  </metric>
+  <metric name="ResidentSetSizeEstimate">
+    <summary>
+      The estimated resident set size of the page, in kilobytes.
+    </summary>
+  </metric>
+  <metric name="TotalRecentCPUUsageAllPages">
+    <summary>
+      The sum of the estimated CPU usage of all pages over the last 2 minutes,
+      with 10,000 as 100% usage of 1 full core. (The same scale as the
       PerformanceMonitor.AverageCPU8.* histograms.) RecentCPUUsage can be
       compared to this to find how the page compares to other open tabs.
     </summary>
@@ -21429,6 +21551,12 @@ be describing additional metrics about the same event.
       cookie block.
     </summary>
   </metric>
+  <metric name="AccessId">
+    <summary>
+      A random integer to identify this cookie access and associate this event
+      with a RedirectHeuristic.CookieAccessThirdParty event.
+    </summary>
+  </metric>
   <metric name="HoursSinceLastInteraction">
     <summary>
       The number of hours before the cookie access that the user last interacted
@@ -21456,6 +21584,21 @@ be describing additional metrics about the same event.
       The number of top-level sites redirected through between the initial
       tracking page and the final page whose cookies are accessed. Capped at 20
       sites.
+    </summary>
+  </metric>
+</event>
+
+<event name="RedirectHeuristic.CookieAccessThirdParty">
+  <owner>amaliev@chromium.org</owner>
+  <owner>dc-komics@google.com</owner>
+  <summary>
+    Recorded when a top-level page accesses cookies on another page later in its
+    redirect chain.
+  </summary>
+  <metric name="AccessId">
+    <summary>
+      A random integer to identify this cookie access and associate this event
+      with a RedirectHeuristic.CookieAccess event.
     </summary>
   </metric>
 </event>
@@ -24448,6 +24591,67 @@ be describing additional metrics about the same event.
     <summary>
       Session ID of the browser or app window this entry represents, unique for
       the browsing session.
+    </summary>
+  </metric>
+</event>
+
+<event name="TabRevisitTracker.TabStateChange">
+  <owner>anthonyvd@chromium.org</owner>
+  <owner>chrome-catan@google.com</owner>
+  <summary>
+    Recorded when a tab changes state to/from &quot;active&quot;,
+    &quot;background&quot;, and &quot;closed&quot;.
+  </summary>
+  <metric name="ConnectednessToActiveTab">
+    <summary>
+      How connected the tab is to the active tab, if `NewState` isn't `Active`.
+      Computed from tab switches in the current session, and represents a
+      probability in the range [0.0, 1.0].
+    </summary>
+  </metric>
+  <metric name="NewState" enum="TabRevisitTracker.TabState">
+    <summary>
+      The state the tab is in after the transition.
+    </summary>
+  </metric>
+  <metric name="NumTabsOnSameUrl">
+    <summary>
+      The count of tabs with the same main frame URL as this one in the current
+      browser session. Used to identify instances of duplicate tabs. Bucketed in
+      20 buckets (0 to 20) + an overflow bucket.
+    </summary>
+  </metric>
+  <metric name="NumTotalRevisits">
+    <summary>
+      The count of times this tab was revisited since it was created. Bucketed
+      in 20 buckets (0 to 20) + an overflow bucket.
+    </summary>
+  </metric>
+  <metric name="PreviousState" enum="TabRevisitTracker.TabState">
+    <summary>
+      The state the tab was in before the transition.
+    </summary>
+  </metric>
+  <metric name="SameTabGroupAsActiveTab" enum="Boolean">
+    <summary>
+      Whether the tab is in the same tab group as the current active tab.
+    </summary>
+  </metric>
+  <metric name="SameWindowAsActiveTab" enum="Boolean">
+    <summary>
+      Whether the tab is in the same browser window as the current active tab.
+    </summary>
+  </metric>
+  <metric name="TimeInPreviousState">
+    <summary>
+      The time spent by the tab in `PreviousState`, before transitioning to
+      `NewState`, in seconds.
+    </summary>
+  </metric>
+  <metric name="TotalTimeActive">
+    <summary>
+      The total time the tab has spent as the active tab since it was created,
+      in seconds.
     </summary>
   </metric>
 </event>

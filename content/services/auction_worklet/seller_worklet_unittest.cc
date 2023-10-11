@@ -1587,12 +1587,12 @@ TEST_F(SellerWorkletTest, ScoreAdBiddingDuration) {
 TEST_F(SellerWorkletTest, ScoreAdAuctionConfigParam) {
   decision_logic_url_ = GURL("https://url.test/");
   RunScoreAdWithReturnValueExpectingResult(
-      "auctionConfig.decisionLogicUrl.length",
+      "auctionConfig.decisionLogicURL.length",
       decision_logic_url_.spec().length());
 
   decision_logic_url_ = GURL("https://url.test/longer/url");
   RunScoreAdWithReturnValueExpectingResult(
-      "auctionConfig.decisionLogicUrl.length",
+      "auctionConfig.decisionLogicURL.length",
       decision_logic_url_.spec().length());
 
   direct_from_seller_auction_signals_header_ad_slot_ = R"("abcde")";
@@ -2769,7 +2769,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
         'view': "https://view.example.com/",
       }))",
       /*expected_signals_for_winner=*/"5",
-      /*expected_report_url =*/absl::nullopt, expected_ad_beacon_map);
+      /*expected_report_url=*/absl::nullopt, expected_ad_beacon_map);
 
   browser_signal_render_url_ = GURL("https://foo/");
   RunReportResultCreatedScriptExpectingResult(
@@ -2780,7 +2780,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       });
       sendReportTo(browserSignals.renderURL))",
       /*expected_signals_for_winner=*/"5",
-      /*expected_report_url =*/browser_signal_render_url_,
+      /*expected_report_url=*/browser_signal_render_url_,
       expected_ad_beacon_map);
 
   RunReportResultCreatedScriptExpectingResult(
@@ -2791,7 +2791,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
         'view': "https://view.example.com/",
       }))",
       /*expected_signals_for_winner=*/"5",
-      /*expected_report_url =*/browser_signal_render_url_,
+      /*expected_report_url=*/browser_signal_render_url_,
       expected_ad_beacon_map);
 
   // Don't call twice.
@@ -2803,7 +2803,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       });
       registerAdBeacon())",
       /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:14 Uncaught TypeError: registerAdBeacon may be "
@@ -2819,7 +2819,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
          try { registerAdBeacon() }
          catch (e) {})",
       /*expected_signals_for_winner=*/"5",
-      /*expected_report_url =*/absl::nullopt, expected_ad_beacon_map);
+      /*expected_report_url=*/absl::nullopt, expected_ad_beacon_map);
 
   // If error on first call, can be called again.
   RunReportResultCreatedScriptExpectingResult(
@@ -2831,51 +2831,58 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
            'view': "https://view.example.com/",
          }))",
       /*expected_signals_for_winner=*/"5",
-      /*expected_report_url =*/absl::nullopt, expected_ad_beacon_map);
+      /*expected_report_url=*/absl::nullopt, expected_ad_beacon_map);
 
   // Error if no parameters
   RunReportResultCreatedScriptExpectingResult(
       R"(5)", R"(registerAdBeacon())",
       /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon requires 1 "
-       "object parameter."});
+      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): at least "
+       "1 argument(s) are required."});
 
   // Error if parameter is not an object
   RunReportResultCreatedScriptExpectingResult(
       R"(5)", R"(registerAdBeacon("foo"))",
       /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon requires 1 "
-       "object parameter."});
+      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): Cannot "
+       "convert argument 'map' to a record since it's not an Object."});
 
-  // Error if parameter is not an object
-  RunReportResultCreatedScriptExpectingResult(
-      R"(5)", R"(registerAdBeacon("foo"))",
-      /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
-      /*expected_ad_beacon_map=*/{},
-      /*expected_pa_requests=*/{},
-      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon requires 1 "
-       "object parameter."});
-
-  // Error if parameter attributes are not strings
+  // Generally OK if parameter attributes are not strings
   RunReportResultCreatedScriptExpectingResult(
       R"(5)",
       R"(registerAdBeacon({
         'click': "https://click.example.com/",
         1: "https://view.example.com/",
       }))",
+      /*expected_signals_for_winner=*/"5",
+      /*expected_report_url=*/absl::nullopt,
+      /*expected_ad_beacon_map=*/
+      {
+          {"click", GURL("https://click.example.com/")},
+          {"1", GURL("https://view.example.com/")},
+      },
+      /*expected_pa_requests=*/{}, {});
+
+  // ... but keys must be convertible to strings
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(let map = {
+           'click': "https://click.example.com/"
+         }
+         map[Symbol('a')] = "https://view.example.com/";
+         registerAdBeacon(map))",
       /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon object "
-       "attributes must be strings."});
+      {"https://url.test/:14 Uncaught TypeError: Cannot convert a Symbol value "
+       "to a string."});
 
   // Error if invalid reporting URL
   RunReportResultCreatedScriptExpectingResult(
@@ -2885,10 +2892,10 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
         'view': "gopher://view.example.com/",
       }))",
       /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon invalid "
+      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): invalid "
        "reporting url for key 'view': 'gopher://view.example.com/'."});
 
   // Error if not trustworthy reporting URL
@@ -2899,11 +2906,24 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
         'view': "http://view.example.com/",
       }))",
       /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon invalid "
+      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): invalid "
        "reporting url for key 'view': 'http://view.example.com/'."});
+
+  // Special case for error message if the key has mismatched surrogates.
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(registerAdBeacon({
+         '\ud835': "http://127.0.0.1/",
+      }))",
+      /*expected_signals_for_winner=*/{},
+      /*expected_report_url=*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
+      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): invalid "
+       "reporting url."});
 }
 
 TEST_F(SellerWorkletTest, ReportResultBid) {

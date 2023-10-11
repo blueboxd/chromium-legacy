@@ -97,7 +97,10 @@ class DevToolsManagerDelegate final : public content::DevToolsManagerDelegate {
     std::vector<content::BrowserContext*> contexts = GetBrowserContexts();
     return contexts.empty() ? nullptr : contexts.front();
   }
-  content::DevToolsAgentHost::List RemoteDebuggingTargets() override {
+  content::DevToolsAgentHost::List RemoteDebuggingTargets(
+      DevToolsManagerDelegate::TargetType target_type) override {
+    LOG_IF(WARNING, target_type != DevToolsManagerDelegate::kFrame)
+        << "Ignoring unsupported remote target type: " << target_type;
     return main_parts_->devtools_controller()->RemoteDebuggingTargets();
   }
 
@@ -346,7 +349,7 @@ WebEngineContentBrowserClient::CreateURLLoaderThrottles(
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
   auto* frame_impl = FrameImpl::FromWebContents(wc_getter.Run());
   DCHECK(frame_impl);
-  const auto& rules =
+  auto rules =
       frame_impl->url_request_rewrite_rules_manager()->GetCachedRules();
   if (rules) {
     throttles.emplace_back(std::make_unique<url_rewrite::URLLoaderThrottle>(

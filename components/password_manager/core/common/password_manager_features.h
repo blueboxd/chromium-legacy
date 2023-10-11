@@ -32,6 +32,7 @@ BASE_DECLARE_FEATURE(kForgotPasswordFormSupport);
 BASE_DECLARE_FEATURE(kIOSPasswordUISplit);
 BASE_DECLARE_FEATURE(kIOSPasswordCheckup);
 BASE_DECLARE_FEATURE(kIOSPasswordBottomSheet);
+BASE_DECLARE_FEATURE(kIOSPasswordSettingsBulkUploadLocalPasswords);
 #endif  // IS_IOS
 BASE_DECLARE_FEATURE(kPasswordIssuesInSpecificsMetadata);
 BASE_DECLARE_FEATURE(kSendPasswords);
@@ -42,9 +43,6 @@ BASE_DECLARE_FEATURE(kPasswordGenerationExperiment);
 #endif
 BASE_DECLARE_FEATURE(kPasswordsImportM2);
 BASE_DECLARE_FEATURE(kRecoverFromNeverSaveAndroid);
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
-BASE_DECLARE_FEATURE(kRevampedPasswordManagementBubble);
-#endif
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 BASE_DECLARE_FEATURE(kSkipUndecryptablePasswords);
 #endif
@@ -58,7 +56,6 @@ BASE_DECLARE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroid);
 BASE_DECLARE_FEATURE(kUnifiedPasswordManagerLocalPasswordsMigrationWarning);
 BASE_DECLARE_FEATURE(kUnifiedPasswordManagerSyncUsingAndroidBackendOnly);
 BASE_DECLARE_FEATURE(kUnifiedPasswordManagerAndroidBranding);
-BASE_DECLARE_FEATURE(kExploratorySaveUpdatePasswordStrings);
 BASE_DECLARE_FEATURE(kPasswordsInCredMan);
 #endif
 BASE_DECLARE_FEATURE(kUsernameFirstFlowFallbackCrowdsourcing);
@@ -173,6 +170,10 @@ bool RequiresMigrationForUnifiedPasswordManager();
 #if BUILDFLAG(IS_IOS)
 // Returns true if the Password Checkup feature flag is enabled.
 bool IsPasswordCheckupEnabled();
+
+// Helper function returning the status of
+// `kIOSPasswordSettingsBulkUploadLocalPasswords`.
+bool IsBulkUploadLocalPasswordsEnabled();
 #endif  // IS_IOS
 
 }  // namespace password_manager::features

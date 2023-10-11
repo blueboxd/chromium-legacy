@@ -7,7 +7,7 @@
 #import <utility>
 #import <vector>
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/path_service.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/autofill/core/browser/ui/popup_types.h"
@@ -168,6 +168,7 @@ class FormSuggestionControllerTest : public PlatformTest {
   }
 
   void TearDown() override {
+    [accessory_mediator_ disconnect];
     [suggestion_controller_ detachFromWebState];
     PlatformTest::TearDown();
   }

@@ -53,6 +53,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.android_webview.autofill.AndroidAutofillSafeModeAction;
 import org.chromium.android_webview.common.AwFeatures;
 import org.chromium.android_webview.common.AwSwitches;
+import org.chromium.android_webview.common.Lifetime;
 import org.chromium.android_webview.gfx.AwDrawFnImpl;
 import org.chromium.android_webview.gfx.AwFunctor;
 import org.chromium.android_webview.gfx.AwGLFunctor;
@@ -155,6 +156,7 @@ import java.util.regex.Pattern;
  * (We define this class independent of the hidden WebViewProvider interfaces, to allow
  * continuous build &amp; test in the open source SDK-based tree).
  */
+@Lifetime.WebView
 @JNINamespace("android_webview")
 public class AwContents implements SmartClipProvider {
     private static final String TAG = "AwContents";
@@ -713,7 +715,7 @@ public class AwContents implements SmartClipProvider {
     private class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate {
         @Override
         public boolean shouldIgnoreNavigation(NavigationHandle navigationHandle, GURL escapedUrl,
-                boolean crossFrame, boolean isSandboxedFrame) {
+                boolean hiddenCrossFrame, boolean isSandboxedFrame) {
             // The shouldOverrideUrlLoading call might have resulted in posting messages to the
             // UI thread. Using sendMessage here (instead of calling onPageStarted directly)
             // will allow those to run in order.
@@ -1021,6 +1023,7 @@ public class AwContents implements SmartClipProvider {
     private class AwFrameMetricsListener {
         private FrameMetricsListener mFrameMetricsListener;
         private boolean mAttached;
+        private WeakReference<Window> mWindow;
 
         public AwFrameMetricsListener() {
             FrameMetricsStore metricsStore = new FrameMetricsStore();
@@ -1030,13 +1033,14 @@ public class AwContents implements SmartClipProvider {
 
         public void attachListener(Window window) {
             if (mAttached) return;
+            mWindow = new WeakReference<Window>(window);
             final Handler handler = new Handler();
             window.addOnFrameMetricsAvailableListener(mFrameMetricsListener, handler);
             mAttached = true;
         }
 
         public void detachListener(Window window) {
-            if (!mAttached) return;
+            if (!mAttached || window != mWindow.get()) return;
             window.removeOnFrameMetricsAvailableListener(mFrameMetricsListener);
             mAttached = false;
         }
@@ -2417,12 +2421,10 @@ public class AwContents implements SmartClipProvider {
      */
     public void setScrollBarStyle(int style) {
         if (TRACE) Log.i(TAG, "%s setScrollBarStyle", this);
-        if (style == View.SCROLLBARS_INSIDE_OVERLAY
-                || style == View.SCROLLBARS_OUTSIDE_OVERLAY) {
-            mOverlayHorizontalScrollbar = mOverlayVerticalScrollbar = true;
-        } else {
-            mOverlayHorizontalScrollbar = mOverlayVerticalScrollbar = false;
-        }
+        boolean scrollbars =
+                style == View.SCROLLBARS_INSIDE_OVERLAY || style == View.SCROLLBARS_OUTSIDE_OVERLAY;
+        mOverlayHorizontalScrollbar = scrollbars;
+        mOverlayVerticalScrollbar = scrollbars;
     }
 
     /**
@@ -3922,7 +3924,7 @@ public class AwContents implements SmartClipProvider {
      * Determine if at least one edge of the WebView extends over the edge of the window.
      */
     private boolean extendsOutOfWindow() {
-        int loc[] = new int[2];
+        int[] loc = new int[2];
         mContainerView.getLocationOnScreen(loc);
         int x = loc[0];
         int y = loc[1];
@@ -4134,7 +4136,7 @@ public class AwContents implements SmartClipProvider {
         // was removed too recently to have had its functor reclaimed, we still collect data.
         // This likely doesn't matter too much, especially since as noted below, the metrics are
         // expected to only be useful to tell whether the experiment produces a signal.
-        if (AwContentsLifecycleNotifier.getAppState() != AppState.BACKGROUND) return;
+        if (AwContentsLifecycleNotifier.getInstance().getAppState() != AppState.BACKGROUND) return;
 
         // Comment below from base/android/meminfo_dump_provider.cc:
         //

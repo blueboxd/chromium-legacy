@@ -75,7 +75,7 @@ class FileManagerPrivateSelectFilesFunction : public LoggedExtensionFunction {
       const std::vector<ui::SelectedFileInfo>& files);
 
   bool should_return_local_path_;
-  std::vector<base::FilePath> local_paths_;
+  std::vector<GURL> file_urls_;
   int resync_files_remaining_ = 0;
 };
 

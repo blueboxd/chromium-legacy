@@ -476,6 +476,11 @@
       base_feature: "none",
     },
     {
+      name: "BlinkExtensionChromeOSDiagnostics",
+      depends_on: ["BlinkExtensionChromeOS"],
+      base_feature: "none",
+    },
+    {
       name: "BlinkExtensionChromeOSHID",
       depends_on: ["BlinkExtensionChromeOS"],
       base_feature: "none",
@@ -495,12 +500,6 @@
     },
     {
       name: "BlinkRuntimeCallStats",
-      base_feature: "none",
-    },
-    {
-      // https://html.spec.whatwg.org/multipage/urls-and-fetching.html#blocking-attributes
-      name: "BlockingAttribute",
-      status: "stable",
       base_feature: "none",
     },
     {
@@ -636,6 +635,11 @@
       base_feature: "none",
     },
     {
+      // https://drafts.fxtf.org/css-masking/#typedef-geometry-box
+      name: "ClipPathGeometryBox",
+      status: "experimental",
+    },
+    {
       name: "CloseWatcher",
     },
     {
@@ -645,7 +649,7 @@
     },
     {
       name: "CompositeBackgroundAttachmentFixed",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CompositeBGColorAnimation",
@@ -671,6 +675,13 @@
     {
       name: "CompositeScrollAfterPaint",
       status: "stable",
+    },
+    {
+      name: "CompositionForegroundMarkers",
+      status: {
+        "Android": "stable",
+        "default": "",
+      }
     },
     {
       name: "CompressionDictionaryTransport",
@@ -755,7 +766,7 @@
       // Allows positioning a positioned element relative to another one.
       // https://drafts.csswg.org/css-anchor-1/
       name: "CSSAnchorPositioning",
-      implied_by: ["HTMLSelectMenuElement"],
+      implied_by: ["HTMLSelectListElement"],
       status: "experimental",
       base_feature: "none",
     },
@@ -804,7 +815,7 @@
     },
     {
       name: "CSSCapFontUnits",
-      status: "experimental",
+      status: "stable",
     },
     {
       // Support case-sensitive attribute selector modifier
@@ -842,9 +853,8 @@
       status: "stable",
     },
     {
-      // crbug.com/995106
-      name: "CSSDisplayMultipleValues",
-      status: "stable",
+      name: "CSSDynamicRangeLimit",
+      status: "experimental",
     },
     // Exists so that we can run a reverse-Finch experiment to assess its performance.
     {
@@ -861,6 +871,12 @@
     {
       name: "CSSExponentialFunctions",
       status: "experimental",
+    },
+    {
+      // Don't allow new line as preceding character for ::first-letter.
+      // See crbug.com/1477217
+      name: "CSSFirstLetterNoNewLineAsPrecedingChar",
+      status: "stable",
     },
     {
       name: "CSSFocusVisible",
@@ -921,7 +937,7 @@
     },
     {
       name: "CSSLogical",
-      status: "experimental",
+      status: "stable",
       base_feature: "none",
     },
     {
@@ -1032,9 +1048,14 @@
       base_feature: "none",
     },
     {
+      // https://drafts.csswg.org/css-color-5/#relative-colors
+      name: "CSSRelativeColor",
+      status: "experimental",
+    },
+    {
       // https://drafts.csswg.org/css-cascade-6/#scoped-styles
       name: "CSSScope",
-      status: "experimental",
+      status: "stable",
     },
     {
       // https://drafts.csswg.org/css-scroll-snap-2
@@ -1056,6 +1077,10 @@
     },
     {
       name: "CSSSignRelatedFunctions",
+      status: "experimental",
+    },
+    {
+      name: "CSSSnapContainerQueries",
       status: "experimental",
     },
     {
@@ -1097,11 +1122,6 @@
       status: "stable",
     },
     {
-      // Merge multiple rulesets into one, for faster matching.
-      name: "CSSSuperRulesets",
-      status: "experimental",
-    },
-    {
       name: "CSSSystemAccentColor",
       status: "experimental",
     },
@@ -1116,17 +1136,19 @@
       name: "CSSTextBoxTrim",
       status: "test",
     },
+    {
+      // crbug.com/1463891: CSS `text-spacing-trim` property
+      name: "CSSTextSpacingTrim",
+    },
     // Use the `NGSCoreLineBreaker` for `text-wrap: balance`. crbug.com/1451205
     {
       name: "CSSTextWrapBalanceByScore",
       status: "stable",
-      depends_on: ["CSSWhiteSpaceShorthand"],
     },
     // `text-wrap: pretty`. crbug.com/1432798
     {
       name: "CSSTextWrapPretty",
       status: "stable",
-      depends_on: ["CSSWhiteSpaceShorthand"],
     },
     // Support for CSS Toggles, https://tabatkins.github.io/css-toggle/
     {
@@ -1149,7 +1171,7 @@
       // Support for the 'border-box', 'content-box' and 'stroke-box' keywords
       // for the 'transform-box' property.
       name: "CSSTransformBoxAdditionalKeywords",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSTransitionDiscrete",
@@ -1209,9 +1231,12 @@
       status: "stable",
       base_feature: "none",
     },
-    // `white-space` as a shorthand. crbug.com/1417543
     {
-      name: "CSSWhiteSpaceShorthand",
+      // The view-timeline shorthand includes the view-timeline-inset
+      // property.
+      //
+      // https://github.com/w3c/csswg-drafts/pull/9189
+      name: "CSSViewTimelineInsetShorthand",
       status: "stable",
     },
     {
@@ -1229,18 +1254,6 @@
     {
       name: "DateInputInlineBlock",
       status: "test",
-    },
-    {
-      name: "DecodeJpeg420ImagesToYUV",
-      public: true,
-      status: "stable",
-      base_feature: "none",
-    },
-    {
-      name: "DecodeLossyWebPImagesToYUV",
-      public: true,
-      status: "stable",
-      base_feature: "none",
     },
     {
       name: "DeflateRawCompressionFormat",
@@ -1261,6 +1274,10 @@
       name: "DeliveryType",
       status: "stable",
       base_feature: "none",
+    },
+    {
+      name: "DeprecatedNonStreamingDeclarativeShadowDOM",
+      status: "stable",
     },
     {
       name: "DesktopCaptureDisableLocalEchoControl",
@@ -1383,16 +1400,6 @@
       public: true,
     },
     {
-      // When a Web application calls getDisplayMedia() and asks for video,
-      // allow a hint to be provided as to whether it prefers that a
-      // certain surface type be more prominently offered to the user.
-      //
-      // https://github.com/w3c/mediacapture-screen-share/pull/186/files
-      name: "DisplaySurfaceConstraint",
-      status: "stable",
-      base_feature: "none",
-    },
-    {
       name: "DocumentCookie",
       base_feature: "none",
     },
@@ -1448,6 +1455,12 @@
       base_feature: "none",
     },
     {
+      name: "DocumentRenderBlocking",
+      status: "test",
+      base_feature: "none",
+      implied_by: ["ViewTransitionOnNavigation"],
+    },
+    {
       name: "DocumentWrite",
       base_feature: "none",
     },
@@ -1473,6 +1486,13 @@
       name: "EditContext",
       origin_trial_feature_name: "EditContext",
       status: "experimental",
+    },
+    {
+      name: "ElementCapture",
+    },
+    {
+      name: "EnforceAnonymityExposure",
+      status: "stable",
     },
     {
       // Experiment with preventing some instances of mutation XSS
@@ -1557,7 +1577,28 @@
       base_feature: "none",
     },
     {
+      name: "FedCmAccountAutoSelectedFlag",
+      depends_on: ["FedCm"],
+      public: true,
+      status: "test",
+      base_feature: "none",
+    },
+    {
       name: "FedCmAuthz",
+      depends_on: ["FedCm"],
+      public: true,
+      status: "test",
+      base_feature: "none",
+    },
+    {
+      name: "FedCmError",
+      depends_on: ["FedCm"],
+      public: true,
+      status: "test",
+      base_feature: "none",
+    },
+    {
+      name: "FedCmHostedDomain",
       depends_on: ["FedCm"],
       public: true,
       status: "test",
@@ -1663,8 +1704,8 @@
       base_feature: "none",
     },
     {
-      name: "FileSystemAccessAccessHandle",
-      status: "stable",
+      name: "FileSystemAccessAccessHandleLockingScheme",
+      status: "experimental",
       base_feature: "none",
     },
     {
@@ -1739,6 +1780,12 @@
     {
       name: "FluentScrollbars",
       base_feature: "none",
+    },
+    {
+      // Kill switch for crbug.com/1420810 fix
+      // TODO(xiaochengh): Remove after M122.
+      name: "FlushParserBeforeCreatingCustomElements",
+      status: "stable",
     },
     {
       name: "Focusgroup",
@@ -1817,7 +1864,16 @@
       name: "FormControlsVerticalWritingModeDirectionSupport",
     },
     {
+      // Allow these form controls to have vertical writing mode: select, meter,
+      // progress, button and non-text-based input types.
       name: "FormControlsVerticalWritingModeSupport",
+      status: "experimental",
+    },
+    {
+      // TODO(crbug.com/484651): Allow text-based form controls to have vertical
+      // writing mode: textarea and input types email, number, password, search,
+      // tel, text, url.
+      name: "FormControlsVerticalWritingModeTextSupport",
       status: "experimental",
     },
     {
@@ -1859,6 +1915,8 @@
     {
       name: "GetAllScreensMedia",
       depends_on: ["GetDisplayMedia"],
+      origin_trial_feature_name: "GetAllScreensMedia",
+      origin_trial_os: ["chromeos"],
       public: true,
       status: "test",
     },
@@ -1899,7 +1957,7 @@
     },
     {
       name: "HasUAVisualTransition",
-      status: "test",
+      status: "stable",
       base_feature: "none",
     },
     // HighlightAPI's custom highlights use HighlightInheritance's behavior even
@@ -1925,6 +1983,15 @@
       base_feature: "none",
     },
     {
+      name: "HitTestOpaqueness",
+      implied_by: ["HitTestTransparency"],
+    },
+    {
+      // Whether we use cc::HitTestOpaqueness::kTransparent for
+      // non-hit-testable objects, e.g. with pointer-events:none.
+      name: "HitTestTransparency",
+    },
+    {
       name: "HrefTranslate",
       depends_on: ["TranslateService"],
       origin_trial_feature_name: "HrefTranslate",
@@ -1943,7 +2010,7 @@
       name: "HTMLPopoverAttribute",
       status: "stable",
       origin_trial_feature_name: "HTMLPopupAttribute",
-      implied_by: ["HTMLSelectMenuElement","HTMLPopoverHint"],
+      implied_by: ["HTMLSelectListElement","HTMLPopoverHint"],
     },
     {
       // TODO(crbug.com/1416284): Enables popover=hint functionality.
@@ -1951,7 +2018,11 @@
       status: "experimental",
     },
     {
-      name: "HTMLSelectMenuElement",
+      name: "HTMLSearchElement",
+      status: "stable",
+    },
+    {
+      name: "HTMLSelectListElement",
       status: "experimental",
       base_feature: "none",
     },
@@ -2035,6 +2106,10 @@
       status: "experimental",
     },
     {
+      name: "InvisibleSVGAnimationThrottling",
+      status: "stable",
+    },
+    {
       name: "JavaScriptCompileHintsMagicRuntime",
       status: "experimental",
       origin_trial_feature_name: "JavaScriptCompileHintsMagic",
@@ -2058,13 +2133,6 @@
       status: "stable",
     },
     {
-      name: "LayoutFlexNewRowAlgorithm",
-      implied_by: ["LayoutFlexNewRowAlgorithmV2"],
-    },
-    {
-      name: "LayoutFlexNewRowAlgorithmV2",
-    },
-    {
       name: "LayoutFlexNewRowAlgorithmV3",
       status: "test",
     },
@@ -2077,7 +2145,8 @@
       status: "stable",
     },
     {
-      name: "LayoutNewGridStaticPosition",
+      name: "LayoutNewSnapLogic",
+      status: "stable",
     },
     {
       name: "LayoutNewStickyLogic",
@@ -2087,7 +2156,7 @@
       // crbug.com/1353190
       name: "LayoutNGNoCopyBack",
       depends_on: ["LayoutNGNoLocation", "ScrollableAreaNoSnapping"],
-      status: "test",
+      status: "stable",
     },
     {
       // crbug.com/1353190
@@ -2299,6 +2368,11 @@
       base_feature: "none",
     },
     {
+      name: "MediaStreamTrackGetFrameStats",
+      status: "test",
+      base_feature: "none",
+    },
+    {
       name: "MediaStreamTrackTransfer",
       status: "test",
       base_feature: "none",
@@ -2367,10 +2441,6 @@
       base_feature: "none",
     },
     {
-      name: "NodeAsNSResolver",
-      status: "stable",
-    },
-    {
       name: "NoIdleEncodingForWebTests",
       status: "test",
       base_feature: "none",
@@ -2386,6 +2456,32 @@
       // Kill switch for crbug.com/1427047 fix.
       // TODO(xiaochengh): Remove in M117.
       name: "NonReentrantFieldSetDisable",
+      status: "stable",
+    },
+    {
+      // TODO(crbug.com/924486): This feature enables the deprecated values
+      // inner-spin-button, push-button, searchfield-cancel-button,
+      // slider-horizontal, square-button. Disable this feature to stop
+      // parsing or allowing these values.
+      // https://drafts.csswg.org/css-ui-4/#appearance-switching
+      name: "NonStandardAppearanceValuesHighUsage",
+      status: "stable",
+    },
+    {
+      // TODO(crbug.com/1426629): This feature enables the deprecated value
+      // slider-vertical. Disable this feature to stop parsing or allowing these
+      // values.
+      // https://drafts.csswg.org/css-ui-4/#appearance-switching
+      name: "NonStandardAppearanceValueSliderVertical",
+      status: "stable",
+    },
+    {
+      // TODO(crbug.com/924486): This feature enables the deprecated values
+      // media-slider, media-sliderthumb, media-volume-slider
+      // media-volume-sliderthumb, sliderthumb-horizontal, sliderthumb-vertical.
+      // Disable this feature to stop parsing or allowing these values.
+      // https://drafts.csswg.org/css-ui-4/#appearance-switching
+      name: "NonStandardAppearanceValuesLowUsage",
       status: "stable",
     },
     {
@@ -2454,6 +2550,14 @@
     // no regressions are reported.
     {
       name: "OptimizedNodeCloneOrder",
+      status: "stable",
+    },
+    // This flag is a killswitch. It was only exists as a way for us to turn
+    // the feature off in the emergency that it breaks websites.
+    // TODO(http://crbug.com/1473340): Delete internal web_tests which are
+    // redundant with existing WPTs when we delete this flag.
+    {
+      name: "OptionElementAlwaysUseLabel",
       status: "stable",
     },
     {
@@ -2741,7 +2845,7 @@
     {
       name: "PermissionsPolicyUnload",
       origin_trial_feature_name: "PermissionsPolicyUnload",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "PermissionsRequestRevoke",
@@ -2803,7 +2907,7 @@
     },
     {
       name: "PrefersReducedTransparency",
-      status: "experimental",
+      status: "stable",
     },
     // This feature is deprecated and we are evangelizing affected sites.
     // See https://crbug.com/346236 for current status.
@@ -2833,7 +2937,7 @@
       // When enabled, gives the option to pretty-print JSON documents to
       // cleanly format the JSON and make it readable.
       name:"PrettyPrintJSONDocument",
-      status: "experimental",
+      status: "stable",
     },
     // The RTE feature encompasses multiple APIs, including: Attribution
     // Reporting, FLEDGE, Topics and Fenced Frames.
@@ -2909,6 +3013,10 @@
       origin_trial_feature_name: "ReduceAcceptLanguage"
     },
     {
+      name: "ReduceCookieIPCs",
+      status: "test",
+    },
+    {
       // If enabled, the deviceModel will be reduced to "K" and the
       // androidVersion will be reduced to a static "10" string in android
       // User-Agent string.
@@ -2962,22 +3070,6 @@
       public: true,
       status: "stable",
       base_feature: "none",
-    },
-    {
-      // Non-standard appearance values should be removed. This feature removes
-      // inner-spin-button, media-slider, media-sliderthumb, media-volume-slider
-      // media-volume-sliderthumb, push-button, searchfield-cancel-button,
-      // slider-horizontal, sliderthumb-horizontal, sliderthumb-vertical,
-      // square-button.
-      // https://drafts.csswg.org/css-ui-4/#appearance-switching
-      name: "RemoveNonStandardAppearanceValue",
-      status: "experimental",
-    },
-    {
-      // Non-standard appearance values should be removed. This feature removes
-      // slider-vertical.
-      // https://drafts.csswg.org/css-ui-4/#appearance-switching
-      name: "RemoveNonStandardAppearanceValueSliderVertical",
     },
     {
       name: "RenderBlockingStatus",
@@ -3036,6 +3128,11 @@
       status: "experimental",
     },
     {
+      name: "RTCEncodedFrameSetMetadata",
+      status: "experimental",
+      origin_trial_feature_name: "RTCEncodedFrameSetMetadata",
+    },
+    {
       name: "RTCEncodedVideoFrameAdditionalMetadata",
       status: "experimental",
     },
@@ -3051,6 +3148,11 @@
       origin_trial_feature_name: "RTCLegacyCallbackBasedGetStats",
       status: "experimental",
       base_feature: "none",
+    },
+    // Enables the use of |RTCRtpEncodingParameters.codec|
+    {
+      name: "RTCRtpEncodingParametersCodec",
+      status: "experimental",
     },
     // Enables the use of |RTCRtpTransceiver::getHeaderExtensionsToNegotiate|,
     // |RTCRtpTransceiver::setHeaderExtensionsToNegotiate|, and
@@ -3111,17 +3213,20 @@
       base_feature: "none",
     },
     {
+      name: "ScriptingMediaFeature",
+      status: "stable",
+    },
+    {
       name: "ScrollableAreaNoSnapping",
       status: "stable",
     },
     {
       name: "ScrollbarColor",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "ScrollbarWidth",
       status: "experimental",
-      base_feature: "none",
     },
     {
       name: "ScrollCustomization",
@@ -3298,6 +3403,15 @@
       base_feature: "none",
     },
     {
+      // When hovering on an element that contains a title, skip converting the
+      // HitTestResult to the shadow host. This is used to ensure tooltips in
+      // the shadow tree appear correctly. This is to be used as a killswitch in
+      // case of any issues.
+      // TODO(crbug.com/1473774): Remove flag if no issues arise.
+      name: "SkipShadowHostWhenHoveringForTooltip",
+      status: "stable",
+    },
+    {
       // Skips the browser touch event filter, ensuring that events that reach
       // the queue and would otherwise be filtered out will instead be passed
       // onto the renderer compositor process as long as the page hasn't timed
@@ -3312,6 +3426,17 @@
       status: {"Android": "", "default": "test"},
     },
     {
+      name: "SmartZoom",
+      depends_on: ["AccessibilityPageZoom"],
+      base_feature: "none",
+      public: true,
+      status: {"Android": "test"},
+    },
+    {
+      name: "SmilAutoSuspendOnLag",
+      status: "stable",
+    },
+    {
       // If enabled Border, Outline and Column-Rule Widths
       // will be pixel snapped before layout.
       name: "SnapBorderWidthsBeforeLayout",
@@ -3321,7 +3446,6 @@
       name: "SoftNavigationHeuristics",
       status: "experimental",
       depends_on: ["NavigationId"],
-      origin_trial_allows_third_party: true,
       origin_trial_feature_name: "SoftNavigationHeuristics",
     },
     {
@@ -3329,6 +3453,7 @@
     },
     {
       name: "SolidColorLayers",
+      status: "experimental",
     },
     {
       name: "SparseObjectPaintProperties",
@@ -3454,10 +3579,6 @@
       status: "experimental",
     },
     {
-      name: "StreamingDeclarativeShadowDOM",
-      status: "stable",
-    },
-    {
       name: "StrictMimeTypesForWorkers",
       status: "experimental",
       base_feature: "none",
@@ -3465,6 +3586,10 @@
     {
       name: "StylusHandwriting",
       base_feature: "none",
+    },
+    {
+      name: "SvgCrossOriginAttribute",
+      status: "stable",
     },
     {
       name: "SvgMapLocalToAncestorFix",
@@ -3476,7 +3601,7 @@
     },
     {
       name: "SvgRasterOptimizations",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "SvgTextSkipZeroLengthItems",
@@ -3539,10 +3664,8 @@
       base_feature: "none",
     },
     {
-      name: "ThirdPartyCookiesUserBypass",
-      status: "experimental",
-      base_feature: "none",
-      browser_process_read_write_access: true,
+      name: "TextMetricsBaselines",
+      status: "stable",
     },
     {
       // Support for the timeline-scope property.
@@ -3685,6 +3808,11 @@
     {
       name: "UserAgentClientHint",
       status: "stable",
+    },
+    {
+      // https://chromestatus.com/feature/5132477781245952
+      name: "UserValidUserInvalid",
+      status: "experimental",
     },
     {
       name: "V8IdleTasks",
@@ -3999,13 +4127,6 @@
       public: true,
     },
     {
-      name: "WebGPUWebCodecs",
-      status: "stable",
-      public: true,
-      // Make the WebGPUDeveloperFeatures also enabled this feature.
-      implied_by: ["WebGPUDeveloperFeatures"],
-    },
-    {
       name: "WebHID",
       status: {"Android": "", "default": "stable"},
       base_feature: "none",
@@ -4201,6 +4322,12 @@
     {
       name: "WindowPlacementFullscreenOnScreensChange",
       status: "experimental",
+    },
+    // Flag guard for change to XML parser to merge adjacent CDATA sections.
+    // See https://crrev.com/c/4790343.
+    {
+      name: "XMLParserMergeAdjacentCDataSections",
+      status: "stable",
     },
     {
       // If enabled, the `getDisplayMedia()` family of APIs will ask for NV12

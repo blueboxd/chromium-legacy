@@ -121,8 +121,8 @@ class OsUpdatesReporterBrowserTest
 
   ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
-  raw_ptr<FakeUpdateEngineClient, ExperimentalAsh> fake_update_engine_client_ =
-      nullptr;
+  raw_ptr<FakeUpdateEngineClient, DanglingUntriaged | ExperimentalAsh>
+      fake_update_engine_client_ = nullptr;
 };
 
 IN_PROC_BROWSER_TEST_F(OsUpdatesReporterBrowserTest, ReportUpdateSuccessEvent) {
@@ -243,7 +243,8 @@ class OsUpdatesReporterPowerwashBrowserTest
  private:
   ash::EmbeddedPolicyTestServerMixin policy_test_server_mixin_{&mixin_host_};
 
-  raw_ptr<::policy::DeviceCloudPolicyManagerAsh, ExperimentalAsh>
+  raw_ptr<::policy::DeviceCloudPolicyManagerAsh,
+          DanglingUntriaged | ExperimentalAsh>
       policy_manager_;
 };
 

@@ -40,12 +40,14 @@ import org.chromium.chrome.browser.share.link_to_text.LinkToTextCoordinator.Link
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetLinkToggleCoordinator.LinkToggleState;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetLinkToggleMetricsHelper.LinkToggleMetricsDetails;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtilsJni;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
 
 import java.lang.ref.WeakReference;
@@ -59,11 +61,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * Tests {@link ShareSheetUsageRankingHelper}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Features.EnableFeatures({ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION})
+@EnableFeatures({ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION})
 @LooperMode(LooperMode.Mode.LEGACY)
 
 public class ShareSheetUsageRankingHelperTest {
-    private static final String MOCK_URL = JUnitTestGURLs.EXAMPLE_URL;
+    private static final String MOCK_URL = JUnitTestGURLs.EXAMPLE_URL.getSpec();
 
     @Rule
     public TestRule mFeatureProcessor = new Features.JUnitProcessor();
@@ -103,7 +105,7 @@ public class ShareSheetUsageRankingHelperTest {
         when(mWindow.getActivity()).thenReturn(new WeakReference<>(mActivity));
         when(mWindow.getUnownedUserDataHost()).thenReturn(new UnownedUserDataHost());
         when(mDistillerUrlUtilsJniMock.getOriginalUrlFromDistillerUrl(anyString()))
-                .thenReturn(JUnitTestGURLs.getGURL(MOCK_URL));
+                .thenReturn(new GURL(MOCK_URL));
         when(mContentTypes.contains(ShareContentTypeHelper.ContentType.IMAGE)).thenReturn(true);
 
         mParams = new ShareParams.Builder(mWindow, "title", MOCK_URL)

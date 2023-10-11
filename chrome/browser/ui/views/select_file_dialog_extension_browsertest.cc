@@ -404,6 +404,12 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionBrowserTest, CanResize) {
 
   // The dialog should be resizable.
   ASSERT_EQ(!GetParam().tablet_mode, OpenDialogIsResizable());
+
+  // Click the "Cancel" button. This closes the dialog thus removing it from
+  // `PendingDialog::map_`. `PendingDialog::map_` otherwise prevents the dialog
+  // from being destroyed on `reset()` in test TearDown and the
+  // `SelectFileDialog::listener_` becomes dangling.
+  CloseDialog(DIALOG_BTN_CANCEL, owning_window);
 }
 
 
@@ -783,8 +789,8 @@ class SelectFileDialogExtensionPolicyTest
         .WillByDefault(testing::Return(mock_files_controller_.get()));
   }
 
-  raw_ptr<policy::MockDlpRulesManager, ExperimentalAsh> rules_manager_ =
-      nullptr;
+  raw_ptr<policy::MockDlpRulesManager, DanglingUntriaged | ExperimentalAsh>
+      rules_manager_ = nullptr;
   std::unique_ptr<MockFilesController> mock_files_controller_ = nullptr;
   raw_ptr<storage::ExternalMountPoints, ExperimentalAsh> mount_points_ =
       nullptr;

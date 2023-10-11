@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/webui/common/trusted_types_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +26,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "ui/webui/color_change_listener/color_change_handler.h"
 
 namespace ash {
 
@@ -58,6 +60,12 @@ void ParentAccessUI::BindInterface(
       std::move(receiver), identity_manager, ParentAccessDialog::GetInstance());
 }
 
+void ParentAccessUI::BindInterface(
+    mojo::PendingReceiver<color_change_listener::mojom::PageHandler> receiver) {
+  color_provider_handler_ = std::make_unique<ui::ColorChangeHandler>(
+      web_ui()->GetWebContents(), std::move(receiver));
+}
+
 parent_access_ui::mojom::ParentAccessUIHandler*
 ParentAccessUI::GetHandlerForTest() {
   return mojo_api_handler_.get();
@@ -74,6 +82,8 @@ void ParentAccessUI::SetUpResources() {
   source->AddResourcePath("parent_access_controller.js",
                           IDR_PARENT_ACCESS_CONTROLLER_JS);
   source->AddResourcePath("parent_access_app.js", IDR_PARENT_ACCESS_APP_JS);
+  source->AddResourcePath("parent_access_template.js",
+                          IDR_PARENT_ACCESS_TEMPLATE_JS);
   source->AddResourcePath("parent_access_ui.js", IDR_PARENT_ACCESS_UI_JS);
   source->AddResourcePath("parent_access_ui_handler.js",
                           IDR_PARENT_ACCESS_UI_HANDLER_JS);
@@ -94,6 +104,9 @@ void ParentAccessUI::SetUpResources() {
                           IDR_PARENT_ACCESS_BEFORE_JS);
   source->AddResourcePath("parent_access_disabled.js",
                           IDR_PARENT_ACCESS_DISABLED_JS);
+  source->AddResourcePath("parent_access_error.js", IDR_PARENT_ACCESS_ERROR_JS);
+  source->AddResourcePath("parent_access_offline.js",
+                          IDR_PARENT_ACCESS_OFFLINE_JS);
   source->AddResourcePath("parent_access_ui.mojom-webui.js",
                           IDR_PARENT_ACCESS_UI_MOJOM_WEBUI_JS);
   source->AddResourcePath("webview_manager.js",
@@ -109,10 +122,13 @@ void ParentAccessUI::SetUpResources() {
                           IDR_PARENT_ACCESS_REQUEST_APPROVAL_DARK_SVG);
 
   source->UseStringsJs();
+  source->AddBoolean("isParentAccessJellyEnabled",
+                     features::IsParentAccessJellyEnabled());
   source->SetDefaultResource(IDR_PARENT_ACCESS_HTML);
 
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"pageTitle", IDS_PARENT_ACCESS_PAGE_TITLE},
+      {"closeButtonTitle", IDS_PARENT_ACCESS_CLOSE_BUTTON_TITLE},
       {"approveButtonText", IDS_PARENT_ACCESS_AFTER_APPROVE_BUTTON},
       {"denyButtonText", IDS_PARENT_ACCESS_AFTER_DENY_BUTTON},
       {"askInPersonButtonText", IDS_PARENT_ACCESS_ASK_IN_PERSON_BUTTON},

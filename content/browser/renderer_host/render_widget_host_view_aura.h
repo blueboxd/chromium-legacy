@@ -185,6 +185,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
+  void InvalidateLocalSurfaceIdAndAllocationGroup() override;
   void ClearFallbackSurfaceForCommitPending() override;
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
@@ -416,6 +417,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
   ui::Compositor* GetCompositor() override;
+
+  void AllocateLocalSurfaceIdOnNextShow() {
+    allocate_local_surface_id_on_next_show_ = true;
+  }
 
   DelegatedFrameHost* GetDelegatedFrameHostForTesting() const {
     return delegated_frame_host_.get();
@@ -680,6 +685,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnViewportSegmentsChanged(
       const std::vector<gfx::Rect>& segments) override;
 
+  // Provided a list of viewport segments, calculate and set the
+  // DisplayFeature.
+  void ComputeDisplayFeature();
+
   raw_ptr<aura::Window> window_;
 
   std::unique_ptr<DelegatedFrameHostClient> delegated_frame_host_client_;
@@ -815,6 +824,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // are expressed in DIPs relative to the view. See display_feature.h for more
   // details.
   absl::optional<DisplayFeature> display_feature_;
+  // Viewport segments returned by the platform.
+  std::vector<gfx::Rect> viewport_segments_;
 
 #if BUILDFLAG(IS_WIN)
   mojo::Remote<device::mojom::DevicePostureProvider> device_posture_provider_;
@@ -823,6 +834,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 #endif
 
   absl::optional<display::ScopedDisplayObserver> display_observer_;
+
+  bool allocate_local_surface_id_on_next_show_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_{this};
 };

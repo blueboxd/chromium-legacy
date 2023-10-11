@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/cross_thread_handle.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -28,6 +29,7 @@
 namespace blink {
 
 class ExecutionContext;
+class ImageDataBuffer;
 
 class CORE_EXPORT CanvasAsyncBlobCreator
     : public GarbageCollected<CanvasAsyncBlobCreator> {
@@ -99,12 +101,16 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   void Dispose();
 
   scoped_refptr<StaticBitmapImage> image_;
+  Member<ExecutionContext> context_;
+
+  // The following members are used for progressive/idle encoding,
+  // see comment above the implementation of ScheduleAsyncBlobCreation.
+  sk_sp<SkImage> skia_image_;
+  SkPixmap src_data_;  // Holds a raw pointer owned by `skia_ìmage`.
   std::unique_ptr<ImageEncoder> encoder_;
   Vector<unsigned char> encoded_image_;
   int num_rows_completed_;
-  Member<ExecutionContext> context_;
 
-  SkPixmap src_data_;
   ImageEncodingMimeType mime_type_;
   ToBlobFunctionType function_type_;
 
@@ -123,7 +129,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   // Used for OffscreenCanvas only
   Member<ScriptPromiseResolver> script_promise_resolver_;
 
-  static bool EncodeImage(const SkPixmap& src_data,
+  static bool EncodeImage(std::unique_ptr<ImageDataBuffer>,
                           ImageEncodingMimeType,
                           const double& quality,
                           Vector<unsigned char>* encoded_image);
@@ -133,7 +139,13 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   void ForceEncodeRows();  // Similar to IdleEncodeRows without deadline.
 
   // WEBP
-  void EncodeImageOnEncoderThread(double quality);
+  static void EncodeImageOnEncoderThread(
+      CrossThreadHandle<CanvasAsyncBlobCreator>,
+      scoped_refptr<base::SingleThreadTaskRunner>,
+      sk_sp<SkImage>,
+      std::unique_ptr<ImageDataBuffer>,
+      ImageEncodingMimeType,
+      double quality);
 
   void IdleTaskStartTimeoutEvent(double quality);
   void IdleTaskCompleteTimeoutEvent();

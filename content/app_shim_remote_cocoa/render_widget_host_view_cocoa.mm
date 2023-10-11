@@ -11,11 +11,11 @@
 #include <tuple>
 #include <utility>
 
+#import "base/apple/foundation_util.h"
 #include "base/apple/owned_objc.h"
 #include "base/containers/contains.h"
 #include "base/debug/crash_logging.h"
 #include "base/mac/mac_util.h"
-#import "base/mac/foundation_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/remote_cocoa/app_shim/ns_view_ids.h"
@@ -832,6 +832,14 @@ void ExtractUnderlines(NSAttributedString* string,
   WebMouseEvent web_event = WebMouseEventBuilder::Build(event, self);
   web_event.SetModifiers(web_event.GetModifiers() |
                          WebInputEvent::kRelativeMotionEvent);
+  // TODO(crbug.com/1465562): We shouldn't be posting events with null
+  // timestamps. However `MessagePumpNSApplication::DoQuit` usage of
+  // `otherEventWithType` seems to truncate `NSTimeInterval` to seconds. Which
+  // could lead to those generated events be in the past, compared to ones
+  // created directly in later parts of the pipeline or in tests.
+  if (web_event.TimeStamp().is_null()) {
+    web_event.SetTimeStamp(ui::EventTimeForNow());
+  }
   _hostHelper->ForwardMouseEvent(web_event);
 }
 
@@ -1072,9 +1080,19 @@ void ExtractUnderlines(NSAttributedString* string,
     return NO;
   }
 
-  // If the event is reserved by the system, then do not pass it to web content.
-  if (EventIsReservedBySystem(theEvent))
+  // If the event is reserved by the system, do not pass it to web content.
+  // If the user changes the system hotkey mapping after Chrome has been
+  // launched, it is possible that a formerly reserved system hotkey is no
+  // longer reserved. The hotkey would have skipped the renderer, but would
+  // also have not been handled by the system. If this is the case, immediately
+  // return.
+  // TODO(erikchen): SystemHotkeyHelperMac should use the File System Events
+  // api to monitor changes to system hotkeys. This logic will have to be
+  // updated.
+  // http://crbug.com/383558.
+  if (EventIsReservedBySystem(theEvent)) {
     return NO;
+  }
 
   // Command key combinations are sent via performKeyEquivalent rather than
   // keyDown:. We just forward this on and if WebCore doesn't want to handle
@@ -1150,7 +1168,7 @@ void ExtractUnderlines(NSAttributedString* string,
   // If KeyboardLock has been requested for this keyCode, then mark the event
   // so it skips the pre-handler and is delivered straight to the website.
   if ([self isKeyLocked:theEvent])
-    event.skip_in_browser = true;
+    event.skip_if_unhandled = true;
 
   // Do not forward key up events unless preceded by a matching key down,
   // otherwise we might get an event from releasing the return key in the
@@ -1295,7 +1313,7 @@ void ExtractUnderlines(NSAttributedString* string,
   if (_hasMarkedText || oldHasMarkedText || _textToBeInserted.length() > 1) {
     NativeWebKeyboardEvent fakeEvent = event;
     fakeEvent.windows_key_code = 0xE5;  // VKEY_PROCESSKEY
-    fakeEvent.skip_in_browser = true;
+    fakeEvent.skip_if_unhandled = true;
     _hostHelper->ForwardKeyboardEvent(fakeEvent, latency_info);
     // If this key event was handled by the input method, but
     // -doCommandBySelector: (invoked by the call to -interpretKeyEvents: above)
@@ -1317,11 +1335,10 @@ void ExtractUnderlines(NSAttributedString* string,
   // Otherwise, if the text to be inserted only contains 1 character, then we
   // can just send a keypress event which is fabricated by changing the type of
   // the keydown event, so that we can retain all necessary information, such
-  // as unmodifiedText, etc. And we need to set event.skip_in_browser to true to
-  // prevent the browser from handling it again.
-  // Note that, |textToBeInserted_| is a UTF-16 string, but it's fine to only
-  // handle BMP characters here, as we can always insert non-BMP characters as
-  // text.
+  // as unmodifiedText, etc. And we need to set event.skip_if_unhandled to true
+  // to prevent the browser from handling it again. Note that,
+  // |textToBeInserted_| is a UTF-16 string, but it's fine to only handle BMP
+  // characters here, as we can always insert non-BMP characters as text.
   BOOL textInserted = NO;
   if (_textToBeInserted.length() >
       ((_hasMarkedText || oldHasMarkedText) ? 0u : 1u)) {
@@ -1367,7 +1384,7 @@ void ExtractUnderlines(NSAttributedString* string,
     // event to balance it.
     NativeWebKeyboardEvent fakeEvent = event;
     fakeEvent.SetType(blink::WebInputEvent::Type::kKeyUp);
-    fakeEvent.skip_in_browser = true;
+    fakeEvent.skip_if_unhandled = true;
     ui::LatencyInfo fake_event_latency_info = latency_info;
     fake_event_latency_info.set_source_event_type(ui::SourceEventType::OTHER);
     _hostHelper->ForwardKeyboardEvent(fakeEvent, fake_event_latency_info);
@@ -1385,7 +1402,7 @@ void ExtractUnderlines(NSAttributedString* string,
       event.SetType(blink::WebInputEvent::Type::kChar);
       event.text[0] = _textToBeInserted[0];
       event.text[1] = 0;
-      event.skip_in_browser = true;
+      event.skip_if_unhandled = true;
       _hostHelper->ForwardKeyboardEvent(event, latency_info);
     } else if ((!textInserted || delayEventUntilAfterImeComposition) &&
                event.text[0] != '\0' &&
@@ -1395,7 +1412,7 @@ void ExtractUnderlines(NSAttributedString* string,
       // generates an insert command. So synthesize a keypress event for these
       // cases, unless the key event generated any other command.
       event.SetType(blink::WebInputEvent::Type::kChar);
-      event.skip_in_browser = true;
+      event.skip_if_unhandled = true;
       _hostHelper->ForwardKeyboardEvent(event, latency_info);
     }
   }
@@ -1826,7 +1843,7 @@ void ExtractUnderlines(NSAttributedString* string,
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
   if (item.action == @selector(orderFrontSubstitutionsPanel:))
     return YES;
-  if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
+  if (NSMenuItem* menuItem = base::apple::ObjCCast<NSMenuItem>(item)) {
     if (item.action == @selector(toggleAutomaticQuoteSubstitution:)) {
       menuItem.state = self.automaticQuoteSubstitutionEnabled;
       return !!(self.allowedTextCheckingTypes & NSTextCheckingTypeQuote);

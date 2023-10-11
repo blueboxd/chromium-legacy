@@ -57,6 +57,16 @@ LLVM_BUILD_TOOLS_DIR = os.path.abspath(
     os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
 ANDROID_NDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party',
                                'android_toolchain', 'ndk')
+ANDROID_NDK_TOOLCHAIN_RELATIVE_DIR = os.path.join('toolchains', 'llvm',
+                                                  'prebuilt', 'linux-x86_64')
+ANDROID_NDK_TOOLCHAIN_DIR = os.path.join(ANDROID_NDK_DIR,
+                                         ANDROID_NDK_TOOLCHAIN_RELATIVE_DIR)
+# NOTE(nathaniel): Using the canary Android NDK in this manner is forecast
+# to be temporary (~months; will be done differently by 2024).
+ANDROID_NDK_CANARY_DIR = os.path.join(CHROMIUM_DIR, 'third_party',
+                                      'android_toolchain_canary', 'ndk')
+ANDROID_NDK_CANARY_TOOLCHAIN_DIR = os.path.join(
+    ANDROID_NDK_CANARY_DIR, ANDROID_NDK_TOOLCHAIN_RELATIVE_DIR)
 FUCHSIA_SDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'fuchsia-sdk',
                                'sdk')
 PINNED_CLANG_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR, 'pinned-clang')
@@ -66,6 +76,7 @@ BUG_REPORT_URL = ('https://crbug.com in the Tools>LLVM component,'
                   ' (only if inside Google) to upload crash related files,')
 
 LIBXML2_VERSION = 'libxml2-v2.9.12'
+ZSTD_VERSION = 'zstd-1.5.5'
 
 win_sdk_dir = None
 def GetWinSDKDir():
@@ -391,6 +402,78 @@ def BuildLibXml2():
   return extra_cmake_flags, extra_cflags
 
 
+class ZStdDirs:
+  """
+  The set of directories where zstd is located.
+
+  Includes the diractories where the source is unpacked, where it is built,
+  and installed.
+  """
+  def __init__(self):
+    self.unzip_dir = LLVM_BUILD_TOOLS_DIR
+    # When unpacked in `unzip_dir`, this will be the directory where the
+    # sources are found.
+    self.src_dir = os.path.join(self.unzip_dir, ZSTD_VERSION)
+    # The lib is built in a directory under its sources. Note, zstd uses
+    # build/cmake for cmake.
+    self.build_dir = os.path.join(self.src_dir, 'cmake_build')
+    # The lib is installed in a directory under where its built.
+    self.install_dir = os.path.join(self.build_dir, 'install')
+    # The full path to installed include files.
+    self.include_dir = os.path.join(self.install_dir, 'include')
+    # The full path to installed lib files.
+    self.lib_dir = os.path.join(self.install_dir, 'lib')
+
+
+def BuildZStd():
+  """Download and build zstd lib"""
+  # The zstd-1.5.5.tar.gz was downloaded from
+  #   https://github.com/facebook/zstd/releases/
+  # and uploaded as follows.
+  # $ gsutil cp -n -a public-read zstd-$VER.tar.gz \
+  #   gs://chromium-browser-clang/tools
+
+  dirs = ZStdDirs()
+  if os.path.exists(dirs.src_dir):
+    RmTree(dirs.src_dir)
+  zip_name = ZSTD_VERSION + '.tar.gz'
+  DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, dirs.unzip_dir)
+  os.mkdir(dirs.build_dir)
+  os.chdir(dirs.build_dir)
+
+  RunCommand(
+      [
+          'cmake',
+          '-GNinja',
+          '-DCMAKE_BUILD_TYPE=Release',
+          '-DCMAKE_INSTALL_PREFIX=install',
+          # The mac_arm bot builds a clang arm binary, but currently on an intel
+          # host. If we ever move it to run on an arm mac, this can go. We
+          # could pass this only if args.build_mac_arm, but zstd is small, so
+          # might as well build it universal always for a few years.
+          '-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64',
+          '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded',  # /MT to match LLVM.
+          '-DZSTD_BUILD_SHARED=OFF',
+          '../build/cmake',
+      ],
+      setenv=True)
+  RunCommand(['ninja', 'install'], setenv=True)
+
+  if sys.platform == 'win32':
+    zstd_lib = os.path.join(dirs.lib_dir, 'zstd_static.lib')
+  else:
+    zstd_lib = os.path.join(dirs.lib_dir, 'libzstd.a')
+  extra_cmake_flags = [
+      '-DLLVM_ENABLE_ZSTD=ON',
+      '-DLLVM_USE_STATIC_ZSTD=ON',
+      '-Dzstd_INCLUDE_DIR=' + dirs.include_dir.replace('\\', '/'),
+      '-Dzstd_LIBRARY=' + zstd_lib.replace('\\', '/'),
+  ]
+  extra_cflags = []
+
+  return extra_cmake_flags, extra_cflags
+
+
 def DownloadRPMalloc():
   """Download rpmalloc."""
   rpmalloc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'rpmalloc')
@@ -468,6 +551,31 @@ def VerifyZlibSupport():
     sys.exit(1)
 
 
+def VerifyZStdSupport():
+  """Check that lld was built with zstd support enabled."""
+  lld = os.path.join(LLVM_BUILD_DIR, 'bin')
+  if sys.platform == 'win32':
+    lld = os.path.join(lld, 'lld-link.exe')
+  elif sys.platform == 'linux':
+    lld = os.path.join(lld, 'ld.lld')
+  else:
+    print('zstd support check cannot be performed on the unsupported ' \
+          'platform ' + sys.platform)
+    return
+
+  print('Checking for zstd support')
+  lld_out = subprocess.run([lld, '--compress-debug-sections=zstd'],
+                           check=False,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT,
+                           universal_newlines=True).stdout
+  if '--compress-debug-sections: zstd is not available' in lld_out:
+    print(('Failed to detect zlib support!\n\n(driver output: %s)') % lld_out)
+    sys.exit(1)
+  else:
+    print('OK')
+
+
 def DownloadDebianSysroot(platform_name):
   # Download sysroots. This uses basically Chromium's sysroots, but with
   # minor changes:
@@ -492,7 +600,8 @@ def DownloadDebianSysroot(platform_name):
 
   toolchain_name = f'debian_bullseye_{platform_name}_sysroot'
   output = os.path.join(LLVM_BUILD_TOOLS_DIR, toolchain_name)
-  U = toolchain_bucket + hashes[platform_name] + '/' + toolchain_name + '.tar.xz'
+  U = toolchain_bucket + hashes[platform_name] + '/' + toolchain_name + \
+      '.tar.xz'
   DownloadAndUnpack(U, output)
 
   return output
@@ -603,10 +712,19 @@ def main():
   parser.add_argument('--with-goma',
                       action='store_true',
                       help='Use goma to build the stage 1 compiler')
+  parser.add_argument('--without-zstd',
+                      dest='with_zstd',
+                      action='store_false',
+                      help='Disable zstd in the build')
 
   args = parser.parse_args()
 
   global CLANG_REVISION, PACKAGE_VERSION, LLVM_BUILD_DIR
+
+  # TODO(crbug.com/1467585): Remove in next Clang roll.
+  if args.llvm_force_head_revision:
+    global RELEASE_VERSION
+    RELEASE_VERSION = '18'
 
   if (args.pgo or args.thinlto) and not args.bootstrap:
     print('--pgo/--thinlto requires --bootstrap')
@@ -729,8 +847,7 @@ def main():
       '-DLLVM_ENABLE_CURL=OFF',
       # Build libclang.a as well as libclang.so
       '-DLIBCLANG_BUILD_STATIC=ON',
-      # Don't try to use ZStd (crbug.com/1444500).
-      '-DLLVM_ENABLE_ZSTD=OFF',
+      '-DLLVM_ENABLE_ZSTD=%s' % ('ON' if args.with_zstd else 'OFF'),
   ]
 
   if sys.platform == 'darwin':
@@ -818,6 +935,13 @@ def main():
   base_cmake_args += libxml_cmake_args
   cflags += libxml_cflags
   cxxflags += libxml_cflags
+
+  if args.with_zstd:
+    # Statically link zstd to make lld support zstd compression for debug info.
+    zstd_cmake_args, zstd_cflags = BuildZStd()
+    base_cmake_args += zstd_cmake_args
+    cflags += zstd_cflags
+    cxxflags += zstd_cflags
 
   if args.bootstrap:
     print('Building bootstrap compiler')
@@ -1159,14 +1283,17 @@ def main():
     }
 
   if args.with_android:
-    toolchain_dir = ANDROID_NDK_DIR + '/toolchains/llvm/prebuilt/linux-x86_64'
-    for target_arch in ['aarch64', 'arm', 'i686', 'x86_64']:
+    for target_arch in ['aarch64', 'arm', 'i686', 'riscv64', 'x86_64']:
+      toolchain_dir = ANDROID_NDK_TOOLCHAIN_DIR
       target_triple = target_arch
       if target_arch == 'arm':
         target_triple = 'armv7'
       api_level = '19'
       if target_arch == 'aarch64' or target_arch == 'x86_64':
         api_level = '21'
+      elif target_arch == 'riscv64':
+        api_level = '35'
+        toolchain_dir = ANDROID_NDK_CANARY_TOOLCHAIN_DIR
       target_triple += '-linux-android' + api_level
       android_cflags = [
           '--sysroot=%s/sysroot' % toolchain_dir,
@@ -1373,6 +1500,8 @@ def main():
   if not args.build_mac_arm:
     VerifyVersionOfBuiltClangMatchesVERSION()
     VerifyZlibSupport()
+  if args.with_zstd:
+    VerifyZStdSupport()
 
   # Run tests.
   if (not args.build_mac_arm and

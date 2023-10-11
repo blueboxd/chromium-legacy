@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/webui/settings/ash/reset_section.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/webui/ash/settings/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_features_util.h"
-#include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/chromium_strings.h"
@@ -22,47 +23,32 @@ namespace ash::settings {
 
 namespace mojom {
 using ::chromeos::settings::mojom::kResetSectionPath;
+using ::chromeos::settings::mojom::kSystemPreferencesSectionPath;
 using ::chromeos::settings::mojom::Section;
 using ::chromeos::settings::mojom::Setting;
 using ::chromeos::settings::mojom::Subpage;
 }  // namespace mojom
 
-namespace {
-
-const std::vector<SearchConcept>& GetResetSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_RESET,
-       mojom::kResetSectionPath,
-       mojom::SearchResultIcon::kReset,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSection,
-       {.section = mojom::Section::kReset}},
-      {IDS_OS_SETTINGS_TAG_RESET_POWERWASH,
-       mojom::kResetSectionPath,
-       mojom::SearchResultIcon::kReset,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kPowerwash},
-       {IDS_OS_SETTINGS_TAG_RESET_POWERWASH_ALT1, SearchConcept::kAltTagEnd}},
-  });
-  return *tags;
-}
-
-}  // namespace
-
 ResetSection::ResetSection(Profile* profile,
                            SearchTagRegistry* search_tag_registry)
-    : OsSettingsSection(profile, search_tag_registry) {
+    : OsSettingsSection(profile, search_tag_registry),
+      isRevampWayfindingEnabled_(
+          ash::features::IsOsSettingsRevampWayfindingEnabled()) {
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
-  if (IsPowerwashAllowed())
-    updater.AddSearchTags(GetResetSearchConcepts());
+  if (IsPowerwashAllowed()) {
+    updater.AddSearchTags(GetSearchConcepts());
+  }
 }
 
 ResetSection::~ResetSection() = default;
 
 void ResetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"resetPageTitle", IDS_SETTINGS_RESET_TITLE},
+  const bool kIsRevampEnabled =
+      ash::features::IsOsSettingsRevampWayfindingEnabled();
+
+  webui::LocalizedString kLocalizedStrings[] = {
+      {"resetPageTitle", kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_RESET_TITLE
+                                          : IDS_SETTINGS_RESET_TITLE},
       {"powerwashTitle", IDS_SETTINGS_FACTORY_RESET},
       {"powerwashDialogTitle", IDS_SETTINGS_FACTORY_RESET_HEADING},
       {"powerwashDialogButton", IDS_SETTINGS_RESTART},
@@ -93,8 +79,11 @@ void ResetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   html_source->AddString(
       "powerwashDescription",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_FACTORY_RESET_DESCRIPTION,
-                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      kIsRevampEnabled ? l10n_util::GetStringUTF16(
+                             IDS_OS_SETTINGS_REVAMP_FACTORY_RESET_DESCRIPTION)
+                       : l10n_util::GetStringFUTF16(
+                             IDS_SETTINGS_FACTORY_RESET_DESCRIPTION,
+                             l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 }
 
 void ResetSection::AddHandlers(content::WebUI* web_ui) {
@@ -107,7 +96,8 @@ int ResetSection::GetSectionNameMessageId() const {
 }
 
 mojom::Section ResetSection::GetSection() const {
-  return mojom::Section::kReset;
+  return isRevampWayfindingEnabled_ ? mojom::Section::kSystemPreferences
+                                    : mojom::Section::kReset;
 }
 
 mojom::SearchResultIcon ResetSection::GetSectionIcon() const {
@@ -115,7 +105,8 @@ mojom::SearchResultIcon ResetSection::GetSectionIcon() const {
 }
 
 const char* ResetSection::GetSectionPath() const {
-  return mojom::kResetSectionPath;
+  return isRevampWayfindingEnabled_ ? mojom::kSystemPreferencesSectionPath
+                                    : mojom::kResetSectionPath;
 }
 
 bool ResetSection::LogMetric(mojom::Setting setting, base::Value& value) const {
@@ -125,6 +116,29 @@ bool ResetSection::LogMetric(mojom::Setting setting, base::Value& value) const {
 
 void ResetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kPowerwash);
+}
+
+const std::vector<SearchConcept>& ResetSection::GetSearchConcepts() {
+  const mojom::Section section = GetSection();
+  const char* section_path = GetSectionPath();
+
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_RESET,
+       section_path,
+       mojom::SearchResultIcon::kReset,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSection,
+       {.section = section}},
+      {IDS_OS_SETTINGS_TAG_RESET_POWERWASH,
+       section_path,
+       mojom::SearchResultIcon::kReset,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kPowerwash},
+       {IDS_OS_SETTINGS_TAG_RESET_POWERWASH_ALT1, SearchConcept::kAltTagEnd}},
+  });
+
+  return *tags;
 }
 
 }  // namespace ash::settings

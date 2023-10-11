@@ -22,19 +22,22 @@ namespace ash::welcome_tour_metrics {
 // persisted to logs. Entries should not be renumbered and numeric values should
 // never be reused.
 enum class AbortedReason {
-  kUnknown = 0,
+  kMinValue = 0,
+  kUnknown = kMinValue,
   kAccelerator = 1,
   kChromeVoxEnabled = 2,
   kTabletModeEnabled = 3,
   kUserDeclinedTour = 4,
-  kMaxValue = kUserDeclinedTour,
+  kShutdown = 5,
+  kMaxValue = kShutdown,
 };
 
 // Enumeration of reasons the Welcome Tour may be prevented. These values are
 // persisted to logs. Entries should not be renumbered and numeric values should
-// never be reused.
+// never be reused. Be sure to update `kAllPreventedReasonsSet` accordingly.
 enum class PreventedReason {
-  kUnknown = 0,
+  kMinValue = 0,
+  kUnknown = kMinValue,
   kChromeVoxEnabled = 1,
   kCounterfactualExperimentArm = 2,
   kManagedAccount = 3,
@@ -46,10 +49,26 @@ enum class PreventedReason {
   kMaxValue = kUserNotNewLocally,
 };
 
+static constexpr auto kAllPreventedReasonsSet =
+    base::EnumSet<PreventedReason,
+                  PreventedReason::kMinValue,
+                  PreventedReason::kMaxValue>({
+        PreventedReason::kUnknown,
+        PreventedReason::kChromeVoxEnabled,
+        PreventedReason::kCounterfactualExperimentArm,
+        PreventedReason::kManagedAccount,
+        PreventedReason::kTabletModeEnabled,
+        PreventedReason::kUserNewnessNotAvailable,
+        PreventedReason::kUserNotNewCrossDevice,
+        PreventedReason::kUserTypeNotRegular,
+        PreventedReason::kUserNotNewLocally,
+    });
+
 // Enumeration of steps in the Welcome Tour. These values are persisted to logs.
 // Entries should not be renumbered and numeric values should never be reused.
 enum class Step {
-  kDialog = 0,
+  kMinValue = 0,
+  kDialog = kMinValue,
   kExploreApp = 1,
   kExploreAppWindow = 2,
   kHomeButton = 3,
@@ -62,7 +81,8 @@ enum class Step {
 
 // Enumeration of interactions users may engage in after the Welcome Tour. These
 // values are persisted to logs. Entries should not be renumbered and numeric
-// values should never be reused.
+// values should never be reused. Be sure to update `kAllInteractionsSet`
+// accordingly.
 enum class Interaction {
   kMinValue = 0,
   kFilesApp = kMinValue,
@@ -70,13 +90,24 @@ enum class Interaction {
   kQuickSettings = 2,
   kSearch = 3,
   kSettingsApp = 4,
-  kMaxValue = kSettingsApp,
+  kExploreApp = 5,
+  kMaxValue = kExploreApp,
 };
 
-using AllInteractionsSet =
-    base::EnumSet<Interaction, Interaction::kMinValue, Interaction::kMaxValue>;
+static constexpr auto kAllInteractionsSet =
+    base::EnumSet<Interaction, Interaction::kMinValue, Interaction::kMaxValue>({
+        Interaction::kExploreApp,
+        Interaction::kFilesApp,
+        Interaction::kLauncher,
+        Interaction::kQuickSettings,
+        Interaction::kSearch,
+        Interaction::kSettingsApp,
+    });
 
 // Utilities -------------------------------------------------------------------
+
+// Record that a given `interaction` has occurred.
+ASH_EXPORT void RecordInteraction(Interaction interaction);
 
 // Record that the given `step` of the Welcome Tour was aborted.
 ASH_EXPORT void RecordStepAborted(Step step);
@@ -86,12 +117,6 @@ ASH_EXPORT void RecordStepDuration(Step step, base::TimeDelta duration);
 
 // Record that the given `step` of the Welcome Tour was shown.
 ASH_EXPORT void RecordStepShown(Step step);
-
-// Record the time to first occurrence of a given `interaction`. This should
-// be measured from the time the user is first able to interact in the intended
-// way, i.e. after the Welcome Tour is ended or prevented.
-ASH_EXPORT void RecordTimeToInteraction(Interaction interaction,
-                                        base::TimeDelta delta);
 
 // Record that the Welcome Tour was aborted for the given `reason`.
 ASH_EXPORT void RecordTourAborted(AbortedReason reason);
@@ -105,6 +130,9 @@ ASH_EXPORT void RecordTourPrevented(PreventedReason reason);
 
 // Returns a string representation of the given `interaction`.
 ASH_EXPORT std::string ToString(Interaction interaction);
+
+// Returns a string representation of the given `step`.
+ASH_EXPORT std::string ToString(Step step);
 
 }  // namespace ash::welcome_tour_metrics
 

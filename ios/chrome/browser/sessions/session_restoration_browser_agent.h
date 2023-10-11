@@ -12,16 +12,16 @@
 #import <vector>
 
 #import "base/observer_list.h"
+#import "ios/chrome/browser/sessions/web_state_list_serialization.h"
 #import "ios/chrome/browser/shared/model/browser/browser_observer.h"
 #import "ios/chrome/browser/shared/model/browser/browser_user_data.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
 #import "ios/web/public/web_state_observer.h"
 
 class AllWebStateObservationForwarder;
 class ChromeBrowserState;
 @class SessionWindowIOS;
-@class SessionIOSFactory;
+@class SessionWindowIOSFactory;
 class SessionRestorationObserver;
 @class SessionServiceIOS;
 class WebStateList;
@@ -128,8 +128,8 @@ class SessionRestorationBrowserAgent
 
   ChromeBrowserState* browser_state_ = nullptr;
 
-  // Session Factory used to create session data for saving.
-  SessionIOSFactory* session_ios_factory_ = nullptr;
+  // SessionWindowIOSFactory used to create session data for saving.
+  SessionWindowIOSFactory* session_window_ios_factory_ = nullptr;
 
   // Session identifier for this agent.
   __strong NSString* session_identifier_ = nil;

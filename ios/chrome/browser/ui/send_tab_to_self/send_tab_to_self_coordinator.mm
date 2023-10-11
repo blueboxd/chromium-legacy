@@ -8,9 +8,9 @@
 #import <memory>
 #import <utility>
 
+#import "base/apple/foundation_util.h"
 #import "base/check.h"
 #import "base/ios/block_types.h"
-#import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/send_tab_to_self/entry_point_display_reason.h"
 #import "components/send_tab_to_self/metrics_util.h"
@@ -219,7 +219,7 @@ void OpenManageDevicesTab(CommandDispatcher* dispatcher) {
 - (CGFloat)modalHeightForWidth:(CGFloat)width {
   UIView* view = self.sendTabToSelfViewController.view;
   CGSize contentSize = CGSizeZero;
-  if (UIScrollView* scrollView = base::mac::ObjCCast<UIScrollView>(view)) {
+  if (UIScrollView* scrollView = base::apple::ObjCCast<UIScrollView>(view)) {
     CGRect layoutFrame = self.baseViewController.view.bounds;
     layoutFrame.size.width = width;
     scrollView.frame = layoutFrame;
@@ -338,7 +338,8 @@ void OpenManageDevicesTab(CommandDispatcher* dispatcher) {
 
       __weak __typeof(self) weakSelf = self;
       ShowSigninCommandCompletionCallback callback =
-          ^(SigninCoordinatorResult result) {
+          ^(SigninCoordinatorResult result,
+            SigninCompletionInfo* completionInfo) {
             BOOL succeeded = result == SigninCoordinatorResultSuccess;
             [weakSelf onSigninComplete:succeeded];
           };
@@ -379,11 +380,10 @@ void OpenManageDevicesTab(CommandDispatcher* dispatcher) {
 }
 
 - (absl::optional<send_tab_to_self::EntryPointDisplayReason>)displayReason {
-  ChromeBrowserState* browserState = self.browser->GetBrowserState();
-  return send_tab_to_self::GetEntryPointDisplayReason(
-      _url, SyncServiceFactory::GetForBrowserState(browserState),
-      SendTabToSelfSyncServiceFactory::GetForBrowserState(browserState),
-      browserState->GetPrefs());
+  send_tab_to_self::SendTabToSelfSyncService* service =
+      SendTabToSelfSyncServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+  return service ? service->GetEntryPointDisplayReason(_url) : absl::nullopt;
 }
 
 @end

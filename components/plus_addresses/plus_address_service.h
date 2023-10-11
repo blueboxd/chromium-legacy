@@ -8,17 +8,16 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "base/functional/callback_forward.h"
-#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/plus_addresses/plus_address_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
-namespace plus_addresses {
+namespace signin {
+class IdentityManager;
+}
 
-// Represents a psuedo-profile-like object for use on a given facet.
-struct PlusProfile {
-  std::string address;
-};
+namespace plus_addresses {
 
 typedef base::OnceCallback<void(const std::string&)> PlusAddressCallback;
 
@@ -26,14 +25,21 @@ typedef base::OnceCallback<void(const std::string&)> PlusAddressCallback;
 // Not intended for widespread use.
 class PlusAddressService : public KeyedService {
  public:
-  // Default constructor/destructor only, for now.
+  // Used to simplify testing in cases where calls depending on the
+  // identity manager can be mocked out.
   PlusAddressService();
   ~PlusAddressService() override;
 
+  // Initialize the PlusAddressService with the `IdentityManager`.
+  explicit PlusAddressService(signin::IdentityManager* identity_manager);
+
   // Returns `true` when plus addresses are supported. Currently requires only
   // that the `kPlusAddressesEnabled` base::Feature is enabled.
-  // TODO(crbug.com/1467623): also take signin state into account.
-  bool SupportsPlusAddresses();
+  // Virtual to allow overriding the behavior in tests. This allows external
+  // tests (e.g., those in autofill that depend on this class) to substitute
+  // their own behavior.
+  // TODO(crbug.com/1467623): react to `origin` parameter.
+  virtual bool SupportsPlusAddresses(url::Origin origin);
   // Get a plus address, if one exists, for the passed-in origin. Note that all
   // plus address activity is scoped to eTLD+1. This class owns the conversion
   // of `origin` to its eTLD+1 form.
@@ -44,20 +50,30 @@ class PlusAddressService : public KeyedService {
   // Check whether the passed-in string is a known plus address.
   bool IsPlusAddress(std::string potential_plus_address);
 
-  // Eventually, will orchestrate UI elements to inform the user of the plus
-  // address being created on their behalf, calling `PlusAddressCallback` on
-  // confirmation. For now, however, simply generates a fake plus address and
-  // runs `callback` with it immediately.
-  void OfferPlusAddressCreation(url::Origin origin,
+  // For now, simply generates a fake plus address and runs `callback` with it
+  // immediately.
+  void OfferPlusAddressCreation(const url::Origin& origin,
                                 PlusAddressCallback callback);
 
+  // The label for an autofill suggestion offering to create a new plus address.
+  // While only debatably relevant to this class, this function allows for
+  // further decoupling of PlusAddress generation and autofill.
+  std::u16string GetCreateSuggestionLabel();
+
  private:
-  // The user's existing set of plus addresses, scoped to facets.
-  std::unordered_map<std::string, PlusProfile> plus_profiles_;
+  // The user's existing set of plus addresses, scoped to sites.
+  std::unordered_map<std::string, std::string> plus_address_by_site_;
 
   // Used to drive the `IsPlusAddress` function, and derived from the values of
   // `plus_profiles`.
   std::unordered_set<std::string> plus_addresses_;
+
+  // Stores pointer to IdentityManager instance. It must outlive the
+  // PlusAddressService and can be null during tests.
+  const raw_ptr<signin::IdentityManager> identity_manager_;
+
+  // Handles requests to a remote server that this service uses.
+  const PlusAddressClient plus_address_client_;
 };
 
 }  // namespace plus_addresses

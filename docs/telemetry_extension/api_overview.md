@@ -40,6 +40,9 @@ and **events**.
 | ufs_lifetime |
 | power_button |
 | audio_driver |
+| bluetooth_discovery |
+| bluetooth_scanning |
+| bluetooth_pairing |
 
 ### Enum RoutineStatus
 | Property Name |
@@ -169,7 +172,10 @@ and **events**.
 | runBatteryHealthRoutine | () => Promise<Routine\> | `os.diagnostics` | M96 |
 | runBatteryDischargeRoutine | (params: RunBatteryDischargeRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M96 |
 | runBatteryChargeRoutine | (params: RunBatteryChargeRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M96 |
+| runBluetoothDiscoveryRoutine | () => Promise<Routine\> | `os.diagnostics` | M118 |
+| runBluetoothPairingRoutine | () => Promise<Routine\> | `os.diagnostics` | M118 |
 | runBluetoothPowerRoutine | () => Promise<Routine\> | `os.diagnostics` | M117 |
+| runBluetoothScanningRoutine | () => Promise<Routine\> | `os.diagnostics` | M118 |
 | runCpuCacheRoutine | (params: RunCpuRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M96 |
 | runCpuFloatingPointAccuracyRoutine | (params: RunCpuRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M99 |
 | runCpuPrimeSearchRoutine | (params: RunCpuRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M99 |
@@ -424,7 +430,7 @@ and **events**.
 | trackingId | number | An id to track an initiated contact throughout its life cycle |
 | x | number | The x position |
 | y | number | The y position |
-| pressure | number | The pressure applied to the touch contact. The value ranges from 0 to `max_pressure` as defined in `TouchpadConnectedEventInfo` |
+| pressure | number | The pressure applied to the touch contact. The value ranges from 0 to `max_pressure` as defined in `TouchpadConnectedEventInfo` and `TouchscreenConnectedEventInfo` |
 | touchMajor | number | The length of the longer dimension of the touch contact |
 | touchMinor | number | The length of the shorter dimension of the touch contact |
 
@@ -434,10 +440,43 @@ and **events**.
 | touchPoints | Array<TouchPointInfo\> | The touch points reported by the touchpad |
 
 ### TouchpadConnectedEventInfo
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
 | maxX | number | The maximum possible x position of touch points |
 | maxY | number | The maximum possible y position of touch points |
 | maxPressure | number | The maximum possible pressure of touch points, or 0 if pressure is not supported |
 | buttons | Array<InputTouchButton\> | The supported buttons |
+
+### TouchscreenTouchEventInfo
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| touchPoints | Array<TouchPointInfo\> | The touch points reported by the touchscreen |
+
+### TouchscreenConnectedEventInfo
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| maxX | number | The maximum possible x position of touch points |
+| maxY | number | The maximum possible y position of touch points |
+| maxPressure | number | The maximum possible pressure of touch points, or 0 if pressure is not supported |
+
+### StylusTouchPointInfo
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| x | number | The x position in the cartesian XY plane. The value ranges from 0 to `max_x` as defined in `StylusConnectedEventInfo` |
+| y | number | The y position in the cartesian XY plane. The value ranges from 0 to `max_y` as defined in `StylusConnectedEventInfo` |
+| pressure | number | The pressure applied to the touch contact. The value ranges from 0 to `max_pressure` as defined in `StylusConnectedEventInfo` |
+
+### StylusTouchEventInfo
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| touchPoint | StylusTouchPointInfo | The info of the stylus touch point. A null touch point means the stylus leaves the contact |
+
+### StylusConnectedEventInfo
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| maxX | number | The maximum possible x position of touch points |
+| maxY | number | The maximum possible y position of touch points |
+| maxPressure | number | The maximum possible pressure of touch points, or 0 if pressure is not supported |
 
 ## Functions
 
@@ -454,7 +493,7 @@ and **events**.
 | onAudioJackEvent | function(AudioJackEventInfo) | `os.events` | M115 | An audio device was plugged in or out |
 | onKeyboardDiagnosticEvent | function(KeyboardDiagnosticEventInfo) | `os.events` | M117 | Informs the extension that a Keyboard diagnostic has been completed in the first party diagnostic tool |
 | onLidEvent | function(LidEventInfo) | `os.events` | M115 | The device lid was opened or closed |
-| onUsbEvent | function(UsbEventInfo) | `os.events` | M117 | Informs the extension that a `Usb` event occurred |
+| onUsbEvent | function(UsbEventInfo) | `os.events` | M115 | Informs the extension that a `Usb` event occurred |
 | onExternalDisplayEvent | function(ExternalDisplayEventInfo) | `os.events` | M117 | Informs the extension that a `ExternalDisplay` event occurred |
 | onSdCardEvent | function(SdCardEventInfo) | `os.events` | M117 | Informs the extension that a `SD Card` event occurred |
 | onPowerEvent | function(PowerEventInfo) | `os.events` | M117 | Informs the extension that a `Power` event occurred |
@@ -462,6 +501,8 @@ and **events**.
 | onTouchpadButtonEvent | function(TouchpadButtonEventInfo) | `os.events` | M117 | Informs the extension that a `Touchpad Button` event occurred |
 | onTouchpadTouchEvent | function(TouchpadTouchEventInfo) | `os.events` | M117 | Informs the extension that a `Touchpad Touch` event occurred |
 | onTouchpadConnectedEvent | function(TouchpadConnectedEventInfo) | `os.events` | M117 | Informs the extension that a `Touchpad Connected` event occurred |
+| onTouchscreenTouchEvent | function(TouchscreenTouchEventInfo) | `os.events` | M118 | Informs the extension that a `Touchscreen Touch` event occurred |
+| onTouchscreenConnectedEvent | function(TouchscreenConnectedEventInfo) | `os.events` | M118 | Informs the extension that a `Touchscreen Connected` event occurred |
 | onStylusTouchEvent | function(StylusTouchEventInfo) | `os.events` | M117 | Informs the extension that a `Stylus Touch` event occurred |
 | onStylusConnectedEvent | function(StylusConnectedEventInfo) | `os.events` | M117 | Informs the extension that a `Stylus Connected` event occurred |
 

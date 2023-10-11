@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
-#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -74,7 +73,6 @@
 #include "third_party/blink/renderer/modules/formatted_text/formatted_text.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
-#include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
@@ -101,35 +99,6 @@ static mojom::blink::ColorScheme GetColorSchemeFromCanvas(
   }
   return mojom::blink::ColorScheme::kLight;
 }
-
-// Drawing methods need to use this instead of SkAutoCanvasRestore in case
-// overdraw detection substitutes the recording canvas (to discard overdrawn
-// draw calls).
-class CanvasRenderingContext2DAutoRestoreSkCanvas {
-  STACK_ALLOCATED();
-
- public:
-  explicit CanvasRenderingContext2DAutoRestoreSkCanvas(
-      CanvasRenderingContext2D* context)
-      : context_(context) {
-    DCHECK(context_);
-    cc::PaintCanvas* c = context_->GetOrCreatePaintCanvas();
-    if (c) {
-      save_count_ = c->getSaveCount();
-    }
-  }
-
-  ~CanvasRenderingContext2DAutoRestoreSkCanvas() {
-    cc::PaintCanvas* c = context_->GetOrCreatePaintCanvas();
-    if (c)
-      c->restoreToCount(save_count_);
-    context_->ValidateStateStack();
-  }
-
- private:
-  CanvasRenderingContext2D* context_;
-  int save_count_ = 0;
-};
 
 CanvasRenderingContext* CanvasRenderingContext2D::Factory::Create(
     CanvasRenderingContextHost* host,
@@ -405,26 +374,13 @@ sk_sp<PaintFilter> CanvasRenderingContext2D::StateGetFilter() {
   return GetState().GetFilter(canvas(), canvas()->Size(), this);
 }
 
-void CanvasRenderingContext2D::SnapshotStateForFilter() {
-  // The style resolution required for fonts is not available in frame-less
-  // documents.
-  if (!canvas()->GetDocument().GetFrame())
-    return;
-
-  GetState().SetFontForFilter(AccessFont());
-}
-
 cc::PaintCanvas* CanvasRenderingContext2D::GetOrCreatePaintCanvas() {
   if (UNLIKELY(isContextLost()))
     return nullptr;
   if (LIKELY(canvas()->GetOrCreateCanvas2DLayerBridge())) {
-    if (LIKELY(!layer_count_) &&
-        LIKELY(canvas()->GetCanvas2DLayerBridge()->ResourceProvider())) {
+    if (LIKELY(!layer_count_) && LIKELY(Host()->ResourceProvider())) {
       // TODO(crbug.com/1246486): Make auto-flushing layer friendly.
-      canvas()
-          ->GetCanvas2DLayerBridge()
-          ->ResourceProvider()
-          ->FlushIfRecordingLimitExceeded();
+      Host()->ResourceProvider()->FlushIfRecordingLimitExceeded();
     }
     return canvas()->GetCanvas2DLayerBridge()->GetPaintCanvas();
   }
@@ -432,10 +388,9 @@ cc::PaintCanvas* CanvasRenderingContext2D::GetOrCreatePaintCanvas() {
 }
 
 cc::PaintCanvas* CanvasRenderingContext2D::GetPaintCanvas() {
-  if (UNLIKELY(isContextLost() || !canvas() ||
-               !canvas()->GetCanvas2DLayerBridge() ||
-               !canvas()->GetCanvas2DLayerBridge()->ResourceProvider()))
+  if (UNLIKELY(isContextLost() || !Host() || !Host()->ResourceProvider())) {
     return nullptr;
+  }
   return canvas()->GetCanvas2DLayerBridge()->GetPaintCanvas();
 }
 
@@ -446,72 +401,45 @@ void CanvasRenderingContext2D::WillDraw(
   // Always draw everything during printing.
   if (!layer_count_) {
     // TODO(crbug.com/1246486): Make auto-flushing layer friendly.
-    canvas()
-        ->GetCanvas2DLayerBridge()
-        ->ResourceProvider()
-        ->FlushIfRecordingLimitExceeded();
+    Host()->ResourceProvider()->FlushIfRecordingLimitExceeded();
   }
 }
 
 void CanvasRenderingContext2D::FlushCanvas(
     CanvasResourceProvider::FlushReason reason) {
-  if (canvas() && canvas()->GetCanvas2DLayerBridge() &&
-      canvas()->GetCanvas2DLayerBridge()->ResourceProvider()) {
-    canvas()->GetCanvas2DLayerBridge()->ResourceProvider()->FlushCanvas(reason);
+  if (Host() && Host()->ResourceProvider()) {
+    Host()->ResourceProvider()->FlushCanvas(reason);
   }
 }
 
-String CanvasRenderingContext2D::font() const {
-  if (!GetState().HasRealizedFont())
-    return kDefaultFont;
-
-  canvas()->GetDocument().GetCanvasFontCache()->WillUseCurrentFont();
-  StringBuilder serialized_font;
-  const FontDescription& font_description = GetState().GetFontDescription();
-
-  if (font_description.Style() == ItalicSlopeValue())
-    serialized_font.Append("italic ");
-  if (font_description.Weight() == BoldWeightValue()) {
-    serialized_font.Append("bold ");
-  } else if (font_description.Weight() != NormalWeightValue()) {
-    int weight_as_int = static_cast<int>((float)font_description.Weight());
-    serialized_font.AppendNumber(weight_as_int);
-    serialized_font.Append(" ");
-  }
-  if (font_description.VariantCaps() == FontDescription::kSmallCaps)
-    serialized_font.Append("small-caps ");
-
-  serialized_font.AppendNumber(font_description.ComputedSize());
-  serialized_font.Append("px ");
-
-  serialized_font.Append(
-      ComputedStyleUtils::ValueForFontFamily(font_description.Family())
-          ->CssText());
-
-  return serialized_font.ToString();
-}
-
-void CanvasRenderingContext2D::setFont(const String& new_font) {
+bool CanvasRenderingContext2D::WillSetFont() const {
   // The style resolution required for fonts is not available in frame-less
   // documents.
-  if (!canvas()->GetDocument().GetFrame())
-    return;
-  if (UNLIKELY(identifiability_study_helper_.ShouldUpdateBuilder())) {
-    identifiability_study_helper_.UpdateBuilder(
-        CanvasOps::kSetFont, IdentifiabilityBenignStringToken(new_font));
+  if (!canvas()->GetDocument().GetFrame()) {
+    return false;
   }
 
   canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(
       canvas(), DocumentUpdateReason::kCanvas);
+  return true;
+}
 
-  // The following early exit is dependent on the cache not being empty
-  // because an empty cache may indicate that a style change has occured
+bool CanvasRenderingContext2D::CurrentFontResolvedAndUpToDate() const {
+  // An empty cache may indicate that a style change has occurred
   // which would require that the font be re-resolved. This check has to
-  // come after the layout tree update to flush pending style changes.
-  if (new_font == GetState().UnparsedFont() && GetState().HasRealizedFont() &&
-      fonts_resolved_using_current_style_.size() > 0)
-    return;
+  // come after the layout tree update in WillSetFont() to flush pending
+  // style changes.
+  return GetState().HasRealizedFont() &&
+         fonts_resolved_using_current_style_.size() > 0;
+}
 
+void CanvasRenderingContext2D::setFontForTesting(const String& new_font) {
+  // Dependency inversion to allow BaseRenderingContext2D::setFont
+  // to be invoked from core unit tests.
+  setFont(new_font);
+}
+
+bool CanvasRenderingContext2D::ResolveFont(const String& new_font) {
   CanvasFontCache* canvas_font_cache =
       canvas()->GetDocument().GetCanvasFontCache();
 
@@ -528,7 +456,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       MutableCSSPropertyValueSet* parsed_style =
           canvas_font_cache->ParseFont(new_font);
       if (!parsed_style)
-        return;
+        return false;
       ComputedStyleBuilder font_style_builder =
           canvas()
               ->GetDocument()
@@ -544,8 +472,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
           element_font_description.SpecifiedSize());
 
       font_style_builder.SetFontDescription(element_font_description);
-      scoped_refptr<const ComputedStyle> font_style =
-          font_style_builder.TakeStyle();
+      const ComputedStyle* font_style = font_style_builder.TakeStyle();
       Font font = canvas()->GetDocument().GetStyleEngine().ComputeFont(
           *canvas(), *font_style, *parsed_style);
 
@@ -566,7 +493,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
     Font resolved_font;
     if (!canvas_font_cache->GetFontUsingDefaultStyle(*canvas(), new_font,
                                                      resolved_font))
-      return;
+      return false;
 
     // We need to reset Computed and Adjusted size so we skip zoom and
     // minimum font size for detached canvas.
@@ -575,11 +502,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
     final_description.SetAdjustedSize(final_description.SpecifiedSize());
     GetState().SetFont(final_description, Host()->GetFontSelector());
   }
-
-  // The parse succeeded.
-  String new_font_safe_copy(new_font);  // Create a string copy since newFont
-                                        // can be deleted inside realizeSaves.
-  GetState().SetUnparsedFont(new_font_safe_copy);
+  return true;
 }
 
 void CanvasRenderingContext2D::DidProcessTask(
@@ -707,228 +630,6 @@ Color CanvasRenderingContext2D::GetCurrentColor() const {
   return color;
 }
 
-static inline TextDirection ToTextDirection(
-    CanvasRenderingContext2DState::Direction direction,
-    HTMLCanvasElement* canvas,
-    const ComputedStyle** computed_style = nullptr) {
-  const ComputedStyle* style =
-      (computed_style ||
-       direction == CanvasRenderingContext2DState::kDirectionInherit)
-          ? canvas->EnsureComputedStyle()
-          : nullptr;
-  if (computed_style)
-    *computed_style = style;
-  switch (direction) {
-    case CanvasRenderingContext2DState::kDirectionInherit:
-      return style ? style->Direction() : TextDirection::kLtr;
-    case CanvasRenderingContext2DState::kDirectionRTL:
-      return TextDirection::kRtl;
-    case CanvasRenderingContext2DState::kDirectionLTR:
-      return TextDirection::kLtr;
-  }
-  NOTREACHED();
-  return TextDirection::kLtr;
-}
-
-String CanvasRenderingContext2D::direction() const {
-  if (GetState().GetDirection() ==
-      CanvasRenderingContext2DState::kDirectionInherit) {
-    canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(
-        canvas(), DocumentUpdateReason::kCanvas);
-  }
-  return ToTextDirection(GetState().GetDirection(), canvas()) ==
-                 TextDirection::kRtl
-             ? kRtlDirectionString
-             : kLtrDirectionString;
-}
-
-void CanvasRenderingContext2D::setDirection(const String& direction_string) {
-  CanvasRenderingContext2DState::Direction direction;
-  if (direction_string == kInheritDirectionString)
-    direction = CanvasRenderingContext2DState::kDirectionInherit;
-  else if (direction_string == kRtlDirectionString)
-    direction = CanvasRenderingContext2DState::kDirectionRTL;
-  else if (direction_string == kLtrDirectionString)
-    direction = CanvasRenderingContext2DState::kDirectionLTR;
-  else
-    return;
-
-  if (GetState().GetDirection() == direction)
-    return;
-
-  GetState().SetDirection(direction);
-}
-
-void CanvasRenderingContext2D::setLetterSpacing(const String& letter_spacing) {
-  UseCounter::Count(canvas()->GetTopExecutionContext(),
-                    WebFeature::kCanvasRenderingContext2DLetterSpacing);
-  // TODO(crbug.com/1234113): Instrument new canvas APIs.
-  identifiability_study_helper_.set_encountered_skipped_ops();
-  if (!GetState().HasRealizedFont())
-    setFont(font());
-
-  GetState().SetLetterSpacing(letter_spacing);
-}
-
-void CanvasRenderingContext2D::setWordSpacing(const String& word_spacing) {
-  UseCounter::Count(canvas()->GetTopExecutionContext(),
-                    WebFeature::kCanvasRenderingContext2DWordSpacing);
-  // TODO(crbug.com/1234113): Instrument new canvas APIs.
-  identifiability_study_helper_.set_encountered_skipped_ops();
-
-  if (!GetState().HasRealizedFont())
-    setFont(font());
-
-  GetState().SetWordSpacing(word_spacing);
-}
-
-void CanvasRenderingContext2D::setTextRendering(
-    const String& text_rendering_string) {
-  UseCounter::Count(canvas()->GetTopExecutionContext(),
-                    WebFeature::kCanvasRenderingContext2DTextRendering);
-  // TODO(crbug.com/1234113): Instrument new canvas APIs.
-  identifiability_study_helper_.set_encountered_skipped_ops();
-  if (!GetState().HasRealizedFont())
-    setFont(font());
-
-  absl::optional<blink::V8CanvasTextRendering> text_value =
-      V8CanvasTextRendering::Create(text_rendering_string);
-
-  if (!text_value.has_value()) {
-    return;
-  }
-
-  if (GetState().GetTextRendering() == text_value.value()) {
-    return;
-  }
-  GetState().SetTextRendering(text_value.value(), Host()->GetFontSelector());
-}
-
-void CanvasRenderingContext2D::setFontKerning(
-    const String& font_kerning_string) {
-  UseCounter::Count(canvas()->GetTopExecutionContext(),
-                    WebFeature::kCanvasRenderingContext2DFontKerning);
-  // TODO(crbug.com/1234113): Instrument new canvas APIs.
-  identifiability_study_helper_.set_encountered_skipped_ops();
-  if (!GetState().HasRealizedFont())
-    setFont(font());
-  FontDescription::Kerning kerning;
-  if (font_kerning_string == kAutoKerningString) {
-    kerning = FontDescription::kAutoKerning;
-  } else if (font_kerning_string == kNoneKerningString) {
-    kerning = FontDescription::kNoneKerning;
-  } else if (font_kerning_string == kNormalKerningString) {
-    kerning = FontDescription::kNormalKerning;
-  } else {
-    return;
-  }
-
-  if (GetState().GetFontKerning() == kerning)
-    return;
-
-  GetState().SetFontKerning(kerning, Host()->GetFontSelector());
-}
-
-void CanvasRenderingContext2D::setFontStretch(const String& font_stretch) {
-  UseCounter::Count(canvas()->GetTopExecutionContext(),
-                    WebFeature::kCanvasRenderingContext2DFontStretch);
-  // TODO(crbug.com/1234113): Instrument new canvas APIs.
-  identifiability_study_helper_.set_encountered_skipped_ops();
-  if (!GetState().HasRealizedFont())
-    setFont(font());
-
-  absl::optional<blink::V8CanvasFontStretch> font_value =
-      V8CanvasFontStretch::Create(font_stretch);
-
-  if (!font_value.has_value()) {
-    return;
-  }
-  if (GetState().GetFontStretch() == font_value.value()) {
-    return;
-  }
-  GetState().SetFontStretch(font_value.value(), Host()->GetFontSelector());
-}
-
-void CanvasRenderingContext2D::setFontVariantCaps(
-    const String& font_variant_caps_string) {
-  UseCounter::Count(canvas()->GetTopExecutionContext(),
-                    WebFeature::kCanvasRenderingContext2DFontVariantCaps);
-  // TODO(crbug.com/1234113): Instrument new canvas APIs.
-  identifiability_study_helper_.set_encountered_skipped_ops();
-  if (!GetState().HasRealizedFont())
-    setFont(font());
-  FontDescription::FontVariantCaps variant_caps;
-  if (font_variant_caps_string == kNormalVariantString) {
-    variant_caps = FontDescription::kCapsNormal;
-  } else if (font_variant_caps_string == kSmallCapsVariantString) {
-    variant_caps = FontDescription::kSmallCaps;
-  } else if (font_variant_caps_string == kAllSmallCapsVariantString) {
-    variant_caps = FontDescription::kAllSmallCaps;
-  } else if (font_variant_caps_string == kPetiteVariantString) {
-    variant_caps = FontDescription::kPetiteCaps;
-  } else if (font_variant_caps_string == kAllPetiteVariantString) {
-    variant_caps = FontDescription::kAllPetiteCaps;
-  } else if (font_variant_caps_string == kUnicaseVariantString) {
-    variant_caps = FontDescription::kUnicase;
-  } else if (font_variant_caps_string == kTitlingCapsVariantString) {
-    variant_caps = FontDescription::kTitlingCaps;
-  } else {
-    return;
-  }
-
-  if (GetState().GetFontVariantCaps() == variant_caps)
-    return;
-
-  GetState().SetFontVariantCaps(variant_caps, Host()->GetFontSelector());
-}
-
-void CanvasRenderingContext2D::fillText(const String& text,
-                                        double x,
-                                        double y) {
-  DrawTextInternal(text, x, y, CanvasRenderingContext2DState::kFillPaintType);
-}
-
-void CanvasRenderingContext2D::fillText(const String& text,
-                                        double x,
-                                        double y,
-                                        double max_width) {
-  DrawTextInternal(text, x, y, CanvasRenderingContext2DState::kFillPaintType,
-                   &max_width);
-}
-
-void CanvasRenderingContext2D::strokeText(const String& text,
-                                          double x,
-                                          double y) {
-  DrawTextInternal(text, x, y, CanvasRenderingContext2DState::kStrokePaintType);
-}
-
-void CanvasRenderingContext2D::strokeText(const String& text,
-                                          double x,
-                                          double y,
-                                          double max_width) {
-  DrawTextInternal(text, x, y, CanvasRenderingContext2DState::kStrokePaintType,
-                   &max_width);
-}
-
-TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
-  // The style resolution required for fonts is not available in frame-less
-  // documents.
-  if (!canvas()->GetDocument().GetFrame())
-    return MakeGarbageCollected<TextMetrics>();
-
-  canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(
-      canvas(), DocumentUpdateReason::kCanvas);
-
-  const Font& font = AccessFont();
-
-  TextDirection direction =
-      ToTextDirection(GetState().GetDirection(), canvas());
-
-  return MakeGarbageCollected<TextMetrics>(font, direction,
-                                           GetState().GetTextBaseline(),
-                                           GetState().GetTextAlign(), text);
-}
-
 void CanvasRenderingContext2D::drawFormattedText(
     FormattedText* formatted_text,
     double x,
@@ -956,136 +657,6 @@ void CanvasRenderingContext2D::drawFormattedText(
         CanvasRenderingContext2DState::kNoImage,
         CanvasPerformanceMonitor::DrawType::kText);
   }
-}
-
-void CanvasRenderingContext2D::DrawTextInternal(
-    const String& text,
-    double x,
-    double y,
-    CanvasRenderingContext2DState::PaintType paint_type,
-    double* max_width) {
-  // The style resolution required for fonts is not available in frame-less
-  // documents.
-  if (!canvas()->GetDocument().GetFrame())
-    return;
-
-  // accessFont needs the style to be up to date, but updating style can cause
-  // script to run, (e.g. due to autofocus) which can free the canvas (set size
-  // to 0, for example), so update style before grabbing the PaintCanvas.
-  canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(
-      canvas(), DocumentUpdateReason::kCanvas);
-
-  cc::PaintCanvas* c = GetOrCreatePaintCanvas();
-  if (!c)
-    return;
-
-  if (!std::isfinite(x) || !std::isfinite(y))
-    return;
-  if (max_width && (!std::isfinite(*max_width) || *max_width <= 0))
-    return;
-
-  if (UNLIKELY(identifiability_study_helper_.ShouldUpdateBuilder())) {
-    identifiability_study_helper_.UpdateBuilder(
-        paint_type == CanvasRenderingContext2DState::kFillPaintType
-            ? CanvasOps::kFillText
-            : CanvasOps::kStrokeText,
-        IdentifiabilitySensitiveStringToken(text), x, y,
-        max_width ? *max_width : -1);
-    identifiability_study_helper_.set_encountered_sensitive_ops();
-  }
-
-  const Font& font = AccessFont();
-  const SimpleFontData* font_data = font.PrimaryFont();
-  DCHECK(font_data);
-  if (!font_data)
-    return;
-
-  // FIXME: Need to turn off font smoothing.
-
-  const ComputedStyle* computed_style = nullptr;
-  TextDirection direction =
-      ToTextDirection(GetState().GetDirection(), canvas(), &computed_style);
-  bool is_rtl = direction == TextDirection::kRtl;
-  bool bidi_override =
-      computed_style ? IsOverride(computed_style->GetUnicodeBidi()) : false;
-
-  TextRun text_run(text, direction, bidi_override);
-  text_run.SetNormalizeSpace(true);
-  // Draw the item text at the correct point.
-  gfx::PointF location(ClampTo<float>(x),
-                       ClampTo<float>(y + GetFontBaseline(*font_data)));
-  gfx::RectF bounds;
-  double font_width = font.Width(text_run, &bounds);
-
-  bool use_max_width = (max_width && *max_width < font_width);
-  double width = use_max_width ? *max_width : font_width;
-
-  TextAlign align = GetState().GetTextAlign();
-  if (align == kStartTextAlign)
-    align = is_rtl ? kRightTextAlign : kLeftTextAlign;
-  else if (align == kEndTextAlign)
-    align = is_rtl ? kLeftTextAlign : kRightTextAlign;
-
-  switch (align) {
-    case kCenterTextAlign:
-      location.set_x(location.x() - width / 2);
-      break;
-    case kRightTextAlign:
-      location.set_x(location.x() - width);
-      break;
-    default:
-      break;
-  }
-
-  bounds.Offset(location.x(), location.y());
-  if (paint_type == CanvasRenderingContext2DState::kStrokePaintType)
-    InflateStrokeRect(bounds);
-
-  CanvasRenderingContext2DAutoRestoreSkCanvas state_restorer(this);
-  if (use_max_width) {
-    c->save();
-    // We draw when fontWidth is 0 so compositing operations (eg, a "copy" op)
-    // still work. As the width of canvas is scaled, so text can be scaled to
-    // match the given maxwidth, update text location so it appears on desired
-    // place.
-    c->scale(ClampTo<float>(width / font_width), 1);
-    location.set_x(location.x() / ClampTo<float>(width / font_width));
-  }
-
-  Draw<OverdrawOp::kNone>(
-      [this, text = std::move(text), direction, bidi_override, location](
-          cc::PaintCanvas* c, const cc::PaintFlags* flags)  // draw lambda
-      {
-        TextRun text_run(text, direction, bidi_override);
-        text_run.SetNormalizeSpace(true);
-        TextRunPaintInfo text_run_paint_info(text_run);
-        // Font::DrawType::kGlyphsAndClusters is required for printing to PDF,
-        // otherwise the character to glyph mapping will not be reversible,
-        // which prevents text data from being extracted from PDF files or
-        // from the print preview. This is only needed in vector printing mode
-        // (i.e. when rendering inside the beforeprint event listener),
-        // because in all other cases the canvas is just a rectangle of pixels.
-        // Note: Test coverage for this is assured by manual (non-automated)
-        // web test printing/manual/canvas2d-vector-text.html
-        // That test should be run manually against CLs that touch this code.
-        Font::DrawType draw_type = canvas()->IsPrinting()
-                                       ? Font::DrawType::kGlyphsAndClusters
-                                       : Font::DrawType::kGlyphsOnly;
-        this->AccessFont().DrawBidiText(c, text_run_paint_info, location,
-                                        Font::kUseFallbackIfFontNotReady,
-                                        *flags, draw_type);
-      },
-      [](const SkIRect& rect)  // overdraw test lambda
-      { return false; },
-      bounds, paint_type, CanvasRenderingContext2DState::kNoImage,
-      CanvasPerformanceMonitor::DrawType::kText);
-}
-
-const Font& CanvasRenderingContext2D::AccessFont() {
-  if (!GetState().HasRealizedFont())
-    setFont(GetState().UnparsedFont());
-  canvas()->GetDocument().GetCanvasFontCache()->WillUseCurrentFont();
-  return GetState().GetFont();
 }
 
 void CanvasRenderingContext2D::SetIsInHiddenPage(bool hidden) {
@@ -1255,6 +826,14 @@ RespectImageOrientationEnum CanvasRenderingContext2D::RespectImageOrientation()
     return kDoNotRespectImageOrientation;
   }
   return kRespectImageOrientation;
+}
+
+HTMLCanvasElement* CanvasRenderingContext2D::HostAsHTMLCanvasElement() const {
+  return canvas();
+}
+
+FontSelector* CanvasRenderingContext2D::GetFontSelector() const {
+  return canvas()->GetFontSelector();
 }
 
 }  // namespace blink

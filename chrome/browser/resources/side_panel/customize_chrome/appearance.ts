@@ -31,6 +31,7 @@ export interface AppearanceElement {
     thirdPartyLinkButton: HTMLButtonElement,
     followThemeToggle: HTMLElement,
     followThemeToggleControl: CrToggleElement,
+    uploadedImageButton: HTMLButtonElement,
   };
 }
 
@@ -48,6 +49,12 @@ export class AppearanceElement extends PolymerElement {
       theme_: Object,
       themeButtonClass_: String,
 
+      chromeRefresh2023Enabled_: {
+        type: Boolean,
+        value: () =>
+            document.documentElement.hasAttribute('chrome-refresh-2023'),
+      },
+
       thirdPartyThemeId_: {
         type: String,
         computed: 'computeThirdPartyThemeId_(theme_)',
@@ -60,18 +67,11 @@ export class AppearanceElement extends PolymerElement {
         reflectToAttribute: true,
       },
 
-      // Prevents side panel from showing theme snapshot and colors before
-      // thirdPartyThemeName_ is determined if third party theme is installed.
-      showFirstPartyThemeView_: {
+      showBottomDivider_: {
         type: Boolean,
         value: false,
-        computed: 'computeShowFirstPartyThemeView_(theme_)',
-      },
-
-      showDeviceThemeToggle_: {
-        type: Boolean,
-        value: false,
-        computed: 'computeShowDeviceThemeToggle_(theme_)',
+        computed:
+            'computeShowBottomDivider_(showClassicChromeButton_, showDeviceThemeToggle_)',
       },
 
       showClassicChromeButton_: {
@@ -80,17 +80,45 @@ export class AppearanceElement extends PolymerElement {
         computed: 'computeShowClassicChromeButton_(theme_)',
       },
 
+      showColorPicker_: {
+        type: Boolean,
+        value: false,
+        computed: 'computeShowColorPicker_(theme_)',
+      },
+
+      showDeviceThemeToggle_: {
+        type: Boolean,
+        value: false,
+        computed: 'computeShowDeviceThemeToggle_(theme_)',
+      },
+
+      showThemeSnapshot_: {
+        type: Boolean,
+        value: false,
+        computed: 'computeShowThemeSnapshot_(theme_)',
+      },
+
+      showUploadedImageButton_: {
+        type: Boolean,
+        value: false,
+        computed: 'computeShowUploadedImageButton_(theme_)',
+      },
+
       showManagedDialog_: Boolean,
     };
   }
 
   private theme_: Theme|undefined = undefined;
   private themeButtonClass_: string;
+  private chromeRefresh2023Enabled_: boolean;
   private thirdPartyThemeId_: string|null = null;
   private thirdPartyThemeName_: string|null = null;
-  private showDeviceThemeToggle_: boolean;
+  private hasUploadedImage_: boolean;
+  private showBottomDivider_: boolean;
   private showClassicChromeButton_: boolean;
-  private showFirstPartyThemeView_: boolean;
+  private showColorPicker_: boolean;
+  private showDeviceThemeToggle_: boolean;
+  private showThemeSnapshot: boolean;
   private showManagedDialog_: boolean;
 
   private setThemeListenerId_: number|null = null;
@@ -107,9 +135,7 @@ export class AppearanceElement extends PolymerElement {
   override connectedCallback() {
     super.connectedCallback();
     this.themeButtonClass_ =
-        document.documentElement.hasAttribute('chrome-refresh-2023') ?
-        'floating-button' :
-        'action-button';
+        this.chromeRefresh2023Enabled_ ? 'floating-button' : 'action-button';
     this.setThemeListenerId_ =
         this.callbackRouter_.setTheme.addListener((theme: Theme) => {
           this.theme_ = theme;
@@ -144,7 +170,17 @@ export class AppearanceElement extends PolymerElement {
     }
   }
 
-  private computeShowFirstPartyThemeView_(): boolean {
+  private computeShowBottomDivider_(): boolean {
+    return !!(this.showClassicChromeButton_ || this.showDeviceThemeToggle_);
+  }
+
+  private computeShowClassicChromeButton_(): boolean {
+    return !!(
+        this.theme_ &&
+        (this.theme_.backgroundImage || this.theme_.thirdPartyThemeInfo));
+  }
+
+  private computeShowColorPicker_(): boolean {
     return !!this.theme_ && !this.theme_.thirdPartyThemeInfo;
   }
 
@@ -153,10 +189,18 @@ export class AppearanceElement extends PolymerElement {
         !(!!this.theme_ && !!this.theme_.thirdPartyThemeInfo);
   }
 
-  private computeShowClassicChromeButton_(): boolean {
+  private computeShowThemeSnapshot_(): boolean {
+    return !!this.theme_ && !this.theme_.thirdPartyThemeInfo &&
+        (!this.chromeRefresh2023Enabled_ ||
+         !(this.theme_.backgroundImage &&
+           this.theme_.backgroundImage.isUploadedImage));
+  }
+
+  private computeShowUploadedImageButton_(): boolean {
     return !!(
-        this.theme_ &&
-        (this.theme_.backgroundImage || this.theme_.thirdPartyThemeInfo));
+        this.chromeRefresh2023Enabled_ && this.theme_ &&
+        this.theme_.backgroundImage &&
+        this.theme_.backgroundImage.isUploadedImage);
   }
 
   private onEditThemeClicked_() {
@@ -170,6 +214,10 @@ export class AppearanceElement extends PolymerElement {
     if (this.thirdPartyThemeId_) {
       this.pageHandler_.openThirdPartyThemePage(this.thirdPartyThemeId_);
     }
+  }
+
+  private onUploadedImageButtonClick_() {
+    this.pageHandler_.chooseLocalCustomBackground();
   }
 
   private onSetClassicChromeClicked_() {

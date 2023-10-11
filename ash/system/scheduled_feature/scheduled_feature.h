@@ -98,9 +98,6 @@ class ASH_EXPORT ScheduledFeature
   TimeOfDay GetCustomStartTime() const;
   TimeOfDay GetCustomEndTime() const;
 
-  // Get whether the current time is after sunset and before sunrise.
-  bool IsNowWithinSunsetSunrise() const;
-
   // Set the desired ScheduledFeature settings in the current active user
   // prefs.
   void SetEnabled(bool enabled);
@@ -119,6 +116,9 @@ class ASH_EXPORT ScheduledFeature
 
   // chromeos::PowerManagerClient::Observer:
   void SuspendDone(base::TimeDelta sleep_duration) override;
+
+  // Returns now time from the `clock_`.
+  base::Time Now() const;
 
   void SetClockForTesting(const Clock* clock);
   void SetLocalTimeConverterForTesting(

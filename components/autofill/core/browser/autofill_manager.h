@@ -25,7 +25,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
-#include "components/autofill/core/browser/autofill_trigger_source.h"
+#include "components/autofill/core/browser/autofill_trigger_details.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/form_data.h"
@@ -42,6 +42,8 @@ class RectF;
 namespace autofill {
 
 class AutofillField;
+class AutofillProfile;
+class CreditCard;
 class CreditCardAccessManager;
 struct FormData;
 struct FormFieldData;
@@ -71,6 +73,9 @@ class AutofillManager
   // - if this AutofillManager has been destroyed or reset in the meantime.
   // - if the request in AutofillDownloadManager was not successful (i.e. no 2XX
   //   response code or a null response body).
+  //
+  // TODO(crbug.com/1476488): Consider moving events that are specific to BAM to
+  // a new BAM::Observer class.
   class Observer : public base::CheckedObserver {
    public:
     virtual void OnAutofillManagerDestroyed(AutofillManager& manager) {}
@@ -137,7 +142,29 @@ class AutofillManager
                                         FormGlobalId form,
                                         FieldTypeSource source) {}
 
-    virtual void OnFormSubmitted(AutofillManager& manager, FormGlobalId) {}
+    // Fired when the popup is *actually* shown or hidden.
+    virtual void OnSuggestionsShown(AutofillManager& manager) {}
+    virtual void OnSuggestionsHidden(AutofillManager& manager) {}
+
+    // Fired when a form is filled or previewed with a AutofillProfile or
+    // CreditCard.
+    // `filled_fields` represents the fields that were sent to the renderer to
+    // be filled: each `FormFieldData::value` contains the filled or previewed
+    // value; the corresponding `AutofillField` contains the field type
+    // information. The field values come from `profile_or_credit_card`.
+    // TODO(crbug.com/1331312): Get rid of FormFieldData.
+    // TODO(crbug.com/1476488): Consider removing the event in favor of
+    // OnAfterDidFillAutofillFormData(), which is fired by the renderer.
+    virtual void OnFillOrPreviewDataModelForm(
+        AutofillManager& manager,
+        FormGlobalId form,
+        mojom::AutofillActionPersistence action_persistence,
+        base::span<const std::pair<const FormFieldData*, const AutofillField*>>
+            filled_fields,
+        absl::variant<const AutofillProfile*, const CreditCard*>
+            profile_or_credit_card) {}
+
+    virtual void OnFormSubmitted(AutofillManager& manager, FormGlobalId form) {}
   };
 
   // TODO(crbug.com/1151542): Move to anonymous namespace once
@@ -227,12 +254,12 @@ class AutofillManager
                           const FormFieldData& field,
                           const CreditCard& credit_card,
                           const std::u16string& cvc,
-                          const AutofillTriggerSource trigger_source);
+                          const AutofillTriggerDetails& trigger_details);
 
   void FillProfileForm(const AutofillProfile& profile,
                        const FormData& form,
                        const FormFieldData& field,
-                       const AutofillTriggerSource trigger_source);
+                       const AutofillTriggerDetails& trigger_details);
 
   // Invoked when |form| has been filled with the value given by
   // FillOrPreviewForm.
@@ -252,17 +279,17 @@ class AutofillManager
   // whether focus was previously on a form with which the user had interacted.
   void OnFocusNoLongerOnForm(bool had_interacted_form);
 
-  // Invoked when preview autofill value has been shown.
-  void OnDidPreviewAutofillFormData();
-
   // Invoked when textfeild editing ended
   void OnDidEndTextFieldEditing();
 
   // Invoked when popup window should be hidden.
   void OnHidePopup();
 
+  // Invoked when popup window is actually hidden.
+  void OnPopupHidden();
+
   // Invoked when the options of a select element in the |form| changed.
-  void OnSelectOrSelectMenuFieldOptionsDidChange(const FormData& form);
+  void OnSelectOrSelectListFieldOptionsDidChange(const FormData& form);
 
   // Invoked after JavaScript set the value of |field| in |form|. Only called
   // if |field| was in autofilled state. Note that from a renderer's
@@ -275,11 +302,6 @@ class AutofillManager
       const std::u16string& old_value);
 
   // Other events.
-
-  // Invoked when the field type predictions are downloaded from the autofill
-  // server.
-  virtual void PropagateAutofillPredictionsDeprecated(
-      const std::vector<FormStructure*>& forms) = 0;
 
   virtual void ReportAutofillWebOTPMetrics(bool used_web_otp) = 0;
 
@@ -403,25 +425,25 @@ class AutofillManager
       const FormData& form,
       const base::TimeTicks timestamp) = 0;
 
-  virtual void FillCreditCardFormImpl(const FormData& form,
-                                      const FormFieldData& field,
-                                      const CreditCard& credit_card,
-                                      const std::u16string& cvc,
-                                      AutofillTriggerSource trigger_source) = 0;
-  virtual void FillProfileFormImpl(const FormData& form,
-                                   const FormFieldData& field,
-                                   const AutofillProfile& profile,
-                                   AutofillTriggerSource trigger_source) = 0;
+  virtual void FillCreditCardFormImpl(
+      const FormData& form,
+      const FormFieldData& field,
+      const CreditCard& credit_card,
+      const std::u16string& cvc,
+      const AutofillTriggerDetails& trigger_details) = 0;
+  virtual void FillProfileFormImpl(
+      const FormData& form,
+      const FormFieldData& field,
+      const AutofillProfile& profile,
+      const AutofillTriggerDetails& trigger_details) = 0;
 
   virtual void OnFocusNoLongerOnFormImpl(bool had_interacted_form) = 0;
-
-  virtual void OnDidPreviewAutofillFormDataImpl() = 0;
 
   virtual void OnDidEndTextFieldEditingImpl() = 0;
 
   virtual void OnHidePopupImpl() = 0;
 
-  virtual void OnSelectOrSelectMenuFieldOptionsDidChangeImpl(
+  virtual void OnSelectOrSelectListFieldOptionsDidChangeImpl(
       const FormData& form) = 0;
 
   virtual void OnJavaScriptChangedAutofilledValueImpl(

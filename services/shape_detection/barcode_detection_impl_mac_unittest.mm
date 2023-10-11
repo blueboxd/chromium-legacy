@@ -9,10 +9,10 @@
 #include <memory>
 #include <string>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
@@ -117,7 +117,7 @@ TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
 
   CIContext* context = [[CIContext alloc] init];
 
-  base::ScopedCFTypeRef<CGImageRef> cg_image(
+  base::apple::ScopedCFTypeRef<CGImageRef> cg_image(
       [context createCGImage:qr_code_image fromRect:qr_code_image.extent]);
   EXPECT_EQ(static_cast<size_t>(size.width()), CGImageGetWidth(cg_image));
   EXPECT_EQ(static_cast<size_t>(size.height()), CGImageGetHeight(cg_image));

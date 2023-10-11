@@ -8,6 +8,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/webui/settings/public/constants/routes.mojom.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -28,12 +29,12 @@
 #include "chrome/browser/ash/input_method/ui/input_method_menu_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
+#include "chrome/browser/ui/webui/ash/settings/search/search_tag_registry.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/services/ime/public/cpp/autocorrect.h"
 #include "chromeos/ash/services/ime/public/mojom/input_method.mojom.h"
 #include "chromeos/ash/services/ime/public/mojom/japanese_settings.mojom.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/ime/ash/ime_bridge.h"
@@ -811,6 +812,9 @@ void NativeInputMethodEngineObserver::OnActivate(const std::string& engine_id) {
       ->SetCurrentInputMethodMenuItemList({});
   autocorrect_manager_->OnActivate(engine_id);
   assistive_suggester_->OnActivate(engine_id);
+  if (editor_event_sink_) {
+    editor_event_sink_->OnActivateIme(engine_id);
+  }
 
   // TODO(b/181077907): Always launch the IME service and let IME service decide
   // whether it should shutdown or not.
@@ -863,7 +867,7 @@ void NativeInputMethodEngineObserver::OnFocus(
     const TextInputMethod::InputContext& context) {
   text_client_ =
       TextClient{.context_id = context_id, .state = TextClientState::kPending};
-  if (features::IsOrcaEnabled() && editor_event_sink_) {
+  if (chromeos::features::IsOrcaEnabled() && editor_event_sink_) {
     editor_event_sink_->OnFocus(context_id);
   }
   if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
@@ -961,7 +965,7 @@ void NativeInputMethodEngineObserver::OnBlur(const std::string& engine_id,
 
   text_client_ = absl::nullopt;
 
-  if (features::IsOrcaEnabled() && editor_event_sink_) {
+  if (chromeos::features::IsOrcaEnabled() && editor_event_sink_) {
     editor_event_sink_->OnBlur();
   }
   if (assistive_suggester_->IsAssistiveFeatureEnabled())

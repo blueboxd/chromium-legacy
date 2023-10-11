@@ -14,6 +14,8 @@
 #include "chrome/browser/ash/app_list/app_list_model_updater.h"
 #include "chrome/browser/ash/app_list/app_service/app_service_promise_app_context_menu.h"
 #include "chrome/browser/ash/app_list/chrome_app_list_item.h"
+#include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
+#include "components/sync/model/string_ordinal.h"
 
 // static
 const char AppServicePromiseAppItem::kItemType[] = "AppServicePromiseAppItem";
@@ -21,17 +23,23 @@ const char AppServicePromiseAppItem::kItemType[] = "AppServicePromiseAppItem";
 AppServicePromiseAppItem::AppServicePromiseAppItem(
     Profile* profile,
     AppListModelUpdater* model_updater,
-    const apps::PromiseAppUpdate& update)
+    const apps::PromiseAppUpdate& update,
+    const syncer::StringOrdinal position)
     : ChromeAppListItem(profile, update.PackageId().ToString()),
       package_id_(update.PackageId()) {
-  status_ = update.Status();
   InitializeItem(update);
+
+  SetPromisePackageId(update.PackageId().ToString());
+  SetAppStatus(
+      ShelfControllerHelper::ConvertPromiseStatusToAppStatus(update.Status()));
+  SetProgress(update.Progress().value_or(0));
 
   // Promise icons should not be synced as they are transient and only present
   // during app installations.
   SetIsEphemeral(true);
 
-  SetPosition(CalculateDefaultPositionIfApplicable());
+  SetPosition(position.IsValid() ? position
+                                 : CalculateDefaultPositionIfApplicable());
 
   // Set model updater last to avoid being called during construction.
   set_model_updater(model_updater);
@@ -53,16 +61,15 @@ AppServicePromiseAppItem::~AppServicePromiseAppItem() = default;
 
 void AppServicePromiseAppItem::OnPromiseAppUpdate(
     const apps::PromiseAppUpdate& update) {
-  if (update.NameChanged() && update.Name().has_value()) {
-    SetName(update.Name().value());
-  }
-  if (update.ProgressChanged() && update.Progress().has_value()) {
-    progress_ = update.Progress();
-  }
   // Each status has its own set of visual effects.
   if (update.StatusChanged()) {
-    status_ = update.Status();
+    SetAppStatus(ShelfControllerHelper::ConvertPromiseStatusToAppStatus(
+        update.Status()));
+    SetName(ShelfControllerHelper::GetLabelForPromiseStatus(update.Status()));
     LoadIcon();
+  }
+  if (update.ProgressChanged() && update.Progress().has_value()) {
+    SetProgress(update.Progress().value());
   }
 }
 
@@ -70,7 +77,7 @@ void AppServicePromiseAppItem::LoadIcon() {
   apps::AppServiceProxyFactory::GetForProfile(profile())->LoadPromiseIcon(
       package_id_,
       ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
-      GetIconEffectsForPromiseStatus(status_),
+      apps::GetPromiseIconEffectsForAppStatus(app_status()),
       base::BindOnce(&AppServicePromiseAppItem::OnLoadIcon,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -86,15 +93,13 @@ void AppServicePromiseAppItem::OnLoadIcon(apps::IconValuePtr icon_value) {
 
 void AppServicePromiseAppItem::InitializeItem(
     const apps::PromiseAppUpdate& update) {
-  CHECK(update.Name().has_value());
   CHECK(update.ShouldShow());
-  SetName(update.Name().value());
+  SetName(ShelfControllerHelper::GetLabelForPromiseStatus(update.Status()));
   if (update.Progress().has_value()) {
-    progress_ = update.Progress();
+    SetProgress(update.Progress().value());
   }
-  // TODO(b/261907495): Consider adding new AppStatus values specific to promise
-  // apps and update them in OnPromiseAppUpdate.
-  SetAppStatus(ash::AppStatus::kReady);
+  SetAppStatus(
+      ShelfControllerHelper::ConvertPromiseStatusToAppStatus(update.Status()));
 }
 
 void AppServicePromiseAppItem::GetContextMenuModel(

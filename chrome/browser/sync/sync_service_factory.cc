@@ -50,6 +50,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/command_line_switches.h"
 #include "components/sync/service/sync_service_impl.h"
@@ -72,6 +73,7 @@
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ash/printing/oauth2/authorization_zones_manager_factory.h"
 #include "chrome/browser/ash/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -182,6 +184,9 @@ std::unique_ptr<KeyedService> BuildSyncService(
     password_store->OnSyncServiceInitialized(sync_service.get());
   }
 
+  SendTabToSelfSyncServiceFactory::GetForProfile(profile)
+      ->OnSyncServiceInitialized(sync_service.get());
+
   // Allow sync_preferences/ components to use SyncService.
   sync_preferences::PrefServiceSyncable* pref_service =
       PrefServiceSyncableFromProfile(profile);
@@ -278,6 +283,7 @@ SyncServiceFactory::SyncServiceFactory()
   DependsOn(web_app::WebAppProviderFactory::GetInstance());
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  DependsOn(app_list::AppListSyncableServiceFactory::GetInstance());
   DependsOn(ash::SyncedPrintersManagerFactory::GetInstance());
   DependsOn(
       ash::printing::oauth2::AuthorizationZonesManagerFactory::GetInstance());

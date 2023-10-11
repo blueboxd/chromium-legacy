@@ -17,64 +17,80 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/style/ash_color_id.h"
+#include "ash/style/combobox.h"
+#include "ash/style/icon_button.h"
 #include "ash/system/unified/glanceable_tray_child_bubble.h"
 #include "ash/system/unified/tasks_combobox_model.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/types/cxx23_to_underlying.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/combobox/combobox.h"
-#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/flex_layout_view.h"
+#include "ui/views/view_class_properties.h"
+#include "url/gurl.h"
 
+namespace ash {
 namespace {
 
 constexpr int kMaximumTasks = 5;
-constexpr int kTasksIconRightPadding = 14;
-constexpr int kTasksIconViewSize = 32;
 constexpr int kInteriorGlanceableBubbleMargin = 16;
+constexpr int kAddNewButtonCornerRadius = 16;
 constexpr auto kAddNewTaskButtonMargins = gfx::Insets::TLBR(0, 0, 16, 0);
+constexpr auto kHeaderIconButtonMargins = gfx::Insets::TLBR(0, 0, 0, 4);
 
 constexpr char kTasksManagementPage[] =
     "https://calendar.google.com/calendar/u/0/r/week?opentasks=1";
 
+std::unique_ptr<views::LabelButton> CreateAddNewTaskButton(
+    views::Button::PressedCallback callback) {
+  auto add_new_task_button = std::make_unique<views::LabelButton>(
+      std::move(callback),
+      l10n_util::GetStringUTF16(
+          IDS_GLANCEABLES_TASKS_ADD_NEW_TASK_BUTTON_LABEL));
+  add_new_task_button->SetID(
+      base::to_underlying(GlanceablesViewId::kTasksBubbleAddNewButton));
+  add_new_task_button->SetImageModel(
+      views::Button::ButtonState::STATE_NORMAL,
+      ui::ImageModel::FromVectorIcon(kGlanceablesTasksAddNewTaskIcon,
+                                     cros_tokens::kCrosSysOnSurface));
+  add_new_task_button->SetHorizontalAlignment(
+      gfx::HorizontalAlignment::ALIGN_CENTER);
+  add_new_task_button->SetImageLabelSpacing(8);
+  add_new_task_button->SetBackground(views::CreateThemedRoundedRectBackground(
+      cros_tokens::kCrosSysSystemOnBase, kAddNewButtonCornerRadius));
+  add_new_task_button->SetTextColorId(views::Button::ButtonState::STATE_NORMAL,
+                                      cros_tokens::kCrosSysOnSurface);
+  add_new_task_button->SetProperty(views::kMarginsKey,
+                                   kAddNewTaskButtonMargins);
+
+  views::FocusRing::Get(add_new_task_button.get())
+      ->SetColorId(cros_tokens::kCrosSysFocusRing);
+  views::HighlightPathGenerator::Install(
+      add_new_task_button.get(),
+      std::make_unique<views::RoundRectHighlightPathGenerator>(
+          gfx::Insets(), kAddNewButtonCornerRadius));
+
+  return add_new_task_button;
+}
+
 }  // namespace
 
-namespace ash {
-
-TasksBubbleView::TasksBubbleView(DetailedViewDelegate* delegate)
-    : GlanceableTrayChildBubble(delegate) {
-  if (Shell::Get()->glanceables_v2_controller()->GetTasksClient()) {
-    Shell::Get()->glanceables_v2_controller()->GetTasksClient()->GetTaskLists(
-        base::BindOnce(&TasksBubbleView::InitViews,
-                       weak_ptr_factory_.GetWeakPtr()));
-  }
-}
-
-TasksBubbleView::~TasksBubbleView() = default;
-
-void TasksBubbleView::OnViewFocused(views::View* view) {
-  CHECK_EQ(view, task_list_combo_box_view_);
-
-  AnnounceListStateOnComboBoxAccessibility();
-}
-
-void TasksBubbleView::InitViews(ui::ListModel<GlanceablesTaskList>* task_list) {
-  // TODO(b:277268122): Implement empty tasks glanceable state.
-  if (task_list->item_count() == 0) {
-    return;
-  }
-
+TasksBubbleView::TasksBubbleView(DetailedViewDelegate* delegate,
+                                 ui::ListModel<GlanceablesTaskList>* task_list)
+    : GlanceableTrayChildBubble(delegate, /*for_glanceables_container=*/true) {
   auto* layout_manager =
       SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout_manager
@@ -89,9 +105,10 @@ void TasksBubbleView::InitViews(ui::ListModel<GlanceablesTaskList>* task_list) {
   tasks_header_view_->SetOrientation(views::LayoutOrientation::kHorizontal);
   tasks_header_view_->SetProperty(
       views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
-                               views::MaximumFlexSizeRule::kPreferred)
-          .WithOrder(1));
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kPreferred));
+  tasks_header_view_->SetID(
+      base::to_underlying(GlanceablesViewId::kTasksBubbleHeaderView));
 
   progress_bar_ = AddChildView(std::make_unique<GlanceablesProgressBarView>());
   progress_bar_->UpdateProgressBarVisibility(/*visible=*/false);
@@ -110,69 +127,66 @@ void TasksBubbleView::InitViews(ui::ListModel<GlanceablesTaskList>* task_list) {
           views::BoxLayout::Orientation::kVertical));
   layout->set_between_child_spacing(2);
 
-  add_new_task_button_ = AddChildView(std::make_unique<views::LabelButton>(
-      base::BindRepeating(&TasksBubbleView::ActionButtonPressed,
-                          base::Unretained(this)),
-      l10n_util::GetStringUTF16(
-          IDS_GLANCEABLES_TASKS_ADD_NEW_TASK_BUTTON_LABEL)));
-  add_new_task_button_->SetID(
-      base::to_underlying(GlanceablesViewId::kTasksBubbleAddNewButton));
-  add_new_task_button_->SetImageModel(
-      views::Button::ButtonState::STATE_NORMAL,
-      ui::ImageModel::FromVectorIcon(kGlanceablesTasksAddNewTaskIcon,
-                                     cros_tokens::kCrosSysOnSurface));
-  add_new_task_button_->SetHorizontalAlignment(
-      gfx::HorizontalAlignment::ALIGN_CENTER);
-  add_new_task_button_->SetImageLabelSpacing(8);
-  add_new_task_button_->SetBackground(views::CreateThemedRoundedRectBackground(
-      cros_tokens::kCrosSysSystemOnBase, 16));
-  add_new_task_button_->SetTextColorId(views::Button::ButtonState::STATE_NORMAL,
-                                       cros_tokens::kCrosSysOnSurface);
-  add_new_task_button_->SetProperty(views::kMarginsKey,
-                                    kAddNewTaskButtonMargins);
+  add_new_task_button_ =
+      AddChildView(CreateAddNewTaskButton(base::BindRepeating(
+          &TasksBubbleView::ActionButtonPressed, base::Unretained(this),
+          TasksLaunchSource::kAddNewTaskButton)));
 
-  task_icon_view_ =
-      tasks_header_view_->AddChildView(std::make_unique<views::ImageView>());
-  task_icon_view_->SetPreferredSize(
-      gfx::Size(kTasksIconViewSize, kTasksIconViewSize));
-  task_icon_view_->SetBackground(views::CreateThemedRoundedRectBackground(
-      cros_tokens::kCrosSysBaseElevated, kTasksIconViewSize / 2));
-  if (chromeos::features::IsJellyEnabled()) {
-    task_icon_view_->SetImage(ui::ImageModel::FromVectorIcon(
-        kGlanceablesTasksIcon, cros_tokens::kCrosSysOnSurface));
-  } else {
-    task_icon_view_->SetImage(ui::ImageModel::FromVectorIcon(
-        kGlanceablesTasksIcon, kColorAshTextColorPrimary));
-  }
-  task_icon_view_->SetProperty(
-      views::kMarginsKey, gfx::Insets::TLBR(0, 0, 0, kTasksIconRightPadding));
+  auto* const header_icon =
+      tasks_header_view_->AddChildView(std::make_unique<IconButton>(
+          base::BindRepeating(&TasksBubbleView::ActionButtonPressed,
+                              base::Unretained(this),
+                              TasksLaunchSource::kHeaderButton),
+          IconButton::Type::kMedium, &kGlanceablesTasksIcon,
+          IDS_GLANCEABLES_TASKS_HEADER_ICON_ACCESSIBLE_NAME));
+  header_icon->SetBackgroundColorId(cros_tokens::kCrosSysBaseElevated);
+  header_icon->SetProperty(views::kMarginsKey, kHeaderIconButtonMargins);
+  header_icon->SetID(
+      base::to_underlying(GlanceablesViewId::kTasksBubbleHeaderIcon));
 
   tasks_combobox_model_ = std::make_unique<TasksComboboxModel>(task_list);
   task_list_combo_box_view_ = tasks_header_view_->AddChildView(
-      std::make_unique<views::Combobox>(tasks_combobox_model_.get()));
+      std::make_unique<Combobox>(tasks_combobox_model_.get()));
   task_list_combo_box_view_->SetID(
       base::to_underlying(GlanceablesViewId::kTasksBubbleComboBox));
-  task_list_combo_box_view_->SetSizeToLargestLabel(false);
+  task_list_combo_box_view_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kPreferred));
   combobox_view_observation_.Observe(task_list_combo_box_view_);
 
-  // TODO(b/294681832): Finalize, and then localize strings.
-  task_list_combo_box_view_->SetTooltipTextAndAccessibleName(
-      u"Google tasks list");
+  task_list_combo_box_view_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_GLANCEABLES_TASKS_DROPDOWN_ACCESSIBLE_NAME));
   task_list_combo_box_view_->SetAccessibleDescription(u"");
-  task_list_combo_box_view_->SetCallback(base::BindRepeating(
+  task_list_combo_box_view_->SetSelectionChangedCallback(base::BindRepeating(
       &TasksBubbleView::SelectedTasksListChanged, base::Unretained(this)));
-  task_list_combo_box_view_->SetSelectedIndex(0);
 
-  list_footer_view_ = AddChildView(
-      std::make_unique<GlanceablesListFooterView>(base::BindRepeating(
-          &TasksBubbleView::ActionButtonPressed, base::Unretained(this))));
+  list_footer_view_ = AddChildView(std::make_unique<GlanceablesListFooterView>(
+      l10n_util::GetStringUTF16(
+          IDS_GLANCEABLES_TASKS_SEE_ALL_BUTTON_ACCESSIBLE_NAME),
+      base::BindRepeating(&TasksBubbleView::ActionButtonPressed,
+                          base::Unretained(this),
+                          TasksLaunchSource::kFooterButton)));
   list_footer_view_->SetID(
       base::to_underlying(GlanceablesViewId::kTasksBubbleListFooter));
 
-  SelectedTasksListChanged();
+  ScheduleUpdateTasksList(/*initial_update=*/true);
 }
 
-void TasksBubbleView::ActionButtonPressed() {
+TasksBubbleView::~TasksBubbleView() = default;
+
+void TasksBubbleView::OnViewFocused(views::View* view) {
+  CHECK_EQ(view, task_list_combo_box_view_);
+
+  AnnounceListStateOnComboBoxAccessibility();
+}
+
+void TasksBubbleView::CancelUpdates() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+void TasksBubbleView::ActionButtonPressed(TasksLaunchSource source) {
+  RecordTasksLaunchSource(source);
   NewWindowDelegate::GetPrimary()->OpenUrl(
       GURL(kTasksManagementPage),
       NewWindowDelegate::OpenUrlFrom::kUserInteraction,
@@ -182,10 +196,10 @@ void TasksBubbleView::ActionButtonPressed() {
 void TasksBubbleView::SelectedTasksListChanged() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  ScheduleUpdateTasksList();
+  ScheduleUpdateTasksList(/*initial_update=*/false);
 }
 
-void TasksBubbleView::ScheduleUpdateTasksList() {
+void TasksBubbleView::ScheduleUpdateTasksList(bool initial_update) {
   if (!task_list_combo_box_view_->GetSelectedIndex().has_value()) {
     return;
   }
@@ -195,16 +209,24 @@ void TasksBubbleView::ScheduleUpdateTasksList() {
 
   GlanceablesTaskList* active_task_list = tasks_combobox_model_->GetTaskListAt(
       task_list_combo_box_view_->GetSelectedIndex().value());
+  tasks_combobox_model_->SaveLastSelectedTaskList(active_task_list->id);
   Shell::Get()->glanceables_v2_controller()->GetTasksClient()->GetTasks(
       active_task_list->id,
       base::BindOnce(&TasksBubbleView::UpdateTasksList,
                      weak_ptr_factory_.GetWeakPtr(), active_task_list->id,
-                     active_task_list->title));
+                     active_task_list->title, initial_update));
 }
 
 void TasksBubbleView::UpdateTasksList(const std::string& task_list_id,
                                       const std::string& task_list_title,
+                                      bool initial_update,
                                       ui::ListModel<GlanceablesTask>* tasks) {
+  if (initial_update) {
+    base::UmaHistogramCounts100(
+        "Ash.Glanceables.TimeManagement.TasksCountInDefaultTaskList",
+        tasks->item_count());
+  }
+
   const gfx::Size old_preferred_size = GetPreferredSize();
   progress_bar_->UpdateProgressBarVisibility(/*visible=*/false);
 
@@ -227,14 +249,21 @@ void TasksBubbleView::UpdateTasksList(const std::string& task_list_id,
     ++num_tasks_;
   }
   task_items_container_view_->SetVisible(num_tasks_shown_ > 0);
-  add_new_task_button_->SetVisible(num_tasks_shown_ == 0);
+
+  const bool add_new_task_button_visible = (num_tasks_shown_ == 0);
+  if (add_new_task_button_visible) {
+    RecordAddTaskButtonShown();
+    add_new_task_button_->SetVisible(true);
+  } else {
+    add_new_task_button_->SetVisible(false);
+  }
 
   list_footer_view_->UpdateItemsCount(num_tasks_shown_, num_tasks_);
   list_footer_view_->SetVisible(num_tasks_shown_ > 0);
 
-  // TODO(b/294681832): Finalize, and then localize strings.
-  task_items_container_view_->SetAccessibleName(base::UTF8ToUTF16(
-      base::StringPrintf("Tasks list: %s", task_list_title.c_str())));
+  task_items_container_view_->SetAccessibleName(l10n_util::GetStringFUTF16(
+      IDS_GLANCEABLES_TASKS_SELECTED_LIST_ACCESSIBLE_NAME,
+      base::UTF8ToUTF16(task_list_title)));
   task_items_container_view_->SetAccessibleDescription(
       list_footer_view_->items_count_label());
   task_items_container_view_->NotifyAccessibilityEvent(
@@ -245,14 +274,39 @@ void TasksBubbleView::UpdateTasksList(const std::string& task_list_id,
 
   if (old_preferred_size != GetPreferredSize()) {
     PreferredSizeChanged();
+    if (!initial_update) {
+      GetWidget()->LayoutRootViewIfNecessary();
+      ScrollViewToVisible();
+    }
+  }
+
+  // TODO(anasalazar): Record delay for non-initial updates on the bubble.
+  if (initial_update) {
+    auto* controller = Shell::Get()->glanceables_v2_controller();
+    base::TimeDelta initial_load_time =
+        base::TimeTicks::Now() - controller->last_bubble_show_time();
+
+    if (controller->bubble_shown_count() == 1) {
+      base::UmaHistogramMediumTimes(
+          "Ash.Glanceables.TimeManagement.Tasks.OpenToInitialLoadTime."
+          "FirstOcurrence",
+          initial_load_time);
+    } else {
+      base::UmaHistogramMediumTimes(
+          "Ash.Glanceables.TimeManagement.Tasks.OpenToInitialLoadTime."
+          "SubsequentOccurence",
+          initial_load_time);
+    }
+  } else {
+    RecordActiveTaskListChanged();
   }
 }
 
 void TasksBubbleView::AnnounceListStateOnComboBoxAccessibility() {
   if (add_new_task_button_->GetVisible()) {
-    // TODO(b/294681832): Finalize, and then localize strings.
     task_list_combo_box_view_->GetViewAccessibility().AnnounceText(
-        u"Selected list empty, navigate down to add a new task");
+        l10n_util::GetStringUTF16(
+            IDS_GLANCEABLES_TASKS_SELECTED_LIST_EMPTY_ACCESSIBLE_NAME));
   } else if (list_footer_view_->items_count_label()->GetVisible()) {
     task_list_combo_box_view_->GetViewAccessibility().AnnounceText(
         list_footer_view_->items_count_label()->GetText());

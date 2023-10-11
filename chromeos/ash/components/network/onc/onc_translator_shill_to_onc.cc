@@ -33,8 +33,6 @@ namespace ash::onc {
 
 namespace {
 
-constexpr char kTypeSLAAC[] = "slaac";
-
 // Converts a VPN string to a base::Value of the given |type|. If the
 // conversion fails, returns a default value for |type|.
 base::Value ConvertVpnStringToValue(const std::string& str,
@@ -800,7 +798,7 @@ void ShillToONCTranslator::TranslateIPConfig() {
     type = ::onc::ipconfig::kIPv4;
   } else if (shill_ip_method == shill::kTypeIPv6 ||
              shill_ip_method == shill::kTypeDHCP6 ||
-             shill_ip_method == kTypeSLAAC) {
+             shill_ip_method == shill::kTypeSLAAC) {
     type = ::onc::ipconfig::kIPv6;
   } else {
     return;  // Ignore unhandled IPConfig types, e.g. bootp, zeroconf, ppp

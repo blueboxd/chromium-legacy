@@ -8,6 +8,7 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import {stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AcceleratorEditDialogElement} from 'chrome://shortcut-customization/js/accelerator_edit_dialog.js';
 import {AcceleratorEditViewElement} from 'chrome://shortcut-customization/js/accelerator_edit_view.js';
@@ -15,9 +16,8 @@ import {AcceleratorLookupManager} from 'chrome://shortcut-customization/js/accel
 import {fakeAcceleratorConfig, fakeDefaultAccelerators, fakeLayoutInfo} from 'chrome://shortcut-customization/js/fake_data.js';
 import {FakeShortcutProvider} from 'chrome://shortcut-customization/js/fake_shortcut_provider.js';
 import {setShortcutProviderForTesting} from 'chrome://shortcut-customization/js/mojo_interface_provider.js';
-import {stringToMojoString16} from 'chrome://shortcut-customization/js/mojo_utils.js';
-import {Accelerator, AcceleratorConfigResult, AcceleratorInfo, AcceleratorState, Modifier} from 'chrome://shortcut-customization/js/shortcut_types.js';
-import {AcceleratorResultData} from 'chrome://shortcut-customization/mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
+import {Accelerator, AcceleratorConfigResult, AcceleratorInfo, AcceleratorKeyState, AcceleratorState, Modifier} from 'chrome://shortcut-customization/js/shortcut_types.js';
+import {AcceleratorResultData, UserAction} from 'chrome://shortcut-customization/mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
@@ -173,7 +173,8 @@ suite('acceleratorEditDialogTest', function() {
     const acceleratorElements =
         dialog.querySelectorAll('accelerator-edit-view');
     const expectedHintMessage =
-        'Press 1-4 modifiers and 1 other key on your keyboard';
+        'Press 1-4 modifiers and 1 other key on your keyboard. To exit ' +
+        'editing mode, press alt + esc.';
     const statusMessageElement = strictQuery(
         '#acceleratorInfoText', acceleratorElements[0]!.shadowRoot,
         HTMLDivElement);
@@ -228,7 +229,7 @@ suite('acceleratorEditDialogTest', function() {
       shortcutName: undefined,
     };
 
-    provider.setRestoreDefault(fakeResult);
+    provider.setFakeRestoreDefaultResult(fakeResult);
 
     await flushTasks();
     const restoreDefaultButton =
@@ -238,6 +239,7 @@ suite('acceleratorEditDialogTest', function() {
 
     // Expect call count for `restoreDefault` to be 1.
     assertEquals(1, provider.getRestoreDefaultCallCount());
+    assertEquals(UserAction.kResetAction, provider.getLatestRecordedAction());
   });
 
   test('RestoreDefaultButtonConflict', async () => {
@@ -266,7 +268,7 @@ suite('acceleratorEditDialogTest', function() {
       shortcutName: stringToMojoString16('TestDescription'),
     };
 
-    provider.setRestoreDefault(fakeResult);
+    provider.setFakeRestoreDefaultResult(fakeResult);
 
     await flushTasks();
     const restoreDefaultButton =
@@ -309,6 +311,7 @@ suite('acceleratorEditDialogTest', function() {
     const defaultAccelerators: Accelerator[] = [{
       modifiers: Modifier.CONTROL | Modifier.SHIFT,
       keyCode: 71,
+      keyState: AcceleratorKeyState.PRESSED,
     }];
     provider.setFakeGetDefaultAcceleratorsForId(defaultAccelerators);
 
@@ -332,7 +335,7 @@ suite('acceleratorEditDialogTest', function() {
       shortcutName: stringToMojoString16('TestDescription'),
     };
 
-    provider.setRestoreDefault(fakeResult);
+    provider.setFakeRestoreDefaultResult(fakeResult);
 
     await flushTasks();
     let restoreDefaultButton =
@@ -411,7 +414,7 @@ suite('acceleratorEditDialogTest', function() {
       shortcutName: stringToMojoString16('TestDescription'),
     };
 
-    provider.setRestoreDefault(fakeResult);
+    provider.setFakeRestoreDefaultResult(fakeResult);
 
     await flushTasks();
     const restoreDefaultButton =
@@ -505,7 +508,7 @@ suite('acceleratorEditDialogTest', function() {
       shortcutName: stringToMojoString16('TestDescription'),
     };
 
-    provider.setRestoreDefault(fakeResult);
+    provider.setFakeRestoreDefaultResult(fakeResult);
     const restoreDefaultButton =
         dialog!.querySelector('#restoreDefault') as CrButtonElement;
     restoreDefaultButton.click();
@@ -672,11 +675,67 @@ suite('acceleratorEditDialogTest', function() {
     assertTrue(addButtonContainer.hidden);
   });
 
+  test('maxReachedHintNotVisibleWithDisabledAccelerator', async () => {
+    const acceleratorInfo1: AcceleratorInfo =
+        createCustomStandardAcceleratorInfo(
+            Modifier.CONTROL | Modifier.SHIFT,
+            /*key=*/ 71,
+            /*keyDisplay=*/ 'g', AcceleratorState.kDisabledByUser);
+    const acceleratorInfo2: AcceleratorInfo = createUserAcceleratorInfo(
+        Modifier.CONTROL,
+        /*key=*/ 71,
+        /*keyDisplay=*/ 'g');
+    const acceleratorInfo3: AcceleratorInfo = createUserAcceleratorInfo(
+        Modifier.COMMAND,
+        /*key=*/ 71,
+        /*keyDisplay=*/ 'g');
+    const acceleratorInfo4: AcceleratorInfo = createUserAcceleratorInfo(
+        Modifier.CONTROL | Modifier.SHIFT,
+        /*key=*/ 67,
+        /*keyDisplay=*/ 'c');
+    const acceleratorInfo5: AcceleratorInfo = createUserAcceleratorInfo(
+        Modifier.CONTROL,
+        /*key=*/ 67,
+        /*keyDisplay=*/ 'c');
+
+    // Initialize with max accelerators.
+    const accelerators = [
+      acceleratorInfo1,
+      acceleratorInfo2,
+      acceleratorInfo3,
+      acceleratorInfo4,
+      acceleratorInfo5,
+    ];
+    const description = 'test shortcut';
+
+    viewElement!.acceleratorInfos = accelerators;
+    viewElement!.description = description;
+    await flush();
+
+    const dialog =
+        viewElement!.shadowRoot!.querySelector('cr-dialog') as CrDialogElement;
+    assertTrue(dialog.open);
+    const acceleratorElements =
+        dialog.querySelectorAll('accelerator-edit-view');
+    assertEquals(4, acceleratorElements.length);
+
+    // Expect maxAccelsReachedHint is not visible and addButton is visible.
+    const maxAccelReachedHint =
+        viewElement!.shadowRoot!.querySelector('#maxAcceleratorsReached') as
+        HTMLDivElement;
+    const addButtonContainer =
+        viewElement!.shadowRoot!.querySelector('#addAcceleratorContainer') as
+        HTMLDivElement;
+    assertTrue(maxAccelReachedHint.hidden);
+    assertFalse(addButtonContainer.hidden);
+  });
+
   test('buttonsVisibility', async () => {
     // Set the default accelerators the same as the initialized accelerators.
     const defaultAccelerators: Accelerator[] = [{
       modifiers: Modifier.CONTROL | Modifier.SHIFT,
       keyCode: 71,
+      keyState: AcceleratorKeyState.PRESSED,
     }];
     provider.setFakeGetDefaultAcceleratorsForId(defaultAccelerators);
 
@@ -789,7 +848,11 @@ suite('acceleratorEditDialogTest', function() {
     const acceleratorInfo5: AcceleratorInfo =
         createAliasedStandardAcceleratorInfo(
             Modifier.CONTROL, /*key=*/ 67, /*keyDisplay=*/ 'c',
-            AcceleratorState.kEnabled, {modifiers: Modifier.ALT, keyCode: 67});
+            AcceleratorState.kEnabled, {
+              modifiers: Modifier.ALT,
+              keyCode: 67,
+              keyState: AcceleratorKeyState.PRESSED,
+            });
 
     // Initialize with max accelerators.
     const accelerators = [

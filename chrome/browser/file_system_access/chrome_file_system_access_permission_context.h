@@ -126,12 +126,13 @@ class ChromeFileSystemAccessPermissionContext
 
   // This method may only be called when the Persistent Permissions feature
   // flag is enabled.
-  void SetOriginHasExtendedPermissionForTesting() {
-    // TODO(https://crbug.com/1011533): Make this per-origin when relevant test
-    // cases are added.
+  void SetOriginHasExtendedPermissionForTesting(const url::Origin& origin) {
     CHECK(base::FeatureList::IsEnabled(
         features::kFileSystemAccessPersistentPermissions));
-    origin_has_extended_permission_for_testing_ = true;
+    // TODO(crbug.com/1011533): Refactor to use the registered Content Setting
+    // value, once implemented.
+    extended_permissions_settings_map_[origin] =
+        ContentSetting::CONTENT_SETTING_ALLOW;
   }
   bool RevokeActiveGrantsForTesting(
       const url::Origin& origin,
@@ -148,11 +149,6 @@ class ChromeFileSystemAccessPermissionContext
   }
 
   enum class GrantType { kRead, kWrite };
-
-  enum class PersistedPermissionOptions {
-    kDoNotUpdatePersistedPermission,
-    kUpdatePersistedPermission,
-  };
 
   // Converts permissions objects into a snapshot of grants categorized by
   // read/write and file/directory types. Currently, used in UI code.
@@ -217,6 +213,34 @@ class ChromeFileSystemAccessPermissionContext
 
  private:
   class PermissionGrantImpl;
+
+  // This value should not be stored, and should only be used to check the
+  // state of persisted grants, using the `GetPersistedGrantState()` method.
+  enum class PersistedGrantState {
+    // Represents a grant that was granted access on previous visit.
+    // Extended Permissions is not enabled for the given origin.
+    kDormant,
+    // Represents a grant that "shadows" an active grant for the
+    // current visit. Extended permissions is not enabled for the
+    // given origin. Shadow grants can be used to auto-grant
+    // permission requests. May have active grants that are GRANTED.
+    kShadow,
+    // Represents a grant that persists across multiple visits.
+    // The user has enabled Extended Permissions for the given
+    // origin via the Restore Prompt or by installing a PWA. Can be
+    // used to auto-grant permission requests.
+    kExtended,
+  };
+
+  enum class PersistedPermissionOptions {
+    kDoNotUpdatePersistedPermission,
+    kUpdatePersistedPermission,
+  };
+
+  // Retrieve the persisted grant state for all persisted grants for a given
+  // origin.
+  PersistedGrantState GetPersistedGrantState(const url::Origin& origin) const;
+
   void PermissionGrantDestroyed(PermissionGrantImpl* grant);
 
   // Checks whether the file or directory at `path` corresponds to a directory
@@ -267,7 +291,7 @@ class ChromeFileSystemAccessPermissionContext
                              HandleType handle_type,
                              GrantType grant_type);
 
-  bool HasGrantedActiveGrant(const url::Origin& origin);
+  bool HasGrantedActiveGrant(const url::Origin& origin) const;
 
   // Similar to GetGrantedObjects() but returns only extended grants.
   std::vector<std::unique_ptr<Object>> GetExtendedPersistedObjects(
@@ -291,9 +315,11 @@ class ChromeFileSystemAccessPermissionContext
   struct OriginState;
   std::map<url::Origin, OriginState> active_permissions_map_;
 
-  bool usage_icon_update_scheduled_ = false;
+  // TODO(crbug.com/1011533): Remove this map once the Persistent Permission
+  // Content Setting is implemented.
+  std::map<url::Origin, ContentSetting> extended_permissions_settings_map_;
 
-  bool origin_has_extended_permission_for_testing_ = false;
+  bool usage_icon_update_scheduled_ = false;
 
   scoped_refptr<HostContentSettingsMap> content_settings_;
 

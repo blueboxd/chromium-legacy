@@ -52,10 +52,6 @@ BASE_FEATURE(kSyncSegmentationDataType,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS)
-BASE_FEATURE(kSyncSettingsShowLacrosSideBySideWarning,
-             "SyncSettingsShowLacrosSideBySideWarning",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSyncChromeOSExplicitPassphraseSharing,
              "SyncChromeOSExplicitPassphraseSharing",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -81,14 +77,6 @@ BASE_FEATURE(kSyncEnableHistoryDataType,
              "SyncEnableHistoryDataType",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSyncEnableContactInfoDataType,
-             "SyncEnableContactInfoDataType",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSyncEnableContactInfoDataTypeEarlyReturnNoDatabase,
-             "SyncEnableContactInfoDataTypeEarlyReturnNoDatabase",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSyncEnableContactInfoDataTypeInTransportMode,
              "SyncEnableContactInfoDataTypeInTransportMode",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -103,18 +91,6 @@ BASE_FEATURE(kSyncEnableContactInfoDataTypeForDasherUsers,
 
 BASE_FEATURE(kSyncEnforceBookmarksCountLimit,
              "SyncEnforceBookmarksCountLimit",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSyncAllowClearingMetadataWhenDataTypeIsStopped,
-             "SyncAllowClearingMetadataWhenDataTypeIsStopped",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSyncEnableLoadModelsTimeout,
-             "SyncEnableLoadModelsTimeout",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSyncEnforcePreferencesAllowlist,
-             "SyncEnforcePreferencesAllowlist",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnablePreferencesAccountStorage,
@@ -145,10 +121,6 @@ BASE_FEATURE(kSyncIgnoreGetUpdatesRetryDelay,
              "SyncIgnoreGetUpdatesRetryDelay",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSyncEnablePersistentStorageForAccountPreferences,
-             "SyncEnablePersistentStorageForAccountPreferences",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kTabGroupsSaveNudgeDelay,
              "TabGroupsSaveNudgeDelay",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -157,21 +129,32 @@ BASE_FEATURE(kReplaceSyncPromosWithSignInPromos,
              "ReplaceSyncPromosWithSignInPromos",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSyncAvoidReconfigurationIfAlreadyStopping,
-             "SyncAvoidReconfigurationIfAlreadyStopping",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kEnableBookmarksAccountStorage,
              "EnableBookmarksAccountStorage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_IOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // BUILDFLAG(IS_IOS)
+);
 
 BASE_FEATURE(kReadingListEnableDualReadingListModel,
              "ReadingListEnableDualReadingListModel",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_IOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // BUILDFLAG(IS_IOS)
+);
 
 BASE_FEATURE(kReadingListEnableSyncTransportModeUponSignIn,
              "ReadingListEnableSyncTransportModeUponSignIn",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_IOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // BUILDFLAG(IS_IOS)
+);
 
 BASE_FEATURE(kSyncEnableWalletMetadataInTransportMode,
              "SyncEnableWalletMetadataInTransportMode",
@@ -188,5 +171,19 @@ BASE_FEATURE(kSyncEntityMetadataRecordDeletedByVersionOnLocalDeletion,
 BASE_FEATURE(kSyncPasswordCleanUpAccidentalBatchDeletions,
              "SyncPasswordCleanUpAccidentalBatchDeletions",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncEnableBatchUploadLocalData,
+             "SyncEnableBatchUploadLocalData",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncEnableBatchUploadLocalDataWithDummyDataForTesting,
+             "SyncEnableBatchUploadLocalDataWithDummyDataForTesting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kRestoreSyncedPlaceholderTabs,
+             "RestoreSyncedPlaceholderTabs",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace syncer

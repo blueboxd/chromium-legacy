@@ -175,16 +175,24 @@ declare_args() {
   # a reproducer file to be saved.
   save_reproducers_on_lld_crash = false
 
-  # Allow projects that wish to stay on C++17 to override Chromium's default.
-  # TODO(crbug.com/1402249): evaluate removing this end of 2023
-  use_cxx17 = false
-
   # Enable ShadowCallStack for compiled binaries. SCS stores a pointer to a
   # shadow call stack in register x18. Hence, x18 must not be used by the OS
   # or libraries. We assume that to be the case for high end Android
   # configurations. For more details see
   # https://clang.llvm.org/docs/ShadowCallStack.html
   enable_shadow_call_stack = false
+
+  # Use DWARF simple template names, with the following exceptions:
+  #
+  # * Windows is not supported as it doesn't use DWARF.
+  # * Apple platforms (e.g. MacOS, iPhone, iPad) aren't supported because xcode
+  #   lldb doesn't have the needed changes yet.
+  # TODO(crbug.com/1379070): Remove if the upstream default ever changes.
+  #
+  # This greatly reduces the size of debug builds, at the cost of
+  # debugging information which is required by some specialized
+  # debugging tools.
+  simple_template_names = is_clang && !is_nacl && !is_win && !is_apple
 }
 
 declare_args() {
@@ -306,7 +314,8 @@ config("compiler") {
     ":rustc_revision",
     ":compiler_cpu_abi",
     ":compiler_codegen",
-#   ":compiler_deterministic",
+
+    #   ":compiler_deterministic",
   ]
 
   # Here we enable -fno-delete-null-pointer-checks, which makes various nullptr
@@ -642,7 +651,7 @@ config("compiler") {
         cflags_cc += [ "-fno-trigraphs" ]
       }
     } else if (is_clang) {
-      if (use_cxx17) {
+      if (defined(use_cxx17) && use_cxx17) {
         cflags_cc += [ "-std=${standard_prefix}++17" ]
       } else {
         cflags_cc += [ "-std=${standard_prefix}++20" ]
@@ -654,7 +663,8 @@ config("compiler") {
     }
   } else if (is_win) {
     cflags_c += [ "/std:c11" ]
-    if (use_cxx17 || (!is_clang && defined(msvc_use_cxx17) && msvc_use_cxx17)) {
+    if ((defined(use_cxx17) && use_cxx17) ||
+        (!is_clang && defined(msvc_use_cxx17) && msvc_use_cxx17)) {
       cflags_cc += [ "/std:c++17" ]
     } else {
       cflags_cc += [ "/std:c++20" ]
@@ -667,7 +677,7 @@ config("compiler") {
     # clause, above.
     cflags_c += [ "-std=c11" ]
 
-    if (use_cxx17) {
+    if (defined(use_cxx17) && use_cxx17) {
       cflags_cc += [ "-std=c++17" ]
     } else {
       cflags_cc += [ "-std=c++20" ]
@@ -861,13 +871,8 @@ config("compiler") {
     cflags += [ "-fcomplete-member-pointers" ]
   }
 
-  # Use DWARF simple template names, with the following exceptions:
-  #
-  # * Windows is not supported as it doesn't use DWARF.
-  # * Apple platforms (e.g. MacOS, iPhone, iPad) aren't supported because xcode
-  #   lldb doesn't have the needed changes yet.
-  # TODO(crbug.com/1379070): Remove if the upstream default ever changes.
-  if (is_clang && !is_nacl && !is_win && !is_apple) {
+  # Use DWARF simple template names.
+  if (simple_template_names) {
     cflags_cc += [ "-gsimple-template-names" ]
   }
 
@@ -1758,6 +1763,16 @@ config("default_warnings") {
         cflags += [ "-Wno-nonportable-include-path" ]
       }
 
+      if (is_fuchsia && llvm_force_head_revision) {
+        cflags_cc += [
+          # TODO(https://crbug.com/1474032): fix and reenable
+          "-Wno-deprecated-literal-operator",
+
+          # TODO(https://crbug.com/1474434): fix and reenable
+          "-Wno-missing-field-initializers",
+        ]
+      }
+
       cflags += [
         "-Wenum-compare-conditional",
 
@@ -1891,7 +1906,14 @@ config("chromium_code") {
       # Non-chromium code is not guaranteed to compile cleanly with
       # _FORTIFY_SOURCE. Also, fortified build may fail when optimizations are
       # disabled, so only do that for Release build.
-      defines += [ "_FORTIFY_SOURCE=2" ]
+      fortify_level = "2"
+
+      # ChromeOS supports a high-quality _FORTIFY_SOURCE=3 implementation
+      # with a few custom glibc patches. Use that if it's available.
+      if (is_chromeos_ash) {
+        fortify_level = "3"
+      }
+      defines += [ "_FORTIFY_SOURCE=" + fortify_level ]
     }
 
     if (is_apple) {
@@ -1913,14 +1935,11 @@ config("chromium_code") {
 
       # Warn on unnecessary extra semicolons outside of function definitions.
       "-Wextra-semi",
-    ]
 
-    # TODO(thakis): Enable this more often, https://crbug.com/346399
-    # use_fuzzing_engine_with_lpm: https://crbug.com/1063180
-    if ((!is_nacl || is_nacl_saigo) &&
-        !(is_win && use_fuzzing_engine_with_lpm)) {
-      # cflags += [ "-Wunreachable-code-aggressive" ]
-    }
+      # Warn on unreachable code, including unreachable breaks and returns.
+      # See https://crbug.com/346399#c148 for suppression strategies.
+      # "-Wunreachable-code-aggressive",
+    ]
 
     # Thread safety analysis is broken under nacl: https://crbug.com/982423.
     if (!is_nacl || is_nacl_saigo) {

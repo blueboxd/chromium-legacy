@@ -75,6 +75,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chromeos/ash/components/scalable_iph/scalable_iph_constants.h"
 #include "components/commerce/content/browser/commerce_internals_ui.h"
 #include "components/commerce/core/commerce_constants.h"
 #include "components/favicon/core/favicon_service.h"
@@ -207,10 +208,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/chrome_url_disabled/chrome_url_disabled_ui.h"
-#endif
-
-#if !BUILDFLAG(IS_CHROMEOS)
-#include "chrome/browser/ui/webui/app_launcher_page_ui.h"
 #endif
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -535,15 +532,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 
 #if !BUILDFLAG(IS_ANDROID)
 #if !BUILDFLAG(IS_CHROMEOS)
-  // AppLauncherPage is not needed on Android or ChromeOS.
+  // AppHome is not needed on Android or ChromeOS.
   if (url.host_piece() == chrome::kChromeUIAppLauncherPageHost && profile &&
       extensions::ExtensionSystem::Get(profile)->extension_service() &&
       !profile->IsGuestSession()) {
-    if (base::FeatureList::IsEnabled(features::kDesktopPWAsAppHomePage)) {
-      return &NewWebUI<webapps::AppHomeUI>;
-    } else {
-      return &NewWebUI<AppLauncherPageUI>;
-    }
+    return &NewWebUI<webapps::AppHomeUI>;
   }
 #endif  // !BUILDFLAG(IS_CHROMEOS)
   if (profile->IsGuestSession() &&
@@ -1047,12 +1040,6 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     return FlagsUI::GetFaviconResourceBytes(scale_factor);
 
 #if !BUILDFLAG(IS_ANDROID)
-#if !BUILDFLAG(IS_CHROMEOS)
-  // The Apps launcher page is not available on android or ChromeOS.
-  if (page_url.host_piece() == chrome::kChromeUIAppLauncherPageHost)
-    return AppLauncherPageUI::GetFaviconResourceBytes(scale_factor);
-#endif  // !BUILDFLAG(IS_CHROMEOS)
-
   if (page_url.host_piece() == chrome::kChromeUINewTabPageHost)
     return NewTabPageUI::GetFaviconResourceBytes(scale_factor);
 
@@ -1111,12 +1098,16 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     // avoid confusion, the two instances should provide a link to each other.
     GURL(chrome::kChromeUIAboutURL),
     GURL(chrome::kChromeUIAppServiceInternalsURL),
+    GURL(chrome::kChromeUIChromeURLsURL),
     GURL(chrome::kChromeUIComponentsUrl),
     GURL(chrome::kChromeUICreditsURL),
     GURL(chrome::kChromeUIDeviceLogUrl),
+    GURL(chrome::kChromeUIExtensionsInternalsURL),
+    GURL(chrome::kChromeUIExtensionsURL),
     GURL(chrome::kChromeUIFlagsURL),
     GURL(chrome::kChromeUIGpuURL),
     GURL(chrome::kChromeUIHistogramsURL),
+    GURL(chrome::kChromeUIInspectURL),
     GURL(chrome::kChromeUIInvalidationsUrl),
     GURL(chrome::kChromeUIManagementURL),
     GURL(chrome::kChromeUIPrefsInternalsURL),
@@ -1159,7 +1150,6 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     GURL(chrome::kChromeUIDiagnosticsAppURL),
     GURL(chrome::kChromeUIDriveInternalsUrl),
     GURL(chrome::kChromeUIEmojiPickerURL),
-    GURL(chrome::kChromeUIExtensionsInternalsURL),
     GURL(chrome::kChromeUIFirmwareUpdaterAppURL),
     GURL(chrome::kChromeUIHealthdInternalsURL),
     GURL(chrome::kChromeUIHumanPresenceInternalsURL),
@@ -1190,6 +1180,7 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     GURL(chrome::kChromeUIUntrustedTerminalURL),
     GURL(chrome::kChromeUIUserImageURL),
     GURL(chrome::kChromeUIVmUrl),
+    GURL(scalable_iph::kScalableIphDebugURL),
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // IME extension's Japanese options page. Opened via OS_URL_HANDLER SWA
@@ -1210,6 +1201,14 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
                        url::kStandardSchemeSeparator,
                        extension_misc::kEspeakSpeechSynthesisExtensionId,
                        extension_misc::kEspeakSpeechSynthesisOptionsPath})),
+    // This file doesn't exist but the options page links to it (b/269703827),
+    // so we have to list it here anyways to prevent opening an Ash window on
+    // e.g. shift-click.
+    // TODO(b/269703827): Revisit when Espeak is fixed.
+    GURL(base::StrCat({extensions::kExtensionScheme,
+                       url::kStandardSchemeSeparator,
+                       extension_misc::kEspeakSpeechSynthesisExtensionId,
+                       "/COPYING"})),
     GURL(base::StrCat({extensions::kExtensionScheme,
                        url::kStandardSchemeSeparator,
                        extension_misc::kGoogleSpeechSynthesisExtensionId,

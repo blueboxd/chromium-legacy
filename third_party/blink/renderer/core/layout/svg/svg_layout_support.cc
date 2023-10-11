@@ -32,12 +32,10 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_transformable_container.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_viewport_container.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
-#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/outline_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
-#include "third_party/blink/renderer/core/svg/svg_length_context.h"
+#include "third_party/blink/renderer/core/svg/svg_length_functions.h"
 #include "third_party/blink/renderer/platform/graphics/stroke_data.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/clear_collection_scope.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -298,11 +296,11 @@ gfx::RectF SVGLayoutSupport::ExtendTextBBoxWithStroke(
   gfx::RectF bounds = text_bounds;
   const ComputedStyle& style = layout_object.StyleRef();
   if (style.HasStroke()) {
-    SVGLengthContext length_context(To<SVGElement>(layout_object.GetNode()));
+    const SVGViewportResolver viewport_resolver(layout_object);
     // TODO(fs): This approximation doesn't appear to be conservative enough
     // since while text (usually?) won't have caps it could have joins and thus
     // miters.
-    bounds.Outset(length_context.ValueForLength(style.StrokeWidth()));
+    bounds.Outset(ValueForLength(style.StrokeWidth(), viewport_resolver));
   }
   return bounds;
 }
@@ -317,34 +315,14 @@ gfx::RectF SVGLayoutSupport::ComputeVisualRectForText(
   return visual_rect;
 }
 
-bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
-                                          const gfx::RectF& reference_box,
-                                          const HitTestLocation& location) {
-  ClipPathOperation* clip_path_operation = object.StyleRef().ClipPath();
-  if (!clip_path_operation) {
-    return true;
-  }
-  if (auto* shape_clip =
-          DynamicTo<ShapeClipPathOperation>(*clip_path_operation)) {
-    float zoom = object.StyleRef().EffectiveZoom();
-    return shape_clip->GetPath(gfx::ScaleRect(reference_box, zoom), zoom)
-        .Transform(AffineTransform::MakeScale(1.f / zoom))
-        .Contains(location.TransformedPoint());
-  }
-  DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::kReference);
-  SVGResourceClient* client = SVGResources::GetClient(object);
-  auto* clipper = GetSVGResourceAsType(
-      *client, To<ReferenceClipPathOperation>(*clip_path_operation));
-  return !clipper || clipper->HitTestClipContent(reference_box, location);
-}
-
 DashArray SVGLayoutSupport::ResolveSVGDashArray(
     const SVGDashArray& svg_dash_array,
     const ComputedStyle& style,
-    const SVGLengthContext& length_context) {
+    const SVGViewportResolver& viewport_resolver) {
   DashArray dash_array;
-  for (const Length& dash_length : svg_dash_array.data)
-    dash_array.push_back(length_context.ValueForLength(dash_length, style));
+  for (const Length& dash_length : svg_dash_array.data) {
+    dash_array.push_back(ValueForLength(dash_length, viewport_resolver, style));
+  }
   return dash_array;
 }
 
@@ -355,16 +333,17 @@ void SVGLayoutSupport::ApplyStrokeStyleToStrokeData(StrokeData& stroke_data,
   DCHECK(object.GetNode());
   DCHECK(object.GetNode()->IsSVGElement());
 
-  SVGLengthContext length_context(To<SVGElement>(object.GetNode()));
-  stroke_data.SetThickness(length_context.ValueForLength(style.StrokeWidth()));
+  const SVGViewportResolver viewport_resolver(object);
+  stroke_data.SetThickness(
+      ValueForLength(style.StrokeWidth(), viewport_resolver));
   stroke_data.SetLineCap(style.CapStyle());
   stroke_data.SetLineJoin(style.JoinStyle());
   stroke_data.SetMiterLimit(style.StrokeMiterLimit());
 
   DashArray dash_array =
-      ResolveSVGDashArray(*style.StrokeDashArray(), style, length_context);
+      ResolveSVGDashArray(*style.StrokeDashArray(), style, viewport_resolver);
   float dash_offset =
-      length_context.ValueForLength(style.StrokeDashOffset(), style);
+      ValueForLength(style.StrokeDashOffset(), viewport_resolver, style);
   // Apply scaling from 'pathLength'.
   if (dash_scale_factor != 1) {
     DCHECK_GE(dash_scale_factor, 0);

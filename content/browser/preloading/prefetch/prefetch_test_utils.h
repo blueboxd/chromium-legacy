@@ -30,6 +30,10 @@ void MakeServableStreamingURLLoaderForTest(
     network::mojom::URLResponseHeadPtr head,
     const std::string body);
 
+network::TestURLLoaderFactory::PendingRequest
+MakeManuallyServableStreamingURLLoaderForTest(
+    PrefetchContainer* prefetch_container);
+
 PrefetchStreamingURLLoader::OnPrefetchRedirectCallback
 CreatePrefetchRedirectCallbackForTest(
     base::RunLoop* on_receive_redirect_loop,
@@ -63,6 +67,13 @@ class PrefetchTestURLLoaderClient : public network::mojom::URLLoaderClient,
   BindURLLoaderClientAndGetRemote();
   void DisconnectMojoPipes();
 
+  // By default, auto draining is enabled, i.e. body data pipe is started
+  // draining when received. If auto draining is disabled by
+  // `SetAutoDraining(false)`, `StartDraining()` should be explicitly called
+  // only once.
+  void SetAutoDraining(bool auto_draining) { auto_draining_ = auto_draining; }
+  void StartDraining();
+
   std::string body_content() { return body_content_; }
   uint32_t total_bytes_read() { return total_bytes_read_; }
   bool body_finished() { return body_finished_; }
@@ -75,6 +86,8 @@ class PrefetchTestURLLoaderClient : public network::mojom::URLLoaderClient,
   received_redirects() {
     return received_redirects_;
   }
+
+  void SetOnDataCompleteCallback(base::OnceClosure on_data_complete_callback);
 
  private:
   // network::mojom::URLLoaderClient
@@ -100,6 +113,8 @@ class PrefetchTestURLLoaderClient : public network::mojom::URLLoaderClient,
   mojo::Receiver<network::mojom::URLLoaderClient> receiver_{this};
 
   std::unique_ptr<mojo::DataPipeDrainer> pipe_drainer_;
+  bool auto_draining_{true};
+  mojo::ScopedDataPipeConsumerHandle body_;
 
   std::string body_content_;
   uint32_t total_bytes_read_{0};
@@ -110,6 +125,8 @@ class PrefetchTestURLLoaderClient : public network::mojom::URLLoaderClient,
 
   std::vector<std::pair<net::RedirectInfo, network::mojom::URLResponseHeadPtr>>
       received_redirects_;
+
+  base::OnceClosure on_data_complete_callback_;
 };
 
 }  // namespace content

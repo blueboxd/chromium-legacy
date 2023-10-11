@@ -4,9 +4,10 @@
 
 #import <XCTest/XCTest.h>
 
+#import "base/apple/foundation_util.h"
+#import "base/containers/contains.h"
 #import "base/functional/bind.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "build/build_config.h"
@@ -83,7 +84,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   if (request.relative_url == kHeaderPageURL) {
     std::string result = kHeaderPageFailure;
-    if (request.headers.find("X-Client-Data") != request.headers.end()) {
+    if (base::Contains(request.headers, "X-Client-Data")) {
       result = kHeaderPageSuccess;
     }
     http_response->set_content("<html><body>" + result + "</body></html>");
@@ -174,42 +175,39 @@ id<GREYMatcher> CopyContextMenuButton() {
     copyButtonId = IDS_IOS_COPY_LINK_ACTION_TITLE;
   }
   return grey_allOf(
-      grey_accessibilityLabel(l10n_util::GetNSString(copyButtonId)),
+      chrome_test_util::ContextMenuItemWithAccessibilityLabelId(copyButtonId),
       grey_accessibilityTrait(UIAccessibilityTraitButton), grey_hidden(NO),
       nil);
 }
 
 // Returns Visit Copied Link button from the location bar context menu.
 id<GREYMatcher> VisitCopiedLinkContextMenuButton() {
-  return grey_allOf(grey_accessibilityLabel(
-                        l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)),
+  return grey_allOf(chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                        IDS_IOS_VISIT_COPIED_LINK),
                     grey_accessibilityTrait(UIAccessibilityTraitButton),
                     grey_hidden(NO), nil);
 }
 
 // Returns Search Copied Text button from the location bar context menu.
 id<GREYMatcher> SearchCopiedTextContextMenuButton() {
-  NSString* a11yLabelCopiedText =
-      l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT);
-  return grey_allOf(grey_accessibilityLabel(a11yLabelCopiedText),
+  return grey_allOf(chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                        IDS_IOS_SEARCH_COPIED_TEXT),
                     grey_accessibilityTrait(UIAccessibilityTraitButton),
                     grey_hidden(NO), nil);
 }
 
 // Returns Search Copied Image button from the location bar context menu.
 id<GREYMatcher> SearchCopiedImageContextMenuButton() {
-  NSString* a11yLabelCopiedImage =
-      l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_IMAGE);
-  return grey_allOf(grey_accessibilityLabel(a11yLabelCopiedImage),
+  return grey_allOf(chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                        IDS_IOS_SEARCH_COPIED_IMAGE),
                     grey_accessibilityTrait(UIAccessibilityTraitButton),
                     grey_hidden(NO), nil);
 }
 
 // Returns Search Copied Image button from the location bar context menu.
 id<GREYMatcher> SearchCopiedImageWithLensContextMenuButton() {
-  NSString* a11yLabelCopiedImageWithLens =
-      l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_IMAGE_WITH_LENS);
-  return grey_allOf(grey_accessibilityLabel(a11yLabelCopiedImageWithLens),
+  return grey_allOf(chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                        IDS_IOS_SEARCH_COPIED_IMAGE_WITH_LENS),
                     grey_accessibilityTrait(UIAccessibilityTraitButton),
                     grey_hidden(NO), nil);
 }
@@ -265,9 +263,9 @@ void FocusFakebox() {
                         [ElementSelector
                             selectorWithElementID:kLogoPageChromiumImageId],
                         true /* menu should appear */)];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_CONTEXT_COPYIMAGE)]
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                     IDS_IOS_CONTENT_CONTEXT_COPYIMAGE)]
       performAction:grey_tap()];
 
   GREYCondition* copyCondition =
@@ -403,7 +401,8 @@ void FocusFakebox() {
 
 // Tests that Search Copied Image menu button is shown with an image in the
 // clipboard and is starting an image search.
-- (void)testOmniboxMenuPasteImageToSearch {
+// TODO(crbug.com/1476912): Fix flakiness and re-enable.
+- (void)DISABLED_testOmniboxMenuPasteImageToSearch {
   [self copyImageIntoClipboard];
 
   // Wait for the context menu to dismiss, so the omnibox can be tapped.

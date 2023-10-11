@@ -354,7 +354,6 @@ public class Shell extends LinearLayout {
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 return helper.onActionItemClicked(mode, item);
             }
-
             @Override
             public boolean onDropdownItemClicked(int groupId, int id, @Nullable Intent intent,
                     @Nullable OnClickListener clickListener) {

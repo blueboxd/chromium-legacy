@@ -20,6 +20,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.CharacterStyle;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.SuggestionSpan;
 import android.text.style.UnderlineSpan;
 import android.util.SparseArray;
@@ -1059,12 +1060,17 @@ public class ImeAdapterImpl
             // Update edit bounds to stylus writing service.
             Rect editableNodeBoundsPixOnScreen;
             if (isEditable) {
-                float deviceScale = mWebContents.getRenderCoordinates().getDeviceScaleFactor();
-                editableNodeBoundsPixOnScreen = new Rect((int) (nodeLeftDip * deviceScale),
-                        (int) (nodeTopDip * deviceScale), (int) (nodeRightDip * deviceScale),
-                        (int) (nodeBottomDip * deviceScale));
-                editableNodeBoundsPixOnScreen.offset(
-                        0, mWebContents.getRenderCoordinates().getContentOffsetYPixInt());
+                editableNodeBoundsPixOnScreen =
+                        new Rect(nodeLeftDip, nodeTopDip, nodeRightDip, nodeBottomDip);
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+                    RectF bounds = new RectF(editableNodeBoundsPixOnScreen);
+                    EditorBoundsInfo editorBoundsInfo = new EditorBoundsInfo.Builder()
+                                                                .setEditorBounds(bounds)
+                                                                .setHandwritingBounds(bounds)
+                                                                .build();
+                    mCursorAnchorInfoController.updateWithEditorBoundsInfo(
+                            editorBoundsInfo, getContainerView());
+                }
             } else {
                 editableNodeBoundsPixOnScreen = new Rect();
             }
@@ -1084,32 +1090,35 @@ public class ImeAdapterImpl
         if (!ViewUtils.hasFocus(containerView)) ViewUtils.requestFocus(containerView);
 
         updateInputStateForStylusWriting();
-        return mWebContents.getStylusWritingHandler().requestStartStylusWriting(
-                getStylusWritingImeCallback());
+        return mWebContents.getStylusWritingHandler().requestStartStylusWriting();
     }
 
     @CalledByNative
     void onEditElementFocusedForStylusWriting(int focusedEditLeft, int focusedEditTop,
             int focusedEditRight, int focusedEditBottom, int caretX, int caretY) {
         if (mWebContents.getStylusWritingHandler() == null) return;
-        Rect focusedEditBounds =
-                new Rect(focusedEditLeft, focusedEditTop, focusedEditRight, focusedEditBottom);
+        float scaleFactor = mWebContents.getRenderCoordinates().getDeviceScaleFactor();
+        RectF focusedEditBounds =
+                new RectF(focusedEditLeft / scaleFactor, focusedEditTop / scaleFactor,
+                        focusedEditRight / scaleFactor, focusedEditBottom / scaleFactor);
         Point cursorPosition = new Point(caretX, caretY);
         if (!focusedEditBounds.isEmpty()) {
             int[] screenLocation = new int[2];
             getContainerView().getLocationOnScreen(screenLocation);
             int contentOffsetY = mWebContents.getRenderCoordinates().getContentOffsetYPixInt();
-            focusedEditBounds.offset(0, contentOffsetY);
             cursorPosition.offset(screenLocation[0], screenLocation[1] + contentOffsetY);
         }
 
+        Rect roundedBounds = new Rect();
+        focusedEditBounds.round(roundedBounds);
         // Send focused edit bounds and caret center position to Stylus writing service.
         mWebContents.getStylusWritingHandler().onEditElementFocusedForStylusWriting(
-                focusedEditBounds, cursorPosition);
+                roundedBounds, cursorPosition);
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-            RectF bounds = new RectF(focusedEditBounds);
-            EditorBoundsInfo editorBoundsInfo =
-                    new EditorBoundsInfo.Builder().setHandwritingBounds(bounds).build();
+            EditorBoundsInfo editorBoundsInfo = new EditorBoundsInfo.Builder()
+                                                        .setEditorBounds(focusedEditBounds)
+                                                        .setHandwritingBounds(focusedEditBounds)
+                                                        .build();
             mCursorAnchorInfoController.updateWithEditorBoundsInfo(
                     editorBoundsInfo, getContainerView());
         }
@@ -1144,7 +1153,7 @@ public class ImeAdapterImpl
     }
 
     /** Lazily creates/returns a StylusWritingImeCallback object. */
-    private StylusWritingImeCallback getStylusWritingImeCallback() {
+    public StylusWritingImeCallback getStylusWritingImeCallback() {
         if (mStylusWritingImeCallback == null) {
             mStylusWritingImeCallback = new StylusWritingImeCallback() {
                 @Override
@@ -1282,13 +1291,17 @@ public class ImeAdapterImpl
         if (!(text instanceof SpannableString)) return;
 
         SpannableString spannableString = ((SpannableString) text);
-        CharacterStyle spans[] = spannableString.getSpans(0, text.length(), CharacterStyle.class);
+        CharacterStyle[] spans = spannableString.getSpans(0, text.length(), CharacterStyle.class);
         for (CharacterStyle span : spans) {
             final int spanFlags = spannableString.getSpanFlags(span);
             if (span instanceof BackgroundColorSpan) {
                 ImeAdapterImplJni.get().appendBackgroundColorSpan(imeTextSpans,
                         spannableString.getSpanStart(span), spannableString.getSpanEnd(span),
                         ((BackgroundColorSpan) span).getBackgroundColor());
+            } else if (span instanceof ForegroundColorSpan) {
+                ImeAdapterImplJni.get().appendForegroundColorSpan(imeTextSpans,
+                        spannableString.getSpanStart(span), spannableString.getSpanEnd(span),
+                        ((ForegroundColorSpan) span).getForegroundColor());
             } else if (span instanceof UnderlineSpan) {
                 ImeAdapterImplJni.get().appendUnderlineSpan(imeTextSpans,
                         spannableString.getSpanStart(span), spannableString.getSpanEnd(span));
@@ -1365,6 +1378,7 @@ public class ImeAdapterImpl
                 boolean isSystemKey, int unicodeChar);
         void appendUnderlineSpan(long spanPtr, int start, int end);
         void appendBackgroundColorSpan(long spanPtr, int start, int end, int backgroundColor);
+        void appendForegroundColorSpan(long spanPtr, int start, int end, int backgroundColor);
         void appendSuggestionSpan(long spanPtr, int start, int end, boolean isMisspelling,
                 boolean removeOnFinishComposing, int underlineColor, int suggestionHighlightColor,
                 String[] suggestions);

@@ -163,6 +163,13 @@ export class LockScreenSettings implements LockScreenSettingsInterface {
     await assertForDuration(property);
   }
 
+  async assertRecoveryControlFocused(): Promise<void> {
+    const toggle = await retryUntilSome(() => this.recoveryToggle());
+    const isFocused = () => toggle.contains(this.shadowRoot().activeElement);
+    await assertAsync(isFocused);
+    await assertForDuration(isFocused);
+  }
+
   async assertRecoveryConfigured(isConfigured: boolean): Promise<void> {
     const property = () => {
       const toggle = this.recoveryToggle();
@@ -326,7 +333,7 @@ export class GoogleDriveSettings implements GoogleDriveSettingsInterface {
 
   async assertBulkPinningPinnedSize(expectedPinnedSize: string): Promise<void> {
     assertTrue(
-        this.googleDriveSubpage_?.totalPinnedSize === expectedPinnedSize);
+        this.googleDriveSubpage_?.contentCacheSize === expectedPinnedSize);
   }
 
   async clickClearOfflineFilesAndAssertNewSize(newSize: string): Promise<void> {
@@ -348,8 +355,9 @@ export class GoogleDriveSettings implements GoogleDriveSettingsInterface {
     getConfirmationButton()!.click();
 
     // Wait for the total pinned size to be updated.
-    await assertAsync(
-        () => this.googleDriveSubpage_?.totalPinnedSize === newSize);
+    await assertAsync(() => {
+      return this.googleDriveSubpage_?.contentCacheSize === newSize;
+    });
   }
 }
 

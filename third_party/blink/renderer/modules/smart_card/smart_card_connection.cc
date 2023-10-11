@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_smart_card_protocol.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_smart_card_transaction_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_smart_card_transaction_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_smart_card_transmit_options.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/smart_card/smart_card_cancel_algorithm.h"
 #include "third_party/blink/renderer/modules/smart_card/smart_card_context.h"
@@ -21,7 +22,6 @@
 
 namespace blink {
 namespace {
-constexpr char kOperationInProgress[] = "An operation is in progress.";
 constexpr char kDisconnected[] = "Is disconnected.";
 constexpr char kTransactionAlreadyExists[] =
     "This connection already has an active transaction.";
@@ -44,6 +44,18 @@ SmartCardDisposition ToMojomDisposition(
       return SmartCardDisposition::kUnpower;
     case V8SmartCardDisposition::Enum::kEject:
       return SmartCardDisposition::kEject;
+  }
+}
+
+device::mojom::blink::SmartCardProtocol ToMojoSmartCardProtocol(
+    const V8SmartCardProtocol& protocol) {
+  switch (protocol.AsEnum()) {
+    case blink::V8SmartCardProtocol::Enum::kRaw:
+      return device::mojom::blink::SmartCardProtocol::kRaw;
+    case blink::V8SmartCardProtocol::Enum::kT0:
+      return device::mojom::blink::SmartCardProtocol::kT0;
+    case blink::V8SmartCardProtocol::Enum::kT1:
+      return device::mojom::blink::SmartCardProtocol::kT1;
   }
 }
 
@@ -161,9 +173,13 @@ class SmartCardConnection::TransactionState final
   void SetPendingEnd(device::mojom::blink::SmartCardDisposition);
   device::mojom::blink::SmartCardDisposition TakePendingEnd();
 
-  ScriptPromiseResolver* EndTransaction(
+  void EndTransaction(
       device::mojom::blink::SmartCardDisposition,
       base::OnceCallback<void(device::mojom::blink::SmartCardResultPtr)>);
+
+  ScriptPromiseResolver* GetStartTransactionRequest() const {
+    return start_transaction_request_;
+  }
 
  private:
   Member<ScriptPromiseResolver> start_transaction_request_;
@@ -214,8 +230,8 @@ void SmartCardConnection::TransactionState::SettleStartTransaction(
   if (!callback_exception_.IsEmpty()) {
     start_transaction_request_->Reject(callback_exception_);
   } else if (end_transaction_result->is_error()) {
-    start_transaction_request_->Reject(
-        SmartCardError::Create(end_transaction_result->get_error()));
+    SmartCardError::Reject(start_transaction_request_,
+                           end_transaction_result->get_error());
   } else {
     start_transaction_request_->Resolve();
   }
@@ -244,13 +260,12 @@ SmartCardDisposition SmartCardConnection::TransactionState::TakePendingEnd() {
   return disposition;
 }
 
-ScriptPromiseResolver* SmartCardConnection::TransactionState::EndTransaction(
+void SmartCardConnection::TransactionState::EndTransaction(
     SmartCardDisposition disposition,
     base::OnceCallback<void(device::mojom::blink::SmartCardResultPtr)>
         callback) {
   CHECK(!pending_end_);
   transaction_->EndTransaction(disposition, std::move(callback));
-  return start_transaction_request_.Get();
 }
 
 /////
@@ -285,116 +300,130 @@ ScriptPromise SmartCardConnection::disconnect(
     ScriptState* script_state,
     const V8SmartCardDisposition& disposition,
     ExceptionState& exception_state) {
-  if (!EnsureNoOperationInProgress(exception_state) ||
+  if (!smart_card_context_->EnsureNoOperationInProgress(exception_state) ||
       !EnsureConnection(exception_state)) {
     return ScriptPromise();
   }
 
-  ongoing_request_ = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
+  SetOperationInProgress(resolver);
 
   connection_->Disconnect(
       ToMojomDisposition(disposition),
       WTF::BindOnce(&SmartCardConnection::OnDisconnectDone,
-                    WrapPersistent(this),
-                    WrapPersistent(ongoing_request_.Get())));
+                    WrapPersistent(this), WrapPersistent(resolver)));
 
-  return ongoing_request_->Promise();
+  return resolver->Promise();
 }
 
 ScriptPromise SmartCardConnection::transmit(ScriptState* script_state,
                                             const DOMArrayPiece& send_buffer,
+                                            SmartCardTransmitOptions* options,
                                             ExceptionState& exception_state) {
-  if (!EnsureNoOperationInProgress(exception_state) ||
+  if (!smart_card_context_->EnsureNoOperationInProgress(exception_state) ||
       !EnsureConnection(exception_state)) {
     return ScriptPromise();
   }
 
   if (send_buffer.IsDetached() || send_buffer.IsNull()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Invalid send buffer.");
+    exception_state.ThrowTypeError("Invalid send buffer.");
     return ScriptPromise();
   }
 
-  ongoing_request_ = MakeGarbageCollected<ScriptPromiseResolver>(
+  device::mojom::blink::SmartCardProtocol protocol = active_protocol_;
+  if (options->hasProtocol()) {
+    protocol = ToMojoSmartCardProtocol(options->protocol());
+  }
+
+  if (protocol == device::mojom::blink::SmartCardProtocol::kUndefined) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "No active protocol.");
+    return ScriptPromise();
+  }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
+  SetOperationInProgress(resolver);
 
   Vector<uint8_t> send_vector;
   send_vector.Append(send_buffer.Bytes(),
                      static_cast<wtf_size_t>(send_buffer.ByteLength()));
 
   connection_->Transmit(
-      active_protocol_, send_vector,
+      protocol, send_vector,
       WTF::BindOnce(&SmartCardConnection::OnDataResult, WrapPersistent(this),
-                    WrapPersistent(ongoing_request_.Get())));
+                    WrapPersistent(resolver)));
 
-  return ongoing_request_->Promise();
+  return resolver->Promise();
 }
 
 ScriptPromise SmartCardConnection::status(ScriptState* script_state,
                                           ExceptionState& exception_state) {
-  if (!EnsureNoOperationInProgress(exception_state) ||
+  if (!smart_card_context_->EnsureNoOperationInProgress(exception_state) ||
       !EnsureConnection(exception_state)) {
     return ScriptPromise();
   }
 
-  ongoing_request_ = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
+  SetOperationInProgress(resolver);
 
   connection_->Status(WTF::BindOnce(&SmartCardConnection::OnStatusDone,
                                     WrapPersistent(this),
-                                    WrapPersistent(ongoing_request_.Get())));
+                                    WrapPersistent(resolver)));
 
-  return ongoing_request_->Promise();
+  return resolver->Promise();
 }
 
 ScriptPromise SmartCardConnection::control(ScriptState* script_state,
                                            uint32_t control_code,
                                            const DOMArrayPiece& data,
                                            ExceptionState& exception_state) {
-  if (!EnsureNoOperationInProgress(exception_state) ||
+  if (!smart_card_context_->EnsureNoOperationInProgress(exception_state) ||
       !EnsureConnection(exception_state)) {
     return ScriptPromise();
   }
 
-  if (data.IsDetached() || data.IsNull()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Invalid data.");
-    return ScriptPromise();
-  }
-
-  ongoing_request_ = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
+  SetOperationInProgress(resolver);
 
   Vector<uint8_t> data_vector;
-  data_vector.Append(data.Bytes(), static_cast<wtf_size_t>(data.ByteLength()));
+
+  // Note that there are control codes which require no input data.
+  // Thus sending an empty data vector is fine.
+  if (!data.IsDetached() && !data.IsNull() && data.ByteLength() > 0u) {
+    data_vector.Append(data.Bytes(),
+                       static_cast<wtf_size_t>(data.ByteLength()));
+  }
 
   connection_->Control(
       control_code, data_vector,
       WTF::BindOnce(&SmartCardConnection::OnDataResult, WrapPersistent(this),
-                    WrapPersistent(ongoing_request_.Get())));
+                    WrapPersistent(resolver)));
 
-  return ongoing_request_->Promise();
+  return resolver->Promise();
 }
 
 ScriptPromise SmartCardConnection::getAttribute(
     ScriptState* script_state,
     uint32_t tag,
     ExceptionState& exception_state) {
-  if (!EnsureNoOperationInProgress(exception_state) ||
+  if (!smart_card_context_->EnsureNoOperationInProgress(exception_state) ||
       !EnsureConnection(exception_state)) {
     return ScriptPromise();
   }
 
-  ongoing_request_ = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
+  SetOperationInProgress(resolver);
 
   connection_->GetAttrib(
-      tag,
-      WTF::BindOnce(&SmartCardConnection::OnDataResult, WrapPersistent(this),
-                    WrapPersistent(ongoing_request_.Get())));
+      tag, WTF::BindOnce(&SmartCardConnection::OnDataResult,
+                         WrapPersistent(this), WrapPersistent(resolver)));
 
-  return ongoing_request_->Promise();
+  return resolver->Promise();
 }
 
 ScriptPromise SmartCardConnection::setAttribute(
@@ -402,19 +431,19 @@ ScriptPromise SmartCardConnection::setAttribute(
     uint32_t tag,
     const DOMArrayPiece& data,
     ExceptionState& exception_state) {
-  if (!EnsureNoOperationInProgress(exception_state) ||
+  if (!smart_card_context_->EnsureNoOperationInProgress(exception_state) ||
       !EnsureConnection(exception_state)) {
     return ScriptPromise();
   }
 
   if (data.IsDetached() || data.IsNull()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Invalid data.");
+    exception_state.ThrowTypeError("Invalid data.");
     return ScriptPromise();
   }
 
-  ongoing_request_ = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
+  SetOperationInProgress(resolver);
 
   Vector<uint8_t> data_vector;
   data_vector.Append(data.Bytes(), static_cast<wtf_size_t>(data.ByteLength()));
@@ -422,9 +451,9 @@ ScriptPromise SmartCardConnection::setAttribute(
   connection_->SetAttrib(
       tag, data_vector,
       WTF::BindOnce(&SmartCardConnection::OnPlainResult, WrapPersistent(this),
-                    WrapPersistent(ongoing_request_.Get())));
+                    WrapPersistent(resolver)));
 
-  return ongoing_request_->Promise();
+  return resolver->Promise();
 }
 
 ScriptPromise SmartCardConnection::startTransaction(
@@ -432,7 +461,7 @@ ScriptPromise SmartCardConnection::startTransaction(
     V8SmartCardTransactionCallback* transaction_callback,
     SmartCardTransactionOptions* options,
     ExceptionState& exception_state) {
-  if (!EnsureNoOperationInProgress(exception_state) ||
+  if (!smart_card_context_->EnsureNoOperationInProgress(exception_state) ||
       !EnsureConnection(exception_state)) {
     return ScriptPromise();
   }
@@ -448,8 +477,9 @@ ScriptPromise SmartCardConnection::startTransaction(
     return ScriptPromise::Reject(script_state, signal->reason(script_state));
   }
 
-  ongoing_request_ = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
+  SetOperationInProgress(resolver);
 
   AbortSignal::AlgorithmHandle* abort_handle = nullptr;
   if (signal) {
@@ -459,18 +489,25 @@ ScriptPromise SmartCardConnection::startTransaction(
 
   connection_->BeginTransaction(WTF::BindOnce(
       &SmartCardConnection::OnBeginTransactionDone, WrapPersistent(this),
-      WrapPersistent(ongoing_request_.Get()),
-      WrapPersistent(transaction_callback), WrapPersistent(signal),
-      WrapPersistent(abort_handle)));
+      WrapPersistent(resolver), WrapPersistent(transaction_callback),
+      WrapPersistent(signal), WrapPersistent(abort_handle)));
 
-  return ongoing_request_->Promise();
+  return resolver->Promise();
+}
+
+void SmartCardConnection::OnOperationInProgressCleared() {
+  if (!transaction_state_ || !transaction_state_->HasPendingEnd()) {
+    return;
+  }
+
+  EndTransaction(transaction_state_->TakePendingEnd());
 }
 
 void SmartCardConnection::OnTransactionCallbackDone(
     SmartCardDisposition disposition) {
   CHECK(transaction_state_);
 
-  if (ongoing_request_) {
+  if (smart_card_context_->IsOperationInProgress()) {
     transaction_state_->SetCallbackException(
         DOMExceptionCode::kInvalidStateError,
         kTransactionEndedWithPendingOperation);
@@ -486,7 +523,7 @@ void SmartCardConnection::OnTransactionCallbackFailed(
 
   transaction_state_->SetCallbackException(exception);
 
-  if (ongoing_request_) {
+  if (smart_card_context_->IsOperationInProgress()) {
     transaction_state_->SetPendingEnd(SmartCardDisposition::kLeave);
   } else {
     EndTransaction(SmartCardDisposition::kLeave);
@@ -502,14 +539,23 @@ void SmartCardConnection::Trace(Visitor* visitor) const {
   ExecutionContextClient::Trace(visitor);
 }
 
-bool SmartCardConnection::EnsureNoOperationInProgress(
-    ExceptionState& exception_state) const {
-  if (ongoing_request_) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kOperationInProgress);
-    return false;
+void SmartCardConnection::SetOperationInProgress(
+    ScriptPromiseResolver* resolver) {
+  smart_card_context_->SetConnectionOperationInProgress(resolver);
+
+  if (ongoing_request_ == resolver) {
+    return;
   }
-  return true;
+  CHECK_EQ(ongoing_request_, nullptr);
+  ongoing_request_ = resolver;
+}
+
+void SmartCardConnection::ClearOperationInProgress(
+    ScriptPromiseResolver* resolver) {
+  CHECK_EQ(ongoing_request_, resolver);
+  ongoing_request_ = nullptr;
+
+  smart_card_context_->ClearConnectionOperationInProgress(resolver);
 }
 
 bool SmartCardConnection::EnsureConnection(
@@ -525,12 +571,10 @@ bool SmartCardConnection::EnsureConnection(
 void SmartCardConnection::OnDisconnectDone(
     ScriptPromiseResolver* resolver,
     device::mojom::blink::SmartCardResultPtr result) {
-  CHECK_EQ(ongoing_request_, resolver);
-  ongoing_request_ = nullptr;
+  ClearOperationInProgress(resolver);
 
   if (result->is_error()) {
-    auto* error = SmartCardError::Create(result->get_error());
-    resolver->Reject(error);
+    SmartCardError::Reject(resolver, result->get_error());
     return;
   }
 
@@ -538,53 +582,43 @@ void SmartCardConnection::OnDisconnectDone(
   connection_.reset();
 
   resolver->Resolve();
-
-  MaybeEndTransaction();
 }
 
 void SmartCardConnection::OnPlainResult(
     ScriptPromiseResolver* resolver,
     device::mojom::blink::SmartCardResultPtr result) {
-  CHECK_EQ(ongoing_request_, resolver);
-  ongoing_request_ = nullptr;
+  ClearOperationInProgress(resolver);
 
   if (result->is_error()) {
-    resolver->Reject(SmartCardError::Create(result->get_error()));
+    SmartCardError::Reject(resolver, result->get_error());
     return;
   }
 
   resolver->Resolve();
-
-  MaybeEndTransaction();
 }
 
 void SmartCardConnection::OnDataResult(
     ScriptPromiseResolver* resolver,
     device::mojom::blink::SmartCardDataResultPtr result) {
-  CHECK_EQ(ongoing_request_, resolver);
-  ongoing_request_ = nullptr;
+  ClearOperationInProgress(resolver);
 
   if (result->is_error()) {
-    auto* error = SmartCardError::Create(result->get_error());
-    resolver->Reject(error);
+    SmartCardError::Reject(resolver, result->get_error());
     return;
   }
 
   const Vector<uint8_t>& data = result->get_data();
 
   resolver->Resolve(DOMArrayBuffer::Create(data.data(), data.size()));
-
-  MaybeEndTransaction();
 }
 
 void SmartCardConnection::OnStatusDone(
     ScriptPromiseResolver* resolver,
     device::mojom::blink::SmartCardStatusResultPtr result) {
-  CHECK_EQ(ongoing_request_, resolver);
-  ongoing_request_ = nullptr;
+  ClearOperationInProgress(resolver);
 
   if (result->is_error()) {
-    resolver->Reject(SmartCardError::Create(result->get_error()));
+    SmartCardError::Reject(resolver, result->get_error());
     return;
   }
 
@@ -594,9 +628,8 @@ void SmartCardConnection::OnStatusDone(
       ToV8ConnectionState(mojo_status->state, mojo_status->protocol);
 
   if (!connection_state.has_value()) {
-    auto* error = SmartCardError::Create(
-        device::mojom::blink::SmartCardError::kInternalError);
-    resolver->Reject(error);
+    SmartCardError::Reject(
+        resolver, device::mojom::blink::SmartCardError::kInternalError);
     return;
   }
 
@@ -609,8 +642,6 @@ void SmartCardConnection::OnStatusDone(
                                mojo_status->answer_to_reset.size()));
   }
   resolver->Resolve(status);
-
-  MaybeEndTransaction();
 }
 
 void SmartCardConnection::OnBeginTransactionDone(
@@ -620,8 +651,7 @@ void SmartCardConnection::OnBeginTransactionDone(
     AbortSignal::AlgorithmHandle* abort_handle,
     device::mojom::blink::SmartCardTransactionResultPtr result) {
   CHECK(!transaction_state_);
-  CHECK_EQ(ongoing_request_, resolver);
-  ongoing_request_ = nullptr;
+  ClearOperationInProgress(resolver);
 
   if (signal && abort_handle) {
     signal->RemoveAlgorithm(abort_handle);
@@ -633,7 +663,7 @@ void SmartCardConnection::OnBeginTransactionDone(
             device::mojom::blink::SmartCardError::kCancelled) {
       RejectWithAbortionReason(resolver, signal);
     } else {
-      resolver->Reject(SmartCardError::Create(result->get_error()));
+      SmartCardError::Reject(resolver, result->get_error());
     }
     return;
   }
@@ -680,7 +710,7 @@ void SmartCardConnection::OnBeginTransactionDone(
 void SmartCardConnection::OnEndTransactionDone(
     device::mojom::blink::SmartCardResultPtr end_transaction_result) {
   CHECK(transaction_state_);
-  ongoing_request_ = nullptr;
+  ClearOperationInProgress(transaction_state_->GetStartTransactionRequest());
 
   transaction_state_->SettleStartTransaction(std::move(end_transaction_result));
   transaction_state_ = nullptr;
@@ -700,11 +730,12 @@ void SmartCardConnection::CloseMojoConnection() {
     ongoing_request_->RejectWithDOMException(
         DOMExceptionCode::kInvalidStateError, kDisconnected);
   }
-  ongoing_request_ = nullptr;
+
+  ClearOperationInProgress(ongoing_request_);
 }
 
 void SmartCardConnection::EndTransaction(SmartCardDisposition disposition) {
-  CHECK(!ongoing_request_);
+  CHECK(!smart_card_context_->IsOperationInProgress());
   CHECK(transaction_state_);
 
   if (!connection_.is_bound()) {
@@ -715,17 +746,11 @@ void SmartCardConnection::EndTransaction(SmartCardDisposition disposition) {
     return;
   }
 
-  ongoing_request_ = transaction_state_->EndTransaction(
+  transaction_state_->EndTransaction(
       disposition, WTF::BindOnce(&SmartCardConnection::OnEndTransactionDone,
                                  WrapPersistent(this)));
-}
 
-void SmartCardConnection::MaybeEndTransaction() {
-  if (!transaction_state_ || !transaction_state_->HasPendingEnd()) {
-    return;
-  }
-
-  EndTransaction(transaction_state_->TakePendingEnd());
+  SetOperationInProgress(transaction_state_->GetStartTransactionRequest());
 }
 
 }  // namespace blink

@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_manager_test_api.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
+#include "components/autofill/core/browser/single_field_form_fill_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -55,8 +56,8 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
   }
 
   void TriggerRefill(const FormData& form,
-                     const AutofillTriggerSource trigger_source) {
-    manager_->TriggerRefill(form, trigger_source);
+                     const AutofillTriggerDetails& trigger_details) {
+    manager_->TriggerRefill(form, trigger_details);
   }
 
   void PreProcessStateMatchingTypes(
@@ -74,6 +75,10 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
         ->form_interactions_flow_id_for_test();
   }
 
+  SingleFieldFormFillRouter* single_field_form_fill_router() {
+    return manager_->single_field_form_fill_router_.get();
+  }
+
   void set_single_field_form_fill_router(
       std::unique_ptr<SingleFieldFormFillRouter> router) {
     manager_->single_field_form_fill_router_ = std::move(router);
@@ -85,9 +90,8 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
   }
 
   void OnCreditCardFetched(CreditCardFetchResult result,
-                           const CreditCard* credit_card = nullptr,
-                           const std::u16string& cvc = std::u16string()) {
-    manager_->OnCreditCardFetched(result, credit_card, cvc);
+                           const CreditCard* credit_card = nullptr) {
+    manager_->OnCreditCardFetched(result, credit_card);
   }
 
   bool WillFillCreditCardNumber(const FormData& form,
@@ -106,7 +110,8 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
       AutofillField* autofill_field) {
     return manager_->FillOrPreviewDataModelForm(
         action_persistence, form, field, profile_or_credit_card, optional_cvc,
-        form_structure, autofill_field, AutofillTriggerSource::kPopup);
+        form_structure, autofill_field,
+        {.trigger_source = AutofillTriggerSource::kPopup});
   }
 
   base::flat_map<std::string, VirtualCardUsageData::VirtualCardLastFour>

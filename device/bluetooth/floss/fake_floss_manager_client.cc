@@ -9,7 +9,9 @@
 
 namespace floss {
 
-FakeFlossManagerClient::FakeFlossManagerClient() = default;
+FakeFlossManagerClient::FakeFlossManagerClient() {
+  adapter_to_enabled_.emplace(GetDefaultAdapter(), true);
+}
 
 FakeFlossManagerClient::~FakeFlossManagerClient() = default;
 
@@ -20,6 +22,17 @@ void FakeFlossManagerClient::Init(dbus::Bus* bus,
   std::move(on_ready).Run();
 }
 
+void FakeFlossManagerClient::SetAdapterEnabled(
+    int adapter,
+    bool enabled,
+    ResponseCallback<Void> callback) {
+  adapter_to_enabled_[adapter] = enabled;
+  std::move(callback).Run(Void{});
+  for (auto& observer : observers_) {
+    observer.AdapterEnabledChanged(adapter, enabled);
+  }
+}
+
 void FakeFlossManagerClient::NotifyObservers(
     const base::RepeatingCallback<void(Observer*)>& notify) const {
   for (auto& observer : observers_) {
@@ -28,7 +41,7 @@ void FakeFlossManagerClient::NotifyObservers(
 }
 
 void FakeFlossManagerClient::SetDefaultEnabled(bool enabled) {
-  adapter_to_enabled_.insert_or_assign(GetDefaultAdapter(), enabled);
+  adapter_to_enabled_[GetDefaultAdapter()] = enabled;
 }
 
 }  // namespace floss

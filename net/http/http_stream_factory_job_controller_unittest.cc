@@ -122,6 +122,19 @@ class MockPrefDelegate : public HttpServerProperties::PrefDelegate {
   base::Value::Dict empty_dict_;
 };
 
+// A `TestProxyDelegate` which always sets `is_for_ip_protection` on the
+// `ProxyInfo` it receives in `OnResolveProxy()`.
+class TestProxyDelegateForIpProtection : public TestProxyDelegate {
+ public:
+  void OnResolveProxy(const GURL& url,
+                      const GURL& top_frame_url,
+                      const std::string& method,
+                      const ProxyRetryInfoMap& proxy_retry_info,
+                      ProxyInfo* result) override {
+    result->set_is_for_ip_protection(true);
+  }
+};
+
 }  // anonymous namespace
 
 class HttpStreamFactoryJobPeer {
@@ -201,10 +214,13 @@ class HttpStreamFactoryJobControllerTestBase : public TestWithTaskEnvironment {
       : TestWithTaskEnvironment(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         dns_https_alpn_enabled_(dns_https_alpn_enabled) {
+    std::vector<base::test::FeatureRef> disabled_features;
     if (dns_https_alpn_enabled_) {
       enabled_features.push_back(features::kUseDnsHttpsSvcbAlpn);
+    } else {
+      disabled_features.push_back(features::kUseDnsHttpsSvcbAlpn);
     }
-    feature_list_.InitWithFeatures(enabled_features, {});
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
     FLAGS_quic_enable_http3_grease_randomness = false;
     CreateSessionDeps();
   }
@@ -985,6 +1001,73 @@ TEST_F(JobControllerReconsiderProxyAfterErrorTest,
       EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
     }
   }
+}
+
+// Test proxy fallback logic for an IP Protection request.
+TEST_F(JobControllerReconsiderProxyAfterErrorTest,
+       ReconsiderProxyForIpProtection) {
+  GURL dest_url = GURL("https://www.example.com");
+
+  CreateSessionDeps();
+
+  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service =
+      ConfiguredProxyResolutionService::CreateFixedFromPacResultForTest(
+          "HTTPS badproxy:99; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);
+  auto test_proxy_delegate =
+      std::make_unique<TestProxyDelegateForIpProtection>();
+
+  // Before starting the test, verify that there are no proxies marked as
+  // bad.
+  ASSERT_TRUE(proxy_resolution_service->proxy_retry_info().empty());
+
+  constexpr char kTunnelRequest[] =
+      "CONNECT www.example.com:443 HTTP/1.1\r\n"
+      "Host: www.example.com:443\r\n"
+      "Proxy-Connection: keep-alive\r\n\r\n";
+  const MockWrite kTunnelWrites[] = {{ASYNC, kTunnelRequest}};
+  std::vector<MockRead> reads;
+
+  // Generate errors for both the main proxy.
+  std::unique_ptr<StaticSocketDataProvider> socket_data_proxy_main_job;
+  std::unique_ptr<SSLSocketDataProvider> ssl_data_proxy_main_job;
+  reads.emplace_back(ASYNC, ERR_TUNNEL_CONNECTION_FAILED);
+  socket_data_proxy_main_job =
+      std::make_unique<StaticSocketDataProvider>(reads, kTunnelWrites);
+  ssl_data_proxy_main_job = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+
+  session_deps_.socket_factory->AddSocketDataProvider(
+      socket_data_proxy_main_job.get());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(
+      ssl_data_proxy_main_job.get());
+
+  // After the proxy fails, the request should fall back to using DIRECT,
+  // and succeed.
+  SSLSocketDataProvider ssl_data_first_request(ASYNC, OK);
+  StaticSocketDataProvider socket_data_direct_first_request;
+  socket_data_direct_first_request.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps_.socket_factory->AddSocketDataProvider(
+      &socket_data_direct_first_request);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(
+      &ssl_data_first_request);
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = dest_url;
+
+  proxy_resolution_service->SetProxyDelegate(test_proxy_delegate.get());
+  Initialize(std::move(proxy_resolution_service));
+
+  ProxyInfo used_proxy_info;
+  EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, _))
+      .Times(1)
+      .WillOnce(::testing::SaveArg<1>(&used_proxy_info));
+
+  std::unique_ptr<HttpStreamRequest> request =
+      CreateJobController(request_info);
+  RunUntilIdle();
+
+  // Verify that request was fetched without proxy.
+  EXPECT_TRUE(used_proxy_info.is_direct());
 }
 
 // Test proxy fallback logic in the case connecting through socks5 proxy.

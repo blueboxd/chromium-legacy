@@ -65,18 +65,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="ContentCapture.GetBoundingBox" units="microseconds"
-    expires_after="2022-12-01">
-  <owner>michaelbai@chromium.org</owner>
-  <owner>src/third_party/blink/renderer/core/content_capture/OWNERS</owner>
-  <summary>
-    The time taken to get the bounding box of the batch of captured content.
-
-    Note that this metrics is only recorded on clients on which a
-    high-resolution clock is available.
-  </summary>
-</histogram>
-
 <histogram
     name="ContentSettings.ActiveExpiry.{ProviderType}.ContentSettingsType"
     enum="PermissionType" expires_after="2024-07-10">
@@ -91,7 +79,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.AllowStorageAccessSync" units="ms"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -121,7 +109,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.ExtensionNonEmbeddedSettingSet"
-    enum="ContentType" expires_after="2023-12-10">
+    enum="ContentType" expires_after="2024-02-11">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -181,7 +169,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.Popups" enum="ContentSettingPopupAction"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>charleszhao@chromium.org</owner>
   <owner>lazzzis@google.com</owner>
   <owner>src/components/blocked_content/OWNERS</owner>
@@ -224,7 +212,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.RegularProfile.DefaultBackgroundSyncSetting"
-    enum="ContentSetting" expires_after="2023-12-24">
+    enum="ContentSetting" expires_after="2024-02-25">
   <owner>tungnh@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -874,7 +862,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ContentDuplication2.Position{Index}"
-    enum="Boolean" expires_after="2023-09-01">
+    enum="Boolean" expires_after="2024-09-01">
   <owner>jianli@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -891,7 +879,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ContentDuplication2.{Range}" units="%"
-    expires_after="2023-09-01">
+    expires_after="2024-09-01">
   <owner>jianli@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1013,7 +1001,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.FeedSignInUI" enum="FeedSignInUI"
-    expires_after="2023-10-15">
+    expires_after="2024-02-11">
   <owner>sczs@chromium.org</owner>
   <owner>tinazwang@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1071,7 +1059,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ManualRefreshInterval" units="ms"
-    expires_after="2023-11-19">
+    expires_after="2024-09-01">
   <owner>jianli@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1205,13 +1193,24 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.RefreshTrigger"
-    enum="FeedRefreshTrigger" expires_after="2023-12-10">
+    enum="FeedRefreshTrigger" expires_after="2024-02-11">
   <owner>edchin@google.com</owner>
   <owner>sczs@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
     Tracks triggers that ask the Discover engine to refresh the feed. However, a
     network call may or may not occur based on configuration thresholds.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.ResourceFetchStatus"
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-06-30">
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: Status of resource fetches for the feed. Recorded for each resource
+    fetch. Fetches happen when the specific resource is needed to enhance the
+    feed content while the feed is being displayed.
   </summary>
 </histogram>
 
@@ -1224,7 +1223,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.SessionDuration" units="ms"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>edchin@google.com</owner>
   <owner>sczs@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1264,7 +1263,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.TimeBetweenSessions" units="ms"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>edchin@google.com</owner>
   <owner>sczs@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1329,7 +1328,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UploadActionsStatus"
-    enum="FeedUploadActionsStatus" expires_after="2023-12-04">
+    enum="FeedUploadActionsStatus" expires_after="2024-02-05">
   <owner>iwells@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1374,7 +1373,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserActions.Commands"
-    enum="FeedUserCommandType" expires_after="2023-12-10">
+    enum="FeedUserCommandType" expires_after="2024-02-11">
   <owner>harringtond@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1487,7 +1486,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ViewedCardPercentageAtManualRefresh"
-    units="%" expires_after="2023-09-24">
+    units="%" expires_after="2024-09-01">
   <owner>jianli@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1812,7 +1811,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.{FeedType}.Activity.ByProvider"
-    enum="FeedActivityBucket" expires_after="2023-11-24">
+    enum="FeedActivityBucket" expires_after="2024-02-20">
   <owner>guiperez@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>

@@ -39,7 +39,6 @@
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/mandatory_reauth_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager_test_base.h"
-#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
@@ -221,7 +220,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
                             "4234567890123456",  // Visa
                             "04", "2999", "1");
     masked_server_card.set_guid("00000000-0000-0000-0000-000000000007");
-    masked_server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
+    masked_server_card.set_record_type(CreditCard::RecordType::kFullServerCard);
     masked_server_card.set_server_id("masked_id");
     masked_server_card.set_use_count(15);
     {
@@ -240,7 +239,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
                             "5187654321098765",  // Mastercard
                             "10", "2998", "1");
     full_server_card.set_guid("00000000-0000-0000-0000-000000000008");
-    full_server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
+    full_server_card.set_record_type(CreditCard::RecordType::kFullServerCard);
     full_server_card.set_server_id("full_id");
     full_server_card.set_use_count(10);
     personal_data_->AddFullServerCreditCard(full_server_card);
@@ -250,7 +249,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
                             "4234567890123463",  // Visa
                             "08", "2999", "1");
     local_card.set_guid("00000000-0000-0000-0000-000000000009");
-    local_card.set_record_type(CreditCard::LOCAL_CARD);
+    local_card.set_record_type(CreditCard::RecordType::kLocalCard);
     local_card.set_use_count(5);
     {
       PersonalDataProfileTaskWaiter waiter(*personal_data_);
@@ -1013,82 +1012,82 @@ TEST_F(PersonalDataManagerTest,
 }
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 
-TEST_F(PersonalDataManagerTest, NoIBANsAddedIfDisabled) {
-  prefs::SetAutofillIBANEnabled(prefs_.get(), false);
-  personal_data_->AddIBAN(autofill::test::GetIBAN());
-  personal_data_->AddIBAN(autofill::test::GetIBAN2());
+TEST_F(PersonalDataManagerTest, NoIbansAddedIfDisabled) {
+  prefs::SetAutofillIbanEnabled(prefs_.get(), false);
+  personal_data_->AddIban(autofill::test::GetIban());
+  personal_data_->AddIban(autofill::test::GetIban2());
 
-  EXPECT_EQ(0U, personal_data_->GetLocalIBANs().size());
+  EXPECT_EQ(0U, personal_data_->GetLocalIbans().size());
 }
 
 TEST_F(PersonalDataManagerTest, AddingIbanUpdatesPref) {
-  prefs::SetAutofillIBANEnabled(prefs_.get(), true);
+  prefs::SetAutofillIbanEnabled(prefs_.get(), true);
   // The pref should always start disabled.
   ASSERT_FALSE(personal_data_->IsAutofillHasSeenIbanPrefEnabled());
-  IBAN iban = test::GetIBAN();
+  Iban iban = test::GetIban();
 
-  personal_data_->AddIBAN(iban);
+  personal_data_->AddIban(iban);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
   // Adding an IBAN permanently enables the pref.
   EXPECT_TRUE(personal_data_->IsAutofillHasSeenIbanPrefEnabled());
 }
 
-TEST_F(PersonalDataManagerTest, AddUpdateRemoveIBANs) {
-  prefs::SetAutofillIBANEnabled(prefs_.get(), true);
-  IBAN iban0 = autofill::test::GetIBAN();
+TEST_F(PersonalDataManagerTest, AddUpdateRemoveIbans) {
+  prefs::SetAutofillIbanEnabled(prefs_.get(), true);
+  Iban iban0 = autofill::test::GetIban();
 
-  IBAN iban1 = autofill::test::GetIBAN2();
+  Iban iban1 = autofill::test::GetIban2();
   iban1.set_nickname(u"Nickname 1");
 
-  IBAN iban1_1 = iban1;
+  Iban iban1_1 = iban1;
   iban1_1.set_nickname(u"Nickname 1_1");
 
-  IBAN iban2 = autofill::test::GetIBANWithoutNickname();
+  Iban iban2 = autofill::test::GetIbanWithoutNickname();
   iban2.set_nickname(u"Nickname 2");
 
   // Add two test IBANs to the database. `iban1_1` has the same value
   // as `iban1` but with a different nickname. Verify that only `iban1` is
   // added.
-  personal_data_->AddIBAN(iban0);
+  personal_data_->AddIban(iban0);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
-  personal_data_->AddIBAN(iban1);
+  personal_data_->AddIban(iban1);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
-  personal_data_->AddIBAN(iban1_1);
+  personal_data_->AddIban(iban1_1);
 
-  std::vector<IBAN*> ibans;
+  std::vector<Iban*> ibans;
   ibans.push_back(&iban0);
   ibans.push_back(&iban1);
-  ExpectSameElements(ibans, personal_data_->GetLocalIBANs());
+  ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 
   // `iban1_2` has the same fields as `iban1_1`, verify that `iban1_2` is
   // not added.
-  IBAN iban1_2 = iban1_1;
-  personal_data_->AddIBAN(iban1_1);
-  ExpectSameElements(ibans, personal_data_->GetLocalIBANs());
+  Iban iban1_2 = iban1_1;
+  personal_data_->AddIban(iban1_1);
+  ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 
-  // Update IBAN0, remove IBAN1, and add IBAN2.
+  // Update iban0, remove iban1, and add iban2.
   iban0.set_nickname(u"Nickname new 0");
   iban0.SetRawInfo(IBAN_VALUE, u"GB98 MIDL 0700 9312 3456 78");
-  personal_data_->UpdateIBAN(iban0);
+  personal_data_->UpdateIban(iban0);
   RemoveByGUIDFromPersonalDataManager(iban1.guid());
-  personal_data_->AddIBAN(iban2);
+  personal_data_->AddIban(iban2);
 
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
   ibans.clear();
   ibans.push_back(&iban0);
   ibans.push_back(&iban2);
-  ExpectSameElements(ibans, personal_data_->GetLocalIBANs());
+  ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 
   // Verify that a duplicate IBAN should not be added.
-  IBAN iban0_dup = iban0;
-  personal_data_->AddIBAN(iban0_dup);
+  Iban iban0_dup = iban0;
+  personal_data_->AddIban(iban0_dup);
   ibans.clear();
   ibans.push_back(&iban0);
   ibans.push_back(&iban2);
-  ExpectSameElements(ibans, personal_data_->GetLocalIBANs());
+  ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 
   // Reset the PersonalDataManager. This tests that the personal data was saved
   // to the web database, and that we can load the IBANs from the web database.
@@ -1098,68 +1097,68 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveIBANs) {
   ibans.clear();
   ibans.push_back(&iban0);
   ibans.push_back(&iban2);
-  ExpectSameElements(ibans, personal_data_->GetLocalIBANs());
+  ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 }
 
 // Ensure that new IBANs can be updated and saved via
-// `OnAcceptedLocalIBANSave()`.
-TEST_F(PersonalDataManagerTest, OnAcceptedLocalIBANSave) {
-  prefs::SetAutofillIBANEnabled(prefs_.get(), true);
+// `OnAcceptedLocalIbanSave()`.
+TEST_F(PersonalDataManagerTest, OnAcceptedLocalIbanSave) {
+  prefs::SetAutofillIbanEnabled(prefs_.get(), true);
 
   // Start with a new IBAN.
-  IBAN iban0 = autofill::test::GetIBAN();
+  Iban iban0 = autofill::test::GetIban();
   // Add the IBAN to the database.
-  personal_data_->OnAcceptedLocalIBANSave(iban0);
+  personal_data_->OnAcceptedLocalIbanSave(iban0);
 
   // Make sure everything is set up correctly.
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  EXPECT_EQ(1U, personal_data_->GetLocalIBANs().size());
+  EXPECT_EQ(1U, personal_data_->GetLocalIbans().size());
 
-  // Creates a new IBAN and call `OnAcceptedLocalIBANSave()` and verify that
+  // Creates a new IBAN and call `OnAcceptedLocalIbanSave()` and verify that
   // the new IBAN is saved.
-  IBAN iban1 = autofill::test::GetIBAN2();
-  personal_data_->OnAcceptedLocalIBANSave(iban1);
+  Iban iban1 = autofill::test::GetIban2();
+  personal_data_->OnAcceptedLocalIbanSave(iban1);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
   // Expect that the new IBAN is added.
-  ASSERT_EQ(2U, personal_data_->GetLocalIBANs().size());
+  ASSERT_EQ(2U, personal_data_->GetLocalIbans().size());
 
-  std::vector<IBAN*> ibans;
+  std::vector<Iban*> ibans;
   ibans.push_back(&iban0);
   ibans.push_back(&iban1);
   // Verify that we've loaded the IBAN from the web database.
-  ExpectSameElements(ibans, personal_data_->GetLocalIBANs());
+  ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 
   // Creates a new `iban2` which has the same value as `iban0` but with
-  // different nickname and call `OnAcceptedLocalIBANSave()`.
-  IBAN iban2 = iban0;
+  // different nickname and call `OnAcceptedLocalIbanSave()`.
+  Iban iban2 = iban0;
   iban2.set_nickname(u"Nickname 2");
-  personal_data_->OnAcceptedLocalIBANSave(iban2);
+  personal_data_->OnAcceptedLocalIbanSave(iban2);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  // Updates the nickname for `iban1` and call `OnAcceptedLocalIBANSave()`.
+  // Updates the nickname for `iban1` and call `OnAcceptedLocalIbanSave()`.
   iban1.set_nickname(u"Nickname 1 updated");
-  personal_data_->OnAcceptedLocalIBANSave(iban1);
+  personal_data_->OnAcceptedLocalIbanSave(iban1);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
   ibans.clear();
   ibans.push_back(&iban1);
   ibans.push_back(&iban2);
   // Expect that the existing IBANs are updated.
-  ASSERT_EQ(2U, personal_data_->GetLocalIBANs().size());
+  ASSERT_EQ(2U, personal_data_->GetLocalIbans().size());
 
   // Verify that we've loaded the IBANs from the web database.
-  ExpectSameElements(ibans, personal_data_->GetLocalIBANs());
+  ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 
-  // Call `OnAcceptedLocalIBANSave()` with the same iban1, verify that nothing
+  // Call `OnAcceptedLocalIbanSave()` with the same iban1, verify that nothing
   // changes.
-  personal_data_->OnAcceptedLocalIBANSave(iban1);
-  ExpectSameElements(ibans, personal_data_->GetLocalIBANs());
+  personal_data_->OnAcceptedLocalIbanSave(iban1);
+  ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 
   // Reset the PersonalDataManager. This tests that the IBANs are persisted
   // in the local web database even if the browser is re-loaded, ensuring that
   // the user can load the IBANs from the local web database on browser startup.
   ResetPersonalDataManager();
-  ExpectSameElements(ibans, personal_data_->GetLocalIBANs());
+  ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 }
 
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
@@ -1223,7 +1222,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
                           test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card3, "Jane Doe",
                           "4111111111111111" /* Visa */, "04", "2999", "1");
-  credit_card3.set_record_type(CreditCard::FULL_SERVER_CARD);
+  credit_card3.set_record_type(CreditCard::RecordType::kFullServerCard);
   credit_card3.set_server_id("server_id");
 
   personal_data_->AddFullServerCreditCard(credit_card3);
@@ -1505,8 +1504,7 @@ TEST_F(PersonalDataManagerTest, KeepExistingLocalDataOnSignIn) {
   // Sign out.
   identity_test_env_.ClearPrimaryAccount();
   sync_service_.SetAccountInfo(CoreAccountInfo());
-  EXPECT_EQ(AutofillSyncSigninState::kSignedOut,
-            personal_data_->GetSyncSigninState());
+  EXPECT_TRUE(sync_service_.GetAccountInfo().IsEmpty());
   EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
 
   // Add local card.
@@ -1515,7 +1513,7 @@ TEST_F(PersonalDataManagerTest, KeepExistingLocalDataOnSignIn) {
                           "4234567890123463",  // Visa
                           "08", "2999", "1");
   local_card.set_guid("00000000-0000-0000-0000-000000000009");
-  local_card.set_record_type(CreditCard::LOCAL_CARD);
+  local_card.set_record_type(CreditCard::RecordType::kLocalCard);
   local_card.set_use_count(5);
   personal_data_->AddCreditCard(local_card);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
@@ -1528,8 +1526,9 @@ TEST_F(PersonalDataManagerTest, KeepExistingLocalDataOnSignIn) {
       identity_test_env_.identity_manager()->GetPrimaryAccountInfo(
           signin::ConsentLevel::kSync));
   sync_service_.SetHasSyncConsent(true);
-  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
-            personal_data_->GetSyncSigninState());
+  EXPECT_TRUE(
+      sync_service_.IsSyncFeatureEnabled() &&
+      sync_service_.GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA));
   ASSERT_TRUE(TurnOnSyncFeature());
 
   // Check saved local card should be not lost.
@@ -2017,7 +2016,7 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
   // profiles.
   prefs::SetAutofillProfileEnabled(prefs_.get(), false);
   prefs::SetAutofillCreditCardEnabled(prefs_.get(), false);
-  prefs::SetAutofillIBANEnabled(prefs_.get(), false);
+  prefs::SetAutofillIbanEnabled(prefs_.get(), false);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
   EXPECT_EQ(default_country,
             personal_data_->GetDefaultCountryCodeForNewAddress());
@@ -2842,7 +2841,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowAll) {
 TEST_F(PersonalDataManagerTest, IsKnownCard_MatchesMaskedServerCard) {
   // Add a masked server card.
   std::vector<CreditCard> server_cards;
-  server_cards.emplace_back(CreditCard::MASKED_SERVER_CARD, "b459");
+  server_cards.emplace_back(CreditCard::RecordType::kMaskedServerCard, "b459");
   test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton",
                           "2110" /* last 4 digits */, "12", "2999", "1");
   server_cards.back().SetNetworkForMaskedCard(kVisaCard);
@@ -2862,7 +2861,7 @@ TEST_F(PersonalDataManagerTest, IsKnownCard_MatchesMaskedServerCard) {
 TEST_F(PersonalDataManagerTest, IsKnownCard_MatchesFullServerCard) {
   // Add a full server card.
   std::vector<CreditCard> server_cards;
-  server_cards.emplace_back(CreditCard::FULL_SERVER_CARD, "b459");
+  server_cards.emplace_back(CreditCard::RecordType::kFullServerCard, "b459");
   test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton",
                           "4234567890122110" /* Visa */, "12", "2999", "1");
 
@@ -2935,7 +2934,7 @@ TEST_F(PersonalDataManagerTest, IsKnownCard_LastFourDoesNotMatch) {
 TEST_F(PersonalDataManagerTest, IsServerCard_DuplicateOfFullServerCard) {
   // Add a full server card.
   std::vector<CreditCard> server_cards;
-  server_cards.emplace_back(CreditCard::FULL_SERVER_CARD, "b459");
+  server_cards.emplace_back(CreditCard::RecordType::kFullServerCard, "b459");
   test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton",
                           "4234567890122110" /* Visa */, "12", "2999", "1");
 
@@ -2962,7 +2961,7 @@ TEST_F(PersonalDataManagerTest, IsServerCard_DuplicateOfFullServerCard) {
 TEST_F(PersonalDataManagerTest, IsServerCard_DuplicateOfMaskedServerCard) {
   // Add a masked server card.
   std::vector<CreditCard> server_cards;
-  server_cards.emplace_back(CreditCard::MASKED_SERVER_CARD, "b459");
+  server_cards.emplace_back(CreditCard::RecordType::kMaskedServerCard, "b459");
   test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton",
                           "2110" /* last 4 digits */, "12", "2999", "1");
   server_cards.back().SetNetworkForMaskedCard(kVisaCard);
@@ -2990,12 +2989,12 @@ TEST_F(PersonalDataManagerTest, IsServerCard_DuplicateOfMaskedServerCard) {
 TEST_F(PersonalDataManagerTest, IsServerCard_AlreadyServerCard) {
   std::vector<CreditCard> server_cards;
   // Create a full server card.
-  CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "c789");
+  CreditCard full_server_card(CreditCard::RecordType::kFullServerCard, "c789");
   test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
                           "4234567890123456" /* Visa */, "01", "2999", "1");
   server_cards.push_back(full_server_card);
   // Create a masked server card.
-  CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  CreditCard masked_card(CreditCard::RecordType::kMaskedServerCard, "a123");
   test::SetCreditCardInfo(&masked_card, "Homer Simpson", "2110" /* Visa */,
                           "01", "2999", "1");
   masked_card.SetNetworkForMaskedCard(kVisaCard);
@@ -3054,14 +3053,14 @@ TEST_F(PersonalDataManagerTest,
 
   // Add some server cards.
   std::vector<CreditCard> server_cards;
-  server_cards.emplace_back(CreditCard::MASKED_SERVER_CARD, "b459");
+  server_cards.emplace_back(CreditCard::RecordType::kMaskedServerCard, "b459");
   test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2110", "12",
                           "2999", "1");
   server_cards.back().set_use_count(2);
   server_cards.back().set_use_date(AutofillClock::Now() - base::Days(1));
   server_cards.back().SetNetworkForMaskedCard(kVisaCard);
 
-  server_cards.emplace_back(CreditCard::FULL_SERVER_CARD, "b460");
+  server_cards.emplace_back(CreditCard::RecordType::kFullServerCard, "b460");
   test::SetCreditCardInfo(&server_cards.back(), "Jesse James", "2109", "12",
                           "2999", "1");
   server_cards.back().set_use_count(6);
@@ -3099,14 +3098,14 @@ TEST_F(PersonalDataManagerTest,
 
   // Add some server cards.
   std::vector<CreditCard> server_cards;
-  server_cards.emplace_back(CreditCard::MASKED_SERVER_CARD, "b459");
+  server_cards.emplace_back(CreditCard::RecordType::kMaskedServerCard, "b459");
   test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2110", "12",
                           "2999", "1");
   server_cards.back().set_use_count(2);
   server_cards.back().set_use_date(AutofillClock::Now() - base::Days(1));
   server_cards.back().SetNetworkForMaskedCard(kVisaCard);
 
-  server_cards.emplace_back(CreditCard::FULL_SERVER_CARD, "b460");
+  server_cards.emplace_back(CreditCard::RecordType::kFullServerCard, "b460");
   test::SetCreditCardInfo(&server_cards.back(), "Jesse James", "2109", "12",
                           "2999", "1");
   server_cards.back().set_use_count(6);
@@ -3138,14 +3137,14 @@ TEST_F(PersonalDataManagerTest,
 
   // Add some server cards.
   std::vector<CreditCard> server_cards;
-  server_cards.emplace_back(CreditCard::MASKED_SERVER_CARD, "b459");
+  server_cards.emplace_back(CreditCard::RecordType::kMaskedServerCard, "b459");
   test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2110", "12",
                           "2999", "1");
   server_cards.back().set_use_count(2);
   server_cards.back().set_use_date(AutofillClock::Now() - base::Days(1));
   server_cards.back().SetNetworkForMaskedCard(kVisaCard);
 
-  server_cards.emplace_back(CreditCard::FULL_SERVER_CARD, "b460");
+  server_cards.emplace_back(CreditCard::RecordType::kFullServerCard, "b460");
   test::SetCreditCardInfo(&server_cards.back(), "Jesse James", "2109", "12",
                           "2999", "1");
   server_cards.back().set_use_count(6);
@@ -3204,7 +3203,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardsToSuggest_ServerDuplicates) {
   // This server card matches a local card, except the local card is missing the
   // number. This should count as a dupe and thus not be shown in the
   // suggestions since the locally saved card takes precedence.
-  server_cards.emplace_back(CreditCard::MASKED_SERVER_CARD, "a123");
+  server_cards.emplace_back(CreditCard::RecordType::kMaskedServerCard, "a123");
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "3456" /* Visa */, "01", "2999", "1");
   server_cards.back().set_use_count(2);
@@ -3214,7 +3213,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardsToSuggest_ServerDuplicates) {
   // This unmasked server card is an exact dupe of a local card. Therefore only
   // this card should appear in the suggestions as full server cards have
   // precedence over local cards.
-  server_cards.emplace_back(CreditCard::FULL_SERVER_CARD, "c789");
+  server_cards.emplace_back(CreditCard::RecordType::kFullServerCard, "c789");
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
                           "378282246310005" /* American Express */, "04",
                           "2999", "1");
@@ -3237,9 +3236,12 @@ TEST_F(PersonalDataManagerTest, GetCreditCardsToSuggest_ServerDuplicates) {
             card_to_suggest[1]->GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(u"Bonnie Parker",
             card_to_suggest[2]->GetRawInfo(CREDIT_CARD_NAME_FULL));
-  EXPECT_EQ(CreditCard::LOCAL_CARD, card_to_suggest[0]->record_type());
-  EXPECT_EQ(CreditCard::FULL_SERVER_CARD, card_to_suggest[1]->record_type());
-  EXPECT_EQ(CreditCard::LOCAL_CARD, card_to_suggest[2]->record_type());
+  EXPECT_EQ(CreditCard::RecordType::kLocalCard,
+            card_to_suggest[0]->record_type());
+  EXPECT_EQ(CreditCard::RecordType::kFullServerCard,
+            card_to_suggest[1]->record_type());
+  EXPECT_EQ(CreditCard::RecordType::kLocalCard,
+            card_to_suggest[2]->record_type());
 }
 
 // Tests that a full server card can be a dupe of more than one local card.
@@ -3251,7 +3253,7 @@ TEST_F(PersonalDataManagerTest,
   std::vector<CreditCard> server_cards;
   // This unmasked server card is an exact dupe of a local card. Therefore only
   // the local card should appear in the suggestions.
-  server_cards.emplace_back(CreditCard::FULL_SERVER_CARD, "c789");
+  server_cards.emplace_back(CreditCard::RecordType::kFullServerCard, "c789");
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
                           "378282246310005" /* American Express */, "04",
                           "2999", "1");
@@ -3296,7 +3298,7 @@ TEST_F(PersonalDataManagerTest,
   credit_cards.push_back(&local_card);
 
   // Create a full server card that is a duplicate of one of the local cards.
-  CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "c789");
+  CreditCard full_server_card(CreditCard::RecordType::kFullServerCard, "c789");
   test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
                           "4234567890123456" /* Visa */, "01", "2999", "1");
   full_server_card.set_use_count(1);
@@ -3329,7 +3331,7 @@ TEST_F(PersonalDataManagerTest,
     credit_cards.push_back(&local_card);
 
     // Create a masked server card that is a duplicate of a local card.
-    CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
+    CreditCard masked_card(CreditCard::RecordType::kMaskedServerCard, "a123");
     test::SetCreditCardInfo(&masked_card, "Homer Simpson", "3456" /* Visa */,
                             "01", "2999", "1");
     masked_card.SetNetworkForMaskedCard(kVisaCard);
@@ -3352,7 +3354,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_FullServerAndMasked) {
   std::list<CreditCard*> credit_cards;
 
   // Create a full server card that is a duplicate of one of the local cards.
-  CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "c789");
+  CreditCard full_server_card(CreditCard::RecordType::kFullServerCard, "c789");
   test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
                           "4234567890123456" /* Visa */, "01", "2999", "1");
   full_server_card.set_use_count(1);
@@ -3360,7 +3362,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_FullServerAndMasked) {
   credit_cards.push_back(&full_server_card);
 
   // Create a masked server card that is a duplicate of a local card.
-  CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  CreditCard masked_card(CreditCard::RecordType::kMaskedServerCard, "a123");
   test::SetCreditCardInfo(&masked_card, "Homer Simpson", "3456" /* Visa */,
                           "01", "2999", "1");
   masked_card.set_use_count(2);
@@ -3386,7 +3388,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
   credit_cards.push_back(&local_card);
 
   // Create a masked server card that is different from the local card.
-  CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "b456");
+  CreditCard masked_card(CreditCard::RecordType::kMaskedServerCard, "b456");
   test::SetCreditCardInfo(&masked_card, "Homer Simpson", "0005", "12", "2999",
                           "1");
   masked_card.set_use_count(3);
@@ -3396,7 +3398,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
 
   // Create a full server card that is slightly different of the two other
   // cards.
-  CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "c789");
+  CreditCard full_server_card(CreditCard::RecordType::kFullServerCard, "c789");
   test::SetCreditCardInfo(&full_server_card, "Homer Simpson",
                           "378282246310005" /* American Express */, "04",
                           "2999", "1");
@@ -3485,7 +3487,7 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
 TEST_F(PersonalDataManagerTest, ClearAllServerData) {
   // Add a server card.
   std::vector<CreditCard> server_cards;
-  server_cards.emplace_back(CreditCard::MASKED_SERVER_CARD, "a123");
+  server_cards.emplace_back(CreditCard::RecordType::kMaskedServerCard, "a123");
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "3456" /* Visa */, "01", "2999", "1");
   server_cards.back().SetNetworkForMaskedCard(kVisaCard);
@@ -3641,7 +3643,7 @@ TEST_F(PersonalDataManagerTest, RemoveByGUID_ResetsBillingAddress) {
   test::SetCreditCardInfo(&local_card0, "John Dillinger",
                           "4111111111111111" /* Visa */, "01", "2999",
                           profile0.guid());
-  CreditCard server_card0(CreditCard::FULL_SERVER_CARD, "c789");
+  CreditCard server_card0(CreditCard::RecordType::kFullServerCard, "c789");
   test::SetCreditCardInfo(&server_card0, "John Barrow",
                           "378282246310005" /* American Express */, "04",
                           "2999", profile0.guid());
@@ -3653,7 +3655,7 @@ TEST_F(PersonalDataManagerTest, RemoveByGUID_ResetsBillingAddress) {
   test::SetCreditCardInfo(&local_card1, "Seb Dillinger",
                           "4111111111111111" /* Visa */, "01", "2999",
                           profile1.guid());
-  CreditCard server_card1(CreditCard::FULL_SERVER_CARD, "c789");
+  CreditCard server_card1(CreditCard::RecordType::kFullServerCard, "c789");
   test::SetCreditCardInfo(&server_card1, "John Barrow",
                           "378282246310005" /* American Express */, "04",
                           "2999", profile1.guid());
@@ -3721,8 +3723,9 @@ TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
 
   // Create in-use and in-disuse cards of each record type.
   const std::vector<CreditCard::RecordType> record_types{
-      CreditCard::LOCAL_CARD, CreditCard::MASKED_SERVER_CARD,
-      CreditCard::FULL_SERVER_CARD};
+      CreditCard::RecordType::kLocalCard,
+      CreditCard::RecordType::kMaskedServerCard,
+      CreditCard::RecordType::kFullServerCard};
   for (auto record_type : record_types) {
     // Create a card that's still in active use.
     CreditCard card_in_use = test::GetRandomCreditCard(record_type);
@@ -3737,7 +3740,7 @@ TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
     card_in_disuse.set_use_count(10);
 
     // Add the cards to the personal data manager in the appropriate way.
-    if (record_type == CreditCard::LOCAL_CARD) {
+    if (record_type == CreditCard::RecordType::kLocalCard) {
       personal_data_->AddCreditCard(card_in_use);
       personal_data_->AddCreditCard(card_in_disuse);
     } else {
@@ -3840,7 +3843,8 @@ TEST_F(PersonalDataManagerTest, GetCreditCards_NotActiveSyncService) {
       personal_data_->GetServerCreditCards();
   EXPECT_EQ(2U, server_cards.size());
   for (CreditCard* card : server_cards)
-    EXPECT_TRUE(card->record_type() == CreditCard::MASKED_SERVER_CARD);
+    EXPECT_TRUE(card->record_type() ==
+                CreditCard::RecordType::kMaskedServerCard);
 
   // Call OnSyncShutdown to ensure removing observer added by
   // SetSyncServiceForTest.
@@ -3980,7 +3984,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, SwitchServerStorages) {
                           "4234567890123456",  // Visa
                           "04", "2999", "1");
   server_card.set_guid("00000000-0000-0000-0000-000000000007");
-  server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
+  server_card.set_record_type(CreditCard::RecordType::kFullServerCard);
   server_card.set_server_id("server_id");
   personal_data_->AddFullServerCreditCard(server_card);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
@@ -4005,7 +4009,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
                           "4234567890123456",  // Visa
                           "04", "2999", "1");
   server_card.set_guid("00000000-0000-0000-0000-000000000007");
-  server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
+  server_card.set_record_type(CreditCard::RecordType::kFullServerCard);
   server_card.set_server_id("server_id");
   personal_data_->AddFullServerCreditCard(server_card);
 
@@ -4027,7 +4031,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
                           "4234567890123463",  // Visa
                           "08", "2999", "1");
   local_card.set_guid("00000000-0000-0000-0000-000000000009");
-  local_card.set_record_type(CreditCard::LOCAL_CARD);
+  local_card.set_record_type(CreditCard::RecordType::kLocalCard);
   local_card.set_use_date(AutofillClock::Now() - base::Days(5));
   personal_data_->AddCreditCard(local_card);
 
@@ -4327,7 +4331,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
 
   // Set a server credit card.
   std::vector<CreditCard> server_cards;
-  server_cards.emplace_back(CreditCard::FULL_SERVER_CARD, "c789");
+  server_cards.emplace_back(CreditCard::RecordType::kFullServerCard, "c789");
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
                           "378282246310005" /* American Express */, "04",
                           "2999", "1");
@@ -4394,7 +4398,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
 
   // Set a server credit card.
   std::vector<CreditCard> server_cards;
-  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
+  server_cards.emplace_back(CreditCard::RecordType::kFullServerCard, "c789");
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
                           "378282246310005" /* American Express */, "04",
                           "2999", "1");
@@ -4448,7 +4452,8 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS) &&
         // !BUILDFLAG(IS_CHROMEOS_ASH)
 
-TEST_F(PersonalDataManagerSyncTransportModeTest, GetSyncSigninState) {
+TEST_F(PersonalDataManagerSyncTransportModeTest,
+       GetPaymentsSigninStateForMetrics) {
   // Make sure a non-sync-consented account is available for the first tests.
   ASSERT_TRUE(identity_test_env_.identity_manager()->HasPrimaryAccount(
       signin::ConsentLevel::kSignin));
@@ -4458,8 +4463,9 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, GetSyncSigninState) {
       /*types=*/{syncer::UserSelectableType::kAutofill,
                  syncer::UserSelectableType::kPayments});
 
-  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
-            personal_data_->GetSyncSigninState());
+  EXPECT_EQ(AutofillMetrics::PaymentsSigninState::
+                kSignedInAndWalletSyncTransportEnabled,
+            personal_data_->GetPaymentsSigninStateForMetrics());
 
   // Check that the sync state is |SignedIn| if the sync service does not have
   // wallet data active.
@@ -4467,15 +4473,15 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, GetSyncSigninState) {
       /*sync_everything=*/false,
       /*types=*/syncer::UserSelectableTypeSet(
           {syncer::UserSelectableType::kAutofill}));
-  EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
-            personal_data_->GetSyncSigninState());
+  EXPECT_EQ(AutofillMetrics::PaymentsSigninState::kSignedIn,
+            personal_data_->GetPaymentsSigninStateForMetrics());
 
   // Nothing should change if |kAutofill| is also removed.
   sync_service_.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
       /*types=*/syncer::UserSelectableTypeSet());
-  EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
-            personal_data_->GetSyncSigninState());
+  EXPECT_EQ(AutofillMetrics::PaymentsSigninState::kSignedIn,
+            personal_data_->GetPaymentsSigninStateForMetrics());
 
 // ClearPrimaryAccount is not supported on CrOS.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -4484,8 +4490,8 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, GetSyncSigninState) {
     identity_test_env_.ClearPrimaryAccount();
     sync_service_.SetAccountInfo(CoreAccountInfo());
     sync_service_.SetHasSyncConsent(false);
-    EXPECT_EQ(AutofillSyncSigninState::kSignedOut,
-              personal_data_->GetSyncSigninState());
+    EXPECT_EQ(AutofillMetrics::PaymentsSigninState::kSignedOut,
+              personal_data_->GetPaymentsSigninStateForMetrics());
   }
 #endif
 
@@ -4502,8 +4508,9 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, GetSyncSigninState) {
 
   // Check that the sync state is |SignedInAndSyncFeature| if the sync feature
   // is enabled.
-  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
-            personal_data_->GetSyncSigninState());
+  EXPECT_EQ(
+      AutofillMetrics::PaymentsSigninState::kSignedInAndSyncFeatureEnabled,
+      personal_data_->GetPaymentsSigninStateForMetrics());
 }
 
 // On mobile, no dedicated opt-in is required for WalletSyncTransport - the
@@ -4536,8 +4543,9 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   // Account wallet storage only makes sense together with support for
   // unconsented primary accounts, i.e. on Win/Mac/Linux.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
-            personal_data_->GetSyncSigninState());
+  EXPECT_TRUE(
+      !sync_service_.IsSyncFeatureEnabled() &&
+      sync_service_.GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA));
 
   // Make sure an opt-in gets recorded if the user accepted an Upstream offer.
   personal_data_->OnUserAcceptedUpstreamOffer();
@@ -4557,9 +4565,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   sync_service_.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
       /*types=*/syncer::UserSelectableTypeSet());
-
-  EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
-            personal_data_->GetSyncSigninState());
+  EXPECT_TRUE(!sync_service_.GetAccountInfo().IsEmpty());
 
   // Make sure an opt-in does not get recorded even if the user accepted an
   // Upstream offer.
@@ -4579,8 +4585,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   sync_service_.SetAccountInfo(CoreAccountInfo());
   sync_service_.SetHasSyncConsent(false);
   {
-    EXPECT_EQ(AutofillSyncSigninState::kSignedOut,
-              personal_data_->GetSyncSigninState());
+    EXPECT_TRUE(sync_service_.GetAccountInfo().IsEmpty());
 
     // Make sure an opt-in does not get recorded even if the user accepted an
     // Upstream offer.
@@ -4598,8 +4603,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   sync_service_.SetAccountInfo(active_info);
   sync_service_.SetHasSyncConsent(true);
   {
-    EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
-              personal_data_->GetSyncSigninState());
+    EXPECT_TRUE(sync_service_.IsSyncFeatureEnabled());
 
     // Make sure an opt-in does not get recorded even if the user accepted an
     // Upstream offer.
@@ -4650,16 +4654,6 @@ TEST_F(PersonalDataManagerTest, RemoveObserverInOnPersonalDataChanged) {
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
   EXPECT_FALSE(observer.IsConnected()) << "Observer not called";
-}
-
-TEST_F(PersonalDataManagerTest, AddAndGetUpiId) {
-  constexpr char upi_id[] = "vpa@indianbank";
-  PersonalDataProfileTaskWaiter waiter(*personal_data_);
-  EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
-  personal_data_->AddUpiId(upi_id);
-  waiter.Wait();
-  std::vector<std::string> all_upi_ids = personal_data_->GetUpiIds();
-  EXPECT_THAT(all_upi_ids, testing::ElementsAre(upi_id));
 }
 
 TEST_F(PersonalDataManagerTest, IsEligibleForAddressAccountStorage) {

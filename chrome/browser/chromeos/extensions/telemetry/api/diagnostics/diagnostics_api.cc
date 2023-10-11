@@ -13,9 +13,12 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/diagnostics/diagnostics_api_converters.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/diagnostics/remote_diagnostics_service_strategy.h"
+#include "chrome/browser/chromeos/extensions/telemetry/api/routines/diagnostic_routine_manager.h"
 #include "chrome/common/chromeos/extensions/api/diagnostics.h"
 #include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
 #include "chromeos/crosapi/mojom/nullable_primitives.mojom.h"
+#include "chromeos/crosapi/mojom/telemetry_diagnostic_routine_service.mojom.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/strings/stringprintf.h"
@@ -58,6 +61,17 @@ absl::optional<Params> DiagnosticsApiFunctionBase::GetParams() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 bool DiagnosticsApiFunctionBase::IsCrosApiAvailable() {
   return remote_diagnostics_service_strategy_ != nullptr;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+// DiagnosticsApiFunctionBaseV2 ------------------------------------------------
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+bool DiagnosticsApiFunctionBaseV2::IsCrosApiAvailable() {
+  return LacrosService::Get() &&
+         LacrosService::Get()
+             ->IsAvailable<
+                 crosapi::mojom::TelemetryDiagnosticRoutinesService>();
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -211,10 +225,61 @@ void OsDiagnosticsRunBatteryHealthRoutineFunction::RunIfAllowed() {
   GetRemoteService()->RunBatteryHealthRoutine(GetOnResult());
 }
 
+// OsDiagnosticsRunBluetoothDiscoveryRoutineFunction ---------------------------
+
+void OsDiagnosticsRunBluetoothDiscoveryRoutineFunction::RunIfAllowed() {
+  GetRemoteService()->RunBluetoothDiscoveryRoutine(GetOnResult());
+}
+
+// OsDiagnosticsRunBluetoothPairingRoutineFunction -----------------------------
+
+void OsDiagnosticsRunBluetoothPairingRoutineFunction::RunIfAllowed() {
+  // Pairing Routine is guarded by `os.bluetooth_peripherals_info` permission.
+  if (!extension()->permissions_data()->HasAPIPermission(
+          extensions::mojom::APIPermissionID::
+              kChromeOSBluetoothPeripheralsInfo)) {
+    Respond(
+        Error("Unauthorized access to "
+              "chrome.os.diagnostics.runBluetoothPairingRoutine. Extension "
+              "doesn't have the permission."));
+    return;
+  }
+
+  const auto params = GetParams<cx_diag::RunBluetoothPairingRoutine::Params>();
+  if (!params) {
+    return;
+  }
+  GetRemoteService()->RunBluetoothPairingRoutine(params->request.peripheral_id,
+                                                 GetOnResult());
+}
+
 // OsDiagnosticsRunBluetoothPowerRoutineFunction -------------------------------
 
 void OsDiagnosticsRunBluetoothPowerRoutineFunction::RunIfAllowed() {
   GetRemoteService()->RunBluetoothPowerRoutine(GetOnResult());
+}
+
+// OsDiagnosticsRunBluetoothScanningRoutineFunction ----------------------------
+
+void OsDiagnosticsRunBluetoothScanningRoutineFunction::RunIfAllowed() {
+  // Scanning Routine is guarded by `os.bluetooth_peripherals_info` permission.
+  if (!extension()->permissions_data()->HasAPIPermission(
+          extensions::mojom::APIPermissionID::
+              kChromeOSBluetoothPeripheralsInfo)) {
+    Respond(
+        Error("Unauthorized access to "
+              "chrome.os.diagnostics.runBluetoothScanningRoutine. Extension"
+              " doesn't have the permission."));
+    return;
+  }
+
+  const auto params = GetParams<cx_diag::RunBluetoothScanningRoutine::Params>();
+  if (!params) {
+    return;
+  }
+
+  GetRemoteService()->RunBluetoothScanningRoutine(
+      params->request.length_seconds, GetOnResult());
 }
 
 // OsDiagnosticsRunCpuCacheRoutineFunction -------------------------------------
@@ -362,8 +427,8 @@ void OsDiagnosticsRunSignalStrengthRoutineFunction::RunIfAllowed() {
 // OsDiagnosticsRunSmartctlCheckRoutineFunction --------------------------------
 
 void OsDiagnosticsRunSmartctlCheckRoutineFunction::RunIfAllowed() {
-  absl::optional<api::os_diagnostics::RunSmartctlCheckRoutine::Params> params(
-      api::os_diagnostics::RunSmartctlCheckRoutine::Params::Create(args()));
+  absl::optional<cx_diag::RunSmartctlCheckRoutine::Params> params(
+      cx_diag::RunSmartctlCheckRoutine::Params::Create(args()));
 
   crosapi::mojom::UInt32ValuePtr percentage_used;
   if (params && params->request && params->request->percentage_used_threshold) {
@@ -400,6 +465,46 @@ void OsDiagnosticsRunPowerButtonRoutineFunction::RunIfAllowed() {
 
 void OsDiagnosticsRunAudioDriverRoutineFunction::RunIfAllowed() {
   GetRemoteService()->RunAudioDriverRoutine(GetOnResult());
+}
+
+// OsDiagnosticsCreateMemoryRoutineFunction ------------------------------------
+
+void OsDiagnosticsCreateMemoryRoutineFunction::RunIfAllowed() {
+  absl::optional<cx_diag::CreateMemoryRoutine::Params> params(
+      cx_diag::CreateMemoryRoutine::Params::Create(args()));
+
+  if (!params.has_value() || params.value().args.max_testing_mem_kib < 0) {
+    SetBadMessage();
+    Respond(BadMessage());
+    return;
+  }
+
+  auto memory_arg =
+      crosapi::mojom::TelemetryDiagnosticMemoryRoutineArgument::New();
+  memory_arg->max_testing_mem_kib = params.value().args.max_testing_mem_kib;
+
+  auto* routines_manager = DiagnosticRoutineManager::Get(browser_context());
+  auto result = routines_manager->CreateRoutine(
+      extension_id(),
+      crosapi::mojom::TelemetryDiagnosticRoutineArgument::NewMemory(
+          std::move(memory_arg)));
+
+  if (!result.has_value()) {
+    switch (result.error()) {
+      case DiagnosticRoutineManager::kAppUiClosed:
+        Respond(Error("Companion app UI is not open."));
+        break;
+      case DiagnosticRoutineManager::kExtensionUnloaded:
+        Respond(Error("Extension has been unloaded."));
+        break;
+    }
+    return;
+  }
+
+  cx_diag::CreateMemoryRoutineResponse response;
+  response.uuid = result->AsLowercaseString();
+  Respond(
+      ArgumentList(cx_diag::CreateMemoryRoutine::Results::Create(response)));
 }
 
 }  // namespace chromeos

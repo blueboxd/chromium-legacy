@@ -406,7 +406,8 @@ class CellularPolicyHandlerTest : public testing::Test {
 
   base::HistogramTester histogram_tester_;
   base::test::ScopedFeatureList feature_list_;
-  raw_ptr<CellularPolicyHandler, ExperimentalAsh> cellular_policy_handler_;
+  raw_ptr<CellularPolicyHandler, DanglingUntriaged | ExperimentalAsh>
+      cellular_policy_handler_;
   std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
   TestingPrefServiceSimple profile_prefs_;
   TestingPrefServiceSimple device_prefs_;
@@ -554,6 +555,47 @@ TEST_F(CellularPolicyHandlerTest_SmdsSupportEnabled_SecondEuiccDisabled,
   expected_state.smds_scan_profile_total_count++;
   expected_state.smds_scan_profile_sum++;
   expected_state.install_method_via_smds_count++;
+  CheckHistogramState(expected_state);
+}
+
+TEST_F(CellularPolicyHandlerTest_SmdsSupportEnabled_SecondEuiccDisabled,
+       InstalledButFailedToEnable) {
+  SetupGolden();
+
+  ExpectedHistogramState expected_state;
+  CheckHistogramState(expected_state);
+
+  const policy_util::SmdxActivationCode activation_code(
+      policy_util::SmdxActivationCode::Type::SMDP,
+      HermesEuiccClient::Get()
+          ->GetTestInterface()
+          ->GenerateFakeActivationCode());
+
+  absl::optional<base::Value::Dict> onc_config =
+      chromeos::onc::ReadDictionaryFromJson(
+          GenerateCellularPolicy(activation_code));
+  ASSERT_TRUE(onc_config.has_value());
+
+  // Set the result of the next attempt to enable a carrier profile to match
+  // what would be returned when a profile was successfully installed, but
+  // failed to become enabled.
+  HermesProfileClient::Get()
+      ->GetTestInterface()
+      ->SetNextEnableCarrierProfileResult(
+          HermesResponseStatus::kErrorWrongState);
+
+  {
+    CellularInhibitorObserver cellular_inhibitor_observer;
+    InstallProfile(*onc_config);
+    cellular_inhibitor_observer.CheckLastInhibitReason(
+        CellularInhibitor::InhibitReason::kRequestingAvailableProfiles);
+  }
+
+  EXPECT_TRUE(IsProfileInstalled(*onc_config, activation_code.value(),
+                                 /*check_for_service=*/true));
+  EXPECT_TRUE(HasESimMetadata(activation_code.value()));
+  expected_state.success_initial_count++;
+  expected_state.install_method_via_smdp_count++;
   CheckHistogramState(expected_state);
 }
 

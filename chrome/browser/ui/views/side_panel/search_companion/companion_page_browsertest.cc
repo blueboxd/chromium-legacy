@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/base64.h"
+#include "base/base64url.h"
 #include "base/base_paths.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -417,8 +417,6 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
     if (request.method == net::test_server::HttpMethod::METHOD_POST) {
       net::GetValueForKeyInQuery(url, "sourcelang", &last_sourcelang_);
       net::GetValueForKeyInQuery(url, "targetlang", &last_targetlang_);
-      net::GetValueForKeyInQuery(url, "vpw", &last_viewport_width_param_);
-      net::GetValueForKeyInQuery(url, "vph", &last_viewport_height_param_);
     }
     return nullptr;
   }
@@ -434,32 +432,14 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
 
   std::string GetLastTargetLang() { return last_targetlang_; }
 
-  int GetLastViewportWidthParam() {
-    if (last_viewport_width_param_.empty()) {
-      return 0;
-    }
-
-    int viewport_width;
-    base::StringToInt(last_viewport_width_param_, &viewport_width);
-    return viewport_width;
-  }
-
-  int GetLastViewportHeightParam() {
-    if (last_viewport_height_param_.empty()) {
-      return 0;
-    }
-
-    int viewport_height;
-    base::StringToInt(last_viewport_height_param_, &viewport_height);
-    return viewport_height;
-  }
-
   companion::proto::CompanionUrlParams DeserializeCompanionRequest(
       const std::string& companion_url_param) {
+    std::string serialized_proto;
+    EXPECT_TRUE(base::Base64UrlDecode(
+        companion_url_param, base::Base64UrlDecodePolicy::DISALLOW_PADDING,
+        &serialized_proto));
+
     companion::proto::CompanionUrlParams proto;
-    auto base64_decoded = base::Base64Decode(companion_url_param);
-    auto serialized_proto = std::string(base64_decoded.value().begin(),
-                                        base64_decoded.value().end());
     EXPECT_TRUE(proto.ParseFromString(serialized_proto));
     return proto;
   }
@@ -639,8 +619,6 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
   size_t requests_received_on_server_ = 0;
   std::string last_sourcelang_;
   std::string last_targetlang_;
-  std::string last_viewport_width_param_;
-  std::string last_viewport_height_param_;
   bool enable_feature_side_panel_companion_ = true;
   bool enable_feature_visual_search_ = true;
   bool enable_feature_lens_standalone_ = true;
@@ -1586,6 +1564,8 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
   ExpectUkmEntry(
       &ukm_recorder, ukm::builders::Companion_PageView::kOpenTriggerName,
       static_cast<int>(SidePanelOpenTrigger::kContextMenuSearchOption));
+  histogram_tester_->ExpectBucketCount("Companion.SidePanel.ShowUiSuccess",
+                                       true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
@@ -1634,9 +1614,8 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
   // The language params should be unset when is_image_translate=false.
   EXPECT_EQ(GetLastSourceLang(), "");
   EXPECT_EQ(GetLastTargetLang(), "");
-  // The viewport dimension params should be set to a value
-  EXPECT_TRUE(GetLastViewportHeightParam() > 0);
-  EXPECT_TRUE(GetLastViewportWidthParam() > 0);
+  histogram_tester_->ExpectBucketCount("Companion.SidePanel.ShowUiSuccess",
+                                       true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
@@ -1684,6 +1663,8 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
                  static_cast<int>(SidePanelOpenTrigger::kLensContextMenu));
   EXPECT_EQ(GetLastSourceLang(), source_lang);
   EXPECT_EQ(GetLastTargetLang(), target_lang);
+  histogram_tester_->ExpectBucketCount("Companion.SidePanel.ShowUiSuccess",
+                                       true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, OpenedFromEntryPoint) {
@@ -1708,6 +1689,8 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, OpenedFromEntryPoint) {
   ExpectUkmEntry(&ukm_recorder,
                  ukm::builders::Companion_PageView::kOpenTriggerName,
                  static_cast<int>(SidePanelOpenTrigger::kComboboxSelected));
+  histogram_tester_->ExpectBucketCount("Companion.SidePanel.ShowUiSuccess",
+                                       true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,

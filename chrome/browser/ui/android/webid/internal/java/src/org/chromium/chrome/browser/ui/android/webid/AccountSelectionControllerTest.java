@@ -70,7 +70,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
-import org.chromium.url.ShadowGURL;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -80,33 +79,29 @@ import java.util.Collections;
  * properly.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowGURL.class})
+@Config(manifest = Config.NONE)
 @LooperMode(LooperMode.Mode.LEGACY)
 public class AccountSelectionControllerTest {
     // Note that these are not actual ETLD+1 values, but this is irrelevant for the purposes of this
     // test.
-    private static final String TEST_ETLD_PLUS_ONE = JUnitTestGURLs.EXAMPLE_URL;
-    private static final String TEST_ETLD_PLUS_ONE_1 = JUnitTestGURLs.URL_1;
-    private static final String TEST_ETLD_PLUS_ONE_2 = JUnitTestGURLs.URL_2;
-    private static final GURL TEST_PROFILE_PIC =
-            JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1_WITH_PATH);
-    private static final GURL TEST_URL_TERMS_OF_SERVICE =
-            JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_1);
-    private static final GURL TEST_URL_PRIVACY_POLICY =
-            JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_2);
-    private static final GURL TEST_IDP_BRAND_ICON_URL =
-            JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_3);
-    private static final GURL TEST_CONFIG_URL = JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_2);
+    private static final String TEST_ETLD_PLUS_ONE = JUnitTestGURLs.EXAMPLE_URL.getSpec();
+    private static final String TEST_ETLD_PLUS_ONE_1 = JUnitTestGURLs.URL_1.getSpec();
+    private static final String TEST_ETLD_PLUS_ONE_2 = JUnitTestGURLs.URL_2.getSpec();
+    private static final GURL TEST_PROFILE_PIC = JUnitTestGURLs.URL_1_WITH_PATH;
+    private static final GURL TEST_URL_TERMS_OF_SERVICE = JUnitTestGURLs.RED_1;
+    private static final GURL TEST_URL_PRIVACY_POLICY = JUnitTestGURLs.RED_2;
+    private static final GURL TEST_IDP_BRAND_ICON_URL = JUnitTestGURLs.RED_3;
+    private static final GURL TEST_CONFIG_URL = JUnitTestGURLs.URL_2;
 
-    private static final Account ANA = new Account("Ana", "ana@one.test", "Ana Doe", "Ana",
-            TEST_PROFILE_PIC, /*loginHints=*/new String[0], /*isSignIn=*/true);
+    private static final Account ANA = new Account(
+            "Ana", "ana@one.test", "Ana Doe", "Ana", TEST_PROFILE_PIC, /*isSignIn=*/true);
     private static final Account BOB = new Account("Bob", "", "Bob", "", TEST_PROFILE_PIC,
-            /*loginHints=*/new String[0], /*isSignIn=*/true);
-    private static final Account CARL = new Account("Carl", "carl@three.test", "Carl Test", ":)",
-            TEST_PROFILE_PIC, /*loginHints=*/new String[0], /*isSignIn=*/true);
+            /*isSignIn=*/true);
+    private static final Account CARL = new Account(
+            "Carl", "carl@three.test", "Carl Test", ":)", TEST_PROFILE_PIC, /*isSignIn=*/true);
     private static final Account NEW_USER =
             new Account("602214076", "goto@email.example", "Sam E. Goto", "Sam", TEST_PROFILE_PIC,
-                    /*loginHints=*/new String[0], /*isSignIn=*/false);
+                    /*isSignIn=*/false);
     private static final String[] RP_CONTEXTS =
             new String[] {"signin", "signup", "use", "continue"};
     private static final ClientIdMetadata CLIENT_ID_METADATA =

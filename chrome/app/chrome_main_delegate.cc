@@ -17,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/functional/overloaded.h"
 #include "base/i18n/rtl.h"
 #include "base/immediate_crash.h"
 #include "base/lazy_instance.h"
@@ -105,22 +106,25 @@
 
 #include <algorithm>
 
+#include "base/base_switches.h"
 #include "base/files/important_file_writer_cleaner.h"
 #include "base/threading/platform_thread_win.h"
 #include "base/win/atl.h"
+#include "base/win/resource_exhaustion.h"
 #include "chrome/child/v8_crashpad_support_win.h"
 #include "chrome/chrome_elf/chrome_elf_main.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_version.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #endif
 
 #if BUILDFLAG(IS_MAC)
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
+#include "base/message_loop/message_pump_apple.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/message_loop/message_pump_kqueue.h"
-#include "base/message_loop/message_pump_mac.h"
 #include "base/synchronization/condition_variable.h"
 #include "chrome/app/chrome_main_mac.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
@@ -165,8 +169,8 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/java_exception_reporter.h"
 #include "base/android/library_loader/library_loader_hooks.h"
+#include "chrome/browser/android/flags/chrome_cached_flags.h"
 #include "chrome/browser/android/metrics/uma_session_stats.h"
-#include "chrome/browser/flags/android/cached_feature_flags.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "components/crash/android/pure_java_exception_handler.h"
@@ -642,6 +646,28 @@ void RecordMainStartupMetrics(base::TimeTicks application_start_time) {
   startup_metric_utils::GetCommon().RecordChromeMainEntryTime(now);
 }
 
+#if BUILDFLAG(IS_WIN)
+void OnResourceExhausted() {
+  // RegisterClassEx will fail if the session's pool of ATOMs is exhausted. This
+  // appears to happen most often when the browser is being driven by automation
+  // tools, though the underlying reason for this remains a mystery
+  // (https://crbug.com/1470483). There is nothing that Chrome can do to
+  // meaningfully run until the user restarts their session by signing out of
+  // Windows or restarting their computer.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNoErrorDialogs)) {
+    static constexpr wchar_t kMessageBoxTitle[] = L"System resource exhausted";
+    static constexpr wchar_t kMessage[] =
+        L"Your computer has run out of resources and cannot start "
+        PRODUCT_SHORTNAME_STRING
+        L". Sign out of Windows or restart your computer and try again.";
+    ::MessageBox(nullptr, kMessage, kMessageBoxTitle, MB_OK);
+  }
+  base::Process::TerminateCurrentProcessImmediately(
+      chrome::RESULT_CODE_SYSTEM_RESOURCE_EXHAUSTED);
+}
+#endif  // !BUILDFLAG(IS_WIN)
+
 }  // namespace
 
 ChromeMainDelegate::ChromeMainDelegate()
@@ -674,7 +700,7 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
   const auto* invoked_in_browser =
       absl::get_if<InvokedInBrowserProcess>(&invoked_in);
   if (!invoked_in_browser) {
-    CommonEarlyInitialization();
+    CommonEarlyInitialization(invoked_in);
     return absl::nullopt;
   }
 
@@ -847,7 +873,7 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-  CommonEarlyInitialization();
+  CommonEarlyInitialization(invoked_in);
 
   // Initializes the resource bundle and determines the locale.
   std::string actual_locale = LoadLocalState(
@@ -904,7 +930,7 @@ bool ChromeMainDelegate::ShouldInitializeMojo(InvokedIn invoked_in) {
   return ShouldCreateFeatureList(invoked_in);
 }
 
-void ChromeMainDelegate::CommonEarlyInitialization() {
+void ChromeMainDelegate::CommonEarlyInitialization(InvokedIn invoked_in) {
   const base::CommandLine* const command_line =
       base::CommandLine::ForCurrentProcess();
   std::string process_type =
@@ -954,7 +980,16 @@ void ChromeMainDelegate::CommonEarlyInitialization() {
   } else {
     hang_watcher_process_type = base::HangWatcher::ProcessType::kUnknownProcess;
   }
-  base::HangWatcher::InitializeOnMainThread(hang_watcher_process_type);
+  bool is_zygote_child = absl::visit(
+      base::Overloaded{[](const InvokedInBrowserProcess& invoked_in_browser) {
+                         return false;
+                       },
+                       [](const InvokedInChildProcess& invoked_in_child) {
+                         return invoked_in_child.is_zygote_child;
+                       }},
+      invoked_in);
+  base::HangWatcher::InitializeOnMainThread(
+      hang_watcher_process_type, /*is_zygote_child=*/is_zygote_child);
 
   base::InitializeCpuReductionExperiment();
   base::sequence_manager::internal::SequenceManagerImpl::InitializeFeatures();
@@ -1272,15 +1307,15 @@ void ChromeMainDelegate::InitMacCrashReporter(
   // the helper should always have a --type switch.
   //
   // This check is done this late so there is already a call to
-  // base::mac::IsBackgroundOnlyProcess(), so there is no change in
+  // base::apple::IsBackgroundOnlyProcess(), so there is no change in
   // startup/initialization order.
 
   // The helper's Info.plist marks it as a background only app.
-  if (base::mac::IsBackgroundOnlyProcess()) {
+  if (base::apple::IsBackgroundOnlyProcess()) {
     CHECK(command_line.HasSwitch(switches::kProcessType) &&
           !process_type.empty())
         << "Helper application requires --type.";
-  } else if (base::mac::AmIBundled()) {
+  } else if (base::apple::AmIBundled()) {
     CHECK(!command_line.HasSwitch(switches::kProcessType) &&
           process_type.empty())
         << "Main application forbids --type, saw " << process_type;
@@ -1787,6 +1822,9 @@ absl::optional<int> ChromeMainDelegate::PreBrowserMain() {
 #endif
 
 #if BUILDFLAG(IS_WIN)
+  // Register callback to handle resource exhaustion.
+  base::win::SetOnResourceExhaustedFunction(&OnResourceExhausted);
+
   if (IsExtensionPointDisableSet()) {
     sandbox::SandboxFactory::GetBrokerServices()->SetStartingMitigations(
         sandbox::MITIGATION_EXTENSION_POINT_DISABLE);

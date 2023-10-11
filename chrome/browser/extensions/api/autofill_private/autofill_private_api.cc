@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -39,7 +40,6 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/strings/grit/components_chromium_strings.h"
-#include "components/strings/grit/components_google_chrome_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function.h"
@@ -176,82 +176,33 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
     if (!existing_profile)
       return RespondNow(Error(kErrorDataUnavailable));
   }
+  absl::optional<base::StringPiece> country_code;
+  if (auto it = std::find_if(
+          address->fields.begin(), address->fields.end(),
+          [](const auto& field) {
+            return field.type ==
+                   autofill_private::ServerFieldType::kAddressHomeCountry;
+          });
+      it != address->fields.end()) {
+    country_code = it->value;
+  }
   autofill::AutofillProfile profile =
-      existing_profile
-          ? *existing_profile
-          : CreateNewAutofillProfile(personal_data, address->country_code);
+      existing_profile ? *existing_profile
+                       : CreateNewAutofillProfile(personal_data, country_code);
 
-  if (address->full_name) {
-    profile.SetInfoWithVerificationStatus(
-        autofill::AutofillType(autofill::NAME_FULL),
-        base::UTF8ToUTF16(*address->full_name),
-        g_browser_process->GetApplicationLocale(), kUserVerified);
-  }
-
-  if (address->honorific) {
-    profile.SetRawInfoWithVerificationStatus(
-        autofill::NAME_HONORIFIC_PREFIX, base::UTF8ToUTF16(*address->honorific),
-        kUserVerified);
-  }
-
-  if (address->company_name) {
-    profile.SetRawInfoWithVerificationStatus(
-        autofill::COMPANY_NAME, base::UTF8ToUTF16(*address->company_name),
-        kUserVerified);
-  }
-
-  if (address->address_lines) {
-    profile.SetRawInfoWithVerificationStatus(
-        autofill::ADDRESS_HOME_STREET_ADDRESS,
-        base::UTF8ToUTF16(*address->address_lines), kUserVerified);
-  }
-
-  if (address->address_level1) {
-    profile.SetRawInfoWithVerificationStatus(
-        autofill::ADDRESS_HOME_STATE,
-        base::UTF8ToUTF16(*address->address_level1), kUserVerified);
-  }
-
-  if (address->address_level2) {
-    profile.SetRawInfoWithVerificationStatus(
-        autofill::ADDRESS_HOME_CITY,
-        base::UTF8ToUTF16(*address->address_level2), kUserVerified);
-  }
-
-  if (address->address_level3) {
-    profile.SetRawInfoWithVerificationStatus(
-        autofill::ADDRESS_HOME_DEPENDENT_LOCALITY,
-        base::UTF8ToUTF16(*address->address_level3), kUserVerified);
-  }
-
-  if (address->postal_code) {
-    profile.SetRawInfoWithVerificationStatus(
-        autofill::ADDRESS_HOME_ZIP, base::UTF8ToUTF16(*address->postal_code),
-        kUserVerified);
-  }
-
-  if (address->sorting_code) {
-    profile.SetRawInfoWithVerificationStatus(
-        autofill::ADDRESS_HOME_SORTING_CODE,
-        base::UTF8ToUTF16(*address->sorting_code), kUserVerified);
-  }
-
-  if (address->country_code) {
-    profile.SetRawInfoWithVerificationStatus(
-        autofill::ADDRESS_HOME_COUNTRY,
-        base::UTF8ToUTF16(*address->country_code), kUserVerified);
-  }
-
-  if (address->phone_number) {
-    profile.SetRawInfoWithVerificationStatus(
-        autofill::PHONE_HOME_WHOLE_NUMBER,
-        base::UTF8ToUTF16(*address->phone_number), kUserVerified);
-  }
-
-  if (address->email_address) {
-    profile.SetRawInfoWithVerificationStatus(
-        autofill::EMAIL_ADDRESS, base::UTF8ToUTF16(*address->email_address),
-        kUserVerified);
+  // TODO(crbug.com/1441904): Fields not visible for the autofill profile's
+  // country must be reset.
+  for (const api::autofill_private::AddressField& field : address->fields) {
+    if (field.type == autofill_private::ServerFieldType::kNameFull) {
+      profile.SetInfoWithVerificationStatus(
+          autofill::AutofillType(autofill::NAME_FULL),
+          base::UTF8ToUTF16(field.value),
+          g_browser_process->GetApplicationLocale(), kUserVerified);
+    } else {
+      profile.SetRawInfoWithVerificationStatus(
+          autofill::TypeNameToFieldType(autofill_private::ToString(field.type)),
+          base::UTF8ToUTF16(field.value), kUserVerified);
+    }
   }
 
   if (address->language_code)
@@ -438,7 +389,7 @@ ExtensionFunction::ResponseAction AutofillPrivateRemoveEntryFunction::Run() {
   if (!personal_data || !personal_data->IsDataLoaded())
     return RespondNow(Error(kErrorDataUnavailable));
 
-  if (personal_data->GetIBANByGUID(parameters->guid)) {
+  if (personal_data->GetIbanByGUID(parameters->guid)) {
     base::RecordAction(base::UserMetricsAction("AutofillIbanDeleted"));
   }
 
@@ -588,16 +539,16 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveIbanFunction::Run() {
   // the Chrome payment settings page. Otherwise, leaving it blank creates a new
   // IBAN.
   std::string guid = iban_entry->guid ? *iban_entry->guid : "";
-  const autofill::IBAN* existing_iban = nullptr;
+  const autofill::Iban* existing_iban = nullptr;
   if (!guid.empty()) {
-    existing_iban = personal_data->GetIBANByGUID(guid);
+    existing_iban = personal_data->GetIbanByGUID(guid);
     if (!existing_iban)
       return RespondNow(Error(kErrorDataUnavailable));
   }
-  autofill::IBAN iban =
+  autofill::Iban iban =
       existing_iban
           ? *existing_iban
-          : autofill::IBAN(base::Uuid::GenerateRandomV4().AsLowercaseString());
+          : autofill::Iban(base::Uuid::GenerateRandomV4().AsLowercaseString());
 
   iban.SetRawInfo(autofill::IBAN_VALUE, base::UTF8ToUTF16(*iban_entry->value));
 
@@ -605,7 +556,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveIbanFunction::Run() {
     iban.set_nickname(base::UTF8ToUTF16(*iban_entry->nickname));
 
   if (guid.empty()) {
-    personal_data->AddIBAN(iban);
+    personal_data->AddIban(iban);
     base::RecordAction(base::UserMetricsAction("AutofillIbanAdded"));
     if (!iban.nickname().empty()) {
       base::RecordAction(
@@ -615,7 +566,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveIbanFunction::Run() {
   }
 
   if (existing_iban->Compare(iban) != 0) {
-    personal_data->UpdateIBAN(iban);
+    personal_data->UpdateIban(iban);
     base::RecordAction(base::UserMetricsAction("AutofillIbanEdited"));
     // Record when nickname is updated.
     if (existing_iban->nickname() != iban.nickname()) {
@@ -651,21 +602,7 @@ ExtensionFunction::ResponseAction AutofillPrivateIsValidIbanFunction::Run() {
       api::autofill_private::IsValidIban::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(parameters);
   return RespondNow(WithArguments(
-      autofill::IBAN::IsValid(base::UTF8ToUTF16(parameters->iban_value))));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// AutofillPrivateGetUpiIdListFunction
-
-ExtensionFunction::ResponseAction AutofillPrivateGetUpiIdListFunction::Run() {
-  autofill::PersonalDataManager* personal_data =
-      autofill::PersonalDataManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(browser_context()));
-  DCHECK(personal_data && personal_data->IsDataLoaded());
-
-  return RespondNow(
-      ArgumentList(api::autofill_private::GetUpiIdList::Results::Create(
-          personal_data->GetUpiIds())));
+      autofill::Iban::IsValid(base::UTF8ToUTF16(parameters->iban_value))));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

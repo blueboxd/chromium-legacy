@@ -4,7 +4,6 @@
 
 #include "base/containers/adapters.h"
 #include "base/functional/bind.h"
-#include "base/functional/callback_helpers.h"
 #include "base/path_service.h"
 #include "base/strings/escape.h"
 #include "base/strings/strcat.h"
@@ -19,7 +18,6 @@
 #include "chrome/browser/storage_access_api/storage_access_grant_permission_context.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
@@ -27,9 +25,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/request_type.h"
@@ -41,18 +37,15 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_paths.h"
-#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/features.h"
 #include "net/base/schemeful_site.h"
-#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_partition_key_collection.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-forward.h"
@@ -154,6 +147,13 @@ HandleEchoCookiesWithCorsRequest(const net::test_server::HttpRequest& request) {
 std::string QueryPermission(content::RenderFrameHost* render_frame_host) {
   return content::EvalJs(render_frame_host, kQueryStorageAccessPermission)
       .ExtractString();
+}
+
+bool ThirdPartyPartitionedStorageAllowedByDefault() {
+  return base::FeatureList::IsEnabled(
+             net::features::kThirdPartyPartitionedStorageAllowedByDefault) &&
+         base::FeatureList::IsEnabled(
+             net::features::kThirdPartyStoragePartitioning);
 }
 
 class StorageAccessAPIBaseBrowserTest : public policy::PolicyTest {
@@ -1063,6 +1063,7 @@ IN_PROC_BROWSER_TEST_P(StorageAccessAPIBrowserTest,
       permissions::PermissionRequestManager::ACCEPT_ALL);
   EXPECT_FALSE(content::ExecJs(GetFrame(), "document.requestStorageAccess()"));
   EXPECT_FALSE(storage::test::HasStorageAccessForFrame(GetFrame()));
+  EXPECT_EQ(ReadCookiesAndContent(GetFrame(), kHostB), NoCookiesWithContent());
 }
 
 // Validate that if the iframe is sandboxed and has the Storage Access sandbox
@@ -1081,6 +1082,7 @@ IN_PROC_BROWSER_TEST_P(StorageAccessAPIBrowserTest, SandboxTokenResolves) {
   prompt_factory()->set_response_type(
       permissions::PermissionRequestManager::ACCEPT_ALL);
   EXPECT_TRUE(storage::test::RequestAndCheckStorageAccessForFrame(GetFrame()));
+  EXPECT_EQ(ReadCookies(GetFrame(), kHostB), CookieBundle("cross-site=b.test"));
 }
 
 // Validates that expired grants don't get reused.
@@ -1600,7 +1602,7 @@ IN_PROC_BROWSER_TEST_P(StorageAccessAPIStorageBrowserTest,
   NavigateToPageWithFrame(kHostA);
   NavigateFrameTo(kHostB, "/browsing_data/site_data.html");
 
-  ExpectStorage(GetFrame(), false);
+  ExpectStorage(GetFrame(), ThirdPartyPartitionedStorageAllowedByDefault());
   EXPECT_FALSE(storage::test::HasStorageAccessForFrame(GetFrame()));
 
   prompt_factory()->set_response_type(
@@ -1633,7 +1635,8 @@ IN_PROC_BROWSER_TEST_P(StorageAccessAPIStorageBrowserTest,
   NavigateFrameTo(kHostB, "/iframe.html");
   NavigateNestedFrameTo(kHostC, "/browsing_data/site_data.html");
 
-  ExpectStorage(GetNestedFrame(), false);
+  ExpectStorage(GetNestedFrame(),
+                ThirdPartyPartitionedStorageAllowedByDefault());
   EXPECT_FALSE(storage::test::HasStorageAccessForFrame(GetNestedFrame()));
 
   prompt_factory()->set_response_type(
@@ -1678,7 +1681,8 @@ IN_PROC_BROWSER_TEST_P(StorageAccessAPIStorageBrowserTest, MultiTabTest) {
   NavigateToPageWithFrame(kHostA);
   NavigateFrameTo(kHostB, "/browsing_data/site_data.html");
 
-  storage::test::ExpectCrossTabInfoForFrame(GetFrame(), false);
+  storage::test::ExpectCrossTabInfoForFrame(
+      GetFrame(), ThirdPartyPartitionedStorageAllowedByDefault());
   EXPECT_FALSE(storage::test::HasStorageAccessForFrame(GetFrame()));
 
   EXPECT_TRUE(storage::test::RequestAndCheckStorageAccessForFrame(GetFrame()));
@@ -1805,6 +1809,36 @@ IN_PROC_BROWSER_TEST_P(StorageAccessAPIWithFirstPartySetsBrowserTest,
               Gt(0));
   // Ensure that the denied state is not exposed to developers, per the spec.
   EXPECT_EQ(QueryPermission(GetFrame()), "prompt");
+}
+
+IN_PROC_BROWSER_TEST_P(
+    StorageAccessAPIWithFirstPartySetsBrowserTest,
+    Permission_AutograntedForServiceDomainWithExistingGrant) {
+  SetBlockThirdPartyCookies(true);
+
+  // Manually create a grant for the service site. Other test cases show that
+  // the service site cannot create this grant on its own, but such a grant can
+  // be created via other APIs (namely `document.requestStorageAccessFor`).
+  content_settings::ContentSettingConstraints constraints;
+  constraints.set_lifetime(base::Days(30));
+  constraints.set_session_model(
+      content_settings::SessionModel::NonRestorableUserSession);
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSettingDefaultScope(GetURL(kHostD), GetURL(kHostA),
+                                      ContentSettingsType::STORAGE_ACCESS,
+                                      CONTENT_SETTING_ALLOW, constraints);
+
+  NavigateToPageWithFrame(kHostA);
+  NavigateFrameTo(EchoCookiesURL(kHostD));
+
+  EXPECT_EQ(ReadCookiesAndContent(GetFrame(), kHostD), NoCookiesWithContent());
+  EXPECT_FALSE(storage::test::HasStorageAccessForFrame(GetFrame()));
+
+  EXPECT_TRUE(content::ExecJs(GetFrame(), "document.requestStorageAccess()"));
+  EXPECT_TRUE(storage::test::HasStorageAccessForFrame(GetFrame()));
+  EXPECT_EQ(ReadCookies(GetFrame(), kHostD), CookieBundle("cross-site=d.test"));
+
+  EXPECT_EQ(QueryPermission(GetFrame()), "granted");
 }
 
 IN_PROC_BROWSER_TEST_P(StorageAccessAPIWithFirstPartySetsBrowserTest,

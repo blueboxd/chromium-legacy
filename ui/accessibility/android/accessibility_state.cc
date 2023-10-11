@@ -17,8 +17,9 @@ namespace ui {
 namespace {
 
 // Returns the static vector of Delegates.
-std::vector<AccessibilityState::Delegate*>& GetDelegates() {
-  static base::NoDestructor<std::vector<AccessibilityState::Delegate*>>
+std::vector<AccessibilityState::AccessibilityStateDelegate*>& GetDelegates() {
+  static base::NoDestructor<
+      std::vector<AccessibilityState::AccessibilityStateDelegate*>>
       delegates;
   return *delegates;
 }
@@ -31,34 +32,62 @@ void JNI_AccessibilityState_OnAnimatorDurationScaleChanged(JNIEnv* env) {
 }
 
 // static
+void JNI_AccessibilityState_OnDisplayInversionEnabledChanged(JNIEnv* env,
+                                                             jboolean enabled) {
+  AccessibilityState::NotifyDisplayInversionEnabledObservers((bool)enabled);
+}
+
+// static
 void JNI_AccessibilityState_RecordAccessibilityServiceInfoHistograms(
     JNIEnv* env) {
   AccessibilityState::NotifyRecordAccessibilityServiceInfoHistogram();
 }
 
 // static
-void AccessibilityState::RegisterAnimatorDurationScaleDelegate(
-    Delegate* delegate) {
+void AccessibilityState::RegisterAccessibilityStateDelegate(
+    AccessibilityStateDelegate* delegate) {
   GetDelegates().push_back(delegate);
 }
 
 // static
-void AccessibilityState::UnregisterAnimatorDurationScaleDelegate(
-    Delegate* delegate) {
+void AccessibilityState::UnregisterAccessibilityStateDelegate(
+    AccessibilityStateDelegate* delegate) {
   auto& delegates = GetDelegates();
   delegates.erase(std::find(delegates.begin(), delegates.end(), delegate));
 }
 
 // static
 void AccessibilityState::NotifyAnimatorDurationScaleObservers() {
-  for (Delegate* delegate : GetDelegates()) {
+  for (AccessibilityStateDelegate* delegate : GetDelegates()) {
     delegate->OnAnimatorDurationScaleChanged();
   }
 }
 
 // static
+void AccessibilityState::NotifyDisplayInversionEnabledObservers(bool enabled) {
+  for (AccessibilityStateDelegate* delegate : GetDelegates()) {
+    delegate->OnDisplayInversionEnabledChanged(enabled);
+  }
+}
+
+// static
+void AccessibilityState::NotifyContrastLevelObservers(
+    bool highContrastEnabled) {
+  for (AccessibilityStateDelegate* delegate : GetDelegates()) {
+    delegate->OnContrastLevelChanged(highContrastEnabled);
+  }
+}
+
+// static
+void JNI_AccessibilityState_OnContrastLevelChanged(
+    JNIEnv* env,
+    jboolean highContrastEnabled) {
+  AccessibilityState::NotifyContrastLevelObservers((bool)highContrastEnabled);
+}
+
+// static
 void AccessibilityState::NotifyRecordAccessibilityServiceInfoHistogram() {
-  for (Delegate* delegate : GetDelegates()) {
+  for (AccessibilityStateDelegate* delegate : GetDelegates()) {
     delegate->RecordAccessibilityServiceInfoHistograms();
   }
 }

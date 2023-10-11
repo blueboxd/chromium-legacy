@@ -11,10 +11,10 @@
 #include <stdint.h>
 #include <sys/sysctl.h>
 
+#include "base/apple/mach_logging.h"
+#include "base/apple/scoped_mach_port.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/mach_logging.h"
-#include "base/mac/scoped_mach_port.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "base/time/time.h"
@@ -162,7 +162,7 @@ int ProcessMetrics::GetIdleWakeupsPerSecond() {
 
 // Bytes committed by the system.
 size_t GetSystemCommitCharge() {
-  base::mac::ScopedMachSendRight host(mach_host_self());
+  base::apple::ScopedMachSendRight host(mach_host_self());
   mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
   vm_statistics_data_t data;
   kern_return_t kr = host_statistics(
@@ -178,7 +178,7 @@ size_t GetSystemCommitCharge() {
 bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   struct host_basic_info hostinfo;
   mach_msg_type_number_t count = HOST_BASIC_INFO_COUNT;
-  base::mac::ScopedMachSendRight host(mach_host_self());
+  base::apple::ScopedMachSendRight host(mach_host_self());
   int result = host_info(host.get(), HOST_BASIC_INFO,
                          reinterpret_cast<host_info_t>(&hostinfo), &count);
   if (result != KERN_SUCCESS) {
@@ -206,8 +206,25 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
 #else
   static_assert(PAGE_SIZE % 1024 == 0, "Invalid page size");
 #endif
-  meminfo->free = saturated_cast<int>(
-      PAGE_SIZE / 1024 * (vm_info.free_count - vm_info.speculative_count));
+
+  if (vm_info.speculative_count <= vm_info.free_count) {
+    meminfo->free = saturated_cast<int>(
+        PAGE_SIZE / 1024 * (vm_info.free_count - vm_info.speculative_count));
+  } else {
+    // Inside the `host_statistics64` call above, `speculative_count` is
+    // computed later than `free_count`, so these values are snapshots of two
+    // (slightly) different points in time. As a result, it is possible for
+    // `speculative_count` to have increased significantly since `free_count`
+    // was computed, even to a point where `speculative_count` is greater than
+    // the computed value of `free_count`. See
+    // https://github.com/apple-oss-distributions/xnu/blob/aca3beaa3dfbd42498b42c5e5ce20a938e6554e5/osfmk/kern/host.c#L788
+    // In this case, 0 is the best approximation for `meminfo->free`. This is
+    // inexact, but even in the case where `speculative_count` is less than
+    // `free_count`, the computed `meminfo->free` will only be an approximation
+    // given that the two inputs come from different points in time.
+    meminfo->free = 0;
+  }
+
   meminfo->speculative =
       saturated_cast<int>(PAGE_SIZE / 1024 * vm_info.speculative_count);
   meminfo->file_backed =
@@ -228,18 +245,18 @@ MachVMRegionResult GetTopInfo(mach_port_t task,
   // The kernel always returns a null object for VM_REGION_TOP_INFO, but
   // balance it with a deallocate in case this ever changes. See 10.9.2
   // xnu-2422.90.20/osfmk/vm/vm_map.c vm_map_region.
-  mac::ScopedMachSendRight object_name;
+  apple::ScopedMachSendRight object_name;
 
   kern_return_t kr =
 #if BUILDFLAG(IS_MAC)
       mach_vm_region(task, address, size, VM_REGION_TOP_INFO,
                      reinterpret_cast<vm_region_info_t>(info), &info_count,
-                     mac::ScopedMachSendRight::Receiver(object_name).get());
+                     apple::ScopedMachSendRight::Receiver(object_name).get());
 #else
       vm_region_64(task, reinterpret_cast<vm_address_t*>(address),
-                   reinterpret_cast<vm_size_t*>(size), VM_REGION_BASIC_INFO_64,
+                   reinterpret_cast<vm_size_t*>(size), VM_REGION_TOP_INFO,
                    reinterpret_cast<vm_region_info_t>(info), &info_count,
-                   mac::ScopedMachSendRight::Receiver(object_name).get());
+                   apple::ScopedMachSendRight::Receiver(object_name).get());
 #endif
   return ParseOutputFromMachVMRegion(kr);
 }
@@ -252,21 +269,52 @@ MachVMRegionResult GetBasicInfo(mach_port_t task,
   // The kernel always returns a null object for VM_REGION_BASIC_INFO_64, but
   // balance it with a deallocate in case this ever changes. See 10.9.2
   // xnu-2422.90.20/osfmk/vm/vm_map.c vm_map_region.
-  mac::ScopedMachSendRight object_name;
+  apple::ScopedMachSendRight object_name;
 
   kern_return_t kr =
 #if BUILDFLAG(IS_MAC)
       mach_vm_region(task, address, size, VM_REGION_BASIC_INFO_64,
                      reinterpret_cast<vm_region_info_t>(info), &info_count,
-                     mac::ScopedMachSendRight::Receiver(object_name).get());
+                     apple::ScopedMachSendRight::Receiver(object_name).get());
 
 #else
       vm_region_64(task, reinterpret_cast<vm_address_t*>(address),
                    reinterpret_cast<vm_size_t*>(size), VM_REGION_BASIC_INFO_64,
                    reinterpret_cast<vm_region_info_t>(info), &info_count,
-                   mac::ScopedMachSendRight::Receiver(object_name).get());
+                   apple::ScopedMachSendRight::Receiver(object_name).get());
 #endif
   return ParseOutputFromMachVMRegion(kr);
+}
+
+int ProcessMetrics::GetOpenFdCount() const {
+#if BUILDFLAG(USE_BLINK)
+  // In order to get a true count of the open number of FDs, PROC_PIDLISTFDS
+  // is used. This is done twice: first to get the appropriate size of a
+  // buffer, and then secondly to fill the buffer with the actual FD info.
+  //
+  // The buffer size returned in the first call is an estimate, based on the
+  // number of allocated fileproc structures in the kernel. This number can be
+  // greater than the actual number of open files, since the structures are
+  // allocated in slabs. The value returned in proc_bsdinfo::pbi_nfiles is
+  // also the number of allocated fileprocs, not the number in use.
+  //
+  // However, the buffer size returned in the second call is an accurate count
+  // of the open number of descriptors. The contents of the buffer are unused.
+  int rv = proc_pidinfo(process_, PROC_PIDLISTFDS, 0, nullptr, 0);
+  if (rv < 0) {
+    return -1;
+  }
+
+  std::unique_ptr<char[]> buffer(new char[static_cast<size_t>(rv)]);
+  rv = proc_pidinfo(process_, PROC_PIDLISTFDS, 0, buffer.get(), rv);
+  if (rv < 0) {
+    return -1;
+  }
+  return static_cast<int>(static_cast<unsigned long>(rv) / PROC_PIDLISTFD_SIZE);
+#else
+  NOTIMPLEMENTED_LOG_ONCE();
+  return -1;
+#endif  // BUILDFLAG(USE_BLINK)
 }
 
 int ProcessMetrics::GetOpenFdSoftLimit() const {

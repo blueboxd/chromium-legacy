@@ -14,9 +14,11 @@
 #include "ash/glanceables/common/glanceables_progress_bar_view.h"
 #include "ash/glanceables/glanceables_v2_controller.h"
 #include "ash/shell.h"
+#include "ash/style/combobox.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -93,15 +95,18 @@ ClassroomBubbleTeacherView::ClassroomBubbleTeacherView(
           delegate,
           std::make_unique<ClassroomTeacherComboboxModel>()) {
   CHECK(features::IsGlanceablesV2ClassroomTeacherViewEnabled());
-  combo_box_view_->SetCallback(base::BindRepeating(
+  combo_box_view_->SetSelectionChangedCallback(base::BindRepeating(
       &ClassroomBubbleTeacherView::SelectedAssignmentListChanged,
-      base::Unretained(this)));
-  SelectedAssignmentListChanged();
+      base::Unretained(this),
+      /*initial_update=*/false));
+  SelectedAssignmentListChanged(/*initial_update=*/true);
 }
 
 ClassroomBubbleTeacherView::~ClassroomBubbleTeacherView() = default;
 
 void ClassroomBubbleTeacherView::OnSeeAllPressed() {
+  base::RecordAction(
+      base::UserMetricsAction("Glanceables_Classroom_SeeAllPressed"));
   CHECK(combo_box_view_->GetSelectedIndex());
   const auto selected_index = combo_box_view_->GetSelectedIndex().value();
   CHECK(selected_index >= 0 ||
@@ -117,7 +122,12 @@ void ClassroomBubbleTeacherView::OnSeeAllPressed() {
   }
 }
 
-void ClassroomBubbleTeacherView::SelectedAssignmentListChanged() {
+void ClassroomBubbleTeacherView::SelectedAssignmentListChanged(
+    bool initial_update) {
+  if (!initial_update) {
+    base::RecordAction(
+        base::UserMetricsAction("Glanceables_Classroom_SelectedListChanged"));
+  }
   auto* const client =
       Shell::Get()->glanceables_v2_controller()->GetClassroomClient();
   if (!client) {
@@ -136,9 +146,10 @@ void ClassroomBubbleTeacherView::SelectedAssignmentListChanged() {
 
   AboutToRequestAssignments();
 
-  auto callback = base::BindOnce(&ClassroomBubbleTeacherView::OnGetAssignments,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 GetAssignmentListName(selected_index));
+  auto callback =
+      base::BindOnce(&ClassroomBubbleTeacherView::OnGetAssignments,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     GetAssignmentListName(selected_index), initial_update);
   switch (kTeacherAssignmentsListTypeOrdered[selected_index]) {
     case TeacherAssignmentsListType::kDueSoon:
       return client->GetTeacherAssignmentsWithApproachingDueDate(

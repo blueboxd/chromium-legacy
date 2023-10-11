@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/css/style_rule_counter_style.h"
 #include "third_party/blink/renderer/core/css/style_rule_font_feature_values.h"
 #include "third_party/blink/renderer/core/css/style_rule_font_palette_values.h"
+#include "third_party/blink/renderer/core/css/style_rule_view_transitions.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_stack.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -89,12 +90,6 @@ enum class ValidPropertyFilter : unsigned {
 class CSSSelector;
 class MediaQueryEvaluator;
 class StyleSheetContents;
-
-// See `RuleSet::bucket_data_`.
-struct BucketData {
-  unsigned bucket_number;
-  unsigned order_in_bucket;
-};
 
 // This is a wrapper around a StyleRule, pointing to one of the N complex
 // selectors in the StyleRule. This allows us to treat each selector
@@ -289,11 +284,11 @@ class RuleMap {
   base::span<const RuleData> GetRulesFromExtent(Extent extent) const {
     return {backing.begin() + extent.start_index, extent.length};
   }
-  base::span<BucketData> GetBucketDataFromExtent(Extent extent) {
-    return {bucket_data_.begin() + extent.start_index, extent.length};
+  base::span<unsigned> GetBucketNumberFromExtent(Extent extent) {
+    return {bucket_number_.begin() + extent.start_index, extent.length};
   }
-  base::span<const BucketData> GetBucketDataFromExtent(Extent extent) const {
-    return {bucket_data_.begin() + extent.start_index, extent.length};
+  base::span<const unsigned> GetBucketNumberFromExtent(Extent extent) const {
+    return {bucket_number_.begin() + extent.start_index, extent.length};
   }
 
   HashMap<AtomicString, Extent> buckets;
@@ -301,9 +296,7 @@ class RuleMap {
   // Contains all the rules from all the buckets; after compaction,
   // they will be contiguous in memory and you can do easily lookups
   // on them through Find(); before, they are identified
-  // by having the group number stored in the RuleData itself
-  // (where the hashes for the fast-rejection Bloom filter would
-  // normally live; we delay their computation to after compaction).
+  // by having the group number in bucket_data_.
   //
   // The inline size is, perhaps surprisingly, to reduce GC pressure
   // for _large_ vectors. Setting an inline size (other than zero)
@@ -319,9 +312,9 @@ class RuleMap {
   HeapVector<RuleData, 4> backing;
 
   // Used by RuleMap before compaction, to hold what bucket the corresponding
-  // RuleData (by index) is to be sorted into. After compaction, the vector is
-  // emptied to save memory.
-  Vector<BucketData> bucket_data_;
+  // RuleData (by index) is to be sorted into (this member is 1:1 with backing).
+  // After compaction, the vector is emptied to save memory.
+  Vector<unsigned> bucket_number_;
 
   wtf_size_t num_buckets = 0;
   bool compacted = false;
@@ -424,6 +417,10 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
       const {
     return font_feature_values_rules_;
   }
+  const HeapVector<Member<StyleRuleViewTransitions>>& ViewTransitionsRules()
+      const {
+    return view_transitions_rules_;
+  }
   const HeapVector<Member<StyleRulePositionFallback>>& PositionFallbackRules()
       const {
     return position_fallback_rules_;
@@ -450,10 +447,16 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
     return !slotted_pseudo_element_rules_.empty();
   }
 
+  bool HasPartPseudoRules() const { return !part_pseudo_rules_.empty(); }
+
   bool HasBucketForStyleAttribute() const { return has_bucket_for_style_attr_; }
 
   bool MayHaveScopeInUniversalBucket() const {
     return may_have_scope_in_universal_bucket_;
+  }
+
+  bool HasUAShadowPseudoElementRules() const {
+    return !ua_shadow_pseudo_element_rules_.IsEmpty();
   }
 
   bool NeedsFullRecalcForRuleSetInvalidation() const {
@@ -523,6 +526,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   void AddFontPaletteValuesRule(StyleRuleFontPaletteValues*);
   void AddFontFeatureValuesRule(StyleRuleFontFeatureValues*);
   void AddPositionFallbackRule(StyleRulePositionFallback*);
+  void AddViewTransitionsRule(StyleRuleViewTransitions*);
 
   bool MatchMediaForAddRules(const MediaQueryEvaluator& evaluator,
                              const MediaQuerySet* media_queries);
@@ -621,6 +625,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   HeapVector<Member<StyleRuleFontFace>> font_face_rules_;
   HeapVector<Member<StyleRuleFontPaletteValues>> font_palette_values_rules_;
   HeapVector<Member<StyleRuleFontFeatureValues>> font_feature_values_rules_;
+  HeapVector<Member<StyleRuleViewTransitions>> view_transitions_rules_;
   HeapVector<Member<StyleRuleKeyframes>> keyframes_rules_;
   HeapVector<Member<StyleRuleProperty>> property_rules_;
   HeapVector<Member<StyleRuleCounterStyle>> counter_style_rules_;

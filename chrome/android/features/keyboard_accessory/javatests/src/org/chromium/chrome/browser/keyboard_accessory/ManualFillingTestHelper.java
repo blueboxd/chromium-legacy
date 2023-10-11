@@ -50,9 +50,10 @@ import org.junit.Assert;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.app.ChromeActivity;
-import org.chromium.chrome.browser.autofill.AutofillProfile;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;
@@ -64,6 +65,7 @@ import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAcces
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryButtonGroupView;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.components.autofill.AutofillProfile;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.DOMUtils;
@@ -92,6 +94,8 @@ public class ManualFillingTestHelper {
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
 
     private EmbeddedTestServer mEmbeddedTestServer;
+
+    private RecyclerView mKeyboardAccessoryBarItems;
 
     public FakeKeyboard getKeyboard() {
         return (FakeKeyboard) mActivityTestRule.getKeyboardDelegate();
@@ -131,6 +135,11 @@ public class ManualFillingTestHelper {
         updateWebContentsDependentState();
         cacheCredentials("mpark@gmail.com", "S3cr3t"); // Providing suggestions ensures visibility.
         if (waitForNode) DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
+    }
+
+    public void loadUrl(String url) {
+        mActivityTestRule.loadUrl(mActivityTestRule.getTestServer().getURL(url));
+        mWebContentsRef.set(mActivityTestRule.getWebContents());
     }
 
     public void updateWebContentsDependentState() {
@@ -177,10 +186,21 @@ public class ManualFillingTestHelper {
     }
 
     public void focusPasswordField() throws TimeoutException {
+        focusPasswordField(true);
+    }
+
+    public void focusPasswordField(boolean useFakeKeyboard) throws TimeoutException {
         DOMUtils.focusNode(mActivityTestRule.getWebContents(), PASSWORD_NODE_ID);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getWebContents().scrollFocusedEditableNodeIntoView(); });
-        getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
+
+        ChromeKeyboardVisibilityDelegate keyboard;
+        if (useFakeKeyboard) {
+            keyboard = getKeyboard();
+        } else {
+            keyboard = (ChromeKeyboardVisibilityDelegate) mActivityTestRule.getKeyboardDelegate();
+        }
+        keyboard.showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
     }
 
     public String getPasswordText() throws TimeoutException {
@@ -255,6 +275,14 @@ public class ManualFillingTestHelper {
     public void waitForKeyboardAccessoryToBeShown() {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         waitForKeyboardAccessoryToBeShown(false);
+    }
+
+    public void waitForKeyboardToShow() {
+        CriteriaHelper.pollUiThread(() -> {
+            boolean isKeyboardShowing = mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
+                    mActivityTestRule.getActivity(), mActivityTestRule.getActivity().getTabsView());
+            Criteria.checkThat(isKeyboardShowing, Matchers.is(true));
+        });
     }
 
     public void waitForKeyboardAccessoryToBeShown(boolean waitForSuggestionsToLoad) {

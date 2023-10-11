@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""LayoutTests/ presubmit script for Blink.
+"""web_tests/ presubmit script for Blink.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
@@ -16,8 +16,6 @@ import tempfile
 import re
 from html.parser import HTMLParser
 from typing import List
-
-WPT_IMPORTER_EMAIL = "wpt-autoroller@chops-service-accounts.iam.gserviceaccount.com"
 
 
 def _CheckTestharnessResults(input_api, output_api):
@@ -431,12 +429,12 @@ def _CheckForDoctypeHTML(input_api, output_api):
     if input_api.no_diffs:
         return results
 
-    # These tests are being imported from WPT, so <!DOCTYPE html> is not required yet.
-    no_errors = (input_api.change.author_email == WPT_IMPORTER_EMAIL)
+    wpt_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+                                      "external", "wpt")
 
     for f in input_api.AffectedFiles(include_deletes=False):
         path = f.LocalPath()
-        fname = os.path.basename(path)
+        fname = input_api.os_path.basename(path)
 
         if not fname.endswith(".html") or "quirk" in fname:
             continue
@@ -447,12 +445,82 @@ def _CheckForDoctypeHTML(input_api, output_api):
                     "to the name of your test." % path
 
             if f.Action() == "A" or _IsDoctypeHTMLSet(f.OldContents()):
+                # These tests are being imported from WPT, so <!DOCTYPE html> is
+                # not required yet.
+                no_errors = f.AbsoluteLocalPath().startswith(wpt_path)
                 if no_errors:
                     results.append(output_api.PresubmitPromptWarning(error))
                 else:
                     results.append(output_api.PresubmitError(error))
 
     return results
+
+
+def _CheckNewVirtualSuitesForOwners(input_api, output_api):
+    """Suggest that new virtual test suites have OWNERS responsible for them."""
+    # TODO(crbug.com/1380165): Once all virtual suites adopt "owners", consider
+    # making the field mandatory. In that case, we don't need to access the
+    # change contents and can promote this check to `lint_test_expectations.py`.
+    vts_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+                                      'VirtualTestSuites')
+    for affected_file in input_api.AffectedFiles():
+        if affected_file.AbsoluteLocalPath() != vts_path:
+            continue
+        old_contents = ''.join(affected_file.OldContents())
+        new_contents = ''.join(affected_file.NewContents())
+        try:
+            old_suites = _FilterForSuites(input_api.json.loads(old_contents))
+            new_suites = _FilterForSuites(input_api.json.loads(new_contents))
+            old_suite_names = {suite['prefix'] for suite in old_suites}
+            new_ownerless_suites = []
+            for suite in new_suites:
+                prefix, owners = suite['prefix'], suite.get('owners', [])
+                if prefix not in old_suite_names and not owners:
+                    new_ownerless_suites.append(prefix)
+            if new_ownerless_suites:
+                return [
+                    output_api.PresubmitPromptWarning(
+                        'Consider specifying "owners" (a list of emails) '
+                        'for the virtual suites added by this patch:',
+                        new_ownerless_suites),
+                ]
+        except (ValueError, KeyError):
+            # Invalid JSON or missing required fields will be detected by
+            # `lint_test_expectations.py`.
+            pass
+        break
+    return []
+
+
+def _CheckNoWPTBaselines(input_api, output_api):
+    # TODO(crbug.com/1474771): Add this check after the switch to wptrunner.
+    wpt_baselines = []
+    for affected_file in input_api.AffectedFiles(include_deletes=False):
+        path = input_api.os_path.relpath(affected_file.AbsoluteLocalPath(),
+                                         input_api.PresubmitLocalPath())
+        if not path.endswith('-expected.txt'):
+            continue
+        path_parts = path.split(input_api.os_path.sep)
+        if path_parts[0] == 'wpt_internal' or path_parts[:2] == [
+                'external', 'wpt'
+        ]:
+            wpt_baselines.append(path)
+    if wpt_baselines:
+        return [
+            output_api.PresubmitError(
+                '`*-expected.txt` should not be used anymore for WPT. '
+                'Please see this doc for the new way to set WPT expectations '
+                'in `.ini` files: '
+                'https://chromium.googlesource.com/chromium/src/+/HEAD/'
+                'docs/testing/web_platform_tests_wptrunner.md#Expectations',
+                # Truncate the output to a reasonable maximum length.
+                items=sorted(wpt_baselines[:100])),
+        ]
+    return []
+
+
+def _FilterForSuites(suites):
+    return [suite for suite in suites if not isinstance(suite, str)]
 
 
 def CheckChangeOnUpload(input_api, output_api):
@@ -468,6 +536,7 @@ def CheckChangeOnUpload(input_api, output_api):
     results.extend(_CheckForExtraVirtualBaselines(input_api, output_api))
     results.extend(_CheckWebViewExpectations(input_api, output_api))
     results.extend(_CheckForDoctypeHTML(input_api, output_api))
+    results.extend(_CheckNewVirtualSuitesForOwners(input_api, output_api))
     return results
 
 
@@ -481,4 +550,5 @@ def CheckChangeOnCommit(input_api, output_api):
     results.extend(_CheckForExtraVirtualBaselines(input_api, output_api))
     results.extend(_CheckWebViewExpectations(input_api, output_api))
     results.extend(_CheckForDoctypeHTML(input_api, output_api))
+    results.extend(_CheckNewVirtualSuitesForOwners(input_api, output_api))
     return results

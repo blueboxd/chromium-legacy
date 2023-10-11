@@ -21,6 +21,7 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker_factory.h"
 #include "chrome/browser/ash/login/oobe_quick_start/oobe_quick_start_pref_names.h"
 #include "chrome/browser/ash/login/oobe_quick_start/second_device_auth_broker.h"
+#include "chrome/browser/ash/nearby/quick_start_connectivity_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chromeos/ash/components/quick_start/logging.h"
 #include "chromeos/ash/components/quick_start/quick_start_metrics.h"
@@ -52,16 +53,19 @@ TargetDeviceBootstrapController::TargetDeviceBootstrapController(
     std::unique_ptr<
         TargetDeviceBootstrapController::AccessibilityManagerWrapper>
         accessibility_manager_wrapper,
-    base::WeakPtr<NearbyConnectionsManager> nearby_connections_manager,
-    mojo::SharedRemote<mojom::QuickStartDecoder> quick_start_decoder)
+    QuickStartConnectivityService* quick_start_connectivity_service)
     : auth_broker_(std::move(auth_broker)),
-      accessibility_manager_wrapper_(std::move(accessibility_manager_wrapper)) {
-  session_context_ = SessionContext();
+      accessibility_manager_wrapper_(std::move(accessibility_manager_wrapper)),
+      quick_start_connectivity_service_(quick_start_connectivity_service) {
   connection_broker_ = TargetDeviceConnectionBrokerFactory::Create(
-      session_context_, nearby_connections_manager, quick_start_decoder);
+      session_context_, quick_start_connectivity_service_);
 }
 
-TargetDeviceBootstrapController::~TargetDeviceBootstrapController() = default;
+TargetDeviceBootstrapController::~TargetDeviceBootstrapController() {
+  StopAdvertising();
+  CloseOpenConnections();
+  quick_start_connectivity_service_->Cleanup();
+}
 
 TargetDeviceBootstrapController::Status::Status() = default;
 TargetDeviceBootstrapController::Status::~Status() = default;
@@ -124,12 +128,15 @@ void TargetDeviceBootstrapController::StopAdvertising() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void TargetDeviceBootstrapController::MaybeCloseOpenConnections() {
+void TargetDeviceBootstrapController::CloseOpenConnections() {
   // Close any existing open connection.
   if (authenticated_connection_.MaybeValid()) {
     authenticated_connection_->Close(
         TargetDeviceConnectionBroker::ConnectionClosedReason::kUserAborted);
+    authenticated_connection_.reset();
   }
+
+  CleanupIfNeeded();
 }
 
 void TargetDeviceBootstrapController::PrepareForUpdate() {
@@ -180,6 +187,7 @@ void TargetDeviceBootstrapController::OnConnectionAuthenticated(
 void TargetDeviceBootstrapController::OnConnectionRejected() {
   status_.step = Step::ERROR;
   status_.payload = ErrorCode::CONNECTION_REJECTED;
+  CleanupIfNeeded();
   NotifyObservers();
 }
 
@@ -193,6 +201,7 @@ void TargetDeviceBootstrapController::OnConnectionClosed(
   status_.step = Step::ERROR;
   status_.payload = ErrorCode::CONNECTION_CLOSED;
   authenticated_connection_.reset();
+  CleanupIfNeeded();
   NotifyObservers();
 }
 
@@ -217,12 +226,14 @@ void TargetDeviceBootstrapController::OnStartAdvertisingResult(bool success) {
   }
   status_.step = Step::ERROR;
   status_.payload = ErrorCode::START_ADVERTISING_FAILED;
+  CleanupIfNeeded();
   NotifyObservers();
 }
 
 void TargetDeviceBootstrapController::OnStopAdvertising() {
   status_.step = Step::NONE;
   status_.payload.emplace<absl::monostate>();
+  CleanupIfNeeded();
   NotifyObservers();
 }
 
@@ -374,6 +385,13 @@ void TargetDeviceBootstrapController::OnFidoAssertionReceived(
   status_.step = Step::TRANSFERRED_GOOGLE_ACCOUNT_DETAILS;
   status_.payload.emplace<FidoAssertionInfo>(assertion.value());
   NotifyObservers();
+}
+
+void TargetDeviceBootstrapController::CleanupIfNeeded() {
+  constexpr Step kPossibleSteps[] = {Step::NONE, Step::ERROR};
+  if (base::Contains(kPossibleSteps, status_.step)) {
+    quick_start_connectivity_service_->Cleanup();
+  }
 }
 
 }  // namespace ash::quick_start

@@ -6,8 +6,8 @@
 
 #import <UserNotifications/UserNotifications.h>
 
+#import "base/apple/foundation_util.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
@@ -40,6 +40,8 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/keyboard/menu_builder.h"
 #import "ios/web/common/uikit_ui_util.h"
+#import "ios/web/public/thread/web_task_traits.h"
+#import "ios/web/public/thread/web_thread.h"
 
 namespace {
 // The time delay after firstSceneWillEnterForeground: before checking for main
@@ -230,7 +232,19 @@ const int kMainIntentCheckDelay = 1;
   _didRegisterDeviceWithAPNS = YES;
   base::UmaHistogramBoolean("IOS.PushNotification.APNSDeviceRegistration",
                             true);
-  [_pushNotificationDelegate applicationDidRegisterWithAPNS:deviceToken];
+
+  // TODO(crbug.com/1478263) Move PushNotificationDelegate to
+  // property and this should avoid the need to use strongSelf.
+  __weak MainApplicationDelegate* weakSelf = self;
+  web::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(^{
+        MainApplicationDelegate* strongSelf = weakSelf;
+        if (!strongSelf) {
+          return;
+        }
+        [strongSelf->_pushNotificationDelegate
+            applicationDidRegisterWithAPNS:deviceToken];
+      }));
 }
 
 - (void)application:(UIApplication*)application
@@ -286,9 +300,9 @@ const int kMainIntentCheckDelay = 1;
 
 - (void)sceneWillConnect:(NSNotification*)notification {
   UIWindowScene* scene =
-      base::mac::ObjCCastStrict<UIWindowScene>(notification.object);
+      base::apple::ObjCCastStrict<UIWindowScene>(notification.object);
   SceneDelegate* sceneDelegate =
-      base::mac::ObjCCastStrict<SceneDelegate>(scene.delegate);
+      base::apple::ObjCCastStrict<SceneDelegate>(scene.delegate);
 
   // Under some iOS 15 betas, Chrome gets scene connection events for some
   // system scene connections. To handle this, early return if the connecting
@@ -391,13 +405,13 @@ const int kMainIntentCheckDelay = 1;
 #pragma mark - Testing methods
 
 + (AppState*)sharedAppState {
-  return base::mac::ObjCCast<MainApplicationDelegate>(
+  return base::apple::ObjCCast<MainApplicationDelegate>(
              [[UIApplication sharedApplication] delegate])
       .appState;
 }
 
 + (MainController*)sharedMainController {
-  return base::mac::ObjCCast<MainApplicationDelegate>(
+  return base::apple::ObjCCast<MainApplicationDelegate>(
              [[UIApplication sharedApplication] delegate])
       .mainController;
 }
@@ -413,7 +427,7 @@ const int kMainIntentCheckDelay = 1;
 // delegate which enables the application to display push notifications that
 // were received while Chrome was open.
 - (void)registerDeviceForPushNotifications {
-  if (!_didRegisterDeviceWithAPNS && IsPriceNotificationsEnabled()) {
+  if (!_didRegisterDeviceWithAPNS) {
     [PushNotificationUtil registerDeviceWithAPNS];
   }
 }

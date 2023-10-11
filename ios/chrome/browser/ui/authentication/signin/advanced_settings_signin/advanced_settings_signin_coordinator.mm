@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_coordinator.h"
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "base/notreached.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
@@ -226,10 +226,6 @@ using l10n_util::GetNSString;
 
 - (NSString*)manageSyncSettingsCoordinatorTitle {
   return l10n_util::GetNSString(IDS_IOS_SYNC_SETTINGS_TITLE);
-}
-
-- (void)showSignOutToast {
-  NOTREACHED_NORETURN();
 }
 
 - (void)manageSyncSettingsCoordinatorNeedToOpenChromeSyncWebPage:

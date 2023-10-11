@@ -22,6 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/interaction/element_tracker.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/metadata/view_factory.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
@@ -232,6 +233,28 @@ TEST_F(UserEducationUtilAshTest, GetMatchingViewInRootWindow) {
       GetMatchingViewInRootWindow(secondary_display_id,
                                   ui::ElementTracker::kTemporaryIdentifier),
       AnyOf(Eq(secondary_display_view), Eq(another_secondary_display_view)));
+}
+
+// Verifies that `GetUserType()` is working as intended.
+TEST_F(UserEducationUtilAshTest, GetUserType) {
+  AccountId guest_account_id = AccountId::FromUserEmail("guest@test");
+  AccountId regular_account_id = AccountId::FromUserEmail("regular@test");
+
+  // Case: no user sessions added.
+  EXPECT_FALSE(GetUserType(AccountId()));
+  EXPECT_FALSE(GetUserType(guest_account_id));
+  EXPECT_FALSE(GetUserType(regular_account_id));
+
+  auto* session_controller = GetSessionControllerClient();
+  session_controller->AddUserSession(guest_account_id.GetUserEmail(),
+                                     user_manager::USER_TYPE_GUEST);
+  session_controller->AddUserSession(regular_account_id.GetUserEmail(),
+                                     user_manager::USER_TYPE_REGULAR);
+
+  // Case: multiple user sessions added.
+  EXPECT_FALSE(GetUserType(AccountId()));
+  EXPECT_EQ(GetUserType(guest_account_id), user_manager::USER_TYPE_GUEST);
+  EXPECT_EQ(GetUserType(regular_account_id), user_manager::USER_TYPE_REGULAR);
 }
 
 // Verifies that `IsPrimaryAccountActive()` is working as intended.

@@ -8,57 +8,58 @@
 
 #include "base/base64.h"
 #include "base/check.h"
-#include "base/containers/span.h"
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_controller.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_controller_impl.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_params_storage.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_registration_fetcher_impl.h"
 #include "chrome/common/renderer_configuration.mojom.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_client.h"
-#include "google_apis/gaia/gaia_urls.h"
+#include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "url/origin.h"
 
 namespace {
-const char kRegistrationParamsPref[] =
-    "bound_session_credentials_registration_params";
 const char kGoogleSessionTerminationHeader[] = "Sec-Session-Google-Termination";
 }
 
 BoundSessionCookieRefreshServiceImpl::BoundSessionCookieRefreshServiceImpl(
     unexportable_keys::UnexportableKeyService& key_service,
-    PrefService* pref_service,
-    SigninClient* client)
-    : key_service_(key_service), pref_service_(pref_service), client_(client) {}
+    std::unique_ptr<BoundSessionParamsStorage> session_params_storage,
+    content::StoragePartition* storage_partition,
+    network::NetworkConnectionTracker* network_connection_tracker)
+    : key_service_(key_service),
+      session_params_storage_(std::move(session_params_storage)),
+      storage_partition_(storage_partition),
+      network_connection_tracker_(network_connection_tracker) {
+  CHECK(session_params_storage_);
+  CHECK(storage_partition_);
+  data_removal_observation_.Observe(storage_partition_);
+}
 
 BoundSessionCookieRefreshServiceImpl::~BoundSessionCookieRefreshServiceImpl() =
     default;
 
-// static
-void BoundSessionCookieRefreshServiceImpl::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(kRegistrationParamsPref, std::string());
-}
-
 void BoundSessionCookieRefreshServiceImpl::Initialize() {
-  OnBoundSessionUpdated();
+  absl::optional<bound_session_credentials::BoundSessionParams>
+      bound_session_params = session_params_storage_->ReadParams();
+  if (bound_session_params.has_value()) {
+    InitializeBoundSession(bound_session_params.value());
+  }
 }
 
 void BoundSessionCookieRefreshServiceImpl::RegisterNewBoundSession(
-    const bound_session_credentials::RegistrationParams& params) {
-  if (!IsValidRegistrationParams(params) ||
-      !PersistRegistrationParams(params)) {
-    DVLOG(1) << "Invalid session params or failed to serialize bound session "
-                "registration params.";
+    const bound_session_credentials::BoundSessionParams& params) {
+  if (!session_params_storage_->SaveParams(params)) {
+    DVLOG(1) << "Invalid session params or failed to serialize session params.";
     return;
   }
   // New session should override an existing one.
-  ResetBoundSession();
-
-  OnBoundSessionUpdated();
+  cookie_controller_.reset();
+  InitializeBoundSession(params);
 }
 
 void BoundSessionCookieRefreshServiceImpl::MaybeTerminateSession(
@@ -70,27 +71,28 @@ void BoundSessionCookieRefreshServiceImpl::MaybeTerminateSession(
   std::string session_id;
   if (headers->GetNormalizedHeader(kGoogleSessionTerminationHeader,
                                    &session_id)) {
-    // TODO(b/293433229): Verify `session_id` matches the current session's id.
-    TerminateSession();
+    if (session_id == cookie_controller_->session_id()) {
+      TerminateSession();
+    } else {
+      DVLOG(1) << "Session id on session termination header (" << session_id
+               << ") doesn't match with the current session id ("
+               << cookie_controller_->session_id() << ")";
+    }
   }
 }
 
-bool BoundSessionCookieRefreshServiceImpl::IsBoundSession() const {
-  return pref_service_->HasPrefPath(kRegistrationParamsPref);
-}
-
-chrome::mojom::BoundSessionParamsPtr
-BoundSessionCookieRefreshServiceImpl::GetBoundSessionParams() const {
+chrome::mojom::BoundSessionThrottlerParamsPtr
+BoundSessionCookieRefreshServiceImpl::GetBoundSessionThrottlerParams() const {
   if (!cookie_controller_) {
-    return chrome::mojom::BoundSessionParamsPtr();
+    return chrome::mojom::BoundSessionThrottlerParamsPtr();
   }
 
-  return cookie_controller_->bound_session_params();
+  return cookie_controller_->bound_session_throttler_params();
 }
 
 void BoundSessionCookieRefreshServiceImpl::
-    SetRendererBoundSessionParamsUpdaterDelegate(
-        RendererBoundSessionParamsUpdaterDelegate renderer_updater) {
+    SetRendererBoundSessionThrottlerParamsUpdaterDelegate(
+        RendererBoundSessionThrottlerParamsUpdaterDelegate renderer_updater) {
   renderer_updater_ = renderer_updater;
 }
 
@@ -103,12 +105,11 @@ void BoundSessionCookieRefreshServiceImpl::
 
 void BoundSessionCookieRefreshServiceImpl::OnRequestBlockedOnCookie(
     OnRequestBlockedOnCookieCallback resume_blocked_request) {
-  if (!IsBoundSession()) {
+  if (!cookie_controller_) {
     // Session has been terminated.
     std::move(resume_blocked_request).Run();
     return;
   }
-  CHECK(cookie_controller_);
   cookie_controller_->OnRequestBlockedOnCookie(
       std::move(resume_blocked_request));
 }
@@ -123,7 +124,8 @@ void BoundSessionCookieRefreshServiceImpl::CreateRegistrationRequest(
 
   active_registration_request_ =
       std::make_unique<BoundSessionRegistrationFetcherImpl>(
-          std::move(registration_params), client_->GetURLLoaderFactory(),
+          std::move(registration_params),
+          storage_partition_->GetURLLoaderFactoryForBrowserProcess(),
           &key_service_.get());
   // `base::Unretained(this)` is safe here because `this` owns the fetcher via
   // `active_registration_requests_`
@@ -138,104 +140,82 @@ BoundSessionCookieRefreshServiceImpl::GetWeakPtr() {
 }
 
 void BoundSessionCookieRefreshServiceImpl::OnRegistrationRequestComplete(
-    absl::optional<bound_session_credentials::RegistrationParams>
-        registration_params) {
-  if (registration_params.has_value()) {
-    RegisterNewBoundSession(*registration_params);
+    absl::optional<bound_session_credentials::BoundSessionParams>
+        bound_session_params) {
+  if (bound_session_params.has_value()) {
+    RegisterNewBoundSession(*bound_session_params);
   }
 
   active_registration_request_.reset();
 }
 
-bool BoundSessionCookieRefreshServiceImpl::IsValidRegistrationParams(
-    const bound_session_credentials::RegistrationParams& registration_params) {
-  // TODO(crbug.com/1441168): Check for validity of other fields once they are
-  // available.
-  return registration_params.has_session_id() &&
-         registration_params.has_wrapped_key();
-}
-
-bool BoundSessionCookieRefreshServiceImpl::PersistRegistrationParams(
-    const bound_session_credentials::RegistrationParams& registration_params) {
-  std::string serialized_params = registration_params.SerializeAsString();
-  if (serialized_params.empty()) {
-    return false;
-  }
-
-  std::string encoded_serialized_params;
-  base::Base64Encode(serialized_params, &encoded_serialized_params);
-  pref_service_->SetString(kRegistrationParamsPref, encoded_serialized_params);
-  return true;
-}
-
-absl::optional<bound_session_credentials::RegistrationParams>
-BoundSessionCookieRefreshServiceImpl::GetRegistrationParams() {
-  std::string encoded_params_str =
-      pref_service_->GetString(kRegistrationParamsPref);
-  if (encoded_params_str.empty()) {
-    return absl::nullopt;
-  }
-
-  std::string params_str;
-  if (!base::Base64Decode(encoded_params_str, &params_str)) {
-    return absl::nullopt;
-  }
-
-  bound_session_credentials::RegistrationParams params;
-  if (params.ParseFromString(params_str) && IsValidRegistrationParams(params)) {
-    return params;
-  }
-  return absl::nullopt;
-}
-
-void BoundSessionCookieRefreshServiceImpl::OnBoundSessionParamsChanged() {
+void BoundSessionCookieRefreshServiceImpl::
+    OnBoundSessionThrottlerParamsChanged() {
   UpdateAllRenderers();
 }
 
 void BoundSessionCookieRefreshServiceImpl::TerminateSession() {
-  pref_service_->ClearPref(kRegistrationParamsPref);
-  OnBoundSessionUpdated();
+  cookie_controller_.reset();
+  session_params_storage_->ClearParams();
+  UpdateAllRenderers();
+}
+
+void BoundSessionCookieRefreshServiceImpl::OnStorageKeyDataCleared(
+    uint32_t remove_mask,
+    content::StoragePartition::StorageKeyMatcherFunction storage_key_matcher,
+    const base::Time begin,
+    const base::Time end) {
+  // No active session is running. Nothing to terminate.
+  if (!cookie_controller_) {
+    return;
+  }
+
+  // Only terminate a session if cookies are cleared.
+  // TODO(b/296372836): introduce a specific data type for bound sessions.
+  if (!(remove_mask & content::StoragePartition::REMOVE_DATA_MASK_COOKIES)) {
+    return;
+  }
+
+  // Only terminate a session if it was created within the specified time range.
+  base::Time session_creation_time =
+      cookie_controller_->session_creation_time();
+  if (session_creation_time < begin || session_creation_time > end) {
+    return;
+  }
+
+  // Only terminate a session if its URL matches `storage_key_matcher`.
+  // Bound sessions are only supported in first-party contexts, so it's
+  // acceptable to use `blink::StorageKey::CreateFirstParty()`.
+  if (!storage_key_matcher.Run(blink::StorageKey::CreateFirstParty(
+          url::Origin::Create(cookie_controller_->url())))) {
+    return;
+  }
+
+  TerminateSession();
 }
 
 std::unique_ptr<BoundSessionCookieController>
 BoundSessionCookieRefreshServiceImpl::CreateBoundSessionCookieController(
-    bound_session_credentials::RegistrationParams registration_params,
+    const bound_session_credentials::BoundSessionParams& bound_session_params,
     const base::flat_set<std::string>& cookie_names) {
   return controller_factory_for_testing_.is_null()
              ? std::make_unique<BoundSessionCookieControllerImpl>(
-                   key_service_.get(), client_, registration_params,
+                   key_service_.get(), storage_partition_,
+                   network_connection_tracker_, bound_session_params,
                    cookie_names, this)
-             : controller_factory_for_testing_.Run(registration_params,
+             : controller_factory_for_testing_.Run(bound_session_params,
                                                    cookie_names, this);
 }
 
-void BoundSessionCookieRefreshServiceImpl::InitializeBoundSession() {
+void BoundSessionCookieRefreshServiceImpl::InitializeBoundSession(
+    const bound_session_credentials::BoundSessionParams& bound_session_params) {
   CHECK(!cookie_controller_);
   constexpr char k1PSIDTSCookieName[] = "__Secure-1PSIDTS";
   constexpr char k3PSIDTSCookieName[] = "__Secure-3PSIDTS";
 
-  absl::optional<bound_session_credentials::RegistrationParams>
-      registration_params = GetRegistrationParams();
-  if (!registration_params) {
-    TerminateSession();
-    return;
-  }
-
   cookie_controller_ = CreateBoundSessionCookieController(
-      registration_params.value(), {k1PSIDTSCookieName, k3PSIDTSCookieName});
+      bound_session_params, {k1PSIDTSCookieName, k3PSIDTSCookieName});
   cookie_controller_->Initialize();
-}
-
-void BoundSessionCookieRefreshServiceImpl::ResetBoundSession() {
-  cookie_controller_.reset();
-}
-
-void BoundSessionCookieRefreshServiceImpl::OnBoundSessionUpdated() {
-  if (!IsBoundSession()) {
-    ResetBoundSession();
-  } else {
-    InitializeBoundSession();
-  }
   UpdateAllRenderers();
 }
 

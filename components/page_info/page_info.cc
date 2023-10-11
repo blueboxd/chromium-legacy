@@ -44,7 +44,6 @@
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_recovery_success_rate_tracker.h"
 #include "components/permissions/permission_request_manager.h"
-#include "components/permissions/permission_result.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
 #include "components/permissions/permissions_client.h"
@@ -81,7 +80,9 @@
 #include "components/browser_ui/util/android/url_constants.h"
 #include "components/resources/android/theme_resources.h"
 #include "components/strings/grit/components_chromium_strings.h"
-#endif
+#else
+#include "third_party/blink/public/common/features.h"
+#endif  // BUILDFLAG(IS_ANDROID)
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -133,6 +134,9 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::AR,
     ContentSettingsType::IDLE_DETECTION,
     ContentSettingsType::FEDERATED_IDENTITY_API,
+#if !BUILDFLAG(IS_ANDROID)
+    ContentSettingsType::AUTO_PICTURE_IN_PICTURE,
+#endif  // !BUILDFLAG(IS_ANDROID)
 };
 
 // The list of setting types which request permission for a pair of requesting
@@ -700,9 +704,11 @@ void PageInfo::OnSitePermissionChanged(
   }
 
   // Show the infobar only if permission's status is not handled by an origin.
-  // When the sound setting is changed, no reload is necessary.
+  // When the sound or auto picture-in-picture settings are changed, no reload
+  // is necessary.
   if (!is_subscribed_to_permission_change_event &&
-      type != ContentSettingsType::SOUND) {
+      type != ContentSettingsType::SOUND &&
+      type != ContentSettingsType::AUTO_PICTURE_IN_PICTURE) {
     show_info_bar_ = true;
   }
 
@@ -1197,9 +1203,8 @@ void PageInfo::PopulatePermissionInfo(PermissionInfo& permission_info,
       permission_info.setting == CONTENT_SETTING_DEFAULT &&
       permission_info.source ==
           content_settings::SettingSource::SETTING_SOURCE_USER) {
-    permissions::PermissionResult permission_result(
-        CONTENT_SETTING_DEFAULT,
-        permissions::PermissionStatusSource::UNSPECIFIED);
+    content::PermissionResult permission_result(
+        PermissionStatus::ASK, content::PermissionStatusSource::UNSPECIFIED);
     if (permissions::PermissionUtil::IsPermission(permission_info.type)) {
       permission_result = delegate_->GetPermissionResult(
           permissions::PermissionUtil::ContentSettingTypeToPermissionType(
@@ -1207,21 +1212,23 @@ void PageInfo::PopulatePermissionInfo(PermissionInfo& permission_info,
           url::Origin::Create(site_url_), permission_info.requesting_origin);
     } else if (permission_info.type ==
                ContentSettingsType::FEDERATED_IDENTITY_API) {
-      absl::optional<permissions::PermissionResult> embargo_result =
+      absl::optional<content::PermissionResult> embargo_result =
           delegate_->GetPermissionDecisionAutoblocker()->GetEmbargoResult(
               site_url_, permission_info.type);
       if (embargo_result) {
-        permission_result = *embargo_result;
+        permission_result = embargo_result.value();
       }
     }
 
     // If under embargo, update |permission_info| to reflect that.
-    if (permission_result.content_setting == CONTENT_SETTING_BLOCK &&
+    if (permission_result.status == PermissionStatus::DENIED &&
         (permission_result.source ==
-             permissions::PermissionStatusSource::MULTIPLE_DISMISSALS ||
+             content::PermissionStatusSource::MULTIPLE_DISMISSALS ||
          permission_result.source ==
-             permissions::PermissionStatusSource::MULTIPLE_IGNORES)) {
-      permission_info.setting = permission_result.content_setting;
+             content::PermissionStatusSource::MULTIPLE_IGNORES)) {
+      permission_info.setting =
+          permissions::PermissionUtil::PermissionStatusToContentSetting(
+              permission_result.status);
     }
   }
 }
@@ -1248,6 +1255,18 @@ bool PageInfo::ShouldShowPermission(
       return true;
     }
   }
+
+#if !BUILDFLAG(IS_ANDROID)
+  if (info.type == ContentSettingsType::AUTO_PICTURE_IN_PICTURE) {
+    if (!base::FeatureList::IsEnabled(
+            blink::features::kMediaSessionEnterPictureInPicture)) {
+      return false;
+    }
+    if (delegate_->HasAutoPictureInPictureBeenRegistered()) {
+      return true;
+    }
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   const bool is_incognito =
       web_contents_->GetBrowserContext()->IsOffTheRecord();

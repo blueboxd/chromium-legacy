@@ -45,7 +45,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider.TabFavicon;
 import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider.TabFaviconFetcher;
 import org.chromium.chrome.tab_ui.R;
@@ -272,7 +271,6 @@ public final class TabGridViewBinderUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void testBindFaviconFetcher() {
         doReturn(mDrawable).when(mTabFavicon).getSelectedDrawable();
 
@@ -289,7 +287,6 @@ public final class TabGridViewBinderUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void testBindNullFaviconFetcher() {
         mModel.set(TabProperties.FAVICON_FETCHER, null);
         TabGridViewBinder.bindClosableTab(mModel, mViewGroup, TabProperties.FAVICON_FETCHER);
@@ -298,7 +295,6 @@ public final class TabGridViewBinderUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void testUpdateThumbnailMatrix_notOnAutomotiveDevice_thumbnailImageHasOriginalDensity() {
         mAutomotiveContextWrapperTestRule.setIsAutomotive(false);
         int mockImageSize = 100;
@@ -317,7 +313,6 @@ public final class TabGridViewBinderUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void testUpdateThumbnailMatrix_onAutomotiveDevice_thumbnailImageHasScaledUpDensity() {
         mAutomotiveContextWrapperTestRule.setIsAutomotive(true);
         int mockImageSize = 100;

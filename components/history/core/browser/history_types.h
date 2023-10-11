@@ -61,6 +61,11 @@ typedef int64_t VisitID;
 // `kInvalidVisitID` is 0 because SQL AUTOINCREMENT's very first row has
 // "id" == 1. Therefore any 0 VisitID is a sentinel null-like value.
 constexpr VisitID kInvalidVisitID = 0;
+// Corresponds to the "id" column of the "visited_links" SQL table.
+using VisitedLinkID = int64_t;
+// `kInvalidVisitedLinkID` is 0 because SQL AUTOINCREMENT's very first row has
+// "id" == 1. Therefore any 0 VisitedLinkID is a sentinel null-like value.
+constexpr VisitedLinkID kInvalidVisitedLinkID = 0;
 
 // Structure to hold the mapping between each visit's id and its source.
 typedef std::map<VisitID, VisitSource> VisitSourceMap;
@@ -166,11 +171,17 @@ class VisitRow {
   // "originator_from_visit" column in the visit DB.
   VisitID originator_referring_visit = kInvalidVisitID;
   VisitID originator_opener_visit = kInvalidVisitID;
-
   // Set to true for visits known to Chrome Sync, which can be:
   //  1. Remote visits that have been synced to the local machine.
   //  2. Local visits that have been sent to Sync.
   bool is_known_to_sync = false;
+  // If this visit has a transition type of `LINK` or `MANUAL_SUBFRAME`, it will
+  // have a corresponding entry in the VisitedLinkDatabase. That unique row ID
+  // is stored here. If there is no corresponding entry, the
+  // `kInvalidVisitedLinkID` is stored by default. The VisitDatabase has a
+  // many-to-one relationship with the VisitedLinkDatabase. As such, more than
+  // one visit may correspond to the same VisitedLinkID.
+  VisitedLinkID visited_link_id = kInvalidVisitedLinkID;
 
   // We allow the implicit copy constructor and operator=.
 };
@@ -195,6 +206,42 @@ enum class VisitUpdateReason {
   kAddContextAnnotations,
   kSetOnCloseContextAnnotations
 };
+
+// VisitedLinkRow --------------------------------------------------------------
+// Holds all information globally associated with one visited link (one row in
+// the VisitedLinkDatabase).
+//
+// The VisitedLinkDatabase contains the following fields:
+struct VisitedLinkRow {
+  // `id` - the unique int64 ID assigned to this row.
+  // This is immutable except when retrieving the row from the database or when
+  // determining if the visited link referenced by the VisitedLinkRow already
+  // exists in the database.
+  VisitedLinkID id = 0;
+
+  // `link_url_id` - the unique URLID assigned to the row where this link url is
+  // stored in the URLDatabase. ID is stored to avoid storing the URL twice.
+  // Immutable except when retrieving the row from the database. If clients want
+  // to change it, they must use the constructor to make a new one.
+  URLID link_url_id = 0;
+
+  // `top_level_url` - the GURL of the top-level frame where the link url was
+  // visited from.
+  // Immutable except when retrieving the row from the database. If clients want
+  // to change it, they must use the constructor to make a new one.
+  GURL top_level_url;
+
+  // `frame_url` - the GURL of the frame where the link was visited from.
+  // Immutable except when retrieving the row from the database. If clients want
+  // to change it, they must use the constructor to make a new one.
+  GURL frame_url;
+
+  // `visit_count` - the number of entries in the VisitDatabase corresponding to
+  // this row (must exactly match the <link_url, top_level_url, frame_url>
+  // partition key).
+  int visit_count = 0;
+};
+using VisitedLinkRows = std::vector<VisitedLinkRow>;
 
 // QueryResults ----------------------------------------------------------------
 
@@ -1146,7 +1193,8 @@ struct HistoryAddPageArgs {
   //       GURL(), base::Time(), nullptr, 0, absl::nullopt, GURL(),
   //       RedirectList(), ui::PAGE_TRANSITION_LINK,
   //       false, SOURCE_BROWSED, false, true,
-  //       absl::nullopt, absl::nullopt, absl::nullopt)
+  //       absl::nullopt, absl::nullopt, absl::nullopt, absl::nullopt,
+  //       absl::nullopt)
   HistoryAddPageArgs();
   HistoryAddPageArgs(const GURL& url,
                      base::Time time,
@@ -1161,6 +1209,7 @@ struct HistoryAddPageArgs {
                      bool did_replace_entry,
                      bool consider_for_ntp_most_visited,
                      absl::optional<std::u16string> title = absl::nullopt,
+                     absl::optional<GURL> top_level_url = absl::nullopt,
                      absl::optional<Opener> opener = absl::nullopt,
                      absl::optional<base::Uuid> bookmark_id = absl::nullopt,
                      absl::optional<VisitContextAnnotations::OnVisitFields>
@@ -1185,6 +1234,9 @@ struct HistoryAddPageArgs {
   // exist (e.g. certain page transition types).
   bool consider_for_ntp_most_visited;
   absl::optional<std::u16string> title;
+  // `top_level_url` is a GURL representing the top-level frame that this
+  // navigation originated from.
+  absl::optional<GURL> top_level_url;
   absl::optional<Opener> opener;
   absl::optional<base::Uuid> bookmark_id;
   absl::optional<VisitContextAnnotations::OnVisitFields> context_annotations;

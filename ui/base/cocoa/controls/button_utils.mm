@@ -20,22 +20,6 @@
   return button;
 }
 
-+ (NSButton*)buttonWithTitle:(NSString*)title
-                       image:(NSImage*)image
-                      action:(SEL)action
-                      target:(id)target {
-  NSButton* button = [[NSButton alloc] initWithFrame:NSZeroRect];
-  [button setAction:action];
-  [button setButtonType:NSMomentaryLightButton];
-  [button setFocusRingType:NSFocusRingTypeExterior];
-  [button setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
-  [button setTarget:target];
-  [button setTitle:title];
-  [button setImage:image];
-  [[button cell] setBezelStyle:NSRoundedBezelStyle];
-  return button;
-}
-
 + (NSButton*)checkboxWithTitle:(NSString*)title {
   NSButton* button = [[NSButton alloc] initWithFrame:NSZeroRect];
   [button setButtonType:NSSwitchButton];

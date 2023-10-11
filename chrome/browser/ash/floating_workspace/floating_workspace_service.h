@@ -158,16 +158,8 @@ class FloatingWorkspaceService : public KeyedService,
   // If no difference is recorded no upload job will be triggered.
   bool IsCurrentDeskSameAsPrevious(DeskTemplate* current_desk_template) const;
 
-  // Handles the recording of the error for template launch.
-  void HandleTemplateLaunchErrors(DesksClient::DeskActionError error);
-
   // Handles the recording of the error for template capture.
   void HandleTemplateCaptureErrors(DesksClient::DeskActionError error);
-
-  // Callback function that is run after a floating workspace template
-  // is downloaded and launched.
-  void OnTemplateLaunched(absl::optional<DesksClient::DeskActionError> error,
-                          const base::Uuid& desk_uuid);
 
   // Callback function that is run after a floating workspace template is
   // captured by `desks_storage::DeskSyncBridge`.
@@ -209,6 +201,10 @@ class FloatingWorkspaceService : public KeyedService,
   void RemoveAllPreviousDesksExceptActiveDesk(
       const base::Uuid& exclude_desk_uuid);
 
+  // Sign out of the current user session when we detect another active session
+  // after this service was started.
+  void MaybeSignOutOfCurrentSession();
+
   const raw_ptr<Profile, ExperimentalAsh> profile_;
 
   const floating_workspace_util::FloatingWorkspaceVersion version_;
@@ -222,7 +218,14 @@ class FloatingWorkspaceService : public KeyedService,
   bool should_run_restore_ = true;
 
   // Time when the service is initialized.
-  base::TimeTicks initialization_timestamp_;
+  base::TimeTicks initialization_timeticks_;
+
+  // Time when service is initialized in base::Time format for comparison with
+  // desk template time.
+  base::Time initialization_time_;
+
+  // Time when we first received `kUpToDate` status from `sync_service_`
+  absl::optional<base::TimeTicks> first_uptodate_download_timeticks_;
 
   // Timer used for periodic capturing and uploading.
   base::RepeatingTimer timer_;
@@ -246,6 +249,12 @@ class FloatingWorkspaceService : public KeyedService,
 
   std::unique_ptr<message_center::Notification> notification_;
   std::string progress_notification_id_;
+
+  // The in memory cache of the floating workspace that should be restored after
+  // downloading latest updates. Saved in case the user delays resuming the
+  // session and a captured template was uploaded.
+  std::unique_ptr<DeskTemplate> floating_workspace_template_to_restore_ =
+      nullptr;
 
   // Weak pointer factory used to provide references to this service.
   base::WeakPtrFactory<FloatingWorkspaceService> weak_pointer_factory_{this};

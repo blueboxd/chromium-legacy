@@ -29,6 +29,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/pref_names.h"
@@ -1001,8 +1002,8 @@ TEST_F(RenderViewContextMenuPrefsTest, OpenLinkNavigationInitiatorSet) {
 // Verify that "Show all passwords" is displayed on a password field.
 TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswords) {
   // Set up password manager stuff.
-  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
-      web_contents(), nullptr);
+  autofill::ChromeAutofillClient::CreateForWebContents(web_contents());
+  ChromePasswordManagerClient::CreateForWebContents(web_contents());
 
   NavigateAndCommit(GURL("http://www.foo.com/"));
   content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
@@ -1023,8 +1024,10 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswordsIncognito) {
           profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true), nullptr));
 
   // Set up password manager stuff.
-  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
-      incognito_web_contents.get(), nullptr);
+  autofill::ChromeAutofillClient::CreateForWebContents(
+      incognito_web_contents.get());
+  ChromePasswordManagerClient::CreateForWebContents(
+      incognito_web_contents.get());
 
   content::WebContentsTester::For(incognito_web_contents.get())
       ->NavigateAndCommit(GURL("http://www.foo.com/"));
@@ -1646,8 +1649,11 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchChromeUIScheme) {
 TEST_F(RenderViewContextMenuPrefsTest,
        CompanionNewBadgeEnabledForRegionSearchContextMenuItem) {
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(
-      companion::features::kCompanionEnableNewBadgesInContextMenu);
+  features.InitWithFeaturesAndParameters(
+      {{companion::features::internal::kSidePanelCompanion,
+        {{"open-companion-for-image-search", "true"}}},
+       {companion::features::kCompanionEnableNewBadgesInContextMenu, {}}},
+      {});
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
@@ -1670,8 +1676,10 @@ TEST_F(RenderViewContextMenuPrefsTest,
 TEST_F(RenderViewContextMenuPrefsTest,
        CompanionNewBadgeDisabledForRegionSearchContextMenuItem) {
   base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(
-      companion::features::kCompanionEnableNewBadgesInContextMenu);
+  features.InitWithFeaturesAndParameters(
+      {{companion::features::internal::kSidePanelCompanion,
+        {{"open-companion-for-image-search", "true"}}}},
+      {companion::features::kCompanionEnableNewBadgesInContextMenu});
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
@@ -1694,8 +1702,11 @@ TEST_F(RenderViewContextMenuPrefsTest,
 TEST_F(RenderViewContextMenuPrefsTest,
        CompanionNewBadgeEnabledForImageSearchContextMenuItems) {
   base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(
-      companion::features::kCompanionEnableNewBadgesInContextMenu);
+  features.InitWithFeaturesAndParameters(
+      {{companion::features::internal::kSidePanelCompanion,
+        {{"open-companion-for-image-search", "true"}}},
+       {companion::features::kCompanionEnableNewBadgesInContextMenu, {}}},
+      {});
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
@@ -1722,8 +1733,10 @@ TEST_F(RenderViewContextMenuPrefsTest,
 TEST_F(RenderViewContextMenuPrefsTest,
        CompanionNewBadgeDisabledForImageSearchContextMenuItems) {
   base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(
-      companion::features::kCompanionEnableNewBadgesInContextMenu);
+  features.InitWithFeaturesAndParameters(
+      {{companion::features::internal::kSidePanelCompanion,
+        {{"open-companion-for-image-search", "true"}}}},
+      {companion::features::kCompanionEnableNewBadgesInContextMenu});
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);

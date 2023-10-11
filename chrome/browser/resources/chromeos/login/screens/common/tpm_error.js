@@ -39,7 +39,7 @@ const tpmUIState = {
  * @implements {MultiStepBehaviorInterface}
  */
 const TPMErrorMessageElementBase = mixinBehaviors(
-    [OobeI18nBehavior, MultiStepBehavior, LoginScreenBehavior], PolymerElement);
+    [OobeI18nBehavior, LoginScreenBehavior, MultiStepBehavior], PolymerElement);
 
 /**
  * @typedef {{
@@ -91,10 +91,6 @@ class TPMErrorMessage extends TPMErrorMessageElementBase {
    */
   setStep(step) {
     this.setUIStep(step);
-  }
-
-  onSkip_() {
-    this.userActed('tpm-skip');
   }
 
   onRestartTap_() {

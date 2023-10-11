@@ -30,7 +30,6 @@
 #include "chrome/browser/ash/printing/printer_event_tracker.h"
 #include "chrome/browser/ash/printing/printer_event_tracker_factory.h"
 #include "chrome/browser/ash/printing/printer_info.h"
-#include "chrome/browser/ash/printing/printer_setup_util.h"
 #include "chrome/browser/ash/printing/server_printers_fetcher.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -424,8 +423,7 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(
     PRINTER_LOG(DEBUG) << "HandleUpdateCupsPrinter() called when "
                           "kUserPrintersAllowed is set to false";
     OnAddedOrEditedPrinterCommon(printer,
-                                 PrinterSetupResult::kNativePrintersNotAllowed,
-                                 false /* is_automatic */);
+                                 PrinterSetupResult::kNativePrintersNotAllowed);
     // Logs the error and runs the callback.
     OnAddOrEditPrinterError(callback_id,
                             PrinterSetupResult::kNativePrintersNotAllowed);
@@ -459,18 +457,24 @@ void CupsPrintersHandler::HandleRetrieveCupsPrinterPpd(
     return;
   }
 
-  ash::printing::SetUpPrinter(
-      printers_manager_, *printer,
+  printers_manager_->SetUpPrinter(
+      *printer, /*is_automatic_installation=*/true,
       base::BindOnce(&CupsPrintersHandler::OnSetUpPrinter,
                      weak_factory_.GetWeakPtr(), printer_id, printer_name,
                      eula));
 }
 
-void CupsPrintersHandler::OnSetUpPrinter(
-    const std::string& printer_id,
-    const std::string& printer_name,
-    const std::string& eula,
-    const absl::optional<::printing::PrinterSemanticCapsAndDefaults>& caps) {
+void CupsPrintersHandler::OnSetUpPrinter(const std::string& printer_id,
+                                         const std::string& printer_name,
+                                         const std::string& eula,
+                                         PrinterSetupResult result) {
+  if (result != PrinterSetupResult::kSuccess) {
+    PRINTER_LOG(ERROR) << "Cannot setup a printer " << printer_id << " ("
+                       << printer_name << ")";
+    OnRetrievePpdError(printer_name);
+    return;
+  }
+
   // Once the printer has been setup we can request the PPD.
   const std::vector<uint8_t> empty_ppd;
 
@@ -687,7 +691,7 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
       PRINTER_LOG(DEBUG) << "Performing autoconf setup";
       printer.mutable_ppd_reference()->autoconf = true;
       printers_manager_->SetUpPrinter(
-          printer,
+          printer, /*is_automatic_installation=*/true,
           base::BindOnce(&CupsPrintersHandler::OnAddedDiscoveredPrinter,
                          weak_factory_.GetWeakPtr(), callback_id, printer));
       return;
@@ -806,8 +810,7 @@ void CupsPrintersHandler::AddOrReconfigurePrinter(const base::Value::List& args,
     PRINTER_LOG(DEBUG) << "AddOrReconfigurePrinter() called when "
                           "kUserPrintersAllowed is set to false";
     OnAddedOrEditedPrinterCommon(*printer,
-                                 PrinterSetupResult::kNativePrintersNotAllowed,
-                                 false /* is_automatic */);
+                                 PrinterSetupResult::kNativePrintersNotAllowed);
     // Used to fire the web UI listener.
     OnAddOrEditPrinterError(callback_id,
                             PrinterSetupResult::kNativePrintersNotAllowed);
@@ -886,6 +889,7 @@ void CupsPrintersHandler::AddOrReconfigurePrinter(const base::Value::List& args,
 
   printers_manager_->SetUpPrinter(
       *printer,
+      /*is_automatic_installation=*/false,
       base::BindOnce(&CupsPrintersHandler::OnAddedOrEditedSpecifiedPrinter,
                      weak_factory_.GetWeakPtr(), callback_id, *printer,
                      is_printer_edit));
@@ -893,8 +897,7 @@ void CupsPrintersHandler::AddOrReconfigurePrinter(const base::Value::List& args,
 
 void CupsPrintersHandler::OnAddedOrEditedPrinterCommon(
     const Printer& printer,
-    PrinterSetupResult result_code,
-    bool is_automatic) {
+    PrinterSetupResult result_code) {
   if (printer.IsZeroconf()) {
     UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.ZeroconfPrinterSetupResult",
                               result_code, PrinterSetupResult::kMaxValue);
@@ -908,7 +911,6 @@ void CupsPrintersHandler::OnAddedOrEditedPrinterCommon(
       UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterAdded",
                                 printer.GetProtocol(), Printer::kProtocolMax);
       PRINTER_LOG(USER) << "Performing printer setup";
-      printers_manager_->PrinterInstalled(printer, is_automatic);
       printers_manager_->SavePrinter(printer);
       if (printer.IsUsbProtocol()) {
         // Record UMA for USB printer setup source.
@@ -953,7 +955,7 @@ void CupsPrintersHandler::OnAddedDiscoveredPrinter(
     const std::string& callback_id,
     const Printer& printer,
     PrinterSetupResult result_code) {
-  OnAddedOrEditedPrinterCommon(printer, result_code, /*is_automatic=*/true);
+  OnAddedOrEditedPrinterCommon(printer, result_code);
   if (result_code == PrinterSetupResult::kSuccess) {
     ResolveJavascriptCallback(base::Value(callback_id),
                               base::Value(static_cast<int>(result_code)));
@@ -976,7 +978,7 @@ void CupsPrintersHandler::OnAddedOrEditedSpecifiedPrinter(
   }
   const int result_code_int = static_cast<int>(result_code);
   PRINTER_LOG(EVENT) << "Add/Update manual printer: " << result_code_int;
-  OnAddedOrEditedPrinterCommon(printer, result_code, /*is_automatic=*/false);
+  OnAddedOrEditedPrinterCommon(printer, result_code);
 
   if (result_code != PrinterSetupResult::kSuccess &&
       result_code != PrinterSetupResult::kEditSuccess) {
@@ -1251,7 +1253,7 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
     // If we have something that looks like a ppd reference for this printer,
     // try to configure it.
     printers_manager_->SetUpPrinter(
-        *printer,
+        *printer, /*is_automatic_installation=*/true,
         base::BindOnce(&CupsPrintersHandler::OnAddedDiscoveredPrinter,
                        weak_factory_.GetWeakPtr(), callback_id, *printer));
     return;

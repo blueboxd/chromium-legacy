@@ -41,7 +41,6 @@
 #include "components/unified_consent/unified_consent_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/url_util.h"
@@ -69,6 +68,7 @@ CompanionPageHandler::CompanionPageHandler(
                               GetProfile()->GetPrefs())) {
   identity_manager_observation_.Observe(
       IdentityManagerFactory::GetForProfile(GetProfile()));
+  // TODO(crbug.com/1476887): Observe PCO similarly.
   consent_helper_observation_.Observe(consent_helper_.get());
   if (base::FeatureList::IsEnabled(
           visual_search::features::kVisualSearchSuggestions)) {
@@ -253,6 +253,7 @@ void CompanionPageHandler::ShowUI() {
     // page.
     auto* browser = GetBrowser();
     if (!browser) {
+      base::UmaHistogramBoolean("Companion.SidePanel.ShowUiSuccess", false);
       return;
     }
 
@@ -273,16 +274,17 @@ void CompanionPageHandler::ShowUI() {
     // requested from the feedback UI.
     RegisterModalDialogManager(browser);
 
+    base::UmaHistogramBoolean("Companion.SidePanel.ShowUiSuccess", true);
+
     // If searching the text query succeeds, then early return.
     if (OnSearchTextQuery()) {
       return;
     }
 
-    if (helper->HasImageQuery()) {
-      // If there is an image query to run, we need to wait until the side panel
-      // view has bounds in order for us to issue the request to Lens properly.
-      // This is called in the CompanionSidePanelController once it detects a
-      // change in the Companion's WebContents bounds.
+    std::unique_ptr<side_panel::mojom::ImageQuery> image_query =
+        helper->GetImageQuery();
+    if (image_query) {
+      OnImageQuery(*image_query);
       return;
     }
 
@@ -299,8 +301,6 @@ bool CompanionPageHandler::OnSearchTextQuery() {
     return false;
   }
 
-  // Only notify the companion UI the page changed if we can share
-  // information about the page by user consent.
   GURL page_url;
   if (IsUserPermittedToSharePageInfoWithCompanion(GetProfile()->GetPrefs())) {
     page_url = web_contents()->GetVisibleURL();

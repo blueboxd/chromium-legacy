@@ -49,7 +49,7 @@ chromium-metrics-reviews@google.com.
   <variant name="GoogleDrive"
       summary="The file was opened using the file task for Google
                Drive/Workspace"/>
-  <variant name="MicrosoftOneDrive"
+  <variant name="OneDrive"
       summary="The file was opened using the file task for OneDrive/Microsoft
                365"/>
 </variants>
@@ -296,7 +296,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DirectoryScan" units="ms"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -318,7 +318,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DownloadDestination.IsGoogleDrive.Changed"
-    enum="BooleanEnabled" expires_after="M120">
+    enum="BooleanEnabled" expires_after="2024-08-30">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -338,7 +338,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Downloads.DirectoryPercentageOfDiskUsage"
-    units="%" expires_after="2023-12-24">
+    units="%" expires_after="2024-02-25">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -349,7 +349,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Downloads.DirectorySizeMiB" units="MiB"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -385,6 +385,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.DriveDuplicateFinder.LongSearchByHash" units="ms"
     expires_after="M118">
+  <obsolete>
+    Became obsolete on 2023-08-18 as this feature is no longer in existence.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -394,7 +397,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DriveHostedFilePinSuccess" enum="BooleanSuccess"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>austinct@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Tracks success rate of pinning hosted files in Drive.</summary>
@@ -402,7 +405,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="FileBrowser.DriveOfflineHostedCount.{OpenIsAvailable}.AvailablePercent"
-    units="%" expires_after="2023-10-08">
+    units="%" expires_after="2024-02-20">
   <owner>joelhockey@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -417,7 +420,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="FileBrowser.DriveOfflineHostedCount.{OpenIsAvailable}.{DocsOfflineCounts}"
-    units="Files" expires_after="2023-10-08">
+    units="Files" expires_after="2024-02-20">
   <owner>joelhockey@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -440,7 +443,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DriveOfflineOpen.{OpenIsAvailable}"
-    enum="ViewFileType" expires_after="2023-10-08">
+    enum="ViewFileType" expires_after="2024-02-20">
   <owner>joelhockey@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -454,21 +457,21 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DrivePinSuccess" enum="BooleanSuccess"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>austinct@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Tracks success rate of pinning files in Drive.</summary>
 </histogram>
 
 <histogram name="FileBrowser.ExtractTask.Status"
-    enum="FileManagerExtractStatus" expires_after="2023-12-10">
+    enum="FileManagerExtractStatus" expires_after="2024-02-11">
   <owner>adanilo@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Tracks success/error rate of extracting archive contents.</summary>
 </histogram>
 
 <histogram name="FileBrowser.FileSystemProviderMounted"
-    enum="FileSystemProviderMountType" expires_after="2023-12-17">
+    enum="FileSystemProviderMountType" expires_after="2024-02-20">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -518,7 +521,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FormatFileSystemType"
-    enum="FileManagerFormatFileSystemType" expires_after="2023-12-17">
+    enum="FileManagerFormatFileSystemType" expires_after="2024-02-20">
   <owner>austinct@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -648,9 +651,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.GoogleDrive.BulkPinning.QueueSize" units="count"
+    expires_after="2024-07-01">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    The maximum number of files that can be concurrently downloaded by the
+    bulk-pinning manager. This is recorded every time the bulk-pinning manager
+    starts pinning files, after having enumerated all the files to pin.
+  </summary>
+</histogram>
+
 <histogram
     name="FileBrowser.GoogleDrive.BulkPinning.StateWhenCacheVolumeRemoved"
-    units="BooleanEnabled" expires_after="2024-06-01">
+    enum="BooleanEnabled" expires_after="2024-06-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -667,6 +681,21 @@ chromium-metrics-reviews@google.com.
   <summary>
     The final error state that the Google Drive bulk-pinning feature reached
     while syncing files.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.GoogleDrive.BulkPinning.TimeSpentListing"
+    units="ms" expires_after="2024-06-01">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Time spent listing eligible files in a users Google Drive. The listing of
+    files happens when the user first goes through OOBE, when they open the
+    Google Drive settings page or when the click Get started on the bulk pinning
+    banner. For the first file listing it will typically make a query to the
+    cloud and can take a long time, subsequent queries are done on cached data
+    and happen relatively quickly. This is only emitted if the initial listing
+    finished successfully.
   </summary>
 </histogram>
 
@@ -722,7 +751,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Load{FileBrowserLoad}" units="ms"
-    expires_after="M120">
+    expires_after="2024-08-30">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -761,7 +790,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Location.OnEntryExpandedOrCollapsed.NonTopLevel"
-    enum="FileManagerRootType" expires_after="M120">
+    enum="FileManagerRootType" expires_after="2024-08-30">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -794,7 +823,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Location.OnEntrySelected.TopLevel"
-    enum="FileManagerRootType" expires_after="2023-12-24">
+    enum="FileManagerRootType" expires_after="2024-02-25">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -882,7 +911,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.MenuItemSelected" enum="FileManagerMenuCommands"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1093,7 +1122,7 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="FileBrowser.OfficeFiles.Open.FileType.{ProviderName}"
+<histogram name="FileBrowser.OfficeFiles.Open.FileType.{CloudProvider}"
     enum="OfficeOpenExtensions" expires_after="M124">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
@@ -1101,11 +1130,26 @@ chromium-metrics-reviews@google.com.
     Chrome OS File Browser: Records the extension of office files that are being
     opened with Drive web or Microsoft 365.
   </summary>
-  <token key="ProviderName">
-    <variant name="GoogleDrive"
-        summary="The file is being opened from Google Drive in Drive web"/>
-    <variant name="OneDrive"
-        summary="The file is being opened from OneDrive with Microsoft 365"/>
+  <token key="CloudProvider" variants="CloudProvider"/>
+</histogram>
+
+<histogram
+    name="FileBrowser.OfficeFiles.Open.IOTaskError.{CloudProvider}.{Transfer}"
+    enum="PlatformFileError" expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: Records the error during upload in the &quot;upload
+    and open&quot; workflow for Office files. This metric should add up to the
+    sum of FileBrowser.OfficeFiles.Open.UploadResult.* where the result is a
+    copy or move operation error (IO task errors).
+  </summary>
+  <token key="CloudProvider" variants="CloudProvider"/>
+  <token key="Transfer">
+    <variant name="Copy"
+        summary="The files have been copied to {CloudProvider}"/>
+    <variant name="Move"
+        summary="The files have been moved to {CloudProvider}"/>
   </token>
 </histogram>
 
@@ -1117,10 +1161,20 @@ chromium-metrics-reviews@google.com.
     Chrome OS File Browser: Records the source volume an office file is opened
     from.
   </summary>
-  <token key="CloudProvider" variants="CloudProvider"/>
+<!-- Defining this token inline instead of using the `CloudProvider` variant
+  because this it's spelled differently at call sites in existing builds. -->
+
+  <token key="CloudProvider">
+    <variant name="GoogleDrive"
+        summary="The file was opened using the file task for Google
+                 Drive/Workspace"/>
+    <variant name="MicrosoftOneDrive"
+        summary="The file was opened using the file task for
+                 OneDrive/Microsoft 365"/>
+  </token>
 </histogram>
 
-<histogram name="FileBrowser.OfficeFiles.Open.TransferRequired.{ProviderName}"
+<histogram name="FileBrowser.OfficeFiles.Open.TransferRequired.{CloudProvider}"
     enum="OfficeFilesTransferRequired" expires_after="M124">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
@@ -1128,15 +1182,10 @@ chromium-metrics-reviews@google.com.
     Chrome OS File Browser: Records whether an office file must be transferred
     to Google Drive or Microsoft OneDrive in order to open it.
   </summary>
-  <token key="ProviderName">
-    <variant name="GoogleDrive"
-        summary="The file must be transferred to Google Drive"/>
-    <variant name="OneDrive"
-        summary="The file must be transferred to Microsoft OneDrive"/>
-  </token>
+  <token key="CloudProvider" variants="CloudProvider"/>
 </histogram>
 
-<histogram name="FileBrowser.OfficeFiles.Open.UploadResult.{ProviderName}"
+<histogram name="FileBrowser.OfficeFiles.Open.UploadResult.{CloudProvider}"
     enum="OfficeFilesUploadResult" expires_after="M124">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
@@ -1144,12 +1193,7 @@ chromium-metrics-reviews@google.com.
     Chrome OS File Browser: Records the upload result of the &quot;upload and
     open&quot; workflow for Office files.
   </summary>
-  <token key="ProviderName">
-    <variant name="GoogleDrive"
-        summary="The file must be transferred to Google Drive"/>
-    <variant name="OneDrive"
-        summary="The file must be transferred to Microsoft OneDrive"/>
-  </token>
+  <token key="CloudProvider" variants="CloudProvider"/>
 </histogram>
 
 <histogram name="FileBrowser.OfficeFiles.Setup.CancelPage"
@@ -1184,7 +1228,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="FileBrowser.OfficeFiles.TaskResult.{ProviderName}"
+<histogram name="FileBrowser.OfficeFiles.Setup.ODFSAvailability"
+    enum="BooleanAvailable" expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: Availability of the ODFS extension when mount is
+    requested (not including retries within the same flow).
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.OfficeFiles.TaskResult.{CloudProvider}"
     enum="OfficeTaskResult" expires_after="M124">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
@@ -1192,7 +1246,10 @@ chromium-metrics-reviews@google.com.
     Chrome OS File Browser: The result of the task that opens an Office file
     using Drive or OneDrive.
   </summary>
-  <token key="ProviderName">
+<!-- Defining this token inline instead of using the `CloudProvider` variant
+  because this it's spelled differently at call sites in existing builds. -->
+
+  <token key="CloudProvider">
     <variant name="Drive" summary="The task is for Google Drive/Docs"/>
     <variant name="OneDrive"
         summary="The task is for Microsoft OneDrive/Office"/>
@@ -1200,7 +1257,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.OfficeFiles.UseOutsideDrive"
-    enum="OfficeFilesUseOutsideDriveHook" expires_after="2023-12-24">
+    enum="OfficeFilesUseOutsideDriveHook" expires_after="2024-02-25">
   <owner>cassycc@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1211,7 +1268,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.OpenFiles.RootType" enum="FileManagerRootType"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1221,7 +1278,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.QuickView.DialogType" enum="FileDialogType"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1230,35 +1287,35 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.QuickView.FileType" enum="ViewFileType"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>File types that were tried to be opened with quick view.</summary>
 </histogram>
 
 <histogram name="FileBrowser.QuickView.FileTypeOnLaunch" enum="ViewFileType"
-    expires_after="M118">
+    expires_after="M128">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>File types that were selected when quick view is launched.</summary>
 </histogram>
 
 <histogram name="FileBrowser.QuickView.VolumeType" enum="FileManagerVolumeType"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>The volume type where quick view is opened.</summary>
 </histogram>
 
 <histogram name="FileBrowser.QuickView.WayToOpen"
-    enum="FileManagerQuickViewWayToOpen" expires_after="M118">
+    enum="FileManagerQuickViewWayToOpen" expires_after="M128">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>How quick view was opened.</summary>
 </histogram>
 
 <histogram name="FileBrowser.Recent.FilterByType"
-    enum="FileManagerRecentFilterType" expires_after="2023-12-24">
+    enum="FileManagerRecentFilterType" expires_after="2024-02-25">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1337,7 +1394,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Search.{Source}.Latency" units="ms"
-    expires_after="M120">
+    expires_after="2024-02-20">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1353,7 +1410,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.SWA.Create" enum="FileDialogType"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1364,6 +1421,11 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.SWA.PrefsMigrationStatus"
     enum="FileManagerPrefsMigrationStatus" expires_after="M118">
+  <obsolete>
+    Became obsolete on 2023-08-18 - It's been around for ~20-30 milestones now
+    and most results are either success or failed to find the existing chrome
+    preferences. We probably can't get much more actionable insights from this.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1373,14 +1435,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.SyncStatusTrackerMemoryUsage" units="KiB"
-    expires_after="M118">
+    expires_after="2024-08-30">
   <owner>msalomao@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Memory used by the Sync Status Tracker.</summary>
 </histogram>
 
 <histogram name="FileBrowser.TeamDrivesCount" units="Team Drives"
-    expires_after="M120">
+    expires_after="2024-08-30">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1402,7 +1464,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Trash.DirectorySetupFailed"
-    enum="FileManagerTrashDirectorySetupFailedStep" expires_after="2023-12-10">
+    enum="FileManagerTrashDirectorySetupFailedStep" expires_after="2024-02-11">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1464,7 +1526,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingFileType" enum="ViewFileType"
-    expires_after="M120">
+    expires_after="2024-08-30">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1496,7 +1558,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingRootType" enum="FileManagerRootType"
-    expires_after="2023-12-17">
+    expires_after="2024-02-20">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1506,7 +1568,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingRootType.Offline"
-    enum="FileManagerRootType" expires_after="2023-12-17">
+    enum="FileManagerRootType" expires_after="2024-02-20">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1517,7 +1579,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingRootType.Online" enum="FileManagerRootType"
-    expires_after="2023-12-17">
+    expires_after="2024-02-20">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1528,7 +1590,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingTaskType" enum="FileManagerTaskType"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1538,7 +1600,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingTaskType.Offline"
-    enum="FileManagerTaskType" expires_after="2023-12-17">
+    enum="FileManagerTaskType" expires_after="2024-02-20">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1549,7 +1611,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingTaskType.Online" enum="FileManagerTaskType"
-    expires_after="2023-12-17">
+    expires_after="2024-02-20">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1560,7 +1622,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.VolumeType" enum="FileManagerVolumeType"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1620,7 +1682,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Unzipper.DetectEncoding.Result" enum="ContentEncoding"
-    expires_after="2023-12-17">
+    expires_after="2024-02-20">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1636,7 +1698,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ZipFileCreator.Result" enum="ZipFileCreator.Result"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>

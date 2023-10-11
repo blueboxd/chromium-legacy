@@ -16,10 +16,12 @@
 #include "ui/touch_selection/selection_event_type.h"
 #include "ui/touch_selection/touch_handle.h"
 #include "ui/touch_selection/touch_handle_orientation.h"
+#include "ui/touch_selection/touch_selection_metrics.h"
 #include "ui/touch_selection/ui_touch_selection_export.h"
 
 namespace ui {
 class MotionEvent;
+class Event;
 
 // Interface through which |TouchSelectionController| issues selection-related
 // commands, notifications and requests.
@@ -111,6 +113,13 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   // long-press drag.
   void OnScrollBeginEvent();
 
+  // To be called when a menu command has been requested, to dismiss touch
+  // handles and record metrics if needed.
+  void OnMenuCommand(bool should_dismiss_handles);
+
+  // To be called when an event occurs to deactivate touch selection.
+  void OnSessionEndEvent(const Event& event);
+
   // Hide the handles and suppress bounds updates until the next explicit
   // showing allowance.
   void HideAndDisallowShowingAutomatically();
@@ -166,6 +175,8 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
 
   enum InputEventType { TAP, REPEATED_TAP, LONG_PRESS, INPUT_EVENT_TYPE_NONE };
 
+  enum class DragSelectorInitiatingGesture { kNone, kLongPress, kDoublePress };
+
   bool WillHandleTouchEventImpl(const MotionEvent& event);
 
   // TouchHandleClient implementation.
@@ -215,6 +226,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   TouchHandle::AnimationStyle GetAnimationStyle(bool was_active) const;
 
   void LogSelectionEnd();
+  void LogDragType(const TouchSelectionDraggable& draggable);
 
   const raw_ptr<TouchSelectionControllerClient, DanglingUntriaged> client_;
   const Config config_;
@@ -244,8 +256,14 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   // between lines.
   bool anchor_drag_to_selection_start_;
 
-  // Longpress drag allows direct manipulation of longpress-initiated selection.
+  // Allows the text selection to be adjusted by touch dragging after a long
+  // press or double press initiated selection.
   LongPressDragSelector longpress_drag_selector_;
+
+  // Used to track whether a selection drag gesture was initiated by a long
+  // press or double press.
+  DragSelectorInitiatingGesture drag_selector_initiating_gesture_ =
+      DragSelectorInitiatingGesture::kNone;
 
   gfx::RectF viewport_rect_;
 
@@ -258,6 +276,8 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   bool consume_touch_sequence_;
 
   bool show_touch_handles_;
+
+  TouchSelectionSessionMetricsRecorder session_metrics_recorder_;
 };
 
 }  // namespace ui

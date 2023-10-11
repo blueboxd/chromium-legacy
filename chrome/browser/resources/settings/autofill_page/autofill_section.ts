@@ -153,7 +153,7 @@ export class SettingsAutofillSectionElement extends
    */
   private onAddAddressClick_(e: Event) {
     e.preventDefault();
-    this.activeAddress = {};
+    this.activeAddress = {fields: []};
     this.showAddressDialog_ = true;
   }
 
@@ -237,7 +237,6 @@ export class SettingsAutofillSectionElement extends
     }
 
     if (!loadTimeData.getBoolean('autofillAccountProfileStorage') ||
-        !loadTimeData.getBoolean('syncEnableContactInfoDataType') ||
         !loadTimeData.getBoolean(
             'syncEnableContactInfoDataTypeInTransportMode')) {
       return false;

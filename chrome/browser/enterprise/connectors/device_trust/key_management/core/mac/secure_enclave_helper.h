@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/scoped_cftyperef.h"
 
 namespace enterprise_connectors {
 
@@ -29,7 +29,7 @@ class SecureEnclaveHelper {
   // `attributes`. Returns the key or a nullptr on failure. If an `error`
   // pointer is given, its value will be set to the OSStatus returned by the
   // Keychain API call.
-  virtual base::ScopedCFTypeRef<SecKeyRef> CreateSecureKey(
+  virtual base::apple::ScopedCFTypeRef<SecKeyRef> CreateSecureKey(
       CFDictionaryRef attributes,
       OSStatus* error) = 0;
 
@@ -38,8 +38,8 @@ class SecureEnclaveHelper {
   // if the key is not found. If an `error` pointer
   // is given, its value will be set to the OSStatus returned by the Keychain
   // API call.
-  virtual base::ScopedCFTypeRef<SecKeyRef> CopyKey(CFDictionaryRef query,
-                                                   OSStatus* error) = 0;
+  virtual base::apple::ScopedCFTypeRef<SecKeyRef> CopyKey(CFDictionaryRef query,
+                                                          OSStatus* error) = 0;
 
   // Uses the SecItemUpdate API to update the the key retrieved with the
   // `query` with its `attributes_to_update`. Returns the OSStatus value

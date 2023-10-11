@@ -32,32 +32,38 @@ stats::SegmentationSelectionFailureReason GetFailureReason(
     SegmentResultProvider::ResultState result_state) {
   switch (result_state) {
     case SegmentResultProvider::ResultState::kUnknown:
-    case SegmentResultProvider::ResultState::kSuccessFromDatabase:
-    case SegmentResultProvider::ResultState::kDefaultModelScoreUsed:
-    case SegmentResultProvider::ResultState::kTfliteModelScoreUsed:
+    case SegmentResultProvider::ResultState::kServerModelDatabaseScoreUsed:
+    case SegmentResultProvider::ResultState::kDefaultModelDatabaseScoreUsed:
+    case SegmentResultProvider::ResultState::kDefaultModelExecutionScoreUsed:
+    case SegmentResultProvider::ResultState::kServerModelExecutionScoreUsed:
       NOTREACHED();
       return stats::SegmentationSelectionFailureReason::kMaxValue;
-    case SegmentResultProvider::ResultState::kDatabaseScoreNotReady:
+    case SegmentResultProvider::ResultState::kServerModelDatabaseScoreNotReady:
       return stats::SegmentationSelectionFailureReason::
-          kAtLeastOneSegmentNotReady;
-    case SegmentResultProvider::ResultState::kSegmentNotAvailable:
+          kServerModelDatabaseScoreNotReady;
+    case SegmentResultProvider::ResultState::kDefaultModelDatabaseScoreNotReady:
       return stats::SegmentationSelectionFailureReason::
-          kAtLeastOneSegmentNotAvailable;
-    case SegmentResultProvider::ResultState::kSignalsNotCollected:
+          kDefaultModelDatabaseScoreNotReady;
+    case SegmentResultProvider::ResultState::
+        kServerModelSegmentInfoNotAvailable:
       return stats::SegmentationSelectionFailureReason::
-          kAtLeastOneSegmentSignalsNotCollected;
-    case SegmentResultProvider::ResultState::kDefaultModelMetadataMissing:
+          kServerModelSegmentInfoNotAvailable;
+    case SegmentResultProvider::ResultState::
+        kDefaultModelSegmentInfoNotAvailable:
       return stats::SegmentationSelectionFailureReason::
-          kAtLeastOneSegmentDefaultMissingMetadata;
-    case SegmentResultProvider::ResultState::kDefaultModelSignalNotCollected:
+          kDefaultModelSegmentInfoNotAvailable;
+    case SegmentResultProvider::ResultState::kServerModelSignalsNotCollected:
       return stats::SegmentationSelectionFailureReason::
-          kAtLeastOneSegmentDefaultSignalNotCollected;
+          kServerModelSignalsNotCollected;
+    case SegmentResultProvider::ResultState::kDefaultModelSignalsNotCollected:
+      return stats::SegmentationSelectionFailureReason::
+          kDefaultModelSignalsNotCollected;
     case SegmentResultProvider::ResultState::kDefaultModelExecutionFailed:
       return stats::SegmentationSelectionFailureReason::
-          kAtLeastOneSegmentDefaultExecFailed;
-    case SegmentResultProvider::ResultState::kTfliteModelExecutionFailed:
+          kDefaultModelExecutionFailed;
+    case SegmentResultProvider::ResultState::kServerModelExecutionFailed:
       return stats::SegmentationSelectionFailureReason::
-          kAtLeastOneSegmentTfliteExecFailed;
+          kServerModelExecutionFailed;
   }
 }
 
@@ -81,8 +87,7 @@ SegmentSelectorImpl::SegmentSelectorImpl(
     const Config* config,
     FieldTrialRegister* field_trial_register,
     base::Clock* clock,
-    const PlatformOptions& platform_options,
-    DefaultModelManager* default_model_manager)
+    const PlatformOptions& platform_options)
     : SegmentSelectorImpl(
           segment_database,
           signal_storage_config,
@@ -90,8 +95,7 @@ SegmentSelectorImpl::SegmentSelectorImpl(
           config,
           field_trial_register,
           clock,
-          platform_options,
-          default_model_manager) {}
+          platform_options) {}
 
 SegmentSelectorImpl::SegmentSelectorImpl(
     SegmentInfoDatabase* segment_database,
@@ -100,12 +104,10 @@ SegmentSelectorImpl::SegmentSelectorImpl(
     const Config* config,
     FieldTrialRegister* field_trial_register,
     base::Clock* clock,
-    const PlatformOptions& platform_options,
-    DefaultModelManager* default_model_manager)
+    const PlatformOptions& platform_options)
     : result_prefs_(std::move(prefs)),
       segment_database_(segment_database),
       signal_storage_config_(signal_storage_config),
-      default_model_manager_(default_model_manager),
       config_(config),
       field_trial_register_(field_trial_register),
       clock_(clock),
@@ -137,8 +139,8 @@ void SegmentSelectorImpl::OnPlatformInitialized(
     training_data_collector_ = execution_service->training_data_collector();
   }
   segment_result_provider_ = SegmentResultProvider::Create(
-      segment_database_, signal_storage_config_, default_model_manager_,
-      execution_service, clock_, platform_options_.force_refresh_results);
+      segment_database_, signal_storage_config_, execution_service, clock_,
+      platform_options_.force_refresh_results);
   if (IsPreviousSelectionInvalid()) {
     SelectSegmentAndStoreToPrefs();
   }
@@ -238,6 +240,7 @@ void SegmentSelectorImpl::GetRankForNextSegment(
       options->segment_id = needed_segment.first;
       options->discrete_mapping_key = config_->segmentation_key;
       options->ignore_db_scores = !config_->auto_execute_and_cache;
+      options->save_results_to_db = true;
       options->input_context = input_context;
       options->callback = base::BindOnce(
           &SegmentSelectorImpl::OnGetResultForSegmentSelection,

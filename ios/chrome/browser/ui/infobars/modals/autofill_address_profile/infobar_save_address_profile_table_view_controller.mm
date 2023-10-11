@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/infobars/modals/autofill_address_profile/infobar_save_address_profile_table_view_controller.h"
 
+#import "base/apple/foundation_util.h"
 #import "base/feature_list.h"
-#import "base/mac/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/infobars/modals/autofill_address_profile/infobar_save_address_profile_modal_delegate.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_address_profile_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
@@ -146,8 +147,7 @@ const CGFloat kInfobarSaveAddressProfileSeparatorInset = 54;
         initWithBarButtonSystemItem:UIBarButtonSystemItemEdit
                              target:self
                              action:@selector(showEditAddressProfileModal)];
-    // TODO(crbug.com/1167062): Add accessibility identifier for the edit
-    // button.
+    editButton.accessibilityIdentifier = kInfobarSaveAddressModalEditButton;
     self.navigationItem.rightBarButtonItem = editButton;
   }
 
@@ -209,7 +209,7 @@ const CGFloat kInfobarSaveAddressProfileSeparatorInset = 54;
 
   if (itemType == ItemTypeAddressProfileSaveUpdateButton) {
     TableViewTextButtonCell* tableViewTextButtonCell =
-        base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+        base::apple::ObjCCastStrict<TableViewTextButtonCell>(cell);
     [tableViewTextButtonCell.button
                addTarget:self
                   action:@selector(saveAddressProfileButtonWasPressed:)
@@ -219,7 +219,7 @@ const CGFloat kInfobarSaveAddressProfileSeparatorInset = 54;
         UIEdgeInsetsMake(0, 0, 0, self.tableView.bounds.size.width);
   } else if (itemType == ItemTypeAddressProfileNoThanksButton) {
     TableViewTextButtonCell* tableViewTextButtonCell =
-        base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+        base::apple::ObjCCastStrict<TableViewTextButtonCell>(cell);
     [tableViewTextButtonCell.button
                addTarget:self
                   action:@selector(noThanksButtonWasPressed:)

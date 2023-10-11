@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">மொபைல் நெட்வொர்க்குகளைத் தேடுகிறது</translation>
 <translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">Google இயக்ககம் இப்போது கிடைக்கவில்லை. Google இயக்ககம் இணைப்பு கிடைத்தவுடன் பதிவேற்றம் தானாகவே மறுதொடக்கம் செய்யப்படும்.</translation>
+<translation id="1306130176943817227">ஃபைல் உபயோகத்தில் இருப்பதால் அதை நீக்க முடியவில்லை.</translation>
 <translation id="1307931752636661898">Linux ஃபைல்களைப் பார்க்க முடியவில்லை</translation>
 <translation id="1313405956111467313">தானியங்கு ப்ராக்ஸி உள்ளமைவு</translation>
 <translation id="134645005685694099">ஃபைல் ஒத்திசைவை இயக்கத்தில் வைக்க உங்கள் சாதனத்தில் போதுமான சேமிப்பிடம் இல்லை. புதிய ஃபைல்கள் இனி தானாக ஒத்திசைக்கப்படாது.</translation>
@@ -115,7 +116,6 @@
 <translation id="1920798810075583923">தர்பூசணி</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> ஃபார்மேட் செய்யப்பட்டது</translation>
 <translation id="1931134289871235022">ஸ்லோவாக்</translation>
-<translation id="1933345018156373194">நகர்த்த முடியவில்லை, எதிர்பாராத பிழை: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">ஃபின்னிஷ்</translation>
 <translation id="1942765061641586207">படத் தெளிவுத்திறன்</translation>
 <translation id="1972984168337863910">ஃபைல்கள்  காட்டப்படும் பேனல்களை விரிக்கும்</translation>
@@ -502,7 +502,6 @@
 <translation id="4969785127455456148">ஆல்பம்</translation>
 <translation id="4972330214479971536">ஃபைல் ஒத்திசைவிற்கான அமைவை நிறைவுசெய்ய முடியவில்லை</translation>
 <translation id="4973523518332075481"><ph name="MAX_LENGTH" /> அல்லது அதற்குக் குறைவான எழுத்துக்குறிகள் உள்ள பெயரைப் பயன்படுத்தவும்</translation>
-<translation id="4973970068702235170">ஜிப் செய்ய முடியவில்லை, எதிர்பாராத பிழை: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">ஜாப்பனீஸ்</translation>
 <translation id="4987699874727873250">ஆங்கிலம் (இந்தியா)</translation>
 <translation id="4988205478593450158">"<ph name="FILE_NAME" />"ஐ நிச்சயமாக நீக்க விரும்புகிறீர்களா?</translation>
@@ -543,6 +542,7 @@
 <translation id="5218183485292899140">சுவிஸ் ஃபிரெஞ்சு</translation>
 <translation id="5234764350956374838">நிராகரி</translation>
 <translation id="5253070652067921974">உருவாக்கியவர்</translation>
+<translation id="5254207638927440400">ஃபைல் உபயோகத்தில் இருப்பதால் அதை நகர்த்த முடியவில்லை.</translation>
 <translation id="5257456363153333584">தட்டாம்பூச்சி</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />எங்கிருந்தும் கோப்புகளை அணுகலாம் (ஆஃப்லைனில் இருந்தாலும்).<ph name="MARKUP_2" />
     Google இயக்ககத்தில் உள்ள ஃபைல்கள்  சமீபத்திய மாற்றங்களுடன் இருக்கும், அவற்றை எந்தச் சாதனத்திலிருந்தும் அணுகலாம்.<ph name="MARKUP_3" />
@@ -638,7 +638,6 @@
 <translation id="5896749729057314184">நெட்வொர்க் <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, இயக்கப்படவில்லை, சிக்னல் வலிமை <ph name="SIGNAL_STRENGTH" />%, விவரங்கள்</translation>
 <translation id="5911887972742538906">உங்கள் Linux ஆப்ஸை நிறுவும்போது பிழை நேர்ந்தது.</translation>
 <translation id="5912396950572065471">ஃபார்மேட்</translation>
-<translation id="5913638992615760742">நகலெடுக்க முடியவில்லை, எதிர்பாராத பிழை: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">புதிய தேடல் அம்சங்கள் உள்ளன</translation>
 <translation id="5926082595146149752">டச்சு (நெதர்லாந்து) - யூஎஸ் சர்வதேச PC கீபோர்டு</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -646,7 +645,6 @@
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> ஃபைல்கள் </translation>
 <translation id="5957366693331451795">Chromeboxes</translation>
 <translation id="5982621672636444458">வரிசைப்படுத்தல் விருப்பங்கள்</translation>
-<translation id="6007237601604674381">நகர்வு தோல்வி. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">ஈத்தர்நெட் நெட்வொர்க்</translation>
 <translation id="60357267506638014">செக் க்வெர்டி</translation>
 <translation id="603895874132768835">புதிய பின்னை (PIN) அமைக்காத வரை இந்த நெட்வொர்க்கைப் பயன்படுத்த முடியாது</translation>
@@ -863,6 +861,7 @@
 <translation id="76959938259365003">நீக்கியவை ஃபோல்டரில் உள்ளவற்றை அழிக்க முடியவில்லை.</translation>
 <translation id="770015031906360009">கிரேக்கம்</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> நகலெடுக்கப்பட்டது.</translation>
+<translation id="7707941139430559579">ஃபைலை நகர்த்த முடியவில்லை. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">இந்த நெட்வொர்க்கைப் பயன்படுத்த உங்கள் மொபைல் நிறுவனம் வழங்கிய தனிப்பட்ட 8 இலக்க தடுப்பை நீக்கும் விசையை (PUK) டைப் செய்ய வேண்டும்.</translation>
 <translation id="7711920809702896782">படத் தகவல்</translation>
 <translation id="7724603315864178912">வெட்டு</translation>
@@ -1050,6 +1049,7 @@
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" என்ற பெயருள்ள ஃபைல் ஏற்கனவே உள்ளது. வேறொரு பெயரைத் தேர்வுசெய்யவும்.</translation>
 <translation id="9046895021617826162">இணைப்பு தோல்வியடைந்தது</translation>
 <translation id="9065512565307033593">சரிபார்க்கத் தவறினால் உங்கள் நெட்வொர்க் அணுகல் முடக்கப்படும்.</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 எச்சரிக்கை.}other{<ph name="COUNT" /> எச்சரிக்கைகள்.}}</translation>
 <translation id="908378762078012445">ரஷ்யன் - ஒலிப்புமுறை (AATSEEL) கீபோர்டு</translation>
 <translation id="9086302186042011942">ஒத்திசைக்கிறது</translation>
 <translation id="9099674669267916096">பக்க எண்ணிக்கை</translation>

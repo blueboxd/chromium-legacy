@@ -168,6 +168,21 @@ std::string PrintMsgPrintParamsErrorDetails(const mojom::PrintParams& params) {
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+bool ContentAnalysisAfterDialog(
+    const enterprise_connectors::ContentAnalysisDelegate::Data& scanning_data) {
+  bool cloud_analysis_after_dialog =
+      scanning_data.settings.cloud_or_local_settings.is_cloud_analysis() &&
+      base::FeatureList::IsEnabled(
+          printing::features::kEnableCloudScanAfterPreview);
+  bool local_analysis_after_dialog =
+      scanning_data.settings.cloud_or_local_settings.is_local_analysis() &&
+      base::FeatureList::IsEnabled(
+          printing::features::kEnableLocalScanAfterPreview);
+  return cloud_analysis_after_dialog || local_analysis_after_dialog;
+}
+#endif
+
 }  // namespace
 
 PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
@@ -294,8 +309,9 @@ void PrintViewManagerBase::PrintDocument(
       !print_job_->document()->settings().is_modifiable();
   if (!printing::features::ShouldPrintUsingXps(source_is_pdf)) {
     // Print using GDI, which first requires conversion to EMF.
-    print_job_->StartConversionToNativeFormat(print_data, page_size,
-                                              content_area, offsets);
+    print_job_->StartConversionToNativeFormat(
+        print_data, page_size, content_area, offsets,
+        web_contents()->GetLastCommittedURL());
     return;
   }
 #endif
@@ -814,11 +830,7 @@ void PrintViewManagerBase::ScriptedPrint(mojom::ScriptedPrintParamsPtr params,
           web_contents(),
           enterprise_connectors::PrintScanningContext::kBeforeSystemDialog);
   if (scanning_data) {
-    // TODO(b/281087582): Support post-system-dialog scanning for cloud content
-    // analysis.
-    if (!scanning_data->settings.cloud_or_local_settings.is_local_analysis() ||
-        !base::FeatureList::IsEnabled(
-            printing::features::kEnableLocalScanAfterPreview)) {
+    if (!ContentAnalysisAfterDialog(*scanning_data)) {
       auto scanning_done_callback = base::BindOnce(
           &PrintViewManagerBase::CompleteScriptedPrintAfterContentAnalysis,
           weak_ptr_factory_.GetWeakPtr(), std::move(params),
@@ -992,7 +1004,12 @@ void PrintViewManagerBase::ShouldQuitFromInnerMessageLoop() {
   }
 }
 
-bool PrintViewManagerBase::CreateNewPrintJob(
+scoped_refptr<PrintJob> PrintViewManagerBase::CreatePrintJob(
+    PrintJobManager* print_job_manager) {
+  return base::MakeRefCounted<PrintJob>(print_job_manager);
+}
+
+bool PrintViewManagerBase::SetupNewPrintJob(
     std::unique_ptr<PrinterQuery> query) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!quit_inner_loop_);
@@ -1010,8 +1027,7 @@ bool PrintViewManagerBase::CreateNewPrintJob(
   }
 
   DCHECK(!print_job_);
-  print_job_ =
-      base::MakeRefCounted<PrintJob>(g_browser_process->print_job_manager());
+  print_job_ = CreatePrintJob(g_browser_process->print_job_manager());
   print_job_->Initialize(std::move(query), RenderSourceName(), number_pages());
 #if BUILDFLAG(IS_CHROMEOS)
   print_job_->SetSource(web_contents()->GetBrowserContext()->IsOffTheRecord()
@@ -1156,7 +1172,7 @@ bool PrintViewManagerBase::OpportunisticallyCreatePrintJob(int cookie) {
     return false;
   }
 
-  if (!CreateNewPrintJob(std::move(queued_query))) {
+  if (!SetupNewPrintJob(std::move(queued_query))) {
     // Don't kill anything.
     return false;
   }
@@ -1436,7 +1452,8 @@ void PrintViewManagerBase::ContentAnalysisBeforePrintingDocument(
 }
 
 void PrintViewManagerBase::set_analyzing_content(bool analyzing) {
-  DVLOG(1) << (analyzing ? "Starting" : "Completed") << " content analysis";
+  PRINTER_LOG(EVENT) << (analyzing ? "Starting" : "Completed")
+                     << " content analysis";
   analyzing_content_ = analyzing;
 }
 

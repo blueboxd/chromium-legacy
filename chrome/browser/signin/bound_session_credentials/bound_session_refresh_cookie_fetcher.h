@@ -14,13 +14,18 @@
 // created per request.
 class BoundSessionRefreshCookieFetcher {
  public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class Result {
     kSuccess = 0,
     kConnectionError = 1,
     kServerTransientError = 2,
     kServerPersistentError = 3,
     kServerUnexepectedResponse = 4,
-    kSignChallengeFailed = 5,
+    kChallengeRequiredUnexpectedFormat = 5,
+    kChallengeRequiredLimitExceeded = 6,
+    kSignChallengeFailed = 7,
+    kMaxValue = kSignChallengeFailed,
   };
 
   static bool IsPersistentError(Result result);

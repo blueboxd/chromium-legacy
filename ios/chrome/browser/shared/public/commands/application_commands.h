@@ -24,6 +24,8 @@ class CreditCard;
 }  // namespace autofill
 namespace password_manager {
 struct CredentialUIEntry;
+enum class PasswordCheckReferrer;
+enum class WarningType;
 }  // namespace password_manager
 
 // This protocol groups commands that are part of ApplicationCommands, but
@@ -72,7 +74,7 @@ struct CredentialUIEntry;
             (password_manager::CredentialUIEntry)credential
                         showCancelButton:(BOOL)showCancelButton;
 
-// Shows the list of profiles (addresess) in the settings.
+// Shows the list of profiles (addresses) in the settings.
 - (void)showProfileSettingsFromViewController:
     (UIViewController*)baseViewController;
 
@@ -92,8 +94,10 @@ struct CredentialUIEntry;
 // Shows the settings page allowing the user to clear their browsing data.
 - (void)showClearBrowsingDataSettings;
 
-// Shows the Safety Check page and start Safety Check.
-- (void)showSafetyCheckSettingsAndStartSafetyCheck;
+// Shows the Safety Check page and starts the Safety Check. `showHalfSheet`
+// determines whether the Safety Check will be displayed as a half-sheet, or
+// full-page modal.
+- (void)showAndStartSafetyCheckInHalfSheet:(BOOL)showHalfSheet;
 
 // Shows the Safe Browsing page.
 - (void)showSafeBrowsingSettings;
@@ -122,6 +126,17 @@ struct CredentialUIEntry;
 // Dismisses all modal dialogs with a completion block that is called when
 // modals are dismissed (animations done).
 - (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion;
+
+// Shows the Password Checkup page for `referrer`.
+- (void)showPasswordCheckupPageForReferrer:
+    (password_manager::PasswordCheckReferrer)referrer;
+
+// Opens the Password Issues list displaying compromised, weak or reused
+// credentials for `referrer`.
+- (void)
+    showPasswordIssuesWithWarningType:(password_manager::WarningType)warningType
+                             referrer:(password_manager::PasswordCheckReferrer)
+                                          referrer;
 
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
 // Shows the Settings UI, presenting from `baseViewController`.

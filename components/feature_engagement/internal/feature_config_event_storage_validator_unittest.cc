@@ -13,7 +13,6 @@
 #include "components/feature_engagement/internal/event_model.h"
 #include "components/feature_engagement/internal/proto/feature_event.pb.h"
 #include "components/feature_engagement/public/configuration.h"
-#include "components/feature_engagement/public/group_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feature_engagement {
@@ -227,7 +226,7 @@ class FeatureConfigEventStorageValidatorTest : public ::testing::Test {
 TEST_F(FeatureConfigEventStorageValidatorTest,
        ShouldOnlyUseConfigFromEnabledFeatures) {
   scoped_feature_list_.InitWithFeatures(
-      {kIPHGroups, kEventStorageTestFeatureFoo, kEventStorageTestGroupOne},
+      {kEventStorageTestFeatureFoo, kEventStorageTestGroupOne},
       {kEventStorageTestFeatureBar, kEventStorageTestGroupTwo});
 
   FeatureConfig foo_config = kNeverStored;

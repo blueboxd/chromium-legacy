@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Android Release (Nexus 5X)",
-              "project": "chromium-m117"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-archive",
@@ -38,7 +38,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "android-pie-arm64-rel",
-              "project": "chromium-m117"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -71,14 +71,17 @@
         {
           "bucket": "ci",
           "builder": "Android Release (Nexus 5X)",
-          "project": "chromium-m117"
+          "project": "chromium"
         },
         {
           "bucket": "ci",
           "builder": "android-pie-arm64-rel",
-          "project": "chromium-m117"
+          "project": "chromium"
         }
-      ]
+      ],
+      "rts_config": {
+        "condition": "QUICK_RUN_ONLY"
+      }
     }
   },
   "$build/code_coverage": {
@@ -89,6 +92,7 @@
     "use_clang_coverage": true
   },
   "$build/flakiness": {
+    "check_for_flakiness": true,
     "check_for_flakiness_with_resultdb": true
   },
   "$build/reclient": {

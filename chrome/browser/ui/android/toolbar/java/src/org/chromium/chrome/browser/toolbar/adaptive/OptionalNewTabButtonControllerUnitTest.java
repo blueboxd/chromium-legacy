@@ -81,7 +81,7 @@ public final class OptionalNewTabButtonControllerUnitTest {
         MockitoAnnotations.initMocks(this);
         mContext = RuntimeEnvironment.application;
 
-        doReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL)).when(mTab).getUrl();
+        doReturn(JUnitTestGURLs.EXAMPLE_URL).when(mTab).getUrl();
         doReturn(mContext).when(mTab).getContext();
 
         doReturn(mTab).when(mTabSupplier).get();
@@ -100,7 +100,7 @@ public final class OptionalNewTabButtonControllerUnitTest {
         TrackerFactory.setTrackerForTests(mTracker);
     }
 
-    @EnableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2})
+    @EnableFeatures(ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2)
     @Test
     public void testIPHCommandHelper() {
         assertNull(mOptionalNewTabButtonController.get(/*tab*/ null)
@@ -120,7 +120,7 @@ public final class OptionalNewTabButtonControllerUnitTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2})
+    @EnableFeatures(ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2)
     public void testIPHEvent() {
         doReturn(true).when(mTracker).shouldTriggerHelpUI(
                 FeatureConstants.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_NEW_TAB_FEATURE);

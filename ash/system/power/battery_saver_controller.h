@@ -6,7 +6,6 @@
 #define ASH_SYSTEM_POWER_BATTERY_SAVER_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/constants/ash_features.h"
 #include "ash/system/power/power_status.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -33,9 +32,6 @@ class ASH_EXPORT BatterySaverController : public PowerStatus::Observer {
     kAlwaysOn,
   };
 
-  // The battery charge percent at which battery saver is activated.
-  static const double kActivationChargePercent;
-
   explicit BatterySaverController(PrefService* local_state);
   BatterySaverController(const BatterySaverController&) = delete;
   BatterySaverController& operator=(const BatterySaverController&) = delete;
@@ -44,7 +40,13 @@ class ASH_EXPORT BatterySaverController : public PowerStatus::Observer {
   // Registers local state prefs used in the settings UI.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
+  // Reset the pref and state in Power Manager. Used to clean up state when
+  // Battery Saver is no longer available.
+  static void ResetState(PrefService* local_state);
+
   void SetState(bool active, UpdateReason reason);
+
+  bool IsBatterySaverSupported() const;
 
  private:
   // Types used for metrics tracking.
@@ -62,11 +64,6 @@ class ASH_EXPORT BatterySaverController : public PowerStatus::Observer {
 
   absl::optional<int> GetRemainingMinutes(const PowerStatus* status);
 
-  void MaybeResetNotificationAvailability(
-      features::BatterySaverNotificationBehavior experiment,
-      const double battery_percent,
-      const int battery_remaining_minutes);
-
   raw_ptr<PrefService, ExperimentalAsh> local_state_;  // Non-owned and must
                                                        // out-live this.
 
@@ -75,16 +72,13 @@ class ASH_EXPORT BatterySaverController : public PowerStatus::Observer {
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  // Used to debounce changes to the pref and state in Power Manager.
-  bool active_ = false;
+  const double activation_charge_percent_;
 
   bool always_on_ = false;
 
   bool previously_plugged_in_ = false;
 
   bool threshold_crossed_ = false;
-
-  bool low_power_crossed_ = false;
 
   absl::optional<EnableRecord> enable_record_{absl::nullopt};
 

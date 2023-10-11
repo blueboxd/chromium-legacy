@@ -388,6 +388,19 @@ void HTMLImageElement::ParseAttribute(
       window->GetFrame()->GetAttributionSrcLoader()->Register(params.new_value,
                                                               /*element=*/this);
     }
+  } else if (name == html_names::kSharedstoragewritableAttr &&
+             RuntimeEnabledFeatures::SharedStorageAPIM118Enabled(
+                 GetExecutionContext())) {
+    if (!GetExecutionContext()->IsSecureContext()) {
+      GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kOther,
+          mojom::blink::ConsoleMessageLevel::kError,
+          WebString::FromUTF8("sharedStorageWritable: sharedStorage operations "
+                              "are only available in secure contexts.")));
+    } else if (!params.new_value.IsNull()) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kSharedStorageAPI_Image_Attribute);
+    }
   } else {
     HTMLElement::ParseAttribute(params);
   }

@@ -1,5 +1,5 @@
 # -*- bazel-starlark -*-
-# Copyright 2023 The Chromium Authors. All rights reserved.
+# Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Siso configuration for rewriting remote calls into reproxy config."""
@@ -38,23 +38,6 @@ def __parse_rewrapper_cmdline(ctx, cmd):
     if wrapped_command_pos < 1:
         fail("couldn't find first non-arg passed to rewrapper for %s" % str(cmd.args))
     return cmd.args[wrapped_command_pos:], cfg_file, True
-
-def __rewrite_rewrapper(ctx, cmd):
-    args, cfg_file, wrapped = __parse_rewrapper_cmdline(ctx, cmd)
-    if not wrapped:
-        return
-    if not cfg_file:
-        fail("couldn't find rewrapper cfg file in %s" % str(cmd.args))
-    ctx.actions.fix(
-        args = args,
-        reproxy_config = json.encode(rewrapper_cfg.parse(ctx, cfg_file)),
-    )
-
-def __strip_rewrapper(ctx, cmd):
-    args, _, wrapped = __parse_rewrapper_cmdline(ctx, cmd)
-    if not wrapped:
-        return
-    ctx.actions.fix(args = args)
 
 # TODO(b/278225415): change gn so this wrapper (and by extension this handler) becomes unnecessary.
 def __rewrite_clang_code_coverage_wrapper(ctx, cmd):
@@ -100,6 +83,29 @@ def __rewrite_clang_code_coverage_wrapper(ctx, cmd):
         reproxy_config = json.encode(rewrapper_cfg.parse(ctx, cfg_file)),
     )
 
+def __rewrite_rewrapper(ctx, cmd):
+    # If clang-coverage, needs different handling.
+    if len(cmd.args) > 2 and "clang_code_coverage_wrapper.py" in cmd.args[1]:
+        __rewrite_clang_code_coverage_wrapper(ctx, cmd)
+        return
+
+    # Below is handling for generic rewrapper.
+    args, cfg_file, wrapped = __parse_rewrapper_cmdline(ctx, cmd)
+    if not wrapped:
+        return
+    if not cfg_file:
+        fail("couldn't find rewrapper cfg file in %s" % str(cmd.args))
+    ctx.actions.fix(
+        args = args,
+        reproxy_config = json.encode(rewrapper_cfg.parse(ctx, cfg_file)),
+    )
+
+def __strip_rewrapper(ctx, cmd):
+    args, _, wrapped = __parse_rewrapper_cmdline(ctx, cmd)
+    if not wrapped:
+        return
+    ctx.actions.fix(args = args)
+
 def __rewrite_action_remote_py(ctx, cmd):
     # Example command:
     #   python3
@@ -138,7 +144,6 @@ def __rewrite_action_remote_py(ctx, cmd):
 __handlers = {
     "rewrite_rewrapper": __rewrite_rewrapper,
     "strip_rewrapper": __strip_rewrapper,
-    "rewrite_clang_code_coverage_wrapper": __rewrite_clang_code_coverage_wrapper,
     "rewrite_action_remote_py": __rewrite_action_remote_py,
 }
 
@@ -152,13 +157,19 @@ def __use_remoteexec(ctx):
 def __step_config(ctx, step_config):
     # New rules to convert commands calling rewrapper to use reproxy instead.
     new_rules = [
-        # mojo/mojom_bindings_generator will not always have rewrapper args.
-        # Use this rule for commands with rewrapper args, the native remote rule is converted above.
+        # Disabling remote should always come first.
         {
-            "name": "mojo/mojom_bindings_generator_rewrapper",
-            "action": "mojom_(.*_)?__generator",
-            "command_prefix": "python3 ../../build/util/action_remote.py ../../buildtools/reclient/rewrapper --cfg=",
-            "handler": "rewrite_action_remote_py",
+            # TODO(b/281663988): missing headers.
+            "name": "b281663988/missing-headers",
+            "action_outs": [
+                "./obj/ui/qt/qt5_shim/qt_shim.o",
+                "./obj/ui/qt/qt6_shim/qt_shim.o",
+                "./obj/ui/qt/qt5_shim/qt5_shim_moc.o",
+                "./obj/ui/qt/qt6_shim/qt6_shim_moc.o",
+                "./obj/ui/qt/qt_interface/qt_interface.o",
+            ],
+            "remote": False,
+            "handler": "strip_rewrapper",
         },
         # Handle generic action_remote calls.
         {
@@ -195,6 +206,7 @@ def __step_config(ctx, step_config):
         # clang will always have rewrapper config when use_remoteexec=true.
         # Remove the native siso handling and replace with custom rewrapper-specific handling.
         # All other rule values are not reused, instead use rewrapper config via handler.
+        # (In particular, command_prefix should be avoided because it will be rewrapper.)
         if rule["name"].startswith("clang/") or rule["name"].startswith("clang-cl/"):
             if not rule.get("action"):
                 fail("clang rule %s found without action" % rule["name"])
@@ -206,26 +218,16 @@ def __step_config(ctx, step_config):
             new_rules.append(new_rule)
             continue
 
-        # clang-coverage will always have rewrapper config when use_remoteexec=true.
-        # Remove the native siso handling and replace with custom rewrapper-specific handling.
-        # All other rule values are not reused, instead use rewrapper config via handler.
-        # TODO(b/278225415): change gn so this wrapper (and by extension these rules) become unnecessary.
-        if rule["name"].startswith("clang-coverage"):
-            if rule["command_prefix"].find("../../build/toolchain/clang_code_coverage_wrapper.py") < 0:
-                fail("clang-coverage rule %s found without clang_code_coverage_wrapper.py in command_prefix" % rule["name"])
-            new_rule = {
-                "name": rule["name"],
-                "command_prefix": rule["command_prefix"],
-                "handler": "rewrite_clang_code_coverage_wrapper",
-            }
-            # Insert clang-coverage/ rules at the top.
-            # They are more specific than reproxy clang/ rules, therefore should not be placed after.
-            new_rules.insert(0, new_rule)
+        # clang-coverage/ is handled by the rewrite_rewrapper handler of clang/{cxx, cc} action rules above, so ignore these rules.
+        if rule["name"].startswith("clang-coverage/"):
             continue
 
-        # Other rules where it's enough to only convert native remote config to reproxy config.
+        # Add non-remote rules as-is.
         if not rule.get("remote"):
+            new_rules.append(rule)
             continue
+
+        # Finally handle remaining remote rules. It's assumed it is enough to only convert native remote config to reproxy config.
         platform_ref = rule.get("platform_ref")
         if platform_ref:
             platform = step_config["platforms"].get(platform_ref)
@@ -242,7 +244,10 @@ def __step_config(ctx, step_config):
             },
             "inputs": rule.get("inputs", []),
             "canonicalize_working_dir": rule.get("canonicalize_dir", False),
-            "exec_strategy": "remote",
+            # TODO: b/297807325 - Siso wants to handle local execution. However,
+            # Reclient's CompileErrorRatioAlert requires local fallback to be
+            # done on Reproxy side.
+            "exec_strategy": "remote_local_fallback",
             "exec_timeout": rule.get("timeout", "10m"),
             "download_outputs": True,
         }

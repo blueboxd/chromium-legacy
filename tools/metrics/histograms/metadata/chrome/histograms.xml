@@ -32,17 +32,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Chrome.Frame.MouseDownCaptionHitTestInReservedGrabHandleSpace"
-    enum="Boolean" expires_after="2023-12-04">
-  <owner>robliao@chromium.org</owner>
-  <owner>pkasting@chromium.org</owner>
-  <summary>
-    Recorded only for Windows on every primary button mouse down determined to
-    be in the caption area of Chrome. True if the primary button mouse down was
-    in the reserved grab handle space, false otherwise.
-  </summary>
-</histogram>
-
 <histogram name="Chrome.Headless.Action" enum="HeadlessChromeAction"
     expires_after="2023-12-31">
   <owner>kvitekp@chromium.org</owner>
@@ -80,7 +69,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.KAnonymityService.QuerySet.Action"
-    enum="KAnonymityServiceQuerySetAction" expires_after="2023-12-10">
+    enum="KAnonymityServiceQuerySetAction" expires_after="2024-02-11">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -105,7 +94,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.KAnonymityService.QuerySet.Size" units="count"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -126,7 +115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.KAnonymityService.TrustTokenGetter.Latency" units="ms"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -145,7 +134,7 @@ chromium-metrics-reviews@google.com.
     Chrome.Lacros.Smoothness.PercentDroppedFrames_1sWindow2
   </obsolete>
   <owner>xiyuan@chromium.org</owner>
-  <owner>chromeos-perfmetrics-eng@google.com</owner>
+  <owner>cros-sw-perf@google.com</owner>
   <summary>
     Similar to Ash.Smoothness.PercentDroppedFrames_1sWindow but emitted for the
     browser UI of lacros-chrome.
@@ -155,7 +144,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Chrome.Lacros.Smoothness.PercentDroppedFrames_1sWindow2"
     units="%" expires_after="2024-01-29">
   <owner>xiyuan@chromium.org</owner>
-  <owner>chromeos-perfmetrics-eng@google.com</owner>
+  <owner>cros-sw-perf@google.com</owner>
   <summary>
     Similar to Ash.Smoothness.PercentDroppedFrames_1sWindow2 but emitted for the
     browser UI of lacros-chrome.
@@ -338,8 +327,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Chrome.WrenchMenu.MenuHostInitToNextFramePresented" units="ms"
+    expires_after="2024-08-10">
+  <owner>temao@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
+  <summary>
+    Records time from when the menu host initialization is started to when the
+    next frame is successfully presented. It's logged every time the app menu
+    opens.
+  </summary>
+</histogram>
+
 <histogram name="ChromeColors.ColorOnLoad" enum="ChromeColorsInfo"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
   <summary>

@@ -15,8 +15,9 @@
 #import "components/bookmarks/common/storage_type.h"
 #import "components/prefs/pref_service.h"
 #import "components/query_parser/query_parser.h"
-#import "ios/chrome/browser/bookmarks/account_bookmark_model_factory.h"
-#import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/bookmarks_utils.h"
+#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
@@ -30,6 +31,34 @@
 @implementation BookmarkEarlGreyAppInterface
 
 #pragma mark - Public Interface
+
++ (NSError*)clearBookmarks {
+  bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
+      [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
+  bookmarks::BookmarkModel* accountBookmarkModel =
+      [BookmarkEarlGreyAppInterface accountBookmarkModel];
+  ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+  [BookmarkPathCache
+      clearBookmarkTopMostRowCacheWithPrefService:browserState->GetPrefs()];
+  BOOL removeSucceeded = RemoveAllUserBookmarksIOS(browserState);
+  if (!removeSucceeded) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Failed to remove some user boomkark");
+  }
+  // Checking whether managed bookmarks remain, in which case return false.
+  if (localOrSyncableBookmarkModel->HasBookmarks()) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Local/Syncable bookmark model is not empty. Probably has managed "
+        @"bookmark.");
+  }
+  if (accountBookmarkModel && accountBookmarkModel->HasBookmarks()) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Account bookmark model is not empty. Probably has managed "
+        @"bookmarks.");
+  }
+  return nil;
+}
 
 + (void)clearBookmarksPositionCache {
   ChromeBrowserState* browser_state =

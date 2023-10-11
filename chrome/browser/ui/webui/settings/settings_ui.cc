@@ -19,6 +19,8 @@
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
+#include "chrome/browser/performance_manager/public/user_tuning/user_tuning_utils.h"
+#include "chrome/browser/preloading/preloading_features.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -85,6 +87,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
+#include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/sync/base/features.h"
@@ -95,6 +98,7 @@
 #include "crypto/crypto_buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/interaction/element_identifier.h"
 
 #if !BUILDFLAG(OPTIMIZE_WEBUI)
@@ -169,6 +173,10 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#endif
+
+#if BUILDFLAG(IS_MAC)
+#include "chrome/browser/ui/webui/settings/mac_system_settings_handler.h"
 #endif
 
 namespace settings {
@@ -268,6 +276,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
 #endif
 
+#if BUILDFLAG(IS_MAC)
+  AddSettingsPageUIHandler(std::make_unique<MacSystemSettingsHandler>());
+#endif
+
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   bool has_incompatible_applications =
       IncompatibleApplicationsUpdater::HasCachedApplications();
@@ -326,6 +338,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                                                      features::kPrivacyGuide3));
 
   html_source->AddBoolean(
+      "enablePrivacyGuidePreload",
+      base::FeatureList::IsEnabled(features::kPrivacyGuidePreload) &&
+          base::FeatureList::IsEnabled(features::kPrivacyGuide3));
+
+  html_source->AddBoolean(
       "enableExtendedSettingsDescriptions",
       base::FeatureList::IsEnabled(features::kExtendedSettingsDescriptions));
 
@@ -338,9 +355,16 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       safe_browsing::kEsbIphBubbleAndCollapseSettingsEnableCollapse.Get());
 
   html_source->AddBoolean(
-      "enableFriendlierSafeBrowsingSettingsStandardProtection",
+      "enableFriendlierSafeBrowsingSettings",
       base::FeatureList::IsEnabled(
-          safe_browsing::kFriendlierSafeBrowsingSettingsStandardProtection));
+          safe_browsing::kFriendlierSafeBrowsingSettingsEnhancedProtection) &&
+          base::FeatureList::IsEnabled(
+              safe_browsing::
+                  kFriendlierSafeBrowsingSettingsStandardProtection));
+
+  html_source->AddBoolean("enableHashPrefixRealTimeLookups",
+                          safe_browsing::hash_realtime_utils::
+                              IsHashRealTimeLookupEligibleInSession());
 
   html_source->AddBoolean(
       "downloadBubblePartialViewControlledByPref",
@@ -487,6 +511,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("enableSafetyHub",
                           base::FeatureList::IsEnabled(features::kSafetyHub));
 
+  html_source->AddBoolean("is3pcdCookieSettingsRedesignEnabled",
+                          base::FeatureList::IsEnabled(
+                              content_settings::features::
+                                  kThirdPartyCookieDeprecationCookieSettings));
+
   // Performance
   AddSettingsPageUIHandler(std::make_unique<PerformanceHandler>());
   html_source->AddBoolean(
@@ -497,11 +526,22 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "isDiscardExceptionsImprovementsEnabled",
       base::FeatureList::IsEnabled(
           performance_manager::features::kDiscardExceptionsImprovements));
+  html_source->AddBoolean("isPerformanceSettingsPreloadingSubpageEnabled",
+                          base::FeatureList::IsEnabled(
+                              features::kPerformanceSettingsPreloadingSubpage));
+  html_source->AddBoolean(
+      "isBatterySaverModeManagedByOS",
+      performance_manager::user_tuning::IsBatterySaverModeManagedByOS());
 
   html_source->AddBoolean(
       "enablePermissionStorageAccessApi",
       base::FeatureList::IsEnabled(
           permissions::features::kPermissionStorageAccessAPI));
+
+  html_source->AddBoolean(
+      "autoPictureInPictureEnabled",
+      base::FeatureList::IsEnabled(
+          blink::features::kMediaSessionEnterPictureInPicture));
 
   TryShowHatsSurveyWithTimeout();
 }

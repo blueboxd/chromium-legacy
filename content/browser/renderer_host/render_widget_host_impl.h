@@ -449,6 +449,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void LostFocus();
   void LostCapture();
 
+  // Used by the RenderFrameHost to help with verifying changes in focus. Tells
+  // whether LostFocus() was called after any frame on this page was focused.
+  bool HasLostFocus() const { return has_lost_focus_; }
+  void ResetLostFocus() { has_lost_focus_ = false; }
+
   // Indicates whether the RenderWidgetHost thinks it is focused.
   // This is different from RenderWidgetHostView::HasFocus() in the sense that
   // it reflects what the renderer process knows: it saves the state that is
@@ -903,6 +908,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                   cc::BrowserControlsState current,
                                   bool animate);
 
+  void StartDragging(blink::mojom::DragDataPtr drag_data,
+                     blink::DragOperationsMask drag_operations_mask,
+                     const SkBitmap& unsafe_bitmap,
+                     const gfx::Vector2d& cursor_offset_in_dip,
+                     const gfx::Rect& drag_obj_rect_in_dip,
+                     blink::mojom::DragEventSourceInfoPtr event_info);
+
  protected:
   // |routing_id| must not be MSG_ROUTING_NONE.
   // If this object outlives |delegate|, DetachDelegate() must be called when
@@ -1032,12 +1044,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void AutoscrollStart(const gfx::PointF& position) override;
   void AutoscrollFling(const gfx::Vector2dF& velocity) override;
   void AutoscrollEnd() override;
-  void StartDragging(blink::mojom::DragDataPtr drag_data,
-                     blink::DragOperationsMask drag_operations_mask,
-                     const SkBitmap& unsafe_bitmap,
-                     const gfx::Vector2d& cursor_offset_in_dip,
-                     const gfx::Rect& drag_obj_rect_in_dip,
-                     blink::mojom::DragEventSourceInfoPtr event_info) override;
 
   // When the RenderWidget is destroyed and recreated, this resets states in the
   // browser to match the clean start for the renderer side.
@@ -1240,6 +1246,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // One side of a pipe that is held open while the pointer is locked.
   // The other side is held be the renderer.
   mojo::Receiver<blink::mojom::PointerLockContext> mouse_lock_context_{this};
+
+  // Tracks if LostFocus() has been called on this RenderWidgetHost since the
+  // previous change in focus. This tracks behaviors like a user clicking out of
+  // the page and into a UI element when verifying if a change in focus is
+  // allowed. The value will be reset after a RFHI gets focus. The RFHI will
+  // then keep track of this value to handle passing focus to other frames.
+  bool has_lost_focus_ = false;
 
 #if BUILDFLAG(IS_ANDROID)
   // Tracks the current importance of widget.

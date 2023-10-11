@@ -48,6 +48,7 @@
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/plus_addresses/plus_address_service.h"
 
 namespace autofill {
 
@@ -74,8 +75,7 @@ bool IsValidFieldTypeAndValue(const ServerFieldTypeSet types_seen,
   if (types_seen.count(field_type) && field_type != EMAIL_ADDRESS &&
       (!base::FeatureList::IsEnabled(
            features::kAutofillEnableImportWhenMultiplePhoneNumbers) ||
-       (field_type_group != FieldTypeGroup::kPhoneBilling &&
-        field_type_group != FieldTypeGroup::kPhoneHome))) {
+       field_type_group != FieldTypeGroup::kPhone)) {
     LOG_AF(import_log_buffer)
         << LogMessage::kImportAddressProfileFromFormFailed
         << "Multiple fields of type "
@@ -153,10 +153,7 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
           std::make_unique<AddressProfileSaveManager>(client,
                                                       personal_data_manager)),
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-      iban_save_manager_(
-          base::FeatureList::IsEnabled(features::kAutofillFillIbanFields)
-              ? std::make_unique<IBANSaveManager>(client)
-              : nullptr),
+      iban_save_manager_(std::make_unique<IbanSaveManager>(client)),
       local_card_migration_manager_(
           std::make_unique<LocalCardMigrationManager>(client,
                                                       payments_client,
@@ -219,7 +216,7 @@ void FormDataImporter::ImportAndProcessFormData(
   if (extracted_data.iban_import_candidate.has_value() &&
       payment_methods_autofill_enabled) {
     iban_prompt_potentially_shown =
-        ProcessIBANImportCandidate(*extracted_data.iban_import_candidate);
+        ProcessIbanImportCandidate(*extracted_data.iban_import_candidate);
   }
 
   // If a prompt for credit cards or IBANs is potentially shown, do not allow
@@ -302,9 +299,8 @@ FormDataImporter::ExtractedFormData FormDataImporter::ExtractFormData(
   }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  if (base::FeatureList::IsEnabled(features::kAutofillFillIbanFields) &&
-      payment_methods_autofill_enabled) {
-    extracted_form_data.iban_import_candidate = ExtractIBAN(submitted_form);
+  if (payment_methods_autofill_enabled) {
+    extracted_form_data.iban_import_candidate = ExtractIban(submitted_form);
   }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
@@ -471,6 +467,8 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
   // Tracks if any of the fields belongs to FormType::kAddressForm.
   bool has_address_related_fields = false;
 
+  plus_addresses::PlusAddressService* plus_address_service =
+      client_->GetPlusAddressService();
   // Go through each |form| field and attempt to constitute a valid profile.
   for (const auto* field : section_fields) {
     std::u16string value;
@@ -480,6 +478,13 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
     // information into the field, then skip it.
     if (!field->IsFieldFillable() || value.empty())
       continue;
+
+    // When the experimental plus addresses feature is enabled, and the value is
+    // a plus address, exclude it from the resulting address profile.
+    if (plus_address_service &&
+        plus_address_service->IsPlusAddress(base::UTF16ToUTF8(value))) {
+      continue;
+    }
 
     // When `kAutofillImportFromAutocompleteUnrecognized` is enabled, Autofill
     // imports from fields despite an unrecognized autocomplete attribute.
@@ -517,8 +522,7 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
 
     // Found phone number component field.
     // TODO(crbug.com/1156315) Remove feature check when launched.
-    if ((field_type.group() == FieldTypeGroup::kPhoneBilling ||
-         field_type.group() == FieldTypeGroup::kPhoneHome) &&
+    if (field_type.group() == FieldTypeGroup::kPhone &&
         base::FeatureList::IsEnabled(
             features::kAutofillEnableImportWhenMultiplePhoneNumbers)) {
       if (ignore_phone_number_fields)
@@ -808,12 +812,9 @@ bool FormDataImporter::ProcessExtractedCreditCard(
   return false;
 }
 
-bool FormDataImporter::ProcessIBANImportCandidate(
-    const IBAN& iban_import_candidate) {
-  if (!iban_save_manager_)
-    return false;
-
-  return iban_save_manager_->AttemptToOfferIBANLocalSave(iban_import_candidate);
+bool FormDataImporter::ProcessIbanImportCandidate(
+    const Iban& iban_import_candidate) {
+  return iban_save_manager_->AttemptToOfferIbanLocalSave(iban_import_candidate);
 }
 
 absl::optional<CreditCard> FormDataImporter::ExtractCreditCard(
@@ -897,7 +898,7 @@ absl::optional<CreditCard> FormDataImporter::TryMatchingExistingServerCard(
       return absl::nullopt;
     }
 
-    if (server_card->record_type() == CreditCard::FULL_SERVER_CARD) {
+    if (server_card->record_type() == CreditCard::RecordType::kFullServerCard) {
       AutofillMetrics::LogSubmittedServerCardExpirationStatusMetric(
           server_card->HasSameExpirationDateAs(candidate)
               ? AutofillMetrics::FULL_SERVER_CARD_EXPIRATION_DATE_MATCHED
@@ -947,8 +948,8 @@ absl::optional<CreditCard> FormDataImporter::TryMatchingExistingServerCard(
   return candidate;
 }
 
-absl::optional<IBAN> FormDataImporter::ExtractIBAN(const FormStructure& form) {
-  IBAN candidate_iban = ExtractIBANFromForm(form);
+absl::optional<Iban> FormDataImporter::ExtractIban(const FormStructure& form) {
+  Iban candidate_iban = ExtractIbanFromForm(form);
   if (candidate_iban.value().empty())
     return absl::nullopt;
 
@@ -960,7 +961,7 @@ absl::optional<IBAN> FormDataImporter::ExtractIBAN(const FormStructure& form) {
   personal_data_manager_->SetAutofillHasSeenIban();
 
   bool found_existing_local_iban = base::ranges::any_of(
-      personal_data_manager_->GetLocalIBANs(), [&](const auto& iban) {
+      personal_data_manager_->GetLocalIbans(), [&](const auto& iban) {
         return iban->value() == candidate_iban.value();
       });
 
@@ -1031,8 +1032,8 @@ FormDataImporter::ExtractCreditCardFromForm(const FormStructure& form) {
   return result;
 }
 
-IBAN FormDataImporter::ExtractIBANFromForm(const FormStructure& form) {
-  IBAN candidate_iban;
+Iban FormDataImporter::ExtractIbanFromForm(const FormStructure& form) {
+  Iban candidate_iban;
 
   for (const auto& field : form) {
     if (!field->IsFieldFillable() || field->value.empty()) {
@@ -1041,7 +1042,7 @@ IBAN FormDataImporter::ExtractIBANFromForm(const FormStructure& form) {
 
     AutofillType field_type = field->Type();
     if (field_type.GetStorableType() == IBAN_VALUE &&
-        IBAN::IsValid(field->value)) {
+        Iban::IsValid(field->value)) {
       candidate_iban.SetInfo(field_type, field->value, app_locale_);
       break;
     }

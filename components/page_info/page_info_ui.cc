@@ -13,24 +13,29 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/page_info/core/features.h"
 #include "components/page_info/page_info.h"
 #include "components/page_info/page_info_ui_delegate.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_manager.h"
-#include "components/permissions/permission_result.h"
 #include "components/permissions/permission_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/url_formatter/elide_url.h"
+#include "content/public/browser/permission_result.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/device_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "url/gurl.h"
+#include "url/origin.h"
+
 #if BUILDFLAG(IS_ANDROID)
 #include "components/resources/android/theme_resources.h"
 #else
@@ -201,6 +206,9 @@ base::span<const PageInfoUI::PermissionUIInfo> GetContentSettingsUIInfo() {
      IDS_SITE_SETTINGS_TYPE_IDLE_DETECTION_MID_SENTENCE},
 #if !BUILDFLAG(IS_ANDROID)
     // Page Info Permissions that are not defined in Android.
+    {ContentSettingsType::AUTO_PICTURE_IN_PICTURE,
+     IDS_SITE_SETTINGS_TYPE_AUTO_PICTURE_IN_PICTURE,
+     IDS_SITE_SETTINGS_TYPE_AUTO_PICTURE_IN_PICTURE_MID_SENTENCE},
     {ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
      IDS_SITE_SETTINGS_TYPE_FILE_SYSTEM_ACCESS_WRITE,
      IDS_SITE_SETTINGS_TYPE_FILE_SYSTEM_ACCESS_WRITE_MID_SENTENCE},
@@ -358,6 +366,9 @@ std::u16string GetPermissionAskStateString(ContentSettingsType type) {
     case ContentSettingsType::STORAGE_ACCESS:
       message_id = IDS_PAGE_INFO_STATE_TEXT_STORAGE_ACCESS_ASK;
       break;
+    case ContentSettingsType::AUTO_PICTURE_IN_PICTURE:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_AUTO_PICTURE_IN_PICTURE_ASK;
+      break;
     default:
       NOTREACHED();
   }
@@ -412,20 +423,35 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
     case PageInfo::SAFE_BROWSING_STATUS_NONE:
       break;
     case PageInfo::SAFE_BROWSING_STATUS_MALWARE:
-      return CreateSecurityDescription(SecuritySummaryColor::RED,
-                                       IDS_PAGE_INFO_MALWARE_SUMMARY,
-                                       IDS_PAGE_INFO_MALWARE_DETAILS,
-                                       SecurityDescriptionType::SAFE_BROWSING);
+      return CreateSecurityDescription(
+          SecuritySummaryColor::RED,
+          base::FeatureList::IsEnabled(safe_browsing::kRedInterstitialFacelift)
+              ? IDS_PAGE_INFO_MALWARE_SUMMARY_NEW
+              : IDS_PAGE_INFO_MALWARE_SUMMARY,
+          base::FeatureList::IsEnabled(safe_browsing::kRedInterstitialFacelift)
+              ? IDS_PAGE_INFO_MALWARE_DETAILS_NEW
+              : IDS_PAGE_INFO_MALWARE_DETAILS,
+          SecurityDescriptionType::SAFE_BROWSING);
     case PageInfo::SAFE_BROWSING_STATUS_SOCIAL_ENGINEERING:
-      return CreateSecurityDescription(SecuritySummaryColor::RED,
-                                       IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY,
-                                       IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS,
-                                       SecurityDescriptionType::SAFE_BROWSING);
+      return CreateSecurityDescription(
+          SecuritySummaryColor::RED,
+          base::FeatureList::IsEnabled(safe_browsing::kRedInterstitialFacelift)
+              ? IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY_NEW
+              : IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY,
+          base::FeatureList::IsEnabled(safe_browsing::kRedInterstitialFacelift)
+              ? IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS_NEW
+              : IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS,
+          SecurityDescriptionType::SAFE_BROWSING);
     case PageInfo::SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE:
-      return CreateSecurityDescription(SecuritySummaryColor::RED,
-                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
-                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS,
-                                       SecurityDescriptionType::SAFE_BROWSING);
+      return CreateSecurityDescription(
+          SecuritySummaryColor::RED,
+          base::FeatureList::IsEnabled(safe_browsing::kRedInterstitialFacelift)
+              ? IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY_NEW
+              : IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
+          base::FeatureList::IsEnabled(safe_browsing::kRedInterstitialFacelift)
+              ? IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS_NEW
+              : IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS,
+          SecurityDescriptionType::SAFE_BROWSING);
     case PageInfo::SAFE_BROWSING_STATUS_SAVED_PASSWORD_REUSE: {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       auto security_description = CreateSecurityDescription(
@@ -588,6 +614,25 @@ std::u16string PageInfoUI::PermissionTypeToUIStringMidSentence(
   }
   NOTREACHED();
   return std::u16string();
+}
+
+// static
+std::u16string PageInfoUI::PermissionTooltipUiString(
+    ContentSettingsType type,
+    const absl::optional<url::Origin>& requesting_origin) {
+  switch (type) {
+    case ContentSettingsType::STORAGE_ACCESS:
+      return l10n_util::GetStringFUTF16(
+          IDS_PAGE_INFO_SELECTOR_STORAGE_ACCESS_TOOLTIP,
+          url_formatter::FormatOriginForSecurityDisplay(
+              *requesting_origin,
+              url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+    default:
+      DCHECK(!requesting_origin.has_value());
+      return l10n_util::GetStringFUTF16(
+          IDS_PAGE_INFO_SELECTOR_TOOLTIP,
+          PageInfoUI::PermissionTypeToUIString(type));
+  }
 }
 
 // static
@@ -783,26 +828,25 @@ std::u16string PageInfoUI::PermissionAutoBlockedToUIString(
   if (permission.setting == CONTENT_SETTING_BLOCK &&
       permissions::PermissionDecisionAutoBlocker::IsEnabledForContentSetting(
           permission.type)) {
-    permissions::PermissionResult permission_result(
-        CONTENT_SETTING_DEFAULT,
-        permissions::PermissionStatusSource::UNSPECIFIED);
+    content::PermissionResult permission_result(
+        PermissionStatus::ASK, content::PermissionStatusSource::UNSPECIFIED);
     if (permissions::PermissionUtil::IsPermission(permission.type)) {
       blink::PermissionType permission_type =
           permissions::PermissionUtil::ContentSettingTypeToPermissionType(
               permission.type);
       permission_result = delegate->GetPermissionResult(permission_type);
     } else if (permission.type == ContentSettingsType::FEDERATED_IDENTITY_API) {
-      absl::optional<permissions::PermissionResult> embargo_result =
+      absl::optional<content::PermissionResult> embargo_result =
           delegate->GetEmbargoResult(permission.type);
       if (embargo_result)
         permission_result = *embargo_result;
     }
 
     switch (permission_result.source) {
-      case permissions::PermissionStatusSource::MULTIPLE_DISMISSALS:
+      case content::PermissionStatusSource::MULTIPLE_DISMISSALS:
         message_id = IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED;
         break;
-      case permissions::PermissionStatusSource::MULTIPLE_IGNORES:
+      case content::PermissionStatusSource::MULTIPLE_IGNORES:
         message_id = IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED;
         break;
       default:

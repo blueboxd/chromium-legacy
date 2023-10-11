@@ -11,12 +11,12 @@
 #include "base/strings/stringprintf.h"
 #include "content/browser/buckets/bucket_utils.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/clear_site_data.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features_generated.h"
 
 namespace content {
@@ -59,9 +59,7 @@ int ParametersMask(const ClearSiteDataTypeSet clear_site_data_types,
   if (has_buckets) {
     mask = mask | CLEAR_SITE_DATA_BUCKETS;
   }
-  if (clear_site_data_types.Has(ClearSiteDataType::kClientHints) &&
-      base::FeatureList::IsEnabled(
-          network::features::kClearSiteDataClientHintsSupport)) {
+  if (clear_site_data_types.Has(ClearSiteDataType::kClientHints)) {
     mask = mask | CLEAR_SITE_DATA_CLIENT_HINTS;
   }
   return mask;
@@ -125,18 +123,19 @@ void ClearSiteDataHandler::ConsoleMessagesDelegate::
 void ClearSiteDataHandler::HandleHeader(
     base::RepeatingCallback<BrowserContext*()> browser_context_getter,
     base::RepeatingCallback<WebContents*()> web_contents_getter,
+    const StoragePartitionConfig& storage_partition_config,
     const GURL& url,
     const std::string& header_value,
     int load_flags,
-    const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
-    const absl::optional<blink::StorageKey>& storage_key,
+    const absl::optional<net::CookiePartitionKey> cookie_partition_key,
+    const absl::optional<blink::StorageKey> storage_key,
     bool partitioned_state_allowed_only,
     base::OnceClosure callback) {
-  ClearSiteDataHandler handler(browser_context_getter, web_contents_getter, url,
-                               header_value, load_flags, cookie_partition_key,
-                               storage_key, partitioned_state_allowed_only,
-                               std::move(callback),
-                               std::make_unique<ConsoleMessagesDelegate>());
+  ClearSiteDataHandler handler(
+      browser_context_getter, web_contents_getter, storage_partition_config,
+      url, header_value, load_flags, cookie_partition_key, storage_key,
+      partitioned_state_allowed_only, std::move(callback),
+      std::make_unique<ConsoleMessagesDelegate>());
   handler.HandleHeaderAndOutputConsoleMessages();
 }
 
@@ -155,16 +154,18 @@ bool ClearSiteDataHandler::ParseHeaderForTesting(
 ClearSiteDataHandler::ClearSiteDataHandler(
     base::RepeatingCallback<BrowserContext*()> browser_context_getter,
     base::RepeatingCallback<WebContents*()> web_contents_getter,
+    const StoragePartitionConfig& storage_partition_config,
     const GURL& url,
     const std::string& header_value,
     int load_flags,
-    const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
-    const absl::optional<blink::StorageKey>& storage_key,
+    const absl::optional<net::CookiePartitionKey> cookie_partition_key,
+    const absl::optional<blink::StorageKey> storage_key,
     bool partitioned_state_allowed_only,
     base::OnceClosure callback,
     std::unique_ptr<ConsoleMessagesDelegate> delegate)
     : browser_context_getter_(browser_context_getter),
       web_contents_getter_(web_contents_getter),
+      storage_partition_config_(storage_partition_config),
       url_(url),
       header_value_(header_value),
       load_flags_(load_flags),
@@ -265,17 +266,12 @@ bool ClearSiteDataHandler::ParseHeader(
       net::ClearSiteDataHeaderContents(header);
   std::string output_types;
 
-  if (base::FeatureList::IsEnabled(
-          net::features::kClearSiteDataWildcardSupport) &&
-      std::find(input_types.begin(), input_types.end(),
+  if (std::find(input_types.begin(), input_types.end(),
                 net::kDatatypeWildcard) != input_types.end()) {
     input_types.push_back(net::kDatatypeCookies);
     input_types.push_back(net::kDatatypeStorage);
     input_types.push_back(net::kDatatypeCache);
-    if (base::FeatureList::IsEnabled(
-            network::features::kClearSiteDataClientHintsSupport)) {
-      input_types.push_back(net::kDatatypeClientHints);
-    }
+    input_types.push_back(net::kDatatypeClientHints);
   }
 
   for (auto& input_type : input_types) {
@@ -305,13 +301,9 @@ bool ClearSiteDataHandler::ParseHeader(
       data_type = ClearSiteDataType::kStorage;
     } else if (input_type == net::kDatatypeCache) {
       data_type = ClearSiteDataType::kCache;
-    } else if (base::FeatureList::IsEnabled(
-                   network::features::kClearSiteDataClientHintsSupport) &&
-               input_type == net::kDatatypeClientHints) {
+    } else if (input_type == net::kDatatypeClientHints) {
       data_type = ClearSiteDataType::kClientHints;
-    } else if (base::FeatureList::IsEnabled(
-                   net::features::kClearSiteDataWildcardSupport) &&
-               input_type == net::kDatatypeWildcard) {
+    } else if (input_type == net::kDatatypeWildcard) {
       continue;
     } else {
       delegate->AddMessage(
@@ -377,10 +369,11 @@ void ClearSiteDataHandler::ExecuteClearingTask(
     const ClearSiteDataTypeSet clear_site_data_types,
     const std::set<std::string>& storage_buckets_to_remove,
     base::OnceClosure callback) {
-  ClearSiteData(browser_context_getter_, origin, clear_site_data_types,
-                storage_buckets_to_remove, true /*avoid_closing_connections*/,
-                cookie_partition_key_, storage_key_,
-                partitioned_state_allowed_only_, std::move(callback));
+  ClearSiteData(browser_context_getter_, storage_partition_config_, origin,
+                clear_site_data_types, storage_buckets_to_remove,
+                /*avoid_closing_connections=*/true, cookie_partition_key_,
+                storage_key_, partitioned_state_allowed_only_,
+                std::move(callback));
 }
 
 // static

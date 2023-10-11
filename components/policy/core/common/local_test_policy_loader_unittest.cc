@@ -143,13 +143,6 @@ TEST_F(LocalTestPolicyLoaderTest, PrecedencePolicy) {
       "level": 1,
       "scope": 1,
       "source": 2,
-      "name": "CloudUserPolicyOverridesCloudMachinePolicy",
-      "value": true
-    },
-    {
-      "level": 1,
-      "scope": 1,
-      "source": 2,
       "name": "CloudReportingEnabled",
       "value": true
     },
@@ -159,6 +152,13 @@ TEST_F(LocalTestPolicyLoaderTest, PrecedencePolicy) {
       "source": 2,
       "name": "CloudReportingEnabled",
       "value": false
+    },
+    {
+      "level": 1,
+      "scope": 1,
+      "source": 2,
+      "name": "CloudUserPolicyOverridesCloudMachinePolicy",
+      "value": true
     }
   ])");
 

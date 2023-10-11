@@ -34,6 +34,7 @@
 #include <bitset>
 #include <tuple>
 
+#include "base/containers/contains.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_computed_effect_timing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
@@ -2091,8 +2092,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     Animation* animation = transitions_.Take(property)->animation;
     auto* effect = To<KeyframeEffect>(animation->effect());
     if (effect && effect->HasActiveAnimationsOnCompositor(property) &&
-        pending_update_.NewTransitions().find(property) !=
-            pending_update_.NewTransitions().end() &&
+        base::Contains(pending_update_.NewTransitions(), property) &&
         !animation->Limited()) {
       retargeted_compositor_transitions.insert(property);
     }
@@ -2132,15 +2132,6 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     if (suppressed_transitions.Contains(property))
       continue;
 
-    RunningTransition* running_transition =
-        MakeGarbageCollected<RunningTransition>();
-    running_transition->from = new_transition->from;
-    running_transition->to = new_transition->to;
-    running_transition->reversing_adjusted_start_value =
-        new_transition->reversing_adjusted_start_value;
-    running_transition->reversing_shortening_factor =
-        new_transition->reversing_shortening_factor;
-
     const InertEffect* inert_animation = new_transition->effect.Get();
     TransitionEventDelegate* event_delegate =
         MakeGarbageCollected<TransitionEventDelegate>(element, property);
@@ -2164,7 +2155,12 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
                               ASSERT_NO_EXCEPTION);
     }
     animation->Update(kTimingUpdateOnDemand);
-    running_transition->animation = animation;
+
+    RunningTransition* running_transition =
+        MakeGarbageCollected<RunningTransition>(
+            animation, new_transition->from, new_transition->to,
+            new_transition->reversing_adjusted_start_value,
+            new_transition->reversing_shortening_factor);
     transitions_.Set(property, running_transition);
   }
   ClearPendingUpdate();
@@ -2219,14 +2215,6 @@ void CSSAnimations::CalculateTransitionUpdateForPropertyHandle(
     return;
 
   if (IsAnimationAffectingProperty(property.GetCSSProperty())) {
-    return;
-  }
-
-  if (RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled() &&
-      property.GetCSSProperty().PropertyID() == CSSPropertyID::kWhiteSpace) {
-    // When CSSWhiteSpaceShorthand is enabled white-space is a shorthand, so we
-    // shouldn't transition it. Otherwise, we will hit the DCHECK in
-    // WhiteSpace::CSSValueFromComputedStyleInternal.
     return;
   }
 
@@ -2327,14 +2315,14 @@ void CSSAnimations::CalculateTransitionUpdateForPropertyHandle(
     }
   }
 
-  auto mode = CSSTimingData::GetRepeated(state.transition_data->BehaviorList(),
-                                         transition_index);
+  auto behavior = CSSTimingData::GetRepeated(
+      state.transition_data->BehaviorList(), transition_index);
 
   // If no smooth interpolation exists between the old and new values and
   // transition-behavior didn't indicate that we should do a discrete
   // transition, then don't start a transition.
   if (discrete_interpolation &&
-      mode != CSSTransitionData::TransitionBehavior::kAllowDiscrete) {
+      behavior != CSSTransitionData::TransitionBehavior::kAllowDiscrete) {
     return;
   }
 
@@ -2379,14 +2367,14 @@ void CSSAnimations::CalculateTransitionUpdateForPropertyHandle(
   }
 
   const ComputedStyle* reversing_adjusted_start_value =
-      state.before_change_style.get();
+      state.before_change_style;
   double reversing_shortening_factor = 1;
   if (interrupted_transition) {
     AnimationEffect* effect = interrupted_transition->animation->effect();
     const absl::optional<double> interrupted_progress =
         effect ? effect->Progress() : absl::nullopt;
     if (interrupted_progress) {
-      reversing_adjusted_start_value = interrupted_transition->to.get();
+      reversing_adjusted_start_value = interrupted_transition->to;
       reversing_shortening_factor =
           ClampTo((interrupted_progress.value() *
                    interrupted_transition->reversing_shortening_factor) +
@@ -2489,8 +2477,13 @@ void CSSAnimations::CalculateTransitionUpdateForStandardProperty(
   CSSPropertyID resolved_id =
       ResolveCSSPropertyID(transition_property.unresolved_property);
   bool animate_all = resolved_id == CSSPropertyID::kAll;
+  bool with_discrete =
+      state.transition_data &&
+      CSSTimingData::GetRepeated(state.transition_data->BehaviorList(),
+                                 transition_index) ==
+          CSSTransitionData::TransitionBehavior::kAllowDiscrete;
   const StylePropertyShorthand& property_list =
-      animate_all ? PropertiesForTransitionAll()
+      animate_all ? PropertiesForTransitionAll(with_discrete)
                   : shorthandForProperty(resolved_id);
   // If not a shorthand we only execute one iteration of this loop, and
   // refer to the property directly.
@@ -2604,7 +2597,7 @@ void CSSAnimations::CalculateTransitionUpdate(
   CalculateTransitionActiveInterpolations(update, animating_element);
 }
 
-scoped_refptr<const ComputedStyle> CSSAnimations::CalculateBeforeChangeStyle(
+const ComputedStyle* CSSAnimations::CalculateBeforeChangeStyle(
     Element& animating_element,
     const ComputedStyle& base_style) {
   ActiveInterpolationsMap interpolations_map;
@@ -2862,18 +2855,7 @@ void CSSAnimations::AnimationEventDelegate::MaybeDispatch(
         PseudoElement::PseudoElementNameForEvents(animation_target_);
     AnimationEvent* event = AnimationEvent::Create(
         event_name, name_, elapsed_time, pseudo_element_name);
-
-    EventTarget* event_target = GetEventTarget();
-    if (!event_target) {
-      // TODO(crbug.com/1483390): Investigate why event target may be null.
-      // This condition only appears to be possible for a disposed pseudo-
-      // element. Though in this case, any attached CSS animations should be
-      // canceled. This workaround is safe since there is no originating
-      // element to listen to the event.
-      return;
-    }
-
-    event->SetTarget(event_target);
+    event->SetTarget(GetEventTarget());
     GetDocument().EnqueueAnimationFrameEvent(event);
   }
 }
@@ -3057,25 +3039,29 @@ void CSSAnimations::TransitionEventDelegate::Trace(Visitor* visitor) const {
   AnimationEffect::EventDelegate::Trace(visitor);
 }
 
-const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
+const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll(
+    bool with_discrete) {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   DEFINE_STATIC_LOCAL(StylePropertyShorthand, property_shorthand, ());
   if (properties.empty()) {
     for (CSSPropertyID id : CSSPropertyIDList()) {
       // Avoid creating overlapping transitions with perspective-origin and
       // transition-origin.
+      // transition:all shouldn't expand to itself
       if (id == CSSPropertyID::kWebkitPerspectiveOriginX ||
           id == CSSPropertyID::kWebkitPerspectiveOriginY ||
           id == CSSPropertyID::kWebkitTransformOriginX ||
           id == CSSPropertyID::kWebkitTransformOriginY ||
-          id == CSSPropertyID::kWebkitTransformOriginZ)
-        continue;
-      // transition:all shouldn't expand to itself
-      if (id == CSSPropertyID::kAll) {
+          id == CSSPropertyID::kWebkitTransformOriginZ ||
+          id == CSSPropertyID::kAll) {
         continue;
       }
       const CSSProperty& property = CSSProperty::Get(id);
+      if (!with_discrete && !property.IsInterpolable()) {
+        continue;
+      }
       if (IsAnimationAffectingProperty(property) || property.IsShorthand()) {
+        DCHECK(with_discrete);
         continue;
       }
       properties.push_back(&property);

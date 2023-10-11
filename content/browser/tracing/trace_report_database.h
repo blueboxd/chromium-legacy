@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
 #include "content/common/content_export.h"
@@ -53,6 +54,10 @@ class CONTENT_EXPORT TraceReportDatabase {
 
     // The total size in bytes taken by the report.
     uint64_t total_size;
+
+    // The reason for which a report was not uploaded even if the upload rules
+    // were met.
+    SkipUploadReason skip_reason = SkipUploadReason::kNoSkip;
   };
 
   // NewReport represents the metadata needed to create and add a new report
@@ -83,10 +88,6 @@ class CONTENT_EXPORT TraceReportDatabase {
 
     // The time at which the report was successfully uploaded to a server.
     base::Time upload_time;
-
-    // The reason for which a report was not uploaded even if the upload rules
-    // were met.
-    SkipUploadReason skip_reason;
   };
 
   TraceReportDatabase();
@@ -96,6 +97,9 @@ class CONTENT_EXPORT TraceReportDatabase {
   TraceReportDatabase& operator=(const TraceReportDatabase&) = delete;
 
   bool OpenDatabase(const base::FilePath& path);
+
+  // Open database only if it already exists.
+  bool OpenDatabaseIfExists(const base::FilePath& path);
 
   // Initialize DB and open in it memory.
   bool OpenDatabaseForTesting();
@@ -112,6 +116,9 @@ class CONTENT_EXPORT TraceReportDatabase {
   // Delete traces between the |start| and |end| dates inclusively.
   bool DeleteTracesInDateRange(const base::Time start, const base::Time end);
 
+  // Delete all traces older than |age| from today.
+  bool DeleteTracesOlderThan(const base::TimeDelta age);
+
   bool UserRequestedUpload(base::Uuid uuid);
   bool UploadComplete(base::Uuid uuid, base::Time time);
   bool UploadSkipped(base::Uuid uuid);
@@ -122,11 +129,19 @@ class CONTENT_EXPORT TraceReportDatabase {
   // Returns all the reports currently stored in the database.
   std::vector<ClientReport> GetAllReports();
 
+  // Returns the next report pending upload.
+  absl::optional<ClientReport> GetNextReportPendingUpload();
+
  private:
   bool EnsureTableCreated();
 
   sql::Database database_;
   base::FilePath db_file_path_;
+
+  bool initialized_ = false;
+
+  // Guards usage of |database_|
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace content

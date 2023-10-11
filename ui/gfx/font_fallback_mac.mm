@@ -9,10 +9,10 @@
 #import <Foundation/Foundation.h>
 
 #include "base/apple/bridging.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/i18n/char_iterator.h"
-#include "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_piece.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -37,12 +37,13 @@ CFArrayRef CTFontCopyDefaultCascadeListForLanguagesWrapper(
   typedef CFArrayRef (*MountainLionPrototype)(CTFontRef, CFArrayRef);
   static const MountainLionPrototype cascade_with_languages_function =
       reinterpret_cast<MountainLionPrototype>(
-          dlsym(((void *) -2), "CTFontCopyDefaultCascadeListForLanguages"));
-  if (cascade_with_languages_function)
+          dlsym(((void*)-2), "CTFontCopyDefaultCascadeListForLanguages"));
+  if (cascade_with_languages_function) {
     return cascade_with_languages_function(font_ref, language_pref_list);
+  }
 
   // Fallback to the 10.6 Private API.
-//  DCHECK(base::mac::IsOSLionOrEarlier());
+  //  DCHECK(base::mac::IsOSLionOrEarlier());
   return CTFontCopyDefaultCascadeList(font_ref);
 }
 
@@ -55,8 +56,9 @@ namespace {
 bool TextSequenceHasEmoji(base::StringPiece16 text) {
   for (base::i18n::UTF16CharIterator iter(text); !iter.end(); iter.Advance()) {
     const UChar32 codepoint = iter.get();
-    if (u_hasBinaryProperty(codepoint, UCHAR_EMOJI))
+    if (u_hasBinaryProperty(codepoint, UCHAR_EMOJI)) {
       return true;
+    }
   }
   return false;
 }
@@ -71,28 +73,30 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
   NSArray* languages =
       [NSUserDefaults.standardUserDefaults stringArrayForKey:@"AppleLanguages"];
   CFArrayRef languages_cf = base::apple::NSToCFPtrCast(languages);
-  base::ScopedCFTypeRef<CFArrayRef> cascade_list(
-      CTFontCopyDefaultCascadeListForLanguagesWrapper(
-          font.GetCTFont(), languages_cf));
+  base::apple::ScopedCFTypeRef<CFArrayRef> cascade_list(
+      CTFontCopyDefaultCascadeListForLanguagesWrapper(font.GetCTFont(),
+                                                      languages_cf));
 
   std::vector<Font> fallback_fonts;
-  if (!cascade_list)
+  if (!cascade_list) {
     return fallback_fonts;  // This should only happen for an invalid |font|.
+  }
 
   const CFIndex fallback_count = CFArrayGetCount(cascade_list);
   for (CFIndex i = 0; i < fallback_count; ++i) {
     CTFontDescriptorRef descriptor =
-        base::mac::CFCastStrict<CTFontDescriptorRef>(
+        base::apple::CFCastStrict<CTFontDescriptorRef>(
             CFArrayGetValueAtIndex(cascade_list, i));
-    base::ScopedCFTypeRef<CTFontRef> fallback_font(
+    base::apple::ScopedCFTypeRef<CTFontRef> fallback_font(
         CTFontCreateWithFontDescriptor(descriptor, 0.0, nullptr));
     if (fallback_font.get()) {
       fallback_fonts.emplace_back(fallback_font.get());
     }
   }
 
-  if (fallback_fonts.empty())
+  if (fallback_fonts.empty()) {
     return std::vector<Font>(1, font);
+  }
 
   return fallback_fonts;
 }
@@ -111,8 +115,9 @@ bool GetFallbackFont(const Font& font,
   sk_sp<SkTypeface> fallback_typeface =
       GetSkiaFallbackTypeface(font, locale, text);
 
-  if (!fallback_typeface)
+  if (!fallback_typeface) {
     return false;
+  }
 
   // Fallback needs to keep the exact SkTypeface, as re-matching the font using
   // family name and styling information loses access to the underlying platform

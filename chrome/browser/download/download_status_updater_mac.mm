@@ -4,10 +4,12 @@
 
 #include "chrome/browser/download/download_status_updater.h"
 
+#import <Foundation/Foundation.h>
+
 #include "base/apple/bridging.h"
-#include "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
+#include "base/apple/foundation_util.h"
 #include "base/memory/scoped_policy.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #import "chrome/browser/ui/cocoa/dock_icon.h"
@@ -127,8 +129,7 @@ void CreateNSProgress(download::DownloadItem* download) {
   NSURL* source_url = [NSURL URLWithString:
       base::SysUTF8ToNSString(download->GetURL().possibly_invalid_spec())];
   base::FilePath destination_path = download->GetFullPath();
-  NSURL* destination_url = [NSURL fileURLWithPath:
-      base::mac::FilePathToNSString(destination_path)];
+  NSURL* destination_url = base::apple::FilePathToNSURL(destination_path);
 
   NSDictionary* user_info = @{
     ProgressString(kNSProgressFileLocationCanChangeKeyName) : @true,
@@ -184,10 +185,8 @@ void UpdateNSProgress(download::DownloadItem* download,
   base::FilePath download_path = download->GetFullPath();
   if (progress_data->target() != download_path) {
     progress_data->setTarget(download_path);
-    NSURL* download_url = [NSURL fileURLWithPath:
-        base::mac::FilePathToNSString(download_path)];
-    [progress setUserInfoObject:download_url
-                         forKey:ProgressString(kNSProgressFileURLKeyName)];
+    NSURL* download_url = base::apple::FilePathToNSURL(download_path);
+    progress.fileURL = download_url;
   }
 }
 
@@ -233,7 +232,7 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
   if (download->GetState() != download::DownloadItem::IN_PROGRESS &&
       !download->GetTargetFilePath().empty()) {
     NSString* download_path =
-        base::mac::FilePathToNSString(download->GetTargetFilePath());
+        base::apple::FilePathToNSString(download->GetTargetFilePath());
     if (download->GetState() == download::DownloadItem::COMPLETE) {
       // Bounce the dock icon.
       [NSDistributedNotificationCenter.defaultCenter

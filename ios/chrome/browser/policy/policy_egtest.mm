@@ -17,9 +17,12 @@
 #import "components/policy/core/common/policy_switches.h"
 #import "components/policy/policy_constants.h"
 #import "components/policy/test_support/embedded_policy_test_server.h"
+#import "components/policy/test_support/signature_provider.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "components/strings/grit/components_strings.h"
+#import "components/sync/base/features.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/policy/cloud/user_policy_constants.h"
 #import "ios/chrome/browser/policy/policy_app_interface.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
@@ -49,6 +52,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/earl_grey/scoped_disable_timer_tracking.h"
 #import "ios/chrome/test/earl_grey/test_switches.h"
 #import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
@@ -158,6 +162,22 @@ NSString* const kDomain2 = @"domain2.com";
   config.relaunch_policy = NoForceRelaunchAndResetState;
   config.features_enabled.push_back(
       password_manager::features::kIOSPasswordUISplit);
+
+  if ([self isRunningTest:@selector(testPopupMenuItemWithUserPolicy)] ||
+      [self isRunningTest:@selector(testManagementPageManagedWithUserPolicy)]) {
+    config.features_enabled.push_back(
+        policy::kUserPolicyForSigninOrSyncConsentLevel);
+  }
+
+  if ([self isRunningTest:@selector
+            (testManagementPageManagedWithCBCMAndUserPolicyDifferentDomains)] ||
+      [self isRunningTest:@selector
+            (testManagementPageManagedWithCBCMAndUserPolicySameDomains)] ||
+      [self isRunningTest:@selector(testManagementPageManagedWithUserPolicy)] ||
+      [self isRunningTest:@selector(testPopupMenuItemWithUserPolicy)]) {
+    config.features_disabled.push_back(
+        syncer::kReplaceSyncPromosWithSignInPromos);
+  }
 
   return config;
 }
@@ -444,8 +464,9 @@ NSString* const kDomain2 = @"domain2.com";
                            kLanguageSettingsTableViewAccessibilityIdentifier);
 }
 
-// Tests whether the managed item will be shown if a policy is set.
-- (void)testPopupMenuItem {
+// Tests whether the managed item will be shown if a machine level policy is
+// set.
+- (void)testPopupMenuItemWithMachineLevelPolicy {
   // Setup a machine level policy.
   SetPolicy(false, policy::key::kTranslateEnabled);
 
@@ -461,6 +482,60 @@ NSString* const kDomain2 = @"domain2.com";
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           kChromeUIManagementURL)]
       assertWithMatcher:grey_notNil()];
+}
+
+// Tests whether the managed item will be shown if UserPolicy is enabled and
+// the browser is signed in with a managed account.
+- (void)testPopupMenuItemWithUserPolicy {
+  // Sign in with a managed account.
+  NSString* managedAccountEmail = base::SysUTF8ToNSString(
+      base::StrCat({"enterprise@", policy::SignatureProvider::kTestDomain1}));
+  FakeSystemIdentity* fakeManagedIdentity =
+      [FakeSystemIdentity identityWithEmail:managedAccountEmail
+                                     gaiaID:@"exampleManagedID"
+                                       name:@"Fake Managed"];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeManagedIdentity enableSync:NO];
+
+  // Open the menu and click on the item.
+  [ChromeEarlGreyUI openToolsMenu];
+  [ChromeEarlGreyUI
+      tapToolsMenuAction:grey_accessibilityID(kTextMenuEnterpriseInfo)];
+  [ChromeEarlGrey
+      waitForWebStateContainingText:l10n_util::GetStringUTF8(
+                                        IDS_IOS_MANAGEMENT_UI_DESC)];
+
+  // Check the navigation without assert the content (which is done in another
+  // test case).
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          kChromeUIManagementURL)]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests whether the managed item won't be shown if the browser is signed in
+// with a managed account but UserPolicy is disabled.
+- (void)testPopupMenuItemWithManagedAccountButUserPolicyDisabled {
+  // Sign in with a managed account.
+  NSString* managedAccountEmail = base::SysUTF8ToNSString(
+      base::StrCat({"enterprise@", policy::SignatureProvider::kTestDomain1}));
+  FakeSystemIdentity* fakeManagedIdentity =
+      [FakeSystemIdentity identityWithEmail:managedAccountEmail
+                                     gaiaID:@"exampleManagedID"
+                                       name:@"Fake Managed"];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeManagedIdentity enableSync:NO];
+
+  // Open the menu and click on the item.
+  [ChromeEarlGreyUI openToolsMenu];
+
+  // Scroll to the bottom of the tools menu where the enterprise item is if
+  // displayed.
+  ScopedDisableTimerTracking disabler;
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuView()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  // Check that the enterprise item isn't there.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(kTextMenuEnterpriseInfo)]
+      assertWithMatcher:grey_nil()];
 }
 
 // Tests the chrome://management page when no machine level policy is set.
@@ -521,7 +596,14 @@ NSString* const kDomain2 = @"domain2.com";
 
 // Tests the chrome://management page when there are user level policies.
 - (void)testManagementPageManagedWithUserPolicy {
-  [PolicyAppInterface setUserCloudPolicyDataWithDomain:kDomain1];
+  // Sign in with a managed account.
+  NSString* managedAccountEmail =
+      [@"enterprise@" stringByAppendingString:kDomain1];
+  FakeSystemIdentity* fakeManagedIdentity =
+      [FakeSystemIdentity identityWithEmail:managedAccountEmail
+                                     gaiaID:@"exampleManagedID"
+                                       name:@"Fake Managed"];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeManagedIdentity enableSync:NO];
 
   // Open the management page and check if the content is expected.
   [ChromeEarlGrey loadURL:GURL(kChromeUIManagementURL)];
@@ -551,10 +633,23 @@ NSString* const kDomain2 = @"domain2.com";
   config.additional_args.push_back(
       base::StrCat({"--", policy::switches::kDeviceManagementUrl, "=",
                     _server->GetServiceURL().spec()}));
+  config.features_enabled.push_back(
+      policy::kUserPolicyForSigninOrSyncConsentLevel);
+  config.features_disabled.push_back(
+      syncer::kReplaceSyncPromosWithSignInPromos);
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
+  // Set CBCM policies.
   [PolicyAppInterface setBrowserCloudPolicyDataWithDomain:kDomain1];
-  [PolicyAppInterface setUserCloudPolicyDataWithDomain:kDomain2];
+
+  // Sign in with managed account to enable User Policy.
+  NSString* managedAccountEmail =
+      [@"enterprise@" stringByAppendingString:kDomain2];
+  FakeSystemIdentity* fakeManagedIdentity =
+      [FakeSystemIdentity identityWithEmail:managedAccountEmail
+                                     gaiaID:@"exampleManagedID"
+                                       name:@"Fake Managed"];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeManagedIdentity enableSync:NO];
 
   // Open the management page and check if the content is expected.
   [ChromeEarlGrey loadURL:GURL(kChromeUIManagementURL)];
@@ -586,10 +681,23 @@ NSString* const kDomain2 = @"domain2.com";
   config.additional_args.push_back(
       base::StrCat({"--", policy::switches::kDeviceManagementUrl, "=",
                     _server->GetServiceURL().spec()}));
+  config.features_enabled.push_back(
+      policy::kUserPolicyForSigninOrSyncConsentLevel);
+  config.features_disabled.push_back(
+      syncer::kReplaceSyncPromosWithSignInPromos);
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
+  // Set CBCM policies.
   [PolicyAppInterface setBrowserCloudPolicyDataWithDomain:kDomain1];
-  [PolicyAppInterface setUserCloudPolicyDataWithDomain:kDomain1];
+
+  // Sign in with managed account to enable User Policy.
+  NSString* managedAccountEmail =
+      [@"enterprise@" stringByAppendingString:kDomain1];
+  FakeSystemIdentity* fakeManagedIdentity =
+      [FakeSystemIdentity identityWithEmail:managedAccountEmail
+                                     gaiaID:@"exampleManagedID"
+                                       name:@"Fake Managed"];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeManagedIdentity enableSync:NO];
 
   // Open the management page and check if the content is expected.
   [ChromeEarlGrey loadURL:GURL(kChromeUIManagementURL)];
@@ -707,9 +815,12 @@ NSString* const kDomain2 = @"domain2.com";
   // Check that the prompt is presented.
   ConditionBlock condition = ^{
     NSError* error = nil;
-    [[EarlGrey
-        selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
-                                     IDS_IOS_ENTERPRISE_SYNC_DISABLED_TITLE))]
+    NSString* noticeTitle =
+        [ChromeEarlGrey isReplaceSyncWithSigninEnabled]
+            ? l10n_util::GetNSString(
+                  IDS_IOS_ENTERPRISE_SYNC_DISABLED_TITLE_WITH_UNO)
+            : l10n_util::GetNSString(IDS_IOS_ENTERPRISE_SYNC_DISABLED_TITLE);
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(noticeTitle)]
         assertWithMatcher:grey_sufficientlyVisible()
                     error:&error];
     return error == nil;

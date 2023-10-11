@@ -28,8 +28,8 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton.CompositorOnClickHandler;
 import org.chromium.chrome.browser.compositor.layouts.components.TintedCompositorButton;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.AreaGestureEventFilter;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.AreaMotionEventFilter;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.MotionEventHandler;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayer;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.EventFilter;
@@ -122,7 +122,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
     private final LayoutUpdateHost mUpdateHost;
 
     // Event Filters
-    private final AreaGestureEventFilter mEventFilter;
+    private final AreaMotionEventFilter mEventFilter;
 
     // Internal state
     private boolean mIsIncognito;
@@ -166,7 +166,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
     private final String mDefaultTitle;
     private final Supplier<LayerTitleCache> mLayerTitleCacheSupplier;
 
-    private class TabStripEventHandler implements GestureHandler {
+    private class TabStripEventHandler implements MotionEventHandler {
         @Override
         public void onDown(float x, float y, boolean fromMouse, int buttons) {
             if (mModelSelectorButton.onDown(x, y)) return;
@@ -293,7 +293,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
         mLifecycleDispatcher.register(this);
         mDefaultTitle = context.getString(R.string.tab_loading_default_title);
         mEventFilter =
-                new AreaGestureEventFilter(context, mTabStripEventHandler, null, false, false);
+                new AreaMotionEventFilter(context, mTabStripEventHandler, null, false, false);
 
         CompositorOnClickHandler selectorClickHandler = new CompositorOnClickHandler() {
             @Override
@@ -310,15 +310,10 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
                     context.getResources().getColor(R.color.model_selector_button_bg_color);
 
             // Incognito bg color is surface 1 baseline for folio, surface 2 baseline for detached.
-            int defaultBgColorDarkElev1 = ChromeFeatureList.sBaselineGm3SurfaceColors.isEnabled()
-                    ? R.color.default_bg_color_dark_elev_1_gm3_baseline
-                    : R.color.default_bg_color_dark_elev_1_baseline;
-            int defaultBgColorDarkElev2 = ChromeFeatureList.sBaselineGm3SurfaceColors.isEnabled()
-                    ? R.color.default_bg_color_dark_elev_2_gm3_baseline
-                    : R.color.default_bg_color_dark_elev_2_baseline;
             int backgroundIncognitoColor = TabManagementFieldTrial.isTabStripFolioEnabled()
-                    ? context.getResources().getColor(defaultBgColorDarkElev1)
-                    : context.getResources().getColor(defaultBgColorDarkElev2);
+                    ? context.getResources().getColor(R.color.default_bg_color_dark_elev_1_baseline)
+                    : context.getResources().getColor(
+                            R.color.default_bg_color_dark_elev_2_baseline);
 
             // Model selector button icon color
             // @Todo(zheliooo crbugs.com/1447285) may need to update color using GM3 and update MSB
@@ -692,13 +687,11 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
                 tabCreatorManager.getTabCreator(false), tabStateInitialized);
         mIncognitoHelper.setTabModel(mTabModelSelector.getModel(true),
                 tabCreatorManager.getTabCreator(true), tabStateInitialized);
-        if (TabUiFeatureUtilities.isTabletTabGroupsEnabled(mContext)) {
-            TabModelFilterProvider provider = mTabModelSelector.getTabModelFilterProvider();
-            mNormalHelper.setTabGroupModelFilter(
-                    (TabGroupModelFilter) provider.getTabModelFilter(false));
-            mIncognitoHelper.setTabGroupModelFilter(
-                    (TabGroupModelFilter) provider.getTabModelFilter(true));
-        }
+        TabModelFilterProvider provider = mTabModelSelector.getTabModelFilterProvider();
+        mNormalHelper.setTabGroupModelFilter(
+                (TabGroupModelFilter) provider.getTabModelFilter(false));
+        mIncognitoHelper.setTabGroupModelFilter(
+                (TabGroupModelFilter) provider.getTabModelFilter(true));
         tabModelSwitched(mTabModelSelector.isIncognitoSelected());
 
         mTabModelSelectorTabModelObserver = new TabModelSelectorTabModelObserver(modelSelector) {

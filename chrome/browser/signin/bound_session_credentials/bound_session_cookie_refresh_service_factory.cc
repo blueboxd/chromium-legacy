@@ -5,15 +5,26 @@
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service_factory.h"
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/signin/account_consistency_mode_manager_factory.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service_impl.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_params_storage.h"
 #include "chrome/browser/signin/bound_session_credentials/unexportable_key_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_switches.h"
+#include "content/public/browser/network_service_instance.h"
+
+BASE_FEATURE(kEnableBoundSessionCredentialsOnDiceProfiles,
+             "EnableBoundSessionCredentialsOnDiceProfiles",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // static
 BoundSessionCookieRefreshServiceFactory*
@@ -34,13 +45,11 @@ BoundSessionCookieRefreshServiceFactory::
     : ProfileKeyedServiceFactory(
           "BoundSessionCookieRefreshService",
           ProfileSelections::Builder()
-              // TODO(b/279719658): Enable on OTR profiles after removing
-              // dependency on `ChromeSigninClient`.
-              .WithRegular(ProfileSelection::kOriginalOnly)
-              .WithGuest(ProfileSelection::kOriginalOnly)
+              .WithRegular(ProfileSelection::kOwnInstance)
+              .WithGuest(ProfileSelection::kOwnInstance)
               .Build()) {
-  DependsOn(ChromeSigninClientFactory::GetInstance());
   DependsOn(UnexportableKeyServiceFactory::GetInstance());
+  DependsOn(AccountConsistencyModeManagerFactory::GetInstance());
 }
 
 BoundSessionCookieRefreshServiceFactory::
@@ -61,16 +70,32 @@ BoundSessionCookieRefreshServiceFactory::BuildServiceInstanceForBrowserContext(
     // A bound session requires a crypto provider.
     return nullptr;
   }
+
+  signin::AccountConsistencyMethod account_consistency_method =
+      AccountConsistencyModeManager::GetMethodForProfile(profile);
+  bool should_create_service =
+      account_consistency_method ==
+          signin::AccountConsistencyMethod::kDisabled ||
+      (account_consistency_method == signin::AccountConsistencyMethod::kDice &&
+       base::FeatureList::IsEnabled(
+           kEnableBoundSessionCredentialsOnDiceProfiles));
+
+  if (!should_create_service) {
+    return nullptr;
+  }
+
   std::unique_ptr<BoundSessionCookieRefreshService>
       bound_session_cookie_refresh_service =
           std::make_unique<BoundSessionCookieRefreshServiceImpl>(
-              *key_service, profile->GetPrefs(),
-              ChromeSigninClientFactory::GetForProfile(profile));
+              *key_service,
+              BoundSessionParamsStorage::CreateForProfile(*profile),
+              profile->GetDefaultStoragePartition(),
+              content::GetNetworkConnectionTracker());
   bound_session_cookie_refresh_service->Initialize();
   return bound_session_cookie_refresh_service;
 }
 
 void BoundSessionCookieRefreshServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  BoundSessionCookieRefreshServiceImpl::RegisterProfilePrefs(registry);
+  BoundSessionParamsStorage::RegisterProfilePrefs(registry);
 }

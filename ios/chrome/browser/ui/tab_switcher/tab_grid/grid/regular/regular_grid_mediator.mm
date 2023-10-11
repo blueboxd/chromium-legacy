@@ -8,16 +8,19 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "components/sessions/core/tab_restore_service.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
+#import "ios/chrome/browser/sessions/web_state_list_serialization.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/tabs/features.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_toolbars_configuration_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_toolbars_mutator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_configuration.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
 
 @implementation RegularGridMediator {
   // The saved session window just before close all tabs is called.
@@ -82,7 +85,6 @@
   _closedSessionWindow = nil;
   [self removeEntriesFromTabRestoreService];
   _syncedClosedTabsCount = 0;
-
 }
 
 - (void)discardSavedClosedItems {
@@ -106,25 +108,56 @@
   // TODO(crbug.com/1457146): Implement.
 }
 
+#pragma mark - TabGridToolbarsButtonsDelegate
+
+- (void)closeAllButtonTapped:(id)sender {
+  // TODO(crbug.com/1457146): Clean this in order to have "Close All" and "Undo"
+  // separated actions.
+  // This was saved as a stack: first save the inactive tabs, then the active
+  // tabs. So undo in the reverse order: first undo the active tabs, then the
+  // inactive tabs.
+  if (_closedSessionWindow ||
+      [self.containedGridToolbarsProvider didSavedClosedTabs]) {
+    if ([self.consumer respondsToSelector:@selector(willUndoCloseAll)]) {
+      [self.consumer willUndoCloseAll];
+    }
+    [self undoCloseAllItems];
+    [self.inactiveTabsGridCommands undoCloseAllItems];
+    if ([self.consumer respondsToSelector:@selector(didUndoCloseAll)]) {
+      [self.consumer didUndoCloseAll];
+    }
+  } else {
+    if ([self.consumer respondsToSelector:@selector(willCloseAll)]) {
+      [self.consumer willCloseAll];
+    }
+    [self.inactiveTabsGridCommands saveAndCloseAllItems];
+    [self saveAndCloseAllItems];
+    if ([self.consumer respondsToSelector:@selector(didCloseAll)]) {
+      [self.consumer didCloseAll];
+    }
+  }
+  // This is needed because configure button is called (web state list observer
+  // in base grid mediator) when regular tabs are modified but not when inactive
+  // tabs are modified.
+  [self configureToolbarsButtons];
+}
+
 #pragma mark - Parent's function
 
 - (void)configureToolbarsButtons {
-  TabGridToolbarsConfiguration* containedGridToolbarsConfiguration =
-      [self.containedGridToolbarsProvider toolbarsConfiguration];
+  // Start to configure the delegate, so configured buttons will depend on the
+  // correct delegate.
+  [self.toolbarsMutator setToolbarsButtonsDelegate:self];
 
   TabGridToolbarsConfiguration* toolbarsConfiguration =
       [[TabGridToolbarsConfiguration alloc] init];
-  BOOL onlyPinnedTabs = self.webStateList->GetIndexOfFirstNonPinnedWebState() ==
-                        self.webStateList->count();
-  BOOL tabsInRegularGrid = !self.webStateList->empty() && !onlyPinnedTabs;
-  toolbarsConfiguration.closeAllButton =
-      tabsInRegularGrid || containedGridToolbarsConfiguration.closeAllButton;
+  toolbarsConfiguration.closeAllButton = [self canCloseAll];
   toolbarsConfiguration.doneButton = YES;
+  toolbarsConfiguration.newTabButton = IsAddNewTabAllowedByPolicy(
+      self.browser->GetBrowserState()->GetPrefs(), NO);
   toolbarsConfiguration.searchButton = YES;
-  toolbarsConfiguration.selectTabsButton = tabsInRegularGrid;
-  toolbarsConfiguration.undoButton =
-      _closedSessionWindow || containedGridToolbarsConfiguration.undoButton;
-
+  toolbarsConfiguration.selectTabsButton = [self isTabsInGrid];
+  toolbarsConfiguration.undoButton = [self canUndo];
   [self.toolbarsMutator setToolbarConfiguration:toolbarsConfiguration];
 }
 
@@ -146,6 +179,29 @@
   for (const SessionID sessionID : identifiers) {
     self.tabRestoreService->RemoveTabEntryById(sessionID);
   }
+}
+
+// YES if there are tabs that can be closed.
+- (BOOL)canCloseAll {
+  TabGridToolbarsConfiguration* containedGridToolbarsConfiguration =
+      [self.containedGridToolbarsProvider toolbarsConfiguration];
+
+  return
+      [self isTabsInGrid] || containedGridToolbarsConfiguration.closeAllButton;
+}
+
+// YES if there are tabs that can be restored.
+- (BOOL)canUndo {
+  return (_closedSessionWindow != nil) ||
+         [self.containedGridToolbarsProvider didSavedClosedTabs];
+}
+
+// YES if there are tabs in regular grid only (not pinned, not in inactive tabs,
+// etc.).
+- (BOOL)isTabsInGrid {
+  BOOL onlyPinnedTabs = self.webStateList->GetIndexOfFirstNonPinnedWebState() ==
+                        self.webStateList->count();
+  return !self.webStateList->empty() && !onlyPinnedTabs;
 }
 
 @end

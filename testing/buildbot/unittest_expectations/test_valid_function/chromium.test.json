@@ -10,7 +10,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "foo_test",
         "swarming": {
           "dimensions": {
             "kvm": "1",

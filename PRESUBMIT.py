@@ -407,6 +407,9 @@ _BANNED_OBJC_FUNCTIONS : Sequence[BanRule] = (
        'Please use |SysNSStringToUTF8| instead.',
       ),
       True,
+      excluded_paths = (
+        '^third_party/ocmock/OCMock/',
+      ),
     ),
     BanRule(
       r'__unsafe_unretained',
@@ -502,7 +505,10 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
        'base/gtest_prod_util.h and use FRIEND_TEST_ALL_PREFIXES() instead.',
       ),
       False,
-      (),
+      excluded_paths = (
+        "base/gtest_prod_util.h",
+        "base/allocator/partition_allocator/partition_alloc_base/gtest_prod_util.h",
+      ),
     ),
     BanRule(
       'setMatrixClip',
@@ -634,7 +640,10 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         'other use cases, please contact base/time/OWNERS.',
       ),
       False,
-      (),
+      excluded_paths = (
+        "base/time/time.h",
+        "base/allocator/partition_allocator/partition_alloc_base/time/time.h",
+      ),
     ),
     BanRule(
       'CallJavascriptFunctionUnsafe',
@@ -740,6 +749,15 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
+      r'/#include <(cctype|ctype\.h|cwctype|wctype.h)>',
+      (
+        '<cctype>/<ctype.h>/<cwctype>/<wctype.h> are banned. Use',
+        '"third_party/abseil-cpp/absl/strings/ascii.h" instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    BanRule(
       r'/\bstd::shared_ptr\b',
       (
         'std::shared_ptr is banned. Use scoped_refptr instead.',
@@ -756,6 +774,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
        '^chrome/services/sharing/nearby/',
        # Needed for interop with third-party library libunwindstack.
        '^base/profiler/libunwindstack_unwinder_android\.(cc|h)',
+       '^base/profiler/native_unwinder_android_memory_regions_map_impl.(cc|h)',
        # Needed for interop with third-party boringssl cert verifier
        '^third_party/boringssl/',
        '^net/cert/',
@@ -1614,6 +1633,45 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         r'^third_party/blink/renderer/core/script/script_loader\.cc',
       ),
     ),
+    BanRule(
+      pattern = r'base::raw_ptr<',
+      explanation = (
+        'Do not use base::raw_ptr, use raw_ptr.',
+      ),
+      treat_as_error = True,
+      excluded_paths = (
+        '^base/',
+        '^tools/',
+      ),
+    ),
+    BanRule(
+      pattern = r'base:raw_ref<',
+      explanation = (
+        'Do not use base::raw_ref, use raw_ref.',
+      ),
+      treat_as_error = True,
+      excluded_paths = (
+        '^base/',
+        '^tools/',
+      ),
+    ),
+    BanRule(
+      pattern = r'ContentSettingsType::COOKIES',
+      explanation = (
+        'Do not use ContentSettingsType::COOKIES to check whether cookies are '
+        'supported in the provided context. Instead rely on the '
+        'content_settings::CookieSettings API. If you are using '
+        'ContentSettingsType::COOKIES to check the user preference setting '
+        'specifically, disregard this warning.',
+      ),
+      treat_as_error = False,
+      excluded_paths = (
+        '^chrome/browser/ui/content_settings/',
+        '^components/content_settings/',
+        '^services/network/cookie_settings/',
+        'test.cc',
+      ),
+    ),
 )
 
 _BANNED_MOJOM_PATTERNS : Sequence[BanRule] = (
@@ -1756,6 +1814,7 @@ _GENERIC_PYDEPS_FILES = [
     'third_party/blink/renderer/bindings/scripts/check_generated_file_list.pydeps',
     'third_party/blink/renderer/bindings/scripts/collect_idl_files.pydeps',
     'third_party/blink/renderer/bindings/scripts/generate_bindings.pydeps',
+    'third_party/blink/renderer/bindings/scripts/generate_event_interface_names.pydeps',
     'third_party/blink/renderer/bindings/scripts/validate_web_idl.pydeps',
     'third_party/blink/tools/blinkpy/web_tests/merge_results.pydeps',
     'third_party/blink/tools/merge_web_test_results.pydeps',
@@ -5227,10 +5286,16 @@ _ACCESSIBILITY_EVENTS_TEST_PATH = (
 )
 
 _ACCESSIBILITY_TREE_TEST_PATH = (
-    r"^content/test/data/accessibility/accname/.*\.html",
-    r"^content/test/data/accessibility/aria/.*\.html",
-    r"^content/test/data/accessibility/css/.*\.html",
-    r"^content/test/data/accessibility/html/.*\.html",
+    r"^content/test/data/accessibility/accname/"
+      ".*-expected-(mac|win|uia-win|auralinux).txt",
+    r"^content/test/data/accessibility/aria/"
+      ".*-expected-(mac|win|uia-win|auralinux).txt",
+    r"^content/test/data/accessibility/css/"
+      ".*-expected-(mac|win|uia-win|auralinux).txt",
+    r"^content/test/data/accessibility/event/"
+      ".*-expected-(mac|win|uia-win|auralinux).txt",
+    r"^content/test/data/accessibility/html/"
+      ".*-expected-(mac|win|uia-win|auralinux).txt",
 )
 
 _ACCESSIBILITY_ANDROID_EVENTS_TEST_PATH = (
@@ -5270,12 +5335,12 @@ def CheckAccessibilityEventsTestsAreIncludedForAndroid(input_api, output_api):
     message = []
     for f in input_api.AffectedFiles(include_deletes=True,
                                      file_filter=FilePathFilter):
-        if f.Action() == 'A' or f.Action() == 'D':
+        if f.Action() == 'A':
             message = (
-                "It appears that you are adding, renaming or deleting"
-                "\na dump_accessibility_events* test, but have not included"
+                "It appears that you are adding platform expectations for a"
+                "\ndump_accessibility_events* test, but have not included"
                 "\na corresponding change for Android."
-                "\nPlease include (or remove) the test from:"
+                "\nPlease include the test from:"
                 "\n    content/public/android/javatests/src/org/chromium/"
                 "content/browser/accessibility/"
                 "WebContentsAccessibilityEventsTest.java"
@@ -5318,10 +5383,10 @@ def CheckAccessibilityTreeTestsAreIncludedForAndroid(input_api, output_api):
     message = []
     for f in input_api.AffectedFiles(include_deletes=True,
                                      file_filter=FilePathFilter):
-        if f.Action() == 'A' or f.Action() == 'D':
+        if f.Action() == 'A':
             message = (
-                "It appears that you are adding, renaming or deleting"
-                "\na dump_accessibility_tree* test, but have not included"
+                "It appears that you are adding platform expectations for a"
+                "\ndump_accessibility_tree* test, but have not included"
                 "\na corresponding change for Android."
                 "\nPlease include (or remove) the test from:"
                 "\n    content/public/android/javatests/src/org/chromium/"
@@ -6886,7 +6951,8 @@ def CheckNoJsInIos(input_api, output_api):
         return input_api.FilterSourceFile(
             affected_file,
             files_to_skip=input_api.DEFAULT_FILES_TO_SKIP +
-                (r'^ios/third_party/*', r'^ios/tools/*', r'^third_party/*'),
+                (r'^ios/third_party/*', r'^ios/tools/*', r'^third_party/*',
+                r'^components/autofill/ios/form_util/resources/*'),
             files_to_check=[r'^ios/.*\.js$', r'.*/ios/.*\.js$'])
 
     deleted_files = []

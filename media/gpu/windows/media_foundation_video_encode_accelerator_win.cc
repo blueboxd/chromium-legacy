@@ -237,6 +237,19 @@ bool IsSVCSupported(IMFActivate* activate, VideoCodec codec) {
 #endif  // defined(ARCH_CPU_X86)
 }
 
+bool IsIntelHybridAV1Encoder(IMFActivate* activate) {
+  if (GetDriverVendor(activate) ==
+      MediaFoundationVideoEncodeAccelerator::DriverVendor::kIntel) {
+    // Get the CLSID GUID of the HMFT.
+    GUID mft_guid = {0};
+    activate->GetGUID(MFT_TRANSFORM_CLSID_Attribute, &mft_guid);
+    if (mft_guid == kIntelAV1HybridEncoderCLSID) {
+      return true;
+    }
+  }
+  return false;
+}
+
 uint32_t EnumerateHardwareEncoders(VideoCodec codec, IMFActivate*** activates) {
   if (!InitializeMediaFoundation()) {
     return 0;
@@ -260,7 +273,16 @@ uint32_t EnumerateHardwareEncoders(VideoCodec codec, IMFActivate*** activates) {
     return 0;
   }
 
-  return count;
+  uint32_t excluded_encoders = 0;
+  if (codec == VideoCodec::kAV1) {
+    for (UINT32 i = 0; i < count; i++) {
+      if (IsIntelHybridAV1Encoder((*activates)[i])) {
+        excluded_encoders++;
+      }
+    }
+  }
+
+  return count - excluded_encoders;
 }
 
 bool IsCodecSupportedForEncoding(VideoCodec codec, bool* svc_supported) {
@@ -855,9 +877,12 @@ void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChange(
   DCHECK(imf_output_media_type_);
   DCHECK(imf_input_media_type_);
   DCHECK(encoder_);
-  RETURN_ON_FAILURE(
-      bitrate_allocation.GetMode() == bitrate_allocation_.GetMode(),
-      "Invalid bitrate mode", );
+  if (bitrate_allocation.GetMode() != bitrate_allocation_.GetMode()) {
+    NotifyErrorStatus({EncoderStatus::Codes::kEncoderUnsupportedConfig,
+                       "Can't change bitrate mode after Initialize()"});
+    return;
+  }
+
   framerate =
       std::clamp(framerate, 1u, static_cast<uint32_t>(kMaxFrameRateNumerator));
 
@@ -883,13 +908,21 @@ void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChange(
       var.ulVal = AdjustBitrateToFrameRate(bitrate_allocation_.GetPeakBps(),
                                            configured_frame_rate_, framerate);
       hr = codec_api_->SetValue(&CODECAPI_AVEncCommonMaxBitRate, &var);
-      RETURN_ON_HR_FAILURE(hr, "Couldn't set max bitrate", );
+      if (FAILED(hr)) {
+        NotifyErrorStatus({EncoderStatus::Codes::kSystemAPICallError,
+                           "Couldn't set max bitrate" + PrintHr(hr)});
+        return;
+      }
       [[fallthrough]];
     case Bitrate::Mode::kConstant:
       var.ulVal = AdjustBitrateToFrameRate(bitrate_allocation_.GetSumBps(),
                                            configured_frame_rate_, framerate);
       hr = codec_api_->SetValue(&CODECAPI_AVEncCommonMeanBitRate, &var);
-      RETURN_ON_HR_FAILURE(hr, "Couldn't update mean bitrate", );
+      if (FAILED(hr)) {
+        NotifyErrorStatus({EncoderStatus::Codes::kSystemAPICallError,
+                           "Couldn't set mean bitrate" + PrintHr(hr)});
+        return;
+      }
       break;
     case Bitrate::Mode::kExternal:
       break;
@@ -961,14 +994,9 @@ bool MediaFoundationVideoEncodeAccelerator::ActivateAsyncEncoder(
   for (UINT32 i = 0; i < encoder_count; i++) {
     auto vendor = GetDriverVendor(pp_activate[i]);
     // Skip flawky Intel hybrid AV1 encoder.
-    if (codec_ == VideoCodec::kAV1 && vendor == DriverVendor::kIntel) {
-      // Get the CLSID GUID of the HMFT.
-      GUID mft_guid = {0};
-      pp_activate[i]->GetGUID(MFT_TRANSFORM_CLSID_Attribute, &mft_guid);
-      if (mft_guid == kIntelAV1HybridEncoderCLSID) {
-        DLOG(WARNING) << "Skipped Intel hybrid AV1 encoder MFT.";
-        continue;
-      }
+    if (codec_ == VideoCodec::kAV1 && IsIntelHybridAV1Encoder(pp_activate[i])) {
+      DLOG(WARNING) << "Skipped Intel hybrid AV1 encoder MFT.";
+      continue;
     }
 
     // Skip NVIDIA GPU due to https://crbug.com/1088650 for constrained

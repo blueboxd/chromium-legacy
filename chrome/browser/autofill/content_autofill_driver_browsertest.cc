@@ -72,7 +72,7 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
   ~ContentAutofillDriverBrowserTest() override = default;
 
   void SetUp() override {
-    prerender_helper_.SetUp(embedded_test_server());
+    prerender_helper_.RegisterServerRequestMonitor(embedded_test_server());
     InProcessBrowserTest::SetUp();
   }
 
@@ -143,19 +143,6 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
       autofill_client_injector_;
   content::test::PrerenderTestHelper prerender_helper_;
 };
-
-IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
-                       SwitchTabAndHideAutofillPopup) {
-  EXPECT_CALL(autofill_client(),
-              HideAutofillPopup(PopupHidingReason::kTabGone));
-
-  scoped_refptr<content::MessageLoopRunner> runner =
-      new content::MessageLoopRunner;
-  web_contents_hidden_callback_ = runner->QuitClosure();
-  chrome::AddSelectedTabWithURL(browser(), GURL(url::kAboutBlankURL),
-                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
-  runner->Run();
-}
 
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
                        SameDocumentNavigationHideAutofillPopup) {

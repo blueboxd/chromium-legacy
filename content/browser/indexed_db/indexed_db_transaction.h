@@ -99,8 +99,6 @@ class CONTENT_EXPORT IndexedDBTransaction {
     DCHECK_GE(pending_preemptive_events_, 0);
   }
 
-  void EnsureBackingStoreTransactionBegun();
-
   enum class RunTasksResult { kError, kNotFinished, kCommitted, kAborted };
   std::tuple<RunTasksResult, leveldb::Status> RunTasks();
 
@@ -205,7 +203,6 @@ class CONTENT_EXPORT IndexedDBTransaction {
   leveldb::Status BlobWriteComplete(
       BlobWriteResult result,
       storage::mojom::WriteBlobToFileResult error);
-  void CloseOpenCursorBindings();
   void CloseOpenCursors();
   leveldb::Status CommitPhaseTwo();
   void Timeout();

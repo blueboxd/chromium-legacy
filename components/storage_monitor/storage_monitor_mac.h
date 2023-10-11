@@ -10,7 +10,7 @@
 #include <map>
 #include <memory>
 
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/memory/weak_ptr.h"
 #include "components/storage_monitor/storage_monitor.h"
 
@@ -61,7 +61,7 @@ class StorageMonitorMac : public StorageMonitor,
   bool FindDiskWithMountPoint(const base::FilePath& mount_point,
                               StorageInfo* info) const;
 
-  base::ScopedCFTypeRef<DASessionRef> session_;
+  base::apple::ScopedCFTypeRef<DASessionRef> session_;
   // Maps disk bsd names to disk info objects. This map tracks all mountable
   // devices on the system, though only notifications for removable devices are
   // posted.

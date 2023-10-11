@@ -47,14 +47,6 @@ import java.util.List;
  * validity of this file.
  */
 public final class ChromePreferenceKeys {
-    /**
-     * Whether the simplified tab switcher is enabled when accessibility mode is enabled. Keep in
-     * sync with accessibility_preferences.xml.
-     * Default value is true.
-     */
-    public static final String ACCESSIBILITY_TAB_SWITCHER =
-            AccessibilityConstants.ACCESSIBILITY_TAB_SWITCHER;
-
     /** Whether the current adaptive toolbar customization is enabled. */
     public static final String ADAPTIVE_TOOLBAR_CUSTOMIZATION_ENABLED =
             "Chrome.AdaptiveToolbarCustomization.Enabled";
@@ -339,22 +331,11 @@ public final class ChromePreferenceKeys {
      */
     public static final String FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED = "grid_tab_switcher_enabled";
     /**
-     * Whether warming up network service is enabled.
-     * Default value is false.
-     */
-    public static final String FLAGS_CACHED_NETWORK_SERVICE_WARM_UP_ENABLED =
-            "network_service_warm_up_enabled";
-    /**
      * Whether or not the start surface is enabled.
      * Default value is false.
      */
     public static final String FLAGS_CACHED_START_SURFACE_ENABLED = "start_surface_enabled";
 
-    /**
-     * Key to cache whether SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT is enabled.
-     */
-    public static final String FLAGS_CACHED_SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
-            "swap_pixel_format_to_fix_convert_from_translucent";
     /**
      * Whether or not the tab group is enabled.
      * Default value is false.
@@ -449,13 +430,14 @@ public final class ChromePreferenceKeys {
     public static final String LOCALE_MANAGER_PROMO_SHOWN = "LocaleManager_PREF_PROMO_SHOWN";
     public static final String LOCALE_MANAGER_PROMO_V2_CHECKED =
             "LocaleManager_PREF_PROMO_VER2_CHECKED";
+    public static final String LOCALE_MANAGER_PROMO_V3_CHECKED =
+            "Chrome.SearchEngineChoice.LocaleManagerPromoV3Checked";
     public static final String LOCALE_MANAGER_SEARCH_ENGINE_PROMO_SHOW_STATE =
             "com.android.chrome.SEARCH_ENGINE_PROMO_SHOWN";
     public static final String LOCALE_MANAGER_SEARCH_WIDGET_PRESENT_FIRST_START =
             "LocaleManager_SEARCH_WIDGET_PRESENT_FIRST_START";
     public static final String LOCALE_MANAGER_SHOULD_REPING_RLZ_FOR_SEARCH_PROMO =
             "LocaleManager_SHOULD_REPING_RLZ_FOR_SEARCH_PROMO_KEYWORD";
-    public static final String LOCALE_MANAGER_USER_TYPE = "LocaleManager_USR_TYPE";
     public static final String LOCALE_MANAGER_WAS_IN_SPECIAL_LOCALE =
             "LocaleManager_WAS_IN_SPECIAL_LOCALE";
 
@@ -1038,6 +1020,7 @@ public final class ChromePreferenceKeys {
                 ISOLATED_SPLITS_DEX_COMPILE_VERSION,
                 LAST_SESSION_BROWSER_PID,
                 LAST_SESSION_APPLICATION_STATE,
+                LOCALE_MANAGER_PROMO_V3_CHECKED,
                 MULTI_WINDOW_START_TIME,
                 MULTI_INSTANCE_CLOSE_WINDOW_SKIP_CONFIRM,
                 MULTI_INSTANCE_IS_INCOGNITO_SELECTED.pattern(),

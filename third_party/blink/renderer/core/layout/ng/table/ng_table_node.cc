@@ -10,17 +10,16 @@
 
 namespace blink {
 
-scoped_refptr<const NGTableBorders> NGTableNode::GetTableBorders() const {
+const NGTableBorders* NGTableNode::GetTableBorders() const {
   LayoutNGTable* layout_table = To<LayoutNGTable>(box_.Get());
-  scoped_refptr<const NGTableBorders> table_borders =
-      layout_table->GetCachedTableBorders();
+  const NGTableBorders* table_borders = layout_table->GetCachedTableBorders();
   if (!table_borders) {
     table_borders = NGTableBorders::ComputeTableBorders(*this);
-    layout_table->SetCachedTableBorders(table_borders.get());
+    layout_table->SetCachedTableBorders(table_borders);
   } else {
 #if DCHECK_IS_ON()
     // TODO(crbug.com/1191742) remove these DCHECKs as soon as bug is found.
-    auto duplicate_table_borders = NGTableBorders::ComputeTableBorders(*this);
+    auto* duplicate_table_borders = NGTableBorders::ComputeTableBorders(*this);
     DCHECK(*duplicate_table_borders == *table_borders);
 #endif
   }
@@ -39,7 +38,7 @@ scoped_refptr<const NGTableTypes::Columns> NGTableNode::GetColumnConstraints(
       layout_table->GetCachedTableColumnConstraints();
   if (!column_constraints) {
     column_constraints = NGTableAlgorithmUtils::ComputeColumnConstraints(
-        *this, grouped_children, *GetTableBorders().get(), border_padding);
+        *this, grouped_children, *GetTableBorders(), border_padding);
     layout_table->SetCachedTableColumnConstraints(column_constraints.get());
   }
   return column_constraints;
@@ -54,11 +53,11 @@ LayoutUnit NGTableNode::ComputeTableInlineSize(
 
 LayoutUnit NGTableNode::ComputeCaptionBlockSize(
     const NGConstraintSpace& space) const {
-  LayoutUnit table_inline_size =
-      CalculateInitialFragmentGeometry(space, *this, /* break_token */ nullptr)
-          .border_box_size.inline_size;
-  return NGTableLayoutAlgorithm::ComputeCaptionBlockSize(*this, space,
-                                                         table_inline_size);
+  NGFragmentGeometry geometry =
+      CalculateInitialFragmentGeometry(space, *this, /* break_token */ nullptr);
+  NGLayoutAlgorithmParams params(*this, geometry, space);
+  NGTableLayoutAlgorithm algorithm(params);
+  return algorithm.ComputeCaptionBlockSize();
 }
 
 bool NGTableNode::AllowColumnPercentages(bool is_layout_pass) const {

@@ -5,7 +5,11 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_AUTOFILL_AUTOFILL_VCN_ENROLL_BOTTOM_SHEET_BRIDGE_H_
 #define CHROME_BROWSER_UI_ANDROID_AUTOFILL_AUTOFILL_VCN_ENROLL_BOTTOM_SHEET_BRIDGE_H_
 
+#include <jni.h>
+
 #include <memory>
+
+#include "base/android/scoped_java_ref.h"
 
 namespace content {
 class WebContents;
@@ -33,6 +37,14 @@ class AutofillVCNEnrollBottomSheetBridge {
       content::WebContents* web_contents,
       std::unique_ptr<AutofillVirtualCardEnrollmentInfoBarDelegateMobile>
           delegate);
+
+  void OnAccept(JNIEnv* env);
+  void OnCancel(JNIEnv* env);
+  void OnDismiss(JNIEnv* env);
+
+ private:
+  base::android::ScopedJavaGlobalRef<jobject> java_bridge_;
+  std::unique_ptr<AutofillVirtualCardEnrollmentInfoBarDelegateMobile> delegate_;
 };
 
 }  // namespace autofill

@@ -14,6 +14,7 @@
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
+#include "ash/system/tray/tray_utils.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -66,14 +67,8 @@ class TestTrayBackgroundView : public TrayBackgroundView,
   void ShowBubble() override {
     show_bubble_called_ = true;
 
-    TrayBubbleView::InitParams init_params;
-    init_params.delegate = GetWeakPtr();
-    init_params.parent_window =
-        Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                            kShellWindowId_AccessibilityBubbleContainer);
-    init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
-    init_params.preferred_width = 200;
-    auto bubble_view = std::make_unique<TrayBubbleView>(init_params);
+    auto bubble_view = std::make_unique<TrayBubbleView>(
+        CreateInitParamsForTrayBubble(/*tray=*/this));
     bubble_view->SetCanActivate(true);
     bubble_ = std::make_unique<TrayBubbleWrapper>(this,
                                                   /*event_handling=*/false);
@@ -104,7 +99,7 @@ class TestTrayBackgroundView : public TrayBackgroundView,
 
   bool show_bubble_called() const { return show_bubble_called_; }
 
-  raw_ptr<views::Widget, ExperimentalAsh>
+  raw_ptr<views::Widget, DanglingUntriaged | ExperimentalAsh>
       on_bubble_visibility_change_captured_widget_ = nullptr;
   bool on_bubble_visibility_change_captured_visibility_ = false;
 
@@ -212,9 +207,10 @@ class TrayBackgroundViewTest : public AshTestBase,
   }
 
  private:
-  raw_ptr<TestTrayBackgroundView, ExperimentalAsh> test_tray_background_view_ =
-      nullptr;
-  raw_ptr<PersistentBubbleTestTrayBackgroundView, ExperimentalAsh>
+  raw_ptr<TestTrayBackgroundView, DanglingUntriaged | ExperimentalAsh>
+      test_tray_background_view_ = nullptr;
+  raw_ptr<PersistentBubbleTestTrayBackgroundView,
+          DanglingUntriaged | ExperimentalAsh>
       persistent_bubble_test_tray_background_view_ = nullptr;
   int num_animations_scheduled_ = 0;
 };

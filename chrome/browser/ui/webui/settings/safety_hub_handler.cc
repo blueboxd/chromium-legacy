@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/safety_hub/notification_permission_review_service.h"
 #include "chrome/browser/ui/safety_hub/notification_permission_review_service_factory.h"
 #include "chrome/browser/ui/safety_hub/unused_site_permissions_service.h"
 #include "chrome/browser/ui/safety_hub/unused_site_permissions_service_factory.h"
@@ -26,6 +27,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/permissions/constants.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -72,14 +74,11 @@ GetUnusedSitePermissionsFromDict(
   base::Time expiration = base::ValueToTime(js_expiration).value();
 
   const base::Value* js_lifetime = unused_site_permissions.Find(kLifetimeKey);
-  // TODO(https://crbug.com/1455435): The use of ComputeLifetime here should be
-  // temporary. Once all persisted RuleMetaData instances include lifetimes, we
-  // can remove this, and just use the stored lifetime directly. We can do this
-  // after all lifetime-less settings have expired. Realistically this will take
-  // only one or two milestones, so this can safely be removed in M118 or M119.
+  // Users may edit the stored fields directly, so we cannot assume their
+  // presence and validity.
   base::TimeDelta lifetime = content_settings::RuleMetaData::ComputeLifetime(
-      /*lifetime=*/js_lifetime ? base::ValueToTimeDelta(js_lifetime).value()
-                               : base::TimeDelta(),
+      /*lifetime=*/
+      base::ValueToTimeDelta(js_lifetime).value_or(base::TimeDelta()),
       /*expiration=*/expiration);
 
   content_settings::ContentSettingConstraints constraints =
@@ -87,6 +86,19 @@ GetUnusedSitePermissionsFromDict(
   constraints.set_lifetime(lifetime);
 
   return std::make_tuple(origin, permission_types, constraints);
+}
+
+// Returns the state of Safe Browsing setting.
+SafeBrowsingState GetSafeBrowsingState(PrefService* pref_service) {
+  if (safe_browsing::IsEnhancedProtectionEnabled(*pref_service))
+    return SafeBrowsingState::kEnabledEnhanced;
+  if (safe_browsing::IsSafeBrowsingEnabled(*pref_service))
+    return SafeBrowsingState::kEnabledStandard;
+  if (safe_browsing::IsSafeBrowsingPolicyManaged(*pref_service))
+    return SafeBrowsingState::kDisabledByAdmin;
+  if (safe_browsing::IsSafeBrowsingExtensionControlled(*pref_service))
+    return SafeBrowsingState::kDisabledByExtension;
+  return SafeBrowsingState::kDisabledByUser;
 }
 }  // namespace
 
@@ -237,8 +249,12 @@ void SafetyHubHandler::HandleGetNotificationPermissionReviewList(
 
   const base::Value& callback_id = args[0];
 
+  NotificationPermissionsReviewService* service =
+      NotificationPermissionsReviewServiceFactory::GetForProfile(profile_);
+  DCHECK(service);
+
   base::Value::List result =
-      site_settings::PopulateNotificationPermissionReviewData(profile_);
+      service->PopulateNotificationPermissionReviewData(profile_);
 
   ResolveJavascriptCallback(callback_id, base::Value(std::move(result)));
 }
@@ -248,7 +264,7 @@ void SafetyHubHandler::HandleIgnoreOriginsForNotificationPermissionReview(
   CHECK_EQ(1U, args.size());
   const base::Value::List& origins = args[0].GetList();
 
-  auto* service =
+  NotificationPermissionsReviewService* service =
       NotificationPermissionsReviewServiceFactory::GetForProfile(profile_);
   DCHECK(service);
 
@@ -320,7 +336,7 @@ void SafetyHubHandler::HandleUndoIgnoreOriginsForNotificationPermissionReview(
     const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   const base::Value::List& origins = args[0].GetList();
-  auto* service =
+  NotificationPermissionsReviewService* service =
       NotificationPermissionsReviewServiceFactory::GetForProfile(profile_);
   DCHECK(service);
 
@@ -331,6 +347,18 @@ void SafetyHubHandler::HandleUndoIgnoreOriginsForNotificationPermissionReview(
         primary_pattern, ContentSettingsPattern::Wildcard());
   }
   SendNotificationPermissionReviewList();
+}
+
+void SafetyHubHandler::HandleGetSafeBrowsingState(
+    const base::Value::List& args) {
+  AllowJavascript();
+
+  CHECK_EQ(1U, args.size());
+  const base::Value& callback_id = args[0];
+
+  SafeBrowsingState result = GetSafeBrowsingState(profile_->GetPrefs());
+
+  ResolveJavascriptCallback(callback_id, (int)result);
 }
 
 void SafetyHubHandler::RegisterMessages() {
@@ -393,6 +421,10 @@ void SafetyHubHandler::RegisterMessages() {
           &SafetyHubHandler::
               HandleUndoIgnoreOriginsForNotificationPermissionReview,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getSafeBrowsingState",
+      base::BindRepeating(&SafetyHubHandler::HandleGetSafeBrowsingState,
+                          base::Unretained(this)));
 }
 
 void SafetyHubHandler::SendUnusedSitePermissionsReviewList() {
@@ -405,11 +437,17 @@ void SafetyHubHandler::SendUnusedSitePermissionsReviewList() {
 }
 
 void SafetyHubHandler::SendNotificationPermissionReviewList() {
+  NotificationPermissionsReviewService* service =
+      NotificationPermissionsReviewServiceFactory::GetForProfile(profile_);
+  CHECK(service);
+
+  base::Value::List result =
+      service->PopulateNotificationPermissionReviewData(profile_);
   // Notify observers that the permission review list could have changed. Note
   // that the list is not guaranteed to have changed.
   FireWebUIListener(
       site_settings::kNotificationPermissionsReviewListMaybeChangedEvent,
-      site_settings::PopulateNotificationPermissionReviewData(profile_));
+      service->PopulateNotificationPermissionReviewData(profile_));
 }
 
 void SafetyHubHandler::SetClockForTesting(base::Clock* clock) {

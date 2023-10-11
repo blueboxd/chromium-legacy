@@ -57,9 +57,9 @@ std::string MatrixAsTextProto(const Matrix& matrix) {
 }
 
 void MatrixFromTextProto(const std::string& text_proto, Matrix* matrix) {
-  CHECK(matrix);
+  ABSL_CHECK(matrix);
   MatrixData matrix_data;
-  CHECK(proto_ns::TextFormat::ParseFromString(text_proto, &matrix_data));
+  ABSL_CHECK(proto_ns::TextFormat::ParseFromString(text_proto, &matrix_data));
   MatrixFromMatrixDataProto(matrix_data, matrix);
 }
 #endif  // !defined(MEDIAPIPE_MOBILE) && !defined(MEDIAPIPE_LITE)

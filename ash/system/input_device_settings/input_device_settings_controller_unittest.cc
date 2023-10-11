@@ -15,6 +15,7 @@
 #include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_defaults.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
+#include "ash/system/input_device_settings/pref_handlers/graphics_tablet_pref_handler_impl.h"
 #include "ash/system/input_device_settings/pref_handlers/keyboard_pref_handler.h"
 #include "ash/system/input_device_settings/pref_handlers/mouse_pref_handler_impl.h"
 #include "ash/system/input_device_settings/pref_handlers/pointing_stick_pref_handler_impl.h"
@@ -35,6 +36,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "device/udev_linux/fake_udev_loader.h"
+#include "mojo/public/cpp/bindings/clone_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/ash/keyboard_capability.h"
@@ -102,6 +104,10 @@ const ui::InputDevice kSamplePointingStickInternal(
 const ui::InputDevice kSampleMouseUsb(3,
                                       ui::INPUT_DEVICE_USB,
                                       "kSampleMouseUsb");
+const ui::InputDevice kSampleGraphicsTabletInternal(
+    4,
+    ui::INPUT_DEVICE_INTERNAL,
+    "kSampleGraphicsTabletInternal");
 
 constexpr char kUserEmail1[] = "example1@abc.com";
 constexpr char kUserEmail2[] = "joy@abc.com";
@@ -142,14 +148,24 @@ class FakeDeviceManager {
     ui::DeviceDataManagerTestApi().SetKeyboardDevices(fake_keyboard_devices_);
   }
 
+  // Add a fake graphics tablet to DeviceDataManagerTestApi and provide layout
+  // info to fake udev.
+  void AddFakeGraphicsTablet(const ui::InputDevice& fake_graphics_tablet) {
+    fake_graphics_tablet_devices_.push_back(fake_graphics_tablet);
+    ui::DeviceDataManagerTestApi().SetGraphicsTabletDevices(
+        fake_graphics_tablet_devices_);
+  }
+
   void RemoveAllDevices() {
     fake_udev_.Reset();
     fake_keyboard_devices_.clear();
+    fake_graphics_tablet_devices_.clear();
   }
 
  private:
   testing::FakeUdevLoader fake_udev_;
   std::vector<ui::KeyboardDevice> fake_keyboard_devices_;
+  std::vector<ui::InputDevice> fake_graphics_tablet_devices_;
 };
 
 }  // namespace
@@ -239,14 +255,37 @@ class FakeInputDeviceSettingsControllerObserver
     num_keyboards_settings_updated_++;
   }
 
+  void OnGraphicsTabletConnected(
+      const mojom::GraphicsTablet& graphics_tablet) override {
+    num_graphics_tablets_connected_++;
+  }
+
+  void OnGraphicsTabletDisconnected(
+      const mojom::GraphicsTablet& graphics_tablet) override {
+    num_graphics_tablets_connected_--;
+  }
+
+  void OnGraphicsTabletSettingsUpdated(
+      const mojom::GraphicsTablet& graphics_tablet) override {
+    num_graphics_tablets_settings_updated_++;
+  }
+
   uint32_t num_keyboards_connected() { return num_keyboards_connected_; }
+  uint32_t num_graphics_tablets_connected() {
+    return num_graphics_tablets_connected_;
+  }
   uint32_t num_keyboards_settings_updated() {
     return num_keyboards_settings_updated_;
+  }
+  uint32_t num_graphics_tablets_settings_updated() {
+    return num_graphics_tablets_settings_updated_;
   }
 
  private:
   uint32_t num_keyboards_connected_;
+  uint32_t num_graphics_tablets_connected_;
   uint32_t num_keyboards_settings_updated_;
+  uint32_t num_graphics_tablets_settings_updated_;
 };
 
 class InputDeviceSettingsControllerTest : public NoSessionAshTestBase {
@@ -262,8 +301,9 @@ class InputDeviceSettingsControllerTest : public NoSessionAshTestBase {
   void SetUp() override {
     task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kInputDeviceSettingsSplit);
+    scoped_feature_list_.InitWithFeatures({features::kPeripheralCustomization,
+                                           features::kInputDeviceSettingsSplit},
+                                          {});
     NoSessionAshTestBase::SetUp();
     fake_keyboard_manager_ = std::make_unique<FakeDeviceManager>();
 
@@ -278,7 +318,8 @@ class InputDeviceSettingsControllerTest : public NoSessionAshTestBase {
         local_state(), std::move(keyboard_pref_handler),
         std::make_unique<TouchpadPrefHandlerImpl>(),
         std::make_unique<MousePrefHandlerImpl>(),
-        std::make_unique<PointingStickPrefHandlerImpl>(), task_runner_);
+        std::make_unique<PointingStickPrefHandlerImpl>(),
+        std::make_unique<GraphicsTabletPrefHandlerImpl>(), task_runner_);
     controller_->AddObserver(observer_.get());
     sample_keyboards_ = {kSampleKeyboardUsb, kSampleKeyboardInternal,
                          kSampleKeyboardBluetooth};
@@ -288,9 +329,11 @@ class InputDeviceSettingsControllerTest : public NoSessionAshTestBase {
     session_controller->Reset();
 
     auto user_1_prefs = std::make_unique<TestingPrefServiceSimple>();
-    RegisterUserProfilePrefs(user_1_prefs->registry(), /*for_test=*/true);
+    RegisterUserProfilePrefs(user_1_prefs->registry(), /*country=*/"",
+                             /*for_test=*/true);
     auto user_2_prefs = std::make_unique<TestingPrefServiceSimple>();
-    RegisterUserProfilePrefs(user_2_prefs->registry(), /*for_test=*/true);
+    RegisterUserProfilePrefs(user_2_prefs->registry(), /*country=*/"",
+                             /*for_test=*/true);
     session_controller->AddUserSession(kUserEmail1,
                                        user_manager::USER_TYPE_REGULAR,
                                        /*provide_pref_service=*/false);
@@ -342,8 +385,8 @@ class InputDeviceSettingsControllerTest : public NoSessionAshTestBase {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   std::unique_ptr<InputDeviceSettingsController::ScopedResetterForTest>
       scoped_resetter_;
-  raw_ptr<FakeKeyboardPrefHandler, ExperimentalAsh> keyboard_pref_handler_ =
-      nullptr;
+  raw_ptr<FakeKeyboardPrefHandler, DanglingUntriaged | ExperimentalAsh>
+      keyboard_pref_handler_ = nullptr;
 };
 
 TEST_F(InputDeviceSettingsControllerTest, KeyboardAddingOne) {
@@ -390,13 +433,15 @@ TEST_F(InputDeviceSettingsControllerTest, KeyboardAddingAndRemoving) {
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 2u);
 }
 
-TEST_F(InputDeviceSettingsControllerTest, DeletesPrefsWhenFlagDisabled) {
+TEST_F(InputDeviceSettingsControllerTest,
+       DeletesPrefsWhenInputDeviceSettingsSplitFlagDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(features::kInputDeviceSettingsSplit);
 
   std::unique_ptr<TestingPrefServiceSimple> pref_service =
       std::make_unique<TestingPrefServiceSimple>();
-  ash::RegisterUserProfilePrefs(pref_service->registry(), /*for_test=*/true);
+  ash::RegisterUserProfilePrefs(pref_service->registry(), /*country=*/"",
+                                /*for_test=*/true);
 
   base::Value::Dict test_pref_value;
   test_pref_value.Set("Fake Key", base::Value::Dict());
@@ -408,6 +453,10 @@ TEST_F(InputDeviceSettingsControllerTest, DeletesPrefsWhenFlagDisabled) {
                         test_pref_value.Clone());
   pref_service->SetDict(prefs::kTouchpadDeviceSettingsDictPref,
                         test_pref_value.Clone());
+  GetSessionControllerClient()->SetUserPrefService(account_id_3,
+                                                   std::move(pref_service));
+
+  SetActiveUser(account_id_3);
 
   PrefService* active_pref_service =
       Shell::Get()->session_controller()->GetActivePrefService();
@@ -423,12 +472,48 @@ TEST_F(InputDeviceSettingsControllerTest, DeletesPrefsWhenFlagDisabled) {
 }
 
 TEST_F(InputDeviceSettingsControllerTest,
+       DeletesPrefsWhenPeripheralCustomizationFlagDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kPeripheralCustomization);
+
+  std::unique_ptr<TestingPrefServiceSimple> pref_service =
+      std::make_unique<TestingPrefServiceSimple>();
+  ash::RegisterUserProfilePrefs(pref_service->registry(), /*country=*/"",
+                                /*for_test=*/true);
+
+  base::Value::Dict test_pref_value;
+  test_pref_value.Set("Fake Key", base::Value::Dict());
+  pref_service->SetDict(prefs::kGraphicsTabletPenButtonRemappingsDictPref,
+                        test_pref_value.Clone());
+  pref_service->SetDict(prefs::kGraphicsTabletTabletButtonRemappingsDictPref,
+                        test_pref_value.Clone());
+  pref_service->SetDict(prefs::kMouseButtonRemappingsDictPref,
+                        test_pref_value.Clone());
+  GetSessionControllerClient()->SetUserPrefService(account_id_3,
+                                                   std::move(pref_service));
+
+  SetActiveUser(account_id_3);
+
+  PrefService* active_pref_service =
+      Shell::Get()->session_controller()->GetActivePrefService();
+  EXPECT_EQ(base::Value::Dict(),
+            active_pref_service->GetDict(
+                prefs::kGraphicsTabletPenButtonRemappingsDictPref));
+  EXPECT_EQ(base::Value::Dict(),
+            active_pref_service->GetDict(
+                prefs::kGraphicsTabletTabletButtonRemappingsDictPref));
+  EXPECT_EQ(base::Value::Dict(), active_pref_service->GetDict(
+                                     prefs::kMouseButtonRemappingsDictPref));
+}
+
+TEST_F(InputDeviceSettingsControllerTest,
        DeletesSimulateRightClickPrefsWhenAltFlagDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
       features::kAltClickAndSixPackCustomization);
   auto user_prefs = std::make_unique<TestingPrefServiceSimple>();
-  RegisterUserProfilePrefs(user_prefs->registry(), /*for_test=*/true);
+  RegisterUserProfilePrefs(user_prefs->registry(), /*country=*/"",
+                           /*for_test=*/true);
 
   base::Value::Dict test_pref_value;
   base::Value::Dict six_pack_remappings_dict;
@@ -457,7 +542,8 @@ TEST_F(InputDeviceSettingsControllerTest,
   feature_list.InitAndDisableFeature(
       features::kAltClickAndSixPackCustomization);
   auto user_prefs = std::make_unique<TestingPrefServiceSimple>();
-  RegisterUserProfilePrefs(user_prefs->registry(), /*for_test=*/true);
+  RegisterUserProfilePrefs(user_prefs->registry(), /*country=*/"",
+                           /*for_test=*/true);
 
   base::Value::Dict test_pref_value;
   base::Value::Dict six_pack_remappings_dict;
@@ -577,6 +663,49 @@ TEST_F(InputDeviceSettingsControllerTest, KeyboardSettingsAreValid) {
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 0u);
 }
 
+TEST_F(InputDeviceSettingsControllerTest, GraphicsTabletSettingsAreValid) {
+  fake_keyboard_manager_->AddFakeGraphicsTablet(kSampleGraphicsTabletInternal);
+  EXPECT_EQ(observer_->num_graphics_tablets_connected(), 1u);
+
+  // Create a valid settings.
+  mojom::ButtonRemapping button_remapping1(
+      /*name=*/"test",
+      /*button=*/
+      mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kBack),
+      /*remapping_action=*/
+      mojom::RemappingAction::NewAction(
+          ash::AcceleratorAction::kBrightnessDown));
+  std::vector<mojom::ButtonRemappingPtr> tablet_button_remappings;
+  std::vector<mojom::ButtonRemappingPtr> pen_button_remappings;
+  tablet_button_remappings.push_back(button_remapping1.Clone());
+  mojom::GraphicsTabletSettingsPtr settings =
+      mojom::GraphicsTabletSettings::New(mojo::Clone(tablet_button_remappings),
+                                         mojo::Clone(pen_button_remappings));
+
+  controller_->SetGraphicsTabletSettings(
+      (DeviceId)kSampleGraphicsTabletInternal.id, settings.Clone());
+  EXPECT_EQ(observer_->num_graphics_tablets_settings_updated(), 1u);
+
+  // Invalid empty settings.
+  controller_->SetGraphicsTabletSettings(
+      (DeviceId)kSampleGraphicsTabletInternal.id,
+      mojom::GraphicsTabletSettings::New());
+  EXPECT_EQ(observer_->num_graphics_tablets_settings_updated(), 1u);
+
+  // Invalid settings with a button remapping name more than 64 characters.
+  settings->tablet_button_remappings[0]->name =
+      "This is a really long name which is used to test the name max length";
+  controller_->SetGraphicsTabletSettings(
+      (DeviceId)kSampleGraphicsTabletInternal.id, settings.Clone());
+  EXPECT_EQ(observer_->num_graphics_tablets_settings_updated(), 1u);
+
+  // Valid settings with a button remapping name fewer than 64 characters.
+  settings->tablet_button_remappings[0]->name = "Short valid name";
+  controller_->SetGraphicsTabletSettings(
+      (DeviceId)kSampleGraphicsTabletInternal.id, settings.Clone());
+  EXPECT_EQ(observer_->num_graphics_tablets_settings_updated(), 2u);
+}
+
 TEST_F(InputDeviceSettingsControllerTest,
        RecordSetKeyboardSettingsValidMetric) {
   base::HistogramTester histogram_tester;
@@ -670,6 +799,37 @@ TEST_F(InputDeviceSettingsControllerTest, RecordSetMouseSettingsValidMetric) {
   histogram_tester.ExpectBucketCount(
       "ChromeOS.Settings.Device.Mouse.SetSettingsSucceeded", false,
       /*expected_count=*/1u);
+
+  // Set mouse with valid id and valid settings.
+  controller_->SetMouseSettings(/*id=*/3, mojom::MouseSettings::New());
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.Mouse.SetSettingsSucceeded", true,
+      /*expected_count=*/2u);
+
+  // Create invalid settings.
+  mojom::ButtonRemapping button_remapping(
+      /*name=*/"test",
+      /*button=*/
+      mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kBack),
+      /*remapping_action=*/
+      mojom::RemappingAction::NewAction(
+          ash::AcceleratorAction::kBrightnessDown));
+  std::vector<mojom::ButtonRemappingPtr> button_remappings;
+  button_remappings.push_back(button_remapping.Clone());
+  mojom::MouseSettingsPtr settings = mojom::MouseSettings::New(
+      /*swap_right=*/kDefaultSwapRight, /*sensitivity=*/kDefaultSensitivity,
+      /*reverse_scrolling=*/kDefaultReverseScrolling,
+      /*acceleration_enabled=*/kDefaultAccelerationEnabled,
+      /*scroll_sensitivity=*/kDefaultSensitivity,
+      /*scroll_acceleration=*/kDefaultScrollAcceleration,
+      /*button_remappings=*/mojo::Clone(button_remappings));
+
+  // Set mouse with valid id and invalid settings.
+  controller_->SetMouseSettings(
+      /*id=*/3, settings->Clone());
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Settings.Device.Mouse.SetSettingsSucceeded", false,
+      /*expected_count=*/2u);
 }
 
 // Tests that given an invalid id, keyboard settings are not updated and
@@ -790,7 +950,8 @@ TEST_F(InputDeviceSettingsControllerTest,
   // Test when policy status is kRecommended.
   std::unique_ptr<TestingPrefServiceSimple> pref_service =
       std::make_unique<TestingPrefServiceSimple>();
-  ash::RegisterUserProfilePrefs(pref_service->registry(), /*for_test=*/true);
+  ash::RegisterUserProfilePrefs(pref_service->registry(), /*country=*/"",
+                                /*for_test=*/true);
   controller_->OnActiveUserPrefServiceChanged(pref_service.get());
   pref_service->SetRecommendedPref(prefs::kSendFunctionKeys,
                                    base::Value(kDefaultTopRowAreFKeys));

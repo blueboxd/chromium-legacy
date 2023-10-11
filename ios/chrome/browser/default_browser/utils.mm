@@ -4,9 +4,9 @@
 
 #import "ios/chrome/browser/default_browser/utils.h"
 
+#import "base/apple/foundation_util.h"
 #import "base/command_line.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/metrics/field_trial_params.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
@@ -204,7 +204,7 @@ T* GetObjectFromStorageForKey(NSString* key) {
   }
 
   DCHECK(storage);
-  return base::mac::ObjCCast<T>(storage[key]);
+  return base::apple::ObjCCast<T>(storage[key]);
 }
 
 // Helper function to update storage with `dict`. If a key in `dict` maps
@@ -264,7 +264,7 @@ void LoadActiveDatesForKey(NSString* key,
 
   const base::Time now = base::Time::Now();
   for (NSObject* object : dates) {
-    NSDate* date = base::mac::ObjCCast<NSDate>(object);
+    NSDate* date = base::apple::ObjCCast<NSDate>(object);
     if (!date) {
       continue;
     }
@@ -292,7 +292,7 @@ std::vector<base::Time> LoadActiveTimestampsForKey(NSString* key,
 
   const base::Time now = base::Time::Now();
   for (NSObject* object : dates) {
-    NSDate* date = base::mac::ObjCCast<NSDate>(object);
+    NSDate* date = base::apple::ObjCCast<NSDate>(object);
     if (!date) {
       continue;
     }
@@ -662,10 +662,8 @@ bool IsDefaultBrowserPromoOnlyGenericArmTrain() {
          DefaultBrowserPromoGenericTailoredArm::kOnlyGeneric;
 }
 
-bool ShouldTriggerDefaultBrowserPromoOnOmniboxCopyPaste() {
-  return base::GetFieldTrialParamByFeatureAsBool(
-      kDefaultBrowserTriggerCriteriaExperiment,
-      kDefaultBrowserTriggerOnOmniboxCopyPaste, false);
+bool IsFullScreenPromoOnOmniboxCopyPasteEnabled() {
+  return base::FeatureList::IsEnabled(kFullScreenPromoOnOmniboxCopyPaste);
 }
 
 bool IsDBVideoPromoHalfscreenEnabled() {
@@ -973,11 +971,16 @@ bool ShouldRegisterPromoWithPromoManager(bool is_signed_in,
     return NO;
   }
 
-  // If in trigger criteria experiment, then show default browser promo if the
-  // promo show reason matches the experiment group.
+  // Consider showing full-screen promo on omnibox copy-paste event iff
+  // corresponding experiment is enabled.
+  if (IsFullScreenPromoOnOmniboxCopyPasteEnabled() != is_omnibox_copy_paste) {
+    return NO;
+  }
+
+  // If in trigger criteria experiment, then show default browser promo skipping
+  // further checks.
   if (IsDefaultBrowserTriggerCriteraExperimentEnabled()) {
-    return ShouldTriggerDefaultBrowserPromoOnOmniboxCopyPaste() ==
-           is_omnibox_copy_paste;
+    return YES;
   }
 
   // Consider showing the default browser promo if (1) the user has not seen a

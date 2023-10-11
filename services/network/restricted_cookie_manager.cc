@@ -4,6 +4,7 @@
 
 #include "services/network/restricted_cookie_manager.h"
 
+#include <cstdint>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -39,7 +40,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "services/network/public/mojom/network_service.mojom.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -50,13 +50,6 @@ namespace {
 // because it reduces calls by up to 90% on slow Android devices while not
 // adding a user-perceptible delay.
 constexpr base::TimeDelta kCookiesAccessedTimeout = base::Milliseconds(100);
-
-// TODO(cfredric): the `force_ignore_top_frame_party` param being false prevents
-// `document.cookie` access for same-party scripts embedded in an extension
-// frame. It would be better if we allowed that similarly to how we allow
-// SameParty cookies for requests in same-party contexts embedded in top-level
-// extension frames.
-const bool kForceIgnoreTopFrameParty = false;
 
 net::CookieOptions MakeOptionsForSet(
     mojom::RestrictedCookieManagerRole role,
@@ -125,8 +118,7 @@ void RestrictedCookieManager::ComputeFirstPartySetMetadata(
   absl::optional<net::FirstPartySetMetadata> metadata =
       net::cookie_util::ComputeFirstPartySetMetadataMaybeAsync(
           /*request_site=*/net::SchemefulSite(origin), isolation_info,
-          cookie_store->cookie_access_delegate(), kForceIgnoreTopFrameParty,
-          std::move(callbacks.first));
+          cookie_store->cookie_access_delegate(), std::move(callbacks.first));
   if (metadata.has_value())
     std::move(callbacks.second).Run(std::move(metadata.value()));
 }
@@ -378,11 +370,21 @@ RestrictedCookieManager::~RestrictedCookieManager() {
 }
 
 void RestrictedCookieManager::IncrementSharedVersion() {
+  CHECK(mapped_region_.IsValid());
   // Relaxed memory order since only the version is stored within the region
   // and as such is the only data shared between processes. There is no
   // re-ordering to worry about.
   mapped_region_.mapping.GetMemoryAs<SharedVersionType>()->fetch_add(
       1, std::memory_order_relaxed);
+}
+
+uint64_t RestrictedCookieManager::GetSharedVersion() {
+  CHECK(mapped_region_.IsValid());
+  // Relaxed memory order since only the version is stored within the region
+  // and as such is the only data shared between processes. There is no
+  // re-ordering to worry about.
+  return mapped_region_.mapping.GetMemoryAs<SharedVersionType>()->load(
+      std::memory_order_relaxed);
 }
 
 void RestrictedCookieManager::OnCookieSettingsChanged() {
@@ -689,11 +691,6 @@ void RestrictedCookieManager::SetCanonicalCookie(
     return;
   }
 
-  // The cookie is about to change, increment version. This is best effort
-  // change detection. Remove this line once proper change listening is set
-  // up as part of crbug.com/1393050.
-  IncrementSharedVersion();
-
   net::CanonicalCookie cookie_copy = *sanitized_cookie;
   net::CookieOptions options =
       MakeOptionsForSet(role_, url, site_for_cookies, cookie_settings());
@@ -776,6 +773,12 @@ void RestrictedCookieManager::SetCookieFromString(
     SetCookieFromStringCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // The cookie is about to be set. Proactively increment the version so it's
+  // instantly reflected. This ensures that changes a reflected before the
+  // optimistic callback invocation further down that unblocks the caller before
+  // the cookie is actually set.
+  IncrementSharedVersion();
+
   bool site_for_cookies_ok =
       BoundSiteForCookies().IsEquivalent(site_for_cookies);
   bool top_frame_origin_ok = top_frame_origin == BoundTopFrameOrigin();
@@ -785,9 +788,10 @@ void RestrictedCookieManager::SetCookieFromString(
 
   net::CookieInclusionStatus status;
   std::unique_ptr<net::CanonicalCookie> parsed_cookie =
-      net::CanonicalCookie::Create(url, cookie, base::Time::Now(),
-                                   absl::nullopt /* server_time */,
-                                   cookie_partition_key_, &status);
+      net::CanonicalCookie::Create(
+          url, cookie, base::Time::Now(), /*server_time=*/absl::nullopt,
+          cookie_partition_key_,
+          cookie_settings().are_truncated_cookies_blocked(), &status);
   if (!parsed_cookie) {
     if (cookie_observer_) {
       std::vector<network::mojom::CookieOrLineWithAccessResultPtr>
@@ -835,10 +839,32 @@ void RestrictedCookieManager::GetCookiesString(
   base::ReadOnlySharedMemoryRegion shared_memory_region;
   if (get_version_shared_memory) {
     shared_memory_region = mapped_region_.region.Duplicate();
+
+    // Clients can change their URL. If that happens the subscription needs to
+    // mirror that to get the correct updates.
+    bool new_url = cookie_store_subscription_ && change_subscribed_url_ != url;
+
+    if (!cookie_store_subscription_ || new_url) {
+      change_subscribed_url_ = url;
+      cookie_store_subscription_ =
+          cookie_store_->GetChangeDispatcher().AddCallbackForUrl(
+              url, cookie_partition_key_,
+              base::IgnoreArgs<const net::CookieChangeInfo&>(
+                  base::BindRepeating(
+                      &RestrictedCookieManager::IncrementSharedVersion,
+                      base::Unretained(this))));
+    }
   }
 
-  auto bound_callback =
-      base::BindOnce(std::move(callback), std::move(shared_memory_region));
+  // Bind the current shared cookie version to |callback| to be returned once
+  // the cookie string is retrieved. At that point the cookie version might have
+  // been incremented by actions that happened in the meantime. Returning a
+  // slightly stale version like this is still correct since it's a best effort
+  // mechanism to avoid unnecessary IPCs. When the version is stale an
+  // additional IPC will take place which is the way it would always be if there
+  // was not shared memory versioning.
+  auto bound_callback = base::BindOnce(std::move(callback), GetSharedVersion(),
+                                       std::move(shared_memory_region));
 
   // Match everything.
   auto match_options = mojom::CookieManagerGetOptions::New();

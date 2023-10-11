@@ -29,6 +29,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/touch_selection/touch_selection_magnifier_aura.h"
+#include "ui/touch_selection/touch_selection_metrics.h"
 #include "ui/touch_selection/vector_icons/vector_icons.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/views_delegate.h"
@@ -341,6 +342,10 @@ class TouchSelectionControllerImpl::EditingHandleView : public View {
         is_dragging_ = false;
         GetWidget()->ReleaseCapture();
         controller_->OnDragEnd();
+        ui::RecordTouchSelectionDrag(
+            is_cursor_handle_
+                ? ui::TouchSelectionDragType::kCursorHandleDrag
+                : ui::TouchSelectionDragType::kSelectionHandleDrag);
         break;
       }
       default:
@@ -735,6 +740,11 @@ void TouchSelectionControllerImpl::OnEvent(const ui::Event& event) {
 }
 
 void TouchSelectionControllerImpl::QuickMenuTimerFired() {
+  auto* menu_runner = ui::TouchSelectionMenuRunner::GetInstance();
+  if (!menu_runner) {
+    return;
+  }
+
   gfx::Rect menu_anchor = GetQuickMenuAnchorRect();
   if (menu_anchor == gfx::Rect())
     return;
@@ -752,9 +762,8 @@ void TouchSelectionControllerImpl::QuickMenuTimerFired() {
     handle_image_size = GetMaxHandleImageSize();
   }
 
-  ui::TouchSelectionMenuRunner::GetInstance()->OpenMenu(
-      GetWeakPtr(), menu_anchor, handle_image_size,
-      client_view_->GetNativeView());
+  menu_runner->OpenMenu(GetWeakPtr(), menu_anchor, handle_image_size,
+                        client_view_->GetNativeView());
 }
 
 void TouchSelectionControllerImpl::StartQuickMenuTimer() {
@@ -774,8 +783,10 @@ void TouchSelectionControllerImpl::UpdateQuickMenu() {
 }
 
 void TouchSelectionControllerImpl::HideQuickMenu() {
-  if (ui::TouchSelectionMenuRunner::GetInstance()->IsRunning())
-    ui::TouchSelectionMenuRunner::GetInstance()->CloseMenu();
+  auto* menu_runner = ui::TouchSelectionMenuRunner::GetInstance();
+  if (menu_runner && menu_runner->IsRunning()) {
+    menu_runner->CloseMenu();
+  }
   quick_menu_timer_.Stop();
 }
 

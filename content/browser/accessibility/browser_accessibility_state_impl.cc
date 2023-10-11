@@ -6,12 +6,13 @@
 
 #include <stddef.h>
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/functional/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
@@ -27,6 +28,10 @@
 #include "ui/gfx/color_utils.h"
 
 namespace content {
+
+namespace {
+
+BrowserAccessibilityStateImpl* g_instance = nullptr;
 
 // Auto-disable accessibility if this many seconds elapse with user input
 // events but no accessibility API usage.
@@ -66,31 +71,41 @@ void RecordNewAccessibilityModeFlags(
 // Update the accessibility histogram 45 seconds after initialization.
 static const int ACCESSIBILITY_HISTOGRAM_DELAY_SECS = 45;
 
+}  // namespace
+
 // static
 BrowserAccessibilityState* BrowserAccessibilityState::GetInstance() {
   return BrowserAccessibilityStateImpl::GetInstance();
+}
+
+// static
+BrowserAccessibilityStateImpl* BrowserAccessibilityStateImpl::GetInstance() {
+  CHECK(g_instance);
+  return g_instance;
 }
 
 // On Android, Mac, Lacros, and Windows there are platform-specific subclasses.
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_MAC) && \
     !BUILDFLAG(IS_CHROMEOS_LACROS)
 // static
-BrowserAccessibilityStateImpl* BrowserAccessibilityStateImpl::GetInstance() {
-  static base::NoDestructor<BrowserAccessibilityStateImpl> instance;
-  return &*instance;
+std::unique_ptr<BrowserAccessibilityStateImpl>
+BrowserAccessibilityStateImpl::Create() {
+  return base::WrapUnique(new BrowserAccessibilityStateImpl());
 }
 #endif
 
 BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
     : BrowserAccessibilityState(),
       histogram_delay_(base::Seconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS)) {
-  bool use_command_line_value = false;
+  DCHECK_EQ(g_instance, nullptr);
+  g_instance = this;
+
+  bool disallow_changes = false;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRendererAccessibility)) {
-    use_command_line_value = true;
+    disallow_changes = true;
   } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
                  switches::kForceRendererAccessibility)) {
-    use_command_line_value = true;
 #if BUILDFLAG(IS_WIN)
     std::string ax_mode_bundle = base::WideToUTF8(
         base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
@@ -101,17 +116,19 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
             switches::kForceRendererAccessibility);
 #endif
 
-    // For backwards compatibility, allow parameter to be empty and do not force
-    // mode in that scenario.
-    if (!ax_mode_bundle.empty()) {
+    if (ax_mode_bundle.empty()) {
+      // For backwards compatibility, when --force-renderer-accessibility has no
+      // parameter, use the complete bundle but allow changes.
+      AddAccessibilityModeFlags(ui::kAXModeComplete);
+    } else {
       // Support --force-renderer-accessibility=[basic|form-controls|complete]
+      disallow_changes = true;
       if (ax_mode_bundle.compare(kAXModeBundleBasic) == 0) {
         AddAccessibilityModeFlags(ui::kAXModeBasic);
       } else if (ax_mode_bundle.compare(kAXModeBundleFormControls) == 0) {
         AddAccessibilityModeFlags(ui::kAXModeFormControls);
       } else {
-        // If AXMode is 'complete' or invalid, default to complete
-        // bundle.
+        // If AXMode is 'complete' or invalid, default to complete bundle.
         AddAccessibilityModeFlags(ui::kAXModeComplete);
       }
     }
@@ -120,7 +137,7 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   // Hook ourselves up to observe ax mode changes.
   ui::AXPlatformNode::AddAXModeObserver(this);
 
-  if (use_command_line_value) {
+  if (disallow_changes) {
     DisallowAXModeChanges();
   }
 }
@@ -149,6 +166,9 @@ void BrowserAccessibilityStateImpl::InitBackgroundTasks() {
 }
 
 BrowserAccessibilityStateImpl::~BrowserAccessibilityStateImpl() {
+  DCHECK_EQ(g_instance, this);
+  g_instance = nullptr;
+
   // Remove ourselves from the AXMode global observer list.
   ui::AXPlatformNode::RemoveAXModeObserver(this);
 }

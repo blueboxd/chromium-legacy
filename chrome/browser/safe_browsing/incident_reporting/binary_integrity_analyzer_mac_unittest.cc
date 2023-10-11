@@ -10,11 +10,11 @@
 #include <memory>
 
 #include "base/apple/bundle_locations.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
@@ -106,7 +106,7 @@ TEST_F(BinaryIntegrityAnalyzerMacTest, GetCriticalPathsAndRequirements) {
     EXPECT_EQ(paths_and_requirements[i].requirement,
               paths_and_requirements_expected[i].requirement);
 
-    base::ScopedCFTypeRef<SecRequirementRef> requirement;
+    base::apple::ScopedCFTypeRef<SecRequirementRef> requirement;
     EXPECT_EQ(
         errSecSuccess,
         SecRequirementCreateWithString(

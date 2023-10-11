@@ -27,12 +27,13 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/autofill_trigger_source.h"
+#include "components/autofill/core/browser/autofill_trigger_details.h"
 #include "components/autofill/core/browser/field_filler.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_autofill_history.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/form_types.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/fallback_autocomplete_unrecognized_metrics.h"
 #include "components/autofill/core/browser/metrics/form_events/address_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/form_events/credit_card_form_event_logger.h"
@@ -43,7 +44,6 @@
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/single_field_form_fill_router.h"
-#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/ui/fast_checkout_delegate.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
@@ -63,7 +63,6 @@ namespace autofill {
 class AutofillField;
 class AutofillClient;
 class AutofillSuggestionGenerator;
-class BrowserAutofillManagerTestDelegate;
 class AutofillProfile;
 class AutofillType;
 class CreditCard;
@@ -135,20 +134,6 @@ class BrowserAutofillManager : public AutofillManager,
   virtual void RefetchCardsAndUpdatePopup(const FormData& form,
                                           const FormFieldData& field_data);
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  // Returns the list of credit cards that have associated cloud token data.
-  virtual void FetchVirtualCardCandidates();
-
-  // Callback invoked when an actual card is selected. |selected_card_id| will
-  // be used to identify the card. The selected card's cloud token data will be
-  // fetched from the server.
-  // TODO(crbug.com/1020740): Passes card server id for now. In the future when
-  // one actual credit card can have multiple virtual cards, passes instrument
-  // token instead. Design TBD.
-  virtual void OnVirtualCardCandidateSelected(
-      const std::string& selected_card_id);
-#endif
-
   // Called from our external delegate so they cannot be private.
   // TODO(crbug.com/1330108): Clean up the API.
   virtual void FillOrPreviewForm(
@@ -156,12 +141,13 @@ class BrowserAutofillManager : public AutofillManager,
       const FormData& form,
       const FormFieldData& field,
       Suggestion::BackendId backend_id,
-      const AutofillTriggerSource trigger_source);
-  void FillCreditCardFormImpl(const FormData& form,
-                              const FormFieldData& field,
-                              const CreditCard& credit_card,
-                              const std::u16string& cvc,
-                              AutofillTriggerSource trigger_source) override;
+      const AutofillTriggerDetails& trigger_details);
+  void FillCreditCardFormImpl(
+      const FormData& form,
+      const FormFieldData& field,
+      const CreditCard& credit_card,
+      const std::u16string& cvc,
+      const AutofillTriggerDetails& trigger_details) override;
   // Reverts the last autofill operation on `form` that affected
   // `trigger_field`, virtual for testing. `renderer_action` denotes whether
   // this is an actual filling or a preview operation on the renderer side.
@@ -182,13 +168,14 @@ class BrowserAutofillManager : public AutofillManager,
       const FormData& form,
       const FormFieldData& field,
       const CreditCard* credit_card,
-      const AutofillTriggerSource trigger_source);
+      const AutofillTriggerDetails& trigger_details);
 
   // TODO(crbug.com/1330108): Clean up the API.
-  void FillProfileFormImpl(const FormData& form,
-                           const FormFieldData& field,
-                           const AutofillProfile& profile,
-                           AutofillTriggerSource trigger_source) override;
+  void FillProfileFormImpl(
+      const FormData& form,
+      const FormFieldData& field,
+      const AutofillProfile& profile,
+      const AutofillTriggerDetails& trigger_details) override;
 
   // Fetches the related virtual card information given the related actual card
   // |guid| and fills the information into the form.
@@ -198,7 +185,7 @@ class BrowserAutofillManager : public AutofillManager,
       const std::string& guid,
       const FormData& form,
       const FormFieldData& field,
-      const AutofillTriggerSource trigger_source);
+      const AutofillTriggerDetails& trigger_details);
 
   // Returns true if the value/identifier is deletable. Fills out
   // |title| and |body| with relevant user-facing text.
@@ -232,9 +219,6 @@ class BrowserAutofillManager : public AutofillManager,
 
   const std::string& app_locale() const { return app_locale_; }
 
-  // Only for testing.
-  void SetTestDelegate(BrowserAutofillManagerTestDelegate* delegate);
-
   // Will send an upload based on the |form_structure| data and the local
   // Autofill profile data. |observed_submission| is specified if the upload
   // follows an observed submission event. Returns false if the upload couldn't
@@ -250,13 +234,6 @@ class BrowserAutofillManager : public AutofillManager,
   // Upload the current pending form.
   void ProcessPendingFormForUpload();
 
-  // Invoked when the popup view can't be created. Main usage is to collect
-  // metrics.
-  void DidSuppressPopup(const FormData& form, const FormFieldData& field);
-
-  // Invoked when the "suggestions" popup is hidden.
-  void DidHidePopup();
-
   // AutofillManager:
   base::WeakPtr<AutofillManager> GetWeakPtr() override;
   CreditCardAccessManager* GetCreditCardAccessManager() override;
@@ -267,17 +244,14 @@ class BrowserAutofillManager : public AutofillManager,
                               const gfx::RectF& bounding_box) override;
   void OnDidFillAutofillFormDataImpl(const FormData& form,
                                      const base::TimeTicks timestamp) override;
-  void OnDidPreviewAutofillFormDataImpl() override;
   void OnDidEndTextFieldEditingImpl() override;
   void OnHidePopupImpl() override;
-  void OnSelectOrSelectMenuFieldOptionsDidChangeImpl(
+  void OnSelectOrSelectListFieldOptionsDidChangeImpl(
       const FormData& form) override;
   void OnJavaScriptChangedAutofilledValueImpl(
       const FormData& form,
       const FormFieldData& field,
       const std::u16string& old_value) override;
-  void PropagateAutofillPredictionsDeprecated(
-      const std::vector<FormStructure*>& forms) override;
   void Reset() override;
   void OnContextMenuShownInField(const FormGlobalId& form_global_id,
                                  const FieldGlobalId& field_global_id) override;
@@ -460,7 +434,7 @@ class BrowserAutofillManager : public AutofillManager,
     // The timer used to trigger a refill.
     base::OneShotTimer on_refill_timer;
     // The field type groups that were initially filled.
-    std::set<FieldTypeGroup> type_groups_originally_filled;
+    DenseSet<FieldTypeGroup> type_groups_originally_filled;
     // If populated, this map determines which values will be filled into a
     // field (it does not matter whether the field already contains a value).
     std::map<FieldGlobalId, std::u16string> forced_fill_values;
@@ -482,15 +456,14 @@ class BrowserAutofillManager : public AutofillManager,
       const FormStructure& form_structure,
       const FormFieldData& trigger_field,
       const Section& filling_section,
-      const absl::optional<CreditCard>& optional_credit_card,
-      const std::set<FieldTypeGroup>& type_groups_originally_filled,
+      const CreditCard* optional_credit_card,
+      const DenseSet<FieldTypeGroup>* optional_type_groups_originally_filled,
       bool skip_unrecognized_autocomplete_fields,
       bool is_refill) const;
 
   // CreditCardAccessManager::Accessor
   void OnCreditCardFetched(CreditCardFetchResult result,
-                           const CreditCard* credit_card,
-                           const std::u16string& cvc) override;
+                           const CreditCard* credit_card) override;
 
   // Returns false if Autofill is disabled or if no Autofill data is available.
   bool RefreshDataModels();
@@ -518,7 +491,7 @@ class BrowserAutofillManager : public AutofillManager,
       const FormData& form,
       const FormFieldData& field,
       const AutofillProfile& profile,
-      const AutofillTriggerSource trigger_source);
+      const AutofillTriggerDetails& trigger_details);
 
   // Fills or previews |data_model| in the |form|.
   // TODO(crbug.com/1330108): Clean up the API.
@@ -531,7 +504,7 @@ class BrowserAutofillManager : public AutofillManager,
       const std::u16string* optional_cvc,
       FormStructure* form_structure,
       AutofillField* autofill_field,
-      const AutofillTriggerSource trigger_source,
+      const AutofillTriggerDetails trigger_details,
       bool is_refill = false);
 
   // Returns true if the field value should not be overridden by Autofill.
@@ -656,12 +629,12 @@ class BrowserAutofillManager : public AutofillManager,
 
   // Schedules a call of TriggerRefill. Virtual for testing.
   virtual void ScheduleRefill(const FormData& form,
-                              const AutofillTriggerSource trigger_source);
+                              const AutofillTriggerDetails& trigger_details);
 
   // Attempts to refill the form that was changed dynamically. Should only be
   // called if ShouldTriggerRefill returns true.
   void TriggerRefill(const FormData& form,
-                     const AutofillTriggerSource trigger_source);
+                     const AutofillTriggerDetails& trigger_details);
 
   // This function is called by JavaScriptChangedAutofilledValue and may trigger
   // a refill in case the website used JavaScript to reformat an expiration date
@@ -671,7 +644,7 @@ class BrowserAutofillManager : public AutofillManager,
       const FormData& form,
       const FormFieldData& field,
       const std::u16string& old_value,
-      const AutofillTriggerSource trigger_source);
+      const AutofillTriggerDetails& trigger_details);
 
   // Checks whether JavaScript cleared an autofilled value within
   // kLimitBeforeRefill after the filling and records metrics for this. This
@@ -701,11 +674,6 @@ class BrowserAutofillManager : public AutofillManager,
       const std::vector<AutofillProfile>& profiles,
       FormStructure* form_structure);
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  // Whether to show the option to use virtual card in the autofill popup.
-  bool ShouldShowVirtualCardOption(FormStructure* form_structure);
-#endif
-
   // Returns an appropriate EventFormLogger, depending on the given `field`'s
   // type. May return nullptr.
   autofill_metrics::FormEventLoggerBase* GetEventFormLogger(
@@ -728,6 +696,10 @@ class BrowserAutofillManager : public AutofillManager,
   // form should not be a search form, the forms should have at least one
   // focusable input field with a type from heuristics or the server.
   bool ShouldUploadUkm(const FormStructure& form_structure);
+
+  // Returns a plus address suggestion, if eligible, using `client()`'s
+  // `GetPlusAddressService`.
+  absl::optional<Suggestion> MaybeGetPlusAddressSuggestion();
 
   // Delegates to perform external processing (display, selection) on
   // our behalf.
@@ -811,16 +783,14 @@ class BrowserAutofillManager : public AutofillManager,
   CreditCard credit_card_;
   std::u16string last_unlocked_credit_card_cvc_;
 
-  // Delegate used in test to get notifications on certain events.
-  raw_ptr<BrowserAutofillManagerTestDelegate> test_delegate_ = nullptr;
-
   // A map from FormGlobalId to FillingContext instances used to make refill
   // attempts for dynamic forms.
   std::map<FormGlobalId, std::unique_ptr<FillingContext>> filling_context_;
 
   // Used to record metrics. This should be set at the beginning of the
   // interaction and re-used throughout the context of this manager.
-  AutofillSyncSigninState sync_state_ = AutofillSyncSigninState::kNumSyncStates;
+  AutofillMetrics::PaymentsSigninState signin_state_for_metrics_ =
+      AutofillMetrics::PaymentsSigninState::kUnknown;
 
   // Helps with measuring whether phone number is collected and whether it is in
   // conjunction with WebOTP or OneTimeCode (OTC).

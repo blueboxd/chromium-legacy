@@ -14,8 +14,8 @@
 
 #include <memory>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/logging.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/power_monitor/power_observer.h"
@@ -111,7 +111,7 @@ ThermalStateObserverMac::GetCurrentThermalState() {
 }
 
 int ThermalStateObserverMac::GetCurrentSpeedLimit() {
-  base::ScopedCFTypeRef<CFDictionaryRef> dictionary;
+  apple::ScopedCFTypeRef<CFDictionaryRef> dictionary;
   IOReturn result = IOPMCopyCPUPowerStatus(dictionary.InitializeInto());
   if (result != kIOReturnSuccess) {
     DVLOG(1) << __func__

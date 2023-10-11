@@ -31,6 +31,17 @@ const char kShowMacOverlayBorders[] = "show-mac-overlay-borders";
 const char kEnableResourcesFileSharing[] = "enable-resources-file-sharing";
 #endif
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+// Specifies system font family name. Improves determenism when rendering
+// pages in headless mode.
+const char kSystemFontFamily[] = "system-font-family";
+#endif
+
+#if BUILDFLAG(IS_LINUX)
+// Specify the toolkit used to construct the Linux GUI.
+const char kUiToolkitFlag[] = "ui-toolkit";
+#endif
+
 // Disables layer-edge anti-aliasing in the compositor.
 const char kDisableCompositedAntialiasing[] = "disable-composited-antialiasing";
 

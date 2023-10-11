@@ -34,6 +34,7 @@
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/smb_client/smb_file_system_id.h"
 #include "chrome/browser/ash/smb_client/smb_persisted_share_registry.h"
+#include "chrome/browser/ui/webui/ash/smb_shares/smb_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -48,6 +49,7 @@
 #include "chromeos/ash/components/smbfs/smbfs_mounter.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_web_ui.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,6 +64,20 @@ using ::testing::WithArg;
 using ::testing::WithArgs;
 
 namespace ash {
+
+namespace {
+class TestSmbHandler : public smb_dialog::SmbHandler {
+ public:
+  explicit TestSmbHandler(Profile* profile)
+      : SmbHandler(profile, base::DoNothing()) {}
+  ~TestSmbHandler() override = default;
+
+  // Make public for testing.
+  using SmbHandler::HandleHasAnySmbMountedBefore;
+  using SmbHandler::set_web_ui;
+};
+}  // namespace
+
 namespace smb_client {
 
 namespace {
@@ -76,10 +92,6 @@ constexpr char kInvalidShareUrl[] = "smb://server";
 constexpr char kDisplayName[] = "My Share";
 constexpr char kMountPath[] = "/share/mount/path";
 constexpr char kMountPath2[] = "/share/mount/second_path";
-
-constexpr char kTestADUser[] = "ad-test-user";
-constexpr char kTestADDomain[] = "foobar.corp";
-constexpr char kTestADGuid[] = "ad-user-guid";
 
 void SaveMountResult(SmbMountResult* out, SmbMountResult result) {
   *out = result;
@@ -158,13 +170,6 @@ class SmbServiceWithSmbfsTest : public testing::Test {
     user_manager_temp->AddUser(
         AccountId::FromUserEmail(profile_->GetProfileUserName()));
 
-    ad_profile_ = profile_manager_->CreateTestingProfile(
-        base::StrCat({kTestADUser, "@", kTestADDomain}));
-    user_manager_temp->AddUserWithAffiliationAndTypeAndProfile(
-        AccountId::AdFromUserEmailObjGuid(ad_profile_->GetProfileUserName(),
-                                          kTestADGuid),
-        false, user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY, ad_profile_);
-
     // Run pending async tasks resulting from profile construction to ensure
     // these are complete before the test begins.
     base::RunLoop().RunUntilIdle();
@@ -180,6 +185,7 @@ class SmbServiceWithSmbfsTest : public testing::Test {
   }
 
   ~SmbServiceWithSmbfsTest() override {
+    handler_.reset();
     smb_service_.reset();
     user_manager_enabler_.reset();
     profile_manager_.reset();
@@ -187,6 +193,24 @@ class SmbServiceWithSmbfsTest : public testing::Test {
     ConciergeClient::Shutdown();
     SmbProviderClient::Shutdown();
   }
+
+  // TODO(b/297568333): Split SmbHandler tests from SmbService tests.
+  void VerifyHasSmbMountedBeforeResult(bool expected_result) {
+    base::Value::List args;
+    args.Append("callback-id");
+    handler()->HandleHasAnySmbMountedBefore(args);
+
+    const content::TestWebUI::CallData& call_data =
+        *web_ui()->call_data().back();
+
+    EXPECT_EQ("cr.webUIResponse", call_data.function_name());
+    EXPECT_EQ("callback-id", call_data.arg1()->GetString());
+    EXPECT_TRUE(call_data.arg2()->GetBool());
+    EXPECT_EQ(expected_result, call_data.arg3()->GetBool());
+  }
+
+  TestSmbHandler* handler() { return handler_.get(); }
+  content::TestWebUI* web_ui() { return &web_ui_; }
 
   void CreateService(TestingProfile* profile) {
     SmbService::DisableShareDiscoveryForTesting();
@@ -308,18 +332,18 @@ class SmbServiceWithSmbfsTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_{
       content::BrowserTaskEnvironment::REAL_IO_THREAD};
   base::test::ScopedFeatureList scoped_feature_list_;
-  raw_ptr<disks::FakeDiskMountManager, ExperimentalAsh> disk_mount_manager_ =
-      new disks::FakeDiskMountManager;
+  raw_ptr<disks::FakeDiskMountManager, DanglingUntriaged | ExperimentalAsh>
+      disk_mount_manager_ = new disks::FakeDiskMountManager;
 
   // Not owned.
-  raw_ptr<TestingProfile, ExperimentalAsh> profile_ = nullptr;
-
-  // Not owned.
-  raw_ptr<TestingProfile, ExperimentalAsh> ad_profile_ = nullptr;
+  raw_ptr<TestingProfile, DanglingUntriaged | ExperimentalAsh> profile_ =
+      nullptr;
 
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<SmbService> smb_service_;
+  std::unique_ptr<TestSmbHandler> handler_;
+  content::TestWebUI web_ui_;
 };
 
 TEST_F(SmbServiceWithSmbfsTest, InvalidUrls) {
@@ -501,76 +525,6 @@ TEST_F(SmbServiceWithSmbfsTest, Mount_SaveCredentials) {
   EXPECT_TRUE(info->workgroup().empty());
   EXPECT_FALSE(info->use_kerberos());
   EXPECT_FALSE(info->password_salt().empty());
-}
-
-TEST_F(SmbServiceWithSmbfsTest, Mount_ActiveDirectory) {
-  CreateService(ad_profile_);
-  WaitForSetupComplete();
-
-  mojo::Remote<smbfs::mojom::SmbFs> smbfs_remote;
-  MockSmbFsImpl smbfs_impl(smbfs_remote.BindNewPipeAndPassReceiver());
-  mojo::Remote<smbfs::mojom::SmbFsDelegate> smbfs_delegate_remote;
-
-  smbfs::SmbFsHost::Delegate* smbfs_host_delegate = nullptr;
-  std::unique_ptr<MockSmbFsMounter> mock_mounter =
-      std::make_unique<MockSmbFsMounter>();
-  smb_service_->SetSmbFsMounterCreationCallbackForTesting(
-      base::BindLambdaForTesting([&mock_mounter, &smbfs_host_delegate](
-                                     const std::string& share_path,
-                                     const std::string& mount_dir_name,
-                                     const SmbFsShare::MountOptions& options,
-                                     smbfs::SmbFsHost::Delegate* delegate)
-                                     -> std::unique_ptr<smbfs::SmbFsMounter> {
-        EXPECT_EQ(share_path, kShareUrl);
-        // Username/workgroup/password are ignored when using Active
-        // Directory. Username/workgroup are derived from the account email
-        // address. Password is unused and dropped.
-        EXPECT_EQ(options.username, kTestADUser);
-        // Workgroup/domain is converted to upper-case.
-        EXPECT_EQ(options.workgroup, base::ToUpperASCII(kTestADDomain));
-        EXPECT_TRUE(options.password.empty());
-        EXPECT_TRUE(options.allow_ntlm);
-        EXPECT_EQ(
-            options.kerberos_options->source,
-            smbfs::SmbFsMounter::KerberosOptions::Source::kActiveDirectory);
-        EXPECT_EQ(options.kerberos_options->identity, kTestADGuid);
-        smbfs_host_delegate = delegate;
-        return std::move(mock_mounter);
-      }));
-  EXPECT_CALL(*mock_mounter, Mount(_))
-      .WillOnce(
-          [this, &smbfs_host_delegate, &smbfs_remote,
-           &smbfs_delegate_remote](smbfs::SmbFsMounter::DoneCallback callback) {
-            std::move(callback).Run(
-                smbfs::mojom::MountError::kOk,
-                std::make_unique<smbfs::SmbFsHost>(
-                    MakeMountPoint(base::FilePath(kMountPath)),
-                    smbfs_host_delegate, std::move(smbfs_remote),
-                    smbfs_delegate_remote.BindNewPipeAndPassReceiver()));
-          });
-
-  base::RunLoop run_loop;
-  smb_service_->Mount(
-      kDisplayName, base::FilePath(kSharePath),
-      base::StrCat({kTestUser, "@", kTestDomain}), kTestPassword,
-      true /* use_kerberos */, false /* should_open_file_manager_after_mount */,
-      false /* save_credentials */,
-      base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
-        EXPECT_EQ(SmbMountResult::kSuccess, result);
-        run_loop.Quit();
-      }));
-  run_loop.Run();
-
-  // Check that the share was saved.
-  SmbPersistedShareRegistry registry(ad_profile_);
-  absl::optional<SmbShareInfo> info = registry.Get(SmbUrl(kShareUrl));
-  ASSERT_TRUE(info);
-  EXPECT_EQ(info->share_url().ToString(), kShareUrl);
-  EXPECT_EQ(info->display_name(), kDisplayName);
-  EXPECT_EQ(info->username(), kTestADUser);
-  // Workgroup/domain is converted to upper-case.
-  EXPECT_EQ(info->workgroup(), base::ToUpperASCII(kTestADDomain));
-  EXPECT_TRUE(info->use_kerberos());
 }
 
 TEST_F(SmbServiceWithSmbfsTest, MountPreconfigured) {
@@ -826,6 +780,77 @@ TEST_F(SmbServiceWithSmbfsTest, MountDuplicate) {
                                 base::BindOnce([](SmbMountResult result) {
                                   EXPECT_EQ(SmbMountResult::kSuccess, result);
                                 }));
+}
+
+TEST_F(SmbServiceWithSmbfsTest, IsAnySmbShareAdded) {
+  CreateService(profile_);
+  WaitForSetupComplete();
+  EXPECT_FALSE(smb_service_->IsAnySmbShareConfigured());
+
+  // Add a share
+  std::ignore = MountBasicShare(kSharePath, kMountPath,
+                                base::BindOnce([](SmbMountResult result) {
+                                  EXPECT_EQ(SmbMountResult::kSuccess, result);
+                                }));
+
+  EXPECT_TRUE(smb_service_->IsAnySmbShareConfigured());
+}
+
+TEST_F(SmbServiceWithSmbfsTest, IsAnySmbShareConfigured) {
+  // Add a preconfigured share
+  const char kPreconfiguredShares[] =
+      R"([{"mode":"pre_mount","share_url":"\\\\preconfigured\\share"}])";
+  auto parsed_shares = base::JSONReader::Read(kPreconfiguredShares);
+  ASSERT_TRUE(parsed_shares);
+  profile_->GetPrefs()->Set(prefs::kNetworkFileSharesPreconfiguredShares,
+                            *parsed_shares);
+
+  CreateService(profile_);
+  EXPECT_TRUE(smb_service_->IsAnySmbShareConfigured());
+}
+
+TEST_F(SmbServiceWithSmbfsTest, TestSmbHandlerNoSmbMountedBeforeWithoutSmb) {
+  handler_ = std::make_unique<TestSmbHandler>(profile_);
+  handler_->set_web_ui(&web_ui_);
+  handler_->RegisterMessages();
+  handler_->AllowJavascriptForTesting();
+
+  VerifyHasSmbMountedBeforeResult(false);
+}
+
+TEST_F(SmbServiceWithSmbfsTest, TestSmbHandlerNoSmbMountedBeforeWithSmb) {
+  handler_ = std::make_unique<TestSmbHandler>(profile_);
+  if (!smb_service_) {
+    // Create smb service.
+    smb_service_ = std::make_unique<SmbService>(
+        profile_, std::make_unique<base::SimpleTestTickClock>());
+  }
+
+  handler_->SetSmbServiceForTesting(smb_service_.get());
+  handler_->set_web_ui(&web_ui_);
+  handler_->RegisterMessages();
+  handler_->AllowJavascriptForTesting();
+
+  VerifyHasSmbMountedBeforeResult(false);
+}
+
+TEST_F(SmbServiceWithSmbfsTest, TestSmbHandlerSmbMountedBeforeWithSmb) {
+  handler_ = std::make_unique<TestSmbHandler>(profile_);
+  CreateService(profile_);
+  WaitForSetupComplete();
+
+  // Add a share
+  std::ignore = MountBasicShare(kSharePath, kMountPath,
+                                base::BindOnce([](SmbMountResult result) {
+                                  EXPECT_EQ(SmbMountResult::kSuccess, result);
+                                }));
+
+  handler_->SetSmbServiceForTesting(smb_service_.get());
+  handler_->set_web_ui(&web_ui_);
+  handler_->RegisterMessages();
+  handler_->AllowJavascriptForTesting();
+
+  VerifyHasSmbMountedBeforeResult(true);
 }
 
 }  // namespace smb_client

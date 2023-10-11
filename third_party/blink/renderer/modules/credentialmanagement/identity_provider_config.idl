@@ -6,10 +6,11 @@
 
 dictionary IdentityProviderConfig {
   // URL for the Identity Provider Configuration.
-  required USVString configURL;
-  required USVString clientId;
+  USVString configURL;
+  USVString clientId;
   USVString nonce;
   DOMString loginHint;
+  [RuntimeEnabled=FedCmHostedDomain] DOMString hostedDomain;
   [RuntimeEnabled=FedCmAuthz] sequence<USVString> scope;
   [RuntimeEnabled=FedCmAuthz] sequence<USVString> responseType;
   [RuntimeEnabled=FedCmAuthz] record<USVString, USVString> params;

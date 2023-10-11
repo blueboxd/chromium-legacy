@@ -111,6 +111,11 @@ void PrintJobWorkerOop::StartPrinting(PrintedDocument* new_document) {
                                 document_name));
 }
 
+void PrintJobWorkerOop::Cancel() {
+  PrintJobWorker::Cancel();
+  PrintJobWorkerOop::OnCancel();
+}
+
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 void PrintJobWorkerOop::CleanupAfterContentAnalysisDenial() {
   PrintJobWorker::CleanupAfterContentAnalysisDenial();
@@ -203,7 +208,9 @@ void PrintJobWorkerOop::OnDidDocumentDone(int job_id,
   UnregisterServiceManagerClient();
   base::UmaHistogramEnumeration(kPrintOopPrintResultHistogramName,
                                 PrintOopResult::kSuccessful);
-  FinishDocumentDone(job_id);
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&PrintJobWorkerOop::FinishDocumentDone,
+                                worker_weak_factory_.GetWeakPtr(), job_id));
 
   // Also done with private document reference.
   document_oop_ = nullptr;
@@ -239,7 +246,7 @@ bool PrintJobWorkerOop::SpoolPage(PrintedPage* page) {
   DCHECK_NE(page_number(), PageNumber::npos());
 
 #if !defined(NDEBUG)
-  DCHECK(document_oop_->IsPageInList(*page));
+  DCHECK(document()->IsPageInList(*page));
 #endif
 
   const MetafilePlayer* metafile = page->metafile();
@@ -270,7 +277,7 @@ bool PrintJobWorkerOop::SpoolPage(PrintedPage* page) {
 bool PrintJobWorkerOop::SpoolDocument() {
   DCHECK(task_runner()->RunsTasksInCurrentSequence());
 
-  const MetafilePlayer* metafile = document_oop_->GetMetafile();
+  const MetafilePlayer* metafile = document()->GetMetafile();
   DCHECK(metafile);
   base::MappedReadOnlyRegion region_mapping =
       metafile->GetDataAsSharedMemoryRegion();
@@ -391,10 +398,19 @@ void PrintJobWorkerOop::NotifyFailure(mojom::ResultCode result) {
   }
   base::UmaHistogramEnumeration(kPrintOopPrintResultHistogramName, uma_result);
 
+  if (!document_oop_) {
+    // If no document has been started for printing then don't send cancel.
+    return;
+  }
+
   // Initiate rest of regular failure handling.
   SendCancel(base::BindOnce(&PrintJobWorkerOop::OnDidCancel,
                             ui_weak_factory_.GetWeakPtr(),
                             base::WrapRefCounted(print_job()), result));
+}
+
+void PrintJobWorkerOop::FinishDocumentDone(int job_id) {
+  PrintJobWorker::FinishDocumentDone(job_id);
 }
 
 void PrintJobWorkerOop::SendEstablishPrintingContext() {
@@ -471,6 +487,13 @@ void PrintJobWorkerOop::SendRenderPrintedPage(
   // Page numbers are 0-based for the printing context.
   const uint32_t page_index = page->page_number() - 1;
   const int32_t document_cookie = document_oop_->cookie();
+  if (print_cancel_requested_) {
+    VLOG(1) << "Dropping page " << page_index << " of document "
+            << document_cookie << " to `" << device_name_
+            << "` because job was canceled";
+    return;
+  }
+
   VLOG(1) << "Sending page " << page_index << " of document " << document_cookie
           << " to `" << device_name_ << "` for printing";
   PrintBackendServiceManager& service_mgr =

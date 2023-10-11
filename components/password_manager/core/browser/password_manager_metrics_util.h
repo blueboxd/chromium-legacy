@@ -317,7 +317,8 @@ enum class PasswordType {
   // Passwords used for Chrome sign-in and is closest ("blessed") to be set to
   // sync when signed into multiple profiles if user wants to set up sync.
   // The primary account is equivalent to the "sync account" if this profile has
-  // enabled sync.
+  // enabled history sync. Note: if sync is enabled, but the history datatype
+  // is not enabled, the account is not considered as primary.
   PRIMARY_ACCOUNT_PASSWORD = 1,
   // Other Gaia passwords used in Chrome other than the sync password.
   OTHER_GAIA_PASSWORD = 2,
@@ -691,6 +692,19 @@ enum class SubmittedFormType {
   kMaxValue = kSingleUsername,
 };
 
+// Represents different user interactions related to shared password
+// notification bubble. These values are persisted to logs. Entries should not
+// be renumbered and numeric values should never be reused. Always keep this
+// enum in sync with the corresponding
+// PasswordManager.SharedPasswordsNotificationInteractions in enums.xml.
+enum class SharedPasswordsNotificationBubbleInteractions {
+  kNotificationDisplayed = 0,
+  kGotItButtonClicked = 1,
+  kManagePasswordsButtonClicked = 2,
+  kCloseButtonClicked = 3,
+  kMaxValue = kCloseButtonClicked,
+};
+
 std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(
     PasswordAccountStorageUsageLevel usage_level);
 
@@ -874,6 +888,10 @@ void LogPasswordNoteActionInSettings(PasswordNoteAction action);
 void LogUserInteractionsInPasswordManagementBubble(
     PasswordManagementBubbleInteractions
         password_management_bubble_interaction);
+
+// Log the user interaction events in the shared passwords notification bubble.
+void LogUserInteractionsInSharedPasswordsNotificationBubble(
+    SharedPasswordsNotificationBubbleInteractions interaction);
 
 // Wraps |callback| into another callback that measures the elapsed time between
 // construction and actual execution of the callback. Records the result to

@@ -773,13 +773,29 @@ class FileManagerPrivateApiDlpTest : public FileManagerPrivateApiTest {
 
  protected:
   base::ScopedTempDir drive_path_;
-  raw_ptr<policy::MockDlpRulesManager, ExperimentalAsh> mock_rules_manager_ =
-      nullptr;
+  raw_ptr<policy::MockDlpRulesManager, DanglingUntriaged | ExperimentalAsh>
+      mock_rules_manager_ = nullptr;
   std::unique_ptr<policy::DlpFilesControllerAsh> files_controller_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiDlpTest, DlpBlockCopy) {
+class FileManagerPrivateApiDlpOldUXTest : public FileManagerPrivateApiDlpTest {
+ protected:
+  FileManagerPrivateApiDlpOldUXTest() {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kDataLeakPreventionFilesRestriction},
+        /*disabled_features=*/{features::kNewFilesPolicyUX});
+  }
+
+  FileManagerPrivateApiDlpOldUXTest(const FileManagerPrivateApiDlpOldUXTest&) =
+      delete;
+  void operator=(const FileManagerPrivateApiDlpOldUXTest&) = delete;
+
+  ~FileManagerPrivateApiDlpOldUXTest() override = default;
+};
+
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiDlpOldUXTest, DlpBlockCopy) {
   policy::DlpRulesManagerFactory::GetInstance()->SetTestingFactory(
       browser()->profile(),
       base::BindRepeating(&FileManagerPrivateApiDlpTest::SetDlpRulesManager,

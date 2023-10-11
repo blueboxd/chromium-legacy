@@ -5,9 +5,11 @@
 #ifndef ASH_GLANCEABLES_COMMON_GLANCEABLES_LIST_FOOTER_VIEW_H_
 #define ASH_GLANCEABLES_COMMON_GLANCEABLES_LIST_FOOTER_VIEW_H_
 
+#include <string>
+
 #include "ash/ash_export.h"
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/layout/flex_layout_view.h"
 
@@ -24,7 +26,8 @@ class ASH_EXPORT GlanceablesListFooterView : public views::FlexLayoutView {
  public:
   METADATA_HEADER(GlanceablesListFooterView);
 
-  explicit GlanceablesListFooterView(base::RepeatingClosure on_see_all_pressed);
+  GlanceablesListFooterView(const std::u16string& see_all_accessible_name,
+                            base::RepeatingClosure on_see_all_pressed);
   GlanceablesListFooterView(const GlanceablesListFooterView&) = delete;
   GlanceablesListFooterView& operator=(const GlanceablesListFooterView&) =
       delete;

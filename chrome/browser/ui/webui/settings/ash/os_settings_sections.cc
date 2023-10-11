@@ -78,9 +78,6 @@ OsSettingsSections::OsSettingsSections(
              std::make_unique<PersonalizationSection>(
                  profile, search_tag_registry, prefs));
 
-  AddSection(mojom::Section::kSearchAndAssistant,
-             std::make_unique<SearchSection>(profile, search_tag_registry));
-
   AddSection(mojom::Section::kApps, std::make_unique<AppsSection>(
                                         profile, search_tag_registry, prefs,
                                         arc_app_list_prefs, app_service_proxy));
@@ -89,16 +86,9 @@ OsSettingsSections::OsSettingsSections(
       mojom::Section::kCrostini,
       std::make_unique<CrostiniSection>(profile, search_tag_registry, prefs));
 
-  AddSection(mojom::Section::kDateAndTime,
-             std::make_unique<DateTimeSection>(profile, search_tag_registry));
-
   AddSection(
       mojom::Section::kPrivacyAndSecurity,
       std::make_unique<PrivacySection>(profile, search_tag_registry, prefs));
-
-  AddSection(
-      mojom::Section::kLanguagesAndInput,
-      std::make_unique<LanguagesSection>(profile, search_tag_registry, prefs));
 
   AddSection(mojom::Section::kFiles,
              std::make_unique<FilesSection>(profile, search_tag_registry));
@@ -110,9 +100,6 @@ OsSettingsSections::OsSettingsSections(
   AddSection(mojom::Section::kAccessibility,
              std::make_unique<AccessibilitySection>(
                  profile, search_tag_registry, prefs));
-
-  AddSection(mojom::Section::kReset,
-             std::make_unique<ResetSection>(profile, search_tag_registry));
 
   AddSection(mojom::Section::kAboutChromeOs,
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -128,8 +115,21 @@ OsSettingsSections::OsSettingsSections(
 
   if (ash::features::IsOsSettingsRevampWayfindingEnabled()) {
     AddSection(mojom::Section::kSystemPreferences,
-               std::make_unique<SystemPreferencesSection>(profile,
-                                                          search_tag_registry));
+               std::make_unique<SystemPreferencesSection>(
+                   profile, search_tag_registry, prefs));
+  } else {
+    AddSection(mojom::Section::kDateAndTime,
+               std::make_unique<DateTimeSection>(profile, search_tag_registry));
+
+    AddSection(mojom::Section::kLanguagesAndInput,
+               std::make_unique<LanguagesSection>(profile, search_tag_registry,
+                                                  prefs));
+
+    AddSection(mojom::Section::kReset,
+               std::make_unique<ResetSection>(profile, search_tag_registry));
+
+    AddSection(mojom::Section::kSearchAndAssistant,
+               std::make_unique<SearchSection>(profile, search_tag_registry));
   }
 }
 

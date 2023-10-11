@@ -27,8 +27,8 @@ TopologicalSorter::TopologicalSorter(int num_nodes) : num_nodes_(num_nodes) {
 }
 
 void TopologicalSorter::AddEdge(int from, int to) {
-  CHECK(!traversal_started_ && from < num_nodes_ && to < num_nodes_ &&
-        from >= 0 && to >= 0);
+  ABSL_CHECK(!traversal_started_ && from < num_nodes_ && to < num_nodes_ &&
+             from >= 0 && to >= 0);
   adjacency_lists_[from].push_back(to);
 }
 

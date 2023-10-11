@@ -24,7 +24,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import org.chromium.base.test.util.DisabledTest;
 
 import static org.chromium.base.test.util.Batch.PER_CLASS;
 import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
@@ -74,7 +73,7 @@ import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
-import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.site_settings.ContentSettingException;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
@@ -455,7 +454,7 @@ public class PageInfoViewTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @Features.EnableFeatures(PageInfoFeatures.USER_BYPASS_UI_NAME)
+    @EnableFeatures(PageInfoFeatures.USER_BYPASS_UI_NAME)
     public void testShowWithPermissionsAndCookieBlockingUserBypass() throws IOException {
         addSomePermissions(mTestServerRule.getServer().getURL("/"));
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
@@ -570,8 +569,8 @@ public class PageInfoViewTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @DisabledTest(message = "Flaky - https://crbug.com/1469675")
-    public void testShowCookiesSubpage() throws IOException {
+    @DisableFeatures(PageInfoFeatures.USER_BYPASS_UI_NAME)
+    public void testShowCookiesSubpageUserBypassOff() throws IOException {
         setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
         onView(withId(R.id.page_info_cookies_row)).perform(click());
@@ -582,7 +581,32 @@ public class PageInfoViewTest {
             assertTrue(UserPrefs.get(Profile.getLastUsedRegularProfile())
                                .getBoolean(IN_CONTEXT_COOKIE_CONTROLS_OPENED));
         });
-        mRenderTestRule.render(getPageInfoView(), "PageInfo_CookiesSubpage");
+        mRenderTestRule.render(getPageInfoView(), "PageInfo_CookiesSubpage_Flag_Off");
+    }
+
+    /**
+     * Tests the cookies page of the PageInfo UI with the Cookie Controls UI enabled.
+     */
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @EnableFeatures(PageInfoFeatures.USER_BYPASS_UI_NAME)
+    public void testShowCookiesSubpageUserBypassOn() throws IOException {
+        setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
+        loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
+        onView(withId(R.id.page_info_cookies_row)).perform(click());
+        onViewWaiting(allOf(
+                withText(containsString("Cookies and other site data are used")), isDisplayed()));
+        // Verify that the pref was recorded successfully.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertTrue(UserPrefs.get(Profile.getLastUsedRegularProfile())
+                               .getBoolean(IN_CONTEXT_COOKIE_CONTROLS_OPENED));
+        });
+        mRenderTestRule.render(getPageInfoView(), "PageInfo_CookiesSubpage_Toggle_Off");
+        // Check that the cookie toggle is displayed and try clicking it.
+        onViewWaiting(allOf(withText(containsString("Third-party cookies")), isDisplayed()));
+        onView(withText(containsString("Third-party cookies"))).perform(click());
+        mRenderTestRule.render(getPageInfoView(), "PageInfo_CookiesSubpage_Toggle_On");
     }
 
     /**
@@ -642,7 +666,7 @@ public class PageInfoViewTest {
      */
     @Test
     @MediumTest
-    @Features.EnableFeatures({PageInfoFeatures.USER_BYPASS_UI_NAME})
+    @EnableFeatures({PageInfoFeatures.USER_BYPASS_UI_NAME})
     public void testClearCookiesOnSubpageUserBypass() throws Exception {
         setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
         sActivityTestRule.loadUrl(mTestServerRule.getServer().getURL(sSiteDataHtml));
@@ -809,18 +833,12 @@ public class PageInfoViewTest {
      */
     @Test
     @MediumTest
-    // When both START_SURFACE_ANDROID and TAB_GROUPS_CONTINUATION_ANDROID are enabled, changing
+    // When both START_SURFACE_ANDROID and START_SURFACE_WITH_ACCESSIBILITY are enabled, changing
     // accessibility status won't recreate ChromeTabbedActivity.
     @EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID,
             ChromeFeatureList.START_SURFACE_WITH_ACCESSIBILITY})
-    @CommandLineFlags.
-    Add({"enable-features=" + ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study",
-            "force-fieldtrials=Study/Group",
-            "force-fieldtrial-params=Study.Group:gts-low-end-support/true"
-                    + "/gts-accessibility-support/true"})
-    // clang-format off
-    public void testCloseButton() {
-        // clang-format on
+    public void
+    testCloseButton() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true); });
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
@@ -888,7 +906,7 @@ public class PageInfoViewTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @Features.EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_3)
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_3)
     public void testShowAdPersonalizationInfo() throws IOException {
         loadUrlAndOpenPageInfo(
                 mTestServerRule.getServer().getURLWithHostName("example.com", sSimpleHtml));
@@ -901,7 +919,7 @@ public class PageInfoViewTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @Features.DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
     public void testShowAdPersonalizationInfoSubPage() throws IOException {
         loadUrlAndOpenPageInfo(
                 mTestServerRule.getServer().getURLWithHostName("example.com", sSimpleHtml));
@@ -916,7 +934,7 @@ public class PageInfoViewTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @Features.EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
     public void testShowAdPersonalizationInfoSubPageV4() throws IOException {
         loadUrlAndOpenPageInfo(
                 mTestServerRule.getServer().getURLWithHostName("example.com", sSimpleHtml));
@@ -931,7 +949,7 @@ public class PageInfoViewTest {
      */
     @Test
     @MediumTest
-    @Features.DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
     public void testOpenAdPersonalizationSettings() throws IOException {
         loadUrlAndOpenPageInfo(
                 mTestServerRule.getServer().getURLWithHostName("example.com", sSimpleHtml));
@@ -951,7 +969,7 @@ public class PageInfoViewTest {
      */
     @Test
     @MediumTest
-    @Features.EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
     public void testOpenAdPersonalizationSettingsV4() throws IOException {
         loadUrlAndOpenPageInfo(
                 mTestServerRule.getServer().getURLWithHostName("example.com", sSimpleHtml));

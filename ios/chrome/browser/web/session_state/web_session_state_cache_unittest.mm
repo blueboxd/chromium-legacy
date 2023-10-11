@@ -6,14 +6,15 @@
 
 #import <Foundation/Foundation.h>
 
+#import "base/apple/foundation_util.h"
 #import "base/files/file_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/path_service.h"
 #import "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/task/thread_pool/thread_pool_instance.h"
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
+#import "ios/chrome/browser/sessions/session_constants.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/web_state.h"
@@ -38,8 +39,8 @@ class WebSessionStateCacheTest : public PlatformTest {
     web::WebState::CreateParams createParams(chrome_browser_state_.get());
     web_state_ = web::WebState::Create(createParams);
 
-    session_cache_directory_ = chrome_browser_state_->GetStatePath().Append(
-        kWebSessionCacheDirectoryName);
+    session_cache_directory_ =
+        chrome_browser_state_->GetStatePath().Append(kLegacyWebSessionsDirname);
   }
 
   bool StorageExists() {
@@ -121,7 +122,7 @@ TEST_F(WebSessionStateCacheTest, MigrateSessionPreM116) {
   NSError* error = nil;
   NSData* data = [NSData dataWithBytes:data_str length:strlen(data_str)];
   NSString* legacy_file_path =
-      base::mac::FilePathToNSString(session_cache_directory_.Append(
+      base::apple::FilePathToNSString(session_cache_directory_.Append(
           base::SysNSStringToUTF8(web_state_->GetStableIdentifier())));
   NSDataWritingOptions options =
       NSDataWritingAtomic |

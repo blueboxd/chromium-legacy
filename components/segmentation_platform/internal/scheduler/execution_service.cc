@@ -8,7 +8,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/segmentation_platform/internal/database/cached_result_provider.h"
 #include "components/segmentation_platform/internal/database/storage_service.h"
-#include "components/segmentation_platform/internal/execution/default_model_manager.h"
 #include "components/segmentation_platform/internal/execution/execution_request.h"
 #include "components/segmentation_platform/internal/execution/model_executor_impl.h"
 #include "components/segmentation_platform/internal/execution/processing/feature_aggregator_impl.h"
@@ -29,18 +28,17 @@ void ExecutionService::InitForTesting(
     std::unique_ptr<processing::FeatureListQueryProcessor> feature_processor,
     std::unique_ptr<ModelExecutor> executor,
     std::unique_ptr<ModelExecutionScheduler> scheduler,
-    std::unique_ptr<ModelManager> execution_manager) {
+    ModelManager* model_manager) {
   feature_list_query_processor_ = std::move(feature_processor);
   model_executor_ = std::move(executor);
   model_execution_scheduler_ = std::move(scheduler);
-  model_manager_ = std::move(execution_manager);
+  model_manager_ = model_manager;
 }
 
 void ExecutionService::Initialize(
     StorageService* storage_service,
     SignalHandler* signal_handler,
     base::Clock* clock,
-    ModelManager::SegmentationModelUpdatedCallback callback,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const base::flat_set<SegmentId>& all_segment_ids,
     ModelProviderFactory* model_provider_factory,
@@ -66,14 +64,11 @@ void ExecutionService::Initialize(
   model_executor_ = std::make_unique<ModelExecutorImpl>(
       clock, feature_list_query_processor_.get());
 
-  model_manager_ = std::make_unique<ModelManagerImpl>(
-      all_segment_ids, model_provider_factory, clock,
-      storage_service->segment_info_database(),
-      storage_service->default_model_manager(), callback);
+  model_manager_ = storage_service->model_manager();
 
   model_execution_scheduler_ = std::make_unique<ModelExecutionSchedulerImpl>(
       std::move(observers), storage_service->segment_info_database(),
-      storage_service->signal_storage_config(), model_manager_.get(),
+      storage_service->signal_storage_config(), model_manager_,
       model_executor_.get(), all_segment_ids, clock, platform_options);
 }
 

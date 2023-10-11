@@ -96,8 +96,8 @@ _HALIDE_TARGET_CONFIG_SETTINGS_MAP = {
     # Windows
     "x86-64-windows": ["@mediapipe//mediapipe:windows"],
     # Linux
-    # TODO: add mediapipe configs for linux to avoid assuming it's the default.
-    "x86-64-linux": ["//conditions:default"],
+    "x86-64-linux": ["@mediapipe//mediapipe:linux"],
+    # Deliberately no //condition:default clause here.
 }
 
 _HALIDE_TARGET_MAP_DEFAULT = {

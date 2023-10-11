@@ -5,10 +5,13 @@
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
 
 #include "base/base64.h"
+#include "base/check.h"
 #include "base/pickle.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
@@ -77,7 +80,7 @@ const char* CardNetworkFromWalletCardType(
 
 // Creates a CreditCard from the specified `card` specifics.
 CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
-  CreditCard result(CreditCard::MASKED_SERVER_CARD, card.id());
+  CreditCard result(CreditCard::RecordType::kMaskedServerCard, card.id());
   result.SetNumber(base::UTF8ToUTF16(card.last_four()));
   result.SetNetworkForMaskedCard(CardNetworkFromWalletCardType(card.type()));
   result.SetRawInfo(CREDIT_CARD_NAME_FULL,
@@ -528,6 +531,35 @@ AutofillOfferData AutofillOfferDataFromOfferSpecifics(
   }
 }
 
+sync_pb::AutofillWalletCredentialSpecifics
+AutofillWalletCredentialSpecificsFromStructData(const ServerCvc& server_cvc) {
+  sync_pb::AutofillWalletCredentialSpecifics wallet_credential_specifics;
+  CHECK(!server_cvc.cvc.empty());
+  wallet_credential_specifics.set_instrument_id(
+      base::NumberToString(server_cvc.instrument_id));
+  wallet_credential_specifics.set_cvc(base::UTF16ToUTF8(server_cvc.cvc));
+  wallet_credential_specifics.set_last_updated_time_unix_epoch_millis(
+      (server_cvc.last_updated_timestamp - base::Time::UnixEpoch())
+          .InMilliseconds());
+  return wallet_credential_specifics;
+}
+
+ServerCvc AutofillWalletCvcStructDataFromWalletCredentialSpecifics(
+    const sync_pb::AutofillWalletCredentialSpecifics&
+        wallet_credential_specifics) {
+  CHECK(IsAutofillWalletCredentialDataSpecificsValid(
+      wallet_credential_specifics));
+  int64_t instrument_id;
+  base::StringToInt64(wallet_credential_specifics.instrument_id(),
+                      &instrument_id);
+
+  return ServerCvc(
+      instrument_id, base::UTF8ToUTF16(wallet_credential_specifics.cvc()),
+      base::Time::UnixEpoch() +
+          base::Milliseconds(wallet_credential_specifics
+                                 .last_updated_time_unix_epoch_millis()));
+}
+
 VirtualCardUsageData VirtualCardUsageDataFromUsageSpecifics(
     const sync_pb::AutofillWalletUsageSpecifics& usage_specifics) {
   const sync_pb::AutofillWalletUsageSpecifics::VirtualCardUsageData
@@ -654,6 +686,9 @@ void PopulateWalletTypesFromSyncData(
         cloud_token_data->push_back(
             CloudTokenDataFromSpecifics(autofill_specifics.cloud_token_data()));
         break;
+      case sync_pb::AutofillWalletSpecifics::PAYMENT_INSTRUMENT:
+        // TODO(crbug.com/1472125) Support syncing of payment instruments.
+        break;
       case sync_pb::AutofillWalletSpecifics::UNKNOWN:
         // Just ignore new entry types that the client doesn't know about.
         break;
@@ -761,6 +796,19 @@ bool IsVirtualCardUsageDataSet(
   return *virtual_card_usage_data.instrument_id() != 0 &&
          !virtual_card_usage_data.usage_data_id()->empty() &&
          !virtual_card_usage_data.virtual_card_last_four()->empty();
+}
+
+bool IsAutofillWalletCredentialDataSpecificsValid(
+    const sync_pb::AutofillWalletCredentialSpecifics&
+        wallet_credential_specifics) {
+  int64_t temp_instrument_id;
+  return !wallet_credential_specifics.instrument_id().empty() &&
+         base::StringToInt64(wallet_credential_specifics.instrument_id(),
+                             &temp_instrument_id) &&
+         !wallet_credential_specifics.cvc().empty() &&
+         wallet_credential_specifics
+             .has_last_updated_time_unix_epoch_millis() &&
+         wallet_credential_specifics.last_updated_time_unix_epoch_millis() != 0;
 }
 
 }  // namespace autofill

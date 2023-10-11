@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">Поиск мобильных сетей...</translation>
 <translation id="1293556467332435079">Файлы</translation>
 <translation id="1297922636971898492">Google Диск временно недоступен. Когда доступ будет восстановлен, загрузка автоматически возобновится.</translation>
+<translation id="1306130176943817227">Не получилось удалить объект, так как с ним кто-то работает.</translation>
 <translation id="1307931752636661898">Нет доступа к файлам Linux</translation>
 <translation id="1313405956111467313">Автоматическая настройка прокси-сервера</translation>
 <translation id="134645005685694099">На устройстве недостаточно места для синхронизации файлов. Новые файлы не будут синхронизироваться автоматически.</translation>
@@ -115,7 +116,6 @@
 <translation id="1920798810075583923">Арбуз</translation>
 <translation id="1924372192547904021">Внешнее хранилище "<ph name="DRIVE_NAME" />" отформатировано.</translation>
 <translation id="1931134289871235022">Словацкий</translation>
-<translation id="1933345018156373194">Произошла непредвиденная ошибка. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Финский</translation>
 <translation id="1942765061641586207">Разрешение изображения</translation>
 <translation id="1972984168337863910">Развернуть панель с информацией о файлах</translation>
@@ -502,7 +502,6 @@
 <translation id="4969785127455456148">Альбом</translation>
 <translation id="4972330214479971536">Не удалось завершить настройку синхронизации файлов</translation>
 <translation id="4973523518332075481">Слишком длинное название. Максимальное количество символов: <ph name="MAX_LENGTH" />.</translation>
-<translation id="4973970068702235170">Возникла непредвиденная ошибка. <ph name="ERROR_MESSAGE" />.</translation>
 <translation id="4984616446166309645">Японский</translation>
 <translation id="4987699874727873250">Английский (Индия)</translation>
 <translation id="4988205478593450158">Вы действительно хотите удалить файл "<ph name="FILE_NAME" />"?</translation>
@@ -543,6 +542,7 @@
 <translation id="5218183485292899140">Швейцарская (французская)</translation>
 <translation id="5234764350956374838">Закрыть</translation>
 <translation id="5253070652067921974">Автор</translation>
+<translation id="5254207638927440400">Не удалось переместить файл, так как с ним кто-то работает.</translation>
 <translation id="5257456363153333584">Стрекоза</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Работайте со своими файлами откуда угодно даже без подключения к Интернету.<ph name="MARKUP_2" />
     Последние версии файлов доступны на Google Диске с любого устройства.<ph name="MARKUP_3" />
@@ -638,7 +638,6 @@
 <translation id="5896749729057314184">Сеть <ph name="NETWORK_INDEX" /> из <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, не активирована, уровень сигнала – <ph name="SIGNAL_STRENGTH" /> %, подробная информация</translation>
 <translation id="5911887972742538906">При установке приложения для Linux произошла ошибка.</translation>
 <translation id="5912396950572065471">Форматировать</translation>
-<translation id="5913638992615760742">Произошла непредвиденная ошибка. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">В результатах поиска доступны новые функции</translation>
 <translation id="5926082595146149752">Нидерландский (Нидерланды), американская международная раскладка (ПК)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -646,7 +645,6 @@
 <translation id="5955954492236143329">Объектов: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5957366693331451795">Устройства Chromebox</translation>
 <translation id="5982621672636444458">Сортировать</translation>
-<translation id="6007237601604674381">Не удалось выполнить перемещение. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">Сеть Ethernet</translation>
 <translation id="60357267506638014">Чешская (QWERTY)</translation>
 <translation id="603895874132768835">Вы не сможете использовать эту сеть, пока не зададите новый PIN-код.</translation>
@@ -863,6 +861,7 @@
 <translation id="76959938259365003">Не удалось очистить корзину.</translation>
 <translation id="770015031906360009">Греческий</translation>
 <translation id="7705251383879779343">Скопировано: <ph name="FILE_NAME" />.</translation>
+<translation id="7707941139430559579">Не удалось переместить файл. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">Чтобы использовать эту сеть, введите 8-значный PUK-код, предоставленный оператором связи.</translation>
 <translation id="7711920809702896782">Информация об изображении</translation>
 <translation id="7724603315864178912">Вырезать</translation>
@@ -1050,6 +1049,7 @@
 <translation id="9038620279323455325">Файл "<ph name="FILE_NAME" />" уже существует. Выберите другое название.</translation>
 <translation id="9046895021617826162">Сбой подключения</translation>
 <translation id="9065512565307033593">Если не пройти проверку, доступ к сети будет отключен.</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 предупреждение}one{<ph name="COUNT" /> предупреждение}few{<ph name="COUNT" /> предупреждения}many{<ph name="COUNT" /> предупреждений}other{<ph name="COUNT" /> предупреждения}}</translation>
 <translation id="908378762078012445">Русский, фонетическая раскладка AATSEEL</translation>
 <translation id="9086302186042011942">Выполняется синхронизация</translation>
 <translation id="9099674669267916096">Количество страниц</translation>

@@ -111,12 +111,22 @@ bool IsSearchImageInCompanionSidePanelSupported(const Browser* browser) {
          ShouldEnableOpenCompanionForImageSearch();
 }
 
-bool IsNewBadgeEnabledForSearchMenuItem(const Browser* browser) {
+bool IsNewBadgeEnabledForSearchWebMenuItem(const Browser* browser) {
   if (!browser) {
     return false;
   }
-  return base::FeatureList::IsEnabled(
-      features::kCompanionEnableNewBadgesInContextMenu);
+  return IsSearchWebInCompanionSidePanelSupported(browser) &&
+         base::FeatureList::IsEnabled(
+             features::kCompanionEnableNewBadgesInContextMenu);
+}
+
+bool IsNewBadgeEnabledForSearchImageMenuItem(const Browser* browser) {
+  if (!browser) {
+    return false;
+  }
+  return IsSearchImageInCompanionSidePanelSupported(browser) &&
+         base::FeatureList::IsEnabled(
+             features::kCompanionEnableNewBadgesInContextMenu);
 }
 
 void UpdateCompanionDefaultPinnedToToolbarState(PrefService* pref_service) {

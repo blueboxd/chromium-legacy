@@ -179,10 +179,6 @@ int BrowserFrameViewWin::GetTopInset(bool restored) const {
              : 0;
 }
 
-int BrowserFrameViewWin::GetThemeBackgroundXInset() const {
-  return 0;
-}
-
 bool BrowserFrameViewWin::HasVisibleBackgroundTabShapes(
     BrowserFrameActiveState active_state) const {
   DCHECK(GetWidget());
@@ -382,14 +378,8 @@ int BrowserFrameViewWin::NonClientHitTest(const gfx::Point& point) {
       point, gfx::Insets::TLBR(top_border_thickness, 0, 0, 0),
       top_border_thickness, kResizeCornerWidth - FrameBorderThickness(),
       frame()->widget_delegate()->CanResize());
-
-  if (window_component != HTNOWHERE) {
-    return window_component;
-  }
-
   // Fall back to the caption if no other component matches.
-  TabStripRegionView::ReportCaptionHitTestInReservedGrabHandleSpace(false);
-  return HTCAPTION;
+  return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
 
 void BrowserFrameViewWin::UpdateWindowIcon() {
@@ -473,13 +463,13 @@ int BrowserFrameViewWin::FrameTopBorderThickness(bool restored) const {
   const bool is_fullscreen =
       (frame()->IsFullscreen() || IsMaximized()) && !restored;
   if (!is_fullscreen) {
-    // Restored windows have a smaller top resize handle than the system
-    // default. When maximized, the OS sizes the window such that the border
-    // extends beyond the screen edges. In that case, we must return the default
-    // value.
-    constexpr int kTopResizeFrameArea = 5;
     if (browser_view()->GetTabStripVisible()) {
-      return features::IsChromeRefresh2023() ? 0 : kTopResizeFrameArea;
+      // Restored windows have a smaller top resize handle than the system
+      // default. When maximized, the OS sizes the window such that the border
+      // extends beyond the screen edges. In that case, we must return the
+      // default value.
+      const int kTopResizeFrameArea = features::IsChromeRefresh2023() ? 1 : 5;
+      return kTopResizeFrameArea;
     }
 
     // There is no top border in tablet mode when the window is "restored"

@@ -1031,7 +1031,6 @@ void Layer::SetTransferableResource(const viz::TransferableResource& resource,
   if (!texture_layer_.get()) {
     scoped_refptr<cc::TextureLayer> new_layer =
         cc::TextureLayer::CreateForMailbox(this);
-    new_layer->SetFlipped(true);
     if (!SwitchToLayer(new_layer))
       return;
 
@@ -1045,6 +1044,10 @@ void Layer::SetTransferableResource(const viz::TransferableResource& resource,
   transfer_release_callback_ = std::move(release_callback);
   transfer_resource_ = resource;
   SetTextureSize(texture_size_in_dip);
+
+  // Incoming resource is assumed to have top-left origin which corresponds to
+  // TextureLayer::SetFlipped(false).
+  SetTextureFlipped(false);
 
   for (const auto& mirror : mirrors_) {
     // The release callbacks should be empty as only the source layer
@@ -1639,8 +1642,12 @@ void Layer::SetRoundedCornersFromAnimation(
     PropertyChangeReason reason) {
   cc_layer_->SetRoundedCorner(rounded_corners);
 
-  for (const auto& mirror : mirrors_)
-    mirror->dest()->SetRoundedCornersFromAnimation(rounded_corners, reason);
+  for (const auto& mirror : mirrors_) {
+    Layer* mirror_dest = mirror->dest();
+    if (mirror_dest->sync_rounded_corners_with_source_) {
+      mirror_dest->SetRoundedCornersFromAnimation(rounded_corners, reason);
+    }
+  }
 }
 
 void Layer::SetGradientMaskFromAnimation(

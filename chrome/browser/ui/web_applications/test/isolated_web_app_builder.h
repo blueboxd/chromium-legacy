@@ -12,6 +12,7 @@
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
 #include "components/web_package/test_support/signed_web_bundles/web_bundle_signer.h"
 #include "components/web_package/web_bundle_builder.h"
+#include "url/gurl.h"
 
 namespace web_app {
 
@@ -46,16 +47,70 @@ struct TestSignedWebBundle {
   web_package::SignedWebBundleId id;
 };
 
-struct TestSignedWebBundleBuilderOptions {
-  base::Version version = base::Version("1.0.0");
-  web_package::WebBundleSigner::ErrorsForTesting errors_for_testing = {};
-};
-
 class TestSignedWebBundleBuilder {
  public:
   explicit TestSignedWebBundleBuilder(
       web_package::WebBundleSigner::KeyPair key_pair =
-          web_package::WebBundleSigner::KeyPair::CreateRandom());
+          web_package::WebBundleSigner::KeyPair::CreateRandom(),
+      web_package::WebBundleSigner::ErrorsForTesting errors_for_testing = {});
+
+  static constexpr base::StringPiece kTestManifestUrl = "/manifest.webmanifest";
+  static constexpr base::StringPiece kTestIconUrl = "/256x256-green.png";
+  static constexpr base::StringPiece kTestHtmlUrl = "/index.html";
+
+  // TODO(crbug.com/1434557): Use a struct instead when designated initializers
+  // are supported.
+  class BuildOptions {
+   public:
+    BuildOptions();
+    BuildOptions(const BuildOptions&);
+    BuildOptions(BuildOptions&&);
+    ~BuildOptions();
+
+    BuildOptions& SetKeyPair(web_package::WebBundleSigner::KeyPair key_pair) {
+      key_pair_ = std::move(key_pair);
+      return *this;
+    }
+
+    BuildOptions& SetVersion(base::Version version) {
+      version_ = std::move(version);
+      return *this;
+    }
+
+    BuildOptions& SetPrimaryUrl(GURL primary_url) {
+      primary_url_ = std::move(primary_url);
+      return *this;
+    }
+
+    BuildOptions& SetAppName(const std::string& app_name) {
+      app_name_ = app_name;
+      return *this;
+    }
+
+    BuildOptions& SetBaseUrl(GURL base_url) {
+      base_url_ = std::move(base_url);
+      return *this;
+    }
+
+    BuildOptions& SetIndexHTMLContent(base::StringPiece index_html_content) {
+      index_html_content_ = index_html_content;
+      return *this;
+    }
+
+    BuildOptions& SetErrorsForTesting(
+        web_package::WebBundleSigner::ErrorsForTesting errors_for_testing) {
+      errors_for_testing_ = errors_for_testing;
+      return *this;
+    }
+
+    web_package::WebBundleSigner::KeyPair key_pair_;
+    base::Version version_;
+    std::string app_name_;
+    absl::optional<GURL> primary_url_;
+    absl::optional<GURL> base_url_;
+    absl::optional<base::StringPiece> index_html_content_;
+    web_package::WebBundleSigner::ErrorsForTesting errors_for_testing_;
+  };
 
   // Adds a manifest type payload to the bundle.
   void AddManifest(base::StringPiece manifest_string);
@@ -63,13 +118,23 @@ class TestSignedWebBundleBuilder {
   // Adds a image/PNG type payload to the bundle.
   void AddPngImage(base::StringPiece url, base::StringPiece image_string);
 
-  TestSignedWebBundle Build(
-      TestSignedWebBundleBuilderOptions build_options = {});
+  // Adds a text/html type payload to the bundle.
+  void AddHtml(base::StringPiece url, base::StringPiece html_content);
+
+  // Adds an application/javascript type payload to the bundle.
+  void AddJavaScript(base::StringPiece url, base::StringPiece script_content);
+
+  // Adds the primary url to the bundle. DO NOT use this for IWAs - primary URLs
+  // are not supported in IWAs.
+  void AddPrimaryUrl(GURL url);
+
+  TestSignedWebBundle Build();
   static TestSignedWebBundle BuildDefault(
-      TestSignedWebBundleBuilderOptions build_options = {});
+      BuildOptions build_options = BuildOptions());
 
  private:
   web_package::WebBundleSigner::KeyPair key_pair_;
+  web_package::WebBundleSigner::ErrorsForTesting errors_for_testing_;
   web_package::WebBundleBuilder builder_;
 };
 

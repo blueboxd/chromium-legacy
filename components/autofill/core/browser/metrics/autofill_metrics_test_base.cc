@@ -65,7 +65,8 @@ void AutofillMetricsBaseTest::SetUpHelper() {
           /*iban_save_manager=*/nullptr, &personal_data(), "en-US"));
   autofill_client_->set_autofill_offer_manager(
       std::make_unique<AutofillOfferManager>(
-          &personal_data(), /*coupon_service_delegate=*/nullptr));
+          &personal_data(), /*coupon_service_delegate=*/nullptr,
+          /*shopping_service=*/nullptr));
 
   auto browser_autofill_manager = std::make_unique<TestBrowserAutofillManager>(
       autofill_driver_.get(), autofill_client_.get());
@@ -187,20 +188,17 @@ void AutofillMetricsBaseTest::OnDidGetRealPanWithNonHttpOkResponse() {
 void AutofillMetricsBaseTest::OnCreditCardFetchingSuccessful(
     const std::u16string& real_pan,
     bool is_virtual_card) {
-  credit_card_.set_record_type(
-      is_virtual_card ? CreditCard::RecordType::VIRTUAL_CARD
-                      : CreditCard::RecordType::MASKED_SERVER_CARD);
+  credit_card_.set_record_type(is_virtual_card
+                                   ? CreditCard::RecordType::kVirtualCard
+                                   : CreditCard::RecordType::kMaskedServerCard);
   credit_card_.SetNumber(real_pan);
-
   test_api(autofill_manager())
-      .OnCreditCardFetched(CreditCardFetchResult::kSuccess, &credit_card_,
-                           u"123");
+      .OnCreditCardFetched(CreditCardFetchResult::kSuccess, &credit_card_);
 }
 
 void AutofillMetricsBaseTest::OnCreditCardFetchingFailed() {
   test_api(autofill_manager())
-      .OnCreditCardFetched(CreditCardFetchResult::kPermanentError, nullptr,
-                           u"");
+      .OnCreditCardFetched(CreditCardFetchResult::kPermanentError, nullptr);
 }
 
 void AutofillMetricsBaseTest::RecreateCreditCards(
@@ -226,8 +224,8 @@ void AutofillMetricsBaseTest::CreateCreditCards(
     personal_data().AddCreditCard(local_credit_card);
   }
   if (include_masked_server_credit_card) {
-    CreditCard masked_server_credit_card(CreditCard::MASKED_SERVER_CARD,
-                                         "server_id_1");
+    CreditCard masked_server_credit_card(
+        CreditCard::RecordType::kMaskedServerCard, "server_id_1");
     masked_server_credit_card.set_guid("10000000-0000-0000-0000-000000000002");
     masked_server_credit_card.set_instrument_id(1);
     masked_server_credit_card.SetNetworkForMaskedCard(kDiscoverCard);
@@ -239,7 +237,7 @@ void AutofillMetricsBaseTest::CreateCreditCards(
     personal_data().AddServerCreditCard(masked_server_credit_card);
   }
   if (include_full_server_credit_card) {
-    CreditCard full_server_credit_card(CreditCard::FULL_SERVER_CARD,
+    CreditCard full_server_credit_card(CreditCard::RecordType::kFullServerCard,
                                        "server_id_2");
     full_server_credit_card.set_guid("10000000-0000-0000-0000-000000000003");
     full_server_credit_card.set_instrument_id(2);
@@ -258,7 +256,8 @@ void AutofillMetricsBaseTest::CreateLocalAndDuplicateServerCreditCard() {
 
   // Duplicate masked server card with same card information as local card.
   CreditCard masked_server_credit_card = test::GetCreditCard();
-  masked_server_credit_card.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  masked_server_credit_card.set_record_type(
+      CreditCard::RecordType::kMaskedServerCard);
   masked_server_credit_card.set_server_id("server_id_2");
   std::string server_card_guid(kTestDuplicateMaskedCardId);
   masked_server_credit_card.set_guid(server_card_guid);
@@ -276,8 +275,8 @@ void AutofillMetricsBaseTest::AddMaskedServerCreditCardWithOffer(
     GURL url,
     int64_t id,
     bool offer_expired) {
-  CreditCard masked_server_credit_card(CreditCard::MASKED_SERVER_CARD,
-                                       "server_id_offer");
+  CreditCard masked_server_credit_card(
+      CreditCard::RecordType::kMaskedServerCard, "server_id_offer");
   masked_server_credit_card.set_guid(guid);
   masked_server_credit_card.set_instrument_id(id);
   masked_server_credit_card.SetNetworkForMaskedCard(kDiscoverCard);

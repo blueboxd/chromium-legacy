@@ -4,9 +4,9 @@
 
 #include "base/synchronization/waitable_event_watcher.h"
 
+#include "base/apple/scoped_dispatch_object.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/mac/scoped_dispatch_object.h"
 
 namespace base {
 
@@ -14,7 +14,7 @@ struct WaitableEventWatcher::Storage {
   // A TYPE_MACH_RECV dispatch source on |receive_right_|. When a receive event
   // is delivered, the message queue will be peeked and the bound |callback_|
   // may be run. This will be null if nothing is currently being watched.
-  ScopedDispatchObject<dispatch_source_t> dispatch_source;
+  apple::ScopedDispatchObject<dispatch_source_t> dispatch_source;
 };
 
 WaitableEventWatcher::WaitableEventWatcher()

@@ -386,7 +386,7 @@ PhysicalSize LayoutReplaced::SizeFromNG() const {
 
 NGPhysicalBoxStrut LayoutReplaced::BorderPaddingFromNG() const {
   if (GetBoxLayoutExtraInput()) {
-    return GetBoxLayoutExtraInput()->border_padding_for_replaced;
+    return GetBoxLayoutExtraInput()->border_padding;
   }
   return NGPhysicalBoxStrut(
       BorderTop() + PaddingTop(), BorderRight() + PaddingRight(),

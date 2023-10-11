@@ -12,7 +12,6 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -20,7 +19,6 @@ import static org.mockito.Mockito.doReturn;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup.MarginLayoutParams;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 
 import androidx.core.view.MarginLayoutParamsCompat;
@@ -40,11 +38,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
@@ -52,7 +47,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.content_public.browser.test.util.ClickUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.permissions.AndroidPermissionDelegate;
@@ -195,7 +189,6 @@ public class LocationBarLayoutTest {
     @Test
     @SmallTest
     public void testSetUrlBarFocus() {
-        final LocationBarLayout locationBar = getLocationBar();
         LocationBarMediator locationBarMediator = getLocationBarMediator();
 
         Assert.assertEquals(
@@ -236,34 +229,6 @@ public class LocationBarLayoutTest {
                 2, RecordHistogram.getHistogramTotalCountForTesting("Android.OmniboxFocusReason"));
     }
 
-    /**
-     * Test for checking whether soft input model switches with focus.
-     */
-    @Test
-    @MediumTest
-    @Feature("Omnibox")
-    @DisableFeatures({ChromeFeatureList.OMNIBOX_CONSUMERS_IME_INSETS})
-    public void testFocusChangingSoftInputMode() {
-        final UrlBar urlBar = getUrlBar();
-
-        Callable<Integer> softInputModeCallable = () -> {
-            return mActivityTestRule.getActivity().getWindow().getAttributes().softInputMode;
-        };
-        mOmnibox.requestFocus();
-        CriteriaHelper.pollUiThread(() -> {
-            int inputMode =
-                    mActivityTestRule.getActivity().getWindow().getAttributes().softInputMode;
-            Criteria.checkThat(inputMode, is(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN));
-        });
-
-        mOmnibox.clearFocus();
-        CriteriaHelper.pollUiThread(() -> {
-            int inputMode =
-                    mActivityTestRule.getActivity().getWindow().getAttributes().softInputMode;
-            Criteria.checkThat(inputMode, is(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE));
-        });
-    }
-
     @Test
     @MediumTest
     public void testUpdateLayoutParams() {
@@ -301,7 +266,6 @@ public class LocationBarLayoutTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "Flaky - https://crbug.com/1470061")
     public void testEnforceMinimumUrlBarWidth() {
         setUrlBarTextAndFocus("");
 
@@ -309,6 +273,7 @@ public class LocationBarLayoutTest {
             View urlBar = getUrlBar();
             LocationBarLayout locationBar = getLocationBar();
 
+            int originalWidth = locationBar.getMeasuredWidth();
             int constrainedWidth = ((MarginLayoutParams) urlBar.getLayoutParams()).getMarginStart()
                     + locationBar.getResources().getDimensionPixelSize(
                             R.dimen.location_bar_min_url_width);
@@ -320,9 +285,7 @@ public class LocationBarLayoutTest {
             Assert.assertEquals(locationBar.findViewById(R.id.url_action_container).getVisibility(),
                     View.INVISIBLE);
 
-            locationBar.measure(
-                    MeasureSpec.makeMeasureSpec(
-                            constrainedWidth + urlContainerMarginEnd, MeasureSpec.EXACTLY),
+            locationBar.measure(MeasureSpec.makeMeasureSpec(originalWidth, MeasureSpec.EXACTLY),
                     MeasureSpec.makeMeasureSpec(200, MeasureSpec.EXACTLY));
             Assert.assertEquals(locationBar.findViewById(R.id.url_action_container).getVisibility(),
                     View.VISIBLE);

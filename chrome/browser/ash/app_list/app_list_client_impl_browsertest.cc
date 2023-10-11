@@ -14,6 +14,7 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
+#include "ash/webui/settings/public/constants/routes.mojom.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
@@ -59,7 +60,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -192,6 +192,9 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, IsPlatformAppOpen) {
 IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, UninstallApp) {
   AppListClientImpl* client = AppListClientImpl::GetInstance();
   const extensions::Extension* app = InstallPlatformApp("minimal");
+  auto* app_service_proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(app_service_proxy);
 
   // Bring up the app list.
   EXPECT_FALSE(client->GetAppListWindow());
@@ -204,9 +207,11 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, UninstallApp) {
 
   // Open the uninstall dialog.
   base::RunLoop run_loop;
-  client->UninstallApp(profile(), app->id());
+  app_service_proxy->UninstallForTesting(
+      app->id(), client->GetAppListWindow(),
+      base::BindLambdaForTesting([&](bool) { run_loop.Quit(); }));
+  run_loop.Run();
 
-  run_loop.RunUntilIdle();
   EXPECT_FALSE(wm::GetTransientChildren(client->GetAppListWindow()).empty());
 
   // The app list should not be dismissed when the dialog is shown.
@@ -853,7 +858,8 @@ class AppListAppLaunchTest : public extensions::ExtensionBrowserTest {
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 
  private:
-  raw_ptr<AppListModelUpdater, ExperimentalAsh> model_updater_;
+  raw_ptr<AppListModelUpdater, DanglingUntriaged | ExperimentalAsh>
+      model_updater_;
 };
 
 IN_PROC_BROWSER_TEST_F(AppListAppLaunchTest,

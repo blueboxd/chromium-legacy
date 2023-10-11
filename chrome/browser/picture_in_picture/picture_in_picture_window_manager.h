@@ -7,6 +7,8 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/picture_in_picture_window_options/picture_in_picture_window_options.mojom.h"
@@ -22,12 +24,26 @@ namespace display {
 class Display;
 }  // namespace display
 
+#if !BUILDFLAG(IS_ANDROID)
+class AutoPipSettingHelper;
+
+namespace views {
+class View;
+}  // namespace views
+#endif
+
 // PictureInPictureWindowManager is a singleton that handles the lifetime of the
 // current Picture-in-Picture window and its PictureInPictureWindowController.
 // The class also guarantees that only one window will be present per Chrome
 // instances regardless of the number of windows, tabs, profiles, etc.
 class PictureInPictureWindowManager {
  public:
+  // Observer for PictureInPictureWindowManager events.
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnEnterPictureInPicture() {}
+  };
+
   // Returns the singleton instance.
   static PictureInPictureWindowManager* GetInstance();
 
@@ -116,6 +132,15 @@ class PictureInPictureWindowManager {
   // Used for Document picture-in-picture windows only.
   static gfx::Size GetMaximumWindowSize(const display::Display& display);
 
+  void AddObserver(Observer* observer) { observers_.AddObserver(observer); }
+  void RemoveObserver(Observer* observer) {
+    observers_.RemoveObserver(observer);
+  }
+
+#if !BUILDFLAG(IS_ANDROID)
+  std::unique_ptr<views::View> GetOverlayView();
+#endif
+
  private:
   friend struct base::DefaultSingletonTraits<PictureInPictureWindowManager>;
   class VideoWebContentsObserver;
@@ -141,17 +166,34 @@ class PictureInPictureWindowManager {
   // This is suffixed with "Internal" to keep consistency with the method above.
   void CloseWindowInternal();
 
+  template <typename Functor>
+  void NotifyObservers(const Functor& functor) {
+    for (Observer& observer : observers_) {
+      base::invoke(functor, observer);
+    }
+  }
+
 #if !BUILDFLAG(IS_ANDROID)
   // Called when the document PiP parent web contents is being destroyed.
   void DocumentWebContentsDestroyed();
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+  // Exits picture in picture soon, but not before this call returns.  If
+  // picture in picture closes between now and then, that's okay.  Intended as a
+  // helper class for callbacks, to avoid re-entrant calls during pip set-up.
+  static void ExitPictureInPictureSoon();
+
   PictureInPictureWindowManager();
   ~PictureInPictureWindowManager();
+
+  // Observers that listen to updates of this instance.
+  base::ObserverList<Observer> observers_;
 
   std::unique_ptr<VideoWebContentsObserver> video_web_contents_observer_;
 #if !BUILDFLAG(IS_ANDROID)
   std::unique_ptr<DocumentWebContentsObserver> document_web_contents_observer_;
+
+  std::unique_ptr<AutoPipSettingHelper> auto_pip_setting_helper_;
 #endif  //! BUILDFLAG(IS_ANDROID)
 
   raw_ptr<content::PictureInPictureWindowController, DanglingUntriaged>

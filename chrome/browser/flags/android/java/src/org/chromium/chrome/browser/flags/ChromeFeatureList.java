@@ -113,9 +113,11 @@ public abstract class ChromeFeatureList {
     public static final String ANDROID_APP_INTEGRATION = "AndroidAppIntegration";
     public static final String ANDROID_APP_INTEGRATION_SAFE_SEARCH =
             "AndroidAppIntegrationSafeSearch";
+    public static final String ANDROID_HATS_REFACTOR = "AndroidHatsRefactor";
     public static final String ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION =
             "AndroidSearchEngineChoiceNotification";
     public static final String ANDROID_IMPROVED_BOOKMARKS = "AndroidImprovedBookmarks";
+    public static final String ANDROID_VISIBLE_URL_TRUNCATION = "AndroidVisibleUrlTruncation";
     public static final String ANIMATED_IMAGE_DRAG_SHADOW = "AnimatedImageDragShadow";
     public static final String APP_MENU_MOBILE_SITE_OPTION = "AppMenuMobileSiteOption";
     public static final String AUTOFILL_ACCOUNT_PROFILE_STORAGE = "AutofillAccountProfileStorage";
@@ -127,10 +129,13 @@ public abstract class ChromeFeatureList {
     public static final String AUTOFILL_ENABLE_CARD_PRODUCT_NAME = "AutofillEnableCardProductName";
     public static final String AUTOFILL_ENABLE_MANUAL_FALLBACK_FOR_VIRTUAL_CARDS =
             "AutofillEnableManualFallbackForVirtualCards";
+    public static final String AUTOFILL_ENABLE_MOVING_GPAY_LOGO_TO_THE_RIGHT_ON_CLANK =
+            "AutofillEnableMovingGPayLogoToTheRightOnClank";
     public static final String AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES =
             "AutofillEnableNewCardArtAndNetworkImages";
     public static final String AUTOFILL_ENABLE_CARD_ART_SERVER_SIDE_STRETCHING =
             "AutofillEnableCardArtServerSideStretching";
+    public static final String AUTOFILL_ENABLE_CVC_STORAGE = "AutofillEnableCvcStorageAndFilling";
     public static final String AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH =
             "AutofillEnablePaymentsMandatoryReauth";
     public static final String AUTOFILL_ENABLE_RANKING_FORMULA_ADDRESS_PROFILES =
@@ -173,11 +178,13 @@ public abstract class ChromeFeatureList {
     public static final String CCT_BRAND_TRANSPARENCY_MEMORY_IMPROVEMENT =
             "CCTBrandTransparencyMemoryImprovement";
     public static final String CCT_CLIENT_DATA_HEADER = "CCTClientDataHeader";
+    public static final String CCT_DEPRECATED_APIs = "CCTDeprecatedAPIs";
     public static final String CCT_FEATURE_USAGE = "CCTFeatureUsage";
     public static final String CCT_INCOGNITO = "CCTIncognito";
     public static final String CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY =
             "CCTIncognitoAvailableToThirdParty";
     public static final String CCT_INTENT_FEATURE_OVERRIDES = "CCTIntentFeatureOverrides";
+    public static final String CCT_MINIMIZED = "CCTMinimized";
     public static final String CCT_NEW_DOWNLOAD_TAB = "CCTNewDownloadTab";
     public static final String CCT_PAGE_INSIGHTS_HUB = "CCTPageInsightsHub";
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";
@@ -266,7 +273,6 @@ public abstract class ChromeFeatureList {
     public static final String FEED_LOADING_PLACEHOLDER = "FeedLoadingPlaceholder";
     public static final String FEED_POSITION_ANDROID = "FeedPositionAndroid";
     public static final String FEED_SHOW_SIGN_IN_COMMAND = "FeedShowSignInCommand";
-    public static final String FEED_BOC_SIGN_IN_INTERSTITIAL = "FeedBoCSigninInterstitial";
     public static final String FEED_USER_INTERACTION_RELIABILITY_REPORT =
             "FeedUserInteractionReliabilityReport";
     public static final String FILLING_PASSWORDS_FROM_ANY_ORIGIN = "FillingPasswordsFromAnyOrigin";
@@ -277,12 +283,15 @@ public abstract class ChromeFeatureList {
             "ForceDisableExtendedSyncPromos";
     public static final String FORCE_STARTUP_SIGNIN_PROMO = "ForceStartupSigninPromo";
     public static final String FORCE_WEB_CONTENTS_DARK_MODE = "WebContentsForceDark";
+    public static final String FRIENDLIER_SAFE_BROWSING_SETTINGS_ENHANCED_PROTECTION =
+            "FriendlierSafeBrowsingSettingsEnhancedProtection";
     public static final String FRIENDLIER_SAFE_BROWSING_SETTINGS_STANDARD_PROTECTION =
             "FriendlierSafeBrowsingSettingsStandardProtection";
     public static final String GRID_TAB_SWITCHER_LANDSCAPE_ASPECT_RATIO_PHONES =
             "GridTabSwitcherLandscapeAspectRatioPhones";
+    public static final String HASH_PREFIX_REAL_TIME_LOOKUPS =
+            "SafeBrowsingHashPrefixRealTimeLookups";
     public static final String HISTORY_JOURNEYS = "Journeys";
-    public static final String HISTORY_ORGANIC_REPEATABLE_QUERIES = "OrganicRepeatableQueries";
     public static final String IDENTITY_STATUS_CONSISTENCY = "IdentityStatusConsistency";
     public static final String IMPROVED_INCOGNITO_SCREENSHOT = "ImprovedIncognitoScreenshot";
     public static final String INCOGNITO_DOWNLOADS_WARNING = "IncognitoDownloadsWarning";
@@ -309,6 +318,7 @@ public abstract class ChromeFeatureList {
     public static final String MESSAGES_FOR_ANDROID_PERMISSION_UPDATE =
             "MessagesForAndroidPermissionUpdate";
     public static final String METRICS_SETTINGS_ANDROID = "MetricsSettingsAndroid";
+    public static final String NEW_TAB_SEARCH_ENGINE_URL_ANDROID = "NewTabSearchEngineUrlAndroid";
     public static final String NOTIFICATION_PERMISSION_VARIANT = "NotificationPermissionVariant";
     public static final String NOTIFICATION_PERMISSION_BOTTOM_SHEET =
             "NotificationPermissionBottomSheet";
@@ -322,7 +332,6 @@ public abstract class ChromeFeatureList {
             "OmniboxAdaptNarrowTabletWindows";
     public static final String OMNIBOX_CACHE_SUGGESTION_RESOURCES =
             "OmniboxCacheSuggestionResources";
-    public static final String OMNIBOX_CONSUMERS_IME_INSETS = "OmniboxConsumesImeInsets";
     public static final String OMNIBOX_HISTORY_CLUSTER_PROVIDER =
             "JourneysOmniboxHistoryClusterProvider";
 
@@ -330,14 +339,15 @@ public abstract class ChromeFeatureList {
     public static final String OMNIBOX_MATCH_TOOLBAR_AND_STATUS_BAR_COLOR =
             "OmniboxMatchToolbarAndStatusBarColor";
     public static final String OMNIBOX_MODERNIZE_VISUAL_UPDATE = "OmniboxModernizeVisualUpdate";
-    public static final String OMNIBOX_MOST_VISITED_TILES_ADD_RECYCLED_VIEW_POOL =
-            "OmniboxMostVisitedTilesAddRecycledViewPool";
-
+    public static final String OMNIBOX_MOST_VISITED_TILES_HORIZONTAL_RENDER_GROUP =
+            "OmniboxMostVisitedTilesHorizontalRenderGroup";
     public static final String OMNIBOX_NOOP_EDIT_URL_SUGGESTION_CLICKS =
             "OmniboxNoopEditUrlSuggestionClicks";
     public static final String AVOID_RELAYOUT_DURING_FOCUS_ANIMATION =
             "AvoidRelayoutDuringFocusAnimation";
     public static final String SHORT_CIRCUIT_UNFOCUS_ANIMATION = "ShortCircuitUnfocusAnimation";
+    public static final String OMNIBOX_TOUCH_DOWN_TRIGGER_FOR_PREFETCH =
+            "OmniboxTouchDownTriggerForPrefetch";
     public static final String OMNIBOX_UPDATED_CONNECTION_SECURITY_INDICATORS =
             "OmniboxUpdatedConnectionSecurityIndicators";
     public static final String OMNIBOX_WARM_RECYCLED_VIEW_POOL = "OmniboxWarmRecycledViewPool";
@@ -346,9 +356,6 @@ public abstract class ChromeFeatureList {
     public static final String OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS =
             "OptimizationGuidePushNotifications";
     public static final String PAGE_ANNOTATIONS_SERVICE = "PageAnnotationsService";
-    public static final String PAGE_INFO_ABOUT_THIS_SITE_IMPROVED_BOTTOMSHEET =
-            "PageInfoAboutThisSiteImprovedBottomSheet";
-    public static final String PAGE_INFO_ABOUT_THIS_SITE_NEW_ICON = "PageInfoAboutThisSiteNewIcon";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_MORE_LANGS =
             "PageInfoAboutThisSiteMoreLangs";
     public static final String PAINT_PREVIEW_DEMO = "PaintPreviewDemo";
@@ -365,6 +372,7 @@ public abstract class ChromeFeatureList {
     public static final String PRERENDER2 = "Prerender2";
     public static final String PRECONNECT_ON_TAB_CREATION = "PreconnectOnTabCreation";
     public static final String PRIVACY_GUIDE = "PrivacyGuideAndroid";
+    public static final String PRIVACY_GUIDE_ANDROID_3 = "PrivacyGuideAndroid3";
     public static final String PRIVACY_GUIDE_POST_MVP = "PrivacyGuideAndroidPostMVP";
     public static final String PRIVACY_SANDBOX_FPS_UI = "PrivacySandboxFirstPartySetsUI";
     public static final String PRIVACY_SANDBOX_SETTINGS_3 = "PrivacySandboxSettings3";
@@ -388,8 +396,10 @@ public abstract class ChromeFeatureList {
     public static final String RECORD_SUPPRESSION_METRICS = "RecordSuppressionMetrics";
     public static final String RECOVER_FROM_NEVER_SAVE_ANDROID =
             "RecoverFromNeverSaveAndroid_LAUNCHED";
+    public static final String RED_INTERSTITIAL_FACELIFT = "RedInterstitialFacelift";
     public static final String REENGAGEMENT_NOTIFICATION = "ReengagementNotification";
     public static final String RELATED_SEARCHES = "RelatedSearches";
+    public static final String RENAME_JOURNEYS = "RenameJourneys";
     public static final String RESTORE_TABS_ON_FRE = "RestoreTabsOnFRE";
     public static final String REQUEST_DESKTOP_SITE_DEFAULTS = "RequestDesktopSiteDefaults";
     public static final String REQUEST_DESKTOP_SITE_DEFAULTS_CONTROL =
@@ -406,11 +416,14 @@ public abstract class ChromeFeatureList {
             "RequestDesktopSiteOptInControlSynthetic";
     public static final String REQUEST_DESKTOP_SITE_OPT_IN_SYNTHETIC =
             "RequestDesktopSiteOptInSynthetic";
-    public static final String RESIZE_ONLY_ACTIVE_TAB = "ResizeOnlyActiveTab";
     public static final String SAFE_BROWSING_DELAYED_WARNINGS = "SafeBrowsingDelayedWarnings";
     public static final String SAFE_MODE_FOR_CACHED_FLAGS = "SafeModeForCachedFlags";
     public static final String SCREENSHOTS_FOR_ANDROID_V2 = "ScreenshotsForAndroidV2";
     public static final String SCROLL_TO_TLD_OPTIMIZATION = "ScrollToTLDOptimization";
+    public static final String SEARCH_ENGINES_PROMO_V3 = "SearchEnginesPromoV3";
+    public static final String SEARCH_ENGINE_CHOICE = "SearchEngineChoice";
+    public static final String SEARCH_READY_OMNIBOX_ALLOW_QUERY_EDIT =
+            "SearchReadyOmniboxAllowQueryEdit";
     public static final String SEARCH_RESUMPTION_MODULE_ANDROID = "SearchResumptionModuleAndroid";
     public static final String SHOULD_IGNORE_INTENT_SKIP_INTERNAL_CHECK =
             "ShouldIgnoreIntentSkipInternalCheck";
@@ -438,20 +451,13 @@ public abstract class ChromeFeatureList {
     public static final String SUGGESTION_ANSWERS_COLOR_REVERSE = "SuggestionAnswersColorReverse";
     public static final String SUPPRESS_TOOLBAR_CAPTURES = "SuppressToolbarCaptures";
     public static final String SURFACE_POLISH = "SurfacePolish";
-    public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
-            "SwapPixelFormatToFixConvertFromTranslucent";
     public static final String SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS =
             "SyncAndroidLimitNTPPromoImpressions";
     public static final String SYNC_ENABLE_HISTORY_DATA_TYPE = "SyncEnableHistoryDataType";
-    public static final String SYNC_ENABLE_CONTACT_INFO_DATA_TYPE = "SyncEnableContactInfoDataType";
     public static final String SYNC_ENABLE_CONTACT_INFO_DATA_TYPE_IN_TRANSPORT_MODE =
             "SyncEnableContactInfoDataTypeInTransportMode";
     public static final String TAB_DRAG_DROP_ANDROID = "TabDragDropAndroid";
     public static final String TAB_ENGAGEMENT_REPORTING_ANDROID = "TabEngagementReportingAndroid";
-    public static final String TAB_GRID_LAYOUT_ANDROID = "TabGridLayoutAndroid";
-    public static final String TAB_GROUPS_ANDROID = "TabGroupsAndroid";
-    public static final String TAB_GROUPS_CONTINUATION_ANDROID = "TabGroupsContinuationAndroid";
-    public static final String TAB_GROUPS_FOR_TABLETS = "TabGroupsForTablets";
     public static final String TAB_STRIP_REDESIGN = "TabStripRedesign";
     public static final String TAB_STRIP_STARTUP_REFACTORING = "TabStripStartupRefactoring";
     public static final String TABLET_TOOLBAR_REORDERING = "TabletToolbarReordering";
@@ -482,6 +488,7 @@ public abstract class ChromeFeatureList {
     public static final String VOICE_SEARCH_AUDIO_CAPTURE_POLICY = "VoiceSearchAudioCapturePolicy";
     public static final String WEBNOTES_STYLIZE = "WebNotesStylize";
     public static final String WEB_APK_ALLOW_ICON_UPDATA = "WebApkAllowIconUpdate";
+    public static final String WEB_APK_BACKUP_AND_RESTORE_BACKEND = "WebApkBackupAndRestoreBackend";
     public static final String WEB_APK_INSTALL_SERVICE = "WebApkInstallService";
     public static final String WEB_APK_TRAMPOLINE_ON_INITIAL_INTENT =
             "WebApkTrampolineOnInitialIntent";
@@ -498,6 +505,8 @@ public abstract class ChromeFeatureList {
     public static final String XSURFACE_METRICS_REPORTING = "XsurfaceMetricsReporting";
 
     /* Alphabetical: */
+    public static final CachedFlag sAndroidAppIntegration =
+            new CachedFlag(ANDROID_APP_INTEGRATION, false);
     public static final CachedFlag sAppMenuMobileSiteOption =
             new CachedFlag(APP_MENU_MOBILE_SITE_OPTION, false);
     public static final CachedFlag sBackGestureActivityTabProvider =
@@ -538,8 +547,6 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sCommandLineOnNonRooted =
             new CachedFlag(COMMAND_LINE_ON_NON_ROOTED,
                     ChromePreferenceKeys.FLAGS_CACHED_COMMAND_LINE_ON_NON_ROOTED_ENABLED, false);
-    public static final CachedFlag sCriticalPersistedTabData =
-            new CachedFlag(CRITICAL_PERSISTED_TAB_DATA, false);
     public static final CachedFlag sDelayTempStripRemoval =
             new CachedFlag(DELAY_TEMP_STRIP_REMOVAL, true);
     public static final CachedFlag sDragDropIntoOmnibox =
@@ -549,6 +556,8 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sExperimentsForAgsa = new CachedFlag(EXPERIMENTS_FOR_AGSA, true);
     public static final CachedFlag sFeedLoadingPlaceholder =
             new CachedFlag(FEED_LOADING_PLACEHOLDER, false);
+    public static final CachedFlag sFriendlierSafeBrowsingSettingsEnhancedProtection =
+            new CachedFlag(FRIENDLIER_SAFE_BROWSING_SETTINGS_ENHANCED_PROTECTION, false);
     public static final CachedFlag sFriendlierSafeBrowsingSettingsStandardProtection =
             new CachedFlag(FRIENDLIER_SAFE_BROWSING_SETTINGS_STANDARD_PROTECTION, false);
     public static final CachedFlag sFoldableJankFix = new CachedFlag(FOLDABLE_JANK_FIX, true);
@@ -559,19 +568,23 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sInstanceSwitcher = new CachedFlag(INSTANCE_SWITCHER, true);
     public static final CachedFlag sInstantStart = new CachedFlag(INSTANT_START, false);
     public static final CachedFlag sInterestFeedV2 = new CachedFlag(INTEREST_FEED_V2, true);
+    public static final CachedFlag sNewTabSearchEngineUrlAndroid =
+            new CachedFlag(NEW_TAB_SEARCH_ENGINE_URL_ANDROID, false);
+    public static final CachedFlag sPrivacyGuideAndroid3 =
+            new CachedFlag(PRIVACY_GUIDE_ANDROID_3, false);
     public static final CachedFlag sPrivacyGuidePostMVP =
             new CachedFlag(PRIVACY_GUIDE_POST_MVP, false);
     public static final CachedFlag sOmniboxMatchToolbarAndStatusBarColor =
             new CachedFlag(OMNIBOX_MATCH_TOOLBAR_AND_STATUS_BAR_COLOR, false);
     public static final CachedFlag sOmniboxModernizeVisualUpdate =
             new CachedFlag(OMNIBOX_MODERNIZE_VISUAL_UPDATE, false);
-    public static final CachedFlag sOmniboxMostVisitedTilesAddRecycledViewPool =
-            new CachedFlag(OMNIBOX_MOST_VISITED_TILES_ADD_RECYCLED_VIEW_POOL, false);
     public static final CachedFlag sOptimizationGuidePushNotifications =
             new CachedFlag(OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS, false);
     public static final CachedFlag sPaintPreviewDemo = new CachedFlag(PAINT_PREVIEW_DEMO, false);
     public static final CachedFlag sQueryTiles = new CachedFlag(QUERY_TILES, false);
     public static final CachedFlag sQueryTilesOnStart = new CachedFlag(QUERY_TILES_ON_START, false);
+    public static final CachedFlag sSearchEngineChoice =
+            new CachedFlag(SEARCH_ENGINE_CHOICE, false);
     public static final CachedFlag sShouldIgnoreIntentSkipInternalCheck =
             new CachedFlag(SHOULD_IGNORE_INTENT_SKIP_INTERNAL_CHECK, true);
     public static final CachedFlag sSpareTab = new CachedFlag(SPARE_TAB, false);
@@ -589,20 +602,8 @@ public abstract class ChromeFeatureList {
             new CachedFlag(START_SURFACE_WITH_ACCESSIBILITY, false);
     public static final CachedFlag sStoreHoursAndroid = new CachedFlag(STORE_HOURS, false);
     public static final CachedFlag sSurfacePolish = new CachedFlag(SURFACE_POLISH, false);
-    public static final CachedFlag sSwapPixelFormatToFixConvertFromTranslucent = new CachedFlag(
-            SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
-            ChromePreferenceKeys.FLAGS_CACHED_SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
-            true);
     public static final CachedFlag sTabDragDropAndroid =
             new CachedFlag(TAB_DRAG_DROP_ANDROID, false);
-    public static final CachedFlag sTabGridLayoutAndroid = new CachedFlag(TAB_GRID_LAYOUT_ANDROID,
-            ChromePreferenceKeys.FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED, true);
-    public static final CachedFlag sTabGroupsAndroid = new CachedFlag(
-            TAB_GROUPS_ANDROID, ChromePreferenceKeys.FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED, true);
-    public static final CachedFlag sTabGroupsContinuationAndroid =
-            new CachedFlag(TAB_GROUPS_CONTINUATION_ANDROID, true);
-    public static final CachedFlag sTabGroupsForTablets =
-            new CachedFlag(TAB_GROUPS_FOR_TABLETS, true);
     public static final CachedFlag sTabStripRedesign = new CachedFlag(TAB_STRIP_REDESIGN, false);
     public static final CachedFlag sTabStripStartupRefactoring =
             new CachedFlag(TAB_STRIP_STARTUP_REFACTORING, false);
@@ -623,6 +624,7 @@ public abstract class ChromeFeatureList {
 
     public static final List<CachedFlag> sFlagsCachedFullBrowser = List.of(
             // clang-format off
+        sAndroidAppIntegration,
         sAppMenuMobileSiteOption,
         sBackGestureActivityTabProvider,
         sBackGestureRefactorActivityAndroid,
@@ -644,12 +646,12 @@ public abstract class ChromeFeatureList {
         sCloseTabSuggestions,
         sCloseTabSaveTabList,
         sCommandLineOnNonRooted,
-        sCriticalPersistedTabData,
         sDelayTempStripRemoval,
         sDragDropIntoOmnibox,
         sEarlyLibraryLoad,
         sEmptyStates,
         sFeedLoadingPlaceholder,
+        sFriendlierSafeBrowsingSettingsEnhancedProtection,
         sFriendlierSafeBrowsingSettingsStandardProtection,
         sFoldableJankFix,
         sGridTabSwitcherLandscapeAspectRatioPhones,
@@ -657,14 +659,16 @@ public abstract class ChromeFeatureList {
         sInstanceSwitcher,
         sInstantStart,
         sInterestFeedV2,
+        sNewTabSearchEngineUrlAndroid,
+        sPrivacyGuideAndroid3,
         sPrivacyGuidePostMVP,
         sOmniboxMatchToolbarAndStatusBarColor,
         sOmniboxModernizeVisualUpdate,
-        sOmniboxMostVisitedTilesAddRecycledViewPool,
         sOptimizationGuidePushNotifications,
         sPaintPreviewDemo,
         sQueryTiles,
         sQueryTilesOnStart,
+        sSearchEngineChoice,
         sShouldIgnoreIntentSkipInternalCheck,
         sSpareTab,
         sStartSurfaceAndroid,
@@ -675,12 +679,7 @@ public abstract class ChromeFeatureList {
         sStartSurfaceWithAccessibility,
         sStoreHoursAndroid,
         sSurfacePolish,
-        sSwapPixelFormatToFixConvertFromTranslucent,
         sTabDragDropAndroid,
-        sTabGridLayoutAndroid,
-        sTabGroupsAndroid,
-        sTabGroupsContinuationAndroid,
-        sTabGroupsForTablets,
         sTabStripRedesign,
         sTabStripStartupRefactoring,
         sTabletToolbarReordering,
@@ -698,6 +697,6 @@ public abstract class ChromeFeatureList {
     public static final List<CachedFlag> sTestCachedFlags =
             List.of(sTestDefaultDisabled, sTestDefaultEnabled);
 
-    static final Map<String, CachedFlag> sAllCachedFlags = CachedFlag.createCachedFlagMap(
+    public static final Map<String, CachedFlag> sAllCachedFlags = CachedFlag.createCachedFlagMap(
             List.of(sFlagsCachedFullBrowser, sFlagsCachedInMinimalBrowser, sTestCachedFlags));
 }

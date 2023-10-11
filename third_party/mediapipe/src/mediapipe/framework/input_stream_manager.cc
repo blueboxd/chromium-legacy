@@ -245,7 +245,7 @@ Timestamp InputStreamManager::MinTimestampOrBoundHelper() const
 Packet InputStreamManager::PopPacketAtTimestamp(Timestamp timestamp,
                                                 int* num_packets_dropped,
                                                 bool* stream_is_done) {
-  CHECK(enable_timestamps_);
+  ABSL_CHECK(enable_timestamps_);
   *num_packets_dropped = -1;
   *stream_is_done = false;
   bool queue_became_non_full = false;
@@ -300,7 +300,7 @@ Packet InputStreamManager::PopPacketAtTimestamp(Timestamp timestamp,
 }
 
 Packet InputStreamManager::PopQueueHead(bool* stream_is_done) {
-  CHECK(!enable_timestamps_);
+  ABSL_CHECK(!enable_timestamps_);
   *stream_is_done = false;
   bool queue_became_non_full = false;
   Packet packet;

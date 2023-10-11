@@ -231,6 +231,11 @@ class DownloadUIModel {
     BubbleUIInfo& AddLearnMoreLink(int label_text_id,
                                    int link_text_id,
                                    DownloadCommands::Command command);
+    // Same as above but takes the link text string itself, and assumes that
+    // the whole string should be linked, rather than a substring.
+    BubbleUIInfo& AddLearnMoreLink(const std::u16string& link_text,
+                                   DownloadCommands::Command command);
+
     BubbleUIInfo& DisableMainButton();
 
     // Set common characteristics for dangerous or suspicious downloads.
@@ -613,6 +618,10 @@ class DownloadUIModel {
   // Returns the accessible alert text that should be announced when the
   // download is in progress.
   virtual std::u16string GetInProgressAccessibleAlertText() const;
+
+  // Determines whether the file is an encrypted archive. This is used to
+  // specialize certain strings.
+  virtual bool IsEncryptedArchive() const;
 
  protected:
   // Returns the MIME type of the download.

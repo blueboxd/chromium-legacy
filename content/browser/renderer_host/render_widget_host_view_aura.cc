@@ -288,9 +288,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
 
   cursor_manager_ = std::make_unique<CursorManager>(this);
 
-  SetOverscrollControllerEnabled(
-      base::FeatureList::IsEnabled(features::kOverscrollHistoryNavigation));
-
   selection_controller_client_ =
       std::make_unique<TouchSelectionControllerClientAura>(this);
   CreateSelectionController();
@@ -575,6 +572,14 @@ void RenderWidgetHostViewAura::NotifyHostAndDelegateOnWasShown(
   DCHECK(host_->is_hidden());
   DCHECK_NE(visibility_, Visibility::VISIBLE);
 
+  auto* wth = window()->GetHost();
+  if (wth && allocate_local_surface_id_on_next_show_) {
+    wth->window()->AllocateLocalSurfaceId();
+    wth->compositor()->SetLocalSurfaceIdFromParent(
+        wth->window()->GetLocalSurfaceId());
+  }
+  allocate_local_surface_id_on_next_show_ = false;
+
   visibility_ = Visibility::VISIBLE;
 
   bool has_saved_frame = delegated_frame_host_->HasSavedFrame();
@@ -596,8 +601,9 @@ void RenderWidgetHostViewAura::NotifyHostAndDelegateOnWasShown(
   if (root) {
     aura::client::CursorClient* cursor_client =
         aura::client::GetCursorClient(root);
-    if (cursor_client)
+    if (cursor_client) {
       NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
+    }
   }
 
   // If the frame for the renderer is already available, then the
@@ -762,33 +768,55 @@ void RenderWidgetHostViewAura::EnsureDevicePostureServiceConnection() {
 
 void RenderWidgetHostViewAura::OnViewportSegmentsChanged(
     const std::vector<gfx::Rect>& segments) {
+  display_feature_ = absl::nullopt;
+  viewport_segments_.clear();
   if (segments.empty()) {
-    display_feature_ = absl::nullopt;
     SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                                 window_->GetLocalSurfaceId());
     return;
   }
 
-  display_feature_ = absl::nullopt;
   if (segments.size() >= 2) {
-    float dip_scale = 1 / device_scale_factor_;
-    gfx::Rect transformed_display_feature =
-        gfx::ScaleToRoundedRect(segments[1], dip_scale);
-    transformed_display_feature.Offset(-GetViewBounds().x(),
-                                       -GetViewBounds().y());
-    transformed_display_feature.Intersect(gfx::Rect(GetVisibleViewportSize()));
-    if (transformed_display_feature.x() == 0) {
-      display_feature_ = {DisplayFeature::Orientation::kHorizontal,
-                          transformed_display_feature.y(),
-                          transformed_display_feature.height()};
-    } else if (transformed_display_feature.y() == 0) {
-      display_feature_ = {DisplayFeature::Orientation::kVertical,
-                          transformed_display_feature.x(),
-                          transformed_display_feature.width()};
-    }
+    viewport_segments_ = std::move(segments);
+    ComputeDisplayFeature();
   }
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                               window_->GetLocalSurfaceId());
+}
+
+void RenderWidgetHostViewAura::ComputeDisplayFeature() {
+  if (viewport_segments_.size() < 2) {
+    return;
+  }
+
+  display_feature_ = absl::nullopt;
+  if (!window_->GetRootWindow()) {
+    return;
+  }
+
+  const display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
+  // Set the display feature only if the browser window is maximized.
+  if (window_->GetRootWindow()->GetBoundsInScreen() != display.work_area()) {
+    return;
+  }
+
+  float dip_scale = 1 / device_scale_factor_;
+  // Segments coming from the platform are in native resolution.
+  gfx::Rect transformed_display_feature =
+      gfx::ScaleToRoundedRect(viewport_segments_[1], dip_scale);
+  transformed_display_feature.Offset(-GetViewBounds().x(),
+                                     -GetViewBounds().y());
+  transformed_display_feature.Intersect(gfx::Rect(GetVisibleViewportSize()));
+  if (transformed_display_feature.x() == 0) {
+    display_feature_ = {DisplayFeature::Orientation::kHorizontal,
+                        transformed_display_feature.y(),
+                        transformed_display_feature.height()};
+  } else if (transformed_display_feature.y() == 0) {
+    display_feature_ = {DisplayFeature::Orientation::kVertical,
+                        transformed_display_feature.x(),
+                        transformed_display_feature.width()};
+  }
 }
 
 absl::optional<DisplayFeature> RenderWidgetHostViewAura::GetDisplayFeature() {
@@ -1179,7 +1207,7 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
       DCHECK(!sent_ack);
       window_host->dispatcher()->ProcessedTouchEvent(
           touch.event.unique_touch_event_id, window_, result,
-          InputEventResultStateIsSetNonBlocking(ack_result));
+          InputEventResultStateIsSetBlocking(ack_result));
       if (touch.event.touch_start_or_first_touch_move &&
           result == ui::ER_HANDLED && host()->delegate() &&
           host()->delegate()->GetInputEventRouter()) {
@@ -2583,6 +2611,13 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   if (!in_bounds_changed_)
     window_->SetBounds(rect);
 
+  if (!viewport_segments_.empty()) {
+    // The view bounds have changed so if we have viewport segments from the
+    // platform we need to make sure display_feature_ is updated considering the
+    // new view bounds.
+    ComputeDisplayFeature();
+  }
+
   // Even if not showing yet, we need to synchronize on size. As the renderer
   // needs to begin layout. Waiting until we show to start layout leads to
   // significant delays in embedding the first shown surface (500+ ms.)
@@ -2716,7 +2751,7 @@ void RenderWidgetHostViewAura::ForwardKeyboardEventWithLatencyInfo(
 #if BUILDFLAG(IS_LINUX)
   auto* linux_ui = ui::LinuxUi::instance();
   std::vector<ui::TextEditCommandAuraLinux> commands;
-  if (!event.skip_in_browser && linux_ui && event.os_event &&
+  if (!event.skip_if_unhandled && linux_ui && event.os_event &&
       linux_ui->GetTextEditCommandsForEvent(*event.os_event, &commands)) {
     // Transform from ui/ types to content/ types.
     std::vector<blink::mojom::EditCommandPtr> edit_commands;
@@ -3000,6 +3035,10 @@ void RenderWidgetHostViewAura::TransferTouches(
 void RenderWidgetHostViewAura::SetLastPointerType(
     ui::EventPointerType last_pointer_type) {
   last_pointer_type_ = last_pointer_type;
+}
+
+void RenderWidgetHostViewAura::InvalidateLocalSurfaceIdAndAllocationGroup() {
+  window_->InvalidateLocalSurfaceId(/*also_invalidate_allocation_group=*/true);
 }
 
 void RenderWidgetHostViewAura::InvalidateLocalSurfaceIdOnEviction() {

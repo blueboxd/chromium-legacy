@@ -177,7 +177,16 @@ class WebUsbServiceImplBaseTest : public testing::Test {
             embedded_worker_test_helper_->PrepareRegistrationAndVersion(
                 scope, worker_url);
         worker_version_ = pair.second;
-        auto* embedded_worker = worker_version_->GetEmbeddedWorkerForTesting();
+        worker_version_->set_fetch_handler_type(
+            ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
+        // Since this test fixture is used expecting device events being
+        // handled, simulate the script having hid event handlers by setting
+        // `has_hid_event_handlers_` of `worker_version_` before it is being
+        // activated.
+        worker_version_->set_has_usb_event_handlers(true);
+        worker_version_->SetStatus(ServiceWorkerVersion::Status::ACTIVATED);
+        pair.first->SetActiveVersion(worker_version_);
+        auto* embedded_worker = worker_version_->embedded_worker();
         embedded_worker_test_helper_->StartWorker(
             embedded_worker,
             embedded_worker_test_helper_->CreateStartParams(pair.second));
@@ -361,7 +370,11 @@ TEST_P(WebUsbServiceImplTest, OpenAndDisconnectDevice) {
 
 INSTANTIATE_TEST_SUITE_P(WebUsbServiceImplTests,
                          WebUsbServiceImplTest,
-                         Values(kCreateForFrame, kCreateForServiceWorker),
+                          #if !BUILDFLAG(IS_ANDROID)
+                            Values(kCreateForFrame, kCreateForServiceWorker),
+                          #else
+                            Values(kCreateForFrame),
+                          #endif
                          [](const auto& info) {
                            return ServiceCreationTypeToString(info.param);
                          });
@@ -510,7 +523,11 @@ TEST_P(WebUsbServiceImplProtectedInterfaceTest, BlockProtectedInterface) {
 INSTANTIATE_TEST_SUITE_P(
     WebUsbServiceImplProtectedInterfaceTests,
     WebUsbServiceImplProtectedInterfaceTest,
+#if !BUILDFLAG(IS_ANDROID)
     Combine(Values(kCreateForFrame, kCreateForServiceWorker),
+#else
+    Combine(Values(kCreateForFrame),
+#endif
             Values(device::mojom::kUsbAudioClass,
                    device::mojom::kUsbHidClass,
                    device::mojom::kUsbMassStorageClass,

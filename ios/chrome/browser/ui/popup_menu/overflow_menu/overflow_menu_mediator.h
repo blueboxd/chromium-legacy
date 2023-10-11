@@ -29,6 +29,7 @@ class SyncService;
 
 @protocol ActivityServiceCommands;
 @protocol ApplicationCommands;
+class AuthenticationService;
 @protocol BookmarksCommands;
 @protocol BrowserCoordinatorCommands;
 class BrowserPolicyConnectorIOS;
@@ -128,11 +129,8 @@ class WebStateList;
 // The ReadingListBrowserAgent used to add urls to reading list.
 @property(nonatomic, assign) ReadingListBrowserAgent* readingListBrowserAgent;
 
-// Updates the pin state of the tab corresponding to the given `webState` in
-// `webStateList`.
-+ (void)setTabPinned:(BOOL)pinned
-            webState:(web::WebState*)webState
-        webStateList:(WebStateList*)webStateList;
+// The AuthenticationService to get sign-in info.
+@property(nonatomic, assign) AuthenticationService* authenticationService;
 
 // Disconnect the mediator.
 - (void)disconnect;

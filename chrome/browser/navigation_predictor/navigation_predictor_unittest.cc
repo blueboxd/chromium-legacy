@@ -12,8 +12,10 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "chrome/browser/page_load_metrics/observers/page_anchors_metrics_observer.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -35,7 +37,8 @@ namespace {
 
 class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
  public:
-  NavigationPredictorTest() = default;
+  NavigationPredictorTest()
+      : task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>()) {}
   ~NavigationPredictorTest() override = default;
 
   // Helper function to generate mojom metrics.
@@ -88,11 +91,17 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
     std::map<std::string, std::string> params;
     params["random_anchor_sampling_period"] = "1";
 
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kNavigationPredictor, params);
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kNavigationPredictor, params},
+         {blink::features::kPreloadingHeuristicsMLModel, {}}},
+        {});
   }
 
+  base::TestMockTimeTaskRunner* task_runner() { return task_runner_.get(); }
+
  private:
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+
   base::test::ScopedFeatureList scoped_feature_list_;
   mojo::Remote<blink::mojom::AnchorElementMetricsHost> predictor_service_;
 
@@ -519,12 +528,28 @@ class MockNavigationPredictorForTesting : public NavigationPredictor {
     auto it = tracked_anchor_id_to_index_.find(anchor_id);
     return (it != tracked_anchor_id_to_index_.end()) ? it->second : -1;
   }
+  // NavigationPredictor::
+  void OnPreloadingHeuristicsModelDone(
+      GURL url,
+      PreloadingModelKeyedService::Result result) override {
+    NavigationPredictor::OnPreloadingHeuristicsModelDone(url, result);
+    if (on_preloading_heuristics_mode_done_callback_) {
+      std::move(on_preloading_heuristics_mode_done_callback_).Run(result);
+    }
+  }
+
+  void SetOnPreloadingHeuristicsModelDoneCallback(
+      base::OnceCallback<void(PreloadingModelKeyedService::Result)> callback) {
+    on_preloading_heuristics_mode_done_callback_ = std::move(callback);
+  }
 
  private:
   MockNavigationPredictorForTesting(
       content::RenderFrameHost& render_frame_host,
       mojo::PendingReceiver<blink::mojom::AnchorElementMetricsHost> receiver)
       : NavigationPredictor(render_frame_host, std::move(receiver)) {}
+  base::OnceCallback<void(PreloadingModelKeyedService::Result)>
+      on_preloading_heuristics_mode_done_callback_;
 };
 
 class NavigationPredictorUserInteractionsTest : public NavigationPredictorTest {
@@ -537,6 +562,46 @@ class NavigationPredictorUserInteractionsTest : public NavigationPredictorTest {
       absl::optional<int> id = absl::nullopt) {
     std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
     metrics.push_back(CreateMetricsPtr(id));
+
+    MockNavigationPredictorForTesting::AnchorId anchor_id(
+        metrics[0]->anchor_id);
+    predictor_service->ReportNewAnchorElements(std::move(metrics));
+    return anchor_id;
+  }
+
+  MockNavigationPredictorForTesting::AnchorId ReportNewAnchorElementWithDetails(
+      blink::mojom::AnchorElementMetricsHost* predictor_service,
+      float ratio_area,
+      float ratio_visible_area,
+      float ratio_distance_top_to_visible_top,
+      float ratio_distance_center_to_visible_top,
+      float ratio_distance_root_top,
+      float ratio_distance_root_bottom,
+      bool is_in_iframe,
+      bool contains_image,
+      bool is_same_host,
+      bool is_url_incremented_by_one,
+      bool has_text_sibling,
+      uint32_t font_size_px,
+      uint32_t font_weight) {
+    std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+    metrics.push_back(CreateMetricsPtr());
+
+    metrics[0]->ratio_area = ratio_area;
+    metrics[0]->ratio_visible_area = ratio_visible_area;
+    metrics[0]->ratio_distance_top_to_visible_top =
+        ratio_distance_top_to_visible_top;
+    metrics[0]->ratio_distance_center_to_visible_top =
+        ratio_distance_center_to_visible_top;
+    metrics[0]->ratio_distance_root_top = ratio_distance_root_top;
+    metrics[0]->ratio_distance_root_bottom = ratio_distance_root_bottom;
+    metrics[0]->is_in_iframe = is_in_iframe;
+    metrics[0]->contains_image = contains_image;
+    metrics[0]->is_same_host = is_same_host;
+    metrics[0]->is_url_incremented_by_one = is_url_incremented_by_one;
+    metrics[0]->has_text_sibling = has_text_sibling;
+    metrics[0]->font_size_px = font_size_px;
+    metrics[0]->font_weight = font_weight;
 
     MockNavigationPredictorForTesting::AnchorId anchor_id(
         metrics[0]->anchor_id);
@@ -588,6 +653,20 @@ class NavigationPredictorUserInteractionsTest : public NavigationPredictorTest {
     predictor_service->ReportAnchorElementPointerOut(std::move(metrics));
     base::RunLoop().RunUntilIdle();
   }
+  void ReportAnchorElementPointerDataOnHoverTimerFired(
+      blink::mojom::AnchorElementMetricsHost* predictor_service,
+      MockNavigationPredictorForTesting::AnchorId anchor_id,
+      double mouse_velocity,
+      double mouse_acceleration) {
+    blink::mojom::AnchorElementPointerDataOnHoverTimerFiredPtr metrics =
+        blink::mojom::AnchorElementPointerDataOnHoverTimerFired::New(
+            static_cast<uint32_t>(anchor_id),
+            blink::mojom::AnchorElementPointerData::New(
+                /*is_mouse_pointer=*/true, mouse_velocity, mouse_acceleration));
+    predictor_service->ReportAnchorElementPointerDataOnHoverTimerFired(
+        std::move(metrics));
+    base::RunLoop().RunUntilIdle();
+  }
 
   void ReportAnchorElementClick(
       blink::mojom::AnchorElementMetricsHost* predictor_service,
@@ -610,6 +689,22 @@ class NavigationPredictorUserInteractionsTest : public NavigationPredictorTest {
         blink::mojom::AnchorElementPointerDown::New(
             static_cast<uint32_t>(anchor_id), navigation_start_to_pointer_down);
     predictor_service->ReportAnchorElementPointerDown(std::move(metrics));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void ProcessPointerEventUsingMLModel(
+      blink::mojom::AnchorElementMetricsHost* predictor_service,
+      MockNavigationPredictorForTesting::AnchorId anchor_id,
+      bool is_mouse,
+      blink::mojom::AnchorElementUserInteractionEventForMLModelType
+          user_interaction_event_type) {
+    blink::mojom::AnchorElementPointerEventForMLModelPtr pointer_event =
+        blink::mojom::AnchorElementPointerEventForMLModel::New(
+            /*anchor_id=*/static_cast<uint32_t>(anchor_id),
+            /*is_mouse=*/is_mouse,
+            /*user_interaction_event_type=*/user_interaction_event_type);
+    predictor_service->ProcessPointerEventUsingMLModel(
+        std::move(pointer_event));
     base::RunLoop().RunUntilIdle();
   }
 };
@@ -800,16 +895,28 @@ TEST_F(NavigationPredictorUserInteractionsTest, RecordUserInteractionMetrics) {
   // Mouse hover over anchor element 0 and moves away.
   const int navigation_start_to_pointer_over_0 = 140;
   const int hover_dwell_time_0 = 60;
+  const double mouse_velocity = 50.0;
+  const double mouse_acceleration = -10.0;
   ReportAnchorElementPointerOver(
       predictor_service.get(), anchor_id_0,
       base::Milliseconds(navigation_start_to_pointer_over_0));
   ReportAnchorElementPointerOut(predictor_service.get(), anchor_id_0,
                                 base::Milliseconds(hover_dwell_time_0));
+  ReportAnchorElementPointerDataOnHoverTimerFired(
+      predictor_service.get(), anchor_id_0, mouse_velocity, mouse_acceleration);
 
   // Anchor element 0 leaves the viewport.
   const int time_in_viewport_0 = 250;
   ReportAnchorElementLeftViewport(predictor_service.get(), anchor_id_0,
                                   base::Milliseconds(time_in_viewport_0));
+
+  // Anchor element 0 enters and leaves the viewport again.
+  ReportAnchorElementEnteredViewport(
+      predictor_service.get(), anchor_id_0,
+      base::Milliseconds(navigation_start_to_entered_viewport +
+                         time_in_viewport_0 + 1));
+  ReportAnchorElementLeftViewport(predictor_service.get(), anchor_id_0,
+                                  base::Milliseconds(1));
 
   // Mouse hover over anchor element 1 and stays there.
   const int navigation_start_to_pointer_over_1 = 280;
@@ -839,6 +946,7 @@ TEST_F(NavigationPredictorUserInteractionsTest, RecordUserInteractionMetrics) {
       // Anchor element 0.
       case 0:
         EXPECT_EQ(0, get_metric(i, UkmEntry::kIsInViewportName));
+        EXPECT_EQ(2, get_metric(i, UkmEntry::kEnteredViewportCountName));
         EXPECT_EQ(0, get_metric(i, UkmEntry::kIsPointerHoveringOverName));
         EXPECT_EQ(
             ukm::GetExponentialBucketMin(time_in_viewport_0, 1.3),
@@ -847,12 +955,17 @@ TEST_F(NavigationPredictorUserInteractionsTest, RecordUserInteractionMetrics) {
                   get_metric(i, UkmEntry::kMaxHoverDwellTimeMsName));
         EXPECT_EQ(ukm::GetExponentialBucketMin(1, 1.3),
                   get_metric(i, UkmEntry::kPointerHoveringOverCountName));
+        EXPECT_EQ(/*get_exponential_bucket_for_signed_values(50)=*/40,
+                  get_metric(i, UkmEntry::kMouseVelocityName));
+        EXPECT_EQ(/*get_exponential_bucket_for_signed_values(-10)=*/-9,
+                  get_metric(i, UkmEntry::kMouseAccelerationName));
         break;
 
       // Anchor element 1.
       case 1:
         EXPECT_EQ(1, get_metric(i, UkmEntry::kAnchorIndexName));
         EXPECT_EQ(1, get_metric(i, UkmEntry::kIsInViewportName));
+        EXPECT_EQ(1, get_metric(i, UkmEntry::kEnteredViewportCountName));
         EXPECT_EQ(1, get_metric(i, UkmEntry::kIsPointerHoveringOverName));
         EXPECT_EQ(
             ukm::GetExponentialBucketMin(
@@ -1025,6 +1138,7 @@ TEST_F(NavigationPredictorUserInteractionsTest,
     EXPECT_EQ(static_cast<uint32_t>(anchor_id_0),
               get_metric(UkmEntry::kAnchorIndexName));
     EXPECT_EQ(1, get_metric(UkmEntry::kIsInViewportName));
+    EXPECT_EQ(1, get_metric(UkmEntry::kEnteredViewportCountName));
     EXPECT_EQ(0, get_metric(UkmEntry::kIsPointerHoveringOverName));
     EXPECT_EQ(ukm::GetExponentialBucketMin(hover_dwell_time_0, 1.3),
               get_metric(UkmEntry::kMaxHoverDwellTimeMsName));
@@ -1125,4 +1239,84 @@ TEST_F(NavigationPredictorUserInteractionsTest,
   EXPECT_EQ(0u,
             navigation_predictor_metrics_data->GetUserInteractionsData().count(
                 anchor_index));
+}
+
+TEST_F(NavigationPredictorUserInteractionsTest,
+       ProcessPointerEventUsingMLModel) {
+  mojo::Remote<blink::mojom::AnchorElementMetricsHost> predictor_service;
+  auto* predictor_service_host = MockNavigationPredictorForTesting::Create(
+      main_rfh(), predictor_service.BindNewPipeAndPassReceiver());
+  predictor_service_host->SetTaskRunnerForTesting(
+      task_runner(), task_runner()->GetMockTickClock());
+
+  task_runner()->AdvanceMockTickClock(base::Milliseconds(150));
+  auto anchor_id = ReportNewAnchorElementWithDetails(
+      predictor_service.get(),
+      /*ratio_area=*/0.1,
+      /*ratio_visible_area=*/0.1,
+      /*ratio_distance_top_to_visible_top=*/0.0,
+      /*ratio_distance_center_to_visible_top=*/0.0,
+      /*ratio_distance_root_top=*/0.0,
+      /*ratio_distance_root_bottom=*/0.0,
+      /*is_in_iframe=*/false,
+      /*contains_image=*/true,
+      /*is_same_host=*/true,
+      /*is_url_incremented_by_one=*/true,
+      /*has_text_sibling=*/false,
+      /*font_size_px=*/15,
+      /*font_weight=*/700);
+
+  // Make sure the ML model is periodically called while the mouse pointer is
+  // hovering over the link.
+  for (int i = 0; i < 5; i++) {
+    base::RunLoop run_loop;
+    predictor_service_host->SetOnPreloadingHeuristicsModelDoneCallback(
+        base::BindLambdaForTesting(
+            [&](PreloadingModelKeyedService::Result result) {
+              EXPECT_FALSE(result.has_value());
+              run_loop.Quit();
+            }));
+    predictor_service_host->SetModelScoreCallbackForTesting(
+        base::BindLambdaForTesting(
+            [&](const PreloadingModelKeyedService::Inputs& inputs) {
+              EXPECT_FLOAT_EQ(10.0f, inputs.percent_clickable_area);
+              EXPECT_EQ(2, inputs.font_size);
+              EXPECT_TRUE(inputs.is_bold);
+              EXPECT_FALSE(inputs.has_text_sibling);
+              EXPECT_EQ(base::Milliseconds(150),
+                        inputs.navigation_start_to_link_logged);
+              EXPECT_EQ(base::Milliseconds(i * 100), inputs.hover_dwell_time);
+            }));
+    if (i == 0) {
+      ProcessPointerEventUsingMLModel(
+          /*predictor_service=*/predictor_service.get(),
+          /*anchor_id=*/anchor_id,
+          /*is_mouse=*/true,
+          /*user_interaction_event_type=*/
+          blink::mojom::AnchorElementUserInteractionEventForMLModelType::
+              kPointerOver);
+    }
+    task_runner()->RunUntilIdle();
+    run_loop.Run();
+    task_runner()->AdvanceMockTickClock(base::Milliseconds(100));
+  }
+
+  // Make sure the model is not called after the mouse pointer out event.
+  bool did_ml_score_called = false;
+  predictor_service_host->SetModelScoreCallbackForTesting(
+      base::BindLambdaForTesting(
+          [&](const PreloadingModelKeyedService::Inputs& inputs) {
+            did_ml_score_called = true;
+          }));
+
+  ProcessPointerEventUsingMLModel(
+      /*predictor_service=*/predictor_service.get(),
+      /*anchor_id=*/anchor_id,
+      /*is_mouse=*/true,
+      /*user_interaction_event_type=*/
+      blink::mojom::AnchorElementUserInteractionEventForMLModelType::
+          kPointerOut);
+  task_runner()->AdvanceMockTickClock(base::Milliseconds(200));
+  task_runner()->RunUntilIdle();
+  EXPECT_FALSE(did_ml_score_called);
 }

@@ -15,11 +15,16 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system/anchored_nudge_data.h"
 #include "ash/public/cpp/system/anchored_nudge_manager.h"
+#include "ash/root_window_controller.h"
 #include "ash/scalable_iph/wallpaper_ash_notification_view.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/hotseat_widget.h"
+#include "ash/shelf/shelf_app_button.h"
+#include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/message_view_factory.h"
 #include "ash/webui/grit/ash_print_management_resources.h"
+#include "ash/webui/settings/public/constants/routes.mojom.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/buildflag.h"
@@ -32,13 +37,15 @@
 #include "chrome/browser/ash/crosapi/crosapi_util.h"
 #include "chrome/browser/ash/crosapi/files_app_launcher.h"
 #include "chrome/browser/ash/crosapi/url_handler_ash.h"
+#include "chrome/browser/ash/printing/synced_printers_manager.h"
+#include "chrome/browser/ash/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/scalable_iph/buildflags.h"
@@ -70,6 +77,7 @@ using ::chromeos::network_config::mojom::NetworkFilter;
 using ::chromeos::network_config::mojom::NetworkStatePropertiesPtr;
 using ::chromeos::network_config::mojom::NetworkType;
 using DelegateObserver = ::scalable_iph::ScalableIphDelegate::Observer;
+using DelegateSessionState = ::scalable_iph::ScalableIphDelegate::SessionState;
 using Action = ::scalable_iph::ScalableIphDelegate::Action;
 using NotificationParams =
     ::scalable_iph::ScalableIphDelegate::NotificationParams;
@@ -88,7 +96,6 @@ const base::flat_map<ActionType, std::string>& GetActionTypeURLs() {
   static const base::NoDestructor<base::flat_map<ActionType, std::string>>
       action_type_urls(
           {{ActionType::kOpenChrome, "chrome://new-tab-page/"},
-           {ActionType::kOpenPersonalizationApp, "chrome://personalization/"},
            {ActionType::kOpenPlayStore,
             "https://play.google.com/store/games?device=chromebook"},
            {ActionType::kOpenGoogleDocs,
@@ -139,15 +146,26 @@ message_center::NotificationType GetNotificationType(
 }
 
 bool IsAppValidForProfile(Profile* profile, const std::string& app_id) {
-  if (app_id == arc::kPlayStoreAppId) {
-    return arc::IsArcPlayStoreEnabledForProfile(profile);
+  if (app_id == arc::kPlayStoreAppId &&
+      !arc::IsArcPlayStoreEnabledForProfile(profile)) {
+    return false;
   }
 
-  return arc::IsArcAllowedForProfile(profile);
+  if (!arc::IsArcAllowedForProfile(profile)) {
+    return false;
+  }
+
+  ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+  if (!app_info || !app_info->ready) {
+    return false;
+  }
+
+  return true;
 }
 
 void OpenUrlForProfile(Profile* profile, const GURL& url) {
-  if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
+  if (crosapi::browser_util::IsLacrosEnabled()) {
     const GURL sanitized_url =
         crosapi::gurl_os_handler_utils::SanitizeAshURL(url);
     // Handle settings-related urls to open in their respective windows
@@ -155,20 +173,6 @@ void OpenUrlForProfile(Profile* profile, const GURL& url) {
     if (ChromeWebUIControllerFactory::GetInstance()->CanHandleUrl(
             sanitized_url)) {
       crosapi::UrlHandlerAsh().OpenUrl(sanitized_url);
-      return;
-    }
-
-    // TODO(b/291771298): Opening personalization hub links doesn't work in
-    // the lacros browser so we need to handle it separately.
-    if (url.spec() ==
-        GetActionTypeURLs().at(ActionType::kOpenPersonalizationApp)) {
-      NavigateParams navigate_params(
-          profile, url,
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
-                                    ui::PAGE_TRANSITION_FROM_API));
-      navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-      navigate_params.window_action = NavigateParams::SHOW_WINDOW;
-      Navigate(&navigate_params);
       return;
     }
   }
@@ -232,6 +236,18 @@ class ScalableIphNotificationDelegate
   Action action_;
 };
 
+DelegateSessionState GetDelegateSessionState(
+    session_manager::SessionState state) {
+  switch (state) {
+    case session_manager::SessionState::ACTIVE:
+      return DelegateSessionState::kActive;
+    case session_manager::SessionState::LOCKED:
+      return DelegateSessionState::kLocked;
+    default:
+      return DelegateSessionState::kOther;
+  }
+}
+
 }  // namespace
 
 ScalableIphDelegateImpl::ScalableIphDelegateImpl(Profile* profile)
@@ -260,6 +276,12 @@ ScalableIphDelegateImpl::ScalableIphDelegateImpl(Profile* profile)
   MessageViewFactory::SetCustomNotificationViewFactory(
       kWallpaperNotificationType,
       base::BindRepeating(&WallpaperAshNotificationView::CreateWithPreview));
+
+  synced_printers_manager_ =
+      SyncedPrintersManagerFactory::GetForBrowserContext(profile);
+  CHECK(synced_printers_manager_);
+  synced_printers_manager_observer_.Observe(synced_printers_manager_);
+  MaybeNotifyHasSavedPrinters();
 }
 
 // Remember NOT to interact with `iph_session` from the destructor. See the
@@ -279,9 +301,34 @@ void ScalableIphDelegateImpl::ShowBubble(
   bubble_id_ = params.bubble_id;
   bubble_iph_session_ = std::move(iph_session);
 
+  ShelfAppButton* anchor_view = nullptr;
+  if (!params.anchor_view_app_id.empty()) {
+    // In the case that the specified app ID cannot be found on the shelf,
+    // the nudge will not be anchored and will show in the bottom left
+    // default position instead.
+    anchor_view =
+        Shell::GetPrimaryRootWindowController()
+            ->shelf()
+            ->hotseat_widget()
+            ->GetShelfView()
+            ->GetShelfAppButton(ash::ShelfID(params.anchor_view_app_id));
+  }
+
   ash::AnchoredNudgeData nudge_data(
       params.bubble_id, NudgeCatalogName::kScalableIphBubble,
-      base::UTF8ToUTF16(params.text), /*anchor_view=*/nullptr);
+      base::UTF8ToUTF16(params.text), /*anchor_view=*/anchor_view);
+
+  if (!params.title.empty()) {
+    nudge_data.title_text = base::UTF8ToUTF16(params.title);
+  }
+
+  // Currently, the help app on the shelf is the only view to which a bubble
+  // will be anchored to. Therefore, if the anchor_view is non-null, the
+  // nudge should be anchored to shelf. Once bubbles fully support anchor views,
+  // this behavior may change.
+  if (anchor_view) {
+    nudge_data.anchored_to_shelf = true;
+  }
 
   if (!params.button.text.empty()) {
     nudge_data.first_button_text = base::UTF8ToUTF16(params.button.text);
@@ -309,7 +356,6 @@ void ScalableIphDelegateImpl::ShowBubble(
 void ScalableIphDelegateImpl::ShowNotification(
     const NotificationParams& params,
     std::unique_ptr<scalable_iph::IphSession> iph_session) {
-  // TODO(b/284158831): Add implementation.
   std::string notification_source_name = kNotificationSourceName;
   std::string notification_title = params.title;
   std::string notification_text = params.text;
@@ -375,9 +421,8 @@ void ScalableIphDelegateImpl::PerformActionForScalableIph(
       break;
     }
     case ActionType::kOpenPersonalizationApp: {
-      OpenUrlForProfile(
-          profile_,
-          GURL(GetActionTypeURLs().at(ActionType::kOpenPersonalizationApp)));
+      ash::LaunchSystemWebAppAsync(profile_,
+                                   ash::SystemWebAppType::PERSONALIZATION);
       break;
     }
     case ActionType::kOpenPlayStore: {
@@ -472,8 +517,9 @@ void ScalableIphDelegateImpl::OnShellDestroying() {
   shell_observer_.Reset();
 }
 
-void ScalableIphDelegateImpl::OnLockStateChanged(bool locked) {
-  NotifyLockStateChanged(locked);
+void ScalableIphDelegateImpl::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  NotifySessionStateChanged(GetDelegateSessionState(state));
 }
 
 void ScalableIphDelegateImpl::SuspendDone(base::TimeDelta sleep_duration) {
@@ -489,6 +535,10 @@ void ScalableIphDelegateImpl::OnAppListVisibilityChanged(bool shown,
   for (DelegateObserver& observer : observers_) {
     observer.OnAppListVisibilityChanged(shown);
   }
+}
+
+void ScalableIphDelegateImpl::OnSavedPrintersChanged() {
+  MaybeNotifyHasSavedPrinters();
 }
 
 void ScalableIphDelegateImpl::SetHasOnlineNetwork(bool has_online_network) {
@@ -515,15 +565,31 @@ void ScalableIphDelegateImpl::OnNetworkStateList(
   SetHasOnlineNetwork(HasOnlineNetwork(networks));
 }
 
-void ScalableIphDelegateImpl::NotifyLockStateChanged(bool locked) {
+void ScalableIphDelegateImpl::NotifySessionStateChanged(
+    DelegateSessionState session_state) {
   for (DelegateObserver& observer : observers_) {
-    observer.OnLockStateChanged(locked);
+    observer.OnSessionStateChanged(session_state);
   }
 }
 
 void ScalableIphDelegateImpl::NotifySuspendDoneWithoutLockScreen() {
   for (DelegateObserver& observer : observers_) {
     observer.OnSuspendDoneWithoutLockScreen();
+  }
+}
+
+void ScalableIphDelegateImpl::MaybeNotifyHasSavedPrinters() {
+  const bool has_saved_printers =
+      !synced_printers_manager_->GetSavedPrinters().empty();
+
+  if (has_saved_printers_ == has_saved_printers) {
+    return;
+  }
+
+  has_saved_printers_ = has_saved_printers;
+
+  for (DelegateObserver& observer : observers_) {
+    observer.OnHasSavedPrintersChanged(has_saved_printers_);
   }
 }
 

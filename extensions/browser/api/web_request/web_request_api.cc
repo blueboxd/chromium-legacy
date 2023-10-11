@@ -10,22 +10,16 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/cxx20_erase_vector.h"
 #include "base/functional/bind.h"
-#include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -37,7 +31,6 @@
 #include "extensions/browser/api/web_request/web_request_proxying_url_loader_factory.h"
 #include "extensions/browser/api/web_request/web_request_proxying_websocket.h"
 #include "extensions/browser/api/web_request/web_request_proxying_webtransport.h"
-#include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "extensions/browser/browser_frame_context_data.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
@@ -55,19 +48,14 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
-#include "extensions/common/mojom/event_dispatcher.mojom.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
-#include "extensions/strings/grit/extensions_strings.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/auth.h"
-#include "net/base/net_errors.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/http/http_util.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/web_transport.mojom.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -731,7 +719,15 @@ WebRequestInternalAddEventListenerFunction::Run() {
   std::string extension_name =
       extension ? extension->name() : extension_id_safe();
 
-  if (!web_view_instance_id) {
+  if (web_view_instance_id) {
+    // If a web view ID has been supplied and the call is from an extension
+    // (i.e. not from WebUI), we require the extension to have the webview
+    // permission.
+    if (extension && !extension->permissions_data()->HasAPIPermission(
+                         mojom::APIPermissionID::kWebView)) {
+      return RespondNow(Error("Missing webview permission."));
+    }
+  } else {
     auto has_blocking_permission = [&extension, &event_name]() {
       if (extension->permissions_data()->HasAPIPermission(
               APIPermissionID::kWebRequestBlocking)) {
@@ -792,7 +788,7 @@ void WebRequestInternalEventHandledFunction::OnError(
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       browser_context(), extension_id_safe(), event_name, sub_event_name,
       request_id, render_process_id, web_view_instance_id, worker_thread_id(),
-      service_worker_version_id(), response.release());
+      service_worker_version_id(), std::move(response));
 }
 
 ExtensionFunction::ResponseAction
@@ -937,7 +933,7 @@ WebRequestInternalEventHandledFunction::Run() {
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       browser_context(), extension_id_safe(), event_name, sub_event_name,
       request_id, render_process_id, web_view_instance_id, worker_thread_id(),
-      service_worker_version_id(), response.release());
+      service_worker_version_id(), std::move(response));
 
   return RespondNow(NoArguments());
 }
@@ -968,38 +964,6 @@ ExtensionFunction::ResponseAction
 WebRequestHandlerBehaviorChangedFunction::Run() {
   helpers::ClearCacheOnNavigation();
   return RespondNow(NoArguments());
-}
-
-ExtensionWebRequestEventRouter::EventListener::ID::ID(
-    content::BrowserContext* browser_context,
-    const std::string& extension_id,
-    const std::string& sub_event_name,
-    int render_process_id,
-    int web_view_instance_id,
-    int worker_thread_id,
-    int64_t service_worker_version_id)
-    : browser_context(browser_context),
-      extension_id(extension_id),
-      sub_event_name(sub_event_name),
-      render_process_id(render_process_id),
-      web_view_instance_id(web_view_instance_id),
-      worker_thread_id(worker_thread_id),
-      service_worker_version_id(service_worker_version_id) {}
-
-ExtensionWebRequestEventRouter::EventListener::ID::ID(const ID& source) =
-    default;
-
-bool ExtensionWebRequestEventRouter::EventListener::ID::operator==(
-    const ID& that) const {
-  // Since EventListeners are segmented by browser_context, check that
-  // last, as it is exceedingly unlikely to be different.
-  return extension_id == that.extension_id &&
-         sub_event_name == that.sub_event_name &&
-         web_view_instance_id == that.web_view_instance_id &&
-         render_process_id == that.render_process_id &&
-         worker_thread_id == that.worker_thread_id &&
-         service_worker_version_id == that.service_worker_version_id &&
-         browser_context == that.browser_context;
 }
 
 }  // namespace extensions

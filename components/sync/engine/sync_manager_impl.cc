@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_invalidation.h"
@@ -85,11 +86,7 @@ GURL MakeConnectionURL(const GURL& sync_server, const std::string& client_id) {
 SyncManagerImpl::SyncManagerImpl(
     const std::string& name,
     network::NetworkConnectionTracker* network_connection_tracker)
-    : name_(name),
-      network_connection_tracker_(network_connection_tracker),
-      initialized_(false),
-      observing_network_connectivity_changes_(false),
-      sync_encryption_handler_(nullptr) {}
+    : name_(name), network_connection_tracker_(network_connection_tracker) {}
 
 SyncManagerImpl::~SyncManagerImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

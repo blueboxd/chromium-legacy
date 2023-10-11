@@ -16,15 +16,18 @@
 #include "base/path_service.h"
 #include "base/ranges/algorithm.h"
 #include "base/test/bind.h"
+#include "base/test/test_future.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_util.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_model_delegate.h"
 #include "chrome/browser/browsing_data/counters/site_data_counting_helper.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/browsing_data/content/browsing_data_model.h"
 #include "components/browsing_data/content/browsing_data_test_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager.h"
@@ -102,21 +105,8 @@ class CookiesTreeObserver : public CookiesTreeModel::Observer {
       : quit_closure_(std::move(quit_closure)) {}
   ~CookiesTreeObserver() override = default;
 
-  void TreeModelBeginBatchDeprecated(CookiesTreeModel* model) override {}
-
   void TreeModelEndBatchDeprecated(CookiesTreeModel* model) override {
     std::move(quit_closure_).Run();
-  }
-
-  void TreeNodesAdded(ui::TreeModel* model,
-                      ui::TreeModelNode* parent,
-                      size_t start,
-                      size_t count) override {}
-  void TreeNodesRemoved(ui::TreeModel* model,
-                        ui::TreeModelNode* parent,
-                        size_t start,
-                        size_t count) override {}
-  void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) override {
   }
 
  private:
@@ -141,9 +131,10 @@ BrowsingDataRemoverBrowserTestBase::BrowsingDataRemoverBrowserTestBase() =
 BrowsingDataRemoverBrowserTestBase::~BrowsingDataRemoverBrowserTestBase() =
     default;
 
-void BrowsingDataRemoverBrowserTestBase::InitFeatureList(
-    std::vector<base::test::FeatureRef> enabled_features) {
-  feature_list_.InitWithFeatures(enabled_features, {});
+void BrowsingDataRemoverBrowserTestBase::InitFeatureLists(
+    std::vector<base::test::FeatureRef> enabled_features,
+    std::vector<base::test::FeatureRef> disabled_features) {
+  feature_list_.InitWithFeatures(enabled_features, disabled_features);
 }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -413,6 +404,16 @@ BrowsingDataRemoverBrowserTestBase::GetCookiesTreeModel(Profile* profile) {
   run_loop.Run();
   model->RemoveCookiesTreeObserver(&observer);
   return model;
+}
+
+std::unique_ptr<BrowsingDataModel>
+BrowsingDataRemoverBrowserTestBase::GetBrowsingDataModel(Profile* profile) {
+  base::test::TestFuture<std::unique_ptr<BrowsingDataModel>>
+      browsing_data_model;
+  BrowsingDataModel::BuildFromDisk(
+      profile, ChromeBrowsingDataModelDelegate::CreateForProfile(profile),
+      browsing_data_model.GetCallback());
+  return browsing_data_model.Take();
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)

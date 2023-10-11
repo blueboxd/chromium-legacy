@@ -58,7 +58,6 @@ export class ModuleHeaderElementV2 extends I18nMixin
   private onButtonClick_(e: DomRepeatEvent<MenuItem>) {
     const {action} = e.model.item;
     assert(action);
-    e.stopPropagation();
     this.$.actionMenu.close();
     if (action === 'customize-module') {
       this.dispatchEvent(

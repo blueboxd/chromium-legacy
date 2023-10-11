@@ -37,13 +37,23 @@ struct NGPreviousInflowPosition {
   bool self_collapsing_child_had_clearance;
 };
 
-// This strut holds information for the current inflow child. The data is not
+// This struct holds information for the current inflow child. The data is not
 // useful outside of handling this single inflow child.
 struct NGInflowChildData {
+  NGInflowChildData(NGBfcOffset bfc_offset_estimate,
+                    const NGMarginStrut& margin_strut,
+                    const NGBoxStrut& margins,
+                    bool is_pushed_by_floats = false)
+      : bfc_offset_estimate(bfc_offset_estimate),
+        margin_strut(margin_strut),
+        margins(margins),
+        is_pushed_by_floats(is_pushed_by_floats) {}
+
+  NGInflowChildData(const NGInflowChildData&) = default;
+
   NGBfcOffset bfc_offset_estimate;
   NGMarginStrut margin_strut;
   NGBoxStrut margins;
-  bool allow_discard_start_margin;
   bool is_pushed_by_floats = false;
 };
 
@@ -349,7 +359,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
     return false;
   }
 
-  // Returns true if |this| is a ruby segment (LayoutNGRubyRun) and the
+  // Returns true if |this| is a ruby segment (LayoutRubyColumn) and the
   // specified |child| is a ruby annotation box (LayoutNGRubyText).
   bool IsRubyText(const NGLayoutInputNode& child) const;
 
@@ -401,10 +411,11 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // set, and abort layout if it is.
   bool abort_when_bfc_block_offset_updated_ : 1;
 
-  // This will be set during block fragmentation once we've processed the first
-  // in-flow child of a container. It is used to check if we're at a valid class
-  // A or B breakpoint (between block-level siblings or line box siblings).
-  bool has_processed_first_child_ : 1;
+  // This will be set during block fragmentation, normally once we've processed
+  // the first in-flow child of a container (but there are some exceptions to
+  // this). It is used to check if we're at a valid class A or B breakpoint
+  // (between block-level siblings or line box siblings).
+  bool has_break_opportunity_before_next_child_ : 1;
 
   // If true, ignore the line-clamp property as truncation wont be required.
   bool ignore_line_clamp_ : 1;

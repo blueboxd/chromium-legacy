@@ -178,7 +178,6 @@ struct WebPreferences {
   bool password_echo_enabled;
   bool should_clear_document_background;
   bool enable_scroll_animator;
-  bool threaded_scrolling_enabled;
   bool prefers_reduced_motion;
   bool prefers_reduced_transparency;
   bool inverted_colors;
@@ -212,7 +211,6 @@ struct WebPreferences {
   bool initialize_at_minimum_page_scale;
   bool smart_insert_delete_enabled;
   bool spatial_navigation_enabled;
-  bool navigate_on_drag_drop;
   bool fake_no_alloc_direct_call_for_testing_enabled;
   V8CacheOptions v8_cache_options;
   bool record_whole_document;
@@ -278,6 +276,9 @@ struct WebPreferences {
 
   [EnableIf=is_android]
   float font_scale_factor;
+
+  [EnableIf=is_android]
+  int32 font_weight_adjustment;
 
   [EnableIf=is_android]
   float device_scale_adjustment;

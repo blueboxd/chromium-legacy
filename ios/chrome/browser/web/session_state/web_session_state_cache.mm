@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "base/apple/foundation_util.h"
 #import "base/base_paths.h"
 #import "base/containers/contains.h"
 #import "base/files/file_enumerator.h"
@@ -13,7 +14,6 @@
 #import "base/files/file_util.h"
 #import "base/functional/bind.h"
 #import "base/logging.h"
-#import "base/mac/foundation_util.h"
 #import "base/observer_list.h"
 #import "base/path_service.h"
 #import "base/sequence_checker.h"
@@ -22,15 +22,13 @@
 #import "base/task/sequenced_task_runner.h"
 #import "base/task/thread_pool.h"
 #import "base/threading/scoped_blocking_call.h"
+#import "ios/chrome/browser/sessions/session_constants.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
-
-const base::FilePath::CharType kWebSessionCacheDirectoryName[] =
-    FILE_PATH_LITERAL("Web_Sessions");
 
 namespace {
 
@@ -71,7 +69,7 @@ void WriteSessionData(NSData* session_data, base::FilePath file_path) {
       NSDataWritingAtomic |
       NSDataWritingFileProtectionCompleteUntilFirstUserAuthentication;
 
-  NSString* file_path_string = base::mac::FilePathToNSString(file_path);
+  NSString* file_path_string = base::apple::FilePathToNSString(file_path);
   NSError* error = nil;
   if (![session_data writeToFile:file_path_string
                          options:options
@@ -132,7 +130,7 @@ void PurgeCacheOnBackgroundSequenceExcept(
   if ((self = [super init])) {
     _browserState = browserState;
     _cacheDirectory =
-        browserState->GetStatePath().Append(kWebSessionCacheDirectoryName);
+        browserState->GetStatePath().Append(kLegacyWebSessionsDirname);
     _taskRunner = base::ThreadPool::CreateSequencedTaskRunner(
         {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
@@ -162,7 +160,7 @@ void PurgeCacheOnBackgroundSequenceExcept(
   const base::FilePath filePath =
       _cacheDirectory.Append(SessionIdentifierForWebState(webState));
   NSData* data =
-      [NSData dataWithContentsOfFile:base::mac::FilePathToNSString(filePath)];
+      [NSData dataWithContentsOfFile:base::apple::FilePathToNSString(filePath)];
 
   if (!data) {
     // Until M-115, the file name was derived from GetStableIdentifier()
@@ -177,7 +175,7 @@ void PurgeCacheOnBackgroundSequenceExcept(
     const base::FilePath alternateFilePath = _cacheDirectory.Append(
         base::SysNSStringToUTF8(webState->GetStableIdentifier()));
 
-    data = [NSData dataWithContentsOfFile:base::mac::FilePathToNSString(
+    data = [NSData dataWithContentsOfFile:base::apple::FilePathToNSString(
                                               alternateFilePath)];
     if (data && _taskRunner) {
       _taskRunner->PostTask(FROM_HERE,

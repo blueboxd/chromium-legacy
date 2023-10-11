@@ -24,10 +24,11 @@ if (is_nacl) {
   assert(false, "Unknown CPU: $current_cpu")
 }
 
-if (use_partition_alloc_as_malloc_default) {
-  _default_allocator = "partition"
-} else {
-  _default_allocator = "none"
+declare_args() {
+  # Causes all the allocations to be routed via allocator_shim.cc. Usually,
+  # the allocator shim will, in turn, route them to Partition Alloc, but
+  # other allocators are also supported by the allocator shim.
+  use_allocator_shim = use_allocator_shim_default
 }
 
 declare_args() {
@@ -64,13 +65,8 @@ declare_args() {
 
   # PartitionAlloc-Everywhere (PA-E). Causes allocator_shim.cc to route
   # calls to PartitionAlloc, rather than some other platform allocator.
-  use_partition_alloc_as_malloc =
-      use_partition_alloc && use_partition_alloc_as_malloc_default
-}
-
-declare_args() {
-  # Causes all the allocations to be routed via allocator_shim.cc.
-  use_allocator_shim = use_allocator_shim_default
+  use_partition_alloc_as_malloc = use_partition_alloc && use_allocator_shim &&
+                                  use_partition_alloc_as_malloc_default
 }
 
 assert(!use_allocator_shim || (is_android || is_apple || is_chromeos ||
@@ -116,7 +112,7 @@ declare_args() {
   #
   # Note that |enable_backup_ref_ptr_support = true| doesn't necessarily enable
   # BRP protection. It'll be enabled only for partition created with
-  # partition_alloc::PartitionOptions::BackupRefPtr::kEnabled.
+  # partition_alloc::PartitionOptions::kEnabled.
   enable_backup_ref_ptr_support =
       use_partition_alloc && enable_backup_ref_ptr_support_default
 
@@ -205,9 +201,9 @@ declare_args() {
   enable_shadow_metadata = false
 
   if (is_apple) {
-    # use_blink currently assumes mach absolute ticks (eg, to ensure trace
-    # events cohere).
-    partition_alloc_enable_mach_absolute_time_ticks = is_mac || use_blink
+    # TODO(crbug.com/1414153): this should be removed once the use of mach
+    # absolute time ticks is successfully launched on iOS.
+    partition_alloc_enable_mach_absolute_time_ticks = true
   }
 }
 

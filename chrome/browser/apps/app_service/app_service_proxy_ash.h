@@ -58,6 +58,7 @@ class PromiseAppRegistryCache;
 class PromiseAppService;
 class ShortcutPublisher;
 class ShortcutRegistryCache;
+class StandaloneBrowserApps;
 class UninstallDialog;
 
 struct PromiseApp;
@@ -91,6 +92,8 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
 
   apps::BrowserAppInstanceTracker* BrowserAppInstanceTracker();
   apps::BrowserAppInstanceRegistry* BrowserAppInstanceRegistry();
+
+  apps::StandaloneBrowserApps* StandaloneBrowserApps();
 
   // Registers `crosapi_subscriber_`.
   void RegisterCrosApiSubScriber(SubscriberCrosapi* subscriber);
@@ -170,13 +173,22 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   void RegisterShortcutPublisher(AppType app_type,
                                  ShortcutPublisher* publisher);
 
-  // Update the shortcut with `delta`, which represents some state change of
-  // a shortcut.
-  void UpdateShortcut(ShortcutPtr delta);
-
   // Get pointer to the Shortcut Registry Cache which holds all shortcuts.
   // May return a nullptr if this cache doesn't exist.
   apps::ShortcutRegistryCache* ShortcutRegistryCache();
+
+  // Launches shortcut with `id` in it's parent app. `display_id` contains the
+  // id of the display from which the shortcut will be launched.
+  // display::kInvalidDisplayId means that the default display for new windows
+  // will be used. See `display::Screen` for details.
+  void LaunchShortcut(const ShortcutId& id, int64_t display_id);
+
+  // Removes the shortcut for the given `id`. If `parent_window` is specified,
+  // the remove dialog will be created as a modal dialog anchored at
+  // `parent_window`. Otherwise, the browser window will be used as the anchor.
+  void RemoveShortcut(const ShortcutId& id,
+                      UninstallSource uninstall_source,
+                      gfx::NativeWindow parent_window);
 
  private:
   // For access to Initialize.
@@ -325,6 +337,8 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
       const apps::IntentPtr& intent,
       const apps::IntentFilterPtr& filter,
       const apps::AppUpdate& update) override;
+
+  ShortcutPublisher* GetShortcutPublisher(AppType app_type);
 
   raw_ptr<SubscriberCrosapi, ExperimentalAsh> crosapi_subscriber_ = nullptr;
 

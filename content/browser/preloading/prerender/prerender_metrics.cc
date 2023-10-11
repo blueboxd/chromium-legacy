@@ -410,17 +410,6 @@ void RecordPrerenderActivationTransition(
       potential_activation_transition);
 }
 
-void RecordPrerenderNavigationErrorCode(
-    net::Error error_code,
-    PrerenderTriggerType trigger_type,
-    const std::string& embedder_histogram_suffix) {
-  base::UmaHistogramSparse(
-      GenerateHistogramName(
-          "Prerender.Experimental.PrerenderNavigationRequestNetworkErrorCode",
-          trigger_type, embedder_histogram_suffix),
-      std::abs(error_code));
-}
-
 static_assert(
     static_cast<int>(PrerenderBackNavigationEligibility::kMaxValue) +
         static_cast<int>(
@@ -472,6 +461,18 @@ void RecordBlockedByClientResourceType(
           "Prerender.Experimental.ResourceLoadingBlockedByClientByType",
           trigger_type, embedder_histogram_suffix),
       request_destination);
+}
+
+void RecordReceivedPrerendersPerPrimaryPageChangedCount(
+    int number,
+    PrerenderTriggerType trigger_type,
+    const std::string& eagerness_category) {
+  base::UmaHistogramCounts100(
+      GenerateHistogramName(
+          "Prerender.Experimental.ReceivedPrerendersPerPrimaryPageChangedCount",
+          trigger_type, /*embedder_suffix=*/"") +
+          "." + eagerness_category,
+      number);
 }
 
 }  // namespace content

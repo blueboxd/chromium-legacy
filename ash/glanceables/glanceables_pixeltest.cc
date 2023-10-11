@@ -97,7 +97,7 @@ class GlanceablesPixelTest : public AshTestBase {
 // Pixel test for glanceables when no data is available.
 // Test disabled due to not taking dark/light mode into consideration.
 // http://b/294612234
-TEST_F(GlanceablesPixelTest, DISABLED_GlanceablesZeroState) {
+TEST_F(GlanceablesPixelTest, GlanceablesZeroState) {
   base::subtle::ScopedTimeClockOverrides time_override(
       []() {
         base::Time date;
@@ -115,7 +115,7 @@ TEST_F(GlanceablesPixelTest, DISABLED_GlanceablesZeroState) {
   GetGlanceableTrayBubble()->GetTasksView()->ScrollViewToVisible();
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "glanceables_zero_state", /*revision_number=*/0,
+      "glanceables_zero_state", /*revision_number=*/2,
       GetGlanceableTrayBubble()->GetBubbleView()));
 }
 
@@ -123,7 +123,7 @@ TEST_F(GlanceablesPixelTest, DISABLED_GlanceablesZeroState) {
 // when a task is marked as completed.
 // Test disabled due to not taking dark/light mode into consideration.
 // http://b/294612234
-TEST_F(GlanceablesPixelTest, DISABLED_GlanceablesTasksMarkAsCompleted) {
+TEST_F(GlanceablesPixelTest, GlanceablesTasksMarkAsCompleted) {
   base::subtle::ScopedTimeClockOverrides time_override(
       []() {
         base::Time date;
@@ -149,18 +149,20 @@ TEST_F(GlanceablesPixelTest, DISABLED_GlanceablesTasksMarkAsCompleted) {
   ASSERT_TRUE(task_view);
   task_view->GetWidget()->LayoutRootViewIfNecessary();
   ASSERT_FALSE(task_view->GetCompletedForTest());
-  ASSERT_EQ(0u, fake_glanceables_tasks_client()->completed_tasks().size());
+  ASSERT_EQ(0u,
+            fake_glanceables_tasks_client()->pending_completed_tasks().size());
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "glanceables_task_view_no_completed_tasks", /*revision_number=*/1,
+      "glanceables_task_view_no_completed_tasks", /*revision_number=*/3,
       GetGlanceableTrayBubble()->GetTasksView()));
 
   GestureTapOn(task_view->GetButtonForTest());
   ASSERT_TRUE(task_view->GetCompletedForTest());
-  ASSERT_EQ(1u, fake_glanceables_tasks_client()->completed_tasks().size());
+  ASSERT_EQ(1u,
+            fake_glanceables_tasks_client()->pending_completed_tasks().size());
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "glanceables_task_view_one_completed_task", /*revision_number=*/1,
+      "glanceables_task_view_one_completed_task", /*revision_number=*/3,
       GetGlanceableTrayBubble()->GetTasksView()));
 }
 

@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">Če želite zahtevati spremembe vsebine zaradi pravnih razlogov, obiščite <ph name="BEGIN_LINK1" />stran s pravno pomočjo<ph name="END_LINK1" />. Nekateri podatki o računu in sistemu bodo morda poslani Googlu. Informacije, ki nam jih pošljete, bomo v skladu z našim <ph name="BEGIN_LINK2" />pravilnikom o zasebnosti<ph name="END_LINK2" /> in <ph name="BEGIN_LINK3" />pogoji storitve<ph name="END_LINK3" /> uporabljali za odpravljanje tehničnih težav in izboljševanje naših storitev.</translation>
 <translation id="1885577615937958993">previjanje predstavnosti naprej</translation>
 <translation id="1887850431809612466">Različica strojne opreme</translation>
+<translation id="1897672602657312171">Bližnjica brez tipke za iskanje je morda v sporu z bližnjico katere druge aplikacije. Če želite še naprej uporabljati to bližnjico, jo znova pritisnite, ali pritisnite novo bližnjico s tipko za iskanje.</translation>
 <translation id="1904932688895783618">Na voljo so še nekateri drugi koristni viri:</translation>
 <translation id="1905710495812624430">Preseženo je največje dovoljeno število dovoljenih poskusov.</translation>
 <translation id="1908234395526491708">Neuspele zahteve UDP</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">Vnovičen zagon …</translation>
 <translation id="2533048460510040082">Predlagana vsebina s pomočjo</translation>
 <translation id="2536159006530886390">Internetne povezave ni mogoče vzpostaviti.</translation>
-<translation id="2555662516429796509">Pritisnite 1–4 modifikatorje in še 1 drugo tipko na tipkovnici</translation>
 <translation id="2570743873672969996">Izvajanje preizkusa <ph name="TEST_NAME" /> …</translation>
 <translation id="2584559707064218956">Če želite nastaviti, odprite nastavitve.</translation>
 <translation id="2597774443162333062">Datoteke bodo poslane Googlu zaradi odpravljanja napak.</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">Ključ za preverjanje pristnost TLS</translation>
 <translation id="2713444072780614174">Bela</translation>
 <translation id="2717139507051041123">Omogoči način temne barve</translation>
+<translation id="2728460467788544679">Brisanje celotne zgodovine tiskanja</translation>
 <translation id="2740531572673183784">V redu</translation>
 <translation id="2744221223678373668">V skupni rabi</translation>
 <translation id="2751739896257479635">2. faza preverjanja pristnosti EAP</translation>
 <translation id="2783010256799387990">USPEŠNO</translation>
 <translation id="2787435249130282949">svetlejša osvetlitev tipkovnica</translation>
-<translation id="2789486458103222910">V redu</translation>
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="28232023175184696">Internetne povezave ni mogoče vzpostaviti. Kliknite, da poskusite znova.</translation>
 <translation id="2859243502336719778">Kritična posodobitev</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">Ohranjevalnik zaslona premika oblakov</translation>
 <translation id="2926057806159140518">Vnesite uporabniško ime in geslo ali optično preberite kodo QR.</translation>
 <translation id="2940811910881150316">Naprave ni mogoče preizkusiti. Če želite preizkusiti, znova odprite pokrov.</translation>
+<translation id="2941112035454246133">Nizka</translation>
 <translation id="3008341117444806826">OSVEŽI</translation>
 <translation id="3009958530611748826">Izberite mapo za shranjevanje</translation>
 <translation id="3017079585324758401">Ozadje</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">Ni bilo mogoče razrešiti gostitelja</translation>
 <translation id="3942420633017001071">Diagnostika</translation>
 <translation id="3954678691475912818">Vrsta naprave ni znana.</translation>
+<translation id="3959413315969265597">Tega APN-ja ni mogoče omogočiti. Dodan mora biti privzeti APN.</translation>
 <translation id="3966286471246132217">Če želite natančnejše rezultate, zaprite vse aplikacije, dokler se preizkus ne dokonča.</translation>
 <translation id="3967822245660637423">Prenos končan</translation>
 <translation id="3969602104473960991">Geslo za Chrome OS je posodobljeno</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">zmanjšanje glasnosti</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> od <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Posodobi napravo <ph name="DEVICE_NAME" /></translation>
+<translation id="574392208103952083">Srednji</translation>
 <translation id="5757187557809630523">naslednja skladba</translation>
 <translation id="5760715441271661976">Stanje portala</translation>
 <translation id="576835345334454681">Povečanje svetlosti zaslona</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">Album umetnostne galerije</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="5860491529813859533">Vklopi</translation>
-<translation id="5866840822086176774">Zelo močan</translation>
 <translation id="5876385649737594562">Vklopite, če želite izbrati možnosti.</translation>
 <translation id="588258955323874662">Celozaslonsko</translation>
 <translation id="5895138241574237353">Znova zaženi</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Šibka (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Odpri nastavitve računa</translation>
-<translation id="6456394469623773452">Dober</translation>
+<translation id="6461047516875166066">Želim izvedeti več</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Želite znova optično prebrati stran?}=1{Želite znova optično prebrati {PAGE_NUMBER}. stran?}one{Želite znova optično prebrati {PAGE_NUMBER}. stran?}two{Želite znova optično prebrati {PAGE_NUMBER}. stran?}few{Želite znova optično prebrati {PAGE_NUMBER}. stran?}other{Želite znova optično prebrati {PAGE_NUMBER}. stran?}}</translation>
 <translation id="6472207088655375767">Enkratno geslo</translation>
 <translation id="6480327114083866287">Upravlja domena <ph name="MANAGER" />.</translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">Želite ponastaviti vse bližnjice na privzete vrednosti?</translation>
 <translation id="7058278511608979688">Končaj in shrani</translation>
 <translation id="7059230779847288458">Polnjenje; do napolnjenosti še <ph name="TIME_VALUE" /></translation>
+<translation id="7066538517128343186">ključ <ph name="KEY" /></translation>
 <translation id="7068619307603204412">Pripravite napravo</translation>
 <translation id="708426984172631313">USTAVLJENO</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">Povežite se z omrežjem in znova naložite stran, če si želite ogledati zaslonsko ozadje.</translation>
 <translation id="8291967909914612644">Država domačega ponudnika</translation>
 <translation id="8294431847097064396">Vir</translation>
-<translation id="8297006494302853456">Šibek</translation>
 <translation id="8302368968391049045">Požarni zid HTTPS</translation>
 <translation id="8312330582793120272">predvajanje predstavnosti</translation>
 <translation id="8318753676953949627">Ni slik</translation>
 <translation id="8329018942023753850">aplikacija računalo</translation>
 <translation id="8336739000755212683">Spremeni sliko računa v napravi</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> ali <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Tiskalna opravila</translation>
 <translation id="8351855506390808906">Točka dotika pri razporejanju tipk</translation>
 <translation id="8352772353338965963">Dodajte račun za prijavo z več računi. Do vseh prijavljenih računov je mogoče dostopati brez gesla, zato to funkcijo uporabljajte samo z zaupanja vrednimi računi.</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">Če želite znova vzpostaviti povezavo, odprite nastavitve.</translation>
 <translation id="9126720536733509015">Shrani več strani v eno datoteko PDF.</translation>
 <translation id="9133104754938025929">Zaradi varčevanja z energijo baterije ohranjevalnik zaslona deluje samo med polnjenjem.</translation>
+<translation id="9133772297793293778">Pritisnite 1–4 modifikatorje in še 1 drugo tipko na tipkovnici. Če želite zapreti način za urejanje, pritisnite alt + esc.</translation>
 <translation id="9137526406337347448">Googlove storitve</translation>
 <translation id="9138630967333032450">Leva tipka Shift</translation>
 <translation id="9143347780818904997">za <ph name="MINUTES" /> min</translation>

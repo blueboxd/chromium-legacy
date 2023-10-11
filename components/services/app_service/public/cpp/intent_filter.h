@@ -38,7 +38,12 @@ enum class IntentFilterMatchLevel {
 enum class ConditionType {
   // Matches the URL scheme (e.g. https, tel).
   kScheme = 0,
-  // Matches the URL host (e.g. www.google.com).
+  // Matches the URL host and optional port (e.g. www.google.com:443).
+  // ConditionValue strings should be set using AuthorityView::Encode() however
+  // it is acceptable to supply just a host name; an absence of port will match
+  // on any port.
+  // PatternMatchType will only apply to the host part, the port if present will
+  // use kLiteral matching.
   kAuthority = 1,
   // Matches the URL path (e.g. /abc/*). Does not include the URL query or
   // hash.
@@ -168,10 +173,6 @@ struct COMPONENT_EXPORT(APP_TYPES) IntentFilter {
 
   void GetMimeTypesAndExtensions(std::set<std::string>& mime_types,
                                  std::set<std::string>& file_extensions);
-
-  // Returns all of the links that this intent filter would accept, to be used
-  // in listing all of the supported links for a given app.
-  std::set<std::string> GetSupportedLinksForAppManagement();
 
   // Returns true if the filter is a browser filter, i.e. can handle all https
   // or http scheme.

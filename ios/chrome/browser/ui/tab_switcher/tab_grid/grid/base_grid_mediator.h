@@ -11,22 +11,27 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_shareable_items_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_page_mutator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_buttons_delegate.h"
 
 class Browser;
 @protocol GridMediatorDelegate;
 @protocol GridToolbarsConfigurationProvider;
 @protocol GridToolbarsMutator;
 @protocol TabCollectionConsumer;
+@protocol TabGridToolbarsActionWrangler;
 class WebStateList;
 
 // Mediates between model layer and tab grid UI layer.
 @interface BaseGridMediator : NSObject <GridCommands,
                                         GridShareableItemsProvider,
                                         TabCollectionDragDropHandler,
-                                        TabGridPageMutator>
+                                        TabGridPageMutator,
+                                        TabGridToolbarsButtonsDelegate>
 
 // The source browser.
 @property(nonatomic, assign) Browser* browser;
+// The UI consumer to which updates are made.
+@property(nonatomic, weak) id<TabCollectionConsumer> consumer;
 // Delegate to handle presenting the action sheet.
 @property(nonatomic, weak) id<GridMediatorDelegate> delegate;
 // Mutator to handle toolbars modification.
@@ -36,13 +41,18 @@ class WebStateList;
 // Contained grid which provides tab grid toolbar configuration.
 @property(nonatomic, weak) id<GridToolbarsConfigurationProvider>
     containedGridToolbarsProvider;
-// The UI consumer to which updates are made.
-@property(nonatomic, weak) id<TabCollectionConsumer> consumer;
+// Action handler for the tab grid toolbars. Each method is the result of an
+// action on a toolbar button.
+@property(nonatomic, weak) id<TabGridToolbarsActionWrangler> actionWrangler;
 
 // Initializer with `consumer` as the receiver of model layer updates.
 - (instancetype)initWithConsumer:(id<TabCollectionConsumer>)consumer
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
+
+@end
+
+@interface BaseGridMediator (Subclassing)
 
 // Called when toolbars should be updated. This function should be implemented
 // in a subclass.

@@ -101,6 +101,8 @@ class ArcNetHostImpl : public KeyedService,
       mojom::PasspointApprovalRequestPtr request,
       RequestPasspointAppApprovalCallback callback) override;
   void NotifyAndroidWifiMulticastLockChange(bool is_held) override;
+  void NotifySocketConnectionEvent(
+      mojom::SocketConnectionEventPtr msg) override;
 
   // Overridden from ash::NetworkStateHandlerObserver.
   void ScanCompleted(const ash::DeviceState* /*unused*/) override;
@@ -275,8 +277,8 @@ class ArcNetHostImpl : public KeyedService,
   std::string arc_vpn_service_path_;
   // Owned by the user profile whose context was used to initialize |this|.
   raw_ptr<PrefService, ExperimentalAsh> pref_service_ = nullptr;
-  raw_ptr<ArcAppMetadataProvider, ExperimentalAsh> app_metadata_provider_ =
-      nullptr;
+  raw_ptr<ArcAppMetadataProvider, DanglingUntriaged | ExperimentalAsh>
+      app_metadata_provider_ = nullptr;
 
   std::unique_ptr<CertManager> cert_manager_;
 

@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/single_field_form_fill_router.h"
 #include "components/autofill/core/browser/ui/payments/bubble_show_options.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/plus_addresses/plus_address_service.h"
 #include "components/version_info/channel.h"
 
 namespace autofill {
@@ -58,8 +59,25 @@ AutofillOptimizationGuide* AutofillClient::GetAutofillOptimizationGuide()
   return nullptr;
 }
 
-IBANManager* AutofillClient::GetIBANManager() {
+AutofillMlPredictionModelHandler*
+AutofillClient::GetAutofillMlPredictionModelHandler() {
   return nullptr;
+}
+
+IbanManager* AutofillClient::GetIbanManager() {
+  return nullptr;
+}
+
+plus_addresses::PlusAddressService* AutofillClient::GetPlusAddressService() {
+  return nullptr;
+}
+
+void AutofillClient::OfferPlusAddressCreation(
+    const url::Origin& main_frame_origin,
+    plus_addresses::PlusAddressCallback callback) {
+  // This is overridden by platform subclasses. Currently only
+  // ChromeAutofillClient (Chrome Desktop & Android) implements this, with iOS
+  // support also expected.
 }
 
 MerchantPromoCodeManager* AutofillClient::GetMerchantPromoCodeManager() {
@@ -69,7 +87,7 @@ MerchantPromoCodeManager* AutofillClient::GetMerchantPromoCodeManager() {
 std::unique_ptr<SingleFieldFormFillRouter>
 AutofillClient::CreateSingleFieldFormFillRouter() {
   return std::make_unique<SingleFieldFormFillRouter>(
-      GetAutocompleteHistoryManager(), GetIBANManager(),
+      GetAutocompleteHistoryManager(), GetIbanManager(),
       GetMerchantPromoCodeManager());
 }
 
@@ -85,8 +103,8 @@ AutofillOfferManager* AutofillClient::GetAutofillOfferManager() {
   return nullptr;
 }
 
-std::string AutofillClient::GetVariationConfigCountryCode() const {
-  return std::string();
+GeoIpCountryCode AutofillClient::GetVariationConfigCountryCode() const {
+  return GeoIpCountryCode(std::string());
 }
 
 profile_metrics::BrowserProfileType AutofillClient::GetProfileType() const {
@@ -169,7 +187,8 @@ void AutofillClient::OnUnmaskOtpVerificationResult(
 }
 
 void AutofillClient::UpdateOfferNotification(const AutofillOfferData* offer,
-                                             bool notification_has_been_shown) {
+                                             bool notification_has_been_shown,
+                                             bool expand_notification_icon) {
   // This is overridden by platform subclasses. Currently only
   // ChromeAutofillClient (Chrome Desktop and Clank) implement this.
 }
@@ -185,7 +204,7 @@ void AutofillClient::OnVirtualCardDataAvailable(
   // ChromeAutofillClient (Chrome Desktop & Android) implements this.
 }
 
-void AutofillClient::ShowVirtualCardErrorDialog(
+void AutofillClient::ShowAutofillErrorDialog(
     const AutofillErrorDialogContext& context) {
   // This is overridden by platform subclasses. Currently only
   // ChromeAutofillClient (Chrome Desktop & Android) implements this.

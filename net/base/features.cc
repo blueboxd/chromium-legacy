@@ -65,7 +65,7 @@ const base::FeatureParam<base::TimeDelta> kUseDnsHttpsSvcbSecureExtraTimeMin{
 
 BASE_FEATURE(kUseDnsHttpsSvcbAlpn,
              "UseDnsHttpsSvcbAlpn",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<int> kAlternativePortForGloballyReachableCheck{
     &kUseAlternativePortForGloballyReachableCheck,
@@ -259,8 +259,8 @@ BASE_FEATURE(kNoncedPartitionedCookies,
              "NoncedPartitionedCookies",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kClampCookieExpiryTo400Days,
-             "ClampCookieExpiryTo400Days",
+BASE_FEATURE(kBlockTruncatedCookies,
+             "BlockTruncatedCookies",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStaticKeyPinningEnforcement,
@@ -271,10 +271,6 @@ BASE_FEATURE(kCookieDomainRejectNonASCII,
              "CookieDomainRejectNonASCII",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kBlockSetCookieHeader,
-             "BlockSetCookieHeader",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables partitioning of third party storage (IndexedDB, CacheStorage, etc.)
 // by the top level site to reduce fingerprinting.
 BASE_FEATURE(kThirdPartyStoragePartitioning,
@@ -283,14 +279,16 @@ BASE_FEATURE(kThirdPartyStoragePartitioning,
 // Whether to use the new code paths needed to support partitioning Blob URLs.
 // This exists as a kill-switch in case an issue is identified with the Blob
 // URL implementation that causes breakage.
-// TODO(https://crbug.com/1407944): Kill-switch activated - investigate cause of
-// increased renderer hangs.
 BASE_FEATURE(kSupportPartitionedBlobUrl,
              "SupportPartitionedBlobUrl",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTpcdSupportSettings,
              "TpcdSupportSettings",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kTpcdMetadataGrants,
+             "TpcdMetadataGrants",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAlpsParsing, "AlpsParsing", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -367,9 +365,38 @@ const base::FeatureParam<std::string> kIpPrivacyProxyServer{
     &kEnableIpProtectionProxy, /*name=*/"IpPrivacyProxyServer",
     /*default_value=*/""};
 
-const base::FeatureParam<std::string> kIpPrivacyProxyAllowlist{
-    &kEnableIpProtectionProxy, /*name=*/"IpPrivacyProxyAllowlist",
-    /*default_value=*/""};
+const base::FeatureParam<std::string> kIpPrivacyTokenServer{
+    &kEnableIpProtectionProxy, /*name=*/"IpPrivacyTokenServer",
+    /*default_value=*/"https://autopush-phosphor-pa.sandbox.googleapis.com"};
+
+const base::FeatureParam<std::string> kIpPrivacyTokenServerGetInitialDataPath{
+    &kEnableIpProtectionProxy,
+    /*name=*/"IpPrivacyTokenServerGetInitialDataPath",
+    /*default_value=*/"/v1/getInitialData"};
+
+const base::FeatureParam<std::string> kIpPrivacyTokenServerGetTokensPath{
+    &kEnableIpProtectionProxy, /*name=*/"IpPrivacyTokenServerGetTokensPath",
+    /*default_value=*/"/v1/authWithHeaderCreds"};
+
+const base::FeatureParam<int> kIpPrivacyAuthTokenCacheBatchSize{
+    &kEnableIpProtectionProxy, /*name=*/"IpPrivacyAuthTokenCacheBatchSize",
+    /*default_value=*/64};
+
+const base::FeatureParam<int> kIpPrivacyAuthTokenCacheLowWaterMark{
+    &kEnableIpProtectionProxy, /*name=*/"IpPrivacyAuthTokenCacheLowWaterMark",
+    /*default_value=*/16};
+
+const base::FeatureParam<base::TimeDelta> kIpPrivacyProxyListFetchInterval{
+    &kEnableIpProtectionProxy, /*name=*/"IpPrivacyProxyListFetchInterval",
+    /*default_value=*/base::Hours(1)};
+
+const base::FeatureParam<base::TimeDelta> kIpPrivacyProxyListMinFetchInterval{
+    &kEnableIpProtectionProxy, /*name=*/"IpPrivacyProxyMinListFetchInterval",
+    /*default_value=*/base::Minutes(1)};
+
+const base::FeatureParam<bool> kIpPrivacyDirectOnly{
+    &kEnableIpProtectionProxy, /*name=*/"IpPrivacyDirectOnly",
+    /*default_value=*/false};
 
 // Network-change migration requires NetworkHandle support, which are currently
 // only supported on Android (see
@@ -429,12 +456,16 @@ BASE_FEATURE(kZstdContentEncoding,
              "ZstdContentEncoding",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kClearSiteDataWildcardSupport,
-             "ClearSiteDataWildcardSupport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kDigestAuthEnableSecureAlgorithms,
              "DigestAuthEnableSecureAlgorithms",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When enabled, partitioned storage will be allowed even if third-party cookies
+// are disabled by default. Partitioned storage will not be allowed if
+// third-party cookies are disabled due to a specific rule.
+// TODO(crbug.com/1468277): Default enable when UI work is complete.
+BASE_FEATURE(kThirdPartyPartitionedStorageAllowedByDefault,
+             "ThirdPartyPartitionedStorageAllowedByDefault",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace net::features

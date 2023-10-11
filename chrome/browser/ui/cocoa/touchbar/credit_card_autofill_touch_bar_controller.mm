@@ -11,14 +11,13 @@
 #include "base/time/time.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/autofill/autofill_popup_controller_utils.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "components/autofill/core/browser/ui/autofill_resource_utils.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/grit/components_scaled_resources.h"
-#include "ui/base/cocoa/controls/button_utils.h"
 #import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
@@ -151,16 +150,16 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
       GetCreditCardTouchBarImage(autofill::GetIconResourceID(suggestion.icon));
   NSButton* button = nil;
   if (cardIconImage) {
-    button = [ButtonUtils buttonWithTitle:buttonTitle
-                                    image:cardIconImage
-                                   action:@selector(acceptCreditCard:)
-                                   target:self];
+    button = [NSButton buttonWithTitle:buttonTitle
+                                 image:cardIconImage
+                                target:self
+                                action:@selector(acceptCreditCard:)];
     button.imageHugsTitle = YES;
     button.imagePosition = base::i18n::IsRTL() ? NSImageLeft : NSImageRight;
   } else {
-    button = [ButtonUtils buttonWithTitle:buttonTitle
-                                   action:@selector(acceptCreditCard:)
-                                   target:self];
+    button = [NSButton buttonWithTitle:buttonTitle
+                                target:self
+                                action:@selector(acceptCreditCard:)];
   }
 
   // Apply text attributes to the button so that the subtext will appear
@@ -191,7 +190,7 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 }
 
 - (void)acceptCreditCard:(id)sender {
-  _controller->AcceptSuggestion([sender tag]);
+  _controller->AcceptSuggestion([sender tag], base::TimeTicks::Now());
 }
 
 - (void)setIsCreditCardPopup:(bool)is_credit_card_popup {

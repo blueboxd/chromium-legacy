@@ -37,12 +37,14 @@ import org.mockito.junit.MockitoRule;
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowDisplayPref;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -51,12 +53,12 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.widget.RecyclerViewTestUtils;
+import org.chromium.components.commerce.core.ShoppingService;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.NightModeTestUtils;
-import org.chromium.ui.test.util.NightModeTestUtils.NightModeParams;
 import org.chromium.url.JUnitTestGURLs;
 
 import java.io.IOException;
@@ -68,8 +70,12 @@ import java.util.List;
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @Batch(Batch.PER_CLASS)
 public class BookmarkFolderPickerRenderTest {
-    @ParameterAnnotations.ClassParameter
-    private static final List<ParameterSet> CLASS_PARAMS = new NightModeParams().getParameters();
+    @ClassParameter
+    private static List<ParameterSet> sClassParams =
+            Arrays.asList(new ParameterSet().value(true, true).name("VisualRow_NightModeEnabled"),
+                    new ParameterSet().value(true, false).name("VisualRow_NightModeDisabled"),
+                    new ParameterSet().value(false, true).name("CompactRow_NightModeEnabled"),
+                    new ParameterSet().value(false, false).name("CompactRow_NightModeDisabled"));
 
     @Rule
     public final DisableAnimationsTestRule mDisableAnimationsRule = new DisableAnimationsTestRule();
@@ -91,27 +97,29 @@ public class BookmarkFolderPickerRenderTest {
     //    UserBookmark
     //   UserFolder2
     private final BookmarkId mRootFolderId = new BookmarkId(/*id=*/1, BookmarkType.NORMAL);
-    private final BookmarkId mMobileFolderId = new BookmarkId(/*id=*/2, BookmarkType.NORMAL);
-    private final BookmarkId mBookmarkBarFolderId = new BookmarkId(/*id=*/3, BookmarkType.NORMAL);
+    private final BookmarkId mDesktopFolderId = new BookmarkId(/*id=*/2, BookmarkType.NORMAL);
+    private final BookmarkId mMobileFolderId = new BookmarkId(/*id=*/3, BookmarkType.NORMAL);
+    private final BookmarkId mOtherFolderId = new BookmarkId(/*id=*/5, BookmarkType.NORMAL);
     private final BookmarkId mReadingListFolderId =
-            new BookmarkId(/*id=*/4, BookmarkType.READING_LIST);
-    private final BookmarkId mUserFolderId = new BookmarkId(/*id=*/5, BookmarkType.NORMAL);
-    private final BookmarkId mUserBookmarkId = new BookmarkId(/*id=*/6, BookmarkType.NORMAL);
-    private final BookmarkId mUserFolderId2 = new BookmarkId(/*id=*/7, BookmarkType.NORMAL);
+            new BookmarkId(/*id=*/6, BookmarkType.READING_LIST);
+    private final BookmarkId mUserFolderId = new BookmarkId(/*id=*/7, BookmarkType.NORMAL);
+    private final BookmarkId mUserBookmarkId = new BookmarkId(/*id=*/8, BookmarkType.NORMAL);
+    private final BookmarkId mUserFolderId2 = new BookmarkId(/*id=*/9, BookmarkType.NORMAL);
 
     private final BookmarkItem mRootFolderItem =
             new BookmarkItem(mRootFolderId, "Root", null, true, null, false, false, 0, false, 0);
+    private final BookmarkItem mDesktopFolderItem = new BookmarkItem(
+            mDesktopFolderId, "Bookmarks bar", null, true, mRootFolderId, true, false, 0, false, 0);
     private final BookmarkItem mMobileFolderItem = new BookmarkItem(mMobileFolderId,
-            "Mobile Bookmarks", null, true, mRootFolderId, false, false, 0, false, 0);
-    private final BookmarkItem mBookmarkBarFolderItem = new BookmarkItem(mBookmarkBarFolderId,
-            "Bookmarks Bar", null, true, mRootFolderId, false, false, 0, false, 0);
+            "Mobile bookmarks", null, true, mRootFolderId, true, false, 0, false, 0);
+    private final BookmarkItem mOtherFolderItem = new BookmarkItem(
+            mOtherFolderId, "Other bookmarks", null, true, mRootFolderId, true, false, 0, false, 0);
     private final BookmarkItem mReadingListFolderItem = new BookmarkItem(mReadingListFolderId,
             "Reading List", null, true, mRootFolderId, false, false, 0, false, 0);
     private final BookmarkItem mUserFolderItem = new BookmarkItem(
             mUserFolderId, "UserFolder", null, true, mMobileFolderId, false, false, 0, false, 0);
     private final BookmarkItem mUserBookmarkItem = new BookmarkItem(mUserBookmarkId, "UserBookmark",
-            JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), false, mUserFolderId, true, false,
-            0, false, 0);
+            JUnitTestGURLs.EXAMPLE_URL, false, mUserFolderId, true, false, 0, false, 0);
     private final BookmarkItem mUserFolderItem2 = new BookmarkItem(
             mUserFolderId2, "UserFolder2", null, true, mMobileFolderId, false, false, 0, false, 0);
 
@@ -127,13 +135,24 @@ public class BookmarkFolderPickerRenderTest {
     private Tracker mTracker;
     @Mock
     private BookmarkAddNewFolderCoordinator mAddNewFolderCoordinator;
+    @Mock
+    private BookmarkUiPrefs mBookmarkUiPrefs;
+    @Mock
+    private ShoppingService mShoppingService;
+
+    private final boolean mUseVisualRowLayout;
 
     private AppCompatActivity mActivity;
     private FrameLayout mContentView;
     private BookmarkFolderPickerCoordinator mCoordinator;
+    private ImprovedBookmarkRowCoordinator mImprovedBookmarkRowCoordinator;
     private RecyclerView mRecyclerView;
 
-    public BookmarkFolderPickerRenderTest(boolean nightModeEnabled) {
+    public BookmarkFolderPickerRenderTest(boolean useVisualRowLayout, boolean nightModeEnabled) {
+        mUseVisualRowLayout = useVisualRowLayout;
+        mRenderTestRule.setVariantPrefix(mUseVisualRowLayout ? "visual_" : "compact_");
+
+        // Sets a fake background color to make the screenshots easier to compare with bare eyes.
         NightModeTestUtils.setUpNightModeForBlankUiTestActivity(nightModeEnabled);
         mRenderTestRule.setNightModeEnabled(nightModeEnabled);
     }
@@ -148,16 +167,13 @@ public class BookmarkFolderPickerRenderTest {
         Profile.setLastUsedProfileForTesting(mProfile);
         TrackerFactory.setTrackerForTests(mTracker);
 
-        // Setup BookmarkModel
+        // Setup BookmarkModel.
         doReturn(true).when(mBookmarkModel).isFolderVisible(any());
         doReturn(mRootFolderId).when(mBookmarkModel).getRootFolderId();
         doReturn(mRootFolderItem).when(mBookmarkModel).getBookmarkById(mRootFolderId);
         // Reading list folder
         doReturn(mReadingListFolderId).when(mBookmarkModel).getReadingListFolder();
         doReturn(mReadingListFolderItem).when(mBookmarkModel).getBookmarkById(mReadingListFolderId);
-        doReturn(Arrays.asList(mMobileFolderId, mBookmarkBarFolderId, mReadingListFolderId))
-                .when(mBookmarkModel)
-                .getChildIds(mRootFolderId);
         doReturn(Arrays.asList(mReadingListFolderId))
                 .when(mBookmarkModel)
                 .getTopLevelFolderIds(/*getSpecial=*/true, /*getNormal=*/false);
@@ -168,10 +184,15 @@ public class BookmarkFolderPickerRenderTest {
                 .when(mBookmarkModel)
                 .getChildIds(mMobileFolderId);
         doReturn(2).when(mBookmarkModel).getTotalBookmarkCount(mMobileFolderId);
-        // Bookmarks bar folder
-        doReturn(mBookmarkBarFolderId).when(mBookmarkModel).getDesktopFolderId();
-        doReturn(mBookmarkBarFolderItem).when(mBookmarkModel).getBookmarkById(mBookmarkBarFolderId);
-        doReturn(Arrays.asList()).when(mBookmarkModel).getChildIds(mBookmarkBarFolderId);
+        // Desktop folder.
+        doReturn(mDesktopFolderId).when(mBookmarkModel).getDesktopFolderId();
+        doReturn(mDesktopFolderItem).when(mBookmarkModel).getBookmarkById(mDesktopFolderId);
+        doReturn(Arrays.asList()).when(mBookmarkModel).getChildIds(mDesktopFolderId);
+        doReturn(0).when(mBookmarkModel).getTotalBookmarkCount(mMobileFolderId);
+        // Other folder.
+        doReturn(mOtherFolderId).when(mBookmarkModel).getOtherFolderId();
+        doReturn(mOtherFolderItem).when(mBookmarkModel).getBookmarkById(mOtherFolderId);
+        doReturn(Arrays.asList()).when(mBookmarkModel).getChildIds(mOtherFolderId);
         doReturn(0).when(mBookmarkModel).getTotalBookmarkCount(mMobileFolderId);
         // User folders/bookmarks
         doReturn(mUserFolderItem).when(mBookmarkModel).getBookmarkById(mUserFolderId);
@@ -202,6 +223,12 @@ public class BookmarkFolderPickerRenderTest {
                 .when(mBookmarkImageFetcher)
                 .fetchFirstTwoImagesForFolder(any(), any());
 
+        // Setup BookmarkUiPrefs.
+        doReturn(mUseVisualRowLayout ? BookmarkRowDisplayPref.VISUAL
+                                     : BookmarkRowDisplayPref.COMPACT)
+                .when(mBookmarkUiPrefs)
+                .getBookmarkRowDisplayPref();
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContentView = new FrameLayout(mActivityTestRule.getActivity());
 
@@ -209,9 +236,14 @@ public class BookmarkFolderPickerRenderTest {
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             mActivityTestRule.getActivity().setContentView(mContentView, params);
 
+            mImprovedBookmarkRowCoordinator = new ImprovedBookmarkRowCoordinator(
+                    mActivityTestRule.getActivity(), mBookmarkImageFetcher, mBookmarkModel,
+                    mBookmarkUiPrefs, mShoppingService);
+
             mCoordinator = new BookmarkFolderPickerCoordinator(mActivity, mBookmarkModel,
                     mBookmarkImageFetcher, Arrays.asList(mUserBookmarkId), mFinishRunnable,
-                    mAddNewFolderCoordinator);
+                    mAddNewFolderCoordinator, mBookmarkUiPrefs, mImprovedBookmarkRowCoordinator,
+                    mShoppingService);
             mContentView.addView(mCoordinator.getView());
 
             Toolbar toolbar = (Toolbar) mContentView.findViewById(R.id.toolbar);
@@ -251,7 +283,7 @@ public class BookmarkFolderPickerRenderTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mCoordinator.openFolderForTesting(mRootFolderId); });
         CriteriaHelper.pollUiThread(() -> mRecyclerView.getAdapter().getItemCount() == 4);
-        onView(withText(mBookmarkBarFolderItem.getTitle()));
+        onView(withText(mDesktopFolderItem.getTitle()));
         onView(withText(mReadingListFolderItem.getTitle()));
         RecyclerViewTestUtils.waitForStableMvcRecyclerView(mRecyclerView);
         mRenderTestRule.render(mContentView, "move_bookmark_from_root");

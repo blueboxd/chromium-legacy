@@ -7,9 +7,9 @@
 #include <tuple>
 #include <utility>
 
+#include "base/apple/foundation_util.h"
 #include "base/base64.h"
 #include "base/containers/contains.h"
-#include "base/mac/foundation_util.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
@@ -232,7 +232,7 @@ NSWindow* OriginalHostingWindowFromFullScreenWindow(
     NSWindow* full_screen_window) {
   if ([full_screen_window.delegate
           conformsToProtocol:@protocol(ImmersiveModeDelegate)]) {
-    return base::mac::ObjCCastStrict<NSObject<ImmersiveModeDelegate>>(
+    return base::apple::ObjCCastStrict<NSObject<ImmersiveModeDelegate>>(
                full_screen_window.delegate)
         .originalHostingWindow;
   }
@@ -247,7 +247,7 @@ NativeWidgetMacNSWindowHost* NativeWidgetMacNSWindowHost::GetFromNativeWindow(
   NSWindow* window = native_window.GetNativeNSWindow();
 
   if (NativeWidgetMacNSWindow* widget_window =
-          base::mac::ObjCCast<NativeWidgetMacNSWindow>(window)) {
+          base::apple::ObjCCast<NativeWidgetMacNSWindow>(window)) {
     return GetFromId([widget_window bridgedNativeWidgetId]);
   }
 
@@ -258,7 +258,7 @@ NativeWidgetMacNSWindowHost* NativeWidgetMacNSWindowHost::GetFromNativeWindow(
   if (remote_cocoa::IsNSToolbarFullScreenWindow(window)) {
     NSWindow* original = OriginalHostingWindowFromFullScreenWindow(window);
     if (NativeWidgetMacNSWindow* widget_window =
-            base::mac::ObjCCast<NativeWidgetMacNSWindow>(original)) {
+            base::apple::ObjCCast<NativeWidgetMacNSWindow>(original)) {
       return GetFromId([widget_window bridgedNativeWidgetId]);
     }
   }
@@ -518,6 +518,33 @@ void NativeWidgetMacNSWindowHost::SetBoundsInScreen(const gfx::Rect& bounds) {
       bounds, native_widget_mac_->GetWidget()->GetMinimumSize());
 
   if (remote_ns_window_remote_) {
+    gfx::Rect window_in_screen =
+        gfx::ScreenRectFromNSRect([in_process_ns_window_ frame]);
+    gfx::Rect content_in_screen =
+        gfx::ScreenRectFromNSRect([in_process_ns_window_
+            contentRectForFrameRect:[in_process_ns_window_ frame]]);
+
+    OnWindowGeometryChanged(window_in_screen, content_in_screen);
+  }
+}
+
+void NativeWidgetMacNSWindowHost::SetSize(const gfx::Size& size) {
+  DCHECK(!size.IsEmpty() ||
+         !native_widget_mac_->GetWidget()->GetMinimumSize().IsEmpty())
+      << "Zero-sized windows are not supported on Mac";
+  GetNSWindowMojo()->SetSize(size,
+                             native_widget_mac_->GetWidget()->GetMinimumSize());
+
+  if (remote_ns_window_remote_) {
+    // Reflecting the logic above in SetBoundsInScreen, update our local
+    // version of what we think the bounds of the window are. These bounds
+    // are going to be not quite correct until OnWindowGeometryChanged is
+    // called by the remote process but this is better than keeping the old
+    // bounds around as code might try to make decisions based on the current
+    // perceived bounds of the window.
+    gfx::Rect bounds(GetWindowBoundsInScreen().origin(), size);
+    UpdateLocalWindowFrame(bounds);
+
     gfx::Rect window_in_screen =
         gfx::ScreenRectFromNSRect([in_process_ns_window_ frame]);
     gfx::Rect content_in_screen =

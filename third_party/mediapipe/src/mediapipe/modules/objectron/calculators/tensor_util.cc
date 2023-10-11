@@ -21,7 +21,7 @@ namespace mediapipe {
 
 cv::Mat ConvertTfliteTensorToCvMat(const TfLiteTensor& tensor) {
   // Check tensor is BxCxWxH (size = 4) and the batch size is one(data[0] = 1)
-  CHECK(tensor.dims->size == 4 && tensor.dims->data[0] == 1);
+  ABSL_CHECK(tensor.dims->size == 4 && tensor.dims->data[0] == 1);
   ABSL_CHECK_EQ(kTfLiteFloat32, tensor.type)
       << "tflite_tensor type is not float";
 
@@ -34,7 +34,7 @@ cv::Mat ConvertTfliteTensorToCvMat(const TfLiteTensor& tensor) {
 
 cv::Mat ConvertTensorToCvMat(const mediapipe::Tensor& tensor) {
   // Check tensor is BxCxWxH (size = 4) and the batch size is one(data[0] = 1)
-  CHECK(tensor.shape().dims.size() == 4 && tensor.shape().dims[0] == 1);
+  ABSL_CHECK(tensor.shape().dims.size() == 4 && tensor.shape().dims[0] == 1);
   ABSL_CHECK_EQ(
       mediapipe::Tensor::ElementType::kFloat32 == tensor.element_type(), true)
       << "tensor type is not float";

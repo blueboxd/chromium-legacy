@@ -270,6 +270,13 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
 
   void UpdateCursor();
 
+  float cursor_accessibility_scale_factor() const {
+    return cursor_accessibility_scale_factor_;
+  }
+  void set_cursor_accessibility_scale_factor(float scale) {
+    cursor_accessibility_scale_factor_ = scale;
+  }
+
   Element* GetElementUnderMouse();
 
   Element* CurrentTouchDownElement();
@@ -419,6 +426,8 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
 
   double max_mouse_moved_duration_;
 
+  float cursor_accessibility_scale_factor_ = 1.f;
+
   HeapTaskRunnerTimer<EventHandler> active_interval_timer_;
 
   // last_show_press_timestamp_ prevents the active state rewrited by
@@ -435,6 +444,13 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   // Stored the last touch type primary pointer down adjustment result.
   // This is used in gesture event hit test.
   TouchAdjustmentResult touch_adjustment_result_;
+
+  struct {
+    DOMNodeId mouse_down_target = kInvalidDOMNodeId;
+    DOMNodeId tap_target = kInvalidDOMNodeId;
+    base::TimeTicks mouse_down_time;
+    base::TimeTicks tap_time;
+  } discarded_events_;
 
   // ShouldShowIBeamForNode's unit tests:
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, HitOnNothingDoesNotShowIBeam);

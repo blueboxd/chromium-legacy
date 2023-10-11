@@ -45,6 +45,7 @@ web_component_files = [
   "cellular_setup/confirmation_code_page.js",
   "cellular_setup/esim_flow_ui.js",
   "cellular_setup/final_page.js",
+  "cellular_setup/profile_discovery_consent_page.js",
   "cellular_setup/profile_discovery_list_item_legacy.js",
   "cellular_setup/profile_discovery_list_item.js",
   "cellular_setup/profile_discovery_list_page_legacy.js",
@@ -143,14 +144,13 @@ non_web_component_files = [
   "post_message_api/post_message_api_request_handler.js",
   "post_message_api/post_message_api_server.js",
   "smb_shares/smb_browser_proxy.js",
-  "store/store.js",
-  "store/store_client.js",
   "traffic_counters/traffic_counters_adapter.js",
   "util.js",
   "web_ui_listener_behavior.js",
 ]
 
 web_component_files_ts = [
+  "auth_setup/local_password_input.ts",
   "quick_unlock/pin_keyboard.ts",
   "quick_unlock/setup_pin_keyboard.ts",
   "quick_unlock/fingerprint_progress.ts",
@@ -285,7 +285,6 @@ generate_grd("build_grd") {
     "fake_method_resolver.js",
     "fake_observables.js",
     "keyboard_layouts.js",
-    "mojo_utils.js",
 
     # Test runner used by file manager tests, webui_resource_browsertest.cc, and
     # default_keyboard_extension_browser_test.cc
@@ -380,6 +379,7 @@ grit("resources") {
 
 generate_definitions_js_files = [
   "assert.js",
+  "auth_setup/local_password_input.html.js",
   "bluetooth/bluetooth_metrics_utils.js",
   "bluetooth/bluetooth_types.js",
   "bluetooth/bluetooth_utils.js",
@@ -417,8 +417,6 @@ generate_definitions_js_files = [
   "quick_unlock/setup_pin_keyboard.html.js",
   "quick_unlock/fingerprint_progress.html.js",
   "quick_unlock/fingerprint_progress_icons.html.js",
-  "store/store.js",
-  "store/store_client.js",
   "traffic_counters/traffic_counters_adapter.js",
   "util.js",
 ]
@@ -477,6 +475,7 @@ checked_in_dts_files = [
   "cellular_setup/button_bar.d.ts",
   "cellular_setup/cellular_setup.d.ts",
   "cellular_setup/esim_flow_ui.d.ts",
+  "cellular_setup/profile_discovery_consent_page.d.ts",
   "cellular_setup/profile_discovery_list_page_legacy.d.ts",
   "cellular_setup/profile_discovery_list_page.d.ts",
   "cellular_setup/provisioning_page.d.ts",
@@ -508,6 +507,10 @@ checked_in_dts_files = [
   "network/network_siminfo.d.ts",
   "network/sim_lock_dialogs.d.ts",
   "network/apn_detail_dialog.d.ts",
+
+  "post_message_api/post_message_api_client.d.ts",
+  "post_message_api/post_message_api_request_handler.d.ts",
+  "post_message_api/post_message_api_server.d.ts",
 ]
 
 copy("copy_checked_in_dts_files") {
@@ -526,7 +529,6 @@ group("closure_compile") {
     "network_health:closure_compile_module",
     "post_message_api:closure_compile",
     "smb_shares:closure_compile_module",
-    "store:closure_compile_module",
     "traffic_counters:closure_compile_module",
   ]
 }
@@ -549,7 +551,6 @@ js_type_check("closure_compile_local") {
     ":keyboard_shortcut_list_js",
     ":list_property_update_behavior",
     ":load_time_data.m",
-    ":mojo_utils",
     ":navigation_selector",
     ":navigation_view_panel",
     ":page_toolbar",
@@ -659,10 +660,6 @@ js_library("list_property_update_behavior") {
 }
 
 js_library("load_time_data.m") {
-}
-
-js_library("mojo_utils") {
-  deps = [ "//ash/webui/common/mojom:mojom_js_library_for_compile" ]
 }
 
 js_library("navigation_selector") {

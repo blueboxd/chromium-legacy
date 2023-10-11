@@ -170,6 +170,7 @@ class CORE_EXPORT NGFragmentBuilder {
   }
 
   void PropagateStickyDescendants(const NGPhysicalFragment& child);
+  void PropagateSnapAreas(const NGPhysicalFragment& child);
 
   // Propagate |child|'s anchor for the CSS Anchor Positioning to |this|
   // builder. This includes the anchor of the |child| itself and anchors
@@ -457,12 +458,12 @@ class CORE_EXPORT NGFragmentBuilder {
 
  protected:
   NGFragmentBuilder(const NGLayoutInputNode& node,
-                    scoped_refptr<const ComputedStyle> style,
+                    const ComputedStyle* style,
                     const NGConstraintSpace& space,
                     WritingDirectionMode writing_direction)
       : node_(node),
         space_(space),
-        style_(std::move(style)),
+        style_(style),
         writing_direction_(writing_direction),
         style_variant_(NGStyleVariant::kStandard) {
     DCHECK(style_);
@@ -470,6 +471,7 @@ class CORE_EXPORT NGFragmentBuilder {
   }
 
   HeapVector<Member<LayoutBoxModelObject>>& EnsureStickyDescendants();
+  HeapHashSet<Member<LayoutBox>>& EnsureSnapAreas();
   NGLogicalAnchorQuery& EnsureAnchorQuery();
   ScrollStartTargetCandidates& EnsureScrollStartTargets();
 
@@ -502,7 +504,7 @@ class CORE_EXPORT NGFragmentBuilder {
 
   NGLayoutInputNode node_;
   const NGConstraintSpace& space_;
-  scoped_refptr<const ComputedStyle> style_;
+  const ComputedStyle* style_;
   WritingDirectionMode writing_direction_;
   NGStyleVariant style_variant_;
   NGPhysicalFragment::NGBoxType box_type_ =
@@ -517,6 +519,7 @@ class CORE_EXPORT NGFragmentBuilder {
   const NGBreakToken* break_token_ = nullptr;
 
   HeapVector<Member<LayoutBoxModelObject>>* sticky_descendants_ = nullptr;
+  HeapHashSet<Member<LayoutBox>>* snap_areas_ = nullptr;
   NGLogicalAnchorQuery* anchor_query_ = nullptr;
   LayoutUnit bfc_line_offset_;
   absl::optional<LayoutUnit> bfc_block_offset_;

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -183,6 +183,8 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
     // The metadata associated with the winning ad, to be made available to the
     // interest group in future auctions in the `prevWins` field.
     std::string ad_metadata;
+
+    bool provided_as_additional_bid = false;
   };
 
   // All passed in raw pointers, including those in *BidInfo fields must outlive

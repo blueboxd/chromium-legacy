@@ -6,7 +6,6 @@ ContextualPageActionsModelTest.*
 CrossDeviceUserModelTest.*
 CustomInputProcessorTest.*
 DatabaseMaintenanceImplTest.*
-DefaultModelManagerTest.*
 DeviceSwitcherModelTest.*
 DeviceSwitcherResultDispatcherTest.*
 DeviceTierSegmentTest.*
@@ -54,6 +53,7 @@ SegmentationPlatformServiceImplMultiClientTest.*
 SegmentationPlatformServiceImplTest.*
 SegmentationResultPrefsTest.*
 SegmentationUkmHelperTest.*
+SelectionUtilsTest.*
 ServiceProxyImplTest.*
 ShoppingUserModelTest.*
 SignalDatabaseImplTest.*

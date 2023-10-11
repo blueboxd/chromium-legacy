@@ -38,6 +38,14 @@ class FileAccessPermissions;
 constexpr char kSystemMountNameArchive[] = "archive";
 constexpr char kSystemMountNameRemovable[] = "removable";
 
+// Backend Function called.  Used to control access.
+enum class BackendFunction {
+  kCreateFileSystemOperation,
+  kCreateFileStreamReader,
+  kCreateFileStreamWriter,
+  kGetRedirectURLForContents,
+};
+
 // FileSystemBackend is a Chrome OS specific implementation of
 // ExternalFileSystemBackend. This class is responsible for a
 // number of things, including:
@@ -100,7 +108,9 @@ class FileSystemBackend : public storage::FileSystemBackend {
   // Returns true if |url| is allowed to be accessed.
   // This is supposed to perform ExternalFileSystem-specific security
   // checks.
-  bool IsAccessAllowed(const storage::FileSystemURL& url) const;
+  bool IsAccessAllowed(BackendFunction backend_function,
+                       storage::OperationType operation_type,
+                       const storage::FileSystemURL& url) const;
 
   // Returns the list of top level directories that are exposed by this
   // provider. This list is used to set appropriate child process file access
@@ -145,6 +155,7 @@ class FileSystemBackend : public storage::FileSystemBackend {
       storage::FileSystemType type,
       base::File::Error* error_code) override;
   std::unique_ptr<storage::FileSystemOperation> CreateFileSystemOperation(
+      storage::OperationType type,
       const storage::FileSystemURL& url,
       storage::FileSystemContext* context,
       base::File::Error* error_code) const override;

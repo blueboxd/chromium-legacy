@@ -19,7 +19,7 @@
 #include "ash/wm/desks/desk_bar_controller.h"
 #include "ash/wm/desks/desks_constants.h"
 #include "ash/wm/desks/desks_controller.h"
-#include "base/i18n/case_conversion.h"
+#include "base/i18n/break_iterator.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -67,8 +67,12 @@ DeskSwitchButton::DeskSwitchButton(PressedCallback callback)
 DeskSwitchButton::~DeskSwitchButton() = default;
 
 void DeskSwitchButton::SetShown(bool show) {
-  layer()->SetOpacity(show ? 1.f : 0.f);
+  layer()->SetOpacity(show ? 1.0f : 0.0f);
   SetEnabled(show);
+}
+
+bool DeskSwitchButton::GetShown() const {
+  return GetEnabled() && layer()->GetTargetOpacity() == 1.0f;
 }
 
 void DeskSwitchButton::OnMouseEntered(const ui::MouseEvent& event) {
@@ -342,7 +346,8 @@ views::View* DeskButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
   // We override this function so that the tooltip manager ignores disabled desk
   // switch buttons when creating tooltips.
   views::View* tooltip_handler = Button::GetTooltipHandlerForPoint(point);
-  return tooltip_handler->GetEnabled() ? tooltip_handler : this;
+  return tooltip_handler && tooltip_handler->GetEnabled() ? tooltip_handler
+                                                          : this;
 }
 
 void DeskButton::OnDeskAdded(const Desk* desk, bool from_undo) {
@@ -429,11 +434,20 @@ void DeskButton::CalculateDisplayNames(const Desk* desk) {
   }
 
   desk_name_ = desk->name();
+  base::i18n::BreakIterator iter(desk_name_,
+                                 base::i18n::BreakIterator::BREAK_CHARACTER);
 
-  if (desk->is_name_set_by_user() &&
-      ((desk_name_[0] >= u'a' && desk_name_[0] <= u'z') ||
-       (desk_name_[0] >= u'A' && desk_name_[0] <= u'Z'))) {
-    abbreviated_desk_name_ = base::i18n::ToUpper(desk_name_.substr(0, 1));
+  if (!iter.Init()) {
+    return;
+  }
+
+  if (desk->is_name_set_by_user()) {
+    // For the customized desk name, it shows the first unicode for the
+    // `abbreviated_desk_name_`.
+    if (!iter.Advance()) {
+      return;
+    }
+    abbreviated_desk_name_ = iter.GetString();
   } else {
     abbreviated_desk_name_ =
         u"#" + base::NumberToString16(
@@ -499,12 +513,6 @@ void DeskButton::MaybeUpdateDeskSwitchButtonVisibility(
 void DeskButton::UpdateShelfAutoHideDisabler(
     absl::optional<Shelf::ScopedDisableAutoHide>& disabler,
     bool should_enable_shelf_auto_hide) {
-  // If shelf is not set to always hide, no need to disable.
-  if (desk_button_widget_->shelf()->auto_hide_behavior() !=
-      ShelfAutoHideBehavior::kAlways) {
-    return;
-  }
-
   if (should_enable_shelf_auto_hide) {
     disabler.reset();
   } else {
@@ -515,6 +523,7 @@ void DeskButton::UpdateShelfAutoHideDisabler(
 void DeskButton::SetupFocus(views::Button* view) {
   view->SetInstallFocusRingOnFocus(true);
   view->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  views::FocusRing::Get(view)->SetOutsetFocusRingDisabled(true);
   views::FocusRing::Get(view)->SetColorId(cros_tokens::kCrosSysFocusRing);
   views::InstallRoundRectHighlightPathGenerator(
       view, gfx::Insets(kFocusRingHaloInset), kButtonCornerRadius);

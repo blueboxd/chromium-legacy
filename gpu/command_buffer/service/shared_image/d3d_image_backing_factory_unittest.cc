@@ -39,6 +39,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/win/d3d_shared_fence.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
@@ -643,7 +644,11 @@ TEST_F(D3DImageBackingFactoryTest, Dawn_SkiaGL) {
   // internal methods that would need specific usages.
   wgpu::FeatureName dawn_internal_usage = wgpu::FeatureName::DawnInternalUsages;
   wgpu::DeviceDescriptor device_descriptor;
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  device_descriptor.requiredFeatureCount = 1;
+#else
   device_descriptor.requiredFeaturesCount = 1;
+#endif
   device_descriptor.requiredFeatures = &dawn_internal_usage;
 
   wgpu::Device device =
@@ -811,7 +816,7 @@ void D3DImageBackingFactoryTest::DawnConcurrentReadTestHelper(
 TEST_F(D3DImageBackingFactoryTest, Dawn_ConcurrentReads) {
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       shared_image_factory_->GetDeviceForTesting();
-  if (!D3DSharedFence::IsSupported(d3d11_device.Get())) {
+  if (!gfx::D3DSharedFence::IsSupported(d3d11_device.Get())) {
     GTEST_SKIP();
   }
 
@@ -832,7 +837,11 @@ TEST_F(D3DImageBackingFactoryTest, Dawn_ConcurrentReads) {
   // internal methods that would need specific usages.
   wgpu::FeatureName dawn_internal_usage = wgpu::FeatureName::DawnInternalUsages;
   wgpu::DeviceDescriptor device_descriptor;
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  device_descriptor.requiredFeatureCount = 1;
+#else
   device_descriptor.requiredFeaturesCount = 1;
+#endif
   device_descriptor.requiredFeatures = &dawn_internal_usage;
 
   wgpu::Device device =
@@ -993,7 +1002,11 @@ TEST_F(D3DImageBackingFactoryTest, GL_Dawn_Skia_UnclearTexture) {
   // internal methods that would need specific usages.
   wgpu::FeatureName dawn_internal_usage = wgpu::FeatureName::DawnInternalUsages;
   wgpu::DeviceDescriptor device_descriptor;
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  device_descriptor.requiredFeatureCount = 1;
+#else
   device_descriptor.requiredFeaturesCount = 1;
+#endif
   device_descriptor.requiredFeatures = &dawn_internal_usage;
 
   wgpu::Device device =
@@ -1079,7 +1092,11 @@ TEST_F(D3DImageBackingFactoryTest, UnclearDawn_SkiaFails) {
   // internal methods that would need specific usages.
   wgpu::FeatureName dawn_internal_usage = wgpu::FeatureName::DawnInternalUsages;
   wgpu::DeviceDescriptor device_descriptor;
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  device_descriptor.requiredFeatureCount = 1;
+#else
   device_descriptor.requiredFeaturesCount = 1;
+#endif
   device_descriptor.requiredFeatures = &dawn_internal_usage;
 
   wgpu::Device device =
@@ -1169,7 +1186,7 @@ void D3DImageBackingFactoryTest::RunCreateSharedImageFromHandleTest(
     DXGI_FORMAT dxgi_format) {
   auto mailbox = Mailbox::GenerateForSharedImage();
   const auto buffer_format = gfx::BufferFormat::RGBA_8888;
-  const auto format = viz::GetSharedImageFormat(buffer_format);
+  const auto format = viz::GetSinglePlaneSharedImageFormat(buffer_format);
   const gfx::Size size(1, 1);
   const auto plane = gfx::BufferPlane::DEFAULT;
   const auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -1340,7 +1357,11 @@ TEST_F(D3DImageBackingFactoryTest, Dawn_ReuseExternalImage) {
   // internal methods that would need specific usages.
   wgpu::FeatureName dawn_internal_usage = wgpu::FeatureName::DawnInternalUsages;
   wgpu::DeviceDescriptor device_descriptor;
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  device_descriptor.requiredFeatureCount = 1;
+#else
   device_descriptor.requiredFeaturesCount = 1;
+#endif
   device_descriptor.requiredFeatures = &dawn_internal_usage;
 
   wgpu::Device device =
@@ -1464,7 +1485,11 @@ TEST_F(D3DImageBackingFactoryTest, Dawn_HasLastRef) {
   // internal methods that would need specific usages.
   wgpu::FeatureName dawn_internal_usage = wgpu::FeatureName::DawnInternalUsages;
   wgpu::DeviceDescriptor device_descriptor;
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  device_descriptor.requiredFeatureCount = 1;
+#else
   device_descriptor.requiredFeaturesCount = 1;
+#endif
   device_descriptor.requiredFeatures = &dawn_internal_usage;
 
   wgpu::Device device =

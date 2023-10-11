@@ -36,8 +36,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "base/trace_event/memory_usage_estimator.h"
-#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/history_clusters/core/config.h"
 #include "components/omnibox/browser/actions/omnibox_action_in_suggest.h"
@@ -210,21 +208,23 @@ void AutocompleteController::GetMatchTypeAndExtendSubtypes(
   // TYPE_ON_DEVICE_HEAD, set the subtype accordingly. The type will be set in
   // the switch statement below for SEARCH_SUGGEST or NAVSUGGEST types.
   if (match.provider) {
-    if (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST &&
-        (match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
-         match.type == AutocompleteMatchType::TILE_NAVSUGGEST ||
-         match.type == AutocompleteMatchType::NAVSUGGEST)) {
+    if (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST) {
       // Make sure changes here are reflected in UpdateAssistedQueryStats()
       // below in which the zero-prefix suggestions are counted.
-      if (match.type == AutocompleteMatchType::TILE_NAVSUGGEST ||
-          match.type == AutocompleteMatchType::NAVSUGGEST) {
-        subtypes->emplace(omnibox::SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_URLS);
-      }
       // We abuse this subtype and use it to for zero-suggest suggestions that
       // aren't personalized by the server. That is, it indicates either
       // client-side most-likely URL suggestions or server-side suggestions
       // that depend only on the URL as context.
-      subtypes->emplace(omnibox::SUBTYPE_URL_BASED);
+      // TODO(crbug/1474087): add a dedicated subtype similar to
+      // LOCAL_FREQUENT_URLS and apply it to TILE_REPEATABLE_QUERY.
+      if (match.type == AutocompleteMatchType::TILE_NAVSUGGEST ||
+          match.type == AutocompleteMatchType::TILE_MOST_VISITED_SITE ||
+          match.type == AutocompleteMatchType::NAVSUGGEST) {
+        subtypes->emplace(omnibox::SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_URLS);
+        subtypes->emplace(omnibox::SUBTYPE_URL_BASED);
+      } else if (match.type == AutocompleteMatchType::SEARCH_SUGGEST) {
+        subtypes->emplace(omnibox::SUBTYPE_URL_BASED);
+      }
     } else if (match.provider->type() ==
                AutocompleteProvider::TYPE_ON_DEVICE_HEAD) {
       // This subtype indicates a match from an on-device head provider.
@@ -238,7 +238,8 @@ void AutocompleteController::GetMatchTypeAndExtendSubtypes(
   }
 
   switch (match.type) {
-    case AutocompleteMatchType::SEARCH_SUGGEST: {
+    case AutocompleteMatchType::SEARCH_SUGGEST:
+    case AutocompleteMatchType::TILE_REPEATABLE_QUERY: {
       // Do not set subtype here; subtype may have been set above.
       *type = omnibox::TYPE_QUERY;
       return;
@@ -269,6 +270,7 @@ void AutocompleteController::GetMatchTypeAndExtendSubtypes(
       return;
     }
     case AutocompleteMatchType::TILE_NAVSUGGEST:
+    case AutocompleteMatchType::TILE_MOST_VISITED_SITE:
     case AutocompleteMatchType::NAVSUGGEST: {
       // Do not set subtype here; subtype may have been set above.
       *type = omnibox::TYPE_NAVIGATION;
@@ -694,14 +696,6 @@ void AutocompleteController::OnProviderUpdate(
   }
 
   CheckIfDone();
-
-  // Do not process or propagate asynchronous events coming from
-  // AutocompleteProviders. This helps us reduce the pressure on CPU and memory
-  // on low-end mobile devices.
-  if (base::FeatureList::IsEnabled(omnibox::kIgnoreIntermediateResults) &&
-      !done_) {
-    return;
-  }
 
   if (updated_matches || done_)
     UpdateResult(false, false);
@@ -1219,6 +1213,10 @@ void AutocompleteController::AttachActions() {
 #endif
   }
   result_.TrimOmniboxActions(input_.IsZeroSuggest());
+
+  if (OmniboxFieldTrial::IsActionsUISimplificationEnabled()) {
+    result_.SplitActionsToSuggestions(input_);
+  }
 }
 
 void AutocompleteController::UpdateAssociatedKeywords(
@@ -1815,18 +1813,6 @@ void AutocompleteController::OnUrlScoringModelDone(
       match_itr->RecordAdditionalInfo("ml_legacy_relevance",
                                       match_itr->relevance);
       match_itr->relevance = relevance_heap.top();
-
-      // Fuzzy matches use the scoring signals for history and bookmark
-      // providers with the "corrected" input. This leads to an artificially
-      // high confidence from the model. Correct for this by re-applying the
-      // penalty from the history fuzzy provider.
-      if (match_itr->provider && match_itr->provider->type() ==
-                                     AutocompleteProvider::TYPE_HISTORY_FUZZY) {
-        match_itr->RecordAdditionalInfo("ml_relevance_before_penalty",
-                                        match_itr->relevance);
-        HistoryFuzzyProvider::ApplyRelevancePenalty(
-            *match_itr, match_itr->fuzzy_match_penalty);
-      }
     }
     relevance_heap.pop();
     prediction_and_match_itr_heap.pop();

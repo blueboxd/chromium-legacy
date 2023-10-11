@@ -44,6 +44,10 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+#if BUILDFLAG(IS_MAC)
+#include "media/base/mac/video_frame_mac.h"
+#endif  // BUILDFLAG(IS_MAC)
+
 namespace blink {
 
 constexpr int kMaxFirstFrameLogs = 5;
@@ -436,6 +440,11 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
       is_webgpu_compatible_ =
           buffer_handle.native_pixmap_handle.supports_zero_copy_webgpu_import;
 #endif
+
+#if BUILDFLAG(IS_MAC)
+      is_webgpu_compatible_ =
+          media::IOSurfaceIsWebGPUCompatible(buffer_handle.io_surface.get());
+#endif
       // No need to propagate shared memory region further as it's already
       // exposed by |buffer_context_->data()|.
       buffer_handle.region = base::UnsafeSharedMemoryRegion();
@@ -657,7 +666,7 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::BindVideoFrameOnMediaThread(
 
   frame_->metadata().allow_overlay = true;
   frame_->metadata().read_lock_fences_enabled = true;
-#if BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
   frame_->metadata().is_webgpu_compatible = is_webgpu_compatible_;
 #endif
   return true;
@@ -807,6 +816,10 @@ void VideoCaptureImpl::StartCapture(
       state_update_cb.Run(
           blink::VIDEO_CAPTURE_STATE_ERROR_SYSTEM_PERMISSIONS_DENIED);
       return;
+    case VIDEO_CAPTURE_STATE_ERROR_CAMERA_BUSY:
+      OnLog("VideoCaptureImpl is in camera busy error state.");
+      state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_ERROR_CAMERA_BUSY);
+      return;
     case VIDEO_CAPTURE_STATE_PAUSED:
     case VIDEO_CAPTURE_STATE_RESUMED:
       // The internal |state_| is never set to PAUSED/RESUMED since
@@ -886,6 +899,12 @@ void VideoCaptureImpl::OnStateChanged(
       OnLog(
           "VideoCaptureImpl changing state to "
           "VIDEO_CAPTURE_STATE_ERROR_SYSTEM_PERMISSIONS_DENIED");
+    } else if (result->get_error_code() ==
+               media::VideoCaptureError::kWinMediaFoundationCameraBusy) {
+      state_ = VIDEO_CAPTURE_STATE_ERROR_CAMERA_BUSY;
+      OnLog(
+          "VideoCaptureImpl changing state to "
+          "VIDEO_CAPTURE_STATE_ERROR_CAMERA_BUSY");
     } else {
       state_ = VIDEO_CAPTURE_STATE_ERROR;
       OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_ERROR");

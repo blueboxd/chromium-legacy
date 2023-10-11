@@ -306,6 +306,8 @@ bool ShouldContextResponsePopulateHintCache(
       return false;
     case proto::RequestContext::CONTEXT_NEW_TAB_PAGE:
       return false;
+    case proto::RequestContext::CONTEXT_PAGE_INSIGHTS_HUB:
+      return false;
   }
   NOTREACHED();
   return false;

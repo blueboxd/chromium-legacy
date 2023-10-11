@@ -274,6 +274,13 @@
   E_CPONLY(kColorCheckboxOutlineDisabled) \
   E_CPONLY(kColorCheckboxForegroundChecked) \
   E_CPONLY(kColorCheckboxForegroundUnchecked) \
+  E_CPONLY(kColorChipBackgroundHover) \
+  E_CPONLY(kColorChipBackgroundSelected) \
+  E_CPONLY(kColorChipBorder) \
+  E_CPONLY(kColorChipForeground) \
+  E_CPONLY(kColorChipForegroundSelected) \
+  E_CPONLY(kColorChipIcon) \
+  E_CPONLY(kColorChipIconSelected) \
   E_CPONLY(kColorComboboxBackground) \
   E_CPONLY(kColorComboboxBackgroundDisabled) \
   E_CPONLY(kColorComboboxContainerOutline) \
@@ -290,6 +297,19 @@
   E_CPONLY(kColorDropdownForegroundSelected) \
   E_CPONLY(kColorFocusableBorderFocused) \
   E_CPONLY(kColorFocusableBorderUnfocused) \
+  /* These colors correspond to the system colors defined in */ \
+  /* ui::NativeTheme::SystemThemeColor. They are used to support the */ \
+  /* platform agnostic forced colors mode. */ \
+  E_CPONLY(kColorForcedBtnFace) \
+  E_CPONLY(kColorForcedBtnText) \
+  E_CPONLY(kColorForcedGrayText) \
+  E_CPONLY(kColorForcedHighlight) \
+  E_CPONLY(kColorForcedHighlightText) \
+  E_CPONLY(kColorForcedHotlight) \
+  E_CPONLY(kColorForcedMenuHilight) \
+  E_CPONLY(kColorForcedScrollbar) \
+  E_CPONLY(kColorForcedWindow) \
+  E_CPONLY(kColorForcedWindowText) \
   E_CPONLY(kColorFrameActive) \
   E_CPONLY(kColorFrameActiveUnthemed) \
   E_CPONLY(kColorFrameCaptionButtonUnfocused) \
@@ -455,6 +475,10 @@
   E_CPONLY(kColorThemeColorPickerCheckmarkBackground) \
   E_CPONLY(kColorThemeColorPickerCheckmarkForeground) \
   E_CPONLY(kColorThemeColorPickerCustomColorIconBackground) \
+  E_CPONLY(kColorThemeColorPickerHueSliderDialogBackground) \
+  E_CPONLY(kColorThemeColorPickerHueSliderDialogForeground) \
+  E_CPONLY(kColorThemeColorPickerHueSliderDialogIcon) \
+  E_CPONLY(kColorThemeColorPickerHueSliderHandle) \
   E_CPONLY(kColorThemeColorPickerOptionBackground) \
   E_CPONLY(kColorThrobber) \
   E_CPONLY(kColorThrobberPreconnect) \

@@ -267,8 +267,10 @@ class NetworkMetadataStoreTest : public ::testing::Test {
     AssertCustomApnListFirstValue();
   }
 
-  raw_ptr<const user_manager::User, ExperimentalAsh> primary_user_;
-  raw_ptr<const user_manager::User, ExperimentalAsh> secondary_user_;
+  raw_ptr<const user_manager::User, DanglingUntriaged | ExperimentalAsh>
+      primary_user_;
+  raw_ptr<const user_manager::User, DanglingUntriaged | ExperimentalAsh>
+      secondary_user_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
@@ -894,23 +896,23 @@ TEST_F(NetworkMetadataStoreTest, UserTextMessageSuppressionState) {
   // Case: Suppression state should be Allow when user text message
   // suppression state has never been set.
   EXPECT_EQ(
-      TextMessageSuppressionState::kAllow,
+      UserTextMessageSuppressionState::kAllow,
       metadata_store()->GetUserTextMessageSuppressionState(kCellularkGuid));
 
   // Case: Suppression state should be Suppress when the user text message
   // suppression state was set to Suppress.
   metadata_store()->SetUserTextMessageSuppressionState(
-      kCellularkGuid, TextMessageSuppressionState::kSuppress);
+      kCellularkGuid, UserTextMessageSuppressionState::kSuppress);
   EXPECT_EQ(
-      TextMessageSuppressionState::kSuppress,
+      UserTextMessageSuppressionState::kSuppress,
       metadata_store()->GetUserTextMessageSuppressionState(kCellularkGuid));
 
   // Case: Suppression state should be Allow when the user text message
   // suppression state was set to Allow.
   metadata_store()->SetUserTextMessageSuppressionState(
-      kCellularkGuid, TextMessageSuppressionState::kAllow);
+      kCellularkGuid, UserTextMessageSuppressionState::kAllow);
   EXPECT_EQ(
-      TextMessageSuppressionState::kAllow,
+      UserTextMessageSuppressionState::kAllow,
       metadata_store()->GetUserTextMessageSuppressionState(kCellularkGuid));
 }
 

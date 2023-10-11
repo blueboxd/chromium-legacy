@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">Buscando redes de telefonía móbil</translation>
 <translation id="1293556467332435079">Ficheiros</translation>
 <translation id="1297922636971898492">Google Drive non está dispoñible nestes momentos. A carga reiniciarase automaticamente cando volva estar dispoñible.</translation>
+<translation id="1306130176943817227">Non se puido eliminar o elemento. Estase usando.</translation>
 <translation id="1307931752636661898">Non se puideron ver ficheiros de Linux</translation>
 <translation id="1313405956111467313">Configuración do proxy automática</translation>
 <translation id="134645005685694099">O teu dispositivo non ten suficiente espazo de almacenamento para manter activada a sincronización de ficheiros. O ficheiros novos xa non se sincronizarán automaticamente.</translation>
@@ -115,7 +116,6 @@
 <translation id="1920798810075583923">Sandía</translation>
 <translation id="1924372192547904021">Formatouse <ph name="DRIVE_NAME" /></translation>
 <translation id="1931134289871235022">Eslovaco</translation>
-<translation id="1933345018156373194">Non se puido realizar o movemento debido a un erro inesperado: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finés</translation>
 <translation id="1942765061641586207">Resolución da imaxe</translation>
 <translation id="1972984168337863910">Despregar paneis de comentarios de ficheiros</translation>
@@ -502,7 +502,6 @@
 <translation id="4969785127455456148">Álbum</translation>
 <translation id="4972330214479971536">Non se puido terminar de configurar a sincronización de ficheiros</translation>
 <translation id="4973523518332075481">Utiliza un nome de <ph name="MAX_LENGTH" /> caracteres ou menos</translation>
-<translation id="4973970068702235170">Non se puido realizar a operación de comprimir debido a un erro inesperado: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Xaponés</translation>
 <translation id="4987699874727873250">Inglés (India)</translation>
 <translation id="4988205478593450158">Seguro que queres eliminar "<ph name="FILE_NAME" />"?</translation>
@@ -543,6 +542,7 @@
 <translation id="5218183485292899140">Francés suízo</translation>
 <translation id="5234764350956374838">Rexeitar</translation>
 <translation id="5253070652067921974">Creado por</translation>
+<translation id="5254207638927440400">Non se puido mover o ficheiro. Estase usando.</translation>
 <translation id="5257456363153333584">Libélula</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Accede aos ficheiros desde calquera lugar, mesmo sen conexión.<ph name="MARKUP_2" />
     Os ficheiro de Google Drive están actualizados e pódese acceder a eles desde calquera dispositivo.<ph name="MARKUP_3" />
@@ -637,7 +637,6 @@
 <translation id="5896749729057314184">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, desactivada, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, detalles</translation>
 <translation id="5911887972742538906">Produciuse un erro durante a instalación da aplicación Linux.</translation>
 <translation id="5912396950572065471">Formato</translation>
-<translation id="5913638992615760742">Non se puido efectuar a copia porque se produciu un erro inesperado: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">Novas funcións de busca dispoñibles</translation>
 <translation id="5926082595146149752">Neerlandés (Países Baixos) con teclado internacional estadounidense (PC)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -645,7 +644,6 @@
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> elementos</translation>
 <translation id="5957366693331451795">Dispositivos Chromebox</translation>
 <translation id="5982621672636444458">Opcións de ordenación</translation>
-<translation id="6007237601604674381">Non se puido mover. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">Rede Ethernet</translation>
 <translation id="60357267506638014">QWERTY checo</translation>
 <translation id="603895874132768835">Non poderás utilizar esta rede ata que configures un PIN novo</translation>
@@ -862,6 +860,7 @@
 <translation id="76959938259365003">Non se puido baleirar a papeleira.</translation>
 <translation id="770015031906360009">Grego</translation>
 <translation id="7705251383879779343">Copiouse <ph name="FILE_NAME" />.</translation>
+<translation id="7707941139430559579">Non se puido mover o ficheiro. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">Para utilizar esta rede, tes que indicar a túa a clave de desbloqueo persoal (PUK) de 8 díxitos proporcionada polo operador.</translation>
 <translation id="7711920809702896782">Información da imaxe</translation>
 <translation id="7724603315864178912">Cortar</translation>
@@ -1049,6 +1048,7 @@
 <translation id="9038620279323455325">Xa existe un ficheiro denominado "<ph name="FILE_NAME" />". Escolle un nome diferente.</translation>
 <translation id="9046895021617826162">Erro na conexión</translation>
 <translation id="9065512565307033593">Se non levas a cabo a verificación correctamente, desactivaráseche o acceso á rede.</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 advertencia.}other{<ph name="COUNT" /> advertencias.}}</translation>
 <translation id="908378762078012445">Ruso con teclado AATSEEL fonético</translation>
 <translation id="9086302186042011942">Sincronizando</translation>
 <translation id="9099674669267916096">Número de páxinas</translation>

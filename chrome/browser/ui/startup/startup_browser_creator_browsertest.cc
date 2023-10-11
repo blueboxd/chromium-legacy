@@ -68,7 +68,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/profile_ui_test_utils.h"
+#include "chrome/browser/ui/profiles/profile_ui_test_utils.h"
 #include "chrome/browser/ui/search/ntp_test_utils.h"
 #include "chrome/browser/ui/startup/launch_mode_recorder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -101,6 +101,7 @@
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -135,7 +136,7 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/first_run/scoped_relaunch_chrome_browser_override.h"
-#include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/profiles/profile_picker.h"
 #include "chrome/browser/ui/webui/signin/profile_picker_handler.h"
 #include "chrome/browser/ui/webui/signin/profile_picker_ui.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -550,6 +551,21 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppUrlIncognitoShortcut) {
   observer.Wait();
   EXPECT_EQ("title2.html",
             web_contents->GetLastCommittedURL().ExtractFileName());
+}
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
+                       LaunchWebAppWhileKeepAliveRegistryIsShutdown) {
+  // Command line to simulate app launch.
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(switches::kAppId, "app_id_1");
+
+  // Simulate keep alive registry shutdown and try to launch the app and verify
+  // that we don't crash.
+  KeepAliveRegistry::GetInstance()->SetIsShuttingDown(true);
+  web_app::startup::MaybeHandleWebAppLaunch(
+      command_line, base::FilePath(FILE_PATH_LITERAL("\\path")),
+      browser()->profile(), chrome::startup::IsFirstRun::kNo);
+  base::RunLoop().RunUntilIdle();
 }
 
 namespace {

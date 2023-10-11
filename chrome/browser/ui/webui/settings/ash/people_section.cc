@@ -25,13 +25,13 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/webui/ash/settings/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/ash/sync/os_sync_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/account_manager_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/fingerprint_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/ash/parental_controls_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/quick_unlock_handler.h"
-#include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
 #include "chrome/browser/ui/webui/settings/profile_info_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
@@ -251,10 +251,16 @@ void AddLockScreenPageStrings(content::WebUIDataSource* html_source,
       {"lockScreenEditFingerprints",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_EDIT_FINGERPRINTS},
       {"lockScreenPasswordOnly", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PASSWORD_ONLY},
+      {"lockScreenChangePasswordButton",
+       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_CHANGE_PASSWORD_BUTTON},
       {"lockScreenChangePinButton",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_CHANGE_PIN_BUTTON},
+      {"lockScreenDevicePasswordOptionLabel",
+       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_DEVICE_PASSWORD_OPTION_LABEL},
       {"lockScreenEditFingerprintsDescription",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_EDIT_FINGERPRINTS_DESCRIPTION},
+      {"lockScreenGoogleAccountPasswordOptionLabel",
+       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_GOOGLE_ACCOUNT_PASSWORD_OPTION_LABEL},
       {"lockScreenNone", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NONE},
       {"lockScreenFingerprintNewName",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME},
@@ -265,7 +271,13 @@ void AddLockScreenPageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_OPTIONS_LOGIN_LOCK},
       {"lockScreenRemovePinButton",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_REMOVE_PIN_BUTTON},
+      {"lockScreenPasswordLabel",
+       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PASSWORD_LABEL},
+      {"lockScreenPasswordDescription",
+       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PASSWORD_DESCRIPTION},
       {"lockScreenPinLabel", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PIN_LABEL},
+      {"lockScreenSetupPasswordButton",
+       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_SETUP_PASSWORD_BUTTON},
       {"lockScreenSetupPinButton",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_SETUP_PIN_BUTTON},
       {"lockScreenSignInOptions",
@@ -443,12 +455,21 @@ void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddUsersStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+  const bool kIsRevampEnabled =
+      ash::features::IsOsSettingsRevampWayfindingEnabled();
+
+  webui::LocalizedString kLocalizedStrings[] = {
       {"usersModifiedByOwnerLabel", IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL},
-      {"guestBrowsingLabel", IDS_SETTINGS_USERS_GUEST_BROWSING_LABEL},
+      {"guestBrowsingLabel",
+       kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_USERS_GUEST_BROWSING_LABEL
+                        : IDS_SETTINGS_USERS_GUEST_BROWSING_LABEL},
       {"settingsManagedLabel", IDS_SETTINGS_USERS_MANAGED_LABEL},
       {"showOnSigninLabel", IDS_SETTINGS_USERS_SHOW_ON_SIGNIN_LABEL},
-      {"restrictSigninLabel", IDS_SETTINGS_USERS_RESTRICT_SIGNIN_LABEL},
+      {"restrictSigninLabel",
+       kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_USERS_RESTRICT_SIGNIN_LABEL
+                        : IDS_SETTINGS_USERS_RESTRICT_SIGNIN_LABEL},
+      {"restrictSigninDescription",
+       IDS_OS_SETTINGS_REVAMP_USERS_RESTRICT_SIGNIN_DESCRIPTION},
       {"deviceOwnerLabel", IDS_SETTINGS_USERS_DEVICE_OWNER_LABEL},
       {"removeUserTooltip", IDS_SETTINGS_USERS_REMOVE_USER_TOOLTIP},
       {"userRemovedMessage", IDS_SETTINGS_USERS_USER_REMOVED_MESSAGE},
@@ -479,9 +500,6 @@ void AddParentalControlStrings(content::WebUIDataSource* html_source,
 
   html_source->AddBoolean("showParentalControls",
                           are_parental_control_settings_allowed);
-
-  bool is_child = user_manager::UserManager::Get()->IsLoggedInAsChildUser();
-  html_source->AddBoolean("isChild", is_child);
 }
 
 bool IsSameAccount(const ::account_manager::AccountKey& account_key,

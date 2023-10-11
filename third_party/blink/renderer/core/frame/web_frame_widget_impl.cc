@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -265,11 +266,44 @@ bool IsElementNotNullAndEditable(Element* element) {
   return false;
 }
 
+bool& InputDisabledPerBrowsingContextGroup(
+    const base::UnguessableToken& token) {
+  using BrowsingContextGroupMap = std::map<base::UnguessableToken, bool>;
+  DEFINE_STATIC_LOCAL(BrowsingContextGroupMap, values, ());
+  return values[token];
+}
+
 }  // namespace
 
 // WebFrameWidget ------------------------------------------------------------
 
 bool WebFrameWidgetImpl::ignore_input_events_ = false;
+
+// static
+void WebFrameWidgetImpl::SetIgnoreInputEvents(
+    const base::UnguessableToken& browsing_context_group_token,
+    bool value) {
+  if (base::FeatureList::IsEnabled(
+          features::kPausePagesPerBrowsingContextGroup)) {
+    CHECK_NE(InputDisabledPerBrowsingContextGroup(browsing_context_group_token),
+             value);
+    InputDisabledPerBrowsingContextGroup(browsing_context_group_token) = value;
+  } else {
+    CHECK_NE(ignore_input_events_, value);
+    ignore_input_events_ = value;
+  }
+}
+
+// static
+bool WebFrameWidgetImpl::IgnoreInputEvents(
+    const base::UnguessableToken& browsing_context_group_token) {
+  if (base::FeatureList::IsEnabled(
+          features::kPausePagesPerBrowsingContextGroup)) {
+    return InputDisabledPerBrowsingContextGroup(browsing_context_group_token);
+  } else {
+    return ignore_input_events_;
+  }
+}
 
 WebFrameWidgetImpl::WebFrameWidgetImpl(
     base::PassKey<WebLocalFrame>,
@@ -423,7 +457,7 @@ gfx::Rect WebFrameWidgetImpl::ComputeBlockBound(
   HitTestResult result =
       local_root_->GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location, hit_type);
-  result.SetToShadowHostIfInRestrictedShadowRoot();
+  result.SetToShadowHostIfInUAShadowRoot();
 
   Node* node = result.InnerNodeOrImageMapImage();
   if (!node)
@@ -487,8 +521,7 @@ void WebFrameWidgetImpl::DragTargetDragLeave(
     const gfx::PointF& screen_point) {
   base::ScopedClosureRunner runner(
       WTF::BindOnce(&WebFrameWidgetImpl::CancelDrag, WrapWeakPersistent(this)));
-
-  if (IgnoreInputEvents() || !current_drag_data_) {
+  if (ShouldIgnoreInputEvents() || !current_drag_data_) {
     return;
   }
 
@@ -511,7 +544,7 @@ void WebFrameWidgetImpl::DragTargetDrop(const WebDragData& web_drag_data,
   base::ScopedClosureRunner runner(
       WTF::BindOnce(&WebFrameWidgetImpl::CancelDrag, WrapWeakPersistent(this)));
 
-  if (IgnoreInputEvents() || !current_drag_data_) {
+  if (ShouldIgnoreInputEvents() || !current_drag_data_) {
     return;
   }
 
@@ -551,7 +584,7 @@ void WebFrameWidgetImpl::DragSourceEndedAt(const gfx::PointF& point_in_viewport,
       WTF::BindOnce(&WebFrameWidgetImpl::DragSourceSystemDragEnded,
                     WrapWeakPersistent(this)));
 
-  if (IgnoreInputEvents()) {
+  if (ShouldIgnoreInputEvents()) {
     return;
   }
 
@@ -605,10 +638,10 @@ void WebFrameWidgetImpl::OnStartStylusWriting(
   }
 
   if (auto* text_control = EnclosingTextControl(stylus_writable_element)) {
-    text_control->Focus();
+    text_control->Focus(FocusParams(FocusTrigger::kUserGesture));
   } else if (auto* html_element =
                  DynamicTo<HTMLElement>(stylus_writable_element)) {
-    html_element->Focus();
+    html_element->Focus(FocusParams(FocusTrigger::kUserGesture));
   }
   Element* focused_element = FocusedElement();
   // Since the element can change after it gets focused, we just verify if
@@ -671,7 +704,7 @@ void WebFrameWidgetImpl::GetStringAtPoint(const gfx::Point& point_in_local_root,
                                           GetStringAtPointCallback callback) {
   gfx::Point baseline_point;
   ui::mojom::blink::AttributedStringPtr attributed_string = nullptr;
-  base::ScopedCFTypeRef<CFAttributedStringRef> string =
+  base::apple::ScopedCFTypeRef<CFAttributedStringRef> string =
       SubstringUtil::AttributedWordAtPoint(this, point_in_local_root,
                                            baseline_point);
   if (string) {
@@ -886,7 +919,7 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& local_root,
     HitTestResult result(
         LocalRootImpl()->GetFrame()->GetEventHandler().HitTestResultAtLocation(
             location));
-    result.SetToShadowHostIfInRestrictedShadowRoot();
+    result.SetToShadowHostIfInUAShadowRoot();
     Node* hit_node = result.InnerNode();
     auto* html_element = DynamicTo<HTMLElement>(hit_node);
     if (!result.GetScrollbar() && hit_node && hit_node->GetLayoutObject() &&
@@ -1205,7 +1238,8 @@ void WebFrameWidgetImpl::CancelDrag() {
   current_drag_data_ = nullptr;
 }
 
-void WebFrameWidgetImpl::StartDragging(const WebDragData& drag_data,
+void WebFrameWidgetImpl::StartDragging(LocalFrame* source_frame,
+                                       const WebDragData& drag_data,
                                        DragOperationsMask operations_allowed,
                                        const SkBitmap& drag_image,
                                        const gfx::Vector2d& cursor_offset,
@@ -1222,7 +1256,7 @@ void WebFrameWidgetImpl::StartDragging(const WebDragData& drag_data,
   gfx::Rect drag_obj_rect_in_dips =
       gfx::Rect(widget_base_->BlinkSpaceToFlooredDIPs(drag_obj_rect.origin()),
                 widget_base_->BlinkSpaceToFlooredDIPs(drag_obj_rect.size()));
-  GetAssociatedFrameWidgetHost()->StartDragging(
+  source_frame->GetLocalFrameHostRemote().StartDragging(
       drag_data, operations_allowed, drag_image, offset_in_dips,
       drag_obj_rect_in_dips, possible_drag_event_info_.Clone());
 }
@@ -1232,7 +1266,7 @@ void WebFrameWidgetImpl::DragTargetDragEnterOrOver(
     const gfx::PointF& screen_point,
     DragAction drag_action,
     uint32_t key_modifiers) {
-  if (IgnoreInputEvents() || !current_drag_data_) {
+  if (ShouldIgnoreInputEvents() || !current_drag_data_) {
     CancelDrag();
     return;
   }
@@ -1456,6 +1490,11 @@ void WebFrameWidgetImpl::NotifyViewTransitionRenderingHasBegun() {
           transition->NotifyRenderingHasBegun();
         }
       });
+}
+
+bool WebFrameWidgetImpl::ShouldIgnoreInputEvents() {
+  CHECK(GetPage());
+  return IgnoreInputEvents(GetPage()->BrowsingContextGroupToken());
 }
 
 std::unique_ptr<cc::LayerTreeFrameSink>
@@ -1715,6 +1754,24 @@ void WebFrameWidgetImpl::UpdateVisualProperties(
     widget_base_->LayerTreeHost()->SetExternalPageScaleFactor(
         1.f,
         /*is_pinch_gesture_active=*/false);
+  }
+
+  EventHandler& event_handler = local_root_->GetFrame()->GetEventHandler();
+  if (event_handler.cursor_accessibility_scale_factor() !=
+      visual_properties.cursor_accessibility_scale_factor) {
+    ForEachLocalFrameControlledByWidget(
+        local_root_->GetFrame(), [&](WebLocalFrameImpl* local_frame) {
+          local_frame->GetFrame()
+              ->GetEventHandler()
+              .set_cursor_accessibility_scale_factor(
+                  visual_properties.cursor_accessibility_scale_factor);
+        });
+    // Propagate changes down to any child RemoteFrames.
+    ForEachRemoteFrameControlledByWidget(
+        [scale_factor = visual_properties.cursor_accessibility_scale_factor](
+            RemoteFrame* remote_frame) {
+          remote_frame->CursorAccessibilityScaleFactorChanged(scale_factor);
+        });
   }
 
   // TODO(crbug.com/939118): This code path where scroll_focused_node_into_view
@@ -2735,8 +2792,9 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
 
   // Report the event to be NOT processed by WebKit, so that the browser can
   // handle it appropriately.
-  if (IgnoreInputEvents())
+  if (ShouldIgnoreInputEvents()) {
     return WebInputEventResult::kNotHandled;
+  }
 
   base::AutoReset<const WebInputEvent*> current_event_change(
       &CurrentInputEvent::current_input_event_, &input_event);
@@ -3735,6 +3793,11 @@ void WebFrameWidgetImpl::DidNavigate() {
   widget_base_->widget_input_handler_manager()->DidNavigate();
 }
 
+void WebFrameWidgetImpl::FlushInputForTesting(base::OnceClosure done_callback) {
+  widget_base_->widget_input_handler_manager()->FlushEventQueuesForTesting(
+      std::move(done_callback));
+}
+
 void WebFrameWidgetImpl::SetMouseCapture(bool capture) {
   if (mojom::blink::WidgetInputHandlerHost* host =
           widget_base_->widget_input_handler_manager()
@@ -3968,10 +4031,12 @@ void WebFrameWidgetImpl::Copy() {
 }
 
 void WebFrameWidgetImpl::CopyToFindPboard() {
+#if BUILDFLAG(IS_MAC)
   WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
   if (!focused_frame)
     return;
   To<WebLocalFrameImpl>(focused_frame)->CopyToFindPboard();
+#endif
 }
 
 void WebFrameWidgetImpl::CenterSelection() {

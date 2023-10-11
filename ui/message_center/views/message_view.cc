@@ -161,7 +161,7 @@ void MessageView::SlideOutAndClose(int direction) {
 }
 
 void MessageView::SetExpanded(bool expanded) {
-  // Not implemented by default.
+  MessageCenter::Get()->OnSetExpanded(notification_id_, expanded);
 }
 
 bool MessageView::IsExpanded() const {
@@ -507,6 +507,8 @@ void MessageView::OnSettingsButtonPressed(const ui::Event& event) {
 void MessageView::OnSnoozeButtonPressed(const ui::Event& event) {
   for (auto& observer : observers_)
     observer.OnSnoozeButtonPressed(notification_id_);
+
+  MessageCenter::Get()->ClickOnSnoozeButton(notification_id());
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

@@ -8,6 +8,7 @@
 
 #import "base/functional/bind.h"
 #import "base/location.h"
+#import "base/time/time.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/prefs/pref_service.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -15,6 +16,8 @@
 #import "ios/chrome/browser/omaha/omaha_service.h"
 #import "ios/chrome/browser/safety_check/ios_chrome_safety_check_manager_utils.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
+#import "ios/chrome/browser/ui/ntp/metrics/home_metrics.h"
 #import "ios/chrome/browser/upgrade/upgrade_recommended_details.h"
 #import "ios/chrome/browser/upgrade/upgrade_utils.h"
 #import "ios/chrome/common/channel_info.h"
@@ -54,7 +57,6 @@ IOSChromeSafetyCheckManager::IOSChromeSafetyCheckManager(
 
 IOSChromeSafetyCheckManager::~IOSChromeSafetyCheckManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(observers_.empty());
 }
 
 void IOSChromeSafetyCheckManager::Shutdown() {
@@ -79,6 +81,8 @@ void IOSChromeSafetyCheckManager::StartSafetyCheck() {
     return;
   }
 
+  LogCurrentSafetyCheckRunTime();
+
   // Asynchronous checks
   StartPasswordCheck();
   StartUpdateChromeCheck();
@@ -101,6 +105,9 @@ void IOSChromeSafetyCheckManager::StopSafetyCheck() {
 
 void IOSChromeSafetyCheckManager::RestorePreviousSafetyCheckState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  last_safety_check_run_time_ =
+      local_pref_service_->GetTime(prefs::kIosSafetyCheckManagerLastRunTime);
 
   absl::optional<SafeBrowsingSafetyCheckState> safe_browsing_check_state =
       SafeBrowsingSafetyCheckStateForName(local_pref_service_->GetString(
@@ -244,6 +251,11 @@ IOSChromeSafetyCheckManager::GetInsecureCredentials() const {
   return password_check_manager_->GetInsecureCredentials();
 }
 
+base::Time IOSChromeSafetyCheckManager::GetLastSafetyCheckRunTime() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return last_safety_check_run_time_;
+}
+
 // Returns the Chrome app next version.
 std::string IOSChromeSafetyCheckManager::GetChromeAppNextVersion() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -260,6 +272,9 @@ void IOSChromeSafetyCheckManager::SetSafeBrowsingCheckState(
   }
 
   safe_browsing_check_state_ = state;
+
+  // The safe browsing state changed, log a freshness signal for Safety Check.
+  RecordModuleFreshnessSignal(ContentSuggestionsModuleType::kSafetyCheck);
 
   local_pref_service_->SetString(
       prefs::kIosSafetyCheckManagerSafeBrowsingCheckResult,
@@ -320,6 +335,15 @@ void IOSChromeSafetyCheckManager::SetPasswordCheckState(
     return;
   }
 
+  // Only log that there was a freshness signal if the new state has a different
+  // end result (a password issue, safe).
+  if (state == PasswordSafetyCheckState::kUnmutedCompromisedPasswords ||
+      state == PasswordSafetyCheckState::kReusedPasswords ||
+      state == PasswordSafetyCheckState::kWeakPasswords ||
+      state == PasswordSafetyCheckState::kSafe) {
+    RecordModuleFreshnessSignal(ContentSuggestionsModuleType::kSafetyCheck);
+  }
+
   password_check_state_ = state;
 
   local_pref_service_->SetString(
@@ -340,6 +364,13 @@ void IOSChromeSafetyCheckManager::SetUpdateChromeCheckState(
 
   if (update_chrome_check_state_ == state || ignore_omaha_changes_) {
     return;
+  }
+
+  // Only log that there was a freshness signal if the new state has a different
+  // end result (out of date, up to date).
+  if (state == UpdateChromeSafetyCheckState::kOutOfDate ||
+      state == UpdateChromeSafetyCheckState::kUpToDate) {
+    RecordModuleFreshnessSignal(ContentSuggestionsModuleType::kSafetyCheck);
   }
 
   update_chrome_check_state_ = state;
@@ -480,6 +511,14 @@ void IOSChromeSafetyCheckManager::RefreshSafetyCheckRunningState() {
   for (auto& observer : observers_) {
     observer.RunningStateChanged(running_safety_check_state_);
   }
+}
+
+void IOSChromeSafetyCheckManager::LogCurrentSafetyCheckRunTime() {
+  base::Time now = base::Time::Now();
+
+  last_safety_check_run_time_ = now;
+
+  local_pref_service_->SetTime(prefs::kIosSafetyCheckManagerLastRunTime, now);
 }
 
 void IOSChromeSafetyCheckManager::AddObserver(

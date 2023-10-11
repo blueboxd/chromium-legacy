@@ -130,7 +130,6 @@ class MirroringActivity : public CastActivity,
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, Pause);
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, Play);
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, OnRemotingStateChanged);
-  FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, GetTargetPlayoutDelay);
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest,
                            MultipleMediaControllersNotified);
 
@@ -170,11 +169,6 @@ class MirroringActivity : public CastActivity,
   void FetchMirroringStats();
   void OnMirroringStats(base::Value json_stats);
 
-  // Checks if we should override the target playout delay if the
-  // kCastMirroringTargetPlayoutDelay switch has a value.
-  absl::optional<base::TimeDelta> GetTargetPlayoutDelay(
-      const absl::optional<base::TimeDelta>& source_playout_delay);
-
   std::unique_ptr<mirroring::MirroringServiceHost> host_;
 
   // Sends Cast messages from the mirroring receiver to the mirroring service.
@@ -195,6 +189,9 @@ class MirroringActivity : public CastActivity,
   // mirroring stats are enabled on the mirroring session and to receive
   // mirroring stats from the session.
   mojo::Remote<mojom::Debugger> debugger_;
+
+  // Most recent fetched mirroring stats.
+  base::Value::Dict most_recent_mirroring_stats_;
 
   mojo::Receiver<mirroring::mojom::SessionObserver> observer_receiver_{this};
 
@@ -218,6 +215,8 @@ class MirroringActivity : public CastActivity,
   absl::optional<base::Time> did_start_mirroring_timestamp_;
 
   const absl::optional<MirroringType> mirroring_type_;
+
+  absl::optional<base::TimeDelta> target_playout_delay_;
 
   // The FrameTreeNode ID to retrieve the WebContents of the tab to mirror.
   int frame_tree_node_id_;

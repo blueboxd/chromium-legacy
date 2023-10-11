@@ -5,7 +5,7 @@
 #include "chrome/browser/ash/nearby/quick_start_connectivity_service_factory.h"
 
 #include "chrome/browser/ash/nearby/nearby_process_manager_factory.h"
-#include "chrome/browser/ash/nearby/quick_start_connectivity_service.h"
+#include "chrome/browser/ash/nearby/quick_start_connectivity_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 
@@ -41,7 +41,8 @@ QuickStartConnectivityServiceFactory::QuickStartConnectivityServiceFactory()
 QuickStartConnectivityServiceFactory::~QuickStartConnectivityServiceFactory() =
     default;
 
-KeyedService* QuickStartConnectivityServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+QuickStartConnectivityServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
   if (!ash::IsSigninBrowserContext(context)) {
     return nullptr;
@@ -54,8 +55,9 @@ KeyedService* QuickStartConnectivityServiceFactory::BuildServiceInstanceFor(
     // profile is the one that is used in OOBE.
     //
     // Note: the NearbyProcessManager* fetched here is bound to the lifetime of
-    // the profile and is guaranteed to outlive QuickStartConnectivityService.
-    return new QuickStartConnectivityService(
+    // the profile and is guaranteed to outlive
+    // QuickStartConnectivityServiceImpl.
+    return std::make_unique<QuickStartConnectivityServiceImpl>(
         nearby::NearbyProcessManagerFactory::GetForProfile(profile));
   }
 

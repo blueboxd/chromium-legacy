@@ -150,6 +150,29 @@ export function request_options_with_login_hint(manifest_filename, login_hint) {
   return options;
 }
 
+export function request_options_with_hosted_domain(manifest_filename, hosted_domain) {
+  let options = request_options_with_mediation_required(manifest_filename);
+  options.identity.providers[0].hostedDomain = hosted_domain;
+
+  return options;
+}
+
+export function fedcm_get_dialog_type_promise(t) {
+  return new Promise(resolve => {
+    async function helper() {
+      // Try to get the dialog type. If the UI is not up yet, we'll catch an exception
+      // and try again in 100ms.
+      try {
+        const type = await window.test_driver.get_fedcm_dialog_type();
+        resolve(type);
+      } catch (ex) {
+        t.step_timeout(helper, 100);
+      }
+    }
+    helper();
+  });
+}
+
 export function fedcm_get_title_promise(t) {
   return new Promise(resolve => {
     async function helper() {

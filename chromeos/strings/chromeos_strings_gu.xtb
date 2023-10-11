@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">કાનૂની કારણોસર કન્ટેન્ટમાં ફેરફારની વિનંતી કરવા માટે <ph name="BEGIN_LINK1" />કાનૂની સહાય પેજ<ph name="END_LINK1" /> પર જાઓ. એકાઉન્ટ અને સિસ્ટમની અમુક માહિતી Googleને મોકલવામાં આવી શકે છે. તમે અમને જે માહિતી આપશો, તેનો ઉપયોગ અમે અમારી <ph name="BEGIN_LINK2" />પ્રાઇવસી પૉલિસી<ph name="END_LINK2" /> અને <ph name="BEGIN_LINK3" />સેવાની શરતો<ph name="END_LINK3" />ને આધીન રહીને ટેક્નિકલ સમસ્યાઓના નિવારણ માટે અને અમારી સેવાઓને બહેતર બનાવવા માટે કરીશું.</translation>
 <translation id="1885577615937958993">મીડિયાને ફાસ્ટ ફૉરવર્ડ કરો</translation>
 <translation id="1887850431809612466">હાર્ડવેર પુનરાવર્તન</translation>
+<translation id="1897672602657312171">શોધ કી વિનાનો શૉર્ટકટ કોઈ ઍપના શૉર્ટકટ સાથે વિસંગત હોઈ શકે છે. આ શૉર્ટકટનો ઉપયોગ કરવાનું ચાલુ રાખવા માટે તેને ફરીથી દબાવો અથવા શોધ કીનો ઉપયોગ કરતો હોય તેવો કોઈ નવો શૉર્ટકટ દબાવો.</translation>
 <translation id="1904932688895783618">અહીં કેટલાક અન્ય સહાયરૂપ સંસાધનો આપવામાં આવ્યા છે:</translation>
 <translation id="1905710495812624430">મહત્તમ મંજૂર પ્રયત્નોની સંખ્યા ઓળંગાઈ.</translation>
 <translation id="1908234395526491708">UDP વિનંતી નિષ્ફળ થઈ</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">ફરી શરૂ કરી રહ્યાં છીએ…</translation>
 <translation id="2533048460510040082">સૂચિત સહાયક કન્ટેન્ટ</translation>
 <translation id="2536159006530886390">ઇન્ટરનેટથી કનેક્ટ થઈ શકતા નથી.</translation>
-<translation id="2555662516429796509">તમારા કીબોર્ડ પર 1-4 મૉડિફાયર અને અન્ય 1 કી દબાવો</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> પરીક્ષણ ચલાવી રહ્યાં છીએ…</translation>
 <translation id="2584559707064218956">સેટઅપ કરવા માટે, સેટિંગમાં જાઓ</translation>
 <translation id="2597774443162333062">ડિબગીંગ માટે ફાઇલ Googleને મોકલવામાં આવશે</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">TLS પ્રમાણીકરણ કી</translation>
 <translation id="2713444072780614174">શ્વેત</translation>
 <translation id="2717139507051041123">ઘેરા રંગવાળો મોડ ચાલુ કરો</translation>
+<translation id="2728460467788544679">બધો પ્રિન્ટ ઇતિહાસ સાફ કરો</translation>
 <translation id="2740531572673183784">બરાબર, સમજાઇ ગયું</translation>
 <translation id="2744221223678373668">શેર કરેલી</translation>
 <translation id="2751739896257479635">EAP તબક્કા 2 માટેનું પ્રમાણીકરણ</translation>
 <translation id="2783010256799387990">પરીક્ષણ પાસ કર્યુ</translation>
 <translation id="2787435249130282949">વધુ બ્રાઇટ કીબોર્ડ</translation>
-<translation id="2789486458103222910">બરાબર, સમજાઇ ગયું</translation>
 <translation id="2805756323405976993">ઍપ</translation>
 <translation id="28232023175184696">ઇન્ટરનેટ સાથે કનેક્ટ કરી શકતા નથી. ફરી પ્રયાસ કરવા માટે ક્લિક કરો.</translation>
 <translation id="2859243502336719778">અતિશય મહત્ત્વની અપડેટ</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">ક્લાઉડ ફ્લો સ્ક્રીન સેવર</translation>
 <translation id="2926057806159140518">તમારું વપરાશકર્તા નામ અને પાસવર્ડ દાખલ કરો અથવા તમારો QR કોડ સ્કૅન કરો</translation>
 <translation id="2940811910881150316">ડિવાઇસનું પરીક્ષણ કરી શકતા નથી. પરીક્ષણ કરવા માટે ઢાંકણ ફરી ખોલો.</translation>
+<translation id="2941112035454246133">નીચું</translation>
 <translation id="3008341117444806826">રિફ્રેશ કરો</translation>
 <translation id="3009958530611748826">સ્કૅન જેમાં સાચવવાના છે તે ફોલ્ડર પસંદ કરો</translation>
 <translation id="3017079585324758401">બૅકગ્રાઉન્ડ</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">હોસ્ટ રિઝોલ્વ કરવામાં નિષ્ફળ રહ્યાં</translation>
 <translation id="3942420633017001071">ડાયગ્નોસ્ટિક્સ</translation>
 <translation id="3954678691475912818">ડિવાઇસનો પ્રકાર અજાણ્યો છે.</translation>
+<translation id="3959413315969265597">આ APNને ચાલુ કરી શકાતું નથી. ડિફૉલ્ટ APN ઉમેરેલું હોય એ વાતની ખાતરી કરો.</translation>
 <translation id="3966286471246132217">વધુ ચોક્કસ પરિણામો માટે, પરીક્ષણ પૂરું થાય ત્યાં સુધી બધી ઍપ બંધ રાખો.</translation>
 <translation id="3967822245660637423">ડાઉનલોડ પૂર્ણ</translation>
 <translation id="3969602104473960991">ChromeOSનો પાસવર્ડ અપડેટ કરવામાં આવ્યો</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">વૉલ્યૂમ ઘટાડો</translation>
 <translation id="5707900041990977207"><ph name="TOTAL_PAGES" />માંથી <ph name="CURRENT_PAGE" /></translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" /> અપડેટ કરો</translation>
+<translation id="574392208103952083">મધ્યમ</translation>
 <translation id="5757187557809630523">આગલો ટ્રૅક</translation>
 <translation id="5760715441271661976">પોર્ટલની સ્થિતિ</translation>
 <translation id="576835345334454681">ડિસ્પ્લેનું બ્રાઇટનેસ વધારવાની કી</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">આર્ટ ગૅલરી આલ્બમ</translation>
 <translation id="5860033963881614850">બંધ</translation>
 <translation id="5860491529813859533">ચાલુ કરો</translation>
-<translation id="5866840822086176774">ખૂબ સશક્ત</translation>
 <translation id="5876385649737594562">વિકલ્પો પસંદ કરવાનું ચાલુ કરો</translation>
 <translation id="588258955323874662">પૂર્ણસ્ક્રીન</translation>
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">નબળું (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">એકાઉન્ટ સેટિંગ પર જાઓ</translation>
-<translation id="6456394469623773452">સરસ</translation>
+<translation id="6461047516875166066">મને વધુ જણાવો</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{પેજ ફરીથી સ્કૅન કરીએ?}=1{પેજ {PAGE_NUMBER} ફરીથી સ્કૅન કરીએ?}one{પેજ {PAGE_NUMBER} ફરીથી સ્કૅન કરીએ?}other{પેજ {PAGE_NUMBER} ફરીથી સ્કૅન કરીએ?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" /> દ્વારા મેનેજ કરવામાં આવે છે</translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">બધા શોર્ટકર્ટને ડિફૉલ્ટ તરીકે રીસેટ કરીએ?</translation>
 <translation id="7058278511608979688">બંધ કરો અને સાચવો</translation>
 <translation id="7059230779847288458">ચાર્જ થઈ રહી છે, પૂર્ણ ચાર્જ થવામાં <ph name="TIME_VALUE" /> બાકી</translation>
+<translation id="7066538517128343186"><ph name="KEY" /> કી</translation>
 <translation id="7068619307603204412">તમારું ડિવાઇસ તૈયાર કરો</translation>
 <translation id="708426984172631313">રોકવામાં આવ્યું</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">કૃપા કરીને નેટવર્ક સાથે કનેક્ટ કરો અને વૉલપેપર જોવા માટે પેજને ફરીથી લોડ કરો.</translation>
 <translation id="8291967909914612644">હોમ પ્રદાતાનો દેશ</translation>
 <translation id="8294431847097064396">સ્રોત</translation>
-<translation id="8297006494302853456">નબળું</translation>
 <translation id="8302368968391049045">HTTPS ફાયરવૉલ</translation>
 <translation id="8312330582793120272">મીડિયા ચલાવો</translation>
 <translation id="8318753676953949627">કોઈ છબી ઉપલબ્ધ નથી</translation>
 <translation id="8329018942023753850">કેલ્ક્યુલેટર ઍપ</translation>
 <translation id="8336739000755212683">ડિવાઇસના એકાઉન્ટની છબી બદલો</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> કે <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">પ્રિન્ટ કરવાના કામો</translation>
 <translation id="8351855506390808906">કીમૅપિંગ ટચ પૉઇન્ટ</translation>
 <translation id="8352772353338965963">એકથી વધુ સાઇન ઇન કરવા એક એકાઉન્ટ ઉમેરો. બધા સાઇન ઇન એકાઉન્ટ પાસવર્ડ વગર ઉપયોગ કરી શકાય છે, તેથી આ સુવિધા માત્ર વિશ્વસનીય એકાઉન્ટ સાથે ઉપયોગમાં આવવી જોઇએ.</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">ફરીથી કનેક્ટ કરવા માટે, સેટિંગમાં જાઓ</translation>
 <translation id="9126720536733509015">એક PDFમાં એકથી વધુ પેજ સાચવો</translation>
 <translation id="9133104754938025929">બૅટરીનું સંરક્ષણ કરવા માટે, સ્ક્રીન સેવર ફક્ત ચાર્જિંગના સમયે જ કામ કરે છે.</translation>
+<translation id="9133772297793293778">તમારા કીબોર્ડ પર 1-4 મૉડિફાયર અને અન્ય 1 કી દબાવો. એડિટિંગ મોડમાંથી બહાર નીકળવા માટે, alt + esc દબાવો.</translation>
 <translation id="9137526406337347448">Google સેવાઓ</translation>
 <translation id="9138630967333032450">ડાબી Shift કી</translation>
 <translation id="9143347780818904997"><ph name="MINUTES" /> મિનિટ માટે</translation>

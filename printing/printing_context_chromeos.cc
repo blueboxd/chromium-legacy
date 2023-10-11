@@ -102,16 +102,22 @@ void EncodeClientInfo(const std::vector<mojom::IppClientInfo>& client_infos,
 void EncodeMediaCol(ipp_t* options,
                     const gfx::Size& size_um,
                     const gfx::Rect& printable_area_um,
-                    const std::string& source) {
+                    bool borderless,
+                    const std::string& source,
+                    const std::string& type) {
   // The size and printable area in microns were calculated from the size and
-  // margins in PWG units, so we can losslessly convert them back.
+  // margins in PWG units, so we can losslessly convert them back. If
+  // borderless printing was requested, though, set all margins to zero.
   DCHECK_EQ(size_um.width() % kMicronsPerPwgUnit, 0);
   DCHECK_EQ(size_um.height() % kMicronsPerPwgUnit, 0);
   int width = size_um.width() / kMicronsPerPwgUnit;
   int height = size_um.height() / kMicronsPerPwgUnit;
   int bottom_margin = 0, left_margin = 0, right_margin = 0, top_margin = 0;
-  PwgMarginsFromSizeAndPrintableArea(size_um, printable_area_um, &bottom_margin,
-                                     &left_margin, &right_margin, &top_margin);
+  if (!borderless) {
+    PwgMarginsFromSizeAndPrintableArea(size_um, printable_area_um,
+                                       &bottom_margin, &left_margin,
+                                       &right_margin, &top_margin);
+  }
 
   ScopedIppPtr media_col = WrapIpp(ippNew());
   ScopedIppPtr media_size = WrapIpp(ippNew());
@@ -132,6 +138,10 @@ void EncodeMediaCol(ipp_t* options,
   if (!source.empty()) {
     ippAddString(media_col.get(), IPP_TAG_ZERO, IPP_TAG_KEYWORD,
                  kIppMediaSource, nullptr, source.c_str());
+  }
+  if (!type.empty()) {
+    ippAddString(media_col.get(), IPP_TAG_ZERO, IPP_TAG_KEYWORD, kIppMediaType,
+                 nullptr, type.c_str());
   }
 
   ippAddCollection(options, IPP_TAG_JOB, kIppMediaCol, media_col.get());
@@ -243,7 +253,8 @@ ScopedIppPtr SettingsToIPPOptions(const PrintSettings& settings,
   // Construct the IPP media-col attribute specifying media size, margins,
   // source, etc.
   EncodeMediaCol(options, settings.requested_media().size_microns,
-                 printable_area_um, media_source);
+                 printable_area_um, settings.borderless(), media_source,
+                 settings.media_type());
 
   // Add multivalue enum options.
   for (const auto& it : multival) {

@@ -40,6 +40,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
+#include "base/test/gmock_expected_support.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -76,6 +77,7 @@
 #include "chrome/updater/win/ui/resources/updater_installer_strings.h"
 #include "chrome/updater/win/win_constants.h"
 #include "components/crx_file/crx_verifier.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -182,9 +184,9 @@ void ExpectUpdateRegKeyClean(UpdaterScope scope) {
   EXPECT_EQ(updater_key_iter.SubkeyCount(), 1u);
   EXPECT_STREQ(updater_key_iter.Name(), L"ClientState");
 
-  EXPECT_EQ(base::win::RegKey(root, CLIENT_STATE_KEY, Wow6432(KEY_READ))
-                .GetValueCount(),
-            0u);
+  EXPECT_THAT(base::win::RegKey(root, CLIENT_STATE_KEY, Wow6432(KEY_READ))
+                  .GetValueCount(),
+              base::test::ValueIs(0u));
   const std::vector<std::wstring> allowed_values = {kDidRun, L"lastrun"};
   for (base::win::RegistryKeyIterator client_state_iter(root, CLIENT_STATE_KEY,
                                                         KEY_WOW64_32KEY);
@@ -1999,6 +2001,29 @@ void RunOfflineInstallOsNotSupported(UpdaterScope scope,
 
 base::CommandLine MakeElevated(base::CommandLine command_line) {
   return command_line;
+}
+
+void SetPlatformPolicies(const base::Value::Dict& values) {
+  base::win::RegKey policy_key;
+  ASSERT_EQ(ERROR_SUCCESS,
+            policy_key.Create(HKEY_LOCAL_MACHINE, UPDATER_POLICIES_KEY,
+                              KEY_SET_VALUE));
+
+  for (const auto [app_id, policies] : values) {
+    ASSERT_TRUE(policies.is_dict());
+    for (const auto [name, value] : policies.GetDict()) {
+      const std::wstring& key = base::ASCIIToWide(
+          base::StringPrintf("%s%s", name.c_str(), app_id.c_str()));
+      if (value.is_string()) {
+        policy_key.WriteValue(key.c_str(),
+                              base::ASCIIToWide(value.GetString()).c_str());
+      } else if (value.is_int()) {
+        policy_key.WriteValue(key.c_str(), static_cast<DWORD>(value.GetInt()));
+      } else if (value.is_bool()) {
+        policy_key.WriteValue(key.c_str(), static_cast<DWORD>(value.GetBool()));
+      }
+    }
+  }
 }
 
 }  // namespace updater::test

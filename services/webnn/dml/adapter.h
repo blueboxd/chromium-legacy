@@ -32,8 +32,18 @@ class Adapter final : public base::RefCounted<Adapter> {
   // stage, the default adapter is queried from ANGLE. This method is not
   // thread-safe and should only be called on the GPU main thread.
   //
+  // The returned `Adapter` is guarenteed to support a feature level equal to
+  // or greater than the `min_feature_level_required`. This allows tests to
+  // specify a lower feature level than what WebNN requires.
+  //
   // TODO(crbug.com/1273291): Support `Adapter` instance for other adapters.
-  static scoped_refptr<Adapter> GetInstance();
+  static scoped_refptr<Adapter> GetInstance(
+      DML_FEATURE_LEVEL min_feature_level_required);
+
+  // Same as GetInstance() but always uses DML_FEATURE_LEVEL_1_0 for testing
+  // purposes. Allows tests to run on a per feature level basis using
+  // IsDMLFeatureLevelSupported().
+  static scoped_refptr<Adapter> GetInstanceForTesting();
 
   Adapter(const Adapter&) = delete;
   Adapter& operator=(const Adapter&) = delete;
@@ -46,6 +56,17 @@ class Adapter final : public base::RefCounted<Adapter> {
 
   CommandQueue* command_queue() const { return command_queue_.get(); }
 
+  // Enable the debug layer (requires the Graphics Tools "optional feature").
+  // Must be called prior to Adapter::GetInstance() since the D3D12 device must
+  // be created after the debug layer is enabled.
+  // TODO(crbug.com/1273291): move this once adapter enumeration is implemented.
+  static void EnableDebugLayerForTesting();
+
+  bool IsDMLFeatureLevelSupported(DML_FEATURE_LEVEL feature_level) const;
+
+  // Determines if IDMLDevice1::CompileGraph can be used.
+  bool IsDMLDeviceCompileGraphSupportedForTesting() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WebNNAdapterTest, CreateAdapterFromAngle);
   FRIEND_TEST_ALL_PREFIXES(WebNNAdapterTest, GetInstance);
@@ -54,15 +75,22 @@ class Adapter final : public base::RefCounted<Adapter> {
   Adapter(ComPtr<IDXGIAdapter> dxgi_adapter,
           ComPtr<ID3D12Device> d3d12_device,
           ComPtr<IDMLDevice> dml_device,
-          scoped_refptr<CommandQueue> command_queue);
+          scoped_refptr<CommandQueue> command_queue,
+          DML_FEATURE_LEVEL max_feature_level_supported);
   ~Adapter();
 
-  static scoped_refptr<Adapter> Create(ComPtr<IDXGIAdapter> dxgi_adapter);
+  static scoped_refptr<Adapter> Create(
+      ComPtr<IDXGIAdapter> dxgi_adapter,
+      DML_FEATURE_LEVEL min_feature_level_required);
 
   ComPtr<IDXGIAdapter> dxgi_adapter_;
   ComPtr<ID3D12Device> d3d12_device_;
   ComPtr<IDMLDevice> dml_device_;
   scoped_refptr<CommandQueue> command_queue_;
+
+  DML_FEATURE_LEVEL max_feature_level_supported_ = DML_FEATURE_LEVEL_1_0;
+
+  static bool is_debug_layer_enabled_;
 
   static Adapter* instance_;
 };

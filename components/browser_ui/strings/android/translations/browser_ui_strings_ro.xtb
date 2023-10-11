@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Permite unui site să salveze date pe dispozitiv</translation>
 <translation id="1383876407941801731">Caută</translation>
 <translation id="1384959399684842514">Descărcare întreruptă</translation>
-<translation id="1409426117486808224">Afișare simplificată pentru filele deschise</translation>
 <translation id="1415402041810619267">Adresă URL trunchiată</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1446450296470737166">Control complet dispozitive MIDI</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Permise, cu excepția celor terță parte</translation>
 <translation id="1989112275319619282">Răsfoiește</translation>
 <translation id="1994173015038366702">Adresa URL a site-ului</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Expiră peste o zi}few{Expiră peste # zile}other{Expiră peste # de zile}}</translation>
 <translation id="2004697686368036666">Este posibil ca funcțiile din anumite site-uri să nu funcționeze</translation>
 <translation id="2025115093177348061">Realitate augmentată</translation>
 <translation id="2030769033451695672">Atinge pentru a reveni la <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Titlu</translation>
 <translation id="4008040567710660924">Permite cookie-uri pentru un anumit site.</translation>
 <translation id="4046123991198612571">Melodia următoare</translation>
+<translation id="4053720452172726777">Personalizați și controlați Google Chrome</translation>
 <translation id="4149994727733219643">Afișare simplificată pentru paginile web</translation>
 <translation id="4151930093518524179">Zoom standard</translation>
 <translation id="4165986682804962316">Setări pentru site-uri</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Site-urile nu pot folosi cookie-uri pentru a vedea activitatea ta de navigare de pe diferite site-uri, de exemplu, pentru a personaliza anunțurile. Este posibil ca funcțiile de pe anumite site-uri să nu funcționeze.</translation>
 <translation id="5553374991681107062">Cele mai recente</translation>
 <translation id="5556459405103347317">Reîncarcă</translation>
-<translation id="5596627076506792578">Mai multe opțiuni</translation>
 <translation id="5649053991847567735">Descărcări automate</translation>
 <translation id="5668404140385795438">Ignoră solicitarea unui site de a împiedica mărirea</translation>
 <translation id="5677928146339483299">Blocat</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Dezactivată din setările Android</translation>
 <translation id="7016516562562142042">Se permite pentru motorul de căutare actual</translation>
 <translation id="702275896380648118">Acest site stabilește lucrurile care te interesează, apoi sugerează anunțuri altor site-uri. În plus, site-ul preia subiectele anunțurilor din Chrome pentru a-ți afișa anunțuri mai relevante.</translation>
-<translation id="702463548815491781">Recomandat atunci când este activată opțiunea TalkBack sau Acces prin comutare</translation>
 <translation id="7053983685419859001">Blochează</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selectat}few{# selectate}other{# selectate}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> selectate.  Opțiunile sunt disponibile în partea de sus a ecranului</translation>

@@ -81,7 +81,7 @@ TEST_P(OnBeginFrameAcksSurfaceTest, PresentationCallback) {
   if (BeginFrameAcksEnabled()) {
     support->SetWantsBeginFrameAcks();
   }
-  uint32_t frame_token = 0;
+  uint32_t frame_token = kInvalidOrLocalFrameToken;
   {
     CompositorFrame frame =
         CompositorFrameBuilder()
@@ -89,7 +89,7 @@ TEST_P(OnBeginFrameAcksSurfaceTest, PresentationCallback) {
             .SetBeginFrameSourceId(kBeginFrameSourceId)
             .Build();
     frame_token = frame.metadata.frame_token;
-    ASSERT_NE(frame_token, 0u);
+    ASSERT_NE(frame_token, kInvalidOrLocalFrameToken);
     EXPECT_CALL(client, DidReceiveCompositorFrameAck(testing::_))
         .Times(BeginFrameAcksEnabled() ? 0 : 1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -397,7 +397,7 @@ TEST_P(ImmediateActivationSurfaceTest, WithInteraction) {
     frame.metadata.activation_dependencies.push_back(child_surface_id);
     frame.metadata.deadline =
         FrameDeadline(Now(), 4u, BeginFrameArgs::DefaultInterval(), false);
-    frame.metadata.is_actively_scrolling = true;
+    frame.metadata.is_handling_interaction = true;
     EXPECT_THAT(frame.metadata.referenced_surfaces,
                 testing::ElementsAre(surface_range));
     root_support->SubmitCompositorFrame(root_surface_id.local_surface_id(),

@@ -69,7 +69,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   bool TextDidChangeInTextField(const blink::WebInputElement& element);
 
   // Returns true if the newly focused node caused the generation UI to show.
-  bool HandleFocusChangeComplete(const blink::WebNode& node);
+  bool ShowPasswordGenerationSuggestions(const blink::WebInputElement& element);
 
   // Event forwarded by AutofillAgent from WebAutofillClient, informing that
   // the text field editing has ended, which means that the field is not
@@ -165,11 +165,6 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // Contains the current element where generation is offered at the moment. It
   // can be either automatic or manual password generation.
   std::unique_ptr<GenerationItemInfo> current_generation_item_;
-
-  // Password element that had focus last. Since Javascript could change focused
-  // element after the user triggered a generation request, it is better to save
-  // the last focused password element.
-  blink::WebInputElement last_focused_password_element_;
 
   // Contains correspondence between generation enabled element and data for
   // generation.

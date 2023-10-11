@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Dozvolite web lokaciji da pohranjuje podatke na uređaj</translation>
 <translation id="1383876407941801731">Traži</translation>
 <translation id="1384959399684842514">Preuzimanje je pauzirano</translation>
-<translation id="1409426117486808224">Pojednostavljeni prikaz za otvaranje kartica</translation>
 <translation id="1415402041810619267">URL je odsječen</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1446450296470737166">Puna kontrola MIDI uređaja</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Dozvoljeno, izuzev trećim stranama</translation>
 <translation id="1989112275319619282">Pregledaj</translation>
 <translation id="1994173015038366702">URL web lokacije</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Ističe za 1 dan}one{Ističe za # dan}few{Ističe za # dana}other{Ističe za # dana}}</translation>
 <translation id="2004697686368036666">Moguće je da funkcije neće raditi na nekim web lokacijama</translation>
 <translation id="2025115093177348061">Proširena realnost</translation>
 <translation id="2030769033451695672">Dodirnite da se vratite na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4008040567710660924">Omogućavanje kolačića za određenu web lokaciju.</translation>
 <translation id="4046123991198612571">Sljedeća numera</translation>
+<translation id="4053720452172726777">Prilagodite i kontrolirajte Google Chrome</translation>
 <translation id="4149994727733219643">Pojednostavljeni prikaz za web lokacije</translation>
 <translation id="4151930093518524179">Zadano zumiranje</translation>
 <translation id="4165986682804962316">Postavke web lokacije</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Web lokacije ne mogu koristiti kolačiće da vide vašu aktivnost pregledanja na različitim web lokacijama, npr. radi personaliziranja oglasa. Moguće je da funkcije neće raditi na nekim web lokacijama.</translation>
 <translation id="5553374991681107062">Najnovije</translation>
 <translation id="5556459405103347317">Učitaj ponovo</translation>
-<translation id="5596627076506792578">Više opcija</translation>
 <translation id="5649053991847567735">Automatska preuzimanja</translation>
 <translation id="5668404140385795438">Zaobilaženje zahtjeva web lokacije kako bi se spriječilo zumiranje</translation>
 <translation id="5677928146339483299">Blokirano</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Isključeno u postavkama Androida</translation>
 <translation id="7016516562562142042">Dozvoljeno za trenutni pretraživač</translation>
 <translation id="702275896380648118">Ova web lokacija utvrđuje stvari koje vam se sviđaju, a zatim predlaže oglase drugim web lokacijama. Ova web lokacija prikuplja i vaše teme oglasa iz Chromea da vam prikazuje relevantnije oglase.</translation>
-<translation id="702463548815491781">Preporučeno kada je uključena funkcija TalkBack ili prekidač za pristup.</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 odabrana kartica}one{# odabrana kartica}few{# odabrane kartice}other{# odabranih kartica}}</translation>
 <translation id="7087918508125750058">Odabrali ste <ph name="ITEM_COUNT" />.  Opcije su dostupne pri vrhu ekrana</translation>

@@ -56,15 +56,7 @@
 
 - (void)showSnackbarMessage:(MDCSnackbarMessage*)message {
   CGFloat offset = [self.delegate
-      snackbarCoordinatorBottomOffsetForCurrentlyPresentedView:self
-                                           forceBrowserToolbar:NO];
-  [self showSnackbarMessage:message bottomOffset:offset];
-}
-
-- (void)showSnackbarMessageOverBrowserToolbar:(MDCSnackbarMessage*)message {
-  CGFloat offset = [self.delegate
-      snackbarCoordinatorBottomOffsetForCurrentlyPresentedView:self
-                                           forceBrowserToolbar:YES];
+      snackbarCoordinatorBottomOffsetForCurrentlyPresentedView:self];
   [self showSnackbarMessage:message bottomOffset:offset];
 }
 

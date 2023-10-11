@@ -1521,49 +1521,36 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
   return list;
 }
 
-CSSValue* SpecifiedValueForGridTrackBreadth(const GridLength& track_breadth,
-                                            const ComputedStyle& style) {
-  if (!track_breadth.IsLength()) {
-    return CSSNumericLiteralValue::Create(
-        track_breadth.Flex(), CSSPrimitiveValue::UnitType::kFraction);
-  }
-
-  const Length& track_breadth_length = track_breadth.length();
-  if (track_breadth_length.IsAuto()) {
-    return CSSIdentifierValue::Create(CSSValueID::kAuto);
-  }
-  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-      track_breadth_length, style);
-}
-
 CSSValue* ComputedStyleUtils::SpecifiedValueForGridTrackSize(
     const GridTrackSize& track_size,
     const ComputedStyle& style) {
   switch (track_size.GetType()) {
     case kLengthTrackSizing:
-      return SpecifiedValueForGridTrackBreadth(track_size.MinTrackBreadth(),
-                                               style);
+      return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          track_size.MinTrackBreadth(), style);
     case kMinMaxTrackSizing: {
       if (track_size.MinTrackBreadth().IsAuto() &&
           track_size.MaxTrackBreadth().IsFlex()) {
-        return CSSNumericLiteralValue::Create(
-            track_size.MaxTrackBreadth().Flex(),
-            CSSPrimitiveValue::UnitType::kFraction);
+        return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+            track_size.MaxTrackBreadth(), style);
       }
 
       auto* min_max_track_breadths =
           MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMinmax);
-      min_max_track_breadths->Append(*SpecifiedValueForGridTrackBreadth(
-          track_size.MinTrackBreadth(), style));
-      min_max_track_breadths->Append(*SpecifiedValueForGridTrackBreadth(
-          track_size.MaxTrackBreadth(), style));
+      min_max_track_breadths->Append(
+          *ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+              track_size.MinTrackBreadth(), style));
+      min_max_track_breadths->Append(
+          *ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+              track_size.MaxTrackBreadth(), style));
       return min_max_track_breadths;
     }
     case kFitContentTrackSizing: {
       auto* fit_content_track_breadth =
           MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kFitContent);
-      fit_content_track_breadth->Append(*SpecifiedValueForGridTrackBreadth(
-          track_size.FitContentTrackBreadth(), style));
+      fit_content_track_breadth->Append(
+          *ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+              track_size.FitContentTrackBreadth(), style));
       return fit_content_track_breadth;
     }
   }
@@ -1807,7 +1794,8 @@ void PopulateGridTrackList(CSSValueList* list,
                            const ComputedStyle& style,
                            wtf_size_t start,
                            wtf_size_t end,
-                           int offset) {
+                           int offset,
+                           bool discard_line_names) {
   DCHECK_LE(start, end);
   if (collector.HasCollapsedAutoRepeatNamedLines()) {
     // If the collector has a collapsed auto-repeat track, we need to adjust
@@ -1819,7 +1807,8 @@ void PopulateGridTrackList(CSSValueList* list,
     }
   }
   for (wtf_size_t i = start; i < end; ++i) {
-    if (offset >= 0 || i >= static_cast<wtf_size_t>(-offset)) {
+    if (!discard_line_names &&
+        (offset >= 0 || i >= static_cast<wtf_size_t>(-offset))) {
       AddValuesForNamedGridLinesAtIndex(collector, i + offset, *list,
                                         NamedLinesType::kNamedLines);
     }
@@ -1832,7 +1821,8 @@ void PopulateGridTrackList(CSSValueList* list,
   // Subgrid track names are always relative to offset 0, so they can ignore the
   // tracks after the offset.
   if (!collector.IsSubgriddedAxis() &&
-      (offset >= 0 || end >= static_cast<wtf_size_t>(-offset))) {
+      (!discard_line_names &&
+       (offset >= 0 || end >= static_cast<wtf_size_t>(-offset)))) {
     AddValuesForNamedGridLinesAtIndex(collector, end + offset, *list,
                                       NamedLinesType::kNamedLines);
   }
@@ -2054,8 +2044,7 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
   if (is_subgrid || (is_subgrid_specified && !grid)) {
     list->Append(
         *MakeGarbageCollected<CSSIdentifierValue>(CSSValueID::kSubgrid));
-  } else if ((!is_subgrid_specified && is_track_list_empty) ||
-             (grid && is_subgrid_specified && !is_subgrid_valid)) {
+  } else if (!is_subgrid_specified && is_track_list_empty) {
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
 
@@ -2100,8 +2089,15 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
     int offset = -base::checked_cast<int>(
         grid->ExplicitGridStartForDirection(direction));
 
+    // If `subgrid` is specified in `grid-template-rows/columns`, but the
+    // element is not a valid subgrid, computed style should behave as if it's a
+    // standalone grid. It should also drop any line names specified in the
+    // invalid subgrid rows/column definitions. See
+    // https://github.com/w3c/csswg-drafts/issues/9015.
+    const bool discard_line_names =
+        grid && is_subgrid_specified && !is_subgrid_valid;
     PopulateGridTrackList(list, collector, track_sizes, style, start_index,
-                          end_index, offset);
+                          end_index, offset, discard_line_names);
     return list;
   }
 
@@ -2125,16 +2121,21 @@ CSSValue* ComputedStyleUtils::ValueForGridPosition(
   }
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  const bool has_named_line = !position.NamedGridLine().IsNull();
   if (position.IsSpan()) {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kSpan));
-    list->Append(*CSSNumericLiteralValue::Create(
-        position.SpanPosition(), CSSPrimitiveValue::UnitType::kNumber));
+
+    // Do not include the numeric value of 1 if followed by a line name.
+    if (position.SpanPosition() != 1 || !has_named_line) {
+      list->Append(*CSSNumericLiteralValue::Create(
+          position.SpanPosition(), CSSPrimitiveValue::UnitType::kNumber));
+    }
   } else {
     list->Append(*CSSNumericLiteralValue::Create(
         position.IntegerPosition(), CSSPrimitiveValue::UnitType::kNumber));
   }
 
-  if (!position.NamedGridLine().IsNull()) {
+  if (has_named_line) {
     list->Append(
         *MakeGarbageCollected<CSSCustomIdentValue>(position.NamedGridLine()));
   }
@@ -2622,13 +2623,29 @@ CSSValue* ComputedStyleUtils::ValueForAnimationTimelineList(
       &ValueForAnimationTimeline);
 }
 
+CSSValue* ComputedStyleUtils::ValueForTimelineInset(
+    const TimelineInset& inset,
+    const ComputedStyle& style) {
+  return MakeGarbageCollected<CSSValuePair>(
+      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(inset.GetStart(),
+                                                          style),
+      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(inset.GetEnd(),
+                                                          style),
+      CSSValuePair::kDropIdenticalValues);
+}
+
 CSSValue* ComputedStyleUtils::SingleValueForTimelineShorthand(
     const ScopedCSSName* name,
-    TimelineAxis axis) {
+    TimelineAxis axis,
+    absl::optional<TimelineInset> inset,
+    const ComputedStyle& style) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*ValueForCustomIdentOrNone(name));
   if (axis != TimelineAxis::kBlock) {
     list->Append(*CSSIdentifierValue::Create(axis));
+  }
+  if (inset.value_or(TimelineInset()) != TimelineInset()) {
+    list->Append(*ValueForTimelineInset(inset.value(), style));
   }
   return list;
 }
@@ -3928,8 +3945,8 @@ CSSValue* ComputedStyleUtils::ValueForIntrinsicLength(
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
   }
 
-  if (const absl::optional<LayoutUnit>& length = intrinsic_length.GetLength()) {
-    list->Append(*ZoomAdjustedPixelValue(*length, style));
+  if (const absl::optional<Length>& length = intrinsic_length.GetLength()) {
+    list->Append(*ZoomAdjustedPixelValueForLength(*length, style));
   } else {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
   }

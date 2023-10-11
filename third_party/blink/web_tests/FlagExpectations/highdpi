@@ -64,7 +64,6 @@ crbug.com/1117211 css3/filters/composited-layer-promotion-after-outset-overlap-c
 # ref tests that fail in highdpi
 crbug.com/1179572 animations/cross-fade-webkit-mask-box-image.html [ Failure ]
 
-crbug.com/1353771 virtual/view-transition/external/wpt/css/css-view-transitions/element-with-overflow.html [ Failure ]
 crbug.com/1412910 virtual/view-transition/external/wpt/css/css-view-transitions/fractional-translation-from-position.html [ Failure ]
 crbug.com/1414855 virtual/view-transition/external/wpt/css/css-view-transitions/new-content-captures-spans.html [ Failure ]
 
@@ -438,8 +437,6 @@ crbug.com/1315309 external/wpt/resize-observer/scrollbars-2.html [ Failure ]
 
 crbug.com/1196414 compositing/gestures/gesture-tapHighlight-imagemap.html [ Failure ]
 
-crbug.com/1310040 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer.html [ Failure Pass ]
-
 crbug.com/1324618 external/wpt/css/css-images/object-view-box-fit-fill* [ Pass ]
 
 
@@ -448,3 +445,6 @@ crbug.com/1339051 fast/forms/suggestion-picker/month-suggestion-picker-appearanc
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 virtual/view-transition/external/wpt/css/css-view-transitions/capture-with-opacity-zero-child.html [ Failure ]
+
+# Re-enable after new baselines are generated
+crbug.com/1456636 [ Linux ] virtual/view-transition/external/wpt/css/css-view-transitions/new-and-old-sizes-match.html [ Failure ]  # Reftest image failure

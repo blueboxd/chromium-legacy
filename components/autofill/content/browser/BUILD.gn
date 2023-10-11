@@ -21,12 +21,17 @@ static_library("browser") {
     "form_forest.cc",
     "form_forest.h",
     "form_forest_util_inl.h",
+    "renderer_forms_with_server_predictions.cc",
+    "renderer_forms_with_server_predictions.h",
     "risk/fingerprint.cc",
     "risk/fingerprint.h",
+    "scoped_autofill_managers_observation.cc",
+    "scoped_autofill_managers_observation.h",
   ]
 
   public_deps = [
     ":risk_proto",
+    "//base",
     "//components/autofill/content/common/mojom",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
@@ -37,7 +42,6 @@ static_library("browser") {
     "//third_party/abseil-cpp:absl",
   ]
   deps = [
-    "//base",
     "//base:i18n",
     "//components/os_crypt/sync",
     "//components/prefs",
@@ -107,10 +111,10 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "autofill_internals_log_router_unittest.cc",
-    "autofill_metrics_unittest.cc",
     "content_autofill_driver_factory_unittest.cc",
     "content_autofill_driver_unittest.cc",
     "form_forest_unittest.cc",
+    "scoped_autofill_managers_observation_unittest.cc",
   ]
 
   deps = [
@@ -127,7 +131,6 @@ source_set("unit_tests") {
     "//content/test:test_support",
     "//mojo/public/cpp/system",
     "//net:test_support",
-    "//services/metrics/public/cpp:ukm_builders",
     "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",

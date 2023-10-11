@@ -21,10 +21,10 @@
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer_chromeos.h"
+#include "chrome/browser/ui/webui/ash/settings/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/pdf_ocr_handler.h"
-#include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/ash/select_to_speak_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/switch_access_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/tts_handler.h"
@@ -465,6 +465,10 @@ int GetDisplayAndMangificationLinkDescriptionResourceId() {
     return IDS_SETTINGS_ACCESSIBILITY_DISPLAY_AND_MAGNIFICATION_LINK_NEW_DESCRIPTION;
   }
   return IDS_SETTINGS_ACCESSIBILITY_DISPLAY_AND_MAGNIFICATION_LINK_DESCRIPTION;
+}
+
+bool IsAccessibilityGameFaceIntegrationEnabled() {
+  return ::features::IsAccessibilityGameFaceIntegrationEnabled();
 }
 
 }  // namespace
@@ -1122,6 +1126,9 @@ void AccessibilitySection::AddLoadTimeData(
 
   html_source->AddBoolean("pdfOcrEnabled",
                           base::FeatureList::IsEnabled(::features::kPdfOcr));
+
+  html_source->AddBoolean("isAccessibilityGameFaceIntegrationEnabled",
+                          IsAccessibilityGameFaceIntegrationEnabled());
 
   ::settings::AddCaptionSubpageStrings(html_source);
 }

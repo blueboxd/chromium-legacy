@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_breaker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_info.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/text_auto_space.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inline_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
@@ -527,6 +528,12 @@ void NGInlineNode::PrepareLayout(NGInlineNodeData* previous_data) const {
   SegmentText(data);
   ShapeTextIncludingFirstLine(
       data, previous_data ? &previous_data->text_content : nullptr, nullptr);
+
+  // TODO(https://crbug.com/1463890): Update the likelihood condition.
+  if (UNLIKELY(RuntimeEnabledFeatures::CSSTextAutoSpaceEnabled())) {
+    TextAutoSpace::ApplyIfNeeded(*data);
+  }
+
   AssociateItemsWithInlines(data);
   DCHECK_EQ(data, MutableData());
 
@@ -1682,7 +1689,7 @@ static LayoutUnit ComputeContentSize(
       EFloat previous_float_type = EFloat::kNone;
       for (const auto& floating_object : floating_objects_) {
         const EClear float_clear =
-            floating_object.float_style.Clear(floating_object.style);
+            floating_object.float_style->Clear(*floating_object.style);
 
         // If this float clears the previous float we start a new "line".
         // This is subtly different to block layout which will only reset either
@@ -1701,7 +1708,7 @@ static LayoutUnit ComputeContentSize(
         floats_inline_size_ += floating_object.float_inline_max_size_with_margin
                                    .ClampNegativeToZero();
         previous_float_type =
-            floating_object.float_style.Floating(floating_object.style);
+            floating_object.float_style->Floating(*floating_object.style);
       }
       max_inline_size =
           std::max(max_inline_size, line_inline_size + floats_inline_size_);

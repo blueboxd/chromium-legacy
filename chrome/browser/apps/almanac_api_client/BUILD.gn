@@ -29,6 +29,7 @@ source_set("almanac_api_client") {
     "//components/version_info",
     "//google_apis",
     "//services/network/public/cpp",
+    "//services/network/public/mojom",
   ]
 }
 
@@ -47,7 +48,7 @@ source_set("unit_tests") {
     "//chrome/common:channel_info",
     "//chrome/test:test_support",
     "//components/language/core/browser",
-    "//components/prefs:prefs",
-    "//testing/gtest:gtest",
+    "//components/prefs",
+    "//testing/gtest",
   ]
 }

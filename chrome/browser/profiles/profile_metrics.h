@@ -13,10 +13,6 @@ class Profile;
 class ProfileAttributesEntry;
 class ProfileAttributesStorage;
 
-namespace base {
-class FilePath;
-}
-
 namespace profile_metrics {
 struct Counts;
 }
@@ -72,7 +68,8 @@ class ProfileMetrics {
     kAbortedOnEnterpriseWelcome = 12,
     kSkippedAlreadySyncing = 13,
     kSkippedByPolicies = 14,
-    kMaxValue = kSkippedByPolicies,
+    kForceSigninSyncNotGranted = 15,
+    kMaxValue = kForceSigninSyncNotGranted,
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -126,11 +123,7 @@ class ProfileMetrics {
       ProfileSignedInFlowOutcome outcome);
   static void LogProfileAvatarSelection(size_t icon_index);
   static void LogProfileDeleteUser(ProfileDelete metric);
-
-  // These functions should only be called on the UI thread because they hook
-  // into g_browser_process through a helper function.
   static void LogProfileLaunch(Profile* profile);
-  static void LogProfileUpdate(const base::FilePath& profile_path);
 
   // Records the count of KeyedService active for the System Profile histogram.
   // Expects only System Profiles.

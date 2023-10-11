@@ -114,6 +114,12 @@ class CONTENT_EXPORT PrefetchContainer {
   // The initial URL that was requested to be prefetched.
   GURL GetURL() const { return prefetch_url_; }
 
+  // The current URL being fetched.
+  GURL GetCurrentURL() const;
+
+  // The previous URL, if this has been redirected. Invalid to call otherwise.
+  GURL GetPreviousURL() const;
+
   // The type of this prefetch. Controls how the prefetch is handled.
   const PrefetchType& GetPrefetchType() const { return prefetch_type_; }
 
@@ -135,6 +141,11 @@ class CONTENT_EXPORT PrefetchContainer {
   bool IsProxyRequiredForURL(const GURL& url) const;
 
   const blink::mojom::Referrer& GetReferrer() const { return referrer_; }
+
+  const network::ResourceRequest* GetResourceRequest() const {
+    return resource_request_.get();
+  }
+  void MakeResourceRequest(const net::HttpRequestHeaders& additional_headers);
 
   // Updates |referrer_| after a redirect.
   void UpdateReferrer(
@@ -172,7 +183,7 @@ class CONTENT_EXPORT PrefetchContainer {
   bool IsInitialPrefetchEligible() const;
 
   // Adds a the new URL to |redirect_chain_|.
-  void AddRedirectHop(const GURL& url);
+  void AddRedirectHop(const net::RedirectInfo& redirect_info);
 
   // The length of the redirect chain for this prefetch.
   size_t GetRedirectChainSize() const { return redirect_chain_.size(); }
@@ -201,9 +212,18 @@ class CONTENT_EXPORT PrefetchContainer {
 
   bool HasStreamingURLLoadersForTest() const;
 
-  // Returns the last |PrefetchStreamingURLLoader| from |streaming_loaders_|.
-  // This URL loader should be used when fetching the prefetch.
+  // Returns the last |PrefetchStreamingURLLoader| from |streaming_loaders_|,
+  // i.e. the URL loader being used for prefetching the current redirect hop.
+  // This method should be used during prefetching and shouldn't be called for
+  // serving purpose.
+  //
+  // TODO(https://crbug.com/1449360): Migrate callers (e.g. to
+  // GetNonRedirectResponseReader()) that don't meet this criteria.
   PrefetchStreamingURLLoader* GetLastStreamingURLLoader() const;
+
+  // Returns the PrefetchResponseReader corresponding to the last non-redirect
+  // response, if already received its head, or otherwise nullptr.
+  const PrefetchResponseReader* GetNonRedirectResponseReader() const;
 
   // Clears all |PrefetchStreamingURLLoader|s and |PrefetchResponseReader|s from
   // |streaming_loaders_|.
@@ -378,8 +398,9 @@ class CONTENT_EXPORT PrefetchContainer {
     // Returns the URL that can be served next.
     const GURL& GetCurrentURLToServe() const;
 
-    // Takes the ownership of the current PrefetchResponseReader.
-    std::unique_ptr<PrefetchResponseReader> TakeCurrentResponseReaderToServe();
+    // Gets the current PrefetchResponseReader.
+    base::WeakPtr<PrefetchResponseReader>
+    GetCurrentResponseReaderToServeForTesting();
 
     // Called when one element of |redirect_chain_| is served and the next
     // element can now be served.
@@ -455,6 +476,11 @@ class CONTENT_EXPORT PrefetchContainer {
   // The origin and site of the page that requested the prefetched.
   url::Origin referring_origin_;
   net::SchemefulSite referring_site_;
+
+  // Information about the current prefetch request. Updated when a redirect is
+  // encountered, whether or not the direct can be processed by the same URL
+  // loader or requires the instantiation of a new loader.
+  std::unique_ptr<network::ResourceRequest> resource_request_;
 
   // The No-Vary-Search response data, parsed from the actual response header
   // (`GetHead()`).

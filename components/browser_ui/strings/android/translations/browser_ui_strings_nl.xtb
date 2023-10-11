@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Toestaan dat een site gegevens op je apparaat opslaat</translation>
 <translation id="1383876407941801731">Zoeken</translation>
 <translation id="1384959399684842514">Download onderbroken</translation>
-<translation id="1409426117486808224">Vereenvoudigde weergave voor geopende tabbladen</translation>
 <translation id="1415402041810619267">URL afgekapt</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1446450296470737166">Volledig beheer van MIDI-apparaten toestaan</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Toegestaan, behalve van derden</translation>
 <translation id="1989112275319619282">Browsen</translation>
 <translation id="1994173015038366702">Site-URL</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Verloopt over 1 dag}other{Verloopt over # dagen}}</translation>
 <translation id="2004697686368036666">Functies op bepaalde sites werken misschien niet</translation>
 <translation id="2025115093177348061">Augmented reality</translation>
 <translation id="2030769033451695672">Tik om terug te gaan naar <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4008040567710660924">Cookies voor een specifieke site toestaan.</translation>
 <translation id="4046123991198612571">Volgend nummer</translation>
+<translation id="4053720452172726777">Google Chrome aanpassen en beheren</translation>
 <translation id="4149994727733219643">Vereenvoudigde weergave voor webpagina's</translation>
 <translation id="4151930093518524179">Standaardzoom</translation>
 <translation id="4165986682804962316">Site-instellingen</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Sites kunnen je cookies niet gebruiken om je browse-activiteit op verschillende sites te bekijken, bijvoorbeeld om advertenties te personaliseren. Functies op bepaalde sites werken misschien niet.</translation>
 <translation id="5553374991681107062">Nieuwste</translation>
 <translation id="5556459405103347317">Opnieuw laden</translation>
-<translation id="5596627076506792578">Meer opties</translation>
 <translation id="5649053991847567735">Automatische downloads</translation>
 <translation id="5668404140385795438">Negeer verzoek van website om inzoomen te voorkomen</translation>
 <translation id="5677928146339483299">Geblokkeerd</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Uitgezet in Android-instellingen</translation>
 <translation id="7016516562562142042">Toegestaan voor huidige zoekmachine</translation>
 <translation id="702275896380648118">Deze site stelt vast wat je leuk vindt en stelt daarna advertenties voor op andere sites. Deze site krijgt ook je advertentieonderwerpen van Chrome zodat de site je relevantere advertenties kan laten zien.</translation>
-<translation id="702463548815491781">Aanbevolen als TalkBack of Toegang via schakelaar aanstaan</translation>
 <translation id="7053983685419859001">Blokkeren</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 geselecteerd}other{# geselecteerd}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> geselecteerd. Opties beschikbaar bovenaan het scherm.</translation>

@@ -89,7 +89,8 @@ bool ShouldShowRefresh(PrefService* local_state) {
   }
 
   // Show refresh page if user has flag enabled.
-  return features::IsChromeRefresh2023();
+  return features::IsChromeRefresh2023() &&
+         features::IsChromeWebuiRefresh2023();
 }
 
 bool ShouldShowForState(PrefService* local_state,
@@ -150,6 +151,11 @@ bool ShouldShowForState(PrefService* local_state,
   // multiple profile relaunches (see https://crbug.com/1274313).
   local_state->SetInteger(prefs::kLastWhatsNewVersion, CHROME_VERSION_MAJOR);
   return true;
+}
+
+GURL GetServerURLForRefresh() {
+  return net::AppendQueryParameter(GURL(kChromeWhatsNewRefreshURL), "internal",
+                                   "true");
 }
 
 GURL GetServerURL(bool may_redirect) {
@@ -316,9 +322,7 @@ void StartWhatsNewFetch(Browser* browser) {
     // display again. ShouldShowRefresh should not be called after this
     // boolean is set to true.
     local_state->SetBoolean(prefs::kHasShownRefreshWhatsNew, true);
-    new WhatsNewFetcher(
-        browser, net::AppendQueryParameter(GURL(kChromeWhatsNewRefreshURL),
-                                           "internal", "true"));
+    new WhatsNewFetcher(browser, GetServerURLForRefresh());
     return;
   }
   new WhatsNewFetcher(browser);

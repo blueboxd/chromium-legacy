@@ -118,11 +118,14 @@ class FilesPolicyNotificationManager
 
   // Runs warning callback for the corresponding IOTask with should_proceed set
   // to true.
-  void OnIOTaskResumed(file_manager::io_task::IOTaskId task_id);
+  virtual void OnIOTaskResumed(file_manager::io_task::IOTaskId task_id);
 
   // Force shows a desktop notification for all tracked IO tasks with blocked
   // files.
   void ShowBlockedNotifications();
+
+  // Clears any info stored about the task with `task_id`.
+  void OnErrorItemDismissed(file_manager::io_task::IOTaskId task_id);
 
   std::map<DlpConfidentialFile, Policy> GetIOTaskBlockedFilesForTesting(
       file_manager::io_task::IOTaskId task_id) const;
@@ -213,7 +216,7 @@ class FilesPolicyNotificationManager
     dlp::FileAction action_;
     // Warning/Error dialog widget. Each FileTask is expected to have only one
     // open dialog at a time.
-    base::raw_ptr<views::Widget> widget_ = nullptr;
+    raw_ptr<views::Widget> widget_ = nullptr;
     // Warning/Error dialog widget observation.
     base::ScopedObservation<views::Widget, views::WidgetObserver>
         widget_observation_{this};
@@ -304,7 +307,7 @@ class FilesPolicyNotificationManager
   // BrowserListObserver overrides:
   // Called when opening a new Files App window to use as the modal parent for a
   // FilesPolicyDialog.
-  void OnBrowserSetLastActive(Browser* browser) override;
+  void OnBrowserAdded(Browser* browser) override;
 
   // file_manager::io_task::IOTaskController::Observer overrides:
   void OnIOTaskStatus(
@@ -393,7 +396,8 @@ class FilesPolicyNotificationManager
   base::OnceCallback<void(gfx::NativeWindow)> pending_callback_;
 
   // Context for which the FPNM is created.
-  raw_ptr<content::BrowserContext, ExperimentalAsh> context_;
+  raw_ptr<content::BrowserContext, DanglingUntriaged | ExperimentalAsh>
+      context_;
 
   // A map from tracked IO tasks ids to their info.
   std::map<file_manager::io_task::IOTaskId, FileTaskInfo> io_tasks_;

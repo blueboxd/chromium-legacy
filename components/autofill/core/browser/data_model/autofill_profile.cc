@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/uuid.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_address_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -54,6 +55,12 @@
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
+#include "components/autofill/android/main_autofill_jni_headers/AutofillProfile_jni.h"
+#endif  // BUILDFLAG(IS_ANDROID)
+
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using ::i18n::addressinput::AddressData;
@@ -81,8 +88,9 @@ ServerFieldType GetStorableTypeCollapsingGroups(ServerFieldType type) {
   if (AutofillType(storable_type).group() == FieldTypeGroup::kName)
     return NAME_FULL;
 
-  if (AutofillType(storable_type).group() == FieldTypeGroup::kPhoneHome)
+  if (AutofillType(storable_type).group() == FieldTypeGroup::kPhone) {
     return PHONE_HOME_WHOLE_NUMBER;
+  }
 
   return storable_type;
 }
@@ -209,6 +217,33 @@ void GetFieldsForDistinguishingProfiles(
   }
 }
 
+#if BUILDFLAG(IS_ANDROID)
+void MaybeSetRawInfoWithVerificationStatus(
+    AutofillProfile* profile,
+    ServerFieldType type,
+    const base::android::JavaRef<jstring>& value,
+    jint status) {
+  if (value) {
+    profile->SetRawInfoWithVerificationStatus(
+        type, ConvertJavaStringToUTF16(value),
+        static_cast<VerificationStatus>(status));
+  }
+}
+
+void MaybeSetInfoWithVerificationStatus(
+    AutofillProfile* profile,
+    ServerFieldType type,
+    const base::android::JavaRef<jstring>& value,
+    jint status,
+    const std::string& app_locale) {
+  if (value) {
+    profile->SetInfoWithVerificationStatus(
+        type, ConvertJavaStringToUTF16(value), app_locale,
+        static_cast<VerificationStatus>(status));
+  }
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
 }  // namespace
 
 AutofillProfile::AutofillProfile()
@@ -285,6 +320,96 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
 
   return *this;
 }
+
+#if BUILDFLAG(IS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject> AutofillProfile::CreateJavaObject(
+    const std::string& app_locale) const {
+  // TODO(crbug.com/1471502): Reconcile usage of GetInfo and GetRawInfo below.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_AutofillProfile_create(
+      env, base::android::ConvertUTF8ToJavaString(env, guid()),
+      record_type() == AutofillProfile::LOCAL_PROFILE,
+      static_cast<jint>(source()),
+      base::android::ConvertUTF16ToJavaString(
+          env, GetInfo(AutofillType(NAME_HONORIFIC_PREFIX), app_locale)),
+      static_cast<jint>(GetVerificationStatus(NAME_HONORIFIC_PREFIX)),
+      base::android::ConvertUTF16ToJavaString(
+          env, GetInfo(AutofillType(NAME_FULL), app_locale)),
+      static_cast<jint>(GetVerificationStatus(NAME_FULL)),
+      base::android::ConvertUTF16ToJavaString(env, GetRawInfo(COMPANY_NAME)),
+      static_cast<jint>(GetVerificationStatus(COMPANY_NAME)),
+      base::android::ConvertUTF16ToJavaString(
+          env, GetRawInfo(ADDRESS_HOME_STREET_ADDRESS)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_STREET_ADDRESS)),
+      base::android::ConvertUTF16ToJavaString(env,
+                                              GetRawInfo(ADDRESS_HOME_STATE)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_STATE)),
+      base::android::ConvertUTF16ToJavaString(env,
+                                              GetRawInfo(ADDRESS_HOME_CITY)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_CITY)),
+      base::android::ConvertUTF16ToJavaString(
+          env, GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_DEPENDENT_LOCALITY)),
+      base::android::ConvertUTF16ToJavaString(env,
+                                              GetRawInfo(ADDRESS_HOME_ZIP)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_ZIP)),
+      base::android::ConvertUTF16ToJavaString(
+          env, GetRawInfo(ADDRESS_HOME_SORTING_CODE)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_SORTING_CODE)),
+      base::android::ConvertUTF16ToJavaString(env,
+                                              GetRawInfo(ADDRESS_HOME_COUNTRY)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_COUNTRY)),
+      base::android::ConvertUTF16ToJavaString(
+          env, GetRawInfo(PHONE_HOME_WHOLE_NUMBER)),
+      static_cast<jint>(GetVerificationStatus(PHONE_HOME_WHOLE_NUMBER)),
+      base::android::ConvertUTF16ToJavaString(env, GetRawInfo(EMAIL_ADDRESS)),
+      static_cast<jint>(GetVerificationStatus(EMAIL_ADDRESS)),
+      base::android::ConvertUTF8ToJavaString(env, language_code()));
+}
+
+// static
+AutofillProfile AutofillProfile::CreateFromJavaObject(
+    const base::android::JavaParamRef<jobject>& jprofile,
+    const std::string& app_locale) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  AutofillProfile profile(static_cast<AutofillProfile::Source>(
+      Java_AutofillProfile_getSource(env, jprofile)));
+
+  // Only set the guid if it is an existing profile (java guid not empty).
+  // Otherwise, keep the generated one.
+  std::string guid =
+      ConvertJavaStringToUTF8(Java_AutofillProfile_getGUID(env, jprofile));
+  if (!guid.empty()) {
+    profile.set_guid(guid);
+  }
+
+  // TODO(crbug.com/1471502): Reconcile usage of GetInfo and GetRawInfo below.
+  for (ServerFieldType fieldType : {NAME_FULL, ADDRESS_HOME_COUNTRY}) {
+    MaybeSetInfoWithVerificationStatus(
+        &profile, fieldType,
+        Java_AutofillProfile_getInfo(env, jprofile, fieldType),
+        Java_AutofillProfile_getInfoStatus(env, jprofile, fieldType),
+        app_locale);
+  }
+
+  for (ServerFieldType fieldType :
+       {NAME_HONORIFIC_PREFIX, COMPANY_NAME, ADDRESS_HOME_STREET_ADDRESS,
+        ADDRESS_HOME_STATE, ADDRESS_HOME_CITY, ADDRESS_HOME_DEPENDENT_LOCALITY,
+        ADDRESS_HOME_ZIP, ADDRESS_HOME_SORTING_CODE, PHONE_HOME_WHOLE_NUMBER,
+        EMAIL_ADDRESS}) {
+    MaybeSetRawInfoWithVerificationStatus(
+        &profile, fieldType,
+        Java_AutofillProfile_getInfo(env, jprofile, fieldType),
+        Java_AutofillProfile_getInfoStatus(env, jprofile, fieldType));
+  }
+
+  profile.set_language_code(ConvertJavaStringToUTF8(
+      Java_AutofillProfile_getLanguageCode(env, jprofile)));
+  profile.FinalizeAfterImport();
+
+  return profile;
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 AutofillMetadata AutofillProfile::GetMetadata() const {
   AutofillMetadata metadata = AutofillDataModel::GetMetadata();
@@ -538,7 +663,7 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
         // conditions that follow.
         return false;
       }
-    } else if (AutofillType(type).group() == FieldTypeGroup::kPhoneHome) {
+    } else if (AutofillType(type).group() == FieldTypeGroup::kPhone) {
       // Phone numbers should be canonicalized before comparing.
       if (type != PHONE_HOME_WHOLE_NUMBER &&
           type != PHONE_HOME_CITY_AND_NUMBER) {
@@ -1038,7 +1163,6 @@ const FormGroup* AutofillProfile::FormGroupForType(
 FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
   switch (type.group()) {
     case FieldTypeGroup::kName:
-    case FieldTypeGroup::kNameBilling:
       return &name_;
 
     case FieldTypeGroup::kEmail:
@@ -1047,12 +1171,10 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
     case FieldTypeGroup::kCompany:
       return &company_;
 
-    case FieldTypeGroup::kPhoneHome:
-    case FieldTypeGroup::kPhoneBilling:
+    case FieldTypeGroup::kPhone:
       return &phone_number_;
 
-    case FieldTypeGroup::kAddressHome:
-    case FieldTypeGroup::kAddressBilling:
+    case FieldTypeGroup::kAddress:
       return &address_;
 
     case FieldTypeGroup::kBirthdateField:

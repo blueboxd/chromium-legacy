@@ -23,6 +23,7 @@
 #include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/affiliation_service_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/password_manager/password_sender_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -52,6 +53,7 @@
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
+#include "components/password_manager/core/browser/sharing/password_sender_service.h"
 #include "components/password_manager/core/browser/sharing/recipients_fetcher_impl.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -586,6 +588,14 @@ void PasswordsPrivateDelegateImpl::OnFetchingFamilyMembersCompleted(
       recipient_info.display_name = family_member.user_name;
       recipient_info.profile_image_url = family_member.profile_image_url;
 
+      if (!family_member.public_key.key.empty()) {
+        recipient_info.is_eligible = true;
+        api::passwords_private::PublicKey public_key;
+        public_key.value = family_member.public_key.key;
+        public_key.version = family_member.public_key.key_version;
+        recipient_info.public_key = std::move(public_key);
+      }
+
       results.family_members.push_back(std::move(recipient_info));
     }
   }
@@ -703,9 +713,29 @@ void PasswordsPrivateDelegateImpl::FetchFamilyMembers(
 void PasswordsPrivateDelegateImpl::SharePassword(
     int id,
     const ShareRecipients& recipients) {
-  // TODO(crbug/1445526): Get corresponding password forms for the id.
-  // TODO(crbug/1445526): Call PasswordSenderService.
-  return;
+  const CredentialUIEntry* entry = credential_id_generator_.TryGetKey(id);
+  if (!entry) {
+    return;
+  }
+
+  std::vector<password_manager::PasswordForm> corresponding_credentials =
+      saved_passwords_presenter_.GetCorrespondingPasswordForms(*entry);
+  if (corresponding_credentials.empty()) {
+    return;
+  }
+
+  password_manager::PasswordSenderService* password_sender_service =
+      PasswordSenderServiceFactory::GetForProfile(profile_);
+  for (const api::passwords_private::RecipientInfo& recipient_info :
+       recipients) {
+    CHECK(recipient_info.public_key.has_value());
+    password_manager::PublicKey public_key;
+    public_key.key = recipient_info.public_key.value().value;
+    public_key.key_version = recipient_info.public_key.value().version;
+    password_sender_service->SendPasswords(
+        corresponding_credentials, {.user_id = recipient_info.user_id,
+                                    .public_key = std::move(public_key)});
+  }
 }
 
 void PasswordsPrivateDelegateImpl::ImportPasswords(
@@ -1122,6 +1152,10 @@ PasswordsPrivateDelegateImpl::CreatePasswordUiEntryFromCredentialUiEntry(
             url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
 
     entry.federation_text = base::UTF16ToUTF8(formatted_origin);
+  }
+  absl::optional<GURL> change_password_url = credential.GetChangePasswordURL();
+  if (change_password_url.has_value()) {
+    entry.change_password_url = change_password_url->spec();
   }
   entry.id = credential_id_generator_.GenerateId(std::move(credential));
   return entry;

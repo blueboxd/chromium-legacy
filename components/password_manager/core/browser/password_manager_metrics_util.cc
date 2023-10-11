@@ -398,6 +398,13 @@ void LogUserInteractionsInPasswordManagementBubble(
       password_management_bubble_interaction);
 }
 
+void LogUserInteractionsInSharedPasswordsNotificationBubble(
+    SharedPasswordsNotificationBubbleInteractions interaction) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.SharedPasswordsNotificationBubble.UserAction",
+      interaction);
+}
+
 #if BUILDFLAG(IS_IOS)
 void RecordMigrationToOSCryptLatency(bool success,
                                      base::TimeDelta latency,

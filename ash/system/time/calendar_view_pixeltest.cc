@@ -90,7 +90,8 @@ class CalendarViewPixelTest : public AshTestBase {
   static void SetFakeNow(base::Time fake_now) { fake_time_ = fake_now; }
 
  private:
-  raw_ptr<CalendarView, ExperimentalAsh> calendar_view_ = nullptr;
+  raw_ptr<CalendarView, DanglingUntriaged | ExperimentalAsh> calendar_view_ =
+      nullptr;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   static base::Time fake_time_;
 };
@@ -110,7 +111,7 @@ TEST_F(CalendarViewPixelTest, Basics) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "calendar_view",
-      /*revision_number=*/0, GetCalendarView()));
+      /*revision_number=*/2, GetCalendarView()));
 }
 
 TEST_F(CalendarViewPixelTest, EventList) {
@@ -140,7 +141,7 @@ TEST_F(CalendarViewPixelTest, EventList) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "event_list_view",
-      /*revision_number=*/2, GetEventListView()));
+      /*revision_number=*/4, GetEventListView()));
 }
 
 }  // namespace ash

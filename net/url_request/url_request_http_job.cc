@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
-#include "base/feature_list.h"
 #include "base/file_version_info.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -26,6 +25,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
@@ -33,7 +33,6 @@
 #include "base/types/optional_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/http_user_agent_settings.h"
 #include "net/base/load_flags.h"
@@ -60,6 +59,7 @@
 #include "net/filter/gzip_source_stream.h"
 #include "net/filter/source_stream.h"
 #include "net/filter/zstd_source_stream.h"
+#include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_log_util.h"
@@ -102,6 +102,24 @@
 #endif
 
 namespace {
+
+base::Value::Dict FirstPartySetMetadataNetLogParams(
+    const net::FirstPartySetMetadata& first_party_set_metadata,
+    const int64_t* const fps_cache_filter) {
+  base::Value::Dict dict;
+  auto entry_or_empty =
+      [](const absl::optional<net::FirstPartySetEntry>& entry) -> std::string {
+    return entry.has_value() ? entry->GetDebugString() : "none";
+  };
+
+  dict.Set("cache_filter",
+           fps_cache_filter ? base::NumberToString(*fps_cache_filter) : "none");
+  dict.Set("frame_entry",
+           entry_or_empty(first_party_set_metadata.frame_entry()));
+  dict.Set("top_frame_primary",
+           entry_or_empty(first_party_set_metadata.top_frame_entry()));
+  return dict;
+}
 
 base::Value::Dict CookieInclusionStatusNetLogParams(
     const std::string& operation,
@@ -291,15 +309,17 @@ void URLRequestHttpJob::Start() {
   UMA_HISTOGRAM_BOOLEAN("Net.HttpJob.CanIncludeCookies",
                         should_add_cookie_header);
 
+  request_->net_log().BeginEvent(NetLogEventType::FIRST_PARTY_SETS_METADATA);
+
   if (!should_add_cookie_header) {
     OnGotFirstPartySetMetadata(FirstPartySetMetadata());
     return;
   }
+
   absl::optional<FirstPartySetMetadata> metadata =
       cookie_util::ComputeFirstPartySetMetadataMaybeAsync(
           SchemefulSite(request()->url()), request()->isolation_info(),
           request()->context()->cookie_store()->cookie_access_delegate(),
-          request()->force_ignore_top_frame_party_for_cookies(),
           base::BindOnce(&URLRequestHttpJob::OnGotFirstPartySetMetadata,
                          weak_factory_.GetWeakPtr()));
 
@@ -333,6 +353,13 @@ void URLRequestHttpJob::OnGotFirstPartySetCacheFilterMatchInfo(
     FirstPartySetsCacheFilter::MatchInfo match_info) {
   request_info_.fps_cache_filter = match_info.clear_at_run_id;
   request_info_.browser_run_id = match_info.browser_run_id;
+
+  request_->net_log().EndEvent(
+      NetLogEventType::FIRST_PARTY_SETS_METADATA, [&]() {
+        return FirstPartySetMetadataNetLogParams(
+            first_party_set_metadata_,
+            base::OptionalToPtr(request_info_.fps_cache_filter));
+      });
 
   // Privacy mode could still be disabled in SetCookieHeaderAndStart if we are
   // going to send previously saved cookies.
@@ -868,9 +895,8 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   std::set<std::string> clear_site_data_set(clear_site_data_types.begin(),
                                             clear_site_data_types.end());
   if (clear_site_data_set.find(kDatatypeCookies) != clear_site_data_set.end() ||
-      (base::FeatureList::IsEnabled(features::kClearSiteDataWildcardSupport) &&
-       clear_site_data_set.find(kDatatypeWildcard) !=
-           clear_site_data_set.end())) {
+      clear_site_data_set.find(kDatatypeWildcard) !=
+          clear_site_data_set.end()) {
     clear_site_data_prevents_cookies_from_being_stored = true;
   }
 
@@ -918,9 +944,18 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 
     num_cookie_lines_left_++;
 
+    // For the block_truncated parameter, the value shouldn't matter here
+    // because HTTP requests containing NULLs causes an error before this code
+    // can be reached and unpaired carriage returns and line feed characters
+    // cause truncation during HTTP header processing before reaching this
+    // point, so DCHECK this assumption and just pass true for this parameter.
+    DCHECK(cookie_string.find('\0') == std::string::npos);
+    DCHECK(cookie_string.find('\r') == std::string::npos);
+    DCHECK(cookie_string.find('\n') == std::string::npos);
     std::unique_ptr<CanonicalCookie> cookie = net::CanonicalCookie::Create(
         request_->url(), cookie_string, base::Time::Now(), server_time,
-        cookie_partition_key_.value(), &returned_status);
+        cookie_partition_key_.value(), /*block_truncated=*/true,
+        &returned_status);
 
     absl::optional<CanonicalCookie> cookie_to_return = absl::nullopt;
     if (returned_status.IsInclude()) {

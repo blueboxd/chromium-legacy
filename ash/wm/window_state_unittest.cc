@@ -10,7 +10,9 @@
 #include "ash/metrics/pip_uma.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -19,6 +21,7 @@
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_test_util.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
@@ -1269,6 +1272,29 @@ TEST_F(WindowStateTest, WindowNoOffscreenInMultiDisplays) {
   EXPECT_TRUE(displays[0].bounds().Contains(window->bounds()));
 }
 
+TEST_F(WindowStateTest, CanFullscreen) {
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+  WindowState* window_state = WindowState::Get(window.get());
+
+  // Allow everything to test for cross interactions with other flags.
+  int behavior = ~aura::client::kResizeBehaviorCanFullscreen;
+
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      behavior | aura::client::kResizeBehaviorCanFullscreen);
+  EXPECT_TRUE(window_state->CanFullscreen());
+  ToggleFullScreen(window_state, nullptr);
+  EXPECT_TRUE(window_state->IsFullscreen());
+  ToggleFullScreen(window_state, nullptr);
+  EXPECT_FALSE(window_state->IsFullscreen());
+
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      behavior & ~aura::client::kResizeBehaviorCanFullscreen);
+  EXPECT_FALSE(window_state->CanFullscreen());
+  ToggleFullScreen(window_state, nullptr);
+  EXPECT_FALSE(window_state->IsFullscreen());
+}
+
 TEST_F(WindowStateTest, CanConsumeSystemKeys) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
@@ -2076,16 +2102,16 @@ TEST_F(WindowStateTest, WindowSnapActionSourceUmaMetrics) {
   auto* split_view_divider = split_view_controller->split_view_divider();
   gfx::Rect divider_bounds =
       split_view_divider->GetDividerBoundsInScreen(false);
-  split_view_controller->StartResizeWithDivider(divider_bounds.CenterPoint());
+  split_view_divider->StartResizeWithDivider(divider_bounds.CenterPoint());
   gfx::Rect display_bounds =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window.get());
   gfx::Point resize_point(display_bounds.width() * 0.33f, 0);
-  split_view_controller->ResizeWithDivider(resize_point);
+  split_view_divider->ResizeWithDivider(resize_point);
   // This should not cause any metrics change.
   histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
                                WindowSnapActionSource::kNotSpecified, 1);
-  split_view_controller->EndResizeWithDivider(resize_point);
+  split_view_divider->EndResizeWithDivider(resize_point);
   histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
                                WindowSnapActionSource::kNotSpecified, 1);
 }
@@ -2117,6 +2143,83 @@ TEST_F(WindowStateTest, SnapWindowMinimumSizePortrait) {
       kWorkAreaBounds.x(), kWorkAreaBounds.height() - kMinimumSize.height(),
       kWorkAreaBounds.width(), kMinimumSize.height());
   EXPECT_EQ(expected_snap, window->GetBoundsInScreen());
+}
+
+// Tests the snapped window states in the external display while removing the
+// internal display.
+TEST_F(WindowStateTest, SnappedWindowsInExternalDisplay) {
+  UpdateDisplay("800x600,1920x1200");
+
+  const auto& displays = display_manager()->active_display_list();
+  const int64_t primary_id = displays[0].id();
+  const int64_t secondary_id = displays[1].id();
+  display::Screen* screen = display::Screen::GetScreen();
+
+  // Create two windows inside the external display.
+  std::unique_ptr<aura::Window> w1 =
+      CreateTestWindow(gfx::Rect(801, 0, 200, 100));
+  std::unique_ptr<aura::Window> w2 =
+      CreateTestWindow(gfx::Rect(1000, 0, 200, 100));
+  ASSERT_EQ(secondary_id, screen->GetDisplayNearestWindow(w1.get()).id());
+  ASSERT_EQ(secondary_id, screen->GetDisplayNearestWindow(w2.get()).id());
+
+  // Put the shelf of the internal display at the bottom while the external
+  // display shelf at the left side.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  SetShelfAlignmentPref(prefs, primary_id, ShelfAlignment::kBottom);
+  SetShelfAlignmentPref(prefs, secondary_id, ShelfAlignment::kLeft);
+  EXPECT_EQ(ShelfAlignment::kBottom,
+            Shell::GetRootWindowControllerWithDisplayId(primary_id)
+                ->shelf()
+                ->alignment());
+  EXPECT_EQ(ShelfAlignment::kLeft,
+            Shell::GetRootWindowControllerWithDisplayId(secondary_id)
+                ->shelf()
+                ->alignment());
+
+  // Make `w1` to be left snapped.
+  WindowState* window_state1 = WindowState::Get(w1.get());
+  const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  window_state1->OnWMEvent(&snap_left);
+  EXPECT_TRUE(window_state1->IsSnapped());
+  EXPECT_EQ(secondary_id, screen->GetDisplayNearestWindow(w1.get()).id());
+  EXPECT_EQ(0.5f, *window_state1->snap_ratio());
+
+  // Make `w2` to be right snapped.
+  WindowState* window_state2 = WindowState::Get(w2.get());
+  const WindowSnapWMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
+  window_state2->OnWMEvent(&snap_right);
+  EXPECT_TRUE(window_state2->IsSnapped());
+  EXPECT_EQ(secondary_id, screen->GetDisplayNearestWindow(w2.get()).id());
+  EXPECT_EQ(0.5f, *window_state2->snap_ratio());
+
+  // Store the two snapped window bounds with a left aligned shelf.
+  const gfx::Rect w1_local_bounds = w1->bounds();
+  const gfx::Rect w2_local_bounds = w2->bounds();
+
+  display::ManagedDisplayInfo secondary_info =
+      display_manager()->GetDisplayInfo(secondary_id);
+  // Remove the primary display.
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.push_back(secondary_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  // Verify that both `w1` and `w2` are still snapped in the external display
+  // with unchanged snap ratio, unchanged bounds. There should have no gap
+  // between the two snapped windows.
+  EXPECT_TRUE(window_state1->IsSnapped());
+  EXPECT_TRUE(window_state2->IsSnapped());
+  EXPECT_EQ(secondary_id, screen->GetDisplayNearestWindow(w1.get()).id());
+  EXPECT_EQ(secondary_id, screen->GetDisplayNearestWindow(w2.get()).id());
+  EXPECT_EQ(0.5f, *window_state1->snap_ratio());
+  EXPECT_EQ(0.5f, *window_state2->snap_ratio());
+  EXPECT_EQ(w1_local_bounds, w1->bounds());
+  EXPECT_EQ(w2_local_bounds, w2->bounds());
+  EXPECT_EQ(ShelfAlignment::kLeft,
+            Shell::GetRootWindowControllerWithDisplayId(secondary_id)
+                ->shelf()
+                ->alignment());
 }
 
 class WindowStateMetricsTest : public AshTestBase {

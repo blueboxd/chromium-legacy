@@ -51,7 +51,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
@@ -257,8 +258,8 @@ class RootsRecursionDelegate {
  private:
   // counts the number of |roots| processed.
   uint counter_ = 0;
-  raw_ptr<storage::FileSystemContext, ExperimentalAsh> file_system_context_ =
-      nullptr;
+  raw_ptr<storage::FileSystemContext, DanglingUntriaged | ExperimentalAsh>
+      file_system_context_ = nullptr;
   const std::vector<storage::FileSystemURL> roots_;
   FolderRecursionDelegate::FileURLsCallback callback_;
   std::vector<storage::FileSystemURL> files_urls_;
@@ -422,8 +423,9 @@ DlpFilesControllerAsh::~DlpFilesControllerAsh() {
     // FilesController before VolumeManager, otherwise we would have been
     // notified in `OnShutdownStart`.
     auto* volume_manager = GetVolumeManager();
-    CHECK(volume_manager);
-    volume_manager->RemoveObserver(this);
+    if (volume_manager) {
+      volume_manager->RemoveObserver(this);
+    }
   }
 }
 
@@ -546,7 +548,7 @@ void DlpFilesControllerAsh::CheckIfDownloadAllowed(
   DCHECK(profile);
 
   auto dst_component =
-      MapFilePathtoPolicyComponent(profile, base::FilePath(file_path));
+      MapFilePathToPolicyComponent(profile, base::FilePath(file_path));
   if (!dst_component.has_value()) {
     // We may block downloads only if saved to external component, otherwise
     // downloads should be allowed.
@@ -565,7 +567,7 @@ void DlpFilesControllerAsh::CheckIfDownloadAllowed(
                            /*referrer_url=*/"");
 
   absl::optional<data_controls::Component> component =
-      MapFilePathtoPolicyComponent(profile, file_path);
+      MapFilePathToPolicyComponent(profile, file_path);
   DlpFileDestination dlp_destination =
       component ? DlpFileDestination(*component) : DlpFileDestination();
   IsFilesTransferRestricted(
@@ -603,7 +605,7 @@ bool DlpFilesControllerAsh::ShouldPromptBeforeDownload(
   auto* profile = ProfileManager::GetPrimaryUserProfile();
   DCHECK(profile);
   auto dst_component =
-      MapFilePathtoPolicyComponent(profile, base::FilePath(file_path));
+      MapFilePathToPolicyComponent(profile, base::FilePath(file_path));
   if (!dst_component.has_value()) {
     // We may block downloads only if saved to external component, otherwise
     // downloads should be allowed.
@@ -938,7 +940,7 @@ void DlpFilesControllerAsh::SetFileSystemContextForTesting(
 }
 
 absl::optional<data_controls::Component>
-DlpFilesControllerAsh::MapFilePathtoPolicyComponent(
+DlpFilesControllerAsh::MapFilePathToPolicyComponent(
     Profile* profile,
     const base::FilePath& file_path) {
   if (base::FilePath(file_manager::util::GetAndroidFilesPath())
@@ -958,7 +960,7 @@ DlpFilesControllerAsh::MapFilePathtoPolicyComponent(
     return data_controls::Component::kDrive;
   }
 
-  if (ash::cloud_upload::CloudUploadDialog::IsODFSMounted(profile)) {
+  if (ash::cloud_upload::IsODFSMounted(profile)) {
     auto* service = ash::file_system_provider::Service::Get(profile);
     auto provider_id =
         ash::file_system_provider::ProviderId::CreateFromExtensionId(
@@ -1032,7 +1034,8 @@ void DlpFilesControllerAsh::ReturnDisallowedFiles(
     restricted_files_urls.push_back(files_map.at(file));
     restricted_files_paths.emplace_back(file);
   }
-  if (!restricted_files_paths.empty() && kNewFilesPolicyUXEnabled &&
+  if (!restricted_files_paths.empty() &&
+      base::FeatureList::IsEnabled(features::kNewFilesPolicyUX) &&
       task_id.has_value()) {
     ShowDlpBlockedFiles(std::move(task_id), std::move(restricted_files_paths),
                         file_action);
@@ -1236,7 +1239,7 @@ void DlpFilesControllerAsh::ContinueCheckIfTransferAllowed(
 
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   absl::optional<data_controls::Component> component =
-      MapFilePathtoPolicyComponent(profile, destination.path());
+      MapFilePathToPolicyComponent(profile, destination.path());
   ::dlp::DlpComponent proto;
   if (component) {
     proto = dlp::MapPolicyComponentToProto(*component);

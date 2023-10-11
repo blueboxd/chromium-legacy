@@ -16,7 +16,7 @@
 #endif
 
 namespace gpu {
-class SharedImageFormatRestrictedSinglePlaneUtilsAccessor;
+class SharedImageFormatRestrictedUtilsAccessor;
 }  // namespace gpu
 
 namespace cc {
@@ -72,8 +72,10 @@ COMPONENT_EXPORT(VIZ_SHARED_IMAGE_FORMAT)
 gfx::BufferFormat SinglePlaneSharedImageFormatToBufferFormat(
     SharedImageFormat format);
 
+// Returns the SharedImageFormat corresponding to `format`, which must be a
+// single-planar format.
 COMPONENT_EXPORT(VIZ_SHARED_IMAGE_FORMAT)
-SharedImageFormat GetSharedImageFormat(gfx::BufferFormat format);
+SharedImageFormat GetSinglePlaneSharedImageFormat(gfx::BufferFormat format);
 
 // Utilities that conceptually belong only on the service side, but are
 // currently used by some clients. Usage is restricted to friended clients.
@@ -85,7 +87,7 @@ class COMPONENT_EXPORT(VIZ_SHARED_IMAGE_FORMAT)
   friend class TestInProcessContextProvider;
   friend class cc::PerfContextProvider;
   friend class media::VideoResourceUpdater;
-  friend class gpu::SharedImageFormatRestrictedSinglePlaneUtilsAccessor;
+  friend class gpu::SharedImageFormatRestrictedUtilsAccessor;
 
   // The following functions use unsigned int instead of GLenum, since including
   // third_party/khronos/GLES2/gl2.h causes redefinition errors as

@@ -11,9 +11,9 @@
 #include <stdint.h>
 #include <sstream>
 
+#include "base/apple/foundation_util.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
-#include "base/mac/foundation_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -100,15 +100,6 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
         [VideoCaptureDeviceAVFoundation FourCCToChromiumPixelFormat:fourcc];
     CMVideoDimensions dimensions =
         CMVideoFormatDescriptionGetDimensions(captureFormat.formatDescription);
-    Float64 maxFrameRate = 0;
-    bool matchesFrameRate = false;
-    for (AVFrameRateRange* frameRateRange in captureFormat
-             .videoSupportedFrameRateRanges) {
-      maxFrameRate = std::max(maxFrameRate, frameRateRange.maxFrameRate);
-      matchesFrameRate |=
-          frameRateRange.minFrameRate <= frame_rate + kFrameRateEpsilon &&
-          frame_rate - kFrameRateEpsilon <= frameRateRange.maxFrameRate;
-    }
 
     // If the pixel format is unsupported by our code, then it is not useful.
     if (pixelFormat == VideoPixelFormat::PIXEL_FORMAT_UNKNOWN) {
@@ -121,6 +112,15 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
       continue;
     }
 
+    Float64 maxFrameRate = 0;
+    bool matchesFrameRate = false;
+    for (AVFrameRateRange* frameRateRange in captureFormat
+             .videoSupportedFrameRateRanges) {
+      maxFrameRate = std::max(maxFrameRate, frameRateRange.maxFrameRate);
+      matchesFrameRate |=
+          frameRateRange.minFrameRate <= frame_rate + kFrameRateEpsilon &&
+          frame_rate - kFrameRateEpsilon <= frameRateRange.maxFrameRate;
+    }
     // Prefer a capture format that handles the requested framerate to one
     // that doesn't.
     if (bestCaptureFormat) {
@@ -1118,16 +1118,33 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
         media::SampleBufferTransformer::GetBestTransformerForNv12Output(
             sampleBuffer),
         kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange,
-        media::GetSampleBufferSize(sampleBuffer), kPixelBufferPoolSize);
-    base::ScopedCFTypeRef<CVPixelBufferRef> pixelBuffer =
+        media::GetSampleBufferSize(sampleBuffer), _rotation,
+        kPixelBufferPoolSize);
+    base::apple::ScopedCFTypeRef<CVPixelBufferRef> pixelBuffer =
         _sampleBufferTransformer->Transform(sampleBuffer);
     if (!pixelBuffer) {
       LOG(ERROR) << "Failed to transform captured frame. Dropping frame.";
       return;
     }
+
+#if BUILDFLAG(IS_MAC)
+    base::apple::ScopedCFTypeRef<CVPixelBufferRef> final_pixel_buffer =
+        pixelBuffer;
+#else
+    // The rotated_pixelBuffer might not be the same size as the source
+    // pixelBuffer as it gets rotated by rotation_angle_. In order to restore
+    // the original size, rotated_pixelBuffer need to scale it to its original
+    // size by transforming it.
+    base::apple::ScopedCFTypeRef<CVPixelBufferRef> rotated_pixelBuffer =
+        _sampleBufferTransformer->Rotate(pixelBuffer);
+    base::apple::ScopedCFTypeRef<CVPixelBufferRef> final_pixel_buffer =
+        _sampleBufferTransformer->Transform(rotated_pixelBuffer);
+
+#endif
+
     const media::VideoCaptureFormat captureFormat(
-        gfx::Size(CVPixelBufferGetWidth(pixelBuffer),
-                  CVPixelBufferGetHeight(pixelBuffer)),
+        gfx::Size(CVPixelBufferGetWidth(final_pixel_buffer),
+                  CVPixelBufferGetHeight(final_pixel_buffer)),
         _frameRate, media::PIXEL_FORMAT_NV12);
     // When the |pixelBuffer| is the result of a conversion (not camera
     // pass-through) then it originates from a CVPixelBufferPool and the color
@@ -1139,7 +1156,7 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
     // TODO(hbos): Investigate how to successfully parse and/or configure the
     // color space correctly. The implications of this hack is not fully
     // understood.
-    [self processPixelBufferNV12IOSurface:pixelBuffer
+    [self processPixelBufferNV12IOSurface:final_pixel_buffer
                             captureFormat:captureFormat
                                colorSpace:kColorSpaceRec709Apple
                                 timestamp:timestamp];
@@ -1259,7 +1276,7 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
 }
 
 - (void)onVideoError:(NSNotification*)errorNotification {
-  NSError* error = base::mac::ObjCCast<NSError>(
+  NSError* error = base::apple::ObjCCast<NSError>(
       errorNotification.userInfo[AVCaptureSessionErrorKey]);
   [self
       sendErrorString:[NSString stringWithFormat:@"%@: %@",

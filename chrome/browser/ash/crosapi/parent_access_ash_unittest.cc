@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,7 +84,8 @@ class ParentAccessAshTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   mojo::Remote<crosapi::mojom::ParentAccess> parent_access_remote_;
   std::unique_ptr<crosapi::ParentAccessAsh> parent_access_ash_;
-  raw_ptr<FakeParentAccessDialogProvider, ExperimentalAsh> dialog_provider_;
+  raw_ptr<FakeParentAccessDialogProvider, DanglingUntriaged | ExperimentalAsh>
+      dialog_provider_;
 };
 
 // Tests that the correct parameters were passed through to the dialog for

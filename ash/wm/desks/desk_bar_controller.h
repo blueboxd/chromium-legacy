@@ -15,7 +15,7 @@
 #include "ash/wm/desks/desk_button/desk_button.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/overview/overview_observer.h"
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/rect.h"
@@ -50,7 +50,7 @@ class ASH_EXPORT DeskBarController : public DesksController::Observer,
     ~BarWidgetAndView();
 
     std::unique_ptr<views::Widget> bar_widget;
-    base::raw_ptr<DeskBarViewBase> bar_view;
+    raw_ptr<DeskBarViewBase> bar_view;
   };
 
   DeskBarController();
@@ -103,6 +103,8 @@ class ASH_EXPORT DeskBarController : public DesksController::Observer,
   void CloseAllDeskBars();
 
  private:
+  void CloseDeskBarInternal(BarWidgetAndView& desk_bar);
+
   // Returns bounds for desk bar widget in `root`. Please note, this is the full
   // available bounds and does not change after initialization. Therefore, the
   // desk bar view can adjust its bounds as needed without manipulating the
@@ -156,7 +158,7 @@ class ASH_EXPORT DeskBarController : public DesksController::Observer,
 
   // When pressing off the bar, it should either commit desk name change, or
   // hide the bar.
-  void OnMaybePressOffBar(const ui::LocatedEvent& event);
+  void OnMaybePressOffBar(ui::LocatedEvent& event);
 
   // Returns desk button for `root`.
   DeskButton* GetDeskButton(aura::Window* root);

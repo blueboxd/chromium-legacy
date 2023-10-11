@@ -181,6 +181,9 @@ public class SelectableListLayout<E> extends FrameLayout
                 setToolbarShadowVisibility();
             }
         });
+        mRecyclerView.addOnLayoutChangeListener(
+                (View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,
+                        int oldRight, int oldBottom) -> { setToolbarShadowVisibility(); });
 
         mItemAnimator = mRecyclerView.getItemAnimator();
     }
@@ -256,13 +259,6 @@ public class SelectableListLayout<E> extends FrameLayout
         // Initialize and inflate empty state view stub.
         ViewStub emptyViewStub = findViewById(R.id.empty_state_view_stub);
         View emptyStateView = emptyViewStub.inflate();
-        int bottomMargin = getContext().getResources().getDimensionPixelSize(
-                                   R.dimen.selectable_list_toolbar_height)
-                / 2;
-        FrameLayout.LayoutParams emptyViewParams =
-                (FrameLayout.LayoutParams) emptyStateView.getLayoutParams();
-        emptyViewParams.bottomMargin = bottomMargin;
-        emptyStateView.setLayoutParams(emptyViewParams);
 
         // Initialize empty state resource.
         mEmptyView = emptyStateView.findViewById(R.id.empty_state_text_title);

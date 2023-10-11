@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "mediapipe/framework/port/opencv_calib3d_inc.h"
 #include "mediapipe/framework/port/opencv_imgproc_inc.h"
@@ -44,7 +45,7 @@ void ScaleBox(float scale_x, float scale_y, TimedBoxProto *box) {
 }
 
 cv::Mat ConvertDescriptorsToMat(const std::vector<std::string> &descriptors) {
-  CHECK(!descriptors.empty()) << "empty descriptors.";
+  ABSL_CHECK(!descriptors.empty()) << "empty descriptors.";
 
   const int descriptors_dims = descriptors[0].size();
   ABSL_CHECK_GT(descriptors_dims, 0);
@@ -98,7 +99,7 @@ std::unique_ptr<BoxDetectorInterface> BoxDetectorInterface::Create(
   if (options.index_type() == BoxDetectorOptions::OPENCV_BF) {
     return absl::make_unique<BoxDetectorOpencvBfImpl>(options);
   } else {
-    LOG(FATAL) << "index type undefined.";
+    ABSL_LOG(FATAL) << "index type undefined.";
   }
 }
 
@@ -187,7 +188,8 @@ void BoxDetectorInterface::DetectAndAddBox(
 
   if (features_from_tracking_data.empty() ||
       descriptors_from_tracking_data.empty()) {
-    LOG(WARNING) << "Detection skipped due to empty features or descriptors.";
+    ABSL_LOG(WARNING)
+        << "Detection skipped due to empty features or descriptors.";
     return;
   }
 
@@ -396,9 +398,9 @@ TimedBoxProtoList BoxDetectorInterface::FindQuadFromFeatureCorrespondence(
   TimedBoxProtoList result_list;
 
   if (matches.points_frame.size() != matches.points_index.size()) {
-    LOG(ERROR) << matches.points_frame.size() << " vs "
-               << matches.points_index.size()
-               << ". Correpondence size doesn't match.";
+    ABSL_LOG(ERROR) << matches.points_frame.size() << " vs "
+                    << matches.points_index.size()
+                    << ". Correpondence size doesn't match.";
     return result_list;
   }
 

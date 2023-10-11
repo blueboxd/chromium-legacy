@@ -66,11 +66,6 @@ const int kMinimumOverlapForInvalidOffset = 100;
 // The UMA histogram that logs the types of mirror mode.
 const char kMirrorModeTypesHistogram[] = "DisplayManager.MirrorModeTypes";
 
-// The UMA histogram that logs the range in which the number of connected
-// displays in mirror mode can reside.
-const char kMirroringDisplayCountRangesHistogram[] =
-    "DisplayManager.MirroringDisplayCountRanges";
-
 // The UMA histogram that logs whether mirroring is done in hardware or
 // software.
 const char kMirroringImplementationHistogram[] =
@@ -1164,10 +1159,6 @@ void DisplayManager::UpdateDisplaysWith(
     delegate_->PostDisplayConfigurationChange();
 
   if (mirror_mode) {
-    UMA_HISTOGRAM_ENUMERATION(
-        kMirroringDisplayCountRangesHistogram,
-        GetDisplayCountRange(GetMirroringDestinationDisplayIdList().size() + 1),
-        DisplayCountRange::kCount);
     UMA_HISTOGRAM_ENUMERATION(kMirroringImplementationHistogram,
                               IsInSoftwareMirrorMode()
                                   ? MirroringImplementation::kSoftware
@@ -1348,7 +1339,8 @@ const Display DisplayManager::GetMirroringDisplayById(
     int64_t display_id) const {
   auto iter = base::ranges::find(software_mirroring_display_list_, display_id,
                                  &Display::id);
-  return iter == software_mirroring_display_list_.end() ? Display() : *iter;
+  return iter == software_mirroring_display_list_.end() ? GetInvalidDisplay()
+                                                        : *iter;
 }
 
 std::string DisplayManager::GetDisplayNameForId(int64_t id) const {

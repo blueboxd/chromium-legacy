@@ -28,6 +28,12 @@
       <h2>Drive Debug</h2>
       <div>
         <label>
+          Bulk pinning UI may be visible
+          <input type="checkbox" id="bulk-pinning-visible">
+        </label>
+      </div>
+      <div>
+        <label>
           Verbose logging
           <input type="checkbox" id="verbose-logging-toggle">
         </label>
@@ -117,17 +123,6 @@
           <td>
             <input type="checkbox" id="bulk-pinning-toggle">
           </td>
-        </tr>
-        <tr>
-          <th>Max file sync queue size</th>
-          <td>
-            <form id="max-queue-size-form">
-              <input type="number" id="bulk-pinning-max-queue-size">
-              <button type="submit">Update</button>
-              <span id="max-queue-size-status"></span>
-            </form>
-          </td>
-        </tr>
         <tr>
           <th>Stage</th>
           <td id="bulk-pinning-stage">?</td>

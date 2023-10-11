@@ -33,6 +33,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_directory_integrity_manager.h"
+#include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -120,8 +121,6 @@ std::string UserTypeToString(UserType user_type) {
       return "arc-kiosk";
     case USER_TYPE_WEB_KIOSK_APP:
       return "web-kiosk";
-    case USER_TYPE_ACTIVE_DIRECTORY:
-      return "active-directory";
     case NUM_USER_TYPES:
       NOTREACHED();
       return "";
@@ -245,9 +244,9 @@ void UserManagerBase::UserLoggedIn(const AccountId& account_id,
   }
 
   switch (user_type) {
-    case USER_TYPE_REGULAR:  // fallthrough
-    case USER_TYPE_CHILD:    // fallthrough
-    case USER_TYPE_ACTIVE_DIRECTORY:
+    case USER_TYPE_REGULAR:
+      [[fallthrough]];
+    case USER_TYPE_CHILD:
       if (account_id != GetOwnerAccountId() && !user &&
           (IsEphemeralAccountId(account_id) || browser_restart)) {
         RegularUserLoggedInAsEphemeral(account_id, user_type);
@@ -593,7 +592,9 @@ absl::optional<std::string> UserManagerBase::GetOwnerEmail() {
   }
 
   const std::string* email = owner.FindString(kOwnerAccountIdentity);
-  if (!email) {
+  // A valid email should not be empty, so return a nullopt if Chrome
+  // accidentally saved an empty string.
+  if (!email || email->empty()) {
     return absl::nullopt;
   }
   return *email;
@@ -758,14 +759,15 @@ bool UserManagerBase::IsLoggedInAsAnyKioskApp() const {
 
 bool UserManagerBase::IsLoggedInAsStub() const {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
-  return IsUserLoggedIn() && IsStubAccountId(active_user_->GetAccountId());
+  return IsUserLoggedIn() && active_user_->GetAccountId() == StubAccountId();
 }
 
 bool UserManagerBase::IsUserNonCryptohomeDataEphemeral(
     const AccountId& account_id) const {
   // Data belonging to the guest and stub users is always ephemeral.
-  if (IsGuestAccountId(account_id) || IsStubAccountId(account_id))
+  if (account_id == GuestAccountId() || account_id == StubAccountId()) {
     return true;
+  }
 
   // Data belonging to the owner, anyone found on the user list and obsolete
   // device local accounts whose data has not been removed yet is not ephemeral.
@@ -812,12 +814,12 @@ bool UserManagerBase::IsEphemeralAccountId(const AccountId& account_id) const {
   }
 
   // Data belonging to the stub users is never ephemeral.
-  if (IsStubAccountId(account_id)) {
+  if (account_id == StubAccountId()) {
     return false;
   }
 
   // Data belonging to the guest user is always ephemeral.
-  if (IsGuestAccountId(account_id)) {
+  if (account_id == GuestAccountId()) {
     return true;
   }
 
@@ -1098,7 +1100,7 @@ User* UserManagerBase::FindUserInListAndModify(const AccountId& account_id) {
 
 void UserManagerBase::GuestUserLoggedIn() {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
-  active_user_ = User::CreateGuestUser(GetGuestAccountId());
+  active_user_ = User::CreateGuestUser(GuestAccountId());
 }
 
 void UserManagerBase::AddUserRecord(User* user) {

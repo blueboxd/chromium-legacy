@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Zezwól witrynie na zapisywanie danych na Twoim urządzeniu</translation>
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1384959399684842514">Pobieranie wstrzymane</translation>
-<translation id="1409426117486808224">Uproszczony widok otwartych kart</translation>
 <translation id="1415402041810619267">URL obcięty</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1446450296470737166">Pełne sterowanie urządzeniami MIDI</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Dozwolone, z wyjątkiem witryn innych firm</translation>
 <translation id="1989112275319619282">Przeglądaj</translation>
 <translation id="1994173015038366702">URL strony</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Wygasa za 1 dzień}few{Wygasa za # dni}many{Wygasa za # dni}other{Wygasa za # dnia}}</translation>
 <translation id="2004697686368036666">W niektórych witrynach mogą nie działać funkcje</translation>
 <translation id="2025115093177348061">Rzeczywistość rozszerzona</translation>
 <translation id="2030769033451695672">Kliknij, by wrócić na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Tytuł</translation>
 <translation id="4008040567710660924">Zezwalaj na pliki cookie z określonej strony internetowej.</translation>
 <translation id="4046123991198612571">Następny utwór</translation>
+<translation id="4053720452172726777">Dostosowywanie i kontrolowanie Google Chrome</translation>
 <translation id="4149994727733219643">Uproszczony widok stron internetowych</translation>
 <translation id="4151930093518524179">Domyślne powiększenie</translation>
 <translation id="4165986682804962316">Ustawienia witryn</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Witryny nie mogą używać plików cookie do śledzenia Twojej aktywności związanej z przeglądaniem różnych witryn, na przykład w celu personalizowania reklam. W niektórych witrynach mogą nie działać funkcje.</translation>
 <translation id="5553374991681107062">Najnowsze</translation>
 <translation id="5556459405103347317">Odśwież</translation>
-<translation id="5596627076506792578">Więcej opcji</translation>
 <translation id="5649053991847567735">Pobieranie automatyczne</translation>
 <translation id="5668404140385795438">Zignoruj żądanie strony, gdy chce zapobiec powiększeniu widoku</translation>
 <translation id="5677928146339483299">Zablokowane</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Wyłączone w ustawieniach Androida</translation>
 <translation id="7016516562562142042">Zezwolono na dostęp obecnej wyszukiwarce</translation>
 <translation id="702275896380648118">Witryna określa Twoje zainteresowania, a potem sugeruje reklamy innym witrynom. Witryna wykorzystuje też gromadzone przez Chrome informacje o interesujących Cię tematach, aby wyświetlać trafniejsze reklamy.</translation>
-<translation id="702463548815491781">Zalecane, gdy włączono TalkBack lub Switch Access</translation>
 <translation id="7053983685419859001">Blokuj</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Wybrano 1}few{Wybrano #}many{Wybrano #}other{Wybrano #}}</translation>
 <translation id="7087918508125750058">Wybrano <ph name="ITEM_COUNT" />. Opcje dostępne na górze ekranu</translation>

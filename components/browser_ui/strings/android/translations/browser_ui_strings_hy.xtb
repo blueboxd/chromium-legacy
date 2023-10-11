@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Թույլատրեք կայքին տվյալներ պահել ձեր սարքում</translation>
 <translation id="1383876407941801731">Որոնում</translation>
 <translation id="1384959399684842514">Ներբեռնումը դադարեցվել է</translation>
-<translation id="1409426117486808224">Բաց ներդիրների պարզեցված դիտակերպ</translation>
 <translation id="1415402041810619267">URL-ը կրճատվել է</translation>
 <translation id="1426410128494586442">Այո</translation>
 <translation id="1446450296470737166">Տրամադրել ամբողջական հսկողություն MIDI սարքերի նկատմամբ</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Թույլատրված է, բացի երրորդ կողմի cookie ֆայլերից</translation>
 <translation id="1989112275319619282">Ընտրել</translation>
 <translation id="1994173015038366702">Կայքի URL</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Գործողության ժամկետը սպառվում է 1 օրից}one{Գործողության ժամկետը սպառվում է # օրից}other{Գործողության ժամկետը սպառվում է # օրից}}</translation>
 <translation id="2004697686368036666">Որոշ կայքերում գործառույթները կարող են չաշխատել</translation>
 <translation id="2025115093177348061">Լրացված իրականություն</translation>
 <translation id="2030769033451695672">Հպեք՝ <ph name="URL_OF_THE_CURRENT_TAB" /> վերադառնալու համար</translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Վերնագիր</translation>
 <translation id="4008040567710660924">Թույլատրել քուքիները կոնկրետ կայքի համար:</translation>
 <translation id="4046123991198612571">Հաջորդը</translation>
+<translation id="4053720452172726777">Հարմարեցնել և վերահսկել Google Chrome-ը</translation>
 <translation id="4149994727733219643">Կայքերի պարզեցված դիտակերպ</translation>
 <translation id="4151930093518524179">Կանխադրված մասշտաբ</translation>
 <translation id="4165986682804962316">Կայքի կարգավորումներ</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Կայքերը չեն կարող օգտագործել քուքիներ՝ դիտարկիչում ձեր գործողությունները տեսնելու համար, օրինակ, գովազդի անհատականացման նպատակով։ Որոշ կայքերում գործառույթները կարող են չաշխատել։</translation>
 <translation id="5553374991681107062">Վերջինները</translation>
 <translation id="5556459405103347317">Վերաբեռնել</translation>
-<translation id="5596627076506792578">Լրացուցիչ ընտրանքներ</translation>
 <translation id="5649053991847567735">Ավտոմատ ներբեռնումներ</translation>
 <translation id="5668404140385795438">Անտեսել կայքերի՝ խոշորացումը կանխելու հարցումները</translation>
 <translation id="5677928146339483299">Արգելափակված է</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Անջատված է Android-ի կարգավորումներում</translation>
 <translation id="7016516562562142042">Թույլատրված է ընթացիկ որոնիչին</translation>
 <translation id="702275896380648118">Այս կայքը որոշում է ձեր նախասիրությունները և դրանց հիման վրա գովազդ է առաջարկում այլ կայքերի։ Այս կայքը Chrome-ից նաև ստանում է գովազդի թեմաների մասին տվյալներ՝ ձեզ ավելի համապատասխան գովազդ ցուցադրելու համար։</translation>
-<translation id="702463548815491781">Խորհուրդ է տրվում, երբ TalkBack-ը կամ Switch Access-ը միացված են</translation>
 <translation id="7053983685419859001">Արգելափակել</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ընտրված տարր}one{# ընտրված տարր}other{# ընտրված տարր}}</translation>
 <translation id="7087918508125750058">Ընտրված է <ph name="ITEM_COUNT" /> տարր։ Ընտրանքները հասանելի են էկրանի վերին հատվածում</translation>

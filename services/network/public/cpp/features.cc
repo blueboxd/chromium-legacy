@@ -209,49 +209,89 @@ BASE_FEATURE(kGetCookiesStringUma,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 namespace {
+
+BASE_FEATURE(kDefaultDataPipeAllocationSizeFeature,
+             "DefaultDataPipeAllocationSizeFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kLargerDataPipeAllocationSizeFeature,
+             "LargerDataPipeAllocationSizeFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kNetAdapterMaxBufSizeFeature,
+             "NetAdapterMaxBufSizeFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMaxNumConsumedBytesInTaskFeature,
+             "MaxNumConsumedBytesInTaskFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // The default Mojo ring buffer size, used to send the content body.
-static constexpr uint32_t kDefaultDataPipeAllocationSize = 512 * 1024;
+constexpr base::FeatureParam<int> kDefaultDataPipeAllocationSize(
+    &kDefaultDataPipeAllocationSizeFeature,
+    "DefaultDataPipeAllocationSize",
+    512 * 1024);
+
 // The larger ring buffer size, used primarily for network::URLLoader loads.
 // This value was optimized via Finch: see crbug.com/1041006.
-static constexpr uint32_t kLargerDataPipeAllocationSize = 2 * 1024 * 1024;
+constexpr base::FeatureParam<int> kLargerDataPipeAllocationSize(
+    &kLargerDataPipeAllocationSizeFeature,
+    "LargerDataPipeAllocationSize",
+    2 * 1024 * 1024);
+
+// The max buffer size of NetToMojoPendingBuffer. This buffer size should be
+// smaller than the mojo ring buffer size.
+constexpr base::FeatureParam<int> kNetAdapterMaxBufSize(
+    &kNetAdapterMaxBufSizeFeature,
+    "NetAdapterMaxBufSize",
+    64 * 1024);
 
 // The maximal number of bytes consumed in a loading task. When there are more
 // bytes in the data pipe, they will be consumed in following tasks. Setting too
 // small of a number will generate many tasks but setting a too large of a
 // number will lead to thread janks. This value was optimized via Finch:
 // see crbug.com/1041006.
-static constexpr uint32_t kMaxNumConsumedBytesInTask = 1024 * 1024;
+constexpr base::FeatureParam<int> kMaxNumConsumedBytesInTask(
+    &kMaxNumConsumedBytesInTaskFeature,
+    "MaxNumConsumedBytesInTask",
+    1024 * 1024);
 
-// The smallest buffer size must be larger than the maximum MIME sniffing
-// chunk size. This is assumed several places in content/browser/loader.
-static_assert(kDefaultDataPipeAllocationSize < kLargerDataPipeAllocationSize);
-static_assert(kDefaultDataPipeAllocationSize >= net::kMaxBytesToSniff,
-              "Smallest data pipe size must be at least as large as a "
-              "MIME-type sniffing buffer.");
 }  // namespace
 
 // static
 uint32_t GetDataPipeDefaultAllocationSize(DataPipeAllocationSize option) {
+  // The smallest buffer size must be larger than the maximum MIME sniffing
+  // chunk size. This is assumed several places in content/browser/loader.
+  CHECK_LE(kDefaultDataPipeAllocationSize.Get(),
+           kLargerDataPipeAllocationSize.Get());
+  CHECK_GE(kDefaultDataPipeAllocationSize.Get(), net::kMaxBytesToSniff)
+      << "Smallest data pipe size must be at least as large as a "
+         "MIME-type sniffing buffer.";
+
 #if BUILDFLAG(IS_CHROMEOS)
   // TODO(crbug.com/1306998): ChromeOS experiences a much higher OOM crash
   // rate if the larger data pipe size is used.
-  return kDefaultDataPipeAllocationSize;
+  return kDefaultDataPipeAllocationSize.Get();
 #else
   // For low-memory devices, always use the (smaller) default buffer size.
   if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512)
-    return kDefaultDataPipeAllocationSize;
+    return kDefaultDataPipeAllocationSize.Get();
   switch (option) {
     case DataPipeAllocationSize::kDefaultSizeOnly:
-      return kDefaultDataPipeAllocationSize;
+      return kDefaultDataPipeAllocationSize.Get();
     case DataPipeAllocationSize::kLargerSizeIfPossible:
-      return kLargerDataPipeAllocationSize;
+      return kLargerDataPipeAllocationSize.Get();
   }
 #endif
 }
 
+uint32_t GetNetAdapterMaxBufSize() {
+  return kNetAdapterMaxBufSize.Get();
+}
+
 // static
 uint32_t GetLoaderChunkSize() {
-  return kMaxNumConsumedBytesInTask;
+  return kMaxNumConsumedBytesInTask.Get();
 }
 
 // https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name
@@ -327,9 +367,20 @@ BASE_FEATURE(kPrivateNetworkAccessPermissionPrompt,
 // Enables out-of-process system DNS resolution so getaddrinfo() never runs in
 // the network service sandbox. System DNS resolution will instead be brokered
 // out over Mojo, likely to run in the browser process.
+//
+// This is only necessary on Linux desktop and Android where system DNS
+// resolution cannot always run in a sandboxed network process. The Mac and
+// Windows sandboxing systems allow us to specify system DNS resolution as an
+// allowed action, and ChromeOS uses a simple, known system DNS configuration
+// that can be adequately sandboxed.
 BASE_FEATURE(kOutOfProcessSystemDnsResolution,
              "OutOfProcessSystemDnsResolution",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_LINUX)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 BASE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant,
              "AccessControlAllowMethodsInCORSPreflightSpecConformant",
@@ -374,8 +425,6 @@ BASE_FEATURE(kVisibilityAwareResourceScheduler,
              "VisibilityAwareResourceScheduler",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kClearSiteDataClientHintsSupport,
-             "ClearSiteDataClientHintsSupport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kSharedZstd, "SharedZstd", base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace network::features

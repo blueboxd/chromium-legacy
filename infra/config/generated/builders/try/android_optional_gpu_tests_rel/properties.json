@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "try",
               "builder": "android_optional_gpu_tests_rel",
-              "project": "chromium-m117"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-fyi-archive",
@@ -34,13 +34,14 @@
         {
           "bucket": "try",
           "builder": "android_optional_gpu_tests_rel",
-          "project": "chromium-m117"
+          "project": "chromium"
         }
       ],
       "retry_failed_shards": false
     }
   },
   "$build/flakiness": {
+    "check_for_flakiness": true,
     "check_for_flakiness_with_resultdb": true
   },
   "$build/reclient": {

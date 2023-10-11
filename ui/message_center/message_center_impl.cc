@@ -152,11 +152,14 @@ void MessageCenterImpl::SetNotificationExpandState(
   DCHECK(FindVisibleNotificationById(id));
 
   notification_list_->SetNotificationExpandState(id, expand_state);
+}
 
+void MessageCenterImpl::OnSetExpanded(const std::string& id, bool expanded) {
   scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
+
   if (delegate) {
-    delegate->ExpandStateChanged();
+    delegate->ExpandStateChanged(expanded);
   }
 }
 
@@ -371,9 +374,8 @@ void MessageCenterImpl::UpdateNotification(
   }
 
   auto* old_notification = notification_list_->GetNotificationById(old_id);
-  if (old_notification) {
-    DCHECK(old_notification->notifier_id() == new_notification->notifier_id());
-
+  if (old_notification &&
+      old_notification->notifier_id() == new_notification->notifier_id()) {
     // Copy grouping metadata to the new notification.
     if (old_notification->group_parent()) {
       new_notification->SetGroupParent();
@@ -599,6 +601,17 @@ void MessageCenterImpl::ClickOnSettingsButton(const std::string& id) {
 
   for (MessageCenterObserver& observer : observer_list_) {
     observer.OnNotificationSettingsClicked(handled_by_delegate);
+  }
+}
+
+void MessageCenterImpl::ClickOnSnoozeButton(const std::string& id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  Notification* notification = notification_list_->GetNotificationById(id);
+
+  bool handled_by_delegate =
+      notification && notification_list_->GetNotificationDelegate(id);
+  if (handled_by_delegate) {
+    notification->delegate()->SnoozeButtonClicked();
   }
 }
 

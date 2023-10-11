@@ -67,7 +67,7 @@ export const SECTION_EXPECTATIONS: SectionData[] = [
   {
     name: 'kSearchAndAssistant',
     availableBeforeRevamp: true,
-    availableAfterRevamp: true,
+    availableAfterRevamp: false,
     availableForGuest: true,
   },
   {
@@ -97,13 +97,13 @@ export const SECTION_EXPECTATIONS: SectionData[] = [
   {
     name: 'kDateAndTime',
     availableBeforeRevamp: true,
-    availableAfterRevamp: true,
+    availableAfterRevamp: false,
     availableForGuest: true,
   },
   {
     name: 'kLanguagesAndInput',
     availableBeforeRevamp: true,
-    availableAfterRevamp: true,
+    availableAfterRevamp: false,
     availableForGuest: true,
   },
   {

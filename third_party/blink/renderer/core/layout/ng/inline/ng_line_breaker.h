@@ -329,7 +329,7 @@ class CORE_EXPORT NGLineBreaker {
   // between images, and between text and images.
   bool sticky_images_quirk_ = false;
 
-  // True if the resultant line contains a RubyRun with inline-end overhang.
+  // True if the resultant line contains a RubyColumn with inline-end overhang.
   bool maybe_have_end_overhang_ = false;
 
   // True if ShouldCreateNewSvgSegment() should be called.
@@ -355,7 +355,7 @@ class CORE_EXPORT NGLineBreaker {
   NGExclusionSpace* exclusion_space_;
   const NGInlineBreakToken* break_token_;
   const NGColumnSpannerPath* column_spanner_path_;
-  scoped_refptr<const ComputedStyle> current_style_;
+  const ComputedStyle* current_style_ = nullptr;
 
   LazyLineBreakIterator break_iterator_;
   HarfBuzzShaper shaper_;

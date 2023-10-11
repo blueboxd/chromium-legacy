@@ -73,6 +73,7 @@ bool FormField::MatchesRegexWithCache(base::StringPiece16 input,
 // static
 void FormField::ParseFormFields(
     const std::vector<std::unique_ptr<AutofillField>>& fields,
+    const GeoIpCountryCode& client_country,
     const LanguageCode& page_language,
     bool is_form_tag,
     PatternSource pattern_source,
@@ -83,12 +84,7 @@ void FormField::ParseFormFields(
   // Email pass.
   ParseFormFieldsPass(EmailField::Parse, processed_fields, field_candidates,
                       page_language, pattern_source, log_manager);
-  const size_t email_count = field_candidates.size();
-
-  // Single fields pass.
-  ParseSingleFieldForms(fields, page_language, is_form_tag, pattern_source,
-                        field_candidates, log_manager);
-  size_t fillable_single_fields = field_candidates.size() - email_count;
+  bool found_email_field = !field_candidates.empty();
 
   // Phone pass.
   ParseFormFieldsPass(PhoneField::Parse, processed_fields, field_candidates,
@@ -119,15 +115,15 @@ void FormField::ParseFormFields(
   ParseFormFieldsPass(CreditCardField::Parse, processed_fields,
                       field_candidates, page_language, pattern_source,
                       log_manager);
+  bool found_cc_fields = candidates_size != field_candidates.size();
   if (base::FeatureList::IsEnabled(
           features::kAutofillParseVcnCardOnFileStandaloneCvcFields) &&
-      email_count == 0 && candidates_size == field_candidates.size()) {
+      !found_email_field && !found_cc_fields) {
     // No email or cc fields found. Standalone CVC field pass for the VCN card
     // on file case.
     ParseStandaloneCVCFields(fields, page_language, pattern_source,
                              field_candidates, log_manager);
     // Any detected standalone cvc fields are considered fillable single fields.
-    fillable_single_fields += field_candidates.size() - candidates_size;
   }
 
   // Price pass.
@@ -149,13 +145,27 @@ void FormField::ParseFormFields(
     ParseUsingAutocompleteAttributes(processed_fields, field_candidates);
   }
 
-  size_t fillable_distinct_field_types = 0;
+  // Single fields pass.
+  ParseSingleFieldForms(fields, client_country, page_language, is_form_tag,
+                        pattern_source, field_candidates, log_manager);
+
+  ClearCandidatesIfHeuristicsDidNotFindEnoughFields(
+      fields, field_candidates, is_form_tag, client_country, log_manager);
+}
+
+// static
+void FormField::ClearCandidatesIfHeuristicsDidNotFindEnoughFields(
+    const std::vector<std::unique_ptr<AutofillField>>& fields,
+    FieldCandidatesMap& field_candidates,
+    bool is_form_tag,
+    const GeoIpCountryCode& client_country,
+    LogManager* log_manager) {
   // Set to count distinct field types.
   ServerFieldTypeSet heuristic_types;
   for (const auto& [field_id, candidates] : field_candidates) {
-    if (IsFillableFieldType(candidates.BestHeuristicType())) {
-      ++fillable_distinct_field_types;
-      heuristic_types.insert(candidates.BestHeuristicType());
+    if (ServerFieldType heuristic_type = candidates.BestHeuristicType();
+        IsFillableFieldType(heuristic_type)) {
+      heuristic_types.insert(heuristic_type);
     }
   }
 
@@ -164,7 +174,7 @@ void FormField::ParseFormFields(
   // applied. This reduces false positives by counting similar fields only once.
   // "Fillable" refers to the field type, not whether a specific field is
   // visible and editable by the user.
-  fillable_distinct_field_types = heuristic_types.size();
+  size_t fillable_distinct_field_types = heuristic_types.size();
 
   // Do not autofill a form if there aren't enough fields. Otherwise, it is
   // very easy to have false positives. See http://crbug.com/447332
@@ -172,41 +182,86 @@ void FormField::ParseFormFields(
   // the only recognized field on account registration sites. Also make an
   // exception for single-field Autofillable types, even when the form contains
   // less than kMinRequiredFieldsForHeuristics fields in its form signature.
-  if (fillable_distinct_field_types < kMinRequiredFieldsForHeuristics) {
-    if ((is_form_tag && email_count > 0) || fillable_single_fields > 0) {
-      base::EraseIf(field_candidates, [&](const auto& candidate) {
-        return !(candidate.second.BestHeuristicType() == EMAIL_ADDRESS ||
-                 FormField::IsSingleFieldParseableType(
-                     candidate.second.BestHeuristicType()));
-      });
-    } else {
-      LogBuffer table_rows(IsLoggingActive(log_manager));
-      for (const auto& field : fields)
-        LOG_AF(table_rows) << Tr{} << "Field:" << *field;
-      for (const auto& [field_id, candidates] : field_candidates) {
-        LogBuffer name(IsLoggingActive(log_manager));
-        name << "Type candidate for frame and renderer ID: " << field_id;
-        LogBuffer description(IsLoggingActive(log_manager));
-        LOG_AF(description)
-            << "BestHeuristicType: "
-            << AutofillType::ServerFieldTypeToString(
-                   candidates.BestHeuristicType())
-            << ", is fillable: "
-            << IsFillableFieldType(candidates.BestHeuristicType());
-        LOG_AF(table_rows) << Tr{} << std::move(name) << std::move(description);
+  if (fillable_distinct_field_types >= kMinRequiredFieldsForHeuristics) {
+    return;
+  }
+
+  ServerFieldTypeSet permitted_single_field_types{
+      MERCHANT_PROMO_CODE, IBAN_VALUE,
+      CREDIT_CARD_STANDALONE_VERIFICATION_CODE};
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableZipOnlyAddressForms) &&
+      AddressField::IsStandaloneZipSupported(client_country)) {
+    permitted_single_field_types.insert(ADDRESS_HOME_ZIP);
+  }
+
+  // For historic reasons email addresses are only retained if they appear in
+  // a <form> tag. It's unclear whether that's necessary.
+  ServerFieldTypeSet permitted_single_field_types_in_form{EMAIL_ADDRESS};
+
+  // Returns whether a field type may exist as a stand-alone field.
+  auto retainable_field_type =
+      [&is_form_tag, &permitted_single_field_types_in_form,
+       &permitted_single_field_types](ServerFieldType heuristic_type) {
+        return (is_form_tag && permitted_single_field_types_in_form.contains(
+                                   heuristic_type)) ||
+               permitted_single_field_types.contains(heuristic_type);
+      };
+
+  struct WipedField {
+    FieldGlobalId field_id;
+    ServerFieldType best_heuristic_type;
+  };
+  std::vector<WipedField> wiped_fields;
+  if (IsLoggingActive(log_manager)) {
+    for (const auto& [field_id, candidates] : field_candidates) {
+      ServerFieldType heuristic_type = candidates.BestHeuristicType();
+      if (!retainable_field_type(heuristic_type)) {
+        wiped_fields.emplace_back(WipedField{field_id, heuristic_type});
       }
-      LOG_AF(log_manager)
-          << LoggingScope::kParsing
-          << LogMessage::kLocalHeuristicDidNotFindEnoughFillableFields
-          << Tag{"table"} << Attrib{"class", "form"} << std::move(table_rows)
-          << CTag{"table"};
-      field_candidates.clear();
     }
+  }
+
+  // Given that we don't have kMinRequiredFieldsForHeuristics distinct field
+  // types, we expect field_candidates to be small and don't need to be
+  // extremely performant. It's ok to use EraseIf even if in some cases we could
+  // clear everything.
+  base::EraseIf(
+      field_candidates,
+      [&retainable_field_type](
+          const FieldCandidatesMap::container_type::value_type& candidate) {
+        return !retainable_field_type(candidate.second.BestHeuristicType());
+      });
+
+  if (IsLoggingActive(log_manager)) {
+    LogBuffer table_rows;
+    for (const auto& field : fields) {
+      LOG_AF(table_rows) << Tr{} << "Field:" << *field;
+    }
+    for (const auto& f : wiped_fields) {
+      LogBuffer name;
+      name << "Type candidate for frame and renderer ID: " << f.field_id;
+
+      LogBuffer description;
+      LOG_AF(description) << "BestHeuristicType: "
+                          << AutofillType::ServerFieldTypeToString(
+                                 f.best_heuristic_type)
+                          << ", is fillable: "
+                          << IsFillableFieldType(f.best_heuristic_type);
+
+      LOG_AF(table_rows) << Tr{} << std::move(name) << std::move(description);
+    }
+    LOG_AF(log_manager)
+        << LoggingScope::kParsing
+        << LogMessage::kLocalHeuristicDidNotFindEnoughFillableFields
+        << Tag{"table"} << Attrib{"class", "form"} << std::move(table_rows)
+        << CTag{"table"};
   }
 }
 
 void FormField::ParseSingleFieldForms(
     const std::vector<std::unique_ptr<AutofillField>>& fields,
+    const GeoIpCountryCode& client_country,
     const LanguageCode& page_language,
     bool is_form_tag,
     PatternSource pattern_source,
@@ -220,9 +275,15 @@ void FormField::ParseSingleFieldForms(
                       log_manager);
 
   // IBAN pass.
-  if (base::FeatureList::IsEnabled(features::kAutofillParseIBANFields)) {
-    ParseFormFieldsPass(IBANField::Parse, processed_fields, field_candidates,
-                        page_language, pattern_source, log_manager);
+  ParseFormFieldsPass(IbanField::Parse, processed_fields, field_candidates,
+                      page_language, pattern_source, log_manager);
+
+  if (AddressField::IsStandaloneZipSupported(client_country)) {
+    // In some countries we observe address forms that are particularly small
+    // (e.g. only a zip code.)
+    ParseFormFieldsPass(AddressField::ParseStandaloneZip, processed_fields,
+                        field_candidates, page_language, pattern_source,
+                        log_manager);
   }
 }
 
@@ -531,7 +592,7 @@ bool FormField::MatchesFormControlType(base::StringPiece type,
     return true;
 
   if (match_type.contains(MatchFieldType::kSelect) &&
-      (type == "select-one" || type == "selectmenu")) {
+      (type == "select-one" || type == "selectlist")) {
     return true;
   }
 

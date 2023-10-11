@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
+#include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -122,16 +123,8 @@ MediaControlPopupMenuElement::~MediaControlPopupMenuElement() = default;
 void MediaControlPopupMenuElement::SetIsWanted(bool wanted) {
   MediaControlDivElement::SetIsWanted(wanted);
 
-  // TODO(crbug.com/1466192) On systems with HTMLPopoverAttribute disabled
-  // manually, popovers will not work. This feature will be removed on
-  // August 9, 2023. Until then, at least don't crash the renderer.
-  bool popover_enabled = RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext());
-
   if (wanted) {
-    if (popover_enabled) {
-      ShowPopoverInternal(/*invoker*/ nullptr, /*exception_state*/ nullptr);
-    }
+    ShowPopoverInternal(/*invoker*/ nullptr, /*exception_state*/ nullptr);
     if (!RuntimeEnabledFeatures::CSSAnchorPositioningEnabled()) {
       SetPosition();
     }
@@ -144,7 +137,7 @@ void MediaControlPopupMenuElement::SetIsWanted(bool wanted) {
   } else {
     if (event_listener_)
       event_listener_->StopListening();
-    if (popover_enabled && popoverOpen()) {
+    if (popoverOpen()) {
       HidePopoverInternal(HidePopoverFocusBehavior::kNone,
                           HidePopoverTransitionBehavior::kNoEventsNoWaiting,
                           nullptr);
@@ -159,7 +152,8 @@ void MediaControlPopupMenuElement::OnItemSelected() {
 void MediaControlPopupMenuElement::DefaultEventHandler(Event& event) {
   if (event.type() == event_type_names::kPointermove &&
       event.target() != this) {
-    To<Element>(event.target()->ToNode())->Focus();
+    To<Element>(event.target()->ToNode())
+        ->Focus(FocusParams(FocusTrigger::kUserGesture));
     last_focused_element_ = To<Element>(event.target()->ToNode());
   } else if (event.type() == event_type_names::kFocusout) {
     GetDocument()
@@ -183,7 +177,9 @@ void MediaControlPopupMenuElement::DefaultEventHandler(Event& event) {
     if (last_focused_element_) {
       FocusOptions* focus_options = FocusOptions::Create();
       focus_options->setPreventScroll(true);
-      last_focused_element_->Focus(focus_options);
+      last_focused_element_->Focus(FocusParams(
+          SelectionBehaviorOnFocus::kNone, mojom::blink::FocusType::kNone,
+          nullptr, focus_options, FocusTrigger::kUserGesture));
     }
   }
 
@@ -211,6 +207,12 @@ void MediaControlPopupMenuElement::Trace(Visitor* visitor) const {
 MediaControlPopupMenuElement::MediaControlPopupMenuElement(
     MediaControlsImpl& media_controls)
     : MediaControlDivElement(media_controls) {
+  // When clicking the scroll bar, chrome will find its first focusable parent
+  // and focus on it. In order to prevent popup menu from losing focus (which
+  // will close the menu), we make the popup menu focusable.
+  // TODO(media) There is currently no test for this behavior.
+  setTabIndex(0);
+
   setAttribute(html_names::kPopoverAttr, keywords::kAuto);
   SetElementAttribute(html_names::kAnchorAttr, PopupAnchor());
   SetIsWanted(false);
@@ -275,7 +277,7 @@ bool MediaControlPopupMenuElement::FocusListItemIfDisplayed(Node* node) {
 
   if (!element->InlineStyle() ||
       !element->InlineStyle()->HasProperty(CSSPropertyID::kDisplay)) {
-    element->Focus();
+    element->Focus(FocusParams(FocusTrigger::kUserGesture));
     last_focused_element_ = element;
     return true;
   }
@@ -316,14 +318,14 @@ void MediaControlPopupMenuElement::SelectPreviousItem() {
 
 void MediaControlPopupMenuElement::CloseFromKeyboard() {
   SetIsWanted(false);
-  PopupAnchor()->Focus();
+  PopupAnchor()->Focus(FocusParams(FocusTrigger::kUserGesture));
 }
 
 void MediaControlPopupMenuElement::FocusPopupAnchorIfOverflowClosed() {
   if (!GetMediaControls().OverflowMenuIsWanted() &&
       !GetMediaControls().PlaybackSpeedListIsWanted() &&
       !GetMediaControls().TextTrackListIsWanted()) {
-    PopupAnchor()->Focus();
+    PopupAnchor()->Focus(FocusParams(FocusTrigger::kUserGesture));
   }
 }
 

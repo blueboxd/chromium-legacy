@@ -411,12 +411,16 @@ class WPTResultsProcessor:
         event = Event(raw_event.pop('action'), raw_event.pop('time'),
                       raw_event.pop('thread'), raw_event.pop('pid'),
                       raw_event.pop('source'))
+        if (event.action in ['test_start', 'test_status', 'test_end']
+                and self.run_info.get('used_upstream')):
+            # Do not process test related events when run with
+            # --use-upstream-wpt. Only Wpt report is needed for such case.
+            return
         test = raw_event.pop('test', None)
         subsuite = raw_event.pop('subsuite', '')
         if test:
             test = test[1:] if test.startswith('/') else test
-            if not self.run_info.get('used_upstream'):
-                test = self._get_chromium_test_name(test, subsuite)
+            test = self._get_chromium_test_name(test, subsuite)
             raw_event['test'] = test
         status = raw_event.get('status')
         if status:
@@ -426,7 +430,7 @@ class WPTResultsProcessor:
         handler = self._event_handlers.get(event.action)
         if handler:
             handler(event, **raw_event)
-        elif event.action != 'log':
+        elif event.action not in ['log', 'add_subsuite']:
             _log.warning(
                 "%r event received, but not handled (event: %r, "
                 'extra: %r)', event.action, event, raw_event)
@@ -465,8 +469,9 @@ class WPTResultsProcessor:
             path_from_test_root = self.internal_manifest.file_path_for_test_url(
                 test[len('wpt_internal/'):])
         else:
+            test = self.path_finder.strip_wpt_path(test)
             path_from_test_root = self.wpt_manifest.file_path_for_test_url(
-                test[len(self.path_finder.wpt_prefix()):])
+                test)
         return path_from_test_root
 
     @memoized
@@ -486,7 +491,7 @@ class WPTResultsProcessor:
     def get_test_type(self, test: str) -> str:
         _, test = self.port.get_suite_name_and_base_test(test)
         test_path = self.get_path_from_test_root(test)
-        if self.path_finder.is_wpt_internal_path(test_path):
+        if self.path_finder.is_wpt_internal_path(test):
             return self.internal_manifest.get_test_type(test_path)
         else:
             return self.wpt_manifest.get_test_type(test_path)
@@ -522,14 +527,12 @@ class WPTResultsProcessor:
         result.image_diff_stats = image_diff_stats
         if result.unexpected:
             self._handle_unexpected_result(result)
-        if not self.run_info.get('used_upstream'):
-            # We only need Wpt report when run with upstream
-            self.sink.report_individual_test_result(
-                test_name_prefix=self.test_name_prefix,
-                result=result,
-                artifact_output_dir=self.fs.dirname(self.artifacts_dir),
-                expectations=None,
-                test_file_location=result.file_path)
+        self.sink.report_individual_test_result(
+            test_name_prefix=self.test_name_prefix,
+            result=result,
+            artifact_output_dir=self.fs.dirname(self.artifacts_dir),
+            expectations=None,
+            test_file_location=result.file_path)
         _log.debug(
             'Reported result for %s, iteration %d (actual: %s, '
             'expected: %s, artifacts: %s)', result.name, self._iteration,
@@ -592,8 +595,7 @@ class WPTResultsProcessor:
             if rounded_run_time:
                 test_dict['time'] = rounded_run_time
 
-            if (not self.run_info.get('used_upstream')
-                    and self.port.is_slow_wpt_test(test_name)):
+            if self.port.is_slow_wpt_test(test_name):
                 test_dict['is_slow_test'] = True
 
             if is_unexpected:
@@ -720,9 +722,13 @@ class WPTResultsProcessor:
                                      diff_content.encode())
 
         test_type = self.get_test_type(result.name)
+        if not test_type:
+            raise EventProcessingError(f'Unknown test type: {result.name!r}')
         actual = result.test_section(self.run_info)
-        html_diff_content = wpt_results_diff.wpt_results_diff(
-            actual, expected, test_type)
+        actual.set('type', test_type)
+        if expected:
+            expected.set('type', test_type)
+        html_diff_content = wpt_results_diff.wpt_results_diff(actual, expected)
 
         html_diff_subpath = self.port.output_filename(
             result.name, test_failures.FILENAME_SUFFIX_HTML_DIFF, '.html')
@@ -879,6 +885,9 @@ class WPTResultsProcessor:
         compact_results = []
         for result in results:
             compact_result = {'status': result['status']}
+            subsuite = result.get('subsuite', '')
+            if subsuite:
+                compact_result['subsuite'] = subsuite
             duration = result.get('duration')
             if duration:
                 compact_result['duration'] = duration

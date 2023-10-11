@@ -68,7 +68,8 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.AutomotiveContextWrapperTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.browser_ui.util.date.StringUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -343,8 +344,8 @@ public class DownloadActivityV2Test extends BlankUiTestActivityTestCase {
 
         // Add an item. The new item should be visible and the storage text should be updated.
         OfflineItem item5 = StubbedProvider.createOfflineItem("offline_guid_5",
-                JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_2), OfflineItemState.COMPLETE, 1024,
-                "page 5", "/data/fake_path/Downloads/file_5", System.currentTimeMillis(), 100000,
+                JUnitTestGURLs.URL_2, OfflineItemState.COMPLETE, 1024, "page 5",
+                "/data/fake_path/Downloads/file_5", System.currentTimeMillis(), 100000,
                 OfflineItemFilter.OTHER);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mStubbedOfflineContentProvider.addItem(item5));
@@ -652,7 +653,7 @@ public class DownloadActivityV2Test extends BlankUiTestActivityTestCase {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR_ACTIVITY})
+    @DisableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR_ACTIVITY})
     @DisabledTest(message = "https://crbug.com/1416712")
     public void testDismissSearchViewByBackPress() {
         TestThreadUtils.runOnUiThreadBlocking(() -> { setUpUi(); });
@@ -690,7 +691,7 @@ public class DownloadActivityV2Test extends BlankUiTestActivityTestCase {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR_ACTIVITY})
+    @EnableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR_ACTIVITY})
     public void testDismissSearchViewByBackPress_BackPressRefactor() {
         testDismissSearchViewByBackPress();
     }

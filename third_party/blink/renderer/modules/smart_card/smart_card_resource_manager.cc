@@ -20,6 +20,8 @@ namespace {
 constexpr char kContextGone[] = "Script context has shut down.";
 constexpr char kFeaturePolicyBlocked[] =
     "Access to the feature \"smart-card\" is disallowed by permissions policy.";
+constexpr char kNotSufficientlyIsolated[] =
+    "Frame is not sufficiently isolated to use smart cards.";
 constexpr char kServiceDisconnected[] =
     "Disconnected from the smart card service.";
 
@@ -28,6 +30,10 @@ bool ShouldBlockSmartCardServiceCall(ExecutionContext* context,
   if (!context) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       kContextGone);
+  } else if (!context->IsIsolatedContext() ||
+             !context->IsFeatureEnabled(mojom::blink::PermissionsPolicyFeature::
+                                            kCrossOriginIsolated)) {
+    exception_state.ThrowSecurityError(kNotSufficientlyIsolated);
   } else if (!context->IsFeatureEnabled(
                  mojom::blink::PermissionsPolicyFeature::kSmartCard,
                  ReportOptions::kReportOnFailure)) {
@@ -112,8 +118,7 @@ void SmartCardResourceManager::OnCreateContextDone(
   create_context_promises_.erase(resolver);
 
   if (result->is_error()) {
-    auto* error = SmartCardError::Create(result->get_error());
-    resolver->Reject(error);
+    SmartCardError::Reject(resolver, result->get_error());
     return;
   }
 

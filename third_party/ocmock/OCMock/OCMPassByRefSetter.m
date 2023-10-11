@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009-2015 Erik Doernenburg and contributors
+ *  Copyright (c) 2009-2021 Erik Doernenburg and contributors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use these files except in compliance with the License. You may obtain
@@ -16,48 +16,34 @@
 
 #import "OCMPassByRefSetter.h"
 
-static NSHashTable *gPointerTable = nil;
 
 @implementation OCMPassByRefSetter
 
-+ (void)initialize {
-    if (self == [OCMPassByRefSetter class])
-    {
-        gPointerTable = [[NSHashTable hashTableWithOptions:NSPointerFunctionsOpaqueMemory | NSPointerFunctionsOpaquePersonality] retain];
-    }
-}
-
 - (id)initWithValue:(id)aValue
 {
-    if ((self = [super init]))
+    if((self = [super init]))
     {
         value = [aValue retain];
-        @synchronized(gPointerTable) {
-            NSHashInsertKnownAbsent(gPointerTable, self);
-        }
     }
-	
-	return self;
+
+    return self;
 }
 
 - (void)dealloc
 {
-	[value release];
-	@synchronized(gPointerTable) {
-		NSAssert(NSHashGet(gPointerTable, self) != NULL, @"self should be in the hash table");
-		NSHashRemove(gPointerTable, self);
-	}
-	[super dealloc];
+    [value release];
+    [super dealloc];
 }
 
-- (id)value
+- (void)handleArgument:(id)arg
 {
-	return value;
-}
-
-+ (BOOL)ptrIsPassByRefSetter:(void*)ptr {
-    @synchronized(gPointerTable) {
-        return NSHashGet(gPointerTable, ptr) != NULL;
+    void *pointerValue = [arg pointerValue];
+    if(pointerValue != NULL)
+    {
+        if([value isKindOfClass:[NSValue class]])
+            [(NSValue *)value getValue:pointerValue];
+        else
+            *(id *)pointerValue = value;
     }
 }
 

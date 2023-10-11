@@ -165,6 +165,16 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private static final long TAB_SWITCH_METRICS_MAX_ALLOWED_SCROLL_INTERVAL =
             DateUtils.MINUTE_IN_MILLIS;
 
+    // Histogram Constants
+    private static final String PLACEHOLDER_LEFTOVER_TABS_HISTOGRAM_NAME =
+            "Android.TabStrip.PlaceholderStripLeftoverTabsCount";
+    private static final String PLACEHOLDER_TABS_CREATED_DURING_RESTORE_HISTOGRAM_NAME =
+            "Android.TabStrip.PlaceholderStripTabsCreatedDuringRestoreCount";
+    private static final String PLACEHOLDER_TABS_NEEDED_DURING_RESTORE_HISTOGRAM_NAME =
+            "Android.TabStrip.PlaceholderStripTabsNeededDuringRestoreCount";
+    private static final String PLACEHOLDER_VISIBLE_DURATION_HISTOGRAM_NAME =
+            "Android.TabStrip.PlaceholderStripVisibleDuration";
+
     // External influences
     private final LayoutUpdateHost mUpdateHost;
     private final LayoutRenderHost mRenderHost;
@@ -258,6 +268,10 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private int mActiveTabIndexOnStartup;
     private int mCurrentPlaceholderIndex;
 
+    private long mPlaceholderCreationTime;
+    private int mTabsCreatedDuringRestore;
+    private int mPlaceholdersNeededDuringRestore;
+
     // Tab Drag and Drop state to hold clicked tab being dragged.
     private MultiInstanceManager mMultiInstanceManager;
     private View mToolbarContainerView;
@@ -343,40 +357,25 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                     (int) (NEW_TAB_BUTTON_DEFAULT_PRESSED_OPACITY * 255));
 
             // Surface-2 baseline for folio, surface-3 baseline for detached incognito bg color.
-            int defaultBgColorDarkElev2 = ChromeFeatureList.sBaselineGm3SurfaceColors.isEnabled()
-                    ? R.color.default_bg_color_dark_elev_2_gm3_baseline
-                    : R.color.default_bg_color_dark_elev_2_baseline;
-            int defaultBgColorDarkElev3 = ChromeFeatureList.sBaselineGm3SurfaceColors.isEnabled()
-                    ? R.color.default_bg_color_dark_elev_3_gm3_baseline
-                    : R.color.default_bg_color_dark_elev_3_baseline;
             int incognitoBackgroundTint = TabManagementFieldTrial.isTabStripFolioEnabled()
-                    ? context.getResources().getColor(defaultBgColorDarkElev2)
-                    : context.getResources().getColor(defaultBgColorDarkElev3);
+                    ? context.getResources().getColor(R.color.default_bg_color_dark_elev_2_baseline)
+                    : context.getResources().getColor(
+                            R.color.default_bg_color_dark_elev_3_baseline);
 
             // Surface-5 baseline for incognito pressed bg color
-            int defaultBgColorDarkElev5 = ChromeFeatureList.sBaselineGm3SurfaceColors.isEnabled()
-                    ? R.color.default_bg_color_dark_elev_5_gm3_baseline
-                    : R.color.default_bg_color_dark_elev_5_baseline;
             int incognitoBackgroundPressedTint =
-                    context.getResources().getColor(defaultBgColorDarkElev5);
+                    context.getResources().getColor(R.color.default_bg_color_dark_elev_5_baseline);
 
             // Tab strip redesign new tab button night mode bg color.
             if (ColorUtils.inNightMode(context)) {
-                // Surface 1 for folio night mode bg color.
+                // Surface-1 for folio night mode bg color.
                 if (TabManagementFieldTrial.isTabStripFolioEnabled()) {
                     defaultNTBBackgroundTint =
                             ChromeColors.getSurfaceColor(context, R.dimen.default_elevation_1);
                 } else {
-                    // Primary @ 15% for detached night mode bg color.
-                    if (ChromeFeatureList.sBaselineGm3SurfaceColors.isEnabled()) {
-                        defaultNTBBackgroundTint =
-                                ChromeColors.getSurfaceColor(context, R.dimen.default_elevation_2);
-                    } else {
-                        defaultNTBBackgroundTint =
-                                androidx.core.graphics.ColorUtils.setAlphaComponent(
-                                        SemanticColorUtils.getDefaultIconColorAccent1(context),
-                                        (int) (NEW_TAB_BUTTON_DARK_DETACHED_OPACITY * 255));
-                    }
+                    // Surface-2 for detached night mode bg color.
+                    defaultNTBBackgroundTint =
+                            ChromeColors.getSurfaceColor(context, R.dimen.default_elevation_2);
                 }
                 // Surface 5 for pressed night mode bg color.
                 pressedBackgroundTint =
@@ -673,6 +672,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             mSelectedOnStartup = mModel.isActiveModel();
             if (mPlaceholderStripReady) replacePlaceholdersForRestoredTabs();
         } else {
+            RecordHistogram.recordTimesHistogram(PLACEHOLDER_VISIBLE_DURATION_HISTOGRAM_NAME, 0L);
+
             computeAndUpdateTabOrders(false, false);
         }
     }
@@ -683,8 +684,23 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     protected void onTabStateInitialized() {
         mTabStateInitialized = true;
 
-        // TODO(https://crbug.com/1446844): Iterate through tabs and record if a placeholder
-        //  remained when the tab state initialized.
+        if (ChromeFeatureList.sTabStripStartupRefactoring.isEnabled()) {
+            int numLeftoverPlaceholders = 0;
+            for (int i = 0; i < mStripTabs.length; i++) {
+                if (mStripTabs[i].getIsPlaceholder()) numLeftoverPlaceholders++;
+            }
+
+            RecordHistogram.recordCount1000Histogram(
+                    PLACEHOLDER_LEFTOVER_TABS_HISTOGRAM_NAME, numLeftoverPlaceholders);
+            RecordHistogram.recordCount1000Histogram(
+                    PLACEHOLDER_TABS_CREATED_DURING_RESTORE_HISTOGRAM_NAME,
+                    mTabsCreatedDuringRestore);
+            RecordHistogram.recordCount1000Histogram(
+                    PLACEHOLDER_TABS_NEEDED_DURING_RESTORE_HISTOGRAM_NAME,
+                    mPlaceholdersNeededDuringRestore);
+            RecordHistogram.recordMediumTimesHistogram(PLACEHOLDER_VISIBLE_DURATION_HISTOGRAM_NAME,
+                    SystemClock.uptimeMillis() - mPlaceholderCreationTime);
+        }
 
         // Recreate the StripLayoutTabs from the TabModel, now that all of the real Tabs have been
         // restored. This will reuse valid tabs, discard invalid tabs, and correct tab orders.
@@ -931,6 +947,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         // 4. Mark that the placeholder strip layout is ready and request a visual update.
         mPlaceholderStripReady = true;
+        mPlaceholderCreationTime = SystemClock.uptimeMillis();
         mUpdateHost.requestUpdate();
     }
 
@@ -1004,12 +1021,17 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             mCurrentPlaceholderIndex++;
         }
 
-        // TODO(https://crbug.com/1444818): Investigate if non-restored tabs can be created
-        //  before the tab state is initialized.
-        assert onStartup;
+        // Tab manually created while tabs were still restoring on startup.
+        if (!onStartup) {
+            mTabsCreatedDuringRestore++;
+            return;
+        }
 
-        // TODO(https://crbug.com/1446844): Investigate if we ever allot too few placeholders.
-        assert mCurrentPlaceholderIndex < mStripTabs.length || selected;
+        // Unexpectedly ran out of placeholders.
+        if (mCurrentPlaceholderIndex >= mStripTabs.length && !selected) {
+            mPlaceholdersNeededDuringRestore++;
+            return;
+        }
 
         // Replace the matching placeholder.
         int replaceIndex;
@@ -2264,16 +2286,14 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         // 6. the selected tab will already be visible, so update tab group and background
         // container.
-        if (TabUiFeatureUtilities.isTabletTabGroupsEnabled(mContext)) {
-            Tab tab = getTabById(mInteractingTab.getId());
-            computeAndUpdateTabGroupMargins(true, animationList);
-            if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
-                setTabGroupBackgroundContainersVisible(mTabGroupModelFilter.getRootId(tab), true);
-            } else {
-                setTabGroupDimmed(mTabGroupModelFilter.getRootId(tab), false);
-            }
-            performHapticFeedback(tab);
+        Tab tab = getTabById(mInteractingTab.getId());
+        computeAndUpdateTabGroupMargins(true, animationList);
+        if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+            setTabGroupBackgroundContainersVisible(mTabGroupModelFilter.getRootId(tab), true);
+        } else {
+            setTabGroupDimmed(mTabGroupModelFilter.getRootId(tab), false);
         }
+        performHapticFeedback(tab);
 
         // 7. Lift the TSR folio container off the toolbar.
         mInteractingTab.setIsReordering(true);
@@ -2315,10 +2335,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         }
         setCompositorButtonsVisible(true);
 
-        // 4. Clear any tab group margins if they are enabled.
-        if (TabUiFeatureUtilities.isTabletTabGroupsEnabled(mContext)) {
-            resetTabGroupMargins(animationList);
-        }
+        // 4. Clear any tab group margins.
+        resetTabGroupMargins(animationList);
 
         // 5. Reattach the TSR folio container to the toolbar.
         mInteractingTab.setIsReordering(false);
@@ -2509,8 +2527,6 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     }
 
     private void setTabGroupDimmed(int groupId, boolean dimmed) {
-        assert TabUiFeatureUtilities.isTabletTabGroupsEnabled(mContext);
-
         for (int i = 0; i < mStripTabs.length; i++) {
             final StripLayoutTab tab = mStripTabs[i];
 
@@ -2701,8 +2717,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         // 2. Check if we should swap tabs and track the new destination index.
         int destIndex = TabModel.INVALID_TAB_INDEX;
         boolean towardEnd = (offset >= 0) ^ LocalizationUtils.isLayoutRtl();
-        boolean isInGroup = TabUiFeatureUtilities.isTabletTabGroupsEnabled(mContext)
-                && mTabGroupModelFilter.hasOtherRelatedTabs(getTabById(mInteractingTab.getId()));
+        boolean isInGroup =
+                mTabGroupModelFilter.hasOtherRelatedTabs(getTabById(mInteractingTab.getId()));
         boolean hasTrailingMargin = mInteractingTab.getTrailingMargin() == mTabMarginWidth;
         boolean hasStartingMargin = curIndex == 0
                 ? mStripStartMarginForReorder > 0
@@ -2754,9 +2770,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             // 3.c. Re-compute tab group margins if necessary.
             float oldIdealX = mInteractingTab.getIdealX();
             float oldOffset = mScrollOffset;
-            if (TabUiFeatureUtilities.isTabletTabGroupsEnabled(mContext)) {
-                computeAndUpdateTabGroupMargins(false, null);
-            }
+            computeAndUpdateTabGroupMargins(false, null);
 
             // 3.d. Since we just moved the tab we're dragging, adjust its offset so it stays in
             // the same apparent position.

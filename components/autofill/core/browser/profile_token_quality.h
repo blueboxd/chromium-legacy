@@ -9,12 +9,14 @@
 #include <stdint.h>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/span.h"
+#include "base/memory/raw_ref.h"
 #include "base/types/strong_alias.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/form_data.h"
@@ -45,17 +47,18 @@ class PersonalDataManager;
 //
 // TODO(crbug.com/1453650): Interface + logic to reset observations for
 // `kAccount` profiles and for edits via settings.
-// TODO(crbug.com/1453650): Interface + logic to initialize the class with
-// existing observations (when loading it from the DB).
 // TODO(crbug.com/1453650): Treat values entered through settings as `kAccepted`
 // observations.
 class ProfileTokenQuality {
  public:
   // Describes the different types of observations, derived from an autofilled
   // field at form submission.
-  enum class ObservationType {
-    // Default value. Not used for actual observations.
-    kNone = 0,
+  enum class ObservationType : uint8_t {
+    // An observation type that this client doesn't understand. This is possible
+    // if a newer client synced a new enum value that this client doesn't
+    // understand. Internally, the unknown value is stored as it's underlying
+    // type - but it is exposed as `kUnknown`. See `Observation`.
+    kUnknown = 0,
     // The autofilled value of a stored type was accepted as-filled.
     kAccepted = 1,
     // The autofilled value of a derived type was accepted as-filled. This is
@@ -82,6 +85,7 @@ class ProfileTokenQuality {
     // enum values above. E.g, edited to some completely different value, that
     // doesn't occur in any profile.
     kEditedFallback = 8,
+    kMaxValue = kEditedFallback
   };
 
   // For each stored type, only at most `kMaxObservationsPerToken` observations
@@ -129,9 +133,6 @@ class ProfileTokenQuality {
       const FormData& form_data,
       PersonalDataManager& pdm);
 
-  void AddObservationForTesting(ServerFieldType field_type,
-                                ObservationType observation_type);
-
   // Returns all `ObservationType`s available for the `type`. The resulting
   // vector has at most `kMaxNumberOfObservations` items. It is guaranteed that
   // no observation type is `kNone`.
@@ -140,9 +141,22 @@ class ProfileTokenQuality {
   std::vector<ObservationType> GetObservationTypesForFieldType(
       ServerFieldType type) const;
 
+  // Observations are stored together with their stored `type` in the database.
+  // The observations for each stored type are serialized as a sequence of
+  // integers. Each observation is represented using two uint8_ts, where the
+  // first byte represents the `ObservationType` and the second byte the
+  // `FormSignatureHash`.
+  // Changing the encoding requires adding migration logic to `AutofillTable`.
+  // Tested by autofill_table_unittest.cc.
+  std::vector<uint8_t> SerializeObservationsForStoredType(
+      ServerFieldType type) const;
+  void LoadSerializedObservationsForStoredType(
+      ServerFieldType type,
+      base::span<const uint8_t> serialized_data);
+
   void set_profile(AutofillProfile* profile) {
     CHECK(profile);
-    profile_ = profile;
+    profile_ = *profile;
   }
 
   // Copy the observations for the `type` from `other`.
@@ -162,6 +176,13 @@ class ProfileTokenQuality {
   }
 
  private:
+  friend class ProfileTokenQualityTestApi;
+  // To send/receive observations to/from Sync, the entire `Observation`s need
+  // to be accessed, not just the `ObservationType`. This is implemented in
+  // terms of friend classes to keep the `form_hash`es private.
+  friend class ContactInfoEntryDataSetter;
+  friend class ContactInfoProfileSetter;
+
   // For every form and stored type, at most a single observation is stored
   // (among the `kMaxObservationsPerToken` observations stored in total).
   // To track for which forms an observation was already collected,
@@ -179,7 +200,18 @@ class ProfileTokenQuality {
   // An observation, describing the type of observed observation and the form-
   // field it was collected from.
   struct Observation {
-    ObservationType type = ObservationType::kNone;
+    // Internally, observation types are not stored as an `ObservationType`, but
+    // as their underlying type. This way, new (future) observation types,
+    // synced in from newer clients can be handled:
+    // - Since the sync code uses proto2, the `ObservationType`s are synced as
+    //   ints. Otherwise old clients would lose future observation types.
+    // - Casting the int from sync to the enum class `ObservationType` would
+    //   technically preserve it's value. But it would come at the downside of
+    //   making switch statements with all cases non-exhaustive.
+    // For this reason, it is preferred to store the `ObservationType`s as their
+    // underlying type in the data model as well.
+    // Getters expose unknown values as `kUnknown`.
+    std::underlying_type_t<ObservationType> type;
     FormSignatureHash form_hash = FormSignatureHash(0);
   };
 
@@ -214,15 +246,14 @@ class ProfileTokenQuality {
       const std::vector<AutofillProfile*>& other_profiles,
       const std::string& app_locale) const;
 
-  // The profile for which observations are collected. Not null.
-  base::raw_ptr<AutofillProfile> profile_;
+  // The profile for which observations are collected.
+  raw_ref<AutofillProfile> profile_;
 
   // Maps from `AutofillTable::GetStoredTypesForAutofillProfile()` to the
   // observations for this stored type. The following invariants hold for the
   // `circular_deque`:
   // - The observations are ordered from oldest (`front()`) to newest
   //   (`back()`).
-  // - No stored observation has type `kNone`.
   // - No more than `kMaxObservationsPerToken` elements are stored.
   base::flat_map<ServerFieldType, base::circular_deque<Observation>>
       observations_;

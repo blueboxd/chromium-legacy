@@ -11,10 +11,11 @@
 #include <string>
 
 #include "base/apple/bridging.h"
+#include "base/apple/foundation_util.h"
 #include "base/files/file_path.h"
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #import "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/notreached.h"
 
 @interface URLAndTitle ()
@@ -59,7 +60,7 @@ NSString* UTIFromPboardType(NSString* type) {
 bool ReadWebURLsWithTitlesPboardType(NSPasteboard* pboard,
                                      NSArray** urls,
                                      NSArray** titles) {
-  NSArray* bookmarkPairs = base::mac::ObjCCast<NSArray>([pboard
+  NSArray* bookmarkPairs = base::apple::ObjCCast<NSArray>([pboard
       propertyListForType:UTIFromPboardType(kWebURLsWithTitlesPboardType)]);
   if (!bookmarkPairs)
     return false;
@@ -67,8 +68,8 @@ bool ReadWebURLsWithTitlesPboardType(NSPasteboard* pboard,
   if ([bookmarkPairs count] != 2)
     return false;
 
-  NSArray* urlsArr = base::mac::ObjCCast<NSArray>(bookmarkPairs[0]);
-  NSArray* titlesArr = base::mac::ObjCCast<NSArray>(bookmarkPairs[1]);
+  NSArray* urlsArr = base::apple::ObjCCast<NSArray>(bookmarkPairs[0]);
+  NSArray* titlesArr = base::apple::ObjCCast<NSArray>(bookmarkPairs[1]);
 
   if (!urlsArr || !titlesArr)
     return false;

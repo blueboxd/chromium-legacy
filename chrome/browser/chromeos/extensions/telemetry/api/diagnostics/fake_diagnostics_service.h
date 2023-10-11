@@ -53,8 +53,16 @@ class FakeDiagnosticsService : public crosapi::mojom::DiagnosticsService {
       RunBatteryDischargeRoutineCallback callback) override;
   void RunBatteryHealthRoutine(
       RunBatteryHealthRoutineCallback callback) override;
+  void RunBluetoothDiscoveryRoutine(
+      RunBluetoothDiscoveryRoutineCallback callback) override;
+  void RunBluetoothPairingRoutine(
+      const std::string& peripheral_id,
+      RunBluetoothPairingRoutineCallback callback) override;
   void RunBluetoothPowerRoutine(
       RunBluetoothPowerRoutineCallback callback) override;
+  void RunBluetoothScanningRoutine(
+      uint32_t length_seconds,
+      RunBluetoothScanningRoutineCallback callback) override;
   void RunCpuCacheRoutine(uint32_t length_seconds,
                           RunCpuCacheRoutineCallback callback) override;
   void RunCpuStressRoutine(uint32_t length_seconds,

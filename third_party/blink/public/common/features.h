@@ -212,14 +212,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanvasFreeMemoryWhenHidden);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanChangeToUrlForHistoryApiUpdate);
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCheckOfflineCapability);
-enum class CheckOfflineCapabilityMode {
-  kWarnOnly,
-  kEnforce,
-};
-BLINK_COMMON_EXPORT extern const base::FeatureParam<CheckOfflineCapabilityMode>
-    kCheckOfflineCapabilityParam;
-
 // If enabled, the HTMLDocumentParser will only check its budget after parsing a
 // commonly slow token or for one out of 10 fast tokens. Note that this feature
 // is a no-op if kTimedHTMLParserBudget is disabled.
@@ -230,6 +222,8 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsDeviceMemory_DEPRECATED);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsDPR);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsDPR_DEPRECATED);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsFormFactor);
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kClientHintsPrefersReducedTransparency);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsResourceWidth);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsResourceWidth_DEPRECATED);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsSaveData);
@@ -262,9 +256,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // If enabled, DOMContentLoaded will be fired after all async scripts are
 // executed.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDOMContentLoadedWaitForAsyncScript);
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDecodeJpeg420ImagesToYUV);
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDecodeLossyWebPImagesToYUV);
 
 // If enabled, script source text will be decoded and hashed off the main
 // thread.
@@ -345,6 +336,14 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kDisableThirdPartyStoragePartitioningDeprecationTrial);
 
+// These values are used to implement a browser intervention: if a cross-origin
+// iframe has moved more than {param:distance} screen pixels (manhattan
+// distance) within its embedding page's viewport within the last
+// {param:time_ms} milliseconds, most input events targeting the iframe will be
+// quietly discarded.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kDiscardInputEventsToRecentlyMovedFrames);
+
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDispatchBeforeUnloadOnFreeze);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDisplayLocking);
@@ -411,6 +410,11 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // Uses the kFilterName* values in ui_base_features.h as the 'filter' feature
 // param.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFilteringScrollPrediction);
+
+// (b/283408783): When enabled, first gesture scrolls on web pages that have
+// touch handlers registered will go through the normal queueing process if
+// while gesture scrolls that hit a touch handlers will be queued instantly.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFixGestureScrollQueuingBug);
 
 // FLEDGE ad serving runtime flag/JS API.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledge);
@@ -578,6 +582,9 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLinkPreview);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLoadingTasksUnfreezable);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kLoadingPhaseBufferTimeAfterFirstMeaningfulPaint);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kLogUnexpectedIPCPostedToBackForwardCachedDocuments);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLowLatencyCanvas2dImageChromium);
@@ -622,6 +629,14 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // Keep strong references in the blink memory cache to maximize resource reuse.
 // See https://crbug.com/1409349.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kMemoryCacheStrongReference);
+// The threshold for the total decoded size of resources that keep strong
+// references.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kMemoryCacheStrongReferenceTotalSizeThresholdParam;
+// The threshold for the decoded size of a resource that can keep a strong
+// reference.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kMemoryCacheStrongReferenceResourceSizeThresholdParam;
 // Exclude images from the saved strong references for resources.
 // See https://crbug.com/1409349.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
@@ -630,6 +645,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // See https://crbug.com/1409349.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kMemoryCacheStrongReferenceFilterScripts);
+// Exclude cross origin scripts from the saved strong references for resources.
+// See https://crbug.com/1409349.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kMemoryCacheStrongReferenceFilterCrossOriginScripts);
 // Save only one unloaded page's resources in the memory cache.
 // See https://crbug.com/1409349.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
@@ -728,6 +747,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrefetchFontLookupTables);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrefetchPrivacyChanges);
 
+// If enabled, the machine learning model will be employed to predict the next
+// click for speculation-rule based pre-loadings.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPreloadingHeuristicsMLModel);
+
 // Enables the same-origin main frame navigation in a prerendered page.
 // See https://crbug.com/1239281.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2MainFrameNavigation);
@@ -808,6 +831,11 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kProduceCompileHintsOnIdleDelayParam;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<double>
     kProduceCompileHintsNoiseLevel;
+
+// When enabled, gesture scroll updates that hit a JS touch handlers
+// will be queued normally on CC, enabling coalescing and consistent
+// input handling.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kQueueBlockingGestureScrolls);
 
 // Whether Sec-CH-UA headers on subresource fetches that contain an empty
 // string should be quoted (`""`) as they are for navigation fetches. See
@@ -912,6 +940,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSSVTrailerEnforceExposureAssertion);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSaveDataImgSrcset);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kScopeMemoryCachePerContext);
+
+// When enabled, only pages that belong to a certain browsing context group are
+// paused instead of all pages.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPausePagesPerBrowsingContextGroup);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kScriptStreaming);
 
@@ -1294,6 +1326,10 @@ BLINK_COMMON_EXPORT bool
 IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled();
 
 BLINK_COMMON_EXPORT bool ParkableStringsUseSnappy();
+
+// Checks both of kKeepAliveInBrowserMigration and kFetchLaterAPI, and returns
+// true if any of them is true.
+BLINK_COMMON_EXPORT bool IsKeepAliveInBrowserMigrationEnabled();
 
 }  // namespace features
 }  // namespace blink

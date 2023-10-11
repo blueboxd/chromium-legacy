@@ -514,7 +514,7 @@ bool IsRunOnOsLoginModeEnabledForAutostart(RunOnOsLoginMode login_mode) {
 #if BUILDFLAG(IS_CHROMEOS)
 bool IsWebAppsCrosapiEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  return crosapi::browser_util::IsLacrosPrimaryBrowser();
+  return crosapi::browser_util::IsLacrosEnabled();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   auto* lacros_service = chromeos::LacrosService::Get();
@@ -599,17 +599,6 @@ AppId GetAppIdFromAppSettingsUrl(const GURL& url) {
   if (path.size() <= 1)
     return AppId();
   return path.substr(1);
-}
-
-bool HasAppSettingsPage(Profile* profile, const GURL& url) {
-  const AppId app_id = GetAppIdFromAppSettingsUrl(url);
-  if (app_id.empty())
-    return false;
-
-  WebAppProvider* provider = WebAppProvider::GetForWebApps(profile);
-  if (!provider)
-    return false;
-  return provider->registrar_unsafe().IsLocallyInstalled(app_id);
 }
 
 bool IsInScope(const GURL& url, const GURL& scope) {

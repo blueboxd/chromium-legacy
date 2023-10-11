@@ -12,6 +12,7 @@
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/thread_pool.h"
+#include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
@@ -69,9 +70,8 @@ ParsingCallback(Functor&& functor, Args&&... args) {
 
 // See ParsingCallback().
 template <typename Functor, typename... Args>
-base::OnceCallback<void(AutofillManager&)> NotifyObserversCallback(
-    Functor&& functor,
-    Args&&... args) {
+[[nodiscard]] base::OnceCallback<void(AutofillManager&)>
+NotifyObserversCallback(Functor&& functor, Args&&... args) {
   return base::BindOnce(
       [](Functor&& functor, std::remove_reference_t<Args&&>... args,
          AutofillManager& self) {
@@ -136,12 +136,6 @@ bool CachedFormNeedsUpdate(const FormData& live_form,
 void AutofillManager::LogAutofillTypePredictionsAvailable(
     LogManager* log_manager,
     const std::vector<FormStructure*>& forms) {
-  if (VLOG_IS_ON(1)) {
-    VLOG(1) << "Parsed forms:";
-    for (FormStructure* form : forms)
-      VLOG(1) << *form;
-  }
-
   LogBuffer buffer(IsLoggingActive(log_manager));
   for (FormStructure* form : forms)
     LOG_AF(buffer) << *form;
@@ -182,8 +176,9 @@ void AutofillManager::OnLanguageDetermined(
 
   if (!base::FeatureList::IsEnabled(features::kAutofillParseAsync)) {
     for (auto& [form_id, form_structure] : form_structures_) {
-      form_structure->DetermineHeuristicTypes(form_interactions_ukm_logger(),
-                                              log_manager_);
+      form_structure->DetermineHeuristicTypes(
+          client().GetVariationConfigCountryCode(),
+          form_interactions_ukm_logger(), log_manager_);
       NotifyObservers(&Observer::OnFieldTypesDetermined, form_id,
                       Observer::FieldTypeSource::kHeuristicsOrAutocomplete);
     }
@@ -194,12 +189,15 @@ void AutofillManager::OnLanguageDetermined(
   struct AsyncContext {
     AsyncContext(
         std::map<FormGlobalId, std::unique_ptr<FormStructure>> form_structures,
+        GeoIpCountryCode country_code,
         LogManager* log_manager)
         : form_structures(std::move(form_structures)),
+          country_code(std::move(country_code)),
           log_manager(IsLoggingActive(log_manager)
                           ? LogManager::CreateBuffering()
                           : nullptr) {}
     std::map<FormGlobalId, std::unique_ptr<FormStructure>> form_structures;
+    GeoIpCountryCode country_code;
     std::unique_ptr<BufferingLogManager> log_manager;
   };
 
@@ -212,6 +210,7 @@ void AutofillManager::OnLanguageDetermined(
         "Autofill.Timing.OnLanguageDetermined.RunHeuristics");
     for (auto& [id, form_structure] : context.form_structures) {
       form_structure->DetermineHeuristicTypes(
+          context.country_code,
           /*form_interactions_ukm_logger=*/nullptr, context.log_manager.get());
     }
     return context;
@@ -243,8 +242,10 @@ void AutofillManager::OnLanguageDetermined(
   auto form_structures = std::exchange(form_structures_, {});
   parsing_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(RunHeuristics,
-                     AsyncContext(std::move(form_structures), log_manager_)),
+      base::BindOnce(
+          RunHeuristics,
+          AsyncContext(std::move(form_structures),
+                       client().GetVariationConfigCountryCode(), log_manager_)),
       base::BindOnce(UpdateCache, parsing_weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -265,13 +266,13 @@ void AutofillManager::FillCreditCardForm(
     const FormFieldData& field,
     const CreditCard& credit_card,
     const std::u16string& cvc,
-    const AutofillTriggerSource trigger_source) {
+    const AutofillTriggerDetails& trigger_details) {
   if (!base::FeatureList::IsEnabled(features::kAutofillParseAsync)) {
-    FillCreditCardFormImpl(form, field, credit_card, cvc, trigger_source);
+    FillCreditCardFormImpl(form, field, credit_card, cvc, trigger_details);
     return;
   }
   ParseFormAsync(form, ParsingCallback(&AutofillManager::FillCreditCardFormImpl,
-                                       field, credit_card, cvc, trigger_source)
+                                       field, credit_card, cvc, trigger_details)
                            .Then(NotifyNoObserversCallback()));
 }
 
@@ -279,13 +280,13 @@ void AutofillManager::FillProfileForm(
     const AutofillProfile& profile,
     const FormData& form,
     const FormFieldData& field,
-    const AutofillTriggerSource trigger_source) {
+    const AutofillTriggerDetails& trigger_details) {
   if (!base::FeatureList::IsEnabled(features::kAutofillParseAsync)) {
-    FillProfileFormImpl(form, field, profile, trigger_source);
+    FillProfileFormImpl(form, field, profile, trigger_details);
     return;
   }
   ParseFormAsync(form, ParsingCallback(&AutofillManager::FillProfileFormImpl,
-                                       field, profile, trigger_source)
+                                       field, profile, trigger_details)
                            .Then(NotifyNoObserversCallback()));
 }
 
@@ -361,8 +362,11 @@ void AutofillManager::OnFormsSeen(
         continue;
       DCHECK(form_structure);
 
-      if (update_form_signature)
+      if (update_form_signature) {
         form_structure->set_form_signature(CalculateFormSignature(form));
+        form_structure->set_alternative_form_signature(
+            CalculateAlternativeFormSignature(form));
+      }
 
       parsed_forms.push_back(form);
       AutofillMetrics::LogParseFormTiming(AutofillTickClock::NowTicks() -
@@ -553,10 +557,6 @@ void AutofillManager::OnFocusNoLongerOnForm(bool had_interacted_form) {
   OnFocusNoLongerOnFormImpl(had_interacted_form);
 }
 
-void AutofillManager::OnDidPreviewAutofillFormData() {
-  OnDidPreviewAutofillFormDataImpl();
-}
-
 void AutofillManager::OnDidEndTextFieldEditing() {
   OnDidEndTextFieldEditingImpl();
 }
@@ -565,18 +565,23 @@ void AutofillManager::OnHidePopup() {
   OnHidePopupImpl();
 }
 
-void AutofillManager::OnSelectOrSelectMenuFieldOptionsDidChange(
+void AutofillManager::OnPopupHidden() {
+  driver().PopupHidden();
+  NotifyObservers(&Observer::OnSuggestionsHidden);
+}
+
+void AutofillManager::OnSelectOrSelectListFieldOptionsDidChange(
     const FormData& form) {
   if (!IsValidFormData(form))
     return;
 
   if (!base::FeatureList::IsEnabled(features::kAutofillParseAsync)) {
-    OnSelectOrSelectMenuFieldOptionsDidChangeImpl(form);
+    OnSelectOrSelectListFieldOptionsDidChangeImpl(form);
     return;
   }
   ParseFormAsync(
       form, ParsingCallback(
-                &AutofillManager::OnSelectOrSelectMenuFieldOptionsDidChangeImpl)
+                &AutofillManager::OnSelectOrSelectListFieldOptionsDidChangeImpl)
                 .Then(NotifyNoObserversCallback()));
 }
 
@@ -728,8 +733,11 @@ void AutofillManager::ParseFormsAsync(
       // Not updating signatures of credit card forms is legacy behaviour. We
       // believe that the signatures are kept stable for voting purposes.
       DenseSet<FormType> form_types = cached_form_structure->GetFormTypes();
-      if (form_types.size() > form_types.count(FormType::kCreditCardForm))
+      if (form_types.size() > form_types.count(FormType::kCreditCardForm)) {
         form_structure->set_form_signature(CalculateFormSignature(form_data));
+        form_structure->set_alternative_form_signature(
+            CalculateAlternativeFormSignature(form_data));
+      }
     }
 
     form_structure->set_current_page_language(GetCurrentPageLanguage());
@@ -747,12 +755,15 @@ void AutofillManager::ParseFormsAsync(
 
   struct AsyncContext {
     AsyncContext(std::vector<std::unique_ptr<FormStructure>> form_structures,
+                 GeoIpCountryCode country_code,
                  LogManager* log_manager)
         : form_structures(std::move(form_structures)),
+          country_code(std::move(country_code)),
           log_manager(IsLoggingActive(log_manager)
                           ? LogManager::CreateBuffering()
                           : nullptr) {}
     std::vector<std::unique_ptr<FormStructure>> form_structures;
+    GeoIpCountryCode country_code;
     std::unique_ptr<BufferingLogManager> log_manager;
   };
 
@@ -764,6 +775,7 @@ void AutofillManager::ParseFormsAsync(
     SCOPED_UMA_HISTOGRAM_TIMER("Autofill.Timing.ParseFormsAsync.RunHeuristics");
     for (auto& form_structure : context.form_structures) {
       form_structure->DetermineHeuristicTypes(
+          context.country_code,
           /*form_interactions_ukm_logger=*/nullptr, context.log_manager.get());
     }
     return context;
@@ -795,8 +807,10 @@ void AutofillManager::ParseFormsAsync(
 
   parsing_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(RunHeuristics,
-                     AsyncContext(std::move(form_structures), log_manager_)),
+      base::BindOnce(
+          RunHeuristics,
+          AsyncContext(std::move(form_structures),
+                       client().GetVariationConfigCountryCode(), log_manager_)),
       base::BindOnce(UpdateCache, parsing_weak_ptr_factory_.GetWeakPtr(),
                      std::move(callback), parsed_forms));
 }
@@ -842,12 +856,15 @@ void AutofillManager::ParseFormAsync(
 
   struct AsyncContext {
     AsyncContext(std::unique_ptr<FormStructure> form_structure,
+                 GeoIpCountryCode country_code,
                  LogManager* log_manager)
         : form_structure(std::move(form_structure)),
+          country_code(std::move(country_code)),
           log_manager(IsLoggingActive(log_manager)
                           ? LogManager::CreateBuffering()
                           : nullptr) {}
     std::unique_ptr<FormStructure> form_structure;
+    GeoIpCountryCode country_code;
     std::unique_ptr<BufferingLogManager> log_manager;
   };
 
@@ -858,6 +875,7 @@ void AutofillManager::ParseFormAsync(
   auto RunHeuristics = [](AsyncContext context) {
     SCOPED_UMA_HISTOGRAM_TIMER("Autofill.Timing.ParseFormAsync.RunHeuristics");
     context.form_structure->DetermineHeuristicTypes(
+        context.country_code,
         /*form_interactions_ukm_logger=*/nullptr, context.log_manager.get());
     return context;
   };
@@ -891,8 +909,10 @@ void AutofillManager::ParseFormAsync(
 
   parsing_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(RunHeuristics,
-                     AsyncContext(std::move(form_structure), log_manager_)),
+      base::BindOnce(
+          RunHeuristics,
+          AsyncContext(std::move(form_structure),
+                       client().GetVariationConfigCountryCode(), log_manager_)),
       base::BindOnce(UpdateCache, parsing_weak_ptr_factory_.GetWeakPtr(),
                      std::move(callback), form_data));
 }
@@ -923,8 +943,9 @@ FormStructure* AutofillManager::ParseForm(const FormData& form,
 
   form_structure->set_current_page_language(GetCurrentPageLanguage());
 
-  form_structure->DetermineHeuristicTypes(form_interactions_ukm_logger(),
-                                          log_manager_);
+  form_structure->DetermineHeuristicTypes(
+      client().GetVariationConfigCountryCode(), form_interactions_ukm_logger(),
+      log_manager_);
 
   // Hold the parsed_form_structure we intend to return. We can use this to
   // reference the form_signature when transferring ownership below.
@@ -1001,9 +1022,7 @@ void AutofillManager::OnLoadedServerPredictions(
 
   LogAutofillTypePredictionsAvailable(log_manager_, queried_forms);
 
-  // Forward form structures to the password generation manager to detect
-  // account creation forms.
-  PropagateAutofillPredictionsDeprecated(queried_forms);
+  client().PropagateAutofillPredictionsDeprecated(&driver(), queried_forms);
 
   for (const FormStructure* form : queried_forms) {
     NotifyObservers(&Observer::OnFieldTypesDetermined, form->global_id(),

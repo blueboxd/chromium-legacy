@@ -167,7 +167,7 @@ public class TabStateAttributesTest {
         while (observers.hasNext()) observers.next().onContentChanged(mTab);
         WebContentsObserver webContentsObserver = mWebContentsObserverCaptor.getValue();
         TabStateAttributes.from(mTab).addObserver(mAttributesObserver);
-        GURL testGURL = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
+        GURL testGURL = JUnitTestGURLs.EXAMPLE_URL;
         NavigationHandle navHandle = NavigationHandle.createForTesting(testGURL, false, 0, false);
 
         Assert.assertEquals(TabStateAttributes.DirtinessState.CLEAN,
@@ -184,7 +184,7 @@ public class TabStateAttributesTest {
         TabStateAttributes.createForTab(mTab, TabCreationState.FROZEN_ON_RESTORE);
         RewindableIterator<TabObserver> observers = TabTestUtils.getTabObservers(mTab);
         TabStateAttributes.from(mTab).addObserver(mAttributesObserver);
-        GURL testGURL = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
+        GURL testGURL = JUnitTestGURLs.EXAMPLE_URL;
 
         Assert.assertEquals(TabStateAttributes.DirtinessState.CLEAN,
                 TabStateAttributes.from(mTab).getDirtinessState());
@@ -455,5 +455,21 @@ public class TabStateAttributesTest {
         TabStateAttributes.from(mTab).updateIsDirty(TabStateAttributes.DirtinessState.DIRTY);
         Assert.assertEquals(TabStateAttributes.DirtinessState.DIRTY,
                 TabStateAttributes.from(mTab).getDirtinessState());
+    }
+
+    @Test
+    public void testDirtyCannotBecomeUntidy() {
+        TabStateAttributes.createForTab(mTab, TabCreationState.FROZEN_FOR_LAZY_LOAD);
+        TabStateAttributes.from(mTab).addObserver(mAttributesObserver);
+        Assert.assertEquals(TabStateAttributes.DirtinessState.DIRTY,
+                TabStateAttributes.from(mTab).getDirtinessState());
+
+        TabStateAttributes.from(mTab).updateIsDirty(TabStateAttributes.DirtinessState.UNTIDY);
+        Assert.assertEquals(TabStateAttributes.DirtinessState.DIRTY,
+                TabStateAttributes.from(mTab).getDirtinessState());
+        Mockito.verifyNoMoreInteractions(mAttributesObserver);
+        Mockito.reset(mAttributesObserver);
+
+        mTab.getUserDataHost().removeUserData(TabStateAttributes.class);
     }
 }

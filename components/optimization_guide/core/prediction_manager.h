@@ -20,6 +20,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
+#include "base/types/optional_ref.h"
 #include "components/optimization_guide/core/model_enums.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/prediction_model_download_observer.h"
@@ -166,6 +167,22 @@ class PredictionManager : public PredictionModelDownloadObserver {
           prediction_models);
 
  private:
+  // Contains the model registration specific info to be kept for each
+  // optimization target.
+  struct ModelRegistrationInfo {
+    ModelRegistrationInfo(absl::optional<proto::Any> metadata,
+                          OptimizationTargetModelObserver* model_observer);
+    ~ModelRegistrationInfo();
+
+    // The feature-provided metadata that was registered with the prediction
+    // manager.
+    absl::optional<proto::Any> metadata;
+
+    // The model observer that was registered to receive model updates from
+    // the prediction manager.
+    raw_ptr<OptimizationTargetModelObserver> model_observer;
+  };
+
   friend class PredictionManagerTestBase;
   friend class PredictionModelStoreBrowserTestBase;
 
@@ -265,10 +282,12 @@ class PredictionManager : public PredictionModelDownloadObserver {
   // 2. The last time a fetch attempt was made.
   void ScheduleModelsFetch();
 
-  // Notifies observers of |optimization_target| that the model has been
-  // updated.
-  void NotifyObserversOfNewModel(proto::OptimizationTarget optimization_target,
-                                 const ModelInfo& model_info);
+  // Notifies observers of `optimization_target` that the model has been
+  // updated. `model_info` will be nullopt when the model was stopped to be
+  // served from the server, and removed from the store,
+  void NotifyObserversOfNewModel(
+      proto::OptimizationTarget optimization_target,
+      base::optional_ref<const ModelInfo> model_info);
 
   // Updates the metadata for |model|.
   void UpdateModelMetadata(const proto::PredictionModel& model);
@@ -300,18 +319,11 @@ class PredictionManager : public PredictionModelDownloadObserver {
   // A map of optimization target to the model file containing the model for the
   // target.
   base::flat_map<proto::OptimizationTarget, std::unique_ptr<ModelInfo>>
-      optimization_target_model_info_map_;
+      optimization_target_model_info_map_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  // The map from optimization targets to feature-provided metadata that have
-  // been registered with the prediction manager.
-  base::flat_map<proto::OptimizationTarget, absl::optional<proto::Any>>
-      registered_optimization_targets_and_metadata_;
-
-  // The map from optimization target to observers that have been registered to
-  // receive model updates from the prediction manager.
-  std::map<proto::OptimizationTarget,
-           base::ObserverList<OptimizationTargetModelObserver>>
-      registered_observers_for_optimization_targets_;
+  // The map from optimization target to the model registration specific data.
+  std::map<proto::OptimizationTarget, ModelRegistrationInfo>
+      model_registration_info_map_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // The fetcher that handles making requests to update the models and host
   // model features from the remote Optimization Guide Service.

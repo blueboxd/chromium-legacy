@@ -128,6 +128,10 @@
     "META": {"sizes": {"includes": [5],}},
     "includes": [2400],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/add_supervision/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [2410],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/arc_account_picker/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
     "includes": [2420],
@@ -214,6 +218,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/password_change/resources.grd": {
     "META": {"sizes": {"includes": [30]}},
     "includes": [2860],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/status_area_internals/resources.grd": {
+    "META": {"sizes": {"includes": [30]}},
+    "includes": [2865],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/vc_tray_tester/resources.grd": {
     "META": {"sizes": {"includes": [5]}},
@@ -448,6 +456,10 @@
     "META": {"sizes": {"includes": [10],}},
     "includes": [4040],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/borealis_installer/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [4050],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/chromebox_for_meetings/resources.grd": {
     "META": {"sizes": {"includes": [5]}},
     "includes": [4060],
@@ -600,7 +612,7 @@
     "includes": [4800],
   },
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/webxr_internals/resources.grd": {
-    "META": {"sizes": {"includes": [10,],}},
+    "META": {"sizes": {"includes": [20,],}},
     "includes": [4810],
   },
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/webrtc/resources/resources.grd": {
@@ -634,6 +646,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/enterprise_reporting/resources.grd": {
     "META": {"sizes": {"includes": [20]}},
     "includes": [4960],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/hats/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [4980],
   },
   # END chrome/ WebUI resources section
 

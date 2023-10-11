@@ -238,12 +238,17 @@
         </cr-tooltip-icon>
         <cr-toggle id="enableToggle"
             aria-label$="[[getEnableToggleAriaLabel_(data.*)]]"
-            aria-describedby="name"
+            aria-describedby="name enable-toggle-tooltip"
             checked="[[isEnabled_(data.state)]]"
             on-change="onEnableToggleChange_"
             disabled$="[[!isEnableToggleEnabled_(data.*)]]"
             hidden$="[[!showEnableToggle_(data.*)]]">
         </cr-toggle>
+        <paper-tooltip id="enable-toggle-tooltip" for="enableToggle"
+            position="left" aria-hidden="true" animation-delay="0"
+            fit-to-visible-bounds>
+          [[getEnableToggleTooltipText_(data.*)]]
+        </paper-tooltip>
       </div>
     </div>
     <div id="warnings" hidden$="[[!hasSevereWarnings_(data.*)]]">
@@ -463,6 +468,14 @@
         on-click="onSiteSettingsClick_" external></cr-link-row>
     <template is="dom-if" if="[[shouldShowOptionsSection_(data.*)]]">
       <div id="options-section">
+        <template is="dom-if" if="[[canPinToToolbar_(data.pinnedToToolbar)]]">
+          <extensions-toggle-row id="pin-to-toolbar"
+              checked="[[data.pinnedToToolbar]]"
+              class="hr"
+              on-change="onPinnedToToolbarChange_">
+            <span>$i18n{itemPinToToolbar}</span>
+          </extensions-toggle-row>
+        </template>
         <template is="dom-if"
           if="[[shouldShowIncognitoOption_(
               data.incognitoAccess.isEnabled, incognitoAvailable)]]">

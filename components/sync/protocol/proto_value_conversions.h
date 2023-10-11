@@ -20,11 +20,13 @@ class AutofillOfferSpecifics;
 class AutofillWalletCredentialSpecifics;
 class AutofillWalletSpecifics;
 class AutofillWalletUsageSpecifics;
+class BankAccountDetails;
 class BookmarkSpecifics;
 class ClientConfigParams;
 class ClientToServerMessage;
 class ClientToServerResponse;
 class ContactInfoSpecifics;
+class CrossUserSharingPublicKey;
 class DebugEventInfo;
 class DebugInfo;
 class DeviceInfoSpecifics;
@@ -36,14 +38,17 @@ class ExtensionSettingSpecifics;
 class ExtensionSpecifics;
 class HistoryDeleteDirectiveSpecifics;
 class HistorySpecifics;
+class IncomingPasswordSharingInvitationSpecifics;
 class LinkedAppIconInfo;
 class ManagedUserSettingSpecifics;
 class NavigationRedirect;
 class NigoriSpecifics;
 class OsPreferenceSpecifics;
 class OsPriorityPreferenceSpecifics;
+class OutgoingPasswordSharingInvitationSpecifics;
 class PasswordSpecifics;
 class PasswordSpecificsData;
+class PaymentInstrument;
 class PaymentsCustomerData;
 class PowerBookmarkSpecifics;
 class PreferenceSpecifics;
@@ -121,6 +126,9 @@ base::Value AutofillWalletUsageSpecificsToValue(
     const sync_pb::AutofillWalletUsageSpecifics&
         autofill_wallet_usage_specifics);
 
+base::Value BankAccountDetailsToValue(
+    const sync_pb::BankAccountDetails& bank_account_details);
+
 base::Value BookmarkSpecificsToValue(
     const sync_pb::BookmarkSpecifics& bookmark_specifics);
 
@@ -158,6 +166,9 @@ base::Value HistoryDeleteDirectiveSpecificsToValue(
 base::Value HistorySpecificsToValue(
     const sync_pb::HistorySpecifics& history_specifics);
 
+base::Value IncomingPasswordSharingInvitationSpecificsToValue(
+    const sync_pb::IncomingPasswordSharingInvitationSpecifics& specifics);
+
 base::Value LinkedAppIconInfoToValue(
     const sync_pb::LinkedAppIconInfo& linked_app_icon_info);
 
@@ -176,6 +187,9 @@ base::Value OsPreferenceSpecificsToValue(
 base::Value OsPriorityPreferenceSpecificsToValue(
     const sync_pb::OsPriorityPreferenceSpecifics& specifics);
 
+base::Value OutgoingPasswordSharingInvitationSpecificsToValue(
+    const sync_pb::OutgoingPasswordSharingInvitationSpecifics& specifics);
+
 base::Value PasswordSpecificsToValue(
     const sync_pb::PasswordSpecifics& password_specifics);
 
@@ -184,6 +198,9 @@ base::Value PasswordSpecificsDataToValue(
 
 base::Value PowerBookmarkSpecificsToValue(
     const sync_pb::PowerBookmarkSpecifics& power_bookmark_specifics);
+
+base::Value PaymentInstrumentToValue(
+    const sync_pb::PaymentInstrument& payment_instrument);
 
 base::Value PaymentsCustomerDataToValue(
     const sync_pb::PaymentsCustomerData& payments_customer_data);
@@ -203,6 +220,9 @@ base::Value PrintersAuthorizationServerSpecificsToValue(
 
 base::Value PriorityPreferenceSpecificsToValue(
     const sync_pb::PriorityPreferenceSpecifics& proto);
+
+base::Value CrossUserSharingPublicKeyToValue(
+    const sync_pb::CrossUserSharingPublicKey& proto);
 
 base::Value ReadingListSpecificsToValue(
     const sync_pb::ReadingListSpecifics& proto);

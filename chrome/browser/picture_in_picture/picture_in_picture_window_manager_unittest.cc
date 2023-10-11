@@ -3,13 +3,32 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
+#include <memory>
 
+#include "base/scoped_observation.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 
+#if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/picture_in_picture/auto_picture_in_picture_tab_helper.h"
+#include "ui/views/view.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 namespace {
+
+typedef base::ScopedObservation<PictureInPictureWindowManager,
+                                PictureInPictureWindowManager::Observer>
+    PictureInPictureWindowManagerdObservation;
+
+class MockPictureInPictureWindowManagerObserver
+    : public PictureInPictureWindowManager::Observer {
+ public:
+  MOCK_METHOD(void, OnEnterPictureInPicture, (), (override));
+};
 
 class MockPictureInPictureWindowController
     : public content::PictureInPictureWindowController {
@@ -31,7 +50,29 @@ class MockPictureInPictureWindowController
   MOCK_METHOD(content::WebContents*, GetChildWebContents, (), (override));
 };
 
-using PictureInPictureWindowManagerTest = testing::Test;
+class PictureInPictureWindowManagerTest
+    : public ChromeRenderViewHostTestHarness {
+ public:
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+
+    SetContents(CreateTestWebContents());
+    child_web_contents_ = CreateTestWebContents();
+  }
+
+  void TearDown() override {
+    DeleteContents();
+    child_web_contents_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+  content::WebContents* child_web_contents() const {
+    return child_web_contents_.get();
+  }
+
+ private:
+  std::unique_ptr<content::WebContents> child_web_contents_;
+};
 
 }  // namespace
 
@@ -75,7 +116,7 @@ TEST_F(PictureInPictureWindowManagerTest, RespectsMinAndMaxSize) {
   // minimum height.
   pip_options.initial_aspect_ratio = 100000;
   EXPECT_EQ(
-      gfx::Size(800, 300),
+      gfx::Size(800, 52),
       PictureInPictureWindowManager::
           CalculateInitialPictureInPictureWindowBounds(pip_options, display)
               .size());
@@ -96,3 +137,45 @@ TEST_F(PictureInPictureWindowManagerTest,
   EXPECT_TRUE(
       PictureInPictureWindowManager::GetInstance()->ExitPictureInPicture());
 }
+
+TEST_F(PictureInPictureWindowManagerTest, OnEnterVideoPictureInPicture) {
+  PictureInPictureWindowManager* picture_in_picture_window_manager =
+      PictureInPictureWindowManager::GetInstance();
+  MockPictureInPictureWindowManagerObserver observer;
+  PictureInPictureWindowManagerdObservation observation{&observer};
+  observation.Observe(picture_in_picture_window_manager);
+  EXPECT_CALL(observer, OnEnterPictureInPicture).Times(1);
+
+  picture_in_picture_window_manager->EnterVideoPictureInPicture(web_contents());
+}
+
+#if !BUILDFLAG(IS_ANDROID)
+TEST_F(PictureInPictureWindowManagerTest, OnEnterDocumentPictureInPicture) {
+  PictureInPictureWindowManager* picture_in_picture_window_manager =
+      PictureInPictureWindowManager::GetInstance();
+  MockPictureInPictureWindowManagerObserver observer;
+  PictureInPictureWindowManagerdObservation observation{&observer};
+  observation.Observe(picture_in_picture_window_manager);
+  EXPECT_CALL(observer, OnEnterPictureInPicture).Times(1);
+
+  picture_in_picture_window_manager->EnterDocumentPictureInPicture(
+      web_contents(), child_web_contents());
+}
+
+TEST_F(PictureInPictureWindowManagerTest, DontShowAutoPipSettingUiWithoutPip) {
+  PictureInPictureWindowManager* picture_in_picture_window_manager =
+      PictureInPictureWindowManager::GetInstance();
+  // There's no pip open, so expect no setting UI.
+  EXPECT_FALSE(picture_in_picture_window_manager->GetOverlayView());
+}
+
+TEST_F(PictureInPictureWindowManagerTest,
+       DontShowAutoPipSettingUiForNonAutoPip) {
+  PictureInPictureWindowManager* picture_in_picture_window_manager =
+      PictureInPictureWindowManager::GetInstance();
+  picture_in_picture_window_manager->EnterDocumentPictureInPicture(
+      web_contents(), child_web_contents());
+  // This isn't auto-pip, so expect no overlay view.
+  EXPECT_FALSE(picture_in_picture_window_manager->GetOverlayView());
+}
+#endif

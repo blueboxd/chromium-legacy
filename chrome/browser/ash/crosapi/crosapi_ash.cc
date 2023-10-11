@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "ash/public/ash_interfaces.h"
 #include "base/dcheck_is_on.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
+#include "chrome/browser/apps/app_service/publishers/standalone_browser_apps.h"
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps.h"
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps_factory.h"
 #include "chrome/browser/apps/app_service/publishers/web_apps_crosapi.h"
@@ -48,6 +48,7 @@
 #include "chrome/browser/ash/crosapi/download_status_updater_ash.h"
 #include "chrome/browser/ash/crosapi/drive_integration_service_ash.h"
 #include "chrome/browser/ash/crosapi/echo_private_ash.h"
+#include "chrome/browser/ash/crosapi/embedded_accessibility_helper_client_ash.h"
 #include "chrome/browser/ash/crosapi/emoji_picker_ash.h"
 #include "chrome/browser/ash/crosapi/extension_info_private_ash.h"
 #include "chrome/browser/ash/crosapi/feedback_ash.h"
@@ -126,6 +127,7 @@
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"
 #include "chromeos/crosapi/mojom/device_local_account_extension_service.mojom.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
+#include "chromeos/crosapi/mojom/embedded_accessibility_helper.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/firewall_hole.mojom.h"
@@ -219,6 +221,8 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       drive_integration_service_ash_(
           std::make_unique<DriveIntegrationServiceAsh>()),
       echo_private_ash_(std::make_unique<EchoPrivateAsh>()),
+      embedded_accessibility_helper_client_ash_(
+          std::make_unique<EmbeddedAccessibilityHelperClientAsh>()),
       emoji_picker_ash_(std::make_unique<EmojiPickerAsh>()),
       extension_info_private_ash_(std::make_unique<ExtensionInfoPrivateAsh>()),
       feedback_ash_(std::make_unique<FeedbackAsh>()),
@@ -499,6 +503,15 @@ void CrosapiAsh::BindEchoPrivate(
     mojo::PendingReceiver<mojom::EchoPrivate> receiver) {
   echo_private_ash_->BindReceiver(std::move(receiver));
 }
+
+void CrosapiAsh::BindEmbeddedAccessibilityHelperClientFactory(
+    mojo::PendingReceiver<mojom::EmbeddedAccessibilityHelperClientFactory>
+        receiver) {
+  embedded_accessibility_helper_client_ash_
+      ->BindEmbeddedAccessibilityHelperClientFactoryReceiver(
+          std::move(receiver));
+}
+
 void CrosapiAsh::BindEmojiPicker(
     mojo::PendingReceiver<mojom::EmojiPicker> receiver) {
   emoji_picker_ash_->BindReceiver(std::move(receiver));
@@ -612,6 +625,18 @@ void CrosapiAsh::BindKioskSessionService(
   kiosk_session_service_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindLacrosAppPublisher(
+    mojo::PendingReceiver<mojom::AppPublisher> receiver) {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  auto* app_service_proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  apps::StandaloneBrowserApps* lacros_apps =
+      app_service_proxy->StandaloneBrowserApps();
+  if (lacros_apps) {
+    lacros_apps->RegisterCrosapiHost(std::move(receiver));
+  }
+}
+
 void CrosapiAsh::BindLocalPrinter(
     mojo::PendingReceiver<crosapi::mojom::LocalPrinter> receiver) {
   local_printer_ash_->BindReceiver(std::move(receiver));
@@ -715,7 +740,8 @@ void CrosapiAsh::BindParentAccess(
 void CrosapiAsh::BindPaymentAppInstance(
     mojo::PendingReceiver<chromeos::payments::mojom::PaymentAppInstance>
         receiver) {
-  payment_app_instance_ash_->Initialize();
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  payment_app_instance_ash_->Initialize(profile);
   payment_app_instance_ash_->BindReceiver(std::move(receiver));
 }
 

@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extensions_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/browser/web_applications/extension_status_utils.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -90,7 +91,6 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/file_highlighter.h"
 #include "extensions/browser/management_policy.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/path_util.h"
 #include "extensions/browser/permissions_manager.h"
 #include "extensions/browser/process_manager_factory.h"
@@ -162,6 +162,8 @@ const char kCannotRepairPolicyExtension[] =
     "Cannot repair a policy-installed extension.";
 const char kCannotChangeHostPermissions[] =
     "Cannot change host permissions for the given extension.";
+const char kCannotSetPinnedWithoutAction[] =
+    "Cannot set pinned action state for an extension with no action.";
 const char kInvalidHost[] = "Invalid host.";
 const char kInvalidLazyBackgroundPageParameter[] =
     "isServiceWorker can not be set for lazy background page based extensions.";
@@ -538,6 +540,7 @@ void BrowserContextKeyedAPIFactory<
   DependsOn(EventRouterFactory::GetInstance());
   DependsOn(ExtensionSystemFactory::GetInstance());
   DependsOn(PermissionsManager::GetFactory());
+  DependsOn(ToolbarActionsModelFactory::GetInstance());
 }
 
 // static
@@ -565,6 +568,7 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
   extension_allowlist_observer_.Observe(
       ExtensionSystem::Get(profile)->extension_service()->allowlist());
   permissions_manager_observation_.Observe(PermissionsManager::Get(profile));
+  toolbar_actions_model_observation_.Observe(ToolbarActionsModel::Get(profile));
   pref_change_registrar_.Init(profile->GetPrefs());
   // The unretained is safe, since the PrefChangeRegistrar unregisters the
   // callback on destruction.
@@ -748,6 +752,21 @@ void DeveloperPrivateEventRouter::OnExtensionPermissionsUpdated(
     PermissionsManager::UpdateReason reason) {
   BroadcastItemStateChanged(developer::EVENT_TYPE_PERMISSIONS_CHANGED,
                             extension.id());
+}
+
+void DeveloperPrivateEventRouter::OnToolbarPinnedActionsChanged() {
+  // Currently, only enabled extensions are considered since they are the only
+  // ones that have extension actions.
+  // TODO(crbug.com/1477884): Since pinned info is stored as a pref, include
+  // disabled extensions in this event as well.
+  const ExtensionSet& extensions =
+      ExtensionRegistry::Get(profile_)->enabled_extensions();
+  for (const auto& extension : extensions) {
+    if (ui_util::ShouldDisplayInExtensionSettings(*extension)) {
+      BroadcastItemStateChanged(developer::EVENT_TYPE_PINNED_ACTIONS_CHANGED,
+                                extension->id());
+    }
+  }
 }
 
 void DeveloperPrivateEventRouter::OnProfilePrefChanged() {
@@ -1169,6 +1188,20 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
             ->developer_private_event_router();
     if (event_router) {
       event_router->OnExtensionConfigurationChanged(extension->id());
+    }
+  }
+  if (update.pinned_to_toolbar) {
+    ToolbarActionsModel* toolbar_actions_model = ToolbarActionsModel::Get(
+        Profile::FromBrowserContext(browser_context()));
+    if (!toolbar_actions_model->HasAction(extension->id())) {
+      return RespondNow(Error(kCannotSetPinnedWithoutAction));
+    }
+
+    bool is_action_pinned =
+        toolbar_actions_model->IsActionPinned(extension->id());
+    if (is_action_pinned != *update.pinned_to_toolbar) {
+      toolbar_actions_model->SetActionVisibility(extension->id(),
+                                                 !is_action_pinned);
     }
   }
 
@@ -2498,6 +2531,8 @@ DeveloperPrivateGetMatchingExtensionsForSiteFunction::Run() {
   if (parsed_site.Parse(params->site) != URLPattern::ParseResult::kSuccess)
     return RespondNow(Error("Invalid site: " + params->site));
 
+  constexpr bool kIncludeApiPermissions = false;
+
   std::vector<developer::MatchingExtensionInfo> matching_extensions;
   URLPatternSet site_pattern({parsed_site});
   const ExtensionSet& enabled_extensions =
@@ -2525,18 +2560,25 @@ DeveloperPrivateGetMatchingExtensionsForSiteFunction::Run() {
     // have access to any sites that match `site_pattern`.
     developer::HostAccess host_access = developer::HOST_ACCESS_ON_CLICK;
 
+    // TODO(crbug.com/1472899): Add a version of CanUserSelectSiteAccess to
+    // PermissionsManager which takes in a URLPattern.
+    bool can_request_all_sites =
+        granted_permissions->ShouldWarnAllHosts(kIncludeApiPermissions) ||
+        extension->permissions_data()
+            ->withheld_permissions()
+            .ShouldWarnAllHosts(kIncludeApiPermissions);
+
     // If the extension has access to at least one site that matches
-    // `site_pattern`, return ON_ALL_SITES or ON_SPECIFIC_SITES depending on
-    // if the extension has any withheld sites.
-    // TODO(crbug.com/1459291): Return HOST_ACCESS_ON_ALL_SITES only if the
-    // extension has been granted access to all sites.
+    // `site_pattern`, return ON_ALL_SITES if the extension can request all
+    // sites and has no withheld sites, or ON_SPECIFIC_SITES otherwise.
     if (!granted_intersection.is_empty()) {
-      host_access = extension_withheld_sites.is_empty()
+      host_access = can_request_all_sites && extension_withheld_sites.is_empty()
                         ? developer::HOST_ACCESS_ON_ALL_SITES
                         : developer::HOST_ACCESS_ON_SPECIFIC_SITES;
     }
 
     developer::MatchingExtensionInfo matching_info;
+    matching_info.can_request_all_sites = can_request_all_sites;
     matching_info.site_access = host_access;
     matching_info.id = extension->id();
     matching_extensions.push_back(std::move(matching_info));

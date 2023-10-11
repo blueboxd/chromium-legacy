@@ -10,6 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/test/gmock_expected_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
@@ -43,19 +44,11 @@
 namespace web_app {
 namespace {
 
-using ::testing::AllOf;
+using base::test::ErrorIs;
+using base::test::ValueIs;
+using ::testing::_;
 using ::testing::Eq;
 using ::testing::Field;
-using ::testing::IsFalse;
-using ::testing::IsTrue;
-using ::testing::NotNull;
-using ::testing::Optional;
-using ::testing::Property;
-
-MATCHER_P(IsInDir, directory, "") {
-  *result_listener << "where the directory is " << directory;
-  return arg.DirName() == directory;
-}
 
 class IsolatedWebAppUpdateDiscoveryTaskTest : public WebAppTest {
  public:
@@ -106,10 +99,8 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest, NotFound) {
 
   base::test::TestFuture<Task::CompletionStatus> future;
   task.Start(future.GetCallback());
-  Task::CompletionStatus result = future.Take();
-
-  ASSERT_FALSE(result.has_value());
-  EXPECT_EQ(result.error(), Task::Error::kUpdateManifestDownloadFailed);
+  EXPECT_THAT(future.Take(),
+              ErrorIs(Task::Error::kUpdateManifestDownloadFailed));
 }
 
 TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest, InvalidJson) {
@@ -122,10 +113,7 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest, InvalidJson) {
 
   base::test::TestFuture<Task::CompletionStatus> future;
   task.Start(future.GetCallback());
-  Task::CompletionStatus result = future.Take();
-
-  ASSERT_FALSE(result.has_value());
-  EXPECT_EQ(result.error(), Task::Error::kUpdateManifestInvalidJson);
+  EXPECT_THAT(future.Take(), ErrorIs(Task::Error::kUpdateManifestInvalidJson));
 }
 
 TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest, InvalidManifest) {
@@ -137,10 +125,8 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest, InvalidManifest) {
 
   base::test::TestFuture<Task::CompletionStatus> future;
   task.Start(future.GetCallback());
-  Task::CompletionStatus result = future.Take();
-
-  ASSERT_FALSE(result.has_value());
-  EXPECT_EQ(result.error(), Task::Error::kUpdateManifestInvalidManifest);
+  EXPECT_THAT(future.Take(),
+              ErrorIs(Task::Error::kUpdateManifestInvalidManifest));
 }
 
 TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest,
@@ -155,10 +141,8 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest,
 
   base::test::TestFuture<Task::CompletionStatus> future;
   task.Start(future.GetCallback());
-  Task::CompletionStatus result = future.Take();
-
-  ASSERT_FALSE(result.has_value());
-  EXPECT_EQ(result.error(), Task::Error::kUpdateManifestNoApplicableVersion);
+  EXPECT_THAT(future.Take(),
+              ErrorIs(Task::Error::kUpdateManifestNoApplicableVersion));
 }
 
 TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest, IwaNotInstalled) {
@@ -176,10 +160,7 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest, IwaNotInstalled) {
 
   base::test::TestFuture<Task::CompletionStatus> future;
   task.Start(future.GetCallback());
-  Task::CompletionStatus result = future.Take();
-
-  ASSERT_FALSE(result.has_value());
-  EXPECT_EQ(result.error(), Task::Error::kIwaNotInstalled);
+  EXPECT_THAT(future.Take(), ErrorIs(Task::Error::kIwaNotInstalled));
 }
 
 TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest, AppIsNotIwa) {
@@ -199,10 +180,7 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest, AppIsNotIwa) {
 
   base::test::TestFuture<Task::CompletionStatus> future;
   task.Start(future.GetCallback());
-  Task::CompletionStatus result = future.Take();
-
-  ASSERT_FALSE(result.has_value());
-  EXPECT_EQ(result.error(), Task::Error::kIwaNotInstalled);
+  EXPECT_THAT(future.Take(), ErrorIs(Task::Error::kIwaNotInstalled));
 }
 
 TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest, NoUpdateFound) {
@@ -225,11 +203,8 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest, NoUpdateFound) {
 
   base::test::TestFuture<Task::CompletionStatus> future;
   task.Start(future.GetCallback());
-  Task::CompletionStatus result = future.Take();
-
-  ASSERT_TRUE(result.has_value())
-      << result.error() << ": " << task.AsDebugValue();
-  EXPECT_EQ(result.value(), Task::Success::kNoUpdateFound);
+  EXPECT_THAT(future.Take(), ValueIs(Task::Success::kNoUpdateFound))
+      << task.AsDebugValue();
 }
 
 TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest,
@@ -257,11 +232,8 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskUpdateManifestTest,
 
   base::test::TestFuture<Task::CompletionStatus> future;
   task.Start(future.GetCallback());
-  Task::CompletionStatus result = future.Take();
-
-  ASSERT_TRUE(result.has_value())
-      << result.error() << ": " << task.AsDebugValue();
-  EXPECT_EQ(result.value(), Task::Success::kUpdateAlreadyPending);
+  EXPECT_THAT(future.Take(), ValueIs(Task::Success::kUpdateAlreadyPending))
+      << task.AsDebugValue();
 }
 
 using IsolatedWebAppUpdateDiscoveryTaskWebBundleDownloadTest =
@@ -293,10 +265,7 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskWebBundleDownloadTest, NotFound) {
 
   base::test::TestFuture<Task::CompletionStatus> future;
   task.Start(future.GetCallback());
-  Task::CompletionStatus result = future.Take();
-
-  ASSERT_FALSE(result.has_value());
-  EXPECT_EQ(result.error(), Task::Error::kBundleDownloadError);
+  EXPECT_THAT(future.Take(), ErrorIs(Task::Error::kBundleDownloadError));
 }
 
 class IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest
@@ -334,7 +303,8 @@ class IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest
                                         nullptr));
 
     TestSignedWebBundle bundle = TestSignedWebBundleBuilder::BuildDefault(
-        {.version = available_version});
+        TestSignedWebBundleBuilder::BuildOptions().SetVersion(
+            available_version));
     profile_url_loader_factory().AddResponse(
         "https://example.com/bundle.swbn",
         std::string(bundle.data.begin(), bundle.data.end()));
@@ -386,27 +356,20 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest, Fails) {
 
   base::test::TestFuture<Task::CompletionStatus> future;
   task.Start(future.GetCallback());
-  Task::CompletionStatus result = future.Take();
-
-  ASSERT_FALSE(result.has_value());
-  EXPECT_EQ(result.error(), Task::Error::kUpdateDryRunFailed);
+  EXPECT_THAT(future.Take(), ErrorIs(Task::Error::kUpdateDryRunFailed));
 
   base::FilePath temp_dir;
   EXPECT_TRUE(base::GetTempDir(&temp_dir));
 
   const WebApp* web_app =
       fake_provider().registrar_unsafe().GetAppById(url_info_.app_id());
-  ASSERT_THAT(web_app, NotNull());
-  EXPECT_THAT(web_app->untranslated_name(), Eq("installed iwa"));
-  EXPECT_THAT(
-      web_app->isolation_data(),
-      Optional(AllOf(Field("location", &WebApp::IsolationData::location,
-                           Eq(installed_bundle_location_)),
-                     Field("version", &WebApp::IsolationData::version,
-                           Eq(base::Version("1.0.0"))),
-                     Property("pending_update_info",
-                              &WebApp::IsolationData::pending_update_info,
-                              Eq(absl::nullopt)))))
+  EXPECT_THAT(web_app,
+              test::IwaIs(Eq("installed iwa"),
+                          test::IsolationDataIs(
+                              Eq(installed_bundle_location_),
+                              Eq(base::Version("1.0.0")),
+                              /*controlled_frame_partitions=*/_,
+                              /*pending_update_info=*/Eq(absl::nullopt))))
       << task.AsDebugValue();
 }
 
@@ -420,38 +383,26 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest, Succeeds) {
 
   base::test::TestFuture<Task::CompletionStatus> future;
   task.Start(future.GetCallback());
-  Task::CompletionStatus result = future.Take();
-
-  ASSERT_TRUE(result.has_value())
-      << result.error() << ": " << task.AsDebugValue();
-  EXPECT_EQ(result.value(), Task::Success::kUpdateFoundAndSavedInDatabase);
+  EXPECT_THAT(future.Take(),
+              ValueIs(Task::Success::kUpdateFoundAndSavedInDatabase))
+      << task.AsDebugValue();
 
   base::FilePath temp_dir;
   EXPECT_TRUE(base::GetTempDir(&temp_dir));
 
   const WebApp* web_app =
       fake_provider().registrar_unsafe().GetAppById(url_info_.app_id());
-  ASSERT_THAT(web_app, NotNull());
-  EXPECT_THAT(web_app->untranslated_name(), Eq("installed iwa"));
   EXPECT_THAT(
-      web_app->isolation_data(),
-      Optional(AllOf(
-          Field("location", &WebApp::IsolationData::location,
-                Eq(installed_bundle_location_)),
-          Field("version", &WebApp::IsolationData::version,
-                Eq(base::Version("1.0.0"))),
-          Property(
-              "pending_update_info",
-              &WebApp::IsolationData::pending_update_info,
-              Optional(AllOf(
-                  Field(
-                      "location",
-                      &WebApp::IsolationData::PendingUpdateInfo::location,
-                      VariantWith<InstalledBundle>(Field(
-                          "path", &InstalledBundle::path, IsInDir(temp_dir)))),
-                  Field("version",
-                        &WebApp::IsolationData::PendingUpdateInfo::version,
-                        Eq(base::Version("3.0.0")))))))))
+      web_app,
+      test::IwaIs(
+          Eq("installed iwa"),
+          test::IsolationDataIs(
+              Eq(installed_bundle_location_), Eq(base::Version("1.0.0")),
+              /*controlled_frame_partitions=*/_,
+              test::PendingUpdateInfoIs(
+                  VariantWith<InstalledBundle>(Field(
+                      "path", &InstalledBundle::path, test::IsInDir(temp_dir))),
+                  base::Version("3.0.0")))))
       << task.AsDebugValue();
 }
 
@@ -473,38 +424,26 @@ TEST_F(IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest,
 
   base::test::TestFuture<Task::CompletionStatus> future;
   task.Start(future.GetCallback());
-  Task::CompletionStatus result = future.Take();
-
-  ASSERT_TRUE(result.has_value())
-      << result.error() << ": " << task.AsDebugValue();
-  EXPECT_EQ(result.value(), Task::Success::kUpdateFoundAndSavedInDatabase);
+  EXPECT_THAT(future.Take(),
+              ValueIs(Task::Success::kUpdateFoundAndSavedInDatabase))
+      << task.AsDebugValue();
 
   base::FilePath temp_dir;
   EXPECT_TRUE(base::GetTempDir(&temp_dir));
 
   const WebApp* web_app =
       fake_provider().registrar_unsafe().GetAppById(url_info_.app_id());
-  ASSERT_THAT(web_app, NotNull());
-  EXPECT_THAT(web_app->untranslated_name(), Eq("installed iwa"));
   EXPECT_THAT(
-      web_app->isolation_data(),
-      Optional(AllOf(
-          Field("location", &WebApp::IsolationData::location,
-                Eq(installed_bundle_location_)),
-          Field("version", &WebApp::IsolationData::version,
-                Eq(base::Version("1.0.0"))),
-          Property(
-              "pending_update_info",
-              &WebApp::IsolationData::pending_update_info,
-              Optional(AllOf(
-                  Field(
-                      "location",
-                      &WebApp::IsolationData::PendingUpdateInfo::location,
-                      VariantWith<InstalledBundle>(Field(
-                          "path", &InstalledBundle::path, IsInDir(temp_dir)))),
-                  Field("version",
-                        &WebApp::IsolationData::PendingUpdateInfo::version,
-                        Eq(base::Version("2.0.0")))))))))
+      web_app,
+      test::IwaIs(
+          Eq("installed iwa"),
+          test::IsolationDataIs(
+              Eq(installed_bundle_location_), Eq(base::Version("1.0.0")),
+              /*controlled_frame_partitions=*/_,
+              test::PendingUpdateInfoIs(
+                  VariantWith<InstalledBundle>(Field(
+                      "path", &InstalledBundle::path, test::IsInDir(temp_dir))),
+                  base::Version("2.0.0")))))
       << task.AsDebugValue();
 }
 

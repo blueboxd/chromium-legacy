@@ -16,6 +16,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
+#include "chrome/browser/ui/views/sad_tab_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -270,10 +272,6 @@ int BrowserNonClientFrameViewChromeOS::GetTopInset(bool restored) const {
   return UsePackagedAppHeaderStyle(browser)
              ? header_height
              : caption_button_container_->bounds().bottom();
-}
-
-int BrowserNonClientFrameViewChromeOS::GetThemeBackgroundXInset() const {
-  return BrowserFrameHeaderChromeOS::GetThemeBackgroundXInset();
 }
 
 void BrowserNonClientFrameViewChromeOS::UpdateThrobber(bool running) {
@@ -528,6 +526,12 @@ gfx::Size BrowserNonClientFrameViewChromeOS::GetMinimumSize() const {
     min_height = 2 * border_size.height();
   }
 
+  if (chromeos::features::IsRoundedWindowsEnabled()) {
+    // Include bottom rounded corners region.
+    min_height =
+        min_height + chromeos::GetFrameCornerRadius(frame()->GetNativeWindow());
+  }
+
   return gfx::Size(min_width, min_height);
 }
 
@@ -592,7 +596,7 @@ gfx::ImageSkia BrowserNonClientFrameViewChromeOS::GetFrameHeaderImage(
 }
 
 int BrowserNonClientFrameViewChromeOS::GetFrameHeaderImageYInset() {
-  return ThemeProperties::kFrameHeightAboveTabs - GetTopInset(false);
+  return browser_view()->GetThemeOffsetFromBrowserView().y();
 }
 
 gfx::ImageSkia BrowserNonClientFrameViewChromeOS::GetFrameHeaderOverlayImage(
@@ -1045,11 +1049,31 @@ void BrowserNonClientFrameViewChromeOS::UpdateWindowRoundedCorners() {
           ? 0
           : corner_radius);
 
+  // SideTabView is shown when the renderer crashes. Initially the SabTabView
+  // gets the same corners as the contents webview it gets attached to but its
+  // radii needs to be updated as it is unaware of the client view layout
+  // changes.
+  bool sad_tab_showing = false;
+  if (contents_webview->web_contents()) {
+    if (auto* sad_tab_helper =
+            SadTabHelper::FromWebContents(contents_webview->web_contents());
+        sad_tab_helper->sad_tab()) {
+      static_cast<SadTabView*>(sad_tab_helper->sad_tab())
+          ->SetBackgroundRadii(contents_webview_radii);
+      sad_tab_showing = true;
+    }
+  }
+
   CHECK(contents_webview);
   CHECK(contents_webview->holder());
 
   contents_webview->SetBackgroundRadii(contents_webview_radii);
-  contents_webview->holder()->SetCornerRadii(contents_webview_radii);
+
+  // We do not need to round contents_webview, if SadTabView is shown instead of
+  // contents_webview.
+  if (!sad_tab_showing) {
+    contents_webview->holder()->SetCornerRadii(contents_webview_radii);
+  }
 }
 
 void BrowserNonClientFrameViewChromeOS::LayoutProfileIndicator() {

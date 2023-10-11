@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/views/autofill/popup/popup_base_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_view.h"
 #include "components/autofill/core/common/aliases.h"
-#include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -60,8 +60,9 @@ class PopupViewViews : public PopupBaseView,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // AutofillPopupView:
-  void Show(AutoselectFirstSuggestion autoselect_first_suggestion) override;
+  bool Show(AutoselectFirstSuggestion autoselect_first_suggestion) override;
   void Hide() override;
+  bool OverlapsWithPictureInPictureWindow() const override;
   absl::optional<int32_t> GetAxUniqueId() override;
   void AxAnnounce(const std::u16string& text) override;
   base::WeakPtr<AutofillPopupView> GetWeakPtr() override;
@@ -69,13 +70,8 @@ class PopupViewViews : public PopupBaseView,
   // PopupBaseView:
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
-  bool CanShowDropdownInBoundsForTesting(const gfx::Rect& bounds) const;
-
  private:
-  friend class PopupViewViewsBrowsertest;
-  friend class PopupViewViewsTest;
-
-  const std::vector<RowPointer>& GetRowsForTesting() { return rows_; }
+  friend class PopupViewViewsTestApi;
 
   // Returns the `PopupRowView` at line number `index`. Assumes that there is
   // such a view at that line number - otherwise the underlying variant will
@@ -112,11 +108,11 @@ class PopupViewViews : public PopupBaseView,
   // selected.
   void SelectNextRow();
 
-  // Attempts to accept the selected cell. It will return false if the cell is
-  // not selectable or the current cell selection is invalid.
-  // If `tab_key_pressed` is true, only cells that trigger field filling or
-  // scanning a credit card qualify as selectable.
-  bool AcceptSelectedCell(bool tab_key_pressed);
+  // Attempts to accept the selected cell. It will return false if there is no
+  // selected cell or the cell does not trigger field filling or scanning a
+  // credit card. `event_time` must be the time the user input event was
+  // triggered.
+  bool AcceptSelectedContentOrCreditCardCell(base::TimeTicks event_time);
 
   // Attempts to remove the selected cell. Only content cells are allowed to be
   // selected.

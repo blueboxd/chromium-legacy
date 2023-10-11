@@ -4,25 +4,21 @@
 
 #include "ash/wm/overview/overview_item_view.h"
 
-#include <algorithm>
 #include <memory>
 
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/close_button.h"
-#include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/window_mini_view_header_view.h"
 #include "ash/wm/window_preview_view.h"
 #include "base/containers/contains.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
-#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/animation_builder.h"
@@ -109,6 +105,9 @@ OverviewItemView::OverviewItemView(
   }
 
   header_view()->UpdateIconView(window);
+
+  close_button_->SetPaintToLayer();
+  close_button_->layer()->SetFillsBoundsOpaquely(false);
 }
 
 OverviewItemView::~OverviewItemView() = default;
@@ -251,34 +250,36 @@ gfx::Size OverviewItemView::GetPreviewViewSize() const {
   return gfx::ToRoundedSize(target_size);
 }
 
+void OverviewItemView::RefreshItemVisuals() {}
+
 views::View* OverviewItemView::GetView() {
   return this;
 }
 
-void OverviewItemView::MaybeActivateHighlightedView() {
+void OverviewItemView::MaybeActivateFocusedView() {
   if (overview_item_)
-    overview_item_->OnHighlightedViewActivated();
+    overview_item_->OnFocusedViewActivated();
 }
 
-void OverviewItemView::MaybeCloseHighlightedView(bool primary_action) {
+void OverviewItemView::MaybeCloseFocusedView(bool primary_action) {
   if (overview_item_ && primary_action)
-    overview_item_->OnHighlightedViewClosed();
+    overview_item_->OnFocusedViewClosed();
 }
 
-void OverviewItemView::MaybeSwapHighlightedView(bool right) {}
+void OverviewItemView::MaybeSwapFocusedView(bool right) {}
 
-bool OverviewItemView::MaybeActivateHighlightedViewOnOverviewExit(
+bool OverviewItemView::MaybeActivateFocusedViewOnOverviewExit(
     OverviewSession* overview_session) {
   DCHECK(overview_session);
   overview_session->SelectWindow(overview_item_);
   return true;
 }
 
-void OverviewItemView::OnViewHighlighted() {
+void OverviewItemView::OnFocusableViewFocused() {
   UpdateFocusState(/*focus=*/true);
 }
 
-void OverviewItemView::OnViewUnhighlighted() {
+void OverviewItemView::OnFocusableViewBlurred() {
   UpdateFocusState(/*focus=*/false);
 }
 
@@ -358,7 +359,7 @@ void OverviewItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void OverviewItemView::OnThemeChanged() {
   WindowMiniView::OnThemeChanged();
-  UpdateFocusState(IsViewHighlighted());
+  UpdateFocusState(is_focused());
 }
 
 BEGIN_METADATA(OverviewItemView, WindowMiniView)

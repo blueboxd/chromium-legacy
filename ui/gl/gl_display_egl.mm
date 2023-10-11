@@ -6,7 +6,7 @@
 
 #import <Metal/Metal.h>
 
-#include "base/mac/scoped_nsobject.h"
+#include "base/apple/scoped_nsobject.h"
 #include "ui/gl/gl_bindings.h"
 
 // From ANGLE's egl/eglext_angle.h.
@@ -22,7 +22,7 @@
 namespace gl {
 
 struct GLDisplayEGL::ObjCStorage {
-  base::scoped_nsprotocol<id<MTLSharedEvent>> metal_shared_event;
+  base::apple::scoped_nsprotocol<id<MTLSharedEvent>> metal_shared_event;
   uint64_t metal_signaled_value = 0;
 };
 

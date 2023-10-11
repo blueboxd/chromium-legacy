@@ -174,7 +174,7 @@ void PersonalizationAppAmbientProviderImpl::SetAmbientModeEnabled(
   pref_service->SetBoolean(ash::ambient::prefs::kAmbientModeEnabled, enabled);
 }
 
-void PersonalizationAppAmbientProviderImpl::SetAnimationTheme(
+void PersonalizationAppAmbientProviderImpl::SetAmbientTheme(
     ash::AmbientTheme to_theme) {
   PrefService* pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
@@ -209,7 +209,7 @@ void PersonalizationAppAmbientProviderImpl::SetTopicSource(
   AmbientTheme current_theme = GetCurrentUiSettings().theme();
   // The presence of the `kVideo` theme in pref automatically means the `kVideo`
   // topic source is active. `settings_` should be kept as the server's view of
-  // the user's ambient settings, and `SetAnimationTheme(kVideo)` already
+  // the user's ambient settings, and `SetAmbientTheme(kVideo)` already
   // broadcasts an `OnTopicSourceChanged()`, so there's no work to do here.
   if (current_theme == AmbientTheme::kVideo) {
     if (topic_source != AmbientModeTopicSource::kVideo) {
@@ -341,12 +341,9 @@ void PersonalizationAppAmbientProviderImpl::FetchSettingsAndAlbums() {
   // update the UI with the new settings. If update fails, it will restore
   // previous settings and update UI.
   if (is_updating_backend_) {
-    has_pending_fetch_request_ = true;
     return;
   }
 
-  // TODO(b/161044021): Add a helper function to get all the albums. Currently
-  // only load 100 latest modified albums.
   ash::AmbientBackendController::Get()->FetchSettingsAndAlbums(
       kBannerWidthPx, kBannerHeightPx, /*num_albums=*/100,
       base::BindOnce(
@@ -367,6 +364,12 @@ void PersonalizationAppAmbientProviderImpl::OnAmbientModeEnabledChanged() {
     }
   }
   BroadcastAmbientModeEnabledStatus(enabled);
+  if (!enabled) {
+    // UpdateSettings assumes that ambient is enabled. Since ambient is now
+    // disabled, cancel any requests to update settings.
+    write_weak_factory_.InvalidateWeakPtrs();
+    is_updating_backend_ = false;
+  }
 }
 
 void PersonalizationAppAmbientProviderImpl::BroadcastAmbientModeEnabledStatus(
@@ -388,7 +391,7 @@ void PersonalizationAppAmbientProviderImpl::OnAmbientUiSettingsChanged() {
     return;
   }
 
-  ambient_observer_remote_->OnAnimationThemeChanged(
+  ambient_observer_remote_->OnAmbientThemeChanged(
       GetCurrentUiSettings().theme());
 }
 
@@ -513,89 +516,49 @@ void PersonalizationAppAmbientProviderImpl::UpdateSettings() {
   // Prevent fetch settings callback changing `settings_` and `personal_albums_`
   // while updating.
   read_weak_factory_.InvalidateWeakPtrs();
+  // Cancel in-flight write requests, as this newer update will overwrite them.
+  write_weak_factory_.InvalidateWeakPtrs();
 
-  if (is_updating_backend_) {
-    has_pending_updates_for_backend_ = true;
-    return;
-  }
-
-  has_pending_updates_for_backend_ = false;
   is_updating_backend_ = true;
 
   // Explicitly set show_weather to true to force server to respond with
   // weather information. See: b/158630188.
   settings_->show_weather = true;
 
-  settings_sent_for_update_ = settings_;
   ash::AmbientBackendController::Get()->UpdateSettings(
       *settings_,
       base::BindOnce(&PersonalizationAppAmbientProviderImpl::OnUpdateSettings,
                      write_weak_factory_.GetWeakPtr()));
 }
 
-void PersonalizationAppAmbientProviderImpl::OnUpdateSettings(bool success) {
+void PersonalizationAppAmbientProviderImpl::OnUpdateSettings(
+    bool success,
+    const AmbientSettings& settings) {
   is_updating_backend_ = false;
 
   if (success) {
     update_settings_retry_backoff_.Reset();
-    cached_settings_ = settings_sent_for_update_;
+    OnSettingsAndAlbumsFetched(settings, std::move(personal_albums_));
+    // The request to fetch preview images came in during |UpdateSettings|. Call
+    // it now that updating has finished.
     if (needs_update_previews_) {
       FetchPreviewImages();
     }
   } else {
     update_settings_retry_backoff_.InformOfRequest(/*succeeded=*/false);
+    // When the update fails, send a retry or revert to cached settings.
+    if (update_settings_retry_backoff_.failure_count() <= kMaxRetries) {
+      const base::TimeDelta kDelay =
+          update_settings_retry_backoff_.GetTimeUntilRelease();
+      base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&PersonalizationAppAmbientProviderImpl::UpdateSettings,
+                         write_weak_factory_.GetWeakPtr()),
+          kDelay);
+    } else {
+      OnSettingsAndAlbumsFetched(cached_settings_, std::move(personal_albums_));
+    }
   }
-
-  if (MaybeScheduleNewUpdateSettings(success)) {
-    return;
-  }
-
-  UpdateUIWithCachedSettings(success);
-}
-
-bool PersonalizationAppAmbientProviderImpl::MaybeScheduleNewUpdateSettings(
-    bool success) {
-  // If it was unsuccessful to update settings, but have not reached
-  // `kMaxRetries`, then it will retry.
-  const bool need_retry_update_settings_at_backend =
-      !success && update_settings_retry_backoff_.failure_count() <= kMaxRetries;
-
-  // If there has pending updates or need to retry, then updates settings again.
-  const bool should_update_settings_at_backend =
-      has_pending_updates_for_backend_ || need_retry_update_settings_at_backend;
-
-  if (!should_update_settings_at_backend) {
-    return false;
-  }
-
-  const base::TimeDelta kDelay =
-      update_settings_retry_backoff_.GetTimeUntilRelease();
-  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&PersonalizationAppAmbientProviderImpl::UpdateSettings,
-                     write_weak_factory_.GetWeakPtr()),
-      kDelay);
-  return true;
-}
-
-void PersonalizationAppAmbientProviderImpl::UpdateUIWithCachedSettings(
-    bool success) {
-  // If it was unsuccessful to update settings with `kMaxRetries`, need to
-  // restore to cached settings.
-  const bool should_restore_previous_settings =
-      !success && update_settings_retry_backoff_.failure_count() > kMaxRetries;
-
-  // Otherwise, if there has pending fetching request or need to restore
-  // cached settings, then updates the WebUi.
-  const bool should_update_web_ui =
-      has_pending_fetch_request_ || should_restore_previous_settings;
-
-  if (!should_update_web_ui) {
-    return;
-  }
-
-  OnSettingsAndAlbumsFetched(cached_settings_, std::move(personal_albums_));
-  has_pending_fetch_request_ = false;
 }
 
 void PersonalizationAppAmbientProviderImpl::OnSettingsAndAlbumsFetched(
@@ -642,7 +605,7 @@ void PersonalizationAppAmbientProviderImpl::OnSettingsAndAlbumsFetched(
 
 void PersonalizationAppAmbientProviderImpl::SyncSettingsAndAlbums() {
   // Clear the `selected` field, which will be populated with new value below.
-  // It is neceessary if `UpdateSettings()` failed and we need to reset the
+  // It is necessary if `UpdateSettings()` failed and we need to reset the
   // cached settings.
   for (auto& album : personal_albums_.albums) {
     album.selected = false;
@@ -747,10 +710,9 @@ void PersonalizationAppAmbientProviderImpl::ResetLocalSettings() {
 
   settings_.reset();
   cached_settings_.reset();
-  settings_sent_for_update_.reset();
-  has_pending_fetch_request_ = false;
+  update_settings_retry_backoff_.Reset();
+  fetch_settings_retry_backoff_.Reset();
   is_updating_backend_ = false;
-  has_pending_updates_for_backend_ = false;
 }
 
 void PersonalizationAppAmbientProviderImpl::StartScreenSaverPreview() {

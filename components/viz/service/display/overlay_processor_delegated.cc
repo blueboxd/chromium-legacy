@@ -146,8 +146,10 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
     return false;
   }
 
-  if (disable_delegation())
+  if (disable_delegation()) {
+    delegated_status_ = DelegationStatus::kCompositedFeatureDisabled;
     return false;
+  }
 
   // Do not delegate when we have copy requests on the root render pass or we
   // will end up with the delegated quads missing from the frame buffer.
@@ -202,6 +204,21 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
         DBG_DRAW_RECT("delegated.overlay.aggregated", candidate.display_rect);
       } else {
         DBG_DRAW_RECT("delegated.overlay.candidate", candidate.display_rect);
+
+        if (!candidate.rounded_corners.IsEmpty()) {
+          DBG_DRAW_RECT_OPT("delegated.overlay.candidate_rounded_corners",
+                            DBG_OPT_BLUE, candidate.rounded_corners.rect());
+
+          using Corner = gfx::RRectF::Corner;
+          const Corner corners[] = {Corner::kUpperLeft, Corner::kUpperRight,
+                                    Corner::kLowerRight, Corner::kLowerLeft};
+          for (auto corner : corners) {
+            auto corner_rect =
+                candidate.rounded_corners.CornerBoundingRect(corner);
+            DBG_DRAW_RECT_OPT("delegated.overlay.candidate_rounded_corners",
+                              DBG_OPT_RED, corner_rect);
+          }
+        }
       }
       candidates->push_back(candidate);
     } else if (candidate_status ==
@@ -229,7 +246,33 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
         case OverlayCandidate::CandidateStatus::kFailNotOverlay:
           delegated_status_ = DelegationStatus::kCompositedNotOverlay;
           break;
+        case OverlayCandidate::CandidateStatus::kFailBlending:
+          delegated_status_ = DelegationStatus::kCompositedCandidateBlending;
+          break;
+        case OverlayCandidate::CandidateStatus::kFailQuadNotSupported:
+          delegated_status_ =
+              DelegationStatus::kCompositedCandidateQuadMaterial;
+          break;
+        case OverlayCandidate::CandidateStatus::kFailBufferFormat:
+          delegated_status_ =
+              DelegationStatus::kCompositedCandidateBufferFormat;
+          break;
+        case OverlayCandidate::CandidateStatus::kFailNearFilter:
+          delegated_status_ = DelegationStatus::kCompositedCandidateNearFilter;
+          break;
+        case OverlayCandidate::CandidateStatus::kFailNotSharedImage:
+          delegated_status_ =
+              DelegationStatus::kCompositedCandidateNotSharedImage;
+          break;
+        case OverlayCandidate::CandidateStatus::kFailMaskFilterNotSupported:
+          delegated_status_ = DelegationStatus::kCompositedCandidateMaskFilter;
+          break;
+        case OverlayCandidate::CandidateStatus::kFailHasTransformButCantClip:
+          delegated_status_ =
+              DelegationStatus::kCompositedCandidateTransformCantClip;
+          break;
         default:
+          delegated_status_ = DelegationStatus::kCompositedCandidateFailed;
           break;
       }
     }

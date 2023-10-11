@@ -309,20 +309,20 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(void* base,
                                                      size_t page_size,
                                                      uint64_t id,
                                                      base::StringPiece name,
-                                                     bool readonly)
+                                                     AccessMode access_mode)
     : PersistentMemoryAllocator(Memory(base, MEM_EXTERNAL),
                                 size,
                                 page_size,
                                 id,
                                 name,
-                                readonly) {}
+                                access_mode) {}
 
 PersistentMemoryAllocator::PersistentMemoryAllocator(Memory memory,
                                                      size_t size,
                                                      size_t page_size,
                                                      uint64_t id,
                                                      base::StringPiece name,
-                                                     bool readonly)
+                                                     AccessMode access_mode)
     : mem_base_(static_cast<char*>(memory.base)),
       mem_type_(memory.type),
       mem_size_(checked_cast<uint32_t>(size)),
@@ -332,11 +332,7 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(Memory memory,
 #else
       vm_page_size_(SysInfo::VMAllocationGranularity()),
 #endif
-      readonly_(readonly),
-      corrupt_(false),
-      allocs_histogram_(nullptr),
-      used_histogram_(nullptr),
-      errors_histogram_(nullptr) {
+      access_mode_(access_mode) {
   // These asserts ensure that the structures are 32/64-bit agnostic and meet
   // all the requirements of use within the allocator. They access private
   // definitions and so cannot be moved to the global scope.
@@ -353,6 +349,7 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(Memory memory,
                 "\"queue\" is not aligned properly; must be at end of struct");
 
   // Ensure that memory segment is of acceptable size.
+  const bool readonly = access_mode == kReadOnly;
   CHECK(IsMemoryAcceptable(memory.base, size, page_size, readonly));
 
   // These atomics operate inter-process and so must be lock-free.
@@ -361,9 +358,12 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(Memory memory,
   DCHECK(BlockHeader().next.is_lock_free());
   CHECK(corrupt_.is_lock_free());
 
+  // When calling SetCorrupt() during initialization, don't write to the memory
+  // in kReadOnly and kReadWriteExisting modes.
+  const bool allow_write_for_set_corrupt = (access_mode == kReadWrite);
   if (shared_meta()->cookie != kGlobalCookie) {
-    if (readonly) {
-      SetCorrupt();
+    if (access_mode != kReadWrite) {
+      SetCorrupt(allow_write_for_set_corrupt);
       return;
     }
 
@@ -387,7 +387,8 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(Memory memory,
         first_block->type_id.load(std::memory_order_relaxed) != 0 ||
         first_block->next != 0) {
       // ...or something malicious has been playing with the metadata.
-      SetCorrupt();
+      CHECK(allow_write_for_set_corrupt);
+      SetCorrupt(allow_write_for_set_corrupt);
     }
 
     // This is still safe to do even if corruption has been detected.
@@ -423,26 +424,26 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(Memory memory,
         shared_meta()->freeptr.load(std::memory_order_relaxed) == 0 ||
         shared_meta()->tailptr == 0 || shared_meta()->queue.cookie == 0 ||
         shared_meta()->queue.next.load(std::memory_order_relaxed) == 0) {
-      SetCorrupt();
+      SetCorrupt(allow_write_for_set_corrupt);
     }
     if (!readonly) {
       // The allocator is attaching to a previously initialized segment of
       // memory. If the initialization parameters differ, make the best of it
-      // by reducing the local construction parameters to match those of
-      // the actual memory area. This ensures that the local object never
-      // tries to write outside of the original bounds.
+      // by reducing the local construction parameters to match those of the
+      // actual memory area. This ensures that the local object never tries to
+      // write outside of the original bounds.
       // Because the fields are const to ensure that no code other than the
-      // constructor makes changes to them as well as to give optimization
-      // hints to the compiler, it's necessary to const-cast them for changes
-      // here.
+      // constructor makes changes to them as well as to give optimization hints
+      // to the compiler, it's necessary to const-cast them for changes here.
       if (shared_meta()->size < mem_size_)
         *const_cast<uint32_t*>(&mem_size_) = shared_meta()->size;
       if (shared_meta()->page_size < mem_page_)
         *const_cast<uint32_t*>(&mem_page_) = shared_meta()->page_size;
 
       // Ensure that settings are still valid after the above adjustments.
-      if (!IsMemoryAcceptable(memory.base, mem_size_, mem_page_, readonly))
-        SetCorrupt();
+      if (!IsMemoryAcceptable(memory.base, mem_size_, mem_page_, readonly)) {
+        SetCorrupt(allow_write_for_set_corrupt);
+      }
     }
   }
 }
@@ -477,8 +478,9 @@ const char* PersistentMemoryAllocator::Name() const {
 
 void PersistentMemoryAllocator::CreateTrackingHistograms(
     base::StringPiece name) {
-  if (name.empty() || readonly_)
+  if (name.empty() || access_mode_ == kReadOnly) {
     return;
+  }
   std::string name_string(name);
 
 #if 0
@@ -566,7 +568,7 @@ bool PersistentMemoryAllocator::ChangeType(Reference ref,
                                            uint32_t to_type_id,
                                            uint32_t from_type_id,
                                            bool clear) {
-  DCHECK(!readonly_);
+  DCHECK_NE(access_mode_, kReadOnly);
   volatile BlockHeader* const block = GetBlock(ref, 0, 0, false, false);
   if (!block)
     return false;
@@ -641,7 +643,7 @@ PersistentMemoryAllocator::Reference PersistentMemoryAllocator::Allocate(
 PersistentMemoryAllocator::Reference PersistentMemoryAllocator::AllocateImpl(
     size_t req_size,
     uint32_t type_id) {
-  DCHECK(!readonly_);
+  DCHECK_NE(access_mode_, kReadOnly);
 
   // Validate req_size to ensure it won't overflow when used as 32-bit value.
   if (req_size > kSegmentMaxSize - sizeof(BlockHeader)) {
@@ -815,7 +817,7 @@ void PersistentMemoryAllocator::GetMemoryInfo(MemoryInfo* meminfo) const {
 }
 
 void PersistentMemoryAllocator::MakeIterable(Reference ref) {
-  DCHECK(!readonly_);
+  DCHECK_NE(access_mode_, kReadOnly);
   if (IsCorrupt())
     return;
   volatile BlockHeader* block = GetBlock(ref, 0, 0, false, false);
@@ -876,7 +878,7 @@ void PersistentMemoryAllocator::MakeIterable(Reference ref) {
 // iteration, this method may be called by other "const" methods. In this
 // case, it's safe to discard the constness and modify the local flag and
 // maybe even the shared flag if the underlying data isn't actually read-only.
-void PersistentMemoryAllocator::SetCorrupt() const {
+void PersistentMemoryAllocator::SetCorrupt(bool allow_write) const {
   if (!corrupt_.load(std::memory_order_relaxed) &&
       !CheckFlag(
           const_cast<volatile std::atomic<uint32_t>*>(&shared_meta()->flags),
@@ -886,16 +888,19 @@ void PersistentMemoryAllocator::SetCorrupt() const {
   }
 
   corrupt_.store(true, std::memory_order_relaxed);
-  if (!readonly_) {
+  if (allow_write && access_mode_ != kReadOnly) {
     SetFlag(const_cast<volatile std::atomic<uint32_t>*>(&shared_meta()->flags),
             kFlagCorrupt);
   }
 }
 
 bool PersistentMemoryAllocator::IsCorrupt() const {
-  if (corrupt_.load(std::memory_order_relaxed) ||
-      CheckFlag(&shared_meta()->flags, kFlagCorrupt)) {
-    SetCorrupt();  // Make sure all indicators are set.
+  if (corrupt_.load(std::memory_order_relaxed)) {
+    return true;
+  }
+  if (CheckFlag(&shared_meta()->flags, kFlagCorrupt)) {
+    // Set the local flag if we found the flag in the data.
+    SetCorrupt(/*allow_write=*/false);
     return true;
   }
   return false;
@@ -962,8 +967,8 @@ PersistentMemoryAllocator::GetBlock(Reference ref,
 void PersistentMemoryAllocator::FlushPartial(size_t length, bool sync) {
   // Generally there is nothing to do as every write is done through volatile
   // memory with atomic instructions to guarantee consistency. This (virtual)
-  // method exists so that derivced classes can do special things, such as
-  // tell the OS to write changes to disk now rather than when convenient.
+  // method exists so that derived classes can do special things, such as tell
+  // the OS to write changes to disk now rather than when convenient.
 }
 
 void PersistentMemoryAllocator::RecordError(int error) const {
@@ -992,7 +997,7 @@ const volatile void* PersistentMemoryAllocator::GetBlockData(
 }
 
 void PersistentMemoryAllocator::UpdateTrackingHistograms() {
-  DCHECK(!readonly_);
+  DCHECK_NE(access_mode_, kReadOnly);
   if (used_histogram_) {
     MemoryInfo meminfo;
     GetMemoryInfo(&meminfo);
@@ -1014,7 +1019,7 @@ LocalPersistentMemoryAllocator::LocalPersistentMemoryAllocator(
                                 0,
                                 id,
                                 name,
-                                false) {}
+                                kReadWrite) {}
 
 LocalPersistentMemoryAllocator::~LocalPersistentMemoryAllocator() {
   DeallocateLocalMemory(const_cast<char*>(mem_base_), mem_size_, mem_type_);
@@ -1093,7 +1098,7 @@ WritableSharedPersistentMemoryAllocator::
                                 0,
                                 id,
                                 name,
-                                false),
+                                kReadWrite),
       shared_memory_(std::move(memory)) {}
 
 WritableSharedPersistentMemoryAllocator::
@@ -1118,7 +1123,7 @@ ReadOnlySharedPersistentMemoryAllocator::
           0,
           id,
           name,
-          true),
+          kReadOnly),
       shared_memory_(std::move(memory)) {}
 
 ReadOnlySharedPersistentMemoryAllocator::
@@ -1138,14 +1143,14 @@ FilePersistentMemoryAllocator::FilePersistentMemoryAllocator(
     size_t max_size,
     uint64_t id,
     base::StringPiece name,
-    bool read_only)
+    AccessMode access_mode)
     : PersistentMemoryAllocator(
           Memory(const_cast<uint8_t*>(file->data()), MEM_FILE),
           max_size != 0 ? max_size : file->length(),
           0,
           id,
           name,
-          read_only),
+          access_mode),
       mapped_file_(std::move(file)) {}
 
 FilePersistentMemoryAllocator::~FilePersistentMemoryAllocator() = default;
@@ -1153,8 +1158,8 @@ FilePersistentMemoryAllocator::~FilePersistentMemoryAllocator() = default;
 // static
 bool FilePersistentMemoryAllocator::IsFileAcceptable(
     const MemoryMappedFile& file,
-    bool read_only) {
-  return IsMemoryAcceptable(file.data(), file.length(), 0, read_only);
+    bool readonly) {
+  return IsMemoryAcceptable(file.data(), file.length(), 0, readonly);
 }
 
 void FilePersistentMemoryAllocator::Cache() {

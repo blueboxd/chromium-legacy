@@ -18,7 +18,7 @@
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/service/sync_prefs.h"
 #include "components/sync/service/sync_service_crypto.h"
-#include "components/sync/test/mock_trusted_vault_client.h"
+#include "components/trusted_vault/test/fake_trusted_vault_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -95,7 +95,7 @@ class SyncUserSettingsImplTest : public testing::Test {
   std::unique_ptr<SyncPrefs> sync_prefs_;
   testing::NiceMock<MockSyncServiceCryptoDelegate>
       sync_service_crypto_delegate_;
-  testing::NiceMock<MockTrustedVaultClient> trusted_vault_client_;
+  trusted_vault::FakeTrustedVaultClient trusted_vault_client_;
   std::unique_ptr<SyncServiceCrypto> sync_service_crypto_;
 };
 
@@ -124,7 +124,6 @@ TEST_F(SyncUserSettingsImplTest, GetSelectedTypesWhileSignedOut) {
                             kReadingListEnableSyncTransportModeUponSignIn,
                             password_manager::features::
                                 kEnablePasswordsAccountStorage,
-                            kSyncEnableContactInfoDataType,
                             kSyncEnableContactInfoDataTypeInTransportMode,
                             kEnablePreferencesAccountStorage},
       /*disabled_features=*/{});
@@ -145,7 +144,6 @@ TEST_F(SyncUserSettingsImplTest, SetSelectedTypeInTransportMode) {
                             kReadingListEnableSyncTransportModeUponSignIn,
                             password_manager::features::
                                 kEnablePasswordsAccountStorage,
-                            kSyncEnableContactInfoDataType,
                             kSyncEnableContactInfoDataTypeInTransportMode,
                             kEnablePreferencesAccountStorage},
       /*disabled_features=*/{});

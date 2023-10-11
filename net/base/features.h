@@ -314,9 +314,9 @@ NET_EXPORT BASE_DECLARE_FEATURE(kPartitionedCookies);
 // frames.
 NET_EXPORT BASE_DECLARE_FEATURE(kNoncedPartitionedCookies);
 
-// When enabled, cookies cannot have an expiry date further than 400 days in the
-// future.
-NET_EXPORT BASE_DECLARE_FEATURE(kClampCookieExpiryTo400Days);
+// When enabled, cookie-related code will treat cookies containing '\0', '\r',
+// and '\n' as invalid and reject the cookie.
+NET_EXPORT BASE_DECLARE_FEATURE(kBlockTruncatedCookies);
 
 // Controls whether static key pinning is enforced.
 NET_EXPORT BASE_DECLARE_FEATURE(kStaticKeyPinningEnforcement);
@@ -324,14 +324,15 @@ NET_EXPORT BASE_DECLARE_FEATURE(kStaticKeyPinningEnforcement);
 // When enabled, cookies with a non-ASCII domain attribute will be rejected.
 NET_EXPORT BASE_DECLARE_FEATURE(kCookieDomainRejectNonASCII);
 
-// Blocks the 'Set-Cookie' request header on outbound fetch requests.
-NET_EXPORT BASE_DECLARE_FEATURE(kBlockSetCookieHeader);
-
 NET_EXPORT BASE_DECLARE_FEATURE(kThirdPartyStoragePartitioning);
 NET_EXPORT BASE_DECLARE_FEATURE(kSupportPartitionedBlobUrl);
 
 // Feature to enable consideration of 3PCD Support settings.
 NET_EXPORT BASE_DECLARE_FEATURE(kTpcdSupportSettings);
+
+// Whether to enable the use of 3PC based on 3PCD metadata grants delivered via
+// component updater.
+NET_EXPORT BASE_DECLARE_FEATURE(kTpcdMetadataGrants);
 
 // Whether ALPS parsing is on for any type of frame.
 NET_EXPORT BASE_DECLARE_FEATURE(kAlpsParsing);
@@ -381,9 +382,40 @@ NET_EXPORT BASE_DECLARE_FEATURE(kEnableIpProtectionProxy);
 // Sets the name of the IP protection proxy.
 NET_EXPORT extern const base::FeatureParam<std::string> kIpPrivacyProxyServer;
 
-// Sets the allow list for the IP protection proxy.
+// Sets the name of the IP protection auth token server.
+NET_EXPORT extern const base::FeatureParam<std::string> kIpPrivacyTokenServer;
+
+// Sets the path component of the IP protection auth token server URL used for
+// getting initial token signing data.
 NET_EXPORT extern const base::FeatureParam<std::string>
-    kIpPrivacyProxyAllowlist;
+    kIpPrivacyTokenServerGetInitialDataPath;
+
+// Sets the path component of the IP protection auth token server URL used for
+// getting blind-signed tokens.
+NET_EXPORT extern const base::FeatureParam<std::string>
+    kIpPrivacyTokenServerGetTokensPath;
+
+// Sets the batch size to fetch new auth tokens for IP protection.
+NET_EXPORT extern const base::FeatureParam<int>
+    kIpPrivacyAuthTokenCacheBatchSize;
+
+// Sets the cache low-water-mark for auth tokens for IP protection.
+NET_EXPORT extern const base::FeatureParam<int>
+    kIpPrivacyAuthTokenCacheLowWaterMark;
+
+// Sets the normal time between fetches of the IP protection proxy list.
+NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kIpPrivacyProxyListFetchInterval;
+
+// Sets the minimum time between fetches of the IP protection proxy list, such
+// as when a re-fetch is forced due to an error.
+NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kIpPrivacyProxyListMinFetchInterval;
+
+// Controls whether IP Protection _proxying_ is bypassed by not including any
+// of the proxies in the proxy list. This supports experimental comparison of
+// connections that _would_ have been proxied, but were not.
+NET_EXPORT extern const base::FeatureParam<bool> kIpPrivacyDirectOnly;
 
 // Whether QuicParams::migrate_sessions_on_network_change_v2 defaults to true or
 // false. This is needed as a workaround to set this value to true on Android
@@ -424,12 +456,10 @@ NET_EXPORT BASE_DECLARE_FEATURE(kEnableWebTransportDraft07);
 // Enables Zstandard Content-Encoding support.
 NET_EXPORT BASE_DECLARE_FEATURE(kZstdContentEncoding);
 
-// When enabled, the Clear-Site-Data HTTP Response header supports clearing all
-// targets as "*" rather than requiring all targets be listed out.
-NET_EXPORT BASE_DECLARE_FEATURE(kClearSiteDataWildcardSupport);
-
 // Enables SHA-256 and username hashing support for HTTP Digest auth.
 NET_EXPORT BASE_DECLARE_FEATURE(kDigestAuthEnableSecureAlgorithms);
+
+NET_EXPORT BASE_DECLARE_FEATURE(kThirdPartyPartitionedStorageAllowedByDefault);
 
 }  // namespace net::features
 

@@ -364,7 +364,8 @@
     "matches": [
       "chrome-untrusted://help-app/*",
       "chrome-untrusted://media-app/*",
-      "chrome-untrusted://projector/*"
+      "chrome-untrusted://projector/*",
+      "chrome-untrusted://read-anything-side-panel.top-chrome/*"
     ]
   }],
   "metricsPrivateIndividualApis": {
@@ -757,6 +758,12 @@
   "usb": {
     "dependencies": ["permission:usb"],
     "contexts": ["blessed_extension"]
+  },
+  "userScripts": {
+    "dependencies": [ "permission:userScripts" ],
+    "contexts": [ "blessed_extension" ],
+    "channel": "trunk",
+    "feature_flag": "ApiUserScripts"
   },
   "virtualKeyboard": {
     "dependencies": ["permission:virtualKeyboard"],

@@ -618,6 +618,34 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, WebAppMenuModelNonTabbedApp) {
   EXPECT_FALSE(model.GetIndexOfCommandId(IDC_NEW_TAB).has_value());
 }
 
+IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, MoveTabsToNewWindow) {
+  GURL start_url =
+      embedded_test_server()->GetURL("/web_apps/tab_strip_customizations.html");
+  AppId app_id = InstallTestWebApp(start_url);
+  Browser* app_browser = LaunchWebAppBrowser(app_id);
+
+  chrome::NewTab(app_browser);
+
+  size_t initial_browser_count = BrowserList::GetInstance()->size();
+
+  chrome::MoveTabsToNewWindow(app_browser, {1});
+
+  EXPECT_EQ(initial_browser_count + 1, BrowserList::GetInstance()->size());
+
+  // Check that the tab made it to a new window.
+  Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
+  EXPECT_NE(app_browser, new_browser);
+  EXPECT_TRUE(AppBrowserController::IsForWebApp(new_browser, app_id));
+
+  // Check the new browser contains the moved tab and a pinned home tab.
+  EXPECT_EQ(new_browser->tab_strip_model()->count(), 2);
+  EXPECT_TRUE(new_browser->tab_strip_model()->IsTabPinned(0));
+  EXPECT_EQ(
+      new_browser->tab_strip_model()->GetWebContentsAt(0)->GetVisibleURL(),
+      start_url);
+  EXPECT_EQ(new_browser->tab_strip_model()->active_index(), 1);
+}
+
 IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
                        OnlyNavigateHomeTabIfDifferentUrl) {
   GURL start_url =
@@ -1081,6 +1109,11 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
   EXPECT_TRUE(registrar().IsTabbedWindowModeEnabled(app_id));
 
   EXPECT_TRUE(app_browser->app_controller()->ShouldHideNewTabButton());
+
+  WebAppMenuModel model(nullptr, app_browser);
+  model.Init();
+  // Check menu does not contain 'New Tab'.
+  EXPECT_FALSE(model.GetIndexOfCommandId(IDC_NEW_TAB).has_value());
 }
 
 // Tests that middle clicking links to the home tab, opens the link in the home
@@ -1123,6 +1156,37 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, MiddleClickHomeTabLink) {
   EXPECT_TRUE(tab_strip->IsTabPinned(0));
   EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(), start_url);
   EXPECT_EQ(tab_strip->active_index(), 0);
+}
+
+// Tests the page title, which is used for accessibility.
+// Disabled due to conflict with memory usage; https://crbug.com/1477857.
+IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, DISABLED_PageTitle) {
+  GURL start_url =
+      embedded_test_server()->GetURL("/web_apps/tab_strip_customizations.html");
+  AppId app_id = InstallWebAppFromPage(browser(), start_url);
+  Browser* app_browser = FindWebAppBrowser(browser()->profile(), app_id);
+  TabStripModel* tab_strip = app_browser->tab_strip_model();
+
+  EXPECT_TRUE(registrar().IsTabbedWindowModeEnabled(app_id));
+
+  // Expect app opened with pinned home tab.
+  EXPECT_EQ(tab_strip->count(), 1);
+  EXPECT_TRUE(tab_strip->IsTabPinned(0));
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(), start_url);
+  EXPECT_EQ(tab_strip->active_index(), 0);
+
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForBrowser(app_browser);
+
+  EXPECT_EQ(browser_view->GetAccessibleTabLabel(0),
+            u"Tab Strip Customizations - Pinned");
+
+  chrome::NewTab(app_browser);
+  content::WaitForLoadStop(tab_strip->GetActiveWebContents());
+
+  EXPECT_EQ(browser_view->GetAccessibleTabLabel(0),
+            u"Tab Strip Customizations - Pinned");
+  EXPECT_EQ(browser_view->GetAccessibleTabLabel(1), u"Favicon only");
 }
 
 }  // namespace web_app

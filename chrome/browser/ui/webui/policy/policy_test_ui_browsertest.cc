@@ -661,6 +661,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestErrorStateWhenNameNotSelected) {
 IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestIncorrectValueTypeRaisesError) {
   ASSERT_TRUE(content::NavigateToURL(web_contents(),
                                      GURL(chrome::kChromeUIPolicyTestURL)));
+  EXPECT_TRUE(ClickAddPolicy());
   const std::string getValueCellInErrorStateJs =
       R"(
         document
@@ -750,7 +751,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestClearPoliciesButton) {
         nameDropdown.value = 'CloudReportingUploadFrequency';
       )";
   EXPECT_TRUE(content::ExecJs(web_contents(), selectPolicyNameJs));
-  const std::string getSelectedPolicyNameHiddenJs =
+  const std::string getSelectedPolicyNameJs =
       R"(
         const nameDropdown =
           document
@@ -759,15 +760,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestClearPoliciesButton) {
             .querySelector('policy-test-row')
             .shadowRoot
             .querySelector('.name');
-        nameDropdown.options[nameDropdown.selectedIndex].hidden;
+        nameDropdown.value;
       )";
-  EXPECT_EQ(content::EvalJs(web_contents(), getSelectedPolicyNameHiddenJs),
-            false);
+  EXPECT_EQ(content::EvalJs(web_contents(), getSelectedPolicyNameJs),
+            "CloudReportingUploadFrequency");
   const std::string clickClearJs =
       R"(document.querySelector('#clear-policies').click())";
   EXPECT_TRUE(content::ExecJs(web_contents(), clickClearJs));
   EXPECT_EQ(GetNumberOfRows(), 1);
-  EXPECT_EQ(content::EvalJs(web_contents(), getSelectedPolicyNameHiddenJs),
-            true);
+  EXPECT_EQ(content::EvalJs(web_contents(), getSelectedPolicyNameJs), "");
 }
 }  // namespace

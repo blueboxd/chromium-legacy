@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.search_resumption;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.endsWith;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -121,9 +121,9 @@ public class SearchResumptionModuleMediatorUnitTest {
 
         mUserDataHost = new UserDataHost();
         doReturn(mAutocompleteController).when(mAutocompleteProvider).get(any());
-        mUrlToTrack = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
+        mUrlToTrack = JUnitTestGURLs.EXAMPLE_URL;
         doReturn(mUrlToTrack).when(mTabToTrack).getUrl();
-        GURL currentUrl = JUnitTestGURLs.getGURL(JUnitTestGURLs.NTP_URL);
+        GURL currentUrl = JUnitTestGURLs.NTP_URL;
         doReturn(currentUrl).when(mTab).getUrl();
         doReturn(false).when(mTab).canGoForward();
         doReturn(mUserDataHost).when(mTab).getUserDataHost();
@@ -209,7 +209,7 @@ public class SearchResumptionModuleMediatorUnitTest {
     @MediumTest
     public void testDoNotBuildModuleWithoutEnoughSuggestions_newServiceAPI() {
         String[] texts = {"suggestion 1"};
-        GURL[] gUrls = {JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1)};
+        GURL[] gUrls = {JUnitTestGURLs.URL_1};
 
         createMediator(null, true /* useNewServiceEnabled */);
         mMediator.onSuggestionsAvailable(texts, gUrls);
@@ -302,7 +302,7 @@ public class SearchResumptionModuleMediatorUnitTest {
         if (!useNewServiceEnabled && cachedSuggestions == null) {
             verify(mAutocompleteController).addOnSuggestionsReceivedListener(mListener.capture());
             verify(mAutocompleteController, times(1))
-                    .startZeroSuggest(any(), endsWith(mUrlToTrack.getSpec()), anyInt(), any());
+                    .startZeroSuggest(any(), eq(mUrlToTrack), anyInt(), any());
         }
 
         mFeatureListValues.addFeatureFlagOverride(
@@ -315,8 +315,7 @@ public class SearchResumptionModuleMediatorUnitTest {
 
     private void initSuggestions() {
         mSuggestionTexts = new String[] {"suggestion 1", "suggestion2"};
-        mSuggestionUrls = new GURL[] {JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1),
-                JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_2)};
+        mSuggestionUrls = new GURL[] {JUnitTestGURLs.URL_1, JUnitTestGURLs.URL_2};
     }
 
     private SuggestionResult createCachedSuggestions() {

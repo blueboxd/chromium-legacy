@@ -409,7 +409,9 @@ void SingleEntryPropertiesGetterForDriveFs::OnGetFileInfo(
   properties_->hosted = drivefs::IsHosted(metadata->type);
 
   properties_->available_offline =
-      metadata->available_offline || *properties_->hosted;
+      metadata->available_offline ||
+      drive::util::IsEncryptedMimeType(metadata->content_mime_type) ||
+      *properties_->hosted;
   properties_->available_when_metered =
       metadata->available_offline || *properties_->hosted;
   properties_->pinned = metadata->pinned;
@@ -715,15 +717,26 @@ base::FilePath GetLocalPathFromURL(content::RenderFrameHost* render_frame_host,
   return filesystem_url.path();
 }
 
-void GetSelectedFileInfo(Profile* profile,
-                         std::vector<base::FilePath> local_paths,
+void GetSelectedFileInfo(content::RenderFrameHost* render_frame_host,
+                         Profile* profile,
+                         const std::vector<GURL>& file_urls,
                          GetSelectedFileInfoLocalPathOption local_path_option,
                          GetSelectedFileInfoCallback callback) {
+  DCHECK(render_frame_host);
+  DCHECK(profile);
+
   std::unique_ptr<GetSelectedFileInfoParams> params =
       std::make_unique<GetSelectedFileInfoParams>();
   params->local_path_option = local_path_option;
   params->callback = std::move(callback);
-  params->file_paths = std::move(local_paths);
+
+  for (const GURL& url : file_urls) {
+    base::FilePath path = GetLocalPathFromURL(render_frame_host, profile, url);
+    if (!path.empty()) {
+      DVLOG(1) << "Selected: file path: " << path;
+      params->file_paths.push_back(std::move(path));
+    }
+  }
 
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
@@ -736,7 +749,7 @@ drive::EventLogger* GetLogger(Profile* profile) {
   }
   drive::DriveIntegrationService* service =
       drive::DriveIntegrationServiceFactory::FindForProfile(profile);
-  return service ? service->event_logger() : nullptr;
+  return service ? service->GetLogger() : nullptr;
 }
 
 std::vector<fmp::MountableGuest> CreateMountableGuestList(Profile* profile) {

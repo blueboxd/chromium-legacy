@@ -12,8 +12,8 @@
 
 #include <vector>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/containers/span.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace enterprise_connectors::test {
@@ -24,11 +24,11 @@ class MockSecureEnclaveClient : public SecureEnclaveClient {
   MockSecureEnclaveClient();
   ~MockSecureEnclaveClient() override;
 
-  MOCK_METHOD(base::ScopedCFTypeRef<SecKeyRef>,
+  MOCK_METHOD(base::apple::ScopedCFTypeRef<SecKeyRef>,
               CreatePermanentKey,
               (),
               (override));
-  MOCK_METHOD(base::ScopedCFTypeRef<SecKeyRef>,
+  MOCK_METHOD(base::apple::ScopedCFTypeRef<SecKeyRef>,
               CopyStoredKey,
               (KeyType),
               (override));

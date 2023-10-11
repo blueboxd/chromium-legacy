@@ -241,15 +241,6 @@
       initial: true,
     },
 
-    // Used to disable threaded, compositor scrolling for testing purposes.
-    // crbug.com/410974 tracks removal once alternative solutions for selective
-    // main thread scrolling are supported.
-    {
-      name: "threadedScrollingEnabled",
-      initial: true,
-      invalidate: ["Style", "ViewportPaintProperties"],
-    },
-
     // Used in web tests for gesture tap highlights. Makes the highlights square
     // (rather than rounded) to make it possible to reftest the results.
     {
@@ -488,6 +479,13 @@
       type: "double",
     },
 
+    // Font weight adjustment for accessibility, set at OS-level.
+    {
+      name: "accessibilityFontWeightAdjustment",
+      initial: "0",
+      type: "int",
+    },
+
     // Only used by web tests and inspector emulation.
     {
       name: "mediaTypeOverride",
@@ -565,6 +563,7 @@
     {
       name: "scriptEnabled",
       initial: false,
+      invalidate: ["MediaQuery"],
     },
 
     {

@@ -5,9 +5,9 @@
 #import <memory>
 #import <vector>
 
+#import "base/apple/foundation_util.h"
 #import "base/functional/bind.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -161,7 +161,9 @@ void TapMoreButtonIfVisible() {
   if ([self isRunningTest:@selector
             (testSetUpListDismissItemsWithSyncToSigninDisabled)] ||
       [self isRunningTest:@selector
-            (testSetUpListSigninWithSyncToSigninDisabled)]) {
+            (testSetUpListSigninWithSyncToSigninDisabled)] ||
+      [self isRunningTest:@selector
+            (testSetUpListSigninSwipeToDismissWithSyncToSigninDisabled)]) {
     config.features_disabled.push_back(
         syncer::kReplaceSyncPromosWithSignInPromos);
   }
@@ -214,9 +216,9 @@ void TapMoreButtonIfVisible() {
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
   // Open in new tab.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
       performAction:grey_tap()];
 
   // Check a new page in normal model is opened.
@@ -274,9 +276,9 @@ void TapMoreButtonIfVisible() {
   NSString* pageTitle = base::SysUTF8ToNSString(kPageTitle);
 
   // Tap on remove.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_SUGGESTIONS_REMOVE)]
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                     IDS_IOS_CONTENT_SUGGESTIONS_REMOVE)]
       performAction:grey_tap()];
 
   // Check the tile is removed.
@@ -552,7 +554,10 @@ void TapMoreButtonIfVisible() {
 }
 
 // Tests that the signin and sync screens can be dismissed by a swipe.
-- (void)testSetUpListSigninSwipeToDismiss {
+// Note that if SyncToSignin is enabled, then the signin screen is replaced
+// by a bottom sheet which can't be dismissed by swiping, so this test
+// doesn't apply.
+- (void)testSetUpListSigninSwipeToDismissWithSyncToSigninDisabled {
   [self prepareToTestSetUpList];
   [SigninEarlGrey addFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
 
@@ -597,7 +602,15 @@ void TapMoreButtonIfVisible() {
   // Tap the signin item.
   TapView(set_up_list::kSignInItemID);
   [ChromeEarlGreyUI waitForAppToIdle];
-  TapPromoStyleSecondaryActionButton();
+  if ([ChromeEarlGrey isReplaceSyncWithSigninEnabled]) {
+    // The fake signin UI appears. Dismiss it.
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                            kFakeAuthCancelButtonIdentifier)]
+        performAction:grey_tap()];
+  } else {
+    // The full-screen signin promo appears. Dismiss it.
+    TapPromoStyleSecondaryActionButton();
+  }
 
   ConditionBlock condition = ^{
     NSError* error = nil;
@@ -645,46 +658,20 @@ void TapMoreButtonIfVisible() {
       assertWithMatcher:grey_notNil()];
   // Dismiss the CPE promo.
   TapSecondaryActionButton();
-  // Verify the All Set item is complete.
+  // Verify the All Set item is shown.
   condition = ^{
     NSError* error = nil;
     [[EarlGrey
-        selectElementWithMatcher:
-            grey_allOf(grey_accessibilityID(l10n_util::GetNSString(
-                           IDS_IOS_CONTENT_SUGGESTIONS_SHORTCUTS_MODULE_TITLE)),
-                       grey_sufficientlyVisible(), nil)]
+        selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                                set_up_list::kAllSetItemID),
+                                            grey_sufficientlyVisible(), nil)]
         assertWithMatcher:grey_sufficientlyVisible()
                     error:&error];
     return error == nil;
   };
   GREYAssert(
       base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(2), condition),
-      @"Timeout waiting for the Magic Stack to scroll to next module expired.");
-
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    // Rotate so Magic Stack on iphone so underlying UIScrollView is reachable
-    // for scrolling.
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
-                                  error:nil];
-    // Bring Magic Stack into view
-    [[[EarlGrey
-        selectElementWithMatcher:
-            grey_allOf(grey_accessibilityID(
-                           kMagicStackScrollViewAccessibilityIdentifier),
-                       grey_sufficientlyVisible(), nil)]
-           usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
-        onElementWithMatcher:chrome_test_util::NTPCollectionView()]
-        assertWithMatcher:grey_notNil()];
-  }
-
-  [[[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                              set_up_list::kAllSetItemID),
-                                          grey_sufficientlyVisible(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionLeft, 200)
-      onElementWithMatcher:grey_accessibilityID(
-                               kMagicStackScrollViewAccessibilityIdentifier)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      @"Timeout waiting for the All Set Module to show expired.");
 }
 
 #pragma mark - Test utils
@@ -696,9 +683,8 @@ void TapMoreButtonIfVisible() {
   [ChromeEarlGrey resetDataForLocalStatePref:
                       prefs::kIosCredentialProviderPromoLastActionTaken];
   [NewTabPageAppInterface resetSetUpListPrefs];
-  AppLaunchConfiguration config = self.appConfigurationForTestCase;
-  config.relaunch_policy = ForceRelaunchByCleanShutdown;
-  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+  [ChromeEarlGrey closeAllTabs];
+  [ChromeEarlGrey openNewTab];
   ScrollToSetUpList();
 
   // SetUpList is visible
@@ -712,9 +698,8 @@ void TapMoreButtonIfVisible() {
   [ChromeEarlGrey resetDataForLocalStatePref:
                       prefs::kIosCredentialProviderPromoLastActionTaken];
   [NewTabPageAppInterface resetSetUpListPrefs];
-  AppLaunchConfiguration config = self.appConfigurationForTestCase;
-  config.relaunch_policy = ForceRelaunchByCleanShutdown;
-  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+  [ChromeEarlGrey closeAllTabs];
+  [ChromeEarlGrey openNewTab];
 }
 
 // Setup a most visited tile, and open the context menu by long pressing on it.

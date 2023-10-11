@@ -14,7 +14,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
-#include "components/segmentation_platform/internal/execution/default_model_manager.h"
 #include "components/segmentation_platform/internal/execution/model_manager.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -43,17 +42,23 @@ class ModelManagerImpl : public ModelManager {
       ModelProviderFactory* model_provider_factory,
       base::Clock* clock,
       SegmentInfoDatabase* segment_database,
-      DefaultModelManager* default_model_manager,
       const SegmentationModelUpdatedCallback& model_updated_callback);
+
   ~ModelManagerImpl() override;
 
   // Disallow copy/assign.
   ModelManagerImpl(const ModelManagerImpl&) = delete;
   ModelManagerImpl& operator=(const ModelManagerImpl&) = delete;
 
+  void Initialize() override;
+
   // ModelManager override:
   ModelProvider* GetModelProvider(proto::SegmentId segment_id,
                                   proto::ModelSource model_source) override;
+
+  void SetSegmentationModelUpdatedCallbackForTesting(
+      ModelManager::SegmentationModelUpdatedCallback model_updated_callback)
+      override;
 
  private:
   friend class SegmentationPlatformServiceImplTest;
@@ -62,10 +67,11 @@ class ModelManagerImpl : public ModelManager {
   // Callback for whenever a SegmentationModelHandler is informed that the
   // underlying ML model file has been updated. If there is an available
   // model, this will be called at least once per session.
-  void OnSegmentationModelUpdated(proto::ModelSource model_source,
-                                  proto::SegmentId segment_id,
-                                  proto::SegmentationModelMetadata metadata,
-                                  int64_t model_version);
+  void OnSegmentationModelUpdated(
+      proto::ModelSource model_source,
+      proto::SegmentId segment_id,
+      absl::optional<proto::SegmentationModelMetadata> metadata,
+      int64_t model_version);
 
   // Callback after fetching the current SegmentInfo from the
   // SegmentInfoDatabase. This is part of the flow for informing the
@@ -84,19 +90,26 @@ class ModelManagerImpl : public ModelManager {
   void OnUpdatedSegmentInfoStored(proto::SegmentInfo segment_info,
                                   bool success);
 
+  // Callback after deleting the previous version of the SegmentInfo.
+  void OnSegmentInfoDeleted(SegmentId segment_id,
+                            proto::ModelSource model_source,
+                            bool success);
+
+  const base::flat_set<SegmentId>& segment_ids_;
+
   // All the relevant handlers for each of the segments.
   std::map<std::pair<SegmentId, proto::ModelSource>,
            std::unique_ptr<ModelProvider>>
       model_providers_;
+
+  // Creates model provider.
+  const raw_ptr<ModelProviderFactory> model_provider_factory_;
 
   // Used to access the current time.
   raw_ptr<base::Clock> clock_;
 
   // Database for segment information and metadata.
   raw_ptr<SegmentInfoDatabase> segment_database_;
-
-  // Class to get segment info from default models.
-  const raw_ptr<DefaultModelManager> default_model_manager_;
 
   // Invoked whenever there is an update to any of the relevant ML models.
   SegmentationModelUpdatedCallback model_updated_callback_;

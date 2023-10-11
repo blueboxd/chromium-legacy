@@ -211,7 +211,9 @@ PreloadingEligibility ToEligibility(PrerenderFinalStatus status) {
     case PrerenderFinalStatus::kLowEndDevice:
       return PreloadingEligibility::kLowMemory;
     case PrerenderFinalStatus::kInvalidSchemeRedirect:
+      NOTREACHED_NORETURN();
     case PrerenderFinalStatus::kInvalidSchemeNavigation:
+      return PreloadingEligibility::kHttpOrHttpsOnly;
     case PrerenderFinalStatus::kInProgressNavigation:
     case PrerenderFinalStatus::kNavigationRequestBlockedByCsp:
     case PrerenderFinalStatus::kMainFrameNavigation:
@@ -629,6 +631,14 @@ int PrerenderHostRegistry::CreateAndStartHost(
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
+    // Allow prerendering only HTTP(S) scheme URLs. For redirection, this will
+    // be checked in PrerenderNavigationThrottle::WillStartOrRedirectRequest().
+    if (!attributes.prerendering_url.SchemeIsHTTPOrHTTPS()) {
+      builder.RejectAsNotEligible(
+          attributes, PrerenderFinalStatus::kInvalidSchemeNavigation);
+      return RenderFrameHost::kNoFrameTreeNodeId;
+    }
+
     // Disallow all pages that have an effective URL like hosted apps and NTP.
     if (SiteInstanceImpl::HasEffectiveURL(
             prerender_web_contents.GetBrowserContext(),
@@ -705,6 +715,15 @@ int PrerenderHostRegistry::CreateAndStartHost(
                           frame_tree_node_id));
     prerender_host_by_frame_tree_node_id_[frame_tree_node_id] =
         std::move(prerender_host);
+
+    if (base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler)) {
+      if (GetPrerenderLimitGroup(attributes.trigger_type,
+                                 attributes.eagerness) ==
+          PrerenderLimitGroup::kSpeculationRulesNonEager) {
+        non_eager_prerender_host_id_by_arrival_order_.push_back(
+            frame_tree_node_id);
+      }
+    }
   }
 
   switch (attributes.trigger_type) {
@@ -773,15 +792,14 @@ int PrerenderHostRegistry::StartPrerendering(int frame_tree_node_id) {
   if (frame_tree_node_id == RenderFrameHost::kNoFrameTreeNodeId) {
     CHECK_EQ(running_prerender_host_id_, RenderFrameHost::kNoFrameTreeNodeId);
 
-    for (auto iter = pending_prerenders_.begin();
-         iter != pending_prerenders_.end();) {
-      int host_id = *iter;
+    while (!pending_prerenders_.empty()) {
+      int host_id = pending_prerenders_.front();
 
       // Skip a cancelled request.
       auto found = prerender_host_by_frame_tree_node_id_.find(host_id);
       if (found == prerender_host_by_frame_tree_node_id_.end()) {
         // Remove the cancelled request from the pending queue.
-        iter = pending_prerenders_.erase(iter);
+        pending_prerenders_.pop_front();
         continue;
       }
       PrerenderHost* prerender_host = found->second.get();
@@ -797,7 +815,7 @@ int PrerenderHostRegistry::StartPrerendering(int frame_tree_node_id) {
       }
 
       // Found the request to run.
-      pending_prerenders_.erase(iter);
+      pending_prerenders_.pop_front();
       frame_tree_node_id = host_id;
       break;
     }
@@ -1248,6 +1266,26 @@ void PrerenderHostRegistry::BackNavigationLikely(
     return;
   }
 
+  // Session history prerendering will reuse the back navigation entry's
+  // existing SiteInstance. We can't have a prerendered document share a
+  // SiteInstance with related active content (i.e. an active document with the
+  // same BrowsingInstance) as that would risk having scripting connections to
+  // prerendered documents. So this case is not eligible for prerendering.
+  SiteInstanceImpl* entry_site_instance = back_entry->site_instance();
+  // `entry_site_instance` could be null in cases such as session restore.
+  if (entry_site_instance) {
+    const bool current_and_target_related =
+        contents->GetSiteInstance()->IsRelatedSiteInstance(entry_site_instance);
+    const size_t allowable_related_count = current_and_target_related ? 1u : 0u;
+    if (entry_site_instance->GetRelatedActiveContentsCount() >
+        allowable_related_count) {
+      RecordPrerenderBackNavigationEligibility(
+          predictor, PrerenderBackNavigationEligibility::kRelatedActiveContents,
+          attempt);
+      return;
+    }
+  }
+
   // To determine whether the resource for the target entry is in the HTTP
   // cache, we send a "fake" ResourceRequest which only loads from the cache.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
@@ -1608,49 +1646,82 @@ PrerenderHostRegistry::GetPrerenderLimitGroup(
   }
 }
 
+int PrerenderHostRegistry::GetHostCountByTriggerType(
+    PrerenderTriggerType trigger_type) {
+  int host_count = 0;
+  for (const auto& [_, host] : prerender_host_by_frame_tree_node_id_) {
+    if (host->trigger_type() == trigger_type) {
+      ++host_count;
+    }
+  }
+  return host_count;
+}
+
+int PrerenderHostRegistry::GetHostCountByLimitGroup(
+    PrerenderLimitGroup limit_group) {
+  CHECK(base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler));
+  int host_count = 0;
+  for (const auto& [_, host] : prerender_host_by_frame_tree_node_id_) {
+    if (GetPrerenderLimitGroup(host->trigger_type(), host->eagerness()) ==
+        limit_group) {
+      ++host_count;
+    }
+  }
+  return host_count;
+}
+
 bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
     PrerenderTriggerType trigger_type,
     absl::optional<blink::mojom::SpeculationEagerness> eagerness) {
-  int trigger_type_count = 0;
-
   PrerenderLimitGroup limit_group;
+  int host_count;
   if (base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler)) {
     limit_group = GetPrerenderLimitGroup(trigger_type, eagerness);
+    host_count = GetHostCountByLimitGroup(limit_group);
+  } else {
+    host_count = GetHostCountByTriggerType(trigger_type);
   }
-
-  for (const auto& [_, host] : prerender_host_by_frame_tree_node_id_) {
-    if (base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler)) {
-      if (GetPrerenderLimitGroup(host->trigger_type(), host->eagerness()) ==
-          limit_group) {
-        ++trigger_type_count;
-      }
-    } else {
-      if (host->trigger_type() == trigger_type) {
-        ++trigger_type_count;
-      }
-    }
-  }
-  // TODO(crbug.com/1350676): Make this function care about
-  // `prerender_new_tab_handle_by_frame_tree_node_id_` as well.
 
   if (base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler)) {
     // Apply the limit of maximum number of running prerenders per
     // PrerenderLimitGroup.
     switch (limit_group) {
       case PrerenderLimitGroup::kSpeculationRulesEager:
-        return trigger_type_count <
-               base::GetFieldTrialParamByFeatureAsInt(
-                   kPrerender2NewLimitAndScheduler,
-                   kMaxNumOfRunningSpeculationRulesEagerPrerenders, 10);
-      case PrerenderLimitGroup::kSpeculationRulesNonEager:
-        return trigger_type_count <
-               base::GetFieldTrialParamByFeatureAsInt(
-                   kPrerender2NewLimitAndScheduler,
-                   kMaxNumOfRunningSpeculationRulesNonEagerPrerenders, 2);
+        return host_count < base::GetFieldTrialParamByFeatureAsInt(
+                                kPrerender2NewLimitAndScheduler,
+                                kMaxNumOfRunningSpeculationRulesEagerPrerenders,
+                                10);
+      case PrerenderLimitGroup::kSpeculationRulesNonEager: {
+        int limit_non_eager = base::GetFieldTrialParamByFeatureAsInt(
+            kPrerender2NewLimitAndScheduler,
+            kMaxNumOfRunningSpeculationRulesNonEagerPrerenders, 2);
+
+        // When the limit on non-eager speculation rules is reached, cancel the
+        // oldest host to allow a newly incoming trigger to start.
+        if (host_count >= limit_non_eager) {
+          int oldest_prerender_host_id;
+
+          // Find the oldest non-eager prerender that has not been canceled yet.
+          do {
+            oldest_prerender_host_id =
+                non_eager_prerender_host_id_by_arrival_order_.front();
+            non_eager_prerender_host_id_by_arrival_order_.pop_front();
+          } while (!prerender_host_by_frame_tree_node_id_.contains(
+              oldest_prerender_host_id));
+
+          CHECK(CancelHost(
+              oldest_prerender_host_id,
+              PrerenderFinalStatus::kMaxNumOfRunningPrerendersExceeded));
+
+          CHECK_LT(GetHostCountByLimitGroup(limit_group), limit_non_eager);
+        }
+
+        return true;
+      }
       case PrerenderLimitGroup::kEmbedder:
-        return trigger_type_count < base::GetFieldTrialParamByFeatureAsInt(
-                                        kPrerender2NewLimitAndScheduler,
-                                        kMaxNumOfRunningEmbedderPrerenders, 2);
+        return host_count < base::GetFieldTrialParamByFeatureAsInt(
+                                kPrerender2NewLimitAndScheduler,
+                                kMaxNumOfRunningEmbedderPrerenders, 2);
     }
   }
   switch (trigger_type) {
@@ -1658,7 +1729,7 @@ bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
     case PrerenderTriggerType::kSpeculationRuleFromIsolatedWorld:
       // The number of prerenders triggered by speculation rules is limited to
       // a Finch config param.
-      return trigger_type_count <
+      return host_count <
              base::GetFieldTrialParamByFeatureAsInt(
                  blink::features::kPrerender2,
                  blink::features::kPrerender2MaxNumOfRunningSpeculationRules,
@@ -1666,7 +1737,7 @@ bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
     case PrerenderTriggerType::kEmbedder:
       // Currently the number of prerenders triggered by an embedder is
       // limited to two.
-      return trigger_type_count < 2;
+      return host_count < 2;
   }
 }
 

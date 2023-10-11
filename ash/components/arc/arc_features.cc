@@ -12,7 +12,7 @@ namespace arc {
 // action to start it later in an on-demand manner.
 BASE_FEATURE(kArcOnDemandFeature,
              "ArcOnDemand",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls ACTION_BOOT_COMPLETED broadcast for third party applications on ARC.
 // When disabled, third party apps will not receive this broadcast.
@@ -374,7 +374,7 @@ BASE_FEATURE(kXdgMode, "ArcXdgMode", base::FEATURE_DISABLED_BY_DEFAULT);
 // memory pressure is below foreground.
 BASE_FEATURE(kPriorityAppLmkDelay,
              "ArcPriorityAppLmkDelay",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls the time to wait for inactivity of a high priority app before
 // considering it to be killed. The default value is 5 minutes.

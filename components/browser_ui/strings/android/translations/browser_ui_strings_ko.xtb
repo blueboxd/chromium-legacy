@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">사이트에서 기기에 데이터를 저장하도록 허용</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1384959399684842514">다운로드 일시중지됨</translation>
-<translation id="1409426117486808224">열린 탭 간단히 보기</translation>
 <translation id="1415402041810619267">URL 잘림</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="1446450296470737166">MIDI 기기의 전체 제어 허용</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">타사 쿠키만 제외하고 허용</translation>
 <translation id="1989112275319619282">찾아보기</translation>
 <translation id="1994173015038366702">사이트 URL</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{1일 후에 만료됨}other{#일 후에 만료됨}}</translation>
 <translation id="2004697686368036666">일부 사이트에서 기능이 작동하지 않을 수 있음</translation>
 <translation id="2025115093177348061">증강 현실</translation>
 <translation id="2030769033451695672">탭하여 <ph name="URL_OF_THE_CURRENT_TAB" />(으)로 돌아가기</translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">제목</translation>
 <translation id="4008040567710660924">특정 사이트의 쿠키를 허용합니다.</translation>
 <translation id="4046123991198612571">다음 트랙</translation>
+<translation id="4053720452172726777">Chrome 맞춤설정 및 제어</translation>
 <translation id="4149994727733219643">웹페이지 간단히 보기</translation>
 <translation id="4151930093518524179">기본 확대/축소</translation>
 <translation id="4165986682804962316">사이트 설정</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">사이트에서 사용자의 다양한 사이트 탐색 활동 정보를 이용해 광고 맞춤설정 등의 작업을 하는 데 쿠키를 사용할 수 없습니다. 일부 사이트에서는 기능이 작동하지 않을 수 있습니다.</translation>
 <translation id="5553374991681107062">최신</translation>
 <translation id="5556459405103347317">새로고침</translation>
-<translation id="5596627076506792578">옵션 더보기</translation>
 <translation id="5649053991847567735">자동 다운로드</translation>
 <translation id="5668404140385795438">웹사이트의 확대 방지 요청 무시</translation>
 <translation id="5677928146339483299">차단</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Android 설정에서 사용 중지됨</translation>
 <translation id="7016516562562142042">현재 검색엔진에 허용됨</translation>
 <translation id="702275896380648118">이 사이트는 내 관심분야를 파악한 후 다른 사이트에 광고를 추천합니다. Chrome에 저장된 내 광고 주제를 기반으로 더 관련성 있는 광고를 표시합니다.</translation>
-<translation id="702463548815491781">TalkBack 또는 스위치 제어를 사용 중일 때 권장됩니다.</translation>
 <translation id="7053983685419859001">차단</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1개 선택됨}other{#개 선택됨}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />개 선택됨. 화면 상단에서 옵션 선택 가능</translation>

@@ -32,24 +32,31 @@
 
 .policy-table .main {
   border: 1px solid rgba(0, 0, 0, .06);
+  border-radius: 15px;
 }
 
 .policy-precedence-data {
-  border: 1px solid rgba(0, 0, 0, .06);
+  border-top: 1px solid rgba(0, 0, 0, .06);
 }
 
-.name {
-  border-inline-end: 1px solid rgba(0, 0, 0, .06);
-  flex: 0 0 15%;
-}
-
+.level,
+.messages,
+.name,
+.scope,
+.source,
 .value {
-  flex: 0 0 35%;
+  border-inline-end: 1px solid rgba(0, 0, 0, .06);
+}
+
+.name,
+.value {
+  flex: 0 0 25%;
 }
 
 .row.header {
   background-color: rgb(240, 240, 240);
   border-bottom: 1px solid rgba(0, 0, 0, .06);
+  border-radius: 15px 15px 0 0;
 }
 
 .value.row .value {

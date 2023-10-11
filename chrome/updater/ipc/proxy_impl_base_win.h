@@ -40,26 +40,24 @@ template <typename Derived,
 class ProxyImplBase {
  public:
   // Releases `impl` on `task_runner_`.
-  static void Destroy(scoped_refptr<Derived>& impl) {
-    scoped_refptr<Derived> this_impl;
-    this_impl.swap(impl);
+  static void Destroy(scoped_refptr<Derived> impl) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        this_impl->task_runner_;
-    task_runner->PostTask(FROM_HERE, base::BindOnce(
-                                         [](scoped_refptr<Derived> impl) {
-                                           CHECK(impl);
-                                           impl = nullptr;
-                                         },
-                                         std::move(this_impl)));
-    CHECK(!this_impl);
+        impl->task_runner_;
+    task_runner->PostTask(FROM_HERE,
+                          base::BindOnce([](scoped_refptr<Derived> /*impl*/) {},
+                                         std::move(impl)));
   }
 
  protected:
   explicit ProxyImplBase(UpdaterScope scope) : scope_(scope) {
     DETACH_FROM_SEQUENCE(sequence_checker_);
+    VLOG(2) << __func__;
   }
 
-  ~ProxyImplBase() { VLOG(2) << __func__; }
+  ~ProxyImplBase() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    VLOG(2) << __func__;
+  }
 
   void PostRPCTask(base::OnceClosure task) {
     task_runner_->PostTask(FROM_HERE, std::move(task));
@@ -120,13 +118,13 @@ class ProxyImplBase {
     return interface_.value();
   }
 
-  bool ConnectToServer() {
+  HRESULT ConnectToServer() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (interface_.has_value()) {
-      return true;
+      return S_OK;
     }
     interface_ = CreateInterface();
-    return interface_.has_value();
+    return interface_.has_value() ? S_OK : interface_.error();
   }
 
   // Bound to the `task_runner_` sequence.
@@ -137,7 +135,7 @@ class ProxyImplBase {
   // callbacks. This task runner is thread-affine with the platform COM STA.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_ =
       base::ThreadPool::CreateCOMSTATaskRunner(
-          {base::TaskPriority::USER_VISIBLE,
+          {base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED);
 

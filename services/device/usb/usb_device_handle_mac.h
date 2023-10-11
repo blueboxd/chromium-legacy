@@ -13,9 +13,9 @@
 #include <memory>
 #include <vector>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioplugininterface.h"
 #include "base/memory/raw_ptr.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
@@ -136,12 +136,13 @@ class UsbDeviceHandleMac : public UsbDeviceHandle {
       transfers_;
 
   ScopedIOUSBDeviceInterface device_interface_;
-  base::ScopedCFTypeRef<CFRunLoopSourceRef> device_source_;
+  base::apple::ScopedCFTypeRef<CFRunLoopSourceRef> device_source_;
   scoped_refptr<UsbDeviceMac> device_;
 
   // Both maps take the interface number in as the respective key.
   base::flat_map<uint8_t, ScopedIOUSBInterfaceInterface> interfaces_;
-  base::flat_map<uint8_t, base::ScopedCFTypeRef<CFRunLoopSourceRef>> sources_;
+  base::flat_map<uint8_t, base::apple::ScopedCFTypeRef<CFRunLoopSourceRef>>
+      sources_;
 };
 
 }  // namespace device

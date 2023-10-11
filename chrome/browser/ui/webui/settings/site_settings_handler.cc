@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
+#include "chrome/browser/ui/safety_hub/notification_permission_review_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/url_identity.h"
 #include "chrome/browser/ui/webui/settings/recent_site_settings_helper.h"
@@ -372,12 +373,16 @@ bool IsPatternValidForType(const std::string& pattern_string,
   return true;
 }
 
-void UpdateDataFromModel(SiteSettingsHandler::AllSitesMap* all_sites_map,
-                         std::map<url::Origin, int64_t>* origin_size_map,
-                         const url::Origin& origin,
-                         int64_t size) {
+void UpdateDataFromModel(
+    SiteSettingsHandler::AllSitesMap* all_sites_map,
+    std::map<url::Origin, int64_t>* origin_size_map,
+    const url::Origin& origin,
+    int64_t size,
+    absl::optional<GroupingKey> partition_grouping_key = absl::nullopt) {
   UpdateDataForOrigin(origin, size, origin_size_map);
-  InsertOriginIntoGroup(all_sites_map, origin);
+  InsertOriginIntoGroup(all_sites_map, origin,
+                        /*is_origin_with_cookies=*/false,
+                        partition_grouping_key);
 }
 
 void LogAllSitesAction(AllSitesAction2 action) {
@@ -1011,6 +1016,8 @@ void SiteSettingsHandler::OnGetUsageInfo() {
     if (!entry.Matches(usage_origin)) {
       continue;
     }
+    // TODO(crbug.com/1468277): Step 5 - Check if the entry is backed by a
+    // StorageKey and count the size if the top-site matches too.
     size += entry.data_details->storage_size;
   }
 
@@ -1167,6 +1174,8 @@ void SiteSettingsHandler::HandleClearUnpartitionedUsage(
   RemoveNonTreeModelData(affected_origins);
 }
 
+// TODO(crbug.com/1468277): Step 5 - Handle clearing partitioned entries as
+// well where origin matches the top-site in the browsing data model.
 void SiteSettingsHandler::HandleClearPartitionedUsage(
     const base::Value::List& args) {
   CHECK_EQ(2U, args.size());
@@ -2263,19 +2272,6 @@ void SiteSettingsHandler::StopObservingSourcesForProfile(Profile* profile) {
   observed_profiles_.RemoveObservation(profile);
 }
 
-void SiteSettingsHandler::TreeNodesAdded(ui::TreeModel* model,
-                                         ui::TreeModelNode* parent,
-                                         size_t start,
-                                         size_t count) {}
-
-void SiteSettingsHandler::TreeNodesRemoved(ui::TreeModel* model,
-                                           ui::TreeModelNode* parent,
-                                           size_t start,
-                                           size_t count) {}
-
-void SiteSettingsHandler::TreeNodeChanged(ui::TreeModel* model,
-                                          ui::TreeModelNode* node) {}
-
 void SiteSettingsHandler::TreeModelEndBatchDeprecated(CookiesTreeModel* model) {
   ModelBuilt();
 }
@@ -2305,8 +2301,19 @@ void SiteSettingsHandler::GetOriginStorage(
                          },
                          [](const url::Origin& origin) { return origin; }},
         *entry.data_owner);
+
+    // If the storage is backed by a StorageKey we need to ensure the grouping
+    // key matches the top-site and doesn't default to the origin in the UI.
+    absl::optional<GroupingKey> partition_grouping_key = absl::nullopt;
+    const blink::StorageKey* storage_key =
+        absl::get_if<blink::StorageKey>(&entry.data_key.get());
+    if (storage_key != nullptr && storage_key->IsThirdPartyContext()) {
+      partition_grouping_key = GroupingKey::Create(
+          url::Origin::Create(GURL(storage_key->top_level_site().Serialize())));
+    }
     UpdateDataFromModel(all_sites_map, origin_size_map, origin,
-                        entry.data_details->storage_size);
+                        entry.data_details->storage_size,
+                        partition_grouping_key);
   }
 }
 
@@ -2518,6 +2525,14 @@ void SiteSettingsHandler::ClearAllSitesMapForTesting() {
   all_sites_map_.clear();
 }
 
+CookiesTreeModel* SiteSettingsHandler::GetCookiesTreeModelForTesting() {
+  return cookies_tree_model_.get();
+}
+
+BrowsingDataModel* SiteSettingsHandler::GetBrowsingDataModelForTesting() {
+  return browsing_data_model_.get();
+}
+
 void SiteSettingsHandler::SendCookieSettingDescription() {
   FireWebUIListener("cookieSettingDescriptionChanged",
                     base::Value(GetCookieSettingDescription(profile_)));
@@ -2652,6 +2667,9 @@ void SiteSettingsHandler::SendNotificationPermissionReviewList() {
           features::kSafetyCheckNotificationPermissions)) {
     return;
   }
+  NotificationPermissionsReviewService* service =
+      NotificationPermissionsReviewServiceFactory::GetForProfile(profile_);
+  CHECK(service);
   // Notify observers that the permission review list could have changed. Note
   // that the list is not guaranteed to have changed. In places where
   // determining whether the list has changed is cause for performance concerns,
@@ -2660,7 +2678,7 @@ void SiteSettingsHandler::SendNotificationPermissionReviewList() {
   // HandleSetCategoryPermissionForPattern.
   FireWebUIListener(
       site_settings::kNotificationPermissionsReviewListMaybeChangedEvent,
-      site_settings::PopulateNotificationPermissionReviewData(profile_));
+      service->PopulateNotificationPermissionReviewData(profile_));
 }
 
 }  // namespace settings

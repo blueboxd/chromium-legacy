@@ -51,6 +51,8 @@
 
 namespace {
 
+using ManageTextStyle = ContentSettingBubbleModel::ManageTextStyle;
+
 // Helper functions to access BubbleContent attributes that depend on user
 // modifiable state.
 std::u16string GetDoneButtonText(
@@ -493,9 +495,11 @@ bool ContentSettingBubbleContents::ShouldShowCloseButton() const {
 void ContentSettingBubbleContents::Init() {
   DCHECK(content_setting_bubble_model_);
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  int vertical_spacing =
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+      vertical_spacing));
   std::vector<LayoutRow> rows;
 
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
@@ -504,7 +508,9 @@ void ContentSettingBubbleContents::Init() {
   if (!bubble_content.subtitle.empty()) {
     SetSubtitle(bubble_content.subtitle);
     auto separator = std::make_unique<views::Separator>();
-    rows.push_back({std::move(separator), LayoutRowType::INDENTED});
+    separator->SetProperty(views::kMarginsKey,
+                           gfx::Insets::VH(vertical_spacing, 0));
+    rows.push_back({std::move(separator), LayoutRowType::FULL_WIDTH});
   }
 
   if (!bubble_content.message.empty()) {
@@ -591,8 +597,7 @@ void ContentSettingBubbleContents::Init() {
     rows.push_back({std::move(custom_link), LayoutRowType::DEFAULT});
   }
 
-  if (bubble_content.manage_text_style ==
-      ContentSettingBubbleModel::ManageTextStyle::kCheckbox) {
+  if (bubble_content.manage_text_style == ManageTextStyle::kCheckbox) {
     auto manage_checkbox = std::make_unique<views::Checkbox>(
         bubble_content.manage_text,
         base::BindRepeating(
@@ -607,8 +612,7 @@ void ContentSettingBubbleContents::Init() {
     rows.push_back({std::move(manage_checkbox), LayoutRowType::DEFAULT});
   }
 
-  if (bubble_content.manage_text_style ==
-      ContentSettingBubbleModel::ManageTextStyle::kHoverButton) {
+  if (bubble_content.manage_text_style == ManageTextStyle::kHoverButton) {
     SetButtons(ui::DIALOG_BUTTON_NONE);
     auto separator = std::make_unique<views::Separator>();
     rows.push_back({std::move(separator), LayoutRowType::DEFAULT});
@@ -630,7 +634,14 @@ void ContentSettingBubbleContents::Init() {
   // LayoutRowType::FULL_WIDTH need to not have them applied to look correct.
   const int left_margin = margins().left();
   const int right_margin = margins().right();
-  set_margins(gfx::Insets::TLBR(margins().top(), 0, margins().bottom(), 0));
+
+  int bottom_margin = margins().bottom();
+  if (bubble_content.manage_text_style == ManageTextStyle::kHoverButton) {
+    bottom_margin =
+        provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
+  }
+
+  set_margins(gfx::Insets::TLBR(margins().top(), 0, bottom_margin, 0));
 
   for (LayoutRow& row : rows) {
     if (row.type != LayoutRowType::FULL_WIDTH) {

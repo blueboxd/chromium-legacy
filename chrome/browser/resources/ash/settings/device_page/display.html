@@ -6,11 +6,6 @@
     padding: 0;
   }
 
-  #nightLightTemperatureDiv[disabled] {
-    opacity: 0.38;
-    pointer-events: none;
-  }
-
   .display-tabs {
     width: 100%;
   }
@@ -43,15 +38,21 @@
     border-top: none;
   }
 
-  #nightLightSlider {
-    flex-grow: 1;
-    margin-top: 20px;
+  #mirrorDisplayToggleButton {
+    display: flex;
+    align-self: stretch;
+    margin-bottom: 20px;
   }
 
-  iron-collapse {
-   width: 100%;
-  }
 </style>
+
+<!-- Night Light Settings -->
+<template is="dom-if"
+    if="[[isRevampWayfindingEnabled_]]" restamp>
+  <settings-display-night-light prefs="{{prefs}}">
+  </settings-display-night-light>
+  <div class="hr"></div>
+</template>
 
 <!-- Arrangement section -->
 <template is="dom-if"
@@ -73,16 +74,37 @@
 
     <template is="dom-if"
         if="[[showMirror_(unifiedDesktopMode_, displays)]]" restamp>
-      <div class="secondary self-start">
-        <cr-checkbox id="displayMirrorCheckbox"
-            checked="[[isMirrored_(displays)]]"
-            on-click="onMirroredClick_"
-            aria-label="[[getDisplayMirrorText_(displays)]]"
-            deep-link-focus-id$="[[Setting.kDisplayMirroring]]">
-          <div class="text-area">[[getDisplayMirrorText_(displays)]]</div>
-        </cr-checkbox>
-      </div>
+      <!-- Mirror display toggle button -->
+      <template is="dom-if"
+          if="[[isRevampWayfindingEnabled_]]" restamp>
+        <div id="mirrorDisplayToggleButton" class="text-area">
+          <div id="mirrorDisplayToggleLabel" class="start">
+            [[getDisplayMirrorText_(displays)]]
+          </div>
+          <cr-toggle id="mirrorDisplayToggle"
+              checked="[[isMirrored_(displays)]]"
+              on-click="onMirroredClick_"
+              aria-label="[[getDisplayMirrorText_(displays)]]"
+              deep-link-focus-id$="[[Setting.kDisplayMirroring]]">
+          </cr-toggle>
+        </div>
+      </template>
+
+      <!-- Mirror display checkbox -->
+      <template is="dom-if"
+          if="[[!isRevampWayfindingEnabled_]]" restamp>
+        <div class="secondary self-start">
+          <cr-checkbox id="displayMirrorCheckbox"
+              checked="[[isMirrored_(displays)]]"
+              on-click="onMirroredClick_"
+              aria-label="[[getDisplayMirrorText_(displays)]]"
+              deep-link-focus-id$="[[Setting.kDisplayMirroring]]">
+            <div class="text-area">[[getDisplayMirrorText_(displays)]]</div>
+          </cr-checkbox>
+        </div>
+      </template>
     </template>
+
   </div>
 </template>
 
@@ -136,12 +158,12 @@
   <!-- Display zoom selection slider -->
   <div class="settings-box indented two-line first">
     <div class="start text-area layout vertical">
-      <div id="displayZoomTitle" aria-hidden="true">
-        $i18n{displayZoomTitle}
+      <div id="displayZoomLabel" aria-hidden="true">
+        $i18n{displayZoomLabel}
       </div>
-      <div id="displayZoomSublabel" class="secondary self-start"
+      <div id="displayZoomDescription" class="secondary self-start"
           aria-hidden="true">
-        $i18n{displayZoomSublabel}
+        $i18n{displayZoomDescription}
       </div>
       <div id="logicalResolutionText" class="secondary self-start"
           hidden$="[[!logicalResolutionText_]]" aria-hidden="true">
@@ -152,12 +174,12 @@
         selectedDisplay, prefs.cros.device_display_resolution)]]">
       <cr-policy-pref-indicator
           pref="[[prefs.cros.device_display_resolution]]"
-          icon-aria-label="$i18n{displayZoomTitle}">
+          icon-aria-label="$i18n{displayZoomLabel}">
       </cr-policy-pref-indicator>
     </template>
     <settings-slider id="displaySizeSlider"
         ticks="[[zoomValues_]]" pref="{{selectedZoomPref_}}"
-        label-aria="$i18n{displayZoomTitle}"
+        label-aria="$i18n{displayZoomLabel}"
         label-min="$i18n{displaySizeSliderMinLabel}"
         label-max="$i18n{displaySizeSliderMaxLabel}"
         disabled="[[isDisplayScaleMandatory_(
@@ -293,64 +315,9 @@
 </div>
 
 <!-- Night Light Settings -->
-<settings-toggle-button
-    id="nightLightToggleButton"
-    class="hr"
-    label="$i18n{displayNightLightLabel}"
-    pref="{{prefs.ash.night_light.enabled}}"
-    sub-label="$i18n{displayNightLightText}"
-    deep-link-focus-id$="[[Setting.kNightLight]]">
-</settings-toggle-button>
-
-<div id="nightLightSettingsDiv"
-    class="settings-box continuation start layout vertical">
-  <!-- Color temperature slider -->
-  <div id="nightLightTemperatureDiv"
-      class="settings-box indented continuation"
-      hidden$="[[!prefs.ash.night_light.enabled.value]]">
-    <div class="start text-area" id="colorTemperatureLabel">
-      $i18n{displayNightLightTemperatureLabel}
-    </div>
-    <settings-slider id="colorTemperatureSlider"
-        aria-labelledby="colorTemperatureLabel" min="0" max="100"
-        scale="100" label-min="$i18n{displayNightLightTempSliderMinLabel}"
-        label-max="$i18n{displayNightLightTempSliderMaxLabel}"
-        pref="{{prefs.ash.night_light.color_temperature}}"
-        deep-link-focus-id$="[[Setting.kNightLightColorTemperature]]">
-    </settings-slider>
-  </div>
-  <!-- Schedule settings -->
-  <div class="settings-box indented">
-    <div class="start text-area" aria-hidden="true">
-      <div id="nightLightScheduleLabel" class="label">
-        $i18n{displayNightLightScheduleLabel}
-      </div>
-      <div id="nightLightScheduleSubLabel" class="secondary label"
-          hidden$="[[!nightLightScheduleSubLabel_]]">
-        [[nightLightScheduleSubLabel_]]
-      </div>
-    </div>
-    <settings-dropdown-menu
-        id="nightLightScheduleTypeDropDown"
-        class="cr-row-gap"
-        label="$i18n{displayNightLightScheduleLabel}"
-        aria-describedby="nightLightScheduleSubLabel"
-        pref="{{prefs.ash.night_light.schedule_type}}"
-        menu-options="[[scheduleTypesList_]]">
-    </settings-dropdown-menu>
-  </div>
-  <!-- Custom schedule slider -->
-  <iron-collapse id="nightLightCustomScheduleCollapse"
-      opened="[[shouldOpenCustomScheduleCollapse_]]">
-    <div class="settings-box indented continuation">
-      <div class="start text-area layout vertical">
-        <div class="settings-box continuation self-stretch">
-          <settings-scheduler-slider id="nightLightSlider" prefs="{{prefs}}"
-              pref-start-time="{{prefs.ash.night_light.custom_start_time}}"
-              pref-end-time="{{prefs.ash.night_light.custom_end_time}}">
-          </settings-scheduler-slider>
-        </div>
-      </div>
-    </div>
-  </iron-collapse>
-</div>
+<template is="dom-if"
+    if="[[!isRevampWayfindingEnabled_]]" restamp>
+  <div class="hr"></div>
+  <settings-display-night-light prefs="{{prefs}}">
+  </settings-display-night-light>
+</template>

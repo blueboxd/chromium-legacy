@@ -233,6 +233,7 @@
 #include "chromeos/ash/services/cros_healthd/private/cpp/data_collector.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
@@ -252,6 +253,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
+#include "components/variations/service/variations_service.h"
 #include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -1244,8 +1246,11 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
 
     misconfigured_user_cleaner_->ScheduleCleanup();
 
-    if (features::IsOrcaEnabled()) {
-      editor_mediator_ = std::make_unique<input_method::EditorMediator>();
+    if (chromeos::features::IsOrcaEnabled()) {
+      editor_mediator_ = std::make_unique<input_method::EditorMediator>(
+          /*profile=*/profile,
+          /*country_code=*/g_browser_process->variations_service()
+              ->GetLatestCountry());
     }
 
     g_browser_process->platform_part()->session_manager()->Initialize(

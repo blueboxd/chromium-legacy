@@ -21,6 +21,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/privacy_sandbox/privacy_sandbox_attestations/privacy_sandbox_attestations_parser.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "content/public/browser/browser_thread.h"
@@ -152,8 +153,9 @@ PrivacySandboxSettingsImpl::Status PrivacySandboxAttestations::IsSiteAttested(
   return PrivacySandboxSettingsImpl::Status::kAttestationFailed;
 }
 
-void PrivacySandboxAttestations::LoadAttestations(base::Version version,
-                                                  base::FilePath install_dir) {
+void PrivacySandboxAttestations::LoadAttestations(
+    base::Version version,
+    base::FilePath installed_file_path) {
   // This function should only be called when the feature is enabled.
   CHECK(base::FeatureList::IsEnabled(
       privacy_sandbox::kEnforcePrivacySandboxAttestations));
@@ -163,7 +165,7 @@ void PrivacySandboxAttestations::LoadAttestations(base::Version version,
       FROM_HERE,
       base::BindOnce(&PrivacySandboxAttestations::LoadAttestationsInternal,
                      base::Unretained(this), std::move(version),
-                     std::move(install_dir)));
+                     std::move(installed_file_path)));
 }
 
 void PrivacySandboxAttestations::AddOverride(const net::SchemefulSite& site) {
@@ -201,7 +203,7 @@ PrivacySandboxAttestations::PrivacySandboxAttestations()
 
 void PrivacySandboxAttestations::LoadAttestationsInternal(
     base::Version version,
-    base::FilePath install_dir) {
+    base::FilePath installed_file_path) {
   // This function should only be called when the feature is enabled.
   CHECK(base::FeatureList::IsEnabled(
       privacy_sandbox::kEnforcePrivacySandboxAttestations));
@@ -210,7 +212,6 @@ void PrivacySandboxAttestations::LoadAttestationsInternal(
   if (!file_version_.IsValid()) {
     // There is no existing attestations map.
     CHECK(!attestations_map_.has_value());
-    CHECK_EQ(attestations_parse_progress_, Progress::kNotStarted);
   } else {
     // There is an existing attestations map.
     CHECK(attestations_map_.has_value());
@@ -228,7 +229,7 @@ void PrivacySandboxAttestations::LoadAttestationsInternal(
 
   attestations_parse_progress_ = Progress::kStarted;
 
-  std::ifstream stream(install_dir.AsUTF8Unsafe(),
+  std::ifstream stream(installed_file_path.AsUTF8Unsafe(),
                        std::ios::binary | std::ios::in);
   if (!stream.is_open()) {
     // File does not exist.
@@ -251,10 +252,15 @@ void PrivacySandboxAttestations::LoadAttestationsInternal(
     RunLoadAttestationsDoneCallbackForTesting();  // IN-TEST
     return;
   }
+
   // For an attestations file with 10,000 entries, the average parsing time is
-  // around 150 microsecond.
-  base::UmaHistogramMicrosecondsTimes(kAttestationsFileParsingUMA,
-                                      parsing_timer.Elapsed());
+  // around 240 milliseconds as per local testing on a n2-standard-128 with 128
+  // vCPUs and 512 GB memory. The estimated dynamic memory usage is around 880
+  // KB.
+  base::UmaHistogramTimes(kAttestationsFileParsingUMA, parsing_timer.Elapsed());
+  base::UmaHistogramMemoryKB(
+      kAttestationsMapMemoryUsageUMA,
+      base::trace_event::EstimateMemoryUsage(attestations_map.value()) / 1024);
 
   // Queries on Privacy Sandbox APIs attestation status may happen on the UI
   // thread. The final assignment of the attestations map and its version is

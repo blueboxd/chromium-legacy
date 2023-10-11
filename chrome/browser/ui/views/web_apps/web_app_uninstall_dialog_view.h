@@ -18,7 +18,6 @@
 #include "chrome/browser/web_applications/web_app_install_manager_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/browser/web_applications/web_app_uninstall_dialog_user_options.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/image/image_skia.h"
@@ -37,6 +36,8 @@ namespace views {
 class Checkbox;
 }
 
+using UninstallChoiceCallback = base::OnceCallback<void(bool)>;
+
 // The dialog's view, owned by the views framework.
 class WebAppUninstallDialogDelegateView
     : public views::DialogDelegateView,
@@ -49,7 +50,7 @@ class WebAppUninstallDialogDelegateView
       web_app::AppId app_id,
       webapps::WebappUninstallSource uninstall_source,
       std::map<SquareSizePx, SkBitmap> icon_bitmaps,
-      web_app::UninstallDialogCallback uninstall_choice_callback);
+      UninstallChoiceCallback uninstall_choice_callback);
   WebAppUninstallDialogDelegateView(const WebAppUninstallDialogDelegateView&) =
       delete;
   WebAppUninstallDialogDelegateView& operator=(
@@ -63,7 +64,8 @@ class WebAppUninstallDialogDelegateView
   ui::ImageModel GetWindowIcon() override;
 
   // Uninstalls the web app.
-  void Uninstall(bool clear_site_data);
+  void Uninstall();
+  void ClearWebAppSiteData();
 
   void OnDialogAccepted();
   void OnDialogCanceled();
@@ -78,9 +80,11 @@ class WebAppUninstallDialogDelegateView
   // The web app we are showing the dialog for.
   const web_app::AppId app_id_;
 
+  // The dialog needs start_url copy even if app gets uninstalled.
+  GURL app_start_url_;
   const raw_ptr<Profile, AcrossTasksDanglingUntriaged> profile_;
   base::WeakPtr<web_app::WebAppProvider> provider_;
-  web_app::UninstallDialogCallback uninstall_choice_callback_;
+  UninstallChoiceCallback uninstall_choice_callback_;
 
   base::ScopedObservation<web_app::WebAppInstallManager,
                           web_app::WebAppInstallManagerObserver>

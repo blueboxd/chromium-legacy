@@ -88,6 +88,8 @@ constexpr ReasonAndDescription kReasonDescriptionMap[] = {
      "transition."},
     {CompositingReason::kOverflowScrolling,
      "Is a scrollable overflow element using accelerated scrolling."},
+    {CompositingReason::kElementCapture,
+     "This element is undergoing element-level capture."},
     {CompositingReason::kOverlap, "Overlaps other composited content."},
     {CompositingReason::kBackfaceVisibilityHidden,
      "Has backface-visibility: hidden."},

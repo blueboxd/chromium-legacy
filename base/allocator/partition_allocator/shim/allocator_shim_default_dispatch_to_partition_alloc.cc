@@ -141,28 +141,25 @@ T* LeakySingleton<T, Constructor>::GetSlowPath() {
 class MainPartitionConstructor {
  public:
   static partition_alloc::PartitionRoot* New(void* buffer) {
-    constexpr partition_alloc::PartitionOptions::ThreadCache thread_cache =
+    constexpr partition_alloc::PartitionOptions::EnableToggle thread_cache =
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
         // Additional partitions may be created in ConfigurePartitions(). Since
         // only one partition can have thread cache enabled, postpone the
         // decision to turn the thread cache on until after that call.
         // TODO(bartekn): Enable it here by default, once the "split-only" mode
         // is no longer needed.
-        partition_alloc::PartitionOptions::ThreadCache::kDisabled;
+        partition_alloc::PartitionOptions::kDisabled;
 #else   // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
         // Other tests, such as the ThreadCache tests create a thread cache,
         // and only one is supported at a time.
-        partition_alloc::PartitionOptions::ThreadCache::kDisabled;
+        partition_alloc::PartitionOptions::kDisabled;
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     auto* new_root = new (buffer)
         partition_alloc::PartitionRoot(partition_alloc::PartitionOptions{
-            .aligned_alloc =
-                partition_alloc::PartitionOptions::AlignedAlloc::kAllowed,
+            .aligned_alloc = partition_alloc::PartitionOptions::kAllowed,
             .thread_cache = thread_cache,
-            .star_scan_quarantine =
-                partition_alloc::PartitionOptions::StarScanQuarantine::kAllowed,
-            .backup_ref_ptr =
-                partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
+            .star_scan_quarantine = partition_alloc::PartitionOptions::kAllowed,
+            .backup_ref_ptr = partition_alloc::PartitionOptions::kDisabled,
         });
 
     return new_root;
@@ -225,56 +222,30 @@ void* AllocateAlignedMemory(size_t alignment, size_t size) {
     PA_CHECK(partition_alloc::internal::base::bits::IsPowerOfTwo(alignment));
     // TODO(bartekn): See if the compiler optimizes branches down the stack on
     // Mac, where PartitionPageSize() isn't constexpr.
-    return Allocator()->AllocWithFlagsNoHooks(
-        0, size, partition_alloc::PartitionPageSize());
+    return Allocator()->AllocNoHooks(size,
+                                     partition_alloc::PartitionPageSize());
   }
 
-  return AlignedAllocator()->AlignedAllocWithFlags(
-      partition_alloc::AllocFlags::kNoHooks, alignment, size);
+  return AlignedAllocator()
+      ->AlignedAllocInline<partition_alloc::AllocFlags::kNoHooks>(alignment,
+                                                                  size);
 }
 
 }  // namespace
 
 namespace allocator_shim::internal {
 
-namespace {
-#if BUILDFLAG(IS_APPLE)
-unsigned int g_alloc_flags = 0;
-#else
-constexpr unsigned int g_alloc_flags = 0;
-#endif
-}  // namespace
-
-void PartitionAllocSetCallNewHandlerOnMallocFailure(bool value) {
-#if BUILDFLAG(IS_APPLE)
-  // We generally prefer to always crash rather than returning nullptr for
-  // OOM. However, on some macOS releases, we have to locally allow it due to
-  // weirdness in OS code. See https://crbug.com/654695 for details.
-  //
-  // Apple only since it's not needed elsewhere, and there is a performance
-  // penalty.
-
-  if (value) {
-    g_alloc_flags = 0;
-  } else {
-    g_alloc_flags = partition_alloc::AllocFlags::kReturnNull;
-  }
-#endif
-}
-
 void* PartitionMalloc(const AllocatorDispatch*, size_t size, void* context) {
   partition_alloc::ScopedDisallowAllocations guard{};
-  return Allocator()->AllocWithFlagsNoHooks(
-      g_alloc_flags, size, partition_alloc::PartitionPageSize());
+  return Allocator()->AllocNoHooks(size, partition_alloc::PartitionPageSize());
 }
 
 void* PartitionMallocUnchecked(const AllocatorDispatch*,
                                size_t size,
                                void* context) {
   partition_alloc::ScopedDisallowAllocations guard{};
-  return Allocator()->AllocWithFlagsNoHooks(
-      partition_alloc::AllocFlags::kReturnNull | g_alloc_flags, size,
-      partition_alloc::PartitionPageSize());
+  return Allocator()->AllocNoHooks<partition_alloc::AllocFlags::kReturnNull>(
+      size, partition_alloc::PartitionPageSize());
 }
 
 void* PartitionCalloc(const AllocatorDispatch*,
@@ -284,9 +255,8 @@ void* PartitionCalloc(const AllocatorDispatch*,
   partition_alloc::ScopedDisallowAllocations guard{};
   const size_t total =
       partition_alloc::internal::base::CheckMul(n, size).ValueOrDie();
-  return Allocator()->AllocWithFlagsNoHooks(
-      partition_alloc::AllocFlags::kZeroFill | g_alloc_flags, total,
-      partition_alloc::PartitionPageSize());
+  return Allocator()->AllocNoHooks<partition_alloc::AllocFlags::kZeroFill>(
+      total, partition_alloc::PartitionPageSize());
 }
 
 void* PartitionMemalign(const AllocatorDispatch*,
@@ -310,8 +280,7 @@ void* PartitionAlignedAlloc(const AllocatorDispatch* dispatch,
 // TODO(tasak): Expand the given memory block to the given size if possible.
 // This realloc always free the original memory block and allocates a new memory
 // block.
-// TODO(tasak): Implement PartitionRoot<thread_safe>::AlignedReallocWithFlags
-// and use it.
+// TODO(tasak): Implement PartitionRoot::AlignedRealloc and use it.
 void* PartitionAlignedRealloc(const AllocatorDispatch* dispatch,
                               void* address,
                               size_t size,
@@ -359,8 +328,8 @@ void* PartitionRealloc(const AllocatorDispatch*,
   }
 #endif  // BUILDFLAG(IS_APPLE)
 
-  return Allocator()->ReallocWithFlags(
-      partition_alloc::AllocFlags::kNoHooks | g_alloc_flags, address, size, "");
+  return Allocator()->Realloc<partition_alloc::AllocFlags::kNoHooks>(address,
+                                                                     size, "");
 }
 
 #if BUILDFLAG(PA_IS_CAST_ANDROID)
@@ -596,26 +565,19 @@ void ConfigurePartitions(
   static partition_alloc::internal::base::NoDestructor<
       partition_alloc::PartitionAllocator>
       new_main_allocator(partition_alloc::PartitionOptions{
-          .aligned_alloc =
-              !use_dedicated_aligned_partition
-                  ? partition_alloc::PartitionOptions::AlignedAlloc::kAllowed
-                  : partition_alloc::PartitionOptions::AlignedAlloc::
-                        kDisallowed,
-          .thread_cache =
-              partition_alloc::PartitionOptions::ThreadCache::kDisabled,
-          .star_scan_quarantine =
-              partition_alloc::PartitionOptions::StarScanQuarantine::kAllowed,
-          .backup_ref_ptr =
-              enable_brp
-                  ? partition_alloc::PartitionOptions::BackupRefPtr::kEnabled
-                  : partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
+          .aligned_alloc = !use_dedicated_aligned_partition
+                               ? partition_alloc::PartitionOptions::kAllowed
+                               : partition_alloc::PartitionOptions::kDisallowed,
+          .thread_cache = partition_alloc::PartitionOptions::kDisabled,
+          .star_scan_quarantine = partition_alloc::PartitionOptions::kAllowed,
+          .backup_ref_ptr = enable_brp
+                                ? partition_alloc::PartitionOptions::kEnabled
+                                : partition_alloc::PartitionOptions::kDisabled,
           .ref_count_size = ref_count_size,
           .memory_tagging = {
               .enabled = enable_memory_tagging
-                             ? partition_alloc::PartitionOptions::
-                                   MemoryTagging::kEnabled
-                             : partition_alloc::PartitionOptions::
-                                   MemoryTagging::kDisabled,
+                             ? partition_alloc::PartitionOptions::kEnabled
+                             : partition_alloc::PartitionOptions::kDisabled,
               .reporting_mode = memory_tagging_reporting_mode}});
   partition_alloc::PartitionRoot* new_root = new_main_allocator->root();
 
@@ -626,14 +588,10 @@ void ConfigurePartitions(
     static partition_alloc::internal::base::NoDestructor<
         partition_alloc::PartitionAllocator>
         new_aligned_allocator(partition_alloc::PartitionOptions{
-            .aligned_alloc =
-                partition_alloc::PartitionOptions::AlignedAlloc::kAllowed,
-            .thread_cache =
-                partition_alloc::PartitionOptions::ThreadCache::kDisabled,
-            .star_scan_quarantine =
-                partition_alloc::PartitionOptions::StarScanQuarantine::kAllowed,
-            .backup_ref_ptr =
-                partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
+            .aligned_alloc = partition_alloc::PartitionOptions::kAllowed,
+            .thread_cache = partition_alloc::PartitionOptions::kDisabled,
+            .star_scan_quarantine = partition_alloc::PartitionOptions::kAllowed,
+            .backup_ref_ptr = partition_alloc::PartitionOptions::kDisabled,
         });
     new_aligned_root = new_aligned_allocator->root();
   } else {

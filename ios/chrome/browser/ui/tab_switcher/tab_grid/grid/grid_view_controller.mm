@@ -7,11 +7,11 @@
 #import <algorithm>
 #import <memory>
 
+#import "base/apple/foundation_util.h"
 #import "base/check_op.h"
 #import "base/debug/dump_without_crashing.h"
 #import "base/ios/block_types.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
@@ -444,7 +444,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
             // visible when using context menu.
             for (UITableViewCell* cell in strongSelf.collectionView
                      .visibleCells) {
-              GridCell* gridCell = base::mac::ObjCCast<GridCell>(cell);
+              GridCell* gridCell = base::apple::ObjCCast<GridCell>(cell);
               gridCell.state = mode == TabGridModeSelection
                                    ? GridCellStateEditingUnselected
                                    : GridCellStateNotEditing;
@@ -512,7 +512,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
   for (NSIndexPath* path in self.collectionView.indexPathsForVisibleItems) {
     if (path.section != kOpenTabsSectionIndex)
       continue;
-    GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
+    GridCell* cell = base::apple::ObjCCastStrict<GridCell>(
         [self.collectionView cellForItemAtIndexPath:path]);
     UICollectionViewLayoutAttributes* attributes =
         [self.collectionView layoutAttributesForItemAtIndexPath:path];
@@ -587,34 +587,6 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
   // Stop animating the collection view to prevent the insertion animation from
   // interfering with the tab presentation animation.
   self.currentLayout.animatesItemUpdates = NO;
-}
-
-- (void)willCloseAll {
-  self.isClosingAllOrUndoRunning = YES;
-}
-
-- (void)didCloseAll {
-  self.isClosingAllOrUndoRunning = NO;
-}
-
-- (void)willUndoCloseAll {
-  self.isClosingAllOrUndoRunning = YES;
-}
-
-- (void)didUndoCloseAll {
-  self.isClosingAllOrUndoRunning = NO;
-
-  // Reload the button and ensure it is not hidden, as this is the only flow
-  // where the button can dynamically reappear when the app is running and the
-  // reappearance is not managed by default.
-  [self reloadInactiveTabsButtonHeader];
-  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0
-                                               inSection:kOpenTabsSectionIndex];
-  InactiveTabsButtonHeader* header =
-      base::mac::ObjCCast<InactiveTabsButtonHeader>([self.collectionView
-          supplementaryViewForElementKind:UICollectionElementKindSectionHeader
-                              atIndexPath:indexPath]);
-  header.hidden = NO;
 }
 
 #pragma mark - Public Editing Mode Selection
@@ -716,7 +688,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
         dequeueReusableCellWithReuseIdentifier:kSuggestedActionsCellIdentifier
                                   forIndexPath:indexPath];
     SuggestedActionsGridCell* suggestedActionsCell =
-        base::mac::ObjCCastStrict<SuggestedActionsGridCell>(cell);
+        base::apple::ObjCCastStrict<SuggestedActionsGridCell>(cell);
     suggestedActionsCell.suggestedActionsView =
         self.suggestedActionsViewController.view;
   } else {
@@ -735,7 +707,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
     cell =
         [collectionView dequeueReusableCellWithReuseIdentifier:kCellIdentifier
                                                   forIndexPath:indexPath];
-    GridCell* gridCell = base::mac::ObjCCastStrict<GridCell>(cell);
+    GridCell* gridCell = base::apple::ObjCCastStrict<GridCell>(cell);
     [self configureCell:gridCell withItem:item atIndex:itemIndex];
   }
 
@@ -1132,7 +1104,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
     return nil;
   }
 
-  GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
+  GridCell* cell = base::apple::ObjCCastStrict<GridCell>(
       [self.collectionView cellForItemAtIndexPath:indexPath]);
 
   MenuScenarioHistogram scenario;
@@ -1173,7 +1145,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
   //
   // See crbug.com//1427278
   if ([cell isKindOfClass:[GridCell class]]) {
-    GridCell* gridCell = base::mac::ObjCCastStrict<GridCell>(cell);
+    GridCell* gridCell = base::apple::ObjCCastStrict<GridCell>(cell);
 
     BOOL isTabGridInSelectionMode = _mode == TabGridModeSelection;
     BOOL isGridCellInSelectionMode = gridCell.state != GridCellStateNotEditing;
@@ -1193,7 +1165,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
     // This is important to prevent cells from animating indefinitely. This is
     // safe because the animation state of GridCells is set in
     // `configureCell:withItem:atIndex:` whenever a cell is used.
-    [base::mac::ObjCCastStrict<GridCell>(cell) hideActivityIndicator];
+    [base::apple::ObjCCastStrict<GridCell>(cell) hideActivityIndicator];
   }
 }
 
@@ -1305,7 +1277,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
     return nil;
   }
 
-  GridCell* gridCell = base::mac::ObjCCastStrict<GridCell>(
+  GridCell* gridCell = base::apple::ObjCCastStrict<GridCell>(
       [self.collectionView cellForItemAtIndexPath:indexPath]);
   return gridCell.dragPreviewParameters;
 }
@@ -1377,15 +1349,15 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
                          reuseIdentifier:kCellIdentifier];
       placeholder.cellUpdateHandler = ^(UICollectionViewCell* placeholderCell) {
         GridCell* gridCell =
-            base::mac::ObjCCastStrict<GridCell>(placeholderCell);
+            base::apple::ObjCCastStrict<GridCell>(placeholderCell);
         gridCell.theme = self.theme;
       };
       placeholder.previewParametersProvider =
           ^UIDragPreviewParameters*(UICollectionViewCell* placeholderCell) {
-        GridCell* gridCell =
-            base::mac::ObjCCastStrict<GridCell>(placeholderCell);
-        return gridCell.dragPreviewParameters;
-      };
+            GridCell* gridCell =
+                base::apple::ObjCCastStrict<GridCell>(placeholderCell);
+            return gridCell.dragPreviewParameters;
+          };
 
       id<UICollectionViewDropPlaceholderContext> context =
           [coordinator dropItem:item.dragItem toPlaceholder:placeholder];
@@ -1625,37 +1597,19 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
   [self updateSelectedCollectionViewItemRingAndBringIntoView:NO];
 }
 
-- (void)replaceItemID:(NSString*)existingItemID
-             withItem:(TabSwitcherItem*)newItem {
-  NSUInteger index = [self indexOfItemWithID:existingItemID];
-  if (index == NSNotFound) {
+- (void)replaceItemID:(NSString*)itemID withItem:(TabSwitcherItem*)item {
+  if ([self indexOfItemWithID:itemID] == NSNotFound)
     return;
-  }
-  // Consistency check: `newItem`'s ID is either `existingItemID` or not in
-  // `self.items`.
-  DCHECK([newItem.identifier isEqualToString:existingItemID] ||
-         [self indexOfItemWithID:newItem.identifier] == NSNotFound);
-  self.items[index] = newItem;
-
-  if (base::FeatureList::IsEnabled(kTabGridRefactoring) &&
-      base::FeatureList::IsEnabled(kTabGridRefactoringFix)) {
-    NSDiffableDataSourceSnapshot* snapshot = self.diffableDataSource.snapshot;
-    if ([existingItemID isEqualToString:newItem.identifier]) {
-      [snapshot reconfigureItemsWithIdentifiers:@[ existingItemID ]];
-    } else {
-      // Add the new item before the existing item.
-      [snapshot insertItemsWithIdentifiers:@[ newItem.identifier ]
-                  beforeItemWithIdentifier:existingItemID];
-      [snapshot deleteItemsWithIdentifiers:@[ existingItemID ]];
-    }
-    [self.diffableDataSource applySnapshot:snapshot animatingDifferences:NO];
-  } else {
-    GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
-        [self.collectionView cellForItemAtIndexPath:CreateIndexPath(index)]);
-    // `cell` may be nil if it is scrolled offscreen.
-    if (cell) {
-      [self configureCell:cell withItem:newItem atIndex:index];
-    }
+  // Consistency check: `item`'s ID is either `itemID` or not in `items`.
+  DCHECK([item.identifier isEqualToString:itemID] ||
+         [self indexOfItemWithID:item.identifier] == NSNotFound);
+  NSUInteger index = [self indexOfItemWithID:itemID];
+  self.items[index] = item;
+  GridCell* cell = base::apple::ObjCCastStrict<GridCell>(
+      [self.collectionView cellForItemAtIndexPath:CreateIndexPath(index)]);
+  // `cell` may be nil if it is scrolled offscreen.
+  if (cell) {
+    [self configureCell:cell withItem:item atIndex:index];
   }
 }
 
@@ -1688,6 +1642,34 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
 
 - (void)dismissModals {
   ios::provider::DismissModalsForCollectionView(self.collectionView);
+}
+
+- (void)willCloseAll {
+  self.isClosingAllOrUndoRunning = YES;
+}
+
+- (void)didCloseAll {
+  self.isClosingAllOrUndoRunning = NO;
+}
+
+- (void)willUndoCloseAll {
+  self.isClosingAllOrUndoRunning = YES;
+}
+
+- (void)didUndoCloseAll {
+  self.isClosingAllOrUndoRunning = NO;
+
+  // Reload the button and ensure it is not hidden, as this is the only flow
+  // where the button can dynamically reappear when the app is running and the
+  // reappearance is not managed by default.
+  [self reloadInactiveTabsButtonHeader];
+  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0
+                                               inSection:kOpenTabsSectionIndex];
+  InactiveTabsButtonHeader* header =
+      base::apple::ObjCCast<InactiveTabsButtonHeader>([self.collectionView
+          supplementaryViewForElementKind:UICollectionElementKindSectionHeader
+                              atIndexPath:indexPath]);
+  header.hidden = NO;
 }
 
 #pragma mark - InactiveTabsInfoConsumer
@@ -2348,7 +2330,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
   NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0
                                                inSection:kOpenTabsSectionIndex];
   InactiveTabsButtonHeader* header =
-      base::mac::ObjCCast<InactiveTabsButtonHeader>([self.collectionView
+      base::apple::ObjCCast<InactiveTabsButtonHeader>([self.collectionView
           supplementaryViewForElementKind:UICollectionElementKindSectionHeader
                               atIndexPath:indexPath]);
   if (!header) {
@@ -2405,7 +2387,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
   NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0
                                                inSection:kOpenTabsSectionIndex];
   InactiveTabsButtonHeader* header =
-      base::mac::ObjCCast<InactiveTabsButtonHeader>([self.collectionView
+      base::apple::ObjCCast<InactiveTabsButtonHeader>([self.collectionView
           supplementaryViewForElementKind:UICollectionElementKindSectionHeader
                               atIndexPath:indexPath]);
   // Note: At this point, `header` could be nil if not visible, or if the
@@ -2418,7 +2400,7 @@ NSString* GridCellAccessibilityIdentifier(NSUInteger index) {
   NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0
                                                inSection:kOpenTabsSectionIndex];
   InactiveTabsPreambleHeader* header =
-      base::mac::ObjCCast<InactiveTabsPreambleHeader>([self.collectionView
+      base::apple::ObjCCast<InactiveTabsPreambleHeader>([self.collectionView
           supplementaryViewForElementKind:UICollectionElementKindSectionHeader
                               atIndexPath:indexPath]);
   // Note: At this point, `header` could be nil if not visible, or if the

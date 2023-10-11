@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_interest_group.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_interest_group_key.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_interest_group_size.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_auction_additional_bid_signature.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_report_buyers_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_adproperties_adpropertiessequence.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
@@ -71,9 +72,12 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_operators.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/boringssl/src/include/openssl/curve25519.h"
+#include "url/url_constants.h"
 #include "v8/include/v8-primitive.h"
 #include "v8/include/v8-value.h"
 
@@ -861,6 +865,55 @@ bool CopySizeGroupsFromIdlToMojo(const ExecutionContext& context,
   return true;
 }
 
+bool CopyAuctionServerRequestFlagsFromIdlToMojo(
+    const ExecutionContext& execution_context,
+    ExceptionState& exception_state,
+    const AuctionAdInterestGroup& input,
+    mojom::blink::InterestGroup& output) {
+  output.auction_server_request_flags =
+      mojom::blink::AuctionServerRequestFlags::New();
+  if (!input.hasAuctionServerRequestFlags()) {
+    return true;
+  }
+
+  for (const String& flag : input.auctionServerRequestFlags()) {
+    if (flag == "omit-ads") {
+      output.auction_server_request_flags->omit_ads = true;
+    } else if (flag == "include-full-ads") {
+      output.auction_server_request_flags->include_full_ads = true;
+    }
+  }
+  return true;
+}
+
+bool CopyAdditionalBidKeyFromIdlToMojo(
+    const ExecutionContext& execution_context,
+    ExceptionState& exception_state,
+    const AuctionAdInterestGroup& input,
+    mojom::blink::InterestGroup& output) {
+  if (!input.hasAdditionalBidKey()) {
+    return true;
+  }
+  WTF::Vector<char> decoded_key;
+  if (!WTF::Base64Decode(input.additionalBidKey(), decoded_key)) {
+    exception_state.ThrowTypeError(ErrorInvalidInterestGroup(
+        input, "additionalBidKey", input.additionalBidKey(),
+        "cannot be base64 decoded."));
+    return false;
+  }
+  if (decoded_key.size() != ED25519_PUBLIC_KEY_LEN) {
+    exception_state.ThrowTypeError(ErrorInvalidInterestGroup(
+        input, "additionalBidKey", input.additionalBidKey(),
+        String::Format("must be exactly %d' bytes, was %u.",
+                       ED25519_PUBLIC_KEY_LEN, decoded_key.size())));
+    return false;
+  }
+  output.additional_bid_key.emplace(ED25519_PUBLIC_KEY_LEN);
+  std::copy(decoded_key.begin(), decoded_key.end(),
+            output.additional_bid_key->begin());
+  return true;
+}
+
 // createAdRequest copy functions.
 bool CopyAdRequestUrlFromIdlToMojo(const ExecutionContext& context,
                                    ExceptionState& exception_state,
@@ -1410,15 +1463,24 @@ void CopyDirectFromSellerSignalsHeaderAdSlotFromIdlToMojo(
   output.expects_direct_from_seller_signals_header_ad_slot = true;
 }
 
-void CopyAdditionalBidsFromIdlToMojo(
+bool CopyAdditionalBidsFromIdlToMojo(
     NavigatorAuction::AuctionHandle* auction_handle,
     const mojom::blink::AuctionAdConfigAuctionId* auction_id,
     ScriptState& script_state,
+    ExceptionState& exception_state,
     const AuctionAdConfig& input,
     mojom::blink::AuctionAdConfig& output) {
   if (!input.hasAdditionalBids()) {
     output.expects_additional_bids = false;
-    return;
+    return true;
+  }
+
+  if (!input.hasAuctionNonce()) {
+    exception_state.ThrowTypeError(
+        String::Format("additionalBids specified for AuctionAdConfig with "
+                       "seller '%s' which does not have an auctionNonce.",
+                       input.seller().Utf8().c_str()));
+    return false;
   }
 
   auction_handle->AttachPromiseHandler(
@@ -1427,6 +1489,7 @@ void CopyAdditionalBidsFromIdlToMojo(
           NavigatorAuction::AuctionHandle::AdditionalBidsResolved>(
           auction_handle, auction_id->Clone(), input.seller()));
   output.expects_additional_bids = true;
+  return true;
 }
 
 // Returns nullopt + sets exception on failure, or returns a concrete value.
@@ -1915,9 +1978,9 @@ bool CopyAuctionNonceFromIdlToMojo(const ExecutionContext& execution_context,
                                    const AuctionAdConfig& input,
                                    mojom::blink::AuctionAdConfig& output) {
   // We don't validate that the UUID parsed successfully here. If it failed,
-  // the returned Uuid is an empty string. When we look for it later in the
-  // pending_auction_nonces_, we won't find an empty string, and will fail
-  // the auction then.
+  // the returned Uuid is an empty string. When we look try to claim it from
+  // the AuctionNonceManager, we won't find an empty string, and will fail
+  // the auction or component auction then.
   if (input.hasAuctionNonce()) {
     output.auction_ad_config_non_shared_params->auction_nonce =
         base::Uuid::ParseLowercase(input.auctionNonce().Ascii());
@@ -1982,7 +2045,10 @@ mojom::blink::AuctionAdConfigPtr IdlAuctionConfigToMojo(
       !CopyRequestedSizeFromIdlToMojo(context, exception_state, config,
                                       *mojo_config) ||
       !CopyAuctionNonceFromIdlToMojo(context, exception_state, config,
-                                     *mojo_config)) {
+                                     *mojo_config) ||
+      !CopyAdditionalBidsFromIdlToMojo(auction_handle, auction_id.get(),
+                                       script_state, exception_state, config,
+                                       *mojo_config)) {
     return mojom::blink::AuctionAdConfigPtr();
   }
 
@@ -2012,21 +2078,12 @@ mojom::blink::AuctionAdConfigPtr IdlAuctionConfigToMojo(
       auction_handle, auction_id.get(), script_state, config, *mojo_config);
   CopyPerBuyerCurrenciesFromIdlToMojo(auction_handle, auction_id.get(),
                                       script_state, config, *mojo_config);
-  CopyAdditionalBidsFromIdlToMojo(auction_handle, auction_id.get(),
-                                  script_state, config, *mojo_config);
 
   if (mojo_config->server_response && !is_top_level) {
     // TODO(1457241): Add support for multi-level auctions including server-side
     // auctions.
     exception_state.ThrowTypeError(
         "Only top-level auctions may have 'serverResponse'.");
-    return mojom::blink::AuctionAdConfigPtr();
-  }
-
-  if (mojo_config->auction_ad_config_non_shared_params->auction_nonce &&
-      !is_top_level) {
-    exception_state.ThrowTypeError(
-        "Only top-level auctions may have 'auctionNonce'.");
     return mojom::blink::AuctionAdConfigPtr();
   }
 
@@ -2348,6 +2405,11 @@ ScriptPromise JoinAdInterestGroupInternal(
   }
   RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   const ExecutionContext* context = ExecutionContext::From(script_state);
+  if (context->GetSecurityOrigin()->Protocol() != url::kHttpsScheme) {
+    exception_state.ThrowSecurityError(
+        "May only joinAdInterestGroup from an https origin.");
+    return ScriptPromise();
+  }
   if (!context->IsFeatureEnabled(
           mojom::blink::PermissionsPolicyFeature::kJoinAdInterestGroup)) {
     exception_state.ThrowDOMException(
@@ -2670,32 +2732,7 @@ ScriptValue NavigatorAuction::AuctionHandle::AdditionalBidsResolved::Call(
     return ScriptValue();
   }
 
-  ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionState::kExecutionContext,
-                                 "NavigatorAuction", "runAdAuction");
-  blink::HeapVector<blink::NotShared<DOMUint8Array>> additional_ads;
-  bool ok = false;
-
-  if (!value.IsEmpty()) {
-    additional_ads =
-        NativeValueTraits<IDLSequence<NotShared<DOMUint8Array>>>::NativeValue(
-            script_state->GetIsolate(), value.V8Value(), exception_state);
-    ok = true;
-  }
-
-  if (ok && !exception_state.HadException()) {
-    WTF::Vector<mojo_base::BigBuffer> converted_additional_ads;
-    for (const auto& entry : additional_ads) {
-      mojo_base::BigBuffer mojo_buffer(
-          base::make_span(entry->Data(), entry->length()));
-      converted_additional_ads.push_back(std::move(mojo_buffer));
-    }
-
-    auction_handle()->mojo_pipe()->ResolvedAdditionalBids(
-        auction_id_->Clone(), std::move(converted_additional_ads));
-  } else {
-    auction_handle()->Abort();
-  }
+  auction_handle()->mojo_pipe()->ResolvedAdditionalBids(auction_id_->Clone());
 
   return ScriptValue();
 }
@@ -2848,6 +2885,14 @@ ScriptPromise NavigatorAuction::joinAdInterestGroup(
                                    *group, *mojo_group)) {
     return ScriptPromise();
   }
+  if (!CopyAuctionServerRequestFlagsFromIdlToMojo(*context, exception_state,
+                                                  *group, *mojo_group)) {
+    return ScriptPromise();
+  }
+  if (!CopyAdditionalBidKeyFromIdlToMojo(*context, exception_state, *group,
+                                         *mojo_group)) {
+    return ScriptPromise();
+  }
 
   String error_field_name;
   String error_field_value;
@@ -2915,6 +2960,13 @@ ScriptPromise NavigatorAuction::leaveAdInterestGroup(
     return ScriptPromise();
   }
 
+  if (ExecutionContext::From(script_state)->GetSecurityOrigin()->Protocol() !=
+      url::kHttpsScheme) {
+    exception_state.ThrowSecurityError(
+        "May only leaveAdInterestGroup from an https origin.");
+    return ScriptPromise();
+  }
+
   bool is_cross_origin = !ExecutionContext::From(script_state)
                               ->GetSecurityOrigin()
                               ->IsSameOriginWith(owner.get());
@@ -2942,11 +2994,16 @@ ScriptPromise NavigatorAuction::leaveAdInterestGroupForDocument(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   LocalDOMWindow* window = GetSupplementable()->DomWindow();
-
   if (!window) {
     exception_state.ThrowSecurityError(
         "May not leaveAdInterestGroup from a Document that is not fully "
         "active");
+    return ScriptPromise();
+  }
+  if (ExecutionContext::From(script_state)->GetSecurityOrigin()->Protocol() !=
+      url::kHttpsScheme) {
+    exception_state.ThrowSecurityError(
+        "May only leaveAdInterestGroup from an https origin.");
     return ScriptPromise();
   }
   if (!window->GetFrame()->IsInFencedFrameTree()) {
@@ -3661,6 +3718,13 @@ bool NavigatorAuction::canLoadAdAuctionFencedFrame(ScriptState* script_state,
   }
   return From(ExecutionContext::From(script_state), navigator)
       .canLoadAdAuctionFencedFrame(script_state);
+}
+
+bool NavigatorAuction::deprecatedRunAdAuctionEnforcesKAnonymity(
+    ScriptState* script_state,
+    Navigator&) {
+  return base::FeatureList::IsEnabled(
+      blink::features::kFledgeEnforceKAnonymity);
 }
 
 ScriptPromise NavigatorAuction::getInterestGroupAdAuctionData(

@@ -16,6 +16,7 @@
 #include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/overlay_priority_hint.h"
+#include "ui/ozone/platform/wayland/host/surface_augmenter.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_backing.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_handle.h"
@@ -339,13 +340,6 @@ void WaylandFrameManager::ApplySurfaceConfigure(
     return;
   }
 
-  static const wl_callback_listener frame_listener = {
-      &WaylandFrameManager::FrameCallbackDone};
-  static const wp_presentation_feedback_listener feedback_listener = {
-      &WaylandFrameManager::FeedbackSyncOutput,
-      &WaylandFrameManager::FeedbackPresented,
-      &WaylandFrameManager::FeedbackDiscarded};
-
   surface->set_buffer_transform(
       absl::holds_alternative<gfx::OverlayTransform>(config.transform)
           ? absl::get<gfx::OverlayTransform>(config.transform)
@@ -355,8 +349,6 @@ void WaylandFrameManager::ApplySurfaceConfigure(
   surface->set_viewport_destination(config.bounds_rect.size());
   surface->set_opacity(config.opacity);
   surface->set_blending(config.enable_blend);
-  surface->set_rounded_clip_bounds(
-      config.rounded_clip_bounds.value_or(gfx::RRectF()));
   surface->set_overlay_priority(config.priority_hint);
   surface->set_background_color(config.background_color);
   surface->set_contains_video(
@@ -381,14 +373,35 @@ void WaylandFrameManager::ApplySurfaceConfigure(
   // If we don't attach a released buffer, graphics freeze will occur.
   DCHECK(will_attach || !buffer_handle->released(surface));
 
-  // `damage_region` and `clip_rect` are specified in viz::Display space, the
-  // same as `bounds_rect`. To get the damage and clip rect in surface space we
-  // need to offset the origin by the surface's position. Note: The damage and
-  // clip rect may be enlarged if bounds_rect is sub-pixel positioned because
-  // `damage_region` is a Rect, and |bounds_rect| is a RectF.
+  // `damage_region`, `clip_rect` and `rounded_clip_bounds` are specified in
+  // the root surface coordinates space, the same as `bounds_rect`. To get
+  // these rect values in local surface space we need to offset the origin by
+  // the root surface's position.
+  // Note: The damage and clip rect may be enlarged if bounds_rect is sub-pixel
+  // positioned because `damage_region` and `clip_rect` is a Rect, and
+  // `bounds_rect` is a RectF. `rounded_clip_bounds` is RRectF so no need for
+  // conversion.
+  // Note: There is no rotation nor scale of the coordinates compared to the
+  // root window coordinates, and also, we assume that the surface is a direct
+  // children of the root surface, so we can adjust the position by
+  // `bounds_rect` origin.
   gfx::RectF surface_damage = gfx::RectF(config.damage_region);
   surface_damage -= config.bounds_rect.OffsetFromOrigin();
   surface->UpdateBufferDamageRegion(ToEnclosingRect(surface_damage));
+  if (config.rounded_clip_bounds) {
+    // The deprecated implementation uses root surface coordinates, so do not
+    // offset if the local coordinates rounded corners is not supported.
+    auto rounded_corners_offset =
+        (connection_->surface_augmenter() &&
+         connection_->surface_augmenter()
+             ->NeedsRoundedClipBoundsInLocalSurfaceCoordinates())
+            ? config.bounds_rect.OffsetFromOrigin()
+            : gfx::Vector2d();
+    surface->set_rounded_clip_bounds(*config.rounded_clip_bounds -
+                                     rounded_corners_offset);
+  } else {
+    surface->set_rounded_clip_bounds(gfx::RRectF());
+  }
   if (config.clip_rect) {
     gfx::RectF clip_rect = gfx::RectF(*config.clip_rect);
     clip_rect -= config.bounds_rect.OffsetFromOrigin();
@@ -413,9 +426,11 @@ void WaylandFrameManager::ApplySurfaceConfigure(
     // new wl_buffer, which leads to graphics freeze. So only setup
     // frame_callback when we're attaching a different buffer.
     if (!frame->wl_frame_callback) {
+      static constexpr wl_callback_listener kFrameCallbackListener = {
+          .done = &OnFrameDone};
       frame->wl_frame_callback.reset(wl_surface_frame(surface->surface()));
-      wl_callback_add_listener(frame->wl_frame_callback.get(), &frame_listener,
-                               this);
+      wl_callback_add_listener(frame->wl_frame_callback.get(),
+                               &kFrameCallbackListener, this);
     }
 
     if (!is_solid_color_buffer) {
@@ -432,10 +447,14 @@ void WaylandFrameManager::ApplySurfaceConfigure(
   }
 
   if (connection_->presentation() && !frame->pending_feedback) {
+    static constexpr wp_presentation_feedback_listener
+        kPresentationFeedbackListener = {.sync_output = &OnSyncOutput,
+                                         .presented = &OnPresented,
+                                         .discarded = &OnDiscarded};
     frame->pending_feedback.reset(wp_presentation_feedback(
         connection_->presentation(), surface->surface()));
     wp_presentation_feedback_add_listener(frame->pending_feedback.get(),
-                                          &feedback_listener, this);
+                                          &kPresentationFeedbackListener, this);
   }
 
   if (!is_solid_color_buffer) {
@@ -460,30 +479,30 @@ void WaylandFrameManager::ApplySurfaceConfigure(
 }
 
 // static
-void WaylandFrameManager::FrameCallbackDone(void* data,
-                                            struct wl_callback* callback,
-                                            uint32_t time) {
+void WaylandFrameManager::OnFrameDone(void* data,
+                                      wl_callback* callback,
+                                      uint32_t time) {
   auto* self = static_cast<WaylandFrameManager*>(data);
   DCHECK(self);
-  self->OnFrameCallback(callback);
+  self->HandleFrameCallback(callback);
 }
 
-void WaylandFrameManager::OnFrameCallback(struct wl_callback* callback) {
+void WaylandFrameManager::HandleFrameCallback(wl_callback* callback) {
   DCHECK(submitted_frames_.back()->wl_frame_callback.get() == callback);
   submitted_frames_.back()->wl_frame_callback.reset();
   MaybeProcessPendingFrame();
 }
 
 // static
-void WaylandFrameManager::FeedbackSyncOutput(
+void WaylandFrameManager::OnSyncOutput(
     void* data,
-    struct wp_presentation_feedback* wp_presentation_feedback,
-    struct wl_output* output) {}
+    struct wp_presentation_feedback* presentation_feedback,
+    wl_output* output) {}
 
 // static
-void WaylandFrameManager::FeedbackPresented(
+void WaylandFrameManager::OnPresented(
     void* data,
-    struct wp_presentation_feedback* wp_presentation_feedback,
+    struct wp_presentation_feedback* presentation_feedback,
     uint32_t tv_sec_hi,
     uint32_t tv_sec_lo,
     uint32_t tv_nsec,
@@ -493,8 +512,8 @@ void WaylandFrameManager::FeedbackPresented(
     uint32_t flags) {
   auto* self = static_cast<WaylandFrameManager*>(data);
   DCHECK(self);
-  self->OnPresentation(
-      wp_presentation_feedback,
+  self->HandlePresentationFeedback(
+      presentation_feedback,
       gfx::PresentationFeedback(self->connection_->ConvertPresentationTime(
                                     tv_sec_hi, tv_sec_lo, tv_nsec),
                                 base::Nanoseconds(refresh),
@@ -502,22 +521,22 @@ void WaylandFrameManager::FeedbackPresented(
 }
 
 // static
-void WaylandFrameManager::FeedbackDiscarded(
+void WaylandFrameManager::OnDiscarded(
     void* data,
-    struct wp_presentation_feedback* wp_presentation_feedback) {
+    struct wp_presentation_feedback* presentation_feedback) {
   auto* self = static_cast<WaylandFrameManager*>(data);
   DCHECK(self);
-  self->OnPresentation(wp_presentation_feedback,
-                       gfx::PresentationFeedback::Failure(),
-                       true /* discarded */);
+  self->HandlePresentationFeedback(presentation_feedback,
+                                   gfx::PresentationFeedback::Failure(),
+                                   true /* discarded */);
 }
 
-void WaylandFrameManager::OnPresentation(
-    struct wp_presentation_feedback* wp_presentation_feedback,
+void WaylandFrameManager::HandlePresentationFeedback(
+    struct wp_presentation_feedback* presentation_feedback,
     const gfx::PresentationFeedback& feedback,
     bool discarded) {
   for (auto& frame : submitted_frames_) {
-    if (frame->pending_feedback.get() == wp_presentation_feedback) {
+    if (frame->pending_feedback.get() == presentation_feedback) {
       frame->feedback = feedback;
       break;
     } else if (!frame->feedback.has_value() && !discarded) {
@@ -604,16 +623,16 @@ bool WaylandFrameManager::EnsureWlBuffersExist(WaylandFrame& frame) {
 }
 
 void WaylandFrameManager::OnExplicitBufferRelease(WaylandSurface* surface,
-                                                  struct wl_buffer* wl_buffer,
+                                                  wl_buffer* buffer,
                                                   base::ScopedFD fence) {
-  DCHECK(wl_buffer);
+  DCHECK(buffer);
 
   // Releases may not necessarily come in order, so search the submitted
   // buffers.
   for (const auto& frame : submitted_frames_) {
     auto result = frame->submitted_buffers.find(surface);
     if (result != frame->submitted_buffers.end() &&
-        result->second->wl_buffer() == wl_buffer) {
+        result->second->wl_buffer() == buffer) {
       // Explicitly make this buffer released when
       // linux_explicit_synchronization is used.
       result->second->OnExplicitRelease(surface);
@@ -639,15 +658,31 @@ void WaylandFrameManager::OnExplicitBufferRelease(WaylandSurface* surface,
 }
 
 void WaylandFrameManager::OnWlBufferRelease(WaylandSurface* surface,
-                                            struct wl_buffer* wl_buffer) {
-  DCHECK(wl_buffer);
+                                            wl_buffer* buffer) {
+  DCHECK(buffer);
 
   // Releases may not necessarily come in order, so search the submitted
   // buffers.
   for (const auto& frame : submitted_frames_) {
     auto result = frame->submitted_buffers.find(surface);
     if (result != frame->submitted_buffers.end() &&
-        result->second->wl_buffer() == wl_buffer) {
+        result->second->wl_buffer() == buffer) {
+      if (connection_->UseImplicitSyncInterop()) {
+        base::ScopedFD fence =
+            connection_->buffer_manager_host()->ExtractReleaseFence(
+                result->second->id());
+
+        if (fence.is_valid()) {
+          if (frame->merged_release_fence_fd.is_valid()) {
+            frame->merged_release_fence_fd.reset(sync_merge(
+                "", frame->merged_release_fence_fd.get(), fence.get()));
+          } else {
+            frame->merged_release_fence_fd = std::move(fence);
+          }
+          DCHECK(frame->merged_release_fence_fd.is_valid());
+        }
+      }
+
       frame->submitted_buffers.erase(result);
       break;
     }

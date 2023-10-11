@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/views/autofill/popup/popup_cell_utils.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -212,13 +212,14 @@ bool PopupAutocompleteCellView::HandleKeyPressEvent(
     case ui::VKEY_RETURN:
       CHECK(button_);
       if (button_focused_) {
-        DeleteAutocomplete();
+        DeleteAutocompleteEntry();
         return true;
       }
-      return false;
+      break;
     default:
-      return false;
+      break;
   }
+  return PopupCellView::HandleKeyPressEvent(event);
 }
 
 void PopupAutocompleteCellView::SetSelected(bool selected) {
@@ -264,8 +265,9 @@ views::ImageButton* PopupAutocompleteCellView::GetDeleteButton() {
 void PopupAutocompleteCellView::CreateDeleteButton() {
   std::unique_ptr<views::ImageButton> button =
       views::CreateVectorImageButtonWithNativeTheme(
-          base::BindRepeating(&PopupAutocompleteCellView::DeleteAutocomplete,
-                              base::Unretained(this)),
+          base::BindRepeating(
+              &PopupAutocompleteCellView::DeleteAutocompleteEntry,
+              base::Unretained(this)),
           views::kIcCloseIcon, kCloseIconSize);
 
   CHECK(GetLayoutManager());
@@ -303,8 +305,13 @@ void PopupAutocompleteCellView::CreateDeleteButton() {
           button_.get())));
 }
 
-void PopupAutocompleteCellView::DeleteAutocomplete() {
+void PopupAutocompleteCellView::DeleteAutocompleteEntry() {
   if (controller_ && controller_->RemoveSuggestion(line_number_)) {
+    // Do not access any member variable from here on. Remove suggestions
+    // leads to this class being destroyed and it would therefore lead to
+    // a possible UAF. The following metric is ok because it is a static method.
+    // TODO(crbug.com/1417187): Post the remove call as a task to avoid the UAF
+    // risk.
     AutofillMetrics::OnAutocompleteSuggestionDeleted(
         AutofillMetrics::AutocompleteSingleEntryRemovalMethod::
             kDeleteButtonClicked);

@@ -17,9 +17,9 @@
 #include "base/types/cxx23_to_underlying.h"
 #include "chrome/android/features/keyboard_accessory/internal/jni/AutofillKeyboardAccessoryViewBridge_jni.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/autofill/autofill_popup_controller_utils.h"
 #include "chrome/browser/ui/android/autofill/autofill_accessibility_utils.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "components/autofill/core/browser/ui/autofill_resource_utils.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -135,7 +135,7 @@ void AutofillKeyboardAccessoryView::SuggestionSelected(
     jint list_index) {
   if (base::FeatureList::IsEnabled(
           features::kAutofillKeyboardAccessoryAcceptanceDelayThreshold)) {
-    controller_->AcceptSuggestion(list_index);
+    controller_->AcceptSuggestion(list_index, base::TimeTicks::Now());
   } else {
     controller_->AcceptSuggestionWithoutThreshold(list_index);
   }

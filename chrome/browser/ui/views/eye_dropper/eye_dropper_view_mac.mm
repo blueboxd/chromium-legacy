@@ -96,6 +96,11 @@ void EyeDropperView::PreEventDispatchHandler::OnMouseEvent(
   // The event monitor already provides a handler.
 }
 
+void EyeDropperView::PreEventDispatchHandler::OnGestureEvent(
+    ui::GestureEvent* event) {
+  // The event monitor already provides a handler.
+}
+
 void EyeDropperView::MoveViewToFront() {
   // Moves the window to the front of the screen list within the popup level
   // since the eye dropper can be opened from the color picker.

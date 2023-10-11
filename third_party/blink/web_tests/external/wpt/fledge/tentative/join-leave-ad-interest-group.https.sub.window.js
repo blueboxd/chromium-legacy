@@ -167,58 +167,58 @@ const SIMPLE_JOIN_LEAVE_TEST_CASES = [
                      enableBiddingSignalsPrioritization: false}
   },
 
-  // "biddingLogicUrl" tests
+  // "biddingLogicURL" tests
   { expectJoinSucces: true,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     biddingLogicUrl: null }
+                     biddingLogicURL: null }
   },
   { expectJoinSucces: false,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     biddingLogicUrl: 'https://{{hosts[][www]}}/foo.js' }
+                     biddingLogicURL: 'https://{{hosts[][www]}}/foo.js' }
   },
   { expectJoinSucces: false,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     biddingLogicUrl: 'data:text/javascript,Foo' }
+                     biddingLogicURL: 'data:text/javascript,Foo' }
   },
   { expectJoinSucces: true,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     biddingLogicUrl: `${window.location.origin}/foo.js`}
+                     biddingLogicURL: `${window.location.origin}/foo.js`}
   },
   { expectJoinSucces: true,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     biddingLogicUrl: 'relative/path' }
+                     biddingLogicURL: 'relative/path' }
   },
 
-  // "biddingWasmHelperUrl" tests
+  // "biddingWasmHelperURL" tests
   { expectJoinSucces: true,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     biddingWasmHelperUrl: null }
+                     biddingWasmHelperURL: null }
   },
   { expectJoinSucces: false,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     biddingWasmHelperUrl: 'https://{{hosts[][www]}}/foo.js' }
+                     biddingWasmHelperURL: 'https://{{hosts[][www]}}/foo.js' }
   },
   { expectJoinSucces: false,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     biddingWasmHelperUrl: 'data:application/wasm,Foo' }
+                     biddingWasmHelperURL: 'data:application/wasm,Foo' }
   },
   { expectJoinSucces: true,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     biddingWasmHelperUrl: `${window.location.origin}/foo.js`}
+                     biddingWasmHelperURL: `${window.location.origin}/foo.js`}
   },
   { expectJoinSucces: true,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     biddingWasmHelperUrl: 'relative/path' }
+                     biddingWasmHelperURL: 'relative/path' }
   },
 
   // "dailyUpdateUrl" tests
@@ -265,31 +265,31 @@ const SIMPLE_JOIN_LEAVE_TEST_CASES = [
                      executionMode: 'unknownValuesAreValid' }
   },
 
-  // "trustedBiddingSignalsUrl" tests
+  // "trustedBiddingSignalsURL" tests
   { expectJoinSucces: true,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     trustedBiddingSignalsUrl: null }
+                     trustedBiddingSignalsURL: null }
   },
   { expectJoinSucces: false,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     trustedBiddingSignalsUrl: 'https://{{hosts[][www]}}/foo.js' }
+                     trustedBiddingSignalsURL: 'https://{{hosts[][www]}}/foo.js' }
   },
   { expectJoinSucces: false,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     trustedBiddingSignalsUrl: 'data:application/json,{}' }
+                     trustedBiddingSignalsURL: 'data:application/json,{}' }
   },
   { expectJoinSucces: true,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     trustedBiddingSignalsUrl: `${window.location.origin}/foo.js`}
+                     trustedBiddingSignalsURL: `${window.location.origin}/foo.js`}
   },
   { expectJoinSucces: true,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     trustedBiddingSignalsUrl: 'relative/path' }
+                     trustedBiddingSignalsURL: 'relative/path' }
   },
 
   // "trustedBiddingSignalsKeys" tests
@@ -471,13 +471,15 @@ const SIMPLE_JOIN_LEAVE_TEST_CASES = [
   { expectJoinSucces: true,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     name: 'a'.repeat(1048528) },
+      name: 'a'.repeat(1048524)
+    },
     testCaseName: "Largest possible interest group dictionary",
   },
   { expectJoinSucces: false,
     expectLeaveSucces: true,
     interestGroup: { ...BASE_INTEREST_GROUP,
-                     name: 'a'.repeat(1048529) },
+      name: 'a'.repeat(1048525)
+    },
     testCaseName: "Oversized interest group dictionary",
   },
 ];
@@ -529,7 +531,7 @@ promise_test(async test => {
 
   // Joining an interest group without a bidding script and run an auction.
   // There should be no winner.
-  await joinInterestGroup(test, uuid, { biddingLogicUrl: null });
+  await joinInterestGroup(test, uuid, { biddingLogicURL: null });
   assert_equals(null, await runBasicFledgeAuction(test, uuid),
                 'Auction unexpectedly had a winner');
 
@@ -544,7 +546,7 @@ promise_test(async test => {
 
   // Re-join the first interest group, and re-run the auction. The interest
   // group should be overwritten again, and there should be no winner.
-  await joinInterestGroup(test, uuid, { biddingLogicUrl: null });
+  await joinInterestGroup(test, uuid, { biddingLogicURL: null });
   assert_equals(null, await runBasicFledgeAuction(test, uuid),
                 'Auction unexpectedly had a winner');
 }, 'Join same interest group overwrites old matching group.');

@@ -86,10 +86,6 @@ class Product:
         """Path to the default webdriver binary, if available."""
         return None
 
-    @property
-    def default_binary(self):
-        return None
-
 
 class Chrome(Product):
     name = 'chrome'
@@ -98,20 +94,11 @@ class Chrome(Product):
         """Product-specific wptrunner parameters needed to run tests."""
         return {
             **super().product_specific_options(),
-            'binary': self.default_binary,
-            'webdriver_binary': self.default_webdriver_binary,
+            'binary':
+            self._port.path_to_driver(),
+            'webdriver_binary':
+            self.default_webdriver_binary,
         }
-
-    @property
-    def default_binary(self):
-        binary_path = 'chrome'
-        if self._host.platform.is_win():
-            binary_path += '.exe'
-        elif self._host.platform.is_mac():
-            binary_path = self._host.filesystem.join('Chromium.app',
-                                                     'Contents', 'MacOS',
-                                                     'Chromium')
-        return self._port.build_path(binary_path)
 
     @property
     def default_webdriver_binary(self):
@@ -129,24 +116,15 @@ class ContentShell(Product):
         """Product-specific wptrunner parameters needed to run tests."""
         return {
             **super().product_specific_options(),
-            'binary': self.default_binary,
+            'binary':
+            self._port.path_to_driver(),
         }
-
-    @property
-    def default_binary(self):
-        binary_path = 'content_shell'
-        if self._host.platform.is_win():
-            binary_path += '.exe'
-        elif self._host.platform.is_mac():
-            binary_path = self._host.filesystem.join('Content Shell.app',
-                                                     'Contents', 'MacOS',
-                                                     'Content Shell')
-        return self._port.build_path(binary_path)
 
 
 class ChromeiOS(Product):
 
-    IOS_VERSION = '15.5'
+    IOS_VERSION = '17.0'
+    DEVICE = 'iPhone 14 Pro'
     name = 'chrome_ios'
 
     def __init__(self, port, options):
@@ -169,29 +147,21 @@ class ChromeiOS(Product):
             self._port.artifacts_directory(), "xcode-output")
         return [
             '--out-dir=' + output_dir, '--os=' + self.IOS_VERSION,
-            '--device=iPhone 11 Pro'
+            '--device=' + self.DEVICE
         ]
 
     @contextlib.contextmanager
     def test_env(self):
         path_finder.add_build_ios_to_sys_path()
         import xcode_util as xcode
-        #TODO(crbug.com/1351820): Create a function of the xcode installation in
-        # the util library and use it here.
         with super().test_env():
             # Install xcode.
             if self.xcode_build_version:
                 try:
-                    runtime_cache_folder = xcode.construct_runtime_cache_folder(
-                        '../../Runtime-ios-', self.IOS_VERSION)
-                    self._host.filesystem.maybe_make_directory(
-                        runtime_cache_folder)
-                    xcode.install('../../mac_toolchain',
-                                  self._options.xcode_build_version,
-                                  '../../Xcode.app',
-                                  runtime_cache_folder=runtime_cache_folder,
-                                  ios_version=self.IOS_VERSION)
-                    xcode.select('../../Xcode.app')
+                    xcode.install_xcode('../../mac_toolchain',
+                                        self._options.xcode_build_version,
+                                        '../../Xcode.app',
+                                        '../../Runtime-ios-', self.IOS_VERSION)
                 except subprocess.CalledProcessError as e:
                     logging.error(
                         'Xcode build version %s failed to install: %s ',
@@ -343,6 +313,8 @@ class ChromeAndroidBase(Product):
         it is crucial that it is thread safe.
         """
         with contextlib.ExitStack() as exit_stack:
+            for apk in self._options.additional_apk:
+                exit_stack.enter_context(self._install_apk(device, apk))
             exit_stack.enter_context(
                 self._install_apk(device, self.browser_apk))
             logging.info('Provisioned device (serial: %s)', device.serial)
@@ -387,7 +359,9 @@ class WebView(ChromeAndroidBase):
 
     @contextlib.contextmanager
     def _provision_device(self, device):
-        with self._install_webview(device), super()._provision_device(device):
+        # WebView installation must execute after device provisioning
+        # as the installation might depends on additional packages.
+        with super()._provision_device(device), self._install_webview(device):
             yield
 
 

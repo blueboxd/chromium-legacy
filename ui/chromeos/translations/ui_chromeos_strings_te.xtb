@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">మొబైల్ నెట్‌వర్క్‌ల కోసం వెతుకుతోంది</translation>
 <translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">Google Drive ప్రస్తుతం అందుబాటులో లేదు. Google Drive అందుబాటులోకి వచ్చిన తర్వాత అప్‌లోడ్ ఆటోమేటిక్‌గా మళ్లీ ప్రారంభమవుతుంది.</translation>
+<translation id="1306130176943817227">తొలగించడం సాధ్యపడదు. ఐటెమ్ వినియోగంలో ఉంది.</translation>
 <translation id="1307931752636661898">Linux ఫైళ్లను చూడటం సాధ్యపడలేదు</translation>
 <translation id="1313405956111467313">ఆటోమేటిక్‌ ప్రాక్సీ కాన్ఫిగరేషన్</translation>
 <translation id="134645005685694099">ఫైల్ సింక్‌ను ఆన్‌లో ఉంచడానికి మీ పరికరంలో తగినంత స్టోరేజ్ స్పేస్ లేదు. కొత్త ఫైల్స్ ఇకపై ఆటోమేటిక్‌గా సింక్ చేయబడవు.</translation>
@@ -115,7 +116,6 @@
 <translation id="1920798810075583923">పుచ్చకాయ</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> ఫార్మాట్ చేయబడింది</translation>
 <translation id="1931134289871235022">స్లోవక్</translation>
-<translation id="1933345018156373194">తరలింపు విఫలమైంది, తెలియని ఎర్రర్: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">ఫిన్నిష్</translation>
 <translation id="1942765061641586207">చిత్ర రిజల్యూషన్</translation>
 <translation id="1972984168337863910">అభిప్రాయ ప్యానెల్‌ల ఫైళ్లు విస్తరించు</translation>
@@ -502,7 +502,6 @@
 <translation id="4969785127455456148">ఆల్బమ్</translation>
 <translation id="4972330214479971536">ఫైల్ సింక్‌ను సెటప్ చేయడం పూర్తి చేయడం సాధ్యపడలేదు</translation>
 <translation id="4973523518332075481"><ph name="MAX_LENGTH" /> లేదా అంతకంటే తక్కువ అక్షరాలు ఉన్న పేరుని ఉపయోగించండి</translation>
-<translation id="4973970068702235170">జిప్ చేయడం విఫలమైంది, అనుకోని ఎర్రర్: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">జపనీస్</translation>
 <translation id="4987699874727873250">ఇంగ్లీష్ (భారతదేశం)</translation>
 <translation id="4988205478593450158">మీరు ఖచ్చితంగా "<ph name="FILE_NAME" />"ని తొలగించాలనుకుంటున్నారా?</translation>
@@ -543,6 +542,7 @@
 <translation id="5218183485292899140">స్విస్ ఫ్రెంచ్</translation>
 <translation id="5234764350956374838">తొలగించండి</translation>
 <translation id="5253070652067921974">సృష్టించినవారు</translation>
+<translation id="5254207638927440400">ఫైల్‌ను తరలించడం సాధ్యపడదు. ఫైల్ వినియోగంలో ఉంది.</translation>
 <translation id="5257456363153333584">తూనీగ</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />ఫైళ్లను ఎక్కడి నుండైనా యాక్సెస్ చేయండి, ఆఫ్‌లైన్‌లో ఉన్నా కూడా.<ph name="MARKUP_2" />
     Google Driveలోని ఫైళ్లు అప్‌డేట్ చేయబడి ఉంటాయి, ఇవి ఏ పరికరం నుండైనా అందుబాటులో ఉంటాయి.<ph name="MARKUP_3" />
@@ -638,7 +638,6 @@
 <translation id="5896749729057314184"><ph name="NETWORK_COUNT" /> <ph name="NETWORK_NAME" />‌లోని నెట్‌వర్క్ <ph name="NETWORK_INDEX" /> యాక్టివేట్ చేయబడలేదు, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, వివరాలు</translation>
 <translation id="5911887972742538906">మీ Linux అప్లికేషన్ యొక్క ఇన్‌స్టాలేషన్ సమయంలో ఎర్రర్ ఏర్పడింది.</translation>
 <translation id="5912396950572065471">ఫార్మాట్</translation>
-<translation id="5913638992615760742">కాపీ చర్య విఫలమైంది, ఊహించని ఎర్రర్: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">కొత్త సెర్చ్ ఫీచర్‌లు అందుబాటులో ఉన్నాయి</translation>
 <translation id="5926082595146149752">US అంతర్జాతీయ PC కీబోర్డ్‌తో డచ్ (నెదర్లాండ్స్)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -646,7 +645,6 @@
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> అంశాలు</translation>
 <translation id="5957366693331451795">Chromeboxలు</translation>
 <translation id="5982621672636444458">క్రమబద్ధీకరణ ఎంపికలు</translation>
-<translation id="6007237601604674381">తరలింపు విఫలమైంది. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">ఈథర్‌నెట్ నెట్‌వర్క్</translation>
 <translation id="60357267506638014">చెక్ QWERTY</translation>
 <translation id="603895874132768835">మీరు కొత్త PINను సెటప్ చేసే వరకు ఈ నెట్‌వర్క్‌ను ఉపయోగించలేరు</translation>
@@ -863,6 +861,7 @@
 <translation id="76959938259365003">ట్రాష్‌ను ఖాళీ చేయడంలో విఫలమైంది.</translation>
 <translation id="770015031906360009">గ్రీక్</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> కాపీ చేయబడింది.</translation>
+<translation id="7707941139430559579">ఫైల్‌ను తరలించడం సాధ్యపడదు. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">ఈ నెట్‌వర్క్‌ను ఉపయోగించడానికి, క్యారియర్ అందించిన 8 అంకెల పర్సనల్ అన్‌బ్లాకింగ్ కీ (PUK)ని మీరు ఎంటర్ చేయాల్సి ఉంటుంది.</translation>
 <translation id="7711920809702896782">చిత్రం సమాచారం</translation>
 <translation id="7724603315864178912">కత్తిరించండి</translation>
@@ -1050,6 +1049,7 @@
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" పేరు గల ఫైల్ ఇప్పటికే ఉంది. దయచేసి వేరొక పేరును ఎంచుకోండి.</translation>
 <translation id="9046895021617826162">కనెక్ట్ విఫలమైంది</translation>
 <translation id="9065512565307033593">మీరు వెరిఫై చేయలేకపోతే, మీ నెట్‌వర్క్ యాక్సెస్ డిజేబుల్ చేయబడుతుంది.</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 హెచ్చరిక.}other{<ph name="COUNT" /> హెచ్చరికలు.}}</translation>
 <translation id="908378762078012445">ఫోనెటిక్ AATSEEL కీబోర్డ్‌తో రష్యన్</translation>
 <translation id="9086302186042011942">సింక్ చేస్తోంది</translation>
 <translation id="9099674669267916096">పేజీ గణన</translation>

@@ -70,23 +70,23 @@ CreditCardFidoAuthenticator::~CreditCardFidoAuthenticator() {
 }
 
 void CreditCardFidoAuthenticator::Authenticate(
-    const CreditCard* card,
+    CreditCard card,
     base::WeakPtr<Requester> requester,
     base::Value::Dict request_options,
     absl::optional<std::string> context_token) {
-  card_ = card;
+  card_ = std::move(card);
   requester_ = requester;
   context_token_ = context_token;
 
   // Cancel any previous pending WebAuthn requests.
   authenticator()->Cancel();
 
-  if (card_ && IsValidRequestOptions(request_options.Clone())) {
+  if (IsValidRequestOptions(request_options)) {
     current_flow_ = AUTHENTICATION_FLOW;
     GetAssertion(ParseRequestOptions(std::move(request_options)));
   } else if (requester_) {
-    FidoAuthenticationResponse response{.did_succeed = false};
-    requester_->OnFIDOAuthenticationComplete(response);
+    requester_->OnFIDOAuthenticationComplete(
+        FidoAuthenticationResponse{.did_succeed = false});
   }
 }
 
@@ -145,10 +145,20 @@ void CreditCardFidoAuthenticator::IsUserVerifiable(
     return;
   }
 #if BUILDFLAG(IS_ANDROID)
-  // Because Payments servers only accept WebAuthn credentials for Android P
-  // and above, this returns false if the build version is O or below.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_P) {
+  // When kAutofillEnableAndroidNKeyForFidoAuthentication is on,
+  // Payments servers only accept WebAuthn credentials for Android N
+  // and above. When kAutofillEnableAndroidNKeyForFidoAuthentication is off,
+  // Payments servers only accept WebAuthn credentials for Android P
+  // and above. Do nothing for the other cases.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableAndroidNKeyForFidoAuthentication)) {
+    if (base::android::BuildInfo::GetInstance()->sdk_int() <
+        base::android::SDK_VERSION_NOUGAT) {
+      std::move(callback).Run(false);
+      return;
+    }
+  } else if (base::android::BuildInfo::GetInstance()->sdk_int() <
+             base::android::SDK_VERSION_P) {
     std::move(callback).Run(false);
     return;
   }
@@ -252,8 +262,10 @@ void CreditCardFidoAuthenticator::OnWebauthnOfferDialogUserResponse(
     payments_client_->CancelRequest();
     card_authorization_token_ = std::string();
     current_flow_ = NONE_FLOW;
-    GetOrCreateFidoAuthenticationStrikeDatabase()->AddStrikes(
-        FidoAuthenticationStrikeDatabase::kStrikesToAddWhenOptInOfferDeclined);
+    if (auto* strike_database = GetOrCreateFidoAuthenticationStrikeDatabase()) {
+      strike_database->AddStrikes(FidoAuthenticationStrikeDatabase::
+                                      kStrikesToAddWhenOptInOfferDeclined);
+    }
     user_is_opted_in_ = false;
     UpdateUserPref();
   }
@@ -263,10 +275,11 @@ void CreditCardFidoAuthenticator::OnWebauthnOfferDialogUserResponse(
 FidoAuthenticationStrikeDatabase*
 CreditCardFidoAuthenticator::GetOrCreateFidoAuthenticationStrikeDatabase() {
   if (!fido_authentication_strike_database_) {
-    fido_authentication_strike_database_ =
-        std::make_unique<FidoAuthenticationStrikeDatabase>(
-            FidoAuthenticationStrikeDatabase(
-                autofill_client_->GetStrikeDatabase()));
+    if (auto* strike_database = autofill_client_->GetStrikeDatabase()) {
+      fido_authentication_strike_database_ =
+          std::make_unique<FidoAuthenticationStrikeDatabase>(
+              FidoAuthenticationStrikeDatabase(strike_database));
+    }
   }
   return fido_authentication_strike_database_.get();
 }
@@ -409,9 +422,12 @@ void CreditCardFidoAuthenticator::OnDidMakeCredential(
     // Treat failure to perform user verification as a strong signal not to
     // offer opt-in in the future.
     if (current_flow_ == OPT_IN_WITH_CHALLENGE_FLOW) {
-      GetOrCreateFidoAuthenticationStrikeDatabase()->AddStrikes(
-          FidoAuthenticationStrikeDatabase::
-              kStrikesToAddWhenUserVerificationFailsOnOptInAttempt);
+      if (auto* strike_database =
+              GetOrCreateFidoAuthenticationStrikeDatabase()) {
+        strike_database->AddStrikes(
+            FidoAuthenticationStrikeDatabase::
+                kStrikesToAddWhenUserVerificationFailsOnOptInAttempt);
+      }
       user_is_opted_in_ = false;
       UpdateUserPref();
     }
@@ -477,9 +493,8 @@ void CreditCardFidoAuthenticator::OnFullCardRequestSucceeded(
   if (!requester_)
     return;
 
-  FidoAuthenticationResponse response{
-      .did_succeed = true, .card = &card, .cvc = cvc};
-  requester_->OnFIDOAuthenticationComplete(response);
+  requester_->OnFIDOAuthenticationComplete(FidoAuthenticationResponse{
+      .did_succeed = true, .card = &card, .cvc = cvc});
 }
 
 void CreditCardFidoAuthenticator::OnFullCardRequestFailed(
@@ -491,9 +506,8 @@ void CreditCardFidoAuthenticator::OnFullCardRequestFailed(
   if (!requester_)
     return;
 
-  FidoAuthenticationResponse response{.did_succeed = false,
-                                      .failure_type = failure_type};
-  requester_->OnFIDOAuthenticationComplete(response);
+  requester_->OnFIDOAuthenticationComplete(FidoAuthenticationResponse{
+      .did_succeed = false, .failure_type = failure_type});
 }
 
 blink::mojom::PublicKeyCredentialRequestOptionsPtr
@@ -742,7 +756,7 @@ void CreditCardFidoAuthenticator::HandleGetAssertionSuccess(
           autofill_client_->GetPersonalDataManager());
 
       absl::optional<GURL> last_committed_primary_main_frame_origin;
-      if (card_->record_type() == CreditCard::VIRTUAL_CARD &&
+      if (card_->record_type() == CreditCard::RecordType::kVirtualCard &&
           autofill_client_->GetLastCommittedPrimaryMainFrameURL().is_valid()) {
         last_committed_primary_main_frame_origin =
             autofill_client_->GetLastCommittedPrimaryMainFrameURL()
@@ -822,12 +836,16 @@ void CreditCardFidoAuthenticator::HandleGetAssertionFailure() {
 #if BUILDFLAG(IS_ANDROID)
       // For Android, even if GetAssertion fails for opting-in, we still report
       // success to |requester_| to fill the form with the fetched card info.
-      if (requester_)
+      if (requester_) {
         requester_->OnFidoAuthorizationComplete(/*did_succeed=*/true);
+      }
 #endif  // BUILDFLAG(IS_ANDROID)
-      GetOrCreateFidoAuthenticationStrikeDatabase()->AddStrikes(
-          FidoAuthenticationStrikeDatabase::
-              kStrikesToAddWhenUserVerificationFailsOnOptInAttempt);
+      if (auto* strike_database =
+              GetOrCreateFidoAuthenticationStrikeDatabase()) {
+        strike_database->AddStrikes(
+            FidoAuthenticationStrikeDatabase::
+                kStrikesToAddWhenUserVerificationFailsOnOptInAttempt);
+      }
       user_is_opted_in_ = false;
       UpdateUserPref();
       break;

@@ -59,6 +59,8 @@ PolicyService::PolicyManagers SortManagers(
   return {managers_vector, managers_map};
 }
 
+}  // namespace
+
 PolicyService::PolicyManagerVector CreatePolicyManagerVector(
     bool should_take_policy_critical_section,
     scoped_refptr<ExternalConstants> external_constants,
@@ -80,6 +82,7 @@ PolicyService::PolicyManagerVector CreatePolicyManagerVector(
       should_take_policy_critical_section,
       external_constants->IsMachineManaged());
   if (group_policy_manager->CloudPolicyOverridesPlatformPolicy()) {
+    VLOG(1) << __func__ << ": CloudPolicyOverridesPlatformPolicy=1";
     managers.push_back(std::move(group_policy_manager));
   } else {
     managers.insert(managers.begin(), std::move(group_policy_manager));
@@ -98,8 +101,6 @@ PolicyService::PolicyManagerVector CreatePolicyManagerVector(
   managers.push_back(GetDefaultValuesPolicyManager());
   return managers;
 }
-
-}  // namespace
 
 PolicyService::PolicyManagers::PolicyManagers(
     PolicyManagerVector manager_vector,

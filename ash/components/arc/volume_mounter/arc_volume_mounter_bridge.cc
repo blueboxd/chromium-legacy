@@ -13,12 +13,10 @@
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
-#include "ash/components/arc/session/arc_vm_client_adapter.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -285,15 +283,6 @@ void ArcVolumeMounterBridge::OnMountEvent(
                                       device_label, device_type, visible);
       delegate_->StopWatchingRemovableMedia(mount_info.mount_path);
       break;
-  }
-
-  if (event == DiskMountManager::MountEvent::MOUNTING &&
-      (device_type == ash::DeviceType::kUSB ||
-       device_type == ash::DeviceType::kSD)) {
-    // Record visibilities of the mounted devices only when they are removable
-    // storages (e.g. USB sticks or SD cards).
-    base::UmaHistogramBoolean("Arc.ExternalStorage.MountedMediaVisibility",
-                              visible);
   }
 }
 

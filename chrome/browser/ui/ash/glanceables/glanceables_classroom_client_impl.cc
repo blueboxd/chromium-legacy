@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <functional>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <utility>
 #include <vector>
@@ -64,15 +65,17 @@ constexpr char kOwnCoursesFilterValue[] = "me";
 // the specified course.
 constexpr char kAllStudentSubmissionsParameterValue[] = "-";
 
-// TODO(b/282013130): Update the traffic annotation tag once all "[TBD]" items
-// are ready.
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotationTag =
     net::DefineNetworkTrafficAnnotation("glanceables_classroom_integration", R"(
         semantics {
           sender: "Glanceables keyed service"
           description: "Provide ChromeOS users quick access to their "
                        "classroom items without opening the app or website"
-          trigger: "[TBD] Depends on UI surface and pre-fetching strategy"
+          trigger: "User presses the calendar pill in shelf, which triggers "
+                   "opening the calendar, classroom (if available) and tasks "
+                   "widgets. This specific client implementation "
+                   "is responsible for fetching user's classroom data from "
+                   "Google Classroom API."
           internal {
             contacts {
               email: "chromeos-launcher@google.com"
@@ -84,12 +87,16 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotationTag =
           data: "The request is authenticated with an OAuth2 access token "
                 "identifying the Google account"
           destination: GOOGLE_OWNED_SERVICE
-          last_reviewed: "2023-05-12"
+          last_reviewed: "2023-08-21"
         }
         policy {
           cookies_allowed: NO
-          setting: "[TBD] This feature cannot be disabled in settings"
-          policy_exception_justification: "WIP, guarded by `GlanceablesV2` flag"
+          setting: "This feature cannot be disabled in settings"
+          chrome_policy {
+            GlanceablesEnabled {
+              GlanceablesEnabled: false
+            }
+          }
         }
     )");
 
@@ -246,7 +253,11 @@ void GlanceablesClassroomClientImpl::IsStudentRoleActive(
   FetchStudentCourses(base::BindOnce(
       [](IsRoleEnabledCallback callback, bool success,
          const CourseList& courses) {
-        std::move(callback).Run(!courses.empty());
+        const bool is_active = !courses.empty();
+        base::UmaHistogramBoolean(
+            "Ash.Glanceables.Api.Classroom.IsStudentRoleActiveResult",
+            is_active);
+        std::move(callback).Run(is_active);
       },
       std::move(callback)));
 }
@@ -1014,6 +1025,26 @@ void GlanceablesClassroomClientImpl::OnStudentDataFetched(
   }
 
   PruneInvalidCourseWork(student_courses_.courses(), student_course_work_);
+
+  if (!student_data_fetch_had_failure_) {
+    for (const auto& course : student_courses_.courses()) {
+      const auto iter = student_course_work_.find(course->id);
+      if (iter == student_course_work_.end()) {
+        continue;
+      }
+
+      base::UmaHistogramCounts1000(
+          "Ash.Glanceables.Api.Classroom.CourseWorkItemsPerStudentCourseCount",
+          iter->second.size());
+      base::UmaHistogramCounts1000(
+          "Ash.Glanceables.Api.Classroom."
+          "StudentSubmissionsPerStudentCourseCount",
+          std::accumulate(iter->second.begin(), iter->second.end(), 0,
+                          [](int count, const auto& x) {
+                            return count + x.second.total_submissions();
+                          }));
+    }
+  }
 
   std::list<DataFetchCallback> callbacks;
   callbacks_waiting_for_student_data_.swap(callbacks);

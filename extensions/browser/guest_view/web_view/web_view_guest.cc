@@ -22,12 +22,12 @@
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/common/guest_view_constants.h"
+#include "components/permissions/permission_util.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -42,6 +42,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/url_constants.h"
@@ -74,6 +75,7 @@
 #include "third_party/blink/public/common/logging/logging_utils.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -102,11 +104,6 @@ constexpr char kAttributeSrc[] = "src";
 
 // API namespace.
 constexpr char kAPINamespace[] = "webViewInternal";
-
-// API error messages.
-constexpr char kAPILoadDataInvalidDataURL[] = "Invalid data URL \"%s\".";
-constexpr char kAPILoadDataInvalidBaseURL[] = "Invalid base URL \"%s\".";
-constexpr char kAPILoadDataInvalidVirtualURL[] = "Invalid virtual URL \"%s\".";
 
 // Initialization parameters.
 constexpr char kInitialZoomFactor[] = "initialZoomFactor";
@@ -1136,6 +1133,33 @@ bool WebViewGuest::RequiresSslInterstitials() const {
   return true;
 }
 
+bool WebViewGuest::IsPermissionRequestable(ContentSettingsType type) const {
+  CHECK(permissions::PermissionUtil::IsPermission(type));
+  const blink::PermissionType permission_type =
+      permissions::PermissionUtil::ContentSettingTypeToPermissionType(type);
+
+  switch (permission_type) {
+    case blink::PermissionType::GEOLOCATION:
+    case blink::PermissionType::AUDIO_CAPTURE:
+    case blink::PermissionType::VIDEO_CAPTURE:
+      // Any permission that could be granted by the webview permissionrequest
+      // API should be requestable.
+      return true;
+    default:
+      // Any other permission could not be legitimately granted to the webview.
+      // We preemptivly reject such requests here. The permissions system should
+      // have rejected it anyway as there would be no way to prompt the user.
+      // Ideally, we would just let the permissions system take care of this on
+      // its own, however, since permissions are currently scoped to a
+      // BrowserContext, not a StoragePartition, a permission granted to an
+      // origin loaded in a regular tab could be applied to a webview, hence the
+      // need to preemptively reject it.
+      // TODO(crbug.com/1469672): Permissions should be scoped to
+      // StoragePartitions.
+      return false;
+  }
+}
+
 content::JavaScriptDialogManager* WebViewGuest::GetJavaScriptDialogManager(
     WebContents* source) {
   return &javascript_dialog_helper_;
@@ -1342,48 +1366,6 @@ void WebViewGuest::SetTransparency(
 
 void WebViewGuest::SetAllowScaling(bool allow) {
   allow_scaling_ = allow;
-}
-
-bool WebViewGuest::LoadDataWithBaseURL(const GURL& data_url,
-                                       const GURL& base_url,
-                                       const GURL& virtual_url,
-                                       std::string* error) {
-  // Check that the provided URLs are valid.
-  // |data_url| must be a valid data URL.
-  if (!data_url.is_valid() || !data_url.SchemeIs(url::kDataScheme)) {
-    base::SStringPrintf(error, kAPILoadDataInvalidDataURL,
-                        data_url.possibly_invalid_spec().c_str());
-    return false;
-  }
-  const url::Origin& owner_origin = owner_rfh()->GetLastCommittedOrigin();
-  const bool base_in_owner_origin = owner_origin.IsSameOriginWith(base_url);
-  // |base_url| must be a valid URL. It is also limited to URLs that the owner
-  // is trusted to have control over.
-  if (!base_url.is_valid() ||
-      (!base_url.SchemeIsHTTPOrHTTPS() && !base_in_owner_origin)) {
-    base::SStringPrintf(error, kAPILoadDataInvalidBaseURL,
-                        base_url.possibly_invalid_spec().c_str());
-    return false;
-  }
-  // |virtual_url| must be a valid URL.
-  if (!virtual_url.is_valid()) {
-    base::SStringPrintf(error, kAPILoadDataInvalidVirtualURL,
-                        virtual_url.possibly_invalid_spec().c_str());
-    return false;
-  }
-
-  // Set up the parameters to load |data_url| with the specified |base_url|.
-  content::NavigationController::LoadURLParams load_params(data_url);
-  load_params.load_type = content::NavigationController::LOAD_TYPE_DATA;
-  load_params.base_url_for_data_url = base_url;
-  load_params.virtual_url_for_data_url = virtual_url;
-  load_params.override_user_agent =
-      content::NavigationController::UA_OVERRIDE_INHERIT;
-
-  // Navigate to the data URL.
-  GetController().LoadURLWithParams(load_params);
-
-  return true;
 }
 
 void WebViewGuest::AddNewContents(

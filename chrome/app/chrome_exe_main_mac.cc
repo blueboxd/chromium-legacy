@@ -19,7 +19,7 @@
 
 #include <memory>
 
-#include "base/allocator/early_zone_registration_mac.h"
+#include "base/allocator/early_zone_registration_apple.h"
 #include "base/logging.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -39,8 +39,8 @@ void abort_report_np(const char* fmt, ...);
 
 CRASH_REPORTER_CLIENT_HIDDEN
 struct crashreporter_annotations_t gCRAnnotations
-    __attribute__((section("__DATA," CRASHREPORTER_ANNOTATIONS_SECTION)))
-    = { CRASHREPORTER_ANNOTATIONS_VERSION, 0, 0, 0, 0, 0, 0, 0 };
+    __attribute__((section("__DATA," CRASHREPORTER_ANNOTATIONS_SECTION))) = {
+        CRASHREPORTER_ANNOTATIONS_VERSION, 0, 0, 0, 0, 0, 0, 0};
 
 namespace {
 

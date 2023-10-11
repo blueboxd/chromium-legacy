@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Dozvolite da sajt čuva podatke na uređaju</translation>
 <translation id="1383876407941801731">Pretraži</translation>
 <translation id="1384959399684842514">Preuzimanje je pauzirano</translation>
-<translation id="1409426117486808224">Pojednostavljen prikaz otvorenih kartica</translation>
 <translation id="1415402041810619267">URL je skraćen</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1446450296470737166">Puna kontrola nad MIDI uređajima</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Dozvoljeni, osim treće strane</translation>
 <translation id="1989112275319619282">Pregledaj</translation>
 <translation id="1994173015038366702">URL sajta</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Ističe za 1 dan}one{Ističe za # dan}few{Ističe za # dana}other{Ističe za # dana}}</translation>
 <translation id="2004697686368036666">Funkcije na nekim sajtovima mogu da ne rade</translation>
 <translation id="2025115093177348061">Proširena realnost</translation>
 <translation id="2030769033451695672">Dodirnite da biste se vratili na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4008040567710660924">Omogućava kolačiće za određeni sajt.</translation>
 <translation id="4046123991198612571">Sledeća pesma</translation>
+<translation id="4053720452172726777">Prilagodite i kontrolišite Google Chrome</translation>
 <translation id="4149994727733219643">Pojednostavljen prikaz veb-stranica</translation>
 <translation id="4151930093518524179">Podrazumevani zum</translation>
 <translation id="4165986682804962316">Podešavanja sajta</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Sajtovi ne mogu da koriste kolačiće da bi videli vaše aktivnosti pregledanja na različitim sajtovima, na primer, za personalizaciju oglasa. Funkcije na nekim sajtovima mogu da ne rade.</translation>
 <translation id="5553374991681107062">Najnovije</translation>
 <translation id="5556459405103347317">Učitaj ponovo</translation>
-<translation id="5596627076506792578">Još opcija</translation>
 <translation id="5649053991847567735">Automatska preuzimanja</translation>
 <translation id="5668404140385795438">Odbijanje zahteva veb-sajta da se spreči uvećavanje</translation>
 <translation id="5677928146339483299">Blokirano</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Isključeno je u Android podešavanjima</translation>
 <translation id="7016516562562142042">Dozvoljeno je za aktuelni pretraživač</translation>
 <translation id="702275896380648118">Ovaj sajt određuje stvari koje vam se sviđaju, a zatim predlaže oglase za druge sajtove. Ovaj sajt takođe prima podatke o vašim temama oglasa iz Chrome-a da bi vam prikazivao relevantnije oglase.</translation>
-<translation id="702463548815491781">Preporučujemo vam kada uključite TalkBack ili pristup pomoću prekidača</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Izabrano: 1}one{Izabrano: #}few{Izabrano: #}other{Izabrano: #}}</translation>
 <translation id="7087918508125750058">Izabrali ste <ph name="ITEM_COUNT" />. Opcije su dostupne pri vrhu ekrana</translation>

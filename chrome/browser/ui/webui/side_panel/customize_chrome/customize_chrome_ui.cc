@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/cart/cart_handler.h"
 #include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
 #include "chrome/browser/new_tab_page/new_tab_page_util.h"
@@ -75,11 +76,13 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       {"currentTheme", IDS_NTP_CUSTOMIZE_CHROME_CURRENT_THEME_LABEL},
       {"defaultColorName", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
       {"greyDefaultColorName", IDS_NTP_CUSTOMIZE_GREY_DEFAULT_LABEL},
+      {"hueSliderTitle", IDS_NTP_CUSTOMIZE_COLOR_HUE_SLIDER_TITLE},
       {"mainColorName", IDS_NTP_CUSTOMIZE_MAIN_COLOR_LABEL},
       {"managedColorsTitle", IDS_NTP_THEME_MANAGED_DIALOG_TITLE},
       {"managedColorsBody", IDS_NTP_THEME_MANAGED_DIALOG_BODY},
       {"uploadImage", IDS_NTP_CUSTOM_BG_UPLOAD_AN_IMAGE},
       {"uploadedImage", IDS_NTP_CUSTOMIZE_UPLOADED_IMAGE_LABEL},
+      {"yourUploadedImage", IDS_NTP_CUSTOMIZE_YOUR_UPLOADED_IMAGE_LABEL},
       {"resetToClassicChrome",
        IDS_NTP_CUSTOMIZE_CHROME_RESET_TO_CLASSIC_CHROME_LABEL},
       {"followThemeToggle", IDS_NTP_CUSTOMIZE_CHROME_FOLLOW_THEME_LABEL},
@@ -124,6 +127,18 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
 #else
                      false);
 #endif
+
+  source->AddBoolean(
+      "extensionsCardEnabled",
+      base::FeatureList::IsEnabled(
+          ntp_features::kCustomizeChromeSidePanelExtensionsCard) &&
+          features::IsChromeWebuiRefresh2023());
+
+  source->AddBoolean("wallpaperSearchEnabled",
+                     base::FeatureList::IsEnabled(
+                         ntp_features::kCustomizeChromeWallpaperSearch) &&
+                         base::FeatureList::IsEnabled(features::kMantaService));
+
   webui::SetupChromeRefresh2023(source);
 
   webui::SetupWebUIDataSource(

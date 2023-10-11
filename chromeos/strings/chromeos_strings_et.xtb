@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">Õiguslikel põhjustel sisumuudatuste taotlemiseks avage <ph name="BEGIN_LINK1" />leht Juriidiline abi<ph name="END_LINK1" />. Osa konto ja süsteemi teabest võidakse saata Google'ile. Kasutame teilt saadud teavet tehniliste probleemide lahendamiseks ning oma teenuste täiustamiseks kooskõlas meie <ph name="BEGIN_LINK2" />privaatsuseeskirjade<ph name="END_LINK2" /> ja <ph name="BEGIN_LINK3" />teenusetingimustega<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">kerib meediasisu edasi</translation>
 <translation id="1887850431809612466">Riistvara redaktsioon</translation>
+<translation id="1897672602657312171">Otsetee ilma otsinguklahvita võib olla vastuolus mõne rakenduse otseteega. Kasutamise jätkamiseks vajutage seda otseteed uuesti või vajutage otsinguklahvi abil uut otseteed.</translation>
 <translation id="1904932688895783618">Allpool on veel kasulikke allikaid</translation>
 <translation id="1905710495812624430">Katsete maksimaalne arv on ületatud.</translation>
 <translation id="1908234395526491708">UDP-taotluste vead</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">Taaskäivitamine …</translation>
 <translation id="2533048460510040082">Soovitatud abisisu</translation>
 <translation id="2536159006530886390">Internetiga ei õnnestu ühendust luua.</translation>
-<translation id="2555662516429796509">Vajutage klaviatuuril 1–4 muuteklahvi ja ühte muud klahvi</translation>
 <translation id="2570743873672969996">Testi <ph name="TEST_NAME" /> käitamine …</translation>
 <translation id="2584559707064218956">Seadistamiseks avage leht Seaded</translation>
 <translation id="2597774443162333062">Failid saadetakse silumiseks Google'ile</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">TLS-i autentimisvõti</translation>
 <translation id="2713444072780614174">Valge</translation>
 <translation id="2717139507051041123">Luba tume värvirežiim</translation>
+<translation id="2728460467788544679">Kogu printimisajaloo kustutamine</translation>
 <translation id="2740531572673183784">Ok</translation>
 <translation id="2744221223678373668">Jagatud</translation>
 <translation id="2751739896257479635">EAP 2. etapi autentimine</translation>
 <translation id="2783010256799387990">LÄBITUD</translation>
 <translation id="2787435249130282949">heledam klaviatuur</translation>
-<translation id="2789486458103222910">Selge</translation>
 <translation id="2805756323405976993">Rakendused</translation>
 <translation id="28232023175184696">Internetiga ei õnnestu ühendust luua. Klõpsake uuesti proovimiseks.</translation>
 <translation id="2859243502336719778">Tähtis värskendus</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">Pilvevoolu ekraanisäästja</translation>
 <translation id="2926057806159140518">Sisestage kasutajanimi ja parool või skannige QR-kood</translation>
 <translation id="2940811910881150316">Seadet ei saa testida. Testimiseks avage uuesti kaas.</translation>
+<translation id="2941112035454246133">Madal</translation>
 <translation id="3008341117444806826">VÄRSKENDA</translation>
 <translation id="3009958530611748826">Valige kaust, kuhu salvestada</translation>
 <translation id="3017079585324758401">Taust</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">Hosti lahendamine ebaõnnestus</translation>
 <translation id="3942420633017001071">Diagnostika</translation>
 <translation id="3954678691475912818">Seadme tüüp pole teada.</translation>
+<translation id="3959413315969265597">Seda APN-i ei saa lubada. Veenduge, et lisatud oleks vaike-APN.</translation>
 <translation id="3966286471246132217">Täpsemate tulemuste saamiseks sulgege kõik rakendused, kuni test on lõpetatud.</translation>
 <translation id="3967822245660637423">Allalaadimine on lõpule viidud</translation>
 <translation id="3969602104473960991">Chrome OS-i parooli värskendati</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">vähendab helitugevust</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" />/<ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Värskenda seadet <ph name="DEVICE_NAME" /></translation>
+<translation id="574392208103952083">Keskmine</translation>
 <translation id="5757187557809630523">järgmine lugu</translation>
 <translation id="5760715441271661976">Portaali olek</translation>
 <translation id="576835345334454681">Ekraanikuva ereduse suurendamine</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">Kunstigalerii album</translation>
 <translation id="5860033963881614850">Väljas</translation>
 <translation id="5860491529813859533">Lülita sisse</translation>
-<translation id="5866840822086176774">Väga tugev</translation>
 <translation id="5876385649737594562">Lülitage see valikute tegemiseks sisse</translation>
 <translation id="588258955323874662">Täisekraan</translation>
 <translation id="5895138241574237353">Taaskäivitamine</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Nõrk (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Ava konto seaded</translation>
-<translation id="6456394469623773452">Hea</translation>
+<translation id="6461047516875166066">Soovin rohkem teada</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Kas skannida leht uuesti?}=1{Kas skannida {PAGE_NUMBER}. leht uuesti?}other{Kas skannida {PAGE_NUMBER}. leht uuesti?}}</translation>
 <translation id="6472207088655375767">Ühekordne parool</translation>
 <translation id="6480327114083866287">Haldab <ph name="MANAGER" /></translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">Kas lähtestada kõik otseteed vaikeväärtustele?</translation>
 <translation id="7058278511608979688">Lõpeta ja salvesta</translation>
 <translation id="7059230779847288458">Laadimine, täislaadimiseks kulub <ph name="TIME_VALUE" /></translation>
+<translation id="7066538517128343186">võti <ph name="KEY" /></translation>
 <translation id="7068619307603204412">Seadme ettevalmistamine</translation>
 <translation id="708426984172631313">PEATATUD</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">Taustapildi vaatamiseks looge ühendus võrguga ja laadige leht uuesti.</translation>
 <translation id="8291967909914612644">Koduteenuse pakkuja riik</translation>
 <translation id="8294431847097064396">Allikas</translation>
-<translation id="8297006494302853456">Nõrk</translation>
 <translation id="8302368968391049045">HTTPS-i tulemüür</translation>
 <translation id="8312330582793120272">esitab meediat</translation>
 <translation id="8318753676953949627">Pilte pole</translation>
 <translation id="8329018942023753850">rakendus Kalkulaator</translation>
 <translation id="8336739000755212683">Seadme kontopildi muutmine</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> või <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Prinditööd</translation>
 <translation id="8351855506390808906">Klahvide vastendamine, puutepunkt</translation>
 <translation id="8352772353338965963">Lisage mitmele kontole sisselogimiseks konto. Kõigile kontodele, kuhu on sisse logitud, pääseb juurde ilma paroolita, seega soovitame seda funktsiooni kasutada vaid usaldusväärsete kontodega.</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">Uuesti ühendamiseks avage leht Seaded</translation>
 <translation id="9126720536733509015">Mitme lehe ühte PDF-faili salvestamine</translation>
 <translation id="9133104754938025929">Aku säästmiseks töötab ekraanisäästja ainult laadimise ajal.</translation>
+<translation id="9133772297793293778">Vajutage klaviatuuril 1–4 muuteklahvi ja ühte muud klahvi. Muutmisrežiimist väljumiseks vajutage klahvikombinatsiooni alt + esc.</translation>
 <translation id="9137526406337347448">Google Services</translation>
 <translation id="9138630967333032450">Vasakpoolne tõstuklahv</translation>
 <translation id="9143347780818904997"><ph name="MINUTES" /> minutiks</translation>

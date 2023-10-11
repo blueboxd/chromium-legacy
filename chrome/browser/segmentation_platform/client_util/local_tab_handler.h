@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SEGMENTATION_PLATFORM_CLIENT_UTIL_LOCAL_TAB_HANDLER_H_
 #define CHROME_BROWSER_SEGMENTATION_PLATFORM_CLIENT_UTIL_LOCAL_TAB_HANDLER_H_
 
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
+#include "base/memory/raw_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/segmentation_platform/embedder/input_delegate/tab_session_source.h"
 #include "components/segmentation_platform/embedder/tab_fetcher.h"
@@ -29,8 +29,6 @@ class LocalTabHandler : public TabFetcher, public base::SupportsUserData::Data {
   // TabFetcher impl.
   bool FillAllLocalTabsFromTabModel(std::vector<TabEntry>& tabs) override;
   Tab FindLocalTab(const TabEntry& entry) override;
-  base::TimeDelta GetLocalTabTimeSinceModified(
-      const TabFetcher::Tab& tab) override;
 
  private:
   const raw_ptr<Profile> profile_;

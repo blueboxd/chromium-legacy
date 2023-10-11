@@ -23,6 +23,8 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "components/infobars/core/infobar_manager.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
+#import "components/password_manager/core/browser/ui/password_check_referrer.h"
+#import "components/password_manager/core/common/password_manager_features.h"
 #import "components/prefs/pref_service.h"
 #import "components/previous_session_info/previous_session_info.h"
 #import "components/signin/public/base/signin_metrics.h"
@@ -58,6 +60,9 @@
 #import "ios/chrome/browser/main/browser_util.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
+#import "ios/chrome/browser/passwords/password_checkup_utils.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
@@ -84,6 +89,7 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_commands.h"
+#import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/lens_commands.h"
@@ -95,7 +101,6 @@
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -134,7 +139,11 @@
 #import "ios/chrome/browser/ui/policy/user_policy_util.h"
 #import "ios/chrome/browser/ui/promos_manager/promos_manager_scene_agent.h"
 #import "ios/chrome/browser/ui/scoped_ui_blocker/scoped_ui_blocker.h"
+#import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_mediator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#import "ios/chrome/browser/ui/settings/utils/password_utils.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_scene_agent.h"
@@ -242,6 +251,7 @@ void InjectNTP(Browser* browser) {
 @interface SceneController () <AppStateObserver,
                                HistoryCoordinatorDelegate,
                                IncognitoInterstitialCoordinatorDelegate,
+                               PasswordCheckupCoordinatorDelegate,
                                PolicyWatcherBrowserAgentObserving,
                                SettingsNavigationControllerDelegate,
                                SceneUIProvider,
@@ -274,6 +284,10 @@ void InjectNTP(Browser* browser) {
 // Navigation View controller for the settings.
 @property(nonatomic, strong)
     SettingsNavigationController* settingsNavigationController;
+
+// Coordinator for display the Password Checkup.
+@property(nonatomic, strong)
+    PasswordCheckupCoordinator* passwordCheckupCoordinator;
 
 // Coordinator for displaying history.
 @property(nonatomic, strong) HistoryCoordinator* historyCoordinator;
@@ -698,6 +712,35 @@ void InjectNTP(Browser* browser) {
 
 #pragma mark - private
 
+// Creates a `SettingsNavigationController` (if it doesn't already exist) and
+// `PasswordCheckupCoordinator` for `referrer`, then starts the
+// `PasswordCheckupCoordinator`.
+- (void)startPasswordCheckupCoordinator:
+    (password_manager::PasswordCheckReferrer)referrer {
+  if (!password_manager::features::IsPasswordCheckupEnabled()) {
+    return;
+  }
+
+  Browser* browser = self.mainInterface.browser;
+
+  if (!self.settingsNavigationController) {
+    self.settingsNavigationController =
+        [SettingsNavigationController safetyCheckControllerForBrowser:browser
+                                                             delegate:self
+                                                   displayAsHalfSheet:NO];
+  }
+
+  self.passwordCheckupCoordinator = [[PasswordCheckupCoordinator alloc]
+      initWithBaseNavigationController:self.settingsNavigationController
+                               browser:browser
+                          reauthModule:nil
+                              referrer:referrer];
+
+  self.passwordCheckupCoordinator.delegate = self;
+
+  [self.passwordCheckupCoordinator start];
+}
+
 // Shows the Incognito interstitial on top of `activeViewController`.
 // Assumes the Incognito interstitial coordinator is currently not instantiated.
 // Runs `completion` once the Incognito interstitial is presented.
@@ -824,9 +867,8 @@ void InjectNTP(Browser* browser) {
             "Signin.AccountCapabilities.GetFromSystemLibraryDuration."
             "SigninUpgradePromo",
             fetch_duration);
-        if (!experimental_flags::AlwaysDisplayUpgradePromo() &&
-            (fetch_duration > signin::GetWaitThresholdForCapabilities() ||
-             result != CapabilityResult::kTrue)) {
+        if (fetch_duration > signin::GetWaitThresholdForCapabilities() ||
+            result != CapabilityResult::kTrue) {
           return;
         }
         [weakSelf presentSigninUpgradePromo];
@@ -1213,6 +1255,10 @@ void InjectNTP(Browser* browser) {
   [self.signinCoordinator
       interruptWithAction:SigninCoordinatorInterrupt::UIShutdownNoDismiss
                completion:nil];
+  // `self.signinCoordinator.signinCompletion()` was called in the interrupt
+  // method. Therefore now `self.signinCoordinator` is now stopped, and
+  // `self.signinCoordinator` is now nil.
+  DCHECK(!self.signinCoordinator);
 
   [self.historyCoordinator stop];
   self.historyCoordinator = nil;
@@ -1359,9 +1405,6 @@ void InjectNTP(Browser* browser) {
 - (BOOL)shouldPresentSigninUpgradePromo {
   if (self.sceneState.appState.initStage <= InitStageFirstRun) {
     return NO;
-  }
-  if (experimental_flags::AlwaysDisplayUpgradePromo()) {
-    return YES;
   }
   if (!signin::ShouldPresentUserSigninUpgrade(
           self.sceneState.appState.mainBrowserState,
@@ -1516,7 +1559,6 @@ void InjectNTP(Browser* browser) {
 - (void)displayTabSwitcherForcingRegularTabs:(BOOL)forcing {
   DCHECK(!self.mainCoordinator.isTabGridActive);
   if (!self.isProcessingVoiceSearchCommand) {
-    [self.currentInterface.bvc userEnteredTabSwitcher];
 
     if (forcing && self.currentInterface.incognito) {
       [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
@@ -1836,7 +1878,9 @@ void InjectNTP(Browser* browser) {
   __weak SceneController* weakSelf = self;
   // Copy the URL so it can be safely captured in the block.
   GURL copiedURL = url;
-  [self startSigninCoordinatorWithCompletion:^(SigninCoordinatorResult result) {
+  [self startSigninCoordinatorWithCompletion:^(
+            SigninCoordinatorResult result,
+            SigninCompletionInfo* completionInfo) {
     // If the sign-in is not successful or the scene controller is shut down do
     // not load the continuation URL.
     BOOL success = result == SigninCoordinatorResultSuccess;
@@ -2062,6 +2106,21 @@ void InjectNTP(Browser* browser) {
                                  completion:nil];
 }
 
+- (void)showPasswordCheckupPageForReferrer:
+    (password_manager::PasswordCheckReferrer)referrer {
+  if (!password_manager::features::IsPasswordCheckupEnabled()) {
+    return;
+  }
+
+  UIViewController* baseViewController = self.currentInterface.viewController;
+
+  [self startPasswordCheckupCoordinator:referrer];
+
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
 - (void)showPasswordDetailsForCredential:
             (password_manager::CredentialUIEntry)credential
                         showCancelButton:(BOOL)showCancelButton {
@@ -2078,6 +2137,26 @@ void InjectNTP(Browser* browser) {
                                  delegate:self
                                credential:credential
                          showCancelButton:showCancelButton];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
+- (void)
+    showPasswordIssuesWithWarningType:(password_manager::WarningType)warningType
+                             referrer:(password_manager::PasswordCheckReferrer)
+                                          referrer {
+  if (!password_manager::features::IsPasswordCheckupEnabled()) {
+    return;
+  }
+
+  UIViewController* baseViewController = self.currentInterface.viewController;
+
+  [self startPasswordCheckupCoordinator:referrer];
+
+  [self.passwordCheckupCoordinator
+      showPasswordIssuesWithWarningType:warningType];
+
   [baseViewController presentViewController:self.settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -2180,18 +2259,22 @@ void InjectNTP(Browser* browser) {
                                  completion:nil];
 }
 
-- (void)showSafetyCheckSettingsAndStartSafetyCheck {
+- (void)showAndStartSafetyCheckInHalfSheet:(BOOL)showHalfSheet {
   UIViewController* baseViewController = self.currentInterface.viewController;
+
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
-            showSafetyCheckSettingsAndStartSafetyCheck];
+        showAndStartSafetyCheckInHalfSheet:showHalfSheet];
     return;
   }
+
   Browser* browser = self.mainInterface.browser;
 
-  self.settingsNavigationController =
-      [SettingsNavigationController safetyCheckControllerForBrowser:browser
-                                                           delegate:self];
+  self.settingsNavigationController = [SettingsNavigationController
+      safetyCheckControllerForBrowser:browser
+                             delegate:self
+                   displayAsHalfSheet:showHalfSheet];
+
   [baseViewController presentViewController:self.settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -2407,6 +2490,47 @@ void InjectNTP(Browser* browser) {
       return ^{
         [weakSelf startPasswordSearch];
       };
+    case OPEN_READING_LIST:
+      return ^{
+        [weakSelf openReadingList];
+      };
+    case OPEN_BOOKMARKS:
+      return ^{
+        [weakSelf openBookmarks];
+      };
+    case OPEN_RECENT_TABS:
+      return ^{
+        [weakSelf openRecentTabs];
+      };
+    case OPEN_TAB_GRID:
+      return ^{
+        [weakSelf.mainCoordinator showTabGrid];
+      };
+    case SET_CHROME_DEFAULT_BROWSER:
+      return ^{
+        [weakSelf showDefaultBrowserSettings];
+      };
+    case VIEW_HISTORY:
+      return ^{
+        [weakSelf showHistory];
+      };
+    case OPEN_PAYMENT_METHODS:
+      return ^{
+        [weakSelf openPaymentMethods];
+      };
+    case RUN_SAFETY_CHECK:
+      return ^{
+        [weakSelf showAndStartSafetyCheckInHalfSheet:NO];
+      };
+    case MANAGE_PASSWORDS:
+      return ^{
+        [weakSelf showPasswordSearchPage];
+      };
+    case MANAGE_SETTINGS:
+      return ^{
+        [weakSelf showSettingsFromViewController:weakSelf.currentInterface
+                                                     .viewController];
+      };
     default:
       return nil;
   }
@@ -2479,6 +2603,47 @@ void InjectNTP(Browser* browser) {
       HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
                          ApplicationSettingsCommands);
   [applicationSettingsCommandsHandler showPasswordSearchPage];
+}
+
+- (void)openReadingList {
+  if (!self.currentInterface.browser) {
+    return;
+  }
+  id<BrowserCoordinatorCommands> browserCoordinatorCommandsHandler =
+      HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
+                         BrowserCoordinatorCommands);
+  [browserCoordinatorCommandsHandler showReadingList];
+}
+
+- (void)openBookmarks {
+  if (!self.currentInterface.browser) {
+    return;
+  }
+  id<BrowserCoordinatorCommands> browserCoordinatorCommandsHandler =
+      HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
+                         BrowserCoordinatorCommands);
+  [browserCoordinatorCommandsHandler showBookmarksManager];
+}
+
+- (void)openRecentTabs {
+  if (!self.currentInterface.browser) {
+    return;
+  }
+  id<BrowserCoordinatorCommands> browserCoordinatorCommandsHandler =
+      HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
+                         BrowserCoordinatorCommands);
+  [browserCoordinatorCommandsHandler showRecentTabs];
+}
+
+- (void)openPaymentMethods {
+  if (!self.currentInterface.browser) {
+    return;
+  }
+
+  id<ApplicationCommands> applicationCommandsHandler =
+      HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
+                         ApplicationCommands);
+  [applicationCommandsHandler showCreditCardSettings];
 }
 
 #pragma mark - TabOpening implementation.
@@ -3176,7 +3341,7 @@ void InjectNTP(Browser* browser) {
   switch (statusService) {
     case AuthenticationService::ServiceStatus::SigninDisabledByPolicy: {
       if (completion) {
-        completion(SigninCoordinatorResultDisabled);
+        completion(SigninCoordinatorResultDisabled, nil);
       }
       [self.signinCoordinator stop];
       id<PolicyChangeCommands> handler = HandlerForProtocol(
@@ -3214,7 +3379,7 @@ void InjectNTP(Browser* browser) {
         uiBlocker.reset();
 
         if (completion) {
-          completion(result);
+          completion(result, info);
         }
 
         if (!weakSelf.dismissingSigninPromptFromExternalTrigger) {
@@ -3307,6 +3472,18 @@ void InjectNTP(Browser* browser) {
     (IncognitoInterstitialCoordinator*)incognitoInterstitial {
   DCHECK(incognitoInterstitial == self.incognitoInterstitialCoordinator);
   [self closePresentedViews:YES completion:nil];
+}
+
+#pragma mark - PasswordCheckupCoordinatorDelegate
+
+- (void)passwordCheckupCoordinatorDidRemove:
+    (PasswordCheckupCoordinator*)coordinator {
+  DCHECK_EQ(self.passwordCheckupCoordinator, coordinator);
+
+  [self.passwordCheckupCoordinator stop];
+
+  self.passwordCheckupCoordinator.delegate = nil;
+  self.passwordCheckupCoordinator = nil;
 }
 
 #pragma mark - Helpers for web state list events

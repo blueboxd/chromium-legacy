@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">モバイル ネットワークを検索しています</translation>
 <translation id="1293556467332435079">ファイル</translation>
 <translation id="1297922636971898492">Google ドライブは現在ご利用いただけません。Google ドライブが利用可能になったときに、自動的にアップロードを再開します。</translation>
+<translation id="1306130176943817227">削除できません。アイテムは使用中です。</translation>
 <translation id="1307931752636661898">[Linux ファイル] を表示できません</translation>
 <translation id="1313405956111467313">自動プロキシ設定</translation>
 <translation id="134645005685694099">デバイスに十分な空き容量がないため、ファイルの同期を継続できません。新しいファイルは自動的に同期されなくなります。</translation>
@@ -94,7 +95,6 @@
 <translation id="174937106936716857">合計ファイル数</translation>
 <translation id="1755345808328621801">このファイルは Windows ソフトウェアを使用する PC 用に作成されています。ご使用のデバイスでは Chrome OS が実行されているため、互換性がありません。Chrome ウェブストアで適切なアプリをお探しください。</translation>
 <translation id="1757915090001272240">全角ラテン文字</translation>
-<translation id="1761091787730831947"><ph name="VM_NAME" /> と共有</translation>
 <translation id="1773212559869067373">認証証明書がローカルで拒否されました</translation>
 <translation id="1775381402323441512">動画情報</translation>
 <translation id="180035236176489073">このファイルにアクセスするには、オンライン接続が必要です。</translation>
@@ -115,7 +115,6 @@
 <translation id="1920798810075583923">スイカ</translation>
 <translation id="1924372192547904021">「<ph name="DRIVE_NAME" />」をフォーマットしました</translation>
 <translation id="1931134289871235022">スロバキア語</translation>
-<translation id="1933345018156373194">移動できませんでした。予期しないエラー: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">フィンランド語</translation>
 <translation id="1942765061641586207">画像解像度</translation>
 <translation id="1972984168337863910">ファイルのフィードバック パネルを展開します</translation>
@@ -213,7 +212,6 @@
 <translation id="2718540689505416944">Linux でアプリをインストール</translation>
 <translation id="2719020180254996569"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="CONNECTION_STATUS" />、詳細</translation>
 <translation id="2724954091494693138">トルコ語（F）キーボード</translation>
-<translation id="2732288874651063549"><ph name="VM_NAME" /> との共有を管理</translation>
 <translation id="2732839045120506979">ベトナム語（VNI）</translation>
 <translation id="2735623501230989521">Parallels Desktop に <ph name="FOLDER_NAME" /> フォルダのファイルへのアクセスを許可します</translation>
 <translation id="2764206540577097904">個人用の Google Workspace ストレージの空き容量がなくなりました。</translation>
@@ -308,7 +306,6 @@
 <translation id="3509680540198371098"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="SECURITY_STATUS" />、<ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、詳細</translation>
 <translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムの同期を準備しています...</translation>
 <translation id="3522708245912499433">ポルトガル語</translation>
-<translation id="3523225005467146490">1 個のフォルダを <ph name="VM_NAME" /> と共有しました</translation>
 <translation id="3524311639100184459">注: これらのファイルは一時的なもので、ディスクの空き容量を増やすために自動的に削除されることがあります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">フォルダ</translation>
 <translation id="3548125359243647069">間違った PIN が繰り返し入力されました。</translation>
@@ -502,7 +499,6 @@
 <translation id="4969785127455456148">アルバム</translation>
 <translation id="4972330214479971536">ファイルの同期の設定を完了できませんでした</translation>
 <translation id="4973523518332075481">名前は <ph name="MAX_LENGTH" /> 文字以内で指定してください</translation>
-<translation id="4973970068702235170">圧縮できませんでした。予期しないエラー: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">日本語</translation>
 <translation id="4987699874727873250">英語（インド）</translation>
 <translation id="4988205478593450158">「<ph name="FILE_NAME" />」を削除してもよろしいですか？</translation>
@@ -543,6 +539,7 @@
 <translation id="5218183485292899140">フランス語（スイス）</translation>
 <translation id="5234764350956374838">閉じる</translation>
 <translation id="5253070652067921974">作成者</translation>
+<translation id="5254207638927440400">ファイルを移動できません。ファイルは使用中です。</translation>
 <translation id="5257456363153333584">トンボ</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />どこからでも、オフラインでもファイルにアクセス<ph name="MARKUP_2" />
         Google ドライブでは最新の状態のファイルをどのデバイスからでも利用できます。<ph name="MARKUP_3" />
@@ -638,7 +635,6 @@
 <translation id="5896749729057314184">ネットワーク <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />、<ph name="NETWORK_NAME" />、未有効化、電波強度 <ph name="SIGNAL_STRENGTH" />%、詳細</translation>
 <translation id="5911887972742538906">Linux アプリケーションのインストール中にエラーが発生しました。</translation>
 <translation id="5912396950572065471">形式</translation>
-<translation id="5913638992615760742">コピーできませんでした。予期しないエラー: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">新しい検索機能をご利用いただけます</translation>
 <translation id="5926082595146149752">オランダ語（オランダ）（US インターナショナル PC）キーボード</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -646,7 +642,6 @@
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> 個のアイテム</translation>
 <translation id="5957366693331451795">Chromebox</translation>
 <translation id="5982621672636444458">並べ替え方法</translation>
-<translation id="6007237601604674381">移動できませんでした。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">イーサネット ネットワーク</translation>
 <translation id="60357267506638014">チェコ語 QWERTY 配列</translation>
 <translation id="603895874132768835">新しい PIN を設定するまでこのネットワークは使用できません。</translation>
@@ -669,7 +664,6 @@
 <translation id="6165508094623778733">詳細</translation>
 <translation id="6170470584681422115">サンドイッチ</translation>
 <translation id="6177854567773392726">空き容量を確認しています… <ph name="ITEMS_FOUND" /> 個のアイテムが見つかりました</translation>
-<translation id="6181912134988520389"><ph name="VM_NAME" /> に Google ドライブのファイルへのアクセスを許可します。変更が加えられた場合は他のデバイスに同期されます。</translation>
 <translation id="6187719147498869044">ハンガリー語</translation>
 <translation id="6198252989419008588">PIN を変更</translation>
 <translation id="6199801702437275229">空き容量情報を待機中...</translation>
@@ -773,7 +767,6 @@
 <translation id="6989942356279143254">スウェーデン語</translation>
 <translation id="6990081529015358884">空き容量が不足しています</translation>
 <translation id="6993826899923627728">これらのアイテムはゴミ箱に入っています</translation>
-<translation id="6996593023542748157"><ph name="VM_NAME" /> とフォルダを共有</translation>
 <translation id="7008426324576352165">アップロードを完了するには、組織で追加のストレージが必要です。</translation>
 <translation id="7009985720488544166"><ph name="COUNT" /> 個のファイルの移動は管理者が設定したポリシーによってブロックされています</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" />（<ph name="ROOT_SUMMARY" />）</translation>
@@ -863,6 +856,7 @@
 <translation id="76959938259365003">ゴミ箱を空にできませんでした。</translation>
 <translation id="770015031906360009">ギリシャ語</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> をコピーしました。</translation>
+<translation id="7707941139430559579">ファイルを移動できません。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">このネットワークを使用するには、携帯通信会社が提供する 8 桁の PIN ブロック解除キー（PUK）を入力する必要があります。</translation>
 <translation id="7711920809702896782">画像情報</translation>
 <translation id="7724603315864178912">切り取り</translation>
@@ -959,7 +953,6 @@
 <translation id="8335837413233998004">ベラルーシ語</translation>
 <translation id="8336153091935557858">昨日 <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">同じ名前のファイルまたはディレクトリが既に存在しています。</translation>
-<translation id="83651606385705612"><ph name="VM_NAME" /> に <ph name="FOLDER_NAME" /> フォルダのファイルへのアクセスを許可します</translation>
 <translation id="8372369524088641025">WEP キーが正しくありません</translation>
 <translation id="8372852072747894550">ギリシャ語</translation>
 <translation id="8386903983509584791">スキャンが完了しました</translation>
@@ -969,7 +962,6 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> ネットワーク、接続中</translation>
 <translation id="8425213833346101688">変更</translation>
 <translation id="8428213095426709021">設定</translation>
-<translation id="8429998526804961548"><ph name="NUMBER_OF_ITEMS" /> 個のフォルダを <ph name="VM_NAME" /> と共有しました</translation>
 <translation id="8431909052837336408">SIM PIN を変更</translation>
 <translation id="8437209419043462667">US</translation>
 <translation id="8452135315243592079">SIM カードがありません</translation>
@@ -1050,6 +1042,7 @@
 <translation id="9038620279323455325">「<ph name="FILE_NAME" />」という名前のファイルはすでに存在します。別の名前を選択してください。</translation>
 <translation id="9046895021617826162">接続に失敗しました</translation>
 <translation id="9065512565307033593">確認に失敗した場合、ネットワーク アクセスは無効になります。</translation>
+<translation id="9083722265619106011">{0,plural, =1{警告 1 件。}other{警告 <ph name="COUNT" /> 件。}}</translation>
 <translation id="908378762078012445">ロシア語（表音 AATSEEL）キーボード</translation>
 <translation id="9086302186042011942">同期しています</translation>
 <translation id="9099674669267916096">ページ数</translation>

@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/style_rule_namespace.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -523,9 +524,7 @@ void StyleSheetContents::CheckLoaded() {
     if (loading_clients[i]->LoadCompleted()) {
       continue;
     }
-    if (loading_clients[i]->IsConstructed()) {
-      continue;
-    }
+    DCHECK(!loading_clients[i]->IsConstructed());
 
     // sheetLoaded might be invoked after its owner node is removed from
     // document.
@@ -597,10 +596,19 @@ Document* StyleSheetContents::AnyOwnerDocument() const {
   return RootStyleSheet()->ClientAnyOwnerDocument();
 }
 
-bool StyleSheetContents::HasOwnerParentNode(Node* candidate) const {
+bool StyleSheetContents::HasOwnerParentElementOrAdoptiveHost(
+    Element* candidate) const {
   for (const WeakMember<CSSStyleSheet>& sheet : completed_clients_) {
+    // Handles the normal case of e.g. <div><style>@scope{}</style></div>,
+    // and (due to ParentOrShadowHostElement) also handles the case where
+    // the <style> element appears directly below the shadow root.
     if (Node* node = sheet->ownerNode();
-        node && (node->parentNode() == candidate)) {
+        node && (node->ParentOrShadowHostElement() == candidate)) {
+      return true;
+    }
+    // Handles constructed/adopted stylesheets.
+    if (IsShadowHost(candidate) &&
+        sheet->IsAdoptedByTreeScope(*candidate->GetShadowRoot())) {
       return true;
     }
   }
@@ -650,6 +658,7 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(
       case StyleRuleBase::kFontFeature:
       case StyleRuleBase::kPositionFallback:
       case StyleRuleBase::kTry:
+      case StyleRuleBase::kViewTransitions:
         break;
       case StyleRuleBase::kCounterStyle:
         if (To<StyleRuleCounterStyle>(rule)
@@ -699,7 +708,17 @@ void StyleSheetContents::RegisterClient(CSSStyleSheet* sheet) {
       has_single_owner_document_ = false;
     }
   }
-  loading_clients_.insert(sheet);
+
+  if (sheet->IsConstructed()) {
+    // Constructed stylesheets don't need loading. Note that @import is ignored
+    // in both CSSStyleSheet.replaceSync and CSSStyleSheet.replace.
+    //
+    // https://drafts.csswg.org/cssom/#dom-cssstylesheet-replacesync
+    // https://drafts.csswg.org/cssom/#dom-cssstylesheet-replace
+    completed_clients_.insert(sheet);
+  } else {
+    loading_clients_.insert(sheet);
+  }
 }
 
 void StyleSheetContents::UnregisterClient(CSSStyleSheet* sheet) {

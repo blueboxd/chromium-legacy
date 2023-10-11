@@ -1159,6 +1159,9 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 
 // Checks whether the feed top section is visible and updates the
 // `NTPContentDelegate`.
+// TODO(crbug.com/1331010): This function currently checks the visibility of the
+// entire feed top section, but it should only check the visibility of the promo
+// within it.
 - (void)updateFeedSigninPromoIsVisible {
   if (!self.feedTopSectionViewController) {
     return;
@@ -1473,21 +1476,12 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 }
 
 // The y-position content offset for when the user has completely scrolled into
-// the Feed. Only takes sticky omnibox into consideration for non-iPad devices.
+// the Feed.
 - (CGFloat)offsetWhenScrolledIntoFeed {
-  CGFloat offset;
+  CGFloat offset = -[self feedHeaderHeight];
   if ([self shouldPinFakeOmnibox]) {
-    offset = -(self.headerViewController.view.frame.size.height -
-               [self stickyOmniboxHeight] -
-               [self.feedHeaderViewController customSearchEngineViewHeight]);
-  } else {
-    offset = -[self feedHeaderHeight];
+    offset -= [self stickyOmniboxHeight];
   }
-
-  if (self.feedTopSectionViewController) {
-    offset -= self.feedTopSectionViewController.view.frame.size.height;
-  }
-
   return offset;
 }
 

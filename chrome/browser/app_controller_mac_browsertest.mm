@@ -9,11 +9,11 @@
 
 #include <string>
 
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_objc_class_swizzler.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_objc_class_swizzler.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -55,8 +55,8 @@
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
-#include "chrome/browser/ui/profile_picker.h"
-#include "chrome/browser/ui/profile_ui_test_utils.h"
+#include "chrome/browser/ui/profiles/profile_picker.h"
+#include "chrome/browser/ui/profiles/profile_ui_test_utils.h"
 #include "chrome/browser/ui/search/ntp_test_utils.h"
 #include "chrome/browser/ui/startup/first_run_service.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
@@ -791,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerReplaceNTPBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppControllerBrowserTest, OpenInRegularBrowser) {
   ASSERT_TRUE(embedded_test_server()->Start());
   AppController* ac =
-      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+      base::apple::ObjCCastStrict<AppController>([NSApp delegate]);
   ASSERT_TRUE(ac);
   // Create an incognito browser and make it the last active browser.
   Browser* incognito_browser = CreateIncognitoBrowser(browser()->profile());
@@ -830,7 +830,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerBrowserTest,
                        OpenInRegularBrowserWhenOnlyIncognitoBrowserIsOpened) {
   ASSERT_TRUE(embedded_test_server()->Start());
   AppController* ac =
-      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+      base::apple::ObjCCastStrict<AppController>([NSApp delegate]);
   ASSERT_TRUE(ac);
   EXPECT_EQ(BrowserList::GetInstance()->size(), 1u);
   // Close the current browser.
@@ -874,7 +874,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppControllerBrowserTest, OpenUrlInGuestBrowser) {
   ASSERT_TRUE(embedded_test_server()->Start());
   AppController* ac =
-      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+      base::apple::ObjCCastStrict<AppController>([NSApp delegate]);
   ASSERT_TRUE(ac);
   // Create a guest browser and make it the last active browser.
   Browser* guest_browser = CreateGuestBrowser();
@@ -1324,7 +1324,7 @@ class AppControllerHandoffBrowserTest : public InProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     // This swizzle intercepts the URL that would be sent to the Handoff
     // Manager, and instead puts it into a variable accessible to this test.
-    swizzler_ = std::make_unique<base::mac::ScopedObjCClassSwizzler>(
+    swizzler_ = std::make_unique<base::apple::ScopedObjCClassSwizzler>(
         [AppController class], @selector(updateHandoffManagerWithURL:title:),
         @selector(new_updateHandoffManagerWithURL:title:));
   }
@@ -1340,7 +1340,7 @@ class AppControllerHandoffBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> swizzler_;
+  std::unique_ptr<base::apple::ScopedObjCClassSwizzler> swizzler_;
 };
 
 // Tests that as a user switches between tabs, navigates within a tab, and
@@ -1427,7 +1427,7 @@ class AppControllerHandoffPrerenderBrowserTest
     : public AppControllerHandoffBrowserTest {
  public:
   void SetUpOnMainThread() override {
-    prerender_helper_.SetUp(embedded_test_server());
+    prerender_helper_.RegisterServerRequestMonitor(embedded_test_server());
     host_resolver()->AddRule("*", "127.0.0.1");
     embedded_test_server()->ServeFilesFromDirectory(
         base::PathService::CheckedGet(chrome::DIR_TEST_DATA));

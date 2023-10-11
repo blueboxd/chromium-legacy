@@ -33,7 +33,7 @@ class ShellSurfaceBase;
 namespace wayland {
 class SerialTracker;
 
-constexpr uint32_t kZAuraShellVersion = 57;
+constexpr uint32_t kZAuraShellVersion = 58;
 
 // Adds bindings to the Aura Shell. Normally this implies Ash on ChromeOS
 // builds. On non-ChromeOS builds the protocol provides access to Aura windowing
@@ -173,11 +173,14 @@ class AuraToplevel {
   void OnRotatePaneFocus(uint32_t serial,
                          ash::FocusCycler::Direction direction,
                          bool restart);
+  void SetCanMaximize(bool can_maximize);
+  void SetCanFullscreen(bool can_fullscreen);
 
-  raw_ptr<ShellSurface, ExperimentalAsh> shell_surface_;
+  raw_ptr<ShellSurface, DanglingUntriaged | ExperimentalAsh> shell_surface_;
   const raw_ptr<SerialTracker, ExperimentalAsh> serial_tracker_;
   const raw_ptr<SerialTracker, ExperimentalAsh> rotation_serial_tracker_;
-  raw_ptr<wl_resource, ExperimentalAsh> xdg_toplevel_resource_;
+  raw_ptr<wl_resource, DanglingUntriaged | ExperimentalAsh>
+      xdg_toplevel_resource_;
   raw_ptr<wl_resource, ExperimentalAsh> aura_toplevel_resource_;
   bool supports_window_bounds_ = false;
 
@@ -197,7 +200,7 @@ class AuraPopup {
   void SetScaleFactor(float scale_factor);
 
  private:
-  raw_ptr<ShellSurfaceBase, ExperimentalAsh> shell_surface_;
+  raw_ptr<ShellSurfaceBase, DanglingUntriaged> shell_surface_;
 };
 
 class AuraOutput : public WaylandDisplayObserver {

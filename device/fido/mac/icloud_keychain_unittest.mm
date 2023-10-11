@@ -6,6 +6,9 @@
 
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/ranges/algorithm.h"
 #include "base/test/task_environment.h"
 #include "device/fido/discoverable_credential_metadata.h"
@@ -20,6 +23,8 @@
 namespace device::fido::icloud_keychain {
 
 namespace {
+
+constexpr char kMetricName[] = "WebAuthentication.MacOS.PasskeyPermission";
 
 static const uint8_t kAttestationObjectBytes[] = {
     0xa3, 0x63, 0x66, 0x6d, 0x74, 0x66, 0x70, 0x61, 0x63, 0x6b, 0x65, 0x64,
@@ -124,7 +129,7 @@ static const uint8_t kCredentialID[] = {
 class iCloudKeychainTest : public testing::Test, FidoDiscoveryBase::Observer {
  public:
   void SetUp() override {
-    if (@available(macOS 13.3, *)) {
+    if (@available(macOS 13.5, *)) {
       NSWindow* window = [[NSWindow alloc] init];
       window.releasedWhenClosed = NO;  // Required by ARC.
 
@@ -143,7 +148,7 @@ class iCloudKeychainTest : public testing::Test, FidoDiscoveryBase::Observer {
   }
 
   void TearDown() override {
-    if (@available(macOS 13.3, *)) {
+    if (@available(macOS 13.5, *)) {
       SetSystemInterfaceForTesting(nullptr);
     }
   }
@@ -178,7 +183,7 @@ class iCloudKeychainTest : public testing::Test, FidoDiscoveryBase::Observer {
 };
 
 TEST_F(iCloudKeychainTest, RequestAuthorization) {
-  if (@available(macOS 13.3, *)) {
+  if (@available(macOS 13.5, *)) {
     PublicKeyCredentialParams public_key_params(
         {PublicKeyCredentialParams::CredentialInfo()});
     CtapMakeCredentialRequest make_credential_request(
@@ -233,7 +238,7 @@ TEST_F(iCloudKeychainTest, RequestAuthorization) {
 }
 
 TEST_F(iCloudKeychainTest, MakeCredential) {
-  if (@available(macOS 13.3, *)) {
+  if (@available(macOS 13.5, *)) {
     PublicKeyCredentialParams public_key_params(
         {PublicKeyCredentialParams::CredentialInfo()});
     CtapMakeCredentialRequest request("{}", {{1, 2, 3, 4}, "rp.id"},
@@ -266,6 +271,20 @@ TEST_F(iCloudKeychainTest, MakeCredential) {
       auto result = make_credential();
       EXPECT_EQ(std::get<0>(result),
                 CtapDeviceResponseCode::kCtap2ErrCredentialExcluded);
+      EXPECT_FALSE(std::get<1>(result).has_value());
+    }
+
+    {
+      // This is a little odd because we call `Cancel` before `MakeCredential`
+      // rather than during it, but our fake doesn't support blocking
+      // operations.
+      fake_->SetMakeCredentialError(1001 /* generic error */);
+      EXPECT_EQ(fake_->cancel_count(), 0u);
+      authenticator_->Cancel();
+      EXPECT_EQ(fake_->cancel_count(), 1u);
+      auto result = make_credential();
+      EXPECT_EQ(std::get<0>(result),
+                CtapDeviceResponseCode::kCtap2ErrKeepAliveCancel);
       EXPECT_FALSE(std::get<1>(result).has_value());
     }
 
@@ -318,6 +337,42 @@ TEST_F(iCloudKeychainTest, MakeCredential) {
                                  FidoTransportProtocol::kInternal));
       EXPECT_EQ(response.transport_used, FidoTransportProtocol::kInternal);
     }
+
+    {
+      std::unique_ptr<base::StatisticsRecorder> stats_recorder =
+          base::StatisticsRecorder::CreateTemporaryForTesting();
+
+      fake_->set_auth_state(FakeSystemInterface::kAuthNotAuthorized);
+      fake_->set_next_auth_state(FakeSystemInterface::kAuthDenied);
+      fake_->SetMakeCredentialResult(kAttestationObjectBytes, kCredentialID);
+      make_credential();
+
+      base::HistogramBase* histogram =
+          base::StatisticsRecorder::FindHistogram(kMetricName);
+      std::unique_ptr<base::HistogramSamples> samples(
+          histogram->SnapshotSamples());
+      EXPECT_EQ(samples->GetCount(0), 1);
+      EXPECT_EQ(samples->GetCount(1), 0);
+      EXPECT_EQ(samples->GetCount(2), 1);
+    }
+
+    {
+      std::unique_ptr<base::StatisticsRecorder> stats_recorder =
+          base::StatisticsRecorder::CreateTemporaryForTesting();
+
+      fake_->set_auth_state(FakeSystemInterface::kAuthNotAuthorized);
+      fake_->set_next_auth_state(FakeSystemInterface::kAuthAuthorized);
+      fake_->SetMakeCredentialResult(kAttestationObjectBytes, kCredentialID);
+      make_credential();
+
+      base::HistogramBase* histogram =
+          base::StatisticsRecorder::FindHistogram(kMetricName);
+      std::unique_ptr<base::HistogramSamples> samples(
+          histogram->SnapshotSamples());
+      EXPECT_EQ(samples->GetCount(0), 1);
+      EXPECT_EQ(samples->GetCount(1), 1);
+      EXPECT_EQ(samples->GetCount(2), 0);
+    }
   }
 }
 
@@ -331,7 +386,7 @@ TEST_F(iCloudKeychainTest, GetAssertion) {
   static const uint8_t kSignature[] = {1, 2, 3, 4};
   static const uint8_t kUserID[] = {5, 6, 7, 8};
 
-  if (@available(macOS 13.3, *)) {
+  if (@available(macOS 13.5, *)) {
     CtapGetAssertionRequest request("rp.id", "{}");
     CtapGetAssertionOptions options;
 
@@ -351,6 +406,20 @@ TEST_F(iCloudKeychainTest, GetAssertion) {
       auto result = get_assertion();
       EXPECT_EQ(std::get<0>(result),
                 CtapDeviceResponseCode::kCtap2ErrOperationDenied);
+      EXPECT_TRUE(std::get<1>(result).empty());
+    }
+
+    {
+      // This is a little odd because we call `Cancel` before `GetAssertion`
+      // rather than during it, but our fake doesn't support blocking
+      // operations.
+      fake_->SetMakeCredentialError(1001 /* generic error */);
+      EXPECT_EQ(fake_->cancel_count(), 0u);
+      authenticator_->Cancel();
+      EXPECT_EQ(fake_->cancel_count(), 1u);
+      auto result = get_assertion();
+      EXPECT_EQ(std::get<0>(result),
+                CtapDeviceResponseCode::kCtap2ErrKeepAliveCancel);
       EXPECT_TRUE(std::get<1>(result).empty());
     }
 
@@ -378,11 +447,57 @@ TEST_F(iCloudKeychainTest, GetAssertion) {
       EXPECT_TRUE(response.user_selected);
       EXPECT_EQ(response.transport_used, FidoTransportProtocol::kInternal);
     }
+
+    {
+      fake_->SetGetAssertionError(1001,
+                                  "... No credentials available for login ...");
+      auto result = get_assertion();
+      EXPECT_EQ(std::get<0>(result),
+                CtapDeviceResponseCode::kCtap2ErrNoCredentials);
+    }
+
+    {
+      std::unique_ptr<base::StatisticsRecorder> stats_recorder =
+          base::StatisticsRecorder::CreateTemporaryForTesting();
+
+      fake_->set_auth_state(FakeSystemInterface::kAuthNotAuthorized);
+      fake_->set_next_auth_state(FakeSystemInterface::kAuthDenied);
+      fake_->SetGetAssertionResult(kAuthenticatorData, kSignature, kUserID,
+                                   kCredentialID);
+      get_assertion();
+
+      base::HistogramBase* histogram =
+          base::StatisticsRecorder::FindHistogram(kMetricName);
+      std::unique_ptr<base::HistogramSamples> samples(
+          histogram->SnapshotSamples());
+      EXPECT_EQ(samples->GetCount(3), 1);
+      EXPECT_EQ(samples->GetCount(4), 0);
+      EXPECT_EQ(samples->GetCount(5), 1);
+    }
+
+    {
+      std::unique_ptr<base::StatisticsRecorder> stats_recorder =
+          base::StatisticsRecorder::CreateTemporaryForTesting();
+
+      fake_->set_auth_state(FakeSystemInterface::kAuthNotAuthorized);
+      fake_->set_next_auth_state(FakeSystemInterface::kAuthAuthorized);
+      fake_->SetGetAssertionResult(kAuthenticatorData, kSignature, kUserID,
+                                   kCredentialID);
+      get_assertion();
+
+      base::HistogramBase* histogram =
+          base::StatisticsRecorder::FindHistogram(kMetricName);
+      std::unique_ptr<base::HistogramSamples> samples(
+          histogram->SnapshotSamples());
+      EXPECT_EQ(samples->GetCount(3), 1);
+      EXPECT_EQ(samples->GetCount(4), 1);
+      EXPECT_EQ(samples->GetCount(5), 0);
+    }
   }
 }
 
 TEST_F(iCloudKeychainTest, FetchCredentialMetadata) {
-  if (@available(macOS 13.3, *)) {
+  if (@available(macOS 13.5, *)) {
     const std::vector<DiscoverableCredentialMetadata> creds = {
         {AuthenticatorType::kICloudKeychain,
          "example.com",
@@ -408,8 +523,42 @@ TEST_F(iCloudKeychainTest, FetchCredentialMetadata) {
   }
 }
 
+TEST_F(iCloudKeychainTest, FetchCredentialMetadataWithAllowlist) {
+  if (@available(macOS 13.5, *)) {
+    const std::vector<DiscoverableCredentialMetadata> creds = {
+        {AuthenticatorType::kICloudKeychain,
+         "example.com",
+         {1, 2, 3, 4},
+         {{4, 3, 2, 1}, "name", absl::nullopt}},
+        {AuthenticatorType::kICloudKeychain,
+         "example.com",
+         {1, 2, 3, 5},
+         {{4, 3, 2, 2}, "name", absl::nullopt}},
+    };
+    fake_->SetCredentials(creds);
+    test::TestCallbackReceiver<std::vector<DiscoverableCredentialMetadata>,
+                               FidoRequestHandlerBase::RecognizedCredential>
+        callback;
+    CtapGetAssertionRequest request("example.com", "{}");
+    request.allow_list = {{CredentialType::kPublicKey, {1, 2, 3, 4}}};
+    CtapGetAssertionOptions options;
+
+    CHECK(authenticator_);
+    authenticator_->GetPlatformCredentialInfoForRequest(request, options,
+                                                        callback.callback());
+    callback.WaitForCallback();
+    auto result = callback.TakeResult();
+    std::vector<DiscoverableCredentialMetadata> creds_out =
+        std::move(std::get<0>(result));
+
+    // The second credential should have been filtered out by the allow list.
+    ASSERT_EQ(creds_out.size(), 1u);
+    EXPECT_EQ(creds[0], creds_out[0]);
+  }
+}
+
 TEST_F(iCloudKeychainTest, FetchCredentialMetadataNoPermission) {
-  if (@available(macOS 13.3, *)) {
+  if (@available(macOS 13.5, *)) {
     fake_->set_auth_state(FakeSystemInterface::kAuthNotAuthorized);
 
     test::TestCallbackReceiver<std::vector<DiscoverableCredentialMetadata>,

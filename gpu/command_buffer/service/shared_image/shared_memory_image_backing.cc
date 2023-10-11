@@ -99,6 +99,11 @@ void SharedMemoryImageBacking::SetClearedRect(const gfx::Rect& cleared_rect) {
   NOTREACHED();
 }
 
+gfx::GpuMemoryBufferHandle
+SharedMemoryImageBacking::GetGpuMemoryBufferHandle() {
+  return handle_.Clone();
+}
+
 const SharedMemoryRegionWrapper&
 SharedMemoryImageBacking::shared_memory_wrapper() {
   return shared_memory_wrapper_;
@@ -198,7 +203,8 @@ SharedMemoryImageBacking::SharedMemoryImageBacking(
     SkAlphaType alpha_type,
     uint32_t usage,
     SharedMemoryRegionWrapper wrapper,
-    gfx::GpuMemoryBufferHandle handle)
+    gfx::GpuMemoryBufferHandle handle,
+    absl::optional<gfx::BufferUsage> buffer_usage)
     : SharedImageBacking(mailbox,
                          format,
                          size,
@@ -207,7 +213,8 @@ SharedMemoryImageBacking::SharedMemoryImageBacking(
                          alpha_type,
                          usage,
                          format.EstimatedSizeInBytes(size),
-                         false),
+                         false,
+                         std::move(buffer_usage)),
       shared_memory_wrapper_(std::move(wrapper)),
       handle_(std::move(handle)) {
   DCHECK(shared_memory_wrapper_.IsValid());

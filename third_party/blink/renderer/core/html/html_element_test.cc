@@ -436,8 +436,6 @@ TEST_F(HTMLElementTest, ImplicitlyAnchorElementConnected) {
 }
 
 TEST_F(HTMLElementTest, PopoverTopLayerRemovalTiming) {
-  ScopedHTMLPopoverAttributeForTest scoped_feature(true);
-
   SetBodyInnerHTML(R"HTML(
     <div id="target" popover></div>
   )HTML");
@@ -488,7 +486,7 @@ TEST_F(HTMLElementTest, DialogTopLayerRemovalTiming) {
 }
 
 TEST_F(HTMLElementTest, AnchorAttrWithFeatureDisabled) {
-  ScopedHTMLSelectMenuElementForTest select_menu_disabled(false);
+  ScopedHTMLSelectListElementForTest select_list_disabled(false);
   ScopedCSSAnchorPositioningForTest anchor_pos_disabled(false);
 
   SetBodyInnerHTML("<div id=anchor><div anchor=anchor id=target></div></div>");

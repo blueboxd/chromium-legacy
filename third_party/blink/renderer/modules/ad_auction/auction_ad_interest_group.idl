@@ -65,4 +65,8 @@ dictionary AuctionAdInterestGroup {
   sequence<AuctionAd> adComponents;
   record<DOMString, AuctionAdInterestGroupSize> adSizes;
   record<DOMString, sequence<DOMString>> sizeGroups;
+
+  sequence<DOMString> auctionServerRequestFlags;
+
+  DOMString? additionalBidKey;
 };

@@ -164,6 +164,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // weren't.
     bool transport_list_did_include_internal = false;
 
+    // transport_list_did_include_hybrid is set to true during a getAssertion
+    // request if at least one element of the allowList included the "hybrid"
+    // transport, or didn't have any transports.
+    bool transport_list_did_include_hybrid = false;
+
+    // transport_list_did_include_security_key is set to true during a
+    // getAssertion request if at least one element of the allowList included
+    // the "usb", "nfc", or "ble" transport, or didn't have any transports.
+    bool transport_list_did_include_security_key = false;
+
     // request_is_internal_only indicates that this request can only be serviced
     // by internal authenticators (e.g. due to the attachment setting).
     // See also `make_credential_attachment`.
@@ -178,12 +188,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // this request.
     ConditionalUITreatment conditional_ui_treatment =
         ConditionalUITreatment::kDefault;
-
-    // has_icloud_drive_enabled returns true if we believe that the user is
-    // current syncing with iCloud Drive. This is used as an approximation to
-    // "has iCloud Keychain" enabled, which is what we would like to know but
-    // cannot easily learn.
-    bool has_icloud_drive_enabled = false;
   };
 
   class COMPONENT_EXPORT(DEVICE_FIDO) Observer {

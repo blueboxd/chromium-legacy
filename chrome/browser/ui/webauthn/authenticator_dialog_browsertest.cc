@@ -556,6 +556,12 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_phone_confirmation) {
 // where test_name is the second arg to IN_PROC_BROWSER_TEST_F().
 class GPMPasskeysAuthenticatorDialogTest : public AuthenticatorDialogTest {
  public:
+  GPMPasskeysAuthenticatorDialogTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {device::kWebAuthnListSyncedPasskeys, device::kWebAuthnNewPasskeyUI},
+        /*disabled_features=*/{});
+  }
+
   // AuthenticatorDialogTest:
   void ShowUi(const std::string& name) override {
     // Web modal dialogs' bounds may exceed the display's work area.
@@ -608,7 +614,9 @@ class GPMPasskeysAuthenticatorDialogTest : public AuthenticatorDialogTest {
         /*extension_is_v2=*/absl::nullopt, std::move(phones),
         /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
 
-    if (name == "local_and_phone") {
+    if (name == "no_passkeys_discovered") {
+      transport_availability.recognized_credentials = {};
+    } else if (name == "local_and_phone") {
       transport_availability.recognized_credentials = {
           std::move(local_cred1),
           std::move(local_cred2),
@@ -675,6 +683,8 @@ class GPMPasskeysAuthenticatorDialogTest : public AuthenticatorDialogTest {
       transport_availability.available_transports = {
           AuthenticatorTransport::kHybrid,
       };
+    } else {
+      NOTREACHED();
     }
     model_->StartFlow(std::move(transport_availability),
                       /*is_conditional_mediation=*/false);
@@ -682,9 +692,13 @@ class GPMPasskeysAuthenticatorDialogTest : public AuthenticatorDialogTest {
 
  private:
   std::unique_ptr<AuthenticatorRequestDialogModel> model_;
-  base::test::ScopedFeatureList scoped_feature_list_{
-      device::kWebAuthnListSyncedPasskeys};
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest,
+                       InvokeUi_no_passkeys_discovered) {
+  ShowAndVerifyUi();
+}
 
 IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest,
                        InvokeUi_local_and_phone) {

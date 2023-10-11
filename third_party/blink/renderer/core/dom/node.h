@@ -325,7 +325,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   bool SupportsAltText();
 
-  void SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style);
+  void SetComputedStyle(const ComputedStyle* computed_style);
 
   // Other methods (not part of DOM)
   ALWAYS_INLINE NodeType getNodeType() const {
@@ -675,7 +675,7 @@ class CORE_EXPORT Node : public EventTarget {
   // This differs from GetTreeScope for shadow clones inside <svg:use/>.
   TreeScope& OriginatingTreeScope() const;
 
-  HashSet<Member<TreeScope>> GetAncestorTreeScopes() const;
+  HeapHashSet<Member<TreeScope>> GetAncestorTreeScopes() const;
 
   bool InActiveDocument() const;
 
@@ -960,10 +960,9 @@ class CORE_EXPORT Node : public EventTarget {
 
   void AddDOMPart(Part& part) { EnsureRareData().AddDOMPart(part); }
   void RemoveDOMPart(Part& part) { EnsureRareData().RemoveDOMPart(part); }
-  bool HasDOMParts() const {
-    return HasRareData() && RareData()->HasDOMParts();
+  PartsList* GetDOMParts() const {
+    return HasRareData() ? RareData()->GetDOMParts() : nullptr;
   }
-  PartsList GetDOMParts() const { return RareData()->GetDOMParts(); }
   void UpdateForRemovedDOMParts(ContainerNode& insertion_point);
   void UpdateForInsertedDOMParts(ContainerNode& insertion_point);
 

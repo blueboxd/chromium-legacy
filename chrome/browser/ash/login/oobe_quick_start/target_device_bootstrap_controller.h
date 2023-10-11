@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -21,12 +22,13 @@
 #include "chrome/browser/ash/login/oobe_quick_start/second_device_auth_broker.h"
 #include "chrome/browser/nearby_sharing/public/cpp/nearby_connections_manager.h"
 #include "chromeos/ash/components/quick_start/types.h"
-#include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder.mojom.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace ash::quick_start {
+
+class QuickStartConnectivityService;
 
 class TargetDeviceBootstrapController
     : public TargetDeviceConnectionBroker::ConnectionLifecycleListener {
@@ -93,8 +95,7 @@ class TargetDeviceBootstrapController
       std::unique_ptr<SecondDeviceAuthBroker> auth_broker,
       std::unique_ptr<AccessibilityManagerWrapper>
           accessibility_manager_wrapper,
-      base::WeakPtr<NearbyConnectionsManager> nearby_connections_manager,
-      mojo::SharedRemote<mojom::QuickStartDecoder> quick_start_decoder);
+      QuickStartConnectivityService* quick_start_connectivity_service);
   TargetDeviceBootstrapController(TargetDeviceBootstrapController&) = delete;
   TargetDeviceBootstrapController& operator=(TargetDeviceBootstrapController&) =
       delete;
@@ -125,7 +126,7 @@ class TargetDeviceBootstrapController
   void StartAdvertisingAndMaybeGetQRCode();
 
   void StopAdvertising();
-  void MaybeCloseOpenConnections();
+  void CloseOpenConnections();
 
   // A user may initiate Quick Start then have to download an update and reboot.
   // This function persists necessary data and notifies the source device so
@@ -170,6 +171,9 @@ class TargetDeviceBootstrapController
   void OnChallengeBytesReceived(
       quick_start::SecondDeviceAuthBroker::ChallengeBytesOrError);
 
+  // If we're not advertising, connecting, or connected, perform cleanup.
+  void CleanupIfNeeded();
+
   void set_connection_broker_for_testing(
       std::unique_ptr<TargetDeviceConnectionBroker> connection_broker) {
     connection_broker_ = std::move(connection_broker);
@@ -192,9 +196,16 @@ class TargetDeviceBootstrapController
   Base64UrlString challenge_bytes_;
 
   std::unique_ptr<quick_start::SecondDeviceAuthBroker> auth_broker_;
+  // During this instantiation of SessionContext, if resuming Quick Start after
+  // an update, the local state is cleared after fetching the session context
+  // data from the previous connection. Re-instantiating the SessionContext
+  // object overwrites the context with new data that won't match the previous
+  // connection details.
   SessionContext session_context_;
 
   std::unique_ptr<AccessibilityManagerWrapper> accessibility_manager_wrapper_;
+
+  raw_ptr<QuickStartConnectivityService> quick_start_connectivity_service_;
 
   base::WeakPtrFactory<TargetDeviceBootstrapController>
       weak_ptr_factory_for_clients_{this};

@@ -255,7 +255,8 @@ class ClientCertResolverTest : public testing::Test,
         /*managed_cellular_pref_handler=*/nullptr, network_state_handler_.get(),
         network_profile_handler_.get(), network_config_handler_.get(),
         nullptr /* network_device_handler */,
-        nullptr /* prohibited_technologies_handler */);
+        nullptr /* prohibited_technologies_handler */,
+        /*hotspot_controller=*/nullptr);
     // Run all notifications before starting the cert loader to reduce run time.
     task_environment_.RunUntilIdle();
 
@@ -486,7 +487,8 @@ class ClientCertResolverTest : public testing::Test,
   std::string test_cert_id_;
   std::unique_ptr<base::SimpleTestClock> test_clock_;
   std::unique_ptr<ClientCertResolver> client_cert_resolver_;
-  raw_ptr<NetworkCertLoader, ExperimentalAsh> network_cert_loader_ = nullptr;
+  raw_ptr<NetworkCertLoader, DanglingUntriaged | ExperimentalAsh>
+      network_cert_loader_ = nullptr;
   std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
   std::unique_ptr<net::NSSCertDatabaseChromeOS> test_system_nsscertdb_;
 
@@ -498,10 +500,12 @@ class ClientCertResolverTest : public testing::Test,
   }
 
  protected:
-  raw_ptr<ShillServiceClient::TestInterface, ExperimentalAsh> service_test_ =
-      nullptr;
-  raw_ptr<ShillProfileClient::TestInterface, ExperimentalAsh> profile_test_ =
-      nullptr;
+  raw_ptr<ShillServiceClient::TestInterface,
+          DanglingUntriaged | ExperimentalAsh>
+      service_test_ = nullptr;
+  raw_ptr<ShillProfileClient::TestInterface,
+          DanglingUntriaged | ExperimentalAsh>
+      profile_test_ = nullptr;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
   std::unique_ptr<NetworkConfigurationHandler> network_config_handler_;

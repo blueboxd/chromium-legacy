@@ -16,7 +16,7 @@ BASE_FEATURE(kAddToHomescreenMessaging,
 
 BASE_FEATURE(kAmbientBadgeSuppressFirstVisit,
              "AmbientBadgeSuppressFirstVisit",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 extern const base::FeatureParam<base::TimeDelta>
     kAmbientBadgeSuppressFirstVisit_Period{&kAmbientBadgeSuppressFirstVisit,
@@ -30,7 +30,7 @@ BASE_FEATURE(kInstallableAmbientBadgeInfoBar,
 // Enables or disables the installable ambient badge message.
 BASE_FEATURE(kInstallableAmbientBadgeMessage,
              "InstallableAmbientBadgeMessage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // The capacity of cached domains which do not show message again if
 // users do not accept the message.
@@ -75,10 +75,15 @@ BASE_FEATURE(kBlockInstallPromptIfIgnoreRecently,
              "BlockInstallPromptIfIgnoreRecently",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Allows installing a web app with fallback manifest values.
+BASE_FEATURE(kUniversalInstallManifest,
+             "UniversalInstallManifest",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Allows installing a web app when no icon provided by the manifest.
 BASE_FEATURE(kUniversalInstallIcon,
              "UniversalInstallIcon",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // When the user clicks "Create Shortcut" in the dot menu, the current page is

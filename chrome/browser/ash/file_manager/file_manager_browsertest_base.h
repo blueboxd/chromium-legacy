@@ -53,17 +53,18 @@ enum TestAccountType {
 };
 enum DeviceMode { kDeviceModeNotSet, kConsumerOwned, kEnrolled };
 
+class AndroidFilesTestVolume;
+class CrostiniTestVolume;
+class DocumentsProviderTestVolume;
+class DownloadsTestVolume;
 class DriveFsTestVolume;
 class FakeTestVolume;
-class DownloadsTestVolume;
-class CrostiniTestVolume;
-class AndroidFilesTestVolume;
-class RemovableTestVolume;
-class DocumentsProviderTestVolume;
-class MediaViewTestVolume;
-class SmbfsTestVolume;
-class HiddenTestVolume;
+class FileSystemProviderTestVolume;
 class GuestOsTestVolume;
+class HiddenTestVolume;
+class MediaViewTestVolume;
+class RemovableTestVolume;
+class SmbfsTestVolume;
 
 ash::LoggedInUserMixin::LogInType LogInTypeFor(
     TestAccountType test_account_type);
@@ -100,6 +101,9 @@ class FileManagerBrowserTestBase
 
     // Whether test requires Android documents provider for Google Photos.
     bool photos_documents_provider = false;
+
+    // Whether test requires a fake file system provider.
+    bool fake_file_system_provider = false;
 
     // Whether test requires ARC++.
     bool arc = false;
@@ -147,6 +151,9 @@ class FileManagerBrowserTestBase
     // feature.
     bool enable_dlp_files_restriction = false;
 
+    // Whether test should enable Files policy new UX feature.
+    bool enable_files_policy_new_ux = false;
+
     // Whether test should run with the Upload Office to Cloud feature.
     bool enable_upload_office_to_cloud = false;
 
@@ -166,11 +173,20 @@ class FileManagerBrowserTestBase
     // Whether test should enable the file transfer connector.
     bool enable_file_transfer_connector = false;
 
+    // Whether test should enable the new UX for the file transfer connector.
+    bool enable_file_transfer_connector_new_ux = false;
+
     // Whether test should use report-only mode for the file transfer connector.
     bool file_transfer_connector_report_only = false;
 
     // Whether tests should enable V2 of search.
     bool enable_search_v2 = false;
+
+    // Whether tests should enable image content search.
+    bool enable_image_content_search = false;
+
+    // Whether test should run with the fsps-in-recents flag.
+    bool enable_fsps_in_recents = false;
 
     // Whether tests should enable OS Feedback.
     bool enable_os_feedback = false;
@@ -229,6 +245,8 @@ class FileManagerBrowserTestBase
   // Returns an account id used for a test. The base class provides a default
   // implementation.
   virtual AccountId GetAccountId();
+
+  content::WebContents* GetWebContentsForId(const std::string& app_id);
 
   // Launches the test extension from GetTestExtensionManifestName() and uses
   // it to drive the testing the actual FileManager component extension under
@@ -336,6 +354,7 @@ class FileManagerBrowserTestBase
   std::unique_ptr<MediaViewTestVolume> media_view_documents_;
   std::unique_ptr<SmbfsTestVolume> smbfs_volume_;
   std::unique_ptr<HiddenTestVolume> hidden_volume_;
+  std::unique_ptr<FileSystemProviderTestVolume> file_system_provider_volume_;
 
   // Map from source path (e.g. sftp://1:2) to volume.
   base::flat_map<std::string, std::unique_ptr<GuestOsTestVolume>>

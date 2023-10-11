@@ -90,6 +90,9 @@ mojom::blink::InputEventResultState InputEventDispositionToAck(
     case InputHandlerProxy::DID_HANDLE:
       return mojom::blink::InputEventResultState::kConsumed;
     case InputHandlerProxy::DID_NOT_HANDLE:
+      if (base::FeatureList::IsEnabled(features::kFixGestureScrollQueuingBug)) {
+        return mojom::blink::InputEventResultState::kNotConsumedBlocking;
+      }
       return mojom::blink::InputEventResultState::kNotConsumed;
     case InputHandlerProxy::DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING:
       return mojom::blink::InputEventResultState::kSetNonBlockingDueToFling;
@@ -768,11 +771,21 @@ void WidgetInputHandlerManager::WaitForInputProcessed(
   DCHECK(!input_processed_callback_);
   input_processed_callback_ = std::move(callback);
 
-  // We mustn't touch widget_ from the impl thread so post all the setup
-  // to the main thread. Make sure the callback runs after all the queued events
-  // are dispatched.
-  input_event_queue_->QueueClosure(
-      base::BindOnce(&WaitForInputProcessedFromMain, widget_));
+  // We mustn't touch widget_ from the impl thread so post all the setup to the
+  // main thread. Make sure the callback runs after all the queued events are
+  // dispatched.
+  base::OnceClosure closure =
+      base::BindOnce(&MainThreadEventQueue::QueueClosure, input_event_queue_,
+                     base::BindOnce(&WaitForInputProcessedFromMain, widget_));
+
+  // If there are frame-aligned input events waiting to be dispatched, wait for
+  // that to happen before posting to the main thread input queue.
+  if (input_handler_proxy_) {
+    input_handler_proxy_->RequestCallbackAfterEventQueueFlushed(
+        std::move(closure));
+  } else {
+    std::move(closure).Run();
+  }
 }
 
 void WidgetInputHandlerManager::DidNavigate() {
@@ -1015,7 +1028,8 @@ void WidgetInputHandlerManager::DidHandleInputEventSentToCompositor(
   if (ack_state == mojom::blink::InputEventResultState::kSetNonBlocking ||
       ack_state ==
           mojom::blink::InputEventResultState::kSetNonBlockingDueToFling ||
-      ack_state == mojom::blink::InputEventResultState::kNotConsumed) {
+      ack_state == mojom::blink::InputEventResultState::kNotConsumed ||
+      ack_state == mojom::blink::InputEventResultState::kNotConsumedBlocking) {
     DCHECK(!overscroll_params);
     DCHECK(!event->latency_info().coalesced());
     MainThreadEventQueue::DispatchType dispatch_type =
@@ -1154,6 +1168,40 @@ void WidgetInputHandlerManager::UpdateBrowserControlsState(
   DCHECK(InputThreadTaskRunner()->BelongsToCurrentThread());
   input_handler_proxy_->UpdateBrowserControlsState(constraints, current,
                                                    animate);
+}
+
+void WidgetInputHandlerManager::FlushCompositorQueueForTesting() {
+  CHECK(InputThreadTaskRunner()->BelongsToCurrentThread());
+  if (!input_handler_proxy_) {
+    return;
+  }
+  input_handler_proxy_->FlushQueuedEventsForTesting();
+}
+
+void WidgetInputHandlerManager::FlushMainThreadQueueForTesting(
+    base::OnceClosure done) {
+  CHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  input_event_queue()->DispatchRafAlignedInput(base::TimeTicks::Now());
+  CHECK(input_event_queue()->IsEmptyForTesting());
+  std::move(done).Run();
+}
+
+void WidgetInputHandlerManager::FlushEventQueuesForTesting(
+    base::OnceClosure done_callback) {
+  CHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
+  auto flush_compositor_queue = base::BindOnce(
+      &WidgetInputHandlerManager::FlushCompositorQueueForTesting, this);
+
+  auto flush_main_queue =
+      base::BindOnce(&WidgetInputHandlerManager::FlushMainThreadQueueForTesting,
+                     this, std::move(done_callback));
+
+  // Flush the compositor queue first since dispatching compositor events may
+  // bounce them back into the main thread event queue.
+  InputThreadTaskRunner()->PostTaskAndReply(FROM_HERE,
+                                            std::move(flush_compositor_queue),
+                                            std::move(flush_main_queue));
 }
 
 }  // namespace blink

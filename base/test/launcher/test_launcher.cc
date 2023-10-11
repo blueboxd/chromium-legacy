@@ -66,7 +66,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libxml/chromium/libxml_utils.h"
 
 #if BUILDFLAG(IS_POSIX)
 #include <fcntl.h>
@@ -75,7 +74,7 @@
 #endif
 
 #if BUILDFLAG(IS_APPLE)
-#include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/apple/scoped_nsautorelease_pool.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -833,10 +832,6 @@ class TestRunner {
   // |done|.
   void CleanupTask(base::ScopedTempDir task_temp_dir, bool done);
 
-  // No-op error function that replaces libxml's default, which writes to
-  // stderr.
-  static void NullXmlErrorFunc(void* context, const char* message, ...) {}
-
   ThreadChecker thread_checker_;
 
   const raw_ptr<TestLauncher> launcher_;
@@ -849,9 +844,6 @@ class TestRunner {
   // Protects member used concurrently by worker tasks.
   base::Lock lock_;
   std::vector<std::string> tests_to_run_ GUARDED_BY(lock_);
-  // Set the global libxml error context and function pointer for the lifetime
-  // of this test runner.
-  ScopedXmlErrorFunc xml_error_func_{nullptr, &NullXmlErrorFunc};
 
   base::WeakPtrFactory<TestRunner> weak_ptr_factory_{this};
 };
@@ -1979,7 +1971,7 @@ std::vector<std::string> TestLauncher::CollectTests() {
   // more exact gtest filter, we first split filter into exact filter
   // and wildcards filter, then exact filter can match faster.
   std::vector<StringPiece> positive_wildcards_filter;
-  std::unordered_set<StringPiece, StringPieceHash> positive_exact_filter;
+  std::unordered_set<StringPiece> positive_exact_filter;
   positive_exact_filter.reserve(positive_test_filter_.size());
   for (const std::string& filter : positive_test_filter_) {
     if (filter.find('*') != std::string::npos) {
@@ -1990,7 +1982,7 @@ std::vector<std::string> TestLauncher::CollectTests() {
   }
 
   std::vector<StringPiece> negative_wildcards_filter;
-  std::unordered_set<StringPiece, StringPieceHash> negative_exact_filter;
+  std::unordered_set<StringPiece> negative_exact_filter;
   negative_exact_filter.reserve(negative_test_filter_.size());
   for (const std::string& filter : negative_test_filter_) {
     if (filter.find('*') != std::string::npos) {

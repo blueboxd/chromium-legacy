@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "absl/log/absl_check.h"
-#include "mediapipe/framework/port/logging.h"
+#include "absl/log/absl_log.h"
 #include "mediapipe/util/tracking/motion_models.h"
 #include "mediapipe/util/tracking/region_flow.h"
 
@@ -26,7 +26,7 @@ namespace mediapipe {
 
 // Returns median of the L1 color distance between img_1 and img_2
 float FrameDifferenceMedian(const cv::Mat& img_1, const cv::Mat& img_2) {
-  CHECK(img_1.size() == img_2.size());
+  ABSL_CHECK(img_1.size() == img_2.size());
   ABSL_CHECK_EQ(img_1.channels(), img_2.channels());
 
   std::vector<float> color_diffs;
@@ -53,7 +53,7 @@ float FrameDifferenceMedian(const cv::Mat& img_1, const cv::Mat& img_2) {
 }
 
 void JetColoring(int steps, std::vector<Vector3_f>* color_map) {
-  CHECK(color_map != nullptr);
+  ABSL_CHECK(color_map != nullptr);
   color_map->resize(steps);
   for (int i = 0; i < steps; ++i) {
     const float frac = 2.0f * (i * (1.0f / steps) - 0.5f);
@@ -72,7 +72,7 @@ void JetColoring(int steps, std::vector<Vector3_f>* color_map) {
       (*color_map)[i] =
           Vector3_f(1.0f + (frac - 0.8f) * -2.0f, 0.0f, 0.0f) * 255.0f;
     } else {
-      LOG(ERROR) << "Out of bound value. Should not occur.";
+      ABSL_LOG(ERROR) << "Out of bound value. Should not occur.";
     }
   }
 }

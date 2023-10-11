@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/shell.h"
+#include "ash/wm/snap_group/snap_group.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "ash/wm/window_mini_view_header_view.h"
 #include "ash/wm/window_preview_view.h"
@@ -16,6 +17,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
@@ -41,14 +43,6 @@ WindowCycleItemView::WindowCycleItemView(aura::Window* window)
     : WindowMiniView(window) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetNotifyEnterExitOnChild(true);
-}
-
-void WindowCycleItemView::ShowPreview() {
-  DCHECK(!preview_view());
-
-  header_view()->UpdateIconView(source_window());
-  SetShowPreview(/*show=*/true);
-  UpdatePreviewRoundedCorners(/*show=*/true);
 }
 
 void WindowCycleItemView::OnMouseEntered(const ui::MouseEvent& event) {
@@ -140,14 +134,26 @@ bool WindowCycleItemView::HandleAccessibleAction(
   return View::HandleAccessibleAction(action_data);
 }
 
+void WindowCycleItemView::RefreshItemVisuals() {
+  header_view()->UpdateIconView(source_window());
+  SetShowPreview(/*show=*/true);
+  RefreshHeaderViewRoundedCorners();
+  RefreshPreviewRoundedCorners(/*show=*/true);
+}
+
 BEGIN_METADATA(WindowCycleItemView, WindowMiniView)
 END_METADATA
 
-GroupContainerView::GroupContainerView() {
+GroupContainerCycleView::GroupContainerCycleView(SnapGroup* snap_group) {
+  mini_view1_ = AddChildView(
+      std::make_unique<WindowCycleItemView>(snap_group->window1()));
+  mini_view2_ = AddChildView(
+      std::make_unique<WindowCycleItemView>(snap_group->window2()));
+  RefreshItemVisuals();
+
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-  SetAccessibleName(u"Group container view");
 
   // TODO(michelefan@): Orientation should correspond to the window layout.
   views::BoxLayout* layout =
@@ -158,9 +164,105 @@ GroupContainerView::GroupContainerView() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 }
 
-GroupContainerView::~GroupContainerView() = default;
+GroupContainerCycleView::~GroupContainerCycleView() = default;
 
-BEGIN_METADATA(GroupContainerView, FocusableView)
+bool GroupContainerCycleView::Contains(aura::Window* window) const {
+  return (mini_view1_ && mini_view1_->Contains(window)) ||
+         (mini_view2_ && mini_view2_->Contains(window));
+}
+
+aura::Window* GroupContainerCycleView::GetWindowAtPoint(
+    const gfx::Point& screen_point) const {
+  for (auto mini_view : {mini_view1_, mini_view2_}) {
+    if (!mini_view) {
+      continue;
+    }
+    if (auto* window = mini_view->GetWindowAtPoint(screen_point)) {
+      return window;
+    }
+  }
+  return nullptr;
+}
+
+void GroupContainerCycleView::RefreshItemVisuals() {
+  if (mini_view1_ && mini_view2_) {
+    mini_view1_->SetRoundedCornersRadius(gfx::RoundedCornersF(
+        /*upper_left=*/WindowMiniView::kWindowMiniViewCornerRadius,
+        /*upper_right=*/0, /*lower_right=*/0,
+        /*lower_left=*/WindowMiniView::kWindowMiniViewCornerRadius));
+    mini_view2_->SetRoundedCornersRadius(gfx::RoundedCornersF(
+        /*upper_left=*/0,
+        /*upper_right=*/WindowMiniView::kWindowMiniViewCornerRadius,
+        /*lower_right=*/WindowMiniView::kWindowMiniViewCornerRadius,
+        /*lower_left=*/0));
+  }
+
+  for (auto mini_view : {mini_view1_, mini_view2_}) {
+    if (mini_view) {
+      mini_view->RefreshItemVisuals();
+    }
+  }
+}
+
+int GroupContainerCycleView::TryRemovingChildItem(
+    aura::Window* destroying_window) {
+  std::vector<raw_ptr<WindowCycleItemView>*> mini_views_ptrs = {&mini_view1_,
+                                                                &mini_view2_};
+  for (auto* mini_view_ptr : mini_views_ptrs) {
+    if (auto& mini_view = *mini_view_ptr; mini_view) {
+      // Explicitly reset the current visuals.
+      mini_view->ResetRoundedCorners();
+      if (mini_view->Contains(destroying_window)) {
+        auto* temp = mini_view.get();
+        // Explicitly reset the `mini_view` to avoid dangling pointer detection.
+        mini_view = nullptr;
+        RemoveChildViewT(temp);
+      }
+    }
+  }
+
+  RefreshItemVisuals();
+
+  return base::ranges::count_if(
+      mini_views_ptrs,
+      [](raw_ptr<WindowCycleItemView>* ptr) { return *ptr != nullptr; });
+}
+
+void GroupContainerCycleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::View::GetAccessibleNodeData(node_data);
+  node_data->role = ax::mojom::Role::kGroup;
+  // TODO(b/297062026): Update the string after been finalized by consulting
+  // with a11y team.
+  node_data->SetName(u"Group container view");
+}
+
+gfx::RoundedCornersF GroupContainerCycleView::GetRoundedCorners() const {
+  if (!mini_view1_ && !mini_view2_) {
+    return gfx::RoundedCornersF();
+  }
+
+  // In normal use cases, the left corners (`upper_left` and `lower_left`) will
+  // depend on the primary snapped window, and likewise for the right corners.
+  // However, if one window gets destructed leaving only one mini view hosted by
+  // this. All the rounded corners have to be from the remaining mini view.
+  // TODO(b/294294344): for vertical split view, the upper corners will depend
+  // on the primary snapped window and likewise for the lower corners.
+  const float upper_left = mini_view1_
+                               ? mini_view1_->GetRoundedCorners().upper_left()
+                               : mini_view2_->GetRoundedCorners().upper_left();
+  const float upper_right =
+      mini_view2_ ? mini_view2_->GetRoundedCorners().upper_right()
+                  : mini_view1_->GetRoundedCorners().upper_right();
+  const float lower_right = mini_view2_
+                                ? mini_view2_->GetRoundedCorners().lower_right()
+                                : mini_view1_->GetRoundedCorners().lower_left();
+  const float lower_left = mini_view1_
+                               ? mini_view1_->GetRoundedCorners().lower_left()
+                               : mini_view2_->GetRoundedCorners().lower_right();
+  return gfx::RoundedCornersF(upper_left, upper_right, lower_right, lower_left);
+}
+
+BEGIN_METADATA(GroupContainerCycleView, WindowMiniViewBase)
 END_METADATA
 
 }  // namespace ash

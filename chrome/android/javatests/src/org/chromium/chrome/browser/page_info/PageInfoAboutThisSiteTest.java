@@ -54,7 +54,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.components.page_info.proto.AboutThisSiteMetadataProto.Hyperlink;
@@ -69,14 +69,13 @@ import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.url.GURL;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for PageInfoAboutThisSite.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Features.EnableFeatures({ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_MORE_LANGS})
+@EnableFeatures({ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_MORE_LANGS})
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.DISABLE_STARTUP_PROMOS,
         ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors"})
@@ -251,29 +250,9 @@ public class PageInfoAboutThisSiteTest {
                 .check(renderView("page_info_about_this_site_row"));
     }
 
-    @Test
-    @MediumTest
-    @Features.DisableFeatures(ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_IMPROVED_BOTTOMSHEET)
-    public void testAboutThisSiteOpensEphemeralTab() throws ExecutionException, TimeoutException {
-        mockResponse(createDescription());
-        openPageInfo();
-
-        onView(withId(PageInfoAboutThisSiteController.ROW_ID)).perform(click());
-        verify(mMockAboutThisSiteJni).onAboutThisSiteRowClicked(true);
-        endAnimations();
-        assertTrue("The bottomsheet did not open", mEphemeralTabCoordinator.isOpened());
-
-        String moreAboutUrl = mTestServerRule.getServer().getURL(sAboutHtml);
-        assertEquals(new GURL(moreAboutUrl + "?ilrm=minimal"),
-                mEphemeralTabCoordinator.getUrlForTesting());
-        assertEquals(new GURL(moreAboutUrl), mEphemeralTabCoordinator.getFullPageUrlForTesting());
-
-        closeBottomSheet();
-    }
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_IMPROVED_BOTTOMSHEET})
     @Feature({"RenderTest"})
     public void testAboutThisSiteOpensEphemeralTabWithImprovedBottomSheetEnabled() {
         mockResponse(createDescription());

@@ -63,6 +63,7 @@
 #include "chrome/browser/ui/webui/ash/assistant_optin/assistant_optin_ui.h"
 #include "chrome/browser/ui/webui/ash/audio/audio_ui.h"
 #include "chrome/browser/ui/webui/ash/bluetooth_pairing_dialog.h"
+#include "chrome/browser/ui/webui/ash/borealis_installer/borealis_installer_ui.h"
 #include "chrome/browser/ui/webui/ash/certificate_manager_dialog_ui.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_ui.h"
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_ui.h"
@@ -96,6 +97,7 @@
 #include "chrome/browser/ui/webui/ash/slow_ui.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_credentials_dialog.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_share_dialog.h"
+#include "chrome/browser/ui/webui/ash/status_area_internals/status_area_internals_ui.h"
 #include "chrome/browser/ui/webui/ash/sys_internals/sys_internals_ui.h"
 #include "chrome/browser/ui/webui/ash/vc_tray_tester/vc_tray_tester_ui.h"
 #include "chrome/browser/ui/webui/ash/vm/vm_ui.h"
@@ -226,6 +228,7 @@ void RegisterAshChromeWebUIConfigs() {
   map.AddWebUIConfig(std::make_unique<AssistantOptInUIConfig>());
   map.AddWebUIConfig(std::make_unique<AudioUIConfig>());
   map.AddWebUIConfig(std::make_unique<BluetoothPairingDialogUIConfig>());
+  map.AddWebUIConfig(std::make_unique<BorealisInstallerUIConfig>());
   map.AddWebUIConfig(std::make_unique<CertificateManagerDialogUIConfig>());
   map.AddWebUIConfig(std::make_unique<cloud_upload::CloudUploadUIConfig>());
   map.AddWebUIConfig(std::make_unique<ColorInternalsUIConfig>());
@@ -318,6 +321,7 @@ void RegisterAshChromeWebUIConfigs() {
   map.AddWebUIConfig(std::make_unique<VmUIConfig>());
 #if !defined(OFFICIAL_BUILD)
   map.AddWebUIConfig(std::make_unique<SampleSystemWebAppUIConfig>());
+  map.AddWebUIConfig(std::make_unique<StatusAreaInternalsUIConfig>());
 #if !defined(USE_REAL_DBUS_CLIENTS)
   map.AddWebUIConfig(std::make_unique<DeviceEmulatorUIConfig>());
 #endif  // !defined(USE_REAL_DBUS_CLIENTS)

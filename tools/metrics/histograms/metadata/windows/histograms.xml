@@ -45,7 +45,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.CetEnabled" enum="BooleanEnabled"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>ajgo@chromium.org</owner>
   <owner>wfh@chromium.org</owner>
   <summary>
@@ -101,7 +101,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.HasHighResolutionTimeTicks" enum="Boolean"
-    expires_after="2023-12-19">
+    expires_after="2024-02-20">
   <owner>brucedawson@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
@@ -159,18 +159,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Windows.IsPinnedToTaskbar.ProcessError" enum="BooleanError"
-    expires_after="M85">
-  <owner>pmonette@chromium.org</owner>
-  <summary>
-    Indicates whether a connection error occured between the browser and the
-    shell handler process. This is usually caused by a crash in the utility
-    process. This is logged every time the pinned state is queried.
-  </summary>
-</histogram>
-
 <histogram name="Windows.Launch.TaskbarInstallerPinned" enum="Boolean"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>davidbienvenu@chromium.org</owner>
   <owner>jessemckenna@google.com</owner>
   <summary>
@@ -292,28 +282,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Whether virtualization has been enabled in the system firmware. Logged
     shortly after startup. This metric will only be logged on Windows 10+.
-  </summary>
-</histogram>
-
-<histogram name="Windows.RendererCodeIntegrityEnabled" enum="BooleanEnabled"
-    expires_after="2023-12-24">
-  <owner>ajgo@chromium.org</owner>
-  <owner>wfh@chromium.org</owner>
-  <summary>
-    Records whether or not Renderer code integrity is enabled. This is enabled
-    by default but can be overridden by policy. This is recorded each time a new
-    renderer process starts.
-  </summary>
-</histogram>
-
-<histogram name="Windows.UnpinShortcut.ProcessError" enum="BooleanError"
-    expires_after="2023-10-08">
-  <owner>davidbienvenu@chromium.org</owner>
-  <owner>grt@chromium.org</owner>
-  <summary>
-    Indicates whether a connection error occured between the browser and the
-    shell handler process. This is usually caused by a crash in the utility
-    process. This is logged every time shortcuts are unpinned from the taskbar.
   </summary>
 </histogram>
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/fast_checkout/fast_checkout_client_impl.h"
 #include "chrome/browser/fast_checkout/fast_checkout_features.h"
+#include "chrome/browser/plus_addresses/plus_address_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/content/browser/content_autofill_router.h"
 #include "components/autofill/content/browser/test_autofill_client_injector.h"
@@ -21,6 +22,7 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/ui/mock_fast_checkout_client.h"
 #include "components/autofill/core/common/form_interactions_flow.h"
+#include "components/plus_addresses/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/unified_consent/pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,6 +30,8 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/android/autofill/autofill_save_card_bottom_sheet_bridge.h"
+#include "components/autofill/core/browser/payments/autofill_save_card_delegate.h"
+#include "components/autofill/core/browser/payments/autofill_save_card_ui_info.h"
 #endif
 
 namespace autofill {
@@ -43,7 +47,11 @@ class MockAutofillSaveCardBottomSheetBridge
       : AutofillSaveCardBottomSheetBridge(
             base::android::ScopedJavaGlobalRef<jobject>(nullptr)) {}
 
-  MOCK_METHOD(bool, RequestShowContent, (), (override));
+  MOCK_METHOD(void,
+              RequestShowContent,
+              (const AutofillSaveCardUiInfo&,
+               std::unique_ptr<AutofillSaveCardDelegate>),
+              (override));
 };
 #endif
 
@@ -189,6 +197,17 @@ TEST_F(ChromeAutofillClientTest, GetFormInteractionsFlowId_AdvancedTwice) {
             client()->GetCurrentFormInteractionsFlowId());
 }
 
+// Ensure that, by default, the plus address service is not available.
+// The positive case (feature enabled) will be tested in plus_addresses browser
+// tests; this test is intended to ensure the default state does not behave
+// unexpectedly.
+TEST_F(ChromeAutofillClientTest,
+       PlusAddressesDefaultFeatureStateMeansNullPlusAddressService) {
+  PlusAddressServiceFactory::GetForBrowserContext(
+      web_contents()->GetBrowserContext());
+  EXPECT_EQ(client()->GetPlusAddressService(), nullptr);
+}
+
 #if BUILDFLAG(IS_ANDROID)
 class ChromeAutofillClientTestWithPaymentsAndroidBottomSheetFeature
     : public ChromeAutofillClientTest {
@@ -203,12 +222,24 @@ TEST_F(ChromeAutofillClientTestWithPaymentsAndroidBottomSheetFeature,
   auto* bottom_sheet_bridge =
       autofill_client->InjectMockAutofillSaveCardBottomSheetBridge();
 
-  EXPECT_CALL(*bottom_sheet_bridge, RequestShowContent());
+  EXPECT_CALL(*bottom_sheet_bridge,
+              RequestShowContent(testing::An<const AutofillSaveCardUiInfo&>(),
+                                 testing::NotNull()));
 
   autofill_client->ConfirmSaveCreditCardToCloud(
       CreditCard(), LegalMessageLines(),
       ChromeAutofillClient::SaveCreditCardOptions().with_show_prompt(true),
       base::DoNothing());
+}
+
+TEST_F(ChromeAutofillClientTestWithPaymentsAndroidBottomSheetFeature,
+       ConfirmSaveCreditCardToCloud_DoesNotFailWithoutAWindow) {
+  TestChromeAutofillClient* autofill_client = client();
+
+  EXPECT_NO_FATAL_FAILURE(autofill_client->ConfirmSaveCreditCardToCloud(
+      CreditCard(), LegalMessageLines(),
+      ChromeAutofillClient::SaveCreditCardOptions().with_show_prompt(true),
+      base::DoNothing()));
 }
 #endif
 

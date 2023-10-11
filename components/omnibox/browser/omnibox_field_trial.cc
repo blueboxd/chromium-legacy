@@ -549,6 +549,16 @@ bool OmniboxFieldTrial::HUPSearchDatabase() {
   return value.empty() || (value == "true");
 }
 
+bool OmniboxFieldTrial::IsActionsUISimplificationEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxActionsUISimplification);
+}
+
+const base::FeatureParam<bool>
+    OmniboxFieldTrial::kActionsUISimplificationTrimExtra(
+        &omnibox::kOmniboxActionsUISimplification,
+        "ActionsUISimplificationTrimExtra",
+        true);
+
 bool OmniboxFieldTrial::IsFuzzyUrlSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxFuzzyUrlSuggestions);
 }
@@ -695,6 +705,11 @@ bool OmniboxFieldTrial::IsChromeRefreshSuggestIconsEnabled() {
 bool OmniboxFieldTrial::IsChromeRefreshActionChipIconsEnabled() {
   return omnibox::IsOmniboxCr23CustomizeGuardedFeatureEnabled(
       omnibox::kCr2023ActionChipsIcons);
+}
+
+bool OmniboxFieldTrial::IsChromeRefreshActionChipShapeEnabled() {
+  return omnibox::IsOmniboxCr23CustomizeGuardedFeatureEnabled(
+      omnibox::kCr2023ActionChips);
 }
 
 bool OmniboxFieldTrial::IsChromeRefreshSuggestHoverFillShapeEnabled() {
@@ -1148,6 +1163,14 @@ const base::FeatureParam<bool> kOmniboxModernizeVisualUpdateMergeClipboardOnNTP(
     "modernize_visual_update_merge_clipboard_on_ntp",
     false);
 // <- Android UI Revamp
+// ---------------------------------------------------------
+// Touch Down Trigger For Prefetch ->
+const base::FeatureParam<int>
+    kTouchDownTriggerForPrefetchMaxPrefetchesPerOmniboxSession(
+        &omnibox::kOmniboxTouchDownTriggerForPrefetch,
+        "max_prefetches_per_omnibox_session",
+        5);
+// <- Touch Down Trigger For Prefetch
 // ---------------------------------------------------------
 
 }  // namespace OmniboxFieldTrial

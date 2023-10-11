@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">Agar bu kontent biror qonunni buzsa, shikoyat yuborish uchun <ph name="BEGIN_LINK1" />Huquqiy yordam sahifasiga<ph name="END_LINK1" /> kiring. Hisob va tizimga oid ayrim axborotlar Google kompaniyasiga yuborilishi mumkin. Bizga taqdim etilgan maʼlumotlardan texnik muammolarni hal qilish va xizmatlarimizni yaxshilashda foydalanamiz. Bunda <ph name="BEGIN_LINK2" />Maxfiylik siyosati<ph name="END_LINK2" /> va <ph name="BEGIN_LINK3" />Xizmat shartlariga<ph name="END_LINK3" /> rioya qilinadi.</translation>
 <translation id="1885577615937958993">oldinga oʻtkazish</translation>
 <translation id="1887850431809612466">Qurilma versiyasi</translation>
+<translation id="1897672602657312171">Qidiruv tugmasisiz tezkor tugma ayrim ilovalar tezkor tugmasi bilan muammo qilishi mumkin. Foydalanishni davom ettirish uchun ushbu tezkor tugmani yana bosing yoki qidiruv tugmasi yordamida yangisini bosing.</translation>
 <translation id="1904932688895783618">Quyidagi manbalar foydali boʻlishi mumkin:</translation>
 <translation id="1905710495812624430">Urinishlar soni cheklovdan oshib ketdi.</translation>
 <translation id="1908234395526491708">Bajarilmagan UDP soʻrovlari</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">Oʻchib yonadi…</translation>
 <translation id="2533048460510040082">Tavsiya etilgan yordam kontenti</translation>
 <translation id="2536159006530886390">Internetga ulana olmadi.</translation>
-<translation id="2555662516429796509">Klaviaturada 1-4 ta modifikator va yana 1 ta boshqa tugmani bosing</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> testi bajarilmoqda...</translation>
 <translation id="2584559707064218956">Sozlash uchun Sozlamalarni oching</translation>
 <translation id="2597774443162333062">Fayllar batafsil koʻrib chiqilishi uchun Google serverlariga yuboriladi</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">TLS autentifikatsiya kaliti</translation>
 <translation id="2713444072780614174">Oq</translation>
 <translation id="2717139507051041123">Toʻq rangli rejimni yoqish</translation>
+<translation id="2728460467788544679">Barcha chop etish tarixini tozalash</translation>
 <translation id="2740531572673183784">Ok</translation>
 <translation id="2744221223678373668">Ulashilgan</translation>
 <translation id="2751739896257479635">EAP autentifikatsiya 2-bosqichi</translation>
 <translation id="2783010256799387990">TUGADI</translation>
 <translation id="2787435249130282949">yorqinroq klaviatura</translation>
-<translation id="2789486458103222910">OK</translation>
 <translation id="2805756323405976993">Ilovalar</translation>
 <translation id="28232023175184696">Internetga ulana olmadi. Qayta urinish uchun bosing.</translation>
 <translation id="2859243502336719778">Muhim yangilanish</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">Bulut manzaralari ekran lavhasi</translation>
 <translation id="2926057806159140518">Login va parolingizni kiriting yoki QR kodni skanerlang</translation>
 <translation id="2940811910881150316">Qurilmani sinash imkonsiz. Sinash uchun qurlimani yopib, keyin qayta oching</translation>
+<translation id="2941112035454246133">Past</translation>
 <translation id="3008341117444806826">YANGILASH</translation>
 <translation id="3009958530611748826">Saqlash uchun jild tanlang</translation>
 <translation id="3017079585324758401">Orqa fon</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">Host aniqlanmadi</translation>
 <translation id="3942420633017001071">Diagnostika</translation>
 <translation id="3954678691475912818">Qurilma — noaniq.</translation>
+<translation id="3959413315969265597">Bu APN yoqilmaydi. Asosiy APN kiritilganini tekshiring.</translation>
 <translation id="3966286471246132217">Yanada aniq natijalar olish uchun test tugamaguncha barcha ilovalarni yopib turing.</translation>
 <translation id="3967822245660637423">Yuklab olindi</translation>
 <translation id="3969602104473960991">ChromeOS paroli yangilandi</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">ovozni pasaytirish</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> / <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" /> ilovasini yangilang</translation>
+<translation id="574392208103952083">O‘rtacha</translation>
 <translation id="5757187557809630523">keyingi trek</translation>
 <translation id="5760715441271661976">Portal holati</translation>
 <translation id="576835345334454681">Displey yorqinligini oshirish</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">Fotogalereya albomi</translation>
 <translation id="5860033963881614850">O‘chiq</translation>
 <translation id="5860491529813859533">Yoqish</translation>
-<translation id="5866840822086176774">Juda kuchli</translation>
 <translation id="5876385649737594562">Variantlarni tanlash uchun yoqing</translation>
 <translation id="588258955323874662">Butun ekran</translation>
 <translation id="5895138241574237353">Qayta ishga tushirish</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Zaif (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Hisob sozlamalarini ochish</translation>
-<translation id="6456394469623773452">Yaxshi</translation>
+<translation id="6461047516875166066">Batafsil gapirib ber</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Sahifa qayta skanerlansinmi?}=1{{PAGE_NUMBER} ta sahifani qayta skanerlansinmi?}other{{PAGE_NUMBER} ta sahifani qayta skanerlansinmi?}}</translation>
 <translation id="6472207088655375767">Bir martalik kod</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" /> tomonidan boshqariladi</translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">Barcha yorliqlar tozalansinmi?</translation>
 <translation id="7058278511608979688">Tugatish va saqlash</translation>
 <translation id="7059230779847288458">Quvvat olmoqda (<ph name="TIME_VALUE" /> qoldi)</translation>
+<translation id="7066538517128343186"><ph name="KEY" /> tugmasi</translation>
 <translation id="7068619307603204412">Qurilma tayyorlanmoqda</translation>
 <translation id="708426984172631313">TOʻXTATILDI</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">Fon rasmini koʻrish uchun tarmoqqa ulaning va sahifani yangilang.</translation>
 <translation id="8291967909914612644">Mahalliy ta’minotchi mamlakati</translation>
 <translation id="8294431847097064396">Manba</translation>
-<translation id="8297006494302853456">Zaif</translation>
 <translation id="8302368968391049045">HTTPS Fayrvol</translation>
 <translation id="8312330582793120272">media ijrosi</translation>
 <translation id="8318753676953949627">Rasmlarsiz</translation>
 <translation id="8329018942023753850">kalkulyator ilovasi</translation>
 <translation id="8336739000755212683">Qurilmadagi hisob rasmini almashtirish</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> yoki <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Chop etish vazifalari</translation>
 <translation id="8351855506390808906">Tugma tayinlash: teginish nuqtasi</translation>
 <translation id="8352772353338965963">Bir nechta hisobga kirish tizimiga hisob qo‘shish. Kirish bajarilgan hisoblarni ko‘rish uchun parol so‘ralmaydi, shuning uchun bu funksiyadan faqat ishonchli hisoblarda foydalanish kerak.</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">Qayta ulanish uchun Sozlamalarni oching</translation>
 <translation id="9126720536733509015">Bir nechta sahifani bitta PDFga saqlash</translation>
 <translation id="9133104754938025929">Batareyani tejash maqsadida ekran lavhasi faqat quvvatlash vaqtida ishlaydi.</translation>
+<translation id="9133772297793293778">Klaviaturada 1-4 ta modifikator va yana 1 ta boshqa tugmani bosing. Tahrirlash rejimidan chiqish u chun Alt + Esc tugmalarini bosing.</translation>
 <translation id="9137526406337347448">Google xizmatlari</translation>
 <translation id="9138630967333032450">Chap shift</translation>
 <translation id="9143347780818904997"><ph name="MINUTES" /> daqiqa</translation>

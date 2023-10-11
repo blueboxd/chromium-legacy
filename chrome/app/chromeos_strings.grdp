@@ -283,11 +283,8 @@
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_TITLE" desc="Title asking for consent to scan automatically for available eSIM profiles.">
     Automatically scan for available eSIM profiles?
   </message>
-  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_MESSAGE" desc="Message, informing the user that device information will be shared with third parties.">
-    By continuing, you allow third parties to verify information that identifies this device on the network
-  </message>
-  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_ENTER_MANUALLY" desc="Label for button that allows the user to manually scan for profiles.">
-    Enter manually
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_MESSAGE_WITH_LINK" desc="Message, informing the user that device information will be shared with third parties.">
+    By continuing, you allow third parties to verify information that identifies this device on the network. If you do not wish to allow third parties access to device information, you can set up an eSIM profile <ph name="BEGIN_LINK">&lt;a href="#" &gt;</ph>manually<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_SCAN" desc="Label for button to trigger automatic scanning.">
     Scan
@@ -1558,7 +1555,15 @@
   <message name="IDS_APP_START_WAIT_FOR_APP_WINDOW_INSTALL_FAILED_MESSAGE" desc="Message displayed when kiosk app meta-data obtention fails, but we try to run the app anyway without it.">
     Failed to obtain app data, trying to run the app anyway...
   </message>
-
+  <message name="IDS_PASSWORD_SELECTION_TITLE" desc="Message displayed on the password selection screen.">
+    Use a password to sign in to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+  </message>
+  <message name="IDS_PASSWORD_SELECTION_LOCAL_PASSWORD_LABEL" desc="Label for the local password option on the password selection screen.">
+    Create <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password
+  </message>
+  <message name="IDS_PASSWORD_SELECTION_GAIA_PASSWORD_LABEL" desc="Label for the online password option on the password selection screen.">
+    Use Google Account password
+  </message>
 
   <message name="IDS_APP_START_CONFIGURE_NETWORK" desc="Text displayed for configure network button while installing and/or launching web application in kiosk mode.">
     Configure network
@@ -1674,6 +1679,9 @@
   </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_TITLE" desc="Title for the confirm password dialog.">
     Please re-enter your password to update your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> profile.
+  </message>
+  <message name="IDS_LOGIN_LOCAL_PASSWORD_SETUP_TITLE" desc="Title local password setup dialog.">
+    Set <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password
   </message>
   <message name="IDS_LOGIN_MANUAL_PASSWORD_TITLE" desc="Title for the manual password setting dialog.">
     Please create a password to protect your local data.
@@ -5301,10 +5309,10 @@
   </message>
 
   <!-- Bruschetta -->
-  <message name="IDS_BRUSCHETTA_NAME" desc="The display name for Bruschetta (codename) when a specific VM name cannot be used." translateable="false">
+  <message name="IDS_BRUSCHETTA_NAME" desc="The display name for Bruschetta (codename) when a specific VM name cannot be used.">
     Managed Development Environment
   </message>
-  <message name="IDS_BRUSCHETTA_INSTALLER_WINDOW_TITLE" desc="Title for the installer window while Bruschetta (codename) is installing." translateable="false">
+  <message name="IDS_BRUSCHETTA_INSTALLER_WINDOW_TITLE" desc="Title for the installer window while Bruschetta (codename) is installing.">
     <ph name="VM_NAME">$1<ex>Managed VM</ex></ph> Installer
   </message>
   <message name="IDS_BRUSCHETTA_INSTALLER_INSTALL_BUTTON" desc="Label for the button in the Bruschetta (codename) installer dialog to begin installing.">
@@ -5313,7 +5321,7 @@
   <message name="IDS_BRUSCHETTA_INSTALLER_CONFIRMATION_TITLE" desc="In-window title for when the installer for Bruschetta (codename) first opens.">
     Welcome
   </message>
-  <message name="IDS_BRUSCHETTA_INSTALLER_CONFIRMATION_MESSAGE" desc="More detailed message for when the installer for Bruschetta (codename) first opens." translateable="false">
+  <message name="IDS_BRUSCHETTA_INSTALLER_CONFIRMATION_MESSAGE" desc="More detailed message for when the installer for Bruschetta (codename) first opens.">
     Select which version of <ph name="VM_NAME">$1<ex>Managed VM</ex></ph> to install.
   </message>
   <message name="IDS_BRUSCHETTA_INSTALLER_ONGOING_TITLE" desc="Title for the installer while Bruschetta (codename) is installing.">
@@ -5322,10 +5330,10 @@
   <message name="IDS_BRUSCHETTA_INSTALLER_ERROR_TITLE" desc="Title for the installer when Bruschetta (codename) fails to install.">
     Sorry, an error occurred
   </message>
-  <message name="IDS_BRUSCHETTA_INSTALLER_ERROR_MESSAGE" desc="More detailed message for the installer when Bruschetta (codename, do not translate) fails to install.">
+  <message name="IDS_BRUSCHETTA_INSTALLER_ERROR_MESSAGE" desc="More detailed message for the installer when Bruschetta fails to install.">
     Sorry, something went wrong. Please file feedback with #bruschetta in the description. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>.
   </message>
-  <message name="IDS_BRUSCHETTA_INSTALLER_ERROR_CLEANUP_MESSAGE" desc="More detailed message for the installer when Bruschetta (codename, do not translate) fails to install and the cleaning up the incomplete install also failed.">
+  <message name="IDS_BRUSCHETTA_INSTALLER_ERROR_CLEANUP_MESSAGE" desc="More detailed message for the installer when Bruschetta fails to install and the cleaning up the incomplete install also failed.">
     Sorry, something went wrong. Please file feedback with #bruschetta in the description. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>. Cleaning up failed, you may need to do so manually.
   </message>
   <message name="IDS_BRUSCHETTA_INSTALLER_INSTALLING_DLC_MESSAGE" desc="Message while DLC (DownLoadable Content - codename) to support Bruschetta is being installed.">
@@ -5345,6 +5353,9 @@
   </message>
   <message name="IDS_BRUSCHETTA_UNINSTALLER_BODY" desc="Description for the Bruschetta (codename) uninstaller, a dialog for uninstalling Bruschetta, the associated VM and files.">
     Remove <ph name="VM_NAME">$1<ex>Bruschetta</ex></ph> from your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>? This will delete all apps and data in the virtual machine!
+  </message>
+  <message name="IDS_BRUSCHETTA_UNINSTALLER_UNINSTALL_BUTTON_ARIA_DESCRIPTION" desc="Accessible description for the 'remove' button of the the Bruschetta (codename) uninstaller e.g. read out by screenreaders.">
+    Removes <ph name="VM_NAME">$1<ex>Bruschetta</ex></ph> from your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>. This will delete all apps and data in the virtual machine!
   </message>
   <message name="IDS_BRUSCHETTA_UNINSTALLER_UNINSTALL_BUTTON" desc="Label for the button in the Bruschetta uninstaller dialog to uninstall the VM.">
     Remove
@@ -5939,9 +5950,6 @@
   <message name="IDS_PLUGIN_VM_INSTALLER_DOWNLOAD_PROGRESS_MESSAGE" desc="Text of the Plugin VM installer during downloading Plugin VM image, showing download progress.">
     <ph name="DOWNLOADED_SIZE">$1<ex>1.2</ex></ph>/<ph name="DOWNLOAD_SIZE">$2<ex>3.4 GB</ex></ph>
   </message>
-  <message name="IDS_PLUGIN_VM_INSTALLER_DOWNLOAD_PROGRESS_WITHOUT_DOWNLOAD_SIZE_MESSAGE" desc="Text of the Plugin VM installer while downloading Plugin VM image, showing download progress when the full download size is not known.">
-    <ph name="DOWNLOADED_SIZE">$1<ex>1.2 GB</ex></ph>
-  </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_CONTINUE_BUTTON" desc="Label for the button in the Plugin VM installer to continue installation.">
     Continue
   </message>
@@ -6410,6 +6418,9 @@ You can manage this account’s settings by installing the Family Link app on yo
   <!-- Strings for Parent Access screen -->
   <message name="IDS_PARENT_ACCESS_PAGE_TITLE" desc="Title for the ChromeOS Parent Access screen.">
     Parent Access
+  </message>
+  <message name="IDS_PARENT_ACCESS_CLOSE_BUTTON_TITLE" desc="Title for the ChromeOS Parent Access Widget close button.">
+    Close
   </message>
   <message name="IDS_PARENT_ACCESS_LOCAL_WEB_APPROVALS_AFTER_TITLE" desc="Title for the local web approvals dialog.">
     Approve web request?
@@ -6907,6 +6918,9 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <message name="IDS_OOBE_CHOOBE_DRIVE_PINNING_SUBTITLE_DISABLED" desc="Subtitle of the drive pinning tile in the CHOOBE screen if drive offline is disabled.">
     File sync turned off
   </message>
+  <message name="IDS_OOBE_CHOOBE_DISPLAY_SIZE_TILE_SUBTITLE" desc="Subtitle of the display size tile in the CHOOBE screen if display size is visited.">
+    Display and text size <ph name="DISPLAY_ZOOM">$1<ex>120</ex></ph>%
+  </message>
 
   <!-- CHOOBE Tiles Accessibility -->
   <message name="IDS_OOBE_CHOOBE_TILE_SYNCED" desc="message will be announced by the chromevox if the tile is synced and contain the sync icons.">
@@ -7225,7 +7239,7 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     Can't resume previous session
   </message>
   <message name="IDS_FLOATING_WORKSPACE_ERROR_MESSAGE" desc="Message for Floating Workspace notification when there is an sync service error or timeout.">
-    Something went wrong. Open the windows manuallly instead.
+    Something went wrong. Open the windows manually instead.
   </message>
   <message name="IDS_FLOATING_WORKSPACE_DISPLAY_SOURCE" desc="This is the string shown as the display source of the notification to notify user about floating workspace status.">
     ChromeOS

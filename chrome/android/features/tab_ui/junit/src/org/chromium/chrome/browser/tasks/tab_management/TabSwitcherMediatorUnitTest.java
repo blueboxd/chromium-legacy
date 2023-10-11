@@ -91,7 +91,7 @@ import java.util.List;
 @LooperMode(LooperMode.Mode.LEGACY)
 @DisableFeatures(
         {ChromeFeatureList.START_SURFACE_RETURN_TIME, ChromeFeatureList.START_SURFACE_ANDROID})
-@EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, ChromeFeatureList.TAB_TO_GTS_ANIMATION})
+@EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
 public class TabSwitcherMediatorUnitTest {
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -737,7 +737,6 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void openDialogButton_SingleTab() {
         // Mock that tab 1 is a single tab.
         doReturn(new ArrayList<>(Arrays.asList(mTab1)))
@@ -747,7 +746,6 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void openDialogButton_TabGroup_NotEmpty() {
         // Set up a tab group.
         Tab newTab = prepareTab(TAB4_ID, TAB4_TITLE);
@@ -762,7 +760,6 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void openDialogButton_TabGroup_Empty() {
         // Assume that due to tab model change, current group becomes empty in current model.
         doReturn(new ArrayList<>()).when(mTabModelFilter).getRelatedTabList(TAB1_ID);
@@ -888,10 +885,10 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.START_SURFACE_ANDROID)
+    @EnableFeatures(ChromeFeatureList.START_SURFACE_ANDROID)
     // When Start surface refactoring is enabled, the top control properties are no longer handled
     // separately, and it is covered by test updatesPropertiesWithTopControlsChanges().
-    @Features.DisableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
+    @DisableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
     public void updatesPropertiesWithTopControlsChanges_StartSurface() {
         assertEquals(0, mModel.get(TabListContainerProperties.TOP_MARGIN));
         assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_OFFSET));
@@ -953,7 +950,7 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
+    @EnableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR)
     public void testBackPress() {
         initAndAssertAllProperties();
         Assert.assertFalse(mMediator.shouldInterceptBackPress());
@@ -969,7 +966,7 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
+    @EnableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR)
     public void testBackPressAfterSwitchIncognitoMode() {
         initAndAssertAllProperties();
         Assert.assertFalse(mMediator.shouldInterceptBackPress());
@@ -1010,7 +1007,7 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
+    @EnableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR)
     public void testBackPressAfterTabClosedBySite() {
         initAndAssertAllProperties();
         Assert.assertFalse(mMediator.shouldInterceptBackPress());
@@ -1067,16 +1064,11 @@ public class TabSwitcherMediatorUnitTest {
 
         doReturn(false).when(mTabGridDialogController).isVisible();
         doReturn(mTab1).when(mTabModelSelector).getCurrentTab();
-        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
         mMediator.showTabSwitcherView(false);
 
         //  Verifies that TabSwitcherMediator no longer handles the return to Start surface case.
         mMediator.setLastActiveLayoutTypeForTesting(LayoutType.START_SURFACE);
         Assert.assertFalse(mMediator.shouldInterceptBackPress());
-
-        // Verifies that TabSwitcherMediator still handles the back operation in incognito mode.
-        doReturn(true).when(mTabModelSelector).isIncognitoSelected();
-        Assert.assertTrue(mMediator.shouldInterceptBackPress());
 
         mMediator.setLastActiveLayoutTypeForTesting(LayoutType.BROWSING);
         Assert.assertTrue(mMediator.shouldInterceptBackPress());
@@ -1171,7 +1163,6 @@ public class TabSwitcherMediatorUnitTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void testFocusTabForAccessibility_IsInvoked_OnOverviewModeFinishedShowing() {
         initAndAssertAllProperties();
 

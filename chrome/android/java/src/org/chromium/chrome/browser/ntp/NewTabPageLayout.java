@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.lens.LensMetrics;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.logo.LogoBridge.Logo;
 import org.chromium.chrome.browser.logo.LogoCoordinator;
+import org.chromium.chrome.browser.logo.LogoUtils;
 import org.chromium.chrome.browser.logo.LogoView;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.search.SearchBoxCoordinator;
@@ -56,6 +57,7 @@ import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.chrome.browser.util.BrowserUiUtils.HostSurface;
 import org.chromium.chrome.browser.util.BrowserUiUtils.ModuleTypeOnStartAndNTP;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter;
@@ -145,6 +147,7 @@ public class NewTabPageLayout extends LinearLayout {
     private Boolean mIsHalfMvtLandscape;
     private Boolean mIsHalfMvtPortrait;
     private boolean mIsSurfacePolishEnabled;
+    private boolean mIsSurfacePolishOmniboxColorEnabled;
 
     /**
      * Constructor for inflating from XML.
@@ -190,15 +193,13 @@ public class NewTabPageLayout extends LinearLayout {
      * @param windowAndroid An instance of a {@link WindowAndroid}
      * @param isNtpAsHomeSurfaceEnabled {@code true} if the NTP is showing as the home surface.
      * @param isSurfacePolishEnabled {@code true} if the NTP surface is polished.
-     * @param isSurfacePolishOmniboxSizeEnabled {@code true} if the NTP surface is polished
-     *          and the omnibox size is changed.
      */
     public void initialize(NewTabPageManager manager, Activity activity, Delegate tileGroupDelegate,
             boolean searchProviderHasLogo, boolean searchProviderIsGoogle,
             FeedSurfaceScrollDelegate scrollDelegate, TouchEnabledDelegate touchEnabledDelegate,
             UiConfig uiConfig, ActivityLifecycleDispatcher lifecycleDispatcher, NewTabPageUma uma,
             boolean isIncognito, WindowAndroid windowAndroid, boolean isNtpAsHomeSurfaceEnabled,
-            boolean isSurfacePolishEnabled, boolean isSurfacePolishOmniboxSizeEnabled) {
+            boolean isSurfacePolishEnabled, boolean isSurfacePolishOmniboxColorEnabled) {
         TraceEvent.begin(TAG + ".initialize()");
         mScrollDelegate = scrollDelegate;
         mManager = manager;
@@ -209,12 +210,13 @@ public class NewTabPageLayout extends LinearLayout {
         mWindowAndroid = windowAndroid;
         mIsNtpAsHomeSurfaceEnabled = isNtpAsHomeSurfaceEnabled;
         mIsSurfacePolishEnabled = isSurfacePolishEnabled;
+        mIsSurfacePolishOmniboxColorEnabled = isSurfacePolishOmniboxColorEnabled;
         Profile profile = Profile.getLastUsedRegularProfile();
 
         mSearchBoxCoordinator = new SearchBoxCoordinator(getContext(), this);
         mSearchBoxCoordinator.initialize(lifecycleDispatcher, mIsIncognito, mWindowAndroid);
         if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity)) {
-            if (isSurfacePolishEnabled && isSurfacePolishOmniboxSizeEnabled) {
+            if (isSurfacePolishEnabled) {
                 int searchBoxHeightPolish =
                         getResources().getDimensionPixelSize(R.dimen.ntp_search_box_height_polish);
                 mSearchBoxCoordinator.getView().getLayoutParams().height = searchBoxHeightPolish;
@@ -272,9 +274,23 @@ public class NewTabPageLayout extends LinearLayout {
     }
 
     /**
-     * Sets up the search box background tint.
+     * Sets up the search box background or background tint.
      */
     private void initializeSearchBoxBackground() {
+        if (mIsSurfacePolishOmniboxColorEnabled) {
+            findViewById(R.id.search_box)
+                    .setBackground(AppCompatResources.getDrawable(
+                            mContext, R.drawable.home_surface_search_box_background_colorful));
+            return;
+        }
+
+        if (mIsSurfacePolishEnabled) {
+            findViewById(R.id.search_box)
+                    .setBackground(AppCompatResources.getDrawable(
+                            mContext, R.drawable.home_surface_search_box_background_neutral));
+            return;
+        }
+
         final int elevationDimenId = ChromeFeatureList.sBaselineGm3SurfaceColors.isEnabled()
                 ? R.dimen.default_elevation_4
                 : R.dimen.toolbar_text_box_elevation;
@@ -362,7 +378,11 @@ public class NewTabPageLayout extends LinearLayout {
         // room, we don't need to fetch logo image.
         boolean shouldFetchDoodle = !FeedPositionUtils.isFeedPullUpEnabled();
         LogoView logoView = findViewById(R.id.search_provider_logo);
-        if (mIsNtpAsHomeSurfaceEnabled) {
+        if (mIsSurfacePolishEnabled) {
+            LogoUtils.setLogoViewLayoutParams(logoView, getResources(),
+                    DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext()),
+                    StartSurfaceConfiguration.SURFACE_POLISH_LESS_BRAND_SPACE.getValue());
+        } else if (mIsNtpAsHomeSurfaceEnabled) {
             logoView.getLayoutParams().height =
                     mContext.getResources().getDimensionPixelSize(R.dimen.ntp_logo_height_shrink);
         }
@@ -589,8 +609,18 @@ public class NewTabPageLayout extends LinearLayout {
                 (MarginLayoutParams) mMvTilesContainerLayout.getLayoutParams();
 
         if (mIsSurfacePolishEnabled) {
-            marginLayoutParams.bottomMargin = getResources().getDimensionPixelOffset(
-                    R.dimen.mvt_container_bottom_margin_polish);
+            if (mIsNtpAsHomeSurfaceEnabled) {
+                if (isScrollableMvtEnabled()) {
+                    marginLayoutParams.topMargin = getResources().getDimensionPixelSize(
+                            shouldShowLogo() ? R.dimen.tile_grid_layout_top_margin
+                                             : R.dimen.tile_grid_layout_no_logo_top_margin);
+                } else {
+                    // Set a bit more top padding on the tile grid if there is no logo.
+                    ViewGroup.LayoutParams layoutParams = mMvTilesContainerLayout.getLayoutParams();
+                    layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                    marginLayoutParams.topMargin = getGridMvtTopMargin();
+                }
+            }
             return;
         }
 

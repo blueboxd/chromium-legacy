@@ -306,6 +306,10 @@ Style notes:
         <ph name="ime">$8<ex>Using US keyboard</ex></ph>
         <ph name="locale">$9<ex>Using English</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACCESSIBLE_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The accessible description of hotspot and network in the status tray and the information on it.">
+        <ph name="hotspot">$1<ex>Hotspot on, no devices connected</ex></ph>,
+        <ph name="network">$2<ex>Connected to Google-A, Median signal</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_PRIVACY_ACCESSIBLE_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The accessible description of privacy in the status tray and the information on it.">
         <ph name="mic">$1<ex>A virtual machine is using your microphone</ex></ph>,
         <ph name="camera">$2<ex>A virtual machine is using your camera</ex></ph>
@@ -435,9 +439,6 @@ Style notes:
       </message>
       <message name="IDS_ASH_STATUS_TRAY_LOCK" desc="The label used for the button in the status tray to lock the screen.">
         Lock
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_POWER_OFF" desc="The label used for the button in the status tray to turn off the device.">
-        Power off
       </message>
       <message name="IDS_ASH_STATUS_TRAY_MESSAGE_NOT_ALLOWED_LACROS" desc="The error message multiple signin is prevented because Lacros is enabled.">
         Signing in a second user is not supported if Lacros is enabled. Please use a second browser profile in Lacros instead or disable Lacros and try again.
@@ -772,6 +773,15 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCONNECTED_TOAST" desc="The text used in the toast shown when a new Bluetooth device disconnected from Chromebook.">
       <ph name="DEVICE_NAME">$1<ex>Pixel Buds</ex></ph> disconnected
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE" translateable="false" desc="The label used as the header in the focus mode panel.">
+        Focus
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIME_SUBLABEL" translateable="false" desc="The text used for the subtext of the quick settings pod for an expected session duration.">
+      <ph name="MINUTES_VALUE">$1<ex>30</ex></ph> min
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB" translateable="false" desc="The label text shown on the left side of do not disturb button in Focus mode settings panel.">
+      Do not disturb while in Focus
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
         Restart to update
@@ -1074,8 +1084,15 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY" desc="The label used in the tray menu to show the accessibility option menu. [CHAR_LIMIT=14]">
         Accessibility
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ENABLED_FEATURES_SEPARATOR" desc="The characters used to separate the first feature's 
+      name from the counter in the label displayed when accessibility features are enabled in the quicksettings menu. Example: Select to Speak, +2">
+        , +
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TOOLTIP" desc="The tooltip text in the tray menu to show the accessibility option menu.">
         Show accessibility settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TOGGLED_TOOLTIP" desc="The tooltip text in the tray menu to show the accessibility option menu.">
+        Show accessibility settings, "<ph name="ENABLED_FEATURES">$1<ex>Dictation</ex></ph>" enabled.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TITLE" desc="The label used in the title of the accessibility option menu. [CHAR_LIMIT=18]">
         Accessibility
@@ -1321,6 +1338,11 @@ Style notes:
       </message>
       <message name="IDS_ASH_DICTATION_KEYBOARD_DIALOG_DESCRIPTION_SODA_NOT_AVAILABLE" desc="The description of a dialog that is shown when Dictation is enabled from the keyboard. This description is only shown if SODA (speech-on-device-API) is unavailable.">
         With dictation, you can type using your voice. Press the dictation key or select the microphone icon at the bottom of the screen when you’re on a text field. Your dictation language is set to <ph name="language">$1<ex>English (United States)</ex></ph>. Speech is sent to Google for processing. You can change the dictation language anytime in Settings > Accessibility.
+      </message>
+
+      <!-- Accessibility nudges -->
+      <message name="IDS_ASH_ACCESSIBILITY_NUDGE_DICTATION_NO_FOCUSED_TEXT_FIELD" desc="Displayed in a nudge when Dictation is stopped automatically because there is no focused text field.">
+        Go to a text field to use Dictation
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
@@ -1679,6 +1701,14 @@ Style notes:
       <message name="VIDEO_CONFERENCE_RETURN_TO_APP_PERIPHERALS_ACCESSIBLE_NAME" desc="Tooltip shown for the return to app button regarding peripherals in the video conference panel.">
         <ph name="CAPTURE_MEDIUM">$1<ex>Camera</ex></ph> in use.
       </message>
+      <message name="VIDEO_CONFERENCE_RETURN_TO_APP_EXPANDED_ACCESSIBLE_NAME" desc="The part of the accessible name that indicate if the return to app panel is expanded or collapsed.
+      It also contains a separator (comma) to separate it from the rest of the accessible name that comes before it.">
+        , expanded
+      </message>
+      <message name="VIDEO_CONFERENCE_RETURN_TO_APP_COLLAPSED_ACCESSIBLE_NAME" desc="The part of the accessible name that indicate if the return to app panel is expanded or collapsed.
+      It also contains a separator (comma) to separate it from the rest of the accessible name that comes before it.">
+        , collapsed
+      </message>
 
       <!-- Phone Hub tray-->
       <message name="IDS_ASH_PHONE_HUB_TRAY_ACCESSIBLE_NAME" desc="The accessible name of the Phone Hub tray bubble for screen readers.">
@@ -1850,49 +1880,49 @@ Style notes:
         Set up
       </message>
       <message name="IDS_ASH_PHONE_HUB_ALL_FEATURES_OPT_IN_DESCRIPTION" desc="Description for the notification and apps opt in view.">
-        View your phone's recent photos, media, notifications, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's recent photos, media, notifications, and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_ALL_FEATURES_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button in the notification and apps opt in view">
-        Set up your phone's recent photos, media, notifications, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's recent photos, media, notifications, and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_ALL_FEATURES_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the dismiss button in the notification and apps opt in view">
-        Dismiss setting up your phone's recent photos, media, notifications, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's recent photos, media, notifications, and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_APPS_OPT_IN_DESCRIPTION" desc="Description for the notification and apps opt in view.">
-        View your phone's notifications and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's notifications and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_APPS_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button for the notification and apps opt in view.">
-        Set up your phone's notifications and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's notifications and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_APPS_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name the dismiss button for the notification and apps opt in view.">
-        Dismiss setting up your phone's notifications and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's notifications and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
-        View your phone's notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's notifications
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button for the notification opt in view.">
-        Set up viewing your phone's notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's notifications
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name the dismiss button for the notification opt in view.">
-        Dismiss setting up viewing your phone's notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's notifications
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_CAMERA_ROLL_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
-        View your phone's recent photos, media, and notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's recent photos, media, and notifications
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_CAMERA_ROLL_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button for the notification opt in view.">
-        Set up viewing your phone's recent photos, media, and notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's recent photos, media, and notifications
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_CAMERA_ROLL_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the dismiss button for the notification opt in view.">
-        Dismiss setting up viewing your phone's recent photos, media, and notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's recent photos, media, and notifications
       </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_AND_APPS_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
-        View your phone's recent photos, media, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's recent photos, media, and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_AND_APPS_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button for the notification opt in view.">
-        View your phone's recent photos, media, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's recent photos, media, and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_AND_APPS_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the dismiss button for the notification opt in view.">
-        View your phone's recent photos, media, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's recent photos, media, and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_APP_STREAM_LAUNCHER_TITLE" desc="Title for the launcher that displays apps from your phone.">
         Apps from your phone
@@ -1904,22 +1934,22 @@ Style notes:
         Not supported by app
       </message>
       <message name="IDS_ASH_PHONE_HUB_APPS_OPT_IN_DESCRIPTION" desc="Description for the apps opt in view.">
-        View your phone's apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_APPS_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name the set up button for the apps opt in view.">
-        Set up viewing your phone's apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_APPS_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the dismiss button for the apps opt in view.">
-        Dismiss setting up viewing your phone's apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_OPT_IN_DESCRIPTION" desc="Description for the camera roll opt in view.">
-        View your phone's recent photos and media on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's recent photos and media
       </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Description for the camera roll opt in view.">
-        Set up viewing your phone's recent photos and media on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's recent photos and media
       </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Description for the camera roll opt in view.">
-        Dismiss setting up viewing your phone's recent photos and media on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's recent photos and media
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_HOTSPOT_FAILED_TITLE" desc="Title inside a PhoneHub notification when enable hotspot failed to find a connection.">
         Hotspot connection failed
@@ -2084,10 +2114,10 @@ Style notes:
         CPU usage snapshot, <ph name="CPU_USEAGE">$1<ex>89</ex></ph>%. Temperature <ph name="TEMPERATURE">$2<ex>34</ex></ph> degrees celsius, current speed: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ">$3<ex>1.52</ex></ph>GHz
       </message>
       <message name="IDS_ASH_MEMORY_USAGE_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the answer card with the current memory usage information in the launcher.">
-        Memory <ph name="USED_MEMORY">$1<ex>2.4 GB</ex></ph> | <ph name="TOTAL_MEMORY">$2<ex>7.6 GB</ex></ph> total
+        Memory <ph name="AVAILABLE_MEMORY">$1<ex>2.4 GB</ex></ph> | <ph name="TOTAL_MEMORY">$2<ex>7.6 GB</ex></ph> total
       </message>
       <message name="IDS_ASH_MEMORY_USAGE_IN_LAUNCHER_ACCESSIBILITY_LABEL" desc="Message content for the accessibility label of the answer card with the current memory usage information in the launcher.">
-        Memory <ph name="USED_MEMORY">$1<ex>2.4 GB</ex></ph> available out of <ph name="TOTAL_MEMORY">$2<ex>7.6 GB</ex></ph> total
+        Memory <ph name="AVAILABLE_MEMORY">$1<ex>2.4 GB</ex></ph> available out of <ph name="TOTAL_MEMORY">$2<ex>7.6 GB</ex></ph> total
       </message>
       <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_DESCRIPTION_LEFT_SHORT" desc="Message content for the short description on the left of the battery answer card.">
         Battery <ph name="BATTERY_PERCENTAGE">$1<ex>56</ex></ph>%
@@ -2504,13 +2534,19 @@ Style notes:
         Last desk can't be removed.
       </message>
       <message name="IDS_ASH_DESKS_ACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP" desc="The accessibility tooltip read by screen readers for a highlighted active desk mini_view.">
-        Active desk.
+        active desk
       </message>
       <message name="IDS_ASH_DESKS_INACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP" desc="The accessibility tooltip read by screen readers for a highlighted inactive desk mini_view.">
-        Inactive desk.
+        inactive desk
+      </message>
+      <message name="IDS_ASH_DESKS_DESK_NAME" desc="Alert when highlighting the desk name">
+        Desk name
       </message>
       <message name="IDS_ASH_DESKS_DESK_ACCESSIBLE_NAME" desc="The full accessible desk name">
         Desk: <ph name="DESK_NAME">$1</ph>
+      </message>
+      <message name="IDS_ASH_DESKS_DESK_PREVIEW_A11Y_NAME" desc="The full accessible desk name">
+        Go to <ph name="ACTIVE_STATE">$1</ph> <ph name="DESK_NAME">$2</ph> button.
       </message>
       <message name="IDS_ASH_DESKS_DESK_NAME_COMMIT" desc="Alert when the desk name is committed">
         Desk name was changed to <ph name="DESK_NAME">$1</ph>
@@ -2690,6 +2726,9 @@ Turning on battery saver to increase your battery life.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK" desc="The label used in the network dialog header. [CHAR_LIMIT=18]">
         Network
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_INTERNET" desc="The label used in the network dialog header. [CHAR_LIMIT=18]">
+        Internet
+      </message>
       <message name="IDS_ASH_QUICK_SETTINGS_KNOWN_NETWORKS" desc="The label used in the network detailed page for the known networks group">
         Known networks
       </message>
@@ -2698,6 +2737,9 @@ Turning on battery saver to increase your battery life.
       </message>
       <message name="IDS_ASH_QUICK_SETTINGS_JOIN_WIFI_NETWORK" desc="The label used in the network detailed page for the Join Wi-Fi network entry">
         Join Wi-Fi network
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_ADD_ESIM" desc="The label used in the network detailed page for the Add eSIM network entry">
+        Add eSIM
       </message>
       <message name="IDS_ASH_QUICK_SETTINGS_NETWORK_DISABLED" desc="Network disabled label in the quick settings bubble network subpage." meaning="Network is disabled.">
         Off
@@ -3146,6 +3188,14 @@ Turning on battery saver to increase your battery life.
         Noise cancellation
       </message>
 
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_INPUT_HFP_MIC_SR" desc="label used for input hfp mic sr toggle">
+        Bluetooth Super Resolution
+      </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_NBS_MESSAGE_HFP_MIC_SR_SUPPORTED" desc="label used to warn that NBS is in use and hfp mic sr supported">
+        Your Chromebook or Bluetooth device is using an older version of Bluetooth. Turn on the Bluetooth Super Resolution or use internal microphone for better audio quality.
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_NBS_MESSAGE" desc="label used to warn that NBS is in use">
         Your Chromebook or Bluetooth device is using an older version of Bluetooth. Use the internal microphone for better audio quality.
       </message>
@@ -3415,6 +3465,12 @@ Turning on battery saver to increase your battery life.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING" desc="Message for the network list when activating a network.">
         <ph name="NAME">$1<ex>YBH Cellular</ex></ph>: Activating...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING_WITH_NICK_NAME" desc="Message for the network list when activating a network.">
+        <ph name="NAME">$1<ex>YBH Cellular</ex></ph> · <ph name="SERVICE_PROVIDER">$2<ex>T-Mobile</ex></ph>: Activating...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ITEM_TITLE" desc="Label for a network shown in a list in settings and oobe displaying its name and subtitle.">
+        <ph name="NETWORK_NAME">$1<ex>My Verizon eSIM</ex></ph> · <ph name="SERVICE_PROVIDER">$2<ex>Verizon Wireless</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED" desc="Description in status area or network list when no network is connected.">
         No network
@@ -6865,6 +6921,69 @@ New install
       <message name="IDS_GLANCEABLES_ERROR_DISMISS" desc="A glanceables bubble (classroom or tasks) displays a notification with an error message when an error occurs during any action within said glaceables bubble. This is the text that is displayed on the button within said notification in order to dismiss it.">
         Dismiss
       </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_SEE_ALL_BUTTON_ACCESSIBLE_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. Glanceables UI renders only limited number of items, the rest of them can be seen by clicking this button, which will open a corresponding website. This is the text announced by ChromeVox for this button.">
+        See all classwork on Google Classroom website
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_SEE_ALL_BUTTON_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. Glanceables UI renders only limited number of items, the rest of them can be seen by clicking this button, which will open a corresponding website. This is the text announced by ChromeVox for this button.">
+        See all tasks on Google tasks on web
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_HAS_DUE_DATE_ACCESSIBLE_DESCRIPTION" desc="The glanceable displays tasks items fetched from Google Tasks API. This text is the part of a11y description to announce that a task has attached due date as part of its metadata.">
+        due date <ph name="DUE_DATE">$1<ex>Wed, Aug 23</ex></ph>
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_HAS_SUBTASK_ACCESSIBLE_DESCRIPTION" desc="The glanceable displays tasks items fetched from Google Tasks API. This text is the part of a11y description to announce that a task contains any number of subtasks.">
+        subtask
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_HAS_DETAILS_ACCESSIBLE_DESCRIPTION" desc="The glanceable displays tasks items fetched from Google Tasks API. This text is the part of a11y description to announce that a task contains additional details.">
+        details
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_METADATA_WRAPPER_ACCESSIBLE_DESCRIPTION" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the wrapper text for the a11y description to announce that a task has additional metadata (due date, subtasks, details, etc.).">
+        This item has: <ph name="GLANCEABLES_TASK_ITEM_METADATA">$1<ex>due date Wed, Aug 23, subtask, details</ex></ph>.
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_MARK_COMPLETED_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the a11y name announced by ChromeVox for the checkbox button to mark a task as completed.">
+        Mark completed
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_MARK_NOT_COMPLETED_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the a11y name announced by ChromeVox for the checkbox button to mark a task as not completed.">
+        Mark as not completed
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_STUDENT_DUE_SOON_LIST_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the name of the list that contains assigned (pending / not completed) student assignments w/ due date in the future.">
+        Due soon
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_STUDENT_NO_DUE_DATE_LIST_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the name of the list that contains assigned (pending / not completed) student assignments w/o specified due date.">
+        No due date
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_STUDENT_MISSING_LIST_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the name of the list that contains assigned (pending / not completed) student assignments with missed due date.">
+        Missing
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_STUDENT_DONE_LIST_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the name of the list that contains completed student assignments.">
+        Done
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_ASSIGNMENT_DUE_ACCESSIBLE_DESCRIPTION" desc="The classroom glanceable displays classroom items for student and/or teachers fetched from Google Classroom API. This text is the part of a11y description to announce that an assignment has a due date and/or time.">
+        due <ph name="DUE_DATE_AND_TIME">$1<ex>Wed, Aug 23</ex></ph>
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_ASSIGNMENT_SUBMISSIONS_STATE_ACCESSIBLE_DESCRIPTION" desc="The teacher classroom glanceable shows upcoming/missed/completed assignments from Google Classroom. For each assignment item, this text displays the number of submissions turned in along side the total number of sumbissions. Then this text also displays the number of submissions currently graded.">
+        <ph name="NUM_TURNED_IN">$1<ex>8</ex></ph> of <ph name="TOTAL_NUM_OF_SUBMISSIONS">$2<ex>22</ex></ph> turned in, <ph name="NUM_GRADED">$3<ex>5</ex></ph> graded
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_DROPDOWN_ACCESSIBLE_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the a11y name announced by ChromeVox for the dropdown menu allowing to switch assignments lists: Due soon, No due date, etc.">
+        Classwork type
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_SELECTED_LIST_ACCESSIBLE_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the a11y name announced by ChromeVox for the active assignments list: Due soon, No due date, etc.">
+        Classwork type: <ph name="GLANCEABLES_CLASSROOM_LIST_NAME">$1<ex>Due soon</ex></ph>
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_DROPDOWN_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the a11y name announced by ChromeVox for the dropdown menu allowing to switch tasks lists.">
+        Google tasks list
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_SELECTED_LIST_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the a11y name announced by ChromeVox for the active tasks list.">
+        Google tasks list: <ph name="GLANCEABLES_TASKS_LIST_NAME">$1<ex>Task List 1</ex></ph>
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_SELECTED_LIST_EMPTY_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the text announced by ChromeVox in case the selected tasks list is empty.">
+        Selected list empty, navigate down to add a new task
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_HEADER_ICON_ACCESSIBLE_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the a11y name announced by ChromeVox for the top left corner header icon that opens Google Classroom website (home page).">
+        Google Classroom website
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_HEADER_ICON_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the a11y name announced by ChromeVox for the top left corner header icon that opens Google Calendar website with the companion app panel open.">
+        Google tasks on web
+      </message>
 
       <!-- Do Not Disturb notification -->
       <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_TITLE" desc="Label used for the notification that shows up when the 'Do Not Disturb' feature is enabled.">
@@ -6909,6 +7028,9 @@ To shut down the device, press and hold the power button on the device again.
       </message>
 
       <!-- Welcome Tour -->
+      <message name="IDS_ASH_WELCOME_TOUR_COMPLETE_BUTTON_TEXT" desc="Text shown on the button that completes the System UI Welcome Tour tutorial when triggered and opens the Explore app.">
+       Open Explore
+      </message>
       <message name="IDS_ASH_WELCOME_TOUR_DIALOG_ACCEPT_BUTTON_TEXT" desc="Text shown on the dialog's button that starts the System UI Welcome Tour tutorial when triggered.">
         Quick tour
       </message>
@@ -6916,10 +7038,10 @@ To shut down the device, press and hold the power button on the device again.
         No thanks
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_DIALOG_DESCRIPTION_TEXT" desc="Text shown in the body of the dialog as part of the System UI Welcome Tour.">
-        Take a quick tour to get off to a smooth start. With 6 steps, it will just take a few minutes.
+        Take a quick tour to learn how to get around your Chromebook. Get up and running in 6 steps.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_DIALOG_TITLE_TEXT" desc="Text shown as the Welcome Tour dialog title.">
-        Hi there. Chromebooks are a little different.
+        Hi there. Chromebook is a little different.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_EXPLORE_APP_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the Explore app as part of the System UI Welcome Tour.">
         Those were the basics! Continue in Explore, our built-in app for tips and help. You’ll find tips for getting started, recommended apps, special offers, and the newest Chromebook features.
@@ -6970,37 +7092,91 @@ To shut down the device, press and hold the power button on the device again.
         Toolbar
       </message>
 
-      <!-- TODO(b/286937607): Finalize and translate these strings -->
       <!-- Input device settings notifications -->
-      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_ALT_RIGHT_CLICK" translateable="false" desc="">
-        The Alt + click keyboard shortcut has changed. To use your keyboard to right-click, press the Launcher key + click.
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_ALT_RIGHT_CLICK" desc="The message shown to notify a user that the shortcut used to simulate a right-click using touchpad and keyboard has changed.">
+        The right-click shortcut is updated to <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> key + click from alt + click
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_LAUNCHER_RIGHT_CLICK" translateable="false" desc="">
-        The Launcher + click keyboard shortcut has changed. To use your keyboard to right-click, press the Alt key + click.
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_LAUNCHER_RIGHT_CLICK" desc="The message shown to notify a user that the shortcut used to simulate a right-click using touchpad and keyboard has changed.">
+        The right-click shortcut is updated to alt + click from <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> key + click
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_RIGHT_CLICK_DISABLED" translateable="false" desc="">
-        Simulating a right-click using touchpad and keyboard is disabled, visit device settings to configure.
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_RIGHT_CLICK_DISABLED" desc="The message shown to notify a user that the shortcut used to simulate a right-click using touchpad and keyboard is disabled.">
+        The right-click shortcut is currently off
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_INSERT" translateable="false" desc="Label for the Insert 6-pack key.">
+      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_INSERT" desc="Label for the Insert 6-pack key.">
         insert
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_HOME" translateable="false" desc="Label for the Home 6-pack key.">
+      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_HOME" desc="Label for the Home 6-pack key.">
         home
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_END" translateable="false" desc="Label for the End 6-pack key.">
+      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_END" desc="Label for the End 6-pack key.">
         end
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_PAGE_UP" translateable="false" desc="Label for the PageUp 6-pack key.">
+      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_PAGE_UP" desc="Label for the PageUp 6-pack key.">
         page up
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_PAGE_DOWN" translateable="false" desc="Label for the PageDown 6-pack key.">
+      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_PAGE_DOWN" desc="Label for the PageDown 6-pack key.">
         page down
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_DELETE" translateable="false" desc="Label for the Delete 6-pack key.">
+      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_DELETE" desc="Label for the Delete 6-pack key.">
         delete
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_SIX_PACK_KEY" translateable="false" desc="">
-        The keyboard shortcut to use the <ph name="SIX_PACK_KEY_NAME">$1<ex>Delete</ex></ph> key has changed, visit device settings to configure the shortcut.
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_SIX_PACK_SHORTCUT_DISABLED" desc="">
+        The <ph name="SIX_PACK_KEY_NAME">$1<ex>delete</ex></ph> shortcut is currently off
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_SIX_PACK_KEY" desc="">
+        The <ph name="SIX_PACK_KEY_NAME">$1<ex>delete</ex></ph> shortcut is updated to <ph name="NEW_SHORTCUT">$2<ex>search + backspace</ex></ph> from <ph name="OLD_SHORTCUT">$3<ex>alt + backspace</ex></ph>
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_DELETE_ALT" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        alt + backspace
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_DELETE_SEARCH" desc="In the keyboard settings subpage, the dropdown list item for the search + backspace option.">
+        <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> + backspace
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_HOME_ALT" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        ctrl + alt + up arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_HOME_SEARCH" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> + left arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_END_ALT" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        ctrl + alt + down arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_END_SEARCH" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> + right arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_ALT" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        alt + down arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_SEARCH" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> + down arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_PAGE_UP_ALT" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        alt + up arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_PAGE_UP_SEARCH" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> + up arrow
+      </message>
+      <!-- Modifier key names -->
+      <message name="IDS_ASH_SETTINGS_SHORTCUT_MODIFIER_LAUNCHER" desc="Name of the [Launcher] key. This key has a different name and keyboard glyph/icon depending on the device. This is the string for when it is called Launcher and has a circle/launcher icon.">
+        launcher
+      </message>
+      <message name="IDS_ASH_SETTINGS_SHORTCUT_MODIFIER_SEARCH" desc="Name of the [Search] key. This key has a different name and keyboard glyph/icon depending on the device. This is the string for when it is called Search and has a magnifier icon.">
+        search
+      </message>
+      <message name="IDS_ASH_SETTINGS_SHORTCUT_NOTIFICATION_TITLE" desc="Title for shortcut notifications.">
+        Keyboard shortcut has changed
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_RIGHT_CLICK_TITLE" desc="Title for the right-click shortcut changed notification.">
+        Keyboard shortcut has changed
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_RIGHT_CLICK_DISABLED_TITLE" desc="Title for the notification shown when the right-click shortcut is disabled.">
+        Keyboard shortcut is off
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_EDIT_SHORTCUT_BUTTON" desc="Button shown for device settings notifications which links to the settings app.">
+        Edit shortcut
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_LEARN_MORE_BUTTON" desc="Button shown for device settings notifications which opens an article with helpful information related to the notification.">
+        Learn more
       </message>
      </messages>
     </release>

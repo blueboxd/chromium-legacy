@@ -7,8 +7,8 @@
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 #import "base/apple/bundle_locations.h"
+#import "base/apple/foundation_util.h"
 #import "base/ios/block_types.h"
-#import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/common/app_group/app_group_command.h"
 #import "ios/chrome/common/app_group/app_group_constants.h"
@@ -217,11 +217,14 @@ const CGFloat kMediumAlpha = 0.5;
 
 - (void)loadElementsFromContext {
   NSString* typeURL = UTTypeURL.identifier;
+  // TODO(crbug.com/1472758): Reorganize sharing extension handler.
+  BOOL foundMatch = false;
   for (NSExtensionItem* item in self.extensionContext.inputItems) {
     for (NSItemProvider* itemProvider in item.attachments) {
       if ([itemProvider hasItemConformingToTypeIdentifier:typeURL]) {
+        foundMatch = true;
         ItemBlock URLCompletion = ^(id idURL, NSError* error) {
-          NSURL* URL = base::mac::ObjCCast<NSURL>(idURL);
+          NSURL* URL = base::apple::ObjCCast<NSURL>(idURL);
           if (!URL) {
             [self displayErrorView];
             return;
@@ -249,7 +252,7 @@ const CGFloat kMediumAlpha = 0.5;
               valueWithCGSize:CGSizeMake(kScreenShotWidth, kScreenShotHeight)]
         };
         ItemBlock imageCompletion = ^(id imageData, NSError* error) {
-          self->_image = base::mac::ObjCCast<UIImage>(imageData);
+          self->_image = base::apple::ObjCCast<UIImage>(imageData);
           if (self->_image && self.shareView) {
             dispatch_async(dispatch_get_main_queue(), ^{
               [self.shareView setScreenshot:self->_image];
@@ -260,6 +263,11 @@ const CGFloat kMediumAlpha = 0.5;
                                 completionHandler:imageCompletion];
       }
     }
+  }
+
+  // Display the error view when no match have been found.
+  if (!foundMatch) {
+    [self displayErrorView];
   }
 }
 

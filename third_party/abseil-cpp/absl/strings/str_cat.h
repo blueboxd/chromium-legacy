@@ -89,17 +89,19 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <functional>
+#include <limits>
 #include <string>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "absl/base/attributes.h"
 #include "absl/base/port.h"
+#include "absl/meta/type_traits.h"
 #include "absl/strings/internal/has_absl_stringify.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/internal/stringify_sink.h"
@@ -412,93 +414,6 @@ class AlphaNum {
   char digits_[numbers_internal::kFastToBufferSize];
 };
 
-namespace strings_internal {
-
-// Inlining this function improves performance. However, on GCC this triggers
-// [-Werror=stringop-overflow=], and in that case we split declaration and
-// definition as a workaround.
-#if defined(__GNUC__) && !defined(__clang__)
-char* AppendAlphaNum(char* dst, const AlphaNum& a);
-#else
-inline char* AppendAlphaNum(char* dst, const AlphaNum& a) {
-  return std::copy_n(a.data(), a.size(), dst);
-}
-#endif
-
-// It's possible to call StrAppend with an absl::string_view that is itself a
-// fragment of the string we're appending to.  However the results of this are
-// UB. Therefore, check for this in debug mode.  Use unsigned math so we
-// only have to do one comparison. Note, there's an exception case: appending an
-// empty string is always allowed.
-bool HaveOverlap(const std::string& x, absl::string_view y);
-
-// C++14 compatible alternative to left
-// https://en.cppreference.com/w/cpp/language/fold expression.
-// TODO(b/290784225): Remove `FoldLeft` once Abseil drops C++14 support.
-template <typename F, typename Acc>
-auto FoldLeft(const F&, Acc&& acc) {
-  return std::forward<Acc>(acc);
-}
-template <typename F, typename Acc, typename First, typename... Rest>
-auto FoldLeft(const F& f, Acc&& acc, First&& first, Rest&&... rest) {
-  return FoldLeft(f, f(std::forward<Acc>(acc), std::forward<First>(first)),
-                  std::forward<Rest>(rest)...);
-}
-
-template <std::size_t... Indices, typename Tuple>
-inline void StrAppendTemplate(std::index_sequence<Indices...>,
-                              std::string* dest, Tuple args) {
-  // Note on `Is` and `Tuple`:
-  //
-  //   The goal is to pass N arguments to `StrAppend` and retain `N` as a
-  //   compile-time constant. Thus, we cannot use dynamically sized collections
-  //   such as `absl::Span` or `std::initialized_list`: `std::tuple` comes to
-  //   the rescue.
-  //   `Tuple` is a fixed-sized collection of N elements of `const AlphaNum&`.
-  //   `Indices` is deduced from `std::make_index_sequence<N>` and is used as a
-  //   helper to writing Fold expressions on `Tuple`.
-  assert(FoldLeft(std::logical_and<>{},
-                  !HaveOverlap(*dest, std::get<Indices>(args).Piece())...));
-  size_t old_size = dest->size();
-  size_t new_size =
-      FoldLeft(std::plus<>{}, old_size, std::get<Indices>(args).size()...);
-  strings_internal::STLStringResizeUninitializedAmortized(dest, new_size);
-  FoldLeft(AppendAlphaNum, &(*dest)[old_size], std::get<Indices>(args)...);
-}
-
-template <std::size_t... Indices, typename Tuple>
-inline std::string StrCatTemplate(std::index_sequence<Indices...>, Tuple args) {
-  // See implementation comments in `StrAppendTemplate`.
-  std::string dest;
-  size_t size = FoldLeft(std::plus<size_t>{}, size_t{0},
-                         std::get<Indices>(args).size()...);
-  strings_internal::STLStringResizeUninitializedAmortized(&dest, size);
-  FoldLeft(AppendAlphaNum, &dest[0], std::get<Indices>(args)...);
-  return dest;
-}
-
-// Template functions `StrAppendImpl` and `StrCatImpl` are not exported directly
-// due to historical reasons: there are many existing dependencies that expect
-// 0-4 argument overloads to be non-template functions. Hence implementations
-// are wrapped to keep the compatibility (0-4 arguments only, 5+ arguments are
-// templates).
-
-template <typename... AV>
-inline void StrAppendImpl(std::string* dest, const AV&... args) {
-  strings_internal::StrAppendTemplate(
-      std::make_index_sequence<sizeof...(AV)>{}, dest,
-      std::forward_as_tuple(static_cast<const AlphaNum&>(args)...));
-}
-
-template <typename... AV>
-inline std::string StrCatImpl(const AV&... args) {
-  return strings_internal::StrCatTemplate(
-      std::make_index_sequence<sizeof...(AV)>{},
-      std::forward_as_tuple(static_cast<const AlphaNum&>(args)...));
-}
-
-}  // namespace strings_internal
-
 // -----------------------------------------------------------------------------
 // StrCat()
 // -----------------------------------------------------------------------------
@@ -526,32 +441,95 @@ inline std::string StrCatImpl(const AV&... args) {
 // quadratic time operation with O(n) dynamic allocations.
 //
 // See `StrAppend()` below for more information.
+
+namespace strings_internal {
+
+// Do not call directly - this is not part of the public API.
+std::string CatPieces(std::initializer_list<absl::string_view> pieces);
+void AppendPieces(std::string* dest,
+                  std::initializer_list<absl::string_view> pieces);
+
+template <typename Integer>
+std::string IntegerToString(Integer i) {
+  // Any integer (signed/unsigned) up to 64 bits can be formatted into a buffer
+  // with 22 bytes (including NULL at the end).
+  constexpr size_t kMaxDigits10 = 22;
+  std::string result;
+  strings_internal::STLStringResizeUninitialized(&result, kMaxDigits10);
+  char* start = &result[0];
+  // note: this can be optimized to not write last zero.
+  char* end = numbers_internal::FastIntToBuffer(i, start);
+  auto size = static_cast<size_t>(end - start);
+  assert((size < result.size()) &&
+         "StrCat(Integer) does not fit into kMaxDigits10");
+  result.erase(size);
+  return result;
+}
+template <typename Float>
+std::string FloatToString(Float f) {
+  std::string result;
+  strings_internal::STLStringResizeUninitialized(
+      &result, numbers_internal::kSixDigitsToBufferSize);
+  char* start = &result[0];
+  result.erase(numbers_internal::SixDigitsToBuffer(f, start));
+  return result;
+}
+
+// `SingleArgStrCat` overloads take built-in `int`, `long` and `long long` types
+// (signed / unsigned) to avoid ambiguity on the call side. If we used int32_t
+// and int64_t, then at least one of the three (`int` / `long` / `long long`)
+// would have been ambiguous when passed to `SingleArgStrCat`.
+inline std::string SingleArgStrCat(int x) { return IntegerToString(x); }
+inline std::string SingleArgStrCat(unsigned int x) {
+  return IntegerToString(x);
+}
+// NOLINTNEXTLINE
+inline std::string SingleArgStrCat(long x) { return IntegerToString(x); }
+// NOLINTNEXTLINE
+inline std::string SingleArgStrCat(unsigned long x) {
+  return IntegerToString(x);
+}
+// NOLINTNEXTLINE
+inline std::string SingleArgStrCat(long long x) { return IntegerToString(x); }
+// NOLINTNEXTLINE
+inline std::string SingleArgStrCat(unsigned long long x) {
+  return IntegerToString(x);
+}
+inline std::string SingleArgStrCat(float x) { return FloatToString(x); }
+inline std::string SingleArgStrCat(double x) { return FloatToString(x); }
+
+
+template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>{} &&
+                                                  !std::is_same<T, char>{}>>
+using EnableIfFastCase = T;
+
+}  // namespace strings_internal
+
 ABSL_MUST_USE_RESULT inline std::string StrCat() { return std::string(); }
+
+template <typename T>
+ABSL_MUST_USE_RESULT inline std::string StrCat(
+    strings_internal::EnableIfFastCase<T> a) {
+  return strings_internal::SingleArgStrCat(a);
+}
 ABSL_MUST_USE_RESULT inline std::string StrCat(const AlphaNum& a) {
   return std::string(a.data(), a.size());
 }
-ABSL_MUST_USE_RESULT inline std::string StrCat(const AlphaNum& a,
-                                               const AlphaNum& b) {
-  return strings_internal::StrCatImpl(a, b);
-}
-ABSL_MUST_USE_RESULT inline std::string StrCat(const AlphaNum& a,
-                                               const AlphaNum& b,
-                                               const AlphaNum& c) {
-  return strings_internal::StrCatImpl(a, b, c);
-}
-ABSL_MUST_USE_RESULT inline std::string StrCat(const AlphaNum& a,
-                                               const AlphaNum& b,
-                                               const AlphaNum& c,
-                                               const AlphaNum& d) {
-  return strings_internal::StrCatImpl(a, b, c, d);
-}
+
+ABSL_MUST_USE_RESULT std::string StrCat(const AlphaNum& a, const AlphaNum& b);
+ABSL_MUST_USE_RESULT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
+                                        const AlphaNum& c);
+ABSL_MUST_USE_RESULT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
+                                        const AlphaNum& c, const AlphaNum& d);
 
 // Support 5 or more arguments
 template <typename... AV>
 ABSL_MUST_USE_RESULT inline std::string StrCat(
     const AlphaNum& a, const AlphaNum& b, const AlphaNum& c, const AlphaNum& d,
     const AlphaNum& e, const AV&... args) {
-  return strings_internal::StrCatImpl(a, b, c, d, e, args...);
+  return strings_internal::CatPieces(
+      {a.Piece(), b.Piece(), c.Piece(), d.Piece(), e.Piece(),
+       static_cast<const AlphaNum&>(args).Piece()...});
 }
 
 // -----------------------------------------------------------------------------
@@ -580,27 +558,23 @@ ABSL_MUST_USE_RESULT inline std::string StrCat(
 //   std::string s = "foobar";
 //   absl::string_view p = s;
 //   StrAppend(&s, p);
+
 inline void StrAppend(std::string*) {}
-inline void StrAppend(std::string* dest, const AlphaNum& a) {
-  strings_internal::StrAppendImpl(dest, a);
-}
-inline void StrAppend(std::string* dest, const AlphaNum& a, const AlphaNum& b) {
-  strings_internal::StrAppendImpl(dest, a, b);
-}
-inline void StrAppend(std::string* dest, const AlphaNum& a, const AlphaNum& b,
-                      const AlphaNum& c) {
-  strings_internal::StrAppendImpl(dest, a, b, c);
-}
-inline void StrAppend(std::string* dest, const AlphaNum& a, const AlphaNum& b,
-                      const AlphaNum& c, const AlphaNum& d) {
-  strings_internal::StrAppendImpl(dest, a, b, c, d);
-}
+void StrAppend(std::string* dest, const AlphaNum& a);
+void StrAppend(std::string* dest, const AlphaNum& a, const AlphaNum& b);
+void StrAppend(std::string* dest, const AlphaNum& a, const AlphaNum& b,
+               const AlphaNum& c);
+void StrAppend(std::string* dest, const AlphaNum& a, const AlphaNum& b,
+               const AlphaNum& c, const AlphaNum& d);
+
 // Support 5 or more arguments
 template <typename... AV>
 inline void StrAppend(std::string* dest, const AlphaNum& a, const AlphaNum& b,
                       const AlphaNum& c, const AlphaNum& d, const AlphaNum& e,
                       const AV&... args) {
-  strings_internal::StrAppendImpl(dest, a, b, c, d, e, args...);
+  strings_internal::AppendPieces(
+      dest, {a.Piece(), b.Piece(), c.Piece(), d.Piece(), e.Piece(),
+             static_cast<const AlphaNum&>(args).Piece()...});
 }
 
 // Helper function for the future StrCat default floating-point format, %.6g

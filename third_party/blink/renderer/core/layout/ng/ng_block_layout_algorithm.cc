@@ -244,7 +244,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
       fit_all_lines_(false),
       is_resuming_(IsBreakInside(params.break_token)),
       abort_when_bfc_block_offset_updated_(false),
-      has_processed_first_child_(false),
+      has_break_opportunity_before_next_child_(false),
       ignore_line_clamp_(false),
       is_line_clamp_context_(params.space.IsLineClampContext()),
       lines_until_clamp_(params.space.LinesUntilClamp()) {
@@ -604,23 +604,29 @@ inline const NGLayoutResult* NGBlockLayoutAlgorithm::Layout(
 
   LayoutUnit content_edge = BorderScrollbarPadding().block_start;
 
-  if (BreakToken() && BreakToken()->MonolithicOverflow()) {
-    // If we have been pushed by monolithic overflow that started on a previous
-    // page, we'll behave as if there's a valid breakpoint before the first
-    // child here, and that it has perfect break appeal. This isn't always
-    // strictly correct (the monolithic content in question may have
-    // break-after:avoid, for instance), but should be a reasonable approach,
-    // unless we want to make a bigger effort.
-    //
-    // So just pretend that we have processed the first child already.
-    // TODO(layout-dev): Consider renaming has_processed_first_child_.
-    has_processed_first_child_ = true;
-  }
-
   NGPreviousInflowPosition previous_inflow_position = {
       LayoutUnit(), ConstraintSpace().MarginStrut(),
       is_resuming_ ? LayoutUnit() : container_builder_.Padding().block_start,
       /* self_collapsing_child_had_clearance */ false};
+
+  if (BreakToken()) {
+    if (IsBreakInside(BreakToken()) && !BreakToken()->IsForcedBreak() &&
+        !BreakToken()->IsCausedByColumnSpanner()) {
+      // If the block container is being resumed after an unforced break,
+      // margins inside may be adjoining with the fragmentainer boundary.
+      previous_inflow_position.margin_strut.discard_margins = true;
+    }
+
+    if (BreakToken()->MonolithicOverflow()) {
+      // If we have been pushed by monolithic overflow that started on a
+      // previous page, we'll behave as if there's a valid breakpoint before the
+      // first child here, and that it has perfect break appeal. This isn't
+      // always strictly correct (the monolithic content in question may have
+      // break-after:avoid, for instance), but should be a reasonable approach,
+      // unless we want to make a bigger effort.
+      has_break_opportunity_before_next_child_ = true;
+    }
+  }
 
   // Do not collapse margins between parent and its child if:
   //
@@ -831,17 +837,6 @@ inline const NGLayoutResult* NGBlockLayoutAlgorithm::Layout(
           // layout of the fragment. No more siblings should be processed.
           break;
         }
-
-        // Once we have added a child, there'll be a valid class A/B breakpoint
-        // [1] before consecutive siblings, which implies that we have container
-        // separation, which means that we may break before such siblings.
-        // Exclude children in parallel flows, since they shouldn't affect this
-        // flow.
-        //
-        // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
-        has_processed_first_child_ =
-            !child_break_token || !child_break_token->IsBlockType() ||
-            !To<NGBlockBreakToken>(child_break_token)->IsAtBlockEnd();
       }
     }
   }
@@ -1556,7 +1551,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleNewFormattingContext(
 
   if (ConstraintSpace().HasBlockFragmentation()) {
     bool has_container_separation =
-        has_processed_first_child_ ||
+        has_break_opportunity_before_next_child_ ||
         child_bfc_offset.block_offset > child_bfc_offset_estimate ||
         layout_result->IsPushedByFloats();
     NGBreakStatus break_status = BreakBeforeChildIfNeeded(
@@ -1593,6 +1588,13 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleNewFormattingContext(
       *previous_inflow_position, child, child_data,
       child_bfc_offset.block_offset, logical_offset, *layout_result, fragment,
       /* self_collapsing_child_had_clearance */ false);
+
+  if (ConstraintSpace().HasBlockFragmentation() &&
+      !has_break_opportunity_before_next_child_) {
+    has_break_opportunity_before_next_child_ =
+        HasBreakOpportunityBeforeNextChild(physical_fragment,
+                                           child_break_token);
+  }
 
   return NGLayoutResult::kSuccess;
 }
@@ -2097,7 +2099,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
       // that gets pushed down (the container and the child may have adjoining
       // block-start margins).
       bool has_container_separation =
-          has_processed_first_child_ ||
+          has_break_opportunity_before_next_child_ ||
           (!container_builder_.IsPushedByFloats() &&
            (layout_result->IsPushedByFloats() || is_line_box_pushed_by_floats));
 
@@ -2225,6 +2227,14 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
           previous_inflow_position->logical_block_offset;
     }
   }
+
+  if (ConstraintSpace().HasBlockFragmentation() &&
+      !has_break_opportunity_before_next_child_) {
+    has_break_opportunity_before_next_child_ =
+        HasBreakOpportunityBeforeNextChild(physical_fragment,
+                                           child_break_token);
+  }
+
   return NGLayoutResult::kSuccess;
 }
 
@@ -2283,8 +2293,7 @@ NGInflowChildData NGBlockLayoutAlgorithm::ComputeChildData(
           margins.LineLeft(ConstraintSpace().Direction()),
       BfcBlockOffset() + logical_block_offset};
 
-  return {child_bfc_offset, margin_strut, margins,
-          IsBreakInside(child_block_break_token)};
+  return NGInflowChildData(child_bfc_offset, margin_strut, margins);
 }
 
 NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
@@ -2869,11 +2878,6 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     }
     builder.SetIsLineClampContext(is_line_clamp_context_);
     builder.SetLinesUntilClamp(lines_until_clamp_);
-  } else if (child_data.allow_discard_start_margin) {
-    // If the child is being resumed after a break, margins inside the child may
-    // be adjoining with the fragmentainer boundary, regardless of whether the
-    // child establishes a new formatting context or not.
-    builder.SetDiscardingMarginStrut();
   }
   builder.SetBlockStartAnnotationSpace(block_start_annotation_space);
 
@@ -3171,11 +3175,11 @@ bool NGBlockLayoutAlgorithm::PositionListMarkerWithoutLineBoxes(
 }
 
 bool NGBlockLayoutAlgorithm::IsRubyText(const NGLayoutInputNode& child) const {
-  return Node().IsRubyRun() && child.IsRubyText();
+  return Node().IsRubyColumn() && child.IsRubyText();
 }
 
 void NGBlockLayoutAlgorithm::HandleRubyText(NGBlockNode ruby_text_child) {
-  DCHECK(Node().IsRubyRun());
+  DCHECK(Node().IsRubyColumn());
 
   const NGBlockBreakToken* break_token = nullptr;
   if (const auto* token = BreakToken()) {

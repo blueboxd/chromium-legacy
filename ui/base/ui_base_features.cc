@@ -111,6 +111,28 @@ BASE_FEATURE(kLacrosResourcesFileSharing,
 BASE_FEATURE(kAlwaysConfirmComposition,
              "AlwaysConfirmComposition",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables settings that allow users to remap the F11 and F12 keys in the
+// "Customize keyboard keys" page.
+BASE_FEATURE(kSupportF11AndF12KeyShortcuts,
+             "SupportF11AndF12KeyShortcuts",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool AreF11AndF12ShortcutsEnabled() {
+  // TODO(crbug/1264581): Remove this once kDeviceI18nShortcutsEnabled policy is
+  // deprecated. This policy allows managed users to still be able to use
+  // deprecated legacy shortcuts which some enterprise customers rely on.
+  if (::ui::ShortcutMappingPrefDelegate::IsInitialized()) {
+    ::ui::ShortcutMappingPrefDelegate* instance =
+        ::ui::ShortcutMappingPrefDelegate::GetInstance();
+    if (instance && instance->IsDeviceEnterpriseManaged()) {
+      return instance->IsI18nShortcutPrefEnabled() &&
+             base::FeatureList::IsEnabled(
+                 features::kSupportF11AndF12KeyShortcuts);
+    }
+  }
+  return base::FeatureList::IsEnabled(features::kSupportF11AndF12KeyShortcuts);
+}
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
@@ -299,7 +321,12 @@ bool IsDeprecateAltBasedSixPackEnabled() {
 // TODO(b/262297017): Clean up after touch text editing redesign ships.
 BASE_FEATURE(kTouchTextEditingRedesign,
              "TouchTextEditingRedesign",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_CHROMEOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 bool IsTouchTextEditingRedesignEnabled() {
   return base::FeatureList::IsEnabled(kTouchTextEditingRedesign);
@@ -428,7 +455,14 @@ BASE_FEATURE(kEnableVariableRefreshRate,
              "EnableVariableRefreshRate",
              base::FEATURE_DISABLED_BY_DEFAULT);
 bool IsVariableRefreshRateEnabled() {
-  return base::FeatureList::IsEnabled(kEnableVariableRefreshRate);
+  return base::FeatureList::IsEnabled(kEnableVariableRefreshRate) ||
+         base::FeatureList::IsEnabled(kEnableVariableRefreshRateAlwaysOn);
+}
+BASE_FEATURE(kEnableVariableRefreshRateAlwaysOn,
+             "EnableVariableRefreshRateAlwaysOn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+bool IsVariableRefreshRateAlwaysOn() {
+  return base::FeatureList::IsEnabled(kEnableVariableRefreshRateAlwaysOn);
 }
 
 // Fixes b/267944900.

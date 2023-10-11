@@ -196,8 +196,17 @@ class AuthenticatorRequestDialogModel {
   // to the specific credential to an authenticator that can fulfill it.
   struct Mechanism {
     // These types describe the type of Mechanism.
-    using Credential =
-        base::StrongAlias<class CredentialTag, device::AuthenticatorType>;
+    struct CredentialInfo {
+      CredentialInfo(device::AuthenticatorType source_in,
+                     std::vector<uint8_t> user_id_in);
+      CredentialInfo(const CredentialInfo&);
+      ~CredentialInfo();
+      bool operator==(const CredentialInfo&) const;
+
+      const device::AuthenticatorType source;
+      const std::vector<uint8_t> user_id;
+    };
+    using Credential = base::StrongAlias<class CredentialTag, CredentialInfo>;
     using Transport =
         base::StrongAlias<class TransportTag, AuthenticatorTransport>;
     using WindowsAPI = base::StrongAlias<class WindowsAPITag, absl::monostate>;
@@ -462,6 +471,12 @@ class AuthenticatorRequestDialogModel {
   // was handled.
   bool OnHybridTransportError();
 
+  // To be called when there are no passkeys from an internal authenticator.
+  // This is a rare case but can happen when the user grants passkeys permission
+  // on macOS as part of a request flow and then Chromium realises that the
+  // request should never have been sent to iCloud Keychain in the first place.
+  bool OnNoPasskeys();
+
   // To be called when the Bluetooth adapter powered state changes.
   void OnBluetoothPoweredStateChanged(bool powered);
 
@@ -520,7 +535,7 @@ class AuthenticatorRequestDialogModel {
 
   virtual base::span<const Mechanism> mechanisms() const;
   absl::optional<int> priority_mechanism_index() const {
-    return priority_mechanism_index_;
+    return ephemeral_state_.priority_mechanism_index_;
   }
 
   // Contacts the "priority" paired phone. This is only valid to call when there
@@ -627,15 +642,24 @@ class AuthenticatorRequestDialogModel {
 
   bool offer_try_again_in_ui() const { return offer_try_again_in_ui_; }
 
+  void set_allow_icloud_keychain(bool);
+  void set_should_create_in_icloud_keychain(bool);
+
 #if BUILDFLAG(IS_MAC)
   void RecordMacOsStartedHistogram();
   void RecordMacOsSuccessHistogram(device::FidoRequestType,
                                    device::AuthenticatorType);
+  void set_is_active_profile_authenticator_user(bool);
+  void set_has_icloud_drive_enabled(bool);
+  void set_local_biometrics_override_for_testing(bool);
 #endif
 
   base::WeakPtr<AuthenticatorRequestDialogModel> GetWeakPtr();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MultiplePlatformAuthenticatorsTest,
+                           DeduplicateAccounts);
+
   // Contains the state that will be reset when calling StartOver(). StartOver()
   // might be called at an arbitrary point of execution.
   struct EphemeralState {
@@ -643,6 +667,10 @@ class AuthenticatorRequestDialogModel {
     EphemeralState(EphemeralState&&);
     EphemeralState& operator=(EphemeralState&&);
     ~EphemeralState();
+
+    // priority_mechanism_index_ contains an index in `mechanisms_` for the
+    // mechanism that should immediately be triggered, if any.
+    absl::optional<size_t> priority_mechanism_index_;
 
     // Represents the id of the Bluetooth authenticator that the user is trying
     // to connect to or conduct WebAuthN request to via the WebAuthN UI.
@@ -666,6 +694,10 @@ class AuthenticatorRequestDialogModel {
     // creds_ contains possible credentials to select between before or after an
     // authenticator has responded to a request.
     std::vector<device::DiscoverableCredentialMetadata> creds_;
+
+    // did_dispatch_to_icloud_keychain_ is true if iCloud Keychain has been
+    // triggered.
+    bool did_dispatch_to_icloud_keychain_ = false;
   };
 
   void ResetEphemeralState();
@@ -711,12 +743,23 @@ class AuthenticatorRequestDialogModel {
   // through Chrome Sync, or absl::nullopt if there isn't one.
   absl::optional<size_t> GetPrioritySyncedPhoneIndex() const;
 
+  // SortRecognizedCredentials sorts
+  // `transport_availability_.recognized_credentials` into username order.
+  void SortRecognizedCredentials();
+
   // PopulateMechanisms fills in |mechanisms_|.
   void PopulateMechanisms();
+
+  // Adds a button that triggers Windows Hello with the specified string ID and
+  // transport icon.
+  void AddWindowsButton(int label, AuthenticatorTransport transport);
 
   // IndexOfPriorityMechanism returns the index, in |mechanisms_|, of the
   // Mechanism that should be triggered immediately, if any.
   absl::optional<size_t> IndexOfPriorityMechanism();
+
+  std::vector<device::DiscoverableCredentialMetadata> RecognizedCredentialsFor(
+      device::AuthenticatorType source);
 
   // Identifier for the RenderFrameHost of the frame that initiated the current
   // request.
@@ -792,18 +835,9 @@ class AuthenticatorRequestDialogModel {
   // extension.
   bool cable_extension_provided_ = false;
 
-  // have_restarted_due_to_windows_cancel_ is set to true if the request was
-  // restarted because the UI jumped directly to the Windows UI but the user
-  // hit cancel.
-  bool have_restarted_due_to_windows_cancel_ = false;
-
   // mechanisms contains the entries that appear in the "transport" selection
   // sheet and the drop-down menu.
   std::vector<Mechanism> mechanisms_;
-
-  // priority_mechanism_index_ contains an index in `mechanisms_` for the
-  // mechanism that should immediately be triggered, if any.
-  absl::optional<size_t> priority_mechanism_index_;
 
   // cable_ui_type_ contains the type of UI to display for a caBLE transaction.
   absl::optional<CableUIType> cable_ui_type_;
@@ -842,11 +876,37 @@ class AuthenticatorRequestDialogModel {
   // with the request.
   device::PublicKeyCredentialUserEntity user_entity_;
 
+  // allow_icloud_keychain_ is true if iCloud Keychain can be used for this
+  // request. It is disabled for Secure Payment Confirmation and other non-
+  // WebAuthn cases, for example.
+  bool allow_icloud_keychain_ = false;
+
+  // should_create_in_icloud_keychain is true if creation requests with
+  // attachment=platform should default to iCloud Keychain rather than the
+  // profile authenticator.
+  bool should_create_in_icloud_keychain_ = false;
+
 #if BUILDFLAG(IS_MAC)
   // did_record_macos_start_histogram_ is set to true if a histogram record of
   // starting the current request was made. Any later successful completion will
   // only be recorded if a start event was recorded first.
   bool did_record_macos_start_histogram_ = false;
+
+  // is_active_profile_authenticator_user_ is true if the current profile has
+  // recently used the platform authenticator on macOS that saves credentials
+  // into the profile.
+  bool is_active_profile_authenticator_user_ = false;
+
+  // has_icloud_drive_enabled_ is true if the current system has iCloud Drive
+  // enabled. This is used as an approximation for whether iCloud Keychain
+  // syncing is enabled.
+  bool has_icloud_drive_enabled_ = false;
+
+  // local_biometrics_override_for_testing_ can be set in tests to override
+  // whether or not the this model should consider local biometrics to be
+  // available. Biometrics can be unavailable on Macs because they're not
+  // present (e.g. a Mac Mini) or because it's a laptop in clamshell mode.
+  absl::optional<bool> local_biometrics_override_for_testing_;
 #endif
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};

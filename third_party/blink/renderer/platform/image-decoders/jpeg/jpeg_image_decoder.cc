@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/image-decoders/exif_reader.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/private/SkJpegMetadataDecoder.h"
 
@@ -164,6 +163,31 @@ blink::BitmapImageMetrics::JpegColorSpace ExtractUMAJpegColorSpace(
     default:
       return blink::BitmapImageMetrics::JpegColorSpace::kUnknown;
   }
+}
+
+void UpdateJpegBppHistogram(gfx::Size size, size_t image_size_bytes) {
+  static constexpr char kType[] = "Jpeg";
+  blink::ImageDecoder::UpdateBppHistogram<kType>(size, image_size_bytes);
+}
+
+constexpr base::HistogramBase::Sample kImageAreaHistogramMin = 1;
+constexpr base::HistogramBase::Sample kImageAreaHistogramMax = 8192 * 8192;
+constexpr int32_t kImageAreaHistogramBucketCount = 100;
+
+void CountJpegArea(const gfx::Size& size) {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      blink::CustomCountHistogram, image_area_histogram,
+      ("Blink.ImageDecoders.Jpeg.Area", kImageAreaHistogramMin,
+       kImageAreaHistogramMax, kImageAreaHistogramBucketCount));
+  // A base::HistogramBase::Sample may not fit |size.Area()|. Hence the use of
+  // saturated_cast.
+  image_area_histogram.Count(
+      base::saturated_cast<base::HistogramBase::Sample>(size.Area64()));
+}
+
+void CountJpegColorSpace(
+    blink::BitmapImageMetrics::JpegColorSpace color_space) {
+  UMA_HISTOGRAM_ENUMERATION("Blink.ImageDecoders.Jpeg.ColorSpace", color_space);
 }
 
 // Rounds |size| to the smallest multiple of |alignment| that is greater than or
@@ -720,9 +744,12 @@ class JPEGImageReader final {
 
       case kJpegDone:
         // Finish decompression.
-        BitmapImageMetrics::CountJpegArea(decoder_->Size());
-        BitmapImageMetrics::CountJpegColorSpace(
-            ExtractUMAJpegColorSpace(info_));
+        CountJpegArea(decoder_->Size());
+        CountJpegColorSpace(ExtractUMAJpegColorSpace(info_));
+        if (info_.jpeg_color_space != JCS_GRAYSCALE &&
+            decoder_->IsAllDataReceived()) {
+          UpdateJpegBppHistogram(decoder_->Size(), data_->size());
+        }
         return jpeg_finish_decompress(&info_);
     }
 
@@ -909,8 +936,6 @@ void JPEGImageDecoder::OnSetData(SegmentReader* data) {
   allow_decode_to_yuv_ =
       // Incremental YUV decoding is not currently supported (crbug.com/943519).
       IsAllDataReceived() &&
-      // TODO(sashamcintosh): Cleanup. Finch experiment is enabled by default.
-      RuntimeEnabledFeatures::DecodeJpeg420ImagesToYUVEnabled() &&
       // Ensures that the reader is created, the scale numbers are known,
       // the color profile is known, and the subsampling is known.
       IsSizeAvailable() &&

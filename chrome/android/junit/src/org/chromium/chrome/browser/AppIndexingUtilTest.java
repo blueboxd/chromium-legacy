@@ -52,14 +52,14 @@ public class AppIndexingUtilTest {
         doReturn(true).when(mUtil).isEnabledForDevice();
         doReturn(false).when(mTab).isIncognito();
 
-        doReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL)).when(mTab).getUrl();
+        doReturn(JUnitTestGURLs.EXAMPLE_URL).when(mTab).getUrl();
         doReturn("My neat website").when(mTab).getTitle();
         doReturn(0L).when(mUtil).getElapsedTime();
         doAnswer(invocation -> {
             DocumentMetadata.GetEntities_Response callback =
                     (DocumentMetadata.GetEntities_Response) invocation.getArguments()[0];
             WebPage webpage = new WebPage();
-            webpage.url = createUrl(JUnitTestGURLs.EXAMPLE_URL);
+            webpage.url = createUrl(JUnitTestGURLs.EXAMPLE_URL.getSpec());
             webpage.title = "My neat website";
             callback.call(webpage);
             return null;
@@ -137,7 +137,8 @@ public class AppIndexingUtilTest {
     @Test
     public void testReportPageView() {
         mUtil.reportPageView(mTab);
-        verify(mReporter).reportWebPageView(eq(JUnitTestGURLs.EXAMPLE_URL), eq("My neat website"));
+        verify(mReporter).reportWebPageView(
+                eq(JUnitTestGURLs.EXAMPLE_URL.getSpec()), eq("My neat website"));
     }
 
     private Url createUrl(String s) {

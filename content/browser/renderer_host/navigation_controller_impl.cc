@@ -63,6 +63,7 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/process_lock.h"
+#include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/debug_urls.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -751,7 +752,8 @@ NavigationControllerImpl::NavigationControllerImpl(
       browser_context_(browser_context),
       delegate_(delegate),
       ssl_manager_(this),
-      get_timestamp_callback_(base::BindRepeating(&base::Time::Now)) {
+      get_timestamp_callback_(base::BindRepeating(&base::Time::Now)),
+      back_forward_cache_(browser_context) {
   DCHECK(browser_context_);
 }
 
@@ -1475,14 +1477,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
     // beyond the last committed one. Therefore, `should_replace_current_entry`
     // should be set, which replaces the current entry, or this should be a
     // reload, which does not create a new entry.
-    // In shadowDOM fenced frames, on a history/tab-restore navigation, any
-    // navigation that is restored will not be creating a new entry anyways, so
-    // exclude that case by checking NAVIGATION_TYPE_AUTO_SUBFRAME.
-    // TODO(crbug.com/1319919): Consider adjusting the dcheck for more cases as
-    // pointed out in the issue.
     DCHECK(navigation_request->common_params().should_replace_current_entry ||
-           navigation_request->GetReloadType() != ReloadType::NONE ||
-           navigation_type == NAVIGATION_TYPE_AUTO_SUBFRAME);
+           navigation_request->GetReloadType() != ReloadType::NONE);
   }
 
   if (GetLastCommittedEntry()->IsInitialEntry()) {
@@ -2645,8 +2641,14 @@ void NavigationControllerImpl::NotifyUserActivation() {
   // When a user activation occurs, ensure that all adjacent entries for the
   // same document clear their skippable bit, so that the history manipulation
   // intervention does not apply to them.
-
+  const bool can_go_back = CanGoBack();
   SetSkippableForSameDocumentEntries(GetLastCommittedEntryIndex(), false);
+  // If the value of CanGoBack changes as a result of making some entries
+  // non-skippable, then we must let the delegate know to update its UI state.
+  // See https://crbug.com/1477784.
+  if (!can_go_back && CanGoBack()) {
+    delegate_->NotifyNavigationStateChangedFromController(INVALIDATE_TYPE_ALL);
+  }
 }
 
 bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(

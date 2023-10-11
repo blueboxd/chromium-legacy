@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/threading/sequence_bound.h"
+#include "base/timer/timer.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/browser/tracing/trace_report_database.h"
 #include "content/browser/tracing/tracing_scenario.h"
@@ -68,6 +69,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager,
     REACHED_CODE_SCENARIO_TRIGGERED = 15,
     FINALIZATION_STARTED_WITH_LOCAL_OUTPUT = 16,
     DATABASE_INITIALIZATION_FAILED = 17,
+    DATABASE_CLEANUP_FAILED = 18,
     NUMBER_OF_BACKGROUND_TRACING_METRICS,
   };
   static void RecordMetric(Metrics metric);
@@ -97,6 +99,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager,
       ReceiveCallback receive_callback,
       DataFiltering data_filtering) override;
   bool HasActiveScenario() override;
+  void DeleteTracesInDateRange(base::Time start, base::Time end) override;
 
   // TracingScenario::Delegate:
   void OnScenarioActive(TracingScenario* scenario) override;
@@ -167,6 +170,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager,
   void MaybeConstructPendingAgents();
   void OnFinalizeComplete(bool success);
   void InitializeTraceReportDatabase();
+  void CleanDatabase();
   size_t GetTraceUploadLimitKb() const;
 
   std::unique_ptr<TracingDelegate> delegate_;
@@ -190,10 +194,15 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager,
       pending_agents_;
 
   // This contains all the traces saved locally.
-  base::SequenceBound<TraceReportDatabase> trace_database_;
+  scoped_refptr<base::SequencedTaskRunner> database_task_runner_;
+  std::unique_ptr<TraceReportDatabase, base::OnTaskRunnerDeleter>
+      trace_database_;
 
   // This field contains serialized trace log proto.
   std::string trace_to_upload_;
+
+  // Timer to delete traces older than 2 weeks.
+  base::RepeatingTimer clean_database_timer_;
 
   // All the upload limits below are set for uncompressed trace log. On
   // compression the data size usually reduces by 3x for size < 10MB, and the

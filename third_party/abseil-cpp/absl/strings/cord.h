@@ -396,6 +396,12 @@ class Cord {
   bool EndsWith(absl::string_view rhs) const;
   bool EndsWith(const Cord& rhs) const;
 
+  // Cord::Contains()
+  //
+  // Determines whether the Cord contains the passed string data `rhs`.
+  bool Contains(absl::string_view rhs) const;
+  bool Contains(const Cord& rhs) const;
+
   // Cord::operator std::string()
   //
   // Converts a Cord into a `std::string()`. This operator is marked explicit to
@@ -515,7 +521,7 @@ class Cord {
   //                                         absl::string_view s) {
   //     return std::find(c.chunk_begin(), c.chunk_end(), s);
   //   }
-  ChunkIterator chunk_begin() const;
+  ChunkIterator chunk_begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Cord::chunk_end()
   //
@@ -524,7 +530,7 @@ class Cord {
   // Generally, prefer using `Cord::Chunks()` within a range-based for loop for
   // iterating over the chunks of a Cord. This method may be useful for getting
   // a `ChunkIterator` where range-based for-loops may not be available.
-  ChunkIterator chunk_end() const;
+  ChunkIterator chunk_end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   //----------------------------------------------------------------------------
   // Cord::ChunkRange
@@ -578,7 +584,7 @@ class Cord {
   //       // The temporary Cord returned by CordFactory has been destroyed!
   //     }
   //   }
-  ChunkRange Chunks() const;
+  ChunkRange Chunks() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   //----------------------------------------------------------------------------
   // Cord::CharIterator
@@ -658,7 +664,7 @@ class Cord {
   // Generally, prefer using `Cord::Chars()` within a range-based for loop for
   // iterating over the chunks of a Cord. This method may be useful for getting
   // a `CharIterator` where range-based for-loops may not be available.
-  CharIterator char_begin() const;
+  CharIterator char_begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Cord::char_end()
   //
@@ -667,7 +673,7 @@ class Cord {
   // Generally, prefer using `Cord::Chars()` within a range-based for loop for
   // iterating over the chunks of a Cord. This method may be useful for getting
   // a `CharIterator` where range-based for-loops are not useful.
-  CharIterator char_end() const;
+  CharIterator char_end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Cord::CharRange
   //
@@ -719,7 +725,7 @@ class Cord {
   //       // The temporary Cord returned by CordFactory has been destroyed!
   //     }
   //   }
-  CharRange Chars() const;
+  CharRange Chars() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Cord::operator[]
   //
@@ -737,14 +743,23 @@ class Cord {
   //
   // If this cord's representation is a single flat array, returns a
   // string_view referencing that array.  Otherwise returns nullopt.
-  absl::optional<absl::string_view> TryFlat() const;
+  absl::optional<absl::string_view> TryFlat() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Cord::Flatten()
   //
   // Flattens the cord into a single array and returns a view of the data.
   //
   // If the cord was already flat, the contents are not modified.
-  absl::string_view Flatten();
+  absl::string_view Flatten() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+
+  // Cord::Find()
+  //
+  // Returns an iterator to the first occurrance of the substring `needle`.
+  //
+  // If the substring `needle` does not occur, `Cord::char_end()` is returned.
+  CharIterator Find(absl::string_view needle) const;
+  CharIterator Find(const absl::Cord& needle) const;
 
   // Supports absl::Cord as a sink object for absl::Format().
   friend void AbslFormatFlush(absl::Cord* cord, absl::string_view part) {
@@ -1027,6 +1042,8 @@ class Cord {
   friend class CrcCord;
   void SetCrcCordState(crc_internal::CrcCordState state);
   const crc_internal::CrcCordState* MaybeGetCrcCordState() const;
+
+  CharIterator FindImpl(CharIterator it, absl::string_view needle) const;
 };
 
 ABSL_NAMESPACE_END
@@ -1618,7 +1635,7 @@ inline bool operator>=(const Cord& x, const Cord& y) {
 // Nonmember Cord-to-absl::string_view relational operators.
 //
 // Due to implicit conversions, these also enable comparisons of Cord with
-// with std::string, ::string, and const char*.
+// std::string and const char*.
 inline bool operator==(const Cord& lhs, absl::string_view rhs) {
   size_t lhs_size = lhs.size();
   size_t rhs_size = rhs.size();

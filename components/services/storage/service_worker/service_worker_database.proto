@@ -22,7 +22,7 @@ message ServiceWorkerNavigationPreloadState {
   optional string header = 2;
 }
 
-// NEXT ID TO USE: 25
+// NEXT ID TO USE: 27
 message ServiceWorkerRegistrationData {
   enum ServiceWorkerScriptType {
     CLASSIC = 0;
@@ -189,10 +189,14 @@ message ServiceWorkerRegistrationData {
         message NetworkSource {}
         message RaceSource {}
         message FetchEventSource {}
+        message CacheSource {
+          optional string cache_name = 1;
+        }
         oneof source {
           NetworkSource network_source = 1;
           RaceSource race_source = 2;
           FetchEventSource fetch_event_source = 3;
+          CacheSource cache_source = 4;
         }
       }
       repeated Condition condition = 1;
@@ -257,6 +261,10 @@ message ServiceWorkerRegistrationData {
   optional PolicyContainerPolicies policy_container_policies = 23;
 
   optional RouterRules router_rules = 24;
+
+  optional bool has_hid_event_handlers = 25;
+
+  optional bool has_usb_event_handlers = 26;
 }
 
 message ServiceWorkerResourceRecord {

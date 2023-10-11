@@ -4,9 +4,9 @@
 
 #include "chrome/common/net/x509_certificate_model.h"
 
+#include "base/check.h"
 #include "base/containers/adapters.h"
 #include "base/containers/fixed_flat_map.h"
-#include "base/hash/sha1.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -16,6 +16,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "crypto/sha2.h"
+#include "net/base/ip_address.h"
 #include "net/cert/ct_objects_extractor.h"
 #include "net/cert/pki/cert_errors.h"
 #include "net/cert/pki/certificate_policies.h"
@@ -283,8 +284,7 @@ constexpr uint8_t kEkuMsKeyRecoveryAgent[] = {0x2b, 0x06, 0x01, 0x04, 0x01,
 constexpr auto kNameStringHandling =
     net::X509NameAttribute::PrintableStringHandling::kAsUTF8Hack;
 
-std::string ProcessRawBytesWithSeparators(const unsigned char* data,
-                                          size_t data_length,
+std::string ProcessRawBytesWithSeparators(base::span<const unsigned char> data,
                                           char hex_separator,
                                           char line_separator) {
   static const char kHexChars[] = "0123456789ABCDEF";
@@ -294,16 +294,17 @@ std::string ProcessRawBytesWithSeparators(const unsigned char* data,
   std::string ret;
   size_t kMin = 0U;
 
-  if (!data_length)
+  if (data.empty()) {
     return std::string();
+  }
 
-  ret.reserve(std::max(kMin, data_length * 3 - 1));
+  ret.reserve(std::max(kMin, data.size() * 3 - 1));
 
-  for (size_t i = 0; i < data_length; ++i) {
+  for (size_t i = 0; i < data.size(); ++i) {
     unsigned char b = data[i];
     ret.push_back(kHexChars[(b >> 4) & 0xf]);
     ret.push_back(kHexChars[b & 0xf]);
-    if (i + 1 < data_length) {
+    if (i + 1 < data.size()) {
       if ((i + 1) % 16 == 0)
         ret.push_back(line_separator);
       else
@@ -314,7 +315,7 @@ std::string ProcessRawBytesWithSeparators(const unsigned char* data,
 }
 
 std::string ProcessRawBytes(base::span<const uint8_t> data) {
-  return ProcessRawBytesWithSeparators(data.data(), data.size(), ' ', '\n');
+  return ProcessRawBytesWithSeparators(data, ' ', '\n');
 }
 
 std::string ProcessRawBytes(net::der::Input data) {
@@ -814,14 +815,23 @@ absl::optional<std::string> ProcessGeneralNames(
     rv += FormatGeneralName(IDS_CERT_GENERAL_NAME_URI,
                             uniform_resource_identifier);
   }
-  for (const auto& ip_address : names.ip_addresses) {
+  for (const auto& ip_address_bytes : names.ip_addresses) {
+    net::IPAddress ip_address(ip_address_bytes.AsSpan());
+    // The `GeneralNames` parser should guarantee this.
+    CHECK(ip_address.IsValid());
     rv += FormatGeneralName(IDS_CERT_GENERAL_NAME_IP_ADDRESS,
                             ip_address.ToString());
   }
   for (const auto& ip_address_range : names.ip_address_ranges) {
-    rv += FormatGeneralName(IDS_CERT_GENERAL_NAME_IP_ADDRESS,
-                            ip_address_range.first.ToString() + '/' +
-                                base::NumberToString(ip_address_range.second));
+    net::IPAddress ip_address(ip_address_range.first.AsSpan());
+    net::IPAddress mask(ip_address_range.second.AsSpan());
+    // The `GeneralNames` parser should guarantee this.
+    CHECK(ip_address.IsValid());
+    CHECK(mask.IsValid());
+    rv += FormatGeneralName(
+        IDS_CERT_GENERAL_NAME_IP_ADDRESS,
+        ip_address.ToString() + '/' +
+            base::NumberToString(net::MaskPrefixLength(mask)));
   }
   for (const auto& registered_id : names.registered_ids) {
     rv += FormatGeneralName(IDS_CERT_GENERAL_NAME_REGISTERED_ID,
@@ -1247,19 +1257,7 @@ X509CertificateModel::~X509CertificateModel() = default;
 std::string X509CertificateModel::HashCertSHA256() const {
   auto hash =
       crypto::SHA256Hash(net::x509_util::CryptoBufferAsSpan(cert_data_.get()));
-  return base::HexEncode(hash);
-}
-
-std::string X509CertificateModel::HashCertSHA256WithSeparators() const {
-  auto hash =
-      crypto::SHA256Hash(net::x509_util::CryptoBufferAsSpan(cert_data_.get()));
-  return ProcessRawBytes(hash);
-}
-
-std::string X509CertificateModel::HashCertSHA1WithSeparators() const {
-  auto hash =
-      base::SHA1HashSpan(net::x509_util::CryptoBufferAsSpan(cert_data_.get()));
-  return ProcessRawBytes(hash);
+  return base::ToLowerASCII(base::HexEncode(hash));
 }
 
 std::string X509CertificateModel::GetTitle() const {
@@ -1308,8 +1306,7 @@ std::string X509CertificateModel::GetVersion() const {
 
 std::string X509CertificateModel::GetSerialNumberHexified() const {
   DCHECK(parsed_successfully_);
-  return ProcessRawBytesWithSeparators(tbs_.serial_number.UnsafeData(),
-                                       tbs_.serial_number.Length(), ':', ':');
+  return ProcessRawBytesWithSeparators(tbs_.serial_number.AsSpan(), ':', ':');
 }
 
 bool X509CertificateModel::GetTimes(base::Time* not_before,
@@ -1525,6 +1522,12 @@ std::string X509CertificateModel::ProcessSubjectPublicKeyInfo() const {
   return rv;
 }
 
+std::string X509CertificateModel::HashSpkiSHA256() const {
+  DCHECK(parsed_successfully_);
+  auto hash = crypto::SHA256Hash(tbs_.spki_tlv.AsSpan());
+  return base::ToLowerASCII(base::HexEncode(hash));
+}
+
 std::string X509CertificateModel::ProcessRawBitsSignatureWrap() const {
   DCHECK(parsed_successfully_);
   return ProcessRawBytes(signature_value_.bytes());
@@ -1553,8 +1556,7 @@ std::string ProcessIDN(const std::string& input) {
 
 std::string ProcessRawSubjectPublicKeyInfo(base::span<const uint8_t> spki_der) {
   bssl::UniquePtr<EVP_PKEY> public_key;
-  if (!net::ParsePublicKey(net::der::Input(spki_der.data(), spki_der.size()),
-                           &public_key)) {
+  if (!net::ParsePublicKey(net::der::Input(spki_der), &public_key)) {
     return std::string();
   }
   switch (EVP_PKEY_id(public_key.get())) {
@@ -1580,9 +1582,9 @@ std::string ProcessRawSubjectPublicKeyInfo(base::span<const uint8_t> spki_der) {
 
   net::der::Input unused_algorithm_tlv;
   net::der::Input subject_public_key_value;
-  if (!ParseSubjectPublicKeyInfo(
-          net::der::Input(spki_der.data(), spki_der.size()),
-          &unused_algorithm_tlv, &subject_public_key_value)) {
+  if (!ParseSubjectPublicKeyInfo(net::der::Input(spki_der),
+                                 &unused_algorithm_tlv,
+                                 &subject_public_key_value)) {
     return std::string();
   }
   return ProcessRawBytes(subject_public_key_value);

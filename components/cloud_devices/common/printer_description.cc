@@ -58,6 +58,7 @@ extern constexpr char kOptionDuplex[] = "duplex";
 extern constexpr char kOptionFitToPage[] = "fit_to_page";
 extern constexpr char kOptionMargins[] = "margins";
 extern constexpr char kOptionMediaSize[] = "media_size";
+extern constexpr char kOptionMediaType[] = "media_type";
 extern constexpr char kOptionPageOrientation[] = "page_orientation";
 extern constexpr char kOptionPageRange[] = "page_range";
 extern constexpr char kOptionReverse[] = "reverse_order";
@@ -88,6 +89,7 @@ constexpr char kMediaImageableAreaRight[] = "imageable_area_right_microns";
 constexpr char kMediaImageableAreaTop[] = "imageable_area_top_microns";
 constexpr char kMediaMinHeight[] = "min_height_microns";
 constexpr char kMediaMaxHeight[] = "max_height_microns";
+constexpr char kMediaHasBorderlessVariant[] = "has_borderless_variant";
 
 constexpr char kPageRangeInterval[] = "interval";
 constexpr char kPageRangeEnd[] = "end";
@@ -949,7 +951,8 @@ bool Dpi::operator==(const Dpi& other) const {
 Media::Media()
     : size_name(MediaSize::CUSTOM_MEDIA),
       is_continuous_feed(false),
-      max_height_um(0) {}
+      max_height_um(0),
+      has_borderless_variant(false) {}
 
 Media::Media(const Media& other) = default;
 
@@ -1031,6 +1034,11 @@ MediaBuilder& MediaBuilder::WithMaxHeight(int max_height_um) {
   return *this;
 }
 
+MediaBuilder& MediaBuilder::WithBorderlessVariant(bool has_borderless_variant) {
+  has_borderless_variant_ = has_borderless_variant;
+  return *this;
+}
+
 Media MediaBuilder::Build() const {
   Media result;
   result.size_name = size_name_;
@@ -1040,6 +1048,7 @@ Media MediaBuilder::Build() const {
   result.vendor_id = vendor_id_;
   result.printable_area_um = printable_area_um_;
   result.max_height_um = max_height_um_;
+  result.has_borderless_variant = has_borderless_variant_;
   return result;
 }
 
@@ -1056,6 +1065,18 @@ Interval::Interval(int32_t start) : start(start), end(kMaxPageNumber) {}
 
 bool Interval::operator==(const Interval& other) const {
   return start == other.start && end == other.end;
+}
+
+MediaType::MediaType() = default;
+
+MediaType::MediaType(const std::string& vendor_id,
+                     const std::string& custom_display_name)
+    : vendor_id(vendor_id), custom_display_name(custom_display_name) {}
+
+bool MediaType::operator==(const MediaType& other) const = default;
+
+bool MediaType::IsValid() const {
+  return !vendor_id.empty();
 }
 
 template <const char* kName>
@@ -1469,6 +1490,13 @@ class MediaTraits : public ItemsTraits<kOptionMediaSize> {
           gfx::Rect(imageable_area_left.value(), imageable_area_bottom.value(),
                     width, height);
     }
+
+    absl::optional<bool> has_borderless_variant =
+        dict.FindBool(kMediaHasBorderlessVariant);
+    if (has_borderless_variant) {
+      option->has_borderless_variant = has_borderless_variant.value();
+    }
+
     return true;
   }
 
@@ -1501,6 +1529,35 @@ class MediaTraits : public ItemsTraits<kOptionMediaSize> {
                                               option.printable_area_um.width());
       dict->Set(kMediaImageableAreaTop, option.printable_area_um.y() +
                                             option.printable_area_um.height());
+    }
+    if (option.has_borderless_variant) {
+      dict->Set(kMediaHasBorderlessVariant, true);
+    }
+  }
+};
+
+class MediaTypeTraits : public ItemsTraits<kOptionMediaType> {
+ public:
+  static bool IsValid(const MediaType& option) { return option.IsValid(); }
+
+  static bool Load(const base::Value::Dict& dict, MediaType* option) {
+    const std::string* vendor_id = dict.FindString(kKeyVendorId);
+    if (!vendor_id) {
+      return false;
+    }
+    option->vendor_id = *vendor_id;
+    const std::string* custom_display_name =
+        dict.FindString(kKeyCustomDisplayName);
+    if (custom_display_name) {
+      option->custom_display_name = *custom_display_name;
+    }
+    return true;
+  }
+
+  static void Save(const MediaType& option, base::Value::Dict* dict) {
+    dict->Set(kKeyVendorId, option.vendor_id);
+    if (!option.custom_display_name.empty()) {
+      dict->Set(kKeyCustomDisplayName, option.custom_display_name);
     }
   }
 };
@@ -1600,6 +1657,8 @@ template class SelectionCapability<printer::Dpi, printer::DpiTraits>;
 template class SelectionCapability<printer::FitToPageType,
                                    printer::FitToPageTraits>;
 template class SelectionCapability<printer::Media, printer::MediaTraits>;
+template class SelectionCapability<printer::MediaType,
+                                   printer::MediaTypeTraits>;
 template class ValueCapability<printer::Copies,
                                printer::CopiesCapabilityTraits>;
 template class EmptyCapability<printer::PageRangeTraits>;

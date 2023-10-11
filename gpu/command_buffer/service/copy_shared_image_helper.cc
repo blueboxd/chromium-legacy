@@ -10,6 +10,7 @@
 #include "base/check.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/types/expected.h"
+#include "base/types/expected_macros.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
@@ -356,14 +357,11 @@ base::expected<void, GLError> CopySharedImageHelper::ConvertRGBAToYUVAMailboxes(
   int num_yuva_planes;
   std::array<std::unique_ptr<SkiaImageRepresentation>, SkYUVAInfo::kMaxPlanes>
       yuva_images;
-  auto result = ConvertYUVACommon(
+  RETURN_IF_ERROR(ConvertYUVACommon(
       "ConvertYUVAMailboxesToRGB", yuv_color_space, plane_config, subsampling,
       mailboxes_in, representation_factory_, shared_context_state_,
       dst_color_space, dst_plane_config, dst_subsampling, rgba_image,
-      num_yuva_planes, yuva_images);
-  if (!result.has_value()) {
-    return result;
-  }
+      num_yuva_planes, yuva_images));
 
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
@@ -443,14 +441,11 @@ base::expected<void, GLError> CopySharedImageHelper::ConvertYUVAMailboxesToRGB(
   int num_src_planes;
   std::array<std::unique_ptr<SkiaImageRepresentation>, SkYUVAInfo::kMaxPlanes>
       yuva_images;
-  auto result = ConvertYUVACommon(
+  RETURN_IF_ERROR(ConvertYUVACommon(
       "ConvertYUVAMailboxesToRGB", planes_yuv_color_space, plane_config,
       subsampling, bytes_in, representation_factory_, shared_context_state_,
       src_yuv_color_space, src_plane_config, src_subsampling, rgba_image,
-      num_src_planes, yuva_images);
-  if (!result.has_value()) {
-    return result;
-  }
+      num_src_planes, yuva_images));
 
   sk_sp<SkColorSpace> src_rgb_color_space = ReadSkColorSpace(
       bytes_in + (SkYUVAInfo::kMaxPlanes + 1) * sizeof(gpu::Mailbox));
@@ -468,6 +463,7 @@ base::expected<void, GLError> CopySharedImageHelper::ConvertYUVAMailboxesToRGB(
                 "Destination shared image is not writable"));
   }
 
+  base::expected<void, GLError> result;
   bool source_access_valid = true;
   std::array<std::unique_ptr<SkiaImageRepresentation::ScopedReadAccess>,
              SkYUVAInfo::kMaxPlanes>
@@ -623,6 +619,13 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImage(
                                     "Dest shared image is not writable"));
   }
 
+  // Flush dest surface and submit if necessary before exiting.
+  absl::Cleanup cleanup = [&]() {
+    FlushSurface(dest_scoped_access.get());
+    SubmitIfNecessary(std::move(end_semaphores), shared_context_state_,
+                      is_drdc_enabled_);
+  };
+
   gfx::Rect new_cleared_rect;
   gfx::Rect old_cleared_rect = dest_shared_image->ClearedRect();
   if (!gles2::TextureManager::CombineAdjacentRects(old_cleared_rect, dest_rect,
@@ -642,6 +645,8 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImage(
           dest_scoped_access.get(), representation_factory_,
           shared_context_state_, is_drdc_enabled_, begin_semaphores,
           end_semaphores)) {
+    // Cancel cleanup as TryCopySubTextureINTERNALMemory already handles it.
+    std::move(cleanup).Cancel();
     return base::ok();
   }
 
@@ -664,9 +669,6 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImage(
     if (!dest_shared_image->IsCleared()) {
       dest_shared_image->SetClearedRect(new_cleared_rect);
     }
-    FlushSurface(dest_scoped_access.get());
-    SubmitIfNecessary(std::move(end_semaphores), shared_context_state_,
-                      is_drdc_enabled_);
 
     // Note, that we still generate error for the client to indicate there was
     // problem.
@@ -691,10 +693,6 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImage(
     DCHECK(ret);
   }
   if (!source_scoped_access) {
-    // We still need to flush surface for begin semaphores above.
-    FlushSurface(dest_scoped_access.get());
-    SubmitIfNecessary(std::move(end_semaphores), shared_context_state_,
-                      is_drdc_enabled_);
     return base::unexpected(GLError(GL_INVALID_VALUE, "glCopySubTexture",
                                     "Source shared image is not accessable"));
   }
@@ -775,6 +773,8 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImage(
     }
   }
 
+  // Cancel cleanup as the cleanup order is different here.
+  std::move(cleanup).Cancel();
   FlushSurface(dest_scoped_access.get());
   source_scoped_access->ApplyBackendSurfaceEndState();
   SubmitIfNecessary(std::move(end_semaphores), shared_context_state_,

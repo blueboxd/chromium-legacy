@@ -94,7 +94,8 @@ class ChromeLabsButtonTest : public TestWithBrowserView {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
  protected:
-  raw_ptr<ash::FakeChromeUserManager, ExperimentalAsh> user_manager_;
+  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
+      user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 #endif
 
@@ -130,7 +131,7 @@ TEST_F(ChromeLabsButtonTest, ShowAndHideChromeLabsBubbleOnPress) {
   EXPECT_TRUE(coordinator->BubbleExists());
 
   views::test::WidgetDestroyedWaiter destroyed_waiter(
-      coordinator->GetChromeLabsBubbleViewForTesting()->GetWidget());
+      coordinator->GetChromeLabsBubbleView()->GetWidget());
   test_api.NotifyClick(e);
   destroyed_waiter.Wait();
   EXPECT_FALSE(coordinator->BubbleExists());

@@ -3305,7 +3305,7 @@
         "meteorlake"
       ],
       "features": [
-        "force_rgb10a2_overlay_support_flags"
+        "force_rgb10a2_overlay_support"
       ]
     },
     {
@@ -4234,6 +4234,39 @@
     },
     {
       "id": 417,
+      "description": "Limit D3D11VideoDecoder to 11.0 due to failures on QC chipsets.",
+      "comment": [
+        "On QC chipsets calling ID3D11VideoContext1::SubmitDecoderBuffer1 with ",
+        "non-protected content can result in an E_INVALIDARG result and playback ",
+        "failure. Force the use of 11.0 to create an ID3D11VideoContext instead."
+      ],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x5143",
+      "features": [
+        "limit_d3d11_video_decoder_to_11_0"
+      ]
+    },
+    {
+      "id": 418,
+      "description": "Uploading data or rendering to R8 EGL images generates driver errors.",
+      "cr_bugs": [1455752],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<=",
+          "value": "9.0"
+        }
+      },
+      "gl_vendor": "ARM.*",
+      "gl_type": "gles",
+      "features": [
+        "r8_egl_images_broken"
+      ]
+    },
+    {
+      "id": 419,
       "cr_bugs": [1473665],
       "description": "Corruption when consecutive VP9 keyframes are requested from MFVEA on Intel.",
       "comment": [

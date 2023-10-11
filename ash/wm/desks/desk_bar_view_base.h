@@ -17,7 +17,6 @@
 #include "ash/wm/desks/scroll_arrow_button.h"
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_grid.h"
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/events/event.h"
@@ -87,6 +86,10 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
     is_bounds_animation_on_going_ = value;
   }
 
+  void set_hold_update_for_view_bounds(bool value) {
+    hold_update_for_view_bounds_ = value;
+  }
+
   const gfx::Point& last_dragged_item_screen_location() const {
     return last_dragged_item_screen_location_;
   }
@@ -96,6 +99,8 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
   OverviewGrid* overview_grid() const { return overview_grid_.get(); }
 
   const std::vector<DeskMiniView*>& mini_views() const { return mini_views_; }
+
+  views::View* background_view() { return background_view_; }
 
   const views::View* scroll_view_contents() const {
     return scroll_view_contents_;
@@ -215,8 +220,9 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
 
   // Udate the visibility of the `default_desk_button_` on the desk bar's
   // state.
-  // TODO(conniekxu): Remove `UpdateDeskButtonsVisibility`, replace it with this
-  // function, and rename this function by removing the prefix CrOSNext.
+  // TODO(https://b/291622042): Remove `UpdateDeskButtonsVisibility`, replace it
+  // with this function, and rename this function by removing the prefix
+  // CrOSNext.
   void UpdateDeskButtonsVisibilityCrOSNext();
 
   // Update the visibility of the saved desk library button based on whether
@@ -226,8 +232,9 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
 
   // Update the visibility of the saved desk library button based on whether
   // the saved desk feature is enabled and the user has any saved desks.
-  // TODO(conniekxu): Remove `UpdateLibraryButtonVisibility`, replace it with
-  // this function, and rename this function by removing the prefix CrOSNext.
+  // TODO(https://b/291622042): Remove `UpdateLibraryButtonVisibility`, replace
+  // it with this function, and rename this function by removing the prefix
+  // CrOSNext.
   void UpdateLibraryButtonVisibilityCrOSNext();
 
   // Called to update state of `button` and apply the scale animation to the
@@ -347,6 +354,10 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
   // be moved when performing the mini_view creation or deletion animations.
   int GetFirstMiniViewXOffset() const;
 
+  // Returns the descendant views of the desk bar which animate on desk addition
+  // / removal, mapped to their current X screen coordinates.
+  base::flat_map<views::View*, int> GetAnimatableViewsCurrentXMap() const;
+
   // Determine the new index of the dragged desk at the position of
   // `location_in_screen`.
   int DetermineMoveIndex(int location_in_screen) const;
@@ -405,6 +416,11 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
   // done to eliminate the unnecessary `Layout` calls during the animation.
   bool is_bounds_animation_on_going_ = false;
 
+  // TODO(yongshun): Currently view bounds is being updated at Layout(), which
+  // will cause the desk animation to not update correctly. Set this value to
+  // true so bounds can be updated after animation.
+  bool hold_update_for_view_bounds_ = false;
+
   // Mini view whose preview is being dragged.
   raw_ptr<DeskMiniView, ExperimentalAsh> drag_view_ = nullptr;
 
@@ -427,6 +443,11 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
 
   // The views representing desks mini_views. They're owned by views hierarchy.
   std::vector<DeskMiniView*> mini_views_;
+
+  // The view representing the desk bar background view. It's owned by views
+  // hierarchy. It exists only in the shelf desk bar as it's needed for
+  // animation.
+  raw_ptr<views::View> background_view_ = nullptr;
 
   // Put the contents in a `ScrollView` to support scrollable desks.
   raw_ptr<views::ScrollView, ExperimentalAsh> scroll_view_ = nullptr;
@@ -452,7 +473,7 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
 
   // Buttons for the CrOS Next updated UI. They're added behind the feature flag
   // Jellyroll.
-  // TODO(conniekxu): After CrOS Next is launched, replace
+  // TODO(https://b/291622042): After CrOS Next is launched, replace
   // `zero_state_default_desk_button_`, `zero_state_default_desk_button_`,
   // `expanded_state_new_desk_button_`, `zero_state_library_button_` and
   // `expanded_state_library_button_` with the buttons below.

@@ -33,6 +33,10 @@ const CGFloat kSymbolSize = 22;
 // If YES, a section is shown in the view to migrate the profile to account.
 @property(nonatomic, assign) BOOL showMigrateToAccountSection;
 
+// If YES, denotes that the view shown is to edit the incomplete profiles so
+// that it can migrated to account.
+@property(nonatomic, assign) BOOL editIncompleteProfileForAccountView;
+
 // Stores the signed in user email, or the empty string if the user is not
 // signed-in.
 @property(nonatomic, readonly) NSString* userEmail;
@@ -54,6 +58,7 @@ const CGFloat kSymbolSize = 22;
     _delegate = delegate;
     _showMigrateToAccountSection = showMigrateToAccount;
     _userEmail = userEmail;
+    _editIncompleteProfileForAccountView = NO;
   }
 
   return self;
@@ -80,14 +85,10 @@ const CGFloat kSymbolSize = 22;
 
   TableViewModel* model = self.tableViewModel;
   if (self.showMigrateToAccountSection) {
-    [model addSectionWithIdentifier:
-               AutofillProfileDetailsSectionIdentifierMigrationToAccount];
     [model addItem:[self migrateToAccountRecommendationItem]
-        toSectionWithIdentifier:
-            AutofillProfileDetailsSectionIdentifierMigrationToAccount];
+        toSectionWithIdentifier:AutofillProfileDetailsSectionIdentifierFields];
     [model addItem:[self migrateToAccountButtonItem]
-        toSectionWithIdentifier:
-            AutofillProfileDetailsSectionIdentifierMigrationToAccount];
+        toSectionWithIdentifier:AutofillProfileDetailsSectionIdentifierFields];
   }
 
   [self.handler loadFooterForSettings];
@@ -112,23 +113,18 @@ const CGFloat kSymbolSize = 22;
 
   if (!self.tableView.editing) {
     [self.handler updateProfileData];
-    [self.delegate didEditAutofillProfileFromSettings];
-    // It can happen that the profile does not satisfy minimum requirements for
-    // the migration so we don't show the migration button.
-    if (self.showMigrateToAccountSection && ![self.delegate isMinimumAddress]) {
-      [self removeMigrateButtonSection:nil];
+    if (self.editIncompleteProfileForAccountView) {
+      [self.delegate didTapMigrateToAccountButton];
+      [self showPostMigrationToast];
+      [self.handler setMoveToAccountFromSettings:NO];
+      self.editIncompleteProfileForAccountView = NO;
+    } else {
+      [self.delegate didEditAutofillProfileFromSettings];
     }
   }
 
   [self loadModel];
   [self.handler reconfigureCells];
-  if (self.showMigrateToAccountSection) {
-    [self
-        reconfigureCellsForItems:
-            [self.tableViewModel
-                itemsInSectionWithIdentifier:
-                    AutofillProfileDetailsSectionIdentifierMigrationToAccount]];
-  }
 }
 
 #pragma mark - UITableViewDataSource
@@ -158,13 +154,21 @@ const CGFloat kSymbolSize = 22;
     return;
   }
   if (itemType == AutofillProfileDetailsItemTypeMigrateToAccountButton) {
-    [self.delegate didTapMigrateToAccountButton];
     [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
-    __weak __typeof(self) weakSelf = self;
-    void (^completion)(BOOL) = ^(BOOL) {
-      [weakSelf showPostMigrationToast];
-    };
-    [self removeMigrateButtonSection:completion];
+    if ([self.delegate isMinimumAddress]) {
+      [self.delegate didTapMigrateToAccountButton];
+      __weak __typeof(self) weakSelf = self;
+      void (^completion)(BOOL) = ^(BOOL) {
+        [weakSelf showPostMigrationToast];
+      };
+      [self removeMigrateButton:completion];
+    } else {
+      // Show the profile in the edit mode.
+      self.editIncompleteProfileForAccountView = YES;
+      [self removeMigrateButton:nil];
+      [self editButtonPressed];
+      [self.handler setMoveToAccountFromSettings:YES];
+    }
     return;
   }
   [self.handler didSelectRowAtIndexPath:indexPath];
@@ -238,27 +242,37 @@ const CGFloat kSymbolSize = 22;
 #pragma mark - Private
 
 // Removes the migrate button section from the view.
-- (void)removeMigrateButtonSection:(void (^)(BOOL finished))onCompletion {
+- (void)removeMigrateButton:(void (^)(BOOL finished))onCompletion {
+  __weak AutofillSettingsProfileEditTableViewController* weakSelf = self;
   [self
       performBatchTableViewUpdates:^{
-        [self removeSectionWithIdentifier:
-                  AutofillProfileDetailsSectionIdentifierMigrationToAccount
-                         withRowAnimation:UITableViewRowAnimationFade];
+        TableViewModel* model = weakSelf.tableViewModel;
+        NSIndexPath* indexPathForMigrateRecommendationItem = [model
+            indexPathForItemType:
+                AutofillProfileDetailsItemTypeMigrateToAccountRecommendation
+               sectionIdentifier:AutofillProfileDetailsSectionIdentifierFields];
+        NSIndexPath* indexPathForMigrateButton = [model
+            indexPathForItemType:
+                AutofillProfileDetailsItemTypeMigrateToAccountButton
+               sectionIdentifier:AutofillProfileDetailsSectionIdentifierFields];
+
+        [model removeItemWithType:
+                   AutofillProfileDetailsItemTypeMigrateToAccountRecommendation
+            fromSectionWithIdentifier:
+                AutofillProfileDetailsSectionIdentifierFields];
+        [model removeItemWithType:
+                   AutofillProfileDetailsItemTypeMigrateToAccountButton
+            fromSectionWithIdentifier:
+                AutofillProfileDetailsSectionIdentifierFields];
+
+        [weakSelf.tableView
+            deleteRowsAtIndexPaths:@[
+              indexPathForMigrateRecommendationItem, indexPathForMigrateButton
+            ]
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
       }
                         completion:onCompletion];
   self.showMigrateToAccountSection = NO;
-}
-
-// Removes the given section if it exists.
-- (void)removeSectionWithIdentifier:(NSInteger)sectionIdentifier
-                   withRowAnimation:(UITableViewRowAnimation)animation {
-  TableViewModel* model = self.tableViewModel;
-  if ([model hasSectionForSectionIdentifier:sectionIdentifier]) {
-    NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
-    [model removeSectionWithIdentifier:sectionIdentifier];
-    [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:section]
-                  withRowAnimation:animation];
-  }
 }
 
 - (void)showPostMigrationToast {

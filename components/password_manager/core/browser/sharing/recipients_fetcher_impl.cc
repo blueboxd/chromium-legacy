@@ -22,7 +22,8 @@ namespace {
 
 bool HasServerRequestCompletedWithSuccess(
     const PasswordSharingRecipientsDownloader& request) {
-  return request.GetHttpError() == net::HTTP_OK &&
+  return request.GetAuthError().state() == GoogleServiceAuthError::NONE &&
+         request.GetHttpError() == net::HTTP_OK &&
          request.GetNetError() == net::OK;
 }
 
@@ -34,9 +35,7 @@ RecipientInfo ToRecipientInfo(const sync_pb::UserInfo& user_info) {
   recipient_info.profile_image_url =
       user_info.user_display_info().profile_image_url();
   recipient_info.public_key =
-      user_info.cross_user_sharing_public_key().x25519_public_key();
-  recipient_info.public_key_version =
-      user_info.cross_user_sharing_public_key().version();
+      PublicKey::FromProto(user_info.cross_user_sharing_public_key());
   return recipient_info;
 }
 
@@ -71,6 +70,9 @@ void RecipientsFetcherImpl::FetchFamilyMembers(
 
 void RecipientsFetcherImpl::ServerRequestCallback() {
   if (!HasServerRequestCompletedWithSuccess(*pending_request_)) {
+    // Destroy the request object after the response was fetched otherwise no
+    // further call can be made.
+    pending_request_.reset();
     std::move(callback_).Run(std::vector<RecipientInfo>(),
                              FetchFamilyMembersRequestStatus::kNetworkError);
     return;

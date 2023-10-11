@@ -142,9 +142,10 @@ class PasswordFormManager : public PasswordFormManagerForUI,
       autofill::FieldRendererId generation_element_id,
       const std::u16string& password);
 
-  // Check if the |possible_username| field is present in the |observed_form()|.
-  bool FormHasPossibleUsername(
-      const PossibleUsernameData* possible_username) const;
+  // Check if the field identified by |driver_id| and |field_id| is present in
+  // the |observed_form()|.
+  bool ObservedFormHasField(int driver_id,
+                            autofill::FieldRendererId field_id) const;
 
   // PasswordFormManagerForUI:
   const GURL& GetURL() const override;
@@ -328,14 +329,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   bool IsPossibleSingleUsernameAvailable(
       const PossibleUsernameData* possible_username) const;
 
-  // Returns true if the form is a candidate to send single username vote.
-  // Given that function returns true, |password_form_had_username| is an
-  // output parameter indicating whether password form had same username value
-  // as single username form.
-  bool IsPasswordFormAfterSingleUsernameForm(
-      const PossibleUsernameData* possible_username,
-      bool& password_form_had_username);
-
   // Updates the predictions stored in `parser_` with predictions relevant for
   // `observed_form_or_digest_`.
   void UpdatePredictionsForObservedForm(
@@ -352,6 +345,16 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // Returns true if WebAuthn credential filling is enabled and there are
   // credentials available to use.
   bool WebAuthnCredentialsAvailable() const;
+
+  // Sets voting data and update |parsed_submitted_form_| with the correct
+  // username value for a password form without a username field.
+  void HandleUsernameFirstFlow(const PossibleUsernameData* possible_username,
+                               bool password_form_had_username);
+
+  // Sets voting data for a password form that is likely a forgot password form
+  // (a form, into which the user inputs their username to start the
+  // password recovery process).
+  void HandleForgotPasswordFormData();
 
   // The client which implements embedder-specific PasswordManager operations.
   const raw_ptr<PasswordManagerClient> client_;

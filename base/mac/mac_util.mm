@@ -16,17 +16,23 @@
 #include <sys/xattr.h>
 #include <dlfcn.h>
 
+#include <string>
+#include <string_view>
+#include <vector>
+
 #include "base/apple/bridging.h"
 #include "base/apple/bundle_locations.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/osstatus_logging.h"
+#include "base/apple/scoped_cftyperef.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/mac_logging.h"
 #include "base/mac/scoped_aedesc.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -66,7 +72,7 @@ class LoginItemsFileList {
   // representing the specified bundle.  If such an item is found, returns a
   // retained reference to it. Caller is responsible for releasing the
   // reference.
-  ScopedCFTypeRef<LSSharedFileListItemRef> GetLoginItemForApp(NSURL* url) {
+  apple::ScopedCFTypeRef<LSSharedFileListItemRef> GetLoginItemForApp(NSURL* url) {
     typedef CFURLRef (*LSSharedFileListItemCopyResolvedURLPtr)(LSSharedFileListItemRef, LSSharedFileListResolutionFlags, CFErrorRef*);
     static const LSSharedFileListItemCopyResolvedURLPtr LSSharedFileListItemCopyResolvedURLFuncPtr =
         reinterpret_cast<LSSharedFileListItemCopyResolvedURLPtr>(dlsym(((void *) -2), "LSSharedFileListItemCopyResolvedURL"));
@@ -75,46 +81,48 @@ class LoginItemsFileList {
 
 #pragma clang diagnostic push  // https://crbug.com/1154377
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        ScopedCFTypeRef<CFArrayRef> login_items_array(
-            LSSharedFileListCopySnapshot(login_items_, /*inList=*/nullptr));
-    #pragma clang diagnostic pop
+      apple::ScopedCFTypeRef<CFArrayRef> login_items_array(
+          LSSharedFileListCopySnapshot(login_items_, /*inList=*/nullptr));
+#pragma clang diagnostic pop
 
-        for (CFIndex i = 0; i < CFArrayGetCount(login_items_array); ++i) {
-          LSSharedFileListItemRef item =
-              (LSSharedFileListItemRef)CFArrayGetValueAtIndex(login_items_array, i);
-    #pragma clang diagnostic push  // https://crbug.com/1154377
-    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-          // kLSSharedFileListDoNotMountVolumes is used so that we don't trigger
-          // mounting when it's not expected by a user. Just listing the login
-          // items should not cause any side-effects.
-          NSURL* item_url =
-              apple::CFToNSOwnershipCast(LSSharedFileListItemCopyResolvedURLFuncPtr(
-                  item, kLSSharedFileListDoNotMountVolumes, /*outError=*/nullptr));
-    #pragma clang diagnostic pop
-
-          if (item_url && [item_url isEqual:url]) {
-            return ScopedCFTypeRef<LSSharedFileListItemRef>(
-                item, base::scoped_policy::RETAIN);
-          }
-      }
-    }
-
-    return ScopedCFTypeRef<LSSharedFileListItemRef>();
-  }
-
-  ScopedCFTypeRef<LSSharedFileListItemRef> GetLoginItemForMainApp() {
-    NSURL* url = [NSURL fileURLWithPath:base::apple::MainBundle().bundlePath];
-    return GetLoginItemForApp(url);
-  }
-
- private:
-  ScopedCFTypeRef<LSSharedFileListRef> login_items_;
-};
-
-bool IsHiddenLoginItem(LSSharedFileListItemRef item) {
+      for (CFIndex i = 0; i < CFArrayGetCount(login_items_array); ++i) {
+        LSSharedFileListItemRef item =
+            (LSSharedFileListItemRef)CFArrayGetValueAtIndex(login_items_array,
+                                                            i);
 #pragma clang diagnostic push  // https://crbug.com/1154377
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  ScopedCFTypeRef<CFBooleanRef> hidden(
+        // kLSSharedFileListDoNotMountVolumes is used so that we don't trigger
+        // mounting when it's not expected by a user. Just listing the login
+        // items should not cause any side-effects.
+        NSURL* item_url = apple::CFToNSOwnershipCast(
+            LSSharedFileListItemCopyResolvedURLFuncPtr(
+                item, kLSSharedFileListDoNotMountVolumes,
+                /*outError=*/nullptr));
+#pragma clang diagnostic pop
+
+        if (item_url && [item_url isEqual:url]) {
+          return apple::ScopedCFTypeRef<LSSharedFileListItemRef>(
+              item, base::scoped_policy::RETAIN);
+        }
+      }
+
+      return apple::ScopedCFTypeRef<LSSharedFileListItemRef>();
+    }
+  }
+
+    apple::ScopedCFTypeRef<LSSharedFileListItemRef> GetLoginItemForMainApp() {
+      NSURL* url = [NSURL fileURLWithPath:base::apple::MainBundle().bundlePath];
+      return GetLoginItemForApp(url);
+    }
+
+   private:
+    apple::ScopedCFTypeRef<LSSharedFileListRef> login_items_;
+  };
+
+  bool IsHiddenLoginItem(LSSharedFileListItemRef item) {
+#pragma clang diagnostic push  // https://crbug.com/1154377
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  apple::ScopedCFTypeRef<CFBooleanRef> hidden(
       reinterpret_cast<CFBooleanRef>(LSSharedFileListItemCopyProperty(
           item, kLSSharedFileListLoginItemHidden)));
 #pragma clang diagnostic pop
@@ -169,8 +177,8 @@ void AddToLoginItems(const FilePath& app_bundle_file_path,
     return;
   }
 
-  NSURL* app_bundle_url = base::mac::FilePathToNSURL(app_bundle_file_path);
-  base::ScopedCFTypeRef<LSSharedFileListItemRef> item =
+  NSURL* app_bundle_url = base::apple::FilePathToNSURL(app_bundle_file_path);
+  apple::ScopedCFTypeRef<LSSharedFileListItemRef> item =
       login_items.GetLoginItemForApp(app_bundle_url);
 
   if (item.get() && (IsHiddenLoginItem(item) == hide_on_startup)) {
@@ -191,7 +199,7 @@ void AddToLoginItems(const FilePath& app_bundle_file_path,
   NSDictionary* properties =
       @{apple::CFToNSPtrCast(kLSSharedFileListLoginItemHidden) : @(hide)};
 
-  ScopedCFTypeRef<LSSharedFileListItemRef> new_item(
+  apple::ScopedCFTypeRef<LSSharedFileListItemRef> new_item(
       LSSharedFileListInsertItemURL(
           login_items.GetLoginFileList(), kLSSharedFileListItemLast,
           /*inDisplayName=*/nullptr,
@@ -210,8 +218,8 @@ void RemoveFromLoginItems(const FilePath& app_bundle_file_path) {
     return;
   }
 
-  NSURL* app_bundle_url = base::mac::FilePathToNSURL(app_bundle_file_path);
-  base::ScopedCFTypeRef<LSSharedFileListItemRef> item =
+  NSURL* app_bundle_url = base::apple::FilePathToNSURL(app_bundle_file_path);
+  apple::ScopedCFTypeRef<LSSharedFileListItemRef> item =
       login_items.GetLoginItemForApp(app_bundle_url);
   if (!item.get()) {
     return;
@@ -256,7 +264,7 @@ bool WasLaunchedAsLoginItemRestoreState() {
 
   CFStringRef app = CFSTR("com.apple.loginwindow");
   CFStringRef save_state = CFSTR("TALLogoutSavesState");
-  ScopedCFTypeRef<CFPropertyListRef> plist(
+  apple::ScopedCFTypeRef<CFPropertyListRef> plist(
       CFPreferencesCopyAppValue(save_state, app));
   // According to documentation, com.apple.loginwindow.plist does not exist on a
   // fresh installation until the user changes a login window setting.  The
@@ -267,7 +275,7 @@ bool WasLaunchedAsLoginItemRestoreState() {
     return true;
   }
 
-  if (CFBooleanRef restore_state = base::mac::CFCast<CFBooleanRef>(plist)) {
+  if (CFBooleanRef restore_state = base::apple::CFCast<CFBooleanRef>(plist)) {
     return CFBooleanGetValue(restore_state);
   }
 
@@ -284,7 +292,7 @@ bool WasLaunchedAsHiddenLoginItem() {
     return false;
   }
 
-  base::ScopedCFTypeRef<LSSharedFileListItemRef> item(
+  apple::ScopedCFTypeRef<LSSharedFileListItemRef> item(
       login_items.GetLoginItemForMainApp());
   if (!item.get()) {
     // The OS itself can launch items, usually for the resume feature.
@@ -301,86 +309,82 @@ bool RemoveQuarantineAttribute(const FilePath& file_path) {
 
 namespace {
 
-// Returns the running system's Darwin major version. Don't call this, it's an
-// implementation detail and its result is meant to be cached by
-// MacOSVersionInternal().
-int DarwinMajorVersionInternal() {
-  // base::OperatingSystemVersionNumbers() at one time called Gestalt(), which
-  // was observed to be able to spawn threads (see https://crbug.com/53200).
-  // Nowadays that function calls -[NSProcessInfo operatingSystemVersion], whose
-  // current implementation does things like hit the file system, which is
-  // possibly a blocking operation. Either way, it's overkill for what needs to
-  // be done here.
-  //
-  // uname, on the other hand, is implemented as a simple series of sysctl
-  // system calls to obtain the relevant data from the kernel. The data is
-  // compiled right into the kernel, so no threads or blocking or other
-  // funny business is necessary.
-  //
-  // TODO: Switch to the kern.osproductversion sysctl? It's compiled in and
-  // should require less Darwin offset guessing and parsing.
+std::string StringSysctlByName(const char* name) {
+  size_t buf_len;
+  int result = sysctlbyname(name, nullptr, &buf_len, nullptr, 0);
+  PCHECK(result == 0);
+  CHECK_GE(buf_len, 1u);
 
-  struct utsname uname_info;
-  if (uname(&uname_info) != 0) {
-    DPLOG(ERROR) << "uname";
-    return 0;
-  }
+  std::string value(buf_len - 1, '\0');
+  result = sysctlbyname(name, &value[0], &buf_len, nullptr, 0);
+  PCHECK(result == 0);
+  CHECK_EQ(value[buf_len - 1], '\0');
 
-  if (strcmp(uname_info.sysname, "Darwin") != 0) {
-    DLOG(ERROR) << "unexpected uname sysname " << uname_info.sysname;
-    return 0;
-  }
+  return value;
+}
 
-  int darwin_major_version = 0;
-  char* dot = strchr(uname_info.release, '.');
-  if (dot) {
-    if (!base::StringToInt(
-            base::StringPiece(uname_info.release,
-                              static_cast<size_t>(dot - uname_info.release)),
-            &darwin_major_version)) {
-      dot = nullptr;
+int ParseOSProductVersion(const std::string_view& version) {
+  int macos_version = 0;
+
+  // The number of parts that need to be a part of the return value
+  // (major/minor/bugfix).
+  int parts = 3;
+
+  // When a Rapid Security Response is applied to a system, the UI will display
+  // an additional letter (e.g. "13.4.1 (a)"). That extra letter should not be
+  // present in `version_string`; in fact, the version string should not contain
+  // any spaces. However, take the first string-delimited "word" for parsing.
+  std::vector<std::string_view> words = base::SplitStringPiece(
+      version, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  CHECK_GE(words.size(), 1u);
+
+  // There are expected to be either two or three numbers separated by a dot.
+  // Walk through them, and add them to the version string.
+  for (const auto& value_str : base::SplitStringPiece(
+           words[0], ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    int value;
+    bool success = base::StringToInt(value_str, &value);
+    CHECK(success);
+    macos_version *= 100;
+    macos_version += value;
+    if (--parts == 0) {
+      break;
     }
   }
 
-  if (!dot) {
-    DLOG(ERROR) << "could not parse uname release " << uname_info.release;
-    return 0;
+  // While historically the string has comprised exactly two or three numbers
+  // separated by a dot, it's not inconceivable that it might one day be only
+  // one number. Therefore, only check to see that at least one number was found
+  // and processed.
+  CHECK_LE(parts, 2);
+
+  // Tack on as many '00 digits as needed to be sure that exactly three version
+  // numbers are returned.
+  for (int i = 0; i < parts; ++i) {
+    macos_version *= 100;
   }
 
-  return darwin_major_version;
-}
+  // Checks that the value is within expected bounds corresponding to released
+  // OS version numbers. The most important bit is making sure that the "10.16"
+  // compatibility mode isn't engaged.
+  CHECK(macos_version >= 10'00'00);
+  CHECK(macos_version < 10'16'00 || macos_version >= 11'00'00);
 
-// The implementation of MacOSVersion() as defined in the header. Don't call
-// this, it's an implementation detail and the result is meant to be cached by
-// MacOSVersion().
-int MacOSVersionInternal() {
-  int darwin_major_version = DarwinMajorVersionInternal();
-
-  // Darwin major versions 6 through 19 corresponded to macOS versions 10.2
-  // through 10.15.
-  CHECK(darwin_major_version >= 6);
-  if (darwin_major_version <= 19) {
-    return 1000 + darwin_major_version - 4;
-  }
-
-  // Darwin major version 20 corresponds to macOS version 11.0. Assume a
-  // correspondence between Darwin's major version numbers and macOS major
-  // version numbers.
-  int macos_major_version = darwin_major_version - 9;
-
-  return macos_major_version * 100;
+  return macos_version;
 }
 
 }  // namespace
 
-namespace internal {
-
-int MacOSVersion() {
-  static int macos_version = MacOSVersionInternal();
-  return macos_version;
+int ParseOSProductVersionForTesting(const std::string_view& version) {
+  return ParseOSProductVersion(version);
 }
 
-}  // namespace internal
+int MacOSVersion() {
+  static int macos_version =
+      ParseOSProductVersion(StringSysctlByName("kern.osproductversion"));
+
+  return macos_version;
+}
 
 namespace {
 
@@ -408,51 +412,6 @@ CPUType GetCPUType() {
 #endif  // ARCH_CPU_*
 }
 
-std::string GetModelIdentifier() {
-  std::string return_string;
-  ScopedIOObject<io_service_t> platform_expert(IOServiceGetMatchingService(
-      kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice")));
-  if (platform_expert) {
-    ScopedCFTypeRef<CFDataRef> model_data(
-        static_cast<CFDataRef>(IORegistryEntryCreateCFProperty(
-            platform_expert, CFSTR("model"), kCFAllocatorDefault, 0)));
-    if (model_data) {
-      return_string =
-          reinterpret_cast<const char*>(CFDataGetBytePtr(model_data));
-    }
-  }
-  return return_string;
-}
-
-bool ParseModelIdentifier(const std::string& ident,
-                          std::string* type,
-                          int32_t* major,
-                          int32_t* minor) {
-  size_t number_loc = ident.find_first_of("0123456789");
-  if (number_loc == std::string::npos) {
-    return false;
-  }
-  size_t comma_loc = ident.find(',', number_loc);
-  if (comma_loc == std::string::npos) {
-    return false;
-  }
-  int32_t major_tmp, minor_tmp;
-  std::string::const_iterator begin = ident.begin();
-  if (!StringToInt(MakeStringPiece(begin + static_cast<ptrdiff_t>(number_loc),
-                                   begin + static_cast<ptrdiff_t>(comma_loc)),
-                   &major_tmp) ||
-      !StringToInt(
-          MakeStringPiece(begin + static_cast<ptrdiff_t>(comma_loc) + 1,
-                          ident.end()),
-          &minor_tmp)) {
-    return false;
-  }
-  *type = ident.substr(0, number_loc);
-  *major = major_tmp;
-  *minor = minor_tmp;
-  return true;
-}
-
 std::string GetOSDisplayName() {
   std::string os_name;
   if (IsAtMostOS10_11())
@@ -473,12 +432,12 @@ std::string GetPlatformSerialNumber() {
     return std::string();
   }
 
-  base::ScopedCFTypeRef<CFTypeRef> serial_number(
+  apple::ScopedCFTypeRef<CFTypeRef> serial_number(
       IORegistryEntryCreateCFProperty(expert_device,
                                       CFSTR(kIOPlatformSerialNumberKey),
                                       kCFAllocatorDefault, 0));
   CFStringRef serial_number_cfstring =
-      base::mac::CFCast<CFStringRef>(serial_number);
+      base::apple::CFCast<CFStringRef>(serial_number);
   if (!serial_number_cfstring) {
     DLOG(ERROR) << "Error retrieving the machine serial number.";
     return std::string();
@@ -503,7 +462,7 @@ void OpenSystemSettingsPane(SystemSettingsPane pane) {
   // guessing. Clarity was requested from Apple in FB11753405.
   switch (pane) {
     case SystemSettingsPane::kAccessibility_Captions:
-      if (IsAtLeastOS13()) {
+      if (MacOSMajorVersion() >= 13) {
         url = @"x-apple.systempreferences:com.apple.Accessibility-Settings."
               @"extension?Captioning";
       } else {
@@ -512,7 +471,7 @@ void OpenSystemSettingsPane(SystemSettingsPane pane) {
       }
       break;
     case SystemSettingsPane::kDateTime:
-      if (IsAtLeastOS13()) {
+      if (MacOSMajorVersion() >= 13) {
         url =
             @"x-apple.systempreferences:com.apple.Date-Time-Settings.extension";
       } else {
@@ -520,7 +479,7 @@ void OpenSystemSettingsPane(SystemSettingsPane pane) {
       }
       break;
     case SystemSettingsPane::kNetwork_Proxies:
-      if (IsAtLeastOS13()) {
+      if (MacOSMajorVersion() >= 13) {
         url = @"x-apple.systempreferences:com.apple.Network-Settings.extension?"
               @"Proxies";
       } else {
@@ -529,7 +488,7 @@ void OpenSystemSettingsPane(SystemSettingsPane pane) {
       }
       break;
     case SystemSettingsPane::kPrintersScanners:
-      if (IsAtLeastOS13()) {
+      if (MacOSMajorVersion() >= 13) {
         url = @"x-apple.systempreferences:com.apple.Print-Scan-Settings."
               @"extension";
       } else {
@@ -537,7 +496,7 @@ void OpenSystemSettingsPane(SystemSettingsPane pane) {
       }
       break;
     case SystemSettingsPane::kPrivacySecurity_Accessibility:
-      if (IsAtLeastOS13()) {
+      if (MacOSMajorVersion() >= 13) {
         url = @"x-apple.systempreferences:com.apple.settings.PrivacySecurity."
               @"extension?Privacy_Accessibility";
       } else {
@@ -546,7 +505,7 @@ void OpenSystemSettingsPane(SystemSettingsPane pane) {
       }
       break;
     case SystemSettingsPane::kPrivacySecurity_Bluetooth:
-      if (IsAtLeastOS13()) {
+      if (MacOSMajorVersion() >= 13) {
         url = @"x-apple.systempreferences:com.apple.settings.PrivacySecurity."
               @"extension?Privacy_Bluetooth";
       } else {
@@ -555,7 +514,7 @@ void OpenSystemSettingsPane(SystemSettingsPane pane) {
       }
       break;
     case SystemSettingsPane::kPrivacySecurity_Camera:
-      if (IsAtLeastOS13()) {
+      if (MacOSMajorVersion() >= 13) {
         url = @"x-apple.systempreferences:com.apple.settings.PrivacySecurity."
               @"extension?Privacy_Camera";
       } else {
@@ -564,7 +523,7 @@ void OpenSystemSettingsPane(SystemSettingsPane pane) {
       }
       break;
     case SystemSettingsPane::kPrivacySecurity_Extensions_Sharing:
-      if (IsAtLeastOS13()) {
+      if (MacOSMajorVersion() >= 13) {
         // See ShareKit, -[SHKSharingServicePicker openAppExtensionsPrefpane].
         url = @"x-apple.systempreferences:com.apple.ExtensionsPreferences?"
               @"Sharing";
@@ -584,7 +543,7 @@ void OpenSystemSettingsPane(SystemSettingsPane pane) {
       }
       break;
     case SystemSettingsPane::kPrivacySecurity_LocationServices:
-      if (IsAtLeastOS13()) {
+      if (MacOSMajorVersion() >= 13) {
         url = @"x-apple.systempreferences:com.apple.settings.PrivacySecurity."
               @"extension?Privacy_LocationServices";
       } else {
@@ -593,7 +552,7 @@ void OpenSystemSettingsPane(SystemSettingsPane pane) {
       }
       break;
     case SystemSettingsPane::kPrivacySecurity_Microphone:
-      if (IsAtLeastOS13()) {
+      if (MacOSMajorVersion() >= 13) {
         url = @"x-apple.systempreferences:com.apple.settings.PrivacySecurity."
               @"extension?Privacy_Microphone";
       } else {
@@ -602,12 +561,20 @@ void OpenSystemSettingsPane(SystemSettingsPane pane) {
       }
       break;
     case SystemSettingsPane::kPrivacySecurity_ScreenRecording:
-      if (IsAtLeastOS13()) {
+      if (MacOSMajorVersion() >= 13) {
         url = @"x-apple.systempreferences:com.apple.settings.PrivacySecurity."
               @"extension?Privacy_ScreenCapture";
       } else {
         url = @"x-apple.systempreferences:com.apple.preference.security?"
               @"Privacy_ScreenCapture";
+      }
+      break;
+    case SystemSettingsPane::kTrackpad:
+      if (MacOSMajorVersion() >= 13) {
+        url = @"x-apple.systempreferences:com.apple.Trackpad-Settings."
+              @"extension";
+      } else {
+        url = @"x-apple.systempreferences:com.apple.preference.trackpad";
       }
       break;
   }

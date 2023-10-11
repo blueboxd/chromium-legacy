@@ -28,7 +28,7 @@
 #import "components/sync/service/sync_service.h"
 #import "components/translate/core/browser/translate_manager.h"
 #import "components/translate/core/browser/translate_prefs.h"
-#import "ios/chrome/browser/bookmarks/bookmark_model_bridge_observer.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/find_in_page/abstract_find_tab_helper.h"
@@ -64,10 +64,10 @@
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
+#import "ios/chrome/browser/ui/policy/user_policy_util.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/destination_usage_history/constants.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/destination_usage_history/destination_usage_history.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
@@ -107,42 +107,6 @@ NSString* const kMostRecentTimestampBlueDotPromoShownInOverflowMenu =
     @"MostRecentTimestampBlueDotPromoShownInOverflowMenu";
 
 typedef void (^Handler)(void);
-
-OverflowMenuAction* CreateOverflowMenuActionWithString(
-    NSString* name,
-    overflow_menu::ActionType actionType,
-    NSString* symbolName,
-    bool systemSymbol,
-    bool monochromeSymbol,
-    NSString* accessibilityID,
-    Handler handler) {
-  OverflowMenuAction* action =
-      [[OverflowMenuAction alloc] initWithName:name
-                                    symbolName:symbolName
-                                  systemSymbol:systemSymbol
-                              monochromeSymbol:monochromeSymbol
-                       accessibilityIdentifier:accessibilityID
-                            enterpriseDisabled:NO
-                           displayNewLabelIcon:NO
-                                       handler:handler];
-  action.actionType = static_cast<NSInteger>(actionType);
-  return action;
-}
-
-OverflowMenuAction* CreateOverflowMenuAction(
-    int nameID,
-    overflow_menu::ActionType actionType,
-    NSString* symbolName,
-    bool systemSymbol,
-    bool monochromeSymbol,
-    NSString* accessibilityID,
-    Handler handler) {
-  NSString* name = l10n_util::GetNSString(nameID);
-
-  return CreateOverflowMenuActionWithString(name, actionType, symbolName,
-                                            systemSymbol, monochromeSymbol,
-                                            accessibilityID, handler);
-}
 
 OverflowMenuFooter* CreateOverflowMenuManagedFooter(
     int nameID,
@@ -228,9 +192,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 @property(nonatomic, strong) OverflowMenuAction* openIncognitoTabAction;
 @property(nonatomic, strong) OverflowMenuAction* openNewWindowAction;
 
-@property(nonatomic, strong) OverflowMenuAction* pinTabAction;
-@property(nonatomic, strong) OverflowMenuAction* unpinTabAction;
-
 @property(nonatomic, strong) OverflowMenuAction* clearBrowsingDataAction;
 @property(nonatomic, strong) OverflowMenuAction* followAction;
 @property(nonatomic, strong) OverflowMenuAction* addBookmarkAction;
@@ -251,15 +212,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 @end
 
 @implementation OverflowMenuMediator
-
-+ (void)setTabPinned:(BOOL)pinned
-            webState:(web::WebState*)webState
-        webStateList:(WebStateList*)webStateList {
-  if (!webState || !webStateList) {
-    return;
-  }
-  SetWebStatePinnedState(webStateList, webState->GetStableIdentifier(), pinned);
-}
 
 - (instancetype)init {
   self = [super init];
@@ -310,6 +262,10 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
   if (_model) {
     [self initializeModel];
     [self updateModel];
+    // Any state that is required for re-ordering the menu overall (e.g. badges)
+    // must be ready by this point. After this, the only order-based changes
+    // that will be observed are those that show/hide whole destinations.
+    [_menuOrderer reorderDestinationsForInitialMenu];
   }
 }
 
@@ -498,178 +454,94 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
   __weak __typeof(self) weakSelf = self;
 
   // Bookmarks destination.
-  self.bookmarksDestination =
-      [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_BOOKMARKS
-                              destination:overflow_menu::Destination::Bookmarks
-                               symbolName:kBookmarksSymbol
-                             systemSymbol:YES
-                          accessibilityID:kToolsMenuBookmarksId
-                                  handler:^{
-                                    [weakSelf openBookmarks];
-                                  }];
+  self.bookmarksDestination = [self newBookmarksDestination];
 
   // Downloads destination.
-  self.downloadsDestination =
-      [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_DOWNLOADS
-                              destination:overflow_menu::Destination::Downloads
-                               symbolName:kDownloadSymbol
-                             systemSymbol:YES
-                          accessibilityID:kToolsMenuDownloadsId
-                                  handler:^{
-                                    [weakSelf openDownloads];
-                                  }];
+  self.downloadsDestination = [self newDownloadsDestination];
 
   // History destination.
-  self.historyDestination =
-      [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_HISTORY
-                              destination:overflow_menu::Destination::History
-                               symbolName:kHistorySymbol
-                             systemSymbol:YES
-                          accessibilityID:kToolsMenuHistoryId
-                                  handler:^{
-                                    [weakSelf openHistory];
-                                  }];
+  self.historyDestination = [self newHistoryDestination];
 
   // Passwords destination.
-  self.passwordsDestination =
-      [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_PASSWORD_MANAGER
-                              destination:overflow_menu::Destination::Passwords
-                               symbolName:kPasswordSymbol
-                             systemSymbol:NO
-                          accessibilityID:kToolsMenuPasswordsId
-                                  handler:^{
-                                    [weakSelf openPasswords];
-                                  }];
+  self.passwordsDestination = [self newPasswordsDestination];
 
   // Price Tracking destination.
-  self.priceNotificationsDestination =
-      [self createOverflowMenuDestination:
-                IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TITLE
-                              destination:overflow_menu::Destination::
-                                              PriceNotifications
-                               symbolName:kDownTrendSymbol
-                             systemSymbol:NO
-                          accessibilityID:kToolsMenuPriceNotifications
-                                  handler:^{
-                                    [weakSelf openPriceNotifications];
-                                  }];
+  self.priceNotificationsDestination = [self newPriceNotificationsDestination];
 
   // Reading List destination.
-  self.readingListDestination = [self
-      createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_READING_LIST
-                        destination:overflow_menu::Destination::ReadingList
-                         symbolName:kReadingListSymbol
-                       systemSymbol:NO
-                    accessibilityID:kToolsMenuReadingListId
-                            handler:^{
-                              [weakSelf openReadingList];
-                            }];
+  self.readingListDestination = [self newReadingListDestination];
 
   // Recent Tabs destination.
-  self.recentTabsDestination =
-      [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_RECENT_TABS
-                              destination:overflow_menu::Destination::RecentTabs
-                               symbolName:kRecentTabsSymbol
-                             systemSymbol:NO
-                          accessibilityID:kToolsMenuOtherDevicesId
-                                  handler:^{
-                                    [weakSelf openRecentTabs];
-                                  }];
+  self.recentTabsDestination = [self newRecentTabsDestination];
 
   // Settings destination.
-  self.settingsDestination =
-      [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_SETTINGS
-                              destination:overflow_menu::Destination::Settings
-                               symbolName:kSettingsSymbol
-                             systemSymbol:YES
-                          accessibilityID:kToolsMenuSettingsId
-                                  handler:^{
-                                    [weakSelf openSettings];
-                                  }];
+  self.settingsDestination = [self newSettingsDestination];
 
-  self.spotlightDebuggerDestination = [self destinationForSpotlightDebugger:^{
-    [weakSelf openSpotlightDebugger];
-  }];
+  self.spotlightDebuggerDestination = [self newSpotlightDebuggerDestination];
 
   // WhatsNew destination.
-  self.whatsNewDestination =
-      [self createOverflowMenuDestination:IDS_IOS_CONTENT_SUGGESTIONS_WHATS_NEW
-                              destination:overflow_menu::Destination::WhatsNew
-                               symbolName:kCheckmarkSealSymbol
-                             systemSymbol:YES
-                          accessibilityID:kToolsMenuWhatsNewId
-                                  handler:^{
-                                    [weakSelf openWhatsNew];
-                                  }];
+  self.whatsNewDestination = [self newWhatsNewDestination];
 
   // Site Info destination.
-  self.siteInfoDestination =
-      [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_SITE_INFORMATION
-                              destination:overflow_menu::Destination::SiteInfo
-                               symbolName:kTunerSymbol
-                             systemSymbol:NO
-                          accessibilityID:kToolsMenuSiteInformation
-                                  handler:^{
-                                    [weakSelf openSiteInformation];
-                                  }];
+  self.siteInfoDestination = [self newSiteInfoDestination];
 
   [self logTranslateAvailability];
 
-  self.reloadAction = CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_RELOAD, overflow_menu::ActionType::Reload,
-      kArrowClockWiseSymbol, /*systemSymbol=*/NO,
-      /*monochromeSymbol=*/NO, kToolsMenuReload, ^{
-        [weakSelf reload];
-      });
+  self.reloadAction =
+      [self createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_RELOAD
+                                    actionType:overflow_menu::ActionType::Reload
+                                    symbolName:kArrowClockWiseSymbol
+                                  systemSymbol:NO
+                              monochromeSymbol:NO
+                               accessibilityID:kToolsMenuReload
+                                       handler:^{
+                                         [weakSelf reload];
+                                       }];
 
-  self.stopLoadAction = CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_STOP, overflow_menu::ActionType::Reload, kXMarkSymbol,
-      /*systemSymbol=*/YES,
-      /*monochromeSymbol=*/NO, kToolsMenuStop, ^{
-        [weakSelf stopLoading];
-      });
+  self.stopLoadAction =
+      [self createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_STOP
+                                    actionType:overflow_menu::ActionType::Reload
+                                    symbolName:kXMarkSymbol
+                                  systemSymbol:YES
+                              monochromeSymbol:NO
+                               accessibilityID:kToolsMenuStop
+                                       handler:^{
+                                         [weakSelf stopLoading];
+                                       }];
 
-  self.openTabAction = CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_NEW_TAB, overflow_menu::ActionType::NewTab,
-      kNewTabCircleActionSymbol,
-      /*systemSymbol=*/YES, /*monochromeSymbol=*/NO, kToolsMenuNewTabId, ^{
-        [weakSelf openTab];
-      });
+  self.openTabAction =
+      [self createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_NEW_TAB
+                                    actionType:overflow_menu::ActionType::NewTab
+                                    symbolName:kNewTabCircleActionSymbol
+                                  systemSymbol:YES
+                              monochromeSymbol:NO
+                               accessibilityID:kToolsMenuNewTabId
+                                       handler:^{
+                                         [weakSelf openTab];
+                                       }];
 
-  self.openIncognitoTabAction = CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB,
-      overflow_menu::ActionType::NewIncognitoTab, kIncognitoSymbol,
-      /*systemSymbol=*/NO, /*monochromeSymbol=*/NO, kToolsMenuNewIncognitoTabId,
-      ^{
-        [weakSelf openIncognitoTab];
-      });
+  self.openIncognitoTabAction = [self
+      createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB
+                              actionType:overflow_menu::ActionType::
+                                             NewIncognitoTab
+                              symbolName:kIncognitoSymbol
+                            systemSymbol:NO
+                        monochromeSymbol:NO
+                         accessibilityID:kToolsMenuNewIncognitoTabId
+                                 handler:^{
+                                   [weakSelf openIncognitoTab];
+                                 }];
 
-  self.openNewWindowAction = CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_NEW_WINDOW, overflow_menu::ActionType::NewWindow,
-      kNewWindowActionSymbol,
-      /*systemSymbol=*/YES, /*monochromeSymbol=*/NO, kToolsMenuNewWindowId, ^{
-        [weakSelf openNewWindow];
-      });
-
-  self.pinTabAction = CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_PIN_TAB, overflow_menu::ActionType::PinTab, kPinSymbol,
-      /*systemSymbol=*/YES, /*monochromeSymbol=*/NO, kToolsMenuPinTabId, ^{
-        SetPinnedTabOverflowUsed();
-        [weakSelf pinTab];
-      });
-
-  self.unpinTabAction = CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_UNPIN_TAB, overflow_menu::ActionType::PinTab,
-      kPinSlashSymbol,
-      /*systemSymbol=*/YES, /*monochromeSymbol=*/NO, kToolsMenuUnpinTabId, ^{
-        SetPinnedTabOverflowUsed();
-        [weakSelf unpinTab];
-      });
-
-  if (!WasPinnedTabOverflowUsed()) {
-    self.pinTabAction.displayNewLabelIcon = YES;
-    self.unpinTabAction.displayNewLabelIcon = YES;
-  }
+  self.openNewWindowAction = [self
+      createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_NEW_WINDOW
+                              actionType:overflow_menu::ActionType::NewWindow
+                              symbolName:kNewWindowActionSymbol
+                            systemSymbol:YES
+                        monochromeSymbol:NO
+                         accessibilityID:kToolsMenuNewWindowId
+                                 handler:^{
+                                   [weakSelf openNewWindow];
+                                 }];
 
   self.clearBrowsingDataAction = [self newClearBrowsingDataAction];
 
@@ -682,12 +554,16 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 
   self.addBookmarkAction = [self newAddBookmarkAction];
 
-  self.editBookmarkAction = CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK, overflow_menu::ActionType::Bookmark,
-      kEditActionSymbol,
-      /*systemSymbol=*/YES, /*monochromeSymbol=*/NO, kToolsMenuEditBookmark, ^{
-        [weakSelf addOrEditBookmark];
-      });
+  self.editBookmarkAction = [self
+      createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK
+                              actionType:overflow_menu::ActionType::Bookmark
+                              symbolName:kEditActionSymbol
+                            systemSymbol:YES
+                        monochromeSymbol:NO
+                         accessibilityID:kToolsMenuEditBookmark
+                                 handler:^{
+                                   [weakSelf addOrEditBookmark];
+                                 }];
 
   self.readLaterAction = [self newReadLaterAction];
 
@@ -695,46 +571,65 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 
   self.requestDesktopAction = [self newRequestDesktopAction];
 
-  self.requestMobileAction = CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE,
-      overflow_menu::ActionType::DesktopSite, kIPhoneSymbol,
-      /*systemSymbol=*/YES, /*monochromeSymbol=*/YES, kToolsMenuRequestMobileId,
-      ^{
-        [weakSelf requestMobileSite];
-      });
+  self.requestMobileAction = [self
+      createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE
+                              actionType:overflow_menu::ActionType::DesktopSite
+                              symbolName:kIPhoneSymbol
+                            systemSymbol:YES
+                        monochromeSymbol:YES
+                         accessibilityID:kToolsMenuRequestMobileId
+                                 handler:^{
+                                   [weakSelf requestMobileSite];
+                                 }];
 
   self.findInPageAction = [self newFindInPageAction];
 
   self.textZoomAction = [self newTextZoomAction];
 
-  self.reportIssueAction = CreateOverflowMenuAction(
-      IDS_IOS_OPTIONS_REPORT_AN_ISSUE, overflow_menu::ActionType::ReportAnIssue,
-      kWarningSymbol, /*systemSymbol=*/YES,
-      /*monochromeSymbol=*/NO, kToolsMenuReportAnIssueId, ^{
-        [weakSelf reportAnIssue];
-      });
+  self.reportIssueAction =
+      [self createOverflowMenuActionWithNameID:IDS_IOS_OPTIONS_REPORT_AN_ISSUE
+                                    actionType:overflow_menu::ActionType::
+                                                   ReportAnIssue
+                                    symbolName:kWarningSymbol
+                                  systemSymbol:YES
+                              monochromeSymbol:NO
+                               accessibilityID:kToolsMenuReportAnIssueId
+                                       handler:^{
+                                         [weakSelf reportAnIssue];
+                                       }];
 
-  self.helpAction = CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_HELP_MOBILE, overflow_menu::ActionType::Help,
-      kHelpSymbol, /*systemSymbol=*/YES,
-      /*monochromeSymbol=*/NO, kToolsMenuHelpId, ^{
-        [weakSelf openHelp];
-      });
+  self.helpAction =
+      [self createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_HELP_MOBILE
+                                    actionType:overflow_menu::ActionType::Help
+                                    symbolName:kHelpSymbol
+                                  systemSymbol:YES
+                              monochromeSymbol:NO
+                               accessibilityID:kToolsMenuHelpId
+                                       handler:^{
+                                         [weakSelf openHelp];
+                                       }];
 
-  self.shareChromeAction = CreateOverflowMenuAction(
-      IDS_IOS_OVERFLOW_MENU_SHARE_CHROME,
-      overflow_menu::ActionType::ShareChrome, kShareSymbol,
-      /*systemSymbol=*/YES,
-      /*monochromeSymbol=*/NO, kToolsMenuShareChromeId, ^{
-        [weakSelf shareChromeApp];
-      });
+  self.shareChromeAction = [self
+      createOverflowMenuActionWithNameID:IDS_IOS_OVERFLOW_MENU_SHARE_CHROME
+                              actionType:overflow_menu::ActionType::ShareChrome
+                              symbolName:kShareSymbol
+                            systemSymbol:YES
+                        monochromeSymbol:NO
+                         accessibilityID:kToolsMenuShareChromeId
+                                 handler:^{
+                                   [weakSelf shareChromeApp];
+                                 }];
 
-  self.editActionsAction = CreateOverflowMenuAction(
-      IDS_IOS_OVERFLOW_MENU_EDIT_ACTIONS,
-      overflow_menu::ActionType::EditActions, nil, /*systemSymbol=*/NO,
-      /*monochromeSymbol=*/NO, kToolsMenuEditActionsId, ^{
-        [weakSelf beginActionEdit];
-      });
+  self.editActionsAction = [self
+      createOverflowMenuActionWithNameID:IDS_IOS_OVERFLOW_MENU_EDIT_ACTIONS
+                              actionType:overflow_menu::ActionType::EditActions
+                              symbolName:nil
+                            systemSymbol:NO
+                        monochromeSymbol:NO
+                         accessibilityID:kToolsMenuEditActionsId
+                                 handler:^{
+                                   [weakSelf beginCustomization];
+                                 }];
   self.editActionsAction.useSystemRowColoring = YES;
 
   // The app actions vary based on page state, so they are set in
@@ -764,98 +659,328 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
                  footer:nil];
 
   NSMutableArray* actionGroups = [[NSMutableArray alloc] init];
-  [actionGroups addObjectsFromArray:@[
-    self.appActionsGroup,
-    self.pageActionsGroup,
-    self.helpActionsGroup,
-  ]];
+  [actionGroups
+      addObjectsFromArray:@[ self.appActionsGroup, self.pageActionsGroup ]];
   if (IsOverflowMenuCustomizationEnabled()) {
     [actionGroups addObject:self.editActionsGroup];
   }
+  [actionGroups addObject:self.helpActionsGroup];
 
   self.model.actionGroups = actionGroups;
 }
 
 - (OverflowMenuAction*)newFollowAction {
-  return CreateOverflowMenuActionWithString(
-      l10n_util::GetNSStringF(IDS_IOS_TOOLS_MENU_FOLLOW, u""),
-      overflow_menu::ActionType::Follow, kPlusSymbol,
-      /*systemSymbol=*/YES, /*monochromeSymbol=*/NO, kToolsMenuFollow,
-      ^{
-      });
+  return
+      [self createOverflowMenuActionWithName:l10n_util::GetNSStringF(
+                                                 IDS_IOS_TOOLS_MENU_FOLLOW, u"")
+                                  actionType:overflow_menu::ActionType::Follow
+                                  symbolName:kPlusSymbol
+                                systemSymbol:YES
+                            monochromeSymbol:NO
+                             accessibilityID:kToolsMenuFollow
+                                     handler:^{
+                                     }];
 }
 
 - (OverflowMenuAction*)newAddBookmarkAction {
   __weak __typeof(self) weakSelf = self;
-  return CreateOverflowMenuAction(IDS_IOS_TOOLS_MENU_ADD_TO_BOOKMARKS,
-                                  overflow_menu::ActionType::Bookmark,
-                                  kAddBookmarkActionSymbol,
-                                  /*systemSymbol=*/YES, /*monochromeSymbol=*/NO,
-                                  kToolsMenuAddToBookmarks, ^{
-                                    [weakSelf addOrEditBookmark];
-                                  });
+  return [self
+      createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_ADD_TO_BOOKMARKS
+                              actionType:overflow_menu::ActionType::Bookmark
+                              symbolName:kAddBookmarkActionSymbol
+                            systemSymbol:YES
+                        monochromeSymbol:NO
+                         accessibilityID:kToolsMenuAddToBookmarks
+                                 handler:^{
+                                   [weakSelf addOrEditBookmark];
+                                 }];
 }
 
 - (OverflowMenuAction*)newReadLaterAction {
   __weak __typeof(self) weakSelf = self;
-  return CreateOverflowMenuAction(
-      IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST,
-      overflow_menu::ActionType::ReadingList, kReadLaterActionSymbol,
-      /*systemSymbol=*/YES, /*monochromeSymbol=*/NO, kToolsMenuReadLater, ^{
-        [weakSelf addToReadingList];
-      });
+  return [self
+      createOverflowMenuActionWithNameID:
+          IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST
+                              actionType:overflow_menu::ActionType::ReadingList
+                              symbolName:kReadLaterActionSymbol
+                            systemSymbol:YES
+                        monochromeSymbol:NO
+                         accessibilityID:kToolsMenuReadLater
+                                 handler:^{
+                                   [weakSelf addToReadingList];
+                                 }];
 }
 
 - (OverflowMenuAction*)newClearBrowsingDataAction {
   __weak __typeof(self) weakSelf = self;
-  return CreateOverflowMenuAction(IDS_IOS_TOOLS_MENU_CLEAR_BROWSING_DATA,
-                                  overflow_menu::ActionType::ClearBrowsingData,
-                                  kTrashSymbol,
-                                  /*systemSymbol=*/YES, /*monochromeSymbol=*/NO,
-                                  kToolsMenuClearBrowsingData, ^{
-                                    [weakSelf openClearBrowsingData];
-                                  });
+  return [self
+      createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_CLEAR_BROWSING_DATA
+                              actionType:overflow_menu::ActionType::
+                                             ClearBrowsingData
+                              symbolName:kTrashSymbol
+                            systemSymbol:YES
+                        monochromeSymbol:NO
+                         accessibilityID:kToolsMenuClearBrowsingData
+                                 handler:^{
+                                   [weakSelf openClearBrowsingData];
+                                 }];
 }
 
 - (OverflowMenuAction*)newTranslateAction {
   __weak __typeof(self) weakSelf = self;
-  return CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_TRANSLATE, overflow_menu::ActionType::Translate,
-      kTranslateSymbol,
-      /*systemSymbol=*/NO, /*monochromeSymbol=*/NO, kToolsMenuTranslateId, ^{
-        [weakSelf translatePage];
-      });
+  return [self
+      createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_TRANSLATE
+                              actionType:overflow_menu::ActionType::Translate
+                              symbolName:kTranslateSymbol
+                            systemSymbol:NO
+                        monochromeSymbol:NO
+                         accessibilityID:kToolsMenuTranslateId
+                                 handler:^{
+                                   [weakSelf translatePage];
+                                 }];
 }
 
 - (OverflowMenuAction*)newRequestDesktopAction {
   __weak __typeof(self) weakSelf = self;
-  return CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE,
-      overflow_menu::ActionType::DesktopSite, kDesktopSymbol,
-      /*systemSymbol=*/YES, /*monochromeSymbol=*/YES,
-      kToolsMenuRequestDesktopId, ^{
-        [weakSelf requestDesktopSite];
-      });
+  return [self
+      createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE
+                              actionType:overflow_menu::ActionType::DesktopSite
+                              symbolName:kDesktopSymbol
+                            systemSymbol:YES
+                        monochromeSymbol:YES
+                         accessibilityID:kToolsMenuRequestDesktopId
+                                 handler:^{
+                                   [weakSelf requestDesktopSite];
+                                 }];
 }
 
 - (OverflowMenuAction*)newFindInPageAction {
   __weak __typeof(self) weakSelf = self;
-  return CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_FIND_IN_PAGE, overflow_menu::ActionType::FindInPage,
-      kFindInPageActionSymbol,
-      /*systemSymbol=*/YES, /*monochromeSymbol=*/NO, kToolsMenuFindInPageId, ^{
-        [weakSelf openFindInPage];
-      });
+  return [self
+      createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_FIND_IN_PAGE
+                              actionType:overflow_menu::ActionType::FindInPage
+                              symbolName:kFindInPageActionSymbol
+                            systemSymbol:YES
+                        monochromeSymbol:NO
+                         accessibilityID:kToolsMenuFindInPageId
+                                 handler:^{
+                                   [weakSelf openFindInPage];
+                                 }];
 }
 
 - (OverflowMenuAction*)newTextZoomAction {
   __weak __typeof(self) weakSelf = self;
-  return CreateOverflowMenuAction(
-      IDS_IOS_TOOLS_MENU_TEXT_ZOOM, overflow_menu::ActionType::TextZoom,
-      kZoomTextActionSymbol,
-      /*systemSymbol=*/YES, /*monochromeSymbol=*/NO, kToolsMenuTextZoom, ^{
-        [weakSelf openTextZoom];
-      });
+  return [self
+      createOverflowMenuActionWithNameID:IDS_IOS_TOOLS_MENU_TEXT_ZOOM
+                              actionType:overflow_menu::ActionType::TextZoom
+                              symbolName:kZoomTextActionSymbol
+                            systemSymbol:YES
+                        monochromeSymbol:NO
+                         accessibilityID:kToolsMenuTextZoom
+                                 handler:^{
+                                   [weakSelf openTextZoom];
+                                 }];
+}
+
+- (OverflowMenuDestination*)newBookmarksDestination {
+  __weak __typeof(self) weakSelf = self;
+  return
+      [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_BOOKMARKS
+                              destination:overflow_menu::Destination::Bookmarks
+                               symbolName:kBookmarksSymbol
+                             systemSymbol:YES
+                          accessibilityID:kToolsMenuBookmarksId
+                                  handler:^{
+                                    [weakSelf openBookmarks];
+                                  }];
+}
+
+- (OverflowMenuDestination*)newHistoryDestination {
+  __weak __typeof(self) weakSelf = self;
+  return [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_HISTORY
+                                 destination:overflow_menu::Destination::History
+                                  symbolName:kHistorySymbol
+                                systemSymbol:YES
+                             accessibilityID:kToolsMenuHistoryId
+                                     handler:^{
+                                       [weakSelf openHistory];
+                                     }];
+}
+
+- (OverflowMenuDestination*)newReadingListDestination {
+  __weak __typeof(self) weakSelf = self;
+  return [self
+      createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_READING_LIST
+                        destination:overflow_menu::Destination::ReadingList
+                         symbolName:kReadingListSymbol
+                       systemSymbol:NO
+                    accessibilityID:kToolsMenuReadingListId
+                            handler:^{
+                              [weakSelf openReadingList];
+                            }];
+}
+
+- (OverflowMenuDestination*)newPasswordsDestination {
+  __weak __typeof(self) weakSelf = self;
+  return
+      [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_PASSWORD_MANAGER
+                              destination:overflow_menu::Destination::Passwords
+                               symbolName:kPasswordSymbol
+                             systemSymbol:NO
+                          accessibilityID:kToolsMenuPasswordsId
+                                  handler:^{
+                                    [weakSelf openPasswords];
+                                  }];
+}
+
+- (OverflowMenuDestination*)newDownloadsDestination {
+  __weak __typeof(self) weakSelf = self;
+  return
+      [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_DOWNLOADS
+                              destination:overflow_menu::Destination::Downloads
+                               symbolName:kDownloadSymbol
+                             systemSymbol:YES
+                          accessibilityID:kToolsMenuDownloadsId
+                                  handler:^{
+                                    [weakSelf openDownloads];
+                                  }];
+}
+
+- (OverflowMenuDestination*)newRecentTabsDestination {
+  __weak __typeof(self) weakSelf = self;
+  return
+      [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_RECENT_TABS
+                              destination:overflow_menu::Destination::RecentTabs
+                               symbolName:kRecentTabsSymbol
+                             systemSymbol:NO
+                          accessibilityID:kToolsMenuOtherDevicesId
+                                  handler:^{
+                                    [weakSelf openRecentTabs];
+                                  }];
+}
+
+- (OverflowMenuDestination*)newSiteInfoDestination {
+  __weak __typeof(self) weakSelf = self;
+  OverflowMenuDestination* destination =
+      [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_SITE_INFORMATION
+                              destination:overflow_menu::Destination::SiteInfo
+                               symbolName:kTunerSymbol
+                             systemSymbol:NO
+                          accessibilityID:kToolsMenuSiteInformation
+                                  handler:^{
+                                    [weakSelf openSiteInformation];
+                                  }];
+  destination.canBeHidden = NO;
+  return destination;
+}
+
+- (OverflowMenuDestination*)newSettingsDestination {
+  __weak __typeof(self) weakSelf = self;
+  OverflowMenuDestination* destination =
+      [self createOverflowMenuDestination:IDS_IOS_TOOLS_MENU_SETTINGS
+                              destination:overflow_menu::Destination::Settings
+                               symbolName:kSettingsSymbol
+                             systemSymbol:YES
+                          accessibilityID:kToolsMenuSettingsId
+                                  handler:^{
+                                    [weakSelf openSettings];
+                                  }];
+  destination.canBeHidden = NO;
+  return destination;
+}
+
+- (OverflowMenuDestination*)newWhatsNewDestination {
+  __weak __typeof(self) weakSelf = self;
+  return
+      [self createOverflowMenuDestination:IDS_IOS_CONTENT_SUGGESTIONS_WHATS_NEW
+                              destination:overflow_menu::Destination::WhatsNew
+                               symbolName:kCheckmarkSealSymbol
+                             systemSymbol:YES
+                          accessibilityID:kToolsMenuWhatsNewId
+                                  handler:^{
+                                    [weakSelf openWhatsNew];
+                                  }];
+}
+
+- (OverflowMenuDestination*)newSpotlightDebuggerDestination {
+  __weak __typeof(self) weakSelf = self;
+  return [self destinationForSpotlightDebugger:^{
+    [weakSelf openSpotlightDebugger];
+  }];
+}
+
+- (OverflowMenuDestination*)newPriceNotificationsDestination {
+  __weak __typeof(self) weakSelf = self;
+  return [self createOverflowMenuDestination:
+                   IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TITLE
+                                 destination:overflow_menu::Destination::
+                                                 PriceNotifications
+                                  symbolName:kDownTrendSymbol
+                                systemSymbol:NO
+                             accessibilityID:kToolsMenuPriceNotifications
+                                     handler:^{
+                                       [weakSelf openPriceNotifications];
+                                     }];
+}
+
+- (NSString*)hideItemTextForDestination:
+    (overflow_menu::Destination)destination {
+  switch (destination) {
+    case overflow_menu::Destination::SiteInfo:
+    case overflow_menu::Destination::Settings:
+    case overflow_menu::Destination::SpotlightDebugger:
+      // These items are unhideable.
+      return @"";
+    case overflow_menu::Destination::Bookmarks:
+      // TODO(crbug.com/1477431): Add all these strings
+      return @"";
+    case overflow_menu::Destination::History:
+      return @"";
+    case overflow_menu::Destination::ReadingList:
+      return @"";
+    case overflow_menu::Destination::Passwords:
+      return @"";
+    case overflow_menu::Destination::Downloads:
+      return @"";
+    case overflow_menu::Destination::RecentTabs:
+      return @"";
+    case overflow_menu::Destination::WhatsNew:
+      return @"";
+    case overflow_menu::Destination::PriceNotifications:
+      return @"";
+  }
+}
+
+- (NSString*)hideItemTextForActionType:(overflow_menu::ActionType)actionType {
+  switch (actionType) {
+    case overflow_menu::ActionType::Reload:
+    case overflow_menu::ActionType::NewTab:
+    case overflow_menu::ActionType::NewIncognitoTab:
+    case overflow_menu::ActionType::NewWindow:
+    case overflow_menu::ActionType::ReportAnIssue:
+    case overflow_menu::ActionType::Help:
+    case overflow_menu::ActionType::ShareChrome:
+    case overflow_menu::ActionType::EditActions:
+      // These items are unhideable
+      return @"";
+    case overflow_menu::ActionType::Follow:
+      // TODO(crbug.com/1477431): Add all these strings
+      return @"";
+    case overflow_menu::ActionType::Bookmark:
+      return @"";
+    case overflow_menu::ActionType::ReadingList:
+      return @"";
+    case overflow_menu::ActionType::ClearBrowsingData:
+      return @"";
+    case overflow_menu::ActionType::Translate:
+      return @"";
+    case overflow_menu::ActionType::DesktopSite:
+      return @"";
+    case overflow_menu::ActionType::FindInPage:
+      return @"";
+    case overflow_menu::ActionType::TextZoom:
+      return @"";
+  }
 }
 
 #pragma mark - Private
@@ -893,7 +1018,92 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 
   result.destination = static_cast<NSInteger>(destination);
 
+  if (IsOverflowMenuCustomizationEnabled()) {
+    result.longPressItems = @[
+      [[OverflowMenuLongPressItem alloc]
+          initWithTitle:[self hideItemTextForDestination:destination]
+             symbolName:@"eye.slash"
+                handler:^{
+                  [weakSelf hideDestination:destination];
+                }],
+      [[OverflowMenuLongPressItem alloc]
+          initWithTitle:l10n_util::GetNSString(
+                            IDS_IOS_OVERFLOW_MENU_EDIT_ACTIONS)
+             symbolName:@"pencil"
+                handler:^{
+                  [weakSelf beginCustomization];
+                }],
+    ];
+  }
+
   return result;
+}
+
+// Creates an OverflowMenuAction with the given name to be displayed.
+- (OverflowMenuAction*)
+    createOverflowMenuActionWithName:(NSString*)name
+                          actionType:(overflow_menu::ActionType)actionType
+                          symbolName:(NSString*)symbolName
+                        systemSymbol:(BOOL)systemSymbol
+                    monochromeSymbol:(BOOL)monochromeSymbol
+                     accessibilityID:(NSString*)accessibilityID
+                             handler:(Handler)handler {
+  OverflowMenuAction* action =
+      [[OverflowMenuAction alloc] initWithName:name
+                                    symbolName:symbolName
+                                  systemSymbol:systemSymbol
+                              monochromeSymbol:monochromeSymbol
+                       accessibilityIdentifier:accessibilityID
+                            enterpriseDisabled:NO
+                           displayNewLabelIcon:NO
+                                       handler:handler];
+  action.actionType = static_cast<NSInteger>(actionType);
+
+  __weak __typeof(self) weakSelf = self;
+  ActionRanking reorderableActions = [self basePageActions];
+  // If this action is not reorderable, then don't add any longpress items.
+  bool actionIsReorderable =
+      std::find(reorderableActions.begin(), reorderableActions.end(),
+                actionType) != reorderableActions.end();
+  if (IsOverflowMenuCustomizationEnabled() && actionIsReorderable) {
+    action.longPressItems = @[
+      [[OverflowMenuLongPressItem alloc]
+          initWithTitle:[self hideItemTextForActionType:actionType]
+             symbolName:@"eye.slash"
+                handler:^{
+                  [weakSelf hideActionType:actionType];
+                }],
+      [[OverflowMenuLongPressItem alloc]
+          initWithTitle:l10n_util::GetNSString(
+                            IDS_IOS_OVERFLOW_MENU_EDIT_ACTIONS)
+             symbolName:@"pencil"
+                handler:^{
+                  [weakSelf beginCustomization];
+                }],
+    ];
+  }
+  return action;
+}
+
+// Creates an OverflowMenuAction with the given nameID as a localized string ID
+// to be displayed.
+- (OverflowMenuAction*)
+    createOverflowMenuActionWithNameID:(int)nameID
+                            actionType:(overflow_menu::ActionType)actionType
+                            symbolName:(NSString*)symbolName
+                          systemSymbol:(BOOL)systemSymbol
+                      monochromeSymbol:(BOOL)monochromeSymbol
+                       accessibilityID:(NSString*)accessibilityID
+                               handler:(Handler)handler {
+  NSString* name = l10n_util::GetNSString(nameID);
+
+  return [self createOverflowMenuActionWithName:name
+                                     actionType:actionType
+                                     symbolName:symbolName
+                                   systemSymbol:systemSymbol
+                               monochromeSymbol:monochromeSymbol
+                                accessibilityID:accessibilityID
+                                        handler:handler];
 }
 
 // Creates an OverflowMenuDestination for the Spotlight debugger.
@@ -944,8 +1154,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
       overflow_menu::Destination::Settings,
   };
 
-  if (IsPriceNotificationsEnabled() &&
-      IsSmartSortingPriceTrackingDestinationEnabled()) {
+  if (IsPriceNotificationsEnabled()) {
     destinations.push_back(overflow_menu::Destination::PriceNotifications);
   }
 
@@ -991,11 +1200,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
     [appActions addObject:self.openNewWindowAction];
   }
 
-  if (IsPinnedTabsOverflowEnabled() && !self.isIncognito) {
-    [appActions addObject:([self isTabPinned] ? self.unpinTabAction
-                                              : self.pinTabAction)];
-  }
-
   self.appActionsGroup.actions = appActions;
 
   [self.menuOrderer updatePageActions];
@@ -1015,9 +1219,16 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 
   self.helpActionsGroup.actions = helpActions;
 
+  bool hasMachineLevelPolicies =
+      _browserPolicyConnector &&
+      _browserPolicyConnector->HasMachineLevelPolicies();
+  bool canFetchUserPolicies =
+      _authenticationService && _browserStatePrefs &&
+      CanFetchUserPolicy(_authenticationService, _browserStatePrefs);
   // Set footer (on last section), if any.
-  if (_browserPolicyConnector &&
-      _browserPolicyConnector->HasMachineLevelPolicies()) {
+  if (hasMachineLevelPolicies || canFetchUserPolicies) {
+    // Set the Enterprise footer if there are machine level or user level
+    // (aka ChromeBrowserState level) policies.
     self.helpActionsGroup.footer = CreateOverflowMenuManagedFooter(
         IDS_IOS_TOOLS_MENU_ENTERPRISE_MANAGED,
         IDS_IOS_TOOLS_MENU_ENTERPRISE_LEARN_MORE, kTextMenuEnterpriseInfo,
@@ -1188,15 +1399,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
   OverflowMenuAction* action = [self newFollowAction];
   action.enabled = NO;
   return action;
-}
-
-// Returns 'YES' if the current tab is pinned.
-- (BOOL)isTabPinned {
-  DCHECK(self.webState);
-  DCHECK(self.webStateList);
-
-  int webStateIndex = self.webStateList->GetIndexOfWebState(self.webState);
-  return self.webStateList->IsWebStatePinnedAt(webStateIndex);
 }
 
 #pragma mark - CRWWebStateObserver
@@ -1436,27 +1638,27 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
     (overflow_menu::Destination)destinationType {
   switch (destinationType) {
     case overflow_menu::Destination::Bookmarks:
-      return self.bookmarksDestination;
+      return [self newBookmarksDestination];
     case overflow_menu::Destination::History:
-      return self.historyDestination;
+      return [self newHistoryDestination];
     case overflow_menu::Destination::ReadingList:
-      return self.readingListDestination;
+      return [self newReadingListDestination];
     case overflow_menu::Destination::Passwords:
-      return self.passwordsDestination;
+      return [self newPasswordsDestination];
     case overflow_menu::Destination::Downloads:
-      return self.downloadsDestination;
+      return [self newDownloadsDestination];
     case overflow_menu::Destination::RecentTabs:
-      return self.recentTabsDestination;
+      return [self newRecentTabsDestination];
     case overflow_menu::Destination::SiteInfo:
-      return self.siteInfoDestination;
+      return [self newSiteInfoDestination];
     case overflow_menu::Destination::Settings:
-      return self.settingsDestination;
+      return [self newSettingsDestination];
     case overflow_menu::Destination::WhatsNew:
-      return self.whatsNewDestination;
+      return [self newWhatsNewDestination];
     case overflow_menu::Destination::SpotlightDebugger:
-      return self.spotlightDebuggerDestination;
+      return [self newSpotlightDebuggerDestination];
     case overflow_menu::Destination::PriceNotifications:
-      return self.priceNotificationsDestination;
+      return [self newPriceNotificationsDestination];
   }
 }
 
@@ -1497,8 +1699,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
       return self.openIncognitoTabAction;
     case overflow_menu::ActionType::NewWindow:
       return self.openNewWindowAction;
-    case overflow_menu::ActionType::PinTab:
-      return self.pinTabAction;
     case overflow_menu::ActionType::Follow: {
       // Try to create the followAction if there isn't one. It's possible that
       // sometimes when creating the model the followActionState is hidden so
@@ -1565,7 +1765,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
     case overflow_menu::ActionType::NewTab:
     case overflow_menu::ActionType::NewIncognitoTab:
     case overflow_menu::ActionType::NewWindow:
-    case overflow_menu::ActionType::PinTab:
     case overflow_menu::ActionType::ReportAnIssue:
     case overflow_menu::ActionType::Help:
     case overflow_menu::ActionType::ShareChrome:
@@ -1631,45 +1830,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
   [self.dispatcher
       openNewWindowWithActivity:ActivityToLoadURL(WindowActivityToolsOrigin,
                                                   GURL(kChromeUINewTabURL))];
-}
-
-// Dismisses the menu and pins the tab.
-- (void)pinTab {
-  if (!self.webState) {
-    [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
-    return;
-  }
-
-  RecordAction(UserMetricsAction("MobileMenuPinTab"));
-  [[self class] setTabPinned:YES
-                    webState:self.webState
-                webStateList:self.webStateList];
-  if (!IsSplitToolbarMode(self.webState->GetView()) ||
-      !_engagementTracker->WouldTriggerHelpUI(
-          feature_engagement::kIPHTabPinnedFeature)) {
-    // Only show the snackbar if the tab strip is visible or if the IPH is
-    // presented.
-    [self.popupMenuCommandsHandler showSnackbarForPinnedState:YES
-                                                     webState:self.webState];
-  }
-
-  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
-}
-
-// Dismisses the menu and unpins the tab.
-- (void)unpinTab {
-  if (!self.webState) {
-    [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
-    return;
-  }
-
-  RecordAction(UserMetricsAction("MobileMenuUnpinTab"));
-  [[self class] setTabPinned:NO
-                    webState:self.webState
-                webStateList:self.webStateList];
-  [self.popupMenuCommandsHandler showSnackbarForPinnedState:NO
-                                                   webState:self.webState];
-  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
 }
 
 // Dismisses the menu and opens the Clear Browsing Data screen.
@@ -1782,8 +1942,31 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 }
 
 // Begins the action edit flow.
-- (void)beginActionEdit {
-  [self.dispatcher showActionCustomization];
+- (void)beginCustomization {
+  [self.dispatcher showMenuCustomization];
+}
+
+- (void)hideDestination:(overflow_menu::Destination)destination {
+  DestinationCustomizationModel* destinationCustomizationModel =
+      self.menuOrderer.destinationCustomizationModel;
+  for (OverflowMenuDestination* menuDestination in destinationCustomizationModel
+           .shownDestinations) {
+    if (menuDestination.destination == static_cast<int>(destination)) {
+      menuDestination.shown = NO;
+    }
+  }
+  [self.menuOrderer commitDestinationsUpdate];
+}
+
+- (void)hideActionType:(overflow_menu::ActionType)actionType {
+  ActionCustomizationModel* actionCustomizationModel =
+      self.menuOrderer.actionCustomizationModel;
+  for (OverflowMenuAction* action in actionCustomizationModel.shownActions) {
+    if (action.actionType == static_cast<int>(actionType)) {
+      action.shown = NO;
+    }
+  }
+  [self.menuOrderer commitActionsUpdate];
 }
 
 #pragma mark - Destinations Handlers

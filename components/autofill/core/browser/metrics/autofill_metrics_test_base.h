@@ -181,7 +181,8 @@ class AutofillMetricsBaseTest {
   void FillTestProfile(const FormData& form) {
     autofill_manager().FillOrPreviewForm(
         mojom::AutofillActionPersistence::kFill, form, form.fields.front(),
-        Suggestion::BackendId(kTestProfileId), AutofillTriggerSource::kPopup);
+        Suggestion::BackendId(kTestProfileId),
+        {.trigger_source = AutofillTriggerSource::kPopup});
   }
 
   [[nodiscard]] FormData CreateEmptyForm() {
@@ -200,16 +201,6 @@ class AutofillMetricsBaseTest {
     FormData form = CreateEmptyForm();
     form.fields = std::move(fields);
     return form;
-  }
-
-  // Forwards to test::CreateTestFormField(). This is a hack meant as an
-  // intermediate step towards removing the out-parameters from
-  // autofill_form_util.h.
-  template <typename... Args>
-  [[nodiscard]] FormFieldData CreateField(Args... args) {
-    FormFieldData field;
-    test::CreateTestFormField(args..., &field);
-    return field;
   }
 
   TestBrowserAutofillManager& autofill_manager() {
@@ -240,7 +231,7 @@ class AutofillMetricsBaseTest {
   void CreateTestAutofillProfiles();
 
   base::test::ScopedFeatureList scoped_feature_list_async_parse_form_;
-  CreditCard credit_card_ = test::GetMaskedServerCard();
+  CreditCard credit_card_ = test::GetMaskedServerCardWithCvc();
 };
 
 }  // namespace autofill::autofill_metrics

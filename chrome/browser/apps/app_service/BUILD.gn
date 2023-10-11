@@ -37,6 +37,8 @@ source_set("app_service") {
     "metrics/app_service_metrics.h",
     "package_id.cc",
     "package_id.h",
+    "package_id_util.cc",
+    "package_id_util.h",
     "paused_apps.cc",
     "paused_apps.h",
     "policy_util.cc",
@@ -125,8 +127,6 @@ source_set("app_service") {
       "app_icon/app_icon_writer.h",
       "app_icon/arc_activity_adaptive_icon_impl.cc",
       "app_icon/arc_activity_adaptive_icon_impl.h",
-      "app_icon/arc_icon_once_loader.cc",
-      "app_icon/arc_icon_once_loader.h",
       "app_service_proxy_ash.cc",
       "app_service_proxy_ash.h",
       "app_shortcut_item.cc",
@@ -435,7 +435,10 @@ source_set("unit_tests") {
   }
 
   if (is_chromeos_lacros) {
-    sources += [ "app_service_proxy_lacros_unittest.cc" ]
+    sources += [
+      "app_service_proxy_lacros_unittest.cc",
+      "metrics/website_metrics_service_lacros_unittest.cc",
+    ]
   } else {
     sources += [ "publishers/app_publisher_unittest.cc" ]
   }
@@ -478,4 +481,21 @@ source_set("test_support") {
       "mock_crosapi_app_service_proxy.h",
     ]
   }
+}
+
+source_set("app_registry_cache_waiter") {
+  testonly = true
+
+  sources = [
+    "app_registry_cache_waiter.cc",
+    "app_registry_cache_waiter.h",
+  ]
+
+  public_deps = [ "//components/services/app_service" ]
+
+  deps = [
+    ":app_service",
+    "//build:chromeos_buildflags",
+    "//url",
+  ]
 }

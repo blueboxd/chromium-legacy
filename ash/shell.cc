@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller_impl.h"
+#include "ash/accelerators/accelerator_prefs.h"
 #include "ash/accelerators/accelerator_tracker.h"
 #include "ash/accelerators/ash_accelerator_configuration.h"
 #include "ash/accelerators/ash_focus_manager_factory.h"
@@ -68,7 +69,6 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/events/event_rewriter_controller_impl.h"
-#include "ash/events/keyboard_capability_delegate_impl.h"
 #include "ash/fast_ink/laser/laser_pointer_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/frame/non_client_frame_view_ash.h"
@@ -135,6 +135,7 @@
 #include "ash/system/diagnostics/diagnostics_log_controller.h"
 #include "ash/system/federated/federated_service_controller_impl.h"
 #include "ash/system/firmware_update/firmware_update_notification_controller.h"
+#include "ash/system/focus_mode/focus_mode_controller.h"
 #include "ash/system/geolocation/geolocation_controller.h"
 #include "ash/system/hotspot/hotspot_icon_animation.h"
 #include "ash/system/hotspot/hotspot_info_cache.h"
@@ -174,6 +175,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/system_notification_controller.h"
 #include "ash/system/toast/anchored_nudge_manager_impl.h"
+#include "ash/system/toast/system_nudge_pause_manager_impl.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/usb_peripheral/usb_peripheral_notification_controller.h"
@@ -201,7 +203,7 @@
 #include "ash/wm/multitask_menu_nudge_delegate_ash.h"
 #include "ash/wm/native_cursor_manager_ash.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/raster_scale_controller.h"
+#include "ash/wm/raster_scale/raster_scale_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
@@ -811,6 +813,8 @@ Shell::~Shell() {
   // Must be destructed before human_presence_orientation_controller_.
   power_prefs_.reset();
 
+  accelerator_prefs_.reset();
+
   // Must be destructed before the tablet mode and message center controllers,
   // both of which these rely on.
   snooping_protection_controller_.reset();
@@ -857,7 +861,6 @@ Shell::~Shell() {
 
   // Has to happen before ~MruWindowTracker.
   window_cycle_controller_.reset();
-  overview_controller_.reset();
 
   // As clients of `capture_mode_controller_`, `projector_controller_` and
   // `game_dashboard_controller_` need to be destroyed before
@@ -870,6 +873,10 @@ Shell::~Shell() {
   // need to access those windows and it will be a UAF.
   // https://crbug.com/1350711.
   capture_mode_controller_.reset();
+
+  // Has to happen before `~MruWindowTracker` and after
+  // `~GameDashboardController`.
+  overview_controller_.reset();
 
   // This must be called before deleting all the windows below in
   // `CloseAllRootWindowChildWindows()` since host_windows(which gets destroyed)
@@ -891,6 +898,10 @@ Shell::~Shell() {
   // Should be destroyed after Shelf and |system_notification_controller_|.
   system_tray_model_.reset();
   system_sounds_delegate_.reset();
+
+  // This must be destroyed before `message_center_controller_` in order to
+  // restore the original settings if a focus session was active.
+  focus_mode_controller_.reset();
 
   // MultiDisplayMetricsController has a dependency on `mru_window_tracker_`.
   multi_display_metrics_controller_.reset();
@@ -994,6 +1005,10 @@ Shell::~Shell() {
   // Depends on shelf owned by RootWindowController so destroy this before the
   // |window_tree_host_manager_|.
   clipboard_history_controller_.reset();
+
+  // Should be destroyed after `clipbaord_history_controller_` and
+  // `autozoom_controller_` since they will destruct `SystemNudgeController`.
+  system_nudge_pause_manager_.reset();
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // WindowTreeHostManager before resetting |window_tree_host_manager_|, since
@@ -1124,9 +1139,19 @@ void Shell::Init(
 
   local_state_ = local_state;
 
-  if (features::IsBatterySaverAvailable()) {
-    battery_saver_controller_ =
-        std::make_unique<BatterySaverController>(local_state_);
+  if (local_state_ != nullptr) {
+    // Only construct BatterySaverController if prefs exists. It uses prefs to
+    // store the battery saver state, so testing its functionality without
+    // prefs doesn't make sense.
+    if (features::IsBatterySaverAvailable()) {
+      battery_saver_controller_ =
+          std::make_unique<BatterySaverController>(local_state_);
+    } else {
+      // It's possible that we have a new Chrome without battery saver mode
+      // available, but still have battery saver running because the previous
+      // chrome did. So unconditionally reset battery saver state.
+      BatterySaverController::ResetState(local_state_);
+    }
   }
 
   // This creates the MessageCenter object which is used by some other objects
@@ -1136,8 +1161,7 @@ void Shell::Init(
   message_center_ash_impl_ = std::make_unique<MessageCenterAshImpl>();
 
   // Initialized early since it is used by some other objects.
-  keyboard_capability_ = std::make_unique<ui::KeyboardCapability>(
-      std::make_unique<KeyboardCapabilityDelegateImpl>());
+  keyboard_capability_ = std::make_unique<ui::KeyboardCapability>();
 
   // These controllers call Shell::Get() in their constructors, so they cannot
   // be in the member initialization list.
@@ -1198,6 +1222,7 @@ void Shell::Init(
   if (features::IsSystemNudgeV2Enabled()) {
     anchored_nudge_manager_ = std::make_unique<AnchoredNudgeManagerImpl>();
   }
+  system_nudge_pause_manager_ = std::make_unique<SystemNudgePauseManagerImpl>();
 
   peripheral_battery_listener_ = std::make_unique<PeripheralBatteryListener>();
 
@@ -1209,9 +1234,8 @@ void Shell::Init(
   capture_mode_controller_ = std::make_unique<CaptureModeController>(
       shell_delegate_->CreateCaptureModeDelegate());
 
-  if (features::IsGameDashboardEnabled()) {
-    game_dashboard_controller_ = std::make_unique<GameDashboardController>(
-        shell_delegate_->CreateGameDashboardDelegate());
+  if (features::IsFocusModeEnabled()) {
+    focus_mode_controller_ = std::make_unique<FocusModeController>();
   }
 
   // Accelerometer file reader starts listening to tablet mode controller.
@@ -1319,6 +1343,13 @@ void Shell::Init(
 
   overview_controller_ = std::make_unique<OverviewController>();
 
+  // `GameDashboardController` has dependencies on `OverviewController` and
+  // `CaptureModeController`.
+  if (features::IsGameDashboardEnabled()) {
+    game_dashboard_controller_ = std::make_unique<GameDashboardController>(
+        shell_delegate_->CreateGameDashboardDelegate());
+  }
+
   // `SnapGroupController` has dependencies on `OverviweController` and
   // `TabletModeController`.
   if (features::IsSnapGroupEnabled()) {
@@ -1358,6 +1389,10 @@ void Shell::Init(
 
   cursor_manager_->SetDisplay(
       display::Screen::GetScreen()->GetPrimaryDisplay());
+
+  // Initialize before AcceleratorController and AshAcceleratorConfiguration.
+  accelerator_prefs_ = std::make_unique<AcceleratorPrefs>(
+      shell_delegate_->CreateAcceleratorPrefsDelegate());
 
   // Must be initialized after InputMethodManager.
   accelerator_keycode_lookup_cache_ =
@@ -1558,11 +1593,11 @@ void Shell::Init(
     system_sounds_delegate_->Init();
   }
 
+  privacy_hub_controller_ = PrivacyHubController::CreatePrivacyHubController();
+
   // One of the subcontrollers accesses the SystemNotificationController.
   system_notification_controller_ =
       std::make_unique<SystemNotificationController>();
-
-  privacy_hub_controller_ = PrivacyHubController::CreatePrivacyHubController();
 
   // WmModeController should be created before initializing the window tree
   // hosts, since the latter will initialize the shelf on each display, which
@@ -1639,7 +1674,8 @@ void Shell::Init(
         glanceables_controller_.get()));
   }
 
-  if (features::AreGlanceablesV2Enabled()) {
+  if (features::AreGlanceablesV2Enabled() ||
+      features::AreGlanceablesV2EnabledForTrustedTesters()) {
     glanceables_v2_controller_ = std::make_unique<GlanceablesV2Controller>();
   }
 

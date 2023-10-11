@@ -9,6 +9,7 @@
 #include <cmath>
 #include <memory>
 #include <set>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -77,6 +78,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/event_router.h"
@@ -257,6 +259,8 @@ std::string FileErrorToErrorName(base::File::Error error_code) {
       return "QuotaExceededError";
     case base::File::FILE_ERROR_INVALID_URL:
       return "EncodingError";
+    case base::File::FILE_ERROR_IN_USE:
+      return "InUseError";
     default:
       return "InvalidModificationError";
   }
@@ -698,6 +702,8 @@ void EventRouter::Shutdown() {
     dlp_client->RemoveObserver(this);
   }
 
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
+
   profile_ = nullptr;
 }
 
@@ -815,6 +821,8 @@ void EventRouter::ObserveEvents() {
   if (dlp_client) {
     dlp_client->AddObserver(this);
   }
+
+  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
 }
 
 // File watch setup routines.
@@ -1094,7 +1102,7 @@ void EventRouter::OnFileSystemMountFailed() {
 }
 
 void EventRouter::OnDriveConnectionStatusChanged(
-    drive::util::ConnectionStatusType status) {
+    drive::util::ConnectionStatus status) {
   NotifyDriveConnectionStatusChanged();
 }
 
@@ -1612,6 +1620,20 @@ void EventRouter::OnAppUpdate(const apps::AppUpdate& update) {
 void EventRouter::OnAppRegistryCacheWillBeDestroyed(
     apps::AppRegistryCache* cache) {
   app_registry_cache_observer_.Reset();
+}
+
+void EventRouter::OnConnectionChanged(
+    const network::mojom::ConnectionType type) {
+  file_manager_private::DeviceConnectionState result =
+      content::GetNetworkConnectionTracker()->IsOffline()
+          ? file_manager_private::DEVICE_CONNECTION_STATE_OFFLINE
+          : file_manager_private::DEVICE_CONNECTION_STATE_ONLINE;
+  BroadcastEvent(
+      profile_,
+      extensions::events::
+          FILE_MANAGER_PRIVATE_ON_DEVICE_CONNECTION_STATUS_CHANGED,
+      file_manager_private::OnDeviceConnectionStatusChanged::kEventName,
+      file_manager_private::OnDeviceConnectionStatusChanged::Create(result));
 }
 
 }  // namespace file_manager

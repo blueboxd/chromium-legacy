@@ -155,11 +155,18 @@ export class SettingsSecurityPageElement extends
         observer: 'focusConfigChanged_',
       },
 
-      enableFriendlierSafeBrowsingSettingsStandardProtection_: {
+      enableFriendlierSafeBrowsingSettings_: {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean(
-              'enableFriendlierSafeBrowsingSettingsStandardProtection');
+              'enableFriendlierSafeBrowsingSettings');
+        },
+      },
+
+      enableHashPrefixRealTimeLookups_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('enableHashPrefixRealTimeLookups');
         },
       },
 
@@ -178,7 +185,8 @@ export class SettingsSecurityPageElement extends
   private enableSecurityKeysSubpage_: boolean;
   focusConfig: FocusConfig;
   private showDisableSafebrowsingDialog_: boolean;
-  private enableFriendlierSafeBrowsingSettingsStandardProtection_: boolean;
+  private enableFriendlierSafeBrowsingSettings_: boolean;
+  private enableHashPrefixRealTimeLookups_: boolean;
 
   private browserProxy_: PrivacyPageBrowserProxy =
       PrivacyPageBrowserProxyImpl.getInstance();
@@ -278,23 +286,46 @@ export class SettingsSecurityPageElement extends
         SafeBrowsingSetting.STANDARD;
   }
 
+  private getSafeBrowsingDisabledSubLabel_(): string {
+    return this.i18n(
+        this.enableFriendlierSafeBrowsingSettings_ ?
+            'safeBrowsingNoneDescUpdated' :
+            'safeBrowsingNoneDesc');
+  }
+
+  private getSafeBrowsingEnhancedSubLabel_(): string {
+    return this.i18n(
+        this.enableFriendlierSafeBrowsingSettings_ ?
+            'safeBrowsingEnhancedDescUpdated' :
+            'safeBrowsingEnhancedDesc');
+  }
+
   private getSafeBrowsingStandardSubLabel_(): string {
     return this.i18n(
-        this.enableFriendlierSafeBrowsingSettingsStandardProtection_ ?
+        this.enableFriendlierSafeBrowsingSettings_ ?
+            this.enableHashPrefixRealTimeLookups_ ?
+            'safeBrowsingStandardDescUpdatedProxy' :
             'safeBrowsingStandardDescUpdated' :
             'safeBrowsingStandardDesc');
   }
 
+  private getSafeBrowsingStandardBulTwo_(): string {
+    return this.i18n(
+        this.enableHashPrefixRealTimeLookups_ ?
+            'safeBrowsingStandardBulTwoProxy' :
+            'safeBrowsingStandardBulTwo');
+  }
+
   private getPasswordsLeakToggleLabel_(): string {
     return this.i18n(
-        this.enableFriendlierSafeBrowsingSettingsStandardProtection_ ?
+        this.enableFriendlierSafeBrowsingSettings_ ?
             'passwordsLeakDetectionLabelUpdated' :
             'passwordsLeakDetectionLabel');
   }
 
   private getPasswordsLeakToggleSubLabel_(): string {
     let subLabel = this.i18n(
-        this.enableFriendlierSafeBrowsingSettingsStandardProtection_ ?
+        this.enableFriendlierSafeBrowsingSettings_ ?
             'passwordsLeakDetectionGeneralDescriptionUpdated' :
             'passwordsLeakDetectionGeneralDescription');
     // If the backing password leak detection preference is enabled, but the

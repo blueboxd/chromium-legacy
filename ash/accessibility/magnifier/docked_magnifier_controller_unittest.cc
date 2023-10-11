@@ -30,6 +30,7 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/overview/overview_test_util.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_mini_view_header_view.h"
@@ -539,15 +540,10 @@ TEST_F(DockedMagnifierTest, OverviewTabbing) {
   // Tab once. The viewport should be centered on the beginning of the overview
   // item's title.
   SendKey(ui::VKEY_TAB);
-  OverviewItem* item = GetOverviewItemForWindow(window.get());
+  auto* item = GetOverviewItemForWindow(window.get());
   ASSERT_TRUE(item);
-  const auto label_bounds_in_screen = item->overview_item_view()
-                                          ->header_view()
-                                          ->title_label()
-                                          ->GetBoundsInScreen();
-  const gfx::Point expected_point_of_interest(
-      label_bounds_in_screen.x(), label_bounds_in_screen.CenterPoint().y());
-  TestMagnifierLayerTransform(expected_point_of_interest, root_window);
+  TestMagnifierLayerTransform(item->GetMagnifierFocusPointInScreen(),
+                              root_window);
 
   // Tab one more time. The viewport should be centered on the center of the
   // default desk button in the zero state desks bar.
@@ -1027,8 +1023,8 @@ TEST_F(DockedMagnifierTest, CaptureMode) {
 
   // And the magnifier viewport follows the cursor when it's above the capture
   // mode bar.
-  auto* bar_widget = capture_mode_controller->capture_mode_session()
-                         ->capture_mode_bar_widget();
+  const auto* bar_widget = capture_mode_controller->capture_mode_session()
+                               ->GetCaptureModeBarWidget();
   point_of_interest = bar_widget->GetWindowBoundsInScreen().CenterPoint();
   event_generator->MoveMouseTo(point_of_interest);
   TestMagnifierLayerTransform(point_of_interest, root);

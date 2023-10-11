@@ -159,8 +159,10 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
     element->SetSavedLayerScrollOffset(ScrollOffset());
   }
 
-  GetLayoutBox()->GetDocument().GetSnapCoordinator().AddSnapContainer(
-      *GetLayoutBox());
+  if (!RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+    GetLayoutBox()->GetDocument().GetSnapCoordinator().AddSnapContainer(
+        *GetLayoutBox());
+  }
 }
 
 PaintLayerScrollableArea::~PaintLayerScrollableArea() {
@@ -182,8 +184,10 @@ void PaintLayerScrollableArea::DidCompositorScroll(
 void PaintLayerScrollableArea::DisposeImpl() {
   rare_data_.Clear();
 
-  GetLayoutBox()->GetDocument().GetSnapCoordinator().RemoveSnapContainer(
-      *GetLayoutBox());
+  if (!RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+    GetLayoutBox()->GetDocument().GetSnapCoordinator().RemoveSnapContainer(
+        *GetLayoutBox());
+  }
 
   if (InResizeMode() && !GetLayoutBox()->DocumentBeingDestroyed()) {
     if (LocalFrame* frame = GetLayoutBox()->GetFrame())
@@ -195,6 +199,9 @@ void PaintLayerScrollableArea::DisposeImpl() {
       frame_view->RemoveScrollAnchoringScrollableArea(this);
       frame_view->RemoveUserScrollableArea(this);
       frame_view->RemoveAnimatingScrollableArea(this);
+      if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+        frame_view->RemovePendingSnapUpdate(this);
+      }
     }
   }
 
@@ -1085,9 +1092,15 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
   } else if (!HasScrollbar() && resizer_will_change) {
     Layer()->DirtyStackingContextZOrderLists();
   }
-  // The snap container data will be updated at the end of the layout update. If
-  // the data changes, then this will try to re-snap.
-  SetSnapContainerDataNeedsUpdate(true);
+
+  if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+    EnqueueForSnapUpdateIfNeeded();
+  } else {
+    // The snap container data will be updated at the end of the layout update.
+    // If the data changes, then this will try to re-snap.
+    SetSnapContainerDataNeedsUpdate(true);
+  }
+
   {
     UpdateScrollbarEnabledState(is_horizontal_scrollbar_frozen,
                                 is_vertical_scrollbar_frozen);
@@ -1246,7 +1259,13 @@ void PaintLayerScrollableArea::DidChangeGlobalRootScroller() {
   // Recalculate the snap container data since the scrolling behaviour for this
   // layout box changed (i.e. it either became the layout viewport or it
   // is no longer the layout viewport).
-  SetSnapContainerDataNeedsUpdate(true);
+  if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+    if (!GetLayoutBox()->NeedsLayout()) {
+      EnqueueForSnapUpdateIfNeeded();
+    }
+  } else {
+    SetSnapContainerDataNeedsUpdate(true);
+  }
 }
 
 bool PaintLayerScrollableArea::ShouldPerformScrollAnchoring() const {
@@ -1385,8 +1404,10 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
       old_style->UsedColorScheme() != UsedColorSchemeScrollbars() ||
       old_style->ScrollbarWidth() !=
           GetLayoutBox()->StyleRef().ScrollbarWidth() ||
-      old_style->ScrollbarColor() !=
-          GetLayoutBox()->StyleRef().ScrollbarColor()) {
+      old_style->ScrollbarThumbColorResolved() !=
+          GetLayoutBox()->StyleRef().ScrollbarThumbColorResolved() ||
+      old_style->ScrollbarTrackColorResolved() !=
+          GetLayoutBox()->StyleRef().ScrollbarTrackColorResolved()) {
     SetScrollControlsNeedFullPaintInvalidation();
   }
 }
@@ -1908,6 +1929,7 @@ bool PaintLayerScrollableArea::SnapContainerDataNeedsUpdate() const {
 
 void PaintLayerScrollableArea::SetSnapContainerDataNeedsUpdate(
     bool needs_update) {
+  DCHECK(!RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled());
   EnsureRareData().snap_container_data_needs_update_ = needs_update;
   if (!needs_update)
     return;
@@ -1915,14 +1937,6 @@ void PaintLayerScrollableArea::SetSnapContainerDataNeedsUpdate(
       ->GetDocument()
       .GetSnapCoordinator()
       .SetAnySnapContainerDataNeedsUpdate(true);
-}
-
-bool PaintLayerScrollableArea::NeedsResnap() const {
-  return RareData() ? RareData()->needs_resnap_ : false;
-}
-
-void PaintLayerScrollableArea::SetNeedsResnap(bool needs_resnap) {
-  EnsureRareData().needs_resnap_ = needs_resnap;
 }
 
 absl::optional<gfx::PointF>
@@ -1947,16 +1961,16 @@ PaintLayerScrollableArea::GetSnapPositionAndSetTarget(
         CompositorElementIdFromDOMNodeId(DOMNodeIds::IdForNode(active_element));
   }
 
-  cc::TargetSnapAreaElementIds snap_targets;
-  gfx::PointF snap_position;
   absl::optional<gfx::PointF> snap_point;
-  if (data.FindSnapPosition(strategy, &snap_position, &snap_targets,
-                            active_element_id)) {
-    snap_point = gfx::PointF(snap_position.x(), snap_position.y());
+  cc::SnapPositionData snap =
+      data.FindSnapPosition(strategy, active_element_id);
+  if (snap.type != cc::SnapPositionData::Type::kNone) {
+    snap_point = gfx::PointF(snap.position.x(), snap.position.y());
   }
 
-  if (data.SetTargetSnapAreaElementIds(snap_targets))
+  if (data.SetTargetSnapAreaElementIds(snap.target_element_ids)) {
     GetLayoutBox()->SetNeedsPaintPropertyUpdate();
+  }
 
   return snap_point;
 }
@@ -2046,11 +2060,11 @@ void PaintLayerScrollableArea::UpdateScrollCornerStyle() {
   const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
   bool uses_standard_scrollbar_style =
       style_source.StyleRef().UsesStandardScrollbarStyle();
-  scoped_refptr<const ComputedStyle> corner =
+  const ComputedStyle* corner =
       (GetLayoutBox()->IsScrollContainer() && !uses_standard_scrollbar_style)
           ? style_source.GetUncachedPseudoElementStyle(
                 StyleRequest(kPseudoIdScrollbarCorner, style_source.Style()))
-          : scoped_refptr<ComputedStyle>(nullptr);
+          : nullptr;
   if (corner) {
     if (!scroll_corner_) {
       scroll_corner_ = LayoutCustomScrollbarPart::CreateAnonymous(
@@ -2185,11 +2199,11 @@ void PaintLayerScrollableArea::UpdateResizerStyle(
 
   // Update custom resizer style.
   const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
-  scoped_refptr<const ComputedStyle> resizer =
+  const ComputedStyle* resizer =
       GetLayoutBox()->IsScrollContainer()
           ? style_source.GetUncachedPseudoElementStyle(
                 StyleRequest(kPseudoIdResizer, style_source.Style()))
-          : scoped_refptr<ComputedStyle>(nullptr);
+          : nullptr;
   if (resizer) {
     if (!resizer_) {
       resizer_ = LayoutCustomScrollbarPart::CreateAnonymous(
@@ -2199,6 +2213,23 @@ void PaintLayerScrollableArea::UpdateResizerStyle(
   } else if (resizer_) {
     resizer_->Destroy();
     resizer_ = nullptr;
+  }
+}
+
+void PaintLayerScrollableArea::EnqueueForSnapUpdateIfNeeded() {
+  auto* box = GetLayoutBox();
+  // Not all PLSAs are scroll containers!
+  if (!box->IsScrollContainer()) {
+    return;
+  }
+
+  // Enqueue ourselves for a snap update if we have any snap-areas, or if we
+  // currently have snap-data (and it needs to be cleared).
+  for (const auto& fragment : box->PhysicalFragments()) {
+    if (fragment.SnapAreas() || GetSnapContainerData()) {
+      box->GetFrameView()->AddPendingSnapUpdate(this);
+      break;
+    }
   }
 }
 

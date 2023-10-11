@@ -42,8 +42,12 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using ::views::Button;
 
+constexpr char kCancelButton[] = "cancelButton";
+constexpr char kLoadingDialog[] = "loadingDialog";
 constexpr char kQuickStartButton[] = "quickStart";
 constexpr char kNextButton[] = "nextButton";
+constexpr test::UIPath kCancelButtonLoadingDialog = {
+    QuickStartView::kScreenId.name, kLoadingDialog, kCancelButton};
 constexpr test::UIPath kQuickStartNetworkButtonPath = {
     NetworkScreenView::kScreenId.name /*"network-selection"*/,
     kQuickStartButton};
@@ -53,11 +57,6 @@ constexpr test::UIPath kNextNetworkButtonPath = {
 class NetworkScreenTest : public OobeBaseTest {
  public:
   NetworkScreenTest() {
-    feature_list_.InitWithFeatures(
-        {
-            features::kEnableOobeNetworkScreenSkip,
-        },
-        {});
     needs_network_screen_skip_check_ = true;
   }
 
@@ -146,9 +145,9 @@ class NetworkScreenTest : public OobeBaseTest {
       std::move(screen_exit_callback_).Run();
   }
 
-  raw_ptr<login::MockNetworkStateHelper, ExperimentalAsh>
+  raw_ptr<login::MockNetworkStateHelper, DanglingUntriaged | ExperimentalAsh>
       mock_network_state_helper_;
-  raw_ptr<NetworkScreen, ExperimentalAsh> network_screen_;
+  raw_ptr<NetworkScreen, DanglingUntriaged | ExperimentalAsh> network_screen_;
   bool screen_exited_ = false;
   base::test::ScopedFeatureList feature_list_;
   absl::optional<NetworkScreen::Result> last_screen_result_;
@@ -176,6 +175,30 @@ class NetworkScreenQuickStartEnabled : public NetworkScreenTest {
     OobeBaseTest::TearDownInProcessBrowserTestFixture();
   }
 
+  void EnterQuickStartFlowFromNetworkScreen() {
+    // Open network screen
+    ShowNetworkScreen();
+    WaitForScreenShown();
+    test::OobeJS().ExpectHiddenPath(kQuickStartNetworkButtonPath);
+
+    connection_broker_factory_.instances().front()->set_feature_support_status(
+        quick_start::TargetDeviceConnectionBroker::FeatureSupportStatus::
+            kSupported);
+
+    // Check that QuickStart button is visible since QuickStart feature is
+    // enabled
+    test::OobeJS()
+        .CreateVisibilityWaiter(/*visibility=*/true,
+                                kQuickStartNetworkButtonPath)
+        ->Wait();
+
+    test::OobeJS().ClickOnPath(kQuickStartNetworkButtonPath);
+
+    WaitForScreenExit();
+
+    CheckResult(NetworkScreen::Result::QUICK_START);
+  }
+
   quick_start::FakeTargetDeviceConnectionBroker::Factory
       connection_broker_factory_;
 };
@@ -195,25 +218,19 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenQuickStartEnabled,
 
 IN_PROC_BROWSER_TEST_F(NetworkScreenQuickStartEnabled,
                        QuickStartButtonFunctionalWhenFeatureEnabled) {
-  // Open network screen
-  ShowNetworkScreen();
-  WaitForScreenShown();
-  test::OobeJS().ExpectHiddenPath(kQuickStartNetworkButtonPath);
+  EnterQuickStartFlowFromNetworkScreen();
+}
 
-  connection_broker_factory_.instances().front()->set_feature_support_status(
-      quick_start::TargetDeviceConnectionBroker::FeatureSupportStatus::
-          kSupported);
+IN_PROC_BROWSER_TEST_F(NetworkScreenQuickStartEnabled,
+                       ClickingCancelReturnsToNetwork) {
+  EnterQuickStartFlowFromNetworkScreen();
 
-  // Check that QuickStart button is visible since QuickStart feature is enabled
+  // Cancel button must be present.
   test::OobeJS()
-      .CreateVisibilityWaiter(/*visibility=*/true, kQuickStartNetworkButtonPath)
+      .CreateVisibilityWaiter(/*visibility=*/true, kCancelButtonLoadingDialog)
       ->Wait();
-
-  test::OobeJS().ClickOnPath(kQuickStartNetworkButtonPath);
-
-  WaitForScreenExit();
-
-  CheckResult(NetworkScreen::Result::QUICK_START);
+  test::OobeJS().ClickOnPath(kCancelButtonLoadingDialog);
+  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkScreenTest, CanConnect) {

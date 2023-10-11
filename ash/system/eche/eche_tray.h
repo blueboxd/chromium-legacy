@@ -140,7 +140,6 @@ class ASH_EXPORT EcheTray
   void OnAnyBubbleVisibilityChanged(views::Widget* bubble_widget,
                                     bool visible) override;
   bool CacheBubbleViewForHide() const override;
-  void OnThemeChanged() override;
 
   // TrayBubbleView::Delegate:
   std::u16string GetAccessibleNameForBubble() override;
@@ -294,9 +293,6 @@ class ASH_EXPORT EcheTray
   PhoneHubTray* GetPhoneHubTray();
   EcheIconLoadingIndicatorView* GetLoadingIndicator();
 
-  // Refreshes the header buttons, particularly when the theme changes.
-  void RefreshHeaderView();
-
   // Resize Eche size and update the bubble's position.
   void UpdateEcheSizeAndBubbleBounds();
 
@@ -313,9 +309,6 @@ class ASH_EXPORT EcheTray
   // ShellObserver:
   void OnShelfAlignmentChanged(aura::Window* root_window,
                                ShelfAlignment old_alignment) override;
-
-  // returns the position of the anchor that bubble needs to be anchored to.
-  gfx::Rect GetAnchor();
 
   // Processes the accelerator keys and returns true if the accelerator was
   // processed completely in this method and no further processing is needed.
@@ -363,7 +356,8 @@ class ASH_EXPORT EcheTray
   // The unload timer to force close EcheTray in case unload error.
   std::unique_ptr<base::DelayTimer> unload_timer_;
 
-  raw_ptr<views::View, ExperimentalAsh> header_view_ = nullptr;
+  raw_ptr<views::View, DanglingUntriaged | ExperimentalAsh> header_view_ =
+      nullptr;
   raw_ptr<views::Button, ExperimentalAsh> close_button_ = nullptr;
   raw_ptr<views::Button, ExperimentalAsh> minimize_button_ = nullptr;
   raw_ptr<views::Button, ExperimentalAsh> arrow_back_button_ = nullptr;

@@ -11,8 +11,8 @@
 #include <algorithm>
 #include <string>
 
+#include "base/apple/foundation_util.h"
 #include "base/functional/bind.h"
-#include "base/mac/foundation_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
@@ -43,26 +43,6 @@ std::vector<content::VoiceData>& VoicesRef() {
   return *voices;
 }
 
-AVSpeechSynthesisVoice* GetSystemDefaultVoice() {
-  // This should be
-  //
-  //   [AVSpeechSynthesisVoice voiceWithLanguage:nil]
-  //
-  // but that has a bug (https://crbug.com/1484940#c9, FB13197951). In short,
-  // while passing nil to -[AVSpeechSynthesisVoice voiceWithLanguage:] does
-  // indeed return "the default voice for the system’s language and region",
-  // that's not necessarily the voice that the user selected in System Settings
-  // > Accessibility > Spoken Content, and that user voice selection is the only
-  // one that matters. There does not appear to be an AVSpeechSynthesis API that
-  // returns that user choice, so use the deprecated NSSpeechSynthesizer API,
-  // which behaves correctly.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  NSString* default_voice_identifier = NSSpeechSynthesizer.defaultVoice;
-#pragma clang diagnostic pop
-  return [AVSpeechSynthesisVoice voiceWithIdentifier:default_voice_identifier];
-}
-
 std::vector<content::VoiceData>& Voices() {
   std::vector<content::VoiceData>& voices = VoicesRef();
   if (!voices.empty()) {
@@ -73,13 +53,14 @@ std::vector<content::VoiceData>& Voices() {
       [[AVSpeechSynthesisVoice.speechVoices sortedArrayUsingDescriptors:@[
         [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES]
       ]] mutableCopy];
-  AVSpeechSynthesisVoice* default_voice = GetSystemDefaultVoice();
+  AVSpeechSynthesisVoice* default_voice =
+      [AVSpeechSynthesisVoice voiceWithLanguage:nil];
   if (default_voice) {
     [av_speech_voices removeObject:default_voice];
     [av_speech_voices insertObject:default_voice atIndex:0];
   }
 
-  // For the case of multiple voices with the same name but of a different
+  // For the case of multiple voices with the name name but of a different
   // language, the old API (NSSpeechSynthesizer) would append locale information
   // to the names, while this current API does not. Because returning a bunch of
   // voices with the same name isn't helpful, count how often each name is used,
@@ -153,7 +134,7 @@ AVSpeechUtterance* MakeUtterance(int utterance_id,
 }
 
 int GetUtteranceId(AVSpeechUtterance* utterance) {
-  NSNumber* identifier = base::mac::ObjCCast<NSNumber>(
+  NSNumber* identifier = base::apple::ObjCCast<NSNumber>(
       objc_getAssociatedObject(utterance, @selector(identifier)));
   if (identifier) {
     return identifier.intValue;

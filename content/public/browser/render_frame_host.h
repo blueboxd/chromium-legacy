@@ -455,10 +455,18 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns true if the frame is out of process relative to its parent.
   virtual bool IsCrossProcessSubframe() = 0;
 
-  // Returns the web-exposed isolation level of a frame's agent cluster.
+  // Returns the cross-origin isolation capability of this frame.
   //
-  // Note that this is a property of the document so can change as the frame
+  // Note that this is a property of the document and can change as the frame
   // navigates.
+  //
+  // Unlike RenderProcessHost::GetWebExposedIsolationLevel(), this takes the
+  // currently document's Permissions Policy into account and may return a
+  // lower isolation level than RenderProcessHost if the
+  // "cross-origin-isolated" feature is not delegated to this frame. Because
+  // of this, this function should generally be used instead of
+  // RenderProcessHost::GetWebExposedIsolationLevel() when making decisions
+  // based on the isolation level, such as API availability.
   //
   // TODO(https://936696): Once RenderDocument ships this should be exposed as
   // an invariant of the document host.
@@ -719,31 +727,34 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // always match.
   virtual bool IsActive() = 0;
 
-  // Returns true iff the RenderFrameHost is inactive, i.e., when the
-  // RenderFrameHost is either in BackForwardCache, Prerendering, or pending
-  // deletion. This function should be used when we are unsure if inactive
-  // RenderFrameHosts can properly handle events and events processing shouldn't
-  // or can't be deferred until the RenderFrameHost becomes active again.
-  // Callers that only want to check whether a RenderFrameHost is active or not
-  // should use IsActive() instead.
+  // Checks that the RenderFrameHost is inactive (with some exceptions) and
+  // ensures that it will be never activated if it is inactive when calling this
+  // function.
   //
-  // Additionally, this method has a side effect for back-forward cache and
-  // prerendering, where the document is prevented from ever becoming active
-  // after calling this method. This allows to safely ignore the event as the
-  // RenderFrameHost will never be shown to the user again.
+  // Side effect: In the case of the RenderFrameHost is inactive, this ensures
+  // it will be never activated through the following:
   //
-  // For BackForwardCache: it evicts the document from the cache and triggers
-  // deletion.
-  // For Prerendering: it cancels prerendering and triggers deletion.
+  // - For BackForwardCache: it evicts the document from the cache and
+  //   triggers deletion.
+  // - For Prerendering: it cancels prerendering and triggers deletion.
   //
-  // This should not be called for speculative and pending commit
+  // This should be used when we are unsure if inactive RenderFrameHosts can
+  // properly handle events and events processing shouldn't or can't be deferred
+  // until the RenderFrameHost becomes active again. This allows the callers to
+  // safely ignore the event as the RenderFrameHost will never be shown to the
+  // user again.
+  //
+  // This should not be used just to check whether a RenderFrameHost is active
+  // or not. For that, use |IsActive()| instead.
+  //
+  // This should not be used for speculative and pending commit
   // RenderFrameHosts as disallowing activation is not supported. In that case
   // |IsInactiveAndDisallowActivation()| returns false along with terminating
   // the renderer process.
   //
-  // The return value of IsInactiveAndDisallowActivation() is the opposite of
-  // IsActive() except in some uncommon cases:
-  // - The "small window" referred to in the IsActive() documentation.
+  // Return value: The opposite of |IsActive()|, except in some uncommon cases:
+  //
+  // - The "small window" referred to in the |IsActive()| documentation.
   // - For speculative and pending commit RenderFrameHosts, as mentioned above.
   //
   // |reason| will be logged via UMA and UKM. It is recommended to provide
@@ -1048,6 +1059,13 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // committed any navigations or not, and whether it's a crashed frame that
   // must be replaced or not.
   virtual bool ShouldChangeRenderFrameHostOnSameSiteNavigation() const = 0;
+
+  // The embedder calls this method when a prediction model believes that the
+  // user is likely to click on an anchor element and wants to report the
+  // likelihood of the click. The `score` is the probability that a user will
+  // click on the `url`, and it is a value between 0 and 1.
+  virtual void OnPreloadingHeuristicsModelDone(const GURL& url,
+                                               float score) = 0;
 
  private:
   // This interface should only be implemented inside content.

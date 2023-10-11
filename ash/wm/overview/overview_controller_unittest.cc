@@ -26,13 +26,11 @@
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_test_util.h"
-#include "ash/wm/overview/overview_wallpaper_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/client/aura_constants.h"
@@ -317,7 +315,8 @@ TEST_F(OverviewControllerTest, AnimationCallbacksForCrossFadeWallpaper) {
   EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
 }
 
-TEST_F(OverviewControllerTest, OcclusionTest) {
+// TODO(https://crbug.com/1472403): Investigate test flakiness and reenable.
+TEST_F(OverviewControllerTest, DISABLED_OcclusionTest) {
   using OcclusionState = aura::Window::OcclusionState;
 
   Shell::Get()

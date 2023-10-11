@@ -7,10 +7,10 @@
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
+#include "base/apple/scoped_cftyperef.h"
+#include "base/apple/scoped_objc_class_swizzler.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
-#include "base/mac/scoped_objc_class_swizzler.h"
 #include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
@@ -79,9 +79,10 @@ bool ClearKeyEventModifiers() {
   for (const auto& known_modifier : kKnownModifiers) {
     if (known_modifier.flag_mask & event_flags) {
       had_modifier = true;
-      CGEventPost(kCGSessionEventTap,
-                  base::ScopedCFTypeRef<CGEventRef>(CGEventCreateKeyboardEvent(
-                      nullptr, known_modifier.key_code, false)));
+      CGEventPost(
+          kCGSessionEventTap,
+          base::apple::ScopedCFTypeRef<CGEventRef>(CGEventCreateKeyboardEvent(
+              nullptr, known_modifier.key_code, false)));
       LOG(ERROR) << "Modifier " << known_modifier.name
                  << " is hanging down, and may cause problems for any "
                     "subsequent test.";

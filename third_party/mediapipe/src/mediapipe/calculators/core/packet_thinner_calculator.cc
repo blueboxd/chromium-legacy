@@ -161,8 +161,8 @@ absl::Status PacketThinnerCalculator::Open(CalculatorContext* cc) {
 
   thinner_type_ = options.thinner_type();
   // This check enables us to assume only two thinner types exist in Process()
-  CHECK(thinner_type_ == PacketThinnerCalculatorOptions::ASYNC ||
-        thinner_type_ == PacketThinnerCalculatorOptions::SYNC)
+  ABSL_CHECK(thinner_type_ == PacketThinnerCalculatorOptions::ASYNC ||
+             thinner_type_ == PacketThinnerCalculatorOptions::SYNC)
       << "Unsupported thinner type.";
 
   if (thinner_type_ == PacketThinnerCalculatorOptions::ASYNC) {

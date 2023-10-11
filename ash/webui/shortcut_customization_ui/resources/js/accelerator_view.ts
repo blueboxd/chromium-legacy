@@ -8,19 +8,19 @@ import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
+import {mojoString16ToString} from 'chrome://resources/js/mojo_type_util.js';
 import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {AcceleratorResultData} from '../mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
+import {AcceleratorResultData, UserAction} from '../mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
 
 import {AcceleratorLookupManager} from './accelerator_lookup_manager.js';
 import {getTemplate} from './accelerator_view.html.js';
 import {keyToIconNameMap} from './input_key.js';
 import {getShortcutProvider} from './mojo_interface_provider.js';
-import {mojoString16ToString} from './mojo_utils.js';
 import {ModifierKeyCodes} from './shortcut_input.js';
-import {Accelerator, AcceleratorConfigResult, AcceleratorSource, AcceleratorState, Modifier, ShortcutProviderInterface, StandardAcceleratorInfo} from './shortcut_types.js';
+import {Accelerator, AcceleratorConfigResult, AcceleratorKeyState, AcceleratorSource, AcceleratorState, Modifier, ShortcutProviderInterface, StandardAcceleratorInfo} from './shortcut_types.js';
 import {createEmptyAcceleratorInfo, getAccelerator, getModifiersForAcceleratorInfo, isCustomizationDisabled, isFunctionKey, isStandardAcceleratorInfo, keyCodeToModifier, LWIN_KEY, META_KEY, unidentifiedKeyCodeToKey} from './shortcut_utils.js';
 
 export interface AcceleratorViewElement {
@@ -45,6 +45,8 @@ export enum ViewState {
 // the delay allows the user to see the full animation before requesting a
 // change to the backend.
 const kAnimationTimeoutMs: number = 300;
+
+const kEscapeKey: number = 27;  // Keycode for VKEY_ESCAPE
 
 /**
  * @fileoverview
@@ -132,6 +134,11 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
         computed: 'computeIsDisabled(acceleratorInfo.*)',
         reflectToAttribute: true,
       },
+
+      highlighted: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
     };
   }
 
@@ -146,6 +153,7 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
   categoryIsLocked: boolean;
   isFirstAccelerator: boolean;
   isDisabled: boolean;
+  highlighted: boolean;
   protected pendingAcceleratorInfo: StandardAcceleratorInfo;
   protected isCapturing: boolean;
   private modifiers: string[];
@@ -261,10 +269,18 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
       this.hasError = false;
     }
 
+    const pendingAccelerator = this.keystrokeToAccelerator(e);
+    // Alt + Esc will exit input handling immediately.
+    if (pendingAccelerator.modifiers === Modifier.ALT &&
+        pendingAccelerator.keyCode === kEscapeKey) {
+      this.endCapture(/*shouldDelay=*/ false);
+      return;
+    }
+
     // Add the key pressed to pendingAccelerator.
     this.set(
         'pendingAcceleratorInfo.layoutProperties.standardAccelerator.accelerator',
-        this.keystrokeToAccelerator(e));
+        pendingAccelerator);
 
     if (this.isModifierKey(e)) {
       // Reset the keyDisplay property if the key is a modifier.
@@ -393,8 +409,16 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
         this.hasError = true;
         return;
       }
+      case AcceleratorConfigResult.kNonSearchAcceleratorWarning: {
+        // TODO(jimmyxgong): Add the "Learn More" link when available.
+        this.statusMessage = this.i18n('warningSearchNotIncluded');
+        this.hasError = true;
+        return;
+      }
       case AcceleratorConfigResult.kSuccess: {
         this.fireUpdateEvent();
+        getShortcutProvider().recordUserAction(
+            UserAction.kSuccessfulModification);
         return;
       }
     }
@@ -405,7 +429,11 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
    * Converts a keystroke event to an Accelerator Object.
    */
   private keystrokeToAccelerator(e: KeyboardEvent): Accelerator {
-    const output: Accelerator = {modifiers: 0, keyCode: 0};
+    const output: Accelerator = {
+      modifiers: 0,
+      keyCode: 0,
+      keyState: AcceleratorKeyState.PRESSED,
+    };
     if (e.metaKey) {
       output.modifiers = output.modifiers | Modifier.COMMAND;
     }

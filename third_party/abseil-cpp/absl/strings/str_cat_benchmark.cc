@@ -15,9 +15,13 @@
 #include "absl/strings/str_cat.h"
 
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <string>
 
 #include "benchmark/benchmark.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 
 namespace {
@@ -183,5 +187,16 @@ void StrAppendConfig(B* benchmark) {
 }
 
 BENCHMARK(BM_StrAppend)->Apply(StrAppendConfig);
+
+void BM_StrCat_int(benchmark::State& state) {
+  int i = 0;
+  for (auto s : state) {
+    std::string result = absl::StrCat(i);
+    benchmark::DoNotOptimize(result);
+    i = IncrementAlternatingSign(i);
+  }
+}
+
+BENCHMARK(BM_StrCat_int);
 
 }  // namespace

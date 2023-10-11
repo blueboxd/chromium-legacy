@@ -44,9 +44,11 @@
 #include "components/sync/model/type_entities_count.h"
 #include "components/sync/service/backend_migrator.h"
 #include "components/sync/service/configure_context.h"
+#include "components/sync/service/local_data_description.h"
 #include "components/sync/service/sync_api_component_factory.h"
 #include "components/sync/service/sync_auth_manager.h"
 #include "components/sync/service/sync_prefs.h"
+#include "components/sync/service/sync_service_utils.h"
 #include "components/sync/service/trusted_vault_histograms.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -238,7 +240,6 @@ SyncServiceImpl::~SyncServiceImpl() {
   if (identity_manager_) {
     identity_manager_->RemoveObserver(this);
   }
-  sync_prefs_.RemoveSyncPrefObserver(this);
   // Shutdown() should have been called before destruction.
   DCHECK(!engine_);
 }
@@ -262,7 +263,7 @@ void SyncServiceImpl::Initialize() {
       base::BindRepeating(&SyncServiceImpl::GetAccountInfo,
                           base::Unretained(this)));
 
-  sync_prefs_.AddSyncPrefObserver(this);
+  sync_prefs_observation_.Observe(&sync_prefs_);
 
   if (!IsLocalSyncEnabled()) {
     auth_manager_->RegisterForAuthNotifications();
@@ -339,16 +340,13 @@ void SyncServiceImpl::Initialize() {
     }
   }
 
-  if (base::FeatureList::IsEnabled(
-          kSyncAllowClearingMetadataWhenDataTypeIsStopped)) {
-    // Call Stop() on controllers for non-preferred types to clear metadata.
-    // This allows clearing metadata for types disabled in previous run early-on
-    // during initialization.
-    ModelTypeSet preferred_types = GetPreferredDataTypes();
-    for (auto& [type, controller] : data_type_controllers_) {
-      if (!preferred_types.Has(type)) {
-        controller->Stop(CLEAR_METADATA, base::DoNothing());
-      }
+  // Call Stop() on controllers for non-preferred types to clear metadata.
+  // This allows clearing metadata for types disabled in previous run early-on
+  // during initialization.
+  ModelTypeSet preferred_types = GetPreferredDataTypes();
+  for (auto& [type, controller] : data_type_controllers_) {
+    if (!preferred_types.Has(type)) {
+      controller->Stop(CLEAR_METADATA, base::DoNothing());
     }
   }
 
@@ -456,6 +454,7 @@ void SyncServiceImpl::CredentialsChanged() {
     // the PAUSED state before the engine was created, e.g. during deferred
     // startup.)
     if (!engine_) {
+      DVLOG(2) << "Notify observers on credentials changed";
       NotifyObservers();
     }
     ResetEngine(ShutdownReason::STOP_SYNC_AND_KEEP_DATA,
@@ -475,6 +474,7 @@ void SyncServiceImpl::CredentialsChanged() {
     }
   }
 
+  DVLOG(2) << "Notify observers on credentials changed";
   NotifyObservers();
 }
 
@@ -628,11 +628,8 @@ void SyncServiceImpl::ResetEngine(ShutdownReason shutdown_reason,
     if (shutdown_reason == ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA) {
       sync_client_->GetSyncApiComponentFactory()->ClearAllTransportData();
     }
-    // If enabled, call controller's Stop() to inform them to clear the
-    // metadata.
-    if (shutdown_reason != ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA &&
-        base::FeatureList::IsEnabled(
-            kSyncAllowClearingMetadataWhenDataTypeIsStopped)) {
+    // Call controller's Stop() to inform them to clear the metadata.
+    if (shutdown_reason != ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA) {
       SyncStopMetadataFate fate =
           ShutdownReasonToSyncStopMetadataFate(shutdown_reason);
       for (auto& [type, controller] : data_type_controllers_) {
@@ -699,6 +696,7 @@ void SyncServiceImpl::ResetEngine(ShutdownReason shutdown_reason,
     auth_manager_->ConnectionClosed();
   }
 
+  DVLOG(2) << "Notify observers on reset engine";
   NotifyObservers();
 
   // Now that everything is shut down, try to start up again.
@@ -743,6 +741,7 @@ void SyncServiceImpl::SetSyncFeatureRequested() {
     TryStart();
   }
 
+  DVLOG(2) << "Notify observers on SetSyncFeatureRequested";
   NotifyObservers();
 }
 
@@ -991,6 +990,7 @@ void SyncServiceImpl::OnEngineInitialized(bool success,
     }
   }
 
+  DVLOG(2) << "Notify on engine initialized";
   NotifyObservers();
 }
 
@@ -1008,6 +1008,7 @@ void SyncServiceImpl::OnConnectionStatusChange(ConnectionStatus status) {
   if (!IsLocalSyncEnabled()) {
     auth_manager_->ConnectionStatusChanged(status);
   }
+  DVLOG(2) << "Notify observers OnConnectionStatusChange";
   NotifyObservers();
 }
 
@@ -1114,18 +1115,22 @@ void SyncServiceImpl::OnActionableProtocolError(
     case UNKNOWN_ACTION:
       NOTREACHED();
   }
+  DVLOG(2) << "Notify observers OnActionableProtocolError";
   NotifyObservers();
 }
 
 void SyncServiceImpl::OnBackedOffTypesChanged() {
+  DVLOG(2) << "Notify observers OnBackedOffTypesChanged";
   NotifyObservers();
 }
 
 void SyncServiceImpl::OnInvalidationStatusChanged() {
+  DVLOG(2) << "Notify observers OnInvalidationStatusChanged";
   NotifyObservers();
 }
 
 void SyncServiceImpl::OnNewInvalidatedDataTypes() {
+  DVLOG(2) << "Notify observers OnNewInvalidatedDataTypes";
   NotifyObservers();
 }
 
@@ -1161,6 +1166,7 @@ void SyncServiceImpl::OnConfigureDone(
     observer.OnSyncConfigurationCompleted(this);
   }
 
+  DVLOG(2) << "Notify observers OnConfigureDone";
   NotifyObservers();
 
   // Update configured data types and start handling incoming invalidations. The
@@ -1185,11 +1191,13 @@ void SyncServiceImpl::OnConfigureDone(
 void SyncServiceImpl::OnConfigureStart() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   engine_->StartConfiguration();
+  DVLOG(2) << "Notify observers OnConfigureStart";
   NotifyObservers();
 }
 
 void SyncServiceImpl::CryptoStateChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOG(2) << "Notify observers on CryptoStateChanged";
   NotifyObservers();
 }
 
@@ -1233,6 +1241,7 @@ void SyncServiceImpl::ReconfigureDataTypesDueToCrypto() {
   // whether we triggered configuration or not. This is needed for the
   // IsSetupInProgress() case where the UI needs to be updated to reflect that
   // the passphrase was accepted (https://crbug.com/870256).
+  DVLOG(2) << "Notify observers on ReconfigureDataTypesDueToCrypto";
   NotifyObservers();
 }
 
@@ -1328,6 +1337,7 @@ SyncServiceImpl::GetSetupInProgressHandle() {
   if (++outstanding_setup_in_progress_handles_ == 1) {
     TryStart();
 
+    DVLOG(2) << "Notify observers GetSetupInProgressHandle";
     NotifyObservers();
   }
 
@@ -1803,6 +1813,7 @@ void SyncServiceImpl::OnSyncManagedPrefChange(bool is_sync_managed) {
     // Sync is no longer disabled by policy. Try starting it up if appropriate.
     DCHECK(!engine_);
     TryStart();
+    DVLOG(2) << "Notify observers OnSyncManagedPrefChange";
     NotifyObservers();
   }
 }
@@ -2123,6 +2134,7 @@ void SyncServiceImpl::StopAndClear() {
 
   // Also let observers know that Sync-the-feature is now fully disabled
   // (before it possibly starts up again in transport-only mode).
+  DVLOG(2) << "Notify observers on StopAndClear";
   NotifyObservers();
 }
 
@@ -2153,6 +2165,7 @@ void SyncServiceImpl::ReconfigureDatatypeManager(
 
   // In any case, notify the observers. Whatever triggered the reconfigure
   // (attempt) might be interesting to them.
+  DVLOG(2) << "Notify observers on ReconfigureDatatypeManager";
   NotifyObservers();
 }
 
@@ -2272,6 +2285,7 @@ void SyncServiceImpl::OnSetupInProgressHandleDestroyed() {
     ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/true);
   }
 
+  DVLOG(2) << "Notify observers OnSetupInProgressHandleDestroyed";
   NotifyObservers();
 }
 
@@ -2381,6 +2395,38 @@ void SyncServiceImpl::DownloadStatusRecorder::OnTimeout() {
 void SyncServiceImpl::GetTypesWithUnsyncedData(
     base::OnceCallback<void(ModelTypeSet)> callback) const {
   engine_->GetTypesWithUnsyncedData(std::move(callback));
+}
+
+void SyncServiceImpl::GetLocalDataDescriptions(
+    ModelTypeSet types,
+    base::OnceCallback<void(std::map<ModelType, LocalDataDescription>)>
+        callback) {
+  // Return early if sync is disabled, or paused because of a persistent auth
+  // error.
+  if (GetTransportState() == TransportState::DISABLED ||
+      GetTransportState() == TransportState::PAUSED) {
+    std::move(callback).Run({});
+    return;
+  }
+
+  // Only retain the types that are enabled.
+  types.RetainAll(GetPreferredDataTypes());
+
+  sync_client_->GetLocalDataDescriptions(types, std::move(callback));
+}
+
+void SyncServiceImpl::TriggerLocalDataMigration(ModelTypeSet types) {
+  // Return early if sync is disabled, or paused because of a persistent auth
+  // error.
+  if (GetTransportState() == TransportState::DISABLED ||
+      GetTransportState() == TransportState::PAUSED) {
+    return;
+  }
+
+  // Only retain the types that are enabled.
+  types.RetainAll(GetPreferredDataTypes());
+
+  sync_client_->TriggerLocalDataMigration(types);
 }
 
 }  // namespace syncer

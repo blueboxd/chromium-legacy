@@ -59,7 +59,6 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/anchor_position_scroll_data.h"
-#include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
 #include "third_party/blink/renderer/core/layout/custom_scrollbar.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -137,9 +136,8 @@ struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
   LayoutUnit intrinsic_logical_widths_initial_block_size;
   Member<void*> result;
   HeapVector<Member<const NGLayoutResult>, 1> layout_results;
-  void* pointers[2];
   wtf_size_t first_fragment_item_index_;
-  Member<void*> rare_data;
+  Member<void*> members[2];
 };
 
 ASSERT_SIZE(LayoutBox, SameSizeAsLayoutBox);
@@ -449,19 +447,6 @@ std::tuple<LogicalOffset, WritingMode> LogicalLocation(const LayoutBox& box) {
 
 }  // namespace
 
-BoxLayoutExtraInput::BoxLayoutExtraInput(LayoutBox& layout_box)
-    : box(&layout_box) {
-  box->SetBoxLayoutExtraInput(this);
-}
-
-BoxLayoutExtraInput::~BoxLayoutExtraInput() {
-  box->SetBoxLayoutExtraInput(nullptr);
-}
-
-void BoxLayoutExtraInput::Trace(Visitor* visitor) const {
-  visitor->Trace(box);
-}
-
 LayoutBoxRareData::LayoutBoxRareData()
     : spanner_placeholder_(nullptr),
       // TODO(rego): We should store these based on physical direction.
@@ -487,6 +472,7 @@ LayoutBox::LayoutBox(ContainerNode* node)
 void LayoutBox::Trace(Visitor* visitor) const {
   visitor->Trace(measure_result_);
   visitor->Trace(layout_results_);
+  visitor->Trace(overflow_);
   visitor->Trace(rare_data_);
   LayoutBoxModelObject::Trace(visitor);
 }
@@ -536,14 +522,18 @@ void LayoutBox::DisassociatePhysicalFragments() {
 void LayoutBox::InsertedIntoTree() {
   NOT_DESTROYED();
   LayoutBoxModelObject::InsertedIntoTree();
-  AddScrollSnapMapping();
+  if (!RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+    AddScrollSnapMapping();
+  }
   AddCustomLayoutChildIfNeeded();
 }
 
 void LayoutBox::WillBeRemovedFromTree() {
   NOT_DESTROYED();
   ClearCustomLayoutChild();
-  ClearScrollSnapMapping();
+  if (!RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+    ClearScrollSnapMapping();
+  }
   LayoutBoxModelObject::WillBeRemovedFromTree();
 }
 
@@ -871,22 +861,48 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
       old_style.ScrollPaddingLeft() != StyleRef().ScrollPaddingLeft() ||
       old_style.ScrollPaddingTop() != StyleRef().ScrollPaddingTop() ||
       old_style.ScrollPaddingRight() != StyleRef().ScrollPaddingRight()) {
-    snap_coordinator.SnapContainerDidChange(*this);
+    if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+      if (!NeedsLayout() && IsScrollContainer()) {
+        GetScrollableArea()->EnqueueForSnapUpdateIfNeeded();
+      }
+    } else {
+      snap_coordinator.SnapContainerDidChange(*this);
+    }
   }
 
-  // scroll-snap-align, scroll-snap-stop and scroll-margin invalidate the snap
-  // area.
-  if (old_style.GetScrollSnapAlign() != StyleRef().GetScrollSnapAlign() ||
-      old_style.ScrollSnapStop() != StyleRef().ScrollSnapStop() ||
+  auto SnapAreaDidChange = [&]() {
+    if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+      auto* snap_container = ContainingScrollContainer();
+      if (!snap_container->NeedsLayout()) {
+        snap_container->GetScrollableArea()->EnqueueForSnapUpdateIfNeeded();
+      }
+    } else {
+      snap_coordinator.SnapAreaDidChange(*this,
+                                         StyleRef().GetScrollSnapAlign());
+    }
+  };
+
+  if (old_style.GetScrollSnapAlign() != StyleRef().GetScrollSnapAlign()) {
+    if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+      ContainingBlock()->SetNeedsLayout(
+          layout_invalidation_reason::kStyleChange, kMarkContainerChain);
+    } else {
+      SnapAreaDidChange();
+    }
+  }
+
+  // scroll-snap-stop and scroll-margin invalidate the snap area.
+  if (old_style.ScrollSnapStop() != StyleRef().ScrollSnapStop() ||
       old_style.ScrollMarginBottom() != StyleRef().ScrollMarginBottom() ||
       old_style.ScrollMarginLeft() != StyleRef().ScrollMarginLeft() ||
       old_style.ScrollMarginTop() != StyleRef().ScrollMarginTop() ||
-      old_style.ScrollMarginRight() != StyleRef().ScrollMarginRight())
-    snap_coordinator.SnapAreaDidChange(*this, StyleRef().GetScrollSnapAlign());
+      old_style.ScrollMarginRight() != StyleRef().ScrollMarginRight()) {
+    SnapAreaDidChange();
+  }
 
   // Transform invalidates the snap area.
   if (old_style.Transform() != StyleRef().Transform())
-    snap_coordinator.SnapAreaDidChange(*this, StyleRef().GetScrollSnapAlign());
+    SnapAreaDidChange();
 }
 
 void LayoutBox::AddScrollSnapMapping() {
@@ -933,7 +949,7 @@ void LayoutBox::LayoutSubtreeRoot() {
   // Our own style may have changed which would disqualify us as a layout root
   // (e.g. our containment/writing-mode/formatting-context status/etc changed).
   // Skip subtree layout, and ensure our container chain needs layout.
-  if (SelfNeedsLayout()) {
+  if (SelfNeedsFullLayout()) {
     MarkContainerChainForLayout();
     return;
   }
@@ -1296,7 +1312,8 @@ LayoutUnit LayoutBox::OverrideIntrinsicContentWidth() const {
   }
   // We must have a length because HasOverrideIntrinsicContentWidth() is true.
   DCHECK(intrinsic_length.GetLength().has_value());
-  return *intrinsic_length.GetLength();
+  DCHECK(intrinsic_length.GetLength()->IsFixed());
+  return LayoutUnit(intrinsic_length.GetLength()->Value());
 }
 
 LayoutUnit LayoutBox::OverrideIntrinsicContentHeight() const {
@@ -1320,7 +1337,8 @@ LayoutUnit LayoutBox::OverrideIntrinsicContentHeight() const {
   }
   // We must have a length because HasOverrideIntrinsicContentHeight() is true.
   DCHECK(intrinsic_length.GetLength().has_value());
-  return *intrinsic_length.GetLength();
+  DCHECK(intrinsic_length.GetLength()->IsFixed());
+  return LayoutUnit(intrinsic_length.GetLength()->Value());
 }
 
 LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
@@ -2653,7 +2671,11 @@ void LayoutBox::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
     ClearFirstInlineFragmentItemIndex();
 }
 
-bool LayoutBox::NGPhysicalFragmentList::HasFragmentItems() const {
+bool LayoutBox::NGPhysicalFragmentList::MayHaveFragmentItems() const {
+  return !IsEmpty() && front().IsInlineFormattingContext();
+}
+
+bool LayoutBox::NGPhysicalFragmentList::SlowHasFragmentItems() const {
   for (const NGPhysicalBoxFragment& fragment : *this) {
     if (fragment.HasItems())
       return true;
@@ -2813,6 +2835,9 @@ void LayoutBox::ReplaceLayoutResult(const NGLayoutResult* result,
 void LayoutBox::FinalizeLayoutResults() {
   DCHECK(!layout_results_.empty());
   DCHECK(!layout_results_.back()->PhysicalFragment().BreakToken());
+#if EXPENSIVE_DCHECKS_ARE_ON()
+  CheckMayHaveFragmentItems();
+#endif
   // If we've added all the results we were going to, and the node establishes
   // an inline formatting context, we have some finalization to do.
   if (HasFragmentItems())
@@ -2857,6 +2882,15 @@ void LayoutBox::ShrinkLayoutResults(wtf_size_t results_to_keep) {
   layout_results_.Shrink(results_to_keep);
   InvalidateCachedGeometry();
 }
+
+#if EXPENSIVE_DCHECKS_ARE_ON()
+void LayoutBox::CheckMayHaveFragmentItems() const {
+  NOT_DESTROYED();
+  if (!MayHaveFragmentItems()) {
+    DCHECK(!PhysicalFragments().SlowHasFragmentItems());
+  }
+}
+#endif
 
 void LayoutBox::InvalidateCachedGeometry() {
   NOT_DESTROYED();
@@ -3102,7 +3136,7 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
   // Anonymous blocks should not impede percentage resolution on a child.
   // Examples of such anonymous blocks are blocks wrapped around inlines that
   // have block siblings (from the CSS spec) and multicol flow threads (an
-  // implementation detail). Another implementation detail, ruby runs, create
+  // implementation detail). Another implementation detail, ruby columns, create
   // anonymous inline-blocks, so skip those too. All other types of anonymous
   // objects, such as table-cells, will be treated just as if they were
   // non-anonymous.
@@ -3516,7 +3550,7 @@ void LayoutBox::SetLayoutOverflowFromLayoutResults() {
 
   DCHECK(!LayoutOverflowIsSet());
   if (!overflow_)
-    overflow_ = std::make_unique<BoxOverflowModel>();
+    overflow_ = MakeGarbageCollected<BoxOverflowModel>();
   overflow_->layout_overflow.emplace(layout_overflow->ToLayoutRect());
 }
 
@@ -3641,7 +3675,7 @@ void LayoutBox::AddSelfVisualOverflow(const LayoutRect& rect) {
 
   if (!VisualOverflowIsSet()) {
     if (!overflow_)
-      overflow_ = std::make_unique<BoxOverflowModel>();
+      overflow_ = MakeGarbageCollected<BoxOverflowModel>();
 
     overflow_->visual_overflow.emplace(border_box);
   }
@@ -3665,7 +3699,7 @@ void LayoutBox::AddContentsVisualOverflow(const LayoutRect& rect) {
 
   if (!VisualOverflowIsSet()) {
     if (!overflow_)
-      overflow_ = std::make_unique<BoxOverflowModel>();
+      overflow_ = MakeGarbageCollected<BoxOverflowModel>();
 
     overflow_->visual_overflow.emplace(border_box);
   }
@@ -4192,7 +4226,7 @@ OverflowClipAxes LayoutBox::ComputeOverflowClipAxes() const {
 
 void LayoutBox::MutableForPainting::SavePreviousOverflowData() {
   if (!GetLayoutBox().overflow_)
-    GetLayoutBox().overflow_ = std::make_unique<BoxOverflowModel>();
+    GetLayoutBox().overflow_ = MakeGarbageCollected<BoxOverflowModel>();
   auto& previous_overflow = GetLayoutBox().overflow_->previous_overflow_data;
   if (!previous_overflow)
     previous_overflow.emplace();
@@ -4214,7 +4248,7 @@ void LayoutBox::MutableForPainting::SetPreviousGeometryForLayoutShiftTracking(
     return;
 
   if (!GetLayoutBox().overflow_)
-    GetLayoutBox().overflow_ = std::make_unique<BoxOverflowModel>();
+    GetLayoutBox().overflow_ = MakeGarbageCollected<BoxOverflowModel>();
   auto& previous_overflow = GetLayoutBox().overflow_->previous_overflow_data;
   if (!previous_overflow)
     previous_overflow.emplace();

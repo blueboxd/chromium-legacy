@@ -29,12 +29,8 @@ void AutocompleteUnrecognizedFallbackEventLogger::OnDidShowSuggestions() {
 }
 
 void AutocompleteUnrecognizedFallbackEventLogger::OnDidFillSuggestion() {
-  // Since the `AutocompleteUnrecognizedFallbackEventLogger` is only notified
-  // about autocomplete=unrecognized fields, it is possible that to reach
-  // `OnDidFillSuggestion()` with `suggestion_state_` kNotShown. This happens
-  // when the website dynamically changes the autocomplete attribute to
-  // unrecognized after triggering (regular) suggestions.
-  if (suggestion_state_ == SuggestionState::kShown) {
+  CHECK_NE(suggestion_state_, SuggestionState::kNotShown);
+  if (suggestion_state_ != SuggestionState::kFilled) {
     suggestion_state_ = SuggestionState::kFilled;
   }
 }

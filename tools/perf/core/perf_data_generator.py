@@ -1036,7 +1036,25 @@ BUILDERS = {
         'dimension': {
             'cpu': 'arm',
             'mac_model': 'MacBookPro18,3',
-            'os': 'Mac',
+            'os': 'Mac-13',
+            'pool': 'chrome.tests.perf',
+        },
+    },
+    'mac-14-m1-pro-perf': {
+        'tests': [
+            {
+                'isolate': 'performance_test_suite',
+                'extra_args': [
+                    '--assert-gpu-compositing',
+                ],
+            },
+        ],
+        'platform':
+        'mac',
+        'dimension': {
+            'cpu': 'arm',
+            'mac_model': 'MacBookPro18,3',
+            'os': 'Mac-14',
             'pool': 'chrome.tests.perf',
         },
     },
@@ -1898,7 +1916,7 @@ def generate_performance_test(tester_config, test, builder_name):
       # subprocess output to the task stdout.
       # TODO(crbug.com/865538): Reduce this once we can reduce hard_timeout.
       'io_timeout': test.get('timeout', 6 * 60 * 60),
-      'dimension_sets': [tester_config['dimension']],
+      'dimensions': tester_config['dimension'],
       'service_account': _TESTER_SERVICE_ACCOUNT,
   }
   if shards:

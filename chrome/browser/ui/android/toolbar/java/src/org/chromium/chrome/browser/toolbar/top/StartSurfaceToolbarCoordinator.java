@@ -15,7 +15,6 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -66,8 +65,7 @@ public class StartSurfaceToolbarCoordinator {
     StartSurfaceToolbarCoordinator(ViewStub startSurfaceToolbarStub,
             UserEducationHelper userEducationHelper, ButtonDataProvider identityDiscController,
             ThemeColorProvider provider, MenuButtonCoordinator menuButtonCoordinator,
-            Supplier<ButtonData> identityDiscButtonSupplier, boolean isGridTabSwitcherEnabled,
-            boolean isTabToGtsAnimationEnabled, boolean isTabGroupsAndroidContinuationEnabled,
+            Supplier<ButtonData> identityDiscButtonSupplier, boolean isTabToGtsAnimationEnabled,
             BooleanSupplier isIncognitoModeEnabledSupplier,
             Callback<LoadUrlParams> logoClickedCallback, boolean isRefactorEnabled,
             boolean shouldCreateLogoInToolbar, Callback<Boolean> finishedTransitionCallback,
@@ -81,13 +79,9 @@ public class StartSurfaceToolbarCoordinator {
                                          .START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB.getValue())
                         .with(StartSurfaceToolbarProperties.MENU_IS_VISIBLE, true)
                         .with(StartSurfaceToolbarProperties.IS_VISIBLE, false)
-                        .with(StartSurfaceToolbarProperties.GRID_TAB_SWITCHER_ENABLED,
-                                isGridTabSwitcherEnabled)
                         .build();
 
         mShouldCreateLogoInToolbar = shouldCreateLogoInToolbar;
-        boolean isTabToGtsFadeAnimationEnabled = isTabToGtsAnimationEnabled
-                && !DeviceClassManager.enableAccessibilityLayout(mStub.getContext());
         mToolbarMediator = new StartSurfaceToolbarMediator(mStub.getContext(), mPropertyModel,
                 (iphCommandBuilder)
                         -> {
@@ -99,10 +93,9 @@ public class StartSurfaceToolbarCoordinator {
                 },
                 StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB.getValue(),
                 menuButtonCoordinator, identityDiscController, identityDiscButtonSupplier,
-                isTabToGtsFadeAnimationEnabled, isTabGroupsAndroidContinuationEnabled,
-                isIncognitoModeEnabledSupplier, logoClickedCallback, isRefactorEnabled,
-                StartSurfaceConfiguration.IS_DOODLE_SUPPORTED.getValue(), shouldCreateLogoInToolbar,
-                finishedTransitionCallback, toolbarColorObserverManager);
+                isTabToGtsAnimationEnabled, isIncognitoModeEnabledSupplier, logoClickedCallback,
+                isRefactorEnabled, StartSurfaceConfiguration.IS_DOODLE_SUPPORTED.getValue(),
+                shouldCreateLogoInToolbar, finishedTransitionCallback, toolbarColorObserverManager);
 
         mThemeColorProvider = provider;
         mMenuButtonCoordinator = menuButtonCoordinator;
@@ -247,6 +240,11 @@ public class StartSurfaceToolbarCoordinator {
     /** Returns whether it's on the start surface homepage.*/
     boolean isOnHomepage() {
         return mToolbarMediator.isOnHomepage();
+    }
+
+    /** Returns whether the real search box is focused.*/
+    boolean isRealSearchBoxFocused() {
+        return mToolbarMediator.isRealSearchBoxFocused();
     }
 
     boolean isShowingTabSwitcher() {

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "base/check.h"
@@ -23,8 +24,6 @@
 #include "url/origin.h"
 
 namespace autofill::test {
-
-using base::ASCIIToUTF16;
 
 AutofillTestEnvironment* AutofillTestEnvironment::current_instance_ = nullptr;
 
@@ -65,6 +64,9 @@ FormRendererId AutofillTestEnvironment::NextFormRendererId() {
 FieldRendererId AutofillTestEnvironment::NextFieldRendererId() {
   return FieldRendererId(++field_renderer_id_counter_);
 }
+
+AutofillUnitTestEnvironment::AutofillUnitTestEnvironment(const Options& options)
+    : AutofillTestEnvironment(options) {}
 
 AutofillBrowserTestEnvironment::AutofillBrowserTestEnvironment(
     const Options& options)
@@ -114,22 +116,14 @@ FormFieldData CreateTestFormField(std::string_view label,
                                   std::string_view value,
                                   std::string_view type) {
   FormFieldData field;
-  CreateTestFormField(label, name, value, type, &field);
+  field.host_frame = MakeLocalFrameToken();
+  field.unique_renderer_id = MakeFieldRendererId();
+  field.label = base::UTF8ToUTF16(label);
+  field.name = base::UTF8ToUTF16(name);
+  field.value = base::UTF8ToUTF16(value);
+  field.form_control_type = type;
+  field.is_focusable = true;
   return field;
-}
-
-void CreateTestFormField(std::string_view label,
-                         std::string_view name,
-                         std::string_view value,
-                         std::string_view type,
-                         FormFieldData* field) {
-  field->host_frame = MakeLocalFrameToken();
-  field->unique_renderer_id = MakeFieldRendererId();
-  field->label = ASCIIToUTF16(label);
-  field->name = ASCIIToUTF16(name);
-  field->value = ASCIIToUTF16(value);
-  field->form_control_type = type;
-  field->is_focusable = true;
 }
 
 FormFieldData CreateTestFormField(std::string_view label,
@@ -137,20 +131,10 @@ FormFieldData CreateTestFormField(std::string_view label,
                                   std::string_view value,
                                   std::string_view type,
                                   std::string_view autocomplete) {
-  FormFieldData field;
-  CreateTestFormField(label, name, value, type, autocomplete, &field);
+  FormFieldData field = CreateTestFormField(label, name, value, type);
+  field.autocomplete_attribute = autocomplete;
+  field.parsed_autocomplete = ParseAutocompleteAttribute(autocomplete);
   return field;
-}
-
-void CreateTestFormField(std::string_view label,
-                         std::string_view name,
-                         std::string_view value,
-                         std::string_view type,
-                         std::string_view autocomplete,
-                         FormFieldData* field) {
-  CreateTestFormField(label, name, value, type, field);
-  field->autocomplete_attribute = autocomplete;
-  field->parsed_autocomplete = ParseAutocompleteAttribute(autocomplete);
 }
 
 FormFieldData CreateTestFormField(std::string_view label,
@@ -159,23 +143,13 @@ FormFieldData CreateTestFormField(std::string_view label,
                                   std::string_view type,
                                   std::string_view autocomplete,
                                   uint64_t max_length) {
-  FormFieldData field;
-  CreateTestFormField(label, name, value, type, autocomplete, max_length,
-                      &field);
-  return field;
-}
-
-void CreateTestFormField(std::string_view label,
-                         std::string_view name,
-                         std::string_view value,
-                         std::string_view type,
-                         std::string_view autocomplete,
-                         uint64_t max_length,
-                         FormFieldData* field) {
+  FormFieldData field = CreateTestFormField(label, name, value, type);
   // First, set the `max_length`, as the `parsed_autocomplete` is set based on
   // this value.
-  field->max_length = max_length;
-  CreateTestFormField(label, name, value, type, autocomplete, field);
+  field.max_length = max_length;
+  field.autocomplete_attribute = autocomplete;
+  field.parsed_autocomplete = ParseAutocompleteAttribute(autocomplete);
+  return field;
 }
 
 FormFieldData CreateTestSelectField(std::string_view label,
@@ -193,7 +167,7 @@ FormFieldData CreateTestSelectField(std::string_view label,
                                     std::string_view autocomplete,
                                     const std::vector<const char*>& values,
                                     const std::vector<const char*>& contents) {
-  return CreateTestSelectOrSelectMenuField(label, name, value, autocomplete,
+  return CreateTestSelectOrSelectListField(label, name, value, autocomplete,
                                            values, contents,
                                            /*field_type=*/"select-one");
 }
@@ -204,7 +178,7 @@ FormFieldData CreateTestSelectField(const std::vector<const char*>& values) {
                                /*contents=*/values);
 }
 
-FormFieldData CreateTestSelectOrSelectMenuField(
+FormFieldData CreateTestSelectOrSelectListField(
     std::string_view label,
     std::string_view name,
     std::string_view value,
@@ -212,7 +186,7 @@ FormFieldData CreateTestSelectOrSelectMenuField(
     const std::vector<const char*>& values,
     const std::vector<const char*>& contents,
     std::string_view field_type) {
-  CHECK(field_type == "select-one" || field_type == "selectmenu");
+  CHECK(field_type == "select-one" || field_type == "selectlist");
   FormFieldData field = CreateTestFormField(label, name, value, field_type);
   field.autocomplete_attribute = autocomplete;
   field.parsed_autocomplete = ParseAutocompleteAttribute(autocomplete);
@@ -250,96 +224,66 @@ FormFieldData CreateTestDatalistField(std::string_view label,
 
 FormData CreateTestPersonalInformationFormData() {
   FormData form;
-  CreateTestPersonalInformationFormData(&form);
-  return form;
-}
-
-void CreateTestPersonalInformationFormData(FormData* form) {
-  form->unique_renderer_id = MakeFormRendererId();
-  form->name = u"MyForm";
-  form->url = GURL("https://myform.com/form.html");
-  form->action = GURL("https://myform.com/submit.html");
-  form->main_frame_origin =
+  form.unique_renderer_id = MakeFormRendererId();
+  form.name = u"MyForm";
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  form.main_frame_origin =
       url::Origin::Create(GURL("https://myform_root.com/form.html"));
-
-  FormFieldData field;
-  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
-  form->fields.push_back(field);
-  test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
-  form->fields.push_back(field);
-  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
-  form->fields.push_back(field);
-  test::CreateTestFormField("Email", "email", "", "email", &field);
-  form->fields.push_back(field);
+  form.fields = {CreateTestFormField("First Name", "firstname", "", "text"),
+                 CreateTestFormField("Middle Name", "middlename", "", "text"),
+                 CreateTestFormField("Last Name", "lastname", "", "text"),
+                 CreateTestFormField("Email", "email", "", "email")};
+  return form;
 }
 
 FormData CreateTestCreditCardFormData(bool is_https,
                                       bool use_month_type,
                                       bool split_names) {
   FormData form;
-  CreateTestCreditCardFormData(&form, is_https, use_month_type, split_names);
-  return form;
-}
-
-void CreateTestCreditCardFormData(FormData* form,
-                                  bool is_https,
-                                  bool use_month_type,
-                                  bool split_names) {
-  form->unique_renderer_id = MakeFormRendererId();
-  form->name = u"MyForm";
+  form.unique_renderer_id = MakeFormRendererId();
+  form.name = u"MyForm";
   if (is_https) {
-    form->url = GURL("https://myform.com/form.html");
-    form->action = GURL("https://myform.com/submit.html");
-    form->main_frame_origin =
+    form.url = GURL("https://myform.com/form.html");
+    form.action = GURL("https://myform.com/submit.html");
+    form.main_frame_origin =
         url::Origin::Create(GURL("https://myform_root.com/form.html"));
   } else {
-    form->url = GURL("http://myform.com/form.html");
-    form->action = GURL("http://myform.com/submit.html");
-    form->main_frame_origin =
+    form.url = GURL("http://myform.com/form.html");
+    form.action = GURL("http://myform.com/submit.html");
+    form.main_frame_origin =
         url::Origin::Create(GURL("http://myform_root.com/form.html"));
   }
 
-  FormFieldData field;
   if (split_names) {
-    test::CreateTestFormField("First Name on Card", "firstnameoncard", "",
-                              "text", &field);
-    field.autocomplete_attribute = "cc-given-name";
-    form->fields.push_back(field);
-    test::CreateTestFormField("Last Name on Card", "lastnameoncard", "", "text",
-                              &field);
-    field.autocomplete_attribute = "cc-family-name";
-    form->fields.push_back(field);
-    field.autocomplete_attribute = "";
+    form.fields.push_back(CreateTestFormField(
+        "First Name on Card", "firstnameoncard", "", "text", "cc-given-name"));
+    form.fields.push_back(CreateTestFormField(
+        "Last Name on Card", "lastnameoncard", "", "text", "cc-family=name"));
   } else {
-    test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
-    form->fields.push_back(field);
+    form.fields.push_back(
+        CreateTestFormField("Name on Card", "nameoncard", "", "text"));
   }
-  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
-  form->fields.push_back(field);
+  form.fields.push_back(
+      CreateTestFormField("Card Number", "cardnumber", "", "text"));
   if (use_month_type) {
-    test::CreateTestFormField("Expiration Date", "ccmonth", "", "month",
-                              &field);
-    form->fields.push_back(field);
+    form.fields.push_back(
+        CreateTestFormField("Expiration Date", "ccmonth", "", "month"));
   } else {
-    test::CreateTestFormField("Expiration Date", "ccmonth", "", "text", &field);
-    form->fields.push_back(field);
-    test::CreateTestFormField("", "ccyear", "", "text", &field);
-    form->fields.push_back(field);
+    form.fields.push_back(
+        CreateTestFormField("Expiration Date", "ccmonth", "", "text"));
+    form.fields.push_back(CreateTestFormField("", "ccyear", "", "text"));
   }
-  test::CreateTestFormField("CVC", "cvc", "", "text", &field);
-  form->fields.push_back(field);
+  form.fields.push_back(CreateTestFormField("CVC", "cvc", "", "text"));
+  return form;
 }
 
 FormData CreateTestIbanFormData(std::string_view value) {
   FormData form;
-  CreateTestIbanFormData(&form, value);
+  form.url = GURL("https://www.foo.com");
+  form.fields = {
+      CreateTestFormField("IBAN Value:", "iban_value", value, "text")};
   return form;
-}
-
-void CreateTestIbanFormData(FormData* form_data, std::string_view value) {
-  FormFieldData field;
-  test::CreateTestFormField("IBAN Value:", "iban_value", value, "text", &field);
-  form_data->fields.push_back(field);
 }
 
 }  // namespace autofill::test

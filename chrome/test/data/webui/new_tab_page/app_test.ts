@@ -190,54 +190,40 @@ suite('NewTabPageAppTest', () => {
     });
   });
 
-  [true, false].forEach((removeScrim) => {
-    suite(`OgbThemingRemoveScrim_${removeScrim}`, () => {
-      suiteSetup(() => {
-        loadTimeData.overrideValues({removeScrim});
-      });
+  suite(`OgbThemingRemoveScrim`, () => {
+    test('Ogb updates on ntp load', async () => {
+      // Act.
 
-      test('Ogb updates on ntp load', async () => {
-        // Act.
+      // Create a dark mode theme with a custom background.
+      const theme = createTheme(true);
+      theme.backgroundImage = createBackgroundImage('https://foo.com');
+      callbackRouterRemote.setTheme(theme);
+      await callbackRouterRemote.$.flushForTesting();
 
-        // Create a dark mode theme with a custom background.
-        const theme = createTheme(true);
-        theme.backgroundImage = createBackgroundImage('https://foo.com');
-        callbackRouterRemote.setTheme(theme);
-        await callbackRouterRemote.$.flushForTesting();
+      // Notify the NTP that the ogb has loaded.
+      window.dispatchEvent(new MessageEvent('message', {
+        data: {
+          frameType: 'one-google-bar',
+          messageType: 'loaded',
+        },
+        source: window,
+        origin: window.origin,
+      }));
 
-        // Notify the NTP that the ogb has loaded.
-        window.dispatchEvent(new MessageEvent('message', {
-          data: {
-            frameType: 'one-google-bar',
-            messageType: 'loaded',
-          },
-          source: window,
-          origin: window.origin,
-        }));
+      // Assert.
 
-        // Assert.
-
-        // Dark mode themes with background images and removeScrim set should
-        // apply background protection to the ogb.
-        assertEquals(1, windowProxy.getCallCount('postMessage'));
-        const [_, {type, applyLightTheme}] =
-            windowProxy.getArgs('postMessage')[0];
-        assertEquals('updateAppearance', type);
-        assertEquals(true, applyLightTheme);
-        if (removeScrim) {
-          assertNotStyle($$(app, '#oneGoogleBarScrim')!, 'display', 'none');
-        } else {
-          assertStyle($$(app, '#oneGoogleBarScrim')!, 'display', 'none');
-        }
-      });
+      // Dark mode themes with background images and removeScrim set should
+      // apply background protection to the ogb.
+      assertEquals(1, windowProxy.getCallCount('postMessage'));
+      const [_, {type, applyLightTheme}] =
+          windowProxy.getArgs('postMessage')[0];
+      assertEquals('updateAppearance', type);
+      assertEquals(true, applyLightTheme);
+      assertNotStyle($$(app, '#oneGoogleBarScrim')!, 'display', 'none');
     });
   });
 
   suite('OgbScrim', () => {
-    suiteSetup(() => {
-      loadTimeData.overrideValues({removeScrim: true});
-    });
-
     test('scroll bounce', async () => {
       // Arrange.
 
@@ -333,19 +319,11 @@ suite('NewTabPageAppTest', () => {
 
       // Scrim removal will remove text shadows as background protection is
       // applied to the background element instead.
-      if (loadTimeData.getBoolean('removeScrim')) {
-        assertNotStyle(
-            $$(app, '#backgroundImageAttribution')!, 'background-color',
-            'rgba(0, 0, 0, 0)');
-        assertStyle(
-            $$(app, '#backgroundImageAttribution')!, 'text-shadow', 'none');
-      } else {
-        assertStyle(
-            $$(app, '#backgroundImageAttribution')!, 'background-color',
-            'rgba(0, 0, 0, 0)');
-        assertNotStyle(
-            $$(app, '#backgroundImageAttribution')!, 'text-shadow', 'none');
-      }
+      assertNotStyle(
+          $$(app, '#backgroundImageAttribution')!, 'background-color',
+          'rgba(0, 0, 0, 0)');
+      assertStyle(
+          $$(app, '#backgroundImageAttribution')!, 'text-shadow', 'none');
 
       assertEquals(1, backgroundManager.getCallCount('setBackgroundImage'));
       assertEquals(
@@ -402,17 +380,6 @@ suite('NewTabPageAppTest', () => {
       assertFalse(mostVisited.hasAttribute('use-white-tile-icon_'));
       await callbackRouterRemote.$.flushForTesting();
       assertTrue(mostVisited.hasAttribute('use-white-tile-icon_'));
-    });
-
-    test('theme updates use title pill', async () => {
-      const theme = createTheme();
-      theme.mostVisited.useTitlePill = true;
-      callbackRouterRemote.setTheme(theme);
-      const mostVisited = $$(app, '#mostVisited');
-      assertTrue(!!mostVisited);
-      assertFalse(mostVisited.hasAttribute('use-title-pill_'));
-      await callbackRouterRemote.$.flushForTesting();
-      assertTrue(mostVisited.hasAttribute('use-title-pill_'));
     });
 
     test('theme updates is dark', async () => {
@@ -801,6 +768,10 @@ suite('NewTabPageAppTest', () => {
       const modules = $$(app, 'ntp-modules-v2')!;
       assertTrue(!!modules);
       assertStyle(modules, 'display', 'none');
+    });
+
+    test('modules redesigned attribute applied', async () => {
+      assertTrue(app.hasAttribute('modules-redesigned-enabled_'));
     });
 
     test(`clicking records click`, () => {

@@ -8,13 +8,13 @@
 
 #include <numeric>
 
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/path_service.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -111,16 +111,17 @@ TEST(IcnsEncoderTest, RoundTrip) {
   EXPECT_TRUE(encoder.WriteToFile(icon_path));
 
   // Now use Image I/O methods to load the .icns file back in.
-  base::ScopedCFTypeRef<CFDictionaryRef> empty_dict(
+  base::apple::ScopedCFTypeRef<CFDictionaryRef> empty_dict(
       CFDictionaryCreate(nullptr, nullptr, nullptr, 0, nullptr, nullptr));
-  base::ScopedCFTypeRef<CFURLRef> url = base::mac::FilePathToCFURL(icon_path);
-  base::ScopedCFTypeRef<CGImageSourceRef> source(
+  base::apple::ScopedCFTypeRef<CFURLRef> url =
+      base::apple::FilePathToCFURL(icon_path);
+  base::apple::ScopedCFTypeRef<CGImageSourceRef> source(
       CGImageSourceCreateWithURL(url, nullptr));
 
   // And make sure we got back the same images that were written to the file.
   EXPECT_EQ(3u, CGImageSourceGetCount(source));
   for (size_t i = 0; i < CGImageSourceGetCount(source); ++i) {
-    base::ScopedCFTypeRef<CGImageRef> cg_image(
+    base::apple::ScopedCFTypeRef<CGImageRef> cg_image(
         CGImageSourceCreateImageAtIndex(source, i, empty_dict));
     SkBitmap bitmap = skia::CGImageToSkBitmap(cg_image);
     EXPECT_EQ(bitmap.width(), bitmap.height());

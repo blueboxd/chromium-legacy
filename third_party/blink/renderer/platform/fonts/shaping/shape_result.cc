@@ -256,8 +256,8 @@ float ShapeResult::RunInfo::XPositionForOffset(
     }
   }
 
-  // This is the character position inside the glyph sequence.
-  unsigned pos = offset - glyph_sequence_start;
+  // Determine if the offset is at the beginning of the current glyph sequence.
+  bool is_offset_at_glyph_sequence_start = (offset == glyph_sequence_start);
 
   // We calculate the number of Unicode grapheme clusters (actually cursor
   // position stops) on the subset of characters. We use this to divide
@@ -268,14 +268,23 @@ float ShapeResult::RunInfo::XPositionForOffset(
   unsigned graphemes = NumGraphemes(glyph_sequence_start, glyph_sequence_end);
   if (graphemes > 1) {
     DCHECK_GE(glyph_sequence_end, glyph_sequence_start);
-    unsigned size = glyph_sequence_end - glyph_sequence_start;
-    unsigned place = graphemes * pos / size;
-    pos -= place;
+    unsigned next_offset = offset + (offset == num_characters_ ? 0 : 1);
+    unsigned num_graphemes_to_offset =
+        NumGraphemes(glyph_sequence_start, next_offset) - 1;
+    // |is_offset_at_glyph_sequence_start| bool variable above does not take
+    // into account the case of broken glyphs (with multi graphemes) scenarios,
+    // so make amend here. Check if the offset is at the beginning of the
+    // specific grapheme cluster in the broken glyphs.
+    if (offset > 0) {
+      is_offset_at_glyph_sequence_start =
+          (NumGraphemes(offset - 1, next_offset) != 1);
+    }
     glyph_sequence_advance = glyph_sequence_advance / graphemes;
     if (IsRtl()) {
-      accumulated_position += glyph_sequence_advance * (graphemes - place - 1);
+      accumulated_position +=
+          glyph_sequence_advance * (graphemes - num_graphemes_to_offset - 1);
     } else {
-      accumulated_position += glyph_sequence_advance * place;
+      accumulated_position += glyph_sequence_advance * num_graphemes_to_offset;
     }
   }
 
@@ -283,10 +292,11 @@ float ShapeResult::RunInfo::XPositionForOffset(
   // offset is not at the beginning, we need to jump to the right side of the
   // grapheme. On RTL, if we want AdjustToStart and offset is not at the end, we
   // need to jump to the left side of the grapheme.
-  if (IsLtr() && adjust_mid_cluster == AdjustMidCluster::kToEnd && pos != 0) {
+  if (IsLtr() && adjust_mid_cluster == AdjustMidCluster::kToEnd &&
+      !is_offset_at_glyph_sequence_start) {
     accumulated_position += glyph_sequence_advance;
   } else if (IsRtl() && adjust_mid_cluster == AdjustMidCluster::kToEnd &&
-             pos != 0) {
+             !is_offset_at_glyph_sequence_start) {
     accumulated_position -= glyph_sequence_advance;
   }
 
@@ -946,19 +956,43 @@ scoped_refptr<ShapeResult> ShapeResult::ApplySpacingToCopy(
 }
 
 void ShapeResult::ApplyTextAutoSpacing(
+    bool has_spacing_added_to_adjacent_glyph,
     const Vector<OffsetWithSpacing, 16>& offsets_with_spacing) {
-  DCHECK(offsets_with_spacing.size());
+  DCHECK(offsets_with_spacing.size() || has_spacing_added_to_adjacent_glyph);
+  if (LIKELY(IsLtr())) {
+    ApplyTextAutoSpacingCore(has_spacing_added_to_adjacent_glyph,
+                             offsets_with_spacing.begin(),
+                             offsets_with_spacing.end());
+  } else {
+    ApplyTextAutoSpacingCore(has_spacing_added_to_adjacent_glyph,
+                             offsets_with_spacing.rbegin(),
+                             offsets_with_spacing.rend());
+  }
+}
+
+template <class Iterator>
+void ShapeResult::ApplyTextAutoSpacingCore(
+    bool has_spacing_added_to_adjacent_glyph,
+    Iterator offset_begin,
+    Iterator offset_end) {
+  DCHECK(offset_begin != offset_end || has_spacing_added_to_adjacent_glyph);
+
   float total_space = 0.0;
-  wtf_size_t current_offset_index = 0;
-  // TODO(crbug.com/1463890): Implement and test the RTL case.
+  Iterator current_offset = offset_begin;
   for (auto& run : runs_) {
-    if (!run) {
+    if (!run || run->glyph_data_.size() == 0) {
       continue;
     }
+    if (UNLIKELY(has_spacing_added_to_adjacent_glyph)) {
+      // A spacing is added to the previous glyph in the last run, so set the
+      // first glyph unsafe to break before.
+      run->glyph_data_[0].safe_to_break_before = false;
+      has_spacing_added_to_adjacent_glyph = false;
+    }
+
     float total_space_for_run = 0;
-    for (wtf_size_t i = 0; i < run->glyph_data_.size() &&
-                           current_offset_index < offsets_with_spacing.size();
-         i++) {
+    for (wtf_size_t i = 0;
+         i < run->glyph_data_.size() && current_offset != offset_end; i++) {
       HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
 
       // Skip if it's not a grapheme cluster boundary. Set it to UNLIKELY, since
@@ -969,12 +1003,20 @@ void ShapeResult::ApplyTextAutoSpacing(
         continue;
       }
       if (glyph_data.character_index + run->start_index_ ==
-          offsets_with_spacing[current_offset_index].offset) {
-        glyph_data.advance +=
-            offsets_with_spacing[current_offset_index].spacing;
-        total_space_for_run +=
-            offsets_with_spacing[current_offset_index].spacing;
-        current_offset_index++;
+          current_offset->offset) {
+        glyph_data.advance += current_offset->spacing;
+        total_space_for_run += current_offset->spacing;
+        current_offset++;
+        // If the LineBreaker breaks the content at this point, there is no
+        // adjacent character so it spacing should be removed.
+        // If the next character is in another item, the caller would be
+        // responsible for asking the next item to update this information.
+        if (LIKELY(i + 1 < run->glyph_data_.size())) {
+          run->glyph_data_[i + 1].safe_to_break_before = false;
+        } else {
+          // Tell the next run to set its first glyph to unsafe to break before.
+          has_spacing_added_to_adjacent_glyph = true;
+        }
       }
     }
     run->width_ += total_space_for_run;

@@ -16,6 +16,7 @@
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/screen_backlight.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/test/test_shelf_item_delegate.h"
 #include "ash/root_window_controller.h"
@@ -29,6 +30,7 @@
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
+#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -38,6 +40,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/accessibility/html_test_utils.h"
+#include "chrome/browser/ash/input_method/ui/candidate_window_view.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
@@ -64,12 +68,14 @@
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/base/ime/candidate_window.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -189,7 +195,7 @@ void LoggedInSpokenFeedbackTest::ImportJSModuleForChromeVox(std::string name,
           "})");
 }
 
-void LoggedInSpokenFeedbackTest::EnableChromeVox() {
+void LoggedInSpokenFeedbackTest::EnableChromeVox(bool check_for_intro) {
   // Test setup.
   // Enable ChromeVox, disable earcons and wait for key mappings to be fetched.
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
@@ -198,7 +204,8 @@ void LoggedInSpokenFeedbackTest::EnableChromeVox() {
 
   // Load ChromeVox and block until it's fully loaded.
   AccessibilityManager::Get()->EnableSpokenFeedback(true);
-  sm_.ExpectSpeechPattern("*");
+  sm_.ExpectSpeechPattern(check_for_intro ? "ChromeVox spoken feedback is ready"
+                                          : "*");
   sm_.Call([this]() {
     ImportJSModuleForChromeVox("ChromeVox",
                                "/chromevox/background/chromevox.js");
@@ -283,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, DISABLED_AddBookmark) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, ChromeVoxSpeaksIntro) {
-  EnableChromeVox();
+  EnableChromeVox(/* check_for_intro = */ false);
   sm_.ExpectSpeech("ChromeVox spoken feedback is ready");
   sm_.Replay();
 }
@@ -1511,6 +1518,134 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreSecondaryDisplay) {
   sm_.Replay();
 }
 
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreWebContents) {
+  EnableChromeVox();
+
+  base::SimpleTestTickClock clock;
+  auto* clock_ptr = &clock;
+  ui::SetEventTickClockForTesting(clock_ptr);
+
+  auto* root_window = Shell::Get()->GetPrimaryRootWindow();
+  ui::test::EventGenerator generator(root_window);
+  auto* generator_ptr = &generator;
+
+  gfx::Rect b2_bounds;
+  gfx::Rect b3_bounds;
+
+  sm_.Call([this]() {
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL(R"(data:text/html;charset=utf-8,
+            <button id="b1" autofocus>First</button>
+            <button id="b2">Second</button>
+            <button id="b3">Third</button>
+        )")));
+  });
+  sm_.ExpectSpeech("First");
+  sm_.Call([this, clock_ptr, generator_ptr, &b2_bounds, &b3_bounds]() {
+    auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+    b2_bounds = GetControlBoundsInRoot(web_contents, "b2");
+    b3_bounds = GetControlBoundsInRoot(web_contents, "b3");
+
+    ui::TouchEvent touch_press(
+        ui::ET_TOUCH_PRESSED, b2_bounds.top_center(), base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    generator_ptr->Dispatch(&touch_press);
+
+    clock_ptr->Advance(base::Seconds(1));
+
+    ui::TouchEvent touch_move(
+        ui::ET_TOUCH_MOVED, b2_bounds.CenterPoint(), base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    generator_ptr->Dispatch(&touch_move);
+
+    clock_ptr->Advance(base::Seconds(1));
+
+    ui::TouchEvent touch_move2(
+        ui::ET_TOUCH_MOVED, b2_bounds.left_center(), base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    generator_ptr->Dispatch(&touch_move2);
+  });
+  sm_.ExpectSpeech("Second");
+  sm_.Call([clock_ptr, generator_ptr, &b3_bounds]() {
+    clock_ptr->Advance(base::Seconds(1));
+
+    ui::TouchEvent touch_move(
+        ui::ET_TOUCH_MOVED, b3_bounds.right_center(), base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    generator_ptr->Dispatch(&touch_move);
+
+    clock_ptr->Advance(base::Seconds(1));
+
+    ui::TouchEvent touch_move2(
+        ui::ET_TOUCH_MOVED, b3_bounds.CenterPoint(), base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    generator_ptr->Dispatch(&touch_move2);
+  });
+  sm_.ExpectSpeech("Third");
+  sm_.Replay();
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreWebContentsHighDPI) {
+  ShellTestApi shell_test_api;
+  // Use DPI of Strongbad, to reproduce b/295325508.
+  display::test::DisplayManagerTestApi(shell_test_api.display_manager())
+      .UpdateDisplay("800x700*1.77778");
+
+  EnableChromeVox();
+
+  base::SimpleTestTickClock clock;
+  auto* clock_ptr = &clock;
+  ui::SetEventTickClockForTesting(clock_ptr);
+
+  auto* root_window = Shell::Get()->GetPrimaryRootWindow();
+  ui::test::EventGenerator generator(root_window);
+  auto* generator_ptr = &generator;
+
+  sm_.Call([this]() {
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL(R"(data:text/html;charset=utf-8,
+            <button id="b1" autofocus>First</button>
+            <button id="b2">Second</button>
+        )")));
+  });
+  sm_.ExpectSpeech("First");
+  sm_.Call([this, clock_ptr, generator_ptr]() {
+    float scale_factor = 1.77778;
+    auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+    gfx::Rect b2_bounds = GetControlBoundsInRoot(web_contents, "b2");
+    // GetControlBoundsInRoot returns in DIPs. Multiply by resolution to get px,
+    // which is where we need to touch on a high density screen.
+    b2_bounds.set_x(b2_bounds.x() * scale_factor);
+    b2_bounds.set_y(b2_bounds.y() * scale_factor);
+    b2_bounds.set_width(b2_bounds.width() * scale_factor);
+    b2_bounds.set_height(b2_bounds.height() * scale_factor);
+
+    ui::TouchEvent touch_press(
+        ui::ET_TOUCH_PRESSED, b2_bounds.bottom_center(), base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    generator_ptr->Dispatch(&touch_press);
+
+    clock_ptr->Advance(base::Seconds(1));
+
+    ui::TouchEvent touch_move(
+        ui::ET_TOUCH_MOVED, b2_bounds.CenterPoint(), base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    generator_ptr->Dispatch(&touch_move);
+
+    clock_ptr->Advance(base::Seconds(1));
+
+    ui::TouchEvent touch_move2(
+        ui::ET_TOUCH_MOVED, b2_bounds.right_center(), base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    generator_ptr->Dispatch(&touch_move2);
+  });
+  sm_.ExpectSpeech("Second");
+  sm_.Replay();
+}
+
+// TODO(b/287488905): Add test for touch explore with screen magnifier and high
+// DPI.
+
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxNextTabRecovery) {
   EnableChromeVox();
 
@@ -2238,4 +2373,78 @@ IN_PROC_BROWSER_TEST_F(ShortcutsAppSpokenFeedbackTest,
   sm_.ExpectSpeech("row 1 column 1");
   sm_.Replay();
 }
+
+class SpokenFeedbackWithCandidateWindowTest
+    : public LoggedInSpokenFeedbackTest {
+ public:
+  SpokenFeedbackWithCandidateWindowTest() = default;
+  SpokenFeedbackWithCandidateWindowTest(
+      const SpokenFeedbackWithCandidateWindowTest&) = delete;
+  SpokenFeedbackWithCandidateWindowTest& operator=(
+      const SpokenFeedbackWithCandidateWindowTest&) = delete;
+  ~SpokenFeedbackWithCandidateWindowTest() override = default;
+
+  void SetUpOnMainThread() override {
+    LoggedInSpokenFeedbackTest::SetUpOnMainThread();
+
+    aura::Window* parent =
+        ash::Shell::GetContainer(Shell::Get()->GetPrimaryRootWindow(),
+                                 ash::kShellWindowId_MenuContainer);
+
+    candidate_window_view_ = new ui::ime::CandidateWindowView(parent);
+    candidate_window_view_->InitWidget();
+  }
+  void TearDownOnMainThread() override {
+    candidate_window_view_.ExtractAsDangling()->GetWidget()->CloseNow();
+    LoggedInSpokenFeedbackTest::TearDownOnMainThread();
+  }
+
+  raw_ptr<ui::ime::CandidateWindowView> candidate_window_view_;
+};
+
+IN_PROC_BROWSER_TEST_F(SpokenFeedbackWithCandidateWindowTest,
+                       SpeakSelectedItem) {
+  EnableChromeVox();
+
+  ui::CandidateWindow candidate_window;
+  candidate_window.set_cursor_position(0);
+  candidate_window.set_page_size(2);
+  candidate_window.mutable_candidates()->clear();
+  candidate_window.set_orientation(ui::CandidateWindow::VERTICAL);
+  for (size_t i = 0; i < 2; ++i) {
+    ui::CandidateWindow::Entry entry;
+    entry.value = u"value " + base::NumberToString16(i);
+    entry.label = u"label " + base::NumberToString16(i);
+    candidate_window.mutable_candidates()->push_back(entry);
+  }
+
+  sm_.Call([this, &candidate_window]() {
+    candidate_window_view_->GetWidget()->Show();
+    candidate_window_view_->UpdateCandidates(candidate_window);
+    candidate_window_view_->ShowLookupTable();
+  });
+  sm_.ExpectSpeech("value 0");
+
+  // Move selection to another item.
+  sm_.Call([this, &candidate_window]() {
+    candidate_window.set_cursor_position(1);
+    candidate_window_view_->UpdateCandidates(candidate_window);
+  });
+  sm_.ExpectSpeech("value 1");
+
+  // Simulate pagination.
+  sm_.Call([this, &candidate_window]() {
+    candidate_window.set_cursor_position(0);
+    candidate_window.mutable_candidates()->at(0).value = u"value 2";
+    candidate_window.mutable_candidates()->at(0).label = u"label 2";
+    candidate_window.mutable_candidates()->at(1).value = u"value 3";
+    candidate_window.mutable_candidates()->at(1).label = u"label 3";
+    candidate_window_view_->UpdateCandidates(candidate_window);
+  });
+  sm_.ExpectSpeech(test::SpeechMonitor::Expectation("value 2").WithoutText(
+      {"value 0", "value 1", "value 3"}));
+
+  sm_.Replay();
+}
+
 }  // namespace ash

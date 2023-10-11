@@ -104,10 +104,10 @@ void DumpAccessibilityTreeTest::SetUpCommandLine(
   // Enable accessibility object model, used in other tests.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableBlinkFeatures, "AccessibilityObjectModel");
-  // Enable HTMLSelectMenuElement, used by AccessibilitySelectMenu and
-  // AccessibilitySelectMenuOpen.
+  // Enable HTMLSelectListElement, used by AccessibilitySelectList and
+  // AccessibilitySelectListOpen.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableBlinkFeatures, "HTMLSelectMenuElement");
+      switches::kEnableBlinkFeatures, "HTMLSelectListElement");
   // kDisableAXMenuList is true on Chrome OS by default. Make it consistent
   // for these cross-platform tests.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -2104,16 +2104,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::ValuesIn(DumpAccessibilityTestBase::TreeTestPasses()),
     DumpAccessibilityTreeTestPassToString());
 
-// TODO(crbug.com/1459385): Re-enable this test
-#if BUILDFLAG(IS_LINUX)
-#define MAYBE_AccessibilityFencedFrameScrollable \
-  DISABLED_AccessibilityFencedFrameScrollable
-#else
-#define MAYBE_AccessibilityFencedFrameScrollable \
-  AccessibilityFencedFrameScrollable
-#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeFencedFrameTest,
-                       MAYBE_AccessibilityFencedFrameScrollable) {
+                       AccessibilityFencedFrameScrollable) {
   RunHtmlTest(FILE_PATH_LITERAL("fencedframe-scrollable-mparch.html"));
 }
 
@@ -2847,6 +2839,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("overflow-actions.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityOverflowScroller) {
+  RunHtmlTest(FILE_PATH_LITERAL("overflow-scroller.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityP) {
   RunHtmlTest(FILE_PATH_LITERAL("p.html"));
 }
@@ -2855,7 +2852,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityParam) {
   RunHtmlTest(FILE_PATH_LITERAL("param.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityPopoverApi) {
+// TODO(crbug.com/1476950) Disabled due to flakiness.
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       DISABLED_AccessibilityPopoverApi) {
   RunHtmlTest(FILE_PATH_LITERAL("popover-api.html"));
 }
 
@@ -2975,6 +2974,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityScript) {
   RunHtmlTest(FILE_PATH_LITERAL("script.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySearch) {
+  RunHtmlTest(FILE_PATH_LITERAL("search.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySection) {
   RunHtmlTest(FILE_PATH_LITERAL("section.html"));
 }
@@ -3010,29 +3013,29 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 
 // Flaky on Android - crbug.com/1286650
 #if BUILDFLAG(IS_ANDROID)
-#define MAYBE_AccessibilitySelectMenu DISABLED_AccessibilitySelectMenu
+#define MAYBE_AccessibilitySelectList DISABLED_AccessibilitySelectList
 #else
-#define MAYBE_AccessibilitySelectMenu AccessibilitySelectMenu
+#define MAYBE_AccessibilitySelectList AccessibilitySelectList
 #endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilitySelectMenu) {
+                       MAYBE_AccessibilitySelectList) {
   // Fails when synchronous a11y serialization is enabled - crbug.com/1401767
   if (base::FeatureList::IsEnabled(
           blink::features::kSerializeAccessibilityPostLifecycle)) {
     return;
   }
-  RunHtmlTest(FILE_PATH_LITERAL("selectmenu.html"));
+  RunHtmlTest(FILE_PATH_LITERAL("selectlist.html"));
 }
 
 // Flaky on Android - crbug.com/1286663
 #if BUILDFLAG(IS_ANDROID)
-#define MAYBE_AccessibilitySelectMenuOpen DISABLED_AccessibilitySelectMenuOpen
+#define MAYBE_AccessibilitySelectListOpen DISABLED_AccessibilitySelectListOpen
 #else
-#define MAYBE_AccessibilitySelectMenuOpen AccessibilitySelectMenuOpen
+#define MAYBE_AccessibilitySelectListOpen AccessibilitySelectListOpen
 #endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilitySelectMenuOpen) {
-  RunHtmlTest(FILE_PATH_LITERAL("selectmenu-open.html"));
+                       MAYBE_AccessibilitySelectListOpen) {
+  RunHtmlTest(FILE_PATH_LITERAL("selectlist-open.html"));
 }
 
 // TODO(https://crbug.com/1309941): Flaky on Fuchsia

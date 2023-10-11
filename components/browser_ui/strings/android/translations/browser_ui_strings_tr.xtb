@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Bir sitenin cihazınıza veri kaydetmesine izin verin</translation>
 <translation id="1383876407941801731">Ara</translation>
 <translation id="1384959399684842514">İndirme işlemi duraklatıldı</translation>
-<translation id="1409426117486808224">Açık sekmeler için basitleştirilmiş görünüm</translation>
 <translation id="1415402041810619267">URL kısaltıldı</translation>
 <translation id="1426410128494586442">Evet</translation>
 <translation id="1446450296470737166">MIDI cihazlarının tam denetimine izin verme</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Üçüncü taraf hariç izin veriliyor</translation>
 <translation id="1989112275319619282">Göz at</translation>
 <translation id="1994173015038366702">Site URL'si</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Süresi 1 gün içinde dolacak}other{Süresi # içinde dolacak}}</translation>
 <translation id="2004697686368036666">Bazı sitelerdeki özellikler çalışmayabilir</translation>
 <translation id="2025115093177348061">Artırılmış gerçeklik</translation>
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> sekmesine dönmek için dokunun</translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Başlık</translation>
 <translation id="4008040567710660924">Belirli bir site için çerezlere izin verin.</translation>
 <translation id="4046123991198612571">Sonraki parça</translation>
+<translation id="4053720452172726777">Google Chrome'u özelleştirin ve kontrol edin</translation>
 <translation id="4149994727733219643">Web sayfalarının basitleştirilmiş görünümü</translation>
 <translation id="4151930093518524179">Varsayılan yakınlaştırma</translation>
 <translation id="4165986682804962316">Site ayarları</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde tarama etkinliğinizi görmek için çerezlerinizi kullanamaz. Bazı sitelerdeki özellikler çalışmayabilir.</translation>
 <translation id="5553374991681107062">En son</translation>
 <translation id="5556459405103347317">Yeniden Yükle</translation>
-<translation id="5596627076506792578">Diğer seçenekler</translation>
 <translation id="5649053991847567735">Otomatik indirmeler</translation>
 <translation id="5668404140385795438">Web sitesinin yakınlaştırmayı önleme isteğini geçersiz kılın</translation>
 <translation id="5677928146339483299">Engelleniyor</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Android ayarlarından kapatıldı</translation>
 <translation id="7016516562562142042">Geçerli arama motoru için izin verildi</translation>
 <translation id="702275896380648118">Bu site, nelerden hoşlandığınızı belirleyip diğer sitelere reklam önerir. Ayrıca, size daha alakalı reklamlar göstermek için Chrome'dan reklam konularınızı da öğrenir.</translation>
-<translation id="702463548815491781">TalkBack veya Anahtar Erişimi açık olduğunda önerilir</translation>
 <translation id="7053983685419859001">Engelle</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 öğe seçildi}other{# öğe seçildi}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> öğe seçildi. Seçenekler, ekranın üst kısmına yakın bir yerde bulunur</translation>

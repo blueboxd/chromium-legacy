@@ -111,7 +111,7 @@ component("partition_alloc") {
 
 # Changes the freelist implementation to use pointer offsets in lieu
 # of full-on pointers. Defaults to false, which implies the use of
-# `EncodedPartitionFreelistEntryPtr`.
+# "encoded next" freelist entry.
 #
 # Only usable when pointers are 64-bit.
 use_freelist_pool_offsets = has_64_bit_pointers && false
@@ -270,9 +270,9 @@ source_set("allocator_core") {
     }
   }
   if (use_freelist_pool_offsets) {
-    # Freelist built from pool offsets header goes here.
+    sources += [ "pool_offset_freelist.h" ]
   } else {
-    sources += [ "encoded_freelist.h" ]
+    sources += [ "encoded_next_freelist.h" ]
   }
 
   public_deps = [
@@ -349,9 +349,13 @@ source_set("allocator_base") {
     "partition_alloc_base/cxx20_is_constant_evaluated.h",
     "partition_alloc_base/debug/alias.cc",
     "partition_alloc_base/debug/alias.h",
+    "partition_alloc_base/debug/stack_trace.cc",
+    "partition_alloc_base/debug/stack_trace.h",
     "partition_alloc_base/export_template.h",
     "partition_alloc_base/gtest_prod_util.h",
     "partition_alloc_base/immediate_crash.h",
+    "partition_alloc_base/log_message.cc",
+    "partition_alloc_base/log_message.h",
     "partition_alloc_base/logging.cc",
     "partition_alloc_base/logging.h",
     "partition_alloc_base/memory/page_size.h",
@@ -373,11 +377,16 @@ source_set("allocator_base") {
     "partition_alloc_base/numerics/safe_math_clang_gcc_impl.h",
     "partition_alloc_base/numerics/safe_math_shared_impl.h",
     "partition_alloc_base/posix/eintr_wrapper.h",
+    "partition_alloc_base/process/process_handle.h",
     "partition_alloc_base/rand_util.cc",
     "partition_alloc_base/rand_util.h",
     "partition_alloc_base/scoped_clear_last_error.h",
+    "partition_alloc_base/strings/cstring_builder.cc",
+    "partition_alloc_base/strings/cstring_builder.h",
     "partition_alloc_base/strings/safe_sprintf.cc",
     "partition_alloc_base/strings/safe_sprintf.h",
+    "partition_alloc_base/strings/string_util.cc",
+    "partition_alloc_base/strings/string_util.h",
     "partition_alloc_base/strings/stringprintf.cc",
     "partition_alloc_base/strings/stringprintf.h",
     "partition_alloc_base/system/sys_info.h",
@@ -397,7 +406,9 @@ source_set("allocator_base") {
 
   if (is_win) {
     sources += [
+      "partition_alloc_base/debug/stack_trace_win.cc",
       "partition_alloc_base/memory/page_size_win.cc",
+      "partition_alloc_base/process/process_handle_win.cc",
       "partition_alloc_base/rand_util_win.cc",
       "partition_alloc_base/scoped_clear_last_error_win.cc",
       "partition_alloc_base/threading/platform_thread_win.cc",
@@ -405,22 +416,31 @@ source_set("allocator_base") {
     ]
   } else if (is_posix) {
     sources += [
+      "partition_alloc_base/debug/stack_trace_posix.cc",
       "partition_alloc_base/files/file_util.h",
       "partition_alloc_base/files/file_util_posix.cc",
       "partition_alloc_base/memory/page_size_posix.cc",
       "partition_alloc_base/posix/safe_strerror.cc",
       "partition_alloc_base/posix/safe_strerror.h",
+      "partition_alloc_base/process/process_handle_posix.cc",
       "partition_alloc_base/rand_util_posix.cc",
       "partition_alloc_base/threading/platform_thread_internal_posix.h",
       "partition_alloc_base/threading/platform_thread_posix.cc",
       "partition_alloc_base/time/time_conversion_posix.cc",
     ]
 
+    if (is_linux || is_chromeos) {
+      sources += [ "partition_alloc_base/debug/stack_trace_linux.cc" ]
+    }
+
     if (is_android || is_chromeos_ash) {
       sources += [ "partition_alloc_base/time/time_android.cc" ]
     }
     if (is_apple) {
-      sources += [ "partition_alloc_base/time/time_mac.mm" ]
+      sources += [
+        "partition_alloc_base/debug/stack_trace_mac.cc",
+        "partition_alloc_base/time/time_apple.mm",
+      ]
     } else {
       sources += [ "partition_alloc_base/time/time_now_posix.cc" ]
     }
@@ -442,6 +462,7 @@ source_set("allocator_base") {
     # Only android build requires native_library, and native_library depends
     # on file_path. So file_path is added if is_android = true.
     sources += [
+      "partition_alloc_base/debug/stack_trace_android.cc",
       "partition_alloc_base/files/file_path.cc",
       "partition_alloc_base/files/file_path.h",
       "partition_alloc_base/native_library.cc",
@@ -452,12 +473,12 @@ source_set("allocator_base") {
   if (is_apple) {
     # Apple-specific utilities
     sources += [
-      "partition_alloc_base/mac/foundation_util.h",
-      "partition_alloc_base/mac/foundation_util.mm",
-      "partition_alloc_base/mac/mach_logging.cc",
-      "partition_alloc_base/mac/mach_logging.h",
-      "partition_alloc_base/mac/scoped_cftyperef.h",
-      "partition_alloc_base/mac/scoped_typeref.h",
+      "partition_alloc_base/apple/foundation_util.h",
+      "partition_alloc_base/apple/foundation_util.mm",
+      "partition_alloc_base/apple/mach_logging.cc",
+      "partition_alloc_base/apple/mach_logging.h",
+      "partition_alloc_base/apple/scoped_cftyperef.h",
+      "partition_alloc_base/apple/scoped_typeref.h",
     ]
     if (is_ios) {
       sources += [
@@ -535,8 +556,8 @@ source_set("allocator_shim") {
     }
     if (is_apple) {
       sources += [
-        "shim/allocator_shim_override_mac_default_zone.h",
-        "shim/allocator_shim_override_mac_symbols.h",
+        "shim/allocator_shim_override_apple_default_zone.h",
+        "shim/allocator_shim_override_apple_symbols.h",
         "shim/early_zone_registration_constants.h",
       ]
       configs += [ ":mac_no_default_new_delete_symbols" ]
@@ -564,7 +585,7 @@ source_set("allocator_shim") {
       }
       if (is_apple) {
         sources +=
-            [ "shim/allocator_shim_default_dispatch_to_mac_zoned_malloc.cc" ]
+            [ "shim/allocator_shim_default_dispatch_to_apple_zoned_malloc.cc" ]
       }
       if (is_chromeos || is_linux) {
         sources += [ "shim/allocator_shim_default_dispatch_to_glibc.cc" ]
@@ -583,10 +604,10 @@ source_set("allocator_shim") {
 
   if (is_apple) {
     sources += [
-      "shim/allocator_interception_mac.h",
-      "shim/allocator_interception_mac.mm",
-      "shim/malloc_zone_functions_mac.cc",
-      "shim/malloc_zone_functions_mac.h",
+      "shim/allocator_interception_apple.h",
+      "shim/allocator_interception_apple.mm",
+      "shim/malloc_zone_functions_apple.cc",
+      "shim/malloc_zone_functions_apple.h",
     ]
 
     # Do not compile with ARC because this target has to interface with
@@ -744,6 +765,7 @@ buildflag_header("debugging_buildflags") {
     "PA_DCHECK_IS_ON=$_dcheck_is_on",
     "PA_EXPENSIVE_DCHECKS_ARE_ON=$enable_expensive_dchecks",
     "PA_DCHECK_IS_CONFIGURABLE=$dcheck_is_configurable",
+    "PA_CAN_UNWIND_WITH_FRAME_POINTERS=$can_unwind_with_frame_pointers",
   ]
 }
 

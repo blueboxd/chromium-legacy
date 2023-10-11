@@ -707,6 +707,7 @@
       'filepath': 'history_clusters'\
                   '|image_service'\
                   '|ios/chrome/browser/text_selection'\
+                  '|manta'\
                   '|optimization_guide'\
                   '|optimization_hints'\
                   '|third_party/eigen3'\
@@ -1023,6 +1024,11 @@
     },
     'drive_resource_metadata': {
       'filepath': 'drive.*resource_metadata'
+    },
+    'eche': {
+      'filepath': 'ash/system/eche/|' \
+                  'ash/webui/eche_app_ui/|' \
+                  'chrome/browser/ash/eche_app/'
     },
     'eme': {
       'filepath': 'chrome/renderer/media/.*key_system|' \
@@ -1471,7 +1477,10 @@
     'multipaste': {
      'filepath': 'ash/clipboard/|'\
                  'ash/public/cpp/.*clipboard.*|'\
-                 'chrome/browser/ui/ash/clipboard.*',
+                 'chrome/browser/ash/crosapi/clipboard_history.*|'\
+                 'chrome/browser/lacros/clipboard_history.*|'\
+                 'chrome/browser/ui/ash/clipboard.*|'\
+                 'chromeos/ui/clipboard_history/',
     },
     'nacl': {
       'filepath': 'chrome/nacl/|chrome/test/nacl/|'\
@@ -1608,8 +1617,7 @@
         'ui/gl/gl_.*ozone'
     },
     'ozone_fuchsia': {
-      'filepath': 'ui/ozone/platform/flatland/|'\
-                  'ui/ozone/platform/scenic/'
+      'filepath': 'ui/ozone/platform/flatland/',
     },
     'page_info' : {
       'filepath': 'chrome/browser/ui/page_info/'\
@@ -1617,6 +1625,10 @@
                   '|chrome/android/java/src/org/chromium/chrome/browser/page_info/'\
                   '|components/page_info_strings.grdp'\
                   '|ios/chrome/browser/ui/page_info/'
+    },
+    'page_insights' : {
+      'filepath': 'chrome/browser/ui/android/page_insights/'\
+                  '|chrome/browser/xsurface/android/java/src/org/chromium/chrome/browser/xsurface/pageinsights/'
     },
     'page_load_metrics' : {
       'filepath': '/page_load_metrics/'
@@ -1662,6 +1674,9 @@
                   '|chrome/browser/pdf/'\
                   '|chrome/browser/ui/pdf/'\
                   '|pdf/'
+    },
+    'pdf_ocr': {
+      'filepath': 'pdf_ocr'
     },
     'pepper_api': {
       'filepath': 'ppapi/api'\
@@ -2199,6 +2214,11 @@
     'weblayer_ssl': {
         'filepath': 'weblayer/browser/ssl',
     },
+    'webnn': {
+        'filepath': 'third_party/blink/renderer/modules/ml/webnn/'\
+                    '|services/webnn/'\
+                    '|components/ml/webnn/',
+    },
     'webotp': {
         'filepath': 'third_party/blink/renderer/modules/credentialmanager/credentials_container\.cc'\
                     '|third_party/blink/renderer/modules/credentialmanager/.*otp'\
@@ -2300,7 +2320,8 @@
     'android_webview_network_service': [],
     'app_service': ['dominickn+watch-app_service@chromium.org',
                     'nancylingwang@chromium.org',
-                    'tsergeant+watch@chromium.org'],
+                    'tsergeant+watch@chromium.org',
+                    'mxcai+watch-app_service@chromium.org'],
     'app_service_protos': ['cros-reporting-team+watch@google.com',
                            'vshenvi+watch@google.com'],
     'app_shortcuts': ['dominickn+watch-app_shortcuts@chromium.org',
@@ -2691,9 +2712,15 @@
     'disk_cache': ['gavinp+disk@chromium.org'],
     'dom_storage': ['dmurph+watchingdomstorage@chromium.org'],
     'download': ['dtrainor+watch@chromium.org'],
-    'download_bubble': ['xinghuilu+watch@chromium.org'],
-    'downloads_ui': ['dtrainor+watch@chromium.org'],
+    'download_bubble': ['xinghuilu+watch@chromium.org',
+                        'drubery+watch@chromium.org'],
+    'downloads_ui': ['dtrainor+watch@chromium.org',
+                     'drubery+watch@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
+    'eche': ['ajayramamurthy+watch-eche@google.com',
+             'crisrael+watch-eche@google.com',
+             'jonmann+watch-eche@chromium.org',
+             'pushi+watch-eche@google.com'],
     'eme': ['eme-reviews@chromium.org'],
     'enterprise_connectors': ['dpr-eng@google.com'],
     'enterprise_reporting_private': ['anthonyvd+watch@chormium.org'],
@@ -2903,6 +2930,7 @@
                       'spang+watch@chromium.org'],
     'page_info' : ['permissions-reviews@chromium.org',
                    'olesiamarukhno+watch@google.com'],
+    'page_insights' : ['gbb-cct-eng+cls@google.com'],
     'page_load_metrics' : ['bmcquade+watch@chromium.org',
                            'csharrison+watch@chromium.org',
                            'loading-reviews+metrics@chromium.org',
@@ -2920,6 +2948,8 @@
                  'gogerald+paymentswatch@chromium.org',
                  'nburris+paymentswatch@chromium.org'],
     'pdf': ['pdf-reviews@chromium.org'],
+    'pdf_ocr': ['kyungjunlee+watch@google.com',
+                'rhalavati+watch@chromium.org'],
     'pepper_api': ['binji+watch@chromium.org',
                    'bradnelson+warch@chromium.org',
                    'ihf+watch@chromium.org',
@@ -2929,8 +2959,8 @@
     'permissions_policy': ['loonybear@chromium.org',
                            'iclelland+watch@chromium.org',
                            'jmedley+watch@chromium.org'],
-    'phonehub': ['crisrael+watch-phonehub@google.com',
-                 'ajayramamurthy+watch-phonehub@google.com',
+    'phonehub': ['ajayramamurthy+watch-phonehub@google.com',
+                 'crisrael+watch-phonehub@google.com',
                  'hansberry+watch-phonehub@chromium.org',
                  'jonmann+watch-phonehub@chromium.org',
                  'joeantonetti+watch-phonehub@google.com',
@@ -3158,6 +3188,7 @@
                  'swestphal+watch@chromium.org'],
     'weblayer_safe_browsing' : ['carlosil+watch@chromium.org'],
     'weblayer_ssl' : ['carlosil+watch@chromium.org'],
+    'webnn': ['qjw@chromium.org'],
     'webotp': ['yigu+watch@chromium.org'],
     'webrtc_browser_tests': ['phoglund+watch@chromium.org'],
     'website_settings': ['dullweber+watch@chromium.org',

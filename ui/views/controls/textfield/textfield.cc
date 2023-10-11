@@ -53,6 +53,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/selection_bound.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/touch_selection/touch_selection_metrics.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -854,7 +855,7 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_LONG_TAP:
       if (HandleGestureForSelectionDragging(event)) {
-        NOTREACHED_NORETURN();
+        return;
       }
       // If touch selection is enabled, the context menu on long tap will be
       // shown by the |touch_selection_controller_|, hence we mark the event
@@ -2567,7 +2568,8 @@ void Textfield::UpdateDefaultBorder() {
   if (!use_default_border_) {
     return;
   }
-  auto border = std::make_unique<views::FocusableBorder>();
+  auto border = std::make_unique<views::FocusableBorder>(
+      ::features::IsChromeRefresh2023());
   const LayoutProvider* provider = LayoutProvider::Get();
   border->SetColorId(ui::kColorTextfieldOutline);
   border->SetInsets(gfx::Insets::TLBR(
@@ -2972,6 +2974,7 @@ bool Textfield::HandleGestureForSelectionDragging(ui::GestureEvent* event) {
         SelectWordAt(event->location());
         OnAfterUserAction();
         selection_dragging_state_ = SelectionDraggingState::kSelectedWord;
+        selection_drag_type_ = ui::TouchSelectionDragType::kDoublePressDrag;
       } else if (event->details().tap_down_count() == 3) {
         OnBeforeUserAction();
         SelectAll(false);
@@ -2983,11 +2986,17 @@ bool Textfield::HandleGestureForSelectionDragging(ui::GestureEvent* event) {
       return true;
     case ui::ET_GESTURE_LONG_PRESS:
       selection_dragging_state_ = SelectionDraggingState::kSelectedWord;
+      selection_drag_type_ = ui::TouchSelectionDragType::kLongPressDrag;
       DestroyTouchSelection();
       event->SetHandled();
       return true;
     case ui::ET_GESTURE_LONG_TAP:
-      StopSelectionDragging();
+      if (selection_dragging_state_ != SelectionDraggingState::kNone) {
+        StopSelectionDragging();
+        CreateTouchSelectionControllerAndNotifyIt();
+        event->SetHandled();
+        return true;
+      }
       return false;
     case ui::ET_GESTURE_SCROLL_BEGIN:
       // Only start selection dragging if scrolling with one touch point.
@@ -3077,13 +3086,18 @@ bool Textfield::StartSelectionDragging(const ui::GestureEvent& event) {
     DestroyTouchSelection();
     MoveCursorTo(event.location(), false);
     selection_dragging_state_ = SelectionDraggingState::kDraggingCursor;
+    selection_drag_type_ = ui::TouchSelectionDragType::kCursorDrag;
     return true;
   }
   return false;
 }
 
 void Textfield::StopSelectionDragging() {
+  if (IsSelectionDragging() && selection_drag_type_.has_value()) {
+    ui::RecordTouchSelectionDrag(selection_drag_type_.value());
+  }
   selection_dragging_state_ = SelectionDraggingState::kNone;
+  selection_drag_type_ = absl::nullopt;
 }
 
 BEGIN_METADATA(Textfield, View)

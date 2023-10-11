@@ -14,6 +14,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/app_shim_remote_cocoa/render_widget_host_ns_view_host_helper.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
@@ -51,6 +52,7 @@ class ScopedPasswordInputEnabler;
 
 @class NSAccessibilityRemoteUIElement;
 @class RenderWidgetHostViewCocoa;
+@class CursorAccessibilityScaleFactorObserver;
 
 namespace content {
 
@@ -148,6 +150,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void EnsureSurfaceSynchronizedForWebTest() override;
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
+  void InvalidateLocalSurfaceIdAndAllocationGroup() override;
   void ClearFallbackSurfaceForCommitPending() override;
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
@@ -352,7 +355,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void ForwardKeyboardEventWithCommands(
       std::unique_ptr<blink::WebCoalescedInputEvent> event,
       const std::vector<uint8_t>& native_event_data,
-      bool skip_in_browser,
+      bool skip_if_unhandled,
       std::vector<blink::mojom::EditCommandPtr> commands) override;
   void RouteOrProcessMouseEvent(
       std::unique_ptr<blink::WebCoalescedInputEvent> event) override;
@@ -551,6 +554,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // OnTooltipTextUpdated() function, if not null.
   void SetTooltipText(const std::u16string& tooltip_text);
 
+  void UpdateWindowsNow();
+
   // Interface through which the NSView is to be manipulated. This points either
   // to |in_process_ns_view_bridge_| or to |remote_ns_view_|.
   raw_ptr<remote_cocoa::mojom::RenderWidgetHostNSView> ns_view_ = nullptr;
@@ -614,6 +619,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   SkColor last_frame_root_background_color_ = SK_ColorTRANSPARENT;
 
   std::unique_ptr<CursorManager> cursor_manager_;
+
+  // Observes macOS's accessibility pointer size user preference changes.
+  CursorAccessibilityScaleFactorObserver* __strong cursor_scale_observer_;
 
   // Used to track active password input sessions.
   std::unique_ptr<ui::ScopedPasswordInputEnabler> password_input_enabler_;
@@ -691,6 +699,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   absl::optional<DisplayFeature> display_feature_;
 
   const uint64_t ns_view_id_;
+
+  // See description of `kDelayUpdateWindowsAfterTextInputStateChanged` for
+  // details.
+  base::OneShotTimer update_windows_timer_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;

@@ -7,10 +7,11 @@
 #include <CoreServices/CoreServices.h>
 #import <Foundation/Foundation.h>
 
+#include "base/apple/mach_logging.h"
+#include "base/apple/osstatus_logging.h"
+#include "base/apple/foundation_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/mac_logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
@@ -22,9 +23,9 @@ bool GetBackupExclusion(const FilePath& file_path) {
                                                 base::BlockingType::MAY_BLOCK);
 
 #if BUILDFLAG(IS_MAC)
-  return CSBackupIsItemExcluded(mac::FilePathToCFURL(file_path), nullptr);
+  return CSBackupIsItemExcluded(apple::FilePathToCFURL(file_path), nullptr);
 #elif BUILDFLAG(IS_IOS)
-  NSURL* file_url = mac::FilePathToNSURL(file_path);
+  NSURL* file_url = apple::FilePathToNSURL(file_path);
   DCHECK([file_url checkPromisedItemIsReachableAndReturnError:nil]);
 
   NSError* error = nil;
@@ -55,14 +56,14 @@ bool SetBackupState(const FilePath& file_path, bool excluded) {
   // non-root (or admin) users don't get their TimeMachine drive filled up with
   // unnecessary backups.
   OSStatus os_err =
-      CSBackupSetItemExcluded(mac::FilePathToCFURL(file_path), excluded,
+      CSBackupSetItemExcluded(apple::FilePathToCFURL(file_path), excluded,
                               /*excludeByPath=*/FALSE);
   OSSTATUS_DLOG_IF(WARNING, os_err != noErr, os_err)
       << "Failed to set backup exclusion for file '"
       << file_path.value().c_str() << "'";
   return os_err == noErr;
 #elif BUILDFLAG(IS_IOS)
-  NSURL* file_url = mac::FilePathToNSURL(file_path);
+  NSURL* file_url = apple::FilePathToNSURL(file_path);
   DCHECK([file_url checkPromisedItemIsReachableAndReturnError:nil]);
 
   NSError* error = nil;

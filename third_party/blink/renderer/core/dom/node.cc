@@ -1052,7 +1052,7 @@ void Node::SetLayoutObject(LayoutObject* layout_object) {
   data_ = MakeGarbageCollected<NodeData>(layout_object, nullptr);
 }
 
-void Node::SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style) {
+void Node::SetComputedStyle(const ComputedStyle* computed_style) {
   // We don't set computed style for text nodes.
   DCHECK(IsElementNode());
 
@@ -1590,8 +1590,9 @@ void Node::AttachLayoutTree(AttachContext& context) {
 
   ClearNeedsReattachLayoutTree();
 
-  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-    cache->UpdateCacheAfterNodeIsAttached(this);
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
+    cache->NodeIsAttached(this);
+  }
 
   if (context.performing_reattach)
     ReattachHookScope::NotifyAttach(*this);
@@ -1929,16 +1930,14 @@ const AtomicString& Node::lookupNamespaceURI(
     case kElementNode: {
       const auto& element = To<Element>(*this);
 
-      if (RuntimeEnabledFeatures::NodeAsNSResolverEnabled()) {
-        // 1. If prefix is "xml", then return the XML namespace.
-        if (prefix == g_xml_atom) {
-          return xml_names::kNamespaceURI;
-        }
+      // 1. If prefix is "xml", then return the XML namespace.
+      if (prefix == g_xml_atom) {
+        return xml_names::kNamespaceURI;
+      }
 
-        // 2. If prefix is "xmlns", then return the XMLNS namespace.
-        if (prefix == g_xmlns_atom) {
-          return xmlns_names::kNamespaceURI;
-        }
+      // 2. If prefix is "xmlns", then return the XMLNS namespace.
+      if (prefix == g_xmlns_atom) {
+        return xmlns_names::kNamespaceURI;
       }
 
       // 3. If its namespace is not null and its namespace prefix is prefix,
@@ -2236,17 +2235,23 @@ void Node::InvalidateIfHasEffectiveAppearance() const {
 }
 
 void Node::UpdateForRemovedDOMParts(ContainerNode& insertion_point) {
-  if (UNLIKELY(RuntimeEnabledFeatures::DOMPartsAPIEnabled() && HasDOMParts())) {
-    for (Part* part : GetDOMParts()) {
-      part->PartDisconnected();
+  if (LIKELY(!RuntimeEnabledFeatures::DOMPartsAPIEnabled())) {
+    return;
+  }
+  if (auto* parts = GetDOMParts()) {
+    for (Part* part : *parts) {
+      part->PartDisconnected(*this);
     }
   }
 }
 
 void Node::UpdateForInsertedDOMParts(ContainerNode& insertion_point) {
-  if (UNLIKELY(RuntimeEnabledFeatures::DOMPartsAPIEnabled() && HasDOMParts())) {
-    for (Part* part : GetDOMParts()) {
-      part->PartConnected(insertion_point);
+  if (LIKELY(!RuntimeEnabledFeatures::DOMPartsAPIEnabled())) {
+    return;
+  }
+  if (auto* parts = GetDOMParts()) {
+    for (Part* part : *parts) {
+      part->PartConnected(*this, insertion_point);
     }
   }
 }
@@ -2256,7 +2261,7 @@ Node::InsertionNotificationRequest Node::InsertedInto(
   DCHECK(!ChildNeedsStyleInvalidation());
   DCHECK(!NeedsStyleInvalidation());
   DCHECK(insertion_point.isConnected() || insertion_point.IsInShadowTree() ||
-         IsContainerNode());
+         IsContainerNode() || GetDOMParts());
   if (insertion_point.isConnected()) {
     SetFlag(kIsConnectedFlag);
 #if DCHECK_IS_ON()
@@ -2267,14 +2272,13 @@ Node::InsertionNotificationRequest Node::InsertedInto(
   if (ParentOrShadowHostNode()->IsInShadowTree())
     SetFlag(kIsInShadowTreeFlag);
   if (auto* cache = GetDocument().ExistingAXObjectCache()) {
-    cache->ChildrenChanged(&insertion_point);
+    cache->NodeIsConnected(this);
   }
   return kInsertionDone;
 }
 
 void Node::RemovedFrom(ContainerNode& insertion_point) {
-  DCHECK(insertion_point.isConnected() || IsContainerNode() ||
-         IsInShadowTree());
+  DCHECK(IsContainerNode() || IsInTreeScope() || GetDOMParts());
   if (insertion_point.isConnected()) {
     ClearNeedsStyleRecalc();
     ClearChildNeedsStyleRecalc();
@@ -3396,8 +3400,8 @@ HTMLSlotElement* Node::ManuallyAssignedSlot() {
   return nullptr;
 }
 
-HashSet<Member<TreeScope>> Node::GetAncestorTreeScopes() const {
-  HashSet<Member<TreeScope>> ancestor_tree_scopes;
+HeapHashSet<Member<TreeScope>> Node::GetAncestorTreeScopes() const {
+  HeapHashSet<Member<TreeScope>> ancestor_tree_scopes;
   for (TreeScope* scope = &GetTreeScope(); scope;
        scope = scope->ParentTreeScope()) {
     ancestor_tree_scopes.insert(scope);

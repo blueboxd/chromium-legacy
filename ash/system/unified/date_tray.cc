@@ -82,10 +82,11 @@ void DateTray::ShowBubble() {
     return;
   }
 
-  if (ash::Shell::Get()
-          ->glanceables_v2_controller()
-          ->AreGlanceablesAvailable()) {
-    ShowGlanceableBubble();
+  GlanceablesV2Controller* const glanceables_controller =
+      ash::Shell::Get()->glanceables_v2_controller();
+  if (glanceables_controller &&
+      glanceables_controller->AreGlanceablesAvailable()) {
+    ShowGlanceableBubble(/*from_keyboard=*/false);
   }
 }
 
@@ -101,6 +102,16 @@ void DateTray::CloseBubble() {
     // the bubble view.
     unified_system_tray_->CloseBubble();
   }
+}
+
+void DateTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
+  if (bubble_ && bubble_->GetBubbleView() == bubble_view) {
+    CloseBubble();
+  }
+}
+
+void DateTray::HideBubble(const TrayBubbleView* bubble_view) {
+  CloseBubble();
 }
 
 void DateTray::ClickedOutsideBubble() {
@@ -129,13 +140,14 @@ void DateTray::OnButtonPressed(const ui::Event& event) {
     return;
   }
 
-  if (ash::Shell::Get()
-          ->glanceables_v2_controller()
-          ->AreGlanceablesAvailable()) {
+  GlanceablesV2Controller* const glanceables_controller =
+      ash::Shell::Get()->glanceables_v2_controller();
+  if (glanceables_controller &&
+      glanceables_controller->AreGlanceablesAvailable()) {
     // Hide the unified_system_tray_ bubble.
     unified_system_tray_->CloseBubble();
     // Open the glanceables bubble.
-    ShowGlanceableBubble();
+    ShowGlanceableBubble(event.IsKeyEvent());
   } else {
     // Need to set the date tray as active before notifying the system tray of
     // an action because we need the system tray to know that the date tray is
@@ -145,8 +157,8 @@ void DateTray::OnButtonPressed(const ui::Event& event) {
   }
 }
 
-void DateTray::ShowGlanceableBubble() {
-  bubble_ = std::make_unique<GlanceableTrayBubble>(this);
+void DateTray::ShowGlanceableBubble(bool from_keyboard) {
+  bubble_ = std::make_unique<GlanceableTrayBubble>(this, from_keyboard);
   SetIsActive(true);
 }
 

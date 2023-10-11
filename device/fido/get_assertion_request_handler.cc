@@ -66,7 +66,8 @@ const std::set<pin::Permissions> GetPinTokenPermissionsFor(
 }
 
 absl::optional<GetAssertionStatus> ConvertDeviceResponseCode(
-    CtapDeviceResponseCode device_response_code) {
+    CtapDeviceResponseCode device_response_code,
+    AuthenticatorType auth_type) {
   switch (device_response_code) {
     case CtapDeviceResponseCode::kSuccess:
       return GetAssertionStatus::kSuccess;
@@ -74,7 +75,11 @@ absl::optional<GetAssertionStatus> ConvertDeviceResponseCode(
     // Only returned after the user interacted with the
     // authenticator.
     case CtapDeviceResponseCode::kCtap2ErrNoCredentials:
-      return GetAssertionStatus::kUserConsentButCredentialNotRecognized;
+      if (auth_type == AuthenticatorType::kICloudKeychain) {
+        return GetAssertionStatus::kICloudKeychainNoCredentials;
+      } else {
+        return GetAssertionStatus::kUserConsentButCredentialNotRecognized;
+      }
 
     // The user explicitly denied the operation. Touch ID returns this error
     // when the user cancels the macOS prompt. External authenticators may
@@ -180,8 +185,8 @@ bool ResponseValid(
 
     // PublicKeyUserEntity field in GetAssertion response is optional with the
     // following constraints:
-    // - If assertion has been made without user verification, user identifiable
-    //   information must not be included.
+    // - If assertion has been made without user verification on a
+    //   non-platform authenticator/security key.
     // - For resident key credentials, user id of the user entity is mandatory.
     // - When multiple accounts exist for specified RP ID, user entity is
     //   mandatory.
@@ -189,7 +194,8 @@ bool ResponseValid(
     const bool has_user_identifying_info =
         user_entity && (user_entity->display_name || user_entity->name);
     if (!response.authenticator_data.obtained_user_verification() &&
-        has_user_identifying_info) {
+        has_user_identifying_info &&
+        authenticator.GetType() == AuthenticatorType::kOther) {
       return false;
     }
 
@@ -362,6 +368,16 @@ bool AllowListOnlyHybridOrInternal(const CtapGetAssertionRequest& request) {
          base::ranges::all_of(request.allow_list, &IsOnlyHybridOrInternal);
 }
 
+bool AllowListIncludedTransport(const CtapGetAssertionRequest& request,
+                                FidoTransportProtocol transport) {
+  return std::ranges::any_of(
+      request.allow_list,
+      [transport](const PublicKeyCredentialDescriptor& cred) {
+        return cred.transports.empty() ||
+               base::Contains(cred.transports, transport);
+      });
+}
+
 }  // namespace
 
 GetAssertionRequestHandler::GetAssertionRequestHandler(
@@ -390,12 +406,16 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
   transport_availability_info().is_off_the_record_context =
       options_.is_off_the_record_context;
   transport_availability_info().transport_list_did_include_internal =
-      std::any_of(request_.allow_list.begin(), request_.allow_list.end(),
-                  [](const PublicKeyCredentialDescriptor& cred) {
-                    return cred.transports.empty() ||
-                           base::Contains(cred.transports,
-                                          FidoTransportProtocol::kInternal);
-                  });
+      AllowListIncludedTransport(request_, FidoTransportProtocol::kInternal);
+  transport_availability_info().transport_list_did_include_hybrid =
+      AllowListIncludedTransport(request_, FidoTransportProtocol::kHybrid);
+  transport_availability_info().transport_list_did_include_security_key =
+      AllowListIncludedTransport(
+          request_, FidoTransportProtocol::kUsbHumanInterfaceDevice) ||
+      AllowListIncludedTransport(request_,
+                                 FidoTransportProtocol::kBluetoothLowEnergy) ||
+      AllowListIncludedTransport(
+          request_, FidoTransportProtocol::kNearFieldCommunication);
   transport_availability_info().request_is_internal_only =
       !request_.allow_list.empty() &&
       base::ranges::all_of(
@@ -418,15 +438,15 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
 GetAssertionRequestHandler::~GetAssertionRequestHandler() = default;
 
 void GetAssertionRequestHandler::PreselectAccount(
-    std::vector<uint8_t> credential_id) {
+    PublicKeyCredentialDescriptor credential) {
   DCHECK(!preselected_credential_);
-  DCHECK(
-      request_.allow_list.empty() ||
-      std::any_of(request_.allow_list.begin(), request_.allow_list.end(),
-                  [credential_id](const PublicKeyCredentialDescriptor& desc) {
-                    return desc.id == credential_id;
-                  }));
-  preselected_credential_ = std::move(credential_id);
+  DCHECK(request_.allow_list.empty() ||
+         std::ranges::any_of(
+             request_.allow_list,
+             [&credential](const PublicKeyCredentialDescriptor& desc) {
+               return desc.id == credential.id;
+             }));
+  preselected_credential_ = std::move(credential);
 }
 
 base::WeakPtr<GetAssertionRequestHandler>
@@ -521,14 +541,7 @@ void GetAssertionRequestHandler::DispatchRequest(
   }
 
   if (preselected_credential_) {
-    DCHECK(request_.allow_list.empty() ||
-           std::any_of(request_.allow_list.begin(), request_.allow_list.end(),
-                       [this](const PublicKeyCredentialDescriptor& desc) {
-                         return desc.id == preselected_credential_;
-                       }));
-    request.allow_list = {PublicKeyCredentialDescriptor(
-        CredentialType::kPublicKey, *preselected_credential_,
-        {FidoTransportProtocol::kInternal})};
+    request.allow_list = {*preselected_credential_};
   }
 
   ReportGetAssertionRequestTransport(authenticator);
@@ -749,7 +762,7 @@ void GetAssertionRequestHandler::HandleResponse(
   }
 
   const absl::optional<GetAssertionStatus> maybe_result =
-      ConvertDeviceResponseCode(status);
+      ConvertDeviceResponseCode(status, authenticator->GetType());
   if (!maybe_result) {
     if (state_ == State::kWaitingForResponseWithToken) {
       std::move(completion_callback_)
@@ -797,7 +810,7 @@ void GetAssertionRequestHandler::HandleResponse(
     // selection dialog by setting the `userSelected` flag.
     DCHECK_EQ(responses.size(), 1u);
     DCHECK(responses.at(0).credential &&
-           responses.at(0).credential->id == preselected_credential_);
+           responses.at(0).credential->id == preselected_credential_->id);
     responses.at(0).user_selected = true;
   }
 

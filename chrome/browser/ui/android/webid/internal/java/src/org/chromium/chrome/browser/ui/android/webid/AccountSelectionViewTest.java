@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Callback;
@@ -52,7 +51,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.ButtonCompat;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
-import org.chromium.url.ShadowGURL;
 
 import java.util.Collections;
 
@@ -61,17 +59,15 @@ import java.util.Collections;
  * sheet.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(shadows = {ShadowGURL.class})
 public class AccountSelectionViewTest {
-    private static final GURL TEST_PROFILE_PIC = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
-    private static final GURL TEST_CONFIG_URL = JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1);
+    private static final GURL TEST_PROFILE_PIC = JUnitTestGURLs.EXAMPLE_URL;
+    private static final GURL TEST_CONFIG_URL = JUnitTestGURLs.URL_1;
 
-    private static final Account ANA = new Account("Ana", "ana@email.example", "Ana Doe", "Ana",
-            TEST_PROFILE_PIC, /*loginHints=*/new String[0], true);
-    private static final Account NO_ONE = new Account(
-            "", "", "No Subject", "", TEST_PROFILE_PIC, /*loginHints=*/new String[0], true);
-    private static final Account BOB =
-            new Account("Bob", "", "Bob", "", TEST_PROFILE_PIC, /*loginHints=*/new String[0], true);
+    private static final Account ANA =
+            new Account("Ana", "ana@email.example", "Ana Doe", "Ana", TEST_PROFILE_PIC, true);
+    private static final Account NO_ONE =
+            new Account("", "", "No Subject", "", TEST_PROFILE_PIC, true);
+    private static final Account BOB = new Account("Bob", "", "Bob", "", TEST_PROFILE_PIC, true);
 
     private class RpContext {
         public String mValue;

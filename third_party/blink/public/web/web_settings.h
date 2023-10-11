@@ -110,6 +110,7 @@ class WebSettings {
   virtual void SetAllowRunningOfInsecureContent(bool) = 0;
   virtual void SetAllowScriptsToCloseWindows(bool) = 0;
   virtual void SetAllowUniversalAccessFromFileURLs(bool) = 0;
+  virtual void SetAccessibilityFontWeightAdjustment(int) = 0;
   virtual void SetAlwaysShowContextMenuOnTouch(bool) = 0;
   virtual void SetAntialiased2dCanvasEnabled(bool) = 0;
   virtual void SetAntialiasedClips2dCanvasEnabled(bool) = 0;
@@ -121,7 +122,6 @@ class WebSettings {
   virtual void SetCaretBrowsingEnabled(bool) = 0;
   virtual void SetClobberUserAgentInitialScaleQuirk(bool) = 0;
   virtual void SetCookieEnabled(bool) = 0;
-  virtual void SetNavigateOnDragDrop(bool) = 0;
   virtual void SetCursiveFontFamily(const WebString&,
                                     UScriptCode = USCRIPT_COMMON) = 0;
   virtual void SetDNSPrefetchingEnabled(bool) = 0;
@@ -242,7 +242,6 @@ class WebSettings {
   virtual void SetTextTrackTextSize(const WebString&) = 0;
   virtual void SetTextTrackWindowColor(const WebString&) = 0;
   virtual void SetTextTrackWindowRadius(const WebString&) = 0;
-  virtual void SetThreadedScrollingEnabled(bool) = 0;
   virtual void SetTouchDragDropEnabled(bool) = 0;
   virtual void SetTouchDragEndContextMenu(bool) = 0;
   virtual void SetBarrelButtonForDragEnabled(bool) = 0;

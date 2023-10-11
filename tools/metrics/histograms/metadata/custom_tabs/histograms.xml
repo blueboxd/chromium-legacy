@@ -52,6 +52,23 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="CustomTabs.Branding.AppIdType"
+    enum="CustomTabsBrandingAppIdType" expires_after="2024-08-24">
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    For every CCT launch, Chrome will start an async task in the background
+    checking the last time branding is shown for the client app. Each client app
+    is identified with a unique string. It was initially (and preferably) its
+    package name but is extended to be of any text string from the intent's
+    referrer if the package name is unavailable. An empty string is regarded as
+    invalid id.
+
+    Record the type of the id for a given CCT when the async task is finished.
+    Record for Android CCT only.
+  </summary>
+</histogram>
+
 <histogram name="CustomTabs.Branding.BrandingCheckCanceled"
     enum="BooleanCanceled" expires_after="2023-12-31">
   <owner>wenyufu@chromium.org</owner>
@@ -65,7 +82,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.Branding.BrandingCheckDuration" units="ms"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -77,7 +94,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.Branding.BrandingDecision"
-    enum="CustomTabsBrandingDecision" expires_after="2023-12-24">
+    enum="CustomTabsBrandingDecision" expires_after="2024-02-25">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -110,7 +127,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.Branding.NumberOfClients" units="count"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -123,7 +140,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.ClientAppId" enum="ClientAppId"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>yusufo@chromium.org</owner>
   <summary>
     Android: AppId declared by the launching application in EXTRA_APPLICATION_ID
@@ -155,7 +172,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.CloseCause" enum="CustomTabsCloseCause"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>jinsukkim@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>cct-team@google.com</owner>
@@ -258,7 +275,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.HadInteractionOnClose.Form" enum="Boolean"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>katzz@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -282,7 +299,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.HadInteractionOnClose.Navigation" enum="Boolean"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>katzz@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -334,7 +351,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.IntentToFirstCommitNavigationTime3" units="ms"
-    expires_after="M120">
+    expires_after="2024-02-11">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Time between the intent arrival to a Custom Tab and the first navigation
@@ -344,7 +361,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.IntentToFirstNavigationStartTime" units="ms"
-    expires_after="M120">
+    expires_after="2024-02-11">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Time between the intent arrival to a Custom Tab and the navigation start.
@@ -371,6 +388,9 @@ chromium-metrics-reviews@google.com.
     CustomTabs.WarmupStateOnLaunch for the buckets &quot;Session, No Warmup,
     Warmup called from another UID&quot;, &quot;Session, No Warmup&quot; and
     &quot;Session, Warmup&quot;.
+
+    Before M118, unlike CustomTabs.WarmupStateOnLaunch, this metric was only
+    recorded with a valid session.
   </summary>
 </histogram>
 
@@ -480,7 +500,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.ResizeType2" enum="CustomTabsResizeType2"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>kgrosu@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -491,7 +511,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="CustomTabs.RetainableSessionsV2.TimeBetweenLaunch{IdentifierType}"
-    units="seconds" expires_after="2023-10-22">
+    units="seconds" expires_after="2024-02-20">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -576,7 +596,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.SideSheetResizeType" enum="CustomTabsResizeType2"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>kgrosu@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -612,6 +632,57 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="CustomTabs.Startup.TimeToFirstCommitNavigation.{suffix}"
+    units="ms" expires_after="2024-08-25">
+  <owner>mthiesse@chromium.org</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    Startup time for a Custom Tab from the earliest point in startup to the
+    first navigation commit. Split by varying degrees of warmness, from cold to
+    fully pre-loaded through mayLaunchUrl.
+
+    {suffix}.
+  </summary>
+  <token key="suffix">
+    <variant name="Cold"
+        summary="Measures from process creation to first commit"/>
+    <variant name="Speculated"
+        summary="Measures from intent received to first commit when the
+                 mayLaunchUrl speculation is used"/>
+    <variant name="Warm"
+        summary="Measures from intent received to first commit when
+                 CustomTabsConnection#warmUp is not used"/>
+    <variant name="WarmedUp"
+        summary="Measures from intent received to first commit when
+                 CustomTabsConnection#warmUp is used"/>
+  </token>
+</histogram>
+
+<histogram name="CustomTabs.Startup.TimeToLargestContentfulPaint.{suffix}"
+    units="ms" expires_after="2024-08-25">
+  <owner>mthiesse@chromium.org</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    Startup time for a Custom Tab from the earliest point in startup to the
+    Largest Contentful Paint on the first navigation. Split by varying degrees
+    of warmness, from cold to fully pre-loaded through mayLaunchUrl.
+
+    {suffix}.
+  </summary>
+  <token key="suffix">
+    <variant name="Cold" summary="Measures from process creation to LCP"/>
+    <variant name="Speculated"
+        summary="Measures from intent received to LCP when the mayLaunchUrl
+                 speculation is used"/>
+    <variant name="Warm"
+        summary="Measures from intent received to LCP when
+                 CustomTabsConnection#warmUp is not used"/>
+    <variant name="WarmedUp"
+        summary="Measures from intent received to LCP when
+                 CustomTabsConnection#warmUp is used"/>
+  </token>
+</histogram>
+
 <histogram name="CustomTabs.TabCounts.OnClosingAllTabs" units="count"
     expires_after="2023-10-08">
   <owner>wenyufu@chromium.org</owner>
@@ -625,7 +696,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.TabCounts.UniqueTabsSeen" units="count"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -670,7 +741,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.WarmupStateOnLaunch" enum="WarmupStateOnLaunch"
-    expires_after="2023-12-04">
+    expires_after="2024-02-05">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Recorded only on Android. Reports whether warmup() has been called when a
@@ -806,7 +877,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TrustedWebActivity.SplashScreenShown" enum="Boolean"
-    expires_after="2023-09-17">
+    expires_after="2024-01-01">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>

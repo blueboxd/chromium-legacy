@@ -22,9 +22,9 @@
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/password_manager/android/local_passwords_migration_warning_util.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/google_chrome_strings.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/messages/android/mock_message_dispatcher_bridge.h"
 #include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
@@ -77,12 +77,6 @@ constexpr char kUpdatePasswordMessageDismissalReason[] =
 constexpr char kConfirmUsernameMessageDismissalReason[] =
     "PasswordManager.SaveUpdateUIDismissalReasonAndroid."
     "UpdateWithUsernameConfirmation";
-
-struct FeatureConfigTestParam {
-  bool with_unified_password_manager_android;
-  bool with_exploratory_save_update_password_strings;
-  int save_update_prompt_syncing_string_version;
-};
 
 }  // namespace
 
@@ -209,19 +203,15 @@ class SaveUpdatePasswordMessageDelegateTest
 };
 
 class SaveUpdatePasswordMessageDelegateWithFeaturesTest
-    : public testing::WithParamInterface<FeatureConfigTestParam>,
+    : public base::test::WithFeatureOverride,
       public SaveUpdatePasswordMessageDelegateTest {
- protected:
+ public:
+  SaveUpdatePasswordMessageDelegateWithFeaturesTest()
+      : base::test::WithFeatureOverride(
+            password_manager::features::kUnifiedPasswordManagerAndroid) {}
+
   void SetUp() override;
   void InitFeatureList();
-
-  // TODO(crbug.com/1428562): Remove this helper as it makes tests hard to read.
-  std::u16string GetExploratoryStringsMessageDescription(
-      bool is_update,
-      bool is_signed_in,
-      const std::u16string& account_email,
-      int new_string_version);
-
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -231,8 +221,8 @@ SaveUpdatePasswordMessageDelegateTest::SaveUpdatePasswordMessageDelegateTest() =
 
 void SaveUpdatePasswordMessageDelegateTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
-  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
-      web_contents(), nullptr);
+  autofill::ChromeAutofillClient::CreateForWebContents(web_contents());
+  ChromePasswordManagerClient::CreateForWebContents(web_contents());
   ukm_source_id_ = ukm::UkmRecorder::GetNewSourceID();
   metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
       true /*is_main_frame_secure*/, ukm_source_id_, nullptr /*pref_service*/);
@@ -456,62 +446,9 @@ void SaveUpdatePasswordMessageDelegateTest::VerifyUkmMetrics(
 }
 
 void SaveUpdatePasswordMessageDelegateWithFeaturesTest::InitFeatureList() {
-  std::vector<FeatureRefAndParams> enabled_features;
-  std::vector<FeatureRef> disabled_features;
-
-  FeatureConfigTestParam feature_config = GetParam();
-  if (feature_config.with_unified_password_manager_android) {
-    enabled_features.push_back(
-        {password_manager::features::kUnifiedPasswordManagerAndroid, {}});
-  } else {
-    disabled_features.push_back(
-        password_manager::features::kUnifiedPasswordManagerAndroid);
-    disabled_features.push_back(
+  if (!IsParamFeatureEnabled()) {
+    scoped_feature_list_.InitAndDisableFeature(
         password_manager::features::kUnifiedPasswordManagerAndroidBranding);
-  }
-
-  if (feature_config.with_exploratory_save_update_password_strings) {
-    enabled_features.push_back(
-        {password_manager::features::kExploratorySaveUpdatePasswordStrings,
-         {{password_manager::features::kSaveUpdatePromptSyncingStringVersion
-               .name,
-           base::NumberToString(
-               feature_config.save_update_prompt_syncing_string_version)}}});
-  } else {
-    disabled_features.push_back(
-        password_manager::features::kExploratorySaveUpdatePasswordStrings);
-  }
-
-  scoped_feature_list_.InitWithFeaturesAndParameters(enabled_features,
-                                                     disabled_features);
-}
-
-std::u16string SaveUpdatePasswordMessageDelegateWithFeaturesTest::
-    GetExploratoryStringsMessageDescription(bool is_update,
-                                            bool is_signed_in,
-                                            const std::u16string& account_email,
-                                            int new_string_version) {
-  if (!is_signed_in) {
-    return l10n_util::GetStringUTF16(
-        IDS_PASSWORD_MANAGER_SAVE_UPDATE_PASSWORD_SIGNED_OUT_MESSAGE_DESCRIPTION_V1);
-  }
-
-  switch (new_string_version) {
-    case 2:
-      return l10n_util::GetStringFUTF16(
-          is_update
-              ? IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V2
-              : IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V2,
-          account_email);
-    case 3:
-      return l10n_util::GetStringFUTF16(
-          is_update
-              ? IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V3
-              : IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V3,
-          account_email);
-    default:
-      ADD_FAILURE() << "All string version param values should be handled";
-      return u"";
   }
 }
 
@@ -1267,28 +1204,6 @@ TEST_F(SaveUpdatePasswordMessageDelegateTest,
       1);
 }
 
-// Tests that if the exploratory strings feature is given an unsupported
-// string version as a param, the regular strings are used instead.
-TEST_F(SaveUpdatePasswordMessageDelegateTest,
-       ExploratoryStringsWithWrongParamFallsBackToRegular) {
-  base::test::ScopedFeatureList scoped_feature_state;
-  scoped_feature_state.InitAndEnableFeatureWithParameters(
-      password_manager::features::kExploratorySaveUpdatePasswordStrings,
-      {{password_manager::features::kSaveUpdatePromptSyncingStringVersion.name,
-        "1"}});
-  SetPendingCredentials(kUsername, kPassword);
-  auto form_manager =
-      CreateFormManager(GURL(kDefaultUrl), empty_best_matches());
-  const bool kUserNotSignedIn = false;
-  const bool kNotUpdate = false;
-  EnqueueMessage(std::move(form_manager), kUserNotSignedIn, kNotUpdate);
-  EXPECT_EQ(GetExpectedUPMMessageDescription(kNotUpdate, kUserNotSignedIn,
-                                             kAccountEmail16),
-            GetMessageWrapper()->GetDescription());
-
-  DismissMessage(messages::DismissReason::UNKNOWN);
-}
-
 // Tests parameterized with different feature states
 
 // Tests that message properties (title, description, icon, button text) are
@@ -1306,16 +1221,7 @@ TEST_P(SaveUpdatePasswordMessageDelegateWithFeaturesTest,
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON),
             GetMessageWrapper()->GetPrimaryButtonText());
 
-  // Validate message description that depends on
-  // kExploratorySaveUpdatePasswordStrings feature
-  if (GetParam().with_exploratory_save_update_password_strings) {
-    // password_manager::features::kExploratorySaveUpdatePasswordStrings is
-    // enabled
-    EXPECT_EQ(GetExploratoryStringsMessageDescription(
-                  is_update, is_signed_in, kAccountEmail16,
-                  GetParam().save_update_prompt_syncing_string_version),
-              GetMessageWrapper()->GetDescription());
-  } else if (GetParam().with_unified_password_manager_android) {
+  if (IsParamFeatureEnabled()) {
     // password_manager::features::kUnifiedPasswordManagerAndroid is enabled
     EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
                                                kAccountEmail16),
@@ -1330,7 +1236,7 @@ TEST_P(SaveUpdatePasswordMessageDelegateWithFeaturesTest,
   }
 
   // Validate remaining message fields
-  if (GetParam().with_unified_password_manager_android) {
+  if (IsParamFeatureEnabled()) {
     // password_manager::features::kUnifiedPasswordManagerAndroid is enabled
     EXPECT_EQ(ResourceMapper::MapToJavaDrawableId(
                   IDR_ANDROID_PASSWORD_MANAGER_LOGO_24DP),
@@ -1363,7 +1269,7 @@ TEST_P(SaveUpdatePasswordMessageDelegateWithFeaturesTest,
   EnqueueMessage(std::move(form_manager), /*user_signed_in=*/false,
                  /*update_password=*/false);
 
-  if (GetParam().with_unified_password_manager_android) {
+  if (IsParamFeatureEnabled()) {
     // password_manager::features::kUnifiedPasswordManagerAndroid is enabled
     EXPECT_EQ(
         l10n_util::GetStringUTF16(IDS_PASSWORD_MESSAGE_NEVER_SAVE_MENU_ITEM),
@@ -1390,14 +1296,7 @@ TEST_P(SaveUpdatePasswordMessageDelegateWithFeaturesTest,
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_UPDATE_PASSWORD),
             GetMessageWrapper()->GetTitle());
 
-  if (GetParam().with_exploratory_save_update_password_strings) {
-    // password_manager::features::kExploratorySaveUpdatePasswordStrings is
-    // enabled
-    EXPECT_EQ(GetExploratoryStringsMessageDescription(
-                  is_update, is_signed_in, kAccountEmail16,
-                  GetParam().save_update_prompt_syncing_string_version),
-              GetMessageWrapper()->GetDescription());
-  } else if (GetParam().with_unified_password_manager_android) {
+  if (IsParamFeatureEnabled()) {
     // password_manager::features::kUnifiedPasswordManagerAndroid is enabled
     EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
                                                kAccountEmail16),
@@ -1424,14 +1323,7 @@ TEST_P(SaveUpdatePasswordMessageDelegateWithFeaturesTest,
   EnqueueMessage(std::move(form_manager), /*user_signed_in=*/is_signed_in,
                  /*update_password=*/is_update);
 
-  if (GetParam().with_exploratory_save_update_password_strings) {
-    // password_manager::features::kExploratorySaveUpdatePasswordStrings is
-    // enabled
-    EXPECT_EQ(GetExploratoryStringsMessageDescription(
-                  is_update, is_signed_in, kAccountEmail16,
-                  GetParam().save_update_prompt_syncing_string_version),
-              GetMessageWrapper()->GetDescription());
-  } else if (GetParam().with_unified_password_manager_android) {
+  if (IsParamFeatureEnabled()) {
     // password_manager::features::kUnifiedPasswordManagerAndroid is enabled
     EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
                                                kAccountEmail16),
@@ -1466,14 +1358,7 @@ TEST_P(SaveUpdatePasswordMessageDelegateWithFeaturesTest,
 
   EnqueueMessage(std::move(form_manager), /*user_signed_in=*/is_signed_in,
                  /*update_password=*/is_update, account_info);
-  if (GetParam().with_exploratory_save_update_password_strings) {
-    // password_manager::features::kExploratorySaveUpdatePasswordStrings is
-    // enabled
-    EXPECT_EQ(GetExploratoryStringsMessageDescription(
-                  is_update, is_signed_in, kAccountFullName16,
-                  GetParam().save_update_prompt_syncing_string_version),
-              GetMessageWrapper()->GetDescription());
-  } else if (GetParam().with_unified_password_manager_android) {
+  if (IsParamFeatureEnabled()) {
     // password_manager::features::kUnifiedPasswordManagerAndroid is enabled
     EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
                                                kAccountFullName16),
@@ -1503,14 +1388,7 @@ TEST_P(SaveUpdatePasswordMessageDelegateWithFeaturesTest,
   EnqueueMessage(std::move(form_manager), /*user_signed_in=*/is_signed_in,
                  /*update_password=*/is_update);
 
-  if (GetParam().with_exploratory_save_update_password_strings) {
-    // password_manager::features::kExploratorySaveUpdatePasswordStrings is
-    // enabled
-    EXPECT_EQ(GetExploratoryStringsMessageDescription(
-                  is_update, is_signed_in, kAccountEmail16,
-                  GetParam().save_update_prompt_syncing_string_version),
-              GetMessageWrapper()->GetDescription());
-  } else if (GetParam().with_unified_password_manager_android) {
+  if (IsParamFeatureEnabled()) {
     // password_manager::features::kUnifiedPasswordManagerAndroid is enabled
     EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
                                                kAccountEmail16),
@@ -1545,14 +1423,7 @@ TEST_P(SaveUpdatePasswordMessageDelegateWithFeaturesTest,
 
   EnqueueMessage(std::move(form_manager), /*user_signed_in=*/is_signed_in,
                  /*update_password=*/is_update, account_info);
-  if (GetParam().with_exploratory_save_update_password_strings) {
-    // password_manager::features::kExploratorySaveUpdatePasswordStrings is
-    // enabled
-    EXPECT_EQ(GetExploratoryStringsMessageDescription(
-                  is_update, is_signed_in, kAccountFullName16,
-                  GetParam().save_update_prompt_syncing_string_version),
-              GetMessageWrapper()->GetDescription());
-  } else if (GetParam().with_unified_password_manager_android) {
+  if (IsParamFeatureEnabled()) {
     // password_manager::features::kUnifiedPasswordManagerAndroid is enabled
     EXPECT_EQ(GetExpectedUPMMessageDescription(is_update, is_signed_in,
                                                kAccountFullName16),
@@ -1570,32 +1441,5 @@ TEST_P(SaveUpdatePasswordMessageDelegateWithFeaturesTest,
   DismissMessage(messages::DismissReason::UNKNOWN);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    SaveUpdatePasswordMessageDelegateWithFeaturesTest,
-    testing::Values(
-        // Exploratory strings are disabled, no version specified
-        FeatureConfigTestParam{
-            .with_unified_password_manager_android = false,
-            .with_exploratory_save_update_password_strings = false},
-        FeatureConfigTestParam{
-            .with_unified_password_manager_android = true,
-            .with_exploratory_save_update_password_strings = false},
-        // Exploratory strings with UPM enabled
-        FeatureConfigTestParam{
-            .with_unified_password_manager_android = true,
-            .with_exploratory_save_update_password_strings = true,
-            .save_update_prompt_syncing_string_version = 2},
-        FeatureConfigTestParam{
-            .with_unified_password_manager_android = true,
-            .with_exploratory_save_update_password_strings = true,
-            .save_update_prompt_syncing_string_version = 3},
-        // Exploratory strings with UPM disabled
-        FeatureConfigTestParam{
-            .with_unified_password_manager_android = false,
-            .with_exploratory_save_update_password_strings = true,
-            .save_update_prompt_syncing_string_version = 2},
-        FeatureConfigTestParam{
-            .with_unified_password_manager_android = false,
-            .with_exploratory_save_update_password_strings = true,
-            .save_update_prompt_syncing_string_version = 3}));
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
+    SaveUpdatePasswordMessageDelegateWithFeaturesTest);

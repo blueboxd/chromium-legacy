@@ -236,10 +236,11 @@ ts_files = [
   # Common.
   "file_manager/common/js/dom_utils.ts",
   "file_manager/common/js/entry_utils.ts",
+  "file_manager/common/js/file_tasks.ts",
   "file_manager/common/js/file_types_base.ts",
-  "file_manager/common/js/tslib_shim.ts",
   "file_manager/common/js/trash.ts",
   "file_manager/common/js/trusted_script_url_policy_util.ts",
+  "file_manager/common/js/tslib_shim.ts",
 
   # Lib.
   "file_manager/lib/actions_producer.ts",
@@ -250,35 +251,18 @@ ts_files = [
   "file_manager/state/file_key.ts",
   "file_manager/state/store.ts",
 
-  # Actions.
-  "file_manager/state/actions.ts",
-  "file_manager/state/actions/all_entries.ts",
-  "file_manager/state/actions/android_apps.ts",
-  "file_manager/state/actions/bulk_pinning.ts",
-  "file_manager/state/actions/current_directory.ts",
-  "file_manager/state/actions/folder_shortcuts.ts",
-  "file_manager/state/actions/navigation.ts",
-  "file_manager/state/actions/preferences.ts",
-  "file_manager/state/actions/search.ts",
-  "file_manager/state/actions/ui_entries.ts",
-  "file_manager/state/actions/volumes.ts",
-
-  # ActionsProducers.
-  "file_manager/state/actions_producers/all_entries.ts",
-  "file_manager/state/actions_producers/current_directory.ts",
-
-  # Reducers.
-  "file_manager/state/reducers/root.ts",
-  "file_manager/state/reducers/all_entries.ts",
-  "file_manager/state/reducers/android_apps.ts",
-  "file_manager/state/reducers/bulk_pinning.ts",
-  "file_manager/state/reducers/current_directory.ts",
-  "file_manager/state/reducers/folder_shortcuts.ts",
-  "file_manager/state/reducers/navigation.ts",
-  "file_manager/state/reducers/preferences.ts",
-  "file_manager/state/reducers/search.ts",
-  "file_manager/state/reducers/ui_entries.ts",
-  "file_manager/state/reducers/volumes.ts",
+  # Ducks.
+  "file_manager/state/ducks/all_entries.ts",
+  "file_manager/state/ducks/android_apps.ts",
+  "file_manager/state/ducks/bulk_pinning.ts",
+  "file_manager/state/ducks/device.ts",
+  "file_manager/state/ducks/current_directory.ts",
+  "file_manager/state/ducks/folder_shortcuts.ts",
+  "file_manager/state/ducks/navigation.ts",
+  "file_manager/state/ducks/preferences.ts",
+  "file_manager/state/ducks/search.ts",
+  "file_manager/state/ducks/ui_entries.ts",
+  "file_manager/state/ducks/volumes.ts",
 
   # Containers.
   "file_manager/containers/breadcrumb_container.ts",
@@ -396,21 +380,21 @@ ts_test_files = [
   "file_manager/lib/actions_producer_unittest.ts",
   "file_manager/lib/for_tests.ts",
 
-  # Action producers:
-  "file_manager/state/actions_producers/all_entries_unittest.ts",
-
   # Reducers:
   "file_manager/state/for_tests.ts",
-  "file_manager/state/reducers/all_entries_unittest.ts",
-  "file_manager/state/reducers/android_apps_unittest.ts",
-  "file_manager/state/reducers/bulk_pinning_unittest.ts",
-  "file_manager/state/reducers/current_directory_unittest.ts",
-  "file_manager/state/reducers/folder_shortcuts_unittest.ts",
-  "file_manager/state/reducers/navigation_unittest.ts",
-  "file_manager/state/reducers/preferences_unittest.ts",
-  "file_manager/state/reducers/search_unittest.ts",
-  "file_manager/state/reducers/ui_entries_unittest.ts",
-  "file_manager/state/reducers/volumes_unittest.ts",
+
+  # Ducks:
+  "file_manager/state/ducks/all_entries_unittest.ts",
+  "file_manager/state/ducks/android_apps_unittest.ts",
+  "file_manager/state/ducks/bulk_pinning_unittest.ts",
+  "file_manager/state/ducks/device_unittest.ts",
+  "file_manager/state/ducks/current_directory_unittest.ts",
+  "file_manager/state/ducks/folder_shortcuts_unittest.ts",
+  "file_manager/state/ducks/navigation_unittest.ts",
+  "file_manager/state/ducks/preferences_unittest.ts",
+  "file_manager/state/ducks/search_unittest.ts",
+  "file_manager/state/ducks/ui_entries_unittest.ts",
+  "file_manager/state/ducks/volumes_unittest.ts",
 
   # Widgets:
   "file_manager/widgets/xf_breadcrumb_unittest.ts",

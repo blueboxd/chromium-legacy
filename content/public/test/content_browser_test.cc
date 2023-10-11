@@ -27,7 +27,7 @@
 #include "ui/events/platform/platform_event_source.h"
 
 #if BUILDFLAG(IS_MAC)
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #endif
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -52,7 +52,7 @@ ContentBrowserTest::ContentBrowserTest() {
   // uses this same function to change the ContentBrowserClient.
   ContentClient::SetCanChangeContentBrowserClientForTesting(false);
 #if BUILDFLAG(IS_MAC)
-  base::mac::SetOverrideAmIBundled(true);
+  base::apple::SetOverrideAmIBundled(true);
 
   // See comment in InProcessBrowserTest::InProcessBrowserTest().
   base::FilePath content_shell_path;
@@ -142,7 +142,7 @@ void ContentBrowserTest::PreRunTestOnMainThread() {
   // deallocation via an autorelease pool (such as browser window closure and
   // browser shutdown). To avoid this, the following pool is recycled after each
   // time code is directly executed.
-  pool_ = new base::mac::ScopedNSAutoreleasePool;
+  pool_ = new base::apple::ScopedNSAutoreleasePool;
 #endif
 
   // Pump startup related events.

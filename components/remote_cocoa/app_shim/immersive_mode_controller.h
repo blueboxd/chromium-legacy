@@ -116,9 +116,9 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
   // complete.
   bool fullscreen_transition_complete_ = false;
 
-  NativeWidgetMacNSWindow* __unsafe_unretained browser_window_;
-  NativeWidgetMacNSWindow* __unsafe_unretained overlay_window_;
-  BridgedContentView* __unsafe_unretained overlay_content_view_;
+  NativeWidgetMacNSWindow* __weak browser_window_;
+  NativeWidgetMacNSWindow* __weak overlay_window_;
+  BridgedContentView* __weak overlay_content_view_;
 
   // A controller for top chrome.
   ImmersiveModeTitlebarViewController* __strong

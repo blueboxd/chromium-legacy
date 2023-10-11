@@ -69,7 +69,7 @@ class TestAccessManager : public CreditCardAccessManager {
 
   void FetchCreditCard(const CreditCard* card,
                        base::WeakPtr<Accessor> accessor) override {
-    accessor->OnCreditCardFetched(CreditCardFetchResult::kSuccess, card, u"");
+    accessor->OnCreditCardFetched(CreditCardFetchResult::kSuccess, card);
   }
 };
 
@@ -84,10 +84,8 @@ class CreditCardAccessoryControllerTest
     : public ChromeRenderViewHostTestHarness {
  public:
   CreditCardAccessoryControllerTest() {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/
-        {features::kAutofillEnableManualFallbackForVirtualCards},
-        /*disabled_features=*/{features::kAutofillFillMerchantPromoCodeFields});
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAutofillEnableManualFallbackForVirtualCards);
   }
 
   void SetUp() override {
@@ -160,12 +158,7 @@ class CreditCardAccessoryControllerTest
 class CreditCardAccessoryControllerTestSupportingPromoCodeOffers
     : public CreditCardAccessoryControllerTest {
  public:
-  CreditCardAccessoryControllerTestSupportingPromoCodeOffers() {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/
-        {features::kAutofillFillMerchantPromoCodeFields},
-        /*disabled_features=*/{});
-  }
+  CreditCardAccessoryControllerTestSupportingPromoCodeOffers() = default;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -265,13 +258,13 @@ class CreditCardAccessoryControllerCardUnmaskTest
 
   CreditCard GetCreditCard() {
     switch (GetParam()) {
-      case CreditCard::LOCAL_CARD:
+      case CreditCard::RecordType::kLocalCard:
         return test::GetCreditCard();
-      case CreditCard::MASKED_SERVER_CARD:
+      case CreditCard::RecordType::kMaskedServerCard:
         return test::GetMaskedServerCard();
-      case CreditCard::FULL_SERVER_CARD:
+      case CreditCard::RecordType::kFullServerCard:
         return test::GetFullServerCard();
-      case CreditCard::VIRTUAL_CARD: {
+      case CreditCard::RecordType::kVirtualCard: {
         // The CreditCardAccessoryController will automatically create a virtual
         // card for this masked server card.
         CreditCard card = test::GetMaskedServerCard();
@@ -283,7 +276,7 @@ class CreditCardAccessoryControllerCardUnmaskTest
   }
 
   bool IsMaskedServerCard() {
-    return GetParam() == CreditCard::MASKED_SERVER_CARD;
+    return GetParam() == CreditCard::RecordType::kMaskedServerCard;
   }
 };
 
@@ -319,19 +312,20 @@ TEST_P(CreditCardAccessoryControllerCardUnmaskTest, CardUnmask) {
   controller()->OnFillingTriggered(field_id, field);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
-                         CreditCardAccessoryControllerCardUnmaskTest,
-                         testing::Values(CreditCard::LOCAL_CARD,
-                                         CreditCard::MASKED_SERVER_CARD,
-                                         CreditCard::FULL_SERVER_CARD,
-                                         CreditCard::VIRTUAL_CARD));
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    CreditCardAccessoryControllerCardUnmaskTest,
+    testing::Values(CreditCard::RecordType::kLocalCard,
+                    CreditCard::RecordType::kMaskedServerCard,
+                    CreditCard::RecordType::kFullServerCard,
+                    CreditCard::RecordType::kVirtualCard));
 
 TEST_F(CreditCardAccessoryControllerTest,
        RefreshSuggestionsUnmaskedCachedCardNotAdded) {
   // Store a full server card in the credit_card_access_manager's
   // unmasked_cards_cache.
   CreditCard card = test::GetCreditCard();
-  card.set_record_type(CreditCard::FULL_SERVER_CARD);
+  card.set_record_type(CreditCard::RecordType::kFullServerCard);
   data_manager_.AddCreditCard(card);
   std::u16string cvc = u"123";
   autofill_manager().GetCreditCardAccessManager()->CacheUnmaskedCardInfo(card,
@@ -368,9 +362,9 @@ TEST_F(CreditCardAccessoryControllerTest,
   // Add a masked card to PersonalDataManager.
   CreditCard unmasked_card = test::GetCreditCard();
   data_manager_.AddCreditCard(unmasked_card);
-  // Update the record type to VIRTUAL_CARD and add it to the unmasked cards
+  // Update the record type to kVirtualCard and add it to the unmasked cards
   // cache.
-  unmasked_card.set_record_type(CreditCard::VIRTUAL_CARD);
+  unmasked_card.set_record_type(CreditCard::RecordType::kVirtualCard);
   std::u16string cvc = u"123";
   autofill_manager().GetCreditCardAccessManager()->CacheUnmaskedCardInfo(
       unmasked_card, cvc);
@@ -527,8 +521,7 @@ TEST_F(
   EXPECT_EQ(result.user_info_list()[1].icon_url(), GURL());
 }
 
-// Tests that when |kAutofillFillMerchantPromoCodeFields| feature is enabled,
-// promo codes are shown.
+// Tests that promo codes are shown.
 TEST_F(CreditCardAccessoryControllerTestSupportingPromoCodeOffers,
        RefreshSuggestionsWithPromoCodeOffers) {
   CreditCard card = test::GetCreditCard();
@@ -574,41 +567,6 @@ TEST_F(CreditCardAccessoryControllerTestSupportingPromoCodeOffers,
                     base::ASCIIToUTF16(promo_code_valid.GetPromoCode()),
                     base::ASCIIToUTF16(
                         promo_code_valid.GetDisplayStrings().value_prop_text))
-                .Build());
-}
-
-// Tests that when |kAutofillFillMerchantPromoCodeFields| feature is disabled,
-// promo codes are not shown.
-TEST_F(CreditCardAccessoryControllerTest,
-       RefreshSuggestionsWithPromoCodeOffers) {
-  CreditCard card = test::GetCreditCard();
-  data_manager_.AddCreditCard(card);
-  AutofillOfferData promo_code = test::GetPromoCodeOfferData(
-      /*merchant_origin=*/GURL(kExampleSite));
-  data_manager_.AddAutofillOfferData(promo_code);
-  AccessorySheetData result(autofill::AccessoryTabType::CREDIT_CARDS,
-                            std::u16string());
-
-  EXPECT_CALL(mock_mf_controller_, RefreshSuggestions(_))
-      .WillOnce(SaveArg<0>(&result));
-  ASSERT_TRUE(controller());
-  controller()->RefreshSuggestions();
-
-  EXPECT_EQ(result, controller()->GetSheetData());
-  // Promo code offers are available, but not shown.
-  EXPECT_EQ(result,
-            CreditCardAccessorySheetDataBuilder()
-                .AddUserInfo(kVisaCard)
-                .AppendField(card.ObfuscatedNumberWithVisibleLastFourDigits(),
-                             /*text_to_fill=*/std::u16string(),
-                             card.ObfuscatedNumberWithVisibleLastFourDigits(),
-                             card.guid(),
-                             /*is_obfuscated=*/false,
-                             /*selectable=*/true)
-                .AppendSimpleField(card.Expiration2DigitMonthAsString())
-                .AppendSimpleField(card.Expiration4DigitYearAsString())
-                .AppendSimpleField(card.GetRawInfo(CREDIT_CARD_NAME_FULL))
-                .AppendSimpleField(std::u16string())
                 .Build());
 }
 

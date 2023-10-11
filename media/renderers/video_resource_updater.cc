@@ -90,7 +90,8 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
         VideoPixelFormatToGfxBufferFormat(format);
     DCHECK(buffer_format.has_value());
     if (frame.shared_image_format_type() == SharedImageFormatType::kLegacy) {
-      si_formats[0] = viz::GetSharedImageFormat(buffer_format.value());
+      si_formats[0] =
+          viz::GetSinglePlaneSharedImageFormat(buffer_format.value());
     } else {
 #if BUILDFLAG(IS_OZONE)
       CHECK_EQ(frame.shared_image_format_type(),
@@ -317,6 +318,16 @@ viz::SharedImageFormat GetRGBSharedImageFormat(VideoPixelFormat format) {
       NOTREACHED_NORETURN();
   }
 #endif
+}
+
+viz::SharedImageFormat GetSingleChannel8BitFormat(
+    const gpu::Capabilities& caps) {
+  if (caps.texture_rg && !caps.disable_r8_shared_images) {
+    return viz::SinglePlaneFormat::kR_8;
+  }
+
+  DCHECK(caps.supports_luminance_shared_images);
+  return viz::SinglePlaneFormat::kLUMINANCE_8;
 }
 
 // Returns true if the input VideoFrame format can be stored directly in the
@@ -813,17 +824,14 @@ viz::SharedImageFormat VideoResourceUpdater::YuvSharedImageFormat(
     return PaintCanvasVideoRenderer::GetRGBPixelsOutputFormat();
   if (bits_per_channel <= 8) {
     DCHECK(caps.supports_luminance_shared_images || caps.texture_rg);
-    return caps.texture_rg ? viz::SinglePlaneFormat::kR_8
-                           : viz::SinglePlaneFormat::kLUMINANCE_8;
+    return GetSingleChannel8BitFormat(caps);
   }
   if (use_r16_texture_ && caps.texture_norm16)
     return viz::SinglePlaneFormat::kR_16;
   if (caps.texture_half_float_linear && caps.supports_luminance_shared_images) {
     return viz::SinglePlaneFormat::kLUMINANCE_F16;
   }
-  DCHECK(caps.supports_luminance_shared_images || caps.texture_rg);
-  return caps.texture_rg ? viz::SinglePlaneFormat::kR_8
-                         : viz::SinglePlaneFormat::kLUMINANCE_8;
+  return GetSingleChannel8BitFormat(caps);
 }
 
 bool VideoResourceUpdater::ReallocateUploadPixels(size_t needed_size) {

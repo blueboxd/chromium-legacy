@@ -234,6 +234,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("gpu.debug"))                              \
   X(TRACE_DISABLED_BY_DEFAULT("gpu.decoder"))                            \
   X(TRACE_DISABLED_BY_DEFAULT("gpu.device"))                             \
+  X(TRACE_DISABLED_BY_DEFAULT("gpu.graphite.dawn"))                      \
   X(TRACE_DISABLED_BY_DEFAULT("gpu.service"))                            \
   X(TRACE_DISABLED_BY_DEFAULT("gpu.vulkan.vma"))                         \
   X(TRACE_DISABLED_BY_DEFAULT("histogram_samples"))                      \
@@ -334,6 +335,7 @@
   X("gpu,benchmark")                                                          \
   X("gpu,benchmark,android_webview")                                          \
   X("gpu,benchmark,webview")                                                  \
+  X("gpu,login")                                                              \
   X("gpu,startup")                                                            \
   X("gpu,toplevel.flow")                                                      \
   X("gpu.angle,startup")                                                      \

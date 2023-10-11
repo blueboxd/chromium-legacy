@@ -286,7 +286,7 @@ interface Internals {
     long selectPopupItemStyleFontHeight(Node select, long itemIndex);
     void resetTypeAheadSession(HTMLSelectElement select);
 
-    void resetSelectMenuTypeAheadSession(HTMLSelectMenuElement selectmenu);
+    void resetSelectListTypeAheadSession(HTMLSelectListElement selectlist);
 
     StaticSelection getDragCaret();
     [RaisesException] StaticSelection getSelectionInFlatTree(Window window);
@@ -452,4 +452,6 @@ interface Internals {
     void setAllowPerChunkTransferring(ReadableStream stream);
 
     void setBackForwardCacheRestorationBufferSize(long maxSize);
+
+    sequence<DOMString> getCreatorScripts(HTMLImageElement img);
 };

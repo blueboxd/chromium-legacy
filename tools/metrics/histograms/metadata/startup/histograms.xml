@@ -91,7 +91,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstContentfulPaint"
-    units="ms" expires_after="2023-12-10">
+    units="ms" expires_after="2024-02-11">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -104,7 +104,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstNavigationCommit"
-    units="ms" expires_after="2023-12-10">
+    units="ms" expires_after="2024-02-11">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -118,7 +118,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.Cold.TimeToFirstNavigationCommit2.Tabbed"
-    units="ms" expires_after="2023-12-10">
+    units="ms" expires_after="2024-02-11">
   <owner>pasko@chromium.org</owner>
   <owner>agrieve@chromium.org</owner>
   <summary>
@@ -222,7 +222,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.Cold.TimeToVisibleContent" units="ms"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>ckitagawa@chromium.org</owner>
   <summary>
     Android: The time from the activity creation point to the moment the content
@@ -401,7 +401,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.BringToForegroundReason"
-    enum="BooleanBringToForegroundReason" expires_after="2023-12-24">
+    enum="BooleanBringToForegroundReason" expires_after="2024-02-25">
   <owner>peter@chromium.org</owner>
   <summary>
     Records the cause, each time Chrome is brought to the foreground. Currently
@@ -681,6 +681,59 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Startup.GPU.LoadTime.ApplicationStartToGpuInitialized"
+    units="ms" expires_after="2024-06-01">
+  <owner>spvw@chromium.org</owner>
+  <owner>etienneb@chromium.org</owner>
+  <summary>
+    Time from when the application started to when the GPU finishes its
+    initialization.
+
+    Application start is a time recorded as early as possible in GPU process
+    startup. On Windows, application start is at the start of the GPU process'
+    chrome.exe:main, before chrome.dll is loaded. On other platforms, it is when
+    ChromeMainDelegate is constructed.
+
+    It should be noted that this does not include rendezvous starts, since in
+    that case, a new GPU process is not launched.
+
+    This metric is recorded every time the GPU process finishes its
+    initialization, including the case where the process restarts several times
+    during the same browser session. This does not include the GPU info
+    collection process, as that process does not use the GpuServiceImpl.
+  </summary>
+</histogram>
+
+<histogram name="Startup.GPU.LoadTime.ChromeMainToGpuInitialized" units="ms"
+    expires_after="2024-06-01">
+  <owner>spvw@chromium.org</owner>
+  <owner>etienneb@chromium.org</owner>
+  <summary>
+    Time from when ChromeMain was entered in the GPU process to when the GPU
+    finishes its initialization.
+
+    This metric is recorded every time the GPU process finishes its
+    initialization, including the case where the GPU process restarts several
+    times during the same browser session.
+  </summary>
+</histogram>
+
+<histogram name="Startup.GPU.LoadTime.ProcessCreationToGpuInitialized"
+    units="ms" expires_after="2024-06-01">
+  <owner>spvw@chromium.org</owner>
+  <owner>etienneb@chromium.org</owner>
+  <summary>
+    Time from when the GPU process was created according to the OS, to when the
+    GPU finishes its initialization.
+
+    Mostly useful on Windows, where much time is spent in pre-main.
+
+    This metric is recorded every time the GPU process finishes its
+    initialization, including the case where the GPU process restarts several
+    times during the same browser session.
+  </summary>
+</histogram>
+
 <histogram name="Startup.IncognitoForcedStart" enum="IncognitoForcedStart"
     expires_after="M119">
   <owner>arabm@google.com</owner>
@@ -729,7 +782,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.MobileSessionStartAction"
-    enum="MobileSessionStartAction" expires_after="2023-12-10">
+    enum="MobileSessionStartAction" expires_after="2024-02-11">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -739,7 +792,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.MobileSessionStartFromApps"
-    enum="MobileSessionCallerApp" expires_after="2023-12-10">
+    enum="MobileSessionCallerApp" expires_after="2024-02-11">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>The calling application (if any).</summary>
@@ -809,7 +862,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.PreMainMessageLoopRunImplLongTime" units="ms"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>rkaplow@chromium.org</owner>
   <summary>
     The amount of time that elapsed during
@@ -864,7 +917,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.TimeFromProcessCreationToLoad" units="ms"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>olivierrobin@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>

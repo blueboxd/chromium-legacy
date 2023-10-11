@@ -169,11 +169,15 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
   // content::WebContentsObserver implementation.
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
-  // Creates a new empty print job. It has no settings loaded. If there is
+  // Creates a new print job.
+  virtual scoped_refptr<PrintJob> CreatePrintJob(
+      PrintJobManager* print_job_manager);
+
+  // Sets up a new empty print job with no settings loaded. If there is
   // currently a print job, safely disconnect from it. Returns false if it is
   // impossible to safely disconnect from the current print job or it is
   // impossible to create a new print job.
-  virtual bool CreateNewPrintJob(std::unique_ptr<PrinterQuery> query);
+  virtual bool SetupNewPrintJob(std::unique_ptr<PrinterQuery> query);
 
   // Makes sure the current print_job_ has all its data before continuing, and
   // disconnect from it.
@@ -297,12 +301,6 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
 #endif
                           int cookie,
                           PrinterHandler::PrintCallback callback);
-
-  // Runs `callback` with `params` to reply to UpdatePrintSettings().
-  void UpdatePrintSettingsReply(
-      mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
-      mojom::PrintPagesParamsPtr params,
-      bool canceled);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   // Runs `callback` with `params` to reply to GetDefaultPrintSettings().

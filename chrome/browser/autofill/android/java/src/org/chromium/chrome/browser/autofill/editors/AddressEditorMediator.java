@@ -22,7 +22,6 @@ import static org.chromium.chrome.browser.autofill.editors.EditorProperties.Drop
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.EDITOR_FIELDS;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.EDITOR_TITLE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FOOTER_MESSAGE;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FORM_VALID;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.IS_REQUIRED;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.LABEL;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.VALIDATOR;
@@ -33,7 +32,9 @@ import static org.chromium.chrome.browser.autofill.editors.EditorProperties.SHOW
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_ALL_KEYS;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_FIELD_TYPE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_FORMATTER;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.VALIDATE_ON_SHOW;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.VISIBLE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.scrollToFieldWithErrorMessage;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.validateForm;
 
 import android.content.Context;
@@ -44,19 +45,19 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.autofill.AddressValidationType;
 import org.chromium.chrome.browser.autofill.AutofillAddress;
-import org.chromium.chrome.browser.autofill.AutofillProfile;
 import org.chromium.chrome.browser.autofill.AutofillProfileBridge;
 import org.chromium.chrome.browser.autofill.AutofillProfileBridge.AutofillAddressUiComponent;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
 import org.chromium.chrome.browser.autofill.R;
-import org.chromium.chrome.browser.autofill.Source;
 import org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.Delegate;
 import org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownKeyValue;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldItem;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.components.autofill.AutofillProfile;
 import org.chromium.components.autofill.ServerFieldType;
+import org.chromium.components.autofill.Source;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
@@ -251,7 +252,7 @@ class AddressEditorMediator {
                         .with(CANCEL_RUNNABLE, this::onCancelEditing)
                         .with(ALLOW_DELETE, mAllowDelete)
                         .with(DELETE_RUNNABLE, () -> mDelegate.onDelete(mAddressToEdit))
-                        .with(FORM_VALID, true)
+                        .with(VALIDATE_ON_SHOW, mUserFlow != CREATE_NEW_ADDRESS_PROFILE)
                         .build();
 
         mCountryField.set(DROPDOWN_CALLBACK, new Callback<String>() {
@@ -267,9 +268,6 @@ class AddressEditorMediator {
             }
         });
 
-        if (mUserFlow != CREATE_NEW_ADDRESS_PROFILE) {
-            validateForm(mEditorModel);
-        }
         return mEditorModel;
     }
 
@@ -354,11 +352,7 @@ class AddressEditorMediator {
 
     private void onCommitChanges() {
         if (!validateForm(mEditorModel)) {
-            // Note: triggering editor error messages and focused field update using temporary
-            // property.
-            // TODO(crbug.com/1435314): remove this temporary logic.
-            mEditorModel.set(FORM_VALID, true);
-            mEditorModel.set(FORM_VALID, false);
+            scrollToFieldWithErrorMessage(mEditorModel);
             return;
         }
         mEditorModel.set(VISIBLE, false);
@@ -384,9 +378,6 @@ class AddressEditorMediator {
                 && PersonalDataManager.getInstance().isCountryEligibleForAccountStorage(country)) {
             profile.setSource(Source.ACCOUNT);
         }
-        // Clear field values that change among countries so that invisible fields
-        // do not get forwarded to the backend.
-        profile.resetDynamicFields();
         // Country code and phone number are always required and are always collected from the
         // editor model.
         profile.setInfo(ServerFieldType.ADDRESS_HOME_COUNTRY, country);

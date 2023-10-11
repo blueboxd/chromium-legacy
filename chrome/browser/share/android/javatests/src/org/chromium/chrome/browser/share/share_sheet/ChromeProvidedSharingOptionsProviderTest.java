@@ -28,7 +28,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.annotation.Config;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
@@ -65,7 +64,6 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
-import org.chromium.url.ShadowGURL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,10 +72,9 @@ import java.util.List;
  * Instrumentation Unit tests {@link ChromeProvidedSharingOptionsProvider}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@EnableFeatures({ChromeFeatureList.WEBNOTES_STYLIZE})
+@EnableFeatures(ChromeFeatureList.WEBNOTES_STYLIZE)
 @DisableFeatures({ChromeFeatureList.SEND_TAB_TO_SELF_SIGNIN_PROMO,
         ChromeFeatureList.SHARE_SHEET_CUSTOM_ACTIONS_POLISH})
-@Config(shadows = ShadowGURL.class)
 public class ChromeProvidedSharingOptionsProviderTest {
     @Rule
     public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
@@ -89,7 +86,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
     @Rule
     public AutomotiveContextWrapperTestRule mAutoTestRule = new AutomotiveContextWrapperTestRule();
 
-    private static final String URL = JUnitTestGURLs.EXAMPLE_URL;
+    private static final String URL = JUnitTestGURLs.EXAMPLE_URL.getSpec();
 
     @Mock
     private UserPrefs.Natives mUserPrefsNatives;

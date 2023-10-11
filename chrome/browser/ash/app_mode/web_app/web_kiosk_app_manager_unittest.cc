@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/test/repeating_test_future.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -94,14 +93,14 @@ class FakeKioskAppManagerObserver : public KioskAppManagerObserver {
 
   // `KioskAppManagerObserver` implementation:
   void OnKioskAppDataChanged(const std::string& app_id) override {
-    change_waiter_.AddValue(app_id);
+    change_waiter_.SetValue(app_id);
   }
 
-  void WaitForAppDataChange() { change_waiter_.Take(); }
-  bool HasAppDataChange() const { return !change_waiter_.IsEmpty(); }
+  void WaitForAppDataChange() { std::ignore = change_waiter_.Take(); }
+  bool HasAppDataChange() const { return change_waiter_.IsReady(); }
 
  private:
-  base::test::RepeatingTestFuture<std::string> change_waiter_;
+  base::test::TestFuture<std::string> change_waiter_;
 };
 
 }  // namespace
@@ -186,7 +185,8 @@ class WebKioskAppManagerTest : public BrowserWithTestWindowTest {
   AccountId account_id_;
 
   apps::AppServiceTest app_service_test_;
-  raw_ptr<apps::AppServiceProxy, ExperimentalAsh> app_service_ = nullptr;
+  raw_ptr<apps::AppServiceProxy, DanglingUntriaged | ExperimentalAsh>
+      app_service_ = nullptr;
 
   // A keyed service not owned by this class.
   raw_ptr<web_app::FakeWebAppProvider, DanglingUntriaged>

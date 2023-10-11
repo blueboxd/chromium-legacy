@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -42,13 +43,9 @@ namespace internal {
 class MenuRunnerImpl;
 }
 
-namespace test {
-class TestMenuItemViewShown;
-class TestMenuItemViewNotShown;
-}  // namespace test
-
 class ImageView;
 class MenuController;
+class MenuControllerTest;
 class MenuDelegate;
 class Separator;
 class SubmenuView;
@@ -131,6 +128,8 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   MenuItemView(const MenuItemView&) = delete;
   MenuItemView& operator=(const MenuItemView&) = delete;
+
+  ~MenuItemView() override;
 
   // Overridden from View:
   std::u16string GetTooltipText(const gfx::Point& p) const override;
@@ -419,9 +418,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
 
-  // MenuRunner owns MenuItemView and should be the only one deleting it.
-  ~MenuItemView() override;
-
   // View:
   void ChildPreferredSizeChanged(View* child) override;
   void OnThemeChanged() override;
@@ -437,10 +433,10 @@ class VIEWS_EXPORT MenuItemView : public View {
 
  private:
   friend class MenuController;
-  friend class internal::MenuRunnerImpl;        // For access to ~MenuItemView.
-  friend class test::TestMenuItemViewShown;     // for access to |submenu_|;
-  friend class test::TestMenuItemViewNotShown;  // for access to |submenu_|;
+  friend class internal::MenuRunnerImpl;
+  friend class MenuControllerTest;
   friend class TestMenuItemView;
+  FRIEND_TEST_ALL_PREFIXES(MenuControllerTest, RepostEventToEmptyMenuItem);
 
   enum class PaintMode { kNormal, kForDrag };
 

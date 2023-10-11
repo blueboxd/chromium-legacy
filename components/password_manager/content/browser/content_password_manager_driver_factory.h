@@ -15,9 +15,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
-namespace autofill {
-class AutofillClient;
-}
 namespace content {
 class WebContents;
 }
@@ -58,10 +55,8 @@ class ContentPasswordManagerDriverFactory
       ContentPasswordManagerDriverFactory>;
   friend class ContentPasswordManagerDriverFactoryTestApi;
 
-  ContentPasswordManagerDriverFactory(
-      content::WebContents* web_contents,
-      PasswordManagerClient* client,
-      autofill::AutofillClient* autofill_client);
+  ContentPasswordManagerDriverFactory(content::WebContents* web_contents,
+                                      PasswordManagerClient* client);
 
   // content::WebContentsObserver:
   void DidFinishNavigation(
@@ -73,7 +68,6 @@ class ContentPasswordManagerDriverFactory
       frame_driver_map_;
 
   const raw_ptr<PasswordManagerClient> password_client_;
-  raw_ptr<autofill::AutofillClient> autofill_client_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

@@ -8,13 +8,13 @@
 
 #include <Foundation/Foundation.h>
 
+#include "base/apple/foundation_util.h"
 #include "base/enterprise_util.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
-#include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/task/sequenced_task_runner.h"
@@ -113,9 +113,9 @@ PolicyBundle PolicyLoaderMac::Load() {
       schema_map()->GetSchema(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
   for (Schema::Iterator it = schema->GetPropertiesIterator(); !it.IsAtEnd();
        it.Advance()) {
-    base::ScopedCFTypeRef<CFStringRef> name(
+    base::apple::ScopedCFTypeRef<CFStringRef> name(
         base::SysUTF8ToCFStringRef(it.key()));
-    base::ScopedCFTypeRef<CFPropertyListRef> value(
+    base::apple::ScopedCFTypeRef<CFPropertyListRef> value(
         preferences_->CopyAppValue(name, application_id_));
     if (!value)
       continue;
@@ -164,8 +164,9 @@ base::FilePath PolicyLoaderMac::GetManagedPolicyPath(CFStringRef bundle_id) {
   // missed the change.
 
   base::FilePath path;
-  if (!base::mac::GetLocalDirectory(NSLibraryDirectory, &path))
+  if (!base::apple::GetLocalDirectory(NSLibraryDirectory, &path)) {
     return base::FilePath();
+  }
   path = path.Append(FILE_PATH_LITERAL("Managed Preferences"));
   char* login = getlogin();
   if (!login)
@@ -205,15 +206,15 @@ void PolicyLoaderMac::LoadPolicyForComponent(
   if (!schema.valid())
     return;
 
-  base::ScopedCFTypeRef<CFStringRef> bundle_id =
+  base::apple::ScopedCFTypeRef<CFStringRef> bundle_id =
       base::SysUTF8ToCFStringRef(bundle_id_string);
   preferences_->AppSynchronize(bundle_id);
 
   for (Schema::Iterator it = schema.GetPropertiesIterator(); !it.IsAtEnd();
        it.Advance()) {
-    base::ScopedCFTypeRef<CFStringRef> pref_name =
+    base::apple::ScopedCFTypeRef<CFStringRef> pref_name =
         base::SysUTF8ToCFStringRef(it.key());
-    base::ScopedCFTypeRef<CFPropertyListRef> value(
+    base::apple::ScopedCFTypeRef<CFPropertyListRef> value(
         preferences_->CopyAppValue(pref_name, bundle_id));
     if (!value)
       continue;

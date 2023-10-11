@@ -5,10 +5,10 @@
 #include "chrome/browser/ash/extensions/file_manager/system_notification_manager.h"
 
 #include <set>
-#include <unordered_map>
 
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/webui/file_manager/url_constants.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
@@ -150,11 +150,10 @@ class TestNotificationPlatformBridgeDelegator
   std::set<std::string> notification_ids_;
 
   // Maps a notification ID to its displayed title and message.
-  std::unordered_map<std::string, Strings> notifications_;
+  base::flat_map<std::string, Strings> notifications_;
 
   // Maps a notification ID to its delegate to verify click handlers.
-  std::unordered_map<std::string, scoped_refptr<NotificationDelegate>>
-      delegates_;
+  base::flat_map<std::string, scoped_refptr<NotificationDelegate>> delegates_;
 };
 
 // DeviceEventRouter implementation for testing.
@@ -288,7 +287,8 @@ class SystemNotificationManagerTest
   // profile_ is owned by TestingProfileManager.
   raw_ptr<TestingProfile, ExperimentalAsh> profile_;
   // notification_display_service is owned by NotificationDisplayServiceFactory.
-  raw_ptr<NotificationDisplayServiceImpl, ExperimentalAsh> display_service_;
+  raw_ptr<NotificationDisplayServiceImpl, DanglingUntriaged | ExperimentalAsh>
+      display_service_;
   std::unique_ptr<SystemNotificationManager> notification_manager_;
   std::unique_ptr<DeviceEventRouterImpl> event_router_;
 
@@ -298,15 +298,17 @@ class SystemNotificationManagerTest
   size_t notification_count_ = 0;
 
   // notification_platform_bridge is owned by NotificationDisplayService.
-  raw_ptr<TestNotificationPlatformBridgeDelegator, ExperimentalAsh> bridge_;
+  raw_ptr<TestNotificationPlatformBridgeDelegator,
+          DanglingUntriaged | ExperimentalAsh>
+      bridge_;
 
   // Used for tests with IOTask:
-  raw_ptr<io_task::IOTaskController, ExperimentalAsh> io_task_controller;
+  raw_ptr<io_task::IOTaskController, DanglingUntriaged | ExperimentalAsh>
+      io_task_controller;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   // Keep track of the task state transitions.
-  std::unordered_map<io_task::IOTaskId, std::vector<io_task::State>>
-      task_statuses_;
+  base::flat_map<io_task::IOTaskId, std::vector<io_task::State>> task_statuses_;
 
   base::WeakPtrFactory<SystemNotificationManagerTest> weak_ptr_factory_{this};
 };
@@ -1740,8 +1742,9 @@ class SystemNotificationManagerPolicyTest
     return fpnm;
   }
 
-  raw_ptr<policy::MockFilesPolicyNotificationManager, ExperimentalAsh> fpnm_ =
-      nullptr;
+  raw_ptr<policy::MockFilesPolicyNotificationManager,
+          DanglingUntriaged | ExperimentalAsh>
+      fpnm_ = nullptr;
 };
 
 TEST_F(SystemNotificationManagerPolicyTest, HandleIOTaskProgressWarning) {

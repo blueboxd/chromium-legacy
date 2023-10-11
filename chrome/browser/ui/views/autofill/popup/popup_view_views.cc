@@ -15,7 +15,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/autofill/autofill_popup_controller_utils.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
@@ -31,6 +30,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/ui/autofill_resource_utils.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
@@ -125,12 +125,16 @@ void PopupViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
 }
 
-void PopupViewViews::Show(
+bool PopupViewViews::Show(
     AutoselectFirstSuggestion autoselect_first_suggestion) {
   NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
-  if (DoShow() && autoselect_first_suggestion) {
+  if (!DoShow()) {
+    return false;
+  }
+  if (autoselect_first_suggestion) {
     SetSelectedCell(CellIndex{0u, PopupRowView::CellType::kContent});
   }
+  return true;
 }
 
 void PopupViewViews::Hide() {
@@ -211,8 +215,6 @@ bool PopupViewViews::HandleKeyPressEvent(
       SetSelectedCell(absl::nullopt);
       SelectPreviousRow();
       return true;
-    case ui::VKEY_RETURN:
-      return AcceptSelectedCell(/*tab_key_pressed=*/false);
     case ui::VKEY_DELETE:
       return kHasShiftModifier && RemoveSelectedCell();
     case ui::VKEY_TAB:
@@ -222,7 +224,7 @@ bool PopupViewViews::HandleKeyPressEvent(
       // We do not want to handle Mod+TAB for other modifiers because this may
       // have other purposes (e.g., change the tab).
       if (!kHasNonShiftModifier) {
-        AcceptSelectedCell(/*tab_key_pressed=*/true);
+        AcceptSelectedContentOrCreditCardCell(base::TimeTicks::Now());
       }
       return false;
     default:
@@ -265,27 +267,25 @@ void PopupViewViews::SelectNextRow() {
   SetSelectedCell(CellIndex{new_row, kNewCellType});
 }
 
-bool PopupViewViews::AcceptSelectedCell(bool tab_key_pressed) {
+bool PopupViewViews::AcceptSelectedContentOrCreditCardCell(
+    base::TimeTicks event_time) {
   absl::optional<CellIndex> index = GetSelectedCell();
   if (!controller_ || !index) {
     return false;
   }
 
-  // If the tab key is pressed, only content cells that contain fillable items
-  // or scanning a credit card may be accepted.
-  if (tab_key_pressed) {
-    if (index->second != PopupRowView::CellType::kContent) {
-      return false;
-    }
-    PopupItemId popup_item_id =
-        controller_->GetSuggestionAt(index->first).popup_item_id;
-    if (!base::Contains(kItemsTriggeringFieldFilling, popup_item_id) &&
-        popup_item_id != PopupItemId::kScanCreditCard) {
-      return false;
-    }
+  if (index->second != PopupRowView::CellType::kContent) {
+    return false;
   }
 
-  controller_->AcceptSuggestion(index->first);
+  const PopupItemId popup_item_id =
+      controller_->GetSuggestionAt(index->first).popup_item_id;
+  if (!base::Contains(kItemsTriggeringFieldFilling, popup_item_id) &&
+      popup_item_id != PopupItemId::kScanCreditCard) {
+    return false;
+  }
+
+  controller_->AcceptSuggestion(index->first, event_time);
   return true;
 }
 
@@ -317,6 +317,10 @@ bool PopupViewViews::RemoveSelectedCell() {
 void PopupViewViews::OnSuggestionsChanged() {
   CreateChildViews();
   DoUpdateBoundsAndRedrawPopup();
+}
+
+bool PopupViewViews::OverlapsWithPictureInPictureWindow() const {
+  return BoundsOverlapWithPictureInPictureWindow(GetBoundsInScreen());
 }
 
 absl::optional<int32_t> PopupViewViews::GetAxUniqueId() {
@@ -358,11 +362,6 @@ void PopupViewViews::OnWidgetVisibilityChanged(views::Widget* widget,
       feature_engagement::kIPHAutofillVirtualCardSuggestionFeature);
   browser->window()->MaybeShowFeaturePromo(
       feature_engagement::kIPHAutofillExternalAccountProfileSuggestionFeature);
-}
-
-bool PopupViewViews::CanShowDropdownInBoundsForTesting(
-    const gfx::Rect& bounds) const {
-  return CanShowDropdownInBounds(bounds);
 }
 
 bool PopupViewViews::HasPopupRowViewAt(size_t index) const {

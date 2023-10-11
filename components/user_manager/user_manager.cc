@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "components/account_id/account_id.h"
+#include "components/user_manager/user_names.h"
 
 namespace user_manager {
 
@@ -113,8 +114,9 @@ UserType UserManager::CalculateUserType(const AccountId& account_id,
                                         const User* user,
                                         const bool browser_restart,
                                         const bool is_child) const {
-  if (IsGuestAccountId(account_id))
+  if (account_id == GuestAccountId()) {
     return USER_TYPE_GUEST;
+  }
 
   // This may happen after browser crash after device account was marked for
   // removal, but before clean exit.
@@ -139,8 +141,7 @@ UserType UserManager::CalculateUserType(const AccountId& account_id,
 
     // TODO(rsorokin): Check for reverse: account_id AD type should imply
     // AD user type.
-    if (user_type == USER_TYPE_ACTIVE_DIRECTORY &&
-        account_id.GetAccountType() != AccountType::ACTIVE_DIRECTORY) {
+    if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY) {
       LOG(FATAL) << "Incorrect AD user type " << user_type;
     }
 
@@ -151,8 +152,7 @@ UserType UserManager::CalculateUserType(const AccountId& account_id,
   if (is_child)
     return USER_TYPE_CHILD;
 
-  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
-    return USER_TYPE_ACTIVE_DIRECTORY;
+  CHECK(account_id.GetAccountType() != AccountType::ACTIVE_DIRECTORY);
 
   return USER_TYPE_REGULAR;
 }

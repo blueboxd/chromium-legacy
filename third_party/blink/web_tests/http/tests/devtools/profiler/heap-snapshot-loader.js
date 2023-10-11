@@ -5,6 +5,9 @@
 import {TestRunner} from 'test_runner';
 import {HeapProfilerTestRunner} from 'heap_profiler_test_runner';
 
+import * as Common from 'devtools/core/common/common.js';
+import * as SDK from 'devtools/core/sdk/sdk.js';
+
 (async function() {
   TestRunner.addResult(`This test checks HeapSnapshots loader.\n`);
   await TestRunner.showPanel('heap_profiler');
@@ -14,7 +17,7 @@ import {HeapProfilerTestRunner} from 'heap_profiler_test_runner';
   var partSize = sourceStringified.length >> 3;
 
   async function injectMockProfile(callback) {
-    var heapProfilerModel = TestRunner.mainTarget.model(SDK.HeapProfilerModel);
+    var heapProfilerModel = TestRunner.mainTarget.model(SDK.HeapProfilerModel.HeapProfilerModel);
     var panel = UI.panels.heap_profiler;
     panel.reset();
 
@@ -41,13 +44,13 @@ import {HeapProfilerTestRunner} from 'heap_profiler_test_runner';
     TestRunner.addSniffer(
         Profiler.HeapProfileHeader.prototype, 'didWriteToTempFile',
         tempFileReady);
-    if (!UI.context.flavor(SDK.HeapProfilerModel)) {
-      await new Promise(resolve => UI.context.addFlavorChangeListener(SDK.HeapProfilerModel, resolve));
+    if (!UI.context.flavor(SDK.HeapProfilerModel.HeapProfilerModel)) {
+      await new Promise(resolve => UI.context.addFlavorChangeListener(SDK.HeapProfilerModel.HeapProfilerModel, resolve));
     }
     profileType.takeHeapSnapshot();
   }
 
-  Common.console.log = function(message) {
+  Common.Console.Console.instance().log = function(message) {
     TestRunner.addResult('SDK.consoleModel.log: ' + message);
   };
 

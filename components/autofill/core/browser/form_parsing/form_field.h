@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
+#include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/autofill_parsing_utils.h"
 #include "components/autofill/core/browser/form_parsing/field_candidates.h"
@@ -50,6 +51,7 @@ class FormField {
   // |field_candidates|.
   static void ParseFormFields(
       const std::vector<std::unique_ptr<AutofillField>>& fields,
+      const GeoIpCountryCode& client_country,
       const LanguageCode& page_language,
       bool is_form_tag,
       PatternSource pattern_source,
@@ -61,6 +63,7 @@ class FormField {
   // used as the key into |field_candidates|.
   static void ParseSingleFieldForms(
       const std::vector<std::unique_ptr<AutofillField>>& fields,
+      const GeoIpCountryCode& client_country,
       const LanguageCode& page_language,
       bool is_form_tag,
       PatternSource pattern_source,
@@ -114,7 +117,7 @@ class FormField {
   static constexpr float kBaseAddressParserScore = 1.1f;
   static constexpr float kBaseBirthdateParserScore = 1.05f;
   static constexpr float kBaseCreditCardParserScore = 1.0f;
-  static constexpr float kBaseIBANParserScore = 0.975f;
+  static constexpr float kBaseIbanParserScore = 0.975f;
   static constexpr float kBasePriceParserScore = 0.95f;
   static constexpr float kBaseNameParserScore = 0.9f;
   static constexpr float kBaseMerchantPromoCodeParserScore = 0.85f;
@@ -201,6 +204,18 @@ class FormField {
       AutofillScanner* scanner,
       const LanguageCode& page_language,
       PatternSource pattern_source,
+      LogManager* log_manager);
+
+  // Removes entries from `field_candidates` in case
+  // - not enough fields were classified by local heuristics.
+  // - fields were not explicitly allow-listed because they appear in
+  //   contexts that don't contain enough fields (e.g. forms with only an
+  //   email address).
+  static void ClearCandidatesIfHeuristicsDidNotFindEnoughFields(
+      const std::vector<std::unique_ptr<AutofillField>>& fields,
+      FieldCandidatesMap& field_candidates,
+      bool is_form_tag,
+      const GeoIpCountryCode& client_country,
       LogManager* log_manager);
 
   static bool ParseFieldSpecificsWithNewPatterns(

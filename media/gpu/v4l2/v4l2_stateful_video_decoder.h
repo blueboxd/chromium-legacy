@@ -23,6 +23,8 @@ class SequencedTaskRunner;
 
 namespace media {
 
+class H264Parser;
+
 class V4L2Queue;
 
 // V4L2StatefulVideoDecoder is an implementation of VideoDecoderMixin
@@ -122,6 +124,14 @@ class MEDIA_GPU_EXPORT V4L2StatefulVideoDecoder : public VideoDecoderMixin {
   // debugging, preceded with |from_here|s function name.
   void PrintOutQueueStatesForVLOG(const base::Location& from_here);
 
+  // Returns true if this class has successfully Initialize()d.
+  bool IsInitialized() const;
+  // Read the buffer data and parse the NALUs. Return true if the buffer
+  // contains whole NALUs, IOW the total size of the NALUs and NALU headers adds
+  // up to the size of the buffer; false otherwise.
+  bool VerifyDecoderBufferHasOnlyWholeNALUs(
+      scoped_refptr<DecoderBuffer> buffer);
+
   base::ScopedFD device_fd_ GUARDED_BY_CONTEXT(sequence_checker_);
   // This |wake_event_| is used to interrupt a blocking poll() call, such as the
   // one started by e.g. RearmCAPTUREQueueMonitoring().
@@ -157,9 +167,16 @@ class MEDIA_GPU_EXPORT V4L2StatefulVideoDecoder : public VideoDecoderMixin {
   // not used.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  // Weak pointer/factory associated with the main thread (|sequence_checker|).
-  base::WeakPtr<V4L2StatefulVideoDecoder> weak_this_;
-  base::WeakPtrFactory<V4L2StatefulVideoDecoder> weak_this_factory_;
+  // For H264 decode, hardware requires that we send it whole NALUs. The current
+  // implementation of the decoder requires that Decode() is called on a
+  // DecoderBuffer with whole NALUs. So we'll need to parse the stream to ensure
+  // that with a DCHECK().
+  std::unique_ptr<H264Parser> h264_parser_;
+
+  // Weak factories associated with the main thread (|sequence_checker|).
+  base::WeakPtrFactory<V4L2StatefulVideoDecoder> weak_ptr_factory_for_events_;
+  base::WeakPtrFactory<V4L2StatefulVideoDecoder>
+      weak_ptr_factory_for_frame_pool_;
 };
 
 }  // namespace media

@@ -10,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.SystemClock;
-import android.provider.Settings;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.Layout;
@@ -19,10 +18,10 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ReplacementSpan;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -38,11 +37,12 @@ import androidx.core.view.inputmethod.EditorInfoCompat;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.MathUtils;
 import org.chromium.base.SysUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
@@ -50,6 +50,8 @@ import org.chromium.components.browser_ui.share.ShareHelper;
 import org.chromium.components.browser_ui.util.FirstDrawDetector;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.WindowDelegate;
+import org.chromium.ui.display.DisplayAndroid;
+import org.chromium.ui.display.DisplayUtil;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -74,6 +76,11 @@ public abstract class UrlBar extends AutocompleteEditText {
     private static final String IME_OPTION_RESTRICT_STYLUS_WRITING_AREA =
             "restrictDirectWritingArea=true";
 
+    // The text must be at least this long to be truncated. Safety measure to prevent accidentally
+    // over truncating text for large tablets and external displays. Also, tests can continue to
+    // check for text equality, instead of worrying about partial equality with truncated text.
+    static final int MIN_LENGTH_FOR_TRUNCATION = 500;
+
     static final MutableFlagWithSafeDefault sScrollToTLDOptimizationsFlag =
             new MutableFlagWithSafeDefault(ChromeFeatureList.SCROLL_TO_TLD_OPTIMIZATION, false);
 
@@ -92,13 +99,9 @@ public abstract class UrlBar extends AutocompleteEditText {
      * The gesture detector is used to detect long presses. Long presses require special treatment
      * because the URL bar has custom touch event handling. See: {@link #onTouchEvent}.
      */
-    private final GestureDetector mGestureDetector;
-
     private final KeyboardHideHelper mKeyboardHideHelper;
 
     private boolean mFocused;
-    private boolean mSuppressingTouchMoveEventsForThisTouch;
-    private MotionEvent mSuppressedTouchDownEvent;
     private boolean mAllowFocus = true;
 
     private boolean mPendingScroll;
@@ -114,22 +117,21 @@ public abstract class UrlBar extends AutocompleteEditText {
     private CharSequence mVisibleTextPrefixHint;
 
     // Used as a hint to indicate the text may contain an ellipsize span.  This will be true if an
-    // ellispize span was applied the last time the text changed.  A true value here does not
+    // ellipsize span was applied the last time the text changed. A true value here does not
     // guarantee that the text does contain the span currently as newly set text may have cleared
     // this (and it the value will only be recalculated after the text has been changed).
     private boolean mDidEllipsizeTextHint;
-
-    /** A cached point for getting this view's location in the window. */
-    private final int[] mCachedLocation = new int[2];
-
-    /** The location of this view on the last ACTION_DOWN event. */
-    private float mDownEventViewTop;
 
     /**
      * The character index in the displayed text where the origin ends. This is required to
      * ensure that the end of the origin is not scrolled out of view for long hostnames.
      */
     private int mOriginEndIndex;
+
+    // TODO (peilinwang) Currently only used for logging the cases where truncation was incorrect.
+    // Remove once the kAndroidVisibleUrlTruncation experiment is complete.
+    private boolean mIsTextTruncated;
+    private boolean mDidJustTruncate;
 
     @ScrollType
     private int mScrollType;
@@ -172,10 +174,14 @@ public abstract class UrlBar extends AutocompleteEditText {
         void backKeyPressed();
 
         /**
-         * Called to notify that a tap or long press gesture has been detected.
-         * @param isLongPress Whether or not is a long press gesture.
+         * Called to notify that UrlBar has been focused by touch.
          */
-        void gestureDetected(boolean isLongPress);
+        void onFocusByTouch();
+
+        /**
+         * Called to notify that UrlBar has been touched after focus.
+         */
+        void onTouchAfterFocus();
     }
 
     /** Provides updates about the URL text changes. */
@@ -183,10 +189,8 @@ public abstract class UrlBar extends AutocompleteEditText {
         /**
          * Called when the text state has changed.
          * @param textWithoutAutocomplete The url bar text without autocompletion.
-         * @param textWithAutocomplete The url bar text with autocompletion.
          */
-        // TODO(crbug.com/1003080): Consider splitting these into two different callbacks.
-        void onTextChanged(String textWithoutAutocomplete, String textWithAutocomplete);
+        void onTextChanged(String textWithoutAutocomplete);
     }
 
     /** Delegate that provides the additional functionality to the textual context menus. */
@@ -228,40 +232,8 @@ public abstract class UrlBar extends AutocompleteEditText {
             setFocusableInTouchMode(mAllowFocus);
         });
 
-        setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI
-                | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
 
-        // The HTC Sense IME will attempt to autocomplete words in the Omnibox when Prediction is
-        // enabled.  We want to disable this feature and rely on the Omnibox's implementation.
-        // Their IME does not respect ~TYPE_TEXT_FLAG_AUTO_COMPLETE nor any of the other InputType
-        // options I tried, but setting the filter variation prevents it.  Sadly, it also removes
-        // the .com button, but the prediction was buggy as it would autocomplete words even when
-        // typing at the beginning of the omnibox text when other content was present (messing up
-        // what was previously there).  See bug: http://b/issue?id=6200071
-        String defaultIme = Settings.Secure.getString(
-                getContext().getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD);
-        if (defaultIme != null && defaultIme.contains("com.htc.android.htcime")) {
-            setInputType(getInputType() | InputType.TYPE_TEXT_VARIATION_FILTER);
-        }
-
-        mGestureDetector =
-                new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-                    @Override
-                    public void onLongPress(MotionEvent e) {
-                        if (mUrlBarDelegate == null) return;
-                        mUrlBarDelegate.gestureDetected(true);
-                        performLongClick();
-                    }
-
-                    @Override
-                    public boolean onSingleTapUp(MotionEvent e) {
-                        if (mUrlBarDelegate == null) return true;
-                        requestFocus();
-                        mUrlBarDelegate.gestureDetected(false);
-                        return true;
-                    }
-                }, ThreadUtils.getUiThreadHandler());
-        mGestureDetector.setOnDoubleTapListener(null);
         mKeyboardHideHelper = new KeyboardHideHelper(this, () -> {
             if (mUrlBarDelegate != null && !BackPressManager.isEnabled()) {
                 mUrlBarDelegate.backKeyPressed();
@@ -422,81 +394,17 @@ public abstract class UrlBar extends AutocompleteEditText {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // This method contains special logic to enable long presses to be handled correctly.
-
-        // One piece of the logic is to suppress all ACTION_DOWN events received while the UrlBar is
-        // not focused, and only pass them to super.onTouchEvent() if it turns out we're about to
-        // perform a long press. Long pressing will not behave properly without sending this event,
-        // but if we always send it immediately, it will cause the keyboard to show immediately,
-        // whereas we want to wait to show it until after the URL focus animation finishes, to avoid
-        // performance issues on slow devices.
-
-        // The other piece of the logic is to suppress ACTION_MOVE events received after an
-        // ACTION_DOWN received while the UrlBar is not focused. This is because the UrlBar moves to
-        // the side as it's focusing, and a finger held still on the screen would therefore be
-        // interpreted as a drag selection.
-
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            getLocationInWindow(mCachedLocation);
-            mDownEventViewTop = mCachedLocation[1];
-            mSuppressingTouchMoveEventsForThisTouch = !mFocused;
-        }
-
-        if (!mFocused) {
-            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                mSuppressedTouchDownEvent = MotionEvent.obtain(event);
+        if (event.getActionMasked() == MotionEvent.ACTION_UP && mUrlBarDelegate != null) {
+            if (!mFocused) {
+                mUrlBarDelegate.onFocusByTouch();
+            } else {
+                // If the URL bar is already focused, give it an opportunity to handle a tap for a
+                // special case requiring to trigger focus animations when a hardware keyboard is
+                // connected. See the implementation(s) of this method for details.
+                mUrlBarDelegate.onTouchAfterFocus();
             }
-            mGestureDetector.onTouchEvent(event);
-            return true;
         }
-
-        if (event.getActionMasked() == MotionEvent.ACTION_UP
-                || event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
-            // Minor optimization to avoid unnecessarily holding onto a MotionEvent after the touch
-            // finishes.
-            mSuppressedTouchDownEvent = null;
-        }
-
-        if (mSuppressingTouchMoveEventsForThisTouch
-                && event.getActionMasked() == MotionEvent.ACTION_MOVE) {
-            return true;
-        }
-
-        // Working around a platform bug (b/25562038) that was fixed in N that can throw
-        // NullPointerException during text selection. We let it happen rather than catching it
-        // since there can be a different issue here that we might want to know about.
-        try {
-            return super.onTouchEvent(event);
-        } catch (IndexOutOfBoundsException e) {
-            // Work around crash of unknown origin (https://crbug.com/837419).
-            Log.w(TAG, "Ignoring IndexOutOfBoundsException in UrlBar#onTouchEvent.", e);
-            return true;
-        }
-    }
-
-    @Override
-    public boolean performLongClick() {
-        if (!shouldPerformLongClick()) return false;
-
-        releaseSuppressedTouchDownEvent();
-        return super.performLongClick();
-    }
-
-    /**
-     * @return Whether or not a long click should be performed.
-     */
-    private boolean shouldPerformLongClick() {
-        getLocationInWindow(mCachedLocation);
-
-        // If the view moved between the last down event, block the long-press.
-        return mDownEventViewTop == mCachedLocation[1];
-    }
-
-    private void releaseSuppressedTouchDownEvent() {
-        if (mSuppressedTouchDownEvent != null) {
-            super.onTouchEvent(mSuppressedTouchDownEvent);
-            mSuppressedTouchDownEvent = null;
-        }
+        return super.onTouchEvent(event);
     }
 
     @Override
@@ -641,6 +549,56 @@ public abstract class UrlBar extends AutocompleteEditText {
         }
 
         return super.onTextContextMenuItem(id);
+    }
+    /**
+     * Estimates how many characters fit in the viewport and truncates {@link text} before calling
+     * setText({@link text}.
+     *
+     * @param text The text to set.
+     * @param scrollType What type of scroll should be applied to the text.
+     * @param scrollToIndex The index that should be scrolled to, which only applies to
+     *                      {@link ScrollType#SCROLL_TO_TLD}.
+     */
+    public void setTextWithTruncation(
+            CharSequence text, @ScrollType int scrollType, int scrollToIndex) {
+        if (mFocused || TextUtils.isEmpty(text) || text.length() < MIN_LENGTH_FOR_TRUNCATION
+                || getLayoutParams().width == LayoutParams.WRAP_CONTENT || containsRtl(text)) {
+            mIsTextTruncated = false;
+            mDidJustTruncate = false;
+            setText(text);
+            return;
+        }
+
+        // Find the width of the url bar in device independent pixels (dp), then guess how many
+        // characters are able to fit.
+        DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(getContext());
+
+        // Conservatively use the width/height of the entire screen while estimating how many
+        // characters to truncate, to avoid dealing with changes in window size and orientation.
+        int maxScreenDimension = Math.max(display.getDisplayHeight(), display.getDisplayWidth());
+        int dp = DisplayUtil.pxToDp(display, maxScreenDimension);
+
+        // Conservately estimates each char is 0.8mm on average.
+        // 1 dp = 1/160 inches = ~0.158mm, so 5 dp = ~0.8mm.
+        // This is a very rough estimate, chosen arbitrarily. The goal is not to truncate the url
+        // so that it fits exactly in the url bar, but rather to truncate extremely long
+        // (thousands of characters) urls down to something much shorter (tens or 100 characters).
+        int truncationIndex = dp / 5;
+
+        // We don't want to remove any part of the TLD. But, if we think that the TLD can fill up
+        // the url bar, then we can truncate everything after the TLD, since nothing past the end of
+        // the TLD is visible after scrolling.
+        if (scrollType == ScrollType.SCROLL_TO_TLD) {
+            truncationIndex = Math.max(scrollToIndex, truncationIndex);
+        }
+
+        truncationIndex = Math.min(text.length(), truncationIndex);
+
+        mIsTextTruncated = truncationIndex < text.length();
+        mDidJustTruncate = mIsTextTruncated;
+
+        CharSequence truncatedText = text.subSequence(0, truncationIndex);
+        setText(truncatedText);
     }
 
     /**
@@ -800,13 +758,13 @@ public abstract class UrlBar extends AutocompleteEditText {
         int measuredWidth = getVisibleMeasuredViewportWidth();
         int urlTextLength = url.length();
         int finalVisibleCharIndexSlow = getLayout().getOffsetForHorizontal(0, measuredWidth);
-        String errorMessage = "scrollToTLD incorrect optimized"
-                + " finalVisibleCharIndex. old index: " + String.valueOf(finalVisibleCharIndexSlow)
-                + " optimized index: " + String.valueOf(incorrectIndex)
-                + " viewport: " + String.valueOf(measuredWidth)
+        String errorMessage = "scrollToTLD bad index. old final visible index: "
+                + String.valueOf(finalVisibleCharIndexSlow) + " incorrect index: "
+                + String.valueOf(incorrectIndex) + " viewport: " + String.valueOf(measuredWidth)
                 + " prefix: " + url.subSequence(0, Math.max(mOriginEndIndex - 4, 0))
                 + " suffix: " + url.subSequence(mOriginEndIndex, urlTextLength)
-                + " url length: " + String.valueOf(urlTextLength);
+                + " url length: " + String.valueOf(urlTextLength) + " incorrect index horizontal: "
+                + getLayout().getPrimaryHorizontal(Math.min(incorrectIndex + 1, urlTextLength));
         return errorMessage;
     }
 
@@ -873,12 +831,10 @@ public abstract class UrlBar extends AutocompleteEditText {
                         finalVisibleCharIndex = textLayout.getOffsetForHorizontal(0, measuredWidth);
                     }
 
-                    BidiFormatter bidi = new BidiFormatter.Builder()
-                                                 .setTextDirectionHeuristic(
-                                                         TextDirectionHeuristicsCompat.ANYRTL_LTR)
-                                                 .build();
-                    boolean visibleUrlContainsRtl = bidi.isRtl(
-                            url.subSequence(0, Math.min(finalVisibleCharIndex + 1, urlTextLength)));
+                    int finalVisibleCharIndexExclusive =
+                            Math.min(finalVisibleCharIndex + 1, urlTextLength);
+                    boolean visibleUrlContainsRtl =
+                            containsRtl(url.subSequence(0, finalVisibleCharIndexExclusive));
                     if (visibleUrlContainsRtl) {
                         // getOffsetForAdvance does not calculate the correct index if there is RTL
                         // text before finalVisibleCharIndex, so clear the visible text hint. If RTL
@@ -886,9 +842,15 @@ public abstract class UrlBar extends AutocompleteEditText {
                         // the hint.
                         mVisibleTextPrefixHint = null;
                     } else {
-                        assert finalVisibleCharIndex
-                                == textLayout.getOffsetForHorizontal(0, measuredWidth)
-                            : getWrongIndexErrorMessage(finalVisibleCharIndex);
+                        if (BuildConfig.ENABLE_ASSERTS) {
+                            float horizontal =
+                                    textLayout.getPrimaryHorizontal(finalVisibleCharIndexExclusive);
+                            float width = (float) measuredWidth;
+
+                            assert MathUtils.areFloatsEqual(horizontal, width)
+                                    || horizontal > width
+                                : getWrongIndexErrorMessage(finalVisibleCharIndex);
+                        }
 
                         // To avoid issues where a small portion of the character following
                         // finalVisibleCharIndex is visible on screen, be more conservative and
@@ -897,8 +859,7 @@ public abstract class UrlBar extends AutocompleteEditText {
                         // screen. By extending the offset by an additional character, the risk is
                         // of having visual artifacts from the subsequence character on screen is
                         // mitigated.
-                        mVisibleTextPrefixHint = url.subSequence(
-                                0, Math.min(finalVisibleCharIndex + 1, urlTextLength));
+                        mVisibleTextPrefixHint = url.subSequence(0, finalVisibleCharIndexExclusive);
                     }
                 }
             }
@@ -965,6 +926,14 @@ public abstract class UrlBar extends AutocompleteEditText {
         if (mUrlBarDelegate == null || !mUrlBarDelegate.allowKeyboardLearning()) {
             outAttrs.imeOptions |= EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING;
         }
+        // Note: we apply this text variation here (as opposed to Constructor), because we want the
+        // Editor to behave slightly differently than Keyboards:
+        // - we want Editor to permit word selection on long-press, and
+        // - we want Soft keyboards to stop auto-correcting user input.
+        // This happens with certain modern soft keyboards, such as SwiftKey, that corrects spelling
+        // of some urls (e.g. "flipkart.com" -> "flip cart. com" or "flipkart. com") despite
+        // TYPE_TEXT_FLAG_NO_SUGGESTIONS and lack of TYPE_TEXT_FLAG_AUTO_CORRECT.
+        outAttrs.inputType |= EditorInfo.TYPE_TEXT_VARIATION_URI;
         return connection;
     }
 
@@ -977,6 +946,25 @@ public abstract class UrlBar extends AutocompleteEditText {
         if (mVisibleTextPrefixHint != null
                 && (text == null || TextUtils.indexOf(text, mVisibleTextPrefixHint) != 0)) {
             mVisibleTextPrefixHint = null;
+        }
+
+        if (OmniboxFeatures.shouldTruncateVisibleUrl()) {
+            // Make sure we didn't truncate too much.
+            int measuredWidth = getVisibleMeasuredViewportWidth();
+            int textLength = text.length();
+            if (mIsTextTruncated) {
+                Layout layout = getLayout();
+                boolean truncatedTooMuch =
+                        layout != null && layout.getPrimaryHorizontal(textLength) < measuredWidth;
+                RecordHistogram.recordBooleanHistogram(
+                        "Omnibox.setText.TruncatedTooMuch", truncatedTooMuch);
+                assert !truncatedTooMuch
+                    : "If discovered locally, please update crbug.com/1476013: "
+                      + getWrongIndexErrorMessage(textLength - 1);
+            }
+
+            mIsTextTruncated = mDidJustTruncate;
+            mDidJustTruncate = false;
         }
     }
 
@@ -1050,8 +1038,15 @@ public abstract class UrlBar extends AutocompleteEditText {
         // crbug.com/764749
         Log.w(TAG, "Text change observed, triggering autocomplete.");
 
-        mUrlTextChangeListener.onTextChanged(
-                getTextWithoutAutocomplete(), getTextWithAutocomplete());
+        mUrlTextChangeListener.onTextChanged(getTextWithoutAutocomplete());
+    }
+
+    private boolean containsRtl(CharSequence text) {
+        BidiFormatter bidi =
+                new BidiFormatter.Builder()
+                        .setTextDirectionHeuristic(TextDirectionHeuristicsCompat.ANYRTL_LTR)
+                        .build();
+        return bidi.isRtl(text);
     }
 
     /**

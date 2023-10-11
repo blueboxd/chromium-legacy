@@ -514,10 +514,9 @@ base::Time CanonicalCookie::ValidateAndAdjustExpiryDate(
     // * network_handler.cc::MakeCookieFromProtocolValues
     fixed_creation_date = base::Time::Now();
   }
-  if (base::FeatureList::IsEnabled(features::kClampCookieExpiryTo400Days)) {
-    base::Time maximum_expiry_date = fixed_creation_date + base::Days(400);
-    if (expiry_date > maximum_expiry_date)
-      return maximum_expiry_date;
+  base::Time maximum_expiry_date = fixed_creation_date + base::Days(400);
+  if (expiry_date > maximum_expiry_date) {
+    return maximum_expiry_date;
   }
   return expiry_date;
 }
@@ -529,6 +528,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
     const base::Time& creation_time,
     absl::optional<base::Time> server_time,
     absl::optional<CookiePartitionKey> cookie_partition_key,
+    bool block_truncated,
     CookieInclusionStatus* status) {
   // Put a pointer on the stack so the rest of the function can assign to it if
   // the default nullptr is passed in.
@@ -545,7 +545,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
     return nullptr;
   }
 
-  ParsedCookie parsed_cookie(cookie_line, status);
+  ParsedCookie parsed_cookie(cookie_line, block_truncated, status);
 
   // We record this metric before checking validity because the presence of an
   // HTAB will invalidate the ParsedCookie.

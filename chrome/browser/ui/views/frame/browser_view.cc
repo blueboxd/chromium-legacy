@@ -91,8 +91,6 @@
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/user_education/browser_feature_promo_snooze_service.h"
-#include "chrome/browser/ui/user_education/user_education_service.h"
-#include "chrome/browser/ui/user_education/user_education_service_factory.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_focus_highlight.h"
@@ -147,6 +145,7 @@
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_rounded_corner.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_toolbar_container.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
@@ -172,6 +171,8 @@
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
+#include "chrome/browser/user_education/user_education_service.h"
+#include "chrome/browser/user_education/user_education_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -238,6 +239,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/base/window_open_disposition_utils.h"
 #include "ui/compositor/layer.h"
@@ -287,7 +289,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "ui/compositor/throughput_tracker.h"
 #else
-#include "chrome/browser/ui/signin_view_controller.h"
+#include "chrome/browser/ui/signin/signin_view_controller.h"
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_MAC)
@@ -686,12 +688,6 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
     return browser_view_->frame()->GetTopInset() - browser_view_->y();
   }
 
-  int GetThemeBackgroundXInset() const override {
-    // TODO(pkotwicz): Return the inset with respect to the left edge of the
-    // BrowserView.
-    return browser_view_->frame()->GetThemeBackgroundXInset();
-  }
-
   bool IsToolbarVisible() const override {
     return browser_view_->IsToolbarVisible();
   }
@@ -727,6 +723,10 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
 
   gfx::NativeView GetHostView() const override {
     return browser_view_->GetWidget()->GetNativeView();
+  }
+
+  gfx::NativeView GetHostViewForAnchoring() const override {
+    return browser_view_->GetWidgetForAnchoring()->GetNativeView();
   }
 
   bool BrowserIsSystemWebApp() const override {
@@ -856,10 +856,12 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
     SetShowTitle(true);
     SetCanMinimize(false);
     SetCanMaximize(false);
+    SetCanFullscreen(false);
     SetCanResize(true);
   } else {
     SetCanResize(browser_->create_params().can_resize);
     SetCanMaximize(browser_->create_params().can_maximize);
+    SetCanFullscreen(browser_->create_params().can_fullscreen);
     SetCanMinimize(true);
   }
 
@@ -867,7 +869,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
 
   // Create user education resources.
   UserEducationService* const user_education_service =
-      UserEducationServiceFactory::GetForProfile(GetProfile());
+      UserEducationServiceFactory::GetForBrowserContext(GetProfile());
   if (user_education_service) {
     RegisterChromeHelpBubbleFactories(
         user_education_service->help_bubble_factory_registry());
@@ -963,6 +965,10 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       this, is_right_aligned ? SidePanel::kAlignRight : SidePanel::kAlignLeft));
   left_aligned_side_panel_separator_ =
       AddChildView(std::make_unique<ContentsSeparator>());
+  if (features::IsChromeRefresh2023()) {
+    side_panel_rounded_corner_ =
+        AddChildView(std::make_unique<SidePanelRoundedCorner>(this));
+  }
 
   SidePanelUI::SetSidePanelUIForBrowser(
       browser_.get(), std::make_unique<SidePanelCoordinator>(this));
@@ -997,6 +1003,13 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   // High Efficiency mode is default off but is available to turn on
   high_efficiency_opt_in_iph_controller_ =
       std::make_unique<HighEfficiencyOptInIPHController>(browser_.get());
+
+  registrar_.Init(GetProfile()->GetPrefs());
+  registrar_.Add(
+      prefs::kFullscreenAllowed,
+      base::BindRepeating(&BrowserView::UpdateFullscreenAllowedFromPolicy,
+                          base::Unretained(this), CanFullscreen()));
+  UpdateFullscreenAllowedFromPolicy(CanFullscreen());
 }
 
 BrowserView::~BrowserView() {
@@ -1532,6 +1545,18 @@ void BrowserView::UpdateLoadingAnimations(bool is_visible) {
 void BrowserView::SetLoadingAnimationStateChangeClosureForTesting(
     base::OnceClosure closure) {
   loading_animation_state_change_closure_ = std::move(closure);
+}
+
+gfx::Point BrowserView::GetThemeOffsetFromBrowserView() const {
+  gfx::Point browser_view_origin;
+  const views::View* root_view = this;
+  while (root_view->parent()) {
+    root_view = root_view->parent();
+  }
+  views::View::ConvertPointToTarget(this, root_view, &browser_view_origin);
+  return gfx::Point(
+      -browser_view_origin.x(),
+      ThemeProperties::kFrameHeightAboveTabs - browser_view_origin.y());
 }
 
 bool BrowserView::IsLoadingAnimationRunningForTesting() const {
@@ -2323,6 +2348,10 @@ void BrowserView::UpdateSidePanelHorizontalAlignment() {
   unified_side_panel_->SetHorizontalAlignment(
       is_right_aligned ? SidePanel::kAlignRight : SidePanel::kAlignLeft);
   GetBrowserViewLayout()->Layout(this);
+  if (side_panel_rounded_corner_) {
+    side_panel_rounded_corner_->Layout();
+    side_panel_rounded_corner_->SchedulePaint();
+  }
 }
 
 void BrowserView::FocusBookmarksToolbar() {
@@ -3231,13 +3260,12 @@ std::u16string BrowserView::GetAccessibleWindowTitleForChannelAndProfile(
     Profile* profile) const {
   // Start with the tab title, which includes properties of the tab
   // like playing audio or network error.
-  const bool include_app_name = false;
   int active_index = browser_->tab_strip_model()->active_index();
   std::u16string title;
   if (active_index > -1)
-    title = GetAccessibleTabLabel(include_app_name, active_index);
+    title = GetAccessibleTabLabel(active_index);
   else
-    title = browser_->GetWindowTitleForCurrentTab(include_app_name);
+    title = browser_->GetWindowTitleForCurrentTab(false /* include_app_name */);
 
   // Add the name of the browser, unless this is an app window.
   if (browser()->is_type_normal() || browser()->is_type_popup()) {
@@ -3282,10 +3310,8 @@ std::u16string BrowserView::GetAccessibleWindowTitleForChannelAndProfile(
   return title;
 }
 
-std::u16string BrowserView::GetAccessibleTabLabel(bool include_app_name,
-                                                  int index) const {
-  std::u16string title =
-      browser_->GetWindowTitleForTab(include_app_name, index);
+std::u16string BrowserView::GetAccessibleTabLabel(int index) const {
+  std::u16string title = browser_->GetWindowTitleForTab(index);
 
   absl::optional<tab_groups::TabGroupId> group =
       tabstrip_->tab_at(index)->group();
@@ -4116,7 +4142,8 @@ void BrowserView::AddedToWidget() {
       tab_strip_region_view_, tabstrip_, toolbar_, infobar_container_,
       contents_container_, left_aligned_side_panel_separator_,
       unified_side_panel_, right_aligned_side_panel_separator_,
-      immersive_mode_controller_.get(), contents_separator_));
+      side_panel_rounded_corner_, immersive_mode_controller_.get(),
+      contents_separator_));
 
   EnsureFocusOrder();
 
@@ -4158,11 +4185,6 @@ void BrowserView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void BrowserView::OnThemeChanged() {
   views::ClientView::OnThemeChanged();
-  if (!initialized_)
-    return;
-
-  if (status_bubble_)
-    status_bubble_->OnThemeChanged();
 
   FrameColorsChanged();
 }
@@ -5065,6 +5087,16 @@ void BrowserView::FrameColorsChanged() {
         BrowserFrameActiveState::kUseCurrent);
     web_app_window_title_->SetBackgroundColor(frame_color);
     web_app_window_title_->SetEnabledColor(caption_color);
+  }
+}
+
+void BrowserView::UpdateFullscreenAllowedFromPolicy(
+    bool allowed_without_policy) {
+  auto* fullscreen_pref_path = prefs::kFullscreenAllowed;
+  if (GetProfile()->GetPrefs()->HasPrefPath(fullscreen_pref_path)) {
+    SetCanFullscreen(
+        allowed_without_policy &&
+        GetProfile()->GetPrefs()->GetBoolean(fullscreen_pref_path));
   }
 }
 

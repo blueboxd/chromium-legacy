@@ -175,6 +175,7 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD1(
       MouseUp,
       cc::InputHandlerPointerResult(const gfx::PointF& mouse_position));
+  MOCK_METHOD1(SetIsHandlingTouchSequence, void(bool));
   void NotifyInputEvent() override {}
 
   std::unique_ptr<cc::LatencyInfoSwapPromiseMonitor>
@@ -231,8 +232,9 @@ class MockInputHandler : public cc::InputHandler {
   }
   void set_is_scrolling_root(bool is) { is_scrolling_root_ = is; }
 
-  MOCK_METHOD3(GetSnapFlingInfoAndSetAnimatingSnapTarget,
-               bool(const gfx::Vector2dF& natural_displacement,
+  MOCK_METHOD4(GetSnapFlingInfoAndSetAnimatingSnapTarget,
+               bool(const gfx::Vector2dF& current_delta,
+                    const gfx::Vector2dF& natural_displacement,
                     gfx::PointF* initial_offset,
                     gfx::PointF* target_offset));
   MOCK_METHOD1(ScrollEndForSnapFling, void(bool));
@@ -1079,9 +1081,9 @@ void InputHandlerProxyTest::FlingAndSnap() {
   gesture_.data.scroll_update.inertial_phase =
       WebGestureEvent::InertialPhaseState::kMomentum;
   EXPECT_CALL(mock_input_handler_,
-              GetSnapFlingInfoAndSetAnimatingSnapTarget(_, _, _))
-      .WillOnce(DoAll(testing::SetArgPointee<1>(gfx::PointF(0, 0)),
-                      testing::SetArgPointee<2>(gfx::PointF(0, 100)),
+              GetSnapFlingInfoAndSetAnimatingSnapTarget(_, _, _, _))
+      .WillOnce(DoAll(testing::SetArgPointee<2>(gfx::PointF(0, 0)),
+                      testing::SetArgPointee<3>(gfx::PointF(0, 100)),
                       testing::Return(true)));
   EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(1);
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
@@ -1097,7 +1099,7 @@ TEST_P(InputHandlerProxyTest, SnapFlingIgnoresFollowingGSUAndGSE) {
   expected_disposition_ = InputHandlerProxy::DROP_EVENT;
 
   EXPECT_CALL(mock_input_handler_,
-              GetSnapFlingInfoAndSetAnimatingSnapTarget(_, _, _))
+              GetSnapFlingInfoAndSetAnimatingSnapTarget(_, _, _, _))
       .Times(0);
   EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(0);
   EXPECT_EQ(expected_disposition_,
@@ -1481,7 +1483,7 @@ TEST_F(InputHandlerProxyEventQueueTest, AckTouchActionNonBlockingForFling) {
           .Times(2)
           .WillRepeatedly(testing::Return(cc::ElementId()));
       EXPECT_CALL(mock_input_handler_,
-                  GetSnapFlingInfoAndSetAnimatingSnapTarget(_, _, _))
+                  GetSnapFlingInfoAndSetAnimatingSnapTarget(_, _, _, _))
           .WillOnce(Return(false));
 
       auto gsu_fling = CreateGestureScrollPinch(
@@ -1526,6 +1528,7 @@ TEST_F(InputHandlerProxyEventQueueTest, AckTouchActionNonBlockingForFling) {
     // matches the non blocking expectation (i.e. all touches are allowed).
     EXPECT_CALL(mock_client_, SetAllowedTouchAction(TouchAction::kAuto))
         .WillOnce(Return());
+    EXPECT_CALL(mock_input_handler_, SetIsHandlingTouchSequence(true));
 
     InjectInputEvent(std::move(touch_start));
   }
@@ -1642,6 +1645,7 @@ TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestPositive) {
           }));
   EXPECT_CALL(mock_client_, SetAllowedTouchAction(cc::TouchAction::kPanY))
       .WillOnce(testing::Return());
+  EXPECT_CALL(mock_input_handler_, SetIsHandlingTouchSequence(true));
   // Since the second touch point hits a touch-region, there should be no
   // hit-testing for the third touch point.
 
@@ -1688,6 +1692,7 @@ TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestPassivePositive) {
       }));
   EXPECT_CALL(mock_client_, SetAllowedTouchAction(cc::TouchAction::kPanRight))
       .WillOnce(testing::Return());
+  EXPECT_CALL(mock_input_handler_, SetIsHandlingTouchSequence(true));
 
   WebTouchEvent touch(WebInputEvent::Type::kTouchStart,
                       WebInputEvent::kNoModifiers,
@@ -1705,6 +1710,67 @@ TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestPassivePositive) {
   EXPECT_EQ(expected_disposition_,
             HandleInputEventWithLatencyInfo(input_handler_.get(), touch));
 
+  VERIFY_AND_RESET_MOCKS();
+}
+
+TEST_P(InputHandlerProxyTest, TouchTrackingEndsOnCancel) {
+  // One of the touch points is not on a touch-region. So the event should be
+  // sent to the impl thread.
+  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE_NON_BLOCKING;
+  VERIFY_AND_RESET_MOCKS();
+
+  EXPECT_CALL(
+      mock_input_handler_,
+      GetEventListenerProperties(cc::EventListenerClass::kTouchStartOrMove))
+      .WillRepeatedly(testing::Return(cc::EventListenerProperties::kPassive));
+  EXPECT_CALL(mock_input_handler_, EventListenerTypeForTouchStartOrMoveAt(_, _))
+      .Times(1)
+      .WillOnce(testing::Invoke([](const gfx::Point&,
+                                   cc::TouchAction* touch_action) {
+        *touch_action = cc::TouchAction::kPanRight;
+        return cc::InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER;
+      }));
+  EXPECT_CALL(mock_client_, SetAllowedTouchAction(cc::TouchAction::kPanRight))
+      .WillOnce(testing::Return());
+  EXPECT_CALL(mock_input_handler_, SetIsHandlingTouchSequence(true));
+  EXPECT_CALL(mock_input_handler_, HitTest(_))
+      .WillOnce(testing::Return(cc::PointerResultType::kUnhandled));
+
+  WebTouchEvent touch(WebInputEvent::Type::kTouchStart,
+                      WebInputEvent::kNoModifiers,
+                      WebInputEvent::GetStaticTimeStampForTests());
+
+  touch.unique_touch_event_id = 1;
+  touch.touches_length = 1;
+  touch.touch_start_or_first_touch_move = true;
+  touch.touches[0] =
+      CreateWebTouchPoint(WebTouchPoint::State::kStatePressed, 0, 0);
+  EXPECT_EQ(expected_disposition_,
+            HandleInputEventWithLatencyInfo(input_handler_.get(), touch));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
+  EXPECT_CALL(mock_input_handler_, HitTest(_))
+      .WillOnce(testing::Return(cc::PointerResultType::kUnhandled));
+
+  WebMouseEvent mouse_down(WebInputEvent::Type::kMouseDown,
+                           WebInputEvent::kNoModifiers,
+                           WebInputEvent::GetStaticTimeStampForTests());
+  mouse_down.button = WebMouseEvent::Button::kLeft;
+  EXPECT_EQ(expected_disposition_,
+            HandleInputEventWithLatencyInfo(input_handler_.get(), mouse_down));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  EXPECT_CALL(mock_input_handler_, SetIsHandlingTouchSequence(false));
+  WebTouchEvent touch_cancel(WebInputEvent::Type::kTouchCancel,
+                             WebInputEvent::kNoModifiers,
+                             WebInputEvent::GetStaticTimeStampForTests());
+
+  touch_cancel.unique_touch_event_id = 2;
+  EXPECT_EQ(expected_disposition_, HandleInputEventWithLatencyInfo(
+                                       input_handler_.get(), touch_cancel));
   VERIFY_AND_RESET_MOCKS();
 }
 
@@ -1731,6 +1797,7 @@ TEST_P(InputHandlerProxyTest, TouchStartPassiveAndTouchEndBlocking) {
       }));
   EXPECT_CALL(mock_client_, SetAllowedTouchAction(cc::TouchAction::kNone))
       .WillOnce(testing::Return());
+  EXPECT_CALL(mock_input_handler_, SetIsHandlingTouchSequence(true));
 
   WebTouchEvent touch(WebInputEvent::Type::kTouchStart,
                       WebInputEvent::kNoModifiers,
@@ -1770,6 +1837,7 @@ TEST_P(InputHandlerProxyTest, TouchMoveBlockingAddedAfterPassiveTouchStart) {
       .WillOnce(testing::Return());
   EXPECT_CALL(mock_input_handler_, HitTest(_))
       .WillOnce(testing::Return(cc::PointerResultType::kUnhandled));
+  EXPECT_CALL(mock_input_handler_, SetIsHandlingTouchSequence(true));
 
   WebTouchEvent touch(WebInputEvent::Type::kTouchStart,
                       WebInputEvent::kNoModifiers,
@@ -3236,6 +3304,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
       .WillOnce(testing::Return());
   EXPECT_CALL(mock_input_handler_, HitTest(_))
       .WillOnce(testing::Return(cc::PointerResultType::kUnhandled));
+  EXPECT_CALL(mock_input_handler_, SetIsHandlingTouchSequence(true));
 
   expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE_NON_BLOCKING;
   EXPECT_EQ(expected_disposition_,
@@ -3281,6 +3350,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
       .WillOnce(testing::Return());
   EXPECT_CALL(mock_input_handler_, HitTest(_))
       .WillOnce(testing::Return(cc::PointerResultType::kUnhandled));
+  EXPECT_CALL(mock_input_handler_, SetIsHandlingTouchSequence(true));
 
   expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE_NON_BLOCKING;
   EXPECT_EQ(expected_disposition_,
@@ -3373,11 +3443,11 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest, WheelScrollHistogram) {
   input_handler_->RecordScrollBeginForTest(
       WebGestureDevice::kTouchpad,
       kSampleMainThreadScrollingReason |
-          cc::MainThreadScrollingReason::kThreadedScrollingDisabled);
+          cc::MainThreadScrollingReason::kPreferNonCompositedScrolling);
 
   EXPECT_MAIN_THREAD_WHEEL_SCROLL_SAMPLE_2(
       kSampleMainThreadScrollingReason,
-      cc::MainThreadScrollingReason::kThreadedScrollingDisabled);
+      cc::MainThreadScrollingReason::kPreferNonCompositedScrolling);
 }
 
 TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
@@ -3505,6 +3575,7 @@ TEST_P(InputHandlerProxyTouchScrollbarTest,
       .WillOnce(testing::Return(pointer_down_result.type));
   EXPECT_CALL(mock_input_handler_, MouseDown(_, _))
       .WillOnce(testing::Return(pointer_down_result));
+  EXPECT_CALL(mock_input_handler_, SetIsHandlingTouchSequence(true));
   cc::InputHandlerScrollResult scroll_result_did_scroll;
   scroll_result_did_scroll.did_scroll = true;
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;

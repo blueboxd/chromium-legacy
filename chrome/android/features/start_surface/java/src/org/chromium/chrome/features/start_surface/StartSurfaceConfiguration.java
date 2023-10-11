@@ -85,21 +85,23 @@ public class StartSurfaceConfiguration {
             new BooleanCachedFieldTrialParameter(ChromeFeatureList.START_SURFACE_RETURN_TIME,
                     START_SURFACE_RETURN_TIME_USE_MODEL_PARAM, false);
 
-    public static final BooleanCachedFieldTrialParameter SURFACE_POLISH_OMNIBOX_SIZE =
-            new BooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.SURFACE_POLISH, "polish_omnibox_size", false);
-
     public static final BooleanCachedFieldTrialParameter SURFACE_POLISH_OMNIBOX_COLOR =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.SURFACE_POLISH, "polish_omnibox_color", false);
 
+    private static final String SURFACE_POLISH_MOVE_DOWN_LOGO_PARAM = "move_down_logo";
+    public static final BooleanCachedFieldTrialParameter SURFACE_POLISH_MOVE_DOWN_LOGO =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.SURFACE_POLISH, SURFACE_POLISH_MOVE_DOWN_LOGO_PARAM, false);
+
+    private static final String SURFACE_POLISH_LESS_BRAND_SPACE_PARAM = "less_brand_space";
+    public static final BooleanCachedFieldTrialParameter SURFACE_POLISH_LESS_BRAND_SPACE =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.SURFACE_POLISH, SURFACE_POLISH_LESS_BRAND_SPACE_PARAM, false);
+
     public static final BooleanCachedFieldTrialParameter SURFACE_POLISH_USE_MAGIC_SPACE =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.SURFACE_POLISH, "use_magic_space", false);
-
-    public static final BooleanCachedFieldTrialParameter SURFACE_POLISH_SINGLE_TAB_CARD =
-            new BooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.SURFACE_POLISH, "polish_single_tab_card", false);
 
     private static final String STARTUP_UMA_PREFIX = "Startup.Android.";
     private static final String INSTANT_START_SUBFIX = ".Instant";

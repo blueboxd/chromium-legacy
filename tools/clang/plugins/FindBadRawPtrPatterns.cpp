@@ -6,6 +6,7 @@
 
 #include "RawPtrHelpers.h"
 #include "RawPtrManualPathsToIgnore.h"
+#include "SeparateRepositoryPaths.h"
 #include "StackAllocatedChecker.h"
 #include "TypePredicateUtil.h"
 #include "Util.h"
@@ -46,27 +47,7 @@ class BadCastMatcher : public MatchFinder::MatchCallback {
   }
 
   void Register(MatchFinder& match_finder) {
-    // Matches anything contains |raw_ptr<T>| / |raw_ref<T>|.
-    auto src_type =
-        type(isCastingUnsafe(casting_unsafe_predicate_)).bind("srcType");
-    auto dst_type =
-        type(isCastingUnsafe(casting_unsafe_predicate_)).bind("dstType");
-    // Matches |static_cast| on pointers, all |bit_cast|
-    // and all |reinterpret_cast|.
-    auto cast_kind = castExpr(anyOf(
-        hasCastKind(CK_BitCast), hasCastKind(CK_LValueBitCast),
-        hasCastKind(CK_LValueToRValueBitCast),
-        hasCastKind(CK_PointerToIntegral), hasCastKind(CK_IntegralToPointer)));
-    // Implicit/explicit casting from/to |raw_ptr<T>| matches.
-    // Both casting direction is unsafe.
-    //   https://godbolt.org/z/zqKMzcKfo
-    auto cast_matcher =
-        castExpr(
-            allOf(anyOf(hasSourceExpression(hasType(src_type)),
-                        implicitCastExpr(hasImplicitDestinationType(dst_type)),
-                        explicitCastExpr(hasDestinationType(dst_type))),
-                  cast_kind))
-            .bind("castExpr");
+    auto cast_matcher = BadRawPtrCastExpr(casting_unsafe_predicate_);
     match_finder.addMatcher(cast_matcher, this);
   }
 
@@ -78,23 +59,6 @@ class BadCastMatcher : public MatchFinder::MatchCallback {
     const clang::SourceManager& source_manager = *result.SourceManager;
     clang::SourceLocation loc = cast_expr->getSourceRange().getBegin();
     std::string file_path = GetFilename(source_manager, loc);
-
-    // Using raw_ptr<T> in a stdlib collection will cause a cast.
-    // e.g.
-    // https://source.chromium.org/chromium/chromium/src/+/main:components/feed/core/v2/xsurface_datastore.h;drc=a0ff03edcace35ec020edd235f4d9e9735fc9690;l=107
-    // |__bit/bit_cast.h| header is excluded to perform checking on
-    // |std::bit_cast<T>|.
-    if (file_path.find("buildtools/third_party/libc++") != std::string::npos &&
-        file_path.find("__bit/bit_cast.h") == std::string::npos) {
-      return;
-    }
-
-    // Exclude casts via "unsafe_raw_ptr_*_cast".
-    if (file_path.find(
-            "base/allocator/partition_allocator/pointers/raw_ptr_cast.h") !=
-        std::string::npos) {
-      return;
-    }
 
     clang::PrintingPolicy printing_policy(result.Context->getLangOpts());
     const std::string src_name =
@@ -172,7 +136,7 @@ class RawPtrFieldMatcher : public MatchFinder::MatchCallback {
     assert(type_source_info->getType()->isPointerType() &&
            "matcher should only match pointer types");
 
-    compiler_.getDiagnostics().Report(field_decl->getEndLoc(),
+    compiler_.getDiagnostics().Report(field_decl->getLocation(),
                                       error_need_raw_ptr_signature_);
   }
 
@@ -275,6 +239,9 @@ void FindBadRawPtrPatterns(Options options,
 
   std::vector<std::string> paths_to_exclude_lines;
   for (auto* const line : kRawPtrManualPathsToIgnore) {
+    paths_to_exclude_lines.push_back(line);
+  }
+  for (auto* const line : kSeparateRepositoryPaths) {
     paths_to_exclude_lines.push_back(line);
   }
   paths_to_exclude_lines.insert(paths_to_exclude_lines.end(),

@@ -123,6 +123,11 @@ struct ASH_PUBLIC_EXPORT AppListItemMetadata {
   std::string id;    // Id of the app list item.
   std::string name;  // Corresponding app/folder's name of the item.
 
+  // Package Id for the item's app package, used to match an installed app item
+  // with its promise app item. In promise app items, this value is the same as
+  // the primary `id` field.
+  std::string promise_package_id;
+
   AppStatus app_status = AppStatus::kReady;  // App status.
 
   std::string folder_id;           // Id of folder where the item resides.
@@ -149,6 +154,9 @@ struct ASH_PUBLIC_EXPORT AppListItemMetadata {
   // Whether the item is ephemeral - i.e. an app or a folder that does not
   // persist across sessions.
   bool is_ephemeral = false;
+
+  // Applicable only for promise apps. Percentage of app installation completed.
+  float progress = -1;
 };
 
 // Where an app list item is being shown. Used for context menu.
@@ -455,6 +463,24 @@ enum class SystemInfoAnswerCardDisplayType {
   kMultiElementBarChart,
 };
 
+// The categories for launcher search controls.
+enum class AppListSearchControlCategory {
+  kCannotToggle = 0,  // default value to indicate it is non-toggleable
+  kApps = 1,
+  kAppShortcuts = 2,
+  kFiles = 3,
+  kGames = 4,
+  kHelp = 5,
+  kImages = 6,
+  kPlayStore = 7,
+  kWeb = 8,
+};
+
+// Gets the pref name strings used for the app list control category preference
+// dictionary.
+ASH_PUBLIC_EXPORT std::string GetAppListControlCategoryName(
+    AppListSearchControlCategory control_category);
+
 struct ASH_PUBLIC_EXPORT SearchResultIconInfo {
   SearchResultIconInfo();
   // TODO(crbug.com/1232897): Make the search backend explicitly set the shape
@@ -592,11 +618,25 @@ using SearchResultActions = std::vector<SearchResultAction>;
 class ASH_PUBLIC_EXPORT SearchResultTextItem {
  public:
   enum IconCode {
+    kKeyboardShortcutAssistant,
+    kKeyboardShortcutAllApps,
     kKeyboardShortcutBrowserBack,
     kKeyboardShortcutBrowserForward,
     kKeyboardShortcutBrowserRefresh,
+    kKeyboardShortcutBrowserSearch,
+    kKeyboardShortcutCalculator,
+    kKeyboardShortcutDictationToggle,
+    kKeyboardShortcutEmojiPicker,
+    kKeyboardShortcutInputModeChange,
     kKeyboardShortcutZoom,
     kKeyboardShortcutMediaLaunchApp1,
+    kKeyboardShortcutMediaFastForward,
+    kKeyboardShortcutMediaPause,
+    kKeyboardShortcutMediaPlay,
+    kKeyboardShortcutMediaPlayPause,
+    kKeyboardShortcutMediaTrackNext,
+    kKeyboardShortcutMediaTrackPrevious,
+    kKeyboardShortcutMicrophone,
     kKeyboardShortcutBrightnessDown,
     kKeyboardShortcutBrightnessUp,
     kKeyboardShortcutVolumeMute,
@@ -607,7 +647,14 @@ class ASH_PUBLIC_EXPORT SearchResultTextItem {
     kKeyboardShortcutLeft,
     kKeyboardShortcutRight,
     kKeyboardShortcutPrivacyScreenToggle,
+    kKeyboardShortcutSettings,
     kKeyboardShortcutSnapshot,
+    kKeyboardShortcutLauncher,
+    kKeyboardShortcutSearch,
+    kKeyboardShortcutPower,
+    kKeyboardShortcutKeyboardBacklightToggle,
+    kKeyboardShortcutKeyboardBrightnessDown,
+    kKeyboardShortcutKeyboardBrightnessUp,
   };
 
   // Only used for SearchResultTextItemType kString

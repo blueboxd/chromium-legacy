@@ -40,7 +40,6 @@ tools/metrics/histograms/metadata/custom_tabs/histograms.xml
 tools/metrics/histograms/metadata/data/histograms.xml
 tools/metrics/histograms/metadata/dev/histograms.xml
 tools/metrics/histograms/metadata/diagnostics/histograms.xml
-tools/metrics/histograms/metadata/direct/histograms.xml
 tools/metrics/histograms/metadata/disk/histograms.xml
 tools/metrics/histograms/metadata/download/histograms.xml
 tools/metrics/histograms/metadata/enterprise/histograms.xml
@@ -141,6 +140,7 @@ tools/metrics/histograms/metadata/tab/histograms.xml
 tools/metrics/histograms/metadata/translate/histograms.xml
 tools/metrics/histograms/metadata/trusted_vault/histograms.xml
 tools/metrics/histograms/metadata/ukm/histograms.xml
+tools/metrics/histograms/metadata/uma/enums.xml
 tools/metrics/histograms/metadata/uma/histograms.xml
 tools/metrics/histograms/metadata/update_engine/histograms.xml
 tools/metrics/histograms/metadata/v8/histograms.xml

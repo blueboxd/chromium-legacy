@@ -55,6 +55,8 @@ using ::autofill::FormGlobalId;
 using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::Field;
+using ::testing::Matcher;
 using ::testing::Ne;
 using ::testing::NiceMock;
 using ::testing::Pair;
@@ -66,6 +68,14 @@ using ::ukm::builders::Autofill_FastCheckoutFormStatus;
 using ::ukm::builders::Autofill_FastCheckoutRunOutcome;
 
 namespace {
+
+Matcher<const autofill::AutofillTriggerDetails&> EqualsAutofilltriggerDetails(
+    autofill::AutofillTriggerDetails details) {
+  return AllOf(Field(&autofill::AutofillTriggerDetails::trigger_source,
+                     details.trigger_source),
+               Field(&autofill::AutofillTriggerDetails::filling_granularity,
+                     details.filling_granularity));
+}
 
 CreditCard GetEmptyCreditCard() {
   CreditCard credit_card(base::Uuid::GenerateRandomV4().AsLowercaseString(),
@@ -79,6 +89,12 @@ CreditCard GetEmptyCreditCard() {
 
 constexpr char kUrl[] = "https://www.example.com";
 constexpr char kOtherUrl[] = "https://www.example2.com";
+
+// The index of the `FormFieldData` in the test credit card form created in
+// autofill::test::CreateTestCreditCardForm.
+constexpr size_t kCreditCardFieldIndexInForm = 2;
+constexpr size_t kFirstNameFieldIndexInForm = 0;
+
 const std::u16string kAutofillProfileLabel = u"Home";
 const std::u16string kCreditCardNickname = u"Card's nickname";
 const AutofillProfile kProfile1 = autofill::test::GetFullProfile();
@@ -162,7 +178,7 @@ class MockBrowserAutofillManager : public autofill::TestBrowserAutofillManager {
               (const FormData&,
                const FormFieldData&,
                const autofill::AutofillProfile&,
-               const autofill::AutofillTriggerSource),
+               const autofill::AutofillTriggerDetails&),
               (override));
   MOCK_METHOD(void,
               FillCreditCardFormImpl,
@@ -170,7 +186,7 @@ class MockBrowserAutofillManager : public autofill::TestBrowserAutofillManager {
                const FormFieldData&,
                const autofill::CreditCard&,
                const std::u16string&,
-               const autofill::AutofillTriggerSource),
+               const autofill::AutofillTriggerDetails&),
               (override));
   MOCK_METHOD(void,
               SetFastCheckoutRunId,
@@ -366,25 +382,20 @@ class FastCheckoutClientImplTest : public ChromeRenderViewHostTestHarness {
   }
 
   std::unique_ptr<autofill::FormStructure> SetUpCreditCardForm() {
-    FormData credit_card_form_data;
-    autofill::test::CreateTestCreditCardFormData(&credit_card_form_data, true,
-                                                 false, true);
-    auto credit_card_form_structure =
-        std::make_unique<autofill::FormStructure>(credit_card_form_data);
-    credit_card_form_structure->field(0)->set_heuristic_type(
-        autofill::PatternSource::kLegacy,
-        autofill::ServerFieldType::CREDIT_CARD_NUMBER);
+    auto credit_card_form_structure = std::make_unique<autofill::FormStructure>(
+        autofill::test::CreateTestCreditCardFormData(true, false, true));
+    credit_card_form_structure->field(kCreditCardFieldIndexInForm)
+        ->set_heuristic_type(autofill::HeuristicSource::kLegacy,
+                             autofill::ServerFieldType::CREDIT_CARD_NUMBER);
     return credit_card_form_structure;
   }
 
   std::unique_ptr<autofill::FormStructure> SetUpAddressForm() {
-    FormData address_form_data;
-    autofill::test::CreateTestAddressFormData(&address_form_data);
-    auto address_form_structure =
-        std::make_unique<autofill::FormStructure>(address_form_data);
-    address_form_structure->field(0)->set_heuristic_type(
-        autofill::PatternSource::kLegacy,
-        autofill::ServerFieldType::NAME_FIRST);
+    auto address_form_structure = std::make_unique<autofill::FormStructure>(
+        autofill::test::CreateTestAddressFormData());
+    address_form_structure->field(kFirstNameFieldIndexInForm)
+        ->set_heuristic_type(autofill::HeuristicSource::kLegacy,
+                             autofill::ServerFieldType::NAME_FIRST);
     return address_form_structure;
   }
 
@@ -764,7 +775,8 @@ TEST_F(FastCheckoutClientImplTest, OnAfterLoadedServerPredictions_FillsForms) {
   autofill::FormSignature credit_card_form_signature =
       credit_card_form->form_signature();
   FormData address_form_data = address_form->ToFormData();
-  FormFieldData address_form_field_data = *address_form->field(0);
+  FormFieldData address_form_field_data =
+      *address_form->field(kFirstNameFieldIndexInForm);
 
   auto [autofill_profile, credit_card] = StartRunAndSelectOptions(
       {address_form_signature, credit_card_form_signature});
@@ -780,12 +792,14 @@ TEST_F(FastCheckoutClientImplTest, OnAfterLoadedServerPredictions_FillsForms) {
 
   EXPECT_CALL(
       *autofill_manager(),
-      FillProfileFormImpl(FormDataEqualTo(address_form_data),
-                          FormFieldDataEqualTo(address_form_field_data),
-                          Eq(*autofill_profile),
-                          Eq(autofill::AutofillTriggerSource::kFastCheckout)));
+      FillProfileFormImpl(
+          FormDataEqualTo(address_form_data),
+          FormFieldDataEqualTo(address_form_field_data), Eq(*autofill_profile),
+          EqualsAutofilltriggerDetails(
+              {.trigger_source =
+                   autofill::AutofillTriggerSource::kFastCheckout})));
   EXPECT_CALL(*autofill_manager(),
-              SetFastCheckoutRunId(autofill::FieldTypeGroup::kAddressHome,
+              SetFastCheckoutRunId(autofill::FieldTypeGroup::kAddress,
                                    fast_checkout_client()->run_id_));
   fast_checkout_client()->OnAfterLoadedServerPredictions(*autofill_manager());
   EXPECT_THAT(
@@ -816,13 +830,16 @@ TEST_F(FastCheckoutClientImplTest,
   autofill::payments::FullCardRequest* full_card_request =
       autofill_client()->GetCvcAuthenticator()->GetFullCardRequest();
   std::u16string cvc = u"123";
-  const FormFieldData& field = *credit_card_form->field(0);
+  const FormFieldData& field =
+      *credit_card_form->field(kCreditCardFieldIndexInForm);
 
   EXPECT_CALL(*autofill_manager(),
               FillCreditCardFormImpl(
                   FormDataEqualTo(credit_card_form->ToFormData()),
                   FormFieldDataEqualTo(field), Eq(*credit_card), Eq(cvc),
-                  Eq(autofill::AutofillTriggerSource::kFastCheckout)));
+                  EqualsAutofilltriggerDetails(
+                      {.trigger_source =
+                           autofill::AutofillTriggerSource::kFastCheckout})));
   EXPECT_CALL(*autofill_manager(),
               SetFastCheckoutRunId(autofill::FieldTypeGroup::kCreditCard,
                                    fast_checkout_client()->run_id_));
@@ -988,14 +1005,17 @@ TEST_F(FastCheckoutClientImplTest,
       {address_form->form_signature(), credit_card_form->form_signature()});
   autofill::payments::FullCardRequest* full_card_request =
       autofill_client()->GetCvcAuthenticator()->GetFullCardRequest();
-  const FormFieldData& field = *credit_card_form->field(0);
+  const FormFieldData& field =
+      *credit_card_form->field(kCreditCardFieldIndexInForm);
   std::u16string cvc = u"123";
 
   EXPECT_CALL(*autofill_manager(),
               FillCreditCardFormImpl(
                   FormDataEqualTo(credit_card_form->ToFormData()),
                   FormFieldDataEqualTo(field), Eq(*credit_card), Eq(cvc),
-                  Eq(autofill::AutofillTriggerSource::kFastCheckout)));
+                  EqualsAutofilltriggerDetails(
+                      {.trigger_source =
+                           autofill::AutofillTriggerSource::kFastCheckout})));
   EXPECT_CALL(*autofill_manager(),
               SetFastCheckoutRunId(autofill::FieldTypeGroup::kCreditCard,
                                    fast_checkout_client()->run_id_));
@@ -1007,7 +1027,7 @@ TEST_F(FastCheckoutClientImplTest,
 TEST_F(FastCheckoutClientImplTest, OnFullCardRequestFailed_StopsRun) {
   autofill::FormStructure* credit_card_form =
       AddFormToAutofillManagerCache(SetUpCreditCardForm());
-  auto card_type = autofill::CreditCard::RecordType::FULL_SERVER_CARD;
+  auto card_type = autofill::CreditCard::RecordType::kFullServerCard;
   auto failure_type =
       autofill::payments::FullCardRequest::FailureType::GENERIC_FAILURE;
   StartRunAndSelectOptions({credit_card_form->form_signature()});
@@ -1040,7 +1060,7 @@ TEST_F(
   autofill::FormStructure* address_form =
       AddFormToAutofillManagerCache(SetUpAddressForm());
   address_form->field(0)->set_heuristic_type(
-      autofill::PatternSource::kLegacy,
+      autofill::HeuristicSource::kLegacy,
       autofill::ServerFieldType::EMAIL_ADDRESS);
   StartRunAndSelectOptions({address_form->form_signature()});
   std::u16string announcement_text = u"Email filled.";
@@ -1116,7 +1136,8 @@ TEST_F(FastCheckoutClientImplTest,
        TryToFillForms_LocalCreditCard_ImmediatelyFillsCreditCardForm) {
   autofill::FormStructure* credit_card_form =
       AddFormToAutofillManagerCache(SetUpCreditCardForm());
-  const FormFieldData& field = *credit_card_form->field(0);
+  const FormFieldData& field =
+      *credit_card_form->field(kCreditCardFieldIndexInForm);
 
   EXPECT_CALL(
       *autofill_manager(),
@@ -1125,7 +1146,9 @@ TEST_F(FastCheckoutClientImplTest,
               FillCreditCardFormImpl(
                   FormDataEqualTo(credit_card_form->ToFormData()),
                   FormFieldDataEqualTo(field), _, Eq(u""),
-                  Eq(autofill::AutofillTriggerSource::kFastCheckout)));
+                  EqualsAutofilltriggerDetails(
+                      {.trigger_source =
+                           autofill::AutofillTriggerSource::kFastCheckout})));
   StartRunAndSelectOptions({credit_card_form->form_signature()},
                            /*local_card=*/true);
   EXPECT_FALSE(fast_checkout_client()->IsNotShownYet());

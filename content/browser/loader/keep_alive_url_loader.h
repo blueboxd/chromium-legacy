@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_LOADER_KEEP_ALIVE_URL_LOADER_H_
 
 #include <stdint.h>
+#include <queue>
+#include <string>
 #include <vector>
 
 #include "base/functional/callback.h"
@@ -21,6 +23,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -38,27 +41,40 @@ class KeepAliveURLLoaderService;
 class PolicyContainerHost;
 
 // A URLLoader for loading a fetch keepalive request via the browser process,
-// including both `fetch(..., {keepalive: true})` and `navigator.sendBeacon()`
-// requests.
+// including requests generated from the following JS API calls:
+//   - fetch(..., {keepalive: true})
+//   - navigator.sendBeacon(...)
+//   - fetchLater(...)
 //
 // To load a keepalive request initiated by a renderer, this loader performs the
 // following logic:
-// 1. Forwards all request loading actions received from a remote of
-//    `mojom::URLLoader` in a renderer to a receiver of `mojom::URLLoader` in
-//    the network service connected by `loader_`.
-// 2. Receives request loading results from the network service, i.e. the remote
-//    of `loader_receiver_`. The URLLoaderClient overrides will be triggered to
-//    process results:
-//    A. For redirect, perform security checks and ask the network service to
-//       follow all subsequent redirects.
-//    B. For non-redirect,
-//       a. If the renderer is still alive, i.e. `forwarding_client_` is
-//          connected, ask it to process the results instead.
-//       b. If the renderer is dead, drop the results.
 //
-// Instances of this class must only be constructed via calling
-// `KeepAliveURLLoaderService`, such that the lifetime of the instances match
-// the lifetime of the keepalive requests.
+// 1. In ctor, stores request data sent from a renderer.
+// 2. In `Start()`, asks the network service to start loading the request, and
+//    then runs throttles to perform checks.
+// 3. Handles request loading results from the network service, i.e. from the
+//    remote of `loader_receiver_` (a mojom::URLLoaderClient):
+//    A. If it is `OnReceiveRedirect()`, this loader performs checks and runs
+//       throttles, and then asks the network service to proceed with redirects
+//       without interacting with renderer. The redirect params are stored for
+//       later use.
+//    B. If it is `OnReceiveResponse()` or `OnComplete()`, this loader does not
+//       process response. Instead, it calls `ForwardURLLoad()` to begin to
+//       forward previously saved mojom::URLLoaderClient calls to the renderer,
+//       if the renderer is still alive; Otherwise, terminating this loader.
+//    C. If a throttle asynchronously asks to cancel the request, similar to B,
+//       the previously stored calls will be forwarded to the renderer.
+//    D. The renderer's response to `ForwardURLLoad()` may be any of
+//       mojom::URLLoader calls, in which they should continue forwarding by
+//       calling `ForwardURLLoader()` again.
+//
+// See the "Longer Redirect Chain" section of the Design Doc for an example
+// call sequence diagram.
+//
+// This class must only be constructed by `KeepAliveURLLoaderService`.
+//
+// The lifetime of an instance is roughly equal to the lifetime of a keepalive
+// request, which may surpass the initiator renderer's lifetime.
 //
 // Design Doc:
 // https://docs.google.com/document/d/1ZzxMMBvpqn8VZBZKnb7Go8TWjnrGcXuLS_USwVVRUvY
@@ -73,6 +89,10 @@ class CONTENT_EXPORT KeepAliveURLLoader
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>>(void)>;
 
   // Must only be constructed by a `KeepAliveURLLoaderService`.
+  //
+  // Note that calling ctor does not mean loading the request. `Start()` must
+  // also be called subsequently.
+  //
   // `resource_request` must be a keepalive request from a renderer.
   // `forwarding_client` should handle request loading results from the network
   // service if it is still connected.
@@ -87,9 +107,8 @@ class CONTENT_EXPORT KeepAliveURLLoader
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       scoped_refptr<PolicyContainerHost> policy_container_host,
       BrowserContext* browser_context,
-      base::PassKey<KeepAliveURLLoaderService>,
-      URLLoaderThrottlesGetter url_loader_throttles_getter_for_testing =
-          base::NullCallback());
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
+      base::PassKey<KeepAliveURLLoaderService>);
   ~KeepAliveURLLoader() override;
 
   // Not copyable.
@@ -104,6 +123,15 @@ class CONTENT_EXPORT KeepAliveURLLoader
   // Must be called immediately after creating a KeepAliveLoader.
   void set_on_delete_callback(OnDeleteCallback on_delete_callback);
 
+  // Returns true if request loading has been started, i.e. `Start()` has been
+  // called. Otherwise, returns false by default.
+  bool IsStarted() const;
+
+  // Kicks off loading the request, including prepare for requests, and setting
+  // up communication with network service.
+  // This method must only be called when `IsStarted()` is false.
+  void Start();
+
   base::WeakPtr<KeepAliveURLLoader> GetWeakPtr();
 
   // For testing only:
@@ -112,8 +140,12 @@ class CONTENT_EXPORT KeepAliveURLLoader
    public:
     virtual void OnReceiveRedirectForwarded(KeepAliveURLLoader* loader) = 0;
     virtual void OnReceiveRedirectProcessed(KeepAliveURLLoader* loader) = 0;
+    virtual void OnReceiveResponse(KeepAliveURLLoader* loader) = 0;
     virtual void OnReceiveResponseForwarded(KeepAliveURLLoader* loader) = 0;
     virtual void OnReceiveResponseProcessed(KeepAliveURLLoader* loader) = 0;
+    virtual void OnComplete(
+        KeepAliveURLLoader* loader,
+        const network::URLLoaderCompletionStatus& completion_status) = 0;
     virtual void OnCompleteForwarded(
         KeepAliveURLLoader* loader,
         const network::URLLoaderCompletionStatus& completion_status) = 0;
@@ -160,6 +192,20 @@ class CONTENT_EXPORT KeepAliveURLLoader
   void OnComplete(
       const network::URLLoaderCompletionStatus& completion_status) override;
 
+  // Whether `OnReceiveResponse()` has been called.
+  bool HasReceivedResponse() const;
+  // Forwards the stored chain of redriects, response, completion status to the
+  // renderer that initiates this loader, such that the renderer knows what URL
+  // the response come from when parsing the response.
+  //
+  // This method must be called when `IsRendererConnected()` is true.
+  // This method may be called more than one time until it deletes `this`.
+  // WARNING: Calling this method may result in the deletion of `this`.
+  // See also the "Proposed Call Sequences After Migration" section in
+  // https://docs.google.com/document/d/1ZzxMMBvpqn8VZBZKnb7Go8TWjnrGcXuLS_USwVVRUvY/edit?pli=1#heading=h.d006i46pmq9
+  void ForwardURLLoad();
+  // Tells if `ForwardURLLoad()` has ever been called.
+  bool IsForwardURLLoadStarted() const;
   // Tells if this loader is still able to forward actions to the
   // URLLoaderClient in renderer.
   bool IsRendererConnected() const;
@@ -172,6 +218,10 @@ class CONTENT_EXPORT KeepAliveURLLoader
 
   // The ID to identify the request being loaded by this loader.
   const int32_t request_id_;
+
+  // A bitfield of the options of the request being loaded.
+  // See services/network/public/mojom/url_loader_factory.mojom.
+  const uint32_t options_;
 
   // The request to be loaded by this loader.
   // Set in the constructor and updated when redirected.
@@ -194,16 +244,37 @@ class CONTENT_EXPORT KeepAliveURLLoader
   // URLLoader response may be handled in browser.
   mojo::Remote<network::mojom::URLLoaderClient> forwarding_client_;
 
-  // A callback to delete this loader object and clean up resource.
-  OnDeleteCallback on_delete_callback_;
+  // The NetworkTrafficAnnotationTag for the request being loaded.
+  net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
-  // Whether `OnReceiveResponse()` has been called.
-  bool has_received_response_ = false;
+  // A refptr to the URLLoaderFactory implementation that can actually create a
+  // URLLoader. An extra refptr is required here to support deferred loading.
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
+
+  struct StoredURLLoad;
+  // Stores the chain of redriects, response, and completion status, such that
+  // they can be forwarded to renderer after handled in browser.
+  // See also `ForwardURLLoad()`.
+  std::unique_ptr<StoredURLLoad> stored_url_load_;
 
   // A refptr to keep the `PolicyContainerHost` from the RenderFrameHost that
   // initiates this loader alive until `this` is destroyed.
   // It is never null.
   scoped_refptr<PolicyContainerHost> policy_container_host_;
+
+  // The BrowserContext that initiates this loader.
+  // It is ensured to outlive this because it owns KeepAliveURLLoaderService
+  // which owns this loader.
+  const raw_ptr<BrowserContext> browser_context_;
+
+  // TODO(crbug.com/1356128): Remove custom throttle logic here with blink's.
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles_;
+
+  // Tells if this loader has been started or not.
+  bool is_started_ = false;
+
+  // A callback to delete this loader object and clean up resource.
+  OnDeleteCallback on_delete_callback_;
 
   // Records the initial request URL to help veryfing redirect request.
   const GURL initial_url_;

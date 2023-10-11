@@ -19,6 +19,8 @@
 namespace blink {
 namespace {
 constexpr char kContextUnavailable[] = "Context unavailable.";
+constexpr char kContextBusy[] =
+    "An operation is already in progress in this smart card context.";
 
 device::mojom::blink::SmartCardReaderStateFlagsPtr ToMojomStateFlags(
     const SmartCardReaderStateFlags& flags) {
@@ -115,7 +117,7 @@ ScriptPromise SmartCardContext::listReaders(ScriptState* script_state,
   ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
 
-  request_ = resolver;
+  SetOperationInProgress(resolver);
   scard_context_->ListReaders(
       WTF::BindOnce(&SmartCardContext::OnListReadersDone, WrapPersistent(this),
                     WrapPersistent(resolver)));
@@ -152,7 +154,7 @@ ScriptPromise SmartCardContext::getStatusChange(
   ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
 
-  request_ = resolver;
+  SetOperationInProgress(resolver);
   scard_context_->GetStatusChange(
       timeout, ToMojomReaderStatesIn(reader_states),
       WTF::BindOnce(&SmartCardContext::OnGetStatusChangeDone,
@@ -178,7 +180,7 @@ ScriptPromise SmartCardContext::connect(ScriptState* script_state,
   Vector<V8SmartCardProtocol> preferred_protocols =
       options->getPreferredProtocolsOr(Vector<V8SmartCardProtocol>());
 
-  request_ = resolver;
+  SetOperationInProgress(resolver);
   scard_context_->Connect(
       reader_name, ToMojoSmartCardShareMode(access_mode),
       ToMojoSmartCardProtocols(preferred_protocols),
@@ -191,6 +193,7 @@ ScriptPromise SmartCardContext::connect(ScriptState* script_state,
 void SmartCardContext::Trace(Visitor* visitor) const {
   visitor->Trace(scard_context_);
   visitor->Trace(request_);
+  visitor->Trace(connections_);
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }
@@ -203,34 +206,79 @@ void SmartCardContext::Cancel() {
       WTF::BindOnce(&SmartCardContext::OnCancelDone, WrapPersistent(this)));
 }
 
-void SmartCardContext::CloseMojoConnection() {
-  scard_context_.reset();
-
-  auto reject = [](ScriptPromiseResolver* resolver) {
-    if (!resolver) {
-      return;
-    }
-    ScriptState* script_state = resolver->GetScriptState();
-    if (!IsInParallelAlgorithmRunnable(resolver->GetExecutionContext(),
-                                       script_state)) {
-      return;
-    }
-    ScriptState::Scope script_state_scope(script_state);
-    resolver->RejectWithDOMException(DOMExceptionCode::kInvalidStateError,
-                                     kContextUnavailable);
-  };
-
-  reject(request_.Release());
-}
-
 bool SmartCardContext::EnsureNoOperationInProgress(
     ExceptionState& exception_state) const {
   if (request_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "An operation is in progress.");
+                                      kContextBusy);
     return false;
   }
   return true;
+}
+
+void SmartCardContext::SetConnectionOperationInProgress(
+    ScriptPromiseResolver* resolver) {
+  SetOperationInProgress(resolver);
+  is_connection_request_ = true;
+}
+
+void SmartCardContext::SetOperationInProgress(ScriptPromiseResolver* resolver) {
+  if (request_ == resolver) {
+    // NOOP
+    return;
+  }
+
+  CHECK_EQ(request_, nullptr);
+  CHECK(!is_connection_request_);
+
+  request_ = resolver;
+}
+
+void SmartCardContext::ClearConnectionOperationInProgress(
+    ScriptPromiseResolver* resolver) {
+  CHECK(is_connection_request_);
+  is_connection_request_ = false;
+  ClearOperationInProgress(resolver);
+}
+
+void SmartCardContext::ClearOperationInProgress(
+    ScriptPromiseResolver* resolver) {
+  CHECK_EQ(request_, resolver);
+  CHECK(!is_connection_request_);
+  request_ = nullptr;
+
+  for (auto& connection : connections_) {
+    connection->OnOperationInProgressCleared();
+    // If that connection started a new operation, refrain from notifying the
+    // others.
+    if (request_) {
+      break;
+    }
+  }
+}
+
+bool SmartCardContext::IsOperationInProgress() const {
+  return request_ != nullptr;
+}
+
+void SmartCardContext::CloseMojoConnection() {
+  scard_context_.reset();
+
+  if (!request_ || is_connection_request_) {
+    return;
+  }
+
+  ScriptState* script_state = request_->GetScriptState();
+  if (!IsInParallelAlgorithmRunnable(request_->GetExecutionContext(),
+                                     script_state)) {
+    return;
+  }
+
+  ScriptState::Scope script_state_scope(script_state);
+  request_->RejectWithDOMException(DOMExceptionCode::kInvalidStateError,
+                                   kContextUnavailable);
+
+  ClearOperationInProgress(request_);
 }
 
 bool SmartCardContext::EnsureMojoConnection(
@@ -246,8 +294,7 @@ bool SmartCardContext::EnsureMojoConnection(
 void SmartCardContext::OnListReadersDone(
     ScriptPromiseResolver* resolver,
     device::mojom::blink::SmartCardListReadersResultPtr result) {
-  CHECK_EQ(request_, resolver);
-  request_ = nullptr;
+  ClearOperationInProgress(resolver);
 
   if (result->is_error()) {
     auto mojom_error = result->get_error();
@@ -259,8 +306,7 @@ void SmartCardContext::OnListReadersDone(
       return;
     }
 
-    auto* error = SmartCardError::Create(mojom_error);
-    resolver->Reject(error);
+    SmartCardError::Reject(resolver, mojom_error);
     return;
   }
 
@@ -272,8 +318,7 @@ void SmartCardContext::OnGetStatusChangeDone(
     AbortSignal* signal,
     AbortSignal::AlgorithmHandle* abort_handle,
     device::mojom::blink::SmartCardStatusChangeResultPtr result) {
-  CHECK_EQ(request_, resolver);
-  request_ = nullptr;
+  ClearOperationInProgress(resolver);
 
   if (signal && abort_handle) {
     signal->RemoveAlgorithm(abort_handle);
@@ -285,7 +330,7 @@ void SmartCardContext::OnGetStatusChangeDone(
             device::mojom::blink::SmartCardError::kCancelled) {
       RejectWithAbortionReason(resolver, signal);
     } else {
-      resolver->Reject(SmartCardError::Create(result->get_error()));
+      SmartCardError::Reject(resolver, result->get_error());
     }
     return;
   }
@@ -303,12 +348,10 @@ void SmartCardContext::OnCancelDone(
 void SmartCardContext::OnConnectDone(
     ScriptPromiseResolver* resolver,
     device::mojom::blink::SmartCardConnectResultPtr result) {
-  CHECK_EQ(request_, resolver);
-  request_ = nullptr;
+  ClearOperationInProgress(resolver);
 
   if (result->is_error()) {
-    auto* error = SmartCardError::Create(result->get_error());
-    resolver->Reject(error);
+    SmartCardError::Reject(resolver, result->get_error());
     return;
   }
 
@@ -318,6 +361,9 @@ void SmartCardContext::OnConnectDone(
   auto* connection = MakeGarbageCollected<SmartCardConnection>(
       std::move(success->connection), success->active_protocol, this,
       GetExecutionContext());
+  // Being a weak member, it will be automatically removed from the set when
+  // garbage-collected.
+  connections_.insert(connection);
 
   auto* blink_result = SmartCardConnectResult::Create();
   blink_result->setConnection(connection);

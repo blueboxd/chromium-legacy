@@ -62,11 +62,17 @@ LocalImageSearchService::~LocalImageSearchService() = default;
 
 void LocalImageSearchService::Search(
     const std::u16string& query,
+    size_t max_num_results,
     base::OnceCallback<void(const std::vector<FileSearchResult>&)> callback)
     const {
-  annotation_storage_.AsyncCall(&AnnotationStorage::PrefixSearch)
-      .WithArgs(query)
+  annotation_storage_.AsyncCall(&AnnotationStorage::Search)
+      .WithArgs(query, max_num_results)
       .Then(std::move(callback));
+}
+
+void LocalImageSearchService::Insert(const ImageInfo& image_info) {
+  annotation_storage_.AsyncCall(&AnnotationStorage::Insert)
+      .WithArgs(image_info);
 }
 
 }  // namespace app_list

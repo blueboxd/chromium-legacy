@@ -21,6 +21,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
@@ -703,7 +704,8 @@ void UserSelectionScreen::OnBeforeShow() {
 
 void UserSelectionScreen::OnUserStatusChecked(
     const AccountId& account_id,
-    TokenHandleUtil::TokenHandleStatus status) {
+    const std::string& token,
+    const TokenHandleUtil::TokenHandleStatus& status) {
   if (status == TokenHandleUtil::INVALID) {
     RecordReauthReason(account_id, ReauthReason::kInvalidTokenHandle);
     SetAuthType(account_id, proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
@@ -776,6 +778,7 @@ void UserSelectionScreen::Unlock(const AccountId& account_id) {
 }
 
 void UserSelectionScreen::OnSessionStateChanged() {
+  TRACE_EVENT0("login", "UserSelectionScreen::OnSessionStateChanged");
   if (!pending_focused_account_id_.has_value()) {
     return;
   }

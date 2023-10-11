@@ -26,7 +26,8 @@ class GameDashboardTestBase : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override;
-  void TearDown() override;
+
+  void AdvanceClock(base::TimeDelta delta);
 
  protected:
   // Returns true if the `GameDashboardController` is observing the `window`.

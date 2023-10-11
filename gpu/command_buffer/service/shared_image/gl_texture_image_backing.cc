@@ -29,6 +29,10 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/scoped_make_current.h"
 
+#if BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
+#include "gpu/command_buffer/service/shared_image/dawn_gl_texture_representation.h"
+#endif
+
 namespace gpu {
 
 namespace {
@@ -123,7 +127,7 @@ class SkiaGaneshImageRepresentationImpl : public SkiaGaneshImageRepresentation {
       const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override {
     CheckContext();
 
     if (!write_surfaces_.empty()) {
@@ -157,7 +161,7 @@ class SkiaGaneshImageRepresentationImpl : public SkiaGaneshImageRepresentation {
   std::vector<sk_sp<GrPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphore,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override {
     CheckContext();
 
     return promise_textures_;
@@ -177,7 +181,7 @@ class SkiaGaneshImageRepresentationImpl : public SkiaGaneshImageRepresentation {
   std::vector<sk_sp<GrPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override {
     CheckContext();
     return promise_textures_;
   }
@@ -368,6 +372,20 @@ std::unique_ptr<DawnImageRepresentation> GLTextureImageBacking::ProduceDawn(
     return nullptr;
   }
 
+#if BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
+  if (backend_type == wgpu::BackendType::OpenGLES) {
+    std::unique_ptr<GLTextureImageRepresentationBase> image;
+    if (IsPassthrough()) {
+      image = ProduceGLTexturePassthrough(manager, tracker);
+    } else {
+      image = ProduceGLTexture(manager, tracker);
+    }
+    auto result = std::make_unique<DawnGLTextureRepresentation>(
+        std::move(image), manager, this, tracker, device);
+    return result;
+  }
+#endif
+
   // Make SharedContextState from factory the current context
   SharedContextState* shared_context_state = factory()->GetSharedContextState();
   if (!shared_context_state->MakeCurrent(nullptr, true)) {
@@ -479,13 +497,7 @@ void GLTextureImageBacking::InitializeGLTexture(
     gl::ProgressReporter* progress_reporter,
     bool framebuffer_attachment_angle,
     std::string debug_label_from_client) {
-  // If the extension does not exist, pass an empty debug label to avoid
-  // subsequent crashes.
-  std::string debug_label;
-  if (gl::g_current_gl_driver->ext.b_GL_KHR_debug) {
-    debug_label = "GLSharedImage_" + debug_label_from_client;
-  }
-
+  const std::string debug_label = "GLSharedImage_" + debug_label_from_client;
   int num_planes = format().NumberOfPlanes();
   textures_.reserve(num_planes);
   for (int plane = 0; plane < num_planes; ++plane) {

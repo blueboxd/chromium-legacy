@@ -106,6 +106,8 @@ class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
   void PauseEvaluation() override;
   void ResumeEvaluation() override;
   mojom::blink::ServiceWorkerFetchHandlerType FetchHandlerType() override;
+  bool HasHidEventHandlers() override;
+  bool HasUsbEventHandlers() override;
 
   // WorkerReportingProxy overrides:
   void CountFeature(WebFeature) override;

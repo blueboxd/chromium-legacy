@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_illustrated_item.h"
 
+#import "base/apple/foundation_util.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/common/button_configuration_util.h"
@@ -45,7 +45,7 @@ constexpr CGFloat kButtonTopPadding = 14.0;
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:tableCell withStyler:styler];
   TableViewIllustratedCell* cell =
-      base::mac::ObjCCastStrict<TableViewIllustratedCell>(tableCell);
+      base::apple::ObjCCastStrict<TableViewIllustratedCell>(tableCell);
   if ([self.accessibilityIdentifier length]) {
     cell.accessibilityIdentifier = self.accessibilityIdentifier;
   }

@@ -29,9 +29,9 @@ public interface DropdownItemProcessor {
     PropertyModel createModel();
 
     /**
-     * @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean)
+     * Signals that the omnibox session has been activated or deactivated.
      */
-    default void onUrlFocusChange(boolean hasFocus) {}
+    default void onOmniboxSessionStateChange(boolean hasFocus) {}
 
     /**
      * Signals that native initialization has completed.
@@ -47,13 +47,6 @@ public interface DropdownItemProcessor {
      * Return if the suggestion view can have background rounding.
      */
     default boolean allowBackgroundRounding() {
-        return false;
-    }
-
-    /**
-     * Return whether this suggestion can host OmniboxAction chips.
-     */
-    default boolean allowOmniboxActions() {
         return false;
     }
 }

@@ -52,7 +52,8 @@ TEST_P(PrecedenceOverAutocompleteTest, PrecedenceOverAutocompleteParams) {
   field.SetHtmlType(test_case.html_field_type, HtmlFieldMode::kNone);
   field.set_server_predictions(
       {test::CreateFieldPrediction(test_case.server_type)});
-  field.set_heuristic_type(GetActivePatternSource(), test_case.heuristic_type);
+  field.set_heuristic_type(GetActiveHeuristicSource(),
+                           test_case.heuristic_type);
   EXPECT_EQ(test_case.expected_result, field.ComputedType().GetStorableType());
 }
 
@@ -356,7 +357,8 @@ TEST_P(AutofillLocalHeuristicsOverridesTest,
   field.SetHtmlType(test_case.html_field_type, HtmlFieldMode::kNone);
   field.set_server_predictions(
       {test::CreateFieldPrediction(test_case.server_type)});
-  field.set_heuristic_type(GetActivePatternSource(), test_case.heuristic_type);
+  field.set_heuristic_type(GetActiveHeuristicSource(),
+                           test_case.heuristic_type);
   EXPECT_EQ(test_case.expected_result, field.ComputedType().GetStorableType());
 }
 
@@ -404,6 +406,16 @@ INSTANTIATE_TEST_SUITE_P(
             .server_type = ADDRESS_HOME_STREET_ADDRESS,
             .heuristic_type = ADDRESS_HOME_DEPENDENT_LOCALITY,
             .expected_result = ADDRESS_HOME_DEPENDENT_LOCALITY},
+        AutofillLocalHeuristicsOverridesParams{
+            .html_field_type = HtmlFieldType::kAddressLine2,
+            .server_type = ADDRESS_HOME_LINE2,
+            .heuristic_type = ADDRESS_HOME_OVERFLOW_AND_LANDMARK,
+            .expected_result = ADDRESS_HOME_OVERFLOW_AND_LANDMARK},
+        AutofillLocalHeuristicsOverridesParams{
+            .html_field_type = HtmlFieldType::kAddressLine2,
+            .server_type = ADDRESS_HOME_LINE2,
+            .heuristic_type = ADDRESS_HOME_OVERFLOW,
+            .expected_result = ADDRESS_HOME_OVERFLOW},
         // Final type is unknown if the html type is not valid.
         AutofillLocalHeuristicsOverridesParams{
             .html_field_type = HtmlFieldType::kUnrecognized,

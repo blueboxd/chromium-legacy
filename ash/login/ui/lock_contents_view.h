@@ -42,7 +42,9 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace keyboard {
 class KeyboardUIController;
@@ -87,7 +89,8 @@ class ASH_EXPORT LockContentsView
       public display::DisplayObserver,
       public KeyboardControllerObserver,
       public chromeos::PowerManagerClient::Observer,
-      public EnterpriseDomainObserver {
+      public EnterpriseDomainObserver,
+      public views::FocusChangeListener {
  public:
   METADATA_HEADER(LockContentsView);
   friend class LockContentsViewTestApi;
@@ -129,6 +132,7 @@ class ASH_EXPORT LockContentsView
   // views::View:
   void Layout() override;
   void AddedToWidget() override;
+  void RemovedFromWidget() override;
   void OnFocus() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
@@ -232,6 +236,9 @@ class ASH_EXPORT LockContentsView
   void CreateMediaControlsLayout();
   void HideMediaControlsLayout();
   bool AreMediaControlsEnabled() const;
+
+  void OnWillChangeFocus(View* focused_before, View* focused_now) override;
+  void OnDidChangeFocus(View* focused_before, View* focused_now) override;
 
  private:
   using DisplayLayoutAction = base::RepeatingCallback<void(bool landscape)>;
@@ -418,7 +425,7 @@ class ASH_EXPORT LockContentsView
 
   std::vector<UserState> users_;
 
-  const raw_ptr<LoginDataDispatcher, ExperimentalAsh>
+  const raw_ptr<LoginDataDispatcher, LeakedDanglingUntriaged | ExperimentalAsh>
       data_dispatcher_;  // Unowned.
   std::unique_ptr<LoginDetachableBaseModel> detachable_base_model_;
 
@@ -539,6 +546,10 @@ class ASH_EXPORT LockContentsView
   // When OnUsersChanged called during authentication this object stores
   // the users info till the authentication finished.
   absl::optional<std::vector<LoginUserInfo>> pending_users_change_;
+
+  // The widget this view is attached to. This field is here so that we can
+  // remove `this` as FocusChangeListener in `RemovedFromWidget`.
+  base::WeakPtr<views::Widget> widget_;
 
   base::WeakPtrFactory<LockContentsView> weak_ptr_factory_{this};
 };

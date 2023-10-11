@@ -123,6 +123,9 @@ class IOSChromeSafetyCheckManager
   std::vector<password_manager::CredentialUIEntry> GetInsecureCredentials()
       const;
 
+  // Returns the time of the last Safety Check run, if ever.
+  base::Time GetLastSafetyCheckRunTime() const;
+
   // For unit-testing only.
   void StartOmahaCheckForTesting();
   void HandleOmahaResponseForTesting(UpgradeRecommendedDetails details);
@@ -216,6 +219,9 @@ class IOSChromeSafetyCheckManager
   // observers of the change.
   void RefreshSafetyCheckRunningState();
 
+  // Logs the time of the current Safety Check run to Prefs.
+  void LogCurrentSafetyCheckRunTime();
+
   // Current running state of the Safety Check. If any checks are currently
   // running (e.g. Safe Browsing check, Update Chrome check, Passwords Check),
   // then the Safety Check is considered to be running, too. For example:
@@ -266,6 +272,9 @@ class IOSChromeSafetyCheckManager
   UpdateChromeSafetyCheckState previous_update_chrome_check_state_ =
       UpdateChromeSafetyCheckState::kDefault;
 
+  // The last time the Safety Check was run, if ever.
+  base::Time last_safety_check_run_time_;
+
   // If `ignore_omaha_changes_` is true when either
   // `HandleOmahaResponse()` or `HandleOmahaError()` are called, nothing
   // happens. Effectively, this enables users to cancel a currently running
@@ -298,7 +307,7 @@ class IOSChromeSafetyCheckManager
   std::string next_version_;
 
   // Observers to listen to Safety Check changes.
-  base::ObserverList<IOSChromeSafetyCheckManagerObserver> observers_;
+  base::ObserverList<IOSChromeSafetyCheckManagerObserver, true> observers_;
 
   // Weak pointer to the pref service, which checks the user's Enhanced Safe
   // Browsing state.

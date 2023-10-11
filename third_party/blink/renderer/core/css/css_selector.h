@@ -227,6 +227,8 @@ class CORE_EXPORT CSSSelector {
     kPseudoCornerPresent,
     kPseudoDecrement,
     kPseudoDefault,
+    kPseudoDetailsContent,
+    kPseudoDetailsSummary,
     kPseudoDialogInTopLayer,
     kPseudoDisabled,
     kPseudoDoubleButton,
@@ -294,6 +296,8 @@ class CORE_EXPORT CSSSelector {
     // selector (&), or a :scope pseudo-class, and must therefore be kept
     // for serialization purposes.
     kPseudoUnparsed,
+    kPseudoUserInvalid,
+    kPseudoUserValid,
     kPseudoValid,
     kPseudoVertical,
     kPseudoVisited,

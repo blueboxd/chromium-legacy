@@ -49,13 +49,12 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
-import org.chromium.url.ShadowGURL;
 
 /**
  * Test for {@link HomepageSettings} to check the UI components and the interactions.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(shadows = {ShadowGURL.class, ShadowUrlFormatter.class, ShadowLooper.class})
+@Config(shadows = {ShadowUrlFormatter.class, ShadowLooper.class})
 public class HomepageSettingsUnitTest {
     private static final String ASSERT_MESSAGE_SWITCH_ENABLE = "Switch should be enabled.";
     private static final String ASSERT_MESSAGE_SWITCH_DISABLE = "Switch should be disabled.";
@@ -82,9 +81,9 @@ public class HomepageSettingsUnitTest {
     private static final String ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH =
             "HomepageLocationType is different than test settings.";
 
-    private static final String TEST_URL_FOO = JUnitTestGURLs.URL_1;
-    private static final String TEST_URL_BAR = JUnitTestGURLs.URL_2;
-    private static final String CHROME_NTP = JUnitTestGURLs.NTP_URL;
+    private static final String TEST_URL_FOO = JUnitTestGURLs.URL_1.getSpec();
+    private static final String TEST_URL_BAR = JUnitTestGURLs.URL_2.getSpec();
+    private static final String CHROME_NTP = JUnitTestGURLs.NTP_URL.getSpec();
 
     @Implements(UrlFormatter.class)
     static class ShadowUrlFormatter {
@@ -252,7 +251,7 @@ public class HomepageSettingsUnitTest {
     @SmallTest
     @Feature({"Homepage"})
     public void testStartUp_Policies_Customized() {
-        setHomepagePolicy(JUnitTestGURLs.getGURL(TEST_URL_BAR));
+        setHomepagePolicy(new GURL(TEST_URL_BAR));
 
         launchHomepageSettings();
 
@@ -281,7 +280,7 @@ public class HomepageSettingsUnitTest {
     @SmallTest
     @Feature({"Homepage"})
     public void testStartUp_Policies_NTP() {
-        setHomepagePolicy(JUnitTestGURLs.getGURL(CHROME_NTP));
+        setHomepagePolicy(new GURL(CHROME_NTP));
 
         launchHomepageSettings();
 

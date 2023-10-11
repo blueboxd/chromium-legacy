@@ -12,8 +12,6 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
-import static org.chromium.url.JUnitTestGURLs.URL_1;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,6 +29,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content.browser.GestureListenerManagerImpl;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadCommittedDetails;
@@ -43,7 +42,7 @@ import org.chromium.url.JUnitTestGURLs;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS,
+@EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS,
         ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS_ALTERNATIVE_IMPL})
 public class EngagementSignalsInitialScrollObserverUnitTest {
     private static final int SCROLL_EXTENT = 100;
@@ -102,7 +101,7 @@ public class EngagementSignalsInitialScrollObserverUnitTest {
         gestureStateListener.onScrollStarted(0, SCROLL_EXTENT, false);
         assertTrue(mInitialScrollObserver.hasCurrentPageHadScrollDown());
 
-        var details = new LoadCommittedDetails(0, JUnitTestGURLs.getGURL(URL_1), false,
+        var details = new LoadCommittedDetails(0, JUnitTestGURLs.URL_1, false,
                 /*isSameDocument=*/false, /*isMainFrame=*/true, 200);
         webContentsObserver.navigationEntryCommitted(details);
         assertFalse(mInitialScrollObserver.hasCurrentPageHadScrollDown());

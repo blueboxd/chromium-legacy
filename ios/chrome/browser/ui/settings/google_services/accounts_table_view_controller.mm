@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 
+#import "base/apple/foundation_util.h"
 #import "base/feature_list.h"
-#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
@@ -547,7 +547,7 @@ constexpr CGFloat kErrorSymbolSize = 22.;
     case SectionIdentifierSignOut: {
       // Might be a different type of footer.
       TableViewLinkHeaderFooterView* linkView =
-          base::mac::ObjCCast<TableViewLinkHeaderFooterView>(view);
+          base::apple::ObjCCast<TableViewLinkHeaderFooterView>(view);
       linkView.delegate = self;
       break;
     }
@@ -572,7 +572,7 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   switch (itemType) {
     case ItemTypeAccount: {
       TableViewAccountItem* item =
-          base::mac::ObjCCastStrict<TableViewAccountItem>(
+          base::apple::ObjCCastStrict<TableViewAccountItem>(
               [self.tableViewModel itemAtIndexPath:indexPath]);
       DCHECK(item.identity);
 
@@ -586,10 +586,6 @@ constexpr CGFloat kErrorSymbolSize = 22.;
       break;
     }
     case ItemTypeSignOut: {
-      if ([self isAccountSignedInNotSyncing]) {
-        [self signOut];
-        break;
-      }
       UIView* itemView =
           [[tableView cellForRowAtIndexPath:indexPath] contentView];
       [self showSignOutWithItemView:itemView];
@@ -647,7 +643,8 @@ constexpr CGFloat kErrorSymbolSize = 22.;
                identity:nil
             accessPoint:AccessPoint::ACCESS_POINT_SETTINGS
             promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO
-               callback:^(SigninCoordinatorResult result) {
+               callback:^(SigninCoordinatorResult result,
+                          SigninCompletionInfo* completionInfo) {
                  BOOL success = result == SigninCoordinatorResultSuccess;
                  [weakSelf handleDidAddAccount:success];
                }];
@@ -826,7 +823,7 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   _isBeingDismissed = YES;
   __weak __typeof(self) weakSelf = self;
   void (^popAccountsTableViewController)() = ^() {
-    [base::mac::ObjCCastStrict<SettingsNavigationController>(
+    [base::apple::ObjCCastStrict<SettingsNavigationController>(
         weakSelf.navigationController)
         popViewControllerOrCloseSettingsAnimated:YES];
   };
@@ -881,8 +878,9 @@ constexpr CGFloat kErrorSymbolSize = 22.;
 #pragma mark - ChromeAccountManagerServiceObserver
 
 - (void)identityUpdated:(id<SystemIdentity>)identity {
-  TableViewAccountItem* item = base::mac::ObjCCastStrict<TableViewAccountItem>(
-      [_identityMap objectForKey:identity.gaiaID]);
+  TableViewAccountItem* item =
+      base::apple::ObjCCastStrict<TableViewAccountItem>(
+          [_identityMap objectForKey:identity.gaiaID]);
   if (!item) {
     return;
   }
@@ -1001,32 +999,4 @@ constexpr CGFloat kErrorSymbolSize = 22.;
               ->HasSyncConsent();
 }
 
-// Signs out without showing action sheet.
-// Used when the user is signed in not syncing.
-- (void)signOut {
-  if (![self authService]->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
-    // This could happen if the account somehow got removed after the UI was
-    // created.
-    return;
-  }
-  CHECK([self isAccountSignedInNotSyncing]);
-  if (_authenticationOperationInProgress) {
-    return;
-  }
-  _authenticationOperationInProgress = YES;
-  [self preventUserInteraction];
-  signin_metrics::RecordSignoutUserAction(/*force_clear_data=*/false);
-  __weak AccountsTableViewController* weakSelf = self;
-  ProceduralBlock signOutCompletion = ^() {
-    __strong AccountsTableViewController* strongSelf = weakSelf;
-    if (!strongSelf) {
-      return;
-    }
-    [strongSelf allowUserInteraction];
-    [strongSelf handleAuthenticationOperationDidFinish];
-  };
-  [self authService]->SignOut(
-      signin_metrics::ProfileSignout::kUserClickedSignoutSettings,
-      /*force_clear_browsing_data=*/NO, signOutCompletion);
-}
 @end

@@ -700,7 +700,8 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRuleContents(
         id != CSSAtRuleID::kCSSAtRuleContainer &&  // [css-contain-3]
         id != CSSAtRuleID::kCSSAtRuleLayer &&      // [css-cascade-5]
         id != CSSAtRuleID::kCSSAtRuleScope &&      // [css-cascade-6]
-        id != CSSAtRuleID::kCSSAtRuleStartingStyle) {
+        id != CSSAtRuleID::kCSSAtRuleStartingStyle &&
+        id != CSSAtRuleID::kCSSAtRuleViewTransitions) {
       ConsumeErroneousAtRule(stream, id);
       return nullptr;
     }
@@ -758,6 +759,8 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRuleContents(
     DCHECK_LE(allowed_rules, kRegularRules);
 
     switch (id) {
+      case CSSAtRuleID::kCSSAtRuleViewTransitions:
+        return ConsumeViewTransitionsRule(stream);
       case CSSAtRuleID::kCSSAtRuleContainer:
         return ConsumeContainerRule(stream, nesting_type,
                                     parent_rule_for_nesting);
@@ -985,14 +988,38 @@ StyleRuleNamespace* CSSParserImpl::ConsumeNamespaceRule(
 }
 
 StyleRule* CSSParserImpl::CreateImplicitNestedRule(
+    CSSNestingType nesting_type,
     StyleRule* parent_rule_for_nesting) {
-  constexpr bool kNotExplicit =
-      false;  // The rule is implicit, but the & is not.
-  CSSSelector parent_selector(parent_rule_for_nesting, kNotExplicit);
-  parent_selector.SetLastInComplexSelector(true);
-  parent_selector.SetLastInSelectorList(true);
+  constexpr bool kNotImplicit =
+      false;  // The rule is implicit, but the &/:scope is not.
+
+  HeapVector<CSSSelector, 2> selectors;
+
+  switch (nesting_type) {
+    case CSSNestingType::kNone:
+      NOTREACHED();
+      break;
+    case CSSNestingType::kNesting:
+      // kPseudoParent
+      selectors.push_back(CSSSelector(parent_rule_for_nesting, kNotImplicit));
+      break;
+    case CSSNestingType::kScope: {
+      // See CSSSelector::RelationType::kScopeActivation.
+      CSSSelector selector;
+      selector.SetTrue();
+      selector.SetRelation(CSSSelector::kScopeActivation);
+      selectors.push_back(selector);
+      selectors.push_back(CSSSelector(AtomicString("scope"), kNotImplicit));
+      break;
+    }
+  }
+
+  CHECK(!selectors.empty());
+  selectors.back().SetLastInComplexSelector(true);
+  selectors.back().SetLastInSelectorList(true);
+
   return StyleRule::Create(
-      base::span<CSSSelector>{&parent_selector, 1u},
+      base::span<CSSSelector>{selectors.data(), selectors.size()},
       CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }
 
@@ -1577,6 +1604,37 @@ StyleRuleBase* CSSParserImpl::ConsumeScopeRule(
   return MakeGarbageCollected<StyleRuleScope>(*style_scope, std::move(rules));
 }
 
+StyleRuleViewTransitions* CSSParserImpl::ConsumeViewTransitionsRule(
+    CSSParserTokenStream& stream) {
+  CHECK(RuntimeEnabledFeatures::ViewTransitionOnNavigationEnabled());
+  wtf_size_t prelude_offset_start = stream.LookAheadOffset();
+  [[maybe_unused]] CSSParserTokenRange prelude = ConsumeAtRulePrelude(stream);
+  wtf_size_t prelude_offset_end = stream.LookAheadOffset();
+  if (!ConsumeEndOfPreludeForAtRuleWithBlock(stream)) {
+    return nullptr;
+  }
+
+  if (!prelude.AtEnd()) {
+    return nullptr;  // Parse error; @view-transitions prelude should be empty
+  }
+
+  CSSParserTokenStream::BlockGuard guard(stream);
+
+  if (observer_) {
+    observer_->StartRuleHeader(StyleRule::kViewTransitions,
+                               prelude_offset_start);
+    observer_->EndRuleHeader(prelude_offset_end);
+  }
+
+  ConsumeDeclarationList(stream, StyleRule::kViewTransitions,
+                         CSSNestingType::kNone,
+                         /*parent_rule_for_nesting=*/nullptr,
+                         /*child_rules=*/nullptr);
+
+  return MakeGarbageCollected<StyleRuleViewTransitions>(
+      *CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
+}
+
 StyleRuleContainer* CSSParserImpl::ConsumeContainerRule(
     CSSParserTokenStream& stream,
     CSSNestingType nesting_type,
@@ -2000,7 +2058,7 @@ void CSSParserImpl::ConsumeDeclarationList(
       rule_type == StyleRule::kCounterStyle ||
       rule_type == StyleRule::kFontPaletteValues ||
       rule_type == StyleRule::kKeyframe || rule_type == StyleRule::kScope ||
-      rule_type == StyleRule::kTry;
+      rule_type == StyleRule::kViewTransitions || rule_type == StyleRule::kTry;
   bool use_observer = observer_ && is_observer_rule_type;
   if (use_observer) {
     observer_->StartRuleBody(stream.Offset());
@@ -2148,7 +2206,7 @@ void CSSParserImpl::ConsumeRuleListOrNestedDeclarationList(
                            parent_rule_for_nesting, child_rules);
     if (!parsed_properties_.empty()) {
       child_rules->push_front(
-          CreateImplicitNestedRule(parent_rule_for_nesting));
+          CreateImplicitNestedRule(nesting_type, parent_rule_for_nesting));
     }
   } else {
     ConsumeRuleList(stream, kRegularRuleList, nesting_type,
@@ -2211,7 +2269,8 @@ bool CSSParserImpl::ConsumeDeclaration(CSSParserTokenStream& stream,
   if (rule_type == StyleRule::kFontFace ||
       rule_type == StyleRule::kFontPaletteValues ||
       rule_type == StyleRule::kProperty ||
-      rule_type == StyleRule::kCounterStyle) {
+      rule_type == StyleRule::kCounterStyle ||
+      rule_type == StyleRule::kViewTransitions) {
     if (important) {  // Invalid
       return false;
     }

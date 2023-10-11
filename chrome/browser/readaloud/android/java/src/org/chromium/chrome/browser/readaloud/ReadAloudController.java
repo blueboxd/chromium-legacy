@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.readaloud;
 
 import android.content.Context;
+import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -13,10 +14,16 @@ import org.chromium.base.Log;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.readaloud.expandedplayer.ExpandedPlayerCoordinator;
+import org.chromium.chrome.browser.readaloud.miniplayer.MiniPlayerCoordinator;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelTabObserver;
+import org.chromium.chrome.browser.translate.TranslateBridge;
+import org.chromium.chrome.modules.readaloud.ExpandedPlayer;
+import org.chromium.chrome.modules.readaloud.PlaybackArgs;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.url.GURL;
 
@@ -36,6 +43,9 @@ public class ReadAloudController {
     private final Map<String, Boolean> mTimepointsSupportedMap = new HashMap<>();
     private final HashSet<String> mPendingRequests = new HashSet<>();
     private final TabModel mTabModel;
+    private final MiniPlayerCoordinator mMiniPlayer;
+    private final ExpandedPlayer mExpandedPlayer;
+    private final PlayerController mPlayerController;
     private TabModelTabObserver mTabObserver;
 
     private final ReadAloudReadabilityHooks mReadabilityHooks;
@@ -67,36 +77,51 @@ public class ReadAloudController {
                 }
             };
 
-    public ReadAloudController(
-            Context context, ObservableSupplier<Profile> profileSupplier, TabModel tabModel) {
+    public ReadAloudController(Context context, ObservableSupplier<Profile> profileSupplier,
+            TabModel tabModel, ViewStub miniPlayerStub,
+            BottomSheetController bottomSheetController) {
         mProfileSupplier = profileSupplier;
         mTabModel = tabModel;
         mReadabilityHooks = sReadabilityHooksForTesting != null
                 ? sReadabilityHooksForTesting
                 : new ReadAloudReadabilityHooksImpl(context, /* apiKeyOverride= */ null);
+        mMiniPlayer = new MiniPlayerCoordinator(miniPlayerStub);
+        mExpandedPlayer = new ExpandedPlayerCoordinator(context, bottomSheetController);
+        mPlayerController = new PlayerController(mMiniPlayer, mExpandedPlayer);
         if (mReadabilityHooks.isEnabled()) {
             mTabObserver = new TabModelTabObserver(mTabModel) {
                 @Override
                 public void onPageLoadStarted(Tab tab, GURL url) {
                     Log.i(TAG, "onPageLoad called for %s", url.getPossiblyInvalidSpec());
-                    if (!isURLReadAloudSupported(url)) {
-                        return;
-                    }
-                    String urlSpec = url.getSpec();
-                    if (mReadabilityMap.containsKey(urlSpec)
-                            || mPendingRequests.contains(urlSpec)) {
-                        return;
-                    }
+                    maybeCheckReadability(url);
+                }
 
-                    if (!isAvailable()) {
-                        return;
-                    }
-
-                    mPendingRequests.add(urlSpec);
-                    mReadabilityHooks.isPageReadable(urlSpec, mReadabilityCallback);
+                @Override
+                protected void onTabSelected(Tab tab) {
+                    Log.i(TAG, "onTabSelected called for" + tab.getUrl().getPossiblyInvalidSpec());
+                    super.onTabSelected(tab);
+                    maybeCheckReadability(tab.getUrl());
                 }
             };
         }
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+    public void maybeCheckReadability(GURL url) {
+        if (!isURLReadAloudSupported(url)) {
+            return;
+        }
+        String urlSpec = url.getSpec();
+        if (mReadabilityMap.containsKey(urlSpec) || mPendingRequests.contains(urlSpec)) {
+            return;
+        }
+
+        if (!isAvailable()) {
+            return;
+        }
+
+        mPendingRequests.add(urlSpec);
+        mReadabilityHooks.isPageReadable(urlSpec, mReadabilityCallback);
     }
 
     /**
@@ -145,6 +170,13 @@ public class ReadAloudController {
 
     public void playTab(Tab tab) {
         Log.e(TAG, "playTab() not implemented.");
+        PlaybackArgs args =
+                new PlaybackArgs(tab.getUrl().getSpec(), TranslateBridge.getCurrentLanguage(tab),
+                        /* voice=*/null, /* dateModifiedMsSinceEpock=*/0);
+        // TODO request playback here and call mPlayerController.playbackReady()
+
+        // Notify player UI that playback is happening soon.
+        mPlayerController.playTabRequested(tab);
     }
 
     /**
@@ -164,16 +196,13 @@ public class ReadAloudController {
         if (mTabObserver != null) {
             mTabObserver.destroy();
         }
+        // Stop playback and hide players.
+        mPlayerController.destroy();
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     public static void setReadabilityHooks(ReadAloudReadabilityHooks hooks) {
         sReadabilityHooksForTesting = hooks;
         ResettersForTesting.register(() -> sReadabilityHooksForTesting = null);
-    }
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
-    public TabModelTabObserver getTabModelTabObserver() {
-        return mTabObserver;
     }
 }

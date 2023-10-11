@@ -52,6 +52,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/highlight_border.h"
 #include "ui/views/layout/fill_layout.h"
@@ -189,6 +190,7 @@ class HomeButton::ButtonImageView : public views::View {
   void UpdateForShelfConfigChange() {
     layer()->SetBackgroundBlur(
         ShelfConfig::Get()->GetShelfControlButtonBlurRadius());
+    layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
     UpdateBackground();
   }
 
@@ -462,8 +464,6 @@ void HomeButton::ButtonPressed(views::Button* sender,
 }
 
 void HomeButton::OnShelfConfigUpdated() {
-  const float radius = ShelfConfig::Get()->control_border_radius();
-  layer()->SetRoundedCornerRadius({radius, radius, radius, radius});
   button_image_view_->UpdateForShelfConfigChange();
 }
 
@@ -702,8 +702,8 @@ void HomeButton::CreateQuickAppButton() {
   quick_app_button_ = expandable_container_->AddChildView(
       std::make_unique<views::ImageButton>(base::BindRepeating(
           &HomeButton::QuickAppButtonPressed, base::Unretained(this))));
-  // TODO(b/266734005): Replace with localized string once finalized.
-  quick_app_button_->SetAccessibleName(u"QuickApp");
+  quick_app_button_->SetAccessibleName(
+      AppListModelProvider::Get()->quick_app_access_model()->GetAppName());
 
   const int control_size = ShelfControlButton::CalculatePreferredSize().width();
 
@@ -715,6 +715,13 @@ void HomeButton::CreateQuickAppButton() {
       views::Button::STATE_NORMAL,
       AppListModelProvider::Get()->quick_app_access_model()->GetAppIcon(
           preferred_size));
+  views::HighlightPathGenerator::Install(
+      quick_app_button_,
+      std::make_unique<views::RoundRectHighlightPathGenerator>(
+          gfx::Insets(views::FocusRing::kDefaultHaloThickness / 2),
+          ShelfConfig::Get()->control_border_radius()));
+  views::FocusRing::Get(quick_app_button_)
+      ->SetColorId(cros_tokens::kCrosSysFocusRing);
   quick_app_button_->SetSize(preferred_size);
 
   shelf_->shelf_layout_manager()->LayoutShelf(false);

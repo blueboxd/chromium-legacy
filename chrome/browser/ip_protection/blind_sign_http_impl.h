@@ -18,25 +18,24 @@ class SimpleURLLoader;
 }  // namespace network
 class BlindSignHttpImpl : public quiche::BlindSignHttpInterface {
  public:
-  static constexpr char kIpProtectionServerUrl[] =
-      "https://autopush-phosphor-pa.sandbox.googleapis.com";
-
   explicit BlindSignHttpImpl(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~BlindSignHttpImpl() override;
 
-  void DoRequest(const std::string& path_and_query,
+  void DoRequest(quiche::BlindSignHttpRequestType request_type,
                  const std::string& authorization_header,
                  const std::string& body,
                  quiche::BlindSignHttpCallback callback) override;
 
  private:
-  void OnRequestCompleted(std::unique_ptr<std::string> response);
+  void OnRequestCompleted(std::unique_ptr<network::SimpleURLLoader> url_loader,
+                          quiche::BlindSignHttpCallback callback,
+                          std::unique_ptr<std::string> response);
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  std::unique_ptr<network::SimpleURLLoader> url_loader_;
-  quiche::BlindSignHttpCallback callback_;
 
   const GURL ip_protection_server_url_;
+  const std::string ip_protection_server_get_initial_data_path_;
+  const std::string ip_protection_server_get_tokens_path_;
 
   base::WeakPtrFactory<BlindSignHttpImpl> weak_ptr_factory_{this};
 };

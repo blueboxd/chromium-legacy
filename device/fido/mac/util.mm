@@ -10,10 +10,10 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/apple/foundation_util.h"
+#include "base/apple/osstatus_logging.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/functional/bind.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/mac_logging.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/branding_buildflags.h"
@@ -26,7 +26,7 @@
 
 namespace device::fido::mac {
 
-using base::ScopedCFTypeRef;
+using base::apple::ScopedCFTypeRef;
 using cbor::Value;
 using cbor::Writer;
 
@@ -172,7 +172,7 @@ CodeSigningState ProcessIsSigned() {
   // `@available` cannot be negated, so the code is a little awkward around
   // that.
 
-  base::ScopedCFTypeRef<SecTaskRef> task;
+  base::apple::ScopedCFTypeRef<SecTaskRef> task;
   if (@available(macOS 10.12, *)) {
     task.reset(SecTaskCreateFromSelf(nullptr));
     if (!task) {
@@ -182,7 +182,7 @@ CodeSigningState ProcessIsSigned() {
     return CodeSigningState::kUnknown;
   }
 
-  base::ScopedCFTypeRef<CFStringRef> sign_id(
+  base::apple::ScopedCFTypeRef<CFStringRef> sign_id(
       SecTaskCopySigningIdentifier(task.get(), /*error=*/nullptr));
   return static_cast<bool>(sign_id) ? CodeSigningState::kSigned
                                     : CodeSigningState::kNotSigned;

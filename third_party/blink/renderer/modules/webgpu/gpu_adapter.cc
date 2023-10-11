@@ -53,6 +53,14 @@ absl::optional<V8GPUFeatureName::Enum> ToV8FeatureNameEnum(WGPUFeatureName f) {
       return V8GPUFeatureName::Enum::kBgra8UnormStorage;
     case WGPUFeatureName_ChromiumExperimentalDp4a:
       return V8GPUFeatureName::Enum::kChromiumExperimentalDp4A;
+    case WGPUFeatureName_ChromiumExperimentalReadWriteStorageTexture:
+      return V8GPUFeatureName::Enum::
+          kChromiumExperimentalReadWriteStorageTexture;
+    case WGPUFeatureName_ChromiumExperimentalSubgroups:
+      return V8GPUFeatureName::Enum::kChromiumExperimentalSubgroups;
+    case WGPUFeatureName_ChromiumExperimentalSubgroupUniformControlFlow:
+      return V8GPUFeatureName::Enum::
+          kChromiumExperimentalSubgroupUniformControlFlow;
     case WGPUFeatureName_ShaderF16:
       return V8GPUFeatureName::Enum::kShaderF16;
     case WGPUFeatureName_Float32Filterable:
@@ -271,7 +279,11 @@ ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
     required_features.AppendRange(required_features_set.begin(),
                                   required_features_set.end());
     dawn_desc.requiredFeatures = required_features.data();
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+    dawn_desc.requiredFeatureCount = required_features.size();
+#else
     dawn_desc.requiredFeaturesCount = required_features.size();
+#endif
   }
 
   auto* callback = BindWGPUOnceCallback(

@@ -74,7 +74,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/screen_ai/screen_ai_downloader.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/site_isolation/prefs_observer.h"
 #include "chrome/browser/ssl/secure_origin_prefs_observer.h"
@@ -212,7 +211,7 @@
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/first_run/upgrade_util.h"
-#include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/profiles/profile_picker.h"
 #include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 #endif
 
@@ -227,9 +226,11 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/telemetry/chromeos_telemetry_extensions_browser_api_provider.h"
 #include "chrome/browser/hid/hid_pinned_notification.h"
+#include "chrome/browser/screen_ai/screen_ai_downloader_chromeos.h"
 #include "chrome/browser/usb/usb_pinned_notification.h"
 #elif !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/hid/hid_status_icon.h"
+#include "chrome/browser/screen_ai/screen_ai_downloader_non_chromeos.h"
 #include "chrome/browser/usb/usb_status_icon.h"
 #endif
 
@@ -428,8 +429,6 @@ void BrowserProcessImpl::StartTearDown() {
   // |tearing_down_| necessary in IsShuttingDown().
   tearing_down_ = true;
   DCHECK(IsShuttingDown());
-
-  platform_part()->BeginStartTearDown();
 
 #if BUILDFLAG(IS_ANDROID)
   accessibility_prefs_controller_.reset();
@@ -1222,9 +1221,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 
   platform_part_->PreMainMessageLoopRun();
 
-  if (base::FeatureList::IsEnabled(network_time::kNetworkTimeServiceQuerying)) {
-    CreateNetworkTimeTracker();
-  }
+  CreateNetworkTimeTracker();
 
   CreateNetworkQualityObserver();
 
@@ -1244,7 +1241,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  screen_ai_download_ = std::make_unique<screen_ai::ScreenAIDownloader>();
+  screen_ai_download_ = screen_ai::ScreenAIInstallState::Create();
 #endif
 
   base::FilePath user_data_dir;

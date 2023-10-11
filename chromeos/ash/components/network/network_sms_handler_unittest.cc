@@ -8,9 +8,12 @@
 #include <set>
 #include <string>
 
+#include "ash/constants/ash_features.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chromeos/ash/components/dbus/shill/fake_sms_client.h"
 #include "chromeos/ash/components/dbus/shill/modem_messaging_client.h"
@@ -32,6 +35,11 @@ const char kCellularDeviceObjectPath2[] =
     "/org/freedesktop/ModemManager1/stub/0/Modem/1";
 const char kSmsPath[] = "/SMS/0";
 
+struct NetworkSmsHandlerTestCase {
+  std::string test_name;
+  bool use_suppress_text_message_flag;
+};
+
 class TestObserver : public NetworkSmsHandler::Observer {
  public:
   TestObserver() = default;
@@ -41,6 +49,20 @@ class TestObserver : public NetworkSmsHandler::Observer {
     const std::string* text = message.FindString(NetworkSmsHandler::kTextKey);
     if (text)
       messages_.insert(*text);
+  }
+
+  void MessageReceivedFromNetwork(const std::string& guid,
+                                  const TextMessageData& mesage_data) override {
+    if (mesage_data.text.has_value()) {
+      messages_.insert(*mesage_data.text);
+    }
+    if (mesage_data.number.has_value()) {
+      EXPECT_EQ(FakeSMSClient::kNumber, *mesage_data.number);
+    }
+
+    if (mesage_data.timestamp.has_value()) {
+      EXPECT_EQ(FakeSMSClient::kTimestamp, *mesage_data.timestamp);
+    }
   }
 
   void ClearMessages() {
@@ -58,7 +80,9 @@ class TestObserver : public NetworkSmsHandler::Observer {
 
 }  // namespace
 
-class NetworkSmsHandlerTest : public testing::Test {
+class NetworkSmsHandlerTest
+    : public testing::Test,
+      public testing::WithParamInterface<NetworkSmsHandlerTestCase> {
  public:
   NetworkSmsHandlerTest()
       : task_environment_(
@@ -67,6 +91,13 @@ class NetworkSmsHandlerTest : public testing::Test {
   ~NetworkSmsHandlerTest() override = default;
 
   void SetUp() override {
+    auto param = GetParam();
+    if (param.use_suppress_text_message_flag) {
+      features_.InitAndEnableFeature(ash::features::kSuppressTextMessages);
+    } else {
+      features_.InitAndDisableFeature(ash::features::kSuppressTextMessages);
+    }
+
     // Append '--sms-test-messages' to the command line to tell
     // SMSClientStubImpl to generate a series of test SMS messages.
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -115,17 +146,31 @@ class NetworkSmsHandlerTest : public testing::Test {
 
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
-  raw_ptr<ShillDeviceClient::TestInterface, ExperimentalAsh> device_test_;
-  raw_ptr<ModemMessagingClient::TestInterface, ExperimentalAsh>
+  raw_ptr<ShillDeviceClient::TestInterface, DanglingUntriaged | ExperimentalAsh>
+      device_test_;
+  raw_ptr<ModemMessagingClient::TestInterface,
+          DanglingUntriaged | ExperimentalAsh>
       modem_messaging_test_;
   std::unique_ptr<NetworkSmsHandler> network_sms_handler_;
   std::unique_ptr<TestObserver> test_observer_;
 
  private:
-  raw_ptr<FakeSMSClient, ExperimentalAsh> fake_sms_client_;
+  base::test::ScopedFeatureList features_;
+  raw_ptr<FakeSMSClient, DanglingUntriaged | ExperimentalAsh> fake_sms_client_;
 };
 
-TEST_F(NetworkSmsHandlerTest, DbusStub) {
+INSTANTIATE_TEST_SUITE_P(
+    NetworkSmsHandlerTests,
+    NetworkSmsHandlerTest,
+    testing::ValuesIn<NetworkSmsHandlerTestCase>({
+        {"SuppressTextMessageFlagEnabled", true},
+        {"SuppressTextMessageFlagDisabled", false},
+    }),
+    [](const testing::TestParamInfo<NetworkSmsHandlerTest::ParamType>& info) {
+      return info.param.test_name;
+    });
+
+TEST_P(NetworkSmsHandlerTest, DbusStub) {
   EXPECT_EQ(test_observer_->message_count(), 0);
 
   // Test that no messages have been received yet
@@ -134,7 +179,7 @@ TEST_F(NetworkSmsHandlerTest, DbusStub) {
   // ModemMessagingClientStubImpl and SmsClientStubImpl.
   // TODO(stevenjb): Use a TestInterface to set this up to remove dependency.
   const char kMessage1[] = "FakeSMSClient: Test Message: /SMS/0";
-  EXPECT_EQ(messages.find(kMessage1), messages.end());
+  EXPECT_FALSE(base::Contains(messages, kMessage1));
 
   // Test for messages delivered by signals.
   test_observer_->ClearMessages();
@@ -147,7 +192,7 @@ TEST_F(NetworkSmsHandlerTest, DbusStub) {
   network_sms_handler_->RequestUpdate();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(test_observer_->message_count(), 1);
-  EXPECT_NE(messages.find(kMessage1), messages.end());
+  EXPECT_TRUE(base::Contains(messages, kMessage1));
 
   // There should be a request to delete the message after the message has been
   // received. Complete the request.
@@ -215,7 +260,7 @@ TEST_F(NetworkSmsHandlerTest, DbusStub) {
   EXPECT_EQ(test_observer_->message_count(), 4);
 }
 
-TEST_F(NetworkSmsHandlerTest, DeleteFailure) {
+TEST_P(NetworkSmsHandlerTest, DeleteFailure) {
   EXPECT_EQ(test_observer_->message_count(), 0);
 
   // Test that no messages have been received yet
@@ -223,7 +268,7 @@ TEST_F(NetworkSmsHandlerTest, DeleteFailure) {
   // Note: The following string corresponds to values in
   // ModemMessagingClientStubImpl and SmsClientStubImpl.
   const char kMessage1[] = "FakeSMSClient: Test Message: /SMS/0";
-  EXPECT_EQ(messages.find(kMessage1), messages.end());
+  EXPECT_FALSE(base::Contains(messages, kMessage1));
 
   // Test for messages delivered by signals.
   test_observer_->ClearMessages();
@@ -236,7 +281,7 @@ TEST_F(NetworkSmsHandlerTest, DeleteFailure) {
   network_sms_handler_->RequestUpdate();
   base::RunLoop().RunUntilIdle();
   EXPECT_GE(test_observer_->message_count(), 1);
-  EXPECT_NE(messages.find(kMessage1), messages.end());
+  EXPECT_TRUE(base::Contains(messages, kMessage1));
 
   // There should be a request to delete the message after the message has been
   // received.
@@ -313,7 +358,7 @@ TEST_F(NetworkSmsHandlerTest, DeleteFailure) {
             modem_messaging_test_->GetPendingDeleteRequestSmsPath());
 }
 
-TEST_F(NetworkSmsHandlerTest, ReceiveSmsTimeout) {
+TEST_P(NetworkSmsHandlerTest, ReceiveSmsTimeout) {
   EXPECT_EQ(test_observer_->message_count(), 0);
 
   // Test that no messages have been received yet
@@ -322,7 +367,7 @@ TEST_F(NetworkSmsHandlerTest, ReceiveSmsTimeout) {
   // ModemMessagingClientStubImpl and SmsClientStubImpl.
   // TODO(stevenjb): Use a TestInterface to set this up to remove dependency.
   const char kMessage1[] = "FakeSMSClient: Test Message: /SMS/0";
-  EXPECT_EQ(messages.find(kMessage1), messages.end());
+  EXPECT_FALSE(base::Contains(messages, kMessage1));
 
   // Receive 2 SMSes.
   test_observer_->ClearMessages();
@@ -346,9 +391,8 @@ TEST_F(NetworkSmsHandlerTest, ReceiveSmsTimeout) {
   network_sms_handler_->RequestUpdate();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(test_observer_->message_count(), 1);
-  EXPECT_EQ(messages.find(kMessage1), messages.end());
-  EXPECT_NE(messages.find("FakeSMSClient: Test Message: /SMS/2"),
-            messages.end());
+  EXPECT_FALSE(base::Contains(messages, kMessage1));
+  EXPECT_TRUE(base::Contains(messages, "FakeSMSClient: Test Message: /SMS/2"));
 
   // There should be a request to delete the second SMS. Complete the request.
   EXPECT_EQ(sms_path_2,
@@ -365,7 +409,7 @@ TEST_F(NetworkSmsHandlerTest, ReceiveSmsTimeout) {
   EXPECT_TRUE(modem_messaging_test_->GetPendingDeleteRequestSmsPath().empty());
 }
 
-TEST_F(NetworkSmsHandlerTest, EmptyDbusObjectPath) {
+TEST_P(NetworkSmsHandlerTest, EmptyDbusObjectPath) {
   // This test verifies no crash should occur when the device dbus object path
   // is an empty value.
   device_test_->SetDeviceProperty(kCellularDevicePath,
@@ -378,7 +422,7 @@ TEST_F(NetworkSmsHandlerTest, EmptyDbusObjectPath) {
   EXPECT_EQ(test_observer_->message_count(), 0);
 }
 
-TEST_F(NetworkSmsHandlerTest, DeviceObjectPathChange) {
+TEST_P(NetworkSmsHandlerTest, DeviceObjectPathChange) {
   // Fake the SIM being switched to a different SIM.
   device_test_->SetDeviceProperty(
       kCellularDevicePath, shill::kDBusObjectProperty,
@@ -395,7 +439,7 @@ TEST_F(NetworkSmsHandlerTest, DeviceObjectPathChange) {
   // ModemMessagingClientStubImpl and SmsClientStubImpl.
   // TODO(stevenjb): Use a TestInterface to set this up to remove dependency.
   const char kMessage1[] = "FakeSMSClient: Test Message: /SMS/0";
-  EXPECT_EQ(messages.find(kMessage1), messages.end());
+  EXPECT_FALSE(base::Contains(messages, kMessage1));
 
   // Test for messages delivered by signals.
   test_observer_->ClearMessages();
@@ -407,7 +451,7 @@ TEST_F(NetworkSmsHandlerTest, DeviceObjectPathChange) {
   network_sms_handler_->RequestUpdate();
   base::RunLoop().RunUntilIdle();
   EXPECT_GE(test_observer_->message_count(), 1);
-  EXPECT_NE(messages.find(kMessage1), messages.end());
+  EXPECT_TRUE(base::Contains(messages, kMessage1));
 }
 
 }  // namespace ash

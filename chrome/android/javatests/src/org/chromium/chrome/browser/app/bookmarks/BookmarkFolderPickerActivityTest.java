@@ -51,7 +51,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(BaseJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Batch(Batch.PER_CLASS)
-@EnableFeatures({ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS})
+@EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
 public class BookmarkFolderPickerActivityTest {
     @ClassRule
     public static ChromeTabbedActivityTestRule sActivityTestRule =
@@ -110,11 +110,10 @@ public class BookmarkFolderPickerActivityTest {
         BookmarkId folder = addFolder(sMobileFolderId, 0, "folder");
         BookmarkId bookmark = addBookmark(folder, 0, "bookmark", new GURL("https://google.com"));
         startFolderPickerActivity(bookmark);
-        Toolbar toolbar = (Toolbar) mActivity.findViewById(R.id.toolbar);
 
-        assertEquals("folder", toolbar.getTitle());
+        onView(withText("folder"));
         pressBack();
-        onView(withText("Move to…"));
+        onView(withText("Move to..."));
         onView(withText("Cancel")).perform(click());
 
         BookmarkItem item = getBookmarkItem(folder);

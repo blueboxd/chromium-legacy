@@ -48,6 +48,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
@@ -63,6 +64,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -95,7 +97,7 @@
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/color/chrome_color_mixers.h"
 #include "chrome/browser/ui/javascript_dialogs/chrome_javascript_app_modal_dialog_view_factory.h"
-#include "chrome/browser/ui/profile_error_dialog.h"
+#include "chrome/browser/ui/profiles/profile_error_dialog.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/chrome_untrusted_web_ui_configs.h"
@@ -626,8 +628,11 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(bool is_integration_test,
                                                StartupData* startup_data)
     : is_integration_test_(is_integration_test), startup_data_(startup_data) {
   DCHECK(startup_data_);
-  if (is_integration_test_)
-    browser_defaults::enable_help_app = false;
+#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (is_integration_test_) {
+    extensions::ComponentLoader::DisableHelpAppForTesting();
+  }
+#endif
 }
 
 ChromeBrowserMainParts::~ChromeBrowserMainParts() {
@@ -906,8 +911,7 @@ int ChromeBrowserMainParts::OnLocalStateLoaded(
   blink::OriginTrialsSettingsProvider::Get()->SetSettings(
       origin_trials_settings_storage->GetSettings());
 
-  metrics::EnableExpiryChecker(chrome_metrics::kExpiredHistogramsHashes,
-                               chrome_metrics::kNumExpiredHistograms);
+  metrics::EnableExpiryChecker(chrome_metrics::kExpiredHistogramsHashes);
 
   return content::RESULT_CODE_NORMAL_EXIT;
 }

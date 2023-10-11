@@ -70,10 +70,6 @@ BASE_DECLARE_FEATURE(kSyncAutofillWalletCredentialData);
 BASE_DECLARE_FEATURE(kSyncSegmentationDataType);
 
 #if BUILDFLAG(IS_CHROMEOS)
-// Whether warning should be shown in sync settings page when lacros
-// side-by-side mode is enabled.
-BASE_DECLARE_FEATURE(kSyncSettingsShowLacrosSideBySideWarning);
-
 // Whether explicit passphrase sharing between Ash and Lacros is enabled.
 BASE_DECLARE_FEATURE(kSyncChromeOSExplicitPassphraseSharing);
 
@@ -101,8 +97,6 @@ inline constexpr base::FeatureParam<int>
     kSyncHistoryForeignVisitsToDeletePerBatch{
         &kSyncEnableHistoryDataType, "foreign_visit_deletions_per_batch", 100};
 
-BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataType);
-BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeEarlyReturnNoDatabase);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeInTransportMode);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeForCustomPassphraseUsers);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeForDasherUsers);
@@ -113,27 +107,6 @@ inline constexpr base::FeatureParam<bool>
 
 // If enabled, issues error and disables bookmarks sync when limit is crossed.
 BASE_DECLARE_FEATURE(kSyncEnforceBookmarksCountLimit);
-
-// Enables codepath to allow clearing metadata when the data type is stopped.
-BASE_DECLARE_FEATURE(kSyncAllowClearingMetadataWhenDataTypeIsStopped);
-
-// Enabled by default, this acts as a kill switch for a timeout introduced over
-// loading of models for enabled types in ModelLoadManager. When enabled, it
-// skips waiting for types not loaded yet and tries to stop them once they
-// finish loading.
-BASE_DECLARE_FEATURE(kSyncEnableLoadModelsTimeout);
-
-// Timeout duration for loading data types in ModelLoadManager.
-// TODO(crbug.com/992340): Update the timeout duration based on uma metrics
-// Sync.ModelLoadManager.LoadModelsElapsedTime
-inline constexpr base::FeatureParam<base::TimeDelta>
-    kSyncLoadModelsTimeoutDuration{&kSyncEnableLoadModelsTimeout,
-                                   "sync_load_models_timeout_duration",
-                                   base::Seconds(30)};
-
-// Enable check to ensure only preferences in the allowlist are registered as
-// syncable.
-BASE_DECLARE_FEATURE(kSyncEnforcePreferencesAllowlist);
 
 // Enables a separate account-scoped storage for preferences, for syncing users.
 // (Note that opposed to other "account storage" features, this one does not
@@ -166,9 +139,6 @@ BASE_DECLARE_FEATURE(kSyncWebauthnCredentials);
 // If enabled, ignore GetUpdates retry delay command from the server.
 BASE_DECLARE_FEATURE(kSyncIgnoreGetUpdatesRetryDelay);
 
-// If enabled, uses a JsonPrefStore for account preferences.
-BASE_DECLARE_FEATURE(kSyncEnablePersistentStorageForAccountPreferences);
-
 // Wrapper flag to control the nudge delay of the #tab-groups-save feature.
 BASE_DECLARE_FEATURE(kTabGroupsSaveNudgeDelay);
 
@@ -181,9 +151,6 @@ inline constexpr base::FeatureParam<base::TimeDelta>
 
 // Feature flag to replace all sync-related UI with sign-in ones.
 BASE_DECLARE_FEATURE(kReplaceSyncPromosWithSignInPromos);
-
-// Flag to stop call to reconfiguration of datatypes if it's already stopping.
-BASE_DECLARE_FEATURE(kSyncAvoidReconfigurationIfAlreadyStopping);
 
 // If enabled, there will be two different BookmarkModel instances per profile:
 // one instance for "profile" bookmarks and another instance for "account"
@@ -221,6 +188,22 @@ inline constexpr base::FeatureParam<base::TimeDelta>
         &kSyncPasswordCleanUpAccidentalBatchDeletions,
         "SyncPasswordCleanUpAccidentalBatchDeletionsTimeThreshold",
         base::Milliseconds(100)};
+
+// Flag to enable the option to batch upload local data from the new account
+// settings panel.
+BASE_DECLARE_FEATURE(kSyncEnableBatchUploadLocalData);
+BASE_DECLARE_FEATURE(kSyncEnableBatchUploadLocalDataWithDummyDataForTesting);
+inline constexpr base::FeatureParam<base::TimeDelta>
+    kSyncResponseDelayForBatchUploadLocalDataWithDummyDataForTesting{
+        &kSyncEnableBatchUploadLocalDataWithDummyDataForTesting,
+        "SyncResponseDelayForBatchUploadLocalDataWithDummyDataForTesting",
+        base::Seconds(1)};
+
+#if BUILDFLAG(IS_ANDROID)
+// Feature flag for enabling the restoration of synced placeholder tabs missing
+// on the local session, which typically happens only on Android only.
+BASE_DECLARE_FEATURE(kRestoreSyncedPlaceholderTabs);
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace syncer
 

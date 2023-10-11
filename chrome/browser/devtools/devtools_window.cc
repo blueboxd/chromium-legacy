@@ -61,7 +61,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
-#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -72,6 +71,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #include "content/public/common/url_constants.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
@@ -629,7 +629,8 @@ void DevToolsWindow::OpenDevToolsWindow(
   std::string type = agent_host->GetType();
 
   bool is_worker = type == DevToolsAgentHost::kTypeServiceWorker ||
-                   type == DevToolsAgentHost::kTypeSharedWorker;
+                   type == DevToolsAgentHost::kTypeSharedWorker ||
+                   type == DevToolsAgentHost::kTypeSharedStorageWorklet;
 
   if (!agent_host->GetFrontendURL().empty()) {
     DevToolsWindow::OpenExternalFrontend(profile, agent_host->GetFrontendURL(),
@@ -710,13 +711,21 @@ void DevToolsWindow::OpenExternalFrontend(
                     /* browser_connection */ false);
   } else {
     bool is_worker = type == DevToolsAgentHost::kTypeServiceWorker ||
-                     type == DevToolsAgentHost::kTypeSharedWorker;
+                     type == DevToolsAgentHost::kTypeSharedWorker ||
+                     type == DevToolsAgentHost::kTypeSharedStorageWorklet;
 
     FrontendType frontend_type =
         is_worker ? kFrontendRemoteWorker : kFrontendRemote;
     std::string effective_frontend_url =
         use_bundled_frontend ? kFallbackFrontendURL
                              : DevToolsUI::GetProxyURL(frontend_url).spec();
+    if (type == "tab") {
+      if (effective_frontend_url.find("?") == std::string::npos) {
+        effective_frontend_url += "?targetType=tab";
+      } else {
+        effective_frontend_url += "&targetType=tab";
+      }
+    }
     window =
         Create(profile, nullptr, frontend_type, effective_frontend_url, false,
                std::string(), std::string(), agent_host->IsAttached(),
@@ -1208,6 +1217,9 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
       if (base::FeatureList::IsEnabled(::features::kDevToolsTabTarget)) {
         url += "&targetType=tab";
       }
+#if defined(AIDA_SCOPE)
+        url += "&enableAida=true";
+#endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       if (channel >= version_info::Channel::DEV &&
           !base::CommandLine::ForCurrentProcess()->HasSwitch(

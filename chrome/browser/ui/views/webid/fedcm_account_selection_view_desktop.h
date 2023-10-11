@@ -16,6 +16,8 @@
 #include "ui/views/input_event_activation_protector.h"
 #include "ui/views/widget/widget_observer.h"
 
+using TokenError = content::IdentityCredentialTokenError;
+
 class AccountSelectionBubbleViewInterface;
 
 // Provides an implementation of the AccountSelectionView interface on desktop,
@@ -42,7 +44,8 @@ class FedCmAccountSelectionView : public AccountSelectionView,
     VERIFYING = 1,
     AUTO_REAUTHN = 2,
     SIGN_IN_TO_IDP_STATIC = 3,
-    COUNT = 4
+    SIGN_IN_ERROR = 4,
+    COUNT = 5
   };
 
   explicit FedCmAccountSelectionView(AccountSelectionView::Delegate* delegate);
@@ -61,6 +64,12 @@ class FedCmAccountSelectionView : public AccountSelectionView,
       const std::string& idp_etld_plus_one,
       const blink::mojom::RpContext& rp_context,
       const content::IdentityProviderMetadata& idp_metadata) override;
+  void ShowErrorDialog(const std::string& top_frame_etld_plus_one,
+                       const absl::optional<std::string>& iframe_etld_plus_one,
+                       const std::string& idp_etld_plus_one,
+                       const blink::mojom::RpContext& rp_context,
+                       const content::IdentityProviderMetadata& idp_metadata,
+                       const absl::optional<TokenError>& error) override;
   std::string GetTitle() const override;
   absl::optional<std::string> GetSubtitle() const override;
 
@@ -146,7 +155,11 @@ class FedCmAccountSelectionView : public AccountSelectionView,
 
     // Shown when the user is being shown a dialog that auto re-authn is
     // happening.
-    AUTO_REAUTHN
+    AUTO_REAUTHN,
+
+    // Shown when an error has occurred during the user's sign-in attempt and
+    // IDP has not provided any details on the failure.
+    SIGN_IN_ERROR
   };
 
   // This enum describes the outcome of the mismatch dialog and is used for

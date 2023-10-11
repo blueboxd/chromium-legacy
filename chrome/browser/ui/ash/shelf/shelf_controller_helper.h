@@ -17,6 +17,10 @@ class ArcAppListPrefs;
 class ExtensionEnableFlow;
 class Profile;
 
+namespace apps {
+enum class PromiseStatus;
+}
+
 namespace content {
 class WebContents;
 }
@@ -30,6 +34,10 @@ class ShelfControllerHelper : public ExtensionEnableFlowDelegate {
   ShelfControllerHelper& operator=(const ShelfControllerHelper&) = delete;
 
   ~ShelfControllerHelper() override;
+
+  // Get the item label that should be shown for the specified promise app
+  // status.
+  static std::string GetLabelForPromiseStatus(apps::PromiseStatus status);
 
   // Helper function to return the title associated with |app_id|.
   // Returns an empty title if no matching extension can be found.
@@ -56,6 +64,16 @@ class ShelfControllerHelper : public ExtensionEnableFlowDelegate {
   // there isn't a promise app with the specified package ID, return -1.
   static float GetPromiseAppProgress(Profile* profile,
                                      const std::string& string_package_id);
+
+  // Check whether this item is a registered promise app.
+  static bool IsPromiseApp(Profile* profile, const std::string& id);
+
+  // Convert promise status into general app status.
+  static ash::AppStatus ConvertPromiseStatusToAppStatus(
+      apps::PromiseStatus promise_status);
+
+  // Check whether this item is an app service shortcut.
+  static bool IsAppServiceShortcut(Profile* profile, const std::string& id);
 
   // Returns true if |id| is valid for the currently active profile.
   // Used during restore to ignore no longer valid extensions.
@@ -86,7 +104,7 @@ class ShelfControllerHelper : public ExtensionEnableFlowDelegate {
   bool IsValidIDFromAppService(const std::string& app_id) const;
 
   // The currently active profile for the usage of |GetAppID|.
-  raw_ptr<Profile, ExperimentalAsh> profile_;
+  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> profile_;
   std::unique_ptr<ExtensionEnableFlow> extension_enable_flow_;
 };
 

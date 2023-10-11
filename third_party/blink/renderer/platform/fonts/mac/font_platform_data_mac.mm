@@ -27,7 +27,7 @@
 #import <AvailabilityMacros.h>
 
 #include "base/apple/bridging.h"
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/mac/core_text_font_format_support.h"
@@ -93,7 +93,7 @@ bool VariableAxisChangeEffective(SkTypeface* typeface,
 }
 
 static bool CanLoadInProcess(NSFont* ns_font) {
-  base::ScopedCFTypeRef<CGFontRef> cg_font(CTFontCopyGraphicsFont(
+  base::apple::ScopedCFTypeRef<CGFontRef> cg_font(CTFontCopyGraphicsFont(
       base::apple::NSToCFPtrCast(ns_font), /*attributes=*/nullptr));
   NSString* font_name =
       base::apple::CFToNSOwnershipCast(CGFontCopyPostScriptName(cg_font));

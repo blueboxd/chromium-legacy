@@ -432,7 +432,7 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
   gfx::Size surface_size(width(), height());
   const bool can_use_gpu =
       SharedGpuContext::IsGpuCompositingEnabled() &&
-      (IsWebGL() || IsWebGPU() ||
+      (IsWebGL() || IsWebGPU() || IsImageBitmapRenderingContext() ||
        (IsRenderingContext2D() &&
         RuntimeEnabledFeatures::Accelerated2dCanvasEnabled() &&
         !(context_->CreationAttributes().will_read_frequently ==
@@ -457,12 +457,11 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
       GetRenderingContextSkColorInfo());
   const cc::PaintFlags::FilterQuality filter_quality = FilterQuality();
   if (use_shared_image) {
-    constexpr bool kIsOriginTopLeft = true;
     provider = CanvasResourceProvider::CreateSharedImageProvider(
         resource_info, filter_quality,
         CanvasResourceProvider::ShouldInitialize::kCallClear,
         SharedGpuContext::ContextProviderWrapper(),
-        can_use_gpu ? RasterMode::kGPU : RasterMode::kCPU, kIsOriginTopLeft,
+        can_use_gpu ? RasterMode::kGPU : RasterMode::kCPU,
         shared_image_usage_flags);
   } else if (HasPlaceholderCanvas()) {
     // using the software compositor

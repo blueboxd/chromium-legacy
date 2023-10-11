@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/app_home/app_home_page_handler.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
@@ -11,12 +12,14 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/create_application_shortcut_view_test_support.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/ui/webui/app_home/app_home.mojom.h"
 #include "chrome/browser/ui/webui/app_home/mock_app_home_page.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/test/os_integration_test_override_impl.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -265,6 +268,12 @@ class AppHomePageHandlerTest : public InProcessBrowserTest {
 
   std::unique_ptr<web_app::OsIntegrationTestOverrideImpl::BlockingRegistration>
       override_registration_;
+
+#if BUILDFLAG(IS_WIN)
+  // This is used as a fallback to prevent creating shortcuts in the startup
+  // dir if tasks are still running when `override_registration_` is reset.
+  base::ScopedPathOverride override_start_dir_{base::DIR_USER_STARTUP};
+#endif  // BUILDFLAG(IS_WIN)
 };
 
 MATCHER_P(MatchAppName, expected_app_name, "") {
@@ -431,30 +440,18 @@ IN_PROC_BROWSER_TEST_F(AppHomePageHandlerTest, CreateWebAppShortcut) {
   page_handler->CreateAppShortcut(installed_app_id, loop.QuitClosure());
   loop.Run();
 #else
-  views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
-                                       "CreateChromeApplicationShortcutView");
+  CreateChromeApplicationShortcutViewWaiter waiter;
   page_handler->CreateAppShortcut(installed_app_id, base::DoNothing());
   FlushShortcutTasks();
-  views::Widget* widget = waiter.WaitIfNeededAndGet();
-  ASSERT_TRUE(widget != nullptr);
-  views::test::AcceptDialog(widget);
+  std::move(waiter).WaitForAndAccept();
   FlushShortcutTasks();
+  web_app::WebAppProvider::GetForTest(profile())
+      ->command_manager()
+      .AwaitAllCommandsCompleteForTesting();
 #endif
   EXPECT_CALL(page_, RemoveApp(MatchAppId(installed_app_id)))
       .Times(testing::AtLeast(1));
   UninstallTestWebApp(installed_app_id);
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
-  // If SubManagersExecuteEnabled is false, the shortcuts should have been
-  // cleaned up when the web app is uninstalled by
-  // OsIntegrationManager::UninstallOsHooks.
-  // TODO(http://b/289136332) Remove this when the dialog correctly integrates
-  // with the WebAppProvider's sub-manager system.
-  if (web_app::AreSubManagersExecuteEnabled()) {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    override_registration_->test_override->SimulateDeleteShortcutsByUser(
-        profile(), installed_app_id, kTestAppName);
-  }
-#endif
 }
 
 IN_PROC_BROWSER_TEST_F(AppHomePageHandlerTest, CreateExtensionAppShortcut) {
@@ -472,13 +469,10 @@ IN_PROC_BROWSER_TEST_F(AppHomePageHandlerTest, CreateExtensionAppShortcut) {
   page_handler->CreateAppShortcut(extension->id(), loop.QuitClosure());
   loop.Run();
 #else
-  views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
-                                       "CreateChromeApplicationShortcutView");
+  CreateChromeApplicationShortcutViewWaiter waiter;
   page_handler->CreateAppShortcut(extension->id(), base::DoNothing());
   FlushShortcutTasks();
-  views::Widget* widget = waiter.WaitIfNeededAndGet();
-  ASSERT_TRUE(widget != nullptr);
-  views::test::AcceptDialog(widget);
+  std::move(waiter).WaitForAndAccept();
 #endif
   EXPECT_CALL(page_, RemoveApp(MatchAppId(extension->id())))
       .Times(testing::AtLeast(1));

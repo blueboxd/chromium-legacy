@@ -29,12 +29,12 @@ class ExtensionInstallGate;
 // 2. Call BrowserContext::GarbageCollectStoragePartitions with the list as a
 // parameter to delete any Storage Partition domain level paths that is invalid
 // and currently inactive.
-class GarbageCollectStoragePartititonsCommand
+class GarbageCollectStoragePartitionsCommand
     : public WebAppCommandTemplate<AllAppsLock> {
  public:
-  explicit GarbageCollectStoragePartititonsCommand(Profile* profile,
-                                                   base::OnceClosure done);
-  ~GarbageCollectStoragePartititonsCommand() override;
+  explicit GarbageCollectStoragePartitionsCommand(Profile* profile,
+                                                  base::OnceClosure done);
+  ~GarbageCollectStoragePartitionsCommand() override;
 
   // WebAppCommandTemplate<AllAppsLock>:
   void StartWithLock(std::unique_ptr<AllAppsLock> lock) override;
@@ -54,7 +54,7 @@ class GarbageCollectStoragePartititonsCommand
   std::unique_ptr<AllAppsLockDescription> lock_description_;
   std::unique_ptr<AllAppsLock> lock_;
 
-  base::raw_ptr<Profile> profile_;
+  raw_ptr<Profile> profile_ = nullptr;
 
   base::OnceClosure done_closure_;
 
@@ -62,7 +62,7 @@ class GarbageCollectStoragePartititonsCommand
 
   base::Value::Dict debug_info_;
 
-  base::WeakPtrFactory<GarbageCollectStoragePartititonsCommand> weak_factory_{
+  base::WeakPtrFactory<GarbageCollectStoragePartitionsCommand> weak_factory_{
       this};
 };
 

@@ -268,6 +268,8 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   // this method.
   void NotifyTrayBubbleClosed();
 
+  void CloseBubbleView();
+
  protected:
   // views::View:
   void ChildPreferredSizeChanged(View* child) override;
@@ -300,10 +302,8 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     raw_ptr<TrayBubbleView, ExperimentalAsh> tray_bubble_view_;
   };
 
-  void CloseBubbleView();
-
   InitParams params_;
-  raw_ptr<views::BoxLayout, ExperimentalAsh> layout_;
+  raw_ptr<views::BoxLayout, DanglingUntriaged | ExperimentalAsh> layout_;
   base::WeakPtr<Delegate> delegate_;
   int preferred_width_;
   bool is_gesture_dragging_;

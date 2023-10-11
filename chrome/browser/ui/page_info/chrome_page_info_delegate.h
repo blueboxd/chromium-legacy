@@ -48,7 +48,7 @@ class ChromePageInfoDelegate : public PageInfoDelegate {
   void OnUserActionOnPasswordUi(safe_browsing::WarningAction action) override;
   std::u16string GetWarningDetailText() override;
 #endif
-  permissions::PermissionResult GetPermissionResult(
+  content::PermissionResult GetPermissionResult(
       blink::PermissionType permission,
       const url::Origin& origin,
       const absl::optional<url::Origin>& requesting_origin) override;
@@ -81,6 +81,7 @@ class ChromePageInfoDelegate : public PageInfoDelegate {
   StatefulSSLHostStateDelegate* GetStatefulSSLHostStateDelegate() override;
   HostContentSettingsMap* GetContentSettings() override;
   bool IsSubresourceFilterActivated(const GURL& site_url) override;
+  bool HasAutoPictureInPictureBeenRegistered() override;
   bool IsContentDisplayedInVrHeadset() override;
   security_state::SecurityLevel GetSecurityLevel() override;
   security_state::VisibleSecurityState GetVisibleSecurityState() override;

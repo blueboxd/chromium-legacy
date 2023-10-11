@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
@@ -46,6 +47,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/base/features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -247,9 +249,10 @@ void MaybeAppendManagePasswordsEntry(
 }
 
 #if !BUILDFLAG(IS_ANDROID)
-autofill::Suggestion CreateWebAuthnEntry() {
-  autofill::Suggestion suggestion(
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USE_DEVICE_PASSKEY));
+autofill::Suggestion CreateWebAuthnEntry(bool listed_passkeys) {
+  autofill::Suggestion suggestion(l10n_util::GetStringUTF16(
+      listed_passkeys ? IDS_PASSWORD_MANAGER_USE_DIFFERENT_PASSKEY
+                      : IDS_PASSWORD_MANAGER_USE_PASSKEY));
   suggestion.icon = "device";
   suggestion.popup_item_id =
       autofill::PopupItemId::kWebauthnSignInWithAnotherDevice;
@@ -268,8 +271,10 @@ autofill::Suggestion CreateGenerationEntry() {
 
 // Entry for opting in to password account storage and then filling.
 autofill::Suggestion CreateEntryToOptInToAccountStorageThenFill() {
-  autofill::Suggestion suggestion(
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORE));
+  autofill::Suggestion suggestion(l10n_util::GetStringUTF16(
+      base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials)
+          ? IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORE_WITH_PASSKEYS
+          : IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORE));
   suggestion.popup_item_id =
       autofill::PopupItemId::kPasswordAccountStorageOptIn;
   suggestion.icon = "google";
@@ -382,8 +387,6 @@ PasswordAutofillManager::~PasswordAutofillManager() {
 void PasswordAutofillManager::OnPopupShown() {}
 
 void PasswordAutofillManager::OnPopupHidden() {}
-
-void PasswordAutofillManager::OnPopupSuppressed() {}
 
 void PasswordAutofillManager::DidSelectSuggestion(
     const autofill::Suggestion& suggestion,
@@ -573,11 +576,6 @@ void PasswordAutofillManager::ClearPreviewedForm() {
 
 autofill::PopupType PasswordAutofillManager::GetPopupType() const {
   return autofill::PopupType::kPasswords;
-}
-
-absl::variant<autofill::AutofillDriver*, PasswordManagerDriver*>
-PasswordAutofillManager::GetDriver() {
-  return password_manager_driver_.get();
 }
 
 int32_t PasswordAutofillManager::GetWebContentsPopupControllerAxId() const {
@@ -773,7 +771,9 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
 #if !BUILDFLAG(IS_ANDROID)
   // Add "Sign in with another device" button.
   if (uses_passkeys && delegate->OfferPasskeysFromAnotherDeviceOption()) {
-    suggestions.push_back(CreateWebAuthnEntry());
+    bool listed_passkeys = delegate->GetPasskeys().has_value() &&
+                           delegate->GetPasskeys()->size() > 0;
+    suggestions.push_back(CreateWebAuthnEntry(listed_passkeys));
   }
 #endif
 

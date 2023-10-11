@@ -102,6 +102,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
     settings_for_3pcd_ = settings;
   }
 
+  void set_content_settings_for_3pcd_metadata_grants(
+      const ContentSettingsForOneType& settings) {
+    settings_for_3pcd_metadata_grants_ = settings;
+  }
+
   void set_storage_access_grants(const ContentSettingsForOneType& settings) {
     storage_access_grants_ = settings;
   }
@@ -109,6 +114,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
   void set_top_level_storage_access_grants(
       const ContentSettingsForOneType& settings) {
     top_level_storage_access_grants_ = settings;
+  }
+
+  void set_block_truncated_cookies(bool block_truncated_cookies) {
+    block_truncated_cookies_ = block_truncated_cookies;
+  }
+
+  bool are_truncated_cookies_blocked() const {
+    return block_truncated_cookies_;
   }
 
   // Returns a predicate that takes the domain of a cookie and a bool whether
@@ -214,11 +227,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
   ContentSettingsForOneType content_settings_;
   bool block_third_party_cookies_ =
       net::cookie_util::IsForceThirdPartyCookieBlockingEnabled();
+  bool block_truncated_cookies_ = true;
   std::set<std::string> secure_origin_cookies_allowed_schemes_;
   std::set<std::string> matching_scheme_cookies_allowed_schemes_;
   std::set<std::string> third_party_cookies_allowed_schemes_;
   ContentSettingsForOneType settings_for_legacy_cookie_access_;
+  // Used to represent content settings for 3PC accesses granted via 3PC
+  // deprecation trial. This type will only be populated when
+  // `net::features::kTpcdSupportSettings` is enabled.
   ContentSettingsForOneType settings_for_3pcd_;
+  // Used to represent content settings for 3PC accesses granted via the
+  // component updater service. This type will only be populated when
+  // `net::features::kTpcdMetadataGrants` is enabled.
+  ContentSettingsForOneType settings_for_3pcd_metadata_grants_;
   // Used to represent storage access grants provided by the StorageAccessAPI.
   // Will only be populated when the StorageAccessAPI feature is enabled
   // https://crbug.com/989663.

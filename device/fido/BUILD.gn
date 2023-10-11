@@ -251,9 +251,7 @@ component("fido") {
       "LocalAuthentication.framework",
       "Security.framework",
     ]
-    weak_frameworks = [
-      "AuthenticationServices.framework",
-    ]
+    weak_frameworks = [ "AuthenticationServices.framework" ]
 
     deps += [ "//build:branding_buildflags" ]
   }

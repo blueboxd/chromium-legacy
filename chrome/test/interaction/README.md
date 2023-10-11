@@ -1,6 +1,6 @@
 # Interactive Testing API: "Kombucha"
 
-**[go/kombucha-api](goto.google.com/kombucha-api)**
+**[go/kombucha-api](https://goto.google.com/kombucha-api)**
 
 **Kombucha** is a group of powerful test mix-ins that let you easily and
 concisely write interactive tests.
@@ -10,7 +10,7 @@ either be backwards-compatible with existing tests, or the authors will update
 the API calls for you.
 
 This page provides technical documentation. For a cookbook/FAQ/troubleshooting
-guide, see our [Kombucha Playbook](goto.google.com/kombucha-playbook).
+guide, see our [Kombucha Playbook](https://goto.google.com/kombucha-playbook).
 
  - [Changelog](#changelog)
  - [Known Issues](#known-issues-and-incompatibilities)
@@ -374,7 +374,7 @@ RunTestSequence(
          // If the side panel is visible...
          [](const SidePanel* side_panel) { return side_panel != nullptr; },
          // Then press the side panel button to close the side panel.
-         Steps(PressButton(kSidePanelButtonElementId),
+         Steps(PressButton(kToolbarSidePanelButtonElementId),
                WaitForHide(kSidePanelElementId)),
          // Else note that it was not open.
          Log("Side panel was already closed.")),
@@ -646,7 +646,7 @@ class SubscriptionObserver : public StateObserver {
   }
 
   base::CallbackListSubscription subscription_;
-  base::raw_ptr<SubscribableObject> object_;
+  raw_ptr<SubscribableObject> object_;
 };
 ```
 

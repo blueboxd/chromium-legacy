@@ -78,7 +78,7 @@ class TestSkiaImageRepresentation : public SkiaGaneshImageRepresentation {
       const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override {
     if (!static_cast<TestImageBacking*>(backing())->can_access()) {
       return {};
     }
@@ -92,7 +92,7 @@ class TestSkiaImageRepresentation : public SkiaGaneshImageRepresentation {
   std::vector<sk_sp<GrPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override {
     if (!static_cast<TestImageBacking*>(backing())->can_access()) {
       return {};
     }
@@ -106,7 +106,7 @@ class TestSkiaImageRepresentation : public SkiaGaneshImageRepresentation {
   std::vector<sk_sp<GrPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override {
     if (!static_cast<TestImageBacking*>(backing())->can_access()) {
       return {};
     }
@@ -120,12 +120,14 @@ class TestSkiaImageRepresentation : public SkiaGaneshImageRepresentation {
 
  private:
   GrBackendTexture backend_tex() {
+    auto format_desc = ToGLFormatDesc(format(), /*plane_index=*/0,
+                                      /*use_angle_rgbx_format=*/false);
     return GrBackendTextures::MakeGL(
         size().width(), size().height(), skgpu::Mipmapped::kNo,
-        GrGLTextureInfo{GL_TEXTURE_EXTERNAL_OES,
-                        static_cast<TestImageBacking*>(backing())->service_id(),
-                        static_cast<GrGLenum>(TextureStorageFormat(
-                            format(), /*use_angle_rgbx_format=*/false))});
+        GrGLTextureInfo{
+            GL_TEXTURE_EXTERNAL_OES,
+            static_cast<TestImageBacking*>(backing())->service_id(),
+            static_cast<GrGLenum>(format_desc.storage_internal_format)});
   }
 };
 
@@ -195,9 +197,12 @@ TestImageBacking::TestImageBacking(const Mailbox& mailbox,
   texture_->set_mag_filter(GL_LINEAR);
   texture_->set_wrap_t(GL_CLAMP_TO_EDGE);
   texture_->set_wrap_s(GL_CLAMP_TO_EDGE);
-  texture_->SetLevelInfo(GL_TEXTURE_2D, 0, GLInternalFormat(format),
+  GLFormatDesc format_desc = ToGLFormatDesc(format, /*plane_index=*/0,
+                                            /*use_angle_rgbx_format=*/false);
+  texture_->SetLevelInfo(GL_TEXTURE_2D, 0, format_desc.image_internal_format,
                          size.width(), size.height(), 1, 0,
-                         GLDataFormat(format), GLDataType(format), gfx::Rect());
+                         format_desc.data_format, format_desc.data_type,
+                         gfx::Rect());
   texture_->SetImmutable(true, true);
   texture_passthrough_ = base::MakeRefCounted<gles2::TexturePassthrough>(
       service_id_, GL_TEXTURE_2D);

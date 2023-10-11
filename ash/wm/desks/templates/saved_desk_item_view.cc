@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -25,14 +26,13 @@
 #include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_focus_cycler.h"
 #include "ash/wm/overview/overview_grid.h"
-#include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "base/i18n/time_formatting.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -47,7 +47,6 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/highlight_border.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/metadata/view_factory_internal.h"
 #include "ui/views/view.h"
@@ -85,29 +84,23 @@ constexpr auto kSavedDeskNameInsets = gfx::Insets::VH(0, 2);
 constexpr int kFadeDurationMs = 100;
 
 std::u16string GetTimeStr(base::Time timestamp) {
-  std::u16string date, time, time_str;
-
-  // Returns empty if `timestamp` is out of relative date range, which is
-  // yesterday and today as of now. Please see `ui/base/l10n/time_format.h` for
-  // more details.
-  date = ui::TimeFormat::RelativeDate(timestamp, nullptr);
-  if (date.empty()) {
-    // Syntax `yMMMdjmm` is used by the File App if it's not a relative date.
-    // Please note, this might be slightly different for different locales.
-    // Examples:
-    //  `en-US` - `Jan 1, 2022, 10:30 AM`
-    //  `zh-CN` - `2022年1月1日 10:30`
-    time_str = base::TimeFormatWithPattern(timestamp, "yMMMdjmm");
-  } else {
-    // If it's a relative date, just append `jmm` to it.
-    // Please note, this might be slightly different for different locales.
-    // Examples:
-    //  `en-US` - `Today 10:30 AM`
-    //  `zh-CN` - `今天 10:30`
-    time_str = date + u" " + base::TimeFormatWithPattern(timestamp, "jmm");
-  }
-
-  return time_str;
+  // `ui::TimeFormat::RelativeDate()` returns an empty string if `timestamp` is
+  // out of relative date range, which is yesterday and today as of now.
+  const std::u16string date = ui::TimeFormat::RelativeDate(timestamp, nullptr);
+  return date.empty()
+             // Syntax `yMMMdjmm` is used by the File App if it's not a relative
+             // date. Please note, this might be slightly different for
+             // different locales. Examples:
+             //  `en-US` - `Jan 1, 2022, 10:30 AM`
+             //  `zh-CN` - `2022年1月1日 10:30`
+             ? base::LocalizedTimeFormatWithPattern(timestamp, "yMMMdjmm")
+             // If it's a relative date, just append `jmm` to it.
+             // Please note, this might be slightly different for different
+             // locales. Examples:
+             //  `en-US` - `Today 10:30 AM`
+             //  `zh-CN` - `今天 10:30`
+             : (date + u" " +
+                base::LocalizedTimeFormatWithPattern(timestamp, "jmm"));
 }
 
 }  // namespace
@@ -130,11 +123,6 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
       .SetUseDefaultFillLayout(true)
       .SetAccessibleName(saved_desk_name)
       .SetCallback(std::move(launch_template_callback))
-      .SetBorder(std::make_unique<views::HighlightBorder>(
-          kSaveDeskCornerRadius,
-          chromeos::features::IsJellyrollEnabled()
-              ? views::HighlightBorder::Type::kHighlightBorderOnShadow
-              : views::HighlightBorder::Type::kHighlightBorder1))
       .AddChildren(
           views::Builder<View>()
               .CopyAddressTo(&background_view)
@@ -158,7 +146,8 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
                               .CopyAddressTo(&name_view_)
                               .SetController(this)
                               .SetText(saved_desk_name)
-                              .SetAccessibleName(saved_desk_name)
+                              .SetAccessibleName(l10n_util::GetStringUTF16(
+                                  IDS_ASH_DESKS_DESK_NAME))
                               .SetReadOnly(!saved_desk_->IsModifiable())
                               // Use the focus behavior specified by the
                               // subclass of `SavedDeskNameView` unless the
@@ -234,17 +223,22 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
       this, SystemShadow::Type::kElevation12);
   shadow_->SetRoundedCornerRadius(kSaveDeskCornerRadius);
 
-  // Note this view needs to be set to paint to layer so other view won't
-  // paint over it.
-  box_layout_view->SetPaintToLayer();
-  box_layout_view->layer()->SetFillsBoundsOpaquely(false);
+  if (features::IsBackgroundBlurEnabled()) {
+    background_view->SetPaintToLayer();
+    background_view->layer()->SetFillsBoundsOpaquely(false);
+    background_view->layer()->SetBackgroundBlur(
+        ColorProvider::kBackgroundBlurSigma);
+    background_view->layer()->SetBackdropFilterQuality(
+        ColorProvider::kBackgroundBlurQuality);
+    background_view->layer()->SetRoundedCornerRadius(
+        gfx::RoundedCornersF(kSaveDeskCornerRadius));
 
-  background_view->SetPaintToLayer();
-  background_view->layer()->SetBackgroundBlur(
-      ColorProvider::kBackgroundBlurSigma);
-  background_view->layer()->SetRoundedCornerRadius(
-      gfx::RoundedCornersF(kSaveDeskCornerRadius));
-  background_view->layer()->SetFillsBoundsOpaquely(false);
+    // This needs to be painted to a layer if its sibling `background_view` is.
+    // Otherwise, it will be painted to its ancestors layer and
+    // `background_view` will be drawn on top of it as a result.
+    box_layout_view->SetPaintToLayer();
+    box_layout_view->layer()->SetFillsBoundsOpaquely(false);
+  }
 
   const int button_text_id = saved_desk_->type() == DeskTemplateType::kTemplate
                                  ? IDS_ASH_DESKS_TEMPLATES_USE_TEMPLATE_BUTTON
@@ -290,7 +284,7 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
       base::BindRepeating([](const views::View* view) {
         const auto* v = views::AsViewClass<SavedDeskItemView>(view);
         CHECK(v);
-        return v->IsViewHighlighted();
+        return v->is_focused();
       }));
   focus_ring->SetColorId(cros_tokens::kCrosSysFocusRing);
 
@@ -393,7 +387,6 @@ void SavedDeskItemView::UpdateSavedDesk(
   auto new_name = saved_desk_->template_name();
   DCHECK(!new_name.empty());
   name_view_->SetText(new_name);
-  name_view_->SetAccessibleName(new_name);
   SetAccessibleName(new_name);
 
   // This will trigger `name_view_` to compute its new preferred bounds and
@@ -462,16 +455,14 @@ void SavedDeskItemView::OnViewFocused(views::View* observed_view) {
   hover_container_->layer()->SetOpacity(0.0f);
   icon_container_view_->layer()->SetOpacity(1.0f);
 
-  // Set the Overview highlight to move focus with the `name_view_`.
-  auto* highlight_controller = Shell::Get()
-                                   ->overview_controller()
-                                   ->overview_session()
-                                   ->highlight_controller();
-  if (highlight_controller->IsFocusHighlightVisible()) {
-    highlight_controller->MoveHighlightToView(name_view_);
+  // Move the overview focus ring to `name_view_`.
+  auto* focus_cycler =
+      Shell::Get()->overview_controller()->overview_session()->focus_cycler();
+  if (focus_cycler->IsFocusVisible()) {
+    focus_cycler->MoveFocusToView(name_view_);
 
     // Update a11y focus window.
-    highlight_controller->UpdateA11yFocusWindow(name_view_);
+    focus_cycler->UpdateA11yFocusWindow(name_view_);
   }
 
   if (!defer_select_all_)
@@ -554,13 +545,13 @@ void SavedDeskItemView::OnViewBlurred(views::View* observed_view) {
 }
 
 void SavedDeskItemView::OnFocus() {
-  UpdateOverviewHighlightForFocus(this);
-  OnViewHighlighted();
+  MoveFocusToView(this);
+  OnFocusableViewFocused();
   View::OnFocus();
 }
 
 void SavedDeskItemView::OnBlur() {
-  OnViewUnhighlighted();
+  OnFocusableViewBlurred();
   View::OnBlur();
 }
 
@@ -713,8 +704,8 @@ void SavedDeskItemView::OnDeleteButtonPressed() {
     return;
 
   controller->ShowDeleteDialog(
-      GetWidget()->GetNativeWindow()->GetRootWindow(),
-      name_view_->GetAccessibleName(), saved_desk_->type(),
+      GetWidget()->GetNativeWindow()->GetRootWindow(), name_view_->GetText(),
+      saved_desk_->type(),
       base::BindOnce(&SavedDeskItemView::OnDeleteSavedDesk,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -742,7 +733,6 @@ void SavedDeskItemView::OnSavedDeskNameChanged(const std::u16string& new_name) {
 
   DCHECK(!new_name.empty());
   name_view_->SetText(new_name);
-  name_view_->SetAccessibleName(new_name);
   name_view_->ResetTemporaryName();
   SetAccessibleName(new_name);
 
@@ -755,24 +745,24 @@ views::View* SavedDeskItemView::GetView() {
   return this;
 }
 
-void SavedDeskItemView::MaybeActivateHighlightedView() {
+void SavedDeskItemView::MaybeActivateFocusedView() {
   MaybeLaunchSavedDesk();
 }
 
-void SavedDeskItemView::MaybeCloseHighlightedView(bool primary_action) {
+void SavedDeskItemView::MaybeCloseFocusedView(bool primary_action) {
   if (primary_action)
     OnDeleteButtonPressed();
 }
 
-void SavedDeskItemView::MaybeSwapHighlightedView(bool right) {}
+void SavedDeskItemView::MaybeSwapFocusedView(bool right) {}
 
-void SavedDeskItemView::OnViewHighlighted() {
+void SavedDeskItemView::OnFocusableViewFocused() {
   views::FocusRing::Get(this)->SchedulePaint();
 
   ScrollViewToVisible();
 }
 
-void SavedDeskItemView::OnViewUnhighlighted() {
+void SavedDeskItemView::OnFocusableViewBlurred() {
   views::FocusRing::Get(this)->SchedulePaint();
 }
 

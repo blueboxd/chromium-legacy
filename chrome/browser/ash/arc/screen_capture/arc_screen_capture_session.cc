@@ -134,7 +134,8 @@ ArcScreenCaptureSession::Initialize(content::DesktopMediaID desktop_id,
   scaler_ = gl_helper_->CreateScaler(
       gpu::GLHelper::ScalerQuality::SCALER_QUALITY_GOOD,
       gfx::Vector2d(desktop_size.width(), desktop_size.height()),
-      gfx::Vector2d(size_.width(), size_.height()), false, true, false);
+      gfx::Vector2d(size_.width(), size_.height()), /*flipped_source=*/true,
+      /*flip_output=*/true, /*swizzle=*/false);
 
   display_root_window_->GetHost()->compositor()->AddAnimationObserver(this);
 
@@ -232,7 +233,8 @@ void ArcScreenCaptureSession::SetOutputBuffer(
       stride * kBytesPerPixel, 0, stride * kBytesPerPixel * size_.height(),
       std::move(platform_file));
 
-  viz::SharedImageFormat si_format = viz::GetSharedImageFormat(buffer_format);
+  viz::SharedImageFormat si_format =
+      viz::GetSinglePlaneSharedImageFormat(buffer_format);
   CHECK(!si_format.IsLegacyMultiplanar());
 
   gpu::Mailbox mailbox =

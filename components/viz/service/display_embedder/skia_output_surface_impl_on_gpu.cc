@@ -825,8 +825,8 @@ SkiaOutputSurfaceImplOnGpu::CreateSharedImageRepresentationSkia(
 
   gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
   bool result = shared_image_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, kBottomLeft_GrSurfaceOrigin,
-      kUnpremul_SkAlphaType, gpu::kNullSurfaceHandle, kUsage,
+      mailbox, format, size, color_space, kTopLeft_GrSurfaceOrigin,
+      kPremul_SkAlphaType, gpu::kNullSurfaceHandle, kUsage,
       std::string(debug_label));
   if (!result) {
     DLOG(ERROR) << "Failed to create shared image.";
@@ -1036,21 +1036,34 @@ bool SkiaOutputSurfaceImplOnGpu::FlushInternal(
     gpu::SkiaImageRepresentation::ScopedWriteAccess* scoped_write_access,
     GrGpuFinishedProc finished_proc,
     GrGpuFinishedContext finished_context) {
-  GrFlushInfo flush_info;
-  flush_info.fNumSemaphores = end_semaphores.size();
-  flush_info.fSignalSemaphores = end_semaphores.data();
-  flush_info.fFinishedProc = finished_proc;
-  flush_info.fFinishedContext = finished_context;
-  gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_, &flush_info);
   gl::ScopedProgressReporter scoped_process_reporter(
       context_state_->progress_reporter());
-  GrSemaphoresSubmitted flush_result =
-      surface ? gr_context()->flush(surface, flush_info)
-              : gr_context()->flush(flush_info);
-  if (scoped_write_access) {
-    scoped_write_access->ApplyBackendSurfaceEndState();
+  if (gr_context()) {
+    GrFlushInfo flush_info;
+    flush_info.fNumSemaphores = end_semaphores.size();
+    flush_info.fSignalSemaphores = end_semaphores.data();
+    flush_info.fFinishedProc = finished_proc;
+    flush_info.fFinishedContext = finished_context;
+    gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_,
+                                          &flush_info);
+    GrSemaphoresSubmitted flush_result =
+        surface ? gr_context()->flush(surface, flush_info)
+                : gr_context()->flush(flush_info);
+    if (scoped_write_access) {
+      scoped_write_access->ApplyBackendSurfaceEndState();
+    }
+    return flush_result == GrSemaphoresSubmitted::kYes ||
+           end_semaphores.empty();
   }
-  return flush_result == GrSemaphoresSubmitted::kYes || end_semaphores.empty();
+
+  CHECK(graphite_recorder());
+  auto recording = graphite_recorder()->snap();
+  if (recording) {
+    skgpu::graphite::InsertRecordingInfo info = {};
+    info.fRecording = recording.get();
+    return graphite_context()->insertRecording(info);
+  }
+  return false;
 }
 
 SkiaOutputSurfaceImplOnGpu::MailboxAccessData::MailboxAccessData() = default;
@@ -1643,7 +1656,10 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     paint.setColor(SK_ColorBLACK);
     paint.setBlendMode(SkBlendMode::kDstATop);
     surface->getCanvas()->drawPaint(paint);
-    skgpu::ganesh::Flush(surface);
+    if (!FlushSurface(surface, end_semaphores, scoped_access.get())) {
+      FailedSkiaFlush("CopyOutputRGBA need_discard_alpha flush");
+      return;
+    }
   }
 
   absl::optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
@@ -1920,7 +1936,8 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
     }
 
 #if BUILDFLAG(IS_MAC)
-    if (features::UseGpuVsync()) {
+    if (base::FeatureList::IsEnabled(
+            features::kCVDisplayLinkBeginFrameSource)) {
       presenter_->SetVSyncDisplayID(renderer_settings_.display_id);
     }
 #endif
@@ -2287,9 +2304,12 @@ void SkiaOutputSurfaceImplOnGpu::PostSubmit(
     }
 
     if (overlays_.size()) {
+      for (auto& each : overlays_) {
+        DBG_DRAW_RECT("output.overlay.rect", each.display_rect);
+        DBG_DRAW_RECT("output.overlay.damage", each.damage_rect);
+      }
       TRACE_EVENT1("viz", "SkiaOutputDevice->ScheduleOverlays()",
                    "num_overlays", overlays_.size());
-
       constexpr base::TimeDelta kHistogramMinTime = base::Microseconds(5);
       constexpr base::TimeDelta kHistogramMaxTime = base::Milliseconds(16);
       constexpr int kHistogramTimeBuckets = 50;
@@ -2571,7 +2591,7 @@ void SkiaOutputSurfaceImplOnGpu::CreateSolidColorSharedImage(
                                           ->GetPreferredFormatForSolidColor();
   if (preferred_solid_color_format)
     solid_color_image_format_ =
-        GetSharedImageFormat(preferred_solid_color_format.value());
+        GetSinglePlaneSharedImageFormat(preferred_solid_color_format.value());
 #endif
   DCHECK(solid_color_image_format_ == SinglePlaneFormat::kRGBA_8888 ||
          solid_color_image_format_ == SinglePlaneFormat::kBGRA_8888);

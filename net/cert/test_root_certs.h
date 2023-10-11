@@ -5,6 +5,7 @@
 #ifndef NET_CERT_TEST_ROOT_CERTS_H_
 #define NET_CERT_TEST_ROOT_CERTS_H_
 
+#include "base/containers/span.h"
 #include "base/lazy_instance.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
@@ -14,7 +15,7 @@
 #if BUILDFLAG(IS_IOS)
 #include <CoreFoundation/CFArray.h>
 #include <Security/SecTrust.h>
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/scoped_cftyperef.h"
 #endif
 
 namespace net {
@@ -82,7 +83,7 @@ class NET_EXPORT TestRootCerts {
   void ClearImpl();
 
 #if BUILDFLAG(IS_IOS)
-  base::ScopedCFTypeRef<CFMutableArrayRef> temporary_roots_;
+  base::apple::ScopedCFTypeRef<CFMutableArrayRef> temporary_roots_;
 #endif
 
   TrustStoreInMemory test_trust_store_;

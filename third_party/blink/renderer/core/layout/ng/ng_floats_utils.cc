@@ -95,12 +95,6 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
     builder.SetFragmentationType(NGFragmentationType::kFragmentNone);
   }
 
-  // If we're resuming layout of this float after a fragmentainer break, the
-  // margins of its children may be adjoining with the fragmentainer
-  // block-start, in which case they may get truncated.
-  if (IsBreakInside(unpositioned_float.token))
-    builder.SetDiscardingMarginStrut();
-
   builder.SetAvailableSize(unpositioned_float.available_size);
   builder.SetPercentageResolutionSize(unpositioned_float.percentage_size);
   builder.SetReplacedPercentageResolutionSize(
@@ -348,14 +342,33 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
           FragmentainerOffsetAtBfc(parent_space) +
           opportunity.rect.start_offset.block_offset +
           fragment_margins.block_start;
+      const auto* break_token =
+          To<NGBlockBreakToken>(layout_result->PhysicalFragment().BreakToken());
+      bool is_at_block_end = !break_token || break_token->IsAtBlockEnd();
+      if (!is_at_block_end) {
+        // We need to resume in the next fragmentainer (or even push the whole
+        // thing there), which means that there'll be no block-end margin here.
+        fragment_margins.block_end = LayoutUnit();
+      }
+
       if (!MovePastBreakpoint(parent_space, node, *layout_result,
                               fragmentainer_block_offset, kBreakAppealPerfect,
                               /* builder */ nullptr)) {
         need_break_before = true;
-      } else if (layout_result->PhysicalFragment().BreakToken()) {
-        // We need to resume in the next fragmentainer, which means that
-        // there'll be no block-end margin here.
-        fragment_margins.block_end = LayoutUnit();
+      } else if (is_at_block_end &&
+                 parent_space.HasKnownFragmentainerBlockSize()) {
+        NGFragment float_fragment(parent_space.GetWritingDirection(),
+                                  layout_result->PhysicalFragment());
+        LayoutUnit outer_block_end = fragmentainer_block_offset +
+                                     float_fragment.BlockSize() +
+                                     fragment_margins.block_end;
+        if (outer_block_end > FragmentainerCapacity(parent_space) &&
+            !IsBreakInside(unpositioned_float->token)) {
+          // Avoid breaking inside the block-end margin of a float. They are not
+          // to collapse with the fragmentainer boundary, unlike margins on
+          // regular boxes.
+          need_break_before = true;
+        }
       }
     }
   }

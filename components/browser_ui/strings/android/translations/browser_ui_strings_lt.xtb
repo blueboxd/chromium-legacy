@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Leiskite svetainei išsaugoti duomenis įrenginyje</translation>
 <translation id="1383876407941801731">Ieškoti</translation>
 <translation id="1384959399684842514">Atsisiuntimas pristabdytas</translation>
-<translation id="1409426117486808224">Supaprastinta atidarytų skirtukų peržiūra</translation>
 <translation id="1415402041810619267">URL sutrumpintas</translation>
 <translation id="1426410128494586442">Taip</translation>
 <translation id="1446450296470737166">Leisti visiškai valdyti MIDI įr.</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Leidžiama (išskyrus trečiąsias šalis)</translation>
 <translation id="1989112275319619282">Naršyti</translation>
 <translation id="1994173015038366702">Svetainės URL</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Galiojimo laikas baigsis po vienos dienos}one{Galiojimo laikas baigsis po # dienos}few{Galiojimo laikas baigsis po # dienų}many{Galiojimo laikas baigsis po # dienos}other{Galiojimo laikas baigsis po # dienų}}</translation>
 <translation id="2004697686368036666">Funkcijos gali neveikti kai kuriose svetainėse</translation>
 <translation id="2025115093177348061">Išplėstoji realybė</translation>
 <translation id="2030769033451695672">Palieskite, kad grįžtumėte į <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Pavadinimas</translation>
 <translation id="4008040567710660924">Leisti konkrečios svetainės slapukus.</translation>
 <translation id="4046123991198612571">Kitas takelis</translation>
+<translation id="4053720452172726777">Tinkinkite ir valdykite „Google Chrome“</translation>
 <translation id="4149994727733219643">Supaprastinta tinklalapių peržiūra</translation>
 <translation id="4151930093518524179">Numatytasis mastelis</translation>
 <translation id="4165986682804962316">Svetainės nustatymai</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Svetainės negali naudoti slapukų, siekdamos sužinoti apie naršymo veiklą skirtingose svetainėse, pavyzdžiui, kad galėtų suasmeninti skelbimus. Funkcijos gali neveikti kai kuriose svetainėse.</translation>
 <translation id="5553374991681107062">Naujausi</translation>
 <translation id="5556459405103347317">Įkelti iš naujo</translation>
-<translation id="5596627076506792578">Daugiau parinkčių</translation>
 <translation id="5649053991847567735">Automatiškai atsisiųsti</translation>
 <translation id="5668404140385795438">Nepaisyti svetainės mastelio keitimo vengimo užklausos</translation>
 <translation id="5677928146339483299">Užblokuoti</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Išjungta „Android“ nustatymuose</translation>
 <translation id="7016516562562142042">Leidžiama dabartiniam paieškos varikliui</translation>
 <translation id="702275896380648118">Ši svetainė nustato, kas jums patinka, ir siūlo skelbimus, nukreipiančius į kitas svetaines. Ši svetainė taip pat gauna informaciją apie skelbimų temas iš „Chrome“, kad galėtų rodyti jums aktualesnius skelbimus.</translation>
-<translation id="702463548815491781">Rekomenduojama, kai įjungta „TalkBack“ arba prieiga jungikliu</translation>
 <translation id="7053983685419859001">Blokuoti</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Pasirinktas 1 elementas}one{Pasirinktas # elementas}few{Pasirinkti # elementai}many{Pasirinkta # elemento}other{Pasirinkta # elementų}}</translation>
 <translation id="7087918508125750058">Pasirinkta: <ph name="ITEM_COUNT" />. Parinktys pasiekiamos netoli ekrano viršaus</translation>

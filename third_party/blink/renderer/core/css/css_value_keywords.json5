@@ -839,22 +839,24 @@
     "menulist-button",
     "meter",
     "progress-bar",
-    "slider-vertical",
     "searchfield",
     "textfield",
     "textarea",
-    // All appearance values that should not be accepted by the parser.
+    // TODO(crbug/924486) All appearance values that should not be accepted by the parser (high usage).
     "inner-spin-button",
+    "push-button",
+    "square-button",
+    "slider-horizontal",
+    "searchfield-cancel-button",
+    // TODO(crbug/924486) All appearance values that should not be accepted by the parser (low usage).
     "media-slider",
     "media-sliderthumb",
     "media-volume-slider",
     "media-volume-sliderthumb",
-    "push-button",
-    "square-button",
-    "slider-horizontal",
     "sliderthumb-horizontal",
     "sliderthumb-vertical",
-    "searchfield-cancel-button",
+    // TODO(crbug/1426629) All appearance values that should not be accepted by the parser (special case).
+    "slider-vertical",
     //
     // border-image
     //
@@ -1284,7 +1286,7 @@
     "type",
 
     // deprecated gradients
-    "from",
+    // "from", now part of relative color syntax
     "to",
     "color-stop",
     "radial",
@@ -1368,6 +1370,25 @@
     "in",
     // The color-mix function https://www.w3.org/TR/css-color-5/#color-mix
     "color-mix",
+
+    // relative color syntax
+    "from",
+    // RCS channel keywords.
+    // r, g, b for rgb(), rgba() and color()
+    // x, y, z are already defined for "scale"
+    // h, s, l for hsl()
+    // h, w, b for hwb()
+    // l, a, b for lab() and oklab()
+    // l, c, h for lch() and oklch()
+    "r",
+    "g",
+    "b",
+    "h",
+    "s",
+    "l",
+    "w",
+    "a",
+    "c",
 
     // transform
     "matrix",
@@ -1616,6 +1637,7 @@
     // ([video]-dynamic-range) media feature
     "standard",
     "high",
+    "constrained-high",
 
     // Layered @import rule
     "layer",
@@ -1693,7 +1715,23 @@
     "allow-discrete",
 
     // (inverted-colors:) media feature
-    "inverted"
+    "inverted",
+    // none
+
+    // navigation-trigger
+    "cross-document-same-origin",
+    // none
+
+    // container-type
+    // inline-size,
+    // normal,
+    // size,
+    "snap",
+    // sticky,
+
+    // (scripting:) media feature
+    "enabled",
+    "initial-only",
     // none
   ],
 }

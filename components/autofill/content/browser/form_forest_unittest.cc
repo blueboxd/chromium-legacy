@@ -28,7 +28,6 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -135,8 +134,7 @@ auto Equals(const FormForest& exp) {
 // The basic test form is a credit card form with six fields: first name, last
 // name, number, month, year, CVC.
 FormData CreateForm() {
-  FormData form;
-  test::CreateTestCreditCardFormData(&form, true, false, true);
+  FormData form = test::CreateTestCreditCardFormData(true, false, true);
   CHECK_EQ(form.fields.size(), 6u);
   return form;
 }
@@ -411,8 +409,6 @@ class FormForestTest : public content::RenderViewHostTestHarness {
         /*matches_opaque_src=*/false)};
   }
 
-  base::test::ScopedFeatureList feature_list_{
-      ::features::kAutofillSharedAutofill};
   test::AutofillUnitTestEnvironment autofill_test_environment_;
   TestAutofillClientInjector<TestContentAutofillClient>
       autofill_client_injector_;

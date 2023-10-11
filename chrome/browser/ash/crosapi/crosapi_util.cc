@@ -21,6 +21,7 @@
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
 #include "chrome/browser/ash/crosapi/native_theme_service_ash.h"
 #include "chrome/browser/ash/crosapi/resource_manager_ash.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/handlers/device_name_policy_handler.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
@@ -76,6 +77,7 @@
 #include "chromeos/crosapi/mojom/download_status_updater.mojom.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/crosapi/mojom/echo_private.mojom.h"
+#include "chromeos/crosapi/mojom/embedded_accessibility_helper.mojom.h"
 #include "chromeos/crosapi/mojom/emoji_picker.mojom.h"
 #include "chromeos/crosapi/mojom/extension_info_private.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
@@ -292,7 +294,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 114,
+static_assert(crosapi::mojom::Crosapi::Version_ == 116,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -418,6 +420,8 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<media_session::mojom::AudioFocusManager>(),
     MakeInterfaceVersionEntry<media_session::mojom::AudioFocusManagerDebug>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ParentAccess>(),
+    MakeInterfaceVersionEntry<
+        crosapi::mojom::EmbeddedAccessibilityHelperClientFactory>(),
 };
 
 constexpr bool HasDuplicatedUuid() {
@@ -613,6 +617,8 @@ void InjectBrowserInitParams(
   params->use_cups_for_printing = GetUseCupsForPrinting();
   params->use_floss_bluetooth = floss::features::IsFlossEnabled();
   params->is_floss_available = floss::features::IsFlossAvailable();
+  params->is_floss_availability_check_needed =
+      floss::features::IsFlossAvailabilityCheckNeeded();
 
   params->enable_window_layout_menu =
       base::FeatureList::IsEnabled(chromeos::wm::features::kWindowLayoutMenu);
@@ -654,7 +660,7 @@ void InjectBrowserInitParams(
   params->is_pdf_ocr_enabled = ::features::IsPdfOcrEnabled();
 
   params->is_drivefs_bulk_pinning_enabled =
-      ash::features::IsDriveFsBulkPinningEnabled();
+      drive::util::IsDriveFsBulkPinningEnabled();
 
   params->is_sys_ui_downloads_integration_v2_enabled =
       ash::features::IsSysUiDownloadsIntegrationV2Enabled();
@@ -688,10 +694,12 @@ void InjectBrowserPostLoginParams(BrowserParams* params,
       environment_provider->GetLastPolicyFetchAttemptTimestamp().ToTimeT();
 
   params->initial_browser_action = initial_browser_action.action;
-  params->web_apps_enabled = web_app::IsWebAppsCrosapiEnabled();
-  params->standalone_browser_is_primary = IsLacrosPrimaryBrowser();
 
-  params->standalone_browser_is_only_browser = !IsAshWebBrowserEnabled();
+  // TODO(crbug.com/1448575): These three are redundant. Remove them in M120.
+  params->web_apps_enabled = true;
+  params->standalone_browser_is_primary = true;
+  params->standalone_browser_is_only_browser = true;
+
   params->publish_chrome_apps = browser_util::IsLacrosChromeAppsEnabled();
   params->publish_hosted_apps = crosapi::IsStandaloneBrowserHostedAppsEnabled();
 
@@ -700,10 +708,6 @@ void InjectBrowserPostLoginParams(BrowserParams* params,
 
   params->is_current_user_device_owner = GetIsCurrentUserOwner();
   params->is_current_user_ephemeral = IsCurrentUserEphemeral();
-  // TODO(crbug.com/1468140): Deprecate |do_not_mux_extension_app_ids| after
-  // the change for removing extension id muxing code is landed and runs without
-  // any regressions.
-  params->do_not_mux_extension_app_ids = true;
   params->enable_lacros_tts_support =
       tts_crosapi_util::ShouldEnableLacrosTtsSupport();
 }
@@ -786,7 +790,6 @@ mojom::DeviceSettingsPtr GetDeviceSettings() {
   mojom::DeviceSettingsPtr result = mojom::DeviceSettings::New();
 
   result->attestation_for_content_protection_enabled = MojoOptionalBool::kUnset;
-  result->deprecated_device_ephemeral_users_enabled = MojoOptionalBool::kUnset;
   result->device_restricted_managed_guest_session_enabled =
       MojoOptionalBool::kUnset;
   if (ash::CrosSettings::IsInitialized()) {
@@ -828,14 +831,6 @@ mojom::DeviceSettingsPtr GetDeviceSettings() {
           allow_list->usb_device_ids.push_back(std::move(usb_device_id));
         }
         result->usb_detachable_allow_list = std::move(allow_list);
-      }
-
-      bool ephemeral_users_enabled = false;
-      if (cros_settings->GetBoolean(ash::kAccountsPrefEphemeralUsersEnabled,
-                                    &ephemeral_users_enabled)) {
-        result->deprecated_device_ephemeral_users_enabled =
-            ephemeral_users_enabled ? MojoOptionalBool::kTrue
-                                    : MojoOptionalBool::kFalse;
       }
 
       bool device_restricted_managed_guest_session_enabled = false;

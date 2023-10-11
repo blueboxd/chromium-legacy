@@ -14,7 +14,6 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Process;
 import android.os.SystemClock;
 import android.view.Display;
 import android.view.Menu;
@@ -25,7 +24,6 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.IntentUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
@@ -48,6 +46,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcherImp
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
+import org.chromium.components.browser_ui.share.ShareHelper;
 import org.chromium.components.browser_ui.util.FirstDrawDetector;
 import org.chromium.ui.base.ActivityIntentRequestTrackerDelegate;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -64,7 +63,6 @@ public abstract class AsyncInitializationActivity
         extends ChromeBaseAppCompatActivity implements ChromeActivityNativeDelegate, BrowserParts {
     @VisibleForTesting
     public static final String FIRST_DRAW_COMPLETED_TIME_MS_UMA = "FirstDrawCompletedTime";
-    static Boolean sOverrideNativeLibraryCannotBeLoadedForTesting;
     protected final Handler mHandler;
 
     private final NativeInitializationController mNativeInitializationController =
@@ -80,10 +78,7 @@ public abstract class AsyncInitializationActivity
     private long mOnCreateTimestampMs;
     /** Time at which onPause is called. */
     private long mOnPauseTimestampMs;
-    /**
-     * Time at which onPause is called before the activity is recreated due to unfolding. The
-     * timestamp is captured only if recreation starts when the activity is not in stopped state.
-     */
+    /** Time at which onPause is called before the activity is recreated due to unfolding. */
     private long mOnPauseBeforeFoldRecreateTimestampMs;
 
     private ActivityWindowAndroid mWindowAndroid;
@@ -359,14 +354,6 @@ public abstract class AsyncInitializationActivity
             return false;
         }
 
-        if (nativeLibraryCannotBeLoaded()) {
-            // For intents into Chrome, ensure that the right library can be loaded.
-            Intent newIntent = new Intent(this, LaunchFailedActivity.class);
-            IntentUtils.safeStartActivity(this, newIntent);
-            abortLaunch(LaunchIntentDispatcher.Action.FINISH_ACTIVITY);
-            return false;
-        }
-
         if (requiresFirstRunToBeCompleted(intent)
                 && FirstRunFlowSequencer.launch(this, intent, shouldPreferLightweightFre(intent))) {
             abortLaunch(LaunchIntentDispatcher.Action.FINISH_ACTIVITY);
@@ -387,14 +374,6 @@ public abstract class AsyncInitializationActivity
 
         ChromeBrowserInitializer.getInstance().handlePreNativeStartupAndLoadLibraries(this);
         return true;
-    }
-
-    private static boolean nativeLibraryCannotBeLoaded() {
-        if (sOverrideNativeLibraryCannotBeLoadedForTesting != null) {
-            return sOverrideNativeLibraryCannotBeLoadedForTesting;
-        }
-
-        return Process.is64Bit() && !ChromeBrowserInitializer.canBeLoadedIn64Bit();
     }
 
     /**
@@ -577,6 +556,7 @@ public abstract class AsyncInitializationActivity
     @SuppressLint("MissingSuperCall") // Empty method in parent Activity class.
     public void onNewIntent(Intent intent) {
         if (intent == null) return;
+        if (ShareHelper.isCleanerIntent(intent)) return;
         mNativeInitializationController.onNewIntent(intent);
         setIntent(intent);
     }

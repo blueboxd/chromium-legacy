@@ -52,29 +52,6 @@ constexpr base::TimeDelta kHideStackingBarAnimationDuration =
     base::Milliseconds(330);
 constexpr base::TimeDelta kCollapseAnimationDuration = base::Milliseconds(640);
 
-class ScrollerContentsView : public views::View {
- public:
-  explicit ScrollerContentsView(NotificationListView* notification_list_view) {
-    auto* contents_layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kVertical));
-    contents_layout->set_cross_axis_alignment(
-        views::BoxLayout::CrossAxisAlignment::kStretch);
-    AddChildView(notification_list_view);
-  }
-
-  ScrollerContentsView(const ScrollerContentsView&) = delete;
-  ScrollerContentsView& operator=(const ScrollerContentsView&) = delete;
-
-  ~ScrollerContentsView() override = default;
-
-  // views::View:
-  void ChildPreferredSizeChanged(views::View* view) override {
-    PreferredSizeChanged();
-  }
-
-  const char* GetClassName() const override { return "ScrollerContentsView"; }
-};
-
 }  // namespace
 
 NotificationCenterView::NotificationCenterView(
@@ -117,12 +94,13 @@ NotificationCenterView::~NotificationCenterView() {
 void NotificationCenterView::Init() {
   notification_list_view_->Init();
 
-  // Need to set the transparent background explicitly, since ScrollView has
-  // set the default opaque background color.
   // TODO(crbug.com/1247455): Be able to do
   // SetContentsLayerType(LAYER_NOT_DRAWN).
-  scroller_->SetContents(
-      std::make_unique<ScrollerContentsView>(notification_list_view_));
+  auto scroller_contents_view = std::make_unique<views::BoxLayoutView>();
+  scroller_contents_view->AddChildView(notification_list_view_);
+  scroller_->SetContents(std::move(scroller_contents_view));
+  // Need to set the transparent background explicitly, since ScrollView has
+  // set the default opaque background color.
   scroller_->SetBackgroundColor(absl::nullopt);
   scroller_->SetVerticalScrollBar(base::WrapUnique(scroll_bar_.get()));
   scroller_->SetDrawOverflowIndicator(false);
@@ -344,7 +322,7 @@ void NotificationCenterView::AnimationEnded(const gfx::Animation* animation) {
   animation_->SetCurrentValue(1.0);
   PreferredSizeChanged();
 
-  animation_state_ = NotificationCenterAnimationState::IDLE;
+  animation_state_ = NotificationCenterAnimationState::kIdle;
   notification_bar_->SetAnimationState(animation_state_);
   UpdateVisibility();
 }
@@ -373,7 +351,7 @@ void NotificationCenterView::OnContentsScrolled() {
 
 void NotificationCenterView::StartHideStackingBarAnimation() {
   animation_->End();
-  animation_state_ = NotificationCenterAnimationState::HIDE_STACKING_BAR;
+  animation_state_ = NotificationCenterAnimationState::kHideStackingBar;
   notification_bar_->SetAnimationState(animation_state_);
   animation_->SetDuration(kHideStackingBarAnimationDuration);
   animation_->Start();
@@ -381,7 +359,7 @@ void NotificationCenterView::StartHideStackingBarAnimation() {
 
 void NotificationCenterView::StartCollapseAnimation() {
   animation_->End();
-  animation_state_ = NotificationCenterAnimationState::COLLAPSE;
+  animation_state_ = NotificationCenterAnimationState::kCollapse;
   notification_bar_->SetAnimationState(animation_state_);
   animation_->SetDuration(kCollapseAnimationDuration);
   animation_->Start();
@@ -404,7 +382,7 @@ void NotificationCenterView::UpdateVisibility() {
       Shell::Get()->session_controller();
 
   SetVisible(available_height_ >= kUnifiedNotificationMinimumHeight &&
-             (animation_state_ == NotificationCenterAnimationState::COLLAPSE ||
+             (animation_state_ == NotificationCenterAnimationState::kCollapse ||
               notification_list_view_->GetPreferredSize().height() > 0) &&
              session_controller->ShouldShowNotificationTray() &&
              (!session_controller->IsScreenLocked() ||

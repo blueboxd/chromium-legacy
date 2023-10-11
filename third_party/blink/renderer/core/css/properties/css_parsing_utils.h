@@ -9,12 +9,10 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_anchor_query_enums.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
-#include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
-#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
@@ -139,9 +137,6 @@ CORE_EXPORT CSSPrimitiveValue* ConsumeAngle(
     absl::optional<WebFeature> unitless_zero_feature,
     double minimum_value,
     double maximum_value);
-CSSPrimitiveValue* ConsumeHue(CSSParserTokenRange&,
-                              const CSSParserContext&,
-                              absl::optional<WebFeature> unitless_zero_feature);
 CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange&,
                                const CSSParserContext&,
                                CSSPrimitiveValue::ValueRange);
@@ -222,6 +217,8 @@ CSSValue* ConsumeIntrinsicSizeLonghand(CSSParserTokenRange&,
 CSSIdentifierValue* ConsumeShapeBox(CSSParserTokenRange&);
 CSSIdentifierValue* ConsumeVisualBox(CSSParserTokenRange&);
 
+CSSIdentifierValue* ConsumeGeometryBox(CSSParserTokenRange&);
+
 enum class IsImplicitProperty { kNotImplicit, kImplicit };
 
 void AddProperty(CSSPropertyID resolved_property,
@@ -234,6 +231,10 @@ void AddProperty(CSSPropertyID resolved_property,
 void CountKeywordOnlyPropertyUsage(CSSPropertyID,
                                    const CSSParserContext&,
                                    CSSValueID);
+
+void WarnInvalidKeywordPropertyUsage(CSSPropertyID,
+                                     const CSSParserContext&,
+                                     CSSValueID);
 
 const CSSValue* ParseLonghand(CSSPropertyID unresolved_property,
                               CSSPropertyID current_shorthand,

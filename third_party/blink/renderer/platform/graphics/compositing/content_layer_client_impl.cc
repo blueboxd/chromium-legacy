@@ -107,6 +107,18 @@ void ContentLayerClientImpl::UpdateCcPictureLayer(
   // offset_to_transform_parent with the origin of the paint chunk here.
   cc_picture_layer_->SetOffsetToTransformParent(layer_offset);
 
+  cc_picture_layer_->SetBounds(layer_bounds);
+  if (RuntimeEnabledFeatures::HitTestOpaquenessEnabled()) {
+    auto hit_test_opaqueness = pending_layer.GetHitTestOpaqueness();
+    if (hit_test_opaqueness == cc::HitTestOpaqueness::kTransparent &&
+        !RuntimeEnabledFeatures::HitTestTransparencyEnabled()) {
+      hit_test_opaqueness = cc::HitTestOpaqueness::kMixed;
+    }
+    cc_picture_layer_->SetHitTestOpaqueness(hit_test_opaqueness);
+  } else {
+    cc_picture_layer_->SetHitTestable(true);
+  }
+
   // If nothing changed in the layer, keep the original display item list.
   // Here check layer_bounds because RasterInvalidator doesn't issue raster
   // invalidation when only layer_bounds changes.
@@ -124,8 +136,6 @@ void ContentLayerClientImpl::UpdateCcPictureLayer(
       *cc_display_item_list_);
   cc_display_item_list_->Finalize();
 
-  cc_picture_layer_->SetBounds(layer_bounds);
-  cc_picture_layer_->SetHitTestable(true);
   cc_picture_layer_->SetIsDrawable(pending_layer.DrawsContent());
 
   cc_picture_layer_->SetBackgroundColor(pending_layer.ComputeBackgroundColor());

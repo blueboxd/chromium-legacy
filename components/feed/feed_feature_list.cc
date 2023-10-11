@@ -81,9 +81,6 @@ BASE_FEATURE(kFeedBottomSyncStringRemoval,
              "FeedBottomSyncStringRemoval",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
-BASE_FEATURE(kFeedBoCSigninInterstitial,
-             "FeedBoCSigninInterstitial",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kFeedStamp, "FeedStamp", base::FEATURE_DISABLED_BY_DEFAULT);
 
 const char kDefaultReferrerUrl[] = "https://www.google.com/";
@@ -121,13 +118,8 @@ BASE_FEATURE(kPersonalizeFeedUnsignedUsers,
              "PersonalizeFeedUnsignedUsers",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kPersonalizeFeedNonSyncUsers,
-             "PersonalizeFeedNonSyncUsers",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
+// TODO(crbug.com/1205923): Remove this helper, directly use kSignin instead.
 signin::ConsentLevel GetConsentLevelNeededForPersonalizedFeed() {
-  if (!base::FeatureList::IsEnabled(kPersonalizeFeedNonSyncUsers))
-    return signin::ConsentLevel::kSync;
   return signin::ConsentLevel::kSignin;
 }
 
@@ -167,7 +159,7 @@ BASE_FEATURE(kSyntheticCapabilities,
              "FeedSyntheticCapabilities",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCormorant, "Cormorant", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kCormorant, "Cormorant", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFeedUserInteractionReliabilityReport,
              "FeedUserInteractionReliabilityReport",
@@ -184,5 +176,9 @@ BASE_FEATURE(kFeedDynamicColors,
 BASE_FEATURE(kFeedFollowUiUpdate,
              "FeedFollowUiUpdate",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kFeedSportsCard,
+             "FeedSportsCard",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace feed

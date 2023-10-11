@@ -9,7 +9,7 @@
     navigator.joinAdInterestGroup({
         name: ${id},
         owner: "${baseOrigin}",
-        biddingLogicUrl: "${base}fledge_bidding_logic.js.php",
+        biddingLogicURL: "${base}fledge_bidding_logic.js.php",
         ads: [{
           renderUrl: 'https://example.com/render' + ${id},
           metadata: {ad: 'metadata', here: [1, 2, 3]}
@@ -22,7 +22,7 @@
     const auctionJs = `
       (async function() {
         config = await navigator.runAdAuction({
-            decisionLogicUrl: "${base}fledge_decision_logic.js.php",
+            decisionLogicURL: "${base}fledge_decision_logic.js.php",
             seller: "${baseOrigin}",
             interestGroupBuyers: ["${baseOrigin}"],
             resolveToConfig: true});

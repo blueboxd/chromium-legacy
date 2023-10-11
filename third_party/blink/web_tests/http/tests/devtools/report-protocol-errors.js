@@ -4,6 +4,9 @@
 
 import {TestRunner} from 'test_runner';
 
+import * as ProtocolClient from 'devtools/core/protocol_client/protocol_client.js';
+import * as SDK from 'devtools/core/sdk/sdk.js';
+
 (async function() {
   TestRunner.addResult(`Tests that InspectorBackendDispatcher is catching incorrect messages.\n`);
 
@@ -15,7 +18,7 @@ import {TestRunner} from 'test_runner';
   }
 
 
-  const frameTargetSession = SDK.targetManager.primaryPageTarget().sessionId;
+  const frameTargetSession = SDK.TargetManager.TargetManager.instance().primaryPageTarget().sessionId;
 
   var messages = [
     'some wrong string',
@@ -41,7 +44,7 @@ import {TestRunner} from 'test_runner';
 
   var numberOfReports = 0;
 
-  ProtocolClient.InspectorBackend.reportProtocolError = function(error, message) {
+  ProtocolClient.InspectorBackend.InspectorBackend.reportProtocolError = function(error, message) {
     if (numberOfReports < messages.length) {
       TestRunner.addObject(trimErrorMessage(message), {'sessionId': 'skip'});
       TestRunner.addResult('-------------------------------------------------------');

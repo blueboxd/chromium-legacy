@@ -165,7 +165,7 @@ class ChromeLabsCoordinatorTest : public TestWithBrowserView {
   }
 
   views::View* chrome_labs_menu_item_container() {
-    return chrome_labs_coordinator_->GetChromeLabsBubbleViewForTesting()
+    return chrome_labs_coordinator_->GetChromeLabsBubbleView()
         ->GetMenuItemContainerForTesting();
   }
 
@@ -184,7 +184,8 @@ class ChromeLabsCoordinatorTest : public TestWithBrowserView {
 
  private:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  raw_ptr<ash::FakeChromeUserManager, ExperimentalAsh> user_manager_;
+  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
+      user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 #endif
 
@@ -200,19 +201,15 @@ TEST_F(ChromeLabsCoordinatorTest, ShowBubbleTest) {
   EXPECT_TRUE(chrome_labs_coordinator_->BubbleExists());
 
   views::test::WidgetDestroyedWaiter first_destroyed_waiter(
-      chrome_labs_coordinator_->GetChromeLabsBubbleViewForTesting()
-          ->GetWidget());
+      chrome_labs_coordinator_->GetChromeLabsBubbleView()->GetWidget());
   chrome_labs_coordinator_->Hide();
   first_destroyed_waiter.Wait();
   EXPECT_FALSE(chrome_labs_coordinator_->BubbleExists());
   chrome_labs_coordinator_->Show();
   // The bubble can be closed by the user clicking off of the bubble.
   views::test::WidgetDestroyedWaiter second_destroyed_waiter(
-      chrome_labs_coordinator_->GetChromeLabsBubbleViewForTesting()
-          ->GetWidget());
-  chrome_labs_coordinator_->GetChromeLabsBubbleViewForTesting()
-      ->GetWidget()
-      ->Close();
+      chrome_labs_coordinator_->GetChromeLabsBubbleView()->GetWidget());
+  chrome_labs_coordinator_->GetChromeLabsBubbleView()->GetWidget()->Close();
   second_destroyed_waiter.Wait();
   EXPECT_FALSE(chrome_labs_coordinator_->BubbleExists());
 }
@@ -223,8 +220,7 @@ TEST_F(ChromeLabsCoordinatorTest, NewBadgeTest) {
   chrome_labs_coordinator_->Show();
   EXPECT_TRUE(first_lab_item()->GetNewBadgeForTesting()->GetDisplayNewBadge());
   views::test::WidgetDestroyedWaiter destroyed_waiter(
-      chrome_labs_coordinator_->GetChromeLabsBubbleViewForTesting()
-          ->GetWidget());
+      chrome_labs_coordinator_->GetChromeLabsBubbleView()->GetWidget());
   chrome_labs_coordinator_->Hide();
   destroyed_waiter.Wait();
   constexpr base::TimeDelta kDelay = base::Days(8);
@@ -243,8 +239,7 @@ TEST_F(ChromeLabsCoordinatorTest, ShowBubbleWhenUserIsOwner) {
   chrome_labs_coordinator_->Show(
       ChromeLabsCoordinator::ShowUserType::kChromeOsOwnerUserType);
   views::test::WidgetDestroyedWaiter destroyed_waiter(
-      chrome_labs_coordinator_->GetChromeLabsBubbleViewForTesting()
-          ->GetWidget());
+      chrome_labs_coordinator_->GetChromeLabsBubbleView()->GetWidget());
   chrome_labs_coordinator_->Hide();
   destroyed_waiter.Wait();
   chrome_labs_coordinator_->Show(
@@ -407,7 +402,8 @@ class ChromeLabsViewControllerTest : public TestWithBrowserView {
 
  private:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  raw_ptr<ash::FakeChromeUserManager, ExperimentalAsh> user_manager_;
+  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
+      user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 #endif
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -500,7 +496,8 @@ class ChromeLabsAshFeatureTest : public ChromeLabsFeatureTest {
   }
 
  private:
-  raw_ptr<FakeChromeUserManager, ExperimentalAsh> user_manager_;
+  raw_ptr<FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
+      user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 };
 

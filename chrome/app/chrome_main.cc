@@ -144,9 +144,6 @@ int ChromeMain(int argc, const char** argv) {
 #endif
 
 #if BUILDFLAG(IS_MAC)
-  if (!__builtin_available(macOS 10.8, *)) {
-    SetUpMissingMethods();
-  }
   SetUpBundleOverrides();
 #endif
 

@@ -548,6 +548,7 @@ component("views") {
     "//ui/native_theme:native_theme_browser",
     "//ui/resources",
     "//ui/strings",
+    "//ui/touch_selection",
     "//ui/views/debug:views_debug",
     "//ui/views/resources",
     "//url",
@@ -749,8 +750,6 @@ component("views") {
       "event_monitor_aura.h",
       "native_window_tracker_aura.h",
       "touchui/touch_selection_controller_impl.h",
-      "touchui/touch_selection_menu_runner_views.h",
-      "touchui/touch_selection_menu_views.h",
       "view_constants_aura.h",
       "widget/focus_manager_event_handler.h",
       "widget/native_widget_aura.h",
@@ -781,8 +780,6 @@ component("views") {
       "metrics_aura.cc",
       "native_window_tracker_aura.cc",
       "touchui/touch_selection_controller_impl.cc",
-      "touchui/touch_selection_menu_runner_views.cc",
-      "touchui/touch_selection_menu_views.cc",
       "view_constants_aura.cc",
       "views_touch_selection_controller_factory_aura.cc",
       "widget/focus_manager_event_handler.cc",
@@ -810,10 +807,19 @@ component("views") {
       "//ui/events",
       "//ui/platform_window",
       "//ui/platform_window/wm",
-      "//ui/touch_selection",
       "//ui/wm",
       "//ui/wm/public",
     ]
+    if (enable_desktop_aura || is_chromeos_ash) {
+      public += [
+        "touchui/touch_selection_menu_runner_views.h",
+        "touchui/touch_selection_menu_views.h",
+      ]
+      sources += [
+        "touchui/touch_selection_menu_runner_views.cc",
+        "touchui/touch_selection_menu_views.cc",
+      ]
+    }
     if (enable_desktop_aura) {
       public += [
         "widget/desktop_aura/desktop_capture_client.h",
@@ -1341,6 +1347,7 @@ test("views_unittests") {
     "//ui/resources",
     "//ui/resources:ui_test_pak",
     "//ui/strings",
+    "//ui/touch_selection",
     "//url",
   ]
 
@@ -1446,7 +1453,6 @@ test("views_unittests") {
       "controls/native/native_view_host_aura_unittest.cc",
       "corewm/tooltip_controller_unittest.cc",
       "touchui/touch_selection_controller_impl_unittest.cc",
-      "touchui/touch_selection_menu_runner_views_unittest.cc",
       "view_unittest_aura.cc",
       "widget/native_widget_aura_unittest.cc",
       "widget/window_reorderer_unittest.cc",
@@ -1456,7 +1462,6 @@ test("views_unittests") {
       "//ui/aura",
       "//ui/aura:test_support",
       "//ui/base/cursor/mojom:cursor_type",
-      "//ui/touch_selection",
       "//ui/wm",
       "//ui/wm/public",
     ]
@@ -1469,6 +1474,10 @@ test("views_unittests") {
     if (is_win) {
       sources +=
           [ "widget/desktop_aura/desktop_window_tree_host_win_unittest.cc" ]
+    }
+
+    if (enable_desktop_aura || is_chromeos_ash) {
+      sources += [ "touchui/touch_selection_menu_runner_views_unittest.cc" ]
     }
 
     if (enable_desktop_aura) {

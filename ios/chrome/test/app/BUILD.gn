@@ -5,8 +5,6 @@
 source_set("test_support") {
   testonly = true
   sources = [
-    "bookmarks_test_util.h",
-    "bookmarks_test_util.mm",
     "browsing_data_test_util.h",
     "browsing_data_test_util.mm",
     "chrome_test_util.h",
@@ -59,7 +57,7 @@ source_set("test_support") {
     "//ios/chrome/app/application_delegate:application_delegate_internal",
     "//ios/chrome/app/application_delegate:test_support",
     "//ios/chrome/browser/autofill",
-    "//ios/chrome/browser/bookmarks",
+    "//ios/chrome/browser/bookmarks/model",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browsing_data",
     "//ios/chrome/browser/content_settings",

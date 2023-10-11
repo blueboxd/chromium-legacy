@@ -59,7 +59,6 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/content_navigation_policy.h"
-#include "content/common/features.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_host.h"
@@ -427,6 +426,45 @@ void UpdateProcessReusePolicyForProcessPerSiteWithMainFrameThreshold(
   site_instance->set_process_reuse_policy(
       SiteInstanceImpl::ProcessReusePolicy::
           REUSE_PENDING_OR_COMMITTED_SITE_WITH_MAIN_FRAME_THRESHOLD);
+}
+
+// Prepares the View and the DelegatedFrameHost when the page is restored from
+// BackForwardCache with a ViewTransition (VT) on it.
+void PrepareViewTransitionForBFCacheActivation(
+    RenderFrameHostImpl* rfh_to_show) {
+  // https://crbug.com/1415340: The View that's about to be restored from
+  // BFCache has the fallback surface set to the last surface drawn before the
+  // page entered the BFCache. If the ViewTransition's animation is delayed
+  // (e.g., a renderer slow to produce a new frame), the last surface will be
+  // embedded and displayed first. We will be showing the fallback surface
+  // first, then then VT aimation, causing a visual glitch.
+  //
+  // To address this:
+  // 1. We force a new allocation group of the browser's `viz::LocalSurfaceId`
+  //    allocator. This arg ensures Viz doesn't draw any cached frames produced
+  //    by this restored page by changing its allocation group.
+  // 2. With a VT, we let BFCache-restored View always steal the
+  //    fallback surface from the current View, and let the BFCached
+  //    View's fallback content persist after `Show()`.
+
+  auto* rwhv_base =
+      static_cast<RenderWidgetHostViewBase*>(rfh_to_show->GetView());
+
+  // Invalidates the current allocation group. For the next surface embedding,
+  // the browser will be using a fresh allocation group, yet to be registered
+  // with Viz.
+  rwhv_base->InvalidateLocalSurfaceIdAndAllocationGroup();
+
+  // Clears the fallback Surface so later on this BFCached new
+  // View/DelegatedFrameHost with VT can take the fallback from the old page.
+  rwhv_base->ClearFallbackSurfaceForCommitPending();
+
+  // Marks the View/DelegatedFrameHost as evicted. This forces this new View to
+  // take a fallback from the old page. If there isn't a fallback surface,
+  // `ClearFallbackSurfaceForCommitPending` won't trigger an eviction. In such
+  // cases we explicitly mark the View as evicted to force the View to take a
+  // fallback. This seems to occur on Mac's content_shell.
+  rwhv_base->set_is_evicted();
 }
 
 }  // namespace
@@ -1302,8 +1340,21 @@ void RenderFrameHostManager::DidCreateNavigationRequest(
   } else {
     BrowsingContextGroupSwap ignored_bcg_swap_info =
         BrowsingContextGroupSwap::CreateDefault();
-    auto result = GetFrameHostForNavigation(request, &ignored_bcg_swap_info);
+    std::string reason;
+    auto result =
+        GetFrameHostForNavigation(request, &ignored_bcg_swap_info, &reason);
     if (result.has_value()) {
+      if (frame_tree_node_->frame_tree().is_prerendering() &&
+          result.value() == speculative_render_frame_host_.get()) {
+        (*result)->SetCreationInfoForBug1425281(
+            render_frame_host_->GetSiteInstance()
+                ->GetSiteInfo()
+                .GetDebugString(),
+            speculative_render_frame_host_->GetSiteInstance()
+                ->GetSiteInfo()
+                .GetDebugString(),
+            reason, request->GetURL());
+      }
       DCHECK(result.value());
     } else if (result.error() ==
                GetFrameHostForNavigationFailed::kBlockedByPendingCommit) {
@@ -1544,28 +1595,28 @@ RenderFrameHostManager::GetFrameHostForNavigation(
                                    use_current_rfh);
   bool notify_webui_of_rf_creation = request->HasWebUI();
 
+  // For navigation queueing, if the speculative RFH is already committing a
+  // cross-document navigation, avoid discarding it here: the commit needs to
+  // complete in order for the browser and the renderer state to remain in
+  // sync. See https://crbug.com/838348.
+  //
+  // In theory, it would be possible to simply avoid discarding it (see the
+  // later branch for avoiding redundant cancellations: however, this
+  // navigation race should be fairly rare, so for navigation queueing, do the
+  // simple thing and give up trying to assign a RenderFrameHost for the
+  // navigation.
+  if (ShouldQueueNavigationsWhenPendingCommitRFHExists() &&
+      request->ShouldQueueDueToExistingPendingCommitRFH()) {
+    return base::unexpected(
+        GetFrameHostForNavigationFailed::kBlockedByPendingCommit);
+  }
+
   // We only do this if the policy allows it and are recovering a crashed frame.
   bool recovering_without_early_commit =
       ShouldSkipEarlyCommitPendingForCrashedFrame() &&
       render_frame_host_->must_be_replaced();
   if (use_current_rfh) {
     AppendReason(reason, "GetFrameHostForNavigation / use-current-rfh");
-    // For navigation queueing, if the speculative RFH is already committing a
-    // cross-document navigation, avoid discarding it here: the commit needs to
-    // complete in order for the browser and the renderer state to remain in
-    // sync. See https://crbug.com/838348.
-    //
-    // In theory, it would be possible to simply avoid discarding it (see the
-    // later branch for avoiding redundant cancellations: however, this
-    // navigation race should be fairly rare, so for navigation queueing, do the
-    // simple thing and give up trying to assign a RenderFrameHost for the
-    // navigation.
-    if (ShouldQueueNavigationsWhenPendingCommitRFHExists() &&
-        request->ShouldQueueDueToExistingPendingCommitRFH()) {
-      return base::unexpected(
-          GetFrameHostForNavigationFailed::kBlockedByPendingCommit);
-    }
-
     navigation_rfh = render_frame_host_.get();
 
     // Set the associated RenderFrameHost type for the navigation, and discard
@@ -1597,19 +1648,6 @@ RenderFrameHostManager::GetFrameHostForNavigation(
         speculative_render_frame_host_->GetSiteInstance() !=
             dest_site_instance.get()) {
       AppendReason(reason, "GetFrameHostForNavigation / new-speculative-rfh");
-      // If a previous speculative RenderFrameHost didn't exist or if its
-      // SiteInstance differs from the one for the current URL, a new one needs
-      // to be created.
-      //
-      // However, if the speculative RFH is already committing a cross-document
-      // navigation, avoid discarding it now: the commit needs to complete in
-      // order for the browser and the renderer state to remain in sync. See
-      // https://crbug.com/838348.
-      if (ShouldQueueNavigationsWhenPendingCommitRFHExists() &&
-          request->ShouldQueueDueToExistingPendingCommitRFH()) {
-        return base::unexpected(
-            GetFrameHostForNavigationFailed::kBlockedByPendingCommit);
-      }
 
       // Determine if the old speculative RFH and new speculative RFH will use
       // the same process.  If so, add a reference to that process so that
@@ -4413,6 +4451,9 @@ void RenderFrameHostManager::CommitPending(
         if (&*rvh == current_frame_host()->GetRenderViewHost()) {
           page_restore_params->view_transition_state =
               pending_stored_page->TakeViewTransitionState();
+          if (page_restore_params->view_transition_state.has_value()) {
+            PrepareViewTransitionForBFCacheActivation(current_frame_host());
+          }
         }
         rvh->LeaveBackForwardCache(std::move(page_restore_params));
       }
@@ -4480,7 +4521,8 @@ void RenderFrameHostManager::CommitPending(
     // not affect the visibility of the blink::WidgetBase. We should unify these
     // two visibility states to prevent them from drifting.
     old_view->Hide();
-    if (base::FeatureList::IsEnabled(kNavigationUpdatesChildViewsVisibility) &&
+    if (base::FeatureList::IsEnabled(
+            features::kNavigationUpdatesChildViewsVisibility) &&
         old_render_frame_host->child_count()) {
       old_render_frame_host->SetVisibilityForChildViews(false);
     }
@@ -4697,7 +4739,7 @@ void RenderFrameHostManager::CommitPending(
     if (!frame_tree_node_->frame_tree().IsHidden()) {
       new_view->Show();
       if (base::FeatureList::IsEnabled(
-              kNavigationUpdatesChildViewsVisibility) &&
+              features::kNavigationUpdatesChildViewsVisibility) &&
           render_frame_host_->child_count()) {
         render_frame_host_->SetVisibilityForChildViews(true);
       }

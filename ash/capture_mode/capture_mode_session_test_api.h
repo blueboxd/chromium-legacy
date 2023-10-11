@@ -14,9 +14,9 @@ class Label;
 
 namespace ash {
 
+class BaseCaptureModeSession;
 class CaptureLabelView;
 class CaptureModeBarView;
-class CaptureModeSession;
 class CaptureModeSettingsView;
 class MagnifierGlass;
 class RecordingTypeMenuView;
@@ -26,7 +26,7 @@ class UserNudgeController;
 class CaptureModeSessionTestApi {
  public:
   CaptureModeSessionTestApi();
-  explicit CaptureModeSessionTestApi(CaptureModeSession* session);
+  explicit CaptureModeSessionTestApi(BaseCaptureModeSession* session);
 
   CaptureModeSessionTestApi(CaptureModeSessionTestApi&) = delete;
   CaptureModeSessionTestApi& operator=(CaptureModeSessionTestApi&) = delete;
@@ -72,11 +72,14 @@ class CaptureModeSessionTestApi {
   bool IsFolderSelectionDialogShown();
 
   // Returns true if all UIs (cursors, widgets, and paintings on the layer) of
-  // the capture mode session is visible.
-  bool IsAllUisVisible();
+  // the capture mode session are visible.
+  bool AreAllUisVisible();
+
+  gfx::Rect GetSelectedWindowTargetBounds();
 
  private:
-  const raw_ptr<CaptureModeSession, ExperimentalAsh> session_;
+  const raw_ptr<CaptureModeSession, DanglingUntriaged | ExperimentalAsh>
+      session_;
 };
 
 }  // namespace ash

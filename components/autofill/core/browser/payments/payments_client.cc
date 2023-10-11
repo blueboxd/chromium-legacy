@@ -23,11 +23,9 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/account_info_getter.h"
 #include "components/autofill/core/browser/payments/client_behavior_constants.h"
-#include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_requests/get_details_for_enrollment_request.h"
 #include "components/autofill/core/browser/payments/payments_requests/get_unmask_details_request.h"
 #include "components/autofill/core/browser/payments/payments_requests/get_upload_details_request.h"
-#include "components/autofill/core/browser/payments/payments_requests/migrate_cards_request.h"
 #include "components/autofill/core/browser/payments/payments_requests/opt_change_request.h"
 #include "components/autofill/core/browser/payments/payments_requests/payments_request.h"
 #include "components/autofill/core/browser/payments/payments_requests/select_challenge_option_request.h"
@@ -50,6 +48,11 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#include "components/autofill/core/browser/payments/local_card_migration_manager.h"
+#include "components/autofill/core/browser/payments/payments_requests/migrate_cards_request.h"
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 namespace autofill::payments {
 
@@ -79,11 +82,14 @@ GURL GetRequestUrl(const std::string& path) {
 
 }  // namespace
 
-const char PaymentsClient::kRecipientName[] = "recipient_name";
-const char PaymentsClient::kPhoneNumber[] = "phone_number";
-
 PaymentsClient::UnmaskDetails::UnmaskDetails() = default;
-PaymentsClient::UnmaskDetails::~UnmaskDetails() = default;
+
+PaymentsClient::UnmaskDetails::UnmaskDetails(const UnmaskDetails& other) {
+  *this = other;
+}
+
+PaymentsClient::UnmaskDetails::UnmaskDetails(UnmaskDetails&&) = default;
+
 PaymentsClient::UnmaskDetails& PaymentsClient::UnmaskDetails::operator=(
     const PaymentsClient::UnmaskDetails& other) {
   unmask_auth_method = other.unmask_auth_method;
@@ -96,6 +102,11 @@ PaymentsClient::UnmaskDetails& PaymentsClient::UnmaskDetails::operator=(
   fido_eligible_card_ids = other.fido_eligible_card_ids;
   return *this;
 }
+
+PaymentsClient::UnmaskDetails& PaymentsClient::UnmaskDetails::operator=(
+    UnmaskDetails&&) = default;
+
+PaymentsClient::UnmaskDetails::~UnmaskDetails() = default;
 
 PaymentsClient::UnmaskRequestDetails::UnmaskRequestDetails() = default;
 PaymentsClient::UnmaskRequestDetails::UnmaskRequestDetails(
@@ -125,15 +136,22 @@ PaymentsClient::UnmaskRequestDetails::operator=(
 PaymentsClient::UnmaskRequestDetails::~UnmaskRequestDetails() = default;
 
 PaymentsClient::UnmaskResponseDetails::UnmaskResponseDetails() = default;
+
 PaymentsClient::UnmaskResponseDetails::UnmaskResponseDetails(
     const UnmaskResponseDetails& other) {
   *this = other;
 }
-PaymentsClient::UnmaskResponseDetails::~UnmaskResponseDetails() = default;
+
+PaymentsClient::UnmaskResponseDetails::UnmaskResponseDetails(
+    UnmaskResponseDetails&&) = default;
+
 PaymentsClient::UnmaskResponseDetails&
 PaymentsClient::UnmaskResponseDetails::operator=(
-    const PaymentsClient::UnmaskResponseDetails& other) {
+    const UnmaskResponseDetails& other) {
   real_pan = other.real_pan;
+  dcvv = other.dcvv;
+  expiration_month = other.expiration_month;
+  expiration_year = other.expiration_year;
   if (other.fido_request_options.has_value()) {
     fido_request_options = other.fido_request_options->Clone();
   } else {
@@ -143,8 +161,15 @@ PaymentsClient::UnmaskResponseDetails::operator=(
   card_authorization_token = other.card_authorization_token;
   flow_status = other.flow_status;
   context_token = other.context_token;
+  autofill_error_dialog_context = other.autofill_error_dialog_context;
   return *this;
 }
+
+PaymentsClient::UnmaskResponseDetails&
+PaymentsClient::UnmaskResponseDetails::operator=(UnmaskResponseDetails&&) =
+    default;
+
+PaymentsClient::UnmaskResponseDetails::~UnmaskResponseDetails() = default;
 
 PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails() = default;
 PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails(
@@ -315,6 +340,7 @@ void PaymentsClient::UploadCard(
       /*authenticate=*/true);
 }
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 void PaymentsClient::MigrateCards(
     const MigrationRequestDetails& request_details,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
@@ -326,6 +352,7 @@ void PaymentsClient::MigrateCards(
           std::move(callback)),
       /*authenticate=*/true);
 }
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 void PaymentsClient::SelectChallengeOption(
     const SelectChallengeOptionRequestDetails& request_details,

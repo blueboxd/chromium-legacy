@@ -94,6 +94,9 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   // Side Panel colors.
   mixer[kColorSidePanelBackground] = {ui::kColorSysBaseContainer};
 
+  // Tab Group Dialog colors.
+  mixer[kColorTabGroupDialogIconEnabled] = {ui::kColorSysOnSurfaceSubtle};
+
   if (!ShouldApplyChromeMaterialOverrides(key)) {
     return;
   }
@@ -114,7 +117,7 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorAvatarButtonHighlightNormalForeground] = {
       ui::kColorSysOnTonalContainer};
   mixer[kColorAvatarButtonHighlightDefaultForeground] = {
-      ui::kColorSysOnSecondaryContainer};
+      ui::kColorSysOnSurfaceSecondary};
   mixer[kColorAvatarButtonHighlightSyncErrorForeground] = {
       ui::kColorSysOnErrorContainer};
   mixer[kColorAvatarButtonHighlightIncognitoForeground] = {

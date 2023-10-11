@@ -768,22 +768,6 @@ PhysicalRect LayoutInline::PhysicalVisualOverflowRect() const {
   return overflow_rect;
 }
 
-PhysicalRect LayoutInline::ReferenceBoxForClipPath() const {
-  NOT_DESTROYED();
-  // The spec just says to use the border box as clip-path reference box. It
-  // doesn't say what to do if there are multiple lines. Gecko uses the first
-  // fragment in that case. We'll do the same here (but correctly with respect
-  // to writing-mode - Gecko has some issues there).
-  // See crbug.com/641907
-  if (IsInLayoutNGInlineFormattingContext()) {
-    NGInlineCursor cursor;
-    cursor.MoveTo(*this);
-    if (cursor)
-      return cursor.Current().RectInContainerFragment();
-  }
-  return PhysicalRect();
-}
-
 bool LayoutInline::MapToVisualRectInAncestorSpaceInternal(
     const LayoutBoxModelObject* ancestor,
     TransformState& transform_state,

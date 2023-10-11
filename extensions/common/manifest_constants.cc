@@ -58,6 +58,7 @@ const char kFileHandlerIncludeDirectories[] = "include_directories";
 const char kFileHandlerTypes[] = "types";
 const char kFileHandlerVerb[] = "verb";
 const char kGlobal[] = "global";
+const char kHandwritingLanguage[] = "handwriting_language";
 const char kHideBookmarkButton[] = "hide_bookmark_button";
 const char kHomepageURL[] = "homepage_url";
 const char kHostPermissions[] = "host_permissions";
@@ -588,7 +589,7 @@ const char16_t kInvalidURLHandlerPatternElement16[] =
 const char16_t kInvalidURLHandlerTitle[] =
     u"Invalid value for 'url_handlers[*].title'.";
 const char kInvalidURLHandlerPattern[] =
-    "Invalid value for 'url_handlers[*].matches[*]'.";
+    "Invalid value for 'url_handlers[*].matches'.";
 const char kInvalidURLPatternError[] =
     "Invalid url pattern '*'";
 const char16_t kInvalidVersion[] =

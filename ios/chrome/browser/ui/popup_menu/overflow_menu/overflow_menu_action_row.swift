@@ -5,6 +5,29 @@
 import SwiftUI
 import ios_chrome_common_ui_colors_swift
 
+/// Custom toggle style for Overflow Menu Action rows, consisting of a circle
+/// border when the toggle is off and a circle with checkmark when the toggle
+/// is on.
+struct OverflowMenuActionToggleStyle: ToggleStyle {
+  static let onStyle = AnyShapeStyle(.tint)
+  static let offStyle = AnyShapeStyle(Color.grey500)
+
+  @ViewBuilder
+  func makeBody(configuration: Configuration) -> some View {
+    Button {
+      configuration.isOn.toggle()
+    } label: {
+      Label {
+        configuration.label
+      } icon: {
+        Image(systemName: configuration.isOn ? "checkmark.circle.fill" : "circle")
+          .foregroundStyle(configuration.isOn ? Self.onStyle : Self.offStyle)
+          .imageScale(.large)
+      }
+    }
+  }
+}
+
 /// A view that displays an action in the overflow menu.
 @available(iOS 15, *)
 struct OverflowMenuActionRow: View {
@@ -30,51 +53,77 @@ struct OverflowMenuActionRow: View {
   }
 
   var body: some View {
-    Button(
-      action: {
-        guard !isEditing else {
-          return
+    button
+      .accessibilityIdentifier(action.accessibilityIdentifier)
+      .disabled(!action.enabled || action.enterpriseDisabled)
+      .if(!isEditing) { view in
+        view.contextMenu {
+          ForEach(action.longPressItems) { item in
+            Section {
+              Button {
+                item.handler()
+              } label: {
+                Label(item.title, systemImage: item.symbolName)
+              }
+            }
+          }
         }
-        metricsHandler?.popupMenuTookAction()
-        action.handler()
-      },
-      label: {
-        rowContent
-          .contentShape(Rectangle())
       }
-    )
-    .accessibilityIdentifier(action.accessibilityIdentifier)
-    .disabled(!action.enabled || action.enterpriseDisabled)
-    .if(!action.useSystemRowColoring) { view in
-      view.accentColor(.textPrimary)
-    }
-    .listRowSeparatorTint(.overflowMenuSeparator)
+      .if(!action.useSystemRowColoring) { view in
+        view.accentColor(.textPrimary)
+      }
+      .listRowSeparatorTint(.overflowMenuSeparator)
   }
 
   @ViewBuilder
   private var rowContent: some View {
     if isEditing {
       HStack {
+        Toggle(isOn: $action.shown.animation()) {}
+          .toggleStyle(OverflowMenuActionToggleStyle())
+          .labelsHidden()
+          .tint(.chromeBlue)
         rowIcon
         name
         Spacer()
-        Toggle(isOn: $action.shown.animation()) {}
-          .labelsHidden()
-          .tint(.chromeBlue)
       }
       .padding([.trailing], Self.editRowEndPadding)
     } else {
       HStack {
+        // If there is no icon, the text should be centered.
+        if rowIcon == nil {
+          Spacer()
+        }
         name
         if action.displayNewLabelIcon {
           newLabelIconView
         }
+        Spacer()
         if let rowIcon = rowIcon {
-          Spacer()
           rowIcon
         }
       }
       .padding([.trailing], Self.rowEndPadding)
+    }
+  }
+
+  // The button view, which is replaced by just a plain view when this is in
+  // edit mode.
+  @ViewBuilder
+  var button: some View {
+    if isEditing {
+      rowContent
+    } else {
+      Button(
+        action: {
+          metricsHandler?.popupMenuTookAction()
+          action.handler()
+        },
+        label: {
+          rowContent
+            .contentShape(Rectangle())
+        }
+      )
     }
   }
 

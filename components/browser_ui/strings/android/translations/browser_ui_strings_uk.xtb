@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Дозволити сайту зберігати дані на вашому пристрої</translation>
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1384959399684842514">Завантаження призупинено</translation>
-<translation id="1409426117486808224">Спрощений перегляд відкритих вкладок</translation>
 <translation id="1415402041810619267">URL-адресу скорочено</translation>
 <translation id="1426410128494586442">Так</translation>
 <translation id="1446450296470737166">Повний контроль пристроїв MIDI</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Заборонено лише сторонні файли cookie</translation>
 <translation id="1989112275319619282">Переглянути</translation>
 <translation id="1994173015038366702">URL-адреса сайту</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Строк дії закінчується через 1 день}one{Строк дії закінчується через # день}few{Строк дії закінчується через # дні}many{Строк дії закінчується через # днів}other{Строк дії закінчується через # дня}}</translation>
 <translation id="2004697686368036666">Функції на деяких сайтах можуть не працювати</translation>
 <translation id="2025115093177348061">Доповнена реальність</translation>
 <translation id="2030769033451695672">Натисніть, щоб повернутися на сторінку <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4008040567710660924">Дозволити файли cookie для конкретного сайту.</translation>
 <translation id="4046123991198612571">Наступна композиція</translation>
+<translation id="4053720452172726777">Налаштування та керування Google Chrome</translation>
 <translation id="4149994727733219643">Спрощений перегляд веб-сторінок</translation>
 <translation id="4151930093518524179">Масштаб за умовчанням</translation>
 <translation id="4165986682804962316">Налаштування сайтів</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Сайти не можуть використовувати файли cookie для перегляду ваших дій у веб-переглядачі, зокрема, щоб персоналізувати рекламу. Функції на деяких сайтах можуть не працювати.</translation>
 <translation id="5553374991681107062">Останні</translation>
 <translation id="5556459405103347317">Перезавантажити</translation>
-<translation id="5596627076506792578">Інші опції</translation>
 <translation id="5649053991847567735">Автоматичні завантаження</translation>
 <translation id="5668404140385795438">Відхиляти запит веб-сайту, щоб забороняти масштабування</translation>
 <translation id="5677928146339483299">Заблоковано</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Вимкнено в налаштуваннях Android</translation>
 <translation id="7016516562562142042">Дозволено для поточної пошукової системи</translation>
 <translation id="702275896380648118">Цей сайт визначає теми, які вас цікавлять, а потім пропонує свою рекламу на інших сайтах. Він також використовує ваші теми оголошень із Chrome, щоб показувати вам релевантнішу рекламу.</translation>
-<translation id="702463548815491781">Рекомендується, коли ввімкнено TalkBack або кнопковий доступ</translation>
 <translation id="7053983685419859001">Блокувати</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Вибрано 1}one{Вибрано #}few{Вибрано #}many{Вибрано #}other{Вибрано #}}</translation>
 <translation id="7087918508125750058">Вибрано <ph name="ITEM_COUNT" />. Панель інструментів розташовано вгорі екрана</translation>

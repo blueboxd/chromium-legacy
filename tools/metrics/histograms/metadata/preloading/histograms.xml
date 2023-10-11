@@ -26,6 +26,9 @@ chromium-metrics-reviews@google.com.
                velocity and acceleration suggest it will leave soon. The
                output of this predictor is mouse velocity instead of a
                logit/probability."/>
+  <variant name="OnPreloadingHeuristicsMLModel"
+      summary="The estimated probability that a user will click on a link
+               that is calculated by preloading heuristic ML model."/>
 </variants>
 
 <variants name="GroundTruth">
@@ -74,7 +77,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Preloading.AnchorElementPreloader.PreloadingTriggered"
-    enum="AnchorElementPreloaderType" expires_after="2023-12-10">
+    enum="AnchorElementPreloaderType" expires_after="2024-02-11">
   <owner>spelchat@chromium.org</owner>
   <owner>curranmax@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>

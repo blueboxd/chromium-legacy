@@ -26,15 +26,16 @@
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "ash/shell_observer.h"
 #include "ash/system/scheduled_feature/scheduled_feature.h"
+#include "ash/wallpaper/google_photos_wallpaper_manager.h"
 #include "ash/wallpaper/online_wallpaper_manager.h"
 #include "ash/wallpaper/online_wallpaper_variant_info_fetcher.h"
 #include "ash/wallpaper/wallpaper_blur_manager.h"
+#include "ash/wallpaper/wallpaper_file_manager.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_calculated_colors.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-forward.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
@@ -61,6 +62,7 @@ namespace ash {
 
 class OnlineWallpaperManager;
 class WallpaperColorCalculator;
+class WallpaperDailyRefreshScheduler;
 class WallpaperDriveFsDelegate;
 class WallpaperImageDownloader;
 class WallpaperMetricsManager;
@@ -93,11 +95,6 @@ class ASH_EXPORT WallpaperControllerImpl
       public ui::NativeThemeObserver,
       public ScheduledFeature::CheckpointObserver {
  public:
-  // Directory names of custom wallpapers.
-  static const char kSmallWallpaperSubDir[];
-  static const char kLargeWallpaperSubDir[];
-  static const char kOriginalWallpaperSubDir[];
-
   static std::unique_ptr<WallpaperControllerImpl> Create(
       PrefService* local_state);
 
@@ -398,7 +395,6 @@ class ASH_EXPORT WallpaperControllerImpl
   void set_allow_shield_for_testing() { allow_shield_for_testing_ = true; }
 
   // Exposed for testing.
-  void UpdateDailyRefreshWallpaperForTesting();
   base::WallClockTimer& GetUpdateWallpaperTimerForTesting();
 
   WallpaperDriveFsDelegate* drivefs_delegate_for_testing() {
@@ -409,13 +405,14 @@ class ASH_EXPORT WallpaperControllerImpl
     return wallpaper_image_downloader_.get();
   }
 
+  raw_ptr<WallpaperDailyRefreshScheduler>
+  daily_refresh_scheduler_for_testing() {
+    return daily_refresh_scheduler_.get();
+  }
+
  private:
-  FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest, BasicReparenting);
-  FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest,
-                           WallpaperMovementDuringUnlock);
   friend class WallpaperControllerTestBase;
   friend class WallpaperControllerTestApi;
-  friend class KeyboardBacklightColorControllerTest;
 
   enum WallpaperMode { WALLPAPER_NONE, WALLPAPER_IMAGE };
 
@@ -515,13 +512,12 @@ class ASH_EXPORT WallpaperControllerImpl
       bool success);
 
   void OnDailyGooglePhotosPhotoFetched(
-      const AccountId& account_id,
-      const std::string& album_id,
+      const GooglePhotosWallpaperParams& params,
       RefreshWallpaperCallback callback,
       ash::personalization_app::mojom::GooglePhotosPhotoPtr photo,
       bool success);
 
-  void OnDailyGooglePhotosWallpaperDownloaded(
+  void OnDailyGooglePhotosWallpaperDecoded(
       const AccountId& account_id,
       const std::string& photo_id,
       const std::string& album_id,
@@ -529,46 +525,19 @@ class ASH_EXPORT WallpaperControllerImpl
       RefreshWallpaperCallback callback,
       const gfx::ImageSkia& image);
 
-  void GetGooglePhotosWallpaperFromCacheOrDownload(
-      const GooglePhotosWallpaperParams& params,
-      ash::personalization_app::mojom::GooglePhotosPhotoPtr photo,
-      SetWallpaperCallback callback,
-      const base::FilePath& cached_path,
-      bool cached_path_exists);
-
-  void OnGooglePhotosWallpaperDecoded(const WallpaperInfo& info,
-                                      const AccountId& account_id,
-                                      const base::FilePath& path,
+  // Used as the callback of loading Google Photos wallpapers of type
+  // `WallpaperType::kOnceGooglePhotos`. Shows the wallpaper immediately if
+  // `params.account_id` is the active user.
+  void OnGooglePhotosWallpaperDecoded(const GooglePhotosWallpaperParams& params,
                                       SetWallpaperCallback callback,
                                       const gfx::ImageSkia& image);
 
-  void OnGooglePhotosAuthenticationTokenFetched(
-      ash::personalization_app::mojom::GooglePhotosPhotoPtr photo,
-      const AccountId& account_id,
-      ImageDownloader::DownloadCallback callback,
-      const absl::optional<std::string>& access_token);
-
-  // Used as the callback of downloading wallpapers of type
-  // `WallpaperType::kOnceGooglePhotos`. Shows the wallpaper immediately if
-  // `params.account_id` is the active user.
-  void OnGooglePhotosWallpaperDownloaded(
-      const GooglePhotosWallpaperParams& params,
-      SetWallpaperCallback callback,
-      const gfx::ImageSkia& image);
-
-  // Sets the current wallpaper to the Google Photos photo specified by `info`
-  // and updates the Google Photos cache to contain only `image`. Shows the
-  // wallpaper on screen if `show_wallpaper` is true.
-  void SetGooglePhotosWallpaperAndUpdateCache(const AccountId& account_id,
-                                              const WallpaperInfo& info,
-                                              const gfx::ImageSkia& image,
-                                              bool show_wallpaper);
-
-  // Implementation of |SetOnlineWallpaper|. Shows the wallpaper on screen if
+  // Implementation of setting wallpapers. Shows the wallpaper on screen if
   // |show_wallpaper| is true.
-  void SetOnlineWallpaperImpl(const OnlineWallpaperParams& params,
-                              bool show_wallpaper,
-                              const gfx::ImageSkia& image);
+  void SetWallpaperImpl(const AccountId& account_id,
+                        const WallpaperInfo& wallpaper_info,
+                        const gfx::ImageSkia& image,
+                        bool show_wallpaper);
 
   // Loads the `account_id`'s wallpaper by using `info.location`.
   // Guaranteed to work offline.
@@ -675,6 +644,12 @@ class ASH_EXPORT WallpaperControllerImpl
   // `Wallpapertype::kOneShot`.
   bool IsOneShotWallpaper() const;
 
+  // Called when the policy wallpaper has been decoded.
+  void OnPolicyWallpaperDecoded(const AccountId& account_id,
+                                user_manager::UserType user_type,
+                                bool show_image,
+                                const gfx::ImageSkia& image);
+
   // Returns true if device wallpaper policy is in effect and we are at the
   // login screen right now.
   bool ShouldSetDevicePolicyWallpaper() const;
@@ -700,6 +675,10 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Called as a callback for `SetTimeOfDayWallpaper`.
   void OnTimeOfDayWallpaperSetAfterOobe(bool success);
+
+  // Called as a callback for `UpdateDailyRefreshWallpaper`.
+  void OnDailyRefreshWallpaperUpdated(RefreshWallpaperCallback callback,
+                                      bool success);
 
   // If daily refresh wallpapers is enabled by the user.
   bool IsDailyRefreshEnabled() const;
@@ -857,10 +836,20 @@ class ASH_EXPORT WallpaperControllerImpl
 
   const std::unique_ptr<WallpaperImageDownloader> wallpaper_image_downloader_;
 
+  const std::unique_ptr<WallpaperFileManager> wallpaper_file_manager_;
+
   // A utility class that handles file operations for online wallpapers, which
   // include downloading and saving wallpapers to disk, or loading the
   // wallpapers from disk.
   OnlineWallpaperManager online_wallpaper_manager_;
+
+  // A utility class that handles file operations for Google Photos wallpapers,
+  // which include downloading and saving wallpapers to disk, or loading the
+  // wallpapers from disk.
+  GooglePhotosWallpaperManager google_photos_wallpaper_manager_;
+
+  // Provides signals to trigger wallpaper daily refresh.
+  std::unique_ptr<WallpaperDailyRefreshScheduler> daily_refresh_scheduler_;
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 

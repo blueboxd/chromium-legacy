@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">允許特定網站將資料儲存到裝置</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1384959399684842514">已暫停下載</translation>
-<translation id="1409426117486808224">使用簡易檢視模式查看開啟的分頁</translation>
 <translation id="1415402041810619267">已截斷網址</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1446450296470737166">允許完整控制 MIDI 裝置</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">允許 (第三方網站除外)</translation>
 <translation id="1989112275319619282">瀏覽</translation>
 <translation id="1994173015038366702">網站網址</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{1 天後到期}other{# 天後到期}}</translation>
 <translation id="2004697686368036666">某些網站的功能可能無法運作</translation>
 <translation id="2025115093177348061">擴增實境</translation>
 <translation id="2030769033451695672">輕觸即可返回 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">標題</translation>
 <translation id="4008040567710660924">允許特定網站的 Cookie。</translation>
 <translation id="4046123991198612571">下一首曲目</translation>
+<translation id="4053720452172726777">自訂及管理 Google Chrome</translation>
 <translation id="4149994727733219643">使用簡易檢視模式查看網頁</translation>
 <translation id="4151930093518524179">預設縮放</translation>
 <translation id="4165986682804962316">網站設定</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">網站無法使用 Cookie 查看你在各網站的瀏覽活動，也無法提供個人化廣告等服務。某些網站的功能可能無法運作。</translation>
 <translation id="5553374991681107062">最新</translation>
 <translation id="5556459405103347317">重新載入</translation>
-<translation id="5596627076506792578">更多選項</translation>
 <translation id="5649053991847567735">自動下載</translation>
 <translation id="5668404140385795438">覆寫網站禁止放大的要求</translation>
 <translation id="5677928146339483299">已封鎖</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">已在 Android 設定中關閉</translation>
 <translation id="7016516562562142042">允許目前的搜尋引擎存取位置資訊</translation>
 <translation id="702275896380648118">這個網站會判斷你喜歡的內容，然後向其他網站建議廣告。這個網站也會從 Chrome 取得你的廣告主題，為你顯示更貼近需求的廣告。</translation>
-<translation id="702463548815491781">建議在 TalkBack 或切換控制功能開啟時使用</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已選取 1 個項目}other{已選取 # 個項目}}</translation>
 <translation id="7087918508125750058">已選取 <ph name="ITEM_COUNT" /> 個項目。選項位於畫面頂端</translation>

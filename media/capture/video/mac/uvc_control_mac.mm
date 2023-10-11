@@ -7,11 +7,11 @@
 #include <IOKit/IOCFPlugIn.h>
 
 #include "base/apple/bridging.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/feature_list.h"
-#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/capture/video/video_capture_device.h"
@@ -174,7 +174,7 @@ static bool FindDeviceWithVendorAndProductIds(int vendor_id,
                                               int product_id,
                                               io_iterator_t* usb_iterator) {
   // Compose a search dictionary with vendor and product ID.
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> query_dictionary(
+  base::apple::ScopedCFTypeRef<CFMutableDictionaryRef> query_dictionary(
       IOServiceMatching(kIOUSBDeviceClassName));
   CFDictionarySetValue(query_dictionary, CFSTR(kUSBVendorName),
                        base::apple::NSToCFPtrCast(@(vendor_id)));
@@ -366,7 +366,8 @@ static ScopedIOUSBInterfaceInterface OpenVideoClassSpecificControlInterface(
     VLOG(1) << "Unable to open control interface";
 
     // Temporary additional debug logging for crbug.com/1270335
-    VLOG_IF(1, base::mac::IsAtLeastOS12() && ret == kIOReturnExclusiveAccess)
+    VLOG_IF(1, base::mac::MacOSMajorVersion() >= 12 &&
+                   ret == kIOReturnExclusiveAccess)
         << "Camera USBInterfaceOpen failed with "
         << "kIOReturnExclusiveAccess";
     return ScopedIOUSBInterfaceInterface();

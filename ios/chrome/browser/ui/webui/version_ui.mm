@@ -15,7 +15,6 @@
 #import "components/grit/version_ui_resources.h"
 #import "components/grit/version_ui_resources_map.h"
 #import "components/strings/grit/components_chromium_strings.h"
-#import "components/strings/grit/components_google_chrome_strings.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/variations/service/variations_service.h"
 #import "components/version_info/version_info.h"
@@ -57,6 +56,8 @@ web::WebUIIOSDataSource* CreateVersionUIDataSource() {
                                   IDS_IOS_ABOUT_VERSION_COMPANY_NAME);
   html_source->AddLocalizedString(version_ui::kCopyLabel,
                                   IDS_VERSION_UI_COPY_LABEL);
+  html_source->AddLocalizedString(version_ui::kCopyNotice,
+                                  IDS_VERSION_UI_COPY_NOTICE);
   base::Time::Exploded exploded_time;
   base::Time::Now().LocalExplode(&exploded_time);
   html_source->AddString(

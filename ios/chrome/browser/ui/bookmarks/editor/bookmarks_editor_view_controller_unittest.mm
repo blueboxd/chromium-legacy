@@ -7,7 +7,7 @@
 
 #import "base/test/metrics/user_action_tester.h"
 #import "components/bookmarks/browser/bookmark_model.h"
-#import "ios/chrome/browser/bookmarks/bookmark_ios_unit_test_support.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_ios_unit_test_support.h"
 #import "testing/platform_test.h"
 
 namespace {
@@ -56,7 +56,7 @@ TEST_F(BookmarksEditorViewControllerTest, CanSyncBeforeLoad) {
   const bookmarks::BookmarkNode* bookmark = AddBookmark(mobile_node, u"foo");
   BookmarksEditorMediator* mediator = [[BookmarksEditorMediator alloc]
       initWithLocalOrSyncableBookmarkModel:local_or_syncable_bookmark_model_
-                      accountBookmarkModel:nullptr
+                      accountBookmarkModel:account_bookmark_model_
                               bookmarkNode:bookmark
                                      prefs:nullptr
                                syncService:nullptr

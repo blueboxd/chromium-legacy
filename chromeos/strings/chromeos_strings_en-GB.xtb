@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">Go to the <ph name="BEGIN_LINK1" />legal help page<ph name="END_LINK1" /> to request content changes for legal reasons. Some account and system information may be sent to Google. We will use the information that you give us to help address technical issues and to improve our services, subject to our <ph name="BEGIN_LINK2" />privacy policy<ph name="END_LINK2" /> and <ph name="BEGIN_LINK3" />Terms of Service<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">fast forward media</translation>
 <translation id="1887850431809612466">Hardware revision</translation>
+<translation id="1897672602657312171">Shortcut without search key might conflict with some apps' shortcut. Press this shortcut again to continue using it, or press a new shortcut using the search key.</translation>
 <translation id="1904932688895783618">Here are some other helpful resources:</translation>
 <translation id="1905710495812624430">Maximum allowed attempts exceeded.</translation>
 <translation id="1908234395526491708">UDP request failures</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">Restarting...</translation>
 <translation id="2533048460510040082">Suggested help content</translation>
 <translation id="2536159006530886390">Cannot connect to Internet.</translation>
-<translation id="2555662516429796509">Press one to four modifiers and one other key on your keyboard</translation>
 <translation id="2570743873672969996">Running <ph name="TEST_NAME" /> test…</translation>
 <translation id="2584559707064218956">To set up, go to Settings</translation>
 <translation id="2597774443162333062">Files will be sent to Google for debugging</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">TLS authentication key</translation>
 <translation id="2713444072780614174">White</translation>
 <translation id="2717139507051041123">Enable dark colour mode</translation>
+<translation id="2728460467788544679">Clear all print history</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2744221223678373668">Shared</translation>
 <translation id="2751739896257479635">EAP Phase 2 authentication</translation>
 <translation id="2783010256799387990">PASSED</translation>
 <translation id="2787435249130282949">keyboard brighter</translation>
-<translation id="2789486458103222910">OK</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="28232023175184696">Cannot connect to the Internet. Click to try again.</translation>
 <translation id="2859243502336719778">Critical update</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">Cloud flow screen saver</translation>
 <translation id="2926057806159140518">Enter your username and password or scan your QR code</translation>
 <translation id="2940811910881150316">Can’t test device. Reopen the lid to test.</translation>
+<translation id="2941112035454246133">Low</translation>
 <translation id="3008341117444806826">REFRESH</translation>
 <translation id="3009958530611748826">Select a folder to save to</translation>
 <translation id="3017079585324758401">Background</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">Failed to resolve host</translation>
 <translation id="3942420633017001071">Diagnostics</translation>
 <translation id="3954678691475912818">Device type is unknown.</translation>
+<translation id="3959413315969265597">Can’t enable this APN. Make sure a default APN is added.</translation>
 <translation id="3966286471246132217">For more accurate results, close all apps until the test is complete.</translation>
 <translation id="3967822245660637423">Download complete</translation>
 <translation id="3969602104473960991">Chrome OS password updated</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">volume down</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> of <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Update <ph name="DEVICE_NAME" /></translation>
+<translation id="574392208103952083">Medium</translation>
 <translation id="5757187557809630523">next track</translation>
 <translation id="5760715441271661976">Portal state</translation>
 <translation id="576835345334454681">Display brightness up</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">Art gallery album</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5860491529813859533">Turn on</translation>
-<translation id="5866840822086176774">Very strong</translation>
 <translation id="5876385649737594562">Turn on to select options</translation>
 <translation id="588258955323874662">Full screen</translation>
 <translation id="5895138241574237353">Restart</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">Open VPN</translation>
 <translation id="6439505561246192797">Weak (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Go to account settings</translation>
-<translation id="6456394469623773452">Fine</translation>
+<translation id="6461047516875166066">Tell me more</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Rescan page?}=1{Rescan page {PAGE_NUMBER}?}other{Rescan page {PAGE_NUMBER}?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287">Managed by <ph name="MANAGER" /></translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">Reset all shortcuts to defaults?</translation>
 <translation id="7058278511608979688">End and save</translation>
 <translation id="7059230779847288458">Charging; <ph name="TIME_VALUE" /> until full</translation>
+<translation id="7066538517128343186">the <ph name="KEY" /> key</translation>
 <translation id="7068619307603204412">Prepare your device</translation>
 <translation id="708426984172631313">STOPPED</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">Please connect to a network and reload the page to view wallpaper.</translation>
 <translation id="8291967909914612644">Home provider country</translation>
 <translation id="8294431847097064396">Source</translation>
-<translation id="8297006494302853456">Weak</translation>
 <translation id="8302368968391049045">HTTPS Firewall</translation>
 <translation id="8312330582793120272">play media</translation>
 <translation id="8318753676953949627">No images</translation>
 <translation id="8329018942023753850">calculator app</translation>
 <translation id="8336739000755212683">Change device account image</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> or <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Print jobs</translation>
 <translation id="8351855506390808906">Keymapping touch point</translation>
 <translation id="8352772353338965963">Add an account to multiple sign-in. All signed-in accounts can be accessed without a password, so this feature should only be used with trusted accounts.</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">To reconnect, go to Settings</translation>
 <translation id="9126720536733509015">Save multiple pages to one PDF</translation>
 <translation id="9133104754938025929">To conserve battery, screen saver works only while charging.</translation>
+<translation id="9133772297793293778">Press one to four modifiers and one other key on your keyboard. To exit editing mode, press alt + esc.</translation>
 <translation id="9137526406337347448">Google Services</translation>
 <translation id="9138630967333032450">Left shift</translation>
 <translation id="9143347780818904997">for <ph name="MINUTES" /> minutes</translation>

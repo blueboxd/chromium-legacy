@@ -4,9 +4,9 @@
 
 #import "ios/web/navigation/crw_wk_navigation_handler.h"
 
+#import "base/apple/foundation_util.h"
 #import "base/feature_list.h"
 #import "base/ios/ns_error_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
@@ -1023,8 +1023,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   }
 
   SecTrustRef trust = challenge.protectionSpace.serverTrust;
-  base::ScopedCFTypeRef<SecTrustRef> scopedTrust(trust,
-                                                 base::scoped_policy::RETAIN);
+  base::apple::ScopedCFTypeRef<SecTrustRef> scopedTrust(
+      trust, base::scoped_policy::RETAIN);
   __weak CRWWKNavigationHandler* weakSelf = self;
   [self.certVerificationController
       decideLoadPolicyForTrust:scopedTrust
@@ -1656,20 +1656,20 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
     // iOS 15.
     scoped_refptr<net::X509Certificate> leafCert = nil;
     if (@available(iOS 15.0, *)) {
-      base::ScopedCFTypeRef<CFArrayRef> certificateChain(
+      base::apple::ScopedCFTypeRef<CFArrayRef> certificateChain(
           SecTrustCopyCertificateChain(trust));
       SecCertificateRef secCertificate =
-          base::mac::CFCastStrict<SecCertificateRef>(
+          base::apple::CFCastStrict<SecCertificateRef>(
               CFArrayGetValueAtIndex(certificateChain, 0));
       leafCert = net::x509_util::CreateX509CertificateFromSecCertificate(
-          base::ScopedCFTypeRef<SecCertificateRef>(secCertificate,
-                                                   base::scoped_policy::RETAIN),
+          base::apple::ScopedCFTypeRef<SecCertificateRef>(
+              secCertificate, base::scoped_policy::RETAIN),
           {});
     }
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
     else {
       leafCert = net::x509_util::CreateX509CertificateFromSecCertificate(
-          base::ScopedCFTypeRef<SecCertificateRef>(
+          base::apple::ScopedCFTypeRef<SecCertificateRef>(
               SecTrustGetCertificateAtIndex(trust, 0),
               base::scoped_policy::RETAIN),
           {});
@@ -2065,6 +2065,10 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
       self.webStateImpl, failingURL, error, context->IsPost(),
       self.webStateImpl->GetBrowserState()->IsOffTheRecord(), ssl_info,
       context->GetNavigationId(), base::BindOnce(^(NSString* errorHTML) {
+        if (self.navigationStates.lastAddedNavigation != navigation) {
+          // Do not show the stale error page if the page has since navigated.
+          return;
+        }
         if (errorHTML) {
           CRWErrorPageHelper* errorPageHelper =
               [[CRWErrorPageHelper alloc] initWithError:context->GetError()];

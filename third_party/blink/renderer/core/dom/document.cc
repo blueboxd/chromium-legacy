@@ -153,6 +153,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_iterator.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
+#include "third_party/blink/renderer/core/dom/node_move_scope.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_with_index.h"
@@ -383,7 +384,7 @@ namespace {
 // at the end.
 enum class RequestStorageResult {
   APPROVED_EXISTING_ACCESS = 0,
-  APPROVED_NEW_GRANT = 1,
+  // APPROVED_NEW_GRANT = 1,
   REJECTED_NO_USER_GESTURE = 2,
   REJECTED_NO_ORIGIN = 3,
   REJECTED_OPAQUE_ORIGIN = 4,
@@ -395,7 +396,8 @@ enum class RequestStorageResult {
   APPROVED_PRIMARY_FRAME = 10,
   REJECTED_CREDENTIALLESS_IFRAME = 11,
   APPROVED_NEW_OR_EXISTING_GRANT = 12,
-  kMaxValue = APPROVED_NEW_OR_EXISTING_GRANT,
+  REJECTED_FENCED_FRAME = 13,
+  kMaxValue = REJECTED_FENCED_FRAME,
 };
 void FireRequestStorageAccessHistogram(RequestStorageResult result) {
   base::UmaHistogramEnumeration("API.StorageAccess.RequestStorageAccess2",
@@ -404,7 +406,7 @@ void FireRequestStorageAccessHistogram(RequestStorageResult result) {
 
 void FireRequestStorageAccessForHistogram(RequestStorageResult result) {
   base::UmaHistogramEnumeration(
-      "API.TopLevelStorageAccess.RequestStorageAccessFor", result);
+      "API.TopLevelStorageAccess.RequestStorageAccessFor2", result);
 }
 
 class IntrinsicSizeResizeObserverDelegate : public ResizeObserver::Delegate {
@@ -1992,8 +1994,6 @@ bool Document::ShouldScheduleLayoutTreeUpdate() const {
     return false;
   if (lifecycle_.GetState() == DocumentLifecycle::kInPerformLayout)
     return false;
-  if (!ShouldScheduleLayout())
-    return false;
   return true;
 }
 
@@ -2002,8 +2002,9 @@ void Document::ScheduleLayoutTreeUpdate() {
   DCHECK(ShouldScheduleLayoutTreeUpdate());
   DCHECK(NeedsLayoutTreeUpdate());
 
-  if (!View()->CanThrottleRendering())
+  if (!View()->CanThrottleRendering() && ShouldScheduleLayout()) {
     GetPage()->Animator().ScheduleVisualUpdate(GetFrame());
+  }
 
   // FrameSelection caches visual selection information, which must be
   // invalidated on dirty layout tree.
@@ -2446,6 +2447,9 @@ void Document::UpdateStyleAndLayoutForNode(const Node* node,
 
   DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
       node, DisplayLockContext::ForcedPhase::kLayout);
+
+  // For all nodes we must have up-to-date style and have performed layout to do
+  // any location-based calculation.
   UpdateStyleAndLayout(reason);
 }
 
@@ -2486,6 +2490,10 @@ CSSToggleInference& Document::EnsureCSSToggleInference() {
 }
 
 DocumentPartRoot& Document::getPartRoot() {
+  return EnsureDocumentPartRoot();
+}
+
+DocumentPartRoot& Document::EnsureDocumentPartRoot() {
   CHECK(RuntimeEnabledFeatures::DOMPartsAPIEnabled());
   if (!document_part_root_) {
     document_part_root_ = MakeGarbageCollected<DocumentPartRoot>(*this);
@@ -2621,6 +2629,12 @@ void Document::MarkHasFindInPageBeforematchExpandedHiddenMatchable() {
 
 void Document::UpdateStyleAndLayout(DocumentUpdateReason reason) {
   DCHECK(IsMainThread());
+  // TODO(paint-dev): LifecyclePostponed() and
+  // LocalFrameView::IsUpdatingLifecycle() overlap in functionality, but with
+  // slight differences. We should combine them.
+  if (Lifecycle().LifecyclePostponed()) {
+    return;
+  }
   LocalFrameView* frame_view = View();
 
   if (reason != DocumentUpdateReason::kBeginMainFrame && frame_view)
@@ -2653,7 +2667,14 @@ void Document::UpdateStyleAndLayout(DocumentUpdateReason reason) {
 
   if (LocalFrameView* frame_view_anchored = View())
     frame_view_anchored->PerformScrollAnchoringAdjustments();
-  PerformScrollSnappingTasks();
+
+  if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+    if (frame_view) {
+      frame_view->ExecutePendingSnapUpdates();
+    }
+  } else {
+    PerformScrollSnappingTasks();
+  }
 
   if (reason != DocumentUpdateReason::kBeginMainFrame && frame_view)
     frame_view->DidFinishForcedLayout(reason);
@@ -2711,16 +2732,15 @@ void Document::ClearFocusedElementTimerFired(TimerBase*) {
     focused_element_->blur();
 }
 
-scoped_refptr<const ComputedStyle> Document::StyleForPage(uint32_t page_index) {
+const ComputedStyle* Document::StyleForPage(uint32_t page_index) {
   AtomicString page_name;
   if (const LayoutView* layout_view = GetLayoutView())
     page_name = layout_view->NamedPageAtIndex(page_index);
   return StyleForPage(page_index, page_name);
 }
 
-scoped_refptr<const ComputedStyle> Document::StyleForPage(
-    uint32_t page_index,
-    const AtomicString& page_name) {
+const ComputedStyle* Document::StyleForPage(uint32_t page_index,
+                                            const AtomicString& page_name) {
   GetStyleEngine().UpdateViewportSize();
   GetStyleEngine().UpdateActiveStyle();
   return GetStyleEngine().GetStyleResolver().StyleForPage(page_index,
@@ -2730,16 +2750,7 @@ scoped_refptr<const ComputedStyle> Document::StyleForPage(
 void Document::EnsurePaintLocationDataValidForNode(
     const Node* node,
     DocumentUpdateReason reason) {
-  DCHECK(node);
-  if (!node->InActiveDocument())
-    return;
-
-  DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
-      node, DisplayLockContext::ForcedPhase::kLayout);
-
-  // For all nodes we must have up-to-date style and have performed layout to do
-  // any location-based calculation.
-  UpdateStyleAndLayout(reason);
+  UpdateStyleAndLayoutForNode(node, reason);
 }
 
 void Document::GetPageDescription(uint32_t page_index,
@@ -2863,8 +2874,7 @@ void Document::Initialize() {
   DCHECK(!ax_object_cache_ || this != &AXObjectCacheOwner());
 
   UpdateForcedColors();
-  scoped_refptr<const ComputedStyle> style =
-      GetStyleResolver().StyleForViewport();
+  const ComputedStyle* style = GetStyleResolver().StyleForViewport();
   layout_view_ = MakeGarbageCollected<LayoutNGView>(this);
   SetLayoutObject(layout_view_);
 
@@ -4230,16 +4240,20 @@ bool Document::ShouldScheduleLayout() const {
   // needed. This enforces a couple extra rules.
   //
   //    (a) Only schedule a layout once the stylesheets are loaded.
-  //    (b) Only schedule layout once we have a body element.
-  if (!IsActive())
+  //    (b) Only schedule layout once we have a body element, or parsing has
+  //        finished and we don't have a body element (if e.g. a script has
+  //        removed the body element, but the root element, and maybe even the
+  //        head elements are styled to render, we should allow layout of those
+  //        elements).
+  if (!IsActive()) {
     return false;
-
-  if (HaveRenderBlockingResourcesLoaded() && body())
+  }
+  if (HaveRenderBlockingResourcesLoaded() && (body() || HasFinishedParsing())) {
     return true;
-
-  if (documentElement() && !IsA<HTMLHtmlElement>(documentElement()))
+  }
+  if (documentElement() && !IsA<HTMLHtmlElement>(documentElement())) {
     return true;
-
+  }
   return false;
 }
 
@@ -6391,15 +6405,12 @@ ScriptPromise Document::requestStorageAccessFor(ScriptState* script_state,
       mojom::blink::PermissionDescriptorExtension::NewTopLevelStorageAccess(
           std::move(top_level_storage_access_extension));
 
-  auto descriptor_copy = descriptor->Clone();
   GetPermissionService(ExecutionContext::From(script_state))
-      ->HasPermission(
+      ->RequestPermission(
           std::move(descriptor),
-          WTF::BindOnce(
-              &Document::OnGotExistingTopLevelStorageAccessPermissionState,
-              WrapPersistent(this), WrapPersistent(resolver),
-              LocalFrame::HasTransientUserActivation(GetFrame()),
-              std::move(descriptor_copy)));
+          LocalFrame::HasTransientUserActivation(GetFrame()),
+          WTF::BindOnce(&Document::ProcessTopLevelStorageAccessPermissionState,
+                        WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
@@ -6493,10 +6504,11 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
             : "requestStorageAccess: Refused to execute request. The document "
               "is sandboxed, and the 'allow-storage-access-by-user-activation' "
               "keyword is not set."));
-    if (!dom_window_->GetFrame()->IsInFencedFrameTree()) {
-      FireRequestStorageAccessHistogram(
-          RequestStorageResult::REJECTED_SANDBOXED);
-    }
+
+    FireRequestStorageAccessHistogram(
+        dom_window_->GetFrame()->IsInFencedFrameTree()
+            ? RequestStorageResult::REJECTED_FENCED_FRAME
+            : RequestStorageResult::REJECTED_SANDBOXED);
 
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
@@ -6515,59 +6527,6 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
                         WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
-}
-
-void Document::OnGotExistingTopLevelStorageAccessPermissionState(
-    ScriptPromiseResolver* resolver,
-    bool has_user_gesture,
-    mojom::blink::PermissionDescriptorPtr descriptor,
-    mojom::blink::PermissionStatus previous_status) {
-  DCHECK(resolver);
-  DCHECK(GetFrame());
-  ScriptState* script_state = resolver->GetScriptState();
-  DCHECK(script_state);
-  ScriptState::Scope scope(script_state);
-  if (previous_status != mojom::blink::PermissionStatus::ASK) {
-    // Permission state already exists, resolve with the existing value.
-    ProcessTopLevelStorageAccessPermissionState(
-        resolver, /*use_existing_status=*/true, previous_status);
-    return;
-  }
-  // Proceed to request permission.
-  if (!has_user_gesture) {
-    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
-        "requestStorageAccessFor: Must be handling a user gesture to use."));
-    FireRequestStorageAccessHistogram(
-        RequestStorageResult::REJECTED_NO_USER_GESTURE);
-
-    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
-        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
-        "requestStorageAccessFor not allowed"));
-    return;
-  }
-
-  GetPermissionService(ExecutionContext::From(resolver->GetScriptState()))
-      ->RequestPermission(
-          std::move(descriptor), has_user_gesture,
-          WTF::BindOnce(
-              &Document::OnRequestedTopLevelStorageAccessPermissionState,
-              WrapPersistent(this), WrapPersistent(resolver)));
-}
-
-void Document::OnRequestedTopLevelStorageAccessPermissionState(
-    ScriptPromiseResolver* resolver,
-    mojom::blink::PermissionStatus status) {
-  DCHECK(resolver);
-  DCHECK(GetFrame());
-  ScriptState* script_state = resolver->GetScriptState();
-  DCHECK(script_state);
-  ScriptState::Scope scope(script_state);
-
-  ProcessTopLevelStorageAccessPermissionState(resolver,
-                                              /*use_existing_status=*/false,
-                                              status);
 }
 
 void Document::ProcessStorageAccessPermissionState(
@@ -6600,19 +6559,16 @@ void Document::ProcessStorageAccessPermissionState(
 
 void Document::ProcessTopLevelStorageAccessPermissionState(
     ScriptPromiseResolver* resolver,
-    bool use_existing_status,
     mojom::blink::PermissionStatus status) {
   DCHECK(resolver);
   DCHECK(GetFrame());
+  ScriptState* script_state = resolver->GetScriptState();
+  DCHECK(script_state);
+  ScriptState::Scope scope(script_state);
 
   if (status == mojom::blink::PermissionStatus::GRANTED) {
-    if (use_existing_status) {
-      FireRequestStorageAccessForHistogram(
-          RequestStorageResult::APPROVED_EXISTING_ACCESS);
-    } else {
-      FireRequestStorageAccessForHistogram(
-          RequestStorageResult::APPROVED_NEW_GRANT);
-    }
+    FireRequestStorageAccessForHistogram(
+        RequestStorageResult::APPROVED_NEW_OR_EXISTING_GRANT);
     resolver->Resolve();
   } else {
     LocalFrame::ConsumeTransientUserActivation(GetFrame());
@@ -6622,8 +6578,6 @@ void Document::ProcessTopLevelStorageAccessPermissionState(
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kError,
         "requestStorageAccessFor: Permission denied."));
-    ScriptState* script_state = resolver->GetScriptState();
-    DCHECK(script_state);
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
         "requestStorageAccessFor not allowed"));
@@ -7438,6 +7392,10 @@ void Document::OnLargestContentfulPaintUpdated() {
 }
 
 void Document::OnPrepareToStopParsing() {
+  if (render_blocking_resource_manager_) {
+    render_blocking_resource_manager_->SetMainDocumentParsingIsRenderBlocking(
+        false);
+  }
   MaybeExecuteDelayedAsyncScripts(
       MilestoneForDelayedAsyncScript::kFinishedParsing);
 }
@@ -7971,8 +7929,21 @@ void Document::ScheduleForTopLayerRemoval(Element* element,
   if (!element->IsInTopLayer()) {
     return;
   }
-  top_layer_elements_pending_removal_.push_back(
-      MakeGarbageCollected<TopLayerPendingRemoval>(element, reason));
+
+  absl::optional<TopLayerReason> existing_pending_removal = absl::nullopt;
+  for (const auto& pending_removal : top_layer_elements_pending_removal_) {
+    if (pending_removal->element == element) {
+      existing_pending_removal = pending_removal->reason;
+      break;
+    }
+  }
+
+  if (existing_pending_removal) {
+    CHECK_EQ(*existing_pending_removal, reason);
+  } else {
+    top_layer_elements_pending_removal_.push_back(
+        MakeGarbageCollected<TopLayerPendingRemoval>(element, reason));
+  }
   ScheduleLayoutTreeUpdateIfNeeded();
 }
 
@@ -8058,8 +8029,6 @@ HTMLElement* Document::TopmostPopoverOrHint() const {
 }
 
 void Document::SetPopoverPointerdownTarget(const HTMLElement* popover) {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetExecutionContext()));
   DCHECK(!popover || popover->HasPopoverAttribute());
   popover_pointerdown_target_ = popover;
 }
@@ -8215,11 +8184,11 @@ SnapCoordinator& Document::GetSnapCoordinator() {
 }
 
 void Document::PerformScrollSnappingTasks() {
+  DCHECK(!RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled());
   SnapCoordinator& snap_coordinator = GetSnapCoordinator();
   if (!snap_coordinator.AnySnapContainerDataNeedsUpdate())
     return;
   snap_coordinator.UpdateAllSnapContainerDataIfNeeded();
-  snap_coordinator.ResnapAllContainersIfNeeded();
 }
 
 void Document::UpdateHoverActiveState(bool is_active,
@@ -8828,6 +8797,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(element_data_cache_clear_timer_);
   visitor->Trace(element_data_cache_);
   visitor->Trace(use_elements_needing_update_);
+  visitor->Trace(node_move_scope_items_);
   visitor->Trace(template_document_);
   visitor->Trace(template_document_host_);
   visitor->Trace(user_action_elements_);
@@ -8981,7 +8951,7 @@ bool Document::ChildrenCanHaveStyle() const {
 ComputedAccessibleNode* Document::GetOrCreateComputedAccessibleNode(
     AXID ax_id) {
   DCHECK(ax_id) << "Invalid ax_id";
-  if (computed_node_mapping_.find(ax_id) == computed_node_mapping_.end()) {
+  if (!base::Contains(computed_node_mapping_, ax_id)) {
     auto* node = MakeGarbageCollected<ComputedAccessibleNode>(ax_id, this);
     computed_node_mapping_.insert(ax_id, node);
   }

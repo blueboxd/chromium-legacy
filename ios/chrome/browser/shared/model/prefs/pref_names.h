@@ -53,15 +53,20 @@ extern const char
     kIosMagicStackSegmentationShortcutsImpressionsSinceFreshness[];
 extern const char
     kIosMagicStackSegmentationSafetyCheckImpressionsSinceFreshness[];
+extern const char
+    kIosMagicStackSegmentationTabResumptionImpressionsSinceFreshness[];
+extern const char kIosParcelTrackingOptInPromptDisplayed[];
 extern const char kIosPasswordBottomSheetDismissCount[];
 extern const char kIosPreRestoreAccountInfo[];
 extern const char kIosPromosManagerActivePromos[];
 extern const char kIosPromosManagerImpressions[];
 extern const char kIosPromosManagerSingleDisplayActivePromos[];
 extern const char kIosPromosManagerSingleDisplayPendingPromos[];
+extern const char kIosSafetyCheckManagerLastRunTime[];
 extern const char kIosSafetyCheckManagerPasswordCheckResult[];
 extern const char kIosSafetyCheckManagerUpdateCheckResult[];
 extern const char kIosSafetyCheckManagerSafeBrowsingCheckResult[];
+extern const char kIosSaveToPhotosDefaultGaiaId[];
 extern const char kIosSettingsPromoAlreadySeen[];
 extern const char kIosSettingsSigninPromoDisplayedCount[];
 extern const char kIosNtpFeedTopPromoAlreadySeen[];
@@ -79,6 +84,7 @@ extern const char kOverflowMenuDestinationUsageHistoryEnabled[];
 extern const char kOverflowMenuNewDestinations[];
 extern const char kOverflowMenuDestinationsOrder[];
 extern const char kOverflowMenuHiddenDestinations[];
+extern const char kOverflowMenuDestinationBadgeData[];
 extern const char kOverflowMenuActionsOrder[];
 extern const char kPrintingEnabled[];
 extern const char kSearchSuggestEnabled[];

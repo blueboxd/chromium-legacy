@@ -7,7 +7,7 @@
 #import <CoreSpotlight/CoreSpotlight.h>
 #import <memory>
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/timer/elapsed_timer.h"
@@ -78,11 +78,9 @@ using web::WebState;
                  browserList:(BrowserList*)browserList
           spotlightInterface:(SpotlightInterface*)spotlightInterface
        searchableItemFactory:(SearchableItemFactory*)searchableItemFactory {
-  // Expect no regular browsers at creation. There is no backfill from any
-  // existing browsers. If the DCHECK below fails make sure to either adapt this
-  // class so that it observes initial browsers or instantiate it before having
-  // any initial browsers.
-  DCHECK(browserList->AllRegularBrowsers().empty());
+  for (Browser* browser : browserList->AllRegularBrowsers()) {
+    [self browserList:browserList browserAdded:browser];
+  }
 
   if (self) {
     _browserList = browserList;

@@ -153,6 +153,7 @@ using ::testing::Return;
 using ::testing::UnorderedElementsAre;
 
 using GroupingKey = settings::SiteSettingsHandler::GroupingKey;
+using PermissionStatus = blink::mojom::PermissionStatus;
 
 constexpr char kCallbackId[] = "test-callback-id";
 constexpr char kSetting[] = "setting";
@@ -920,6 +921,14 @@ class SiteSettingsHandlerBaseTest : public testing::Test {
       models.browsing_data_model->AddBrowsingData(
           url::Origin::Create(GURL("https://www.google.com")),
           BrowsingDataModel::StorageType::kTrustTokens, 50000000000);
+      models.browsing_data_model->AddBrowsingData(
+          blink::StorageKey::Create(
+              url::Origin::Create(GURL("https://google.com/")),
+              net::SchemefulSite(
+                  url::Origin::Create(GURL("https://www.example.com/"))),
+              blink::mojom::AncestorChainBit::kCrossSite,
+              /*third_party_partitioning_allowed=*/true),
+          BrowsingDataModel::StorageType::kQuotaStorage, 100);
     }));
   }
 
@@ -950,7 +959,7 @@ class SiteSettingsHandlerBaseTest : public testing::Test {
   std::vector<CookieTreeNode*> GetHostNodes(GURL url) {
     std::vector<CookieTreeNode*> nodes;
     for (const auto& host_node :
-         handler()->cookies_tree_model_->GetRoot()->children()) {
+         handler()->GetCookiesTreeModelForTesting()->GetRoot()->children()) {
       if (host_node->GetDetailedInfo().origin.GetURL() == url) {
         nodes.push_back(host_node.get());
       }
@@ -1091,6 +1100,8 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
 
 // Flaky on CrOS and Linux. https://crbug.com/930481
 TEST_F(SiteSettingsHandlerTest, GetAllSites) {
+  SetupModels();
+
   base::Value::List get_all_sites_args;
   get_all_sites_args.Append(kCallbackId);
 
@@ -1187,9 +1198,9 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
         url4, ContentSettingsType::NOTIFICATIONS, false);
   }
   EXPECT_EQ(
-      CONTENT_SETTING_BLOCK,
+      PermissionStatus::DENIED,
       auto_blocker->GetEmbargoResult(url4, ContentSettingsType::NOTIFICATIONS)
-          ->content_setting);
+          ->status);
   handler()->HandleGetAllSites(get_all_sites_args);
 
   {
@@ -1226,9 +1237,9 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
         url3, ContentSettingsType::NOTIFICATIONS, false);
   }
   EXPECT_EQ(
-      CONTENT_SETTING_BLOCK,
+      PermissionStatus::DENIED,
       auto_blocker->GetEmbargoResult(url3, ContentSettingsType::NOTIFICATIONS)
-          ->content_setting);
+          ->status);
   clock.Advance(base::Days(8));
   EXPECT_FALSE(
       auto_blocker->GetEmbargoResult(url3, ContentSettingsType::NOTIFICATIONS)
@@ -1256,9 +1267,9 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
         url5, ContentSettingsType::NOTIFICATIONS, false);
   }
   EXPECT_EQ(
-      CONTENT_SETTING_BLOCK,
+      PermissionStatus::DENIED,
       auto_blocker->GetEmbargoResult(url5, ContentSettingsType::NOTIFICATIONS)
-          ->content_setting);
+          ->status);
   clock.Advance(base::Days(8));
   EXPECT_FALSE(
       auto_blocker->GetEmbargoResult(url5, ContentSettingsType::NOTIFICATIONS)
@@ -1561,10 +1572,10 @@ TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
 
     const base::Value::List* origin_list = site_group.FindList("origins");
     ASSERT_TRUE(origin_list);
-    // There will be 2 origins in this case. Cookie node with url
+    // There will be 3 origins in this case. Cookie node with url
     // http://www.example.com/ will be treat as https://www.example.com/ because
     // this url existed in the storage nodes.
-    EXPECT_EQ(2U, origin_list->size());
+    EXPECT_EQ(3U, origin_list->size());
 
     const base::Value::Dict& origin_info_0 = (*origin_list)[0].GetDict();
 
@@ -1573,16 +1584,27 @@ TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
     EXPECT_EQ(0, origin_info_0.FindDouble("engagement"));
     EXPECT_EQ(0, origin_info_0.FindDouble("usage"));
     EXPECT_EQ(1, origin_info_0.FindDouble("numCookies"));
+    EXPECT_FALSE(origin_info_0.FindBool("isPartitioned").value_or(false));
 
     const base::Value::Dict& origin_info_1 = (*origin_list)[1].GetDict();
+
+    EXPECT_EQ("https://google.com/",
+              CHECK_DEREF(origin_info_1.FindString("origin")));
+    EXPECT_EQ(0, origin_info_1.FindDouble("engagement"));
+    EXPECT_EQ(0, origin_info_1.FindDouble("usage"));
+    EXPECT_EQ(0, origin_info_1.FindDouble("numCookies"));
+    EXPECT_TRUE(origin_info_1.FindBool("isPartitioned").value_or(false));
+
+    const base::Value::Dict& origin_info_2 = (*origin_list)[2].GetDict();
 
     // Even though in the cookies the scheme is http, it still stored as https
     // because there is https data stored.
     EXPECT_EQ("https://www.example.com/",
-              CHECK_DEREF(origin_info_1.FindString("origin")));
-    EXPECT_EQ(0, origin_info_1.FindDouble("engagement"));
-    EXPECT_EQ(2, origin_info_1.FindDouble("usage"));
-    EXPECT_EQ(1, origin_info_1.FindDouble("numCookies"));
+              CHECK_DEREF(origin_info_2.FindString("origin")));
+    EXPECT_EQ(0, origin_info_2.FindDouble("engagement"));
+    EXPECT_EQ(2, origin_info_2.FindDouble("usage"));
+    EXPECT_EQ(1, origin_info_2.FindDouble("numCookies"));
+    EXPECT_FALSE(origin_info_2.FindBool("isPartitioned").value_or(false));
   }
 
   {
@@ -1851,10 +1873,10 @@ TEST_F(SiteSettingsHandlerTest, ResetCategoryPermissionForEmbargoedOrigins) {
     }
     // Check that origin is under embargo.
     EXPECT_EQ(
-        CONTENT_SETTING_BLOCK,
+        PermissionStatus::DENIED,
         auto_blocker
             ->GetEmbargoResult(GURL(kOriginToEmbargo), kPermissionNotifications)
-            ->content_setting);
+            ->status);
   }
 
   // Check there are 2 blocked origins.
@@ -2881,6 +2903,7 @@ TEST_F(SiteSettingsHandlerTest, BlockAutoplay_Update) {
 }
 
 TEST_F(SiteSettingsHandlerTest, ExcludeWebUISchemesInLists) {
+  SetupModels();
   const ContentSettingsType content_settings_type =
       ContentSettingsType::NOTIFICATIONS;
   // Register WebUIAllowlist auto-granted permissions.
@@ -3315,9 +3338,9 @@ TEST_F(SiteSettingsHandlerTest, StorageAccessExceptions_Description_Embargoed) {
                                           kPermissionStorageAccess, false);
   }
   EXPECT_EQ(
-      CONTENT_SETTING_BLOCK,
+      PermissionStatus::DENIED,
       auto_blocker->GetEmbargoResult(GURL(kOrigin), kPermissionStorageAccess)
-          ->content_setting);
+          ->status);
 
   base::Value::List get_exception_list_args;
   get_exception_list_args.Append(kCallbackId);
@@ -3350,9 +3373,9 @@ TEST_F(SiteSettingsHandlerTest,
                                           kPermissionStorageAccess, false);
   }
   EXPECT_EQ(
-      CONTENT_SETTING_BLOCK,
+      PermissionStatus::DENIED,
       auto_blocker->GetEmbargoResult(GURL(kOrigin), kPermissionStorageAccess)
-          ->content_setting);
+          ->status);
 
   CreateIncognitoProfile();
   permissions::PermissionDecisionAutoBlocker* auto_blocker_incognito =
@@ -3362,10 +3385,10 @@ TEST_F(SiteSettingsHandlerTest,
     auto_blocker_incognito->RecordDismissAndEmbargo(
         GURL(kOrigin), kPermissionStorageAccess, false);
   }
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+  EXPECT_EQ(PermissionStatus::DENIED,
             auto_blocker_incognito
                 ->GetEmbargoResult(GURL(kOrigin), kPermissionStorageAccess)
-                ->content_setting);
+                ->status);
 
   base::Value::List get_exception_list_args;
   get_exception_list_args.Append(kCallbackId);
@@ -3510,7 +3533,6 @@ TEST_F(PersistentPermissionsSiteSettingsHandlerTest,
        HandleGetFileSystemGrants) {
   ChromeFileSystemAccessPermissionContext* context =
       FileSystemAccessPermissionContextFactory::GetForProfile(&profile_);
-  context->SetOriginHasExtendedPermissionForTesting();
 
   auto kTestOrigin1 = url::Origin::Create(GURL("https://www.a.com"));
   auto kTestOrigin2 = url::Origin::Create(GURL("https://www.b.com"));
@@ -3520,6 +3542,9 @@ TEST_F(PersistentPermissionsSiteSettingsHandlerTest,
   const base::FilePath kTestPath3 = base::FilePath(FILE_PATH_LITERAL("/e/"));
   const base::FilePath kTestPath4 =
       base::FilePath(FILE_PATH_LITERAL("/f/g/h/"));
+
+  context->SetOriginHasExtendedPermissionForTesting(kTestOrigin1);
+  context->SetOriginHasExtendedPermissionForTesting(kTestOrigin2);
 
   // Populate the `grants` object with permissions.
   auto file_read_grant = context->GetExtendedReadPermissionGrantForTesting(
@@ -3535,6 +3560,7 @@ TEST_F(PersistentPermissionsSiteSettingsHandlerTest,
       context->GetExtendedWritePermissionGrantForTesting(
           kTestOrigin2, kTestPath4,
           ChromeFileSystemAccessPermissionContext::HandleType::kDirectory);
+
   auto kTestOrigin1Grants =
       context->ConvertObjectsToGrants(context->GetGrantedObjects(kTestOrigin1));
   auto kTestOrigin2Grants =
@@ -3607,7 +3633,6 @@ TEST_F(PersistentPermissionsSiteSettingsHandlerTest,
        HandleRevokeFileSystemGrant) {
   ChromeFileSystemAccessPermissionContext* context =
       FileSystemAccessPermissionContextFactory::GetForProfile(&profile_);
-  context->SetOriginHasExtendedPermissionForTesting();
 
   auto kTestOrigin1 = url::Origin::Create(GURL("https://www.a.com"));
   auto kTestOrigin2 = url::Origin::Create(GURL("https://www.b.com"));
@@ -3617,6 +3642,9 @@ TEST_F(PersistentPermissionsSiteSettingsHandlerTest,
   const base::FilePath kTestPath3 = base::FilePath(FILE_PATH_LITERAL("/e/"));
   const base::FilePath kTestPath4 =
       base::FilePath(FILE_PATH_LITERAL("/f/g/h/"));
+
+  context->SetOriginHasExtendedPermissionForTesting(kTestOrigin1);
+  context->SetOriginHasExtendedPermissionForTesting(kTestOrigin2);
 
   // Populate the `grants` object with permissions.
   auto file_read_grant = context->GetExtendedReadPermissionGrantForTesting(
@@ -3682,7 +3710,6 @@ TEST_F(PersistentPermissionsSiteSettingsHandlerTest,
        HandleRevokeFileSystemGrants) {
   ChromeFileSystemAccessPermissionContext* context =
       FileSystemAccessPermissionContextFactory::GetForProfile(&profile_);
-  context->SetOriginHasExtendedPermissionForTesting();
 
   auto kTestOrigin1 = url::Origin::Create(GURL("https://www.a.com"));
   auto kTestOrigin2 = url::Origin::Create(GURL("https://www.b.com"));
@@ -3692,6 +3719,9 @@ TEST_F(PersistentPermissionsSiteSettingsHandlerTest,
   const base::FilePath kTestPath3 = base::FilePath(FILE_PATH_LITERAL("/e/"));
   const base::FilePath kTestPath4 =
       base::FilePath(FILE_PATH_LITERAL("/f/g/h/"));
+
+  context->SetOriginHasExtendedPermissionForTesting(kTestOrigin1);
+  context->SetOriginHasExtendedPermissionForTesting(kTestOrigin2);
 
   // Populate the `grants` object with permissions.
   auto file_read_grant = context->GetExtendedReadPermissionGrantForTesting(
@@ -5372,8 +5402,10 @@ TEST_F(SiteSettingsHandlerUsbTest, HandleSetOriginPermissionsPolicyOnly) {
 TEST_F(SiteSettingsHandlerTest, HandleClearSiteGroupDataAndCookies) {
   SetupModels();
 
-  EXPECT_EQ(28u,
-            handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(28u, handler()
+                     ->GetCookiesTreeModelForTesting()
+                     ->GetRoot()
+                     ->GetTotalNodeCount());
 
   auto verify_site_group = [](const base::Value& site_group,
                               std::string expected_etld_plus1) {
@@ -5413,20 +5445,25 @@ TEST_F(SiteSettingsHandlerTest, HandleClearSiteGroupDataAndCookies) {
     }
   }
 
-  EXPECT_EQ(19u,
-            handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(19u, handler()
+                     ->GetCookiesTreeModelForTesting()
+                     ->GetRoot()
+                     ->GetTotalNodeCount());
 
   storage_and_cookie_list = GetOnStorageFetchedSentList();
-  EXPECT_EQ(3U, storage_and_cookie_list.size());
-  verify_site_group(storage_and_cookie_list[0], "google.com");
+  EXPECT_EQ(4U, storage_and_cookie_list.size());
+  verify_site_group(storage_and_cookie_list[0], "example.com");
+  verify_site_group(storage_and_cookie_list[1], "google.com");
 
   args.clear();
   args.Append(GroupingKey::CreateFromEtldPlus1("google.com").Serialize());
 
   handler()->HandleClearSiteGroupDataAndCookies(args);
 
-  EXPECT_EQ(14u,
-            handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(14u, handler()
+                     ->GetCookiesTreeModelForTesting()
+                     ->GetRoot()
+                     ->GetTotalNodeCount());
 
   storage_and_cookie_list = GetOnStorageFetchedSentList();
   EXPECT_EQ(2U, storage_and_cookie_list.size());
@@ -5439,7 +5476,7 @@ TEST_F(SiteSettingsHandlerTest, HandleClearSiteGroupDataAndCookies) {
   // No nodes representing storage partitioned on google.com.au should be
   // present.
   for (const auto& host_node :
-       handler()->cookies_tree_model_->GetRoot()->children()) {
+       handler()->GetCookiesTreeModelForTesting()->GetRoot()->children()) {
     for (const auto& storage_node : host_node->children()) {
       if (storage_node->GetDetailedInfo().node_type !=
           CookieTreeNode::DetailedInfo::TYPE_COOKIES) {
@@ -5471,18 +5508,22 @@ TEST_F(SiteSettingsHandlerTest, HandleClearSiteGroupDataAndCookies) {
 TEST_P(SiteSettingsHandlerTest, HandleClearUnpartitionedUsage) {
   SetupModels();
 
-  EXPECT_EQ(28u,
-            handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
-  EXPECT_EQ(1, std::distance(handler()->browsing_data_model_->begin(),
-                             handler()->browsing_data_model_->end()));
+  EXPECT_EQ(28u, handler()
+                     ->GetCookiesTreeModelForTesting()
+                     ->GetRoot()
+                     ->GetTotalNodeCount());
+  EXPECT_EQ(2,
+            std::distance(handler()->GetBrowsingDataModelForTesting()->begin(),
+                          handler()->GetBrowsingDataModelForTesting()->end()));
 
   base::Value::List args;
   args.Append(GetParam() ? "https://www.example.com/"
                          : "http://www.example.com/");
   handler()->HandleClearUnpartitionedUsage(args);
 
-  EXPECT_EQ(1, std::distance(handler()->browsing_data_model_->begin(),
-                             handler()->browsing_data_model_->end()));
+  EXPECT_EQ(2,
+            std::distance(handler()->GetBrowsingDataModelForTesting()->begin(),
+                          handler()->GetBrowsingDataModelForTesting()->end()));
 
   // Confirm that only the unpartitioned items for example.com have been
   // cleared.
@@ -5522,8 +5563,9 @@ TEST_P(SiteSettingsHandlerTest, HandleClearUnpartitionedUsage) {
   args.Append("https://www.google.com/");
   handler()->HandleClearUnpartitionedUsage(args);
 
-  EXPECT_EQ(0, std::distance(handler()->browsing_data_model_->begin(),
-                             handler()->browsing_data_model_->end()));
+  EXPECT_EQ(1,
+            std::distance(handler()->GetBrowsingDataModelForTesting()->begin(),
+                          handler()->GetBrowsingDataModelForTesting()->end()));
 
 // Clearing Site Specific Media Licenses Tests
 #if BUILDFLAG(IS_WIN)
@@ -5729,10 +5771,14 @@ TEST_F(SiteSettingsHandlerTest, HandleClearPartitionedUsage) {
   // Confirm that removing unpartitioned storage correctly removes the
   // appropriate nodes.
   SetupModels();
-  EXPECT_EQ(28u,
-            handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
-  EXPECT_EQ(1, std::distance(handler()->browsing_data_model_->begin(),
-                             handler()->browsing_data_model_->end()));
+
+  EXPECT_EQ(28u, handler()
+                     ->GetCookiesTreeModelForTesting()
+                     ->GetRoot()
+                     ->GetTotalNodeCount());
+  EXPECT_EQ(2,
+            std::distance(handler()->GetBrowsingDataModelForTesting()->begin(),
+                          handler()->GetBrowsingDataModelForTesting()->end()));
 
   base::Value::List args;
   args.Append("https://www.example.com/");
@@ -5768,8 +5814,9 @@ TEST_F(SiteSettingsHandlerTest, HandleClearPartitionedUsage) {
   // Should not have affected the browsing data model.
   // TODO(crbug.com/1271155): Update when partitioned storage is represented
   // by the browsing data model.
-  EXPECT_EQ(1, std::distance(handler()->browsing_data_model_->begin(),
-                             handler()->browsing_data_model_->end()));
+  EXPECT_EQ(2,
+            std::distance(handler()->GetBrowsingDataModelForTesting()->begin(),
+                          handler()->GetBrowsingDataModelForTesting()->end()));
 }
 
 TEST_F(SiteSettingsHandlerTest, CookieSettingDescription) {
@@ -5911,10 +5958,13 @@ TEST_F(SiteSettingsHandlerTest, HandleGetUsageInfo) {
   // Confirm that usage info only returns unpartitioned storage.
   SetupModels();
 
-  EXPECT_EQ(28u,
-            handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
-  EXPECT_EQ(1, std::distance(handler()->browsing_data_model_->begin(),
-                             handler()->browsing_data_model_->end()));
+  EXPECT_EQ(28u, handler()
+                     ->GetCookiesTreeModelForTesting()
+                     ->GetRoot()
+                     ->GetTotalNodeCount());
+  EXPECT_EQ(2,
+            std::distance(handler()->GetBrowsingDataModelForTesting()->begin(),
+                          handler()->GetBrowsingDataModelForTesting()->end()));
 
   base::Value::List args;
   args.Append("http://www.example.com");
@@ -5934,7 +5984,7 @@ TEST_F(SiteSettingsHandlerTest, HandleGetUsageInfo) {
   args.Append("http://google.com");
   handler()->HandleFetchUsageTotal(args);
   handler()->ServicePendingRequests();
-  ValidateUsageInfo("http://google.com", "", "2 cookies",
+  ValidateUsageInfo("http://google.com", "100 B", "2 cookies",
                     "2 sites in google.com's group", false);
 
   args.clear();

@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Salli sivuston tallentaa dataa laitteellesi</translation>
 <translation id="1383876407941801731">Haku</translation>
 <translation id="1384959399684842514">Lataus keskeytettiin.</translation>
-<translation id="1409426117486808224">Yksinkertaisempi avoimien välilehtien näkymä</translation>
 <translation id="1415402041810619267">URL näkyy lyhennettynä</translation>
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="1446450296470737166">Salli MIDI-laitteiden täysi käyttöoik.</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Sallittu, paitsi kolmannen osapuolen evästeet</translation>
 <translation id="1989112275319619282">Selaa</translation>
 <translation id="1994173015038366702">Sivuston URL-osoite</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Vanhenee 1 päivän kuluttua}other{Vanhenee # päivän kuluttua}}</translation>
 <translation id="2004697686368036666">Joidenkin sivustojen ominaisuudet eivät välttämättä toimi</translation>
 <translation id="2025115093177348061">Lisätty todellisuus</translation>
 <translation id="2030769033451695672">Napauta, niin palaat tänne: <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Nimi</translation>
 <translation id="4008040567710660924">Salli evästeet tietyllä sivustolla.</translation>
 <translation id="4046123991198612571">Seuraava kappale</translation>
+<translation id="4053720452172726777">Google Chromen muokkaaminen ja hallinta</translation>
 <translation id="4149994727733219643">Yksinkertaisempi sivunäkymä</translation>
 <translation id="4151930093518524179">Zoomauksen oletusarvo</translation>
 <translation id="4165986682804962316">Sivustoasetukset</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Sivustot eivät näe selaustoimintaasi eri sivustoilla evästeiden kautta esim. personoidakseen mainoksia. Joidenkin sivustojen ominaisuudet eivät välttämättä toimi.</translation>
 <translation id="5553374991681107062">Uusimmat</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
-<translation id="5596627076506792578">Lisäasetukset</translation>
 <translation id="5649053991847567735">Automaattiset lataukset</translation>
 <translation id="5668404140385795438">Ohita sivuston zoomauksen estämispyyntö</translation>
 <translation id="5677928146339483299">Estetty</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Poistettu käytöstä Android-asetuksissa</translation>
 <translation id="7016516562562142042">Sallittu nykyisellä hakukoneella</translation>
 <translation id="702275896380648118">Tämä sivusto päättelee, mistä pidät, ja ehdottaa sitten mainoksia muille sivustoille. Se myös saa mainosaiheesi Chromesta, jotta voit nähdä osuvampia mainoksia.</translation>
-<translation id="702463548815491781">Suositellaan käytettäväksi, kun TalkBack tai Kytkimen käyttö on päällä</translation>
 <translation id="7053983685419859001">Estä</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 valittu}other{# valittu}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> valittu. Toimintoja on käytettävissä näytön yläosassa.</translation>

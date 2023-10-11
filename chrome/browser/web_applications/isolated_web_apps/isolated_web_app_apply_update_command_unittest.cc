@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gmock_expected_support.h"
 #include "base/test/test_future.h"
 #include "base/types/expected.h"
 #include "base/types/optional_ref.h"
@@ -44,14 +45,12 @@
 namespace web_app {
 namespace {
 
-using ::testing::AllOf;
+using base::test::HasValue;
 using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::IsFalse;
 using ::testing::IsNull;
 using ::testing::IsTrue;
-using ::testing::Matcher;
-using ::testing::Property;
 using ::testing::Return;
 
 constexpr base::StringPiece kIconPath = "/icon.png";
@@ -76,14 +75,6 @@ blink::mojom::ManifestPtr CreateDefaultManifest(const GURL& application_url,
   return manifest;
 }
 
-Matcher<const WebApp*> HasNameAndIsolationData(
-    base::StringPiece name,
-    const absl::optional<WebApp::IsolationData>& isolation_data) {
-  return AllOf(
-      Property("untranslated_name", &WebApp::untranslated_name, Eq(name)),
-      Property("isolation_data", &WebApp::isolation_data, Eq(isolation_data)));
-}
-
 class IsolatedWebAppApplyUpdateCommandTest : public WebAppTest {
  protected:
   void SetUp() override {
@@ -98,8 +89,8 @@ class IsolatedWebAppApplyUpdateCommandTest : public WebAppTest {
 
   void WriteUpdateBundleToDisk() {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    auto bundle =
-        TestSignedWebBundleBuilder::BuildDefault({.version = update_version_});
+    auto bundle = TestSignedWebBundleBuilder::BuildDefault(
+        TestSignedWebBundleBuilder::BuildOptions().SetVersion(update_version_));
     ASSERT_THAT(base::WriteFile(update_bundle_path_, bundle.data), IsTrue());
   }
 
@@ -161,9 +152,9 @@ class IsolatedWebAppApplyUpdateCommandTest : public WebAppTest {
   void ExpectAppNotUpdatedAndPendingUpdateInfoCleared() {
     const WebApp* web_app =
         fake_provider().registrar_unsafe().GetAppById(url_info_.app_id());
-    EXPECT_THAT(web_app,
-                HasNameAndIsolationData(
-                    "installed app",
+    EXPECT_THAT(
+        web_app,
+        test::IwaIs(Eq("installed app"),
                     WebApp::IsolationData(
                         installed_location_, installed_version_,
                         /*controlled_frame_partitions=*/{"some-partition"},
@@ -197,14 +188,14 @@ TEST_F(IsolatedWebAppApplyUpdateCommandTest, Succeeds) {
   icon_state.bitmaps = {web_app::CreateSquareIcon(32, SK_ColorWHITE)};
 
   auto result = ApplyPendingUpdate();
-  EXPECT_THAT(result.has_value(), IsTrue()) << result.error();
+  EXPECT_THAT(result, HasValue());
 
   const WebApp* web_app =
       fake_provider().registrar_unsafe().GetAppById(url_info_.app_id());
   EXPECT_THAT(
       web_app,
-      HasNameAndIsolationData(
-          "updated app",
+      test::IwaIs(
+          Eq("updated app"),
           WebApp::IsolationData(
               InstalledBundle({.path = update_bundle_path_}), update_version_,
               /*controlled_frame_partitions=*/{"some-partition"},
@@ -249,7 +240,7 @@ TEST_F(IsolatedWebAppApplyUpdateCommandTest, FailsIfInstalledAppIsNotIsolated) {
 
   const WebApp* web_app =
       fake_provider().registrar_unsafe().GetAppById(url_info_.app_id());
-  EXPECT_THAT(web_app, HasNameAndIsolationData("installed app", absl::nullopt));
+  EXPECT_THAT(web_app, test::IwaIs(Eq("installed app"), absl::nullopt));
 }
 
 TEST_F(IsolatedWebAppApplyUpdateCommandTest,

@@ -4,16 +4,17 @@
 
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_info_button_cell.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_switch_cell.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_service_delegate.h"
-#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_view_controller_model_delegate.h"
+#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller_model_delegate.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
@@ -25,6 +26,7 @@ namespace {
 CGFloat kAccountSectionHeaderHeightPointSize = 22.17;
 CGFloat kSyncDataTypeSectionHeaderHeightPointSize = 60.;
 CGFloat kAdvancedSettingsSectionHeaderHeightPointSize = 26.;
+CGFloat kSignOutSectionHeaderHeightPointSize = 26.;
 
 // Table view customized footer heights.
 CGFloat kAccountSectionFooterHeightPointSize = 16.;
@@ -65,7 +67,7 @@ CGFloat kDefaultSectionFooterHeightPointSize = 10.;
   TableViewModel* model = self.tableViewModel;
   NSIndexPath* indexPath = [model indexPathForItemType:sender.tag];
   DCHECK(indexPath);
-  SyncSwitchItem* syncSwitchItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
+  SyncSwitchItem* syncSwitchItem = base::apple::ObjCCastStrict<SyncSwitchItem>(
       [model itemAtIndexPath:indexPath]);
   DCHECK(syncSwitchItem);
   [self.serviceDelegate toggleSwitchItem:syncSwitchItem withValue:sender.isOn];
@@ -79,7 +81,7 @@ CGFloat kDefaultSectionFooterHeightPointSize = 10.;
                      cellForRowAtIndexPath:indexPath];
   if ([cell isKindOfClass:[TableViewSwitchCell class]]) {
     TableViewSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<TableViewSwitchCell>(cell);
+        base::apple::ObjCCastStrict<TableViewSwitchCell>(cell);
     [switchCell.switchView addTarget:self
                               action:@selector(switchAction:)
                     forControlEvents:UIControlEventValueChanged];
@@ -87,11 +89,13 @@ CGFloat kDefaultSectionFooterHeightPointSize = 10.;
     switchCell.switchView.tag = item.type;
   } else if ([cell isKindOfClass:[TableViewInfoButtonCell class]]) {
     TableViewInfoButtonCell* managedCell =
-        base::mac::ObjCCastStrict<TableViewInfoButtonCell>(cell);
+        base::apple::ObjCCastStrict<TableViewInfoButtonCell>(cell);
     managedCell.textLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
     [managedCell.trailingButton addTarget:self
                                    action:@selector(didTapManagedUIInfoButton:)
                          forControlEvents:UIControlEventTouchUpInside];
+  } else if ([cell isKindOfClass:[SettingsImageDetailTextCell class]]) {
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
   }
   return cell;
 }
@@ -110,7 +114,7 @@ CGFloat kDefaultSectionFooterHeightPointSize = 10.;
 
   if (sectionIdentifier == SignOutSectionIdentifier) {
     TableViewLinkHeaderFooterView* linkView =
-        base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(view);
+        base::apple::ObjCCastStrict<TableViewLinkHeaderFooterView>(view);
     linkView.delegate = self;
   }
 
@@ -140,8 +144,13 @@ CGFloat kDefaultSectionFooterHeightPointSize = 10.;
     // No need to reload since the model has not been loaded yet.
     return;
   }
-  [self.tableView deleteSections:sections
-                withRowAnimation:UITableViewRowAnimationNone];
+  // To avoid animation glitches related to crbug.com/1469539.
+  [UIView performWithoutAnimation:^{
+    [self.tableView beginUpdates];
+    [self.tableView deleteSections:sections
+                  withRowAnimation:UITableViewRowAnimationNone];
+    [self.tableView endUpdates];
+  }];
 }
 
 - (void)reloadItem:(TableViewItem*)item {
@@ -150,8 +159,13 @@ CGFloat kDefaultSectionFooterHeightPointSize = 10.;
     return;
   }
   NSIndexPath* indexPath = [self.tableViewModel indexPathForItem:item];
-  [self.tableView reloadRowsAtIndexPaths:@[ indexPath ]
-                        withRowAnimation:UITableViewRowAnimationNone];
+  // To avoid animation glitches related to crbug.com/1469539.
+  [UIView performWithoutAnimation:^{
+    [self.tableView beginUpdates];
+    [self.tableView reloadRowsAtIndexPaths:@[ indexPath ]
+                          withRowAnimation:UITableViewRowAnimationNone];
+    [self.tableView endUpdates];
+  }];
 }
 
 - (void)reloadSections:(NSIndexSet*)sections {
@@ -186,8 +200,13 @@ CGFloat kDefaultSectionFooterHeightPointSize = 10.;
         return kSyncDataTypeSectionHeaderHeightPointSize;
       case AdvancedSettingsSectionIdentifier:
         return kAdvancedSettingsSectionHeaderHeightPointSize;
-      case SyncErrorsSectionIdentifier:
       case SignOutSectionIdentifier:
+        if (![self.tableViewModel hasSectionForSectionIdentifier:
+                                      AdvancedSettingsSectionIdentifier]) {
+          return kSignOutSectionHeaderHeightPointSize;
+        }
+        break;
+      case SyncErrorsSectionIdentifier:
         break;
     }
   }
@@ -203,10 +222,10 @@ CGFloat kDefaultSectionFooterHeightPointSize = 10.;
       case AccountSectionIdentifier:
         return kAccountSectionFooterHeightPointSize;
       case SyncDataTypeSectionIdentifier:
+      case SignOutSectionIdentifier:
         return UITableViewAutomaticDimension;
       case AdvancedSettingsSectionIdentifier:
       case SyncErrorsSectionIdentifier:
-      case SignOutSectionIdentifier:
         break;
     }
   }

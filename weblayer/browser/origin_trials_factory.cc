@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,9 +37,10 @@ OriginTrialsFactory::OriginTrialsFactory()
 
 OriginTrialsFactory::~OriginTrialsFactory() noexcept = default;
 
-KeyedService* OriginTrialsFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+OriginTrialsFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
-  return new origin_trials::OriginTrials(
+  return std::make_unique<origin_trials::OriginTrials>(
       std::make_unique<origin_trials::LevelDbPersistenceProvider>(
           context->GetPath(),
           context->GetDefaultStoragePartition()->GetProtoDatabaseProvider()),

@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">আইনি কারণে কন্টেন্ট পরিবর্তনের অনুরোধ জানাতে <ph name="BEGIN_LINK1" />আইনি সহায়তা পৃষ্ঠা<ph name="END_LINK1" /> দেখুন। অ্যাকাউন্ট ও সিস্টেমের কিছু তথ্য Google-এর কাছে পাঠানো হতে পারে। আপনার দেওয়া তথ্য আমরা টেকনিক্যাল সমস্যা সমাধানের কাজে এবং আমাদের পরিষেবা আরও ভাল করে তোলার জন্য ব্যবহার করব। এই তথ্য <ph name="BEGIN_LINK2" />গোপনীয়তা নীতি<ph name="END_LINK2" /> এবং <ph name="BEGIN_LINK3" />পরিষেবার শর্তাবলী<ph name="END_LINK3" /> মেনেই ব্যবহার করা হবে।</translation>
 <translation id="1885577615937958993">মিডিয়া ফাস্ট ফরওয়ার্ড করুন</translation>
 <translation id="1887850431809612466">হার্ডওয়্যার পুনর্বিবেচনাগুলি</translation>
+<translation id="1897672602657312171">সার্চ বোতাম ছাড়া শর্টকার্ট কিছু অ্যাপের শর্টকার্টের ক্ষেত্রে সমস্যা সৃষ্টি করতে পারে। এটি ব্যবহার করা চালিয়ে যেতে এই শর্টকার্ট প্রেস করুন বা সার্চ বোতাম ব্যবহার করে নতুন শর্টকার্ট প্রেস করুন।</translation>
 <translation id="1904932688895783618">এখানে কিছু অন্যান্য সহায়ক রিসোর্স রয়েছে:</translation>
 <translation id="1905710495812624430">সর্বোচ্চ অনুমোদিত প্রচেষ্টা ছাড়িয়ে গেছে।</translation>
 <translation id="1908234395526491708">UDP-এর অনুরোধ করা যায়নি</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">রিস্টার্ট হচ্ছে...</translation>
 <translation id="2533048460510040082">সাজেস্ট করা সহায়তা কন্টেন্ট</translation>
 <translation id="2536159006530886390">ইন্টারনেটের সাথে কানেক্ট করা যাচ্ছে না।</translation>
-<translation id="2555662516429796509">আপনার কীবোর্ডে ১-৪ 'পরিবর্তক' ও অন্য ১টি 'কী' প্রেস করুন</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> টেস্ট চলছে...</translation>
 <translation id="2584559707064218956">সেট আপ করতে, সেটিংসে যান</translation>
 <translation id="2597774443162333062">ডিবাগিংয়ের জন্য, ফাইল Google-এ পাঠানো হবে</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">TLS যাচাইকরণ কী</translation>
 <translation id="2713444072780614174">সাদা</translation>
 <translation id="2717139507051041123">'ডার্ক কালার' মোড চালু করুন</translation>
+<translation id="2728460467788544679">সমস্ত প্রিন্ট ইতিহাস মুছে দিন</translation>
 <translation id="2740531572673183784">ঠিক আছে</translation>
 <translation id="2744221223678373668">শেয়ার করে নেওয়া</translation>
 <translation id="2751739896257479635">EAP ফেজ ২ যাচাইকরণ</translation>
 <translation id="2783010256799387990">পাস করেছে</translation>
 <translation id="2787435249130282949">কীবোর্ড আরও বেশি উজ্জ্বল</translation>
-<translation id="2789486458103222910">ঠিক আছে</translation>
 <translation id="2805756323405976993">অ্যাপ্স</translation>
 <translation id="28232023175184696">ইন্টারনেটের সাথে কানেক্ট করা যাচ্ছে না। আবার চেষ্টা করতে ক্লিক করুন।</translation>
 <translation id="2859243502336719778">জরুরি আপডেট</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">ক্লাউড ফ্লো স্ক্রিন সেভার</translation>
 <translation id="2926057806159140518">আপনার ব্যবহারকারীর নাম এবং পাসওয়ার্ড লিখুন বা আপনার QR কোড স্ক্যান করুন</translation>
 <translation id="2940811910881150316">ডিভাইসটি পরীক্ষা করা সম্ভব হচ্ছে না। পরীক্ষার জন্য ডিভাইসের লিডটি আবার খুলুন।</translation>
+<translation id="2941112035454246133">নিম্ন</translation>
 <translation id="3008341117444806826">রিফ্রেশ করুন</translation>
 <translation id="3009958530611748826">কোন ফোল্ডারে সেভ করতে চান তা বেছে নিন</translation>
 <translation id="3017079585324758401">ব্যাকগ্রাউন্ড</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">হোস্ট নেম যাচাই করা যায়নি</translation>
 <translation id="3942420633017001071">ডায়গনিস্টিক</translation>
 <translation id="3954678691475912818">ডিভাইসের ধরন অজানা।</translation>
+<translation id="3959413315969265597">এই APN চালু করা যাচ্ছে না। ভালভাবে দেখে নিন ডিফল্ট APN যোগ করা আছে কিনা।</translation>
 <translation id="3966286471246132217">আরও উন্নত ফলাফল পেতে পরীক্ষা সম্পূর্ণ না হওয়া পর্যন্ত সব অ্যাপ বন্ধ করে দিন।</translation>
 <translation id="3967822245660637423">ডাউনলোড সম্পূর্ণ</translation>
 <translation id="3969602104473960991">ChromeOS-এর পাসওয়ার্ড আপডেট করা হয়েছে</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">ভলিউম কমান</translation>
 <translation id="5707900041990977207"><ph name="TOTAL_PAGES" />টির মধ্যে <ph name="CURRENT_PAGE" />নম্বর</translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" /> আপডেট করুন</translation>
+<translation id="574392208103952083">মাঝারি</translation>
 <translation id="5757187557809630523">পরবর্তী ট্র্যাক</translation>
 <translation id="5760715441271661976">পোর্টালের স্থিতি</translation>
 <translation id="576835345334454681">ডিসপ্লের উজ্জ্বলতা বাড়ানোর বোতাম</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">আর্ট গ্যালারি অ্যালবাম</translation>
 <translation id="5860033963881614850">বন্ধ করুন</translation>
 <translation id="5860491529813859533">চালু করুন</translation>
-<translation id="5866840822086176774">খুব জোরালো</translation>
 <translation id="5876385649737594562">বিকল্প বেছে নেওয়ার জন্য চালু করুন</translation>
 <translation id="588258955323874662">সম্পূর্নস্ক্রীণ</translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">খারাপ (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">অ্যাকাউন্ট সেটিংসে যান</translation>
-<translation id="6456394469623773452">ভাল</translation>
+<translation id="6461047516875166066">আরও জানতে চাই</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{পৃষ্ঠাটি আবার স্ক্যান করতে চান?}=1{{PAGE_NUMBER} নম্বর পৃষ্ঠা আবার স্ক্যান করতে চান?}one{{PAGE_NUMBER} নম্বর পৃষ্ঠা আবার স্ক্যান করতে চান?}other{{PAGE_NUMBER} নম্বর পৃষ্ঠা আবার স্ক্যান করতে চান?}}</translation>
 <translation id="6472207088655375767">ওটিপি</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" />-এর মাধ্যমে ম্যানেজ করা হয়</translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">সব শর্টকাট ডিফল্টে রিসেট করবেন?</translation>
 <translation id="7058278511608979688">সম্পূর্ণ করে সেভ করুন</translation>
 <translation id="7059230779847288458">চার্জ করা হচ্ছে, সম্পূর্ণ চার্জ হতে <ph name="TIME_VALUE" /> সময় লাগবে</translation>
+<translation id="7066538517128343186"><ph name="KEY" /> কী</translation>
 <translation id="7068619307603204412">আপনার ডিভাইস রেডি করুন</translation>
 <translation id="708426984172631313">থেমে গেছে</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">ওয়ালপেপার দেখার জন্য কোনও নেটওয়ার্কে কানেক্ট করে পৃষ্ঠা আবার লোড করুন।</translation>
 <translation id="8291967909914612644">হোম পরিষেবা প্রদানকারী দেশ</translation>
 <translation id="8294431847097064396">উৎস</translation>
-<translation id="8297006494302853456">দুর্বল</translation>
 <translation id="8302368968391049045">HTTPS ফায়ারওয়াল</translation>
 <translation id="8312330582793120272">মিডিয়া চালান</translation>
 <translation id="8318753676953949627">কোন ছবি নেই</translation>
 <translation id="8329018942023753850">Calculator অ্যাপ</translation>
 <translation id="8336739000755212683">ডিভাইস অ্যাকাউন্টের ছবিটি পরিবর্তন করুন</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> অথবা <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">প্রিন্ট করার কাজগুলি</translation>
 <translation id="8351855506390808906">কীম্যাপ করার টাচ পয়েন্ট</translation>
 <translation id="8352772353338965963">একাধিক সাইন-ইন-এ একটি অ্যাকাউন্ট যোগ করুন৷ সমস্ত সাইন-ইন থাকা অ্যাকাউন্টগুলি কোনো পাসওয়ার্ড ছাড়াই অ্যাক্সেস করা যাবে, তাই এই বৈশিষ্ট্যটি শুধুমাত্র বিশ্বস্ত অ্যাকাউন্টগুলির সাথে ব্যবহার করা উচিৎ৷</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">আবার কানেক্ট করতে, সেটিংস বিকল্পে যান</translation>
 <translation id="9126720536733509015">একাধিক পৃষ্ঠা সেভ করে একটি পিডিএফ ফাইল তৈরি করুন</translation>
 <translation id="9133104754938025929">ব্যাটারির চার্জ বাঁচাতে, স্ক্রিন সেভার শুধুমাত্র চার্জ দেওয়ার সময় কাজ করে।</translation>
+<translation id="9133772297793293778">আপনার কীবোর্ডে ১-৪ পরিবর্তক ও অন্য ১টি 'কী' প্রেস করুন। এডিটিং মোড ছেড়ে বেরিয়ে আসতে, alt + esc প্রেস করুন।</translation>
 <translation id="9137526406337347448">Google পরিসেবাসমূহ</translation>
 <translation id="9138630967333032450">বাঁদিকের shift কী</translation>
 <translation id="9143347780818904997"><ph name="MINUTES" /> মিনিটের জন্য</translation>

@@ -103,8 +103,8 @@ public interface HistoryClustersDelegate {
      */
     default void onOptOut() {}
 
-    /** Whether tab group creation is enabled. */
-    default boolean areTabGroupsEnabled() {
+    /** Whether the rename from "Journeys" to "Groups" is enabled. */
+    default boolean isRenameEnabled() {
         return true;
     }
 }

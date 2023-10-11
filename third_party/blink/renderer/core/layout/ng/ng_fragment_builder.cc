@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 
 #include "base/containers/contains.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
@@ -120,6 +121,30 @@ void NGFragmentBuilder::PropagateStickyDescendants(
   }
 }
 
+HeapHashSet<Member<LayoutBox>>& NGFragmentBuilder::EnsureSnapAreas() {
+  if (!snap_areas_) {
+    snap_areas_ = MakeGarbageCollected<HeapHashSet<Member<LayoutBox>>>();
+  }
+  return *snap_areas_;
+}
+
+void NGFragmentBuilder::PropagateSnapAreas(const NGPhysicalFragment& child) {
+  if (child.IsSnapArea()) {
+    EnsureSnapAreas().insert(To<LayoutBox>(child.GetMutableLayoutObject()));
+  }
+
+  if (const auto* child_snap_areas = child.PropagatedSnapAreas()) {
+    auto& snap_areas = EnsureSnapAreas();
+    for (auto& child_snap_area : *child_snap_areas) {
+      snap_areas.insert(child_snap_area);
+    }
+  }
+
+  if (child.IsSnapArea() && child.PropagatedSnapAreas()) {
+    child.GetDocument().CountUse(WebFeature::kScrollSnapNestedSnapAreas);
+  }
+}
+
 NGLogicalAnchorQuery& NGFragmentBuilder::EnsureAnchorQuery() {
   if (!anchor_query_)
     anchor_query_ = MakeGarbageCollected<NGLogicalAnchorQuery>();
@@ -140,8 +165,9 @@ void NGFragmentBuilder::PropagateChildAnchors(
     options = AnchorQuerySetOptions(
         child, node_, IsBlockFragmentationContextRoot() || HasItems());
     if (child.Style().AnchorName()) {
-      EnsureAnchorQuery().Set(child.Style().AnchorName(),
-                              *child.GetLayoutObject(), rect, *options);
+      for (const ScopedCSSName* name : child.Style().AnchorName()->GetNames()) {
+        EnsureAnchorQuery().Set(name, *child.GetLayoutObject(), rect, *options);
+      }
     }
     if (child.IsImplicitAnchor()) {
       EnsureAnchorQuery().Set(child.GetLayoutObject(), *child.GetLayoutObject(),
@@ -219,8 +245,11 @@ void NGFragmentBuilder::PropagateFromFragment(
   // Propagate anchors from the |child|. Anchors are in |OutOfFlowData| but the
   // |child| itself may have an anchor.
   PropagateChildAnchors(child, child_offset + relative_offset);
-  PropagateStickyDescendants(child);
 
+  PropagateStickyDescendants(child);
+  if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+    PropagateSnapAreas(child);
+  }
   PropagateScrollStartTarget(child);
 
   if (child.NeedsOOFPositionedInfoPropagation() &&

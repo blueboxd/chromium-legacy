@@ -45,7 +45,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="IOS.Allocator.ShimInstalled" enum="Boolean"
-    expires_after="2023-08-08">
+    expires_after="2024-08-08">
   <owner>rohitrao@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -101,6 +101,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     This event is recorded on every warm start app open. The value represents
     how long the app was away from the foreground.
+  </summary>
+</histogram>
+
+<histogram name="IOS.Bookmarks.BulkAddURLsCount" units="count"
+    expires_after="2024-08-09">
+  <owner>nicolasmacbeth@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <summary>
+    The number of URLs a user has successfully added to Chrome via bulk adding
+    (Siri shortcut). This count is taken after checking for possible duplicates.
   </summary>
 </histogram>
 
@@ -480,20 +490,6 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="IOS.CRWWKNavigationStatesRemoveOldPending" enum="Boolean"
-    expires_after="2023-09-17">
-  <owner>justincohen@chromium.org</owner>
-  <owner>gambard@chromium.org</owner>
-  <summary>
-    Workaround for a WKWebView bug where WKNavigations can leak, leaving a
-    permanent pending URL, thus breaking the omnibox. While it is possible for
-    navigations to finish out-of-order, it's an edge case that should be handled
-    gracefully, as last committed will appear in the omnibox instead of the
-    pending URL. This metric records whether there are old navigations to clean
-    up each time a navigation finishes. See crbug.com/1010765 for details.
-  </summary>
-</histogram>
-
 <histogram name="IOS.DefaultBrowserFullscreenPromo"
     enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2023-12-01">
   <owner>sebsg@chromium.org</owner>
@@ -543,7 +539,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.DefaultBrowserPromo.NonModal.{Impression}"
-    enum="IOSDefaultBrowserPromoNonModalAction" expires_after="2023-12-01">
+    enum="IOSDefaultBrowserPromoNonModalAction" expires_after="2024-02-20">
   <owner>sebsg@chromium.org</owner>
   <owner>nicolasmacbeth@google.com</owner>
   <owner>bling-get-set-up@google.com</owner>
@@ -566,7 +562,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.DefaultBrowserPromo.NonModal.{PromoType}"
-    enum="IOSDefaultBrowserPromoNonModalAction" expires_after="2023-12-01">
+    enum="IOSDefaultBrowserPromoNonModalAction" expires_after="2024-02-20">
   <owner>sebsg@chromium.org</owner>
   <owner>bling-get-set-up@google.com</owner>
   <summary>
@@ -778,7 +774,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.ExperienceKitCalendar.TextClassifierModelAvailable"
-    enum="BooleanAvailable" expires_after="2023-12-10">
+    enum="BooleanAvailable" expires_after="2024-02-11">
   <owner>rajendrant@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1127,7 +1123,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.IncognitoInterstitial.Settings"
-    enum="IncognitoInterstitialSettingsActionType" expires_after="2023-10-17">
+    enum="IncognitoInterstitialSettingsActionType" expires_after="2024-02-11">
   <owner>qpubert@google.com</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -1257,7 +1253,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MainFrameNavigationIsInBrowserLockdownMode" enum="Boolean"
-    expires_after="2023-11-23">
+    expires_after="2024-02-20">
   <owner>joemerramos@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <owner>bling-fundamentals@google.com</owner>
@@ -1279,7 +1275,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MainThreadFreezeDetection.HangWithCleanExit"
-    enum="Boolean" expires_after="2023-09-12">
+    enum="Boolean" expires_after="2024-09-12">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1292,7 +1288,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="IOS.MainThreadFreezeDetection.NotRunningAfterReport"
     enum="IOSMainThreadFreezeDetectionNotRunningAfterReportBlock"
-    expires_after="2023-09-12">
+    expires_after="2024-09-12">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1302,7 +1298,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MainThreadFreezeDetection.RecordGenerationTime" units="ms"
-    expires_after="2024-01-28">
+    expires_after="2024-09-12">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1312,7 +1308,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MainThreadFreezeDetection.RecoveredAfter" units="ms"
-    expires_after="2023-09-12">
+    expires_after="2024-09-12">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1576,7 +1572,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.NavigationStateNotFinishedInLoadCancelled" enum="Boolean"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>ajuma@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
   <summary>
@@ -1651,7 +1647,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Omnibox.SearchSuggestionNumberOfLines" units="count"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>christianxu@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Histogram of the number of lines of search suggestions.</summary>
@@ -1708,14 +1704,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.OverflowMenu.ActionType" enum="IOSOverflowMenuActionType"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>rkgibson@google.com</owner>
   <owner>bling-team@google.com</owner>
   <summary>The type of action the user took in the overflow/tools menu</summary>
 </histogram>
 
 <histogram name="IOS.OverflowMenu.TimeOpen" units="ms"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>rkgibson@google.com</owner>
   <owner>bling-team@google.com</owner>
   <summary>The amount of time the overflow/tools menu is open.</summary>
@@ -1758,7 +1754,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PageLoadTiming.OmnibarToPageLoaded" units="ms"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>ajuma@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -2177,8 +2173,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="IOS.SandboxMetrics.AvailableCapacity" units="MB"
+<histogram name="IOS.SandboxMetrics.ApplicationSupportSize" units="MB"
     expires_after="2023-12-10">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The amount of storage used by the &quot;Application Support&quot; directory
+    excluding the storage used by all currently open tabs. Logged at application
+    startup, maximum once every 2 weeks, if the
+    `kLogApplicationStorageSizeMetrics` flag is enabled.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.AvailableCapacity" units="MB"
+    expires_after="2024-02-11">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -2188,7 +2196,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.SandboxMetrics.AvailableCapacityPercentage" units="%"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -2198,7 +2206,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.SandboxMetrics.CapacityForImportantUsage" units="MB"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -2208,7 +2216,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.SandboxMetrics.CapacityForImportantUsagePercentage"
-    units="%" expires_after="2023-12-10">
+    units="%" expires_after="2024-02-11">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -2218,7 +2226,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.SandboxMetrics.CapacityForOpportunisticUsage" units="MB"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -2228,7 +2236,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.SandboxMetrics.CapacityForOpportunisticUsagePercentage"
-    units="%" expires_after="2023-12-10">
+    units="%" expires_after="2024-02-11">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -2237,8 +2245,30 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="IOS.SandboxMetrics.DocumentsSize2" units="MB"
+<histogram name="IOS.SandboxMetrics.ChromeCacheSize" units="MB"
     expires_after="2023-12-10">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The amount of storage used by the Chrome cache directory. Logged at
+    application startup, maximum once every 2 weeks, if the
+    `kLogApplicationStorageSizeMetrics` flag is enabled.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.ChromeTempSize" units="MB"
+    expires_after="2023-12-10">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The amount of storage used by the Chrome tmp directory. Logged at
+    application startup, maximum once every 2 weeks, if the
+    `kLogApplicationStorageSizeMetrics` flag is enabled.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.DocumentsSize2" units="MB"
+    expires_after="2024-02-11">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -2249,8 +2279,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="IOS.SandboxMetrics.LibrarySize" units="MB"
+<histogram name="IOS.SandboxMetrics.FaviconsSize" units="KB"
     expires_after="2023-12-10">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The total amount of storage used by the favicons file. Logged at application
+    startup, maximum once every 2 weeks, if the
+    `kLogApplicationStorageSizeMetrics` flag is enabled.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.LibrarySize" units="MB"
+    expires_after="2024-02-11">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -2262,7 +2303,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.SandboxMetrics.OptimizationGuideModelDownloadedItems"
-    units="items" expires_after="2023-12-10">
+    units="items" expires_after="2024-02-11">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -2273,7 +2314,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.SandboxMetrics.OptimizationGuideModelDownloadsSize"
-    units="MB" expires_after="2023-12-10">
+    units="MB" expires_after="2024-02-11">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -2284,12 +2325,72 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.SandboxMetrics.TotalCapacity" enum="IOSStorageCapacity"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
     The total amount of storage capacity on the device. Logged once per
     application cold launch, on startup.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.TotalOTRSessionSize" units="MB"
+    expires_after="2023-12-10">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The total amount of storage used by the currently open incognito tabs. This
+    includes both the storage used for current tab state and the associated
+    snapshot images. Logged at application startup, maximum once every 2 weeks,
+    if the `kLogApplicationStorageSizeMetrics` flag is enabled.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.TotalRegularSessionSize" units="MB"
+    expires_after="2023-12-10">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The total amount of storage used by the currently open regular (non
+    incognito) tabs. This includes both the storage used for current tab state
+    and the associated snapshot images. Logged at application startup, maximum
+    once every 2 weeks, if the `kLogApplicationStorageSizeMetrics` flag is
+    enabled.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.WebKitCacheSize" units="MB"
+    expires_after="2023-12-10">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The amount of storage used by the WebKit cache directory. Logged at
+    application startup, maximum once every 2 weeks, if the
+    `kLogApplicationStorageSizeMetrics` flag is enabled.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.WebKitTempSize" units="MB"
+    expires_after="2023-12-10">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The amount of storage used by the WebKit tmp directory. Logged at
+    application startup, maximum once every 2 weeks, if the
+    `kLogApplicationStorageSizeMetrics` flag is enabled.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.WebsiteLocalData" units="MB"
+    expires_after="2023-12-10">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The amount of storage used by the
+    &quot;Library/WebKit/WebsiteData/Default&quot; directory which stores
+    IndexedDB and Local Storage data for websites. Logged at application
+    startup, maximum once every 2 weeks, if the
+    `kLogApplicationStorageSizeMetrics` flag is enabled.
   </summary>
 </histogram>
 
@@ -2563,7 +2664,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="IOS.TabGrid.CloseTabs" units="Tabs" expires_after="2023-11-01">
+<histogram name="IOS.TabGrid.CloseTabs" units="Tabs" expires_after="2024-02-20">
   <owner>ewannpv@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -2730,7 +2831,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabSwitcher.PageChangeInteraction"
-    enum="IOSTabSwitcherPageChangeInteraction" expires_after="2023-12-10">
+    enum="IOSTabSwitcherPageChangeInteraction" expires_after="2024-02-11">
   <owner>marq@chromium.org</owner>
   <owner>ewannpv@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -2795,7 +2896,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TextSelection.EntityDetection.DetectedEntityType"
-    enum="TextSelectionDetectedEntityType" expires_after="2023-12-10">
+    enum="TextSelectionDetectedEntityType" expires_after="2024-02-11">
   <owner>rajendrant@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -2819,7 +2920,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="IOS.TextSelection.EntityDetection.TFLiteModelEvaluationDuration"
-    units="ms" expires_after="2023-12-10">
+    units="ms" expires_after="2024-02-11">
   <owner>rajendrant@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -2997,7 +3098,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.WhatsNew.TableViewDidScroll" enum="Boolean"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>cheickcisse@google.com</owner>
   <owner>sebsg@google.com</owner>
   <summary>
@@ -3005,7 +3106,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="IOS.WhatsNew.TimeSpent" units="ms" expires_after="2023-12-10">
+<histogram name="IOS.WhatsNew.TimeSpent" units="ms" expires_after="2024-02-11">
   <owner>cheickcisse@google.com</owner>
   <owner>sebsg@google.com</owner>
   <summary>Logs the time a user spent on What's New.</summary>

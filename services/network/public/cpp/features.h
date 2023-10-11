@@ -83,6 +83,9 @@ extern uint32_t GetDataPipeDefaultAllocationSize(
     DataPipeAllocationSize = DataPipeAllocationSize::kDefaultSizeOnly);
 
 COMPONENT_EXPORT(NETWORK_CPP)
+extern uint32_t GetNetAdapterMaxBufSize();
+
+COMPONENT_EXPORT(NETWORK_CPP)
 extern uint32_t GetLoaderChunkSize();
 
 COMPONENT_EXPORT(NETWORK_CPP)
@@ -159,10 +162,9 @@ BASE_DECLARE_FEATURE(kCompressionDictionaryTransport);
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kVisibilityAwareResourceScheduler);
 
-// When enabled, the Clear-Site-Data HTTP Response header supports clearing the
-// client hints cache. When disabled, this header cannot clear the cache.
+// Enables Compression Dictionary Transport with Zstandard (aka Shared Zstd).
 COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kClearSiteDataClientHintsSupport);
+BASE_DECLARE_FEATURE(kSharedZstd);
 
 }  // namespace features
 }  // namespace network

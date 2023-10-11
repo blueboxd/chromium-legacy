@@ -229,7 +229,7 @@ class PasswordStoreConsumerVerifier
 base::FilePath GetFirstNonSigninNonLockScreenAppProfile(
     ProfileAttributesStorage* storage) {
   std::vector<ProfileAttributesEntry*> entries =
-      storage->GetAllProfilesAttributesSortedByName();
+      storage->GetAllProfilesAttributesSortedByNameWithCheck();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   const base::FilePath signin_path = ash::ProfileHelper::GetSigninProfileDir();
   const base::FilePath lock_screen_apps_path =
@@ -653,6 +653,23 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, PRE_AddMultipleProfiles) {
 
 IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, AddMultipleProfiles) {
   // Verifies that the browser doesn't crash when it is restarted.
+}
+
+// Regression test for https://crbug.com/1472849
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTestBase,
+                       ConcurrentCreationAsyncAndSync) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::FilePath profile_path =
+      profile_manager->GenerateNextProfileDirectoryPath();
+  // Initiate asynchronous creation.
+  profile_manager->CreateProfileAsync(profile_path, base::DoNothing());
+  // The profile is being created, but creation is not complete.
+  EXPECT_EQ(nullptr, profile_manager->GetProfileByPath(profile_path));
+  // Request synchronous creation of the same profile, this should not crash.
+  Profile* profile = profile_manager->GetProfile(profile_path);
+  // The profile has been loaded.
+  EXPECT_EQ(profile, profile_manager->GetProfileByPath(profile_path));
+  EXPECT_EQ(profile->GetPath(), profile_path);
 }
 
 IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, EphemeralProfile) {

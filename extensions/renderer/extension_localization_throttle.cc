@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/renderer/shared_l10n_map.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -181,7 +182,7 @@ class ExtensionLocalizationURLLoader : public network::mojom::URLLoaderClient,
         extension_id_, &data_, message_sender);
   }
 
-  const std::string extension_id_;
+  const ExtensionId extension_id_;
   std::unique_ptr<mojo::DataPipeDrainer> data_drainer_;
   mojo::ScopedDataPipeProducerHandle producer_handle_;
   std::string data_;

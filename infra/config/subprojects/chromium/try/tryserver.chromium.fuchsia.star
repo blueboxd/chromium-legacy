@@ -155,15 +155,14 @@ try_.compilator_builder(
     main_list_view = "try",
 )
 
-# TODO(b/277863839): remove Siso experimental builders after migrate
-# fuchsia-x64-cast-receiver-rel to Siso.
 try_.orchestrator_builder(
     name = "fuchsia-x64-cast-receiver-siso-rel",
-    mirrors = [
-        "ci/fuchsia-x64-cast-receiver-rel",
-    ],
+    description_html = """\
+This builder shadows fuchsia-x64-cast-receiver-rel builder to compare between Siso builds and Ninja builds.<br/>
+This builder should be removed after migrating fuchsia-x64-cast-receiver-rel from Ninja to Siso. b/277863839
+""",
+    mirrors = builder_config.copy_from("try/fuchsia-x64-cast-receiver-rel"),
     try_settings = builder_config.try_settings(
-        include_all_triggered_testers = True,
         is_compile_only = True,
     ),
     compilator = "fuchsia-x64-cast-receiver-siso-rel-compilator",
@@ -175,7 +174,6 @@ try_.orchestrator_builder(
     },
     main_list_view = "try",
     tryjob = try_.job(
-        # TODO(b/277863839): increase percentage.
         experiment_percentage = 20,
     ),
     use_clang_coverage = True,

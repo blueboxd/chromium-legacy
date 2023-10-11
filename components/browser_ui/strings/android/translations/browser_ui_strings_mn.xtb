@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Сайтад таны төхөөрөмжид өгөгдөл хадгалахыг зөвшөөрөх</translation>
 <translation id="1383876407941801731">Хайлт</translation>
 <translation id="1384959399684842514">Таталтыг түр зогсоосон</translation>
-<translation id="1409426117486808224">Нээлттэй табын хялбаршуулсан харагдац</translation>
 <translation id="1415402041810619267">URL-г танасан</translation>
 <translation id="1426410128494586442">Тийм</translation>
 <translation id="1446450296470737166">MIDI төхөөрөмжийг бүрэн хянахыг зөвшөөрөх</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Гуравдагч этгээдээс бусад этгээдийг зөвшөөрсөн байна</translation>
 <translation id="1989112275319619282">Хөтлөх</translation>
 <translation id="1994173015038366702">Сайтын URL</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{1 хоногийн дараа хугацаа нь дуусна}other{# хоногийн дараа хугацаа нь дуусна}}</translation>
 <translation id="2004697686368036666">Зарим сайтын онцлогууд ажиллахгүй байж болзошгүй</translation>
 <translation id="2025115093177348061">Өргөтгөсөн бодит орчин</translation>
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> руу буцах бол товшино уу</translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Гарчиг</translation>
 <translation id="4008040567710660924">Күүкиг тодорхой сайтад зөвшөөрнө үү.</translation>
 <translation id="4046123991198612571">Дараагийн бичлэг</translation>
+<translation id="4053720452172726777">Google Chrome-ыг өөртөө тохируулан хянах</translation>
 <translation id="4149994727733219643">Веб хуудасны хялбаршуулсан харагдац</translation>
 <translation id="4151930093518524179">Өгөгдмөл томруулалт</translation>
 <translation id="4165986682804962316">Сайтын тохиргоо</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Сайтууд нь, жишээлбэл зарыг хувийн болгохын тулд өөр сайт дээрх таны хөтчийн үйл ажиллагааг харах зорилгоор таны күүкиг ашиглах боломжгүй. Зарим сайтын онцлогууд ажиллахгүй байж болзошгүй.</translation>
 <translation id="5553374991681107062">Хамгийн сүүлийн үеийн</translation>
 <translation id="5556459405103347317">Дахин ачаал</translation>
-<translation id="5596627076506792578">Бусад сонголт</translation>
 <translation id="5649053991847567735">Автоматаар татаж  авах файл</translation>
 <translation id="5668404140385795438">Томруулах үйлдлээс урьдчилан сэргийлэхийн тулд вэбсайтны хүсэлтийг хүчингүй болгох</translation>
 <translation id="5677928146339483299">Хаагдсан</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Андройдын тохиргоонд унтраасан</translation>
 <translation id="7016516562562142042">Одоогийн хайлтын хэрэгсэлд зөвшөөрсөн</translation>
 <translation id="702275896380648118">Энэ сайт таны дуртай зүйлсийг тодорхойлж, дараа нь бусад сайтад зар санал болгодог. Энэ сайт мөн танд илүү хамааралтай зар харуулахын тулд таны зарын сэдвүүдийг Chrome-с авдаг.</translation>
-<translation id="702463548815491781">TalkBack эсвэл Хандалтыг сэлгэх асаалттай үед тохиромжтой</translation>
 <translation id="7053983685419859001">Блоклох</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 сонгосон}other{# сонгосон}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />-г сонгосон. Сонголт дэлгэцийн дээд хэсэгт боломжтой</translation>

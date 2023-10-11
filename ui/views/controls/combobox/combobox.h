@@ -108,6 +108,8 @@ class VIEWS_EXPORT Combobox : public View,
   void SetBorderColorId(ui::ColorId color_id);
   void SetBackgroundColorId(ui::ColorId color_id);
   void SetForegroundColorId(ui::ColorId color_id);
+  void SetForegroundIconColorId(ui::ColorId color_id);
+  void SetForegroundTextStyle(style::TextStyle text_style);
 
   // Sets whether there should be ink drop highlighting on hover/press.
   void SetEventHighlighting(bool should_highlight);
@@ -198,6 +200,8 @@ class VIEWS_EXPORT Combobox : public View,
 
   PrefixSelector* GetPrefixSelector();
 
+  const gfx::FontList& GetForegroundFontList() const;
+
   // Optionally used to tie the lifetime of the model to this combobox. See
   // constructor.
   std::unique_ptr<ui::ComboboxModel> owned_model_;
@@ -234,6 +238,11 @@ class VIEWS_EXPORT Combobox : public View,
 
   // Overriding ColorId for the combobox foreground (text and caret icon).
   absl::optional<ui::ColorId> foreground_color_id_;
+
+  // Attempts to override the color for the combobox foreground icon.
+  absl::optional<ui::ColorId> foreground_icon_color_id_;
+
+  absl::optional<style::TextStyle> foreground_text_style_;
 
   // A helper used to select entries by keyboard input.
   std::unique_ptr<PrefixSelector> selector_;

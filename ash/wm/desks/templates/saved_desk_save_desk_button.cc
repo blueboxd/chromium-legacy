@@ -4,13 +4,11 @@
 
 #include "ash/wm/desks/templates/saved_desk_save_desk_button.h"
 
-#include "ash/public/cpp/style/color_provider.h"
 #include "ash/style/style_util.h"
 #include "ash/wm/desks/templates/saved_desk_constants.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/compositor/layer.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/highlight_border.h"
@@ -30,11 +28,13 @@ SavedDeskSaveDeskButton::SavedDeskSaveDeskButton(
                  icon),
       callback_(callback),
       button_type_(button_type) {
-  views::FocusRing::Get(this)->SetHasFocusPredicate(
+  auto* focus_ring = views::FocusRing::Get(this);
+  focus_ring->SetOutsetFocusRingDisabled(true);
+  focus_ring->SetHasFocusPredicate(
       base::BindRepeating([](const views::View* view) {
         const auto* v = views::AsViewClass<SavedDeskSaveDeskButton>(view);
         CHECK(v);
-        return v->IsViewHighlighted();
+        return v->is_focused();
       }));
 
   SetBorder(std::make_unique<views::HighlightBorder>(
@@ -44,15 +44,6 @@ SavedDeskSaveDeskButton::SavedDeskSaveDeskButton(
           : views::HighlightBorder::Type::kHighlightBorder2));
 
   SetEnableBackgroundBlur(true);
-
-  View* background_view = AddChildView(std::make_unique<views::View>());
-  background_view->SetPaintToLayer();
-
-  background_view->layer()->SetRoundedCornerRadius(
-      gfx::RoundedCornersF{kSaveDeskCornerRadius});
-  background_view->layer()->SetBackgroundBlur(
-      ColorProvider::kBackgroundBlurSigma);
-  background_view->layer()->SetFillsBoundsOpaquely(false);
 }
 
 SavedDeskSaveDeskButton::~SavedDeskSaveDeskButton() = default;
@@ -61,31 +52,31 @@ views::View* SavedDeskSaveDeskButton::GetView() {
   return this;
 }
 
-void SavedDeskSaveDeskButton::MaybeActivateHighlightedView() {
+void SavedDeskSaveDeskButton::MaybeActivateFocusedView() {
   if (GetEnabled())
     callback_.Run();
 }
 
-void SavedDeskSaveDeskButton::MaybeCloseHighlightedView(bool primary_action) {}
+void SavedDeskSaveDeskButton::MaybeCloseFocusedView(bool primary_action) {}
 
-void SavedDeskSaveDeskButton::MaybeSwapHighlightedView(bool right) {}
+void SavedDeskSaveDeskButton::MaybeSwapFocusedView(bool right) {}
 
-void SavedDeskSaveDeskButton::OnViewHighlighted() {
+void SavedDeskSaveDeskButton::OnFocusableViewFocused() {
   views::FocusRing::Get(this)->SchedulePaint();
 }
 
-void SavedDeskSaveDeskButton::OnViewUnhighlighted() {
+void SavedDeskSaveDeskButton::OnFocusableViewBlurred() {
   views::FocusRing::Get(this)->SchedulePaint();
 }
 
 void SavedDeskSaveDeskButton::OnFocus() {
-  UpdateOverviewHighlightForFocus(this);
-  OnViewHighlighted();
+  MoveFocusToView(this);
+  OnFocusableViewFocused();
   View::OnFocus();
 }
 
 void SavedDeskSaveDeskButton::OnBlur() {
-  OnViewUnhighlighted();
+  OnFocusableViewBlurred();
   View::OnBlur();
 }
 

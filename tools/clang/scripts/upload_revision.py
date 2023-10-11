@@ -59,6 +59,7 @@ Tricium: skip
 Disable-Rts: True
 Cq-Include-Trybots: chromium/try:chromeos-amd64-generic-cfi-thin-lto-rel
 Cq-Include-Trybots: chromium/try:dawn-win10-x86-deps-rel
+Cq-Include-Trybots: chromium/try:lacros-arm64-generic-rel
 Cq-Include-Trybots: chromium/try:linux-chromeos-dbg
 Cq-Include-Trybots: chromium/try:linux_chromium_cfi_rel_ng
 Cq-Include-Trybots: chromium/try:linux_chromium_chromeos_msan_rel_ng
@@ -184,9 +185,10 @@ def PatchRustRevision(new_version: RustVersion) -> RustVersion:
 
 
 def PatchRustStage0():
-  verify_stage0 = subprocess.run([BUILD_RUST_PY_PATH, '--verify-stage0-hash'],
-                                 capture_output=True,
-                                 text=True)
+  verify_stage0 = subprocess.run(
+      [sys.executable, BUILD_RUST_PY_PATH, '--verify-stage0-hash'],
+      capture_output=True,
+      text=True)
   if verify_stage0.returncode == 0:
     return
 
@@ -238,7 +240,8 @@ def Git(*args, no_run: bool):
 
 def GitDiffHasChanges(from_git_hash, to_git_hash, glob, git_dir):
   diff = subprocess.check_output(
-      ['git', '-C', git_dir, 'diff', f'{from_git_hash}..{to_git_hash}', glob])
+      ['git', '-C', git_dir, 'diff', f'{from_git_hash}..{to_git_hash}', glob],
+      shell=is_win)
   return bool(diff)
 
 

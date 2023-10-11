@@ -11,6 +11,7 @@
 #include "services/webnn/dml/graph_builder.h"
 #include "services/webnn/dml/tensor_desc.h"
 #include "services/webnn/dml/test_base.h"
+#include "services/webnn/dml/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_angle_util_win.h"
 
@@ -28,19 +29,33 @@ class WebNNGraphBuilderTest : public TestBase {
 void WebNNGraphBuilderTest::SetUp() {
   SKIP_TEST_IF(!UseGPUInTests());
   ASSERT_TRUE(InitializeGLDisplay());
-  scoped_refptr<Adapter> adapter = Adapter::GetInstance();
+  Adapter::EnableDebugLayerForTesting();
+  scoped_refptr<Adapter> adapter = Adapter::GetInstanceForTesting();
   ASSERT_NE(adapter.get(), nullptr);
   dml_device_ = adapter->dml_device();
   ASSERT_NE(dml_device_.Get(), nullptr);
+  is_compile_graph_supported_ =
+      adapter->IsDMLDeviceCompileGraphSupportedForTesting();
+}
 
-  // IDMLDevice1::CompileGraph will rely on IDMLDevice1 interface.
-  ComPtr<IDMLDevice1> dml_device1;
-  HRESULT hr = dml_device_->QueryInterface(IID_PPV_ARGS(&dml_device1));
-  if (FAILED(hr)) {
-    DLOG(WARNING) << "Failed to query dml device1 : "
-                  << logging::SystemErrorCodeToString(hr);
-    is_compile_graph_supported_ = false;
-  }
+// Test creating an invalid operator node with inconsistent tensor dimensions.
+TEST_F(WebNNGraphBuilderTest, CreateInvalidOperator) {
+  GraphBuilder graph_builder(dml_device_);
+
+  TensorDesc input_tensor_desc(DML_TENSOR_DATA_TYPE_FLOAT32, {1, 2, 3, 4});
+  TensorDesc output_tensor_desc(DML_TENSOR_DATA_TYPE_FLOAT32, {1, 2, 3});
+  NodeInfo input_node = graph_builder.CreateInputNode();
+  ASSERT_EQ(input_node.type, NodeInfo::Type::kInput);
+  NodeOutputInfo input =
+      graph_builder.CreateNodeOutput(input_node, input_tensor_desc);
+
+  DML_ACTIVATION_RELU_OPERATOR_DESC invalid_operator_desc{
+      .InputTensor = &input_tensor_desc.GetDMLTensorDesc(),
+      .OutputTensor = &output_tensor_desc.GetDMLTensorDesc()};
+
+  NodeInfo invalid_node = graph_builder.CreateOperatorNode(
+      DML_OPERATOR_ACTIVATION_RELU, &invalid_operator_desc, {input});
+  EXPECT_EQ(invalid_node.type, NodeInfo::Type::kInvalid);
 }
 
 // Test building a DML graph with single operator relu.

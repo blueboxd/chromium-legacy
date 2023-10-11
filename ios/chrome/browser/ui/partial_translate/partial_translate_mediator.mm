@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/partial_translate/partial_translate_mediator.h"
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/memory/weak_ptr.h"
 #import "base/metrics/histogram_functions.h"
 #import "components/prefs/pref_member.h"
@@ -350,7 +350,7 @@ const NSUInteger kPartialTranslateCharactersLimit = 1000;
               if (![object isKindOfClass:[UICommand class]]) {
                 return YES;
               }
-              UICommand* command = base::mac::ObjCCast<UICommand>(object);
+              UICommand* command = base::apple::ObjCCast<UICommand>(object);
               return command.action != NSSelectorFromString(@"_translate:");
             }]];
   };

@@ -131,8 +131,7 @@ void FileAnalyzer::StartExtractZipFeatures() {
   // We give the zip analyzer a weak pointer to this object.
   zip_analyzer_ = SandboxedZipAnalyzer::CreateAnalyzer(
       tmp_path_,
-      // TODO(crbug/1466284): Provide the password from the user here.
-      /*password=*/"",
+      /*password=*/absl::nullopt,
       base::BindOnce(&FileAnalyzer::OnZipAnalysisFinished,
                      weakptr_factory_.GetWeakPtr()),
       LaunchFileUtilService());
@@ -180,6 +179,7 @@ void FileAnalyzer::OnZipAnalysisFinished(
 
   results_.archive_summary.set_file_count(archive_results.file_count);
   results_.archive_summary.set_directory_count(archive_results.directory_count);
+  results_.encryption_info = archive_results.encryption_info;
 
   std::move(callback_).Run(std::move(results_));
 }
@@ -191,6 +191,7 @@ void FileAnalyzer::StartExtractRarFeatures() {
   // analyzer is refcounted, it might outlive the request.
   rar_analyzer_ = SandboxedRarAnalyzer::CreateAnalyzer(
       tmp_path_,
+      /*password=*/absl::nullopt,
       base::BindOnce(&FileAnalyzer::OnRarAnalysisFinished,
                      weakptr_factory_.GetWeakPtr()),
       LaunchFileUtilService());
@@ -235,6 +236,7 @@ void FileAnalyzer::OnRarAnalysisFinished(
 
   results_.archive_summary.set_file_count(archive_results.file_count);
   results_.archive_summary.set_directory_count(archive_results.directory_count);
+  results_.encryption_info = archive_results.encryption_info;
 
   std::move(callback_).Run(std::move(results_));
 }
@@ -305,6 +307,8 @@ void FileAnalyzer::OnDmgAnalysisFinished(
     results_.archive_summary.set_parser_status(
         ClientDownloadRequest::ArchiveSummary::TOO_LARGE);
   }
+
+  results_.encryption_info = archive_results.encryption_info;
 
   std::move(callback_).Run(std::move(results_));
 }
@@ -407,6 +411,7 @@ void FileAnalyzer::OnSevenZipAnalysisFinished(
 
   results_.archive_summary.set_file_count(archive_results.file_count);
   results_.archive_summary.set_directory_count(archive_results.directory_count);
+  results_.encryption_info = archive_results.encryption_info;
 
   std::move(callback_).Run(std::move(results_));
 }

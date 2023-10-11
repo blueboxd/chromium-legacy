@@ -4,16 +4,33 @@
 
 #import "base/mac/launch_application.h"
 
+#include "base/apple/bridging.h"
+#include "base/apple/foundation_util.h"
 #include "base/command_line.h"
 #include "base/functional/callback.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
+#include "base/mac/launch_services_spi.h"
+#include "base/mac/mac_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/types/expected.h"
 
 namespace base::mac {
 
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class LaunchResult {
+  kSuccess = 0,
+  kSuccessDespiteError = 1,
+  kFailure = 2,
+  kMaxValue = kFailure,
+};
+
+void LogLaunchResult(LaunchResult result) {
+  UmaHistogramEnumeration("Mac.LaunchApplicationResult", result);
+}
 
 NSArray* CommandLineArgsToArgsArray(const CommandLineArgs& command_line_args) {
   if (const CommandLine* command_line =
@@ -76,6 +93,86 @@ NSWorkspaceLaunchOptions GetLaunchOptions(LaunchApplicationOptions options) {
   return launch_options;
 }
 
+NSDictionary* GetOpenOptions(LaunchApplicationOptions options,
+                             const CommandLineArgs& command_line_args) {
+  if (@available(macOS 10.15, *)) {
+    NSDictionary* dict = @{
+      base::apple::CFToNSPtrCast(_kLSOpenOptionArgumentsKey) :
+          CommandLineArgsToArgsArray(command_line_args),
+      base::apple::CFToNSPtrCast(_kLSOpenOptionHideKey) :
+          @(options.hidden_in_background),
+      base::apple::CFToNSPtrCast(_kLSOpenOptionBackgroundLaunchKey) :
+          @(options.hidden_in_background),
+      base::apple::CFToNSPtrCast(_kLSOpenOptionAddToRecentsKey) :
+          @(!options.hidden_in_background),
+      base::apple::CFToNSPtrCast(_kLSOpenOptionActivateKey) :
+          @(options.activate),
+      base::apple::CFToNSPtrCast(_kLSOpenOptionPreferRunningInstanceKey) :
+          @(!options.create_new_instance),
+    };
+    return dict;
+  } else {
+    return @{};
+  }
+}
+
+// Sometimes macOS 11 and 12 report an error launching even though the launch
+// succeeded anyway. This helper returns true for the error codes we have
+// observed where scanning the list of running applications appears to be a
+// usable workaround for this.
+bool ShouldScanRunningAppsForError(NSError* error) {
+  if (!error) {
+    return false;
+  }
+  if (error.domain == NSCocoaErrorDomain &&
+      error.code == NSFileReadUnknownError) {
+    return true;
+  }
+  if (error.domain == NSOSStatusErrorDomain && error.code == procNotFound) {
+    return true;
+  }
+  return false;
+}
+
+void LogResultAndInvokeCallback(const base::FilePath& app_bundle_path,
+                                bool create_new_instance,
+                                LaunchApplicationCallback callback,
+                                NSRunningApplication* app,
+                                NSError* error) {
+  // Sometimes macOS 11 and 12 report an error launching even though the
+  // launch succeeded anyway. To work around such cases, check if we can
+  // find a running application matching the app we were trying to launch.
+  // Only do this if `options.create_new_instance` is false though, as
+  // otherwise we wouldn't know which instance to return.
+  if ((MacOSMajorVersion() == 11 || MacOSMajorVersion() == 12) &&
+      !create_new_instance && !app && ShouldScanRunningAppsForError(error)) {
+    NSArray<NSRunningApplication*>* all_apps =
+        NSWorkspace.sharedWorkspace.runningApplications;
+    for (NSRunningApplication* running_app in all_apps) {
+      if (apple::NSURLToFilePath(running_app.bundleURL) == app_bundle_path) {
+        LOG(ERROR) << "Launch succeeded despite error: "
+                   << base::SysNSStringToUTF8(error.localizedDescription);
+        app = running_app;
+        break;
+      }
+    }
+    if (app) {
+      error = nil;
+    }
+    LogLaunchResult(app ? LaunchResult::kSuccessDespiteError
+                        : LaunchResult::kFailure);
+  } else {
+    LogLaunchResult(app ? LaunchResult::kSuccess : LaunchResult::kFailure);
+  }
+
+  if (error) {
+    LOG(ERROR) << base::SysNSStringToUTF8(error.localizedDescription);
+    std::move(callback).Run(nil, error);
+  } else {
+    std::move(callback).Run(app, nil);
+  }
+}
+
 }  // namespace
 
 void LaunchApplication(const base::FilePath& app_bundle_path,
@@ -83,9 +180,11 @@ void LaunchApplication(const base::FilePath& app_bundle_path,
                        const std::vector<std::string>& url_specs,
                        LaunchApplicationOptions options,
                        LaunchApplicationCallback callback) {
-  __block LaunchApplicationCallback callback_block_access = std::move(callback);
+  __block LaunchApplicationCallback callback_block_access =
+      base::BindOnce(&LogResultAndInvokeCallback, app_bundle_path,
+                     options.create_new_instance, std::move(callback));
 
-  NSURL* bundle_url = FilePathToNSURL(app_bundle_path);
+  NSURL* bundle_url = apple::FilePathToNSURL(app_bundle_path);
   if (!bundle_url) {
     dispatch_async(dispatch_get_main_queue(), ^{
       std::move(callback_block_access)
@@ -106,15 +205,33 @@ void LaunchApplication(const base::FilePath& app_bundle_path,
   }
 
   if (@available(macOS 10.15, *)) {
+    if (options.hidden_in_background) {
+      _LSOpenCompletionHandler action_block =
+          ^void(LSASNRef asn, Boolean success, CFErrorRef cf_error) {
+            NSRunningApplication* app = nil;
+            if (asn) {
+              app = [[NSRunningApplication alloc]
+                  initWithApplicationSerialNumber:asn];
+            }
+            NSError* error = base::apple::CFToNSPtrCast(cf_error);
+            dispatch_async(dispatch_get_main_queue(), ^{
+              std::move(callback_block_access).Run(app, error);
+            });
+          };
+
+      _LSOpenURLsWithCompletionHandler(
+          base::apple::NSToCFPtrCast(ns_urls ? ns_urls : @[]),
+          apple::FilePathToCFURL(app_bundle_path),
+          base::apple::NSToCFPtrCast(
+              GetOpenOptions(options, command_line_args)),
+          action_block);
+      return;
+    }
+
     void (^action_block)(NSRunningApplication*, NSError*) =
         ^void(NSRunningApplication* app, NSError* error) {
           dispatch_async(dispatch_get_main_queue(), ^{
-            if (error) {
-              LOG(ERROR) << base::SysNSStringToUTF8(error.localizedDescription);
-              std::move(callback_block_access).Run(nil, error);
-            } else {
-              std::move(callback_block_access).Run(app, nil);
-            }
+            std::move(callback_block_access).Run(app, error);
           });
         };
 

@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/telemetry_extension/routines/self_owned_mojo_proxy.h"
 #include "chromeos/crosapi/mojom/telemetry_diagnostic_routine_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -63,6 +63,9 @@ class TelemetryDiagnosticsRoutineServiceAsh
           routine_receiver,
       mojo::PendingRemote<crosapi::mojom::TelemetryDiagnosticRoutineObserver>
           observer) override;
+  void IsRoutineArgumentSupported(
+      crosapi::mojom::TelemetryDiagnosticRoutineArgumentPtr arg,
+      IsRoutineArgumentSupportedCallback callback) override;
 
  private:
   // Called when a routine controller or observer connection is closed. This
@@ -70,7 +73,8 @@ class TelemetryDiagnosticsRoutineServiceAsh
   void OnConnectionClosed(SelfOwnedMojoProxyInterface* closed_connection);
 
   // The routine controls and observers created for each running routine.
-  base::flat_set<base::raw_ptr<SelfOwnedMojoProxyInterface, ExperimentalAsh>>
+  base::flat_set<
+      raw_ptr<SelfOwnedMojoProxyInterface, DanglingUntriaged | ExperimentalAsh>>
       routine_controls_and_observers_;
 
   // Support any number of connections.

@@ -53,7 +53,7 @@ class PersonalizationAppAmbientProviderImpl
       mojo::PendingRemote<ash::personalization_app::mojom::AmbientObserver>
           observer) override;
   void SetAmbientModeEnabled(bool enabled) override;
-  void SetAnimationTheme(ash::AmbientTheme animation_theme) override;
+  void SetAmbientTheme(ash::AmbientTheme ambient_theme) override;
   void SetScreenSaverDuration(int minutes) override;
   void SetTopicSource(ash::AmbientModeTopicSource topic_source) override;
   void SetTemperatureUnit(
@@ -89,14 +89,7 @@ class PersonalizationAppAmbientProviderImpl
 
   // Called when the settings is updated.
   // `success` is true when update successfully.
-  void OnUpdateSettings(bool success);
-
-  // Return true if a new update needed.
-  // `success` is true when update successfully.
-  bool MaybeScheduleNewUpdateSettings(bool success);
-
-  // `success` is true when update successfully.
-  void UpdateUIWithCachedSettings(bool success);
+  void OnUpdateSettings(bool success, const AmbientSettings& settings);
 
   void OnSettingsAndAlbumsFetched(
       const absl::optional<ash::AmbientSettings>& settings,
@@ -156,19 +149,10 @@ class PersonalizationAppAmbientProviderImpl
   // If `UpdateSettings()` fails, will restore to this value.
   absl::optional<ash::AmbientSettings> cached_settings_;
 
-  // A temporary settings sent to the server in `UpdateSettings()`.
-  absl::optional<ash::AmbientSettings> settings_sent_for_update_;
-
   ash::PersonalAlbums personal_albums_;
-
-  // Whether to update UI when `UpdateSettings()` returns successfully.
-  bool has_pending_fetch_request_ = false;
 
   // Whether the Settings updating is ongoing.
   bool is_updating_backend_ = false;
-
-  // Whether there are pending updates.
-  bool has_pending_updates_for_backend_ = false;
 
   // Whether to update previews when `UpdateSettings()` returns successfully.
   bool needs_update_previews_ = false;

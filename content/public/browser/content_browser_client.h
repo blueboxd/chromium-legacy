@@ -813,6 +813,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // loaded. This is called on the UI thread.
   virtual bool AllowSignedExchange(BrowserContext* context);
 
+  // Allows the embedder to control whether Compression Dictionary Transport
+  // feature can be used. This is called on the UI thread.
+  virtual bool AllowCompressionDictionaryTransport(BrowserContext* context);
+
   virtual bool IsDataSaverEnabled(BrowserContext* context);
 
   // Updates the given prefs for Service Worker and Shared Worker. The prefs
@@ -1491,8 +1495,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the UI thread.
   virtual bool IsRendererCodeIntegrityEnabled();
 
-  // Performs a fast and orderly shutdown of the browser.
-  virtual void SessionEnding() {}
+  // Performs a fast and orderly shutdown of the browser. If present,
+  // `control_type` is a CTRL_* value from a Windows console control handler;
+  // see https://learn.microsoft.com/en-us/windows/console/handlerroutine.
+  virtual void SessionEnding(absl::optional<DWORD> control_type) {}
 
   // Returns true if the audio process should run with high priority. false
   // otherwise.
@@ -1953,8 +1959,10 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Called on IO or UI thread to determine whether or not to allow load and
   // render MHTML page from http/https URLs.
-  virtual bool ShouldForceDownloadResource(const GURL& url,
-                                           const std::string& mime_type);
+  virtual bool ShouldForceDownloadResource(
+      content::BrowserContext* browser_context,
+      const GURL& url,
+      const std::string& mime_type);
 
   virtual void CreateDeviceInfoService(
       RenderFrameHost* render_frame_host,
@@ -2378,17 +2386,23 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldServiceWorkerInheritPolicyContainerFromCreator(
       const GURL& url);
 
-  // Returns whether a context with the given |origin| should be allowed to make
-  // insecure private network requests.
+  enum class PrivateNetworkRequestPolicyOverride {
+    kForceAllow,
+    kForcePreflightBlock,
+    kDefault,
+  };
+
+  // Returns whether and how we should override the default private network
+  // request policy.
   //
-  // See the CORS-RFC1918 spec for more details:
-  // https://wicg.github.io/cors-rfc1918.
+  // See the Private Network Access spec for more details:
+  // https://wicg.github.io/private-network-access.
   //
   // |browser_context| must not be nullptr. Caller retains ownership.
   // |origin| is the origin of a navigation ready to commit.
-  virtual bool ShouldAllowInsecurePrivateNetworkRequests(
-      BrowserContext* browser_context,
-      const url::Origin& origin);
+  virtual PrivateNetworkRequestPolicyOverride
+  ShouldOverridePrivateNetworkRequestPolicy(BrowserContext* browser_context,
+                                            const url::Origin& origin);
 
   // Whether the JIT should be disabled for the given |browser_context| and
   // |site_url|. Pass an empty GURL for |site_url| to get the default JIT policy
@@ -2510,11 +2524,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       content::BrowserContext* browser_context,
       int32_t error_code);
 
-  // Handle a new-window/-tab request using an external implementation-defined
-  // handler, if appropriate. Returns true iff the request was handled.
-  virtual bool OpenExternally(const GURL& url,
-                              WindowOpenDisposition disposition);
-
   // Called when a `SharedStorageWorkletHost` is created for `rfh`.
   virtual void OnSharedStorageWorkletHostCreated(RenderFrameHost* rfh) {}
 
@@ -2593,6 +2602,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       const storage::FileSystemURL& url,
       FileSystemAccessPermissionContext::HandleType handle_type,
       GetCloudIdentifiersCallback callback);
+
+  // Checks if the given BrowserContext allows to store the page loaded with
+  // "Cache-control: no-store" header in BFCache.
+  virtual bool ShouldAllowBackForwardCacheForCacheControlNoStorePage(
+      content::BrowserContext* browser_context);
 };
 
 }  // namespace content

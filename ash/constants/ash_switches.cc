@@ -186,6 +186,11 @@ const char kArcVmUreadaheadMode[] = "arcvm-ureadahead-mode";
 // Madvises the kernel to use Huge Pages for guest memory.
 const char kArcVmUseHugePages[] = "arcvm-use-hugepages";
 
+// Allows bypassing the GlanceablesEnabled pref. This requires that the
+// kGlanceablesV2 feature is enabled as well. Intended to force enable
+// glanceables for testing.
+const char kAshBypassGlanceablesPref[] = "ash-bypass-glanceables-pref";
+
 // Clear the fast ink buffer upon creation. This is needed on some devices that
 // do not zero out new buffers.
 const char kAshClearFastInkBuffer[] = "ash-clear-fast-ink-buffer";
@@ -885,6 +890,9 @@ const char kOobeTimezoneOverrideForTests[] = "oobe-timezone-override-for-tests";
 // Trigger sync engine initialization timeout in OOBE for testing.
 const char kOobeTriggerSyncTimeoutForTests[] =
     "oobe-trigger-sync-timeout-for-tests";
+
+// Supply secret key for Orca feature
+const char kOrcaKey[] = "orca-key";
 
 // Controls how often the HiddenNetworkHandler class checks for wrongly hidden
 // networks. The interval should be provided in seconds, should follow the

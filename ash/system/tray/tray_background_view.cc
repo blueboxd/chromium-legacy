@@ -39,6 +39,7 @@
 #include "base/scoped_multi_source_observation.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
@@ -107,6 +108,7 @@ const float kRippleLayerEndOpacity = 0.0f;
 constexpr base::TimeDelta kPulseEnlargeAnimationTime = base::Milliseconds(500);
 constexpr base::TimeDelta kPulseShrinkAnimationTime = base::Milliseconds(1350);
 constexpr base::TimeDelta kRippleAnimationTime = base::Milliseconds(2000);
+constexpr base::TimeDelta kPulseAnimationCoolDownTime = base::Seconds(5);
 
 // Number of active requests to disable CloseBubble().
 int g_disable_close_bubble_on_window_activated = 0;
@@ -349,10 +351,8 @@ void TrayBackgroundView::SetVisiblePreferred(bool visible_preferred) {
   for (auto& observer : observers_) {
     observer.OnVisiblePreferredChanged(visible_preferred_);
   }
-  base::UmaHistogramEnumeration(
-      visible_preferred_ ? "Ash.StatusArea.TrayBackgroundView.Shown"
-                         : "Ash.StatusArea.TrayBackgroundView.Hidden",
-      catalog_name_);
+
+  TrackVisibilityUMA(visible_preferred);
 
   // Calling `StartVisibilityAnimation(GetEffectiveVisibility())` doesn't work
   // for the case of a collapsed status area (see b/265165818). Passing
@@ -679,6 +679,7 @@ void TrayBackgroundView::UpdateBackground() {
   layer()->SetIsFastRoundedCorner(true);
   layer()->SetBackgroundBlur(
       ShelfConfig::Get()->GetShelfControlButtonBlurRadius());
+  layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
   layer()->SetClipRect(GetBackgroundBounds());
 
   const views::Widget* widget = GetWidget();
@@ -1007,77 +1008,25 @@ void TrayBackgroundView::StartPulseAnimation() {
   // Stop any ongoing pulse animation before starting new a new one.
   StopPulseAnimation();
 
-  using ConstantTransform = ui::InterpolatedConstantTransform;
-  using MatrixTransform = ui::InterpolatedMatrixTransform;
-
   AddRippleLayer();
 
-  const gfx::Rect background_bounds = GetBackgroundBounds();
-  // |ripple_layer_| is at the same hierarchy of TrayBackgroundView so we need
-  // to calculate the origin point using offset from both the tray and tray's
-  // actual content.
-  gfx::Rect ripple_layer_bound(
-      gfx::PointAtOffsetFromOrigin(bounds().OffsetFromOrigin() +
-                                   background_bounds.OffsetFromOrigin()),
-      background_bounds.size());
-  const gfx::RoundedCornersF rounded_corners = GetRoundedCorners();
-
-  ripple_layer_->SetBounds(ripple_layer_bound);
-  ripple_layer_->SetRoundedCornerRadius(rounded_corners);
-
-  const gfx::Transform ripple_normal_transform = GetScaledTransform(
-      gfx::RectF(gfx::SizeF(ripple_layer_->size())).CenterPoint(),
-      kNormalScaleFactor);
-
-  const gfx::Transform ripple_scale_up_transform = GetScaledTransform(
-      gfx::RectF(gfx::SizeF(ripple_layer_->size())).CenterPoint(),
-      kRippleScaleUpFactor);
-
-  const gfx::Transform button_normal_transform = GetScaledTransform(
-      gfx::RectF(GetLocalBounds()).CenterPoint(), kNormalScaleFactor);
-
-  const gfx::Transform button_scale_up_transform = GetScaledTransform(
-      gfx::RectF(GetLocalBounds()).CenterPoint(), kPulseScaleUpFactor);
-
-  views::AnimationBuilder builder;
-  ripple_and_pulse_animation_abort_handle_ = builder.GetAbortHandle();
-  builder.Repeatedly()
-      .At(base::TimeDelta())
-      .SetOpacity(ripple_layer_.get(), kRippleLayerStartingOpacity)
-      .SetInterpolatedTransform(
-          ripple_layer_.get(),
-          std::make_unique<ConstantTransform>(ripple_normal_transform))
-      .Then()
-      .SetDuration(kRippleAnimationTime)
-      .SetInterpolatedTransform(
-          ripple_layer_.get(),
-          std::make_unique<MatrixTransform>(ripple_normal_transform,
-                                            ripple_scale_up_transform),
-          gfx::Tween::ACCEL_0_40_DECEL_100)
-      .SetOpacity(ripple_layer_.get(), kRippleLayerEndOpacity,
-                  gfx::Tween::ACCEL_0_80_DECEL_80)
-      .Offset(base::TimeDelta())
-      .SetDuration(kPulseEnlargeAnimationTime)
-      .SetInterpolatedTransform(
-          /*target=*/this,
-          std::make_unique<MatrixTransform>(button_normal_transform,
-                                            button_scale_up_transform),
-          gfx::Tween::ACCEL_40_DECEL_20)
-      .Then()
-      .SetDuration(kPulseShrinkAnimationTime)
-      .SetInterpolatedTransform(
-          /*target=*/this,
-          std::make_unique<MatrixTransform>(button_scale_up_transform,
-                                            button_normal_transform),
-          gfx::Tween::ACCEL_20_DECEL_100);
+  PlayPulseAnimation();
 }
 
 void TrayBackgroundView::StopPulseAnimation() {
+  pulse_animation_cool_down_timer_.Stop();
   ripple_and_pulse_animation_abort_handle_.reset();
   const gfx::Transform normal_transform = GetScaledTransform(
       gfx::RectF(GetLocalBounds()).CenterPoint(), kNormalScaleFactor);
   layer()->SetTransform(normal_transform);
   RemoveRippleLayer();
+}
+
+void TrayBackgroundView::TrackVisibilityUMA(bool visible_preferred) const {
+  base::UmaHistogramEnumeration(
+      visible_preferred ? "Ash.StatusArea.TrayBackgroundView.Shown"
+                        : "Ash.StatusArea.TrayBackgroundView.Hidden",
+      catalog_name_);
 }
 
 views::PaintInfo::ScaleType TrayBackgroundView::GetPaintScaleType() const {
@@ -1172,10 +1121,89 @@ void TrayBackgroundView::AddRippleLayer() {
 }
 
 void TrayBackgroundView::RemoveRippleLayer() {
+  CHECK(!pulse_animation_cool_down_timer_.IsRunning());
   if (ripple_layer_) {
     layer()->parent()->Remove(ripple_layer_.get());
     ripple_layer_.reset();
   }
+}
+
+void TrayBackgroundView::PlayPulseAnimation() {
+  // `ripple_layer_` must exist when calling `PlayPulseAnimation()`.
+  CHECK(ripple_layer_);
+
+  using ConstantTransform = ui::InterpolatedConstantTransform;
+  using MatrixTransform = ui::InterpolatedMatrixTransform;
+
+  const gfx::Rect background_bounds = GetBackgroundBounds();
+  // `ripple_layer_` is at the same hierarchy of TrayBackgroundView so we need
+  // to calculate the origin point using offset from both the tray and tray's
+  // actual content.
+  gfx::Rect ripple_layer_bound(
+      gfx::PointAtOffsetFromOrigin(bounds().OffsetFromOrigin() +
+                                   background_bounds.OffsetFromOrigin()),
+      background_bounds.size());
+  const gfx::RoundedCornersF rounded_corners = GetRoundedCorners();
+
+  ripple_layer_->SetBounds(ripple_layer_bound);
+  ripple_layer_->SetRoundedCornerRadius(rounded_corners);
+
+  const gfx::Transform ripple_normal_transform = GetScaledTransform(
+      gfx::RectF(gfx::SizeF(ripple_layer_->size())).CenterPoint(),
+      kNormalScaleFactor);
+
+  const gfx::Transform ripple_scale_up_transform = GetScaledTransform(
+      gfx::RectF(gfx::SizeF(ripple_layer_->size())).CenterPoint(),
+      kRippleScaleUpFactor);
+
+  const gfx::Transform button_normal_transform = GetScaledTransform(
+      gfx::RectF(GetLocalBounds()).CenterPoint(), kNormalScaleFactor);
+
+  const gfx::Transform button_scale_up_transform = GetScaledTransform(
+      gfx::RectF(GetLocalBounds()).CenterPoint(), kPulseScaleUpFactor);
+
+  views::AnimationBuilder builder;
+  ripple_and_pulse_animation_abort_handle_ = builder.GetAbortHandle();
+  builder
+      .OnEnded(
+          base::BindOnce(&TrayBackgroundView::StartPulseAnimationCoolDownTimer,
+                         base::Unretained(this)))
+      .Once()
+      .At(base::TimeDelta())
+      .SetOpacity(ripple_layer_.get(), kRippleLayerStartingOpacity)
+      .SetInterpolatedTransform(
+          ripple_layer_.get(),
+          std::make_unique<ConstantTransform>(ripple_normal_transform))
+      .Then()
+      .SetDuration(kRippleAnimationTime)
+      .SetInterpolatedTransform(
+          ripple_layer_.get(),
+          std::make_unique<MatrixTransform>(ripple_normal_transform,
+                                            ripple_scale_up_transform),
+          gfx::Tween::ACCEL_0_40_DECEL_100)
+      .SetOpacity(ripple_layer_.get(), kRippleLayerEndOpacity,
+                  gfx::Tween::ACCEL_0_80_DECEL_80)
+      .Offset(base::TimeDelta())
+      .SetDuration(kPulseEnlargeAnimationTime)
+      .SetInterpolatedTransform(
+          /*target=*/this,
+          std::make_unique<MatrixTransform>(button_normal_transform,
+                                            button_scale_up_transform),
+          gfx::Tween::ACCEL_40_DECEL_20)
+      .Then()
+      .SetDuration(kPulseShrinkAnimationTime)
+      .SetInterpolatedTransform(
+          /*target=*/this,
+          std::make_unique<MatrixTransform>(button_scale_up_transform,
+                                            button_normal_transform),
+          gfx::Tween::ACCEL_20_DECEL_100);
+}
+
+void TrayBackgroundView::StartPulseAnimationCoolDownTimer() {
+  pulse_animation_cool_down_timer_.Start(
+      FROM_HERE, kPulseAnimationCoolDownTime,
+      base::BindOnce(&TrayBackgroundView::PlayPulseAnimation,
+                     base::Unretained(this)));
 }
 
 BEGIN_METADATA(TrayBackgroundView, ActionableView)

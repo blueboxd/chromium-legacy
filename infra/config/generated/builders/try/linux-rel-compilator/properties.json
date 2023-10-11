@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "GPU Linux Builder",
-              "project": "chromium-m117"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-archive",
@@ -33,7 +33,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Linux Builder",
-              "project": "chromium-m117"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-linux-archive",
@@ -59,7 +59,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Linux Release (NVIDIA)",
-              "project": "chromium-m117"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-archive",
@@ -82,7 +82,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "GPU Linux Builder",
-                "project": "chromium-m117"
+                "project": "chromium"
               }
             }
           },
@@ -90,7 +90,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Linux Tests",
-              "project": "chromium-m117"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-linux-archive",
@@ -113,7 +113,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Linux Builder",
-                "project": "chromium-m117"
+                "project": "chromium"
               }
             }
           }
@@ -123,26 +123,29 @@
         {
           "bucket": "ci",
           "builder": "GPU Linux Builder",
-          "project": "chromium-m117"
+          "project": "chromium"
         },
         {
           "bucket": "ci",
           "builder": "Linux Builder",
-          "project": "chromium-m117"
+          "project": "chromium"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "Linux Release (NVIDIA)",
-          "project": "chromium-m117"
+          "project": "chromium"
         },
         {
           "bucket": "ci",
           "builder": "Linux Tests",
-          "project": "chromium-m117"
+          "project": "chromium"
         }
-      ]
+      ],
+      "rts_config": {
+        "condition": "QUICK_RUN_ONLY"
+      }
     }
   },
   "$build/code_coverage": {
@@ -153,6 +156,7 @@
     "use_clang_coverage": true
   },
   "$build/flakiness": {
+    "check_for_flakiness": true,
     "check_for_flakiness_with_resultdb": true
   },
   "$build/reclient": {

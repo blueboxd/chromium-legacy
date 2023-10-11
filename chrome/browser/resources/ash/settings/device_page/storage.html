@@ -123,7 +123,7 @@
         <div class="message-title">$i18n{storageSpaceLowMessageTitle}</div>
         <div class="message-description">
           <span>$i18n{storageSpaceLowMessageLine1}</span>
-          <span>$i18n{storageSpaceLowMessageLine2}</span>
+          <span>&nbsp;$i18n{storageSpaceLowMessageLine2}</span>
         </div>
       </div>
     </div>
@@ -139,7 +139,7 @@
         </div>
         <div class="message-description">
           <span>$i18n{storageSpaceCriticallyLowMessageLine1}</span>
-          <span>$i18n{storageSpaceCriticallyLowMessageLine2}</span>
+          <span>&nbsp;$i18n{storageSpaceCriticallyLowMessageLine2}</span>
         </div>
       </div>
     </div>
@@ -185,8 +185,9 @@
     sub-label="$i18n{storageSizeComputing}"
     external>
 </cr-link-row>
-<template is="dom-if" if="[[showDriveOfflineStorage_]]">
-  <cr-link-row id="driveOfflineSize" class="hr" on-click="onDriveOfflineClick_"
+<template is="dom-if" if="[[shouldShowOfflineFilesRow_(isDriveEnabled_, isDriveFsBulkPinningEnabled_, showGoogleDriveSettingsPage_)]]">
+  <cr-link-row id="driveOfflineSize" class="hr"
+      on-click="onDriveOfflineClick_"
       label="$i18n{storageItemOffline}"
       sub-label="$i18n{storageSizeComputing}"
       role-description="$i18n{subpageArrowRoleDescription}">

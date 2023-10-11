@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Benarkan laman menyimpan data pada peranti anda</translation>
 <translation id="1383876407941801731">Carian</translation>
 <translation id="1384959399684842514">Muat turun dijeda</translation>
-<translation id="1409426117486808224">Paparan ringkas bagi tab terbuka</translation>
 <translation id="1415402041810619267">URL terpangkas</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1446450296470737166">Benarkan kawalan penuh peranti MIDI</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Dibenarkan, kecuali pihak ketiga</translation>
 <translation id="1989112275319619282">Semak Imbas</translation>
 <translation id="1994173015038366702">URL tapak</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Tamat tempoh dalam masa 1 hari}other{Tamat tempoh dalam masa # hari}}</translation>
 <translation id="2004697686368036666">Ciri pada sesetengah laman mungkin tidak berfungsi</translation>
 <translation id="2025115093177348061">Realiti tambahan</translation>
 <translation id="2030769033451695672">Ketik untuk kembali kepada <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Tajuk</translation>
 <translation id="4008040567710660924">Benarkan kuki untuk tapak tertentu.</translation>
 <translation id="4046123991198612571">Lagu seterusnya</translation>
+<translation id="4053720452172726777">Sesuaikan dan kawal Google Chrome</translation>
 <translation id="4149994727733219643">Paparan ringkas bagi halaman web</translation>
 <translation id="4151930093518524179">Zum lalai</translation>
 <translation id="4165986682804962316">Tetapan tapak</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Laman tidak boleh menggunakan kuki anda untuk melihat aktiviti penyemakan imbas anda merentas beberapa laman yang berlainan, contohnya, untuk memeribadikan iklan. Ciri pada sesetengah laman mungkin tidak berfungsi.</translation>
 <translation id="5553374991681107062">Terbaharu</translation>
 <translation id="5556459405103347317">Muat Semula</translation>
-<translation id="5596627076506792578">Lagi pilihan</translation>
 <translation id="5649053991847567735">Muat turun automatik</translation>
 <translation id="5668404140385795438">Mengatasi permintaan laman web untuk menghalang zum masuk</translation>
 <translation id="5677928146339483299">Disekat</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Dimatikan dalam tetapan Android</translation>
 <translation id="7016516562562142042">Dibenarkan untuk enjin carian semasa</translation>
 <translation id="702275896380648118">Laman ini menentukan perkara yang anda sukai dan kemudian mencadangkan iklan kepada laman lain. Laman ini juga mendapat topik iklan anda daripada Chrome untuk memaparkan iklan yang lebih berkaitan kepada anda.</translation>
-<translation id="702463548815491781">Disyorkan apabila TalkBack atau Akses Suis dihidupkan</translation>
 <translation id="7053983685419859001">Sekat</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 dipilih}other{# dipilih}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> dipilih. Pilihan tersedia berhampiran bahagian atas skrin</translation>

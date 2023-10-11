@@ -113,8 +113,6 @@ component("gfx") {
     "image/image_util.h",
     "interpolated_transform.cc",
     "interpolated_transform.h",
-    "nine_image_painter.cc",
-    "nine_image_painter.h",
     "overlay_plane_data.cc",
     "overlay_plane_data.h",
     "overlay_transform_utils.cc",
@@ -206,6 +204,8 @@ component("gfx") {
       "system_fonts_win.h",
       "win/crash_id_helper.cc",
       "win/crash_id_helper.h",
+      "win/d3d_shared_fence.cc",
+      "win/d3d_shared_fence.h",
       "win/direct_write.cc",
       "win/direct_write.h",
       "win/hwnd_util.cc",
@@ -421,8 +421,8 @@ component("gfx") {
     ]
   }
 
-  if ((!use_aura && !toolkit_views) || is_ios) {
-    sources -= [
+  if (use_aura || toolkit_views) {
+    sources += [
       "nine_image_painter.cc",
       "nine_image_painter.h",
     ]
@@ -637,6 +637,7 @@ source_set("memory_buffer_sources") {
       "linux/client_native_pixmap_dmabuf.h",
       "linux/client_native_pixmap_factory_dmabuf.cc",
       "linux/client_native_pixmap_factory_dmabuf.h",
+      "linux/dmabuf_uapi.h",
       "linux/native_pixmap_dmabuf.cc",
       "linux/native_pixmap_dmabuf.h",
     ]
@@ -797,7 +798,7 @@ test("gfx_unittests") {
 
   data = [ "test/data/" ]
 
-  if (!is_ios) {
+  if (use_blink) {
     sources += [
       "animation/animation_container_unittest.cc",
       "animation/animation_runner_unittest.cc",
@@ -805,6 +806,7 @@ test("gfx_unittests") {
       "animation/multi_animation_unittest.cc",
       "animation/slide_animation_unittest.cc",
       "animation/tween_unittest.cc",
+      "bidi_line_iterator_unittest.cc",
       "blit_unittest.cc",
       "break_list_unittest.cc",
       "canvas_unittest.cc",
@@ -847,10 +849,10 @@ test("gfx_unittests") {
       "image/image_skia_operations_unittest.cc",
       "image/image_util_unittest.cc",
       "mojom/mojom_traits_unittest.cc",
-      "nine_image_painter_unittest.cc",
       "overlay_transform_utils_unittest.cc",
       "paint_vector_icon_unittest.cc",
       "range/range_unittest.cc",
+      "render_text_unittest.cc",
       "selection_bound_unittest.cc",
       "selection_model_unittest.cc",
       "sequential_id_generator_unittest.cc",
@@ -890,11 +892,6 @@ test("gfx_unittests") {
   ]
 
   if (use_blink) {
-    sources += [
-      "bidi_line_iterator_unittest.cc",
-      "render_text_unittest.cc",
-    ]
-
     deps += [ "//third_party:freetype_harfbuzz" ]
   }
 
@@ -912,8 +909,8 @@ test("gfx_unittests") {
     sources += [ "font_fallback_skia_unittest.cc" ]
   }
 
-  if (!use_aura && !is_ios) {
-    sources -= [ "nine_image_painter_unittest.cc" ]
+  if (use_aura || toolkit_views) {
+    sources += [ "nine_image_painter_unittest.cc" ]
   }
 
   if (is_win) {

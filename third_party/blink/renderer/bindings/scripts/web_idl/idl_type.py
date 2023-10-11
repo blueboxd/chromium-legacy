@@ -232,7 +232,7 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
 
         In case of x.apply_to_all_composing_elements(callback), |callback| will
         be recursively called back on x, x.inner_type, x.element_type,
-        x.result_type.original_type, etc. if any.
+        x.result_type, x.original_type, etc. if any.
 
         If |callback| raises a StopIteration, then this function stops
         traversing deeper than this type (inner type, etc.), however, siblings
@@ -422,6 +422,11 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
     @property
     def is_callback_function(self):
         """Returns True if this is a callback function type."""
+        return False
+
+    @property
+    def is_async_iterator(self):
+        """Returns True if this is an asynchronous iterator type."""
         return False
 
     @property
@@ -852,6 +857,10 @@ class DefinitionType(IdlType, WithIdentifier):
     @property
     def is_callback_function(self):
         return self.type_definition_object.is_callback_function
+
+    @property
+    def is_async_iterator(self):
+        return self.type_definition_object.is_async_iterator
 
     @property
     def is_sync_iterator(self):

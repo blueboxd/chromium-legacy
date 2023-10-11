@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
-#include "chrome/browser/ui/signin_view_controller.h"
+#include "chrome/browser/ui/signin/signin_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "components/paint_preview/buildflags/buildflags.h"
@@ -63,6 +63,7 @@ class BrowserWindow;
 class ExclusiveAccessManager;
 class FindBarController;
 class LocationBarModel;
+class OverscrollPrefManager;
 class Profile;
 class ScopedKeepAlive;
 class ScopedProfileKeepAlive;
@@ -319,6 +320,10 @@ class Browser : public TabStripModelObserver,
     // maximizable.
     bool can_maximize = true;
 
+    // Only applied when not in forced app mode. True if the browser can enter
+    // fullscreen.
+    bool can_fullscreen = true;
+
     // Document Picture in Picture options, specific to TYPE_PICTURE_IN_PICTURE.
     absl::optional<blink::mojom::PictureInPictureWindowOptions> pip_options;
 
@@ -499,9 +504,7 @@ class Browser : public TabStripModelObserver,
   std::u16string GetWindowTitleForCurrentTab(bool include_app_name) const;
 
   // Gets the window title of the tab at |index|.
-  // Disables additional formatting when |include_app_name| is false or if the
-  // window is an app window.
-  std::u16string GetWindowTitleForTab(bool include_app_name, int index) const;
+  std::u16string GetWindowTitleForTab(int index) const;
 
   // Gets the window title for the current tab, to display in a menu. If the
   // title is too long to fit in the required space, the tab title will be
@@ -1359,6 +1362,10 @@ class Browser : public TabStripModelObserver,
   // If true, the Browser window has been closed and this will be deleted
   // shortly (after a PostTask).
   bool is_delete_scheduled_ = false;
+
+#if defined(USE_AURA)
+  std::unique_ptr<OverscrollPrefManager> overscroll_pref_manager_;
+#endif
 
   // The following factory is used for chrome update coalescing.
   base::WeakPtrFactory<Browser> chrome_updater_factory_{this};

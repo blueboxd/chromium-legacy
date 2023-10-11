@@ -38,9 +38,9 @@ void LayoutSVGViewportContainer::UpdateLayout() {
   DCHECK(NeedsLayout());
 
   const auto* svg = To<SVGSVGElement>(GetElement());
-  is_layout_size_changed_ = SelfNeedsLayout() && svg->HasRelativeLengths();
+  is_layout_size_changed_ = SelfNeedsFullLayout() && svg->HasRelativeLengths();
 
-  if (SelfNeedsLayout()) {
+  if (SelfNeedsFullLayout()) {
     SVGLengthContext length_context(svg);
     gfx::RectF old_viewport = viewport_;
     viewport_.SetRect(svg->x()->CurrentValue()->Value(length_context),
@@ -66,6 +66,10 @@ SVGTransformChange LayoutSVGViewportContainer::UpdateLocalTransform(
       AffineTransform::Translation(viewport_.x(), viewport_.y()) *
       svg->ViewBoxToViewTransform(viewport_.size());
   return change_detector.ComputeChange(local_to_parent_transform_);
+}
+
+gfx::RectF LayoutSVGViewportContainer::ViewBoxRect() const {
+  return To<SVGSVGElement>(*GetElement()).CurrentViewBoxRect();
 }
 
 bool LayoutSVGViewportContainer::NodeAtPoint(

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -124,6 +125,8 @@ class AuthenticatorDialogViewTest : public DialogBrowserTest {
       // "Manage devices" button to be shown.
       device::FidoRequestHandlerBase::TransportAvailabilityInfo
           transport_availability;
+      transport_availability.request_type =
+          device::FidoRequestType::kGetAssertion;
       transport_availability.available_transports = {
           AuthenticatorTransport::kUsbHumanInterfaceDevice,
           AuthenticatorTransport::kHybrid};

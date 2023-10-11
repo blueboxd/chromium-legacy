@@ -17,8 +17,6 @@
 namespace ash {
 namespace {
 
-constexpr char kTypeSLAAC[] = "slaac";
-
 bool IpTypeMatchesIpConfigMethod(const std::string& type,
                                  const std::string& method) {
   if (type == method) {
@@ -28,7 +26,7 @@ bool IpTypeMatchesIpConfigMethod(const std::string& type,
     return method == shill::kTypeDHCP;
   }
   return type == shill::kTypeIPv6 &&
-         (method == shill::kTypeDHCP6 || method == kTypeSLAAC);
+         (method == shill::kTypeDHCP6 || method == shill::kTypeSLAAC);
 }
 
 }  // namespace

@@ -23,6 +23,7 @@
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
+#include "ash/style/tab_slider_button.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "base/containers/flat_map.h"
@@ -50,11 +51,11 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(
 
 // The focusable items for the FocusGroup::kSelection group.
 constexpr std::array<FineTunePosition, 9> kSelectionTabbingOrder = {
-    FineTunePosition::kCenter,       FineTunePosition::kTopLeft,
-    FineTunePosition::kTopCenter,    FineTunePosition::kTopRight,
-    FineTunePosition::kRightCenter,  FineTunePosition::kBottomRight,
-    FineTunePosition::kBottomCenter, FineTunePosition::kBottomLeft,
-    FineTunePosition::kLeftCenter};
+    FineTunePosition::kCenter,     FineTunePosition::kTopLeftVertex,
+    FineTunePosition::kTopEdge,    FineTunePosition::kTopRightVertex,
+    FineTunePosition::kRightEdge,  FineTunePosition::kBottomRightVertex,
+    FineTunePosition::kBottomEdge, FineTunePosition::kBottomLeftVertex,
+    FineTunePosition::kLeftEdge};
 
 // We inset the `window_of_interest` by `kWindowOfInterestInset` and outset any
 // other window by `kIntersectingWindowOutset` we intersect with it, so that the
@@ -928,7 +929,7 @@ aura::Window* CaptureModeSessionFocusCycler::GetA11yOverrideWindow() const {
     case FocusGroup::kCaptureWindow:
     case FocusGroup::kSettingsClose:
     case FocusGroup::kPendingSettings:
-      return session_->capture_mode_bar_widget()->GetNativeWindow();
+      return session_->GetCaptureModeBarWidget()->GetNativeWindow();
     case FocusGroup::kCameraPreview:
       return GetCameraPreviewWidget()->GetNativeWindow();
     case FocusGroup::kRecordingTypeMenu:

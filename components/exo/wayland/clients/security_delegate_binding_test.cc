@@ -30,12 +30,12 @@ class SecurityDelegateBindingTest : public test::WaylandServerTest {
   void SetUp() override {
     WaylandServerTest::SetUp();
     server_security_delegate_ =
-        GetSecurityDelegate(server_->GetWaylandDisplayForTesting());
+        GetSecurityDelegate(server_->GetWaylandDisplay());
     ASSERT_NE(server_security_delegate_, nullptr);
   }
 
-  raw_ptr<SecurityDelegate, ExperimentalAsh> server_security_delegate_ =
-      nullptr;
+  raw_ptr<SecurityDelegate, DanglingUntriaged | ExperimentalAsh>
+      server_security_delegate_ = nullptr;
 };
 
 TEST_F(SecurityDelegateBindingTest, ShellSurfaceHasSecurityDelegate) {

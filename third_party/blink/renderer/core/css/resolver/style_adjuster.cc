@@ -157,8 +157,6 @@ bool ElementForcesStackingContext(Element* element) {
 static EDisplay EquivalentBlockDisplay(EDisplay display) {
   switch (display) {
     case EDisplay::kFlowRootListItem:
-      DCHECK(RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled());
-      [[fallthrough]];
     case EDisplay::kBlock:
     case EDisplay::kTable:
     case EDisplay::kWebkitBox:
@@ -182,10 +180,8 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
     case EDisplay::kInlineLayoutCustom:
       return EDisplay::kLayoutCustom;
     case EDisplay::kInlineListItem:
-      DCHECK(RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled());
       return EDisplay::kListItem;
     case EDisplay::kInlineFlowRootListItem:
-      DCHECK(RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled());
       return EDisplay::kFlowRootListItem;
 
     case EDisplay::kContents:
@@ -276,10 +272,8 @@ void StyleAdjuster::AdjustStyleForTextCombine(ComputedStyleBuilder& builder) {
   const auto line_height = builder.FontHeight();
   const auto size =
       LengthSize(Length::Fixed(line_height), Length::Fixed(one_em));
-  builder.SetContainIntrinsicWidth(
-      StyleIntrinsicLength(false, size.Width().Value()));
-  builder.SetContainIntrinsicHeight(
-      StyleIntrinsicLength(false, size.Height().Value()));
+  builder.SetContainIntrinsicWidth(StyleIntrinsicLength(false, size.Width()));
+  builder.SetContainIntrinsicHeight(StyleIntrinsicLength(false, size.Height()));
   builder.SetHeight(size.Height());
   builder.SetLineHeight(size.Height());
   builder.SetMaxHeight(size.Height());
@@ -308,7 +302,7 @@ void StyleAdjuster::AdjustStyleForCombinedText(ComputedStyleBuilder& builder) {
 #if DCHECK_IS_ON()
   DCHECK_EQ(builder.GetFont().GetFontDescription().Orientation(),
             FontOrientation::kHorizontal);
-  scoped_refptr<const ComputedStyle> cloned_style = builder.CloneStyle();
+  const ComputedStyle* cloned_style = builder.CloneStyle();
   LayoutNGTextCombine::AssertStyleIsValid(*cloned_style);
 #endif
 }
@@ -899,7 +893,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // it to have a backdrop filter either.
     if (is_document_element && is_in_main_frame &&
         builder.HasBackdropFilter()) {
-      builder.MutableBackdropFilter().clear();
+      builder.SetBackdropFilter(FilterOperations());
     }
   } else {
     AdjustStyleForFirstLetter(builder);

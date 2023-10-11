@@ -14,6 +14,8 @@
   [RuntimeEnabled=RTCEncodedAudioFrameClone, RaisesException]
   RTCEncodedAudioFrame clone();
     stringifier;
-  [RuntimeEnabled=RTCEncodedAudioFrameAbsCaptureTime, RaisesException] void
+  [RuntimeEnabled=RTCEncodedFrameSetMetadata, Measure, RaisesException] void
   setTimestamp(unsigned long timestamp);
+  [RuntimeEnabled=RTCEncodedFrameSetMetadata, Measure, RaisesException]
+  void setMetadata(RTCEncodedAudioFrameMetadata metadata);
 };

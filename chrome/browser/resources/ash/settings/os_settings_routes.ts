@@ -205,6 +205,7 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   POWER: Route;
   PRIVACY: Route;
   PRIVACY_HUB: Route;
+  PRIVACY_HUB_MICROPHONE: Route;
   SEARCH: Route;
   SEARCH_SUBPAGE: Route;
   SMART_PRIVACY: Route;
@@ -390,15 +391,6 @@ export function createRoutes(): OsSettingsRoutes {
         Section.kPersonalization);
   }
 
-  // Search and Assistant section.
-  r.OS_SEARCH = createSection(
-      r.BASIC, routesMojom.SEARCH_AND_ASSISTANT_SECTION_PATH,
-      Section.kSearchAndAssistant);
-  r.GOOGLE_ASSISTANT = createSubpage(
-      r.OS_SEARCH, routesMojom.ASSISTANT_SUBPAGE_PATH, Subpage.kAssistant);
-  r.SEARCH_SUBPAGE = createSubpage(
-      r.OS_SEARCH, routesMojom.SEARCH_SUBPAGE_PATH, Subpage.kSearch);
-
   // Apps section.
   r.APPS = createSection(r.BASIC, routesMojom.APPS_SECTION_PATH, Section.kApps);
   r.APP_NOTIFICATIONS = createSubpage(
@@ -518,12 +510,6 @@ export function createRoutes(): OsSettingsRoutes {
         Subpage.kBruschettaManageSharedFolders);
   }
 
-  // Date and Time section.
-  r.DATETIME = createSection(
-      r.ADVANCED, routesMojom.DATE_AND_TIME_SECTION_PATH, Section.kDateAndTime);
-  r.DATETIME_TIMEZONE_SUBPAGE = createSubpage(
-      r.DATETIME, routesMojom.TIME_ZONE_SUBPAGE_PATH, Subpage.kTimeZone);
-
   // Privacy and Security section.
   r.OS_PRIVACY = createSection(
       r.BASIC, routesMojom.PRIVACY_AND_SECURITY_SECTION_PATH,
@@ -542,35 +528,16 @@ export function createRoutes(): OsSettingsRoutes {
       Subpage.kSmartPrivacy);
   r.PRIVACY_HUB = createSubpage(
       r.OS_PRIVACY, routesMojom.PRIVACY_HUB_SUBPAGE_PATH, Subpage.kPrivacyHub);
-
-  // Languages and Input section.
-  r.OS_LANGUAGES = createSection(
-      r.ADVANCED, routesMojom.LANGUAGES_AND_INPUT_SECTION_PATH,
-      Section.kLanguagesAndInput);
-  r.OS_LANGUAGES_LANGUAGES = createSubpage(
-      r.OS_LANGUAGES, routesMojom.LANGUAGES_SUBPAGE_PATH, Subpage.kLanguages);
-  r.OS_LANGUAGES_INPUT = createSubpage(
-      r.OS_LANGUAGES, routesMojom.INPUT_SUBPAGE_PATH, Subpage.kInput);
-  r.OS_LANGUAGES_INPUT_METHOD_OPTIONS = createSubpage(
-      r.OS_LANGUAGES_INPUT, routesMojom.INPUT_METHOD_OPTIONS_SUBPAGE_PATH,
-      Subpage.kInputMethodOptions);
-  r.OS_LANGUAGES_EDIT_DICTIONARY = createSubpage(
-      r.OS_LANGUAGES_INPUT, routesMojom.EDIT_DICTIONARY_SUBPAGE_PATH,
-      Subpage.kEditDictionary);
-  r.OS_LANGUAGES_JAPANESE_MANAGE_USER_DICTIONARY = createSubpage(
-      r.OS_LANGUAGES_INPUT,
-      routesMojom.JAPANESE_MANAGE_USER_DICTIONARY_SUBPAGE_PATH,
-      Subpage.kJapaneseManageUserDictionary);
-  r.OS_LANGUAGES_SMART_INPUTS = createSubpage(
-      r.OS_LANGUAGES, routesMojom.SMART_INPUTS_SUBPAGE_PATH,
-      Subpage.kSmartInputs);
-
+  r.PRIVACY_HUB_MICROPHONE = createSubpage(
+      r.OS_PRIVACY, routesMojom.PRIVACY_HUB_MICROPHONE_SUBPAGE_PATH,
+      Subpage.kPrivacyHubMicrophone);
 
   // Files section.
   if (!isGuest()) {
     r.FILES = createSection(
         r.ADVANCED, routesMojom.FILES_SECTION_PATH, Section.kFiles);
-    if (loadTimeData.getBoolean('enableDriveFsBulkPinning')) {
+    if (loadTimeData.getBoolean('showGoogleDriveSettingsPage') ||
+        loadTimeData.getBoolean('enableDriveFsBulkPinning')) {
       r.GOOGLE_DRIVE = createSubpage(
           r.FILES, routesMojom.GOOGLE_DRIVE_SUBPAGE_PATH, Subpage.kGoogleDrive);
     }
@@ -605,12 +572,82 @@ export function createRoutes(): OsSettingsRoutes {
     r.SYSTEM_PREFERENCES = createSection(
         r.BASIC, routesMojom.SYSTEM_PREFERENCES_SECTION_PATH,
         Section.kSystemPreferences);
+
+    // Date and Time subpages.
+    r.DATETIME_TIMEZONE_SUBPAGE = createSubpage(
+        r.SYSTEM_PREFERENCES, routesMojom.TIME_ZONE_SUBPAGE_PATH,
+        Subpage.kTimeZone);
+
+    // Languages and Input subpages.
+    r.OS_LANGUAGES_LANGUAGES = createSubpage(
+        r.SYSTEM_PREFERENCES, routesMojom.LANGUAGES_SUBPAGE_PATH,
+        Subpage.kLanguages);
+    r.OS_LANGUAGES_INPUT = createSubpage(
+        r.SYSTEM_PREFERENCES, routesMojom.INPUT_SUBPAGE_PATH, Subpage.kInput);
+    r.OS_LANGUAGES_INPUT_METHOD_OPTIONS = createSubpage(
+        r.OS_LANGUAGES_INPUT, routesMojom.INPUT_METHOD_OPTIONS_SUBPAGE_PATH,
+        Subpage.kInputMethodOptions);
+    r.OS_LANGUAGES_EDIT_DICTIONARY = createSubpage(
+        r.OS_LANGUAGES_INPUT, routesMojom.EDIT_DICTIONARY_SUBPAGE_PATH,
+        Subpage.kEditDictionary);
+    r.OS_LANGUAGES_JAPANESE_MANAGE_USER_DICTIONARY = createSubpage(
+        r.OS_LANGUAGES_INPUT,
+        routesMojom.JAPANESE_MANAGE_USER_DICTIONARY_SUBPAGE_PATH,
+        Subpage.kJapaneseManageUserDictionary);
+    r.OS_LANGUAGES_SMART_INPUTS = createSubpage(
+        r.SYSTEM_PREFERENCES, routesMojom.SMART_INPUTS_SUBPAGE_PATH,
+        Subpage.kSmartInputs);
+
+    // Search and Assistant subpages.
+    r.SEARCH_SUBPAGE = createSubpage(
+        r.SYSTEM_PREFERENCES, routesMojom.SEARCH_SUBPAGE_PATH, Subpage.kSearch);
+    r.GOOGLE_ASSISTANT = createSubpage(
+        r.SYSTEM_PREFERENCES, routesMojom.ASSISTANT_SUBPAGE_PATH,
+        Subpage.kAssistant);
   } else {
+    // Date and Time section.
+    r.DATETIME = createSection(
+        r.ADVANCED, routesMojom.DATE_AND_TIME_SECTION_PATH,
+        Section.kDateAndTime);
+    r.DATETIME_TIMEZONE_SUBPAGE = createSubpage(
+        r.DATETIME, routesMojom.TIME_ZONE_SUBPAGE_PATH, Subpage.kTimeZone);
+
+    // Languages and Input section.
+    r.OS_LANGUAGES = createSection(
+        r.ADVANCED, routesMojom.LANGUAGES_AND_INPUT_SECTION_PATH,
+        Section.kLanguagesAndInput);
+    r.OS_LANGUAGES_LANGUAGES = createSubpage(
+        r.OS_LANGUAGES, routesMojom.LANGUAGES_SUBPAGE_PATH, Subpage.kLanguages);
+    r.OS_LANGUAGES_INPUT = createSubpage(
+        r.OS_LANGUAGES, routesMojom.INPUT_SUBPAGE_PATH, Subpage.kInput);
+    r.OS_LANGUAGES_INPUT_METHOD_OPTIONS = createSubpage(
+        r.OS_LANGUAGES_INPUT, routesMojom.INPUT_METHOD_OPTIONS_SUBPAGE_PATH,
+        Subpage.kInputMethodOptions);
+    r.OS_LANGUAGES_EDIT_DICTIONARY = createSubpage(
+        r.OS_LANGUAGES_INPUT, routesMojom.EDIT_DICTIONARY_SUBPAGE_PATH,
+        Subpage.kEditDictionary);
+    r.OS_LANGUAGES_JAPANESE_MANAGE_USER_DICTIONARY = createSubpage(
+        r.OS_LANGUAGES_INPUT,
+        routesMojom.JAPANESE_MANAGE_USER_DICTIONARY_SUBPAGE_PATH,
+        Subpage.kJapaneseManageUserDictionary);
+    r.OS_LANGUAGES_SMART_INPUTS = createSubpage(
+        r.OS_LANGUAGES, routesMojom.SMART_INPUTS_SUBPAGE_PATH,
+        Subpage.kSmartInputs);
+
     // Reset section.
     if (isPowerwashAllowed()) {
       r.OS_RESET = createSection(
           r.ADVANCED, routesMojom.RESET_SECTION_PATH, Section.kReset);
     }
+
+    // Search and Assistant section.
+    r.OS_SEARCH = createSection(
+        r.BASIC, routesMojom.SEARCH_AND_ASSISTANT_SECTION_PATH,
+        Section.kSearchAndAssistant);
+    r.SEARCH_SUBPAGE = createSubpage(
+        r.OS_SEARCH, routesMojom.SEARCH_SUBPAGE_PATH, Subpage.kSearch);
+    r.GOOGLE_ASSISTANT = createSubpage(
+        r.OS_SEARCH, routesMojom.ASSISTANT_SUBPAGE_PATH, Subpage.kAssistant);
   }
 
   return r as OsSettingsRoutes;

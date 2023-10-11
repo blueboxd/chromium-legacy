@@ -29,7 +29,7 @@ namespace {
 // Represents the state of the accelerator modification in the prefs.
 // `kAdd` - User adds a custom accelerator ontop of the default accelerators.
 // `kRemove` - User removes a default accelerator.
-// Removing a user-added accelerator will result in a new action, rather it
+// Removing a user-added accelerator will not result in a new action, rather it
 // will remove the pref override entry with `kAdd`.
 enum class AcceleratorModificationAction {
   kAdd = 0,
@@ -173,6 +173,9 @@ class ASH_EXPORT AshAcceleratorConfiguration : public AcceleratorConfiguration,
   // Checks that the accelerators are in a valid state, if not reset back to
   // the default state and clear the override prefs.
   bool AreAcceleratorsValid();
+
+  // Resets all accelerator mappings to the the system default.
+  void ResetAllAccelerators();
 
   // A local copy of the pref overrides, allows modifying the overrides before
   // updating the override pref.

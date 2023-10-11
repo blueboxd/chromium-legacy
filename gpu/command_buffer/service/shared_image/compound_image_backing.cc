@@ -191,7 +191,7 @@ class WrappedSkiaGaneshCompoundImageRepresentation
       const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) final {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) final {
     compound_backing()->NotifyBeginAccess(SharedImageAccessStream::kSkia,
                                           AccessMode::kWrite);
     return wrapped_->BeginWriteAccess(final_msaa_count, surface_props,
@@ -201,7 +201,7 @@ class WrappedSkiaGaneshCompoundImageRepresentation
   std::vector<sk_sp<GrPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) final {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) final {
     compound_backing()->NotifyBeginAccess(SharedImageAccessStream::kSkia,
                                           AccessMode::kWrite);
     return wrapped_->BeginWriteAccess(begin_semaphores, end_semaphores,
@@ -212,7 +212,7 @@ class WrappedSkiaGaneshCompoundImageRepresentation
   std::vector<sk_sp<GrPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) final {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) final {
     compound_backing()->NotifyBeginAccess(SharedImageAccessStream::kSkia,
                                           AccessMode::kRead);
     return wrapped_->BeginReadAccess(begin_semaphores, end_semaphores,
@@ -433,7 +433,7 @@ std::unique_ptr<SharedImageBacking> CompoundImageBacking::CreateSharedMemory(
 
   const gfx::Size plane_size = GetPlaneSize(plane, size);
   const auto plane_format =
-      viz::GetSharedImageFormat(GetPlaneBufferFormat(plane, format));
+      viz::GetSinglePlaneSharedImageFormat(GetPlaneBufferFormat(plane, format));
 
   auto shm_backing = std::make_unique<SharedMemoryImageBacking>(
       mailbox, plane_format, plane_size, color_space, surface_origin,
@@ -480,7 +480,7 @@ std::unique_ptr<SharedImageBacking> CompoundImageBacking::CreateSharedMemory(
   return base::WrapUnique(new CompoundImageBacking(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
       std::move(debug_label), allow_shm_overlays, std::move(shm_backing),
-      gpu_backing_factory->GetWeakPtr()));
+      gpu_backing_factory->GetWeakPtr(), std::move(buffer_usage)));
 }
 
 CompoundImageBacking::CompoundImageBacking(
@@ -494,7 +494,8 @@ CompoundImageBacking::CompoundImageBacking(
     std::string debug_label,
     bool allow_shm_overlays,
     std::unique_ptr<SharedMemoryImageBacking> shm_backing,
-    base::WeakPtr<SharedImageBackingFactory> gpu_backing_factory)
+    base::WeakPtr<SharedImageBackingFactory> gpu_backing_factory,
+    absl::optional<gfx::BufferUsage> buffer_usage)
     : SharedImageBacking(mailbox,
                          format,
                          size,
@@ -503,7 +504,8 @@ CompoundImageBacking::CompoundImageBacking(
                          alpha_type,
                          usage,
                          shm_backing->GetEstimatedSize(),
-                         /*is_thread_safe=*/false) {
+                         /*is_thread_safe=*/false,
+                         std::move(buffer_usage)) {
   DCHECK(shm_backing);
   DCHECK_EQ(size, shm_backing->size());
   elements_[0].backing = std::move(shm_backing);
@@ -595,6 +597,12 @@ gfx::Rect CompoundImageBacking::ClearedRect() const {
 }
 
 void CompoundImageBacking::SetClearedRect(const gfx::Rect& cleared_rect) {}
+
+gfx::GpuMemoryBufferHandle CompoundImageBacking::GetGpuMemoryBufferHandle() {
+  auto& element = GetElement(SharedImageAccessStream::kMemory);
+  CHECK(element.backing);
+  return element.backing->GetGpuMemoryBufferHandle();
+}
 
 std::unique_ptr<DawnImageRepresentation> CompoundImageBacking::ProduceDawn(
     SharedImageManager* manager,

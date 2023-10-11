@@ -10,10 +10,10 @@
 #include <utility>
 
 #include "base/apple/bridging.h"
+#include "base/apple/foundation_util.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
-#include "base/mac/foundation_util.h"
 #include "base/pickle.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_util.h"
@@ -321,7 +321,7 @@ using content::DropData;
     }
 
     if (!mimeType.empty()) {
-      base::ScopedCFTypeRef<CFStringRef> mimeTypeCF(
+      base::apple::ScopedCFTypeRef<CFStringRef> mimeTypeCF(
           base::SysUTF8ToCFStringRef(mimeType));
       _fileUTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType,
                                                        mimeTypeCF, NULL);

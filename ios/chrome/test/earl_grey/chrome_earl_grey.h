@@ -293,6 +293,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // server.
 - (void)waitForSyncInvalidationFields;
 
+// Returns whether UserSelectableType::kHistory is among the selected types.
+- (BOOL)isSyncHistoryDataTypeSelected;
+
 #pragma mark - Tab Utilities (EG2)
 
 // Opens a new tab and waits for the new tab animation to complete within a
@@ -307,6 +310,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 // Closes the current tab and waits for the UI to complete.
 - (void)closeCurrentTab;
+
+// Pins the current tab and waits for the UI to complete.
+- (void)pinCurrentTab;
 
 // Opens a new incognito tab and waits for the new tab animation to complete.
 - (void)openNewIncognitoTab;
@@ -630,12 +636,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // `ForceRelaunchByKilling.
 - (void)clearAllWebStateBrowsingData:(AppLaunchConfiguration)config;
 
-#pragma mark - Bookmarks Utilities (EG2)
-
-// Clears bookmarks if any bookmark still presents. A GREYAssert is induced if
-// bookmarks can not be cleared.
-- (void)clearBookmarks;
-
 #pragma mark - URL Utilities (EG2)
 
 // Returns the title string to be used for a page with `URL` if that page
@@ -694,6 +694,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 // Returns YES if the SyncEnableHistoryDataType feature is enabled.
 - (BOOL)isSyncHistoryDataTypeEnabled [[nodiscard]];
+
+// Returns YES if the ReplaceSyncPromosWithSignInPromos feature is enabled.
+- (BOOL)isReplaceSyncWithSigninEnabled [[nodiscard]];
 
 // Returns YES if the `launchSwitch` is found in host app launch switches.
 - (BOOL)appHasLaunchSwitch:(const std::string&)launchSwitch;

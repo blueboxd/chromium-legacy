@@ -8,10 +8,10 @@
 
 #include <algorithm>
 
+#include "base/apple/foundation_util.h"
+#include "base/apple/osstatus_logging.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/check_op.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/mac_logging.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -564,7 +564,7 @@ std::tuple<UniChar, bool> NsKeyCodeAndModifiersToCharacter(
   UInt32 modifier_key_state = (unicode_modifiers >> 8) & 0xFF;
 
   UInt32 dead_key_state = 0;
-  base::ScopedCFTypeRef<TISInputSourceRef> input_source(
+  base::apple::ScopedCFTypeRef<TISInputSourceRef> input_source(
       TISCopyCurrentKeyboardLayoutInputSource());
   UniChar translated_char = TranslatedUnicodeCharFromKeyCode(
       input_source.get(), static_cast<UInt16>(key_code), kUCKeyActionDown,
@@ -948,7 +948,7 @@ UniChar TranslatedUnicodeCharFromKeyCode(TISInputSourceRef input_source,
   DCHECK(dead_key_state);
 
   CFDataRef layout_data =
-      base::mac::CFCast<CFDataRef>(TISGetInputSourceProperty(
+      base::apple::CFCast<CFDataRef>(TISGetInputSourceProperty(
           input_source, kTISPropertyUnicodeKeyLayoutData));
   if (!layout_data)
     return 0xFFFD;  // REPLACEMENT CHARACTER

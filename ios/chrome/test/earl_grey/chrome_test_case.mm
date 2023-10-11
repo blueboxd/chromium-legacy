@@ -13,6 +13,7 @@
 #import "base/command_line.h"
 #import "base/ios/ios_util.h"
 #import "base/path_service.h"
+#import "base/strings/string_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
@@ -69,8 +70,9 @@ NSArray* multitaskingTests() {
     // UI tests
     @"testActivityServiceControllerPrintAfterRedirectionToUnprintablePage",
     // ActivityServiceControllerTestCase
-    @"testDismissOnDestroy",           // AlertCoordinatorTestCase
-    @"testAddRemoveBookmark",          // BookmarksTestCase
+    @"testDismissOnDestroy",  // AlertCoordinatorTestCase
+    // TODO(crbug.com/1475206): Re-enable this test.
+    // @"testAddRemoveBookmark",       // BookmarksTestCase
     @"testJavaScriptInOmnibox",        // BrowserViewControllerTestCase
     @"testChooseCastReceiverChooser",  // CastReceiverTestCase
     @"testErrorPage",                  // ErrorPageTestCase
@@ -370,7 +372,7 @@ void ResetAuthentication() {
   NSMutableArray* flakyTestNames = [NSMutableArray array];
   for (unsigned int i = 0; i < count; i++) {
     SEL selector = method_getName(methods[i]);
-    if (std::string(sel_getName(selector)).find(kFlakyTestPrefix) == 0) {
+    if (base::StartsWith(sel_getName(selector), kFlakyTestPrefix)) {
       NSMethodSignature* methodSignature =
           [self instanceMethodSignatureForSelector:selector];
       NSInvocation* invocation =

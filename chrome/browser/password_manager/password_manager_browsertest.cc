@@ -30,6 +30,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/passwords_navigation_observer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -44,6 +45,7 @@
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/content/browser/test_autofill_client_injector.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom-test-utils.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -70,7 +72,6 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
@@ -82,6 +83,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -139,6 +141,20 @@ class PasswordManagerBrowserTest : public PasswordManagerBrowserTestBase {
   }
 
   ~PasswordManagerBrowserTest() override = default;
+};
+
+// A test fixture that injects an `ObservingAutofillClient` into newly created
+// tabs to allow waiting for an Autofill popup to open.
+class PasswordManagerAutofillPopupBrowserTest
+    : public PasswordManagerBrowserTest {
+ protected:
+  ObservingAutofillClient& autofill_client() {
+    return *autofill_client_injector_[WebContents()];
+  }
+
+ private:
+  autofill::TestAutofillClientInjector<ObservingAutofillClient>
+      autofill_client_injector_;
 };
 
 // This fixture enables communication to the Autofill crowdsourcing server, but
@@ -2017,7 +2033,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(PasswordManagerAutofillPopupBrowserTest,
                        InFrameNavigationDoesNotClearPopupState) {
   password_manager::PasswordStoreInterface* password_store =
       PasswordStoreFactory::GetForProfile(browser()->profile(),
@@ -2030,21 +2046,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   password_store->AddLogin(signin_form);
 
   NavigateToFile("/password/password_form.html");
-
-  // Mock out the AutofillClient so we know how long to wait. Unfortunately
-  // there isn't otherwise a good event to wait on to verify that the popup
-  // would have been shown.
-  password_manager::ContentPasswordManagerDriverFactory* driver_factory =
-      password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
-          WebContents());
-  ObservingAutofillClient::CreateForWebContents(WebContents());
-  ObservingAutofillClient* observing_autofill_client =
-      ObservingAutofillClient::FromWebContents(WebContents());
-  password_manager::ContentPasswordManagerDriver* driver =
-      driver_factory->GetDriverForFrame(WebContents()->GetPrimaryMainFrame());
-  driver->GetPasswordAutofillManager()->set_autofill_client_for_test(
-      observing_autofill_client);
-
   // Trigger in page navigation.
   std::string in_page_navigate = "location.hash = '#blah';";
   ASSERT_TRUE(content::ExecJs(RenderFrameHost(), in_page_navigate,
@@ -2053,8 +2054,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // Click on the username field to display the popup.
   content::SimulateMouseClickOrTapElementWithId(WebContents(),
                                                 "username_field");
-  // Make sure the popup would be shown.
-  observing_autofill_client->WaitForAutofillPopup();
+  // Make sure that the popup is showing.
+  autofill_client().WaitForAutofillPopup();
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ChangePwdFormBubbleShown) {
@@ -2350,18 +2351,19 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "'iframe').contentDocument.getElementById('username_field')"
       ".getBoundingClientRect();",
       content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-  int y = content::EvalJs(RenderFrameHost(),
-                          "usernameRect.top + usernameRect.bottom;",
-                          content::EXECUTE_SCRIPT_NO_USER_GESTURE)
-              .ExtractInt();
-  int x = content::EvalJs(RenderFrameHost(),
-                          "usernameRect.left + usernameRect.right;",
-                          content::EXECUTE_SCRIPT_NO_USER_GESTURE)
-              .ExtractInt();
+  int y =
+      content::EvalJs(RenderFrameHost(),
+                      "Math.floor(usernameRect.top + usernameRect.height / 2)",
+                      content::EXECUTE_SCRIPT_NO_USER_GESTURE)
+          .ExtractInt();
+  int x =
+      content::EvalJs(RenderFrameHost(),
+                      "Math.floor(usernameRect.left + usernameRect.width / 2)",
+                      content::EXECUTE_SCRIPT_NO_USER_GESTURE)
+          .ExtractInt();
 
-  content::SimulateMouseClickAt(WebContents(), 0,
-                                blink::WebMouseEvent::Button::kLeft,
-                                gfx::Point(x / 2, y / 2));
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(x, y));
   // Verify username and password have been autofilled
   WaitForElementValue("iframe", "username_field", "temp");
   WaitForElementValue("iframe", "password_field", "pa55w0rd");
@@ -3975,8 +3977,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_FALSE(chrome::FindBrowserWithWebContents(new_web_contents.get()));
 
   // Create ChromePasswordManagerClient for newly created web_contents.
-  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
-      new_web_contents.get(), /*autofill_client=*/nullptr);
+  autofill::ChromeAutofillClient::CreateForWebContents(new_web_contents.get());
+  ChromePasswordManagerClient::CreateForWebContents(new_web_contents.get());
 
   ChromePasswordManagerClient* client =
       ChromePasswordManagerClient::FromWebContents(new_web_contents.get());
@@ -4416,7 +4418,7 @@ class PasswordManagerPrerenderBrowserTest : public PasswordManagerBrowserTest {
   ~PasswordManagerPrerenderBrowserTest() override = default;
 
   void SetUp() override {
-    prerender_helper_.SetUp(embedded_test_server());
+    prerender_helper_.RegisterServerRequestMonitor(embedded_test_server());
     PasswordManagerBrowserTest::SetUp();
   }
 
@@ -4460,10 +4462,7 @@ class PasswordManagerPrerenderBrowserTest : public PasswordManagerBrowserTest {
     // logging.
     autofill::ChromeAutofillClient::CreateForWebContents(
         owned_web_contents.get());
-    ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
-        owned_web_contents.get(),
-        autofill::ContentAutofillClient::FromWebContents(
-            owned_web_contents.get()));
+    ChromePasswordManagerClient::CreateForWebContents(owned_web_contents.get());
     ASSERT_TRUE(
         ChromePasswordManagerClient::FromWebContents(owned_web_contents.get()));
     ManagePasswordsUIController::CreateForWebContents(owned_web_contents.get());

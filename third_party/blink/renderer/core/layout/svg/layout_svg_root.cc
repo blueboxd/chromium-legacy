@@ -84,7 +84,7 @@ void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
   if (!intrinsic_sizing_info.size.IsEmpty()) {
     intrinsic_sizing_info.aspect_ratio = intrinsic_sizing_info.size;
   } else {
-    gfx::SizeF view_box_size = svg->viewBox()->CurrentValue()->Rect().size();
+    const gfx::SizeF view_box_size = svg->CurrentViewBox().Rect().size();
     if (!view_box_size.IsEmpty()) {
       // The viewBox can only yield an intrinsic ratio, not an intrinsic size.
       intrinsic_sizing_info.aspect_ratio = view_box_size;
@@ -179,7 +179,7 @@ void LayoutSVGRoot::UpdateLayout() {
   // selfNeedsLayout() will cover changes to one (or more) of viewBox,
   // current{Scale,Translate}, decorations and 'overflow'.
   const bool viewport_may_have_changed =
-      SelfNeedsLayout() || old_size != SizeFromNG();
+      SelfNeedsFullLayout() || old_size != SizeFromNG();
   is_layout_size_changed_ = viewport_may_have_changed;
 
   SVGContainerLayoutInfo layout_info;
@@ -451,6 +451,16 @@ AffineTransform LayoutSVGRoot::LocalToSVGParentTransform() const {
   return AffineTransform::Translation(RoundToInt(Location().X()),
                                       RoundToInt(Location().Y())) *
          local_to_border_box_transform_;
+}
+
+gfx::RectF LayoutSVGRoot::ViewBoxRect() const {
+  return To<SVGSVGElement>(*GetNode()).CurrentViewBoxRect();
+}
+
+gfx::SizeF LayoutSVGRoot::ViewportSize() const {
+  const PhysicalSize& viewport_size = PhysicalContentBoxRectFromNG().size;
+  const float zoom = StyleRef().EffectiveZoom();
+  return gfx::SizeF(viewport_size.width / zoom, viewport_size.height / zoom);
 }
 
 // This method expects local CSS box coordinates.

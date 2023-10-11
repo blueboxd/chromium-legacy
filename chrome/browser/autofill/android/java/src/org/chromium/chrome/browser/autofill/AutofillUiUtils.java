@@ -57,7 +57,7 @@ import org.chromium.url.GURL;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Calendar;
-import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Helper methods that can be used across multiple Autofill UIs.
@@ -94,11 +94,16 @@ public class AutofillUiUtils {
         int NONE = 7;
     }
 
+    /**
+     * Different sizes in which we show the credit card art images. Update the {@code NUM_SIZES}
+     * entry when adding/removing entries.
+     */
     @IntDef({CardIconSize.SMALL, CardIconSize.LARGE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CardIconSize {
         int SMALL = 0;
         int LARGE = 1;
+        int NUM_SIZES = 2;
     }
 
     /**
@@ -472,7 +477,7 @@ public class AutofillUiUtils {
      * @return A {@link SpannableStringBuilder} that can directly be set on a TextView.
      */
     public static SpannableStringBuilder getSpannableStringForLegalMessageLines(Context context,
-            LinkedList<LegalMessageLine> legalMessageLines, boolean underlineLinks,
+            List<LegalMessageLine> legalMessageLines, boolean underlineLinks,
             Callback<String> onClickCallback) {
         SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder();
         for (LegalMessageLine line : legalMessageLines) {

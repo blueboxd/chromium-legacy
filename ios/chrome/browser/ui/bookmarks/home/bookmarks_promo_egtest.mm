@@ -85,6 +85,10 @@ using chrome_test_util::SecondarySignInButton;
                    (testNoSyncPromoIfSyncToSigninEnabled)]) {
     config.features_enabled.push_back(
         syncer::kReplaceSyncPromosWithSignInPromos);
+  } else if ([self isRunningTest:@selector
+                   (testSigninWithSyncPassphraseAndTurnOnSync)]) {
+    config.features_disabled.push_back(
+        syncer::kReplaceSyncPromosWithSignInPromos);
   }
 
   return config;
@@ -94,13 +98,13 @@ using chrome_test_util::SecondarySignInButton;
   [super setUp];
 
   [BookmarkEarlGrey waitForBookmarkModelsLoaded];
-  [ChromeEarlGrey clearBookmarks];
+  [BookmarkEarlGrey clearBookmarks];
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  [ChromeEarlGrey clearBookmarks];
+  [BookmarkEarlGrey clearBookmarks];
   [BookmarkEarlGrey clearBookmarksPositionCache];
   [PolicyAppInterface clearPolicies];
 }

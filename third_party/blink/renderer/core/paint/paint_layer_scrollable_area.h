@@ -83,7 +83,6 @@ struct CORE_EXPORT PaintLayerScrollableAreaRareData final
   HeapLinkedHashSet<Member<PaintLayer>> sticky_layers_;
   absl::optional<cc::SnapContainerData> snap_container_data_;
   bool snap_container_data_needs_update_ = true;
-  bool needs_resnap_ = false;
   Vector<gfx::Rect> tickmarks_override_;
 };
 
@@ -506,6 +505,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
     had_vertical_scrollbar_before_relayout_ = val;
   }
 
+  void EnqueueForSnapUpdateIfNeeded();
+
   void AddStickyLayer(PaintLayer*);
   bool HasStickyLayer(PaintLayer* layer) const {
     return rare_data_ && rare_data_->sticky_layers_.Contains(layer);
@@ -565,8 +566,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool SetTargetSnapAreaElementIds(cc::TargetSnapAreaElementIds) override;
   bool SnapContainerDataNeedsUpdate() const override;
   void SetSnapContainerDataNeedsUpdate(bool) override;
-  bool NeedsResnap() const override;
-  void SetNeedsResnap(bool) override;
 
   absl::optional<gfx::PointF> GetSnapPositionAndSetTarget(
       const cc::SnapSelectionStrategy& strategy) override;

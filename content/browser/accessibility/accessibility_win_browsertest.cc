@@ -46,6 +46,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/scoped_accessibility_mode_override.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
@@ -932,7 +933,7 @@ class WebContentsUIAParentNavigationInDestroyedWatcher
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestAlwaysFireFocusEventAfterNavigationComplete) {
-  testing::ScopedContentAXModeSetter ax_mode_setter(ui::kAXModeBasic.flags());
+  ScopedAccessibilityModeOverride ax_mode_override(ui::kAXModeBasic.flags());
 
   ASSERT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
@@ -968,7 +969,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestLoadingAccessibilityTree) {
-  testing::ScopedContentAXModeSetter ax_mode_setter(ui::kAXModeBasic.flags());
+  ScopedAccessibilityModeOverride ax_mode_override(ui::kAXModeBasic.flags());
 
   AccessibleChecker document1_checker(std::wstring(), ROLE_SYSTEM_DOCUMENT,
                                       std::wstring());
@@ -1196,11 +1197,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, FocusEventOnPageLoad) {
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kLoadComplete);
-  GURL html_data_url(
-      "data:text/html," +
-      base::EscapeQueryParamValue(R"HTML(<p> Hello</ p>)HTML", false));
-  EXPECT_TRUE(NavigateToURL(shell(), html_data_url));
-  WaitForAccessibilityFocusChange();
+  {
+    base::RunLoop run_loop;
+    GURL html_data_url(
+        "data:text/html," +
+        base::EscapeQueryParamValue(R"HTML(<p> Hello</ p>)HTML", false));
+    BrowserAccessibilityManager::SetFocusChangeCallbackForTesting(
+        run_loop.QuitClosure());
+    EXPECT_TRUE(NavigateToURL(shell(), html_data_url));
+    run_loop.Run();  // Wait for the focus change.
+  }
   // TODO(https://crbug.com/1332468): Investigate why this does not return
   // true.
   ASSERT_TRUE(waiter.WaitForNotification());
@@ -5469,7 +5475,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIASelectivelyEnabledBrowserTest,
 
   // Start with AXMode::kWebContents. Later, a UIA call will cause kNativeAPIs
   // to be added to the AXMode.
-  testing::ScopedContentAXModeSetter ax_mode_setter(ui::AXMode::kWebContents);
+  ScopedAccessibilityModeOverride ax_mode_override(ui::AXMode::kWebContents);
 
   // Request an automation element for the top-level window.
   Microsoft::WRL::ComPtr<IUIAutomation> uia;

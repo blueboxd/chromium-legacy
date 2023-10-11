@@ -22,7 +22,6 @@
 #include "chrome/browser/apps/app_service/app_icon/icon_effects.h"
 #include "chrome/browser/apps/app_service/app_icon/icon_key_util.h"
 #include "chrome/browser/apps/app_service/launch_result_type.h"
-#include "chrome/browser/apps/app_service/paused_apps.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -50,6 +49,7 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/app_service/app_notifications.h"
 #include "chrome/browser/apps/app_service/media_requests.h"
+#include "chrome/browser/apps/app_service/paused_apps.h"
 #include "chrome/browser/badging/badge_manager_delegate.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/notifications/notification_common.h"
@@ -65,7 +65,6 @@ class Profile;
 class GURL;
 
 namespace apps {
-struct ShareTarget;
 struct AppLaunchParams;
 enum class RunOnOsLoginMode;
 }  // namespace apps
@@ -143,11 +142,6 @@ class WebAppPublisherHelper : public WebAppRegistrarObserver,
   static bool IsSupportedWebAppPermissionType(
       ContentSettingsType permission_type);
 
-  // Converts |uninstall_source| to a |WebappUninstallSource|.
-  static webapps::WebappUninstallSource
-  ConvertUninstallSourceToWebAppUninstallSource(
-      apps::UninstallSource uninstall_source);
-
   // Must be called before profile keyed services are destroyed.
   void Shutdown();
 
@@ -184,11 +178,13 @@ class WebAppPublisherHelper : public WebAppRegistrarObserver,
 
   void SetIconEffect(const std::string& app_id);
 
+#if BUILDFLAG(IS_CHROMEOS)
   void PauseApp(const std::string& app_id);
 
   void UnpauseApp(const std::string& app_id);
 
   bool IsPaused(const std::string& app_id);
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   void LoadIcon(const std::string& app_id,
                 apps::IconType icon_type,
@@ -286,14 +282,9 @@ class WebAppPublisherHelper : public WebAppRegistrarObserver,
 
   bool IsShuttingDown() const;
 
-  // Create intent filters for `app_id`. The `app_scope` is needed because
-  // currently the correct app scope is not provided through WebApp API for
-  // shortcuts.
   static apps::IntentFilters CreateIntentFiltersForWebApp(
-      const web_app::AppId& app_id,
-      const GURL& app_scope,
-      const apps::ShareTarget* app_share_target,
-      const apps::FileHandlers* enabled_file_handlers);
+      const WebAppProvider& provider,
+      const web_app::WebApp& app);
 
  private:
 #if BUILDFLAG(IS_CHROMEOS)
@@ -314,8 +305,7 @@ class WebAppPublisherHelper : public WebAppRegistrarObserver,
   // WebAppInstallManagerObserver:
   void OnWebAppInstalled(const AppId& app_id) override;
   void OnWebAppInstalledWithOsHooks(const AppId& app_id) override;
-  void OnWebAppManifestUpdated(const AppId& app_id,
-                               base::StringPiece old_name) override;
+  void OnWebAppManifestUpdated(const AppId& app_id) override;
   void OnWebAppUninstalled(
       const AppId& app_id,
       webapps::WebappUninstallSource uninstall_source) override;
@@ -443,9 +433,9 @@ class WebAppPublisherHelper : public WebAppRegistrarObserver,
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
+#if BUILDFLAG(IS_CHROMEOS)
   apps::PausedApps paused_apps_;
 
-#if BUILDFLAG(IS_CHROMEOS)
   base::ScopedObservation<NotificationDisplayService,
                           NotificationDisplayService::Observer>
       notification_display_service_{this};
@@ -459,7 +449,7 @@ class WebAppPublisherHelper : public WebAppRegistrarObserver,
       media_indicator_observation_{this};
 
   apps::MediaRequests media_requests_;
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   std::map<std::string, WebAppShortcutsMenuItemInfo> shortcut_id_map_;
   ShortcutId::Generator shortcut_id_generator_;

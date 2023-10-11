@@ -25,7 +25,16 @@ FakeGlanceablesTasksClient::FakeGlanceablesTasksClient(
 FakeGlanceablesTasksClient::~FakeGlanceablesTasksClient() = default;
 
 void FakeGlanceablesTasksClient::GetTaskLists(GetTaskListsCallback callback) {
-  std::move(callback).Run(task_lists_.get());
+  if (!paused_) {
+    std::move(callback).Run(task_lists_.get());
+  } else {
+    pending_get_task_lists_callbacks_.push_back(base::BindOnce(
+        [](ui::ListModel<ash::GlanceablesTaskList>* task_lists,
+           GetTaskListsCallback callback) {
+          std::move(callback).Run(task_lists);
+        },
+        task_lists_.get(), std::move(callback)));
+  }
 }
 
 void FakeGlanceablesTasksClient::GetTasks(const std::string& task_list_id,
@@ -46,13 +55,25 @@ void FakeGlanceablesTasksClient::GetTasks(const std::string& task_list_id,
 void FakeGlanceablesTasksClient::MarkAsCompleted(
     const std::string& task_list_id,
     const std::string& task_id,
-    MarkAsCompletedCallback callback) {
-  completed_tasks_.push_back(base::JoinString({task_list_id, task_id}, ":"));
-  std::move(callback).Run(/*success=*/true);
+    bool completed) {
+  if (completed) {
+    pending_completed_tasks_.push_back(
+        base::JoinString({task_list_id, task_id}, ":"));
+  } else {
+    pending_completed_tasks_.erase(std::find(
+        pending_completed_tasks_.begin(), pending_completed_tasks_.end(),
+        base::JoinString({task_list_id, task_id}, ":")));
+  }
 }
 
-void FakeGlanceablesTasksClient::OnGlanceablesBubbleClosed() {
+void FakeGlanceablesTasksClient::OnGlanceablesBubbleClosed(
+    GlanceablesTasksClient::OnAllPendingCompletedTasksSavedCallback callback) {
   ++bubble_closed_count_;
+  RunPendingGetTaskListsCallbacks();
+  RunPendingGetTasksCallbacks();
+  completed_tasks_ += pending_completed_tasks_.size();
+  pending_completed_tasks_.clear();
+  std::move(callback).Run();
 }
 
 int FakeGlanceablesTasksClient::GetAndResetBubbleClosedCount() {
@@ -64,6 +85,15 @@ int FakeGlanceablesTasksClient::GetAndResetBubbleClosedCount() {
 size_t FakeGlanceablesTasksClient::RunPendingGetTasksCallbacks() {
   std::list<base::OnceClosure> callbacks;
   pending_get_tasks_callbacks_.swap(callbacks);
+  for (auto& callback : callbacks) {
+    std::move(callback).Run();
+  }
+  return callbacks.size();
+}
+
+size_t FakeGlanceablesTasksClient::RunPendingGetTaskListsCallbacks() {
+  std::list<base::OnceClosure> callbacks;
+  pending_get_task_lists_callbacks_.swap(callbacks);
   for (auto& callback : callbacks) {
     std::move(callback).Run();
   }

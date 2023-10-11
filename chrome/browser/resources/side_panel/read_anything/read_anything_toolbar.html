@@ -6,10 +6,17 @@
     padding: 0 8px 0 0;
   }
   cr-icon-button {
-    margin: 10px 8px;
+    margin: 10px 4px;
+  }
+  :host-context([chrome-refresh-2023]) #play-pause {
+    --cr-icon-button-icon-size: 20px;
+    --cr-icon-button-size: 28px;
+    color: var(--color-side-panel-entry-icon);
   }
   :host-context([chrome-refresh-2023]) cr-icon-button {
-    color: var(--color-side-panel-entry-icon);
+    --cr-icon-button-icon-size: 16px;
+    --cr-icon-button-size: 24px;
+    color: var(--color-sys-on-surface-subtle);
   }
   :host-context([chrome-refresh-2023]) .dropdown-item:focus {
     background-color: var(--cr-hover-background-color);
@@ -21,146 +28,124 @@
   /* TODO(b/1465029): Investigate why chrome refresh colors don't always
      work on first launch. */
   :host-context([chrome-refresh-2023]) cr-action-menu {
-    --cr-menu-background-color: var(--color-side-panel-menu-background, white);
-    --cr-menu-border-radius: 8px;
-    --cr-primary-text-color: var(--color-side-panel-menu-foreground);
-  }
-  .floating-button {
-    --cr-icon-button-icon-size: 20px;
-    --cr-icon-button-size: 20px;
-    margin: 0px 6px;
-    background-color: var(--color-button-background-tonal,
-            var(--cr-fallback-color-secondary-container));
-    color: var(--color-button-foreground-tonal,
-            var(--cr-fallback-color-on-tonal-container));
-  }
-  .floating-button:hover {
-    background-color: var(--google-grey-400);
+    --cr-menu-border-radius: 4px;
   }
   .back, .section {
     font-weight: bold;
   }
-  .end-image {
-    margin-left: 12px;
-    float: right;
+  #font-size-decrease{
+    margin-left: 16px;
+  }
+  .font-size {
+    margin: 0 4px;
+  }
+  .text-button {
+    border: none;
   }
 </style>
-<div>
+<div class="toolbar-container">
+  <span hidden="[[!isReadAloudEnabled_]]">
+    <cr-icon-button
+      id="play-pause"
+      iron-icon="read-anything-20:play"
+      on-click="onPlayPauseClick_">
+    </cr-icon-button>
+  </span>
   <cr-icon-button
-      id="settings"
-      iron-icon="read-anything:settings-outline"
-      on-click="onShowSettingsMenuClick_">
+      id="font-size"
+      iron-icon="read-anything:font-size"
+      on-click="onShowFontSizeMenuClick_">
+  </cr-icon-button>
+  <cr-icon-button
+      id="font"
+      iron-icon="read-anything:font"
+      on-click="onShowFontSubMenuClick_">
+  </cr-icon-button>
+  <cr-icon-button
+      id="color"
+      iron-icon="read-anything:color"
+      on-click="onShowColorSubMenuClick_">
+  </cr-icon-button>
+  <cr-icon-button
+      id="line-spacing"
+      iron-icon="read-anything:line-spacing"
+      on-click="onShowLineSpacingSubMenuClick_">
+  </cr-icon-button>
+  <cr-icon-button
+      id="letter-spacing"
+      iron-icon="read-anything:letter-spacing"
+      on-click="onShowLetterSpacingSubMenuClick_">
   </cr-icon-button>
 
-  <cr-action-menu id="menu">
-    <span class="dropdown-item section">
-      $i18n{displaySectionTitle}
-    </span>
-    <!-- TODO(crbug.com/1465029): Improve formatting of the increase/decrease buttons once UX design is finalized -->
-    <span class="dropdown-item">
-      <iron-icon class="button-image" icon="read-anything:font-size">
-      </iron-icon>
-      $i18n{fontSizeTitle}
-      <span class="end-image">
-        <cr-icon-button class="floating-button button-image" iron-icon="read-anything:font-size-increase">
-        </cr-icon-button>
-        <cr-icon-button class="floating-button button-image" iron-icon="read-anything:font-size-decrease">
-        </cr-icon-button>
-      </span>
-    </span>
-    <button class="dropdown-item" on-click="onShowFontSubMenuClick_">
-      <iron-icon class="button-image" icon="read-anything:font">
-      </iron-icon>
-      $i18n{fontNameTitle}
-      <iron-icon class="button-image end-image" icon="cr:arrow-right">
-      </iron-icon>
-    </button>
-    <button class="dropdown-item" on-click="onShowColorSubMenuClick_">
-      <iron-icon class="button-image" icon="read-anything:color">
-      </iron-icon>
-      $i18n{themeTitle}
-      <iron-icon class="button-image end-image" icon="cr:arrow-right">
-      </iron-icon>
-    </button>
-    <button class="dropdown-item" on-click="onShowLineSpacingSubMenuClick_">
-      <iron-icon class="button-image" icon="read-anything:line-spacing">
-      </iron-icon>
-      $i18n{lineSpacingTitle}
-      <iron-icon class="button-image end-image" icon="cr:arrow-right">
-      </iron-icon>
-    </button>
-    <button class="dropdown-item" on-click="onShowLetterSpacingSubMenuClick_">
-      <iron-icon class="button-image" icon="read-anything:letter-spacing">
-      </iron-icon>
-      $i18n{letterSpacingTitle}
-      <iron-icon class="button-image end-image" icon="cr:arrow-right">
-      </iron-icon>
-    </button>
+  <cr-action-menu id="fontSizeMenu">
+    <cr-icon-button
+        class="font-size"
+        id="font-size-decrease"
+        iron-icon="read-anything:font-size-decrease"
+        on-click="onFontSizeDecreaseClick_">
+    </cr-icon-button>
+    <cr-icon-button
+        class="font-size"
+        id="font-size-increase"
+        iron-icon="read-anything:font-size-increase"
+        on-click="onFontSizeIncreaseClick_">
+    </cr-icon-button>
+    <cr-button class="text-button" on-click="onFontResetClick_">
+      Reset
+    </cr-button>
   </cr-action-menu>
   <cr-action-menu id="colorSubmenu">
-    <button class="dropdown-item back" on-click="onBackClick_">
-      <iron-icon class="button-image" icon="cr:arrow-back"></iron-icon>
-      $i18n{back}
-    </button>
-    <button class="dropdown-item" on-click="onDefaultTheme_">
+    <button class="dropdown-item" data$="[[menuStateEnum_.DEFAULT_COLOR]]">
       <iron-icon class="button-image" icon="read-anything:default-theme"></iron-icon>
       $i18n{defaultColorTitle}
     </button>
-    <button class="dropdown-item" on-click="onLightTheme_">
+    <button class="dropdown-item" data$="[[menuStateEnum_.LIGHT]]">
       <iron-icon class="button-image" icon="read-anything:light-theme"></iron-icon>
       $i18n{lightColorTitle}
     </button>
-    <button class="dropdown-item" on-click="onDarkTheme_">
+    <button class="dropdown-item" data$="[[menuStateEnum_.DARK]]">
       <iron-icon class="button-image" icon="read-anything:dark-theme"></iron-icon>
       $i18n{darkColorTitle}
     </button>
-    <button class="dropdown-item" on-click="onYellowTheme_">
+    <button class="dropdown-item" data$="[[menuStateEnum_.YELLOW]]">
       <iron-icon class="button-image" icon="read-anything:yellow-theme"></iron-icon>
       $i18n{yellowColorTitle}
     </button>
-    <button class="dropdown-item" on-click="onBlueTheme_">
+    <button class="dropdown-item" data$="[[menuStateEnum_.BLUE]]">
       <iron-icon class="button-image" icon="read-anything:blue-theme"></iron-icon>
       $i18n{blueColorTitle}
     </button>
   </cr-action-menu>
   <cr-action-menu id="lineSpacingSubmenu">
-    <button class="dropdown-item back" on-click="onBackClick_">
-      <iron-icon class="button-image" icon="cr:arrow-back"></iron-icon>
-      $i18n{back}
-    </button>
-    <button class="dropdown-item" on-click="onLineSpacingStandardClick_">
+    <button class="dropdown-item" data$="[[menuStateEnum_.LINE_STANDARD]]">
       <iron-icon class="button-image"
       icon="read-anything:line-spacing-standard"></iron-icon>
       $i18n{lineSpacingStandardTitle}
     </button>
-    <button class="dropdown-item" on-click="onLineSpacingLooseClick_">
+    <button class="dropdown-item" data$="[[menuStateEnum_.LOOSE]]">
       <iron-icon class="button-image"
       icon="read-anything:line-spacing-loose"></iron-icon>
       $i18n{lineSpacingLooseTitle}
     </button>
-    <button class="dropdown-item" on-click="onLineSpacingVeryLooseClick_">
+    <button class="dropdown-item" data$="[[menuStateEnum_.VERY_LOOSE]]">
       <iron-icon class="button-image"
       icon="read-anything:line-spacing-very-loose"></iron-icon>
       $i18n{lineSpacingVeryLooseTitle}
       </button>
     </cr-action-menu>
   <cr-action-menu id="letterSpacingSubmenu">
-    <button class="dropdown-item back" on-click="onBackClick_">
-      <iron-icon class="button-image" icon="cr:arrow-back"></iron-icon>
-      $i18n{back}
-    </button>
     <!--TODO(b/1465029): Fix icon that is slightly out of alignment. -->
-    <button class="dropdown-item" on-click="onLetterSpacingStandardClick_">
+    <button class="dropdown-item" data$="[[menuStateEnum_.LETTER_STANDARD]]">
       <iron-icon class="button-image"
       icon="read-anything:letter-spacing-standard"></iron-icon>
       $i18n{letterSpacingStandardTitle}
     </button>
-    <button class="dropdown-item" on-click="onLetterSpacingWideClick_">
+    <button class="dropdown-item" data$="[[menuStateEnum_.WIDE]]">
       <iron-icon class="button-image"
       icon="read-anything:letter-spacing-wide"></iron-icon>
       $i18n{letterSpacingWideTitle}
     </button>
-    <button class="dropdown-item" on-click="onLetterSpacingVeryWideClick_">
+    <button class="dropdown-item" data$="[[menuStateEnum_.VERY_WIDE]]">
       <iron-icon class="button-image"
       icon="read-anything:letter-spacing-very-wide"></iron-icon>
       $i18n{letterSpacingVeryWideTitle}
@@ -169,11 +154,9 @@
   <!-- TODO(b/1465029): Use the brower's preferred language to hide unsupported
        fonts.
   -->
+  <!-- If you change these fonts, please also update
+       read_anything_constants.h -->
   <cr-action-menu id="fontSubmenu">
-    <button class="dropdown-item back" on-click="onBackClick_">
-      <iron-icon class="button-image" icon="cr:arrow-back"></iron-icon>
-      $i18n{back}
-    </button>
   <!-- TODO(1266555): Each button should be styled in its own font. -->
     <button class="dropdown-item">
       Poppins

@@ -7,6 +7,7 @@
 
 #include "chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher.h"
 
+#include <cstddef>
 #include <memory>
 
 #include "base/functional/callback_forward.h"
@@ -48,6 +49,13 @@ class BoundSessionRefreshCookieFetcherImpl
                            OnCookiesAccessedRead);
   FRIEND_TEST_ALL_PREFIXES(BoundSessionRefreshCookieFetcherImplTest,
                            OnCookiesAccessedChange);
+  FRIEND_TEST_ALL_PREFIXES(
+      BoundSessionRefreshCookieFetcherImplParseChallengeHeaderTest,
+      ParseChallengeHeader);
+
+  // Returns empty if parsing challenge header failed. Otherwise, returns the
+  // decoded challenge field value.
+  static std::string ParseChallengeHeader(const std::string& header);
 
   void StartRefreshRequest(
       absl::optional<std::string> sec_session_challenge_response);
@@ -57,9 +65,12 @@ class BoundSessionRefreshCookieFetcherImpl
       absl::optional<int> response_code);
   void ReportRefreshResult();
 
-  // Returns an empty string if assertion isn't required.
-  std::string GetChallengeIfBindingKeyAssertionRequired(
-      const scoped_refptr<net::HttpResponseHeaders>& headers);
+  // Returns `absl::nullopt` if assertion isn't required.
+  absl::optional<std::string> GetChallengeIfBindingKeyAssertionRequired(
+      const scoped_refptr<net::HttpResponseHeaders>& headers) const;
+  void HandleBindingKeyAssertionRequired(
+      const std::string& challenge_header_value);
+  void CompleteRequestAndReportRefreshResult(Result result);
   void RefreshWithChallenge(const std::string& challenge);
   void OnGenerateBindingKeyAssertion(std::string assertion);
 
@@ -87,7 +98,7 @@ class BoundSessionRefreshCookieFetcherImpl
   // Refresh request result.
   Result result_;
   bool cookie_refresh_completed_ = false;
-  bool has_assertion_been_already_requested_ = false;
+  size_t assertion_requests_count_ = 0;
 
   // Non-null after a fetch has started.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;

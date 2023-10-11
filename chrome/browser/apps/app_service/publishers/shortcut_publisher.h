@@ -31,12 +31,32 @@ class ShortcutPublisher {
   // that sends the initial list of apps to the App Service.
   void RegisterShortcutPublisher(AppType app_type);
 
+  // Launches a shortcut identified by `local_shortcut_id` in the app identified
+  // by 'host_app_id`. `display_id` contains the id of the display from which
+  // the shortcut will be launched. display::kInvalidDisplayId means that the
+  // default display for new windows will be used. See `display::Screen` for
+  // details.
+  virtual void LaunchShortcut(const std::string& host_app_id,
+                              const std::string& local_shortcut_id,
+                              int64_t display_id) = 0;
+
+  // Removes the shortcut identified by `local_shortcut_id` in the app
+  // identified by 'host_app_id`. This request will be sent to shortcut
+  // publisher to remove shortcut from the platform published it.
+  virtual void RemoveShortcut(const std::string& host_app_id,
+                              const std::string& local_shortcut_id,
+                              UninstallSource uninstall_source) = 0;
+
  protected:
   // Publish one `delta` to AppServiceProxy. Should be called whenever the
   // shortcut represented by `delta` undergoes some state change to inform
   // AppServiceProxy of the change. Ensure that RegisterShortcutPublisher() has
   // been called before the first call to this method.
   void PublishShortcut(ShortcutPtr delta);
+
+  // Calls when shortcut represented by shortcut id `id` has been removed from
+  // the shortcut publisher, and needs to be removed from ShortcutRegistryCache.
+  void ShortcutRemoved(const ShortcutId& id);
 
   AppServiceProxy* proxy() { return proxy_; }
 

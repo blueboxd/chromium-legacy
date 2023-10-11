@@ -329,7 +329,7 @@ void LayoutBlock::AddVisualOverflowFromChildren() {
 
 void LayoutBlock::ComputeVisualOverflow() {
   NOT_DESTROYED();
-  DCHECK(!SelfNeedsLayout());
+  DCHECK(!SelfNeedsFullLayout());
 
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
   ClearVisualOverflow();
@@ -347,9 +347,9 @@ void LayoutBlock::AddVisualOverflowFromBlockChildren() {
   NOT_DESTROYED();
   for (LayoutBox* child = FirstChildBox(); child;
        child = child->NextSiblingBox()) {
-    if ((!IsLayoutNGContainingBlock(this) && child->IsFloating()) ||
-        child->IsOutOfFlowPositioned() || child->IsColumnSpanAll())
+    if (child->IsOutOfFlowPositioned() || child->IsColumnSpanAll()) {
       continue;
+    }
 
     AddVisualOverflowFromChild(*child);
   }
@@ -765,7 +765,7 @@ LayoutBlock* LayoutBlock::CreateAnonymousWithParentAndDisplay(
                                                   new_display);
 
   parent->UpdateAnonymousChildStyle(nullptr, new_style_builder);
-  scoped_refptr<const ComputedStyle> new_style = new_style_builder.TakeStyle();
+  const ComputedStyle* new_style = new_style_builder.TakeStyle();
 
   LayoutBlock* layout_block;
   if (new_display == EDisplay::kFlex) {
@@ -782,7 +782,7 @@ LayoutBlock* LayoutBlock::CreateAnonymousWithParentAndDisplay(
     layout_block = MakeGarbageCollected<LayoutNGBlockFlow>(nullptr);
   }
   layout_block->SetDocumentForAnonymous(&parent->GetDocument());
-  layout_block->SetStyle(std::move(new_style));
+  layout_block->SetStyle(new_style);
   return layout_block;
 }
 

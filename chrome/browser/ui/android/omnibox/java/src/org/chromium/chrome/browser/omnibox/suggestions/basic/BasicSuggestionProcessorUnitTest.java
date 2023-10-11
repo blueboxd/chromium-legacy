@@ -46,7 +46,6 @@ import org.chromium.components.omnibox.OmniboxSuggestionType;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
-import org.chromium.url.ShadowGURL;
 
 import java.util.HashMap;
 import java.util.List;
@@ -56,7 +55,7 @@ import java.util.Map;
  * Tests for {@link BasicSuggestionProcessor}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowGURL.class, ShadowUrlBarData.class})
+@Config(manifest = Config.NONE, shadows = {ShadowUrlBarData.class})
 public class BasicSuggestionProcessorUnitTest {
     private static final @DrawableRes int ICON_BOOKMARK = R.drawable.btn_star;
     private static final @DrawableRes int ICON_GLOBE = R.drawable.ic_globe_24dp;
@@ -422,8 +421,7 @@ public class BasicSuggestionProcessorUnitTest {
         mProcessor.onNativeInitialized();
         // URLs that are rejected by UrlBarData should not be presented to the User.
         ShadowUrlBarData.sShouldShowNextUrl = false;
-        createUrlSuggestion(
-                OmniboxSuggestionType.URL_WHAT_YOU_TYPED, "", new GURL(JUnitTestGURLs.URL_1));
+        createUrlSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, "", JUnitTestGURLs.URL_1);
         Assert.assertNull(mModel.get(SuggestionViewProperties.TEXT_LINE_2_TEXT));
     }
 }

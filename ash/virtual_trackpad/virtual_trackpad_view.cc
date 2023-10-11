@@ -7,7 +7,10 @@
 #include <memory>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_id.h"
+#include "ash/style/blurred_background_shield.h"
 #include "ash/wm/window_util.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "ui/aura/window.h"
@@ -17,6 +20,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
@@ -241,20 +245,28 @@ VirtualTrackpadView::VirtualTrackpadView() {
   }
   UpdateFingerButtonsColors();
 
-  // TODO(b/286303073): Add a blur effect to the transparent background
-  // while keeping the shadow effect.
   SetPaintToLayer();
   layer()->SetOpacity(kTrackpadContainerOpacity);
 
   SetBorder(views::CreateEmptyBorder(kTrackpadContainerPadding));
   SetBackground(
       views::CreateSolidBackground(kTrackpadContainerBackgroundColor));
+
+  blurred_background_ = std::make_unique<BlurredBackgroundShield>(
+      this, SK_ColorTRANSPARENT, ColorProvider::kBackgroundBlurSigma,
+      gfx::RoundedCornersF(
+          static_cast<float>(chromeos::kTopCornerRadiusWhenRestored)));
 }
 
 VirtualTrackpadView::~VirtualTrackpadView() = default;
 
 // static
 void VirtualTrackpadView::Toggle() {
+  // If we have a real trackpad, we should use that instead.
+  if (!ui::DeviceDataManager::GetInstance()->GetTouchpadDevices().empty()) {
+    return;
+  }
+
   if (g_fake_trackpad_widget) {
     g_fake_trackpad_widget->Close();
     g_fake_trackpad_widget = nullptr;

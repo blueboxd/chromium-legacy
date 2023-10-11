@@ -1098,7 +1098,7 @@ policies:
   1097: DeviceReportNetworkEvents
   1098: SafeBrowsingExtensionProtectionAllowed
   1099: ShowDisplaySizeScreenEnabled
-  1100: AnonymousSearchEnabled
+  1100: EssentialSearchEnabled
   1101: LegacyTechReportAllowlist
   1102: ReportAppInventory
   1103: ReportAppUsage
@@ -1136,10 +1136,23 @@ policies:
   1135: DeviceReportRuntimeCountersCheckingRateMs
   1136: BruschettaInstallerConfiguration
   1137: ForcePermissionPolicyUnloadDefaultEnabled
-  1138: ReportWebsiteActivity
-  1139: ReportWebsiteUsage
-  1140: ReportWebsiteUsageCollectionRateMs
+  1138: ReportWebsiteActivityAllowlist
+  1139: ReportWebsiteTelemetryAllowlist
+  1140: ReportWebsiteTelemetryCollectionRateMs
   1141: SafeBrowsingSurveysEnabled
+  1142: BlockTruncatedCookies
+  1143: ReportWebsiteTelemetry
+  1144: CompressionDictionaryTransportEnabled
+  1145: MicrosoftOfficeCloudUpload
+  1146: GoogleWorkspaceCloudUpload
+  1147: ShortcutCustomizationAllowed
+  1148: MicrosoftOneDriveMount
+  1149: ExtensionOAuthRedirectUrls
+  1150: CreatePasskeysInICloudKeychain
+  1151: QuickOfficeForceFileDownloadEnabled
+  1152: ProfileSeparationSettings
+  1153: ProfileSeparationDataMigrationSettings
+  1154: ProfileSeparationDomainExceptionList
 atomic_groups:
   1: Homepage
   2: RemoteAccess
@@ -1189,3 +1202,4 @@ atomic_groups:
   46: KerberosPrefilledConfig
   47: ThirdPartyStoragePartitioningSettings
   48: MidiSettings
+  49: ProfileSeparation

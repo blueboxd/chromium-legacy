@@ -21,7 +21,6 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">La fenêtre de mise à jour du micrologiciel pour les appareils externes est ouverte. <ph name="NUM_UPDATES" /> mises à jour disponibles.</translation>
 <translation id="1145516343487477149">Trouvez des articles d'aide et des réponses aux questions courantes relatives au Chromebook</translation>
-<translation id="1154390310959620237">Vous ne pouvez personnaliser que cinq raccourcis. Supprimez un raccourci pour en ajouter un nouveau.</translation>
 <translation id="1164939766849482256">Écran de veille de l'aube à l'obscurité</translation>
 <translation id="1167755866710282443">Ouvrez le menu pour personnaliser les clés. Faites glisser le menu pour le déplacer.</translation>
 <translation id="1175697296044146566">Ce <ph name="DEVICE_TYPE" /> est géré par <ph name="MANAGER" />.</translation>
@@ -134,6 +133,7 @@
 <translation id="1881188606372070653">Accédez à la <ph name="BEGIN_LINK1" />page d'aide pour les questions d'ordre juridique<ph name="END_LINK1" /> afin de demander des modifications de contenu pour des raisons juridiques. Certains renseignements relatifs à votre compte et à votre système peuvent être envoyés à Google. Nous utiliserons les renseignements que vous nous fournissez pour vous aider à résoudre les problèmes techniques et pour améliorer nos services, sous réserve de notre <ph name="BEGIN_LINK2" />politique de confidentialité<ph name="END_LINK2" /> et de nos <ph name="BEGIN_LINK3" />conditions d'utilisation<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">avance rapide du contenu multimédia</translation>
 <translation id="1887850431809612466">Révision du matériel</translation>
+<translation id="1897672602657312171">Un raccourci sans touche de recherche peut entrer en conflit avec le raccourci de certaines applications. Appuyez à nouveau sur ce raccourci pour continuer à l'utiliser ou appuyez sur un nouveau raccourci à l'aide de la touche de recherche.</translation>
 <translation id="1904932688895783618">Voici quelques autres ressources utiles :</translation>
 <translation id="1905710495812624430">Nombre maximal autorisé de tentatives atteint.</translation>
 <translation id="1908234395526491708">Échecs des demandes UDP</translation>
@@ -217,7 +217,6 @@
 <translation id="253029298928638905">Redémarrage en cours…</translation>
 <translation id="2533048460510040082">Contenu d'aide suggéré</translation>
 <translation id="2536159006530886390">Impossible de se connecter à Internet.</translation>
-<translation id="2555662516429796509">Appuyez sur les modificateurs 1 à 4 et sur 1 autre touche de votre clavier</translation>
 <translation id="2570743873672969996">Le test <ph name="TEST_NAME" /> est en cours d'exécution…</translation>
 <translation id="2584559707064218956">Pour configurer le réseau, accédez à Paramètres</translation>
 <translation id="2597774443162333062">Les fichiers seront envoyés à Google pour un débogage</translation>
@@ -237,7 +236,6 @@
 <translation id="2751739896257479635">Authentification EAP phase 2</translation>
 <translation id="2783010256799387990">TEST RÉUSSI</translation>
 <translation id="2787435249130282949">clavier plus lumineux</translation>
-<translation id="2789486458103222910">OK</translation>
 <translation id="2805756323405976993">Applications</translation>
 <translation id="28232023175184696">Impossible de se connecter à Internet. Cliquez pour réessayer.</translation>
 <translation id="2859243502336719778">Mise à jour critique</translation>
@@ -249,6 +247,7 @@
 <translation id="2880569433548999039">Écran de veille Cloud Flow</translation>
 <translation id="2926057806159140518">Entrez votre nom d'utilisateur et votre mot de passe ou numérisez votre code QR</translation>
 <translation id="2940811910881150316">Impossible de tester l'appareil. Rouvrir le couvercle pour tester.</translation>
+<translation id="2941112035454246133">Faible</translation>
 <translation id="3008341117444806826">ACTUALISER</translation>
 <translation id="3009958530611748826">Sélectionnez un dossier dans lequel enregistrer les fichiers</translation>
 <translation id="3017079585324758401">Arrière-plan</translation>
@@ -298,7 +297,6 @@
 <translation id="3369013195428705271">Voulez-vous vraiment effacer tout l'historique d'impression? Vos tâches d'impression courantes ne seront pas effacées.</translation>
 <translation id="3373141842870501561">Fond d'écran Earth Flow</translation>
 <translation id="337375748120863155">Renseignements relatifs à votre sélection. Utilisez les touches de flèche vers la droite ou vers la gauche pour accéder aux commandes.</translation>
-<translation id="3383623117265110236">Exclusif</translation>
 <translation id="3404249063913988450">Activer l'écran de veille</translation>
 <translation id="3413935475507503304">Pour lancer la mise à jour, cliquez sur Suivant.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
@@ -369,6 +367,7 @@
 <translation id="3941014780699102620">Impossible de résoudre l'hôte</translation>
 <translation id="3942420633017001071">Diagnostics</translation>
 <translation id="3954678691475912818">Le type d'appareil est inconnu.</translation>
+<translation id="3959413315969265597">Impossible d'activer ce nom de point d'accès. Assurez-vous qu'un nom de point d'accès par défaut est ajouté.</translation>
 <translation id="3966286471246132217">Pour obtenir des résultats plus précis, fermez toutes les applications jusqu'à la fin du test.</translation>
 <translation id="3967822245660637423">Téléchargement terminé</translation>
 <translation id="3969602104473960991">Mot de passe de Chrome OS mis à jour</translation>
@@ -404,7 +403,6 @@
 <translation id="4171077696775491955">diminuer la luminosité</translation>
 <translation id="4176463684765177261">Désactivé</translation>
 <translation id="4176659219503619100">Panneau de configuration</translation>
-<translation id="4185315616950253617">Le raccourci avec les touches de la rangée supérieure doit inclure la touche de recherche.</translation>
 <translation id="420283545744377356">Désactiver l'écran de veille</translation>
 <translation id="4213104098953699324">Clavier USB</translation>
 <translation id="4227825898293920515">Le mot de passe expire dans <ph name="TIME" /></translation>
@@ -415,7 +413,6 @@
 <translation id="4258281355379922695">Latence HTTP</translation>
 <translation id="4271957103967917607">Afficher en plein écran</translation>
 <translation id="4275663329226226506">Médias</translation>
-<translation id="4278766082079064416">Le raccourci est utilisé pour « <ph name="CONFLICT_ACCEL_NAME" /> ». Modifiez-le ou retirez-le pour résoudre le conflit.</translation>
 <translation id="4289540628985791613">Aperçu</translation>
 <translation id="4289849978083912975">Diaporama</translation>
 <translation id="4297501883039923494">Tâche arrêtée : erreur inconnue</translation>
@@ -496,7 +493,6 @@
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Il reste {0} tentative}one{<ph name="ERROR_MESSAGE" /> Il reste {0} tentative}other{<ph name="ERROR_MESSAGE" /> Il reste {0} tentatives}}</translation>
 <translation id="4873827928179867585">Algorithme d'authentification</translation>
 <translation id="4880328057631981605">Nom du point d'accès</translation>
-<translation id="488307179443832524">Le raccourci est utilisé pour « <ph name="CONFLICT_ACCEL_NAME" /> ». Appuyez sur un nouveau raccourci.</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4890353053343094602">Choisissez-en un immédiatement</translation>
 <translation id="4891842000192098784">Stress</translation>
@@ -607,12 +603,12 @@
 <translation id="5703716265115423771">diminuer le volume</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> sur <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Mettre à jour <ph name="DEVICE_NAME" /></translation>
+<translation id="574392208103952083">Moyenne</translation>
 <translation id="5757187557809630523">chanson suivante</translation>
 <translation id="5760715441271661976">État du portail</translation>
 <translation id="576835345334454681">Augmenter la luminosité de l'écran</translation>
 <translation id="57838592816432529">Désactiver le son</translation>
 <translation id="5784136236926853061">Latence HTTP élevée</translation>
-<translation id="5816802250591013230">Aucun raccourci attribué</translation>
 <translation id="5826644637650799838">À propos du fond d'écran</translation>
 <translation id="5832805196449965646">Ajouter une personne</translation>
 <translation id="583281660410589416">Inconnu</translation>
@@ -622,7 +618,6 @@
 <translation id="5859603669299126575">Album de galerie d'art</translation>
 <translation id="5860033963881614850">Désactivé</translation>
 <translation id="5860491529813859533">Activer</translation>
-<translation id="5866840822086176774">Très fort</translation>
 <translation id="5876385649737594562">Activez pour sélectionner les options</translation>
 <translation id="588258955323874662">Plein écran</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
@@ -706,7 +701,6 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Faible (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Accéder aux paramètres du compte</translation>
-<translation id="6456394469623773452">Acceptable</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Numériser de nouveau la page?}=1{Numériser de nouveau la page {PAGE_NUMBER}?}one{Numériser de nouveau la page {PAGE_NUMBER}?}other{Numériser de nouveau les pages {PAGE_NUMBER}?}}</translation>
 <translation id="6472207088655375767">Phr passe usage uniq</translation>
 <translation id="6480327114083866287">Géré par <ph name="MANAGER" /></translation>
@@ -774,15 +768,14 @@
 <translation id="7028979494427204405"><ph name="MANAGER" /> gère cet appareil et a accès à toutes les activités, y compris les pages Web que vous visitez, vos mots de passe et vos courriels.</translation>
 <translation id="7040230719604914234">Opérateur</translation>
 <translation id="7041549558901442110">L'appareil n'est pas connecté.</translation>
-<translation id="7046522406494308071">Réinitialiser tous les raccourcis par défaut?</translation>
 <translation id="7058278511608979688">Terminer et enregistrer</translation>
 <translation id="7059230779847288458">En recharge : <ph name="TIME_VALUE" /> avant que la pile soit rechargée</translation>
+<translation id="7066538517128343186">la touche <ph name="KEY" /></translation>
 <translation id="7068619307603204412">Préparer votre appareil</translation>
 <translation id="708426984172631313">ARRÊTÉ</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Échec – Échec de l'autorisation</translation>
 <translation id="7103252855940681301">Appareil <ph name="INDEX" /> de <ph name="COUNT" /> nommé <ph name="NAME" />.</translation>
-<translation id="7107255225945990211">Choisir parmi les illustrations exclusives à <ph name="PRODUCT_NAME" /></translation>
 <translation id="7108668606237948702">Entrée</translation>
 <translation id="7130438335435247835">Nom du point d'accès (NPA)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Serveur de noms}one{Serveur de noms}other{Serveurs de noms}}</translation>
@@ -804,7 +797,6 @@
 <translation id="7216409898977639127">Fournisseur cellulaire</translation>
 <translation id="725133483556299729">Sélectionner un courriel</translation>
 <translation id="7271040990581020067">Le numériseur est en cours d'utilisation. Réessayez plus tard.</translation>
-<translation id="7273347807225967898">Raccourci non accessible. Appuyez sur un nouveau raccourci à l'aide d'une touche de modification (Ctrl, Alt, majuscule, recherche ou lanceur).</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" /> sur <ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281657306185710294">Souffle de la brise</translation>
 <translation id="7287310195820267359">Collections de fonds d'écran</translation>
@@ -864,7 +856,6 @@
 <translation id="7718231387947923843">éclairage du clavier</translation>
 <translation id="773153675489693198">Compte de cycles</translation>
 <translation id="7747039790905080783">Clé prépartagée</translation>
-<translation id="7752963721013053477">De l'aube à l'obscurité – exclusif</translation>
 <translation id="7762130827864645708">La modification de votre mot de passe a bien été effectuée. Veuillez utiliser le nouveau mot de passe à partir de maintenant.</translation>
 <translation id="7763470514545477072">Correspondance du suffixe de domaine</translation>
 <translation id="7769672763586021400">Identifiant de modèle</translation>
@@ -884,7 +875,6 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Type de fournisseur</translation>
 <translation id="7882501334836096755">Clé publique</translation>
-<translation id="7903695460270716054">Choisir parmi une sélection d'illustrations et d'images</translation>
 <translation id="7915220255123750251">Gérez les paramètres de NPA du réseau. Les NPA établissent une connexion entre un réseau cellulaire et Internet.</translation>
 <translation id="7936303884198020182">Aucun serveur de nom n'a été trouvé</translation>
 <translation id="7942349550061667556">Rouge</translation>
@@ -911,7 +901,6 @@
 <translation id="808894953321890993">Changer le mot de passe</translation>
 <translation id="8094062939584182041">Autoriser Google à vous envoyer un courriel à propos de ce problème</translation>
 <translation id="8104083085214006426">Vous utilisez un réseau ouvert et non sécurisé</translation>
-<translation id="8111706652656628199">Raccourci non accessible. Appuyez sur un nouveau raccourci à l'aide de la touche Majuscule et d'une autre touche de modification (Ctrl, Alt, recherche ou lanceur).</translation>
 <translation id="811820734797650957">La passerelle peut faire l'objet d'un ping (Android)</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8132480444149501833">Demander des compteurs de trafic</translation>
@@ -930,12 +919,12 @@
 <translation id="8286154143153872371">Veuillez vous connecter au réseau et actualiser la page pour afficher le fond d'écran.</translation>
 <translation id="8291967909914612644">Pays du propriétaire</translation>
 <translation id="8294431847097064396">Source</translation>
-<translation id="8297006494302853456">Faible</translation>
 <translation id="8302368968391049045">Pare-feu HTTPS</translation>
 <translation id="8312330582793120272">lire le contenu multimédia</translation>
 <translation id="8318753676953949627">Aucune image</translation>
 <translation id="8329018942023753850">application calculatrice</translation>
 <translation id="8336739000755212683">Changer l'image du compte sur l'appareil</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> ou <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Tâches d'impression</translation>
 <translation id="8351855506390808906">Point de contact d'affectation des touches</translation>
 <translation id="8352772353338965963">Ajouter un compte à la connexion multicompte. Tous les comptes connectés sont accessibles sans mot de passe. Nous vous recommandons donc de n'utiliser cette fonctionnalité qu'avec des comptes fiables.</translation>
@@ -990,7 +979,6 @@
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">Album Google Photos</translation>
 <translation id="877985182522063539">A4</translation>
-<translation id="8789196995628578448">Le raccourci est utilisé pour « <ph name="CONFLICT_ACCEL_NAME" /> ». Appuyez sur un nouveau raccourci. Pour remplacer le raccourci d'origine, appuyez à nouveau sur ce raccourci.</translation>
 <translation id="879568662008399081">Ce réseau peut présenter un portail captif</translation>
 <translation id="8798099450830957504">Par défaut</translation>
 <translation id="8798441408945964110">Nom du fournisseur</translation>
@@ -1053,6 +1041,7 @@
 <translation id="9122602430962285795">Pour vous reconnecter, accédez à Paramètres</translation>
 <translation id="9126720536733509015">Enregistrer plusieurs pages en un seul PDF</translation>
 <translation id="9133104754938025929">Pour augmenter l'autonomie de la pile, l'écran de veille fonctionne uniquement pendant la recharge.</translation>
+<translation id="9133772297793293778">Appuyez sur les modificateurs 1 à 4 et sur 1 autre touche de votre clavier. Pour quitter le mode de modification, appuyez sur alt+esc.</translation>
 <translation id="9137526406337347448">Services Google</translation>
 <translation id="9138630967333032450">Majuscule gauche</translation>
 <translation id="9143347780818904997">pendant <ph name="MINUTES" /> minutes</translation>

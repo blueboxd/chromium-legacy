@@ -117,7 +117,6 @@
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/style_retain_scope.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/layout/traced_layout_object.h"
@@ -345,6 +344,7 @@ void LocalFrameView::Trace(Visitor* visitor) const {
   visitor->Trace(pending_transform_updates_);
   visitor->Trace(pending_opacity_updates_);
   visitor->Trace(pending_sticky_updates_);
+  visitor->Trace(pending_snap_updates_);
   visitor->Trace(disconnected_elements_with_remembered_size_);
 }
 
@@ -697,7 +697,6 @@ void LocalFrameView::PerformLayout() {
   LayoutObject* root_for_this_layout = GetLayoutView();
 
   FontCachePurgePreventer font_cache_purge_preventer;
-  StyleRetainScope style_retain_scope;
   bool in_subtree_layout = false;
   base::AutoReset<bool> change_scheduling_enabled(&layout_scheduling_enabled_,
                                                   false);
@@ -2221,7 +2220,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
 
   absl::optional<base::AutoReset<bool>> force_debug_info;
   if (reason == DocumentUpdateReason::kTest)
-    force_debug_info.emplace(&layer_debug_info_enabled_, true);
+    force_debug_info.emplace(&paint_debug_info_enabled_, true);
 
   // Run the lifecycle updates.
   UpdateLifecyclePhasesInternal(target_state);
@@ -2548,7 +2547,11 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
     frame_view.PerformScrollAnchoringAdjustments();
   });
 
-  frame_->GetDocument()->PerformScrollSnappingTasks();
+  if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+    ExecutePendingSnapUpdates();
+  } else {
+    frame_->GetDocument()->PerformScrollSnappingTasks();
+  }
 
   EnqueueScrollEvents();
 
@@ -2853,7 +2856,7 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode) {
   CullRectUpdater(*layout_view->Layer()).Update();
 
   bool debug_info_newly_enabled =
-      UpdateLayerDebugInfoEnabled() && PaintDebugInfoEnabled();
+      UpdatePaintDebugInfoEnabled() && PaintDebugInfoEnabled();
 
   paint_frame_count_++;
   ForAllNonThrottledLocalFrameViews(
@@ -3010,7 +3013,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
   }
 
   paint_artifact_compositor_->SetLayerDebugInfoEnabled(
-      layer_debug_info_enabled_);
+      paint_debug_info_enabled_);
 
   PaintArtifactCompositor::ViewportProperties viewport_properties;
   if (const auto& viewport = page->GetVisualViewport();
@@ -3197,6 +3200,12 @@ void LocalFrameView::UpdateStyleAndLayout() {
       GetLayoutView()->AssertSubtreeIsLaidOut();
   }
 #endif
+
+  // Once all of the layout is finished, update the focused element. This
+  // shouldn't be done before since focusability check sometimes requires an
+  // layout update, which would recurse into this function. This update is only
+  // required if we still need layout though, which should be cleared already.
+  frame_->GetDocument()->ClearFocusedElementIfNeeded();
 
   if (did_layout) {
     bool visual_viewport_size_changed = false;
@@ -4804,17 +4813,18 @@ LocalFrameView::DisallowLayoutInvalidationScope::
 
 #endif
 
-bool LocalFrameView::UpdateLayerDebugInfoEnabled() {
+bool LocalFrameView::UpdatePaintDebugInfoEnabled() {
   DCHECK(frame_->IsLocalRoot());
 #if DCHECK_IS_ON()
-  DCHECK(layer_debug_info_enabled_);
+  DCHECK(paint_debug_info_enabled_);
 #else
   bool should_enable =
       cc::frame_viewer_instrumentation::IsTracingLayerTreeSnapshots() ||
+      RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
       WebTestSupport::IsRunningWebTest() ||
       CoreProbeSink::HasAgentsGlobal(CoreProbeSink::kInspectorLayerTreeAgent);
-  if (should_enable != layer_debug_info_enabled_) {
-    layer_debug_info_enabled_ = should_enable;
+  if (should_enable != paint_debug_info_enabled_) {
+    paint_debug_info_enabled_ = should_enable;
     SetPaintArtifactCompositorNeedsUpdate();
     return true;
   }
@@ -5132,6 +5142,33 @@ void LocalFrameView::ExecutePendingStickyUpdates() {
       scrollable_area->UpdateAllStickyConstraints();
     }
     pending_sticky_updates_->clear();
+  }
+}
+
+void LocalFrameView::AddPendingSnapUpdate(PaintLayerScrollableArea* object) {
+  if (!pending_snap_updates_) {
+    pending_snap_updates_ =
+        MakeGarbageCollected<HeapHashSet<Member<PaintLayerScrollableArea>>>();
+  }
+  pending_snap_updates_->insert(object);
+}
+
+void LocalFrameView::RemovePendingSnapUpdate(PaintLayerScrollableArea* object) {
+  if (pending_snap_updates_) {
+    pending_snap_updates_->erase(object);
+  }
+}
+
+void LocalFrameView::ExecutePendingSnapUpdates() {
+  if (pending_snap_updates_) {
+    // Iteration order of the objects doesn't matter as the snap-areas are
+    // contained within each scroll-container.
+    for (PaintLayerScrollableArea* scrollable_area : *pending_snap_updates_) {
+      auto* snap_container = scrollable_area->GetLayoutBox();
+      DCHECK(snap_container->IsScrollContainer());
+      SnapCoordinator::UpdateSnapContainerData(*snap_container);
+    }
+    pending_snap_updates_->clear();
   }
 }
 

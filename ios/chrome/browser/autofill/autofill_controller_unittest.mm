@@ -7,8 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "base/apple/foundation_util.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/memory/ptr_util.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/task/thread_pool/thread_pool_instance.h"
@@ -332,16 +332,12 @@ void AutofillControllerTest::SetUp() {
   infobars::InfoBarManager* infobar_manager =
       InfoBarManagerImpl::FromWebState(web_state());
   autofill_client_ = std::make_unique<TestAutofillClient>(
-      browser_state_.get(), web_state(), infobar_manager, autofill_agent_,
-      /*password_generation_manager=*/nullptr);
+      browser_state_.get(), web_state(), infobar_manager, autofill_agent_);
 
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillUseAlternativeStateNameMap)) {
-    autofill_client_->GetPersonalDataManager()
-        ->personal_data_manager_cleaner_for_testing()
-        ->alternative_state_name_map_updater_for_testing()
-        ->set_local_state_for_testing(local_state_.Get());
-  }
+  autofill_client_->GetPersonalDataManager()
+      ->personal_data_manager_cleaner_for_testing()
+      ->alternative_state_name_map_updater_for_testing()
+      ->set_local_state_for_testing(local_state_.Get());
 
   std::string locale("en");
   autofill::AutofillDriverIOSFactory::CreateForWebState(
@@ -368,6 +364,7 @@ void AutofillControllerTest::SetUp() {
 }
 
 void AutofillControllerTest::TearDown() {
+  [accessory_mediator_ disconnect];
   [suggestion_controller_ detachFromWebState];
 
   web::test::WaitForBackgroundTasks();

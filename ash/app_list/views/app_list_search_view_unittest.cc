@@ -13,14 +13,17 @@
 #include "ash/app_list/model/search/test_search_result.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_bubble_search_page.h"
+#include "ash/app_list/views/app_list_toast_view.h"
 #include "ash/app_list/views/pulsing_block_view.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/app_list/views/search_notifier_controller.h"
 #include "ash/app_list/views/search_result_image_list_view.h"
 #include "ash/app_list/views/search_result_image_view_delegate.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/shell.h"
@@ -267,6 +270,13 @@ class SearchResultImageViewTest : public SearchViewClamshellAndTabletTest {
   SearchResultImageViewTest() {
     scoped_feature_list_.InitAndEnableFeature(
         features::kProductivityLauncherImageSearch);
+  }
+
+  bool IsImageSearchEnabled(PrefService* prefs) {
+    return prefs->GetDict(prefs::kLauncherSearchCategoryControlStatus)
+        .FindBool(GetAppListControlCategoryName(
+            AppListSearchControlCategory::kImages))
+        .value_or(true);
   }
 
  private:
@@ -570,6 +580,86 @@ TEST_P(SearchResultImageViewTest, PulsingBlocksShowWhenNoResultIcon) {
   }
 
   client->set_search_callback(TestAppListClient::SearchCallback());
+}
+
+TEST_P(SearchResultImageViewTest, SearchNotifierController) {
+  GetAppListTestHelper()->ShowAppList();
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  auto* notifier_controller = GetSearchView()->search_notifier_controller();
+  EXPECT_EQ(notifier_controller->GetPrivacyNoticeShownCount(prefs), 0);
+  EXPECT_TRUE(notifier_controller->ShouldShowPrivacyNotice());
+  // TODO(crbug.com/1352636): Check that the image search is not enabled.
+
+  // Press a character key to open the search.
+  PressAndReleaseKey(ui::VKEY_A);
+  EXPECT_TRUE(GetSearchPage()->GetVisible());
+  EXPECT_EQ(notifier_controller->GetPrivacyNoticeShownCount(prefs), 1);
+  EXPECT_TRUE(notifier_controller->ShouldShowPrivacyNotice());
+  // The search notifier shows for the first time.
+  auto* search_notifier = GetSearchView()->search_notifier_view();
+  ASSERT_TRUE(search_notifier);
+  EXPECT_TRUE(search_notifier->GetVisible());
+
+  PressAndReleaseKey(ui::VKEY_BACK);
+  EXPECT_FALSE(GetSearchPage()->GetVisible());
+  EXPECT_EQ(notifier_controller->GetPrivacyNoticeShownCount(prefs), 1);
+
+  // The search notifier shows for the second time.
+  PressAndReleaseKey(ui::VKEY_A);
+  EXPECT_TRUE(GetSearchPage()->GetVisible());
+  EXPECT_EQ(notifier_controller->GetPrivacyNoticeShownCount(prefs), 2);
+  EXPECT_TRUE(notifier_controller->ShouldShowPrivacyNotice());
+  EXPECT_TRUE(search_notifier->GetVisible());
+
+  PressAndReleaseKey(ui::VKEY_BACK);
+  EXPECT_FALSE(GetSearchPage()->GetVisible());
+  EXPECT_EQ(notifier_controller->GetPrivacyNoticeShownCount(prefs), 2);
+
+  // The search notifier shows for the third time.
+  PressAndReleaseKey(ui::VKEY_A);
+  EXPECT_TRUE(GetSearchPage()->GetVisible());
+  EXPECT_EQ(notifier_controller->GetPrivacyNoticeShownCount(prefs), 3);
+  EXPECT_TRUE(notifier_controller->ShouldShowPrivacyNotice());
+  EXPECT_TRUE(search_notifier->GetVisible());
+
+  PressAndReleaseKey(ui::VKEY_BACK);
+  EXPECT_FALSE(GetSearchPage()->GetVisible());
+  EXPECT_EQ(notifier_controller->GetPrivacyNoticeShownCount(prefs), 3);
+
+  // The search notifier should not show more than 3 times.
+  PressAndReleaseKey(ui::VKEY_A);
+  EXPECT_TRUE(GetSearchPage()->GetVisible());
+  EXPECT_EQ(notifier_controller->GetPrivacyNoticeShownCount(prefs), 4);
+  EXPECT_FALSE(notifier_controller->ShouldShowPrivacyNotice());
+  EXPECT_FALSE(GetSearchView()->search_notifier_view());
+  EXPECT_TRUE(IsImageSearchEnabled(prefs));
+}
+
+TEST_P(SearchResultImageViewTest, AcceptingPrivacyNoticeRemovesIt) {
+  GetAppListTestHelper()->ShowAppList();
+
+  auto* search_notifier_controller =
+      GetSearchView()->search_notifier_controller();
+  EXPECT_TRUE(search_notifier_controller->ShouldShowPrivacyNotice());
+  // TODO(crbug.com/1352636): Check that the image search is not enabled.
+
+  // Press a character key to open the search.
+  PressAndReleaseKey(ui::VKEY_A);
+  EXPECT_TRUE(GetSearchPage()->GetVisible());
+  auto* search_notifier = GetSearchView()->search_notifier_view();
+  ASSERT_TRUE(search_notifier);
+  EXPECT_TRUE(search_notifier->GetVisible());
+
+  // Accept the privacy notice.
+  LeftClickOn(search_notifier->toast_button());
+
+  // The privacy notice should not be shown again after accepted.
+  EXPECT_FALSE(GetSearchView()->search_notifier_view());
+  EXPECT_FALSE(search_notifier_controller->ShouldShowPrivacyNotice());
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  EXPECT_TRUE(IsImageSearchEnabled(prefs));
 }
 
 TEST_P(SearchViewClamshellAndTabletTest, AnimateSearchResultView) {

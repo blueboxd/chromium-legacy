@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">درحال جستجوی شبکه‌های دستگاه همراه</translation>
 <translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">‏Google Drive در حال حاضر در دسترس نیست. به محض در دسترس قرار گرفتن Google Drive بارگذاری کردن به صورت خودکار دوباره شروع می‌شود.</translation>
+<translation id="1306130176943817227">حذف نشد. مورد درحال استفاده است.</translation>
 <translation id="1307931752636661898">‏نمی‌توان فایل‌های Linux را مشاهده کرد</translation>
 <translation id="1313405956111467313">پیکربندی پراکسی خودکار</translation>
 <translation id="134645005685694099">فضای ذخیره‌سازی دستگاه برای روشن نگه داشتن همگام‌سازی فایل کافی نیست. فایل‌های جدید ازاین‌پس به‌طور خودکار همگام‌سازی نخواهند شد.</translation>
@@ -115,7 +116,6 @@
 <translation id="1920798810075583923">هندوانه</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> قالب‌بندی شد</translation>
 <translation id="1931134289871235022">اسلواکی</translation>
-<translation id="1933345018156373194">انتقال انجام نشد، خطای غیرمنتظره: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">فنلاندی</translation>
 <translation id="1942765061641586207">وضوح تصویر</translation>
 <translation id="1972984168337863910">بزرگ کردن پانل‌های بازخورد فایل‌ها</translation>
@@ -502,7 +502,6 @@
 <translation id="4969785127455456148">آلبوم</translation>
 <translation id="4972330214479971536">راه‌اندازی همگام‌سازی فایل تکمیل نشد</translation>
 <translation id="4973523518332075481">‏از نامی استفاده کنید که ‎<ph name="MAX_LENGTH" /> نویسه یا کمتر داشته باشد</translation>
-<translation id="4973970068702235170">فشرده‌سازی انجام نشد، خطای غیرمنتظره: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">ژاپنی</translation>
 <translation id="4987699874727873250">انگلیسی (هند)</translation>
 <translation id="4988205478593450158">آیا مطمئنید می‌خواهید «<ph name="FILE_NAME" />» را حذف کنید؟</translation>
@@ -543,6 +542,7 @@
 <translation id="5218183485292899140">فرانسوی سوئیس</translation>
 <translation id="5234764350956374838">رد کردن</translation>
 <translation id="5253070652067921974">ایجاد شده توسط</translation>
+<translation id="5254207638927440400">فایل منتقل نشد. فایل درحال استفاده است.</translation>
 <translation id="5257456363153333584">سنجاقک</translation>
 <translation id="5262311848634918433">‏<ph name="MARKUP_1" />در همه جا به فایل‌ها دسترسی داشته باشید، حتی وقتی به اینترنت متصل نیستید.<ph name="MARKUP_2" />
         فایل‌های موجود در Google Drive به‌روز هستند و از هر دستگاهی می‌توان به آن‌ها دسترسی داشت.<ph name="MARKUP_3" />
@@ -638,7 +638,6 @@
 <translation id="5896749729057314184">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />،‏ <ph name="NETWORK_NAME" />،‏ غیرفعال، قدرت سیگنال: <ph name="SIGNAL_STRENGTH" />٪، جزئیات</translation>
 <translation id="5911887972742538906">‏هنگام نصب برنامه Linux خطایی روی داد.</translation>
 <translation id="5912396950572065471">قالب</translation>
-<translation id="5913638992615760742">عملیات کپی انجام نشد، خطای غیرمنتظره: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">ویژگی‌های جستجوی جدید دردسترس است</translation>
 <translation id="5926082595146149752">هلندی (هلند) با صفحه‌کلید بین‌المللی آمریکایی رایانه</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -646,7 +645,6 @@
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> مورد</translation>
 <translation id="5957366693331451795">‏دستگاه‌های Chromebox</translation>
 <translation id="5982621672636444458">گزینه‌های مرتب‌سازی</translation>
-<translation id="6007237601604674381">انتقال انجام نشد. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">شبکه اترنت</translation>
 <translation id="60357267506638014">‏QWERTY چکی</translation>
 <translation id="603895874132768835">تا پین جدیدی راه‌اندازی نکنید، نمی‌توانید از این شبکه استفاده کنید</translation>
@@ -863,6 +861,7 @@
 <translation id="76959938259365003">پوشه حذف‌شده‌ها پاک نشد.</translation>
 <translation id="770015031906360009">یونانی</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> کپی شد.</translation>
+<translation id="7707941139430559579">فایل منتقل نشد. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">‏برای استفاده از این شبکه، باید «کلید لغو انسداد شخصی» (PUK‏) ۸ رقمی را که شرکت مخابراتی ارائه کرده است وارد کنید.</translation>
 <translation id="7711920809702896782">اطلاعات تصویر</translation>
 <translation id="7724603315864178912">برش</translation>
@@ -1050,6 +1049,7 @@
 <translation id="9038620279323455325">فایلی با نام «<ph name="FILE_NAME" />» ازقبل وجود دارد. لطفاً نام دیگری انتخاب کنید.</translation>
 <translation id="9046895021617826162">اتصال برقرار نشد</translation>
 <translation id="9065512565307033593">اگر نتوانید به‌تأیید برسانید، دسترسی شما به شبکه غیرفعال خواهد شد.</translation>
+<translation id="9083722265619106011">{0,plural, =1{۱ هشدار.}one{<ph name="COUNT" /> هشدار.}other{<ph name="COUNT" /> هشدار.}}</translation>
 <translation id="908378762078012445">‏روسی با صفحه‌کلید آوایی AATSEEL</translation>
 <translation id="9086302186042011942">همگام‌سازی</translation>
 <translation id="9099674669267916096">تعداد صفحه</translation>

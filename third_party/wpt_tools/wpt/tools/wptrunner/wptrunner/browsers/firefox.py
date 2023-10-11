@@ -72,6 +72,17 @@ def get_timeout_multiplier(test_type, run_info_data, **kwargs):
             return 4 * multiplier
         else:
             return 2 * multiplier
+    elif test_type == "wdspec":
+        if (run_info_data.get("asan") or
+            run_info_data.get("ccov") or
+            run_info_data.get("debug")):
+            return 4 * multiplier
+        elif run_info_data.get("tsan"):
+            return 8 * multiplier
+
+        if run_info_data["os"] == "android":
+            return 4 * multiplier
+        return 1 * multiplier
     elif (run_info_data["debug"] or
           run_info_data.get("asan") or
           run_info_data.get("tsan")):
@@ -93,7 +104,7 @@ def check_args(**kwargs):
     require_arg(kwargs, "binary")
 
 
-def browser_kwargs(logger, test_type, run_info_data, config, **kwargs):
+def browser_kwargs(logger, test_type, run_info_data, config, subsuite, **kwargs):
     browser_kwargs = {"binary": kwargs["binary"],
                       "webdriver_binary": kwargs["webdriver_binary"],
                       "webdriver_args": kwargs["webdriver_args"],
@@ -123,6 +134,8 @@ def browser_kwargs(logger, test_type, run_info_data, config, **kwargs):
                       "debug_test": kwargs["debug_test"]}
     if test_type == "wdspec" and kwargs["binary"]:
         browser_kwargs["webdriver_args"].extend(["--binary", kwargs["binary"]])
+    browser_kwargs["binary_args"].extend(subsuite.config.get("binary_args", []))
+    browser_kwargs["extra_prefs"].extend(subsuite.config.get("prefs", []))
     return browser_kwargs
 
 
@@ -226,8 +239,18 @@ def run_info_browser_version(**kwargs):
 
 
 def update_properties():
-    return (["os", "debug", "fission", "processor", "swgl", "domstreams", "editorLegacyDirectionMode"],
-            {"os": ["version"], "processor": ["bits"]})
+    return ([
+        "os",
+        "debug",
+        "fission",
+        "processor",
+        "swgl",
+        "asan",
+        "tsan",
+        "subsuite",
+        "editorLegacyDirectionMode"], {
+        "os": ["version"],
+        "processor": ["bits"]})
 
 
 def log_gecko_crashes(logger, process, test, profile_dir, symbols_path, stackwalk_binary):
@@ -668,7 +691,6 @@ class ProfileCreator:
             # TODO: Remove preferences once Firefox 64 is stable (Bug 905404)
             "network.proxy.type": 0,
             "places.history.enabled": False,
-            "network.preload": True,
         })
         if self.e10s:
             profile.set_preferences({"browser.tabs.remote.autostart": True})

@@ -79,9 +79,8 @@ class CSSDefaultStyleSheets final
 
   StyleSheetContents* DefaultStyleSheet() { return default_style_sheet_.Get(); }
   StyleSheetContents* QuirksStyleSheet() { return quirks_style_sheet_.Get(); }
-  StyleSheetContents* PopoverStyleSheet() { return popover_style_sheet_.Get(); }
-  StyleSheetContents* SelectMenuStyleSheet() {
-    return selectmenu_style_sheet_.Get();
+  StyleSheetContents* SelectListStyleSheet() {
+    return selectlist_style_sheet_.Get();
   }
   StyleSheetContents* SvgStyleSheet() { return svg_style_sheet_.Get(); }
   StyleSheetContents* MathmlStyleSheet() { return mathml_style_sheet_.Get(); }
@@ -97,6 +96,9 @@ class CSSDefaultStyleSheets final
   }
   StyleSheetContents* FormControlsNotVerticalSheet() {
     return form_controls_not_vertical_style_sheet_.Get();
+  }
+  StyleSheetContents* FormControlsNotVerticalTextSheet() {
+    return form_controls_not_vertical_style_text_sheet_.Get();
   }
 
   CORE_EXPORT void PrepareForLeakDetection();
@@ -157,11 +159,11 @@ class CSSDefaultStyleSheets final
   Member<StyleSheetContents> media_controls_style_sheet_;
   Member<StyleSheetContents> text_track_style_sheet_;
   Member<StyleSheetContents> fullscreen_style_sheet_;
-  Member<StyleSheetContents> popover_style_sheet_;
-  Member<StyleSheetContents> selectmenu_style_sheet_;
+  Member<StyleSheetContents> selectlist_style_sheet_;
   Member<StyleSheetContents> marker_style_sheet_;
   Member<StyleSheetContents> forced_colors_style_sheet_;
   Member<StyleSheetContents> form_controls_not_vertical_style_sheet_;
+  Member<StyleSheetContents> form_controls_not_vertical_style_text_sheet_;
 
   std::unique_ptr<UAStyleSheetLoader> media_controls_style_sheet_loader_;
 };

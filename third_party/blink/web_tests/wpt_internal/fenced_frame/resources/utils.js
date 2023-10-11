@@ -87,19 +87,23 @@ async function generateURNFromFledgeRawURL(
   let interestGroup = {
     name: 'testAd1',
     owner: location.origin,
-    biddingLogicUrl: new URL(FLEDGE_BIDDING_URL, location.origin),
+    biddingLogicURL: new URL(FLEDGE_BIDDING_URL, location.origin),
     ads: [{renderUrl: href, bid: 1}],
     userBiddingSignals: {biddingToken: bidding_token},
     trustedBiddingSignalsKeys: ['key1'],
     adComponents: ad_components_list,
   };
 
-  let params = new URLSearchParams(interestGroup.biddingLogicUrl.search);
+  let biddingUrlParams =
+    new URLSearchParams(interestGroup.biddingLogicURL.search);
+  if (requested_size)
+    biddingUrlParams.set(
+        'requested-size', requested_size[0] + '-' + requested_size[1]);
   if (ad_with_size)
-    params.set('ad-with-size', 1);
+    biddingUrlParams.set('ad-with-size', 1);
   if (automatic_beacon)
-    params.set('automatic-beacon', 1);
-  interestGroup.biddingLogicUrl.search = params;
+    biddingUrlParams.set('automatic-beacon', 1);
+  interestGroup.biddingLogicURL.search = biddingUrlParams;
 
   if (ad_with_size) {
     interestGroup.ads[0].sizeGroup = 'group1';
@@ -114,13 +118,21 @@ async function generateURNFromFledgeRawURL(
   let auctionConfig = {
     seller: location.origin,
     interestGroupBuyers: [location.origin],
-    decisionLogicUrl: new URL(FLEDGE_DECISION_URL, location.origin),
+    decisionLogicURL: new URL(FLEDGE_DECISION_URL, location.origin),
     auctionSignals: {biddingToken: bidding_token, sellerToken: seller_token},
     resolveToConfig: resolve_to_config
   };
+
   if (requested_size) {
+    let decisionUrlParams =
+      new URLSearchParams(auctionConfig.decisionLogicURL.search);
+    decisionUrlParams.set(
+        'requested-size', requested_size[0] + '-' + requested_size[1]);
+    auctionConfig.decisionLogicURL.search = decisionUrlParams;
+
     auctionConfig['requestedSize'] = {width: requested_size[0], height: requested_size[1]};
   }
+
   return navigator.runAdAuction(auctionConfig);
 }
 

@@ -6,6 +6,7 @@
 load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
+load("//lib/builder_health_indicators.star", "health_spec")
 load("//lib/builders.star", "cpu", "os", "reclient", "sheriff_rotations", "xcode")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
@@ -19,6 +20,7 @@ ci.defaults.set(
     tree_closing = True,
     main_console_view = "main",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
+    health_spec = health_spec.DEFAULT,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
@@ -496,6 +498,7 @@ ios_builder(
         ),
         build_gs_bucket = "chromium-mac-archive",
     ),
+    cpu = cpu.ARM64,
     console_view_entry = [
         consoles.console_view_entry(
             category = "ios|default",

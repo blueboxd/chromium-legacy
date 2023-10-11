@@ -18,11 +18,14 @@
 # tags: [ desktop
 #         mobile ]
 # Browser
-# tags: [ android-chromium android-webview-instrumentation
+# tags: [ android-chromium
+#         android-webview-instrumentation
 #         debug debug-x64
 #         release release-x64
-#         fuchsia-chrome web-engine-shell
-#         lacros-chrome cros-chrome ]
+#         fuchsia-chrome
+#         web-engine-shell
+#         lacros-chrome
+#         cros-chrome ]
 # GPU
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x67ef amd-0x6821 amd-0x7340
 #         apple apple-apple-m1 apple-apple-m2
@@ -31,7 +34,7 @@
 #         arm
 #         google google-0xffff google-0xc0de
 #         intel intel-gen-9 intel-gen-12 intel-0xa2e intel-0xd26 intel-0xa011
-#               intel-0x3e92 intel-0x3e9b intel-0x5912 intel-0x9bc5
+#             intel-0x3e92 intel-0x3e9b intel-0x5912 intel-0x9bc5
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm ]
 # Architecture
@@ -67,6 +70,8 @@
 # tags: [ webgpu-adapter-default webgpu-adapter-swiftshader ]
 # WebGPU Compat Mode
 # tags: [ webgpu-compat webgpu-not-compat ]
+# WebGPU DXC
+# tags: [ webgpu-dxc-enabled webgpu-dxc-disabled webgpu-dxc-default ]
 # Clang coverage
 # tags: [ clang-coverage no-clang-coverage ]
 # Skia Graphite
@@ -206,22 +211,20 @@ crbug.com/1307787 [ fuchsia ] Pixel_VulkanSwiftShader_WebGPU* [ Skip ]
 crbug.com/1307787 [ mac ] Pixel_VulkanSwiftShader_WebGPU* [ Skip ]
 crbug.com/1307787 [ win ] Pixel_VulkanSwiftShader_WebGPU* [ Skip ]
 
-# Test is too slow for old phones and laptops, and in Debug mode.
+# Test is too slow for old phones and laptops, and in Debug and ASAN.
 crbug.com/1356246 [ android android-nexus-5x ] Pixel_SVGHuge [ Skip ]
 crbug.com/1356246 [ mac amd debug ] Pixel_SVGHuge [ Skip ]
+crbug.com/1356246 [ mac amd release asan ] Pixel_SVGHuge [ Skip ]
+crbug.com/1356246 [ mac intel debug ] Pixel_SVGHuge [ Skip ]
+crbug.com/1356246 [ mac intel release asan ] Pixel_SVGHuge [ Skip ]
 # Mac Nvidia laptops are quite old and the test times out on release builds too.
 crbug.com/1356246 [ mac nvidia ] Pixel_SVGHuge [ Skip ]
+# Test flakily times out on Win10 and Linux Debug
+crbug.com/1474637 [ win10 nvidia debug ] Pixel_SVGHuge [ RetryOnFailure ]
+crbug.com/1474637 [ linux nvidia debug ] Pixel_SVGHuge [ RetryOnFailure ]
 
 # Fuchsia devices do not have enough memory for this test.
 crbug.com/1441056 [ fuchsia ] Pixel_SVGHuge [ Skip ]
-
-# MediaFoundation for Clear DirectComposition only supported on WIN10_RS3.
-[ android ] Pixel_MediaFoundationClearDirectComposition [ Skip ]
-[ chromeos ] Pixel_MediaFoundationClearDirectComposition [ Skip ]
-[ fuchsia ] Pixel_MediaFoundationClearDirectComposition [ Skip ]
-[ linux ] Pixel_MediaFoundationClearDirectComposition [ Skip ]
-[ mac ] Pixel_MediaFoundationClearDirectComposition [ Skip ]
-[ win8 ] Pixel_MediaFoundationClearDirectComposition [ Skip ]
 
 # WebGPU is not shipped on MacOS < 13.
 crbug.com/1426664 [ monterey ] Pixel_WebGPU* [ Skip ]
@@ -284,8 +287,6 @@ crbug.com/1353952 [ chromeos cros-chrome chromeos-board-kevin ] Pixel_WebGLConte
 
 crbug.com/624256 [ android ] Pixel_SolidColorBackground [ Failure ]
 
-crbug.com/1213674 [ mac nvidia passthrough graphite-disabled ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ Failure ]
-
 # Mark all webview tests as RetryOnFailure due to Nexus 5x driver bug.
 crbug.com/950932 [ android-webview-instrumentation android-nexus-5x ] * [ RetryOnFailure ]
 
@@ -294,7 +295,6 @@ crbug.com/950932 [ android-webview-instrumentation android-nexus-5x ] * [ RetryO
 # should have made this test flaky instead of always failing. Need to
 # investigate later. Filed a bug to track the debug.
 crbug.com/984734 [ android android-webview-instrumentation android-nexus-5x ] Pixel_Video_Context_Loss_VP9 [ Failure ]
-
 
 # Failing on Lacros x64 Release Intel
 crbug.com/1458976 [ linux angle-opengles display-server-wayland intel passthrough release renderer-skia-gl no-clang-coverage ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Failure ]
@@ -307,15 +307,12 @@ crbug.com/1176918 [ android android-pixel-4 android-webview-instrumentation rend
 crbug.com/1230619 [ android-chromium android-pie android-pixel-2 angle-disabled no-clang-coverage no-passthrough qualcomm renderer-skia-gl target-cpu-32 ] Pixel_WebGLFloat [ Failure ]
 crbug.com/1230619 [ android-chromium android-pixel-6 android-t angle-disabled arm no-clang-coverage no-passthrough renderer-skia-vulkan target-cpu-64 ] Pixel_WebGLFloat [ Failure ]
 crbug.com/1230619 [ android-chromium android-s angle-disabled no-clang-coverage no-passthrough renderer-skia-gl target-cpu-32 ] Pixel_WebGLFloat [ Failure ]
-crbug.com/1230619 [ android-nexus-5x android-nougat android-webview-instrumentation angle-opengles no-clang-coverage no-passthrough qualcomm renderer-skia-gl target-cpu-64 ] Pixel_WebGLFloat [ Failure ]
+crbug.com/1230619 [ android-nexus-5x android android-webview-instrumentation ] Pixel_WebGLFloat [ Failure ]
 crbug.com/1230619 [ android-chromium android-pixel-4 android-r angle-disabled no-clang-coverage no-passthrough qualcomm renderer-skia-gl target-cpu-32 ] Pixel_WebGLFloat [ Failure ]
-
 
 # Failing likely due to protected memory, but cause TBD.
 crbug.com/1420067 [ fuchsia fuchsia-board-astro ] Pixel_Video* [ Failure ]
 crbug.com/1420067 [ fuchsia fuchsia-board-sherlock ] Pixel_Video* [ Failure ]
-
-
 
 # Failures on Sherlock
 # These two tests causes a crash on Swarming. Skipping so that we have a signal for other tests.
@@ -346,8 +343,6 @@ crbug.com/1372144 [ android android-sm-a135m ] Pixel_CanvasDisplaySRGBAccelerate
 crbug.com/1372144 [ android android-sm-a135m ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
 crbug.com/1372141 [ android android-sm-a235m ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
 
-
-
 crbug.com/1376927 [ win10 target-cpu-32 nvidia-0x2184 ] Pixel_MediaFoundationClearDirectComposition [ Failure ]
 
 # Fails / flaky on Linux AMD RX 5500 XT with RADV 20.0.8
@@ -355,6 +350,7 @@ crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] Pixel_OffscreenCanvasAcceler
 crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] Pixel_OffscreenCanvasAccelerated2DWorker [ Failure ]
 crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
 crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] Pixel_WebGLDisplayP3 [ Failure ]
+crbug.com/1478354 [ linux amd-0x7340 angle-vulkan ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ RetryOnFailure ]
 
 # Lacros consistent failures on CrOS devices, skip to save some time
 crbug.com/1392806 [ chromeos lacros-chrome ] Pixel_CanvasDisplaySRGBAccelerated2D [ Skip ]
@@ -375,6 +371,7 @@ crbug.com/1453989 [ linux nvidia release ] Pixel_VideoStreamFrom2DAlphaCanvas_Di
 crbug.com/1456360 [ chromeos chromeos-board-amd64-generic ] Pixel_WebGLCopyImage [ Skip ]
 crbug.com/1456360 [ chromeos chromeos-board-amd64-generic ] Pixel_WebGLSadCanvas [ Skip ]
 crbug.com/1456755 [ chromeos chromeos-board-amd64-generic ] Pixel_WebGLDisplayP3 [ Failure ]
+crbug.com/1471713 [ chromeos chromeos-board-amd64-generic ] Pixel_PrecisionRoundedCorner [ Failure ]
 
 crbug.com/1468826 [ ventura angle-opengl amd-0x67ef asan ] Pixel_WebGPUDisplayP3 [ Failure ]
 crbug.com/1468826 [ ventura angle-opengl amd-0x67ef asan ] Pixel_WebGPUToDataURL [ Failure ]
@@ -382,48 +379,26 @@ crbug.com/1468826 [ ventura angle-opengl amd-0x67ef asan ] Pixel_WebGPUToDataURL
 crbug.com/1469875 [ mac graphite-enabled ] Pixel_BackgroundImage [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled ] Pixel_CSSFilterEffects [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled ] Pixel_CSSFilterEffects_NoOverlays [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasAccelerated2D [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasAccelerated2DWorker [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled amd angle-opengl ] Pixel_OffscreenCanvasIBRCWebGLHighPerfMain [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled apple angle-opengl ] Pixel_OffscreenCanvasIBRCWebGLHighPerfMain [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled intel angle-opengl ] Pixel_OffscreenCanvasIBRCWebGLHighPerfMain [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled amd angle-opengl ] Pixel_OffscreenCanvasIBRCWebGLHighPerfWorker [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled apple angle-opengl ] Pixel_OffscreenCanvasIBRCWebGLHighPerfWorker [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled intel angle-opengl ] Pixel_OffscreenCanvasIBRCWebGLHighPerfWorker [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasIBRCWebGLMain [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasIBRCWebGLWorker [ Failure ]
+crbug.com/1469875 [ amd-0x679e angle-metal graphite-enabled mac-x86_64 monterey no-asan ] Pixel_OffscreenCanvasAccelerated2D [ Failure ]
+crbug.com/1469875 [ angle-opengl graphite-enabled no-asan ventura ] Pixel_OffscreenCanvasAccelerated2D [ Failure ]
+crbug.com/1469875 [ amd-0x679e angle-metal graphite-enabled mac-x86_64 monterey no-asan ] Pixel_OffscreenCanvasAccelerated2DWorker [ Failure ]
+crbug.com/1469875 [ angle-opengl graphite-enabled no-asan ventura ] Pixel_OffscreenCanvasAccelerated2DWorker [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasTransferToImageBitmap [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasTransferToImageBitmapSoftwareCompositing [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasTransferToImageBitmapWorker [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasWebGLDefault [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasWebGLDefaultWorker [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_PaintWorkletTransform [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled amd release ] Pixel_SVGHuge [ Failure ]
+crbug.com/1469875 [ amd-0x679e angle-metal graphite-enabled mac-x86_64 monterey no-asan ] Pixel_PaintWorkletTransform [ Failure ]
+crbug.com/1469875 [ angle-opengl graphite-enabled no-asan ventura ] Pixel_PaintWorkletTransform [ Failure ]
+crbug.com/1469875 [ mac graphite-enabled amd release no-asan ] Pixel_SVGHuge [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled apple ] Pixel_SVGHuge [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled intel ] Pixel_SVGHuge [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_VideoStreamFrom2DAlphaCanvas_DisableOOPRaster [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_VideoStreamFrom2DAlphaCanvas_DisableReadbackFromTexture [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGL2_ClearBufferfv_Result_Displayed [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGLContextRestored [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGLFloat [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGLGreenTriangle_NoAA_NoAlpha [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGLGreenTriangle_NonChromiumImage_AA_Alpha [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGLGreenTriangle_NonChromiumImage_AA_NoAlpha [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_Alpha [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGLSadCanvas [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGLWebCodecsBreakoutBoxDisplaysFrame [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGPUCanvasDisableOneCopyCapture_Accelerated [ Failure ]
+crbug.com/1469875 [ mac graphite-enabled intel release no-asan ] Pixel_SVGHuge [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled no-asan ] Pixel_WebGPUCanvasOneCopyCapture [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGPUImportVideoFrame [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
+
+crbug.com/1474611 [ mac nvidia angle-opengl graphite-disabled ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ Failure ]
+crbug.com/1476029 [ mac asan graphite-enabled ] Pixel_Video_BackdropFilter [ Failure ]
+crbug.com/1477318 [ mac ] Pixel_WebGLPreservedAfterTabSwitch [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

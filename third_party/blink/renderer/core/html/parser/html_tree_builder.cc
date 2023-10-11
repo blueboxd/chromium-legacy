@@ -723,6 +723,7 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
     case HTMLTag::kNav:
     case HTMLTag::kOl:
     case HTMLTag::kP:
+    case HTMLTag::kSearch:
     case HTMLTag::kSection:
     case HTMLTag::kSummary:
     case HTMLTag::kUl:
@@ -978,6 +979,12 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
         tree_.InsertForeignElement(token, svg_names::kNamespaceURI);
       } else {
         tree_.ReconstructTheActiveFormattingElements();
+        if (RuntimeEnabledFeatures::
+                FlushParserBeforeCreatingCustomElementsEnabled()) {
+          // Flush before creating custom elements. NOTE: Flush() can cause any
+          // queued tasks to execute, possibly re-entering the parser.
+          tree_.Flush();
+        }
         tree_.InsertHTMLElement(token);
       }
       break;
@@ -1004,11 +1011,8 @@ DeclarativeShadowRootType DeclarativeShadowRootTypeFromToken(
   // crbug.com/1396384 tracks the eventual removal of the old behavior.
   Attribute* type_attribute_streaming =
       token->GetAttributeItem(html_names::kShadowrootmodeAttr);
-  bool streaming =
-      type_attribute_streaming &&
-      RuntimeEnabledFeatures::StreamingDeclarativeShadowDOMEnabled();
   String shadow_mode;
-  if (streaming) {
+  if (type_attribute_streaming) {
     shadow_mode = type_attribute_streaming->Value();
   } else {
     Attribute* type_attribute_non_streaming =
@@ -1016,19 +1020,33 @@ DeclarativeShadowRootType DeclarativeShadowRootTypeFromToken(
     if (!type_attribute_non_streaming) {
       return DeclarativeShadowRootType::kNone;
     }
+    if (!RuntimeEnabledFeatures::
+            DeprecatedNonStreamingDeclarativeShadowDOMEnabled()) {
+      document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kDeprecation,
+          mojom::blink::ConsoleMessageLevel::kError,
+          "Found an old-style declarative `shadowroot` attribute on a "
+          "template, but that style was deprecated and has been removed. "
+          "Please use the `shadowrootmode` attribute instead. Please see "
+          "https://chromestatus.com/feature/6239658726391808."));
+      return DeclarativeShadowRootType::kNone;
+    }
     shadow_mode = type_attribute_non_streaming->Value();
   }
 
   if (include_shadow_roots) {
     if (EqualIgnoringASCIICase(shadow_mode, "open")) {
-      return streaming ? DeclarativeShadowRootType::kStreamingOpen
-                       : DeclarativeShadowRootType::kOpen;
+      return type_attribute_streaming
+                 ? DeclarativeShadowRootType::kStreamingOpen
+                 : DeclarativeShadowRootType::kOpen;
     } else if (EqualIgnoringASCIICase(shadow_mode, "closed")) {
-      return streaming ? DeclarativeShadowRootType::kStreamingClosed
-                       : DeclarativeShadowRootType::kClosed;
+      return type_attribute_streaming
+                 ? DeclarativeShadowRootType::kStreamingClosed
+                 : DeclarativeShadowRootType::kClosed;
     }
   }
-  String attribute_in_use = streaming ? "shadowrootmode" : "shadowroot";
+  String attribute_in_use =
+      type_attribute_streaming ? "shadowrootmode" : "shadowroot";
   if (!include_shadow_roots) {
     document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kOther,
@@ -1083,32 +1101,36 @@ bool HTMLTreeBuilder::ProcessTemplateEndTag(AtomicHTMLToken* token) {
         DynamicTo<HTMLTemplateElement>(template_stack_item->GetElement());
     DocumentFragment* template_content = nullptr;
     if (template_element->IsDeclarativeShadowRoot()) {
-      if (shadow_host_stack_item->GetNode() ==
-          tree_.OpenElements()->RootNode()) {
-        // 10. If the adjusted current node is the topmost element in the stack
-        // of open elements, then stop this algorithm.
-        template_element->SetDeclarativeShadowRootType(
-            DeclarativeShadowRootType::kNone);
-      } else {
-        DCHECK(shadow_host_stack_item);
-        DCHECK(shadow_host_stack_item->IsElementNode());
-        if (template_element->IsNonStreamingDeclarativeShadowRoot()) {
-          template_content = template_element->DeclarativeShadowContent();
-          auto focus_delegation = template_stack_item->GetAttributeItem(
-                                      html_names::kShadowrootdelegatesfocusAttr)
-                                      ? FocusDelegation::kDelegateFocus
-                                      : FocusDelegation::kNone;
-          // TODO(crbug.com/1063157): Add an attribute for imperative slot
-          // assignment.
-          auto slot_assignment_mode = SlotAssignmentMode::kNamed;
-          shadow_host_stack_item->GetElement()
-              ->AttachDeprecatedNonStreamingDeclarativeShadowRoot(
-                  *template_element,
-                  template_element->GetDeclarativeShadowRootType() ==
-                          DeclarativeShadowRootType::kOpen
-                      ? ShadowRootType::kOpen
-                      : ShadowRootType::kClosed,
-                  focus_delegation, slot_assignment_mode);
+      if (RuntimeEnabledFeatures::
+              DeprecatedNonStreamingDeclarativeShadowDOMEnabled()) {
+        if (shadow_host_stack_item->GetNode() ==
+            tree_.OpenElements()->RootNode()) {
+          // 10. If the adjusted current node is the topmost element in the
+          // stack of open elements, then stop this algorithm.
+          template_element->SetDeclarativeShadowRootType(
+              DeclarativeShadowRootType::kNone);
+        } else {
+          DCHECK(shadow_host_stack_item);
+          DCHECK(shadow_host_stack_item->IsElementNode());
+          if (template_element->IsNonStreamingDeclarativeShadowRoot()) {
+            template_content = template_element->DeclarativeShadowContent();
+            auto focus_delegation =
+                template_stack_item->GetAttributeItem(
+                    html_names::kShadowrootdelegatesfocusAttr)
+                    ? FocusDelegation::kDelegateFocus
+                    : FocusDelegation::kNone;
+            // TODO(crbug.com/1063157): Add an attribute for imperative slot
+            // assignment.
+            auto slot_assignment_mode = SlotAssignmentMode::kNamed;
+            shadow_host_stack_item->GetElement()
+                ->AttachDeprecatedNonStreamingDeclarativeShadowRoot(
+                    *template_element,
+                    template_element->GetDeclarativeShadowRootType() ==
+                            DeclarativeShadowRootType::kOpen
+                        ? ShadowRootType::kOpen
+                        : ShadowRootType::kClosed,
+                    focus_delegation, slot_assignment_mode);
+          }
         }
       }
     } else {
@@ -2011,6 +2033,7 @@ void HTMLTreeBuilder::ProcessEndTagForInBody(AtomicHTMLToken* token) {
     case HTMLTag::kNav:
     case HTMLTag::kOl:
     case HTMLTag::kPre:
+    case HTMLTag::kSearch:
     case HTMLTag::kSection:
     case HTMLTag::kSummary:
     case HTMLTag::kUl:

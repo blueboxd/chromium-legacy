@@ -41,6 +41,11 @@ BASE_FEATURE(kWebViewConnectionlessSafeBrowsing,
              "WebViewConnectionlessSafeBrowsing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Kill switch for adding CHECKs to loading pak files.
+BASE_FEATURE(kWebViewCheckPakFileDescriptors,
+             "WebViewCheckPakFileDescriptors",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Cache origins which have camera/mic permissions approved to allow subsequent
 // calls to enumerate devices to return device labels.
 BASE_FEATURE(kWebViewEnumerateDevicesCache,
@@ -179,7 +184,7 @@ BASE_FEATURE(kWebViewImageDrag,
 // This Feature is checked and used in downstream internal code.
 BASE_FEATURE(kWebViewUmaUploadQualityOfServiceSetToDefault,
              "WebViewUmaUploadQualityOfServiceSetToDefault",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // This enables zoom keyboard shortcuts for zoom-in, zoom-out and zoom reset.
 BASE_FEATURE(kWebViewZoomKeyboardShortcuts,

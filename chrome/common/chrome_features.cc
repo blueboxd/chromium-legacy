@@ -63,6 +63,13 @@ BASE_FEATURE(kAppShimRemoteCocoa,
 BASE_FEATURE(kAppShimNewCloseBehavior,
              "AppShimNewCloseBehavior",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, notifications coming from PWAs will be displayed via their app
+// shim processes, rather than directly by chrome.
+// https://crbug.com/938661
+BASE_FEATURE(kAppShimNotificationAttribution,
+             "AppShimNotificationAttribution",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_MAC)
 
 // Enables the built-in DNS resolver.
@@ -104,9 +111,20 @@ BASE_FEATURE(kBackgroundModeAllowRestart,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(IS_CHROMEOS)
+BASE_FEATURE(kQuickOfficeForceFileDownload,
+             "QuickOfficeForceFileDownload",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable Borealis on Chrome OS.
 BASE_FEATURE(kBorealis, "Borealis", base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+// Enables cco test1.
+BASE_FEATURE(kCcoTest1, "CcoTest1", base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Enables change picture video mode.
@@ -237,7 +255,8 @@ const base::FeatureParam<OsIntegrationSubManagersStage>::Option
 const base::FeatureParam<OsIntegrationSubManagersStage>
     kOsIntegrationSubManagersStageParam{
         &kOsIntegrationSubManagers, "stage",
-        OsIntegrationSubManagersStage::kWriteConfig, &sub_manager_stages};
+        OsIntegrationSubManagersStage::kExecuteAndWriteConfig,
+        &sub_manager_stages};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -392,7 +411,7 @@ BASE_FEATURE(kEnableWebHidOnExtensionServiceWorker,
 // Enable WebUSB on extension service workers.
 BASE_FEATURE(kEnableWebUsbOnExtensionServiceWorker,
              "EnableWebUsbOnExtensionServiceWorker",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable extended descriptions for key settings in Chrome settings.
 BASE_FEATURE(kExtendedSettingsDescriptions,
@@ -440,6 +459,25 @@ BASE_FEATURE(kFlashDeprecationWarning,
 // of languages.
 BASE_FEATURE(kGeoLanguage, "GeoLanguage", base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables or disables the Privacy Guide v3 update of the Privacy Guide feature
+// in Chrome Settings.
+BASE_FEATURE(kPrivacyGuide3,
+             "PrivacyGuide3",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables or disables the Privacy Guide preload card update of the Privacy
+// Guide feature in Chrome Settings. Also, this requires the PrivacyGuide3
+// feature to be enabled as well.
+BASE_FEATURE(kPrivacyGuidePreload,
+             "PrivacyGuidePreload",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kPrivacyGuideAndroid3,
+             "PrivacyGuideAndroid3",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 #if !BUILDFLAG(IS_ANDROID)
 // Enables or disables the Happiness Tracking System demo mode for Desktop
 // Chrome.
@@ -475,12 +513,6 @@ BASE_FEATURE(kHaTSDesktopDevToolsIssuesHeavyAd,
 // DevTools on Desktop.
 BASE_FEATURE(kHaTSDesktopDevToolsIssuesCSP,
              "HaTSDesktopDevToolsIssuesCSP",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables or disables the Privacy Guide v3 update of the Privacy Guide feature
-// in Chrome Settings.
-BASE_FEATURE(kPrivacyGuide3,
-             "PrivacyGuide3",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables the Happiness Tracking System for Desktop Privacy Guide.
@@ -856,7 +888,7 @@ BASE_FEATURE(kMacSystemScreenCapturePermissionCheck,
 // whether to treat a WiFi or Cellular network as 'metered'.
 BASE_FEATURE(kMeteredShowToggle,
              "MeteredShowToggle",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Whether to show the Hidden toggle in Settings, allowing users to toggle
 // whether to treat a WiFi network as having a hidden ssid.
@@ -905,6 +937,13 @@ BASE_FEATURE(kNewMacNotificationAPI,
              "NewMacNotificationAPI",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(IS_CHROMEOS)
+// Enables new UX for files policy restrictions on ChromeOS.
+BASE_FEATURE(kNewFilesPolicyUX,
+             "NewFilesPolicyUX",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // When kNoReferrers is enabled, most HTTP requests will provide empty
 // referrers instead of their ordinary behavior.
@@ -993,7 +1032,7 @@ BASE_FEATURE(kPrerenderFallbackToPreconnect,
 // Enable improved printer state and error state messaging for Print Preview.
 BASE_FEATURE(kPrintPreviewSetupAssistance,
              "PrintPreviewSetupAssistance",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 BASE_FEATURE(kPrivacyGuideAndroid,
@@ -1399,6 +1438,10 @@ const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2PrivacySandbox4NoticeSettingsProbability{
         &kTrustSafetySentimentSurveyV2,
         "privacy-sandbox-4-notice-settings-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2SafeBrowsingInterstitialProbability{
+        &kTrustSafetySentimentSurveyV2,
+        "safe-browsing-interstitial-probability", 0.0};
 // The HaTS trigger IDs, which determine which survey is delivered from the HaTS
 // backend.
 const base::FeatureParam<std::string>
@@ -1435,6 +1478,10 @@ extern const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2PrivacySandbox4NoticeSettingsTriggerId{
         &kTrustSafetySentimentSurveyV2,
         "privacy-sandbox-4-notice-settings-trigger-id", ""};
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2SafeBrowsingInterstitialTriggerId{
+        &kTrustSafetySentimentSurveyV2, "safe-browsing-interstitial-trigger-id",
+        ""};
 // The time the user must have the Trusted Surface bubble open to be considered.
 // Alternatively the user can interact with the bubble, in which case this time
 // is irrelevant.
@@ -1504,6 +1551,15 @@ BASE_FEATURE(kWebKioskEnableLacros,
              "WebKioskEnableLacros",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS)
+// Enables Isolated context APIs (Coralfish/IWA APIs) in web kiosk sessions.
+// When enabled, Web App (PWA) kiosk session passes an isolated context check,
+// which makes blink expose IWA APIs to be used by the web app.
+BASE_FEATURE(kWebKioskEnableIwaApis,
+             "WebKioskEnableIwaApis",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 #if !BUILDFLAG(IS_ANDROID)
 // Allow capturing of WebRTC event logs, and uploading of those logs to Crash.

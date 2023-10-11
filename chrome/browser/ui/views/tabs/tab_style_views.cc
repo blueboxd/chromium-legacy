@@ -19,11 +19,14 @@
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/top_container_background.h"
 #include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkRRect.h"
@@ -940,10 +943,12 @@ void GM2TabStyleViews::PaintTabBackgroundFill(
   if (fill_id.has_value()) {
     gfx::ScopedCanvas scale_scoper(canvas);
     canvas->sk_canvas()->scale(scale, scale);
-    canvas->TileImageInt(
-        *tab_->GetThemeProvider()->GetImageSkiaNamed(fill_id.value()),
-        tab_->GetMirroredX() + tab_->controller()->GetBackgroundOffset(), 0, 0,
-        y_inset, tab_->width(), tab_->height());
+    gfx::ImageSkia* image =
+        tab_->GetThemeProvider()->GetImageSkiaNamed(fill_id.value());
+    TopContainerBackground::PaintThemeAlignedImage(
+        canvas, tab_,
+        BrowserView::GetBrowserViewForBrowser(tab_->controller()->GetBrowser()),
+        image);
   }
 
   if (hovered) {
@@ -1190,12 +1195,22 @@ SkPath ChromeRefresh2023TabStyleViews::GetPath(
       const int right_separator_overlap =
           tab_style()->GetSeparatorSize().width() - left_separator_overlap;
 
-      left -= (tab_style()->GetSeparatorMargins().right() +
-               left_separator_overlap) *
-              scale;
-      right += (tab_style()->GetSeparatorMargins().left() +
-                right_separator_overlap) *
-               scale;
+      // If there is a tab before this one, then expand into its overlap.
+      const Tab* const previous_tab =
+          tab()->controller()->GetAdjacentTab(tab(), -1);
+      if (previous_tab) {
+        left -= (tab_style()->GetSeparatorMargins().right() +
+                 left_separator_overlap) *
+                scale;
+      }
+
+      // If there is a tab after this one, then expand into its overlap.
+      const Tab* const next_tab = tab()->controller()->GetAdjacentTab(tab(), 1);
+      if (next_tab) {
+        right += (tab_style()->GetSeparatorMargins().left() +
+                  right_separator_overlap) *
+                 scale;
+      }
     }
 
     SkPath path;

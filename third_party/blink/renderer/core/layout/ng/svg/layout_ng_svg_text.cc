@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
+#include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 #include "third_party/blink/renderer/core/paint/svg_model_object_painter.h"
@@ -234,7 +235,7 @@ void LayoutNGSVGText::UpdateLayout() {
     needs_text_metrics_update_ = false;
   }
 
-  gfx::RectF old_boundaries = ObjectBoundingBox();
+  const gfx::RectF old_boundaries = ObjectBoundingBox();
 
   const ComputedStyle& style = StyleRef();
   NGConstraintSpaceBuilder builder(
@@ -245,8 +246,23 @@ void LayoutNGSVGText::UpdateLayout() {
 
   needs_update_bounding_box_ = true;
 
-  gfx::RectF boundaries = ObjectBoundingBox();
+  const gfx::RectF boundaries = ObjectBoundingBox();
   const bool bounds_changed = old_boundaries != boundaries;
+  bool update_parent_boundaries = false;
+  if (bounds_changed) {
+    update_parent_boundaries = true;
+  }
+  if (UpdateAfterSvgLayout(bounds_changed)) {
+    update_parent_boundaries = true;
+  }
+
+  // If our bounds changed, notify the parents.
+  if (update_parent_boundaries) {
+    SetNeedsBoundariesUpdate();
+  }
+}
+
+bool LayoutNGSVGText::UpdateAfterSvgLayout(bool bounds_changed) {
   if (bounds_changed) {
     // Invalidate all resources of this client if our reference box changed.
     SVGResourceInvalidator resource_invalidator(*this);
@@ -254,11 +270,8 @@ void LayoutNGSVGText::UpdateLayout() {
     resource_invalidator.InvalidatePaints();
   }
 
-  // If our bounds changed, notify the parents.
-  if (UpdateTransformAfterLayout(bounds_changed) || bounds_changed)
-    SetNeedsBoundariesUpdate();
-
   UpdateTransformAffectsVectorEffect();
+  return UpdateTransformAfterLayout(bounds_changed);
 }
 
 bool LayoutNGSVGText::IsObjectBoundingBoxValid() const {
@@ -336,9 +349,10 @@ bool LayoutNGSVGText::NodeAtPoint(HitTestResult& result,
   if (!local_location)
     return false;
 
-  if (!SVGLayoutSupport::IntersectsClipPath(*this, ObjectBoundingBox(),
-                                            *local_location))
+  if (HasClipPath() &&
+      !ClipPathClipper::HitTest(*this, ObjectBoundingBox(), *local_location)) {
     return false;
+  }
 
   return LayoutNGBlockFlowMixin<LayoutSVGBlock>::NodeAtPoint(
       result, *local_location, accumulated_offset, phase);

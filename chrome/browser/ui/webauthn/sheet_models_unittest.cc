@@ -8,9 +8,11 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
+#include "chrome/grit/generated_resources.h"
 #include "device/fido/fido_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -115,11 +117,11 @@ TEST_F(AuthenticatorMultiSourcePickerSheetModelTest, GPMPasskeysOnly) {
   EXPECT_CALL(dialog_model, GetPrioritySyncedPhoneName)
       .WillRepeatedly(testing::Return(kPhoneName));
   mechanisms.emplace_back(
-      Mechanism::Credential(device::AuthenticatorType::kPhone), kPasskeyName1,
-      kPasskeyName1, kPasskeyPhoneIcon, base::DoNothing());
+      Mechanism::Credential({device::AuthenticatorType::kPhone, {0}}),
+      kPasskeyName1, kPasskeyName1, kPasskeyPhoneIcon, base::DoNothing());
   mechanisms.emplace_back(
-      Mechanism::Credential(device::AuthenticatorType::kPhone), kPasskeyName2,
-      kPasskeyName2, kPasskeyPhoneIcon, base::DoNothing());
+      Mechanism::Credential({device::AuthenticatorType::kPhone, {1}}),
+      kPasskeyName2, kPasskeyName2, kPasskeyPhoneIcon, base::DoNothing());
   mechanisms.emplace_back(
       Mechanism::Transport(AuthenticatorTransport::kUsbHumanInterfaceDevice),
       u"security key", u"usb", kPasskeyAoaIcon, base::DoNothing());
@@ -129,7 +131,9 @@ TEST_F(AuthenticatorMultiSourcePickerSheetModelTest, GPMPasskeysOnly) {
   AuthenticatorMultiSourcePickerSheetModel model(&dialog_model);
   EXPECT_THAT(model.primary_passkey_indices(), testing::ElementsAre(0, 1));
   EXPECT_THAT(model.secondary_passkey_indices(), testing::ElementsAre(2));
-  EXPECT_EQ(model.primary_passkeys_label(), u"From \"pixel 7\" (UNTRANSLATED)");
+  EXPECT_EQ(
+      model.primary_passkeys_label(),
+      l10n_util::GetStringFUTF16(IDS_WEBAUTHN_FROM_PHONE_LABEL, kPhoneName));
 }
 
 TEST_F(AuthenticatorMultiSourcePickerSheetModelTest, GPMAndLocalPasskeys) {
@@ -138,11 +142,11 @@ TEST_F(AuthenticatorMultiSourcePickerSheetModelTest, GPMAndLocalPasskeys) {
   EXPECT_CALL(dialog_model, GetPrioritySyncedPhoneName)
       .WillRepeatedly(testing::Return(kPhoneName));
   mechanisms.emplace_back(
-      Mechanism::Credential(device::AuthenticatorType::kPhone), kPasskeyName1,
-      kPasskeyName1, kPasskeyPhoneIcon, base::DoNothing());
+      Mechanism::Credential({device::AuthenticatorType::kPhone, {0}}),
+      kPasskeyName1, kPasskeyName1, kPasskeyPhoneIcon, base::DoNothing());
   mechanisms.emplace_back(
-      Mechanism::Credential(device::AuthenticatorType::kTouchID), kPasskeyName2,
-      kPasskeyName2, kPasskeyAoaIcon, base::DoNothing());
+      Mechanism::Credential({device::AuthenticatorType::kTouchID, {1}}),
+      kPasskeyName2, kPasskeyName2, kPasskeyAoaIcon, base::DoNothing());
   mechanisms.emplace_back(
       Mechanism::Transport(AuthenticatorTransport::kUsbHumanInterfaceDevice),
       u"security key", u"usb", kPasskeyAoaIcon, base::DoNothing());
@@ -152,7 +156,8 @@ TEST_F(AuthenticatorMultiSourcePickerSheetModelTest, GPMAndLocalPasskeys) {
   AuthenticatorMultiSourcePickerSheetModel model(&dialog_model);
   EXPECT_THAT(model.primary_passkey_indices(), testing::ElementsAre(1));
   EXPECT_THAT(model.secondary_passkey_indices(), testing::ElementsAre(0, 2));
-  EXPECT_EQ(model.primary_passkeys_label(), u"From this device (UNTRANSLATED)");
+  EXPECT_EQ(model.primary_passkeys_label(),
+            l10n_util::GetStringUTF16(IDS_WEBAUTHN_THIS_DEVICE_LABEL));
 }
 
 TEST_F(AuthenticatorMultiSourcePickerSheetModelTest, NoDiscoveredPasskeys) {

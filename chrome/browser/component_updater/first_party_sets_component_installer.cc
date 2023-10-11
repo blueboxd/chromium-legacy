@@ -13,7 +13,6 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/task/thread_pool.h"
@@ -22,6 +21,7 @@
 #include "components/component_updater/component_updater_paths.h"
 #include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/common/content_features.h"
+#include "net/base/features.h"
 #include "net/cookies/cookie_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -63,7 +63,11 @@ GetConfigPathInstance() {
 }
 
 base::TaskPriority GetTaskPriority() {
-  return content::FirstPartySetsHandler::GetInstance()->IsEnabled()
+  // We may use USER_BLOCKING here since First-Party Set initialization can
+  // block network requests at startup.
+  return content::FirstPartySetsHandler::GetInstance()->IsEnabled() &&
+                 base::FeatureList::IsEnabled(
+                     net::features::kWaitForFirstPartySetsInit)
              ? base::TaskPriority::USER_BLOCKING
              : base::TaskPriority::BEST_EFFORT;
 }
@@ -96,16 +100,10 @@ void SetFirstPartySetsConfig(SetsReadyOnceCallback on_sets_ready) {
     return;
   }
 
-  // We use USER_BLOCKING here since First-Party Set initialization blocks
-  // network navigations at startup.
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), GetTaskPriority()},
       base::BindOnce(&OpenFile, instance_path->first),
       base::BindOnce(std::move(on_sets_ready), instance_path->second));
-}
-
-std::string BoolToString(bool b) {
-  return b ? "true" : "false";
 }
 
 }  // namespace
@@ -124,10 +122,6 @@ FirstPartySetsComponentInstallerPolicy::FirstPartySetsComponentInstallerPolicy(
 
 FirstPartySetsComponentInstallerPolicy::
     ~FirstPartySetsComponentInstallerPolicy() = default;
-
-const char
-    FirstPartySetsComponentInstallerPolicy::kDogfoodInstallerAttributeName[] =
-        "_internal_experimental_sets";
 
 bool FirstPartySetsComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
@@ -197,12 +191,7 @@ std::string FirstPartySetsComponentInstallerPolicy::GetName() const {
 
 update_client::InstallerAttributes
 FirstPartySetsComponentInstallerPolicy::GetInstallerAttributes() const {
-  return {
-      {
-          kDogfoodInstallerAttributeName,
-          BoolToString(features::kFirstPartySetsIsDogfooder.Get()),
-      },
-  };
+  return {};
 }
 
 // static

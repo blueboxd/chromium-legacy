@@ -237,14 +237,13 @@ AttributionStorageDelegateImpl::GetRandomizedResponse(
     const CommonSourceInfo& source,
     const EventReportWindows& event_report_windows,
     base::Time source_time,
-    int max_event_level_reports) {
+    int max_event_level_reports,
+    double randomized_response_rate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   switch (noise_mode_) {
     case AttributionNoiseMode::kDefault: {
-      double randomized_trigger_rate = GetRandomizedResponseRate(
-          event_report_windows, source.source_type(), max_event_level_reports);
-      return GenerateWithRate(randomized_trigger_rate)
+      return GenerateWithRate(randomized_response_rate)
                  ? absl::make_optional(GetRandomFakeReports(
                        source, event_report_windows, source_time,
                        max_event_level_reports))
@@ -338,11 +337,10 @@ AttributionStorageDelegateImpl::GetFakeReportsForSequenceIndex(
 
 double AttributionStorageDelegateImpl::ComputeChannelCapacity(
     const CommonSourceInfo& source,
-    const attribution_reporting::EventReportWindows& event_report_windows,
+    const EventReportWindows& event_report_windows,
     base::Time source_time,
-    int max_event_level_reports) {
-  double randomized_trigger_rate = GetRandomizedResponseRate(
-      event_report_windows, source.source_type(), max_event_level_reports);
+    int max_event_level_reports,
+    double randomized_response_rate) {
   const int64_t num_states = GetNumberOfStarsAndBarsSequences(
       /*num_stars=*/max_event_level_reports,
       /*num_bars=*/TriggerDataCardinality(source.source_type()) *
@@ -351,18 +349,18 @@ double AttributionStorageDelegateImpl::ComputeChannelCapacity(
   // This computes the channel capacity of a qary-symmetric channel with error
   // probability p. See more info at
   // https://wicg.github.io/attribution-reporting-api/#computing-channel-capacity
-  double p = randomized_trigger_rate * (num_states - 1) / num_states;
+  double p = randomized_response_rate * (num_states - 1) / num_states;
   return log2(num_states) - binary_entropy(p) - p * log2(num_states - 1);
 }
 
 base::Time AttributionStorageDelegateImpl::GetExpiryTime(
     absl::optional<base::TimeDelta> declared_expiry,
     base::Time source_time,
-    attribution_reporting::mojom::SourceType source_type) {
+    SourceType source_type) {
   base::TimeDelta expiry =
       declared_expiry.value_or(kDefaultAttributionSourceExpiry);
 
-  if (source_type == attribution_reporting::mojom::SourceType::kEvent) {
+  if (source_type == SourceType::kEvent) {
     expiry = expiry.RoundToMultiple(base::Days(1));
   }
 
@@ -467,7 +465,7 @@ EventReportWindows AttributionStorageDelegateImpl::GetDefaultEventReportWindows(
   }
 
   absl::optional<EventReportWindows> event_report_windows =
-      EventReportWindows::CreateAndTruncate(
+      EventReportWindows::CreateWindowsAndTruncate(
           /*start_time=*/base::Days(0), std::move(end_times),
           /*expiry=*/last_report_window);
   DCHECK(event_report_windows.has_value());

@@ -394,7 +394,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
 
                         return true;
                     }
-                }, eventThrottleDelays, viewIndependentEvents, new HashSet<Integer>(), false);
+                }, eventThrottleDelays, viewIndependentEvents, new HashSet<Integer>());
 
         if (mDelegate.getNativeAXTree() != 0) {
             initializeNativeWithAXTreeUpdate(mDelegate.getNativeAXTree());
@@ -451,16 +451,12 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         // Register a broadcast receiver for locale change.
         if (mView.isAttachedToWindow()) registerLocaleChangeReceiver();
 
-        // Define a set of relevant AccessibilityEvents if the OnDemand feature is enabled.
-        if (ContentFeatureMap.isEnabled(ContentFeatureList.ON_DEMAND_ACCESSIBILITY_EVENTS)) {
-            Runnable serviceMaskRunnable = () -> {
-                int serviceEventMask = AccessibilityState.getAccessibilityServiceEventTypeMask();
-                mEventDispatcher.updateRelevantEventTypes(
-                        convertMaskToEventTypes(serviceEventMask));
-                mEventDispatcher.setOnDemandEnabled(true);
-            };
-            mView.post(serviceMaskRunnable);
-        }
+        // Define a set of relevant AccessibilityEvents.
+        Runnable serviceMaskRunnable = () -> {
+            int serviceEventMask = AccessibilityState.getAccessibilityServiceEventTypeMask();
+            mEventDispatcher.updateRelevantEventTypes(convertMaskToEventTypes(serviceEventMask));
+        };
+        mView.post(serviceMaskRunnable);
 
         // Send state values set by embedders to native-side objects.
         refreshNativeState();
@@ -744,11 +740,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
                     mIsImageDescriptionsCandidate && AccessibilityState.isScreenReaderEnabled());
 
             // Update the list of events we dispatch to enabled services.
-            if (ContentFeatureMap.isEnabled(ContentFeatureList.ON_DEMAND_ACCESSIBILITY_EVENTS)) {
-                int serviceEventMask = AccessibilityState.getAccessibilityServiceEventTypeMask();
-                mEventDispatcher.updateRelevantEventTypes(
-                        convertMaskToEventTypes(serviceEventMask));
-            }
+            int serviceEventMask = AccessibilityState.getAccessibilityServiceEventTypeMask();
+            mEventDispatcher.updateRelevantEventTypes(convertMaskToEventTypes(serviceEventMask));
 
             // If the auto-disable feature is enabled, then we will disable renderer accessibility
             // and tear down objects when no accessibility services are running. If we have
@@ -935,8 +928,12 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             if (WebContentsAccessibilityImplJni.get().populateAccessibilityNodeInfo(
                         mNativeObj, info, virtualViewId)) {
                 // After successfully populating this node, add it to our cache then return.
-                mNodeInfoCache.put(virtualViewId, AccessibilityNodeInfoCompat.obtain(info));
-                mHistogramRecorder.incrementNodeWasCreatedFromScratch();
+                // If we are not doing performance testing, then use the cache.
+                if (!ContentFeatureMap.isEnabled(
+                            ContentFeatureList.ACCESSIBILITY_PERFORMANCE_TESTING)) {
+                    mNodeInfoCache.put(virtualViewId, AccessibilityNodeInfoCompat.obtain(info));
+                    mHistogramRecorder.incrementNodeWasCreatedFromScratch();
+                }
                 return info;
             } else {
                 info.recycle();
@@ -1620,8 +1617,36 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             return;
         }
 
-        mHistogramRecorder.incrementEnqueuedEvents();
-        mEventDispatcher.enqueueEvent(virtualViewId, eventType);
+        // If we are not doing performance testing, then use event dispatcher, otherwise send the
+        // event immediately without throttling / optimizations.
+        if (!ContentFeatureMap.isEnabled(ContentFeatureList.ACCESSIBILITY_PERFORMANCE_TESTING)) {
+            mHistogramRecorder.incrementEnqueuedEvents();
+            mEventDispatcher.enqueueEvent(virtualViewId, eventType);
+        } else {
+            sendEventSynchronously(virtualViewId, eventType);
+        }
+    }
+
+    private void sendEventSynchronously(int virtualViewId, int eventType) {
+        AccessibilityEvent event = buildAccessibilityEvent(virtualViewId, eventType);
+        if (event == null) return;
+
+        requestSendAccessibilityEvent(event);
+
+        // Always send the ENTER and then the EXIT event, to match a standard
+        // Android View.
+        if (eventType == AccessibilityEvent.TYPE_VIEW_HOVER_ENTER) {
+            AccessibilityEvent exitEvent =
+                    buildAccessibilityEvent(mLastHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
+            if (exitEvent != null) {
+                requestSendAccessibilityEvent(exitEvent);
+                mLastHoverId = virtualViewId;
+            } else if (virtualViewId != View.NO_ID && mLastHoverId != virtualViewId) {
+                // If IDs become mismatched, or on first hover, this will sync the
+                // values again so all further hovers have correct event pairing.
+                mLastHoverId = virtualViewId;
+            }
+        }
     }
 
     private AccessibilityEvent buildAccessibilityEvent(int virtualViewId, int eventType) {

@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_IOSURFACE_IMAGE_BACKING_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_IOSURFACE_IMAGE_BACKING_H_
 
-#include "base/mac/scoped_nsobject.h"
+#include "base/apple/scoped_nsobject.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
@@ -133,16 +133,16 @@ class SkiaIOSurfaceRepresentation : public SkiaGaneshImageRepresentation {
       const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override;
   std::vector<sk_sp<GrPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphore,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override;
   void EndWriteAccess() override;
   std::vector<sk_sp<GrPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override;
   void EndReadAccess() override;
   bool SupportsMultipleConcurrentReadAccess() override;
 
@@ -221,7 +221,7 @@ class SharedEventAndSignalValue : public BackpressureMetalSharedEvent {
   uint64_t signaled_value() const { return signaled_value_; }
 
  private:
-  base::scoped_nsprotocol<id<MTLSharedEvent>> shared_event_;
+  base::apple::scoped_nsprotocol<id<MTLSharedEvent>> shared_event_;
   uint64_t signaled_value_;
 };
 
@@ -229,23 +229,28 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
     : public SharedImageBacking,
       public IOSurfaceBackingEGLState::Client {
  public:
-  IOSurfaceImageBacking(gfx::ScopedIOSurface io_surface,
-                        uint32_t io_surface_plane,
-                        gfx::GenericSharedMemoryId io_surface_id,
-                        const Mailbox& mailbox,
-                        viz::SharedImageFormat format,
-                        const gfx::Size& size,
-                        const gfx::ColorSpace& color_space,
-                        GrSurfaceOrigin surface_origin,
-                        SkAlphaType alpha_type,
-                        uint32_t usage,
-                        GLenum gl_target,
-                        bool framebuffer_attachment_angle,
-                        bool is_cleared,
-                        bool retain_gl_texture);
+  IOSurfaceImageBacking(
+      gfx::ScopedIOSurface io_surface,
+      uint32_t io_surface_plane,
+      gfx::GenericSharedMemoryId io_surface_id,
+      const Mailbox& mailbox,
+      viz::SharedImageFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
+      uint32_t usage,
+      GLenum gl_target,
+      bool framebuffer_attachment_angle,
+      bool is_cleared,
+      bool retain_gl_texture,
+      absl::optional<gfx::BufferUsage> buffer_usage = absl::nullopt);
   IOSurfaceImageBacking(const IOSurfaceImageBacking& other) = delete;
   IOSurfaceImageBacking& operator=(const IOSurfaceImageBacking& other) = delete;
   ~IOSurfaceImageBacking() override;
+
+  bool UploadFromMemory(const std::vector<SkPixmap>& pixmaps) override;
+  bool ReadbackToMemory(const std::vector<SkPixmap>& pixmaps) override;
 
   bool InitializePixels(base::span<const uint8_t> pixel_data);
 
@@ -294,6 +299,7 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
   void SetPurgeable(bool purgeable) override;
   bool IsPurgeable() const override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
+  gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override;
 
   // IOSurfaceBackingEGLState::Client:
   bool IOSurfaceBackingEGLStateBeginAccess(IOSurfaceBackingEGLState* egl_state,

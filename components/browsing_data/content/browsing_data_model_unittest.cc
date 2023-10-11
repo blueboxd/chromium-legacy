@@ -470,6 +470,7 @@ TEST_F(BrowsingDataModelTest, ThirdPartyCookieTypes) {
       BrowsingDataModel::StorageType::kLocalStorage,
       BrowsingDataModel::StorageType::kSessionStorage,
       BrowsingDataModel::StorageType::kQuotaStorage,
+      BrowsingDataModel::StorageType::kSharedWorker,
   };
 
   constexpr BrowsingDataModel::StorageTypeSet non_third_party_cookie_types = {

@@ -6,11 +6,25 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/animation/animation.h"
+
+@interface NSWorkspace (Partials)
+
+@property(readonly) BOOL accessibilityDisplayShouldDifferentiateWithoutColor;
+@property(readonly) BOOL accessibilityDisplayShouldIncreaseContrast;
+@property(readonly) BOOL accessibilityDisplayShouldReduceTransparency;
+
+@end
+
+// Only available since 10.12.
+@interface NSWorkspace (AvailableSinceSierra)
+@property(readonly) BOOL accessibilityDisplayShouldReduceMotion;
+@end
 
 namespace content {
 
@@ -78,15 +92,10 @@ void BrowserAccessibilityStateImplMac::UpdateUniqueUserHistograms() {
                         mode.has_mode(ui::AXMode::kScreenReader));
 }
 
-//
-// BrowserAccessibilityStateImpl::GetInstance implementation that constructs
-// this class instead of the base class.
-//
-
 // static
-BrowserAccessibilityStateImpl* BrowserAccessibilityStateImpl::GetInstance() {
-  static base::NoDestructor<BrowserAccessibilityStateImplMac> instance;
-  return &*instance;
+std::unique_ptr<BrowserAccessibilityStateImpl>
+BrowserAccessibilityStateImpl::Create() {
+  return std::make_unique<BrowserAccessibilityStateImplMac>();
 }
 
 }  // namespace content

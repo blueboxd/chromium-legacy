@@ -29,6 +29,11 @@ struct CONTENT_EXPORT ClientMetadata {
   GURL privacy_policy_url;
 };
 
+struct CONTENT_EXPORT IdentityCredentialTokenError {
+  int code;
+  GURL url;
+};
+
 struct CONTENT_EXPORT IdentityProviderMetadata {
   IdentityProviderMetadata();
   IdentityProviderMetadata(const IdentityProviderMetadata& other);
@@ -134,6 +139,16 @@ class CONTENT_EXPORT IdentityRequestDialogController {
       const IdentityProviderMetadata& idp_metadata,
       DismissCallback dismiss_callback,
       SigninToIdPCallback signin_callback);
+
+  // Shows an error UI when the user's sign-in attempt failed.
+  virtual void ShowErrorDialog(
+      const std::string& top_frame_for_display,
+      const absl::optional<std::string>& iframe_for_display,
+      const std::string& idp_for_display,
+      const blink::mojom::RpContext& rp_context,
+      const IdentityProviderMetadata& idp_metadata,
+      const absl::optional<IdentityCredentialTokenError>& error,
+      DismissCallback dismiss_callback);
 
   // Only to be called after a dialog is shown.
   virtual std::string GetTitle() const;

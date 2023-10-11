@@ -43,12 +43,12 @@ import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.top.OptionalBrowsingModeButtonController;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabCreatorManager;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.display.DisplayAndroidManager;
 import org.chromium.url.JUnitTestGURLs;
-import org.chromium.url.ShadowGURL;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -57,10 +57,9 @@ import java.util.NoSuchElementException;
  * Robolectric tests running {@link OptionalNewTabButtonController} in a {@link
  * ChromeTabbedActivity}.
  */
-@Config(shadows = {OptionalNewTabButtonControllerActivityTest.ShadowDelegate.class,
-                ShadowGURL.class})
+@Config(shadows = {OptionalNewTabButtonControllerActivityTest.ShadowDelegate.class})
 @RunWith(BaseRobolectricTestRunner.class)
-@Features.EnableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2})
+@EnableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2})
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
         "enable-features=" + ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2
@@ -121,7 +120,7 @@ public class OptionalNewTabButtonControllerActivityTest {
         ShadowDelegate.sTabModelSelector = tabModelSelector;
         ShadowDelegate.sTabCreatorManager = new MockTabCreatorManager(tabModelSelector);
         mTab = (MockTab) tabModelSelector.getCurrentTab();
-        mTab.setGurlOverrideForTesting(JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL));
+        mTab.setGurlOverrideForTesting(JUnitTestGURLs.EXAMPLE_URL);
 
         mActivityScenario = ActivityScenario.launch(ChromeTabbedActivity.class);
         mActivityScenario.onActivity(activity -> {
@@ -195,10 +194,10 @@ public class OptionalNewTabButtonControllerActivityTest {
         mActivityScenario.onActivity(activity -> {
             assertTrue(mAdaptiveButtonController.get(mTab).canShow());
 
-            mTab.setGurlOverrideForTesting(JUnitTestGURLs.getGURL(JUnitTestGURLs.NTP_URL));
+            mTab.setGurlOverrideForTesting(JUnitTestGURLs.NTP_URL);
             assertFalse(mAdaptiveButtonController.get(mTab).canShow());
 
-            mTab.setGurlOverrideForTesting(JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL));
+            mTab.setGurlOverrideForTesting(JUnitTestGURLs.EXAMPLE_URL);
             assertTrue(mAdaptiveButtonController.get(mTab).canShow());
         });
     }

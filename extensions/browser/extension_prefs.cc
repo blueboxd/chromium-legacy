@@ -46,6 +46,7 @@
 #include "extensions/common/api/types.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/app_display_info.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -337,7 +338,7 @@ class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
   }
 
  private:
-  const std::string extension_id_;
+  const ExtensionId extension_id_;
 };
 
 // Whether SetAlertSystemFirstRun() should always return true, so that alerts
@@ -404,7 +405,7 @@ base::Value::List* ExtensionPrefs::ScopedListUpdate::Ensure() {
 //
 
 // static
-ExtensionPrefs* ExtensionPrefs::Create(
+std::unique_ptr<ExtensionPrefs> ExtensionPrefs::Create(
     content::BrowserContext* browser_context,
     PrefService* prefs,
     const base::FilePath& root_dir,
@@ -417,7 +418,7 @@ ExtensionPrefs* ExtensionPrefs::Create(
 }
 
 // static
-ExtensionPrefs* ExtensionPrefs::Create(
+std::unique_ptr<ExtensionPrefs> ExtensionPrefs::Create(
     content::BrowserContext* browser_context,
     PrefService* pref_service,
     const base::FilePath& root_dir,
@@ -425,9 +426,9 @@ ExtensionPrefs* ExtensionPrefs::Create(
     bool extensions_disabled,
     const std::vector<EarlyExtensionPrefsObserver*>& early_observers,
     base::Clock* clock) {
-  return new ExtensionPrefs(browser_context, pref_service, root_dir,
-                            extension_pref_value_map, clock,
-                            extensions_disabled, early_observers);
+  return std::make_unique<ExtensionPrefs>(
+      browser_context, pref_service, root_dir, extension_pref_value_map, clock,
+      extensions_disabled, early_observers);
 }
 
 ExtensionPrefs::~ExtensionPrefs() {
@@ -2217,6 +2218,7 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterListPref(pref_names::kInstallAllowList);
   registry->RegisterListPref(pref_names::kInstallDenyList);
   registry->RegisterDictionaryPref(pref_names::kInstallForceList);
+  registry->RegisterDictionaryPref(pref_names::kOAuthRedirectUrls);
   registry->RegisterListPref(pref_names::kAllowedTypes);
   registry->RegisterIntegerPref(pref_names::kManifestV2Availability, 0);
   registry->RegisterBooleanPref(pref_names::kStorageGarbageCollect, false);

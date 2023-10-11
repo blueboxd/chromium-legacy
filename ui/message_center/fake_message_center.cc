@@ -170,6 +170,8 @@ void FakeMessageCenter::ClickOnNotificationButtonWithReply(
 
 void FakeMessageCenter::ClickOnSettingsButton(const std::string& id) {}
 
+void FakeMessageCenter::ClickOnSnoozeButton(const std::string& id) {}
+
 void FakeMessageCenter::DisableNotification(const std::string& id) {}
 
 void FakeMessageCenter::MarkSinglePopupAsShown(const std::string& id,
@@ -203,6 +205,8 @@ ExpandState FakeMessageCenter::GetNotificationExpandState(
 
 void FakeMessageCenter::SetNotificationExpandState(const std::string& id,
                                                    const ExpandState state) {}
+
+void FakeMessageCenter::OnSetExpanded(const std::string& id, bool expanded) {}
 
 void FakeMessageCenter::SetHasMessageCenterView(bool has_message_center_view) {
   has_message_center_view_ = has_message_center_view;

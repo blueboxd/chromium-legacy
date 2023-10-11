@@ -137,7 +137,6 @@ import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.JUnitTestGURLs;
-import org.chromium.url.ShadowGURL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -145,7 +144,7 @@ import java.util.List;
 
 /** Tests for {@link StartSurfaceMediator}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = ShadowGURL.class)
+@Config(manifest = Config.NONE)
 public class StartSurfaceMediatorUnitTest {
     private static final String START_SURFACE_TIME_SPENT = "StartSurface.TimeSpent";
     private PropertyModel mPropertyModel;
@@ -464,14 +463,14 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_TITLE_VISIBLE), equalTo(true));
 
         Tab tab1 = mock(Tab.class);
-        doReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1)).when(tab1).getUrl();
+        doReturn(JUnitTestGURLs.URL_1).when(tab1).getUrl();
         mTabModelObserverCaptor.getValue().didSelectTab(tab1, TabSelectionType.FROM_CLOSE, 1);
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_TITLE_VISIBLE), equalTo(true));
 
         Tab NTPTab = mock(Tab.class);
-        doReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.NTP_URL)).when(NTPTab).getUrl();
+        doReturn(JUnitTestGURLs.NTP_URL).when(NTPTab).getUrl();
         mTabModelObserverCaptor.getValue().didSelectTab(NTPTab, TabSelectionType.FROM_CLOSE, 2);
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(false));
@@ -1343,8 +1342,7 @@ public class StartSurfaceMediatorUnitTest {
     @EnableFeatures(ChromeFeatureList.SURFACE_POLISH)
     public void initializeStartSurfaceTopMargins_SurfacePolish() {
         Resources resources = ContextUtils.getApplicationContext().getResources();
-        int tasksSurfaceBodyTopMarginPolished =
-                resources.getDimensionPixelSize(R.dimen.tasks_surface_body_top_margin_polished);
+        int tasksSurfaceBodyTopMarginPolished = 0;
         int tabSwitcherTitleTopMargin =
                 resources.getDimensionPixelSize(R.dimen.tab_switcher_title_top_margin);
 
@@ -1414,7 +1412,7 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures(INSTANT_START)
+    @EnableFeatures(INSTANT_START)
     public void feedPlaceholderFromWarmStart() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
         doReturn(mVoiceRecognitionHandler).when(mOmniboxStub).getVoiceRecognitionHandler();
@@ -1490,7 +1488,7 @@ public class StartSurfaceMediatorUnitTest {
                 .when(mCarouselOrSingleTabSwitcherModuleController)
                 .getTabSwitcherType();
         MockTab regularTab = new MockTab(1, false);
-        regularTab.setGurlOverrideForTesting(JUnitTestGURLs.getGURL(JUnitTestGURLs.NTP_URL));
+        regularTab.setGurlOverrideForTesting(JUnitTestGURLs.NTP_URL);
         when(mTabModelSelector.getCurrentTab()).thenReturn(regularTab);
 
         StartSurfaceMediator mediator =
@@ -1559,6 +1557,42 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
+    @EnableFeatures(ChromeFeatureList.SURFACE_POLISH)
+    public void testInitializeLogoWhenSurfacePolishedMoveDownLogoEnabled() {
+        doReturn(mVoiceRecognitionHandler).when(mOmniboxStub).getVoiceRecognitionHandler();
+        when(mTemplateUrlService.doesDefaultSearchEngineHaveLogo()).thenReturn(true);
+
+        StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO.setForTesting(true);
+        Assert.assertTrue(ReturnToChromeUtil.moveDownLogo());
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(/*isStartSurfaceEnabled=*/true,
+                /* isRefactorEnabled */ false, /* hadWarmStart= */ false,
+                /* useMagicSpace*/ false);
+        showHomepageAndVerify(mediator, StartSurfaceState.SHOWN_HOMEPAGE);
+
+        verify(mLogoContainerView).setVisibility(View.VISIBLE);
+        verify(mLogoBridge).getCurrentLogo(anyLong(), any(), any());
+        Assert.assertTrue(mediator.isLogoVisible());
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.SURFACE_POLISH)
+    public void testNotInitializeLogoWhenSurfacePolishedMoveDownLogoDisabled() {
+        doReturn(mVoiceRecognitionHandler).when(mOmniboxStub).getVoiceRecognitionHandler();
+        when(mTemplateUrlService.doesDefaultSearchEngineHaveLogo()).thenReturn(true);
+
+        Assert.assertFalse(ReturnToChromeUtil.moveDownLogo());
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(/*isStartSurfaceEnabled=*/true,
+                /* isRefactorEnabled */ false, /* hadWarmStart= */ false,
+                /* useMagicSpace*/ false);
+        showHomepageAndVerify(mediator, StartSurfaceState.SHOWN_HOMEPAGE);
+
+        verify(mLogoContainerView, times(0)).setVisibility(View.VISIBLE);
+        Assert.assertFalse(mediator.isLogoVisible());
+    }
+
+    @Test
     public void testFeedReliabilityLoggerPageLoadStarted() {
         doReturn(mVoiceRecognitionHandler).when(mOmniboxStub).getVoiceRecognitionHandler();
 
@@ -1607,7 +1641,7 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
+    @EnableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR)
     // TODO(crbug.com/1315676): removes this test once the Start surface refactoring is enabled.
     // This is because the StartSurfaceMediator is no longer responsible for the transition between
     // the Start surface and the Tab switcher.
@@ -1706,7 +1740,7 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     // TODO(crbug.com/1315676): Removes this test after the refactoring is enabled by default. This
     // is because the SecondaryTasksSurface will go away.
-    @DisableFeatures({ChromeFeatureList.START_SURFACE_REFACTOR})
+    @DisableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
     public void testBackPressHandlerOnStartSurfaceWithTabSwitcherCreated() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
@@ -2019,7 +2053,7 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.SURFACE_POLISH})
+    @EnableFeatures(ChromeFeatureList.SURFACE_POLISH)
     public void testUpdateStartSurfaceBackgroundColor() {
         Assert.assertTrue(ChromeFeatureList.sSurfacePolish.isEnabled());
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();

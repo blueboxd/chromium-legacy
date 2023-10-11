@@ -71,15 +71,15 @@ std::unique_ptr<SkiaGLImageRepresentation> SkiaGLImageRepresentation::Create(
          plane_index++) {
       GrBackendTexture backend_texture;
       // Use the format and size per plane for multiplanar formats.
-      GLenum plane_gl_storage_format =
-          TextureStorageFormat(format, angle_rgbx_internal_format, plane_index);
+      GLFormatDesc format_desc =
+          ToGLFormatDesc(format, plane_index, angle_rgbx_internal_format);
       gfx::Size plane_size = format.GetPlaneSize(plane_index, backing->size());
       if (!GetGrBackendTexture(
               context_state->feature_info(),
               gl_representation->GetTextureBase(plane_index)->target(),
               plane_size,
               gl_representation->GetTextureBase(plane_index)->service_id(),
-              plane_gl_storage_format,
+              format_desc.storage_internal_format,
               context_state->gr_context()->threadSafeProxy(),
               &backend_texture)) {
         return nullptr;
@@ -131,7 +131,7 @@ std::vector<sk_sp<SkSurface>> SkiaGLImageRepresentation::BeginWriteAccess(
     const gfx::Rect& update_rect,
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
-    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
+    std::unique_ptr<skgpu::MutableTextureState>* end_state) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
   CheckContext();
 
@@ -172,7 +172,7 @@ std::vector<sk_sp<GrPromiseImageTexture>>
 SkiaGLImageRepresentation::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
-    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
+    std::unique_ptr<skgpu::MutableTextureState>* end_state) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
   CheckContext();
 
@@ -197,7 +197,7 @@ std::vector<sk_sp<GrPromiseImageTexture>>
 SkiaGLImageRepresentation::BeginReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
-    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
+    std::unique_ptr<skgpu::MutableTextureState>* end_state) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
   CheckContext();
 

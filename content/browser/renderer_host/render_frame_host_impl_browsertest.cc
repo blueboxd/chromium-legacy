@@ -43,6 +43,7 @@
 #include "content/browser/renderer_host/runtime_feature_state_controller_impl.h"
 #include "content/browser/sms/test/mock_sms_provider.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/features.h"
 #include "content/common/frame_messages.mojom.h"
@@ -112,6 +113,7 @@
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
+#include "ui/snapshot/snapshot.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_canon.h"
@@ -4940,11 +4942,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, WebUiReloadAfterCrash) {
   EXPECT_EQ(main_frame_url, main_document->GetLastCommittedURL());
   // Execute script in an isolated world to avoid causing a Trusted Types
   // violation due to eval.
-  EXPECT_EQ("Graphics Feature Status",
-            EvalJs(main_document,
-                   "document.querySelector('info-view').shadowRoot"
-                   ".querySelector('h3').textContent",
-                   EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1));
+  EXPECT_THAT(EvalJs(main_document,
+                     "document.querySelector('info-view').shadowRoot"
+                     ".querySelector('#used-only-by-test').text",
+                     EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1)
+                  .ExtractString(),
+              testing::StartsWith("GPU Info"));
 }
 
 // Start with A(B), navigate A to C. By emulating a slow unload handler B, check
@@ -5895,20 +5898,20 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
             root_frame_host()->GetWebExposedIsolationLevel());
 }
 
-namespace {
-const char kAppHost[] = "app.com";
-const char kNonAppHost[] = "non-app.com";
-}  // namespace
-
-class IsolatedWebAppContentBrowserClient
+class IsolatedApplicationContentBrowserClient
     : public ContentBrowserTestContentBrowserClient {
  public:
-  IsolatedWebAppContentBrowserClient() = default;
+  explicit IsolatedApplicationContentBrowserClient(
+      const std::string& isolated_application_host)
+      : isolated_application_host_(isolated_application_host) {}
 
   bool ShouldUrlUseApplicationIsolationLevel(BrowserContext* browser_context,
                                              const GURL& url) override {
-    return url.host() == kAppHost;
+    return url.host() == isolated_application_host_;
   }
+
+ private:
+  std::string isolated_application_host_;
 };
 
 class RenderFrameHostImplBrowserTestWithRestrictedApis
@@ -5933,54 +5936,137 @@ class RenderFrameHostImplBrowserTestWithRestrictedApis
  protected:
   void SetUpOnMainThread() override {
     RenderFrameHostImplBrowserTest::SetUpOnMainThread();
+
     mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
     net::test_server::RegisterDefaultHandlers(https_server());
     ASSERT_TRUE(https_server()->Start());
-    test_client_ = std::make_unique<IsolatedWebAppContentBrowserClient>();
-  }
-
-  void TearDownOnMainThread() override {
-    RenderFrameHostImplBrowserTest::TearDownOnMainThread();
-    test_client_.reset();
   }
 
  private:
-  std::unique_ptr<IsolatedWebAppContentBrowserClient> test_client_;
   ContentMockCertVerifier mock_cert_verifier_;
 };
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithRestrictedApis,
                        GetWebExposedIsolationLevel) {
+  std::string app_host = "app.com";
+  IsolatedApplicationContentBrowserClient client(app_host);
+
   // Not isolated:
+  std::string non_app_host = "nonapp.com";
   TestNavigationObserver navigation_observer(web_contents());
-  shell()->LoadURL(https_server()->GetURL(kNonAppHost, "/empty.html"));
+  shell()->LoadURL(https_server()->GetURL(non_app_host, "/empty.html"));
   navigation_observer.Wait();
 
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
   EXPECT_EQ(WebExposedIsolationLevel::kNotIsolated,
+            root_frame_host()->GetProcess()->GetWebExposedIsolationLevel());
+  EXPECT_EQ(WebExposedIsolationLevel::kNotIsolated,
             root_frame_host()->GetWebExposedIsolationLevel());
+  EXPECT_EQ(false, EvalJs(root_frame_host(), "self.crossOriginIsolated"));
 
   // Cross-Origin Isolated:
-  EXPECT_TRUE(NavigateToURL(
-      shell(),
-      https_server()->GetURL(kNonAppHost,
+  GURL non_app_url =
+      https_server()->GetURL(non_app_host,
                              "/set-header?"
                              "Cross-Origin-Opener-Policy: same-origin&"
-                             "Cross-Origin-Embedder-Policy: require-corp")));
+                             "Cross-Origin-Embedder-Policy: require-corp&"
+                             "Cross-Origin-Resource-Policy: cross-origin");
+  EXPECT_TRUE(NavigateToURL(shell(), non_app_url));
   EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolated,
+            root_frame_host()->GetProcess()->GetWebExposedIsolationLevel());
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolated,
             root_frame_host()->GetWebExposedIsolationLevel());
+  EXPECT_EQ(true, EvalJs(root_frame_host(), "self.crossOriginIsolated"));
+
+  // Permission delegated Cross-Origin Isolated child frame:
+  std::string create_iframe = R"(
+    new Promise(resolve => {
+      const iframe = document.createElement('iframe');
+      iframe.src = $1;
+      iframe.allow = $2;
+      iframe.addEventListener('load', () => resolve(true));
+      document.body.appendChild(iframe);
+    });
+  )";
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(create_iframe, non_app_url, "")));
+  RenderFrameHost* non_app_child_frame = ChildFrameAt(root_frame_host(), 0);
+  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolated,
+            non_app_child_frame->GetProcess()->GetWebExposedIsolationLevel());
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolated,
+            non_app_child_frame->GetWebExposedIsolationLevel());
+  EXPECT_EQ(true, EvalJs(non_app_child_frame, "self.crossOriginIsolated"));
+
+  // Non permission delegated Cross-Origin Isolated child frame:
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(create_iframe, non_app_url,
+                                        "cross-origin-isolated 'none'")));
+  non_app_child_frame = ChildFrameAt(root_frame_host(), 1);
+  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolated,
+            non_app_child_frame->GetProcess()->GetWebExposedIsolationLevel());
+  EXPECT_EQ(WebExposedIsolationLevel::kNotIsolated,
+            non_app_child_frame->GetWebExposedIsolationLevel());
+  EXPECT_EQ(false, EvalJs(non_app_child_frame, "self.crossOriginIsolated"));
 
   // Isolated Application:
+  GURL app_url =
+      https_server()->GetURL(app_host,
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp&"
+                             "Cross-Origin-Resource-Policy: same-origin");
   Shell* app_shell = shell()->CreateNewWindow(
       web_contents()->GetController().GetBrowserContext(), GURL(),
       /*site_instance=*/nullptr, gfx::Size());
-  EXPECT_TRUE(NavigateToURL(app_shell,
-                            https_server()->GetURL(kAppHost, "/empty.html")));
+  EXPECT_TRUE(NavigateToURL(app_shell, app_url));
+  RenderFrameHost* app_frame = app_shell->web_contents()->GetPrimaryMainFrame();
   EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolatedApplication,
-            app_shell->web_contents()
-                ->GetPrimaryMainFrame()
-                ->GetWebExposedIsolationLevel());
+            app_frame->GetProcess()->GetWebExposedIsolationLevel());
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolatedApplication,
+            app_frame->GetWebExposedIsolationLevel());
+  EXPECT_EQ(true, EvalJs(app_frame, "self.crossOriginIsolated"));
+
+  // Permission delegated same-origin Isolated Application child frame:
+  EXPECT_TRUE(ExecJs(
+      app_shell, JsReplace(create_iframe, app_url, "cross-origin-isolated")));
+  RenderFrameHost* app_child_frame = ChildFrameAt(app_frame, 0);
+  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolatedApplication,
+            app_child_frame->GetProcess()->GetWebExposedIsolationLevel());
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolatedApplication,
+            app_child_frame->GetWebExposedIsolationLevel());
+  EXPECT_EQ(true, EvalJs(app_child_frame, "self.crossOriginIsolated"));
+
+  // Non permission delegated same-origin Isolated Application child frame:
+  EXPECT_TRUE(ExecJs(app_shell, JsReplace(create_iframe, app_url,
+                                          "cross-origin-isolated 'none'")));
+  app_child_frame = ChildFrameAt(app_frame, 1);
+  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolatedApplication,
+            app_child_frame->GetProcess()->GetWebExposedIsolationLevel());
+  EXPECT_EQ(WebExposedIsolationLevel::kNotIsolated,
+            app_child_frame->GetWebExposedIsolationLevel());
+  EXPECT_EQ(false, EvalJs(app_child_frame, "self.crossOriginIsolated"));
+
+  // Permission delegated cross-origin Isolated Application child frame:
+  // The frame's WebExposedIsolationLevel isn't "isolated application" despite
+  // being delegated the "cross-origin-isolated" permission because that
+  // isolation level can only be delegated to same-origin child frames.
+  EXPECT_TRUE(ExecJs(app_shell, JsReplace(create_iframe, non_app_url,
+                                          "cross-origin-isolated")));
+  non_app_child_frame = ChildFrameAt(app_frame, 2);
+  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolated,
+            non_app_child_frame->GetProcess()->GetWebExposedIsolationLevel());
+  EXPECT_EQ(WebExposedIsolationLevel::kIsolated,
+            non_app_child_frame->GetWebExposedIsolationLevel());
+  EXPECT_EQ(true, EvalJs(non_app_child_frame, "self.crossOriginIsolated"));
+
+  // Non permission delegated cross-origin Isolated Application child frame:
+  EXPECT_TRUE(ExecJs(app_shell, JsReplace(create_iframe, non_app_url,
+                                          "cross-origin-isolated 'none'")));
+  non_app_child_frame = ChildFrameAt(app_frame, 3);
+  EXPECT_EQ(WebExposedIsolationLevel::kMaybeIsolated,
+            non_app_child_frame->GetProcess()->GetWebExposedIsolationLevel());
+  EXPECT_EQ(WebExposedIsolationLevel::kNotIsolated,
+            non_app_child_frame->GetWebExposedIsolationLevel());
+  EXPECT_EQ(false, EvalJs(non_app_child_frame, "self.crossOriginIsolated"));
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
@@ -7930,7 +8016,8 @@ class RenderFrameHostImplBrowserTestWithBFCache
     std::vector<base::test::FeatureRefAndParams> enabled_features =
         GetDefaultEnabledBackForwardCacheFeaturesForTesting(
             /*ignore_outstanding_network_request=*/false);
-    enabled_features.push_back({kNavigationUpdatesChildViewsVisibility, {{}}});
+    enabled_features.push_back(
+        {features::kNavigationUpdatesChildViewsVisibility, {{}}});
     enabled_features.push_back({features::kEvictSubtree, {{}}});
     scoped_feature_list_.InitWithFeaturesAndParameters(
         enabled_features,
@@ -8065,6 +8152,87 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithBFCache,
   RenderWidgetHostImpl* rwhi_a =
       RenderWidgetHostImpl::From(rfh_a->GetView()->GetRenderWidgetHost());
   EXPECT_TRUE(rwhi_a->IsContentRenderingTimeoutRunning());
+}
+
+namespace {
+class RenderFrameHostImplBrowserTestWithBFCacheAndViewTransition
+    : public RenderFrameHostImplBrowserTestWithBFCache {
+ public:
+  RenderFrameHostImplBrowserTestWithBFCacheAndViewTransition() {
+    std::vector<base::test::FeatureRefAndParams> enabled_features =
+        GetDefaultEnabledBackForwardCacheFeaturesForTesting(
+            /*ignore_outstanding_network_request=*/false);
+    enabled_features.push_back(
+        {blink::features::kViewTransitionOnNavigation, {{}}});
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        enabled_features,
+        GetDefaultDisabledBackForwardCacheFeaturesForTesting());
+
+    EnablePixelOutput();
+  }
+  ~RenderFrameHostImplBrowserTestWithBFCacheAndViewTransition() override =
+      default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+void AssertBitmapOfColor(const SkBitmap& bitmap, SkColor color) {
+  for (int r = 0; r < bitmap.height(); ++r) {
+    for (int c = 0; c < bitmap.width(); ++c) {
+// TODO(https://crbug.com/1452223): Re-enable the color comparison for Mac.
+#if !BUILDFLAG(IS_MAC)
+      ASSERT_EQ(bitmap.getColor(c, r), color);
+#endif
+    }
+  }
+}
+}  // namespace
+
+// https://crbug.com/1415340: For a page with ViewTransition being restored from
+// BFCache, we explicitly set its fallback surface to the current View to avoid
+// visual glitches.
+//
+// TODO(https://crbug.com/1472026): Investigate and re-enable.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition \
+  DISABLED_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition
+#else
+#define MAYBE_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition \
+  NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition
+#endif
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTestWithBFCacheAndViewTransition,
+    MAYBE_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition) {
+  // "red_jank_second_pageshow.html" janks the renderer on the second pageshow
+  // event.
+  const GURL url_red(embedded_test_server()->GetURL(
+      "a.com", "/view_transitions/red_jank_second_pageshow.html"));
+  const GURL url_green(
+      embedded_test_server()->GetURL("a.com", "/view_transitions/green.html"));
+
+  // Navigate to Red.
+  ASSERT_TRUE(NavigateToURL(shell(), url_red));
+  RenderFrameHostWrapper rfh_red(web_contents()->GetPrimaryMainFrame());
+
+  // Navigate to Green.
+  ASSERT_TRUE(NavigateToURL(shell(), url_green));
+  ASSERT_FALSE(rfh_red.IsDestroyed());
+  ASSERT_TRUE(
+      static_cast<RenderFrameHostImpl*>(rfh_red.get())->IsInBackForwardCache());
+
+  // Navigate back to Red.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  ASSERT_EQ(rfh_red.get(), web_contents()->GetPrimaryMainFrame());
+
+  RenderWidgetHostImpl* rwhi_red =
+      RenderWidgetHostImpl::From(rfh_red->GetView()->GetRenderWidgetHost());
+  ASSERT_TRUE(rwhi_red->IsContentRenderingTimeoutRunning());
+
+  gfx::Image screenshot;
+  ui::GrabViewSnapshot(web_contents()->GetView()->GetNativeView(),
+                       gfx::Rect(web_contents()->GetSize()), &screenshot);
+  AssertBitmapOfColor(screenshot.AsBitmap(), SK_ColorGREEN);
 }
 
 // Tests that when a RenderFrameHost is stored in BFCache, that the visibility

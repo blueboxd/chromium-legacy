@@ -163,7 +163,7 @@ BASE_FEATURE(kEnableTraitCollectionWorkAround,
 
 BASE_FEATURE(kEnableUIButtonConfiguration,
              "EnableUIButtonConfiguration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsUIButtonConfigurationEnabled() {
   return base::FeatureList::IsEnabled(kEnableUIButtonConfiguration);
@@ -204,7 +204,7 @@ constexpr base::FeatureParam<int>
 
 BASE_FEATURE(kNotificationSettingsMenuItem,
              "NotificationSettingsMenuItem",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSpotlightOpenTabsSource,
              "SpotlightOpenTabsSource",
@@ -254,14 +254,15 @@ BASE_FEATURE(kOnlyAccessClipboardAsync,
 
 BASE_FEATURE(kHideSettingsSyncPromo,
              "HideSettingsSyncPromo",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDefaultBrowserTriggerCriteriaExperiment,
              "DefaultBrowserTriggerCriteriaExperiment",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-const char kDefaultBrowserTriggerOnOmniboxCopyPaste[] =
-    "trigger_on_omnibox_copy_paste";
+BASE_FEATURE(kFullScreenPromoOnOmniboxCopyPaste,
+             "FullScreenPromoOnOmniboxCopyPaste",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kThemeColorInToolbar,
              "ThemeColorInToolbar",
@@ -271,14 +272,14 @@ BASE_FEATURE(kTabGridRefactoring,
              "TabGridRefactoring",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kTabGridRefactoringFix,
-             "TabGridRefactoringFix",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 bool IsSafetyCheckMagicStackEnabled() {
   return base::FeatureList::IsEnabled(kSafetyCheckMagicStack);
 }
 
-BASE_FEATURE(kSettingsWillBeDismissedBugFixKillSwitch,
-             "SettingsWillBeDismissedBugFixKillSwitch",
+BASE_FEATURE(kBlockSimultaneousCellSelectionKillSwitch,
+             "BlockSimultaneousCellSelectionKillSwitch",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kIOSSaveToPhotos,
+             "IOSSaveToPhotos",
+             base::FEATURE_DISABLED_BY_DEFAULT);

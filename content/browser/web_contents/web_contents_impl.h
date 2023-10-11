@@ -589,8 +589,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   void AboutToBeDiscarded(WebContents* new_contents) override;
 
-  [[nodiscard]] base::ScopedClosureRunner CreateDisallowCustomCursorScope()
-      override;
+  [[nodiscard]] base::ScopedClosureRunner CreateDisallowCustomCursorScope(
+      int max_dimension_dips) override;
+
+  void SetOverscrollNavigationEnabled(bool enabled) override;
 
   // RenderFrameHostDelegate ---------------------------------------------------
   bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
@@ -1222,6 +1224,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Called when a file selection is to be done.
   void RunFileChooser(
+      base::WeakPtr<FileChooserImpl> file_chooser,
       RenderFrameHost* render_frame_host,
       scoped_refptr<FileChooserImpl::FileSelectListenerImpl> listener,
       const blink::mojom::FileChooserParams& params);
@@ -1230,6 +1233,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // chooser in directory-enumeration mode and having the user select the given
   // directory.
   void EnumerateDirectory(
+      base::WeakPtr<FileChooserImpl> file_chooser,
       RenderFrameHost* render_frame_host,
       scoped_refptr<FileChooserImpl::FileSelectListenerImpl> listener,
       const base::FilePath& directory_path);
@@ -2382,6 +2386,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Counts the number of open scopes that disallow custom cursors in this web
   // contents. Custom cursors are allowed if this is 0.
   int disallow_custom_cursor_scope_count_ = 0;
+
+  base::WeakPtr<FileChooserImpl> active_file_chooser_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_{this};
   base::WeakPtrFactory<WebContentsImpl> weak_factory_{this};

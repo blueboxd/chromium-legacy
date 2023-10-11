@@ -220,6 +220,7 @@
   E_CPONLY(kColorNewTabPageModuleBackground) \
   E_CPONLY(kColorNewTabPageModuleIconContainerBackground) \
   E_CPONLY(kColorNewTabPageModuleItemBackground) \
+  E_CPONLY(kColorNewTabPageModuleItemBackgroundHovered) \
   E_CPONLY(kColorNewTabPageModuleScrollButtonBackground) \
   E_CPONLY(kColorNewTabPageModuleScrollButtonBackgroundHovered) \
   E_CPONLY(kColorNewTabPageMostVisitedForeground) \
@@ -295,8 +296,8 @@
   /* Page Info colors */ \
   E_CPONLY(kColorPageActionIcon) \
   E_CPONLY(kColorPageActionIconHover) \
-  E_CPONLY(kColorPageActionIconPressed) \
   E_CPONLY(kColorPageInfoBackground) \
+  E_CPONLY(kColorPageInfoBackgroundTonal) \
   E_CPONLY(kColorPageInfoChosenObjectDeleteButtonIcon) \
   E_CPONLY(kColorPageInfoChosenObjectDeleteButtonIconDisabled) \
   E_CPONLY(kColorPageInfoIconHover) \
@@ -423,6 +424,7 @@
   E_CPONLY(kColorSidePanelDivider) \
   E_CPONLY(kColorSidePanelEditFooterBorder) \
   E_CPONLY(kColorSidePanelEntryIcon) \
+  E_CPONLY(kColorSidePanelEntryDropdownIcon) \
   E_CPONLY(kColorSidePanelEntryTitle) \
   E_CPONLY(kColorSidePanelFilterChipBorder) \
   E_CPONLY(kColorSidePanelFilterChipForeground) \
@@ -512,6 +514,7 @@
   E_CPONLY(kColorTabGroupDialogPurple) \
   E_CPONLY(kColorTabGroupDialogCyan) \
   E_CPONLY(kColorTabGroupDialogOrange) \
+  E_CPONLY(kColorTabGroupDialogIconEnabled) \
   /* The colors used for tab groups in the context submenu. */ \
   E_CPONLY(kColorTabGroupContextMenuBlue) \
   E_CPONLY(kColorTabGroupContextMenuCyan) \

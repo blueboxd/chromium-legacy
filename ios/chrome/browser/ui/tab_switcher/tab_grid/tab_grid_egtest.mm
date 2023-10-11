@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "base/containers/contains.h"
 #import "base/format_macros.h"
 #import "base/i18n/message_formatter.h"
 #import "base/ios/ios_util.h"
@@ -240,7 +241,7 @@ id<GREYMatcher> SearchSuggestedActionsSectionWithHistoryMatchesCount(
 }
 // Matcher for the select tabs button in the context menu.
 id<GREYMatcher> SelectTabsContextMenuItem() {
-  return chrome_test_util::ButtonWithAccessibilityLabelId(
+  return chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
       IDS_IOS_CONTENT_CONTEXT_SELECTTABS);
 }
 
@@ -269,7 +270,7 @@ class EchoURLDefaultSearchEngineResponseProvider
 
 bool EchoURLDefaultSearchEngineResponseProvider::CanHandleRequest(
     const Request& request) {
-  return request.url.spec().find(kSearchEngineHost) != std::string::npos;
+  return base::Contains(request.url.spec(), kSearchEngineHost);
 }
 
 void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
@@ -521,6 +522,48 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
                   @"Expected 4 inactive tabs.");
 }
 
+// Tests that tapping Close All from the incognito grid shows no tabs and does
+// not shows Undo button. Also ensure that it close the expected tabs to avoid
+// crbug.com/1475005.
+- (void)testCloseAllAndUndoCloseAllForIncognitoGrid {
+  // Opens 3 incognito tabs and 1 regular.
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey openNewTab];
+
+  [ChromeEarlGrey waitForMainTabCount:2];
+  [ChromeEarlGrey waitForIncognitoTabCount:3];
+
+  // Open the regular grid.
+  [ChromeEarlGreyUI openTabGrid];
+
+  // Scroll the tab grid to switch from regular grid to incognito grid.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                              kTabGridScrollViewIdentifier),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeLeft)];
+
+  // Close all incognito tabs
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridEditMenuCloseAllButton()]
+      performAction:grey_tap()];
+
+  // Ensure only incognito tabs were closed
+  [ChromeEarlGrey waitForMainTabCount:2];
+  [ChromeEarlGrey waitForIncognitoTabCount:0];
+
+  // Ensure undo button is not visible and edit button is visible
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 // Tests that the Undo button is no longer available after tapping Close All,
 // then creating a new tab, then coming back to the tab grid.
 // Validates this case when Tab Grid Bulk Actions feature is enabled.
@@ -569,6 +612,37 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
   [ChromeEarlGreyUI assertHistoryHasNoEntries];
 }
 
+#pragma mark - Recent Tabs
+
+// Tests reopening a closed tab from an incognito tab.
+- (void)testOpenCloseTabFromIncognito {
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
+
+  // Close the tab, making it appear in Recent Tabs.
+  [ChromeEarlGrey closeAllNormalTabs];
+
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGreyUI openTabGrid];
+
+  [[EarlGrey selectElementWithMatcher:TabGridOtherDevicesPanelButton()]
+      performAction:grey_tap()];
+
+  [ChromeEarlGrey waitForMainTabCount:0];
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
+
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(kTitle1),
+                                          grey_sufficientlyVisible(), nil)]
+      atIndex:0] performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText(_URL1.GetContent())];
+
+  [ChromeEarlGrey waitForMainTabCount:1];
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
+}
+
 #pragma mark - Recent Tabs Context Menu
 
 // Tests the Copy Link action on a recent tab's context menu.
@@ -580,18 +654,6 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
       verifyCopyLinkActionWithText:[NSString
                                        stringWithUTF8String:_URL1.spec()
                                                                 .c_str()]];
-}
-
-// Tests the Open in New Tab action on a recent tab's context menu.
-- (void)testRecentTabsContextMenuOpenInNewTab {
-  [self prepareRecentTabWithURL:_URL1 response:kResponse1];
-  [self longPressTabWithTitle:kTitle1];
-
-  [ChromeEarlGrey verifyOpenInNewTabActionWithURL:_URL1.GetContent()];
-
-  // Verify that the Tab Grid is closed.
-  [[EarlGrey selectElementWithMatcher:TabGridOtherDevicesPanelButton()]
-      assertWithMatcher:grey_notVisible()];
 }
 
 // Tests the Open in New Window action on a recent tab's context menu.
@@ -658,9 +720,9 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 
   [self longPressTabWithTitle:kTitle1];
 
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK)]
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                     IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK)]
       performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:
@@ -2080,9 +2142,9 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 
   [self longPressTabWithTitle:kTitle2];
 
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK)]
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                     IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK)]
       performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:

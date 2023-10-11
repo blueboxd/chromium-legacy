@@ -34,7 +34,6 @@
 #include "components/permissions/contexts/bluetooth_chooser_context.h"
 #include "components/permissions/object_permission_context_base.h"
 #include "components/permissions/permission_manager.h"
-#include "components/permissions/permission_result.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
@@ -47,7 +46,7 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
+#include "chrome/browser/ui/webui/ash/settings/app_management/app_management_uma.h"
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -55,6 +54,7 @@
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
 #include "chrome/browser/lookalikes/safety_tip_ui_helper.h"
+#include "chrome/browser/picture_in_picture/auto_picture_in_picture_tab_helper.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -175,20 +175,18 @@ std::u16string ChromePageInfoDelegate::GetWarningDetailText() {
 }
 #endif
 
-permissions::PermissionResult ChromePageInfoDelegate::GetPermissionResult(
+content::PermissionResult ChromePageInfoDelegate::GetPermissionResult(
     blink::PermissionType permission,
     const url::Origin& origin,
     const absl::optional<url::Origin>& requesting_origin) {
   auto* controller = GetProfile()->GetPermissionController();
 
   if (requesting_origin.has_value()) {
-    return permissions::PermissionUtil::ToPermissionResult(
-        controller->GetPermissionResultForOriginWithoutContext(
-            permission, *requesting_origin, origin));
+    return controller->GetPermissionResultForOriginWithoutContext(
+        permission, *requesting_origin, origin);
   } else {
-    return permissions::PermissionUtil::ToPermissionResult(
-        controller->GetPermissionResultForOriginWithoutContext(permission,
-                                                               origin));
+    return controller->GetPermissionResultForOriginWithoutContext(permission,
+                                                                  origin);
   }
 }
 
@@ -342,6 +340,17 @@ bool ChromePageInfoDelegate::IsSubresourceFilterActivated(
               ->settings_manager();
 
   return settings_manager->GetSiteActivationFromMetadata(site_url);
+}
+
+bool ChromePageInfoDelegate::HasAutoPictureInPictureBeenRegistered() {
+#if BUILDFLAG(IS_ANDROID)
+  return false;
+#else
+  auto* auto_pip_tab_helper =
+      AutoPictureInPictureTabHelper::FromWebContents(web_contents_);
+  return auto_pip_tab_helper &&
+         auto_pip_tab_helper->HasAutoPictureInPictureBeenRegistered();
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 bool ChromePageInfoDelegate::IsContentDisplayedInVrHeadset() {

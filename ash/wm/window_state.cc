@@ -394,6 +394,11 @@ bool WindowState::IsUserPositionable() const {
   return window_util::IsWindowUserPositionable(window_);
 }
 
+bool WindowState::CanFullscreen() const {
+  return (window_->GetProperty(aura::client::kResizeBehaviorKey) &
+          aura::client::kResizeBehaviorCanFullscreen) != 0;
+}
+
 bool WindowState::CanMaximize() const {
   return (window_->GetProperty(aura::client::kResizeBehaviorKey) &
           aura::client::kResizeBehaviorCanMaximize) != 0;
@@ -1351,11 +1356,8 @@ void WindowState::OnWindowParentChanged(aura::Window* window,
 void WindowState::OnWindowVisibilityChanged(aura::Window* window,
                                             bool visible) {
   // If this window is a PiP and its SnapFraction is null.
-  // Note that, at this point, ARC PiP may not be ready as visibility can be
-  // updated when it transitions from minimized to PiP. In this case, snap
-  // fraction is updated in `ClientControlledShellSurface::OnPostWidgetCommit`.
   if (window == window_ && visible && IsPip() &&
-      !PipPositioner::HasSnapFraction(this) && !IsArcWindow(window)) {
+      !PipPositioner::HasSnapFraction(this)) {
     PipPositioner::SaveSnapFraction(this, window_->GetBoundsInScreen());
   }
   // From here, we are only interested if the parent visibility changes, i.e.

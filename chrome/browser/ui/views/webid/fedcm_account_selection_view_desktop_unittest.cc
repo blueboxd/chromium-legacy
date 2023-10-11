@@ -21,6 +21,7 @@
 
 using LoginState = content::IdentityRequestAccount::LoginState;
 using SignInMode = content::IdentityRequestAccount::SignInMode;
+using TokenError = content::IdentityCredentialTokenError;
 
 namespace {
 
@@ -35,7 +36,8 @@ class TestBubbleView : public AccountSelectionBubbleViewInterface {
     kAccountPicker,
     kConfirmAccount,
     kVerifying,
-    kFailure
+    kFailure,
+    kError
   };
 
   TestBubbleView() = default;
@@ -79,6 +81,15 @@ class TestBubbleView : public AccountSelectionBubbleViewInterface {
       const std::u16string& idp_for_display,
       const content::IdentityProviderMetadata& idp_metadata) override {
     sheet_type_ = SheetType::kFailure;
+    account_ids_ = {};
+  }
+
+  void ShowErrorDialog(const std::u16string& top_frame_for_display,
+                       const absl::optional<std::u16string>& iframe_for_display,
+                       const std::u16string& idp_for_display,
+                       const content::IdentityProviderMetadata& idp_metadata,
+                       const absl::optional<TokenError>& error) override {
+    sheet_type_ = SheetType::kError;
     account_ids_ = {};
   }
 
@@ -200,7 +211,9 @@ class FedCmAccountSelectionViewDesktopTest : public ChromeViewsTestBase {
     std::vector<content::IdentityRequestAccount> accounts;
     for (const auto& account_info : account_infos) {
       accounts.emplace_back(account_info.first, "", "", "", GURL::EmptyGURL(),
-                            std::vector<std::string>(), account_info.second);
+                            /*login_hints=*/std::vector<std::string>(),
+                            /*hosted_domains=*/std::vector<std::string>(),
+                            account_info.second);
     }
     return IdentityProviderDisplayData(u"", content::IdentityProviderMetadata(),
                                        content::ClientMetadata(GURL(), GURL()),
@@ -239,6 +252,17 @@ class FedCmAccountSelectionViewDesktopTest : public ChromeViewsTestBase {
                                   kIdpEtldPlusOne, rp_context,
                                   content::IdentityProviderMetadata());
     EXPECT_EQ(TestBubbleView::SheetType::kFailure, bubble_view_->sheet_type_);
+    return controller;
+  }
+
+  std::unique_ptr<TestFedCmAccountSelectionView> CreateAndShowErrorDialog(
+      blink::mojom::RpContext rp_context = blink::mojom::RpContext::kSignIn) {
+    auto controller = std::make_unique<TestFedCmAccountSelectionView>(
+        delegate_.get(), widget_.get(), bubble_view_.get());
+    controller->ShowErrorDialog(
+        kTopFrameEtldPlusOne, kIframeEtldPlusOne, kIdpEtldPlusOne, rp_context,
+        content::IdentityProviderMetadata(), /*error=*/absl::nullopt);
+    EXPECT_EQ(TestBubbleView::SheetType::kError, bubble_view_->sheet_type_);
     return controller;
   }
 
@@ -974,4 +998,35 @@ TEST_F(FedCmAccountSelectionViewDesktopTest,
   EXPECT_TRUE(widget_->IsVisible());
   EXPECT_EQ(TestBubbleView::SheetType::kConfirmAccount,
             bubble_view_->sheet_type_);
+}
+
+// Tests that the error dialog can be shown.
+TEST_F(FedCmAccountSelectionViewDesktopTest, ErrorDialogShown) {
+  std::unique_ptr<TestFedCmAccountSelectionView> controller =
+      CreateAndShowErrorDialog();
+  EXPECT_TRUE(widget_->IsVisible());
+}
+
+// Tests that RP context is properly set for the error dialog.
+TEST_F(FedCmAccountSelectionViewDesktopTest, ErrorDialogWithRpContext) {
+  {
+    std::unique_ptr<TestFedCmAccountSelectionView> controller =
+        CreateAndShowErrorDialog();
+    EXPECT_EQ(controller->GetRpContext(), blink::mojom::RpContext::kSignIn);
+  }
+  {
+    std::unique_ptr<TestFedCmAccountSelectionView> controller =
+        CreateAndShowErrorDialog(blink::mojom::RpContext::kSignUp);
+    EXPECT_EQ(controller->GetRpContext(), blink::mojom::RpContext::kSignUp);
+  }
+  {
+    std::unique_ptr<TestFedCmAccountSelectionView> controller =
+        CreateAndShowErrorDialog(blink::mojom::RpContext::kContinue);
+    EXPECT_EQ(controller->GetRpContext(), blink::mojom::RpContext::kContinue);
+  }
+  {
+    std::unique_ptr<TestFedCmAccountSelectionView> controller =
+        CreateAndShowErrorDialog(blink::mojom::RpContext::kUse);
+    EXPECT_EQ(controller->GetRpContext(), blink::mojom::RpContext::kUse);
+  }
 }

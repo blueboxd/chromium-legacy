@@ -43,7 +43,7 @@ class ElementInternals;
 class ExceptionState;
 class FormAssociated;
 class HTMLFormElement;
-class HTMLSelectMenuElement;
+class HTMLSelectListElement;
 class KeyboardEvent;
 class V8UnionStringLegacyNullToEmptyStringOrTrustedScript;
 
@@ -183,7 +183,6 @@ class CORE_EXPORT HTMLElement : public Element {
   static const AtomicString& EventNameForAttributeName(
       const QualifiedName& attr_name);
 
-  bool SupportsFocus() const override;
   bool IsDisabledFormControl() const override;
   bool MatchesEnabledPseudoClass() const override;
   bool MatchesReadOnlyPseudoClass() const override;
@@ -277,8 +276,8 @@ class CORE_EXPORT HTMLElement : public Element {
   void MaybeQueuePopoverHideEvent();
   static void HoveredElementChanged(Element* old_element, Element* new_element);
 
-  void SetPopoverOwnerSelectMenuElement(HTMLSelectMenuElement* element);
-  HTMLSelectMenuElement* popoverOwnerSelectMenuElement() const;
+  void SetPopoverOwnerSelectListElement(HTMLSelectListElement* element);
+  HTMLSelectListElement* popoverOwnerSelectListElement() const;
 
   bool DispatchFocusEvent(
       Element* old_focused_element,
@@ -286,6 +285,8 @@ class CORE_EXPORT HTMLElement : public Element {
       InputDeviceCapabilities* source_capabilities) override;
 
  protected:
+  bool SupportsFocus() const override;
+
   enum AllowPercentage { kDontAllowPercentageValues, kAllowPercentageValues };
   enum AllowZero { kDontAllowZeroValues, kAllowZeroValues };
   void AddHTMLLengthToStyle(MutableCSSPropertyValueSet*,

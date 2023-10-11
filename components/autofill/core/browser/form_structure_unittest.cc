@@ -188,7 +188,8 @@ class FormStructureTestImpl : public test::FormStructureTest {
  protected:
   bool FormIsAutofillable(const FormData& form) {
     FormStructure form_structure(form);
-    form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+    form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                           nullptr);
     return form_structure.IsAutofillable();
   }
 
@@ -503,10 +504,10 @@ TEST_F(FormStructureTestImpl_ShouldBeParsed_Test, FalseIfOnlySelectField) {
       test_api(form_structure()).ShouldBeParsed({.min_required_fields = 2}));
 }
 
-TEST_F(FormStructureTestImpl_ShouldBeParsed_Test, FalseIfOnlySelectMenuField) {
+TEST_F(FormStructureTestImpl_ShouldBeParsed_Test, FalseIfOnlySelectListField) {
   {
     FormFieldData field;
-    field.form_control_type = "selectmenu";
+    field.form_control_type = "selectlist";
     AddField(field);
   }
   EXPECT_FALSE(test_api(form_structure()).ShouldBeParsed());
@@ -994,7 +995,8 @@ TEST_F(FormStructureTestImpl,
   // Default configuration.
   {
     FormStructure form_structure(form);
-    form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+    form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                           nullptr);
     ASSERT_EQ(2U, form_structure.field_count());
     ASSERT_EQ(0U, form_structure.autofill_count());
     EXPECT_EQ(UNKNOWN_TYPE, form_structure.field(0)->heuristic_type());
@@ -1026,7 +1028,8 @@ TEST_F(FormStructureTestImpl,
     FormData form_copy = form;
     form_copy.fields.pop_back();
     FormStructure form_structure(form_copy);
-    form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+    form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                           nullptr);
     ASSERT_EQ(1U, form_structure.field_count());
     ASSERT_EQ(1U, form_structure.autofill_count());
     EXPECT_EQ(UNKNOWN_TYPE, form_structure.field(0)->heuristic_type());
@@ -1055,7 +1058,8 @@ TEST_F(FormStructureTestImpl, PromoCodeHeuristics_SmallForm) {
   // Default configuration.
   {
     FormStructure form_structure(form);
-    form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+    form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                           nullptr);
     ASSERT_EQ(1U, form_structure.field_count());
     ASSERT_EQ(1U, form_structure.autofill_count());
     EXPECT_EQ(MERCHANT_PROMO_CODE, form_structure.field(0)->heuristic_type());
@@ -1076,7 +1080,8 @@ TEST_F(FormStructureTestImpl, PasswordFormShouldBeQueried) {
                  CreateTestFormField("Email", "email", "", "text", "username"),
                  CreateTestFormField("Password", "Password", "", "password")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   EXPECT_TRUE(form_structure.has_password_field());
   EXPECT_TRUE(form_structure.ShouldBeQueried());
   EXPECT_TRUE(form_structure.ShouldBeUploaded());
@@ -1119,7 +1124,8 @@ TEST_F(FormStructureTestImpl, HeuristicsAutocompleteAttributeWithSections) {
       // Credit card fields are implicitly in one, separate credit card section.
       CreateTestFormField("", "", "", "text", "section-foo cc-number")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   EXPECT_TRUE(form_structure.IsAutofillable());
 
   // Expect the correct number of fields.
@@ -1153,7 +1159,8 @@ TEST_F(FormStructureTestImpl,
       CreateTestFormField("", "", "", "text", "garbage shipping email"),
       CreateTestFormField("", "", "", "text", "garbage billing email")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
 
   // Expect the correct number of fields.
   ASSERT_EQ(6U, form_structure.field_count());
@@ -1178,7 +1185,8 @@ TEST_F(FormStructureTestImpl,
       CreateTestFormField("", "", "", "text", "section-foo email"),
       CreateTestFormField("", "", "", "text", "section-foo address-line1")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
 
   // Expect the correct number of fields.
   ASSERT_EQ(2U, form_structure.field_count());
@@ -1214,7 +1222,8 @@ TEST_F(FormStructureTestImpl,
                  CreateTestFormField("", "", "", "text", "name"),
                  CreateTestFormField("", "two", "", "text", "address-line1")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
 
   // Expect the correct number of fields.
   ASSERT_EQ(4U, form_structure.field_count());
@@ -1288,7 +1297,8 @@ TEST_F(FormStructureTestImpl, HeuristicsSample8) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(10U, form_structure->field_count());
   ASSERT_EQ(9U, form_structure->autofill_count());
@@ -1362,7 +1372,8 @@ TEST_F(FormStructureTestImpl, HeuristicsSample6) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(7U, form_structure->field_count());
   ASSERT_EQ(6U, form_structure->autofill_count());
@@ -1436,7 +1447,8 @@ TEST_F(FormStructureTestImpl, HeuristicsLabelsOnly) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(8U, form_structure->field_count());
   ASSERT_EQ(7U, form_structure->autofill_count());
@@ -1500,7 +1512,8 @@ TEST_F(FormStructureTestImpl, HeuristicsCreditCardInfo) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(6U, form_structure->field_count());
   ASSERT_EQ(5U, form_structure->autofill_count());
@@ -1568,7 +1581,8 @@ TEST_F(FormStructureTestImpl, HeuristicsCreditCardInfoWithUnknownCardField) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(7U, form_structure->field_count());
   ASSERT_EQ(5U, form_structure->autofill_count());
@@ -1620,7 +1634,8 @@ TEST_F(FormStructureTestImpl, ThreeAddressLines) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(4U, form_structure->autofill_count());
@@ -1665,7 +1680,8 @@ TEST_F(FormStructureTestImpl, SurplusAddressLinesIgnored) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
 
@@ -1713,7 +1729,8 @@ TEST_F(FormStructureTestImpl, ThreeAddressLinesExpedia) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(4U, form_structure->field_count());
   EXPECT_EQ(4U, form_structure->autofill_count());
@@ -1755,7 +1772,8 @@ TEST_F(FormStructureTestImpl, TwoAddressLinesEbay) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(3U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
@@ -1792,7 +1810,8 @@ TEST_F(FormStructureTestImpl, HeuristicsStateWithProvince) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(3U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
@@ -1870,7 +1889,8 @@ TEST_F(FormStructureTestImpl, HeuristicsWithBilling) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(11U, form_structure->field_count());
   ASSERT_EQ(11U, form_structure->autofill_count());
@@ -1924,7 +1944,8 @@ TEST_F(FormStructureTestImpl, ThreePartPhoneNumber) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(4U, form_structure->autofill_count());
@@ -1971,7 +1992,8 @@ TEST_F(FormStructureTestImpl, HeuristicsInfernoCC) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
@@ -2032,7 +2054,8 @@ TEST_F(FormStructureTestImpl, HeuristicsInferCCNames_NamesNotFirst) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
@@ -2097,7 +2120,8 @@ TEST_F(FormStructureTestImpl, HeuristicsInferCCNames_NamesFirst) {
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
@@ -2185,6 +2209,8 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest) {
   {
     AutofillPageQueryRequest::Form* query_form = query.add_forms();
     query_form->set_signature(form_signature.value());
+    query_form->set_alternative_signature(
+        form_structure.alternative_form_signature().value());
     query_form->add_fields()->set_signature(412125936U);
     query_form->add_fields()->set_signature(1917667676U);
     query_form->add_fields()->set_signature(2226358947U);
@@ -2193,12 +2219,16 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest) {
 
     query_form = query.add_forms();
     query_form->set_signature(12345UL);
+    query_form->set_alternative_signature(
+        form_structure.alternative_form_signature().value());
     query_form->add_fields()->set_signature(1917667676U);
     query_form->add_fields()->set_signature(747221617U);
     query_form->add_fields()->set_signature(4108155786U);
 
     query_form = query.add_forms();
     query_form->set_signature(67890UL);
+    query_form->set_alternative_signature(
+        form_structure.alternative_form_signature().value());
     query_form->add_fields()->set_signature(2226358947U);
   }
 
@@ -2247,6 +2277,8 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest) {
   {
     AutofillPageQueryRequest::Form* query_form = query.add_forms();
     query_form->set_signature(2608858059775241169);
+    query_form->set_alternative_signature(
+        form_structure3.alternative_form_signature().value());
     query_form->add_fields()->set_signature(412125936U);
     query_form->add_fields()->set_signature(1917667676U);
     query_form->add_fields()->set_signature(2226358947U);
@@ -4638,6 +4670,96 @@ TEST_F(FormStructureTestImpl, CheckFormSignature) {
             form_structure->FormSignatureAsStr());
 }
 
+TEST_F(FormStructureTestImpl, CheckAlternativeFormSignatureLarge) {
+  FormData large_form;
+  large_form.url = GURL("http://foo.com/login?q=a#ref");
+
+  FormFieldData field1;
+  field1.form_control_type = "text";
+  large_form.fields.push_back(field1);
+
+  FormFieldData field2;
+  field2.form_control_type = "text";
+  large_form.fields.push_back(field2);
+
+  FormFieldData field3;
+  field3.form_control_type = "email";
+  large_form.fields.push_back(field3);
+
+  FormFieldData field4;
+  field4.form_control_type = "tel";
+  large_form.fields.push_back(field4);
+
+  // Alternative form signature string of a form with more than two fields
+  // should only concatenate scheme, host, and field types.
+  EXPECT_EQ(StrToHash64Bit("http://foo.com&text&text&email&tel"),
+            std::make_unique<FormStructure>(large_form)
+                ->alternative_form_signature()
+                .value());
+}
+
+TEST_F(FormStructureTestImpl, CheckAlternativeFormSignatureSmallPath) {
+  FormData small_form_path;
+  small_form_path.url = GURL("http://foo.com/login?q=a#ref");
+
+  FormFieldData field1;
+  field1.form_control_type = "text";
+  small_form_path.fields.push_back(field1);
+
+  FormFieldData field2;
+  field2.form_control_type = "text";
+  small_form_path.fields.push_back(field2);
+
+  // Alternative form signature string of a form with 2 fields or less should
+  // concatenate scheme, host, field types, and path if it is non-empty.
+  EXPECT_EQ(StrToHash64Bit("http://foo.com&text&text/login"),
+            std::make_unique<FormStructure>(small_form_path)
+                ->alternative_form_signature()
+                .value());
+}
+
+TEST_F(FormStructureTestImpl, CheckAlternativeFormSignatureSmallRef) {
+  FormData small_form_ref;
+  small_form_ref.url = GURL("http://foo.com?q=a#ref");
+
+  FormFieldData field1;
+  field1.form_control_type = "text";
+  small_form_ref.fields.push_back(field1);
+
+  FormFieldData field2;
+  field2.form_control_type = "text";
+  small_form_ref.fields.push_back(field2);
+
+  // Alternative form signature string of a form with 2 fields or less and
+  // without a path should concatenate scheme, host, field types, and reference
+  // if it is non-empty.
+  EXPECT_EQ(StrToHash64Bit("http://foo.com&text&text#ref"),
+            std::make_unique<FormStructure>(small_form_ref)
+                ->alternative_form_signature()
+                .value());
+}
+
+TEST_F(FormStructureTestImpl, CheckAlternativeFormSignatureSmallQuery) {
+  FormData small_form_query;
+  small_form_query.url = GURL("http://foo.com?q=a");
+
+  FormFieldData field1;
+  field1.form_control_type = "text";
+  small_form_query.fields.push_back(field1);
+
+  FormFieldData field2;
+  field2.form_control_type = "text";
+  small_form_query.fields.push_back(field2);
+
+  // Alternative form signature string of a form with 2 fields or less and
+  // without a path or reference should concatenate scheme, host, field types,
+  // and query if it is non-empty.
+  EXPECT_EQ(StrToHash64Bit("http://foo.com&text&text?q=a"),
+            std::make_unique<FormStructure>(small_form_query)
+                ->alternative_form_signature()
+                .value());
+}
+
 TEST_F(FormStructureTestImpl, ToFormData) {
   FormData form;
   form.name = u"the-name";
@@ -4704,6 +4826,8 @@ TEST_F(FormStructureTestImpl, SkipFieldTest) {
   query.set_client_version(std::string(GetProductNameAndVersionForUserAgent()));
   AutofillPageQueryRequest::Form* query_form = query.add_forms();
   query_form->set_signature(form_structure.form_signature().value());
+  query_form->set_alternative_signature(
+      form_structure.alternative_form_signature().value());
 
   query_form->add_fields()->set_signature(239111655U);
   query_form->add_fields()->set_signature(420638584U);
@@ -4753,6 +4877,8 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest_WithLabels) {
   query.set_client_version(std::string(GetProductNameAndVersionForUserAgent()));
   AutofillPageQueryRequest::Form* query_form = query.add_forms();
   query_form->set_signature(form_structure.form_signature().value());
+  query_form->set_alternative_signature(
+      form_structure.alternative_form_signature().value());
 
   query_form->add_fields()->set_signature(239111655U);
   query_form->add_fields()->set_signature(420638584U);
@@ -4804,6 +4930,8 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest_WithLongLabels) {
   query.set_client_version(std::string(GetProductNameAndVersionForUserAgent()));
   AutofillPageQueryRequest::Form* query_form = query.add_forms();
   query_form->set_signature(form_structure.form_signature().value());
+  query_form->set_alternative_signature(
+      form_structure.alternative_form_signature().value());
 
   query_form->add_fields()->set_signature(239111655U);
   query_form->add_fields()->set_signature(420638584U);
@@ -4850,6 +4978,8 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest_MissingNames) {
   query.set_client_version(std::string(GetProductNameAndVersionForUserAgent()));
   AutofillPageQueryRequest::Form* query_form = query.add_forms();
   query_form->set_signature(form_structure.form_signature().value());
+  query_form->set_alternative_signature(
+      form_structure.alternative_form_signature().value());
 
   query_form->add_fields()->set_signature(239111655U);
   query_form->add_fields()->set_signature(1318412689U);
@@ -4946,7 +5076,7 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_ServerPredictionIsOverride) {
 
   // Parse the response and update the field type predictions.
   FormStructure form(form_data);
-  form.DetermineHeuristicTypes(nullptr, nullptr);
+  form.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr, nullptr);
   std::vector<FormStructure*> forms{&form};
   FormStructure::ParseApiQueryResponse(response_string, forms,
                                        test::GetEncodedSignatures(forms),
@@ -5008,7 +5138,7 @@ TEST_F(FormStructureTestImpl,
   form_data.fields.push_back(field);
 
   FormStructure form(form_data);
-  form.DetermineHeuristicTypes(nullptr, nullptr);
+  form.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr, nullptr);
 
   // Setup the query response.
   AutofillQueryResponse response;
@@ -5073,7 +5203,7 @@ TEST_F(FormStructureTestImpl,
   form_data.fields.push_back(field);
 
   FormStructure form(form_data);
-  form.DetermineHeuristicTypes(nullptr, nullptr);
+  form.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr, nullptr);
 
   // Setup the query response.
   AutofillQueryResponse response;
@@ -5116,7 +5246,7 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_TooManyTypes) {
       CreateTestFormField("Last Name", "lname", "", "text"),
       CreateTestFormField("email", "email", "", "text", "address-level2")};
   FormStructure form(form_data);
-  form.DetermineHeuristicTypes(nullptr, nullptr);
+  form.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr, nullptr);
 
   // Setup the query response.
   AutofillQueryResponse response;
@@ -5176,7 +5306,7 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_UnknownType) {
       CreateTestFormField("Last Name", "lname", "", "text"),
       CreateTestFormField("email", "email", "", "text", "address-level2")};
   FormStructure form(form_data);
-  form.DetermineHeuristicTypes(nullptr, nullptr);
+  form.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr, nullptr);
 
   // Setup the query response.
   AutofillQueryResponse response;
@@ -5849,7 +5979,8 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_AuthorDefinedTypes) {
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  forms.front()->DetermineHeuristicTypes(nullptr, nullptr);
+  forms.front()->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
 
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
@@ -5920,7 +6051,8 @@ TEST_F(FormStructureTestImpl,
 
   FormStructure form_structure(form);
   // Will identify the sections based on the heuristics types.
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
@@ -5984,7 +6116,8 @@ TEST_F(FormStructureTestImpl, NoServerDataCCFields_CVC_NoOverwrite) {
   FormStructure form_structure(form);
 
   // Will identify the sections based on the heuristics types.
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
@@ -6053,7 +6186,8 @@ TEST_F(FormStructureTestImpl, WithServerDataCCFields_CVC_NoOverwrite) {
   FormStructure form_structure(form);
 
   // Will identify the sections based on the heuristics types.
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
@@ -6093,7 +6227,7 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_RankEqualSignatures) {
             CalculateFieldSignatureForField(form_data.fields[1]));
 
   FormStructure form(form_data);
-  form.DetermineHeuristicTypes(nullptr, nullptr);
+  form.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr, nullptr);
 
   // Setup the query response.
   AutofillQueryResponse response;
@@ -6131,7 +6265,7 @@ TEST_F(FormStructureTestImpl,
             CalculateFieldSignatureForField(form_data.fields[1]));
 
   FormStructure form(form_data);
-  form.DetermineHeuristicTypes(nullptr, nullptr);
+  form.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr, nullptr);
 
   // Setup the query response.
   AutofillQueryResponse response;
@@ -6639,7 +6773,7 @@ TEST_F(FormStructureTestImpl, ExperimentalServerPredictionsAreSeparate) {
   }
 
   FormStructure form(form_data);
-  form.DetermineHeuristicTypes(nullptr, nullptr);
+  form.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr, nullptr);
 
   const auto default_autofill_prediction = CreateFieldPrediction(
       NAME_FIRST, FieldPrediction::SOURCE_AUTOFILL_DEFAULT);
@@ -6739,7 +6873,8 @@ TEST_P(FormStructureTest_ForPatternSource, ParseFieldTypesWithPatterns) {
   ASSERT_THAT(form_structure.fields(), Not(IsEmpty()));
 
   auto get_heuristic_type = [&](const AutofillField& field) {
-    return field.heuristic_type(pattern_source());
+    return field.heuristic_type(
+        PatternSourceToHeuristicSource(pattern_source()));
   };
   EXPECT_THAT(
       form_structure.fields(),
@@ -6748,7 +6883,8 @@ TEST_P(FormStructureTest_ForPatternSource, ParseFieldTypesWithPatterns) {
 
   for (PatternSource other_pattern_source : other_pattern_sources()) {
     auto get_other_pattern_heuristic_type = [&](const AutofillField& field) {
-      return field.heuristic_type(other_pattern_source);
+      return field.heuristic_type(
+          PatternSourceToHeuristicSource(other_pattern_source));
     };
     EXPECT_THAT(form_structure.fields(),
                 Each(Pointee(ResultOf(get_other_pattern_heuristic_type,

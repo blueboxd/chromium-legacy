@@ -51,7 +51,7 @@ class MEDIA_EXPORT Mp4MuxerDelegate {
       absl::optional<AudioEncoder::CodecDescription> codec_description,
       base::TimeTicks timestamp);
   // Write to the big endian ISO-BMFF boxes and call `write_callback`.
-  void Flush();
+  bool Flush();
 
   struct Fragment {
     Fragment();
@@ -64,7 +64,13 @@ class MEDIA_EXPORT Mp4MuxerDelegate {
   };
 
  private:
+  void BuildFileTypeBox(mp4::writable_boxes::FileType& mp4_file_type_box);
   void BuildMovieBox();
+  void BuildVideoTrackFragmentRandomAccess(
+      mp4::writable_boxes::TrackFragmentRandomAccess&
+          fragment_random_access_box_writer,
+      Fragment& fragment,
+      size_t written_offset);
 
   void BuildVideoTrackWithKeyframe(
       const Muxer::VideoParameters& params,

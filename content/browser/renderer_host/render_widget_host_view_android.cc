@@ -2139,7 +2139,7 @@ void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
   // |is_source_touch_event_set_non_blocking| defines a blocking behaviour of
   // the future inputs.
   const bool is_source_touch_event_set_non_blocking =
-      InputEventResultStateIsSetNonBlocking(ack_result);
+      InputEventResultStateIsSetBlocking(ack_result);
   // |was_touch_blocked| indicates whether the current event was dispatched
   // blocking to the Renderer.
   const bool was_touch_blocked =
@@ -3231,6 +3231,11 @@ void RenderWidgetHostViewAndroid::SetHasPersistentVideo(
     return;
 
   screen_state_change_handler_.SetHasPersistentVideo(has_persistent_video);
+}
+
+void RenderWidgetHostViewAndroid::InvalidateLocalSurfaceIdAndAllocationGroup() {
+  local_surface_id_allocator_.Invalidate(
+      /*also_invalidate_allocation_group=*/true);
 }
 
 void RenderWidgetHostViewAndroid::HandleSwipeToMoveCursorGestureAck(

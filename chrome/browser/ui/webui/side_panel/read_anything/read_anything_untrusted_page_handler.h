@@ -60,6 +60,13 @@ class ReadAnythingUntrustedPageHandler
 
   // read_anything::mojom::UntrustedPageHandler:
   void OnCopy() override;
+  void OnLineSpaceChange(
+      read_anything::mojom::LineSpacing line_spacing) override;
+  void OnLetterSpaceChange(
+      read_anything::mojom::LetterSpacing letter_spacing) override;
+  void OnFontChange(const std::string& font) override;
+  void OnFontSizeChange(double font_size) override;
+  void OnColorChange(read_anything::mojom::Colors color) override;
   void OnLinkClicked(const ui::AXTreeID& target_tree_id,
                      ui::AXNodeID target_node_id) override;
   void OnSelectionChange(const ui::AXTreeID& target_tree_id,
@@ -67,6 +74,7 @@ class ReadAnythingUntrustedPageHandler
                          int anchor_offset,
                          ui::AXNodeID focus_node_id,
                          int focus_offset) override;
+  void OnCollapseSelection() override;
 
   // ReadAnythingModel::Observer:
   void OnReadAnythingThemeChanged(
@@ -109,9 +117,21 @@ class ReadAnythingUntrustedPageHandler
   // Notifies the model that the AXTreeID has changed.
   void OnActiveAXTreeIDChanged();
 
+  // Logs the current visual settings values.
+  void LogTextStyle();
+
   raw_ptr<ReadAnythingCoordinator> coordinator_;
   const raw_ptr<Browser> browser_;
   const raw_ptr<content::WebUI> web_ui_;
+  const std::map<std::string, ReadAnythingFont> font_map_ = {
+      {"Poppins", ReadAnythingFont::kPoppins},
+      {"Sans-serif", ReadAnythingFont::kSansSerif},
+      {"Serif", ReadAnythingFont::kSerif},
+      {"Comic Neue", ReadAnythingFont::kComicNeue},
+      {"Lexend Deca", ReadAnythingFont::kLexendDeca},
+      {"EB Garamond", ReadAnythingFont::kEbGaramond},
+      {"STIX Two Text", ReadAnythingFont::kStixTwoText},
+  };
 
   const mojo::Receiver<read_anything::mojom::UntrustedPageHandler> receiver_;
   const mojo::Remote<read_anything::mojom::UntrustedPage> page_;

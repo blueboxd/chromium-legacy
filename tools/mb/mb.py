@@ -92,6 +92,8 @@ class MetaBuildWrapper:
     self.isolate_exe = 'isolate.exe' if self.platform.startswith(
         'win') else 'isolate'
     self.use_luci_auth = False
+    self.rts_out_dir = self.PathJoin('gen', 'rts')
+    self.banned_from_rts = set()
 
   def PostArgsInit(self):
     self.use_luci_auth = getattr(self.args, 'luci_auth', False)
@@ -102,6 +104,16 @@ class MetaBuildWrapper:
     if 'expectations_dir' in self.args and self.args.expectations_dir is None:
       self.args.expectations_dir = os.path.join(
           os.path.dirname(self.args.config_file), 'mb_config_expectations')
+
+    banned_from_rts_map = json.loads(
+        self.ReadFile(
+            self.PathJoin(self.chromium_src_dir, 'tools', 'mb',
+                          'rts_banned_suites.json')))
+    self.banned_from_rts.update(banned_from_rts_map.get('*', set()))
+
+    if getattr(self.args, 'builder', None):
+      self.banned_from_rts.update(
+          banned_from_rts_map.get(self.args.builder, set()))
 
   def Main(self, args):
     self.ParseArgs(args)
@@ -163,6 +175,15 @@ class MetaBuildWrapper:
                         help='Sets GN arg android_default_version_code')
       subp.add_argument('--android-version-name',
                         help='Sets GN arg android_default_version_name')
+      subp.add_argument('--rts',
+                        default=None,
+                        help='which regression test selection model to use'
+                        ' For more info about RTS, please see'
+                        ' //docs/testing/regression-test-selection.md')
+      subp.add_argument('--use-rts',
+                        action='store_true',
+                        default=False,
+                        help='Deprecated argument for enabling RTS')
 
       # TODO(crbug.com/1060857): Remove this once swarming task templates
       # support command prefixes.
@@ -261,6 +282,10 @@ class MetaBuildWrapper:
                            'newline.')
     subp.add_argument('--json-output',
                       help='Write errors to json.output')
+    subp.add_argument('--rts-target-change-recall',
+                      type=float,
+                      help='how much safety is needed when selecting tests. '
+                      '0.0 is the lowest and 1.0 is the highest')
     subp.add_argument('path',
                       help='path to generate build into')
     subp.set_defaults(func=self.CmdGen)
@@ -299,17 +324,6 @@ class MetaBuildWrapper:
                       help='Lookup arguments from imported files, '
                            'implies --quiet')
     subp.set_defaults(func=self.CmdLookup)
-
-    subp = subps.add_parser('try',
-                            description='Try your change on a remote builder')
-    AddCommonOptions(subp)
-    subp.add_argument('target',
-                      help='ninja target to build and run')
-    subp.add_argument('--force', default=False, action='store_true',
-                      help='Force the job to run. Ignores local checkout state;'
-                      ' by default, the tool doesn\'t trigger jobs if there are'
-                      ' local changes which are not present on Gerrit.')
-    subp.set_defaults(func=self.CmdTry)
 
     subp = subps.add_parser(
       'run', formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -453,7 +467,41 @@ class MetaBuildWrapper:
       self.WriteFile(expectation_file, json_s)
     return 0
 
+  def RtsSelect(self):
+    if self.args.rts == 'rts-ml-chromium':
+      model_dir = self.PathJoin(self.chromium_src_dir, 'testing', 'rts',
+                                self.args.rts, self._CipdPlatform())
+      exe = self.PathJoin(model_dir, self.args.rts)
+    else:
+      model_dir = self.PathJoin(self.chromium_src_dir, 'testing', 'rts',
+                                self._CipdPlatform())
+      exe = self.PathJoin(model_dir, self.args.rts)
+
+    if self.platform == 'win32':
+      exe += '.exe'
+
+    args = [
+        exe,
+        'select',
+        '-gen-inverse',
+        '-model-dir', model_dir, \
+        '-out', self.PathJoin(self.ToAbsPath(self.args.path), self.rts_out_dir),
+        '-checkout', self.chromium_src_dir,
+    ]
+    if self.args.rts_target_change_recall:
+      if (self.args.rts_target_change_recall < 0
+          or self.args.rts_target_change_recall > 1):
+        self.WriteFailureAndRaise(
+            'rts-target-change-recall must be between (0 and 1]', None)
+      args += ['-target-change-recall', str(self.args.rts_target_change_recall)]
+
+    ret, _, err = self.Run(args, force_verbose=True)
+    if ret != 0:
+      self.WriteFailureAndRaise(err, None)
+
   def CmdGen(self):
+    if self.args.rts:
+      self.RtsSelect()
     vals = self.Lookup()
     return self.RunGNGen(vals)
 
@@ -496,73 +544,6 @@ class MetaBuildWrapper:
       self.Print('\nWriting """\\\n%s""" to _path_/args.gn.\n' % gn_args)
       self.PrintCmd(cmd)
     return 0
-
-  def CmdTry(self):
-    ninja_target = self.args.target
-    if ninja_target.startswith('//'):
-      self.Print("Expected a ninja target like base_unittests, got %s" % (
-        ninja_target))
-      return 1
-
-    _, out, _ = self.Run(['git', 'cl', 'diff', '--stat'], force_verbose=False)
-    if out:
-      self.Print("Your checkout appears to local changes which are not uploaded"
-                 " to Gerrit. Changes must be committed and uploaded to Gerrit"
-                 " to be tested using this tool.")
-      if not self.args.force:
-        return 1
-
-    json_path = self.PathJoin(self.chromium_src_dir, 'out.json')
-    try:
-      ret, out, err = self.Run(
-        ['git', 'cl', 'issue', '--json=out.json'], force_verbose=False)
-      if ret != 0:
-        self.Print(
-          "Unable to fetch current issue. Output and error:\n%s\n%s" % (
-            out, err
-        ))
-        return ret
-      with open(json_path) as f:
-        issue_data = json.load(f)
-    finally:
-      if self.Exists(json_path):
-        os.unlink(json_path)
-
-    if not issue_data['issue']:
-      self.Print("Missing issue data. Upload your CL to Gerrit and try again.")
-      return 1
-
-    class LedException(Exception):
-      pass
-
-    def run_cmd(previous_res, cmd):
-      if self.args.verbose:
-        self.Print(('| ' if previous_res else '') + ' '.join(cmd))
-
-      res, out, err = self.Call(cmd, input=previous_res)
-      if res != 0:
-        self.Print("Err while running '%s'. Output:\n%s\nstderr:\n%s" % (
-          ' '.join(cmd), out, err))
-        raise LedException()
-      return out
-
-    try:
-      result = LedResult(None, run_cmd).then(
-        # TODO(martiniss): maybe don't always assume the bucket?
-        'led', 'get-builder', 'luci.chromium.try:%s' % self.args.builder).then(
-        'led', 'edit', '-r', 'chromium_trybot_experimental',
-          '-p', 'tests=["%s"]' % ninja_target).then(
-        'led', 'edit-system', '--tag=purpose:user-debug-mb-try').then(
-        'led', 'edit-cr-cl', issue_data['issue_url']).then(
-        'led', 'launch').result
-    except LedException:
-      self.Print("If this is an unexpected error message, please file a bug"
-                 " with https://goto.google.com/mb-try-bug")
-      raise
-
-    swarming_data = json.loads(result)['swarming']
-    self.Print("Launched task at https://%s/task?id=%s" % (
-      swarming_data['host_name'], swarming_data['task_id']))
 
   def CmdRun(self):
     vals = self.GetConfig()
@@ -1310,6 +1291,20 @@ class MetaBuildWrapper:
         return ret
     return 0
 
+  def AddFilterFileArg(self, target, build_dir, command, inverted=False):
+    filter_file = ('%s_inverted' % target if inverted else target) + '.filter'
+    filter_file_path = self.PathJoin(self.rts_out_dir, filter_file)
+    abs_filter_file_path = self.ToAbsPath(build_dir, filter_file_path)
+
+    filter_exists = self.Exists(abs_filter_file_path)
+    if filter_exists:
+      filtered_command = command.copy()
+      filtered_command.append('--test-launcher-filter-file=%s' %
+                              filter_file_path)
+      self.Print('added RTS filter file to command: %s' % filter_file)
+      return filtered_command
+    return None
+
   def PossibleRuntimeDepsPaths(self, vals, ninja_targets, isolate_map):
     """Returns a map of targets to possible .runtime_deps paths.
 
@@ -1514,6 +1509,25 @@ class MetaBuildWrapper:
             'files': files,
         }
     }
+    # For more info about RTS, please see
+    # //docs/testing/regression-test-selection.md
+    if self.args.rts:
+      if target in self.banned_from_rts:
+        self.Print('%s is banned for RTS on this builder' % target)
+      else:
+        rts_command = self.AddFilterFileArg(target,
+                                            build_dir,
+                                            command,
+                                            inverted=False)
+        if rts_command:
+          isolate['variables']['rts_command'] = rts_command
+
+        inverted_command = self.AddFilterFileArg(target,
+                                                 build_dir,
+                                                 command,
+                                                 inverted=True)
+        if inverted_command:
+          isolate['variables']['inverted_command'] = inverted_command
 
     self.WriteFile(isolate_path, json.dumps(isolate, sort_keys=True) + '\n')
 
@@ -1587,6 +1601,9 @@ class MetaBuildWrapper:
     android_version_name = self.args.android_version_name
     if android_version_name:
       gn_args += ' android_default_version_name="%s"' % android_version_name
+
+    if self.args.rts:
+      gn_args += ' use_rts=true'
 
     args_gn_lines = []
     parsed_gn_args = {}
@@ -2123,27 +2140,6 @@ class MetaBuildWrapper:
       self.Print('\nWriting """\\\n%s""" to %s.\n' % (contents, path))
     with open(path, 'w', encoding='utf-8', newline='') as fp:
       return fp.write(contents)
-
-
-class LedResult:
-  """Holds the result of a led operation. Can be chained using |then|."""
-
-  def __init__(self, result, run_cmd):
-    self._result = result
-    self._run_cmd = run_cmd
-
-  @property
-  def result(self):
-    """The mutable result data of the previous led call as decoded JSON."""
-    return self._result
-
-  def then(self, *cmd):
-    """Invoke led, passing it the current `result` data as input.
-
-    Returns another LedResult object with the output of the command.
-    """
-    return self.__class__(
-        self._run_cmd(self._result, cmd), self._run_cmd)
 
 
 def FlattenConfig(config_pool, mixin_pool, config):

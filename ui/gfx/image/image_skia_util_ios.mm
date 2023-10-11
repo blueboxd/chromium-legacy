@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_scale_factor.h"
@@ -48,7 +48,7 @@ UIImage* UIImageFromImageSkiaRep(const gfx::ImageSkiaRep& image_skia_rep) {
     return nil;
 
   float scale = image_skia_rep.scale();
-  base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+  base::apple::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateDeviceRGB());
   return skia::SkBitmapToUIImageWithColorSpace(image_skia_rep.GetBitmap(),
                                                scale, color_space);

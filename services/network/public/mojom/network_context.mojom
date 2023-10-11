@@ -219,6 +219,12 @@ struct CTPolicy {
   array<string> excluded_legacy_spkis;
 };
 
+// Some of the fields below point to sqlite databases. On Android, when the
+// network service is sandboxed, those paths are also tracked by a sqlite
+// SandboxedVFSDelegate so that the browser knows which paths are safe to open
+// databases in. Any new sqlite databases used here will need to similarly
+// update the list of paths the browser can open in a sandboxed network service
+// on Android.
 struct NetworkContextFilePaths {
   // Points to the shared dictionary directory containing the sqlite database
   // file named "db" for metadata and the disk cache directory named "cache".
@@ -908,6 +914,14 @@ interface IpProtectionAuthTokenGetter {
   TryGetAuthTokens(uint32 batch_size) =>
     (array<BlindSignedAuthToken>? bsa_tokens,
      mojo_base.mojom.Time? try_again_after);
+
+  // Get the list of IP Protection proxies. The list contains proxy hostnames,
+  // in order of preference. Callers should prefer the first proxy, falling
+  // back to later proxies in the list. All proxies are implicitly HTTPS.
+  //
+  // This method will return an up-to-date list, possibly fetching that list
+  // remotely before returning it.
+  GetProxyList() => (array<string> proxy_list);
 };
 
 // Represents a distinct context for making network requests, with its own
@@ -1628,4 +1642,8 @@ interface NetworkContext {
   // `client_token` identifies which client has changed its visibility.
   ResourceSchedulerClientVisibilityChanged(
       mojo_base.mojom.UnguessableToken client_token, bool visible);
+
+  // Will flush cached client certificate for `host` if `certificate`
+  // doesn't match the corresponding cached certificate.
+  FlushCachedClientCertIfNeeded(HostPortPair host, X509Certificate certificate);
 };

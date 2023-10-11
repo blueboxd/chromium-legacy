@@ -478,8 +478,9 @@ class TestImporter(object):
         first ensures if upstream deletes some files, we also delete them.
         """
         _log.info('Cleaning out tests from %s.', self.dest_path)
-        should_remove = lambda fs, dirname, basename: (
-            is_file_exportable(fs.relpath(fs.join(dirname, basename), self.finder.chromium_base())))
+        should_remove = lambda fs, dirname, basename: (is_file_exportable(
+            fs.relpath(fs.join(dirname, basename), self.finder.chromium_base()
+                       ), self.host.project_config))
         files_to_delete = self.fs.files_under(
             self.dest_path, file_filter=should_remove)
         for subpath in files_to_delete:
@@ -523,6 +524,7 @@ class TestImporter(object):
             message += '\n'.join(
                 str(commit) for commit in locally_applied_commits)
         message += '\nNo-Export: true'
+        message += '\nValidate-Test-Flakiness: skip'
         return message
 
     def _delete_orphaned_baselines(self):
@@ -618,10 +620,12 @@ class TestImporter(object):
         # Prevent FindIt from auto-reverting import CLs.
         description += 'NOAUTOREVERT=true\n'
 
-        # Move any No-Export tag to the end of the description.
+        # Move any No-Export tag and flakiness footers to the end of the description.
         description = description.replace('No-Export: true', '')
-        description = description.replace('\n\n\n\n', '\n\n')
+        description = description.replace('Validate-Test-Flakiness: skip', '')
+        description = description.replace('\n\n\n\n\n', '\n\n')
         description += 'No-Export: true\n'
+        description += 'Validate-Test-Flakiness: skip\n'
 
         # Add the wptrunner MVP tryjobs as blocking trybots, to catch any test
         # changes or infrastructure changes from upstream.

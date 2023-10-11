@@ -248,12 +248,12 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 #pragma mark - SnapshotCacheObserver
 
 - (void)snapshotCache:(SnapshotCache*)snapshotCache
-    didUpdateSnapshotForID:(NSString*)snapshotID {
+    didUpdateSnapshotForID:(SnapshotID)snapshotID {
   web::WebState* webState = nullptr;
   for (int i = 0; i < _webStateList->count(); i++) {
     SnapshotTabHelper* snapshotTabHelper =
         SnapshotTabHelper::FromWebState(_webStateList->GetWebStateAt(i));
-    if ([snapshotID isEqualToString:snapshotTabHelper->GetSnapshotID()]) {
+    if (snapshotID == snapshotTabHelper->GetSnapshotID()) {
       webState = _webStateList->GetWebStateAt(i);
       break;
     }
@@ -451,9 +451,9 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 
 - (void)closeItemWithID:(NSString*)itemID {
   // TODO(crbug.com/1418021): Add metrics when the user closes an inactive tab.
-  int index = GetTabIndex(_webStateList, WebStateSearchCriteria{
-                                             .identifier = itemID,
-                                         });
+  int index = GetWebStateIndex(_webStateList, WebStateSearchCriteria{
+                                                  .identifier = itemID,
+                                              });
   if (index != WebStateList::kInvalidIndex) {
     _webStateList->CloseWebStateAt(index, WebStateList::CLOSE_USER_ACTION);
   }
@@ -490,8 +490,12 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
       [[TabGridToolbarsConfiguration alloc] init];
   toolbarsConfiguration.closeAllButton = !_webStateList->empty();
   toolbarsConfiguration.searchButton = YES;
-  toolbarsConfiguration.undoButton = _closedSessionWindow;
+  toolbarsConfiguration.undoButton = [self didSavedClosedTabs];
   return toolbarsConfiguration;
+}
+
+- (BOOL)didSavedClosedTabs {
+  return _closedSessionWindow != nil;
 }
 
 @end

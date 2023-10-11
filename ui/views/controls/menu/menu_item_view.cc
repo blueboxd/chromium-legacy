@@ -107,6 +107,16 @@ MenuItemView::MenuItemView(MenuDelegate* delegate)
                    Type::kSubMenu,
                    delegate) {}
 
+MenuItemView::~MenuItemView() {
+  if (GetMenuController()) {
+    GetMenuController()->OnMenuItemDestroying(this);
+  }
+  delete submenu_;
+  for (auto* item : removed_items_) {
+    delete item;
+  }
+}
+
 void MenuItemView::ChildPreferredSizeChanged(View* child) {
   invalidate_dimensions();
   PreferredSizeChanged();
@@ -810,14 +820,6 @@ MenuItemView::MenuItemView(MenuItemView* parent,
                            MenuItemView::Type type)
     : MenuItemView(parent, command, type, /* delegate */ nullptr) {}
 
-MenuItemView::~MenuItemView() {
-  if (GetMenuController())
-    GetMenuController()->OnMenuItemDestroying(this);
-  delete submenu_;
-  for (auto* item : removed_items_)
-    delete item;
-}
-
 MenuItemView::MenuItemView(MenuItemView* parent,
                            int command,
                            Type type,
@@ -1057,12 +1059,10 @@ void MenuItemView::PaintBackground(gfx::Canvas* canvas,
 
     ui::NativeTheme::MenuItemExtraParams menu_item_extra_params;
     menu_item_extra_params.corner_radius = config.item_corner_radius;
-    ui::NativeTheme::ExtraParams extra_params;
-    extra_params.menu_item = menu_item_extra_params;
-    GetNativeTheme()->Paint(canvas->sk_canvas(), GetColorProvider(),
-                            ui::NativeTheme::kMenuItemBackground,
-                            ui::NativeTheme::kHovered, item_bounds,
-                            extra_params);
+    GetNativeTheme()->Paint(
+        canvas->sk_canvas(), GetColorProvider(),
+        ui::NativeTheme::kMenuItemBackground, ui::NativeTheme::kHovered,
+        item_bounds, ui::NativeTheme::ExtraParams(menu_item_extra_params));
   }
 }
 
@@ -1291,8 +1291,7 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
   int label_text_height = secondary_title().empty() ? font_list.GetHeight()
                                                     : font_list.GetHeight() * 2;
   dimensions.height =
-      std::max({dimensions.height, label_text_height + vertical_margins,
-                config.item_min_height});
+      std::max(dimensions.height, label_text_height + vertical_margins);
 
   ApplyMinimumDimensions(&dimensions);
   return dimensions;
@@ -1300,14 +1299,10 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
 
 void MenuItemView::ApplyMinimumDimensions(MenuItemDimensions* dims) const {
   // Don't apply minimums to menus without controllers or to comboboxes.
-  if (!GetMenuController() || GetMenuController()->IsCombobox())
+  if (const auto* const controller = GetMenuController();
+      !controller || controller->IsCombobox()) {
     return;
-
-  // TODO(nicolaso): PaintBackground() doesn't cover the whole area in footnotes
-  // when minimum height is set too high. For now, just ignore minimum height
-  // for kHighlighted elements.
-  if (type_ == Type::kHighlighted)
-    return;
+  }
 
   const MenuConfig& config = MenuConfig::instance();
   dims->height = std::max(dims->height,

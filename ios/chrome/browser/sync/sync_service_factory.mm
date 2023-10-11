@@ -15,6 +15,7 @@
 #import "components/keyed_service/ios/browser_state_dependency_manager.h"
 #import "components/network_time/network_time_tracker.h"
 #import "components/prefs/pref_service.h"
+#import "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #import "components/supervised_user/core/common/buildflags.h"
 #import "components/sync/base/command_line_switches.h"
 #import "components/sync/base/sync_util.h"
@@ -25,11 +26,11 @@
 #import "components/sync_device_info/device_info_tracker.h"
 #import "components/sync_device_info/local_device_info_provider.h"
 #import "components/sync_preferences/pref_service_syncable.h"
-#import "ios/chrome/browser/bookmarks/account_bookmark_model_factory.h"
-#import "ios/chrome/browser/bookmarks/account_bookmark_sync_service_factory.h"
-#import "ios/chrome/browser/bookmarks/bookmark_undo_service_factory.h"
-#import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
-#import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_sync_service_factory.h"
+#import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/account_bookmark_sync_service_factory.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_undo_service_factory.h"
+#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
 #import "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
@@ -49,6 +50,7 @@
 #import "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #import "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #import "ios/chrome/browser/sync/model_type_store_service_factory.h"
+#import "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #import "ios/chrome/browser/sync/session_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_invalidations_service_factory.h"
 #import "ios/chrome/browser/trusted_vault/ios_trusted_vault_service_factory.h"
@@ -63,84 +65,9 @@
 #import "ios/chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
-// static
-SyncServiceFactory* SyncServiceFactory::GetInstance() {
-  static base::NoDestructor<SyncServiceFactory> instance;
-  return instance.get();
-}
+namespace {
 
-// static
-syncer::SyncService* SyncServiceFactory::GetForBrowserState(
-    ChromeBrowserState* browser_state) {
-  if (!syncer::IsSyncAllowedByFlag())
-    return nullptr;
-
-  return static_cast<syncer::SyncService*>(
-      GetInstance()->GetServiceForBrowserState(browser_state, true));
-}
-
-// static
-syncer::SyncService* SyncServiceFactory::GetForBrowserStateIfExists(
-    ChromeBrowserState* browser_state) {
-  if (!syncer::IsSyncAllowedByFlag())
-    return nullptr;
-
-  return static_cast<syncer::SyncService*>(
-      GetInstance()->GetServiceForBrowserState(browser_state, false));
-}
-
-// static
-syncer::SyncServiceImpl*
-SyncServiceFactory::GetAsSyncServiceImplForBrowserStateForTesting(
-    ChromeBrowserState* browser_state) {
-  return static_cast<syncer::SyncServiceImpl*>(
-      GetForBrowserState(browser_state));
-}
-
-SyncServiceFactory::SyncServiceFactory()
-    : BrowserStateKeyedServiceFactory(
-          "SyncService",
-          BrowserStateDependencyManager::GetInstance()) {
-  // The SyncService depends on various SyncableServices being around
-  // when it is shut down.  Specify those dependencies here to build the proper
-  // destruction order.
-  DependsOn(ChromeAccountManagerServiceFactory::GetInstance());
-  DependsOn(ConsentAuditorFactory::GetInstance());
-  DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
-  // Sync needs this service to still be present when the sync engine is
-  // disabled, so that preferences can be cleared.
-  DependsOn(GoogleGroupsUpdaterServiceFactory::GetInstance());
-  DependsOn(ios::AboutSigninInternalsFactory::GetInstance());
-  DependsOn(ios::AccountBookmarkModelFactory::GetInstance());
-  DependsOn(ios::AccountBookmarkSyncServiceFactory::GetInstance());
-  DependsOn(ios::LocalOrSyncableBookmarkModelFactory::GetInstance());
-  DependsOn(ios::LocalOrSyncableBookmarkSyncServiceFactory::GetInstance());
-  DependsOn(ios::BookmarkUndoServiceFactory::GetInstance());
-  DependsOn(ios::FaviconServiceFactory::GetInstance());
-  DependsOn(ios::HistoryServiceFactory::GetInstance());
-  DependsOn(ios::TemplateURLServiceFactory::GetInstance());
-  DependsOn(ios::WebDataServiceFactory::GetInstance());
-  DependsOn(IdentityManagerFactory::GetInstance());
-  DependsOn(IOSChromeGCMProfileServiceFactory::GetInstance());
-  DependsOn(IOSChromePasswordStoreFactory::GetInstance());
-  DependsOn(IOSChromeAccountPasswordStoreFactory::GetInstance());
-  DependsOn(IOSTrustedVaultServiceFactory::GetInstance());
-  DependsOn(IOSUserEventServiceFactory::GetInstance());
-  DependsOn(ModelTypeStoreServiceFactory::GetInstance());
-  DependsOn(ReadingListModelFactory::GetInstance());
-  DependsOn(SessionSyncServiceFactory::GetInstance());
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-
-  DependsOn(SyncInvalidationsServiceFactory::GetInstance());
-}
-
-SyncServiceFactory::~SyncServiceFactory() {}
-
-std::unique_ptr<KeyedService> SyncServiceFactory::BuildServiceInstanceFor(
-    web::BrowserState* context) const {
+std::unique_ptr<KeyedService> BuildSyncService(web::BrowserState* context) {
   ChromeBrowserState* browser_state =
       ChromeBrowserState::FromBrowserState(context);
 
@@ -207,5 +134,97 @@ std::unique_ptr<KeyedService> SyncServiceFactory::BuildServiceInstanceFor(
       browser_state->GetSyncablePrefs();
   pref_service->OnSyncServiceInitialized(sync_service.get());
 
+  SendTabToSelfSyncServiceFactory::GetForBrowserState(browser_state)
+      ->OnSyncServiceInitialized(sync_service.get());
+
   return sync_service;
+}
+
+}  // namespace
+
+// static
+SyncServiceFactory* SyncServiceFactory::GetInstance() {
+  static base::NoDestructor<SyncServiceFactory> instance;
+  return instance.get();
+}
+
+// static
+SyncServiceFactory::TestingFactory SyncServiceFactory::GetDefaultFactory() {
+  return base::BindRepeating(&BuildSyncService);
+}
+
+// static
+syncer::SyncService* SyncServiceFactory::GetForBrowserState(
+    ChromeBrowserState* browser_state) {
+  if (!syncer::IsSyncAllowedByFlag())
+    return nullptr;
+
+  return static_cast<syncer::SyncService*>(
+      GetInstance()->GetServiceForBrowserState(browser_state, true));
+}
+
+// static
+syncer::SyncService* SyncServiceFactory::GetForBrowserStateIfExists(
+    ChromeBrowserState* browser_state) {
+  if (!syncer::IsSyncAllowedByFlag())
+    return nullptr;
+
+  return static_cast<syncer::SyncService*>(
+      GetInstance()->GetServiceForBrowserState(browser_state, false));
+}
+
+// static
+syncer::SyncServiceImpl*
+SyncServiceFactory::GetAsSyncServiceImplForBrowserStateForTesting(
+    ChromeBrowserState* browser_state) {
+  return static_cast<syncer::SyncServiceImpl*>(
+      GetForBrowserState(browser_state));
+}
+
+SyncServiceFactory::SyncServiceFactory()
+    : BrowserStateKeyedServiceFactory(
+          "SyncService",
+          BrowserStateDependencyManager::GetInstance()) {
+  // The SyncService depends on various SyncableServices being around
+  // when it is shut down.  Specify those dependencies here to build the proper
+  // destruction order.
+  DependsOn(ChromeAccountManagerServiceFactory::GetInstance());
+  DependsOn(ConsentAuditorFactory::GetInstance());
+  DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
+  DependsOn(SendTabToSelfSyncServiceFactory::GetInstance());
+  // Sync needs this service to still be present when the sync engine is
+  // disabled, so that preferences can be cleared.
+  DependsOn(GoogleGroupsUpdaterServiceFactory::GetInstance());
+  DependsOn(ios::AboutSigninInternalsFactory::GetInstance());
+  DependsOn(ios::AccountBookmarkModelFactory::GetInstance());
+  DependsOn(ios::AccountBookmarkSyncServiceFactory::GetInstance());
+  DependsOn(ios::LocalOrSyncableBookmarkModelFactory::GetInstance());
+  DependsOn(ios::LocalOrSyncableBookmarkSyncServiceFactory::GetInstance());
+  DependsOn(ios::BookmarkUndoServiceFactory::GetInstance());
+  DependsOn(ios::FaviconServiceFactory::GetInstance());
+  DependsOn(ios::HistoryServiceFactory::GetInstance());
+  DependsOn(ios::TemplateURLServiceFactory::GetInstance());
+  DependsOn(ios::WebDataServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
+  DependsOn(IOSChromeGCMProfileServiceFactory::GetInstance());
+  DependsOn(IOSChromePasswordStoreFactory::GetInstance());
+  DependsOn(IOSChromeAccountPasswordStoreFactory::GetInstance());
+  DependsOn(IOSTrustedVaultServiceFactory::GetInstance());
+  DependsOn(IOSUserEventServiceFactory::GetInstance());
+  DependsOn(ModelTypeStoreServiceFactory::GetInstance());
+  DependsOn(ReadingListModelFactory::GetInstance());
+  DependsOn(SessionSyncServiceFactory::GetInstance());
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
+  DependsOn(SyncInvalidationsServiceFactory::GetInstance());
+}
+
+SyncServiceFactory::~SyncServiceFactory() {}
+
+std::unique_ptr<KeyedService> SyncServiceFactory::BuildServiceInstanceFor(
+    web::BrowserState* context) const {
+  return BuildSyncService(context);
 }

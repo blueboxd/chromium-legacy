@@ -88,7 +88,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
-#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/peak_gpu_memory_tracker.h"
@@ -101,6 +100,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #include "content/public/common/result_codes.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -152,6 +152,7 @@
 #include "content/browser/renderer_host/input/fling_scheduler_mac.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
+#include "ui/base/cocoa/cursor_utils.h"
 #endif
 
 using blink::DragOperationsMask;
@@ -1093,6 +1094,12 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   visual_properties.compositing_scale_factor =
       properties_from_parent_local_root_.compositing_scale_factor;
 
+#if BUILDFLAG(IS_MAC)
+  // Only macOS cursor scaling affects CSS custom cursor images for now.
+  visual_properties.cursor_accessibility_scale_factor =
+      ui::GetCursorAccessibilityScaleFactor();
+#endif
+
   // The |visible_viewport_size| is affected by auto-resize which is magical and
   // tricky.
   //
@@ -1294,6 +1301,7 @@ void RenderWidgetHostImpl::LostFocus() {
   if (owner_delegate_) {
     owner_delegate_->RenderWidgetLostFocus();
   }
+  has_lost_focus_ = true;
 }
 
 void RenderWidgetHostImpl::Focus() {
@@ -1496,18 +1504,18 @@ void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
 }
 
 void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
-    const blink::WebMouseEvent& mouse_event,
+    const WebMouseEvent& mouse_event,
     const ui::LatencyInfo& latency) {
   TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardMouseEvent", "x",
                mouse_event.PositionInWidget().x(), "y",
                mouse_event.PositionInWidget().y());
 
-  DCHECK_GE(mouse_event.GetType(), blink::WebInputEvent::Type::kMouseTypeFirst);
-  DCHECK_LE(mouse_event.GetType(), blink::WebInputEvent::Type::kMouseTypeLast);
+  DCHECK_GE(mouse_event.GetType(), WebInputEvent::Type::kMouseTypeFirst);
+  DCHECK_LE(mouse_event.GetType(), WebInputEvent::Type::kMouseTypeLast);
 
   // This is used to auto-disable accessibility if we detect user input
   // but no accessibility API usage.
-  if (mouse_event.GetType() == blink::WebInputEvent::Type::kMouseDown) {
+  if (mouse_event.GetType() == WebInputEvent::Type::kMouseDown) {
     BrowserAccessibilityStateImpl::GetInstance()->OnUserInputEvent();
   }
 
@@ -1543,7 +1551,7 @@ void RenderWidgetHostImpl::ForwardWheelEvent(
 }
 
 void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
-    const blink::WebMouseWheelEvent& wheel_event,
+    const WebMouseWheelEvent& wheel_event,
     const ui::LatencyInfo& latency) {
   TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardWheelEvent", "dx",
                wheel_event.delta_x, "dy", wheel_event.delta_y);
@@ -1589,7 +1597,7 @@ void RenderWidgetHostImpl::WaitForInputProcessed(base::OnceClosure callback) {
 }
 
 void RenderWidgetHostImpl::ForwardGestureEvent(
-    const blink::WebGestureEvent& gesture_event) {
+    const WebGestureEvent& gesture_event) {
   ForwardGestureEventWithLatencyInfo(
       gesture_event,
       ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
@@ -1597,14 +1605,14 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
 }
 
 void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
-    const blink::WebGestureEvent& gesture_event,
+    const WebGestureEvent& gesture_event,
     const ui::LatencyInfo& latency) {
   TRACE_EVENT1("input", "RenderWidgetHostImpl::ForwardGestureEvent", "type",
                WebInputEvent::GetName(gesture_event.GetType()));
 
   // This is used to auto-disable accessibility if we detect user input
   // but no accessibility API usage.
-  if (gesture_event.GetType() == blink::WebInputEvent::Type::kGestureTapDown) {
+  if (gesture_event.GetType() == WebInputEvent::Type::kGestureTapDown) {
     BrowserAccessibilityStateImpl::GetInstance()->OnUserInputEvent();
   }
 
@@ -1618,7 +1626,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
             blink::WebGestureDevice::kUninitialized);
 
   if (gesture_event.GetType() ==
-      blink::WebInputEvent::Type::kGestureScrollBegin) {
+      WebInputEvent::Type::kGestureScrollBegin) {
     DCHECK(
         !is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())]);
     is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
@@ -1628,7 +1636,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     scroll_peak_gpu_mem_tracker_ =
         PeakGpuMemoryTracker::Create(PeakGpuMemoryTracker::Usage::SCROLL);
   } else if (gesture_event.GetType() ==
-             blink::WebInputEvent::Type::kGestureScrollEnd) {
+             WebInputEvent::Type::kGestureScrollEnd) {
     DCHECK(
         is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())]);
     is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
@@ -1651,7 +1659,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     }
     scroll_peak_gpu_mem_tracker_ = nullptr;
   } else if (gesture_event.GetType() ==
-             blink::WebInputEvent::Type::kGestureFlingStart) {
+             WebInputEvent::Type::kGestureFlingStart) {
     NotifyUISchedulerOfScrollStateUpdate(
         BrowserUIThreadScheduler::ScrollState::kFlingActive);
     if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
@@ -1696,7 +1704,7 @@ void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
 
   // This is used to auto-disable accessibility if we detect user input
   // but no accessibility API usage.
-  if (touch_event.GetType() == blink::WebInputEvent::Type::kTouchStart) {
+  if (touch_event.GetType() == WebInputEvent::Type::kTouchStart) {
     BrowserAccessibilityStateImpl::GetInstance()->OnUserInputEvent();
   }
 
@@ -1737,8 +1745,8 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
 
   // This is used to auto-disable accessibility if we detect user input
   // but no accessibility API usage.
-  if (key_event.GetType() == blink::WebInputEvent::Type::kRawKeyDown ||
-      key_event.GetType() == blink::WebInputEvent::Type::kKeyDown) {
+  if (key_event.GetType() == WebInputEvent::Type::kRawKeyDown ||
+      key_event.GetType() == WebInputEvent::Type::kKeyDown) {
     BrowserAccessibilityStateImpl::GetInstance()->OnUserInputEvent();
   }
 
@@ -1783,7 +1791,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
   bool is_shortcut = false;
 
   // Only pre-handle the key event if it's not handled by the input method.
-  if (delegate_ && !key_event.skip_in_browser) {
+  if (delegate_ && !key_event.skip_if_unhandled) {
     // We need to set |suppress_events_until_keydown_| to true if
     // PreHandleKeyboardEvent() handles the event, but |this| may already be
     // destroyed at that time. So set |suppress_events_until_keydown_| true
@@ -2549,7 +2557,8 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
   // We only send unprocessed key event upwards if we are not hidden,
   // because the user has moved away from us and no longer expect any effect
   // of this key event.
-  if (delegate_ && !processed && !is_hidden() && !event.event.skip_in_browser) {
+  if (delegate_ && !processed && !is_hidden() &&
+      !event.event.skip_if_unhandled) {
     delegate_->HandleKeyboardEvent(event.event);
   }
   // WARNING: This RenderWidgetHostImpl can be deallocated at this point
@@ -2685,6 +2694,97 @@ void RenderWidgetHostImpl::UpdateBrowserControlsState(
                                                       animate);
 }
 
+void RenderWidgetHostImpl::StartDragging(
+    blink::mojom::DragDataPtr drag_data,
+    DragOperationsMask drag_operations_mask,
+    const SkBitmap& bitmap,
+    const gfx::Vector2d& cursor_offset_in_dip,
+    const gfx::Rect& drag_obj_rect_in_dip,
+    blink::mojom::DragEventSourceInfoPtr event_info) {
+  DropData drop_data = DragDataToDropData(*drag_data);
+  DropData filtered_data(drop_data);
+  RenderProcessHost* process = GetProcess();
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  // Allow drag of Javascript URLs to enable bookmarklet drag to bookmark bar.
+  if (!filtered_data.url.SchemeIs(url::kJavaScriptScheme)) {
+    process->FilterURL(true, &filtered_data.url);
+  }
+  process->FilterURL(false, &filtered_data.html_base_url);
+  // Filter out any paths that the renderer didn't have access to. This prevents
+  // the following attack on a malicious renderer:
+  // 1. StartDragging IPC sent with renderer-specified filesystem paths that it
+  //    doesn't have read permissions for.
+  // 2. We initiate a native DnD operation.
+  // 3. DnD operation immediately ends since mouse is not held down. DnD events
+  //    still fire though, which causes read permissions to be granted to the
+  //    renderer for any file paths in the drop.
+  filtered_data.filenames.clear();
+  for (const auto& file_info : drop_data.filenames) {
+    if (policy->CanReadFile(GetProcess()->GetID(), file_info.path)) {
+      filtered_data.filenames.push_back(file_info);
+    }
+  }
+
+  storage::FileSystemContext* file_system_context =
+      GetProcess()->GetStoragePartition()->GetFileSystemContext();
+  filtered_data.file_system_files.clear();
+
+  for (const auto& file_system_file : drop_data.file_system_files) {
+    storage::FileSystemURL file_system_url =
+        file_system_context->CrackURLInFirstPartyContext(file_system_file.url);
+
+    // Sandboxed filesystem files should never be handled via this path, so
+    // skip any that are sent from the renderer. In all other cases, it should
+    // be safe to use the FileSystemURL returned from calling
+    // CrackURLInFirstPartyContext as long as CanReadFileSystemFile only
+    // performs checks on the origin and doesn't use more of the StorageKey.
+    if (file_system_url.type() == storage::kFileSystemTypePersistent ||
+        file_system_url.type() == storage::kFileSystemTypeTemporary) {
+      continue;
+    }
+
+    if (policy->CanReadFileSystemFile(GetProcess()->GetID(), file_system_url)) {
+      filtered_data.file_system_files.push_back(file_system_file);
+    }
+  }
+
+  if (frame_tree_) {
+    bool intercepted = false;
+    devtools_instrumentation::WillStartDragging(
+        frame_tree_->root(), filtered_data, std::move(drag_data),
+        drag_operations_mask, &intercepted);
+    if (intercepted) {
+      return;
+    }
+  }
+
+  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
+  if (!view || !GetView()) {
+    // Need to clear drag and drop state in blink.
+    DragSourceSystemDragEnded();
+    return;
+  }
+  float scale = GetScaleFactorForView(GetView());
+  gfx::ImageSkia image = gfx::ImageSkia::CreateFromBitmap(bitmap, scale);
+  gfx::Vector2d offset = cursor_offset_in_dip;
+  gfx::Rect rect = drag_obj_rect_in_dip;
+#if BUILDFLAG(IS_WIN)
+  // Scale the offset by device scale factor, otherwise the drag
+  // image location doesn't line up with the drop location (drag destination).
+  // TODO(crbug.com/1354831): this conversion should not be necessary.
+  gfx::Vector2dF scaled_offset = static_cast<gfx::Vector2dF>(offset);
+  scaled_offset.Scale(scale);
+  offset = gfx::ToRoundedVector2d(scaled_offset);
+  gfx::RectF scaled_rect = static_cast<gfx::RectF>(rect);
+  scaled_rect.Scale(scale);
+  rect = gfx::ToRoundedRect(scaled_rect);
+#endif
+  view->StartDragging(filtered_data, drag_operations_mask, image, offset, rect,
+                      *event_info, this);
+}
+
 // static
 bool RenderWidgetHostImpl::DidVisualPropertiesSizeChange(
     const blink::VisualProperties& old_visual_properties,
@@ -2772,6 +2872,8 @@ bool RenderWidgetHostImpl::StoredVisualPropertiesNeedsUpdate(
              new_visual_properties.page_scale_factor ||
          old_visual_properties->compositing_scale_factor !=
              new_visual_properties.compositing_scale_factor ||
+         old_visual_properties->cursor_accessibility_scale_factor !=
+             new_visual_properties.cursor_accessibility_scale_factor ||
          old_visual_properties->is_pinch_gesture_active !=
              new_visual_properties.is_pinch_gesture_active ||
          old_visual_properties->root_widget_window_segments !=
@@ -2836,97 +2938,6 @@ void RenderWidgetHostImpl::AutoscrollEnd() {
 
   ForwardGestureEventWithLatencyInfo(
       cancel_event, ui::LatencyInfo(ui::SourceEventType::OTHER));
-}
-
-void RenderWidgetHostImpl::StartDragging(
-    blink::mojom::DragDataPtr drag_data,
-    blink::DragOperationsMask drag_operations_mask,
-    const SkBitmap& bitmap,
-    const gfx::Vector2d& cursor_offset_in_dip,
-    const gfx::Rect& drag_obj_rect_in_dip,
-    blink::mojom::DragEventSourceInfoPtr event_info) {
-  DropData drop_data = DragDataToDropData(*drag_data);
-  DropData filtered_data(drop_data);
-  RenderProcessHost* process = GetProcess();
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  // Allow drag of Javascript URLs to enable bookmarklet drag to bookmark bar.
-  if (!filtered_data.url.SchemeIs(url::kJavaScriptScheme)) {
-    process->FilterURL(true, &filtered_data.url);
-  }
-  process->FilterURL(false, &filtered_data.html_base_url);
-  // Filter out any paths that the renderer didn't have access to. This prevents
-  // the following attack on a malicious renderer:
-  // 1. StartDragging IPC sent with renderer-specified filesystem paths that it
-  //    doesn't have read permissions for.
-  // 2. We initiate a native DnD operation.
-  // 3. DnD operation immediately ends since mouse is not held down. DnD events
-  //    still fire though, which causes read permissions to be granted to the
-  //    renderer for any file paths in the drop.
-  filtered_data.filenames.clear();
-  for (const auto& file_info : drop_data.filenames) {
-    if (policy->CanReadFile(GetProcess()->GetID(), file_info.path)) {
-      filtered_data.filenames.push_back(file_info);
-    }
-  }
-
-  storage::FileSystemContext* file_system_context =
-      GetProcess()->GetStoragePartition()->GetFileSystemContext();
-  filtered_data.file_system_files.clear();
-
-  for (const auto& file_system_file : drop_data.file_system_files) {
-    storage::FileSystemURL file_system_url =
-        file_system_context->CrackURLInFirstPartyContext(file_system_file.url);
-
-    // Sandboxed filesystem files should never be handled via this path, so
-    // skip any that are sent from the renderer. In all other cases, it should
-    // be safe to use the FileSystemURL returned from calling
-    // CrackURLInFirstPartyContext as long as CanReadFileSystemFile only
-    // performs checks on the origin and doesn't use more of the StorageKey.
-    if (file_system_url.type() == storage::kFileSystemTypePersistent ||
-        file_system_url.type() == storage::kFileSystemTypeTemporary) {
-      continue;
-    }
-
-    if (policy->CanReadFileSystemFile(GetProcess()->GetID(), file_system_url)) {
-      filtered_data.file_system_files.push_back(file_system_file);
-    }
-  }
-
-  if (frame_tree_) {
-    bool intercepted = false;
-    devtools_instrumentation::WillStartDragging(
-        frame_tree_->root(), filtered_data, std::move(drag_data),
-        drag_operations_mask, &intercepted);
-    if (intercepted) {
-      return;
-    }
-  }
-
-  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
-  if (!view || !GetView()) {
-    // Need to clear drag and drop state in blink.
-    DragSourceSystemDragEnded();
-    return;
-  }
-  float scale = GetScaleFactorForView(GetView());
-  gfx::ImageSkia image = gfx::ImageSkia::CreateFromBitmap(bitmap, scale);
-  gfx::Vector2d offset = cursor_offset_in_dip;
-  gfx::Rect rect = drag_obj_rect_in_dip;
-#if BUILDFLAG(IS_WIN)
-  // Scale the offset by device scale factor, otherwise the drag
-  // image location doesn't line up with the drop location (drag destination).
-  // TODO(crbug.com/1354831): this conversion should not be necessary.
-  gfx::Vector2dF scaled_offset = static_cast<gfx::Vector2dF>(offset);
-  scaled_offset.Scale(scale);
-  offset = gfx::ToRoundedVector2d(scaled_offset);
-  gfx::RectF scaled_rect = static_cast<gfx::RectF>(rect);
-  scaled_rect.Scale(scale);
-  rect = gfx::ToRoundedRect(scaled_rect);
-#endif
-  view->StartDragging(filtered_data, drag_operations_mask, image, offset, rect,
-                      *event_info, this);
 }
 
 bool RenderWidgetHostImpl::IsAutoscrollInProgress() {
@@ -3136,7 +3147,7 @@ void RenderWidgetHostImpl::RequestForceRedraw(int snapshot_id) {
 
 bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
     const NativeWebKeyboardEvent& event) {
-  if (event.skip_in_browser ||
+  if (event.skip_if_unhandled ||
       event.GetType() != WebKeyboardEvent::Type::kRawKeyDown) {
     return false;
   }
@@ -3160,7 +3171,7 @@ bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
 }
 
 blink::mojom::InputEventResultState RenderWidgetHostImpl::FilterInputEvent(
-    const blink::WebInputEvent& event,
+    const WebInputEvent& event,
     const ui::LatencyInfo& latency_info) {
   // Don't ignore touch cancel events, since they may be sent while input
   // events are being ignored in order to keep the renderer from getting
@@ -3341,7 +3352,7 @@ RenderWidgetHostImpl::BindAndGenerateCreateFrameWidgetParamsForNewWindow() {
 }
 
 void RenderWidgetHostImpl::DispatchInputEventWithLatencyInfo(
-    const blink::WebInputEvent& event,
+    const WebInputEvent& event,
     ui::LatencyInfo* latency,
     ui::EventLatencyMetadata* event_latency_metadata) {
   latency_tracker_.OnInputEvent(event, latency, event_latency_metadata);

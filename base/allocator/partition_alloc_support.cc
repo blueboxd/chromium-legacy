@@ -21,6 +21,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_lock.h"
+#include "base/allocator/partition_allocator/partition_root.h"
 #include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/allocator/partition_allocator/shim/allocator_shim.h"
 #include "base/allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
@@ -413,6 +414,9 @@ std::string ExtractDanglingPtrSignature(std::string stacktrace) {
       // Mac signatures
       "internal::RawPtrBackupRefImpl<false, false>::ReleaseInternal",
       "internal::RawPtrBackupRefImpl<false, true>::ReleaseInternal",
+
+      // ChromeOS signatures
+      "base::allocator::dispatcher::internal::DispatcherImpl<>::FreeFn()",
 
       // Task traces are prefixed with "Task trace:" in
       // |TaskTrace::OutputToStream|
@@ -1329,10 +1333,17 @@ void PartitionAllocSupport::ReconfigureAfterTaskRunnerInit(
       base::SingleThreadTaskRunner::GetCurrentDefault());
 #endif
 
-  if (base::FeatureList::IsEnabled(
-          base::features::kPartitionAllocSortActiveSlotSpans)) {
-    partition_alloc::PartitionRoot::EnableSortActiveSlotSpans();
-  }
+  partition_alloc::PartitionRoot::SetStraightenLargerSlotSpanFreeListsMode(
+      base::FeatureList::IsEnabled(
+          base::features::kPartitionAllocStraightenLargerSlotSpanFreeLists)
+          ? features::kPartitionAllocStraightenLargerSlotSpanFreeListsMode.Get()
+          : partition_alloc::StraightenLargerSlotSpanFreeListsMode::kNever);
+  partition_alloc::PartitionRoot::SetSortSmallerSlotSpanFreeListsEnabled(
+      base::FeatureList::IsEnabled(
+          base::features::kPartitionAllocSortSmallerSlotSpanFreeLists));
+  partition_alloc::PartitionRoot::SetSortActiveSlotSpansEnabled(
+      base::FeatureList::IsEnabled(
+          base::features::kPartitionAllocSortActiveSlotSpans));
 }
 
 void PartitionAllocSupport::OnForegrounded(bool has_main_frame) {

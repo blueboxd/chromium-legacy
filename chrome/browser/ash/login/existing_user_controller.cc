@@ -292,8 +292,7 @@ int CountRegularUsers(const user_manager::UserList& users) {
     // Allow offline login from the error screen if user of one of these types
     // has already logged in.
     if (user->GetType() == user_manager::USER_TYPE_REGULAR ||
-        user->GetType() == user_manager::USER_TYPE_CHILD ||
-        user->GetType() == user_manager::USER_TYPE_ACTIVE_DIRECTORY) {
+        user->GetType() == user_manager::USER_TYPE_CHILD) {
       regular_users_counter++;
     }
   }
@@ -788,6 +787,13 @@ void ExistingUserController::ContinueAuthSuccessAfterResumeAttempt(
   if (!is_enterprise_managed &&
       user_manager::UserManager::Get()->GetUsers().empty()) {
     DeviceSettingsService::Get()->MarkWillEstablishConsumerOwnership();
+
+    // Save the owner email in case Chrome restarts/crashes before fully taking
+    // ownership.
+    if (!user_manager::UserManager::Get()->GetOwnerEmail().has_value()) {
+      user_manager::UserManager::Get()->RecordOwner(
+          user_context.GetAccountId());
+    }
   }
 
   if (user_context.CanLockManagedGuestSession()) {

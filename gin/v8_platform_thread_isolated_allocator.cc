@@ -26,15 +26,14 @@ ThreadIsolatedAllocator::~ThreadIsolatedAllocator() = default;
 void ThreadIsolatedAllocator::Initialize(int pkey) {
   pkey_ = pkey;
   allocator_.init(partition_alloc::PartitionOptions{
-      .aligned_alloc =
-          partition_alloc::PartitionOptions::AlignedAlloc::kAllowed,
+      .aligned_alloc = partition_alloc::PartitionOptions::kAllowed,
       .thread_isolation = partition_alloc::ThreadIsolationOption(pkey_),
   });
 }
 
 void* ThreadIsolatedAllocator::Allocate(size_t size) {
-  return allocator_.root()->AllocWithFlagsNoHooks(
-      0, size, partition_alloc::PartitionPageSize());
+  return allocator_.root()->AllocNoHooks(size,
+                                         partition_alloc::PartitionPageSize());
 }
 
 void ThreadIsolatedAllocator::Free(void* object) {

@@ -13,8 +13,6 @@ import static org.mockito.Mockito.verify;
 import android.content.Context;
 import android.content.res.Resources;
 
-import androidx.recyclerview.widget.RecyclerView.RecycledViewPool;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -104,7 +102,7 @@ public class BaseCarouselSuggestionViewBinderUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
+    @EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
     public void padding_smallBottomPadding() {
         OmniboxFeatures.ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET.setForTesting(true);
         OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALL_BOTTOM_MARGIN.setForTesting(true);
@@ -118,7 +116,7 @@ public class BaseCarouselSuggestionViewBinderUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
+    @EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
     public void padding_smallerMargins() {
         OmniboxFeatures.ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET.setForTesting(true);
         OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALLER_MARGINS.setForTesting(true);
@@ -132,7 +130,7 @@ public class BaseCarouselSuggestionViewBinderUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
+    @EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
     public void padding_smallestMargins() {
         OmniboxFeatures.ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET.setForTesting(true);
         OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALLEST_MARGINS.setForTesting(true);
@@ -232,14 +230,6 @@ public class BaseCarouselSuggestionViewBinderUnitTest {
 
         mModel.set(BaseCarouselSuggestionViewProperties.HORIZONTAL_FADE, false);
         Assert.assertFalse(mView.isHorizontalFadingEdgeEnabled());
-    }
-
-    @Test
-    public void recyclerView_setRecycledViewPool() {
-        createMVCForTest();
-        RecycledViewPool testRecycledViewPool = new RecycledViewPool();
-        mModel.set(BaseCarouselSuggestionViewProperties.RECYCLED_VIEW_POOL, testRecycledViewPool);
-        Assert.assertEquals(testRecycledViewPool, mView.getRecycledViewPool());
     }
 
     @Test

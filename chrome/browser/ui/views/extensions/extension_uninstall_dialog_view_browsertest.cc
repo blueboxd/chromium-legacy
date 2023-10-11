@@ -6,6 +6,7 @@
 
 #include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -551,8 +552,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
   RunTest(MANUAL_UNINSTALL, EXTENSION_LOCAL_SOURCE);
 }
 
+// TODO(crbug.com/1472311): Re-enable this test
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_InvokeUi_ManualUninstallShowReportAbuse \
+  DISABLED_InvokeUi_ManualUninstallShowReportAbuse
+#else
+#define MAYBE_InvokeUi_ManualUninstallShowReportAbuse \
+  InvokeUi_ManualUninstallShowReportAbuse
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
-                       InvokeUi_ManualUninstallShowReportAbuse) {
+                       MAYBE_InvokeUi_ManualUninstallShowReportAbuse) {
   RunTest(MANUAL_UNINSTALL, EXTENSION_FROM_WEBSTORE);
 }
 
@@ -568,8 +577,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
   RunTest(UNINSTALL_BY_EXTENSION, EXTENSION_LOCAL_SOURCE);
 }
 
+// TODO(crbug.com/1472311): Fix flakiness and re-enable this test.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_InvokeUi_UninstallByExtensionShowReportAbuse \
+  DISABLED_InvokeUi_UninstallByExtensionShowReportAbuse
+#else
+#define MAYBE_InvokeUi_UninstallByExtensionShowReportAbuse \
+  InvokeUi_UninstallByExtensionShowReportAbuse
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
-                       InvokeUi_UninstallByExtensionShowReportAbuse) {
+                       MAYBE_InvokeUi_UninstallByExtensionShowReportAbuse) {
   RunTest(UNINSTALL_BY_EXTENSION, EXTENSION_FROM_WEBSTORE);
 }
 

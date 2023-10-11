@@ -332,6 +332,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   mojom::blink::ServiceWorkerFetchHandlerType FetchHandlerType();
 
+  bool HasHidEventHandlers();
+
+  bool HasUsbEventHandlers();
+
   // EventTarget
   bool SetAttributeEventListener(const AtomicString& event_type,
                                  EventListener* listener) override;

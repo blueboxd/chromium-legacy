@@ -45,8 +45,8 @@
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
-#include "chrome/browser/ui/profile_picker.h"
-#include "chrome/browser/ui/profile_view_utils.h"
+#include "chrome/browser/ui/profiles/profile_picker.h"
+#include "chrome/browser/ui/profiles/profile_view_utils.h"
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
 #include "chrome/browser/ui/side_panel/side_panel_entry_id.h"
 #include "chrome/browser/ui/side_panel/side_panel_enums.h"
@@ -83,12 +83,12 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
-#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #include "content/public/common/profiling.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
@@ -623,7 +623,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       SaveCreditCard(browser_);
       break;
     case IDC_SAVE_IBAN_FOR_PAGE:
-      SaveIBAN(browser_);
+      SaveIban(browser_);
       break;
     case IDC_AUTOFILL_MANDATORY_REAUTH:
       ShowMandatoryReauthOptInPrompt(browser_);

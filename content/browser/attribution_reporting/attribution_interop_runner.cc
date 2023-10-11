@@ -30,9 +30,12 @@
 #include "base/task/updateable_sequenced_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
 #include "base/types/expected_macros.h"
 #include "base/values.h"
 #include "components/attribution_reporting/parsing_utils.h"
+#include "components/attribution_reporting/source_registration.h"
+#include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/aggregation_service/aggregation_service_features.h"
 #include "content/browser/aggregation_service/aggregation_service_impl.h"
 #include "content/browser/aggregation_service/aggregation_service_test_utils.h"
@@ -50,6 +53,7 @@
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/create_report_result.h"
 #include "content/browser/attribution_reporting/send_result.h"
+#include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/global_routing_id.h"
@@ -262,17 +266,44 @@ class AttributionEventHandler : public AttributionObserver {
 
   void Handle(AttributionSimulationEvent event) {
     fake_cookie_checker_->set_debug_cookie_set(event.debug_permission);
-    absl::visit(base::Overloaded{
-                    [&](StorableSource source) {
-                      manager_->HandleSource(std::move(source),
-                                             GlobalRenderFrameHostId());
-                    },
-                    [&](AttributionTrigger trigger) {
-                      manager_->HandleTrigger(std::move(trigger),
-                                              GlobalRenderFrameHostId());
-                    },
-                },
-                std::move(event.event));
+
+    base::Value::Dict* dict = event.registration.GetIfDict();
+    if (!dict) {
+      AddUnparsableRegistration(event);
+      return;
+    }
+
+    if (event.source_type.has_value()) {
+      auto registration =
+          attribution_reporting::SourceRegistration::Parse(std::move(*dict));
+      if (!registration.has_value()) {
+        AddUnparsableRegistration(event);
+        return;
+      }
+
+      manager_->HandleSource(
+          StorableSource(std::move(event.reporting_origin),
+                         std::move(*registration),
+                         std::move(event.context_origin), *event.source_type,
+                         /*is_within_fenced_frame=*/false),
+          GlobalRenderFrameHostId());
+      return;
+    }
+
+    auto registration =
+        attribution_reporting::TriggerRegistration::Parse(std::move(*dict));
+    if (!registration.has_value()) {
+      AddUnparsableRegistration(event);
+      return;
+    }
+
+    manager_->HandleTrigger(
+        AttributionTrigger(std::move(event.reporting_origin),
+                           std::move(*registration),
+                           std::move(event.context_origin),
+                           /*verifications=*/{},
+                           /*is_within_fenced_frame=*/false),
+        GlobalRenderFrameHostId());
   }
 
   base::Value::Dict TakeOutput() {
@@ -301,6 +332,10 @@ class AttributionEventHandler : public AttributionObserver {
     if (!verbose_debug_reports_.empty()) {
       output.Set(kVerboseDebugReportsKey,
                  std::exchange(verbose_debug_reports_, {}));
+    }
+
+    if (!unparsable_.empty()) {
+      output.Set(kUnparsableRegistrationsKey, std::exchange(unparsable_, {}));
     }
 
     return output;
@@ -353,6 +388,13 @@ class AttributionEventHandler : public AttributionObserver {
     }
   }
 
+  void AddUnparsableRegistration(const AttributionSimulationEvent& event) {
+    base::Value::Dict dict;
+    dict.Set("time", json_converter_.FormatTime(event.time));
+    dict.Set("type", event.source_type.has_value() ? "source" : "trigger");
+    unparsable_.Append(std::move(dict));
+  }
+
   const std::unique_ptr<AttributionManagerImpl> manager_;
   const raw_ref<FakeCookieChecker> fake_cookie_checker_;
 
@@ -365,6 +407,7 @@ class AttributionEventHandler : public AttributionObserver {
   base::Value::List aggregatable_reports_;
   base::Value::List debug_aggregatable_reports_;
   base::Value::List verbose_debug_reports_;
+  base::Value::List unparsable_;
 };
 
 }  // namespace

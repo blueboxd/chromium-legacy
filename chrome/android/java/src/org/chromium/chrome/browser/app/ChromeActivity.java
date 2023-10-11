@@ -80,6 +80,7 @@ import org.chromium.chrome.browser.app.tab_activity_glue.TabReparentingControlle
 import org.chromium.chrome.browser.app.tabmodel.AsyncTabParamsManagerSingleton;
 import org.chromium.chrome.browser.app.tabmodel.TabModelOrchestrator;
 import org.chromium.chrome.browser.back_press.BackPressManager;
+import org.chromium.chrome.browser.back_press.CloseListenerManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
 import org.chromium.chrome.browser.bookmarks.TabBookmarker;
@@ -120,6 +121,7 @@ import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
+import org.chromium.chrome.browser.intents.BrowserIntentUtils;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponent;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentFactory;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentSupplier;
@@ -129,6 +131,7 @@ import org.chromium.chrome.browser.media.FullscreenVideoPictureInPictureControll
 import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.modaldialog.TabModalLifetimeHandler;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.night_mode.WebContentsDarkModeController;
@@ -399,10 +402,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private TextBubbleBackPressHandler mTextBubbleBackPressHandler;
     private SelectionPopupBackPressHandler mSelectionPopupBackPressHandler;
     private Callback<TabModelSelector> mSelectionPopupBackPressInitCallback;
+    private CloseListenerManager mCloseListenerManager;
     private StylusWritingCoordinator mStylusWritingCoordinator;
     private boolean mBlockingDrawForAppRestart;
     private Runnable mShowContentRunnable;
     private boolean mIsRecreatingForTabletModeChange;
+    // Handling the dismissal of tab modal dialog.
+    private TabModalLifetimeHandler mTabModalLifetimeHandler;
 
     protected ChromeActivity() {
         mIntentHandler = new IntentHandler(this, createIntentHandlerDelegate());
@@ -1318,7 +1324,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 onDeferredStartupForMultiWindowMode();
             }
 
-            long intentTimestamp = IntentHandler.getTimestampFromIntent(getIntent());
+            long intentTimestamp = BrowserIntentUtils.getStartupRealtimeMillis(getIntent());
             if (intentTimestamp != -1) {
                 recordIntentToCreationTime(getOnCreateTimestampMs() - intentTimestamp);
             }
@@ -1598,6 +1604,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mSelectionPopupBackPressHandler = null;
         }
 
+        if (mCloseListenerManager != null) {
+            mCloseListenerManager.destroy();
+            mCloseListenerManager = null;
+        }
+
         if (mStylusWritingCoordinator != null) {
             mStylusWritingCoordinator.destroy();
             mStylusWritingCoordinator = null;
@@ -1641,8 +1652,21 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     protected ModalDialogManager createModalDialogManager() {
-        return new ModalDialogManager(
+        var dialogManager = new ModalDialogManager(
                 new AppModalPresenter(this), ModalDialogManager.ModalDialogType.APP);
+        // TODO(crbug.com/1157310): Transition this::method refs to dedicated suppliers.
+        mTabModalLifetimeHandler = new TabModalLifetimeHandler(this, getLifecycleDispatcher(),
+                dialogManager,
+                ()
+                        -> mRootUiCoordinator.getAppBrowserControlsVisibilityDelegate(),
+                this::getTabObscuringHandler, this::getToolbarManager,
+                getContextualSearchManagerSupplier(), getTabModelSelectorSupplier(),
+                this::getBrowserControlsManager, this::getFullscreenManager, mBackPressManager);
+        return dialogManager;
+    }
+
+    protected TabModalLifetimeHandler getTabModalLifetimeHandler() {
+        return mTabModalLifetimeHandler;
     }
 
     protected Drawable getBackgroundDrawable() {
@@ -2294,6 +2318,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         new FullscreenBackPressHandler(controlManager.getFullscreenManager()),
                         BackPressHandler.Type.FULLSCREEN);
             });
+
+            mCloseListenerManager = new CloseListenerManager(getActivityTabProvider());
+            mBackPressManager.addHandler(
+                    mCloseListenerManager, BackPressHandler.Type.CLOSE_WATCHER);
         } else {
             OnBackPressedCallback callback = new OnBackPressedCallback(true) {
                 @Override
@@ -2805,14 +2833,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mIsTabReparentingPrepared = true;
             if (!isFinishing()) {
                 mIsRecreatingForTabletModeChange = true;
-                // Store the OnPause timestamp before recreation to capture unfold latency metric
-                // only if the activity is currently not in stopped state, to not capture the time
-                // when system was suspended. Hence, unfolding instances where Chrome wasn't in
-                // foreground are not captured in this metric.
-                if (isTablet
-                        && ApplicationStatus.getStateForActivity(this) != ActivityState.STOPPED) {
-                    super.setOnPauseBeforeFoldRecreateTimestampMs();
-                }
+                // Store the OnPause timestamp before recreation to capture unfold latency metric.
+                if (isTablet) super.setOnPauseBeforeFoldRecreateTimestampMs();
                 recreate();
                 mHandler.removeCallbacks(mShowContentRunnable);
                 return true;

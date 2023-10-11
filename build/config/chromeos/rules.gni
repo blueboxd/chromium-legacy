@@ -101,13 +101,80 @@ if (cros_sdk_version != "") {
   }
 }
 
-# Creates dependencies required by skylab testing. If passed the
-# generated_script and test_exe this will generate the skylab runner script.
-# If passed tast_attr_expr, tast_tests or tast_disabled_tests this will
-# generate a filter file containing the expression for running tests in skylab.
+template("generate_chromeos_sdk_deps") {
+  forward_variables_from(invoker,
+                         [
+                           "deploy_chrome",
+                           "is_tast",
+                         ])
+  if (!defined(deploy_chrome)) {
+    deploy_chrome = false
+  }
+  if (!defined(is_tast)) {
+    is_tast = false
+  }
+
+  _sdk_data = []
+  assert(cros_sdk_version != "", "cros sdk version is not defined")
+  foreach(b, _potential_test_boards) {
+    _cros_is_vm = false
+    foreach(b1, string_split(cros_boards_with_qemu_images, ":")) {
+      if (b == b1) {
+        _cros_is_vm = true
+      }
+    }
+
+    # Determine the real paths for various items in the SDK, which may be used
+    # in the 'generate_runner_script' template below.
+    if (is_tast || _cros_is_vm || deploy_chrome) {
+      _symlink_targets = []
+      foreach(m, _symlink_targets_map) {
+        if (b == m[0]) {
+          _symlink_targets = []
+          _symlink_targets = m[1]
+        }
+      }
+
+      if (is_tast) {
+        # Add tast sdk items.
+        _sdk_data += [ _symlink_targets[0] ]
+      }
+      if (deploy_chrome) {
+        # To deploy chrome to the VM, it needs to be stripped down to fit into
+        # the VM. This is done by using binutils in the toolchain. So add the
+        # toolchain to the data.
+        _sdk_data += [
+          _symlink_targets[1],
+          _symlink_targets[2],
+        ]
+      }
+      if (_cros_is_vm) {
+        # Add vm sdk items.
+        _sdk_data += [
+          _symlink_targets[3],
+          _symlink_targets[4],
+          _symlink_targets[5],
+        ]
+      }
+    }
+  }
+  group(target_name) {
+    data = _sdk_data
+    data += [
+      # Needed for various SDK components used below.
+      "//build/cros_cache/chrome-sdk/misc/",
+      "//build/cros_cache/chrome-sdk/symlinks/",
+      "//chrome/VERSION",
+
+      # The LKGM file controls what version of the VM image to download. Add it
+      # as data here so that changes to it will trigger analyze.
+      "//chromeos/CHROMEOS_LKGM",
+    ]
+  }
+}
+
+# Creates tast filter files for skylab tast tests.
 # Args:
-#   generated_script: Name of the generated runner script created for test_exe
-#   test_exe: Name of the executable to run with the generated script.
 #   tast_attr_expr: Tast expression to determine tests to run. This creates the
 #       initial set of tests that can be further filtered..
 #   tast_tests: Names of tests to enable in tast. All other tests will be
@@ -120,112 +187,76 @@ if (cros_sdk_version != "") {
 #       those strings expanded into tests to disable (i.e. as && !"name:test").
 #       The name of those lists are then intended to be used to specify in
 #       test_suites.pyl which collection to be used on specific test suites.
-template("generate_skylab_deps") {
+template("generate_skylab_tast_filter") {
   forward_variables_from(invoker,
                          [
-                           "generated_script",
-                           "test_exe",
                            "tast_attr_expr",
                            "tast_tests",
                            "tast_disabled_tests",
                            "tast_control",
                          ])
-  if (defined(test_exe) || defined(generated_script)) {
-    assert(defined(test_exe) && defined(generated_script),
-           "The test_exe and generated_script must both be defined when " +
-               "generating the skylab runner script")
-    action(target_name) {
-      testonly = true
-      script = "//build/chromeos/generate_skylab_deps.py"
-      outputs = [ generated_script ]
-      args = [
-        "generate-runner",
-        "--test-exe",
-        test_exe,
-        "--output",
-        rebase_path(generated_script, root_build_dir),
+
+  if (defined(tast_disabled_tests)) {
+    assert(defined(tast_attr_expr),
+           "tast_attr_expr must be used when specifying tast_disabled_tests.")
+  }
+  _generated_filter = "$root_build_dir/bin/${target_name}.filter"
+  _skylab_args = [
+    "generate-filter",
+    "--output",
+    rebase_path(_generated_filter),
+  ]
+  if (defined(tast_control)) {
+    _skylab_args += [
+      "--tast-control",
+      rebase_path(tast_control),
+    ]
+  }
+  if (defined(tast_attr_expr)) {
+    _skylab_args += [
+      "--tast-expr",
+      tast_attr_expr,
+    ]
+  }
+  if (defined(tast_tests)) {
+    foreach(_test, tast_tests) {
+      _skylab_args += [
+        "--enabled-tests",
+        _test,
       ]
-
-      deps = [ "//testing/buildbot/filters:chromeos_filters" ]
-      if (defined(invoker.deps)) {
-        deps += invoker.deps
-      }
-
-      data = [ generated_script ]
-      if (defined(invoker.data)) {
-        data += invoker.data
-      }
-
-      data_deps = [ "//testing:test_scripts_shared" ]
-      if (defined(invoker.data_deps)) {
-        data_deps += invoker.data_deps
-      }
     }
   }
-  if (defined(tast_attr_expr) || defined(tast_tests) ||
-      defined(tast_disabled_tests)) {
-    if (defined(tast_disabled_tests)) {
-      assert(defined(tast_attr_expr),
-             "tast_attr_expr must be used when specifying tast_disabled_tests.")
-    }
-    _generated_filter = "$root_build_dir/bin/${target_name}.filter"
-    _skylab_args = [
-      "generate-filter",
-      "--output",
-      rebase_path(_generated_filter),
-    ]
-    if (defined(tast_control)) {
-      _skylab_args += [
-        "--tast-control",
-        rebase_path(tast_control),
-      ]
-    }
-    if (defined(tast_attr_expr)) {
-      _skylab_args += [
-        "--tast-expr",
-        tast_attr_expr,
-      ]
-    }
-    if (defined(tast_tests)) {
-      foreach(_test, tast_tests) {
+  if (defined(tast_disabled_tests)) {
+    foreach(_test, tast_disabled_tests) {
+      _excluded_test_name_and_board = []
+      _excluded_test_name_and_board = string_split(_test, "@") + [ "" ]
+      _excluded_test_name = _excluded_test_name_and_board[0]
+      _excluded_board = _excluded_test_name_and_board[1]
+      if (_excluded_board == "" || _excluded_board == cros_board) {
         _skylab_args += [
-          "--enabled-tests",
-          _test,
+          "--disabled-tests",
+          _excluded_test_name,
         ]
       }
     }
-    if (defined(tast_disabled_tests)) {
-      foreach(_test, tast_disabled_tests) {
-        _excluded_test_name_and_board = []
-        _excluded_test_name_and_board = string_split(_test, "@") + [ "" ]
-        _excluded_test_name = _excluded_test_name_and_board[0]
-        _excluded_board = _excluded_test_name_and_board[1]
-        if (_excluded_board == "" || _excluded_board == cros_board) {
-          _skylab_args += [
-            "--disabled-tests",
-            _excluded_test_name,
-          ]
-        }
-      }
+  }
+  action(target_name) {
+    testonly = true
+    script = "//build/chromeos/generate_skylab_tast_filter.py"
+    if (defined(tast_control)) {
+      sources = [ tast_control ]
     }
-    action(target_name) {
-      testonly = true
-      script = "//build/chromeos/generate_skylab_deps.py"
-      if (defined(tast_control)) {
-        sources = [ tast_control ]
-      }
-      outputs = [ _generated_filter ]
-      args = _skylab_args
-      if (defined(invoker.data_deps)) {
-        data_deps = invoker.data_deps
-      }
-      data = [ _generated_filter ]
-      if (defined(invoker.data)) {
-        data += invoker.data
-      }
-      if (defined(invoker.deps)) {
-        deps = invoker.deps
-      }
+    outputs = [ _generated_filter ]
+    args = _skylab_args
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
+    }
+    data = [ _generated_filter ]
+    if (defined(invoker.data)) {
+      data += invoker.data
+    }
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
     }
   }
 }
@@ -273,7 +304,8 @@ template("generate_runner_script") {
                          ])
 
   if (!defined(skip_generating_board_args)) {
-    skip_generating_board_args = false
+    # --board should be assigned by the autotest wrapper on skylab builders
+    skip_generating_board_args = is_skylab
   }
 
   if (skip_generating_board_args) {
@@ -305,53 +337,14 @@ template("generate_runner_script") {
 
   # If we're in the cros chrome-sdk (and not the raw ebuild), the test will
   # need some additional runtime data located in the SDK cache.
-  _sdk_data = []
   if (cros_sdk_version != "") {
     assert(defined(generated_script),
            "Must specify where to place generated test launcher script via " +
                "'generated_script'")
 
-    foreach(b, _potential_test_boards) {
-      _cros_is_vm = false
-      foreach(b1, string_split(cros_boards_with_qemu_images, ":")) {
-        if (b == b1) {
-          _cros_is_vm = true
-        }
-      }
-
-      # Determine the real paths for various items in the SDK, which may be used
-      # in the 'generate_runner_script' template below.
-      if (is_tast || _cros_is_vm || deploy_chrome) {
-        _symlink_targets = []
-        foreach(m, _symlink_targets_map) {
-          if (b == m[0]) {
-            _symlink_targets = []
-            _symlink_targets = m[1]
-          }
-        }
-
-        if (is_tast) {
-          # Add tast sdk items.
-          _sdk_data += [ _symlink_targets[0] ]
-        }
-        if (deploy_chrome) {
-          # To deploy chrome to the VM, it needs to be stripped down to fit into
-          # the VM. This is done by using binutils in the toolchain. So add the
-          # toolchain to the data.
-          _sdk_data += [
-            _symlink_targets[1],
-            _symlink_targets[2],
-          ]
-        }
-        if (_cros_is_vm) {
-          # Add vm sdk items.
-          _sdk_data += [
-            _symlink_targets[3],
-            _symlink_targets[4],
-            _symlink_targets[5],
-          ]
-        }
-      }
+    generate_chromeos_sdk_deps(target_name + "_cros_deps__helper") {
+      is_tast = is_tast
+      deploy_chrome = deploy_chrome
     }
   }
 
@@ -497,25 +490,17 @@ template("generate_runner_script") {
       "//build/android/pylib/results/",
       "//build/chromeos/",
       "//build/util/",
-
-      # Needed for various SDK components used below.
-      "//build/cros_cache/chrome-sdk/misc/",
-      "//build/cros_cache/chrome-sdk/symlinks/",
-      "//chrome/VERSION",
-
-      # The LKGM file controls what version of the VM image to download. Add it
-      # as data here so that changes to it will trigger analyze.
-      "//chromeos/CHROMEOS_LKGM",
       "//third_party/chromite/",
     ]
-
-    data += _sdk_data
 
     if (defined(invoker.data)) {
       data += invoker.data
     }
 
     data_deps = [ "//testing:test_scripts_shared" ]
+    if (cros_sdk_version != "") {
+      data_deps += [ ":" + target_name + "_cros_deps__helper" ]
+    }
     if (defined(invoker.data_deps)) {
       data_deps += invoker.data_deps
     }
@@ -560,7 +545,7 @@ template("tast_test") {
   _data = [ "//components/crash/content/tools/generate_breakpad_symbols.py" ]
 
   if (is_skylab) {
-    generate_skylab_deps(target_name) {
+    generate_skylab_tast_filter(target_name) {
       # chromite.deploy_chrome is needed for sideloading Chrome.
       data = _data + [ "//third_party/chromite/" ]
       data_deps = _data_deps
@@ -646,7 +631,7 @@ template("lacros_tast_tests") {
   ]
 
   if (is_skylab) {
-    generate_skylab_deps(target_name) {
+    generate_skylab_tast_filter(target_name) {
       data = _lacros_data + [ "//third_party/chromite/" ]
       data_deps = _lacros_data_deps
 

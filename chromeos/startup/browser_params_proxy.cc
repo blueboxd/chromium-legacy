@@ -244,6 +244,10 @@ bool BrowserParamsProxy::IsFlossAvailable() const {
   return BrowserInitParams::Get()->is_floss_available;
 }
 
+bool BrowserParamsProxy::IsFlossAvailabilityCheckNeeded() const {
+  return BrowserInitParams::Get()->is_floss_availability_check_needed;
+}
+
 bool BrowserParamsProxy::IsCurrentUserDeviceOwner() const {
   if (IsLaunchedWithPostLoginParams()) {
     return BrowserPostLoginParams::Get()->is_current_user_device_owner;
@@ -256,13 +260,6 @@ bool BrowserParamsProxy::IsCurrentUserEphemeral() const {
     return BrowserPostLoginParams::Get()->is_current_user_ephemeral;
   }
   return BrowserInitParams::Get()->is_current_user_ephemeral;
-}
-
-bool BrowserParamsProxy::DoNotMuxExtensionAppIds() const {
-  if (IsLaunchedWithPostLoginParams()) {
-    return BrowserPostLoginParams::Get()->do_not_mux_extension_app_ids;
-  }
-  return BrowserInitParams::Get()->do_not_mux_extension_app_ids;
 }
 
 bool BrowserParamsProxy::EnableLacrosTtsSupport() const {

@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Annak engedélyezése egy webhely számára, hogy adatokat mentsen az eszközére</translation>
 <translation id="1383876407941801731">Keresés</translation>
 <translation id="1384959399684842514">A letöltés szünetel</translation>
-<translation id="1409426117486808224">A megnyitott lapok egyszerűsített nézete</translation>
 <translation id="1415402041810619267">URL csonkolva</translation>
 <translation id="1426410128494586442">Igen</translation>
 <translation id="1446450296470737166">MIDI-eszközök teljes vezérlése</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Engedélyezve, kivéve a harmadik felektől származó cookie-kat</translation>
 <translation id="1989112275319619282">Böngészés</translation>
 <translation id="1994173015038366702">Webhely URL-je</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{1 napon belül lejár}other{# napon belül lejár}}</translation>
 <translation id="2004697686368036666">Előfordulhat, hogy bizonyos webhelyek funkciói nem működnek majd megfelelően</translation>
 <translation id="2025115093177348061">Kiterjesztett valóság</translation>
 <translation id="2030769033451695672">Koppintson, hogy visszatérjen ide: <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Cím</translation>
 <translation id="4008040567710660924">Adott webhely cookie-jainak engedélyezése.</translation>
 <translation id="4046123991198612571">Következő szám</translation>
+<translation id="4053720452172726777">A Google Chrome személyre szabása és beállításai</translation>
 <translation id="4149994727733219643">Weboldalak egyszerűsített nézete</translation>
 <translation id="4151930093518524179">Alapértelmezett nagyítás</translation>
 <translation id="4165986682804962316">Webhelybeállítások</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">A webhelyek nem használhatnak cookie-kat az Ön böngészési tevékenységeinek megismeréséhez a különböző webhelyeken például arra, hogy a hirdetéseket személyre szabják. Előfordulhat, hogy bizonyos webhelyek funkciói nem működnek majd megfelelően.</translation>
 <translation id="5553374991681107062">Legutóbbi</translation>
 <translation id="5556459405103347317">Újratöltés</translation>
-<translation id="5596627076506792578">További lehetőségek</translation>
 <translation id="5649053991847567735">Automatikus letöltések</translation>
 <translation id="5668404140385795438">Felülbírálja a webhely kérelmét, mely megakadályozná a nagyítást</translation>
 <translation id="5677928146339483299">Letiltva</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Kikapcsolva az Android beállításaiban</translation>
 <translation id="7016516562562142042">Engedélyezett a jelenlegi keresőmotor számára</translation>
 <translation id="702275896380648118">Ez a webhely kikövetkezteti az Ön által kedvelt dolgokat, majd hirdetéseket ajánl más webhelyeknek. Emellett lekéri az Önre vonatkozó hirdetéstémákat a Chrome-ból, hogy relevánsabb hirdetéseket jelenítsen meg Önnek.</translation>
-<translation id="702463548815491781">Ajánlott, amikor a TalkBack vagy a Kapcsolóalapú hozzáférés be van kapcsolva</translation>
 <translation id="7053983685419859001">Letiltás</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elem kijelölve}other{# elem kijelölve}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> elem kiválasztva. A lehetőségek a képernyő tetején találhatók.</translation>

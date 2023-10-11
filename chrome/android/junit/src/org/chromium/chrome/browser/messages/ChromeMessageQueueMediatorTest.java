@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.messages.ManagedMessageDispatcher;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogManagerObserver;
@@ -164,7 +165,7 @@ public class ChromeMessageQueueMediatorTest {
      * Test the runnable by #onStartShow is reset correctly.
      */
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.SUPPRESS_TOOLBAR_CAPTURES})
+    @EnableFeatures({ChromeFeatureList.SUPPRESS_TOOLBAR_CAPTURES})
     public void testResetOnStartShowRunnable() {
         when(mBrowserControlsManager.getBrowserControlHiddenRatio()).thenReturn(0.5f);
         OneshotSupplierImpl<LayoutStateProvider> layoutStateProviderOneShotSupplier =
@@ -214,7 +215,7 @@ public class ChromeMessageQueueMediatorTest {
      * Test whether #IsReadyForShowing returns correct value.
      */
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.SUPPRESS_TOOLBAR_CAPTURES})
+    @EnableFeatures({ChromeFeatureList.SUPPRESS_TOOLBAR_CAPTURES})
     public void testIsReadyForShowing() {
         final ArgumentCaptor<ChromeMessageQueueMediator.BrowserControlsObserver>
                 observerArgumentCaptor = ArgumentCaptor.forClass(
@@ -352,6 +353,21 @@ public class ChromeMessageQueueMediatorTest {
         verify(mMessageDispatcher).resume(EXPECTED_TOKEN);
         Assert.assertEquals("mUrlFocusToken should be invalidated.", TokenHolder.INVALID_TOKEN,
                 mMediator.getUrlFocusTokenForTesting());
+    }
+
+    /**
+     * Test the queue can be suspended and resumed correctly when tab is un/available.
+     */
+    @Test
+    public void testNoValidTab() {
+        ArgumentCaptor<Callback<Tab>> captor = ArgumentCaptor.forClass(Callback.class);
+        initMediator();
+        verify(mActivityTabProvider).addObserver(captor.capture());
+        captor.getValue().onResult(null);
+        verify(mMessageDispatcher).suspend();
+
+        captor.getValue().onResult(mTab);
+        verify(mMessageDispatcher).resume(EXPECTED_TOKEN);
     }
 
     /**

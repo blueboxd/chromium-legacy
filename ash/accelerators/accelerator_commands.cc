@@ -22,6 +22,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/game_dashboard/game_dashboard_controller.h"
+#include "ash/glanceables/glanceables_v2_controller.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/media/media_controller_impl.h"
@@ -99,7 +100,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/frame_caption_button.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 
@@ -533,7 +533,6 @@ void GroupOrUngroupWindowsInSnapGroup() {
          window2_state_type == WindowStateType::kPrimarySnapped));
 
   // TODO(michelefan): Trigger a11y alert if there are no eligible windows.
-
   if (!snap_group_controller->AreWindowsInSnapGroup(window1, window2)) {
     snap_group_controller->AddSnapGroup(window1, window2);
     CHECK(snap_group_controller->AreWindowsInSnapGroup(window1, window2));
@@ -545,22 +544,6 @@ void GroupOrUngroupWindowsInSnapGroup() {
 
 bool CanMinimizeSnapGroupWindows() {
   return SnapGroupController::Get();
-}
-
-void MinimizeWindowsInSnapGroup() {
-  aura::Window* top_window = GetTargetWindow();
-  SnapGroupController* snap_group_controller = SnapGroupController::Get();
-  if (!top_window || !snap_group_controller) {
-    return;
-  }
-
-  SnapGroup* snap_group =
-      snap_group_controller->GetSnapGroupForGivenWindow(top_window);
-  if (!snap_group) {
-    return;
-  }
-
-  snap_group->MinimizeWindows();
 }
 
 bool CanMinimizeTopWindowOnBack() {
@@ -910,7 +893,7 @@ void MoveActiveItem(bool going_left) {
   const bool in_overview = overview_controller->InOverviewSession();
   if (in_overview) {
     window_to_move =
-        overview_controller->overview_session()->GetHighlightedWindow();
+        overview_controller->overview_session()->GetFocusedWindow();
   } else {
     window_to_move = GetTargetWindow();
   }
@@ -1285,8 +1268,21 @@ void ToggleCalendar() {
   aura::Window* target_root = Shell::GetRootWindowForNewWindows();
   StatusAreaWidget* status_area_widget =
       RootWindowController::ForWindow(target_root)->GetStatusAreaWidget();
-  UnifiedSystemTray* tray = status_area_widget->unified_system_tray();
 
+  DateTray* date_tray = status_area_widget->date_tray();
+  GlanceablesV2Controller* const glanceables_controller =
+      Shell::Get()->glanceables_v2_controller();
+  if (glanceables_controller &&
+      glanceables_controller->AreGlanceablesAvailable()) {
+    if (date_tray->is_active()) {
+      date_tray->HideGlanceableBubble();
+    } else {
+      date_tray->ShowGlanceableBubble(/*from_keyboard=*/true);
+    }
+    return;
+  }
+
+  UnifiedSystemTray* tray = status_area_widget->unified_system_tray();
   // If currently showing the calendar view, close it.
   if (tray->IsShowingCalendarView()) {
     tray->CloseBubble();
@@ -1553,6 +1549,21 @@ bool ToggleMinimized() {
   return true;
 }
 
+void ToggleSnapGroupsMinimize() {
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  if (!snap_group_controller) {
+    return;
+  }
+
+  SnapGroup* topmost_snap_group = snap_group_controller->GetTopmostSnapGroup();
+  if (!topmost_snap_group) {
+    snap_group_controller->RestoreTopmostSnapGroup();
+    return;
+  }
+
+  snap_group_controller->MinimizeTopMostSnapGroup();
+}
+
 void ToggleResizeLockMenu() {
   aura::Window* window = GetTargetWindow();
   auto* frame_view = NonClientFrameViewAsh::Get(window);
@@ -1687,11 +1698,7 @@ void VolumeDown() {
     if (!audio_handler->IsOutputMuted()) {
       AcceleratorController::PlayVolumeAdjustmentSound();
     }
-    if (features::IsAudioPeripheralVolumeGranularityEnabled()) {
-      audio_handler->DecreaseOutputVolumeByOneStep(kStepPercentage);
-    } else {
-      audio_handler->AdjustOutputVolumeByPercent(-kStepPercentage);
-    }
+    audio_handler->DecreaseOutputVolumeByOneStep(kStepPercentage);
     return;
   }
 
@@ -1702,10 +1709,7 @@ void VolumeDown() {
       audio_handler->SetOutputMute(true);
     else
       AcceleratorController::PlayVolumeAdjustmentSound();
-    if (features::IsAudioPeripheralVolumeGranularityEnabled())
-      audio_handler->DecreaseOutputVolumeByOneStep(kStepPercentage);
-    else
-      audio_handler->AdjustOutputVolumeByPercent(-kStepPercentage);
+    audio_handler->DecreaseOutputVolumeByOneStep(kStepPercentage);
   }
 }
 
@@ -1722,11 +1726,7 @@ void VolumeUp() {
       audio_handler->SetOutputMute(false);
     }
     play_sound = audio_handler->GetOutputVolumePercent() != 100;
-    if (features::IsAudioPeripheralVolumeGranularityEnabled()) {
-      audio_handler->IncreaseOutputVolumeByOneStep(kStepPercentage);
-    } else {
-      audio_handler->AdjustOutputVolumeByPercent(kStepPercentage);
-    }
+    audio_handler->IncreaseOutputVolumeByOneStep(kStepPercentage);
 
     if (play_sound) {
       AcceleratorController::PlayVolumeAdjustmentSound();
@@ -1740,11 +1740,7 @@ void VolumeUp() {
     play_sound = true;
   } else {
     play_sound = audio_handler->GetOutputVolumePercent() != 100;
-    if (features::IsAudioPeripheralVolumeGranularityEnabled()) {
-      audio_handler->IncreaseOutputVolumeByOneStep(kStepPercentage);
-    } else {
-      audio_handler->AdjustOutputVolumeByPercent(kStepPercentage);
-    }
+    audio_handler->IncreaseOutputVolumeByOneStep(kStepPercentage);
   }
 
   if (play_sound) {

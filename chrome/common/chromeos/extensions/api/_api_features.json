@@ -20,12 +20,9 @@
     ],
     "channel": "stable"
   },
-  "os.diagnostics.runBluetoothPowerRoutine": {
-    "blocklist": [
-      "E3303523BFFD1014D4A9D480D692C8B22BE6176B" // http://crbug.com/1255653
-    ],
+  "os.diagnostics.createMemoryRoutine": {
     "dependencies": [
-      "permission:os.diagnostics.runBluetoothPowerRoutine"
+      "permission:os.diagnostics"
     ],
     "contexts": [
       "blessed_extension"
@@ -34,7 +31,106 @@
       "chromeos",
       "lacros"
     ],
+    "feature_flag": "TelemetryExtensionPendingApprovalApi",
     "channel": "stable"
+  },
+  "os.diagnostics.onRoutineInitialized": {
+    "dependencies": [
+      "permission:os.diagnostics"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "feature_flag": "TelemetryExtensionPendingApprovalApi",
+    "channel": "stable"
+  },
+  "os.diagnostics.onRoutineRunning": {
+    "dependencies": [
+      "permission:os.diagnostics"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "feature_flag": "TelemetryExtensionPendingApprovalApi",
+    "channel": "stable"
+  },
+  "os.diagnostics.onRoutineWaiting": {
+    "dependencies": [
+      "permission:os.diagnostics"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "feature_flag": "TelemetryExtensionPendingApprovalApi",
+    "channel": "stable"
+  },
+  "os.diagnostics.onMemoryRoutineFinished": {
+    "dependencies": [
+      "permission:os.diagnostics"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "feature_flag": "TelemetryExtensionPendingApprovalApi",
+    "channel": "stable"
+  },
+  "os.diagnostics.runBluetoothDiscoveryRoutine": {
+    "dependencies": [
+      "permission:os.diagnostics.runBluetoothDiscoveryRoutine"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "channel": "stable",
+    "feature_flag": "TelemetryExtensionPendingApprovalApi"
+  },
+  "os.diagnostics.runBluetoothPairingRoutine": {
+    "dependencies": [
+      "permission:os.diagnostics.runBluetoothPairingRoutine"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "channel": "stable",
+    "feature_flag": "TelemetryExtensionPendingApprovalApi"
+  },
+  "os.diagnostics.runBluetoothScanningRoutine": {
+    "dependencies": [
+      "permission:os.diagnostics.runBluetoothScanningRoutine"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "channel": "stable",
+    "feature_flag": "TelemetryExtensionPendingApprovalApi"
   },
   "os.events": {
     "dependencies": [
@@ -48,6 +144,34 @@
       "lacros"
     ],
     "channel": "stable"
+  },
+  "os.events.onTouchscreenTouchEvent": {
+    "dependencies": [
+      "permission:os.events"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "channel": "stable",
+    "feature_flag": "TelemetryExtensionPendingApprovalApi"
+  },
+  "os.events.onTouchscreenConnectedEvent": {
+    "dependencies": [
+      "permission:os.events"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "channel": "stable",
+    "feature_flag": "TelemetryExtensionPendingApprovalApi"
   },
   "os.telemetry": {
     "dependencies": [

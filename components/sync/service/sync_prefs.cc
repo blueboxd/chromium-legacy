@@ -131,12 +131,12 @@ void SyncPrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kObsoleteAutofillWalletImportEnabled, true);
 }
 
-void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
+void SyncPrefs::AddObserver(SyncPrefObserver* sync_pref_observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_pref_observers_.AddObserver(sync_pref_observer);
 }
 
-void SyncPrefs::RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
+void SyncPrefs::RemoveObserver(SyncPrefObserver* sync_pref_observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_pref_observers_.RemoveObserver(sync_pref_observer);
 }
@@ -596,9 +596,8 @@ bool SyncPrefs::IsTypeSupportedInTransportMode(UserSelectableType type) {
       // practice that kPayments depends on kAutofill (when it comes to user
       // choice).
       // TODO(crbug.com/1435431): Update comment once the decoupling is removed.
-      return base::FeatureList::IsEnabled(kSyncEnableContactInfoDataType) &&
-             base::FeatureList::IsEnabled(
-                 kSyncEnableContactInfoDataTypeInTransportMode);
+      return base::FeatureList::IsEnabled(
+          kSyncEnableContactInfoDataTypeInTransportMode);
     case UserSelectableType::kPayments:
       // Always supported, since AUTOFILL_WALLET_DATA is supported in
       // transport mode everywhere.

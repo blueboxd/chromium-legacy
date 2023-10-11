@@ -15,6 +15,10 @@ export function isGuest(): boolean {
   return loadTimeData.getBoolean('isGuest');
 }
 
+export function isChild(): boolean {
+  return loadTimeData.getBoolean('isChild');
+}
+
 export function isRevampWayfindingEnabled(): boolean {
   return loadTimeData.getBoolean('isRevampWayfindingEnabled');
 }
@@ -58,4 +62,13 @@ export function isAccountManagerEnabled(): boolean {
 // Reset page
 export function isPowerwashAllowed(): boolean {
   return loadTimeData.getBoolean('allowPowerwash');
+}
+
+// Search page
+export function isAssistantAllowed(): boolean {
+  return loadTimeData.getBoolean('isAssistantAllowed');
+}
+
+export function shouldShowQuickAnswersSettings(): boolean {
+  return loadTimeData.getBoolean('shouldShowQuickAnswersSettings');
 }

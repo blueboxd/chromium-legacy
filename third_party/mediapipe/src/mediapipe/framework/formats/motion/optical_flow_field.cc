@@ -19,6 +19,7 @@
 #include <cmath>
 
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "mediapipe/framework/deps/mathutil.h"
@@ -26,7 +27,6 @@
 #include "mediapipe/framework/formats/location_opencv.h"
 #include "mediapipe/framework/port/file_helpers.h"
 #include "mediapipe/framework/port/integral_types.h"
-#include "mediapipe/framework/port/logging.h"
 #include "mediapipe/framework/port/point2.h"
 #include "mediapipe/framework/port/ret_check.h"
 #include "mediapipe/framework/type_map.h"
@@ -41,8 +41,8 @@ const float kFloFileHeaderOnRead = 202021.25;
 
 void CartesianToPolarCoordinates(const cv::Mat& cartesian, cv::Mat* magnitudes,
                                  cv::Mat* angles) {
-  CHECK(magnitudes != nullptr);
-  CHECK(angles != nullptr);
+  ABSL_CHECK(magnitudes != nullptr);
+  ABSL_CHECK(angles != nullptr);
   cv::Mat cartesian_components[2];
   cv::split(cartesian, cartesian_components);
   cv::cartToPolar(cartesian_components[0], cartesian_components[1], *magnitudes,
@@ -192,8 +192,8 @@ void OpticalFlowField::ConvertToProto(OpticalFlowFieldData* proto) const {
 
 bool OpticalFlowField::FollowFlow(float x, float y, float* new_x,
                                   float* new_y) const {
-  CHECK(new_x);
-  CHECK(new_y);
+  ABSL_CHECK(new_x);
+  ABSL_CHECK(new_y);
   if (x < 0 || x > flow_data_.cols - 1 ||  // horizontal bounds
       y < 0 || y > flow_data_.rows - 1) {  // vertical bounds
     return false;
@@ -254,7 +254,7 @@ bool OpticalFlowField::AllWithinMargin(const OpticalFlowField& other,
       const cv::Point2f& other_motion = other.flow_data().at<cv::Point2f>(r, c);
       if (!MathUtil::WithinMargin(this_motion.x, other_motion.x, margin) ||
           !MathUtil::WithinMargin(this_motion.y, other_motion.y, margin)) {
-        LOG(INFO) << "First failure at" << r << " " << c;
+        ABSL_LOG(INFO) << "First failure at" << r << " " << c;
         return false;
       }
     }

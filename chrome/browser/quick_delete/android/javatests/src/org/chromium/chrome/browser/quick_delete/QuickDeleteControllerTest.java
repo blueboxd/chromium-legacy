@@ -41,6 +41,7 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
@@ -78,7 +79,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@EnableFeatures({ChromeFeatureList.QUICK_DELETE_FOR_ANDROID})
+@EnableFeatures(ChromeFeatureList.QUICK_DELETE_FOR_ANDROID)
 @Batch(Batch.PER_CLASS)
 public class QuickDeleteControllerTest {
     private static final String TEST_FILE = "/content/test/data/browsing_data/site_data.html";
@@ -191,6 +192,7 @@ public class QuickDeleteControllerTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1477790")
     public void testSnackbarShown_WhenClickingDelete_AllTimeSelected() {
         openQuickDeleteDialog();
         onView(withId(R.id.quick_delete_spinner)).check(matches(isDisplayed()));
@@ -292,8 +294,13 @@ public class QuickDeleteControllerTest {
         openQuickDeleteDialog();
 
         HistogramWatcher histogramWatcher =
-                HistogramWatcher.newSingleRecordWatcher(QuickDeleteMetricsDelegate.HISTOGRAM_NAME,
-                        QuickDeleteMetricsDelegate.QuickDeleteAction.MORE_OPTIONS_CLICKED);
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(QuickDeleteMetricsDelegate.HISTOGRAM_NAME,
+                                QuickDeleteMetricsDelegate.QuickDeleteAction.MORE_OPTIONS_CLICKED)
+                        .expectIntRecord(QuickDeleteMetricsDelegate.HISTOGRAM_NAME,
+                                QuickDeleteMetricsDelegate.QuickDeleteAction
+                                        .DIALOG_DISMISSED_IMPLICITLY)
+                        .build();
 
         onViewWaiting(withId(R.id.quick_delete_more_options)).perform(click());
 

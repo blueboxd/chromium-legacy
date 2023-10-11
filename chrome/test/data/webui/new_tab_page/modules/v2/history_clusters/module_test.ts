@@ -9,7 +9,6 @@ import {DismissModuleInstanceEvent, HistoryClustersProxyImplV2, historyClustersV
 import {$$} from 'chrome://new-tab-page/new_tab_page.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {fakeMetricsPrivate, MetricsTracker} from 'chrome://webui-test/metrics_test_support.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {TestMock} from 'chrome://webui-test/test_mock.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
@@ -49,7 +48,6 @@ function removeHrefAndClick(element: HTMLElement) {
 
 suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
   let handler: TestMock<PageHandlerRemote>;
-  let metrics: MetricsTracker;
 
   setup(() => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
@@ -57,7 +55,6 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
         PageHandlerRemote,
         mock => HistoryClustersProxyImplV2.setInstance(
             new HistoryClustersProxyImplV2(mock)));
-    metrics = fakeMetricsPrivate();
   });
 
   async function initializeModule(clusters: Cluster[]):
@@ -140,7 +137,8 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
     });
 
     test(
-        'Search suggestion header contains chip', async () => {
+        'Search suggestion header contains chip that is not hidden',
+        async () => {
           // Arrange.
           loadTimeData.overrideValues({
             historyClustersSuggestionChipHeaderEnabled: true,
@@ -148,13 +146,18 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
           const moduleElements = await initializeModule(
               [createSampleCluster(2, {label: '"Sample Journey"'})]);
           const moduleElement = moduleElements[0];
-          assertTrue(!!moduleElement);
 
-          // Assert.
+          // Act.
+          assertTrue(!!moduleElement);
           const headerElement = $$(moduleElement, 'history-clusters-header-v2');
           assertTrue(!!headerElement);
+          const label = $$(headerElement, '#label');
+          assertTrue(!!label);
           const suggestionChip = $$(headerElement, '#suggestion-chip');
           assertTrue(!!suggestionChip);
+
+          // Assert.
+          assertEquals((label as HTMLElement).hidden, true);
           assertEquals((suggestionChip as HTMLElement).hidden, false);
         });
 
@@ -264,14 +267,11 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
           [createSampleCluster(2, {label: sampleClusterLabel})]);
       const moduleElement = moduleElements[0];
       assertTrue(!!moduleElement);
-      const headerElement =
-          $$<HTMLElement>(moduleElement, 'history-clusters-header-v2');
+      const headerElement = $$(moduleElement, 'history-clusters-header-v2');
       assertTrue(!!headerElement);
-      const buttonElement = $$<HTMLElement>(headerElement, 'button');
-      assertTrue(!!buttonElement);
 
       const waitForUsageEvent = eventToPromise('usage', moduleElement);
-      buttonElement.click();
+      headerElement.click();
 
       assertEquals(
           sampleClusterLabel.substring(1, sampleClusterLabel.length - 1),
@@ -297,31 +297,6 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
               sampleClusterLabel.substring(1, sampleClusterLabel.length - 1),
               handler.getArgs('showJourneysSidePanel')[0]);
           await waitForUsageEvent;
-        });
-
-    [['Visit', 'ntp-history-clusters-visit-tile'],
-     ['Suggest', 'ntp-history-clusters-suggest-tile-v2']]
-        .forEach(([type, tileTagName]) => {
-          test(`Tile click metrics for ${type}`, async () => {
-            const sampleClusterLabel = '"Sample Journey"';
-            const moduleElements = await initializeModule(
-                [createSampleCluster(2, {label: sampleClusterLabel})]);
-            const moduleElement = moduleElements[0];
-            assertTrue(!!moduleElement);
-            const tileElement = $$<HTMLElement>(moduleElement, tileTagName!);
-            assertTrue(!!tileElement);
-
-            const waitForUsageEvent = eventToPromise('usage', moduleElement);
-            tileElement.click();
-
-            assertEquals(BigInt(111), handler.getArgs('recordClick')[0]);
-            assertEquals(
-                1,
-                metrics.count(`NewTabPage.HistoryClusters.Layout${
-                    LayoutType.kImages}.${type}Tile.ClickIndex`));
-
-            await waitForUsageEvent;
-          });
         });
 
     [...Array(3).keys()].forEach(numRelatedSearches => {

@@ -170,7 +170,7 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
     const ContextCreationAttribs& attribs,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     gpu::raster::GrShaderCache* gr_shader_cache,
-    GpuProcessActivityFlags* activity_flags) {
+    GpuProcessShmCount* use_shader_cache_shm_count) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   TRACE_EVENT0("gpu", "InProcessCommandBuffer::Initialize");
 
@@ -181,7 +181,7 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
 
   Capabilities capabilities;
   InitializeOnGpuThreadParams params(attribs, &capabilities, gr_shader_cache,
-                                     activity_flags);
+                                     use_shader_cache_shm_count);
 
   base::OnceCallback<gpu::ContextResult(void)> init_task =
       base::BindOnce(&InProcessCommandBuffer::InitializeOnGpuThread,
@@ -835,7 +835,7 @@ void InProcessCommandBuffer::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {
 
 void InProcessCommandBuffer::ScheduleGrContextCleanup() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
-  context_state_->ScheduleGrContextCleanup();
+  context_state_->ScheduleSkiaCleanup();
 }
 
 void InProcessCommandBuffer::HandleReturnData(base::span<const uint8_t> data) {

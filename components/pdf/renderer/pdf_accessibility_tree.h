@@ -48,6 +48,10 @@ namespace gfx {
 class Transform;
 }  // namespace gfx
 
+namespace ui {
+struct AXTreeUpdate;
+}  // namespace ui
+
 namespace pdf {
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -74,11 +78,13 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
     PdfOcrRequest(const ui::AXNodeID& image_node_id,
                   const chrome_pdf::AccessibilityImageInfo& image,
                   const ui::AXNodeID& parent_node_id,
+                  const ui::AXNodeID& page_node_id,
                   uint32_t page_index);
 
     const ui::AXNodeID image_node_id;
     const chrome_pdf::AccessibilityImageInfo image;
     const ui::AXNodeID parent_node_id;
+    const ui::AXNodeID page_node_id;
     const uint32_t page_index;
     // This boolean indicates which request corresponds to the last image on
     // each page.
@@ -112,20 +118,18 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
     // reset the page count in this class, i.e. the `remaining_page_count_`
     // field, to its correct value.
     void ResetPageCount(uint32_t page_count);
+    void ComputeAndSetPagesPerBatch(uint32_t page_count);
     void OcrPage(base::queue<PdfOcrRequest> page_requests);
     bool AreAllPagesOcred() const;
     bool AreAllPagesInBatchOcred() const;
     void SetScreenAIAnnotatorForTesting(
         mojo::PendingRemote<screen_ai::mojom::ScreenAIAnnotator>
             screen_ai_annotator);
-    void SetPagesPerBatchForTesting(int32_t pages_per_batch) {
-      pages_per_batch_ = pages_per_batch;
-    }
+    void ResetRemainingPageCountForTesting();
+    uint32_t pages_per_batch_for_testing() { return pages_per_batch_; }
 
    private:
-    // TODO(crbug.com/1443341): Increase initial value after batching issue is
-    // fixed.
-    int32_t pages_per_batch_ = 1u;
+    uint32_t pages_per_batch_ = 20u;
 
     void OcrNextImage();
     void ReceiveOcrResultsForImage(PdfOcrRequest request,
@@ -226,7 +230,6 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   void CreateOcrService();
-
   PdfOcrService* ocr_service_for_testing() { return ocr_service_.get(); }
 
   // After receiving a batch of tree updates containing the results of the OCR
@@ -235,10 +238,21 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   virtual void OnOcrDataReceived(std::vector<PdfOcrRequest> ocr_requests,
                                  std::vector<ui::AXTreeUpdate> tree_updates);
 
-  const ui::AXTree& tree_for_testing() const { return tree_; }
+  ui::AXTree& tree_for_testing() { return tree_; }
+
+  const ui::AXTreeUpdate* postamble_page_tree_update_for_testing() const {
+    return postamble_page_tree_update_.get();
+  }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   bool ShowContextMenu();
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+ protected:
+  // Adds a postample page to the accessibility tree which informs the user that
+  // OCR is in progress, if that is indeed the case.
+  void AddPostamblePageIfNeeded(const ui::AXNodeID& last_page_node_id);
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
  private:
   // Update the AXTreeData when the selected range changed.
@@ -356,9 +370,13 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   uint32_t next_page_index_ = 0;
 
   bool did_get_a_text_run_ = false;
-  bool did_unserialize_nodes_once_ = false;
+  bool sent_metrics_once_ = false;
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  // The postamble page is added to the accessibility tree to inform the user
+  // that the OCR process is ongoing. It is removed once the process is
+  // complete.
+  std::unique_ptr<ui::AXTreeUpdate> postamble_page_tree_update_;
   // The status node contains a notification message for the user.
   std::unique_ptr<ui::AXNodeData> ocr_status_node_wrapper_;
   std::unique_ptr<ui::AXNodeData> ocr_status_node_;

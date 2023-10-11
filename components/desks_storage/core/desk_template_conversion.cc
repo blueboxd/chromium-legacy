@@ -225,8 +225,7 @@ std::string GetJsonAppId(const base::Value::Dict& app) {
 #else
         // Note that this will launch the browser as lacros if it is enabled,
         // even if it was saved as a non-lacros window (and vice-versa).
-        crosapi::lacros_startup_state::IsLacrosEnabled() &&
-        crosapi::lacros_startup_state::IsLacrosPrimaryEnabled();
+        crosapi::lacros_startup_state::IsLacrosEnabled();
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
     // Browser app has a known app ID.
@@ -814,17 +813,6 @@ base::Value::List ConvertURLsToBrowserAppTabValues(
 
 std::string GetAppTypeForJson(apps::AppRegistryCache* apps_cache,
                               const std::string& app_id) {
-  // Browsers are special cases, in some cases we reach this function before
-  // apps cache is ready so we have these special cases to prevent data loss.
-  // TODO(b/293177225): Find a better solution for this issue,
-  if (app_id == app_constants::kChromeAppId) {
-    return kAppTypeBrowser;
-  }
-
-  if (app_id == app_constants::kLacrosAppId) {
-    return kAppTypeBrowser;
-  }
-
   // This switch should follow the same structure as DeskSyncBridge#FillApp.
   switch (apps_cache->GetAppType(app_id)) {
     case apps::AppType::kWeb:
@@ -1201,8 +1189,7 @@ std::string GetAppId(const sync_pb::WorkspaceDeskSpecifics_App& app) {
 #else
           // Note that this will launch the browser as lacros if it is enabled,
           // even if it was saved as a non-lacros window (and vice-versa).
-          crosapi::lacros_startup_state::IsLacrosEnabled() &&
-          crosapi::lacros_startup_state::IsLacrosPrimaryEnabled();
+          crosapi::lacros_startup_state::IsLacrosEnabled();
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
       // Browser app has a known app ID.

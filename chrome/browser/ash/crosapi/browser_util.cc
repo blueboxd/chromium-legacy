@@ -8,6 +8,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/auto_reset.h"
+#include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_map.h"
@@ -15,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/values_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -131,7 +133,6 @@ bool IsUserTypeAllowed(const User& user) {
     case user_manager::USER_TYPE_KIOSK_APP:
       return base::FeatureList::IsEnabled(features::kChromeKioskEnableLacros);
     case user_manager::USER_TYPE_ARC_KIOSK_APP:
-    case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
     case user_manager::NUM_USER_TYPES:
       return false;
   }
@@ -212,8 +213,6 @@ bool IsLacrosAllowedInternal(const User* user,
 
   switch (lacros_availability) {
     case LacrosAvailability::kLacrosDisallowed:
-    case LacrosAvailability::kSideBySide:
-    case LacrosAvailability::kLacrosPrimary:
       return false;
     case LacrosAvailability::kUserChoice:
     case LacrosAvailability::kLacrosOnly:
@@ -251,9 +250,6 @@ LacrosMode GetLacrosModeInternal(const User* user,
     case LacrosAvailability::kLacrosDisallowed:
       NOTREACHED();  // Guarded by IsLacrosAllowedInternal.
       return LacrosMode::kDisabled;
-    case LacrosAvailability::kSideBySide:
-    case LacrosAvailability::kLacrosPrimary:
-      return LacrosMode::kDisabled;
     case LacrosAvailability::kLacrosOnly:
       return LacrosMode::kOnly;
   }
@@ -273,23 +269,6 @@ bool IsLacrosEnabledInternal(const User* user,
   switch (mode) {
     case LacrosMode::kDisabled:
       return false;
-    case LacrosMode::kSideBySide:
-    case LacrosMode::kPrimary:
-    case LacrosMode::kOnly:
-      return true;
-  }
-}
-
-bool IsLacrosPrimaryBrowserInternal(const User* user,
-                                    LacrosAvailability lacros_availability,
-                                    bool check_migration_status) {
-  LacrosMode mode =
-      GetLacrosModeInternal(user, lacros_availability, check_migration_status);
-  switch (mode) {
-    case LacrosMode::kDisabled:
-    case LacrosMode::kSideBySide:
-      return false;
-    case LacrosMode::kPrimary:
     case LacrosMode::kOnly:
       return true;
   }
@@ -303,8 +282,6 @@ bool IsAshWebBrowserEnabledInternal(const User* user,
       GetLacrosModeInternal(user, lacros_availability, check_migration_status);
   switch (mode) {
     case LacrosMode::kDisabled:
-    case LacrosMode::kSideBySide:
-    case LacrosMode::kPrimary:
       return true;
     case LacrosMode::kOnly:
       return false;
@@ -419,8 +396,6 @@ const char kLacrosAvailabilityPolicyInternalName[] =
 const char kLacrosAvailabilityPolicySwitch[] = "lacros-availability-policy";
 const char kLacrosAvailabilityPolicyUserChoice[] = "user_choice";
 const char kLacrosAvailabilityPolicyLacrosDisabled[] = "lacros_disabled";
-const char kLacrosAvailabilityPolicySideBySide[] = "side_by_side";
-const char kLacrosAvailabilityPolicyLacrosPrimary[] = "lacros_primary";
 const char kLacrosAvailabilityPolicyLacrosOnly[] = "lacros_only";
 
 const char kLaunchOnLoginPref[] = "lacros.launch_on_login";
@@ -521,33 +496,9 @@ bool IsAshWebBrowserEnabledForMigration(const user_manager::User* user,
       /*check_migration_status=*/false);
 }
 
-bool IsLacrosPrimaryBrowser() {
-  return IsLacrosPrimaryBrowserInternal(GetPrimaryUser(),
-                                        GetCachedLacrosAvailability(),
-                                        /*check_migration_status=*/true);
-}
-
-bool IsLacrosPrimaryBrowserForMigration(const user_manager::User* user,
-                                        PolicyInitState policy_init_state) {
-  return IsLacrosPrimaryBrowserInternal(
-      user, GetLacrosAvailability(user, policy_init_state),
-      /*check_migration_status=*/false);
-}
-
 LacrosMode GetLacrosMode() {
   return GetLacrosModeInternal(GetPrimaryUser(), GetCachedLacrosAvailability(),
                                /*check_migration_status=*/true);
-}
-
-bool IsLacrosPrimaryBrowserAllowed() {
-  return IsLacrosAllowedInternal(GetPrimaryUser(),
-                                 GetCachedLacrosAvailability());
-}
-
-bool IsLacrosPrimaryBrowserAllowedForMigration(
-    const user_manager::User* user,
-    LacrosAvailability lacros_availability) {
-  return IsLacrosAllowedInternal(user, lacros_availability);
 }
 
 bool IsLacrosOnlyBrowserAllowed() {
@@ -565,13 +516,8 @@ bool IsLacrosAllowedToLaunch() {
 }
 
 bool IsLacrosChromeAppsEnabled() {
-  if (base::FeatureList::IsEnabled(kLacrosDisableChromeApps))
-    return false;
-
-  if (!IsLacrosPrimaryBrowser())
-    return false;
-
-  return true;
+  return !base::FeatureList::IsEnabled(kLacrosDisableChromeApps) &&
+         IsLacrosEnabled();
 }
 
 bool IsLacrosEnabledInWebKioskSession() {
@@ -888,6 +834,51 @@ absl::optional<MigrationMode> GetCompletedMigrationMode(
   return absl::nullopt;
 }
 
+void RecordMigrationStatus() {
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state) {
+    // This can happen in tests.
+    CHECK_IS_TEST();
+    return;
+  }
+
+  const auto* user = GetPrimaryUser();
+  if (!user) {
+    // The function is intended to be run after primary user is initialized.
+    // The function might be run in tests without primary user being set.
+    CHECK_IS_TEST();
+    return;
+  }
+
+  const MigrationStatus status = GetMigrationStatus(local_state, user);
+
+  UMA_HISTOGRAM_ENUMERATION(kLacrosMigrationStatus, status);
+}
+
+MigrationStatus GetMigrationStatus(PrefService* local_state,
+                                   const user_manager::User* user) {
+  if (!crosapi::browser_util::IsLacrosEnabledForMigration(
+          user, crosapi::browser_util::PolicyInitState::kAfterInit)) {
+    return MigrationStatus::kLacrosNotEnabled;
+  }
+
+  absl::optional<MigrationMode> mode =
+      GetCompletedMigrationMode(local_state, user->username_hash());
+
+  if (!mode.has_value()) {
+    return MigrationStatus::kUncompleted;
+  }
+
+  switch (mode.value()) {
+    case MigrationMode::kCopy:
+      return MigrationStatus::kCopyCompleted;
+    case MigrationMode::kMove:
+      return MigrationStatus::kMoveCompleted;
+    case MigrationMode::kSkipForNewUser:
+      return MigrationStatus::kSkippedForNewUser;
+  }
+}
+
 void SetProfileMigrationCompletedForUser(PrefService* local_state,
                                          const std::string& user_id_hash,
                                          MigrationMode mode) {
@@ -1085,9 +1076,8 @@ bool WasGotoFilesClicked(PrefService* local_state,
 }
 
 bool ShouldEnforceAshExtensionKeepList() {
-  return IsLacrosPrimaryBrowser() &&
-         base::FeatureList::IsEnabled(
-             ash::features::kEnforceAshExtensionKeeplist);
+  return IsLacrosEnabled() && base::FeatureList::IsEnabled(
+                                  ash::features::kEnforceAshExtensionKeeplist);
 }
 
 bool IsAshDevToolEnabled() {

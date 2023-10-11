@@ -8,15 +8,15 @@
 import {BrowserUtil} from '../../common/browser_util.js';
 import {constants} from '../../common/constants.js';
 import {LocalStorage} from '../../common/local_storage.js';
+import {StringUtil} from '../../common/string_util.js';
 import {BackgroundBridge} from '../common/background_bridge.js';
 import {BrailleCommandData} from '../common/braille/braille_command_data.js';
 import {BridgeConstants} from '../common/bridge_constants.js';
 import {BridgeHelper} from '../common/bridge_helper.js';
-import {Command, CommandStore} from '../common/command_store.js';
+import {Command} from '../common/command.js';
+import {CommandStore} from '../common/command_store.js';
 import {EventSourceType} from '../common/event_source_type.js';
 import {GestureCommandData} from '../common/gesture_command_data.js';
-import {KeyBinding, KeyMap} from '../common/key_map.js';
-import {KeyUtil} from '../common/key_util.js';
 import {LocaleOutputHelper} from '../common/locale_output_helper.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
@@ -333,39 +333,9 @@ export class Panel extends PanelInterface {
       const categoryToMenu = this.menuManager_.makeCategoryMapping(
           actionsMenu, chromevoxMenu, jumpMenu, speechMenu);
 
-      // TODO(accessibility): Commands should be based off of CommandStore and
-      // not the keymap. There are commands that don't have a key binding (e.g.
-      // commands for touch).
-
-      // Get the key map.
-      const keymap = KeyMap.get();
-
-      // Get the key bindings, get the localized title of each command, and then
-      // sort them.
-      const sortedBindings = keymap.bindings();
-      for (let binding, i = 0; binding = sortedBindings[i]; i++) {
-        const command = binding.command;
-        const keySeq = binding.sequence;
-        binding.keySeq = await KeyUtil.keySequenceToString(keySeq, true);
-        const titleMsgId = CommandStore.messageForCommand(command);
-        if (!titleMsgId) {
-          // Title messages are intentionally missing for some keyboard
-          // shortcuts.
-          if (!(command in COMMANDS_WITH_NO_MSG_ID)) {
-            console.error('No localization for: ' + command);
-          }
-          binding.title = '';
-          continue;
-        }
-        let title = Msgs.getMsg(titleMsgId);
-        // Convert to title case.
-        title = title.replace(
-            /\w\S*/g, word => word.charAt(0).toUpperCase() + word.substr(1));
-        binding.title = title;
-      }
-      sortedBindings.sort(
-          (binding1, binding2) =>
-              binding1.title.localeCompare(String(binding2.title)));
+      // Make a copy of the key bindings, get the localized title of each
+      // command, and then sort them.
+      const sortedBindings = await this.menuManager_.getSortedKeyBindings();
 
       // Insert items from the bindings into the menus.
       const sawBindingSet = {};
@@ -914,25 +884,6 @@ export class Panel extends PanelInterface {
       await BackgroundBridge.UserActionMonitor.destroy();
       this.onCloseTutorial_();
     });
-    $('chromevox-tutorial').addEventListener('requestspeech', evt => {
-      /**
-       * @type {{
-       * text: string,
-       * queueMode: QueueMode,
-       * properties: ({doNotInterrupt: boolean}|undefined)}}
-       */
-      const detail = evt.detail;
-      const text = detail.text;
-      const queueMode = detail.queueMode;
-      const properties = detail.properties || {};
-      if (!text || queueMode === undefined) {
-        throw new Error(
-            `Must specify text and queueMode when requesting speech from the
-                tutorial`);
-      }
-      const cvox = backgroundPage['ChromeVox'];
-      cvox.tts.speak(text, queueMode, properties);
-    });
     $('chromevox-tutorial')
         .addEventListener('startinteractivemode', async evt => {
           const actions = evt.detail.actions;
@@ -1052,21 +1003,6 @@ Panel.ACTION_TO_MSG_ID = {
   showContextMenu: 'show_context_menu',
   longClick: 'force_long_click_on_current_item',
 };
-
-const COMMANDS_WITH_NO_MSG_ID = [
-  'nativeNextCharacter',
-  'nativePreviousCharacter',
-  'nativeNextWord',
-  'nativePreviousWord',
-  'enableLogging',
-  'disableLogging',
-  'dumpTree',
-  'showActionsMenu',
-  'enableChromeVoxArcSupportForCurrentApp',
-  'disableChromeVoxArcSupportForCurrentApp',
-  'showTalkBackKeyboardShortcuts',
-  'copy',
-];
 
 window.addEventListener('load', async () => await Panel.init(), false);
 

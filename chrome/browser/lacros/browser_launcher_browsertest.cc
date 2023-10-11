@@ -20,8 +20,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/profile_picker.h"
-#include "chrome/browser/ui/profile_ui_test_utils.h"
+#include "chrome/browser/ui/profiles/profile_picker.h"
+#include "chrome/browser/ui/profiles/profile_ui_test_utils.h"
 #include "chrome/browser/ui/views/session_crashed_bubble_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
@@ -85,7 +85,7 @@ class BrowserLauncherTest : public InProcessBrowserTest {
   }
 
   void NewWindowSync(bool incognito, bool should_trigger_session_restore) {
-    base::test::TestFuture<void> new_window_future;
+    base::test::TestFuture<crosapi::mojom::CreationResult> new_window_future;
     browser_service()->NewWindow(
         incognito, should_trigger_session_restore,
         display::Screen::GetScreen()->GetDisplayForNewWindows().id(),
@@ -641,7 +641,7 @@ IN_PROC_BROWSER_TEST_F(BrowserLauncherTest,
       ->SetLastSessionExitTypeForTest(ExitType::kCrashed);
 
   // Launch the browser.
-  base::test::TestFuture<void> launch_future;
+  base::test::TestFuture<crosapi::mojom::CreationResult> launch_future;
   browser_service()->Launch(0, launch_future.GetCallback());
   ASSERT_TRUE(launch_future.Wait()) << "Launch did not trigger the callback.";
 
@@ -768,7 +768,7 @@ IN_PROC_BROWSER_TEST_F(BrowserLauncherTest,
 
   // Launch the browser. A browser window for each last profile should be
   // restored.
-  base::test::TestFuture<void> launch_future;
+  base::test::TestFuture<crosapi::mojom::CreationResult> launch_future;
   browser_service()->Launch(0, launch_future.GetCallback());
   ASSERT_TRUE(launch_future.Wait()) << "Launch did not trigger the callback.";
 

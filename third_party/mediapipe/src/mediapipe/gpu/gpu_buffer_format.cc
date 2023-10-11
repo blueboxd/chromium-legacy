@@ -190,7 +190,7 @@ const GlTextureInfo& GlTextureInfoForGpuBufferFormat(GpuBufferFormat format,
   }
 
   auto iter = format_info->find(format);
-  CHECK(iter != format_info->end())
+  ABSL_CHECK(iter != format_info->end())
       << "unsupported format: "
       << static_cast<std::underlying_type_t<decltype(format)>>(format);
   const auto& planes = iter->second;

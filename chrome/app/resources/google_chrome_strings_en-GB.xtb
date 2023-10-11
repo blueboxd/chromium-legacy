@@ -108,10 +108,13 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2775140325783767197">Chrome can't check your passwords. Try checking your Internet connection.</translation>
 <translation id="2799223571221894425">Relaunch</translation>
 <translation id="2847461019998147611">Display Google Chrome in this language</translation>
+<translation id="2853415089995957805">Chrome preloads pages you're likely to visit, so that they load more quickly when you visit them</translation>
 <translation id="2857540653560290388">Launching Chrome...</translation>
 <translation id="2857972467023607093">A Chrome profile with this account already exists</translation>
+<translation id="286025080868315611">Learn why Chrome blocks some downloads</translation>
 <translation id="2861074815332034794">Updating Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="2871893339301912279">You're signed in to Chrome!</translation>
+<translation id="2876628302275096482">Learn more about <ph name="BEGIN_LINK" />how Chrome keeps your data private<ph name="END_LINK" /></translation>
 <translation id="2885378588091291677">Task Manager</translation>
 <translation id="2888126860611144412">About Chrome</translation>
 <translation id="2915996080311180594">Restart later</translation>
@@ -230,6 +233,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5003967926796347400">Click 'Google Password Manager'</translation>
 <translation id="5098668839038261629">When on, you'll also be signed out of Chrome</translation>
+<translation id="5126049312684316860">Chrome preloads even more pages that you're likely to visit, so that they load more quickly when you visit them.</translation>
 <translation id="5132929315877954718">Discover great apps, games, extensions and themes for Google Chrome.</translation>
 <translation id="5139423532931106058">Customise your Chrome profile</translation>
 <translation id="5163087008893166964">Welcome to Chrome; new browser window opened</translation>
@@ -239,6 +243,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="521447420733633466">If you share a device, friends and family can browse separately and set up Chrome just the way they want</translation>
 <translation id="5239627039202700673">Use Chrome any time that you click links in messages, documents and other apps</translation>
 <translation id="5251420635869119124">Guests can use Chrome without leaving anything behind.</translation>
+<translation id="5320351714793324716">If you allow cookies, Chrome may use them when preloading.</translation>
 <translation id="5334309298019785904">Chrome OS could not sync your data because sync is not available for your domain.</translation>
 <translation id="5334487786912937552">Chrome needs storage access permission to download files</translation>
 <translation id="5337648990166757586">Optional: Help improve Chrome OS features and performance by automatically sending diagnostic and usage data to Google.</translation>
@@ -254,7 +259,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> may be dangerous, so Chrome has blocked it.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Your administrator asks that you relaunch Chrome to apply this update}=1{Your administrator asks that you relaunch Chrome to apply this update. Your Incognito window won't reopen.}other{Your administrator asks that you relaunch Chrome to apply this update. Your # Incognito windows won't reopen.}}</translation>
-<translation id="5682679001737420487">Chrome blocks some downloads</translation>
 <translation id="5686916850681061684">Customise and control Google Chrome. Something needs your attention – click for details.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="570005089986962444">When on, Chrome frees up memory from inactive tabs. This gives active tabs and other apps more computer resources and keeps Chrome fast. Your inactive tabs automatically become active again when you go back to them.</translation>
@@ -287,6 +291,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6235018212288296708">Inbound rule for Google Chrome to allow mDNS traffic.</translation>
 <translation id="624230925347970731">Chrome will soon close</translation>
 <translation id="6247557882553405851">Google Password Manager</translation>
+<translation id="6251759518630934363">Warns you about dangerous sites, even ones that Google didn't know about before, by analysing more data from sites than standard protection. You can choose to skip Chrome warnings.</translation>
 <translation id="6273793429163604305">On your marks…</translation>
 <translation id="6277547788421725101">Your parent has turned off 'Permissions for sites, apps and extensions' for Chrome.</translation>
 <translation id="6291089322031436445">Chrome Dev Apps</translation>
@@ -391,6 +396,7 @@ Permissions that you've already given to websites and apps may apply to this acc
 <translation id="8286862437124483331">Google Chrome is trying to show passwords. Type your Windows password to allow this.</translation>
 <translation id="8290100596633877290">Whoa! Google Chrome has crashed. Relaunch now?</translation>
 <translation id="829923460755755423">Add a shortcut to Google Password Manager</translation>
+<translation id="8336463659890584292">When a site asks to privately preload links on their page, Chrome uses Google servers. This hides your identity from the preloaded site, but Google learns what sites get preloaded.</translation>
 <translation id="8342675569599923794">This file is dangerous, so Chrome has blocked it.</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />How we use this data:<ph name="END_BOLD" /> Sites can store information with Chrome about your interests. For example, if you visit a site to buy shoes for a marathon, the site might define your interest as running marathons. Later, if you visit a different site to register for a race, that site can show you an ad for running shoes based on your interests.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>

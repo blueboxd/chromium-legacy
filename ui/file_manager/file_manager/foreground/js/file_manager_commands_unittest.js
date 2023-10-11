@@ -13,10 +13,9 @@ import {waitUntil} from '../../common/js/test_error_reporting.js';
 import {util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
-import {addVolume, updateIsInteractiveVolume} from '../../state/actions/volumes.js';
+import {addVolume, convertVolumeInfoAndMetadataToVolume, trashRootKey, updateIsInteractiveVolume} from '../../state/ducks/volumes.js';
+import {createMyFilesDataWithVolumeEntry} from '../../state/ducks/volumes_unittest.js';
 import {createFakeVolumeMetadata, setUpFileManagerOnWindow, setupStore, waitDeepEquals} from '../../state/for_tests.js';
-import {convertVolumeInfoAndMetadataToVolume, trashRootKey} from '../../state/reducers/volumes.js';
-import {createMyFilesDataWithVolumeEntry} from '../../state/reducers/volumes_unittest.js';
 
 import {CommandHandler} from './file_manager_commands.js';
 

@@ -24,7 +24,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/unguessable_token.h"
 #include "chromeos/ash/services/recording/public/mojom/recording_service.mojom.h"
+#include "chromeos/crosapi/mojom/video_conference.mojom.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -47,7 +49,7 @@ namespace ash {
 class CaptureModeBehavior;
 class CaptureModeCameraController;
 class CaptureModeObserver;
-class CaptureModeSession;
+class BaseCaptureModeSession;
 
 // Defines a callback type that will be invoked when an attempt to delete the
 // given `path` is completed with the given status `delete_successful`.
@@ -71,7 +73,8 @@ class ASH_EXPORT CaptureModeController
     : public recording::mojom::RecordingServiceClient,
       public recording::mojom::DriveFsQuotaDelegate,
       public SessionObserver,
-      public chromeos::PowerManagerClient::Observer {
+      public chromeos::PowerManagerClient::Observer,
+      public crosapi::mojom::VideoConferenceManagerClient {
  public:
   // Contains info about the folder used for saving the captured images and
   // videos.
@@ -106,7 +109,7 @@ class ASH_EXPORT CaptureModeController
   AudioRecordingMode audio_recording_mode() const {
     return audio_recording_mode_;
   }
-  CaptureModeSession* capture_mode_session() const {
+  BaseCaptureModeSession* capture_mode_session() const {
     return capture_mode_session_.get();
   }
   gfx::Rect user_capture_region() const { return user_capture_region_; }
@@ -119,7 +122,8 @@ class ASH_EXPORT CaptureModeController
 
   // Returns true if a capture mode session is currently active. If you only
   // need to call this method, but don't need the rest of the controller, use
-  // capture_mode_util::IsCaptureModeActive().
+  // capture_mode_util::IsCaptureModeActive(). Note that null sessions can still
+  // return `true`.
   bool IsActive() const;
 
   // Returns the effective audio recording mode, taking into account the
@@ -132,6 +136,9 @@ class ASH_EXPORT CaptureModeController
 
   // Returns true if there's an active video recording that is recording audio.
   bool IsAudioRecordingInProgress() const;
+
+  // Returns true if the camera preview is visible, false otherwise.
+  bool IsShowingCameraPreview() const;
 
   // Sets the capture source/type, and recording type, which will be applied to
   // an ongoing capture session (if any), or to a future capture session when
@@ -162,6 +169,10 @@ class ASH_EXPORT CaptureModeController
   // Starts a new capture session with a pre-selected window which will be
   // observed throughout the session and can't be altered.
   void StartForGameDashboard(aura::Window* game_window);
+
+  // Starts recording a pre-selected game window as soon as possible without
+  // starting a countdown by using a null session.
+  void StartRecordingInstantlyForGameDashboard(aura::Window* game_window);
 
   // Stops an existing capture session.
   void Stop();
@@ -281,6 +292,10 @@ class ASH_EXPORT CaptureModeController
   // windows such as the PIP window and the automatic click bubble menu.
   std::vector<aura::Window*> GetWindowsForCollisionAvoidance() const;
 
+  // Updates the video conference manager and panel with the current state of
+  // screen recording and whether camera or audio are being recorded.
+  void MaybeUpdateVcPanel();
+
   // recording::mojom::RecordingServiceClient:
   void OnRecordingEnded(recording::mojom::RecordingStatus status,
                         const gfx::ImageSkia& thumbnail) override;
@@ -290,12 +305,23 @@ class ASH_EXPORT CaptureModeController
       GetDriveFsFreeSpaceBytesCallback callback) override;
 
   // SessionObserver:
+  void OnFirstSessionStarted() override;
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnChromeTerminating() override;
 
   // chromeos::PowerManagerClient::Observer:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
+
+  // crosapi::mojom::VideoConferenceManagerClient:
+  void GetMediaApps(GetMediaAppsCallback callback) override;
+  void ReturnToApp(const base::UnguessableToken& token,
+                   ReturnToAppCallback callback) override;
+  void SetSystemMediaDeviceStatus(
+      crosapi::mojom::VideoConferenceMediaDevice device,
+      bool disabled,
+      SetSystemMediaDeviceStatusCallback callback) override;
+  void StopAllScreenShare() override;
 
   // Skips the 3-second count down, and IsCaptureAllowed() checks, and starts
   // video recording right away for testing purposes.
@@ -312,6 +338,13 @@ class ASH_EXPORT CaptureModeController
  private:
   friend class CaptureModeTestApi;
   friend class VideoRecordingWatcher;
+
+  // Performs the necessary setup common to all start methods (excluding
+  // testing-only methods).
+  void StartInternal(
+      SessionType session_type,
+      CaptureModeEntryType entry_type,
+      OnSessionStartAttemptCallback callback = base::DoNothing());
 
   // Called by |video_recording_watcher_| when the display on which recording is
   // happening changes its bounds such as on display rotation or device scale
@@ -507,7 +540,8 @@ class ASH_EXPORT CaptureModeController
   // whether a pending session initialization should `proceed` or abort due to
   // some restricted contents on the screen. `at_exit_closure` is passed from
   // `Start()` and will be called on the exit of the function.
-  void OnDlpRestrictionCheckedAtSessionInit(CaptureModeEntryType entry_type,
+  void OnDlpRestrictionCheckedAtSessionInit(SessionType session_type,
+                                            CaptureModeEntryType entry_type,
                                             base::OnceClosure at_exit_closure,
                                             bool proceed);
 
@@ -558,6 +592,14 @@ class ASH_EXPORT CaptureModeController
   // otherwise.
   CaptureModeBehavior* GetBehavior(BehaviorType behavior_type);
 
+  // The ID of this object as a client of the video conference manager.
+  const base::UnguessableToken vc_client_id_ = base::UnguessableToken::Create();
+
+  // The ID of an ongoing recording as a media app tracked by the video
+  // conference manager.
+  const base::UnguessableToken capture_mode_media_app_id_ =
+      base::UnguessableToken::Create();
+
   std::unique_ptr<CaptureModeDelegate> delegate_;
 
   // Controls the selfie camera feature of capture mode.
@@ -586,7 +628,7 @@ class ASH_EXPORT CaptureModeController
   // a message to the user instructing them to start selecting a region.
   gfx::Rect user_capture_region_;
 
-  std::unique_ptr<CaptureModeSession> capture_mode_session_;
+  std::unique_ptr<BaseCaptureModeSession> capture_mode_session_;
 
   // Remember the user selected preference for audio recording between sessions.
   // Initially, this value is set to `kOff`, ensuring that this is an opt-in
@@ -610,6 +652,12 @@ class ASH_EXPORT CaptureModeController
   // (initialization or performing the capture).
   bool pending_dlp_check_ = false;
 
+  // These track the state of the camera and microphone (e.g. the camera can be
+  // disabled using a privacy switch, and the microphone can be muted from the
+  // settings).
+  bool is_camera_muted_ = false;
+  bool is_microphone_muted_ = false;
+
   // Watches events that lead to ending video recording.
   std::unique_ptr<VideoRecordingWatcher> video_recording_watcher_;
 
@@ -620,7 +668,8 @@ class ASH_EXPORT CaptureModeController
   base::flat_map<aura::Window*, /*protection_mask*/ uint32_t>
       protected_windows_;
 
-  // If set, it will be called when either an image or video file is saved.
+  // If set, it will be called when either an image or video file is saved and
+  // the file size metric has been recorded.
   base::OnceCallback<void(const base::FilePath&)>
       on_file_saved_callback_for_test_;
 

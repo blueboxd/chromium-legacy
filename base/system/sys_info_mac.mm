@@ -12,11 +12,11 @@
 #include <sys/sysctl.h>
 #include <sys/types.h>
 
+#include "base/apple/scoped_mach_port.h"
 #include "base/check_op.h"
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_mach_port.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
@@ -122,7 +122,7 @@ std::string SysInfo::OperatingSystemArchitecture() {
 uint64_t SysInfo::AmountOfPhysicalMemoryImpl() {
   struct host_basic_info hostinfo;
   mach_msg_type_number_t count = HOST_BASIC_INFO_COUNT;
-  base::mac::ScopedMachSendRight host(mach_host_self());
+  base::apple::ScopedMachSendRight host(mach_host_self());
   int result = host_info(host.get(), HOST_BASIC_INFO,
                          reinterpret_cast<host_info_t>(&hostinfo), &count);
   if (result != KERN_SUCCESS) {
@@ -150,7 +150,16 @@ std::string SysInfo::CPUModelName() {
 
 // static
 std::string SysInfo::HardwareModelName() {
-  return GetSysctlStringValue("hw.model");
+  // The old "hw.machine" and "hw.model" sysctls are discouraged in favor of the
+  // new "hw.product" and "hw.target". See
+  // https://github.com/apple-oss-distributions/xnu/blob/aca3beaa3dfbd42498b42c5e5ce20a938e6554e5/bsd/sys/sysctl.h#L1168-L1169
+  // and
+  // https://github.com/apple-oss-distributions/xnu/blob/aca3beaa3dfbd42498b42c5e5ce20a938e6554e5/bsd/kern/kern_mib.c#L374-L376
+  if (base::mac::MacOSMajorVersion() < 11) {
+    return GetSysctlStringValue("hw.model");
+  } else {
+    return GetSysctlStringValue("hw.product");
+  }
 }
 
 // static

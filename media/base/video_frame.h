@@ -41,7 +41,7 @@
 
 #if BUILDFLAG(IS_APPLE)
 #include <CoreVideo/CVPixelBuffer.h>
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/scoped_cftyperef.h"
 #endif  // BUILDFLAG(IS_APPLE)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -834,7 +834,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
 #if BUILDFLAG(IS_APPLE)
   // CVPixelBuffer, if this frame is wrapping one.
-  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer_;
+  base::apple::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer_;
 #endif
 
   base::Lock done_callbacks_lock_;

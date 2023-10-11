@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Laat ’n werf toe om data op jou toestel te stoor</translation>
 <translation id="1383876407941801731">Soek</translation>
 <translation id="1384959399684842514">Aflaai is onderbreek</translation>
-<translation id="1409426117486808224">Vereenvoudigde aansig vir oop oortjies</translation>
 <translation id="1415402041810619267">URL is afgekap</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1446450296470737166">Laat vol MIDI-toestelbeheer toe</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Toegelaat, buiten van derde party af</translation>
 <translation id="1989112275319619282">Blaai deur</translation>
 <translation id="1994173015038366702">Werf-URL</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Verval oor 1 dag}other{Verval oor # dae}}</translation>
 <translation id="2004697686368036666">Kenmerke op sommige webwerwe sal dalk nie werk nie</translation>
 <translation id="2025115093177348061">Aangevulde realiteit</translation>
 <translation id="2030769033451695672">Tik om na <ph name="URL_OF_THE_CURRENT_TAB" /> terug te keer</translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4008040567710660924">Laat webkoekies vir 'n spesifieke werf toe.</translation>
 <translation id="4046123991198612571">Volgende snit</translation>
+<translation id="4053720452172726777">Pasmaak en beheer Google Chrome</translation>
 <translation id="4149994727733219643">Vereenvoudigde aansig vir webbladsye</translation>
 <translation id="4151930093518524179">Verstekzoem</translation>
 <translation id="4165986682804962316">Werfinstellings</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Werwe kan nie jou webkoekies gebruik om jou blaai-aktiwiteit op verskillende werwe te sien nie, byvoorbeeld om advertensies te publiseer. Kenmerke op sommige werwe sal dalk nie werk nie.</translation>
 <translation id="5553374991681107062">Jongste</translation>
 <translation id="5556459405103347317">Herlaai</translation>
-<translation id="5596627076506792578">Meer opsies</translation>
 <translation id="5649053991847567735">Outomatiese aflaaie</translation>
 <translation id="5668404140385795438">Ignoreer 'n webwerf se versoek om inzoem te verhoed</translation>
 <translation id="5677928146339483299">Geblokkeer</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Afgeskakel in Android-instellings</translation>
 <translation id="7016516562562142042">Toegelaat vir huidige soekenjin</translation>
 <translation id="702275896380648118">Hierdie werf bepaal van watter dinge jy hou, en stel dan advertensies aan ander werwe voor. Hierdie werf kry ook jou advertensieonderwerpe van Chrome af om vir jou relevanter advertensies te wys.</translation>
-<translation id="702463548815491781">Aanbeveel wanneer TalkBack of Skakelaartoegang aan is</translation>
 <translation id="7053983685419859001">Blokkeer</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 gekies}other{# gekies}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> gekies. Opsies is naby aan die bokant van die skerm beskikbaar</translation>

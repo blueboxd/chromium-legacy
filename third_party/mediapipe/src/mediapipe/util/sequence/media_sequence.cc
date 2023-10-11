@@ -531,7 +531,7 @@ std::unique_ptr<mediapipe::Matrix> GetAudioFromFeatureAt(
     const std::string& prefix, const tensorflow::SequenceExample& sequence,
     int index) {
   const auto& flat_data = GetFeatureFloatsAt(prefix, sequence, index);
-  CHECK(HasFeatureNumChannels(prefix, sequence))
+  ABSL_CHECK(HasFeatureNumChannels(prefix, sequence))
       << "GetAudioAt requires num_channels context to be specified as key: "
       << merge_prefix(prefix, kFeatureNumChannelsKey);
   int num_channels = GetFeatureNumChannels(prefix, sequence);

@@ -8,12 +8,12 @@
 
 #include <atomic>
 
+#include "base/apple/mach_logging.h"
+#include "base/apple/scoped_nsautorelease_pool.h"
 #include "base/auto_reset.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/mach_logging.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
 
@@ -127,13 +127,14 @@ MessagePumpKqueue::MessagePumpKqueue()
   // using an EVFILT_USER event, especially when triggered across threads.
   kern_return_t kr = mach_port_allocate(
       mach_task_self(), MACH_PORT_RIGHT_RECEIVE,
-      base::mac::ScopedMachReceiveRight::Receiver(wakeup_).get());
+      base::apple::ScopedMachReceiveRight::Receiver(wakeup_).get());
   MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_port_allocate";
 
   kevent64_s event{};
   if (KqueueTimersSpuriouslyWakeUp()) {
-    kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_PORT_SET,
-                            mac::ScopedMachPortSet::Receiver(port_set_).get());
+    kr =
+        mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_PORT_SET,
+                           apple::ScopedMachPortSet::Receiver(port_set_).get());
     MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_port_allocate PORT_SET";
 
     kr = mach_port_insert_member(mach_task_self(), wakeup_.get(),
@@ -175,7 +176,7 @@ void MessagePumpKqueue::Run(Delegate* delegate) {
     RunSimplified(delegate);
   } else {
     while (keep_running_) {
-      mac::ScopedNSAutoreleasePool pool;
+      apple::ScopedNSAutoreleasePool pool;
 
       bool do_more_work = DoInternalWork(delegate, nullptr);
       if (!keep_running_)
@@ -208,7 +209,7 @@ void MessagePumpKqueue::RunSimplified(Delegate* delegate) {
   DoInternalWork(delegate, nullptr);
 
   while (keep_running_) {
-    mac::ScopedNSAutoreleasePool pool;
+    apple::ScopedNSAutoreleasePool pool;
 
     Delegate::NextWorkInfo next_work_info = delegate->DoWork();
     if (!keep_running_)
@@ -511,7 +512,9 @@ bool MessagePumpKqueue::ProcessEvents(Delegate* delegate, size_t count) {
             static_cast<int>(event->ident));
       }
     } else if (event->filter == EVFILT_MACHPORT) {
-      mach_port_t port = KqueueTimersSpuriouslyWakeUp() ? static_cast<mach_port_t>(event->data) : static_cast<mach_port_t>(event->ident);
+      mach_port_t port = KqueueTimersSpuriouslyWakeUp()
+                             ? static_cast<mach_port_t>(event->data)
+                             : static_cast<mach_port_t>(event->ident);
 
       if (port == wakeup_.get()) {
         // The wakeup event has been received, do not treat this as "doing

@@ -7,7 +7,7 @@
 
 #import <VideoToolbox/VideoToolbox.h>
 
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "media/capture/capture_export.h"
 
 namespace media {
@@ -31,7 +31,7 @@ class CAPTURE_EXPORT PixelBufferTransferer {
   bool TransferImage(CVPixelBufferRef source, CVPixelBufferRef destination);
 
  private:
-  base::ScopedCFTypeRef<VTPixelTransferSessionRef> transfer_session_;
+  base::apple::ScopedCFTypeRef<VTPixelTransferSessionRef> transfer_session_;
 };
 
 }  // namespace media

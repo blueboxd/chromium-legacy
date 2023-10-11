@@ -881,6 +881,9 @@ base::Value::Dict SerializeReferrer(const ReferrerChainEntry& referrer) {
       break;
     case ReferrerChainEntry::COPY_PASTE_USER_INITIATED:
       navigation_initiation = "COPY_PASTE_USER_INITIATED";
+      break;
+    case ReferrerChainEntry::NOTIFICATION_INITIATED:
+      navigation_initiation = "NOTIFICATION_INITIATED";
   }
   referrer_dict.Set("navigation_initiation", navigation_initiation);
 
@@ -1315,6 +1318,9 @@ base::Value::Dict SerializeSafeBrowsingClientProperties(
     case ClientSafeBrowsingReportRequest::PVER5_NATIVE_REAL_TIME:
       url_api_type = "PVER5_NATIVE_REAL_TIME";
       break;
+    case ClientSafeBrowsingReportRequest::ANDROID_SAFEBROWSING_REAL_TIME:
+      url_api_type = "ANDROID_SAFEBROWSING_REAL_TIME";
+      break;
     case ClientSafeBrowsingReportRequest::PVER3_NATIVE:
     case ClientSafeBrowsingReportRequest::FLYWHEEL:
       NOTREACHED();
@@ -1694,6 +1700,9 @@ std::string SerializeHitReport(const HitReport& hit_report) {
       break;
     case ThreatSource::NATIVE_PVER5_REAL_TIME:
       threat_source = "NATIVE_PVER5_REAL_TIME";
+      break;
+    case ThreatSource::ANDROID_SAFEBROWSING_REAL_TIME:
+      threat_source = "ANDROID_SAFEBROWSING_REAL_TIME";
       break;
     case ThreatSource::UNKNOWN:
       threat_source = "UNKNOWN";
@@ -2515,6 +2524,33 @@ std::string SerializeContentAnalysisRequest(
       break;
     case enterprise_connectors::FILE_TRANSFER:
       request_dict.Set("analysis_connector", "FILE_TRANSFER");
+      break;
+  }
+
+  switch (request.reason()) {
+    case enterprise_connectors::ContentAnalysisRequest::UNKNOWN:
+      request_dict.Set("reason", "UNKNOWN");
+      break;
+    case enterprise_connectors::ContentAnalysisRequest::CLIPBOARD_PASTE:
+      request_dict.Set("reason", "CLIPBOARD_PASTE");
+      break;
+    case enterprise_connectors::ContentAnalysisRequest::DRAG_AND_DROP:
+      request_dict.Set("reason", "DRAG_AND_DROP");
+      break;
+    case enterprise_connectors::ContentAnalysisRequest::FILE_PICKER_DIALOG:
+      request_dict.Set("reason", "FILE_PICKER_DIALOG");
+      break;
+    case enterprise_connectors::ContentAnalysisRequest::PRINT_PREVIEW_PRINT:
+      request_dict.Set("reason", "PRINT_PREVIEW_PRINT");
+      break;
+    case enterprise_connectors::ContentAnalysisRequest::SYSTEM_DIALOG_PRINT:
+      request_dict.Set("reason", "SYSTEM_DIALOG_PRINT");
+      break;
+    case enterprise_connectors::ContentAnalysisRequest::NORMAL_DOWNLOAD:
+      request_dict.Set("reason", "NORMAL_DOWNLOAD");
+      break;
+    case enterprise_connectors::ContentAnalysisRequest::SAVE_AS_DOWNLOAD:
+      request_dict.Set("reason", "SAVE_AS_DOWNLOAD");
       break;
   }
 

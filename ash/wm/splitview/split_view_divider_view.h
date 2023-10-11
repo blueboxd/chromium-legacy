@@ -36,7 +36,6 @@ class SplitViewDividerView : public views::View,
 
   // views::View:
   void Layout() override;
-  void OnThemeChanged() override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -66,7 +65,8 @@ class SplitViewDividerView : public views::View,
   // Called to update the bounds of the `snap_group_expanded_menu_widget_`.
   void MaybeUpdateExpandedMenuWidgetBounds();
 
-  raw_ptr<SplitViewController, ExperimentalAsh> split_view_controller_;
+  raw_ptr<SplitViewController, DanglingUntriaged | ExperimentalAsh>
+      split_view_controller_;
   raw_ptr<SplitViewDividerHandlerView, ExperimentalAsh> divider_handler_view_ =
       nullptr;
   raw_ptr<SplitViewDivider, DanglingUntriaged | ExperimentalAsh> divider_;

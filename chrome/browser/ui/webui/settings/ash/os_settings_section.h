@@ -8,14 +8,14 @@
 #include <string>
 #include <vector>
 
+#include "ash/webui/settings/public/constants/routes.mojom.h"
+#include "ash/webui/settings/public/constants/setting.mojom.h"
 #include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/ui/webui/settings/ash/search/mojom/search.mojom.h"
-#include "chrome/browser/ui/webui/settings/ash/search/search_concept.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
+#include "chrome/browser/ui/webui/ash/settings/search/mojom/search.mojom.h"
+#include "chrome/browser/ui/webui/ash/settings/search/search_concept.h"
 
 class Profile;
 
@@ -181,7 +181,8 @@ class OsSettingsSection {
                                            OsSettingsIdentifier id,
                                            const std::string& url_to_modify);
 
-  const raw_ptr<Profile, ExperimentalAsh> profile_ = nullptr;
+  const raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> profile_ =
+      nullptr;
   const raw_ptr<SearchTagRegistry, ExperimentalAsh> search_tag_registry_ =
       nullptr;
 };

@@ -13,8 +13,9 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/dips/dips_features.h"
 #include "chrome/browser/dips/dips_utils.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/dips_utils.h"
 #include "services/network/public/mojom/clear_data_filter.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
@@ -101,6 +102,26 @@ void DIPSStorage::Write(const DIPSState& state) {
   db_->Write(state.site(), state.site_storage_times(),
              state.user_interaction_times(), state.stateful_bounce_times(),
              state.bounce_times(), state.web_authn_assertion_times());
+}
+
+absl::optional<PopupsStateValue> DIPSStorage::ReadPopup(
+    const std::string& first_party_site,
+    const std::string& tracking_site) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(db_);
+
+  return db_->ReadPopup(first_party_site, tracking_site);
+}
+
+bool DIPSStorage::WritePopup(const std::string& first_party_site,
+                             const std::string& tracking_site,
+                             const uint64_t access_id,
+                             const base::Time& popup_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(db_);
+
+  return db_->WritePopup(first_party_site, tracking_site, access_id,
+                         popup_time);
 }
 
 void DIPSStorage::RemoveEvents(base::Time delete_begin,
@@ -271,21 +292,21 @@ std::vector<std::string> DIPSStorage::GetSitesToClear(
     absl::optional<base::TimeDelta> custom_period) const {
   std::vector<std::string> sites_to_clear;
   base::TimeDelta grace_period =
-      custom_period.value_or(dips::kGracePeriod.Get());
+      custom_period.value_or(features::kDIPSGracePeriod.Get());
 
-  switch (dips::kTriggeringAction.Get()) {
-    case DIPSTriggeringAction::kNone: {
+  switch (features::kDIPSTriggeringAction.Get()) {
+    case content::DIPSTriggeringAction::kNone: {
       return {};
     }
-    case DIPSTriggeringAction::kStorage: {
+    case content::DIPSTriggeringAction::kStorage: {
       sites_to_clear = GetSitesThatUsedStorage(grace_period);
       break;
     }
-    case DIPSTriggeringAction::kBounce: {
+    case content::DIPSTriggeringAction::kBounce: {
       sites_to_clear = GetSitesThatBounced(grace_period);
       break;
     }
-    case DIPSTriggeringAction::kStatefulBounce: {
+    case content::DIPSTriggeringAction::kStatefulBounce: {
       sites_to_clear = GetSitesThatBouncedWithState(grace_period);
       break;
     }

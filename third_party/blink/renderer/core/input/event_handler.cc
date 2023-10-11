@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/core/input/event_handling_util.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -89,6 +90,7 @@
 #include "third_party/blink/renderer/core/style/cursor_data.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
+#include "third_party/blink/renderer/core/svg/svg_use_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cursors.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
@@ -107,9 +109,11 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
+
 namespace blink {
 
 namespace {
@@ -168,6 +172,30 @@ gfx::Point DetermineHotSpot(const Image& image,
 
   // If neither is provided, use a default value of (0, 0).
   return gfx::Point();
+}
+
+// Returns whether the hit element contains a title and isn't a SVGUseElement or
+// part of an SVGUseElement.
+bool HasTitleAndNotSVGUseElement(const HitTestResult& hovered_node_result) {
+  // TODO(crbug.com/1473774): Remove flag check if no issues arise.
+  if (!RuntimeEnabledFeatures::SkipShadowHostWhenHoveringForTooltipEnabled()) {
+    return false;
+  }
+  Node* inner_node = hovered_node_result.InnerNode();
+  if (!inner_node) {
+    return false;
+  }
+  auto* element = DynamicTo<Element>(inner_node);
+  if (!element || element->title().IsNull()) {
+    return false;
+  }
+  ShadowRoot* containing_shadow_root = inner_node->ContainingShadowRoot();
+  if (IsA<SVGUseElement>(element) ||
+      (containing_shadow_root &&
+       IsA<SVGUseElement>(containing_shadow_root->host()))) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -575,43 +603,14 @@ absl::optional<ui::Cursor> EventHandler::SelectCursor(
         continue;
       }
 
-      gfx::Point hot_spot = cursor.HotSpot();
-      // For large cursors below the max size, limit their ability to cover UI
-      // elements by removing them when they are not fully contained by the
-      // visual viewport. Careful, we need to make sure to translate coordinate
-      // spaces if we are in an OOPIF.
-      //
-      // TODO(csharrison): Consider sending a fallback cursor in the IPC to the
-      // browser process so we can do that calculation there instead, this would
-      // ensure even a compromised renderer could not obscure browser UI with a
-      // large cursor. Also, consider augmenting the intervention to drop the
-      // cursor for iframes if the cursor image obscures content in the parent
-      // frame.
-      if (size.width() > kMaximumCursorSizeWithoutFallback ||
-          size.height() > kMaximumCursorSizeWithoutFallback) {
-        PhysicalOffset cursor_offset =
-            frame_->ContentLayoutObject()->LocalToAncestorPoint(
-                location.Point(),
-                nullptr,  // no ancestor maps all the way up the hierarchy
-                kTraverseDocumentBoundaries | kApplyRemoteMainFrameTransform) -
-            PhysicalOffset(hot_spot);
-        PhysicalRect cursor_rect(cursor_offset,
-                                 PhysicalSize::FromSizeFFloor(size));
-        PhysicalRect frame_rect(page->GetVisualViewport().VisibleContentRect());
-        frame_->ContentLayoutObject()->MapToVisualRectInAncestorSpace(
-            nullptr, frame_rect);
-        if (!frame_rect.Contains(cursor_rect)) {
-          continue;
-        }
-      }
+      const float device_scale_factor =
+          page->GetChromeClient().GetScreenInfo(*frame_).device_scale_factor;
 
       // If the image is an SVG, then adjust the scale to reflect the device
       // scale factor so that the SVG can be rasterized in the native
       // resolution and scaled down to the correct size for the cursor.
       scoped_refptr<Image> svg_image_holder;
       if (auto* svg_image = DynamicTo<SVGImage>(image)) {
-        const float device_scale_factor =
-            page->GetChromeClient().GetScreenInfo(*frame_).device_scale_factor;
         scale *= device_scale_factor;
         // Re-scale back from DIP to device pixels.
         size.Scale(scale);
@@ -626,12 +625,59 @@ absl::optional<ui::Cursor> EventHandler::SelectCursor(
       }
 
       // Convert from DIP to physical pixels.
-      hot_spot = gfx::ScaleToRoundedPoint(hot_spot, scale);
+      gfx::Point hot_spot = gfx::ScaleToRoundedPoint(cursor.HotSpot(), scale);
 
       const bool hot_spot_specified = cursor.HotSpotSpecified();
-      return ui::Cursor::NewCustom(
+      ui::Cursor custom_cursor = ui::Cursor::NewCustom(
           image->AsSkBitmapForCurrentFrame(kRespectImageOrientation),
           DetermineHotSpot(*image, hot_spot_specified, hot_spot), scale);
+
+      // For large cursors below the max size, limit their ability to cover UI
+      // elements by removing them when they are not fully contained by the
+      // visual viewport. Careful, we need to make sure to translate coordinate
+      // spaces if we are in an OOPIF.
+      //
+      // TODO(csharrison): Consider sending a fallback cursor in the IPC to the
+      // browser process so we can do that calculation there instead, this would
+      // ensure even a compromised renderer could not obscure browser UI with a
+      // large cursor. Also, consider augmenting the intervention to drop the
+      // cursor for iframes if the cursor image obscures content in the parent
+      // frame.
+      gfx::SizeF custom_bitmap_size(custom_cursor.custom_bitmap().width(),
+                                    custom_cursor.custom_bitmap().height());
+      custom_bitmap_size.Scale(1.f / custom_cursor.image_scale_factor());
+      if (custom_bitmap_size.width() > kMaximumCursorSizeWithoutFallback ||
+          custom_bitmap_size.height() > kMaximumCursorSizeWithoutFallback) {
+        PhysicalOffset ancestor_location =
+            frame_->ContentLayoutObject()->LocalToAncestorPoint(
+                location.Point(),
+                nullptr,  // no ancestor maps all the way up the hierarchy
+                kTraverseDocumentBoundaries | kApplyRemoteMainFrameTransform);
+
+        // Check the cursor rect with device and accessibility scaling applied.
+        const float scale_factor =
+            cursor_accessibility_scale_factor_ *
+            (image->IsSVGImage() ? 1.f : device_scale_factor);
+        gfx::SizeF scaled_size(custom_bitmap_size);
+        scaled_size.Scale(scale_factor);
+        gfx::PointF scaled_hot_spot(custom_cursor.custom_hotspot());
+        scaled_hot_spot.Scale(scale_factor /
+                              custom_cursor.image_scale_factor());
+        PhysicalRect cursor_rect(
+            ancestor_location -
+                PhysicalOffset::FromPointFFloor(scaled_hot_spot),
+            PhysicalSize::FromSizeFFloor(scaled_size));
+
+        PhysicalRect frame_rect(page->GetVisualViewport().VisibleContentRect());
+        frame_->ContentLayoutObject()->MapToVisualRectInAncestorSpace(
+            nullptr, frame_rect);
+
+        if (!frame_rect.Contains(cursor_rect)) {
+          continue;
+        }
+      }
+
+      return custom_cursor;
     }
   }
 
@@ -733,10 +779,8 @@ WebInputEventResult EventHandler::HandlePointerEvent(
     const WebPointerEvent& web_pointer_event,
     const Vector<WebPointerEvent>& coalesced_events,
     const Vector<WebPointerEvent>& predicted_events) {
-  WebInputEventResult event_result = pointer_event_manager_->HandlePointerEvent(
+  return pointer_event_manager_->HandlePointerEvent(
       web_pointer_event, coalesced_events, predicted_events);
-  gesture_manager_->NotifyPointerEventHandled(web_pointer_event);
-  return event_result;
 }
 
 WebInputEventResult EventHandler::HandleMousePressEvent(
@@ -793,9 +837,23 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     return result;
   }
 
+  if (discarded_events_.mouse_down_target != kInvalidDOMNodeId &&
+      discarded_events_.mouse_down_target ==
+          DOMNodeIds::IdForNode(mev.InnerNode()) &&
+      mouse_event.TimeStamp() - discarded_events_.mouse_down_time <
+          event_handling_util::kDiscardedEventMistakeInterval) {
+    mev.InnerNode()->GetDocument().CountUse(
+        WebFeature::kInputEventToRecentlyMovedIframeMistakenlyDiscarded);
+  }
   if (event_handling_util::ShouldDiscardEventTargetingFrame(mev.Event(),
                                                             *frame_)) {
+    discarded_events_.mouse_down_target =
+        DOMNodeIds::IdForNode(mev.InnerNode());
+    discarded_events_.mouse_down_time = mouse_event.TimeStamp();
     return WebInputEventResult::kHandledSuppressed;
+  } else {
+    discarded_events_.mouse_down_target = kInvalidDOMNodeId;
+    discarded_events_.mouse_down_time = base::TimeTicks();
   }
 
   LocalFrame::NotifyUserActivation(
@@ -892,7 +950,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
       mouse_event.button == WebPointerProperties::Button::kLeft) {
     DCHECK_EQ(WebInputEvent::Type::kMouseDown, mouse_event.GetType());
     HitTestResult result = mev.GetHitTestResult();
-    result.SetToShadowHostIfInRestrictedShadowRoot();
+    result.SetToShadowHostIfInUAShadowRoot();
     frame_->GetChromeClient().OnMouseDown(*result.InnerNode());
   }
 
@@ -922,7 +980,11 @@ WebInputEventResult EventHandler::HandleMouseMoveEvent(
       layer_scrollable_area->MouseMovedInContentArea();
   }
 
-  hovered_node_result.SetToShadowHostIfInRestrictedShadowRoot();
+  // Should not convert the hit shadow element to its shadow host, so that
+  // tooltips in the shadow tree appear correctly.
+  if (!HasTitleAndNotSVGUseElement(hovered_node_result)) {
+    hovered_node_result.SetToShadowHostIfInUAShadowRoot();
+  }
   page->GetChromeClient().MouseDidMoveOverElement(*frame_, location,
                                                   hovered_node_result);
 
@@ -1569,9 +1631,28 @@ WebInputEventResult EventHandler::HandleGestureEvent(
 
 WebInputEventResult EventHandler::HandleGestureEventInFrame(
     const GestureEventWithHitTestResults& targeted_event) {
+  bool is_tap =
+      targeted_event.Event().GetType() == WebInputEvent::Type::kGestureTap;
+  if (is_tap && discarded_events_.tap_target != kInvalidDOMNodeId &&
+      discarded_events_.tap_target ==
+          DOMNodeIds::IdForNode(targeted_event.InnerNode()) &&
+      targeted_event.Event().TimeStamp() - discarded_events_.tap_time <
+          event_handling_util::kDiscardedEventMistakeInterval) {
+    targeted_event.InnerNode()->GetDocument().CountUse(
+        WebFeature::kInputEventToRecentlyMovedIframeMistakenlyDiscarded);
+  }
   if (event_handling_util::ShouldDiscardEventTargetingFrame(
           targeted_event.Event(), *frame_)) {
+    if (is_tap) {
+      discarded_events_.tap_target =
+          DOMNodeIds::IdForNode(targeted_event.InnerNode());
+      discarded_events_.tap_time = targeted_event.Event().TimeStamp();
+    }
     return WebInputEventResult::kHandledSuppressed;
+  }
+  if (is_tap) {
+    discarded_events_.tap_target = kInvalidDOMNodeId;
+    discarded_events_.tap_time = base::TimeTicks();
   }
   return gesture_manager_->HandleGestureEventInFrame(targeted_event);
 }

@@ -133,6 +133,12 @@ std::unique_ptr<PrefService> PrefServiceForTesting(
   return factory.Create(registry);
 }
 
+[[nodiscard]] FormData CreateTestAddressFormData(const char* unique_id) {
+  FormData form;
+  CreateTestAddressFormData(&form, unique_id);
+  return form;
+}
+
 void CreateTestAddressFormData(FormData* form, const char* unique_id) {
   std::vector<ServerFieldTypeSet> types;
   CreateTestAddressFormData(form, &types, unique_id);
@@ -155,39 +161,34 @@ void CreateTestAddressFormData(FormData* form,
   form->submission_event =
       mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
 
-  FormFieldData field;
-  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("First Name", "firstname", "", "text"));
   types->push_back({NAME_FIRST});
-  test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("Middle Name", "middlename", "", "text"));
   types->push_back({NAME_MIDDLE});
-  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("Last Name", "lastname", "", "text"));
   types->push_back({NAME_LAST, NAME_LAST_SECOND});
-  test::CreateTestFormField("Address Line 1", "addr1", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("Address Line 1", "addr1", "", "text"));
   types->push_back({ADDRESS_HOME_LINE1});
-  test::CreateTestFormField("Address Line 2", "addr2", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("Address Line 2", "addr2", "", "text"));
   types->push_back({ADDRESS_HOME_SUBPREMISE, ADDRESS_HOME_LINE2});
-  test::CreateTestFormField("City", "city", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(CreateTestFormField("City", "city", "", "text"));
   types->push_back({ADDRESS_HOME_CITY});
-  test::CreateTestFormField("State", "state", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(CreateTestFormField("State", "state", "", "text"));
   types->push_back({ADDRESS_HOME_STATE});
-  test::CreateTestFormField("Postal Code", "zipcode", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("Postal Code", "zipcode", "", "text"));
   types->push_back({ADDRESS_HOME_ZIP});
-  test::CreateTestFormField("Country", "country", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(CreateTestFormField("Country", "country", "", "text"));
   types->push_back({ADDRESS_HOME_COUNTRY});
-  test::CreateTestFormField("Phone Number", "phonenumber", "", "tel", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("Phone Number", "phonenumber", "", "tel"));
   types->push_back({PHONE_HOME_WHOLE_NUMBER});
-  test::CreateTestFormField("Email", "email", "", "email", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(CreateTestFormField("Email", "email", "", "email"));
   types->push_back({EMAIL_ADDRESS});
 }
 
@@ -318,22 +319,22 @@ std::string GetStrippedValue(const char* value) {
   return base::UTF16ToUTF8(stripped_value);
 }
 
-IBAN GetIBAN() {
-  IBAN iban(base::Uuid::GenerateRandomV4().AsLowercaseString());
+Iban GetIban() {
+  Iban iban(base::Uuid::GenerateRandomV4().AsLowercaseString());
   iban.set_value(base::UTF8ToUTF16(std::string(kIbanValue)));
   iban.set_nickname(u"Nickname for Iban");
   return iban;
 }
 
-IBAN GetIBAN2() {
-  IBAN iban;
+Iban GetIban2() {
+  Iban iban;
   iban.set_value(base::UTF8ToUTF16(std::string(kIbanValue_1)));
   iban.set_nickname(u"My doctor's IBAN");
   return iban;
 }
 
-IBAN GetIBANWithoutNickname() {
-  IBAN iban;
+Iban GetIbanWithoutNickname() {
+  Iban iban;
   iban.set_value(base::UTF8ToUTF16(std::string(kIbanValue_2)));
   return iban;
 }
@@ -383,7 +384,7 @@ CreditCard GetVerifiedCreditCard2() {
 }
 
 CreditCard GetMaskedServerCard() {
-  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  CreditCard credit_card(CreditCard::RecordType::kMaskedServerCard, "a123");
   test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
                           "2109" /* Mastercard */, NextMonth().c_str(),
                           NextYear().c_str(), "1");
@@ -393,7 +394,7 @@ CreditCard GetMaskedServerCard() {
 }
 
 CreditCard GetMaskedServerCard2() {
-  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "b456");
+  CreditCard credit_card(CreditCard::RecordType::kMaskedServerCard, "b456");
   test::SetCreditCardInfo(&credit_card, "Rick Roman", "2109" /* Mastercard */,
                           NextMonth().c_str(), NextYear().c_str(), "");
   credit_card.SetNetworkForMaskedCard(kMasterCard);
@@ -401,8 +402,14 @@ CreditCard GetMaskedServerCard2() {
   return credit_card;
 }
 
+CreditCard GetMaskedServerCardWithCvc() {
+  CreditCard credit_card = GetMaskedServerCard();
+  credit_card.set_cvc(u"123");
+  return credit_card;
+}
+
 CreditCard GetMaskedServerCardWithLegacyId() {
-  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  CreditCard credit_card(CreditCard::RecordType::kMaskedServerCard, "a123");
   test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
                           "2109" /* Mastercard */, NextMonth().c_str(),
                           NextYear().c_str(), "1");
@@ -411,7 +418,7 @@ CreditCard GetMaskedServerCardWithLegacyId() {
 }
 
 CreditCard GetMaskedServerCardWithNonLegacyId() {
-  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, 1);
+  CreditCard credit_card(CreditCard::RecordType::kMaskedServerCard, 1);
   test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
                           "2109" /* Mastercard */, NextMonth().c_str(),
                           NextYear().c_str(), "1");
@@ -420,7 +427,7 @@ CreditCard GetMaskedServerCardWithNonLegacyId() {
 }
 
 CreditCard GetMaskedServerCardVisa() {
-  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  CreditCard credit_card(CreditCard::RecordType::kMaskedServerCard, "a123");
   test::SetCreditCardInfo(&credit_card, "Bonnie Parker", "1111" /* Visa */,
                           NextMonth().c_str(), NextYear().c_str(), "1");
   credit_card.SetNetworkForMaskedCard(kVisaCard);
@@ -428,7 +435,7 @@ CreditCard GetMaskedServerCardVisa() {
 }
 
 CreditCard GetMaskedServerCardAmex() {
-  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "b456");
+  CreditCard credit_card(CreditCard::RecordType::kMaskedServerCard, "b456");
   test::SetCreditCardInfo(&credit_card, "Justin Thyme", "8431" /* Amex */,
                           NextMonth().c_str(), NextYear().c_str(), "1");
   credit_card.SetNetworkForMaskedCard(kAmericanExpressCard);
@@ -436,7 +443,7 @@ CreditCard GetMaskedServerCardAmex() {
 }
 
 CreditCard GetMaskedServerCardWithNickname() {
-  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "c789");
+  CreditCard credit_card(CreditCard::RecordType::kMaskedServerCard, "c789");
   test::SetCreditCardInfo(&credit_card, "Test user", "1111" /* Visa */,
                           NextMonth().c_str(), NextYear().c_str(), "1");
   credit_card.SetNetworkForMaskedCard(kVisaCard);
@@ -452,7 +459,7 @@ CreditCard GetMaskedServerCardEnrolledIntoVirtualCardNumber() {
 }
 
 CreditCard GetFullServerCard() {
-  CreditCard credit_card(CreditCard::FULL_SERVER_CARD, "c123");
+  CreditCard credit_card(CreditCard::RecordType::kFullServerCard, "c123");
   test::SetCreditCardInfo(&credit_card, "Full Carter",
                           "4111111111111111" /* Visa */, NextMonth().c_str(),
                           NextYear().c_str(), "1");
@@ -464,7 +471,7 @@ CreditCard GetVirtualCard() {
   test::SetCreditCardInfo(&credit_card, "Lorem Ipsum",
                           "5555555555554444",  // Mastercard
                           "10", test::NextYear().c_str(), "1");
-  credit_card.set_record_type(CreditCard::RecordType::VIRTUAL_CARD);
+  credit_card.set_record_type(CreditCard::RecordType::kVirtualCard);
   credit_card.set_virtual_card_enrollment_state(
       CreditCard::VirtualCardEnrollmentState::kEnrolled);
   test_api(credit_card).set_network_for_virtual_card(kMasterCard);
@@ -489,7 +496,7 @@ CreditCard GetRandomCreditCard(CreditCard::RecordType record_type) {
   AutofillClock::Now().LocalExplode(&now);
 
   CreditCard credit_card =
-      (record_type == CreditCard::LOCAL_CARD)
+      (record_type == CreditCard::RecordType::kLocalCard)
           ? CreditCard(base::Uuid::GenerateRandomV4().AsLowercaseString(),
                        kEmptyOrigin)
           : CreditCard(
@@ -499,7 +506,7 @@ CreditCard GetRandomCreditCard(CreditCard::RecordType record_type) {
       &credit_card, "Justin Thyme", GetRandomCardNumber().c_str(),
       base::StringPrintf("%d", base::RandInt(1, 12)).c_str(),
       base::StringPrintf("%d", now.year + base::RandInt(1, 4)).c_str(), "1");
-  if (record_type == CreditCard::MASKED_SERVER_CARD) {
+  if (record_type == CreditCard::RecordType::kMaskedServerCard) {
     credit_card.SetNetworkForMaskedCard(
         kNetworks[base::RandInt(0, kNumNetworks - 1)]);
   }
@@ -730,11 +737,13 @@ void SetCreditCardInfo(CreditCard* credit_card,
                        const char* card_number,
                        const char* expiration_month,
                        const char* expiration_year,
-                       const std::string& billing_address_id) {
+                       const std::string& billing_address_id,
+                       const std::u16string& cvc) {
   check_and_set(credit_card, CREDIT_CARD_NAME_FULL, name_on_card);
   check_and_set(credit_card, CREDIT_CARD_NUMBER, card_number);
   check_and_set(credit_card, CREDIT_CARD_EXP_MONTH, expiration_month);
   check_and_set(credit_card, CREDIT_CARD_EXP_4_DIGIT_YEAR, expiration_year);
+  credit_card->set_cvc(cvc);
   credit_card->set_billing_address_id(billing_address_id);
 }
 
@@ -751,7 +760,7 @@ void SetServerCreditCards(AutofillTable* table,
                           const std::vector<CreditCard>& cards) {
   std::vector<CreditCard> as_masked_cards = cards;
   for (CreditCard& card : as_masked_cards) {
-    card.set_record_type(CreditCard::MASKED_SERVER_CARD);
+    card.set_record_type(CreditCard::RecordType::kMaskedServerCard);
     card.SetNumber(card.LastFourDigits());
     card.SetNetworkForMaskedCard(card.network());
     card.set_instrument_id(card.instrument_id());
@@ -761,8 +770,9 @@ void SetServerCreditCards(AutofillTable* table,
   table->SetServerCreditCards(as_masked_cards);
 
   for (const CreditCard& card : cards) {
-    if (card.record_type() != CreditCard::FULL_SERVER_CARD)
+    if (card.record_type() != CreditCard::RecordType::kFullServerCard) {
       continue;
+    }
     ASSERT_TRUE(table->UnmaskServerCreditCard(card, card.number()));
   }
 }

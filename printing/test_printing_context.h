@@ -39,8 +39,11 @@ class TestPrintingContextDelegate : public PrintingContext::Delegate {
 // PrintBackend::SetPrintBackendForTesting() to avoid using a real PrintBackend.
 class TestPrintingContext : public PrintingContext {
  public:
-  using OnNewDocumentCallback =
-      base::RepeatingCallback<void(const PrintSettings&)>;
+  using OnNewDocumentCallback = base::RepeatingCallback<void(
+#if BUILDFLAG(IS_MAC)
+      bool destination_is_preview,
+#endif
+      const PrintSettings&)>;
 
   TestPrintingContext(Delegate* delegate, bool skip_system_calls);
   TestPrintingContext(const TestPrintingContext&) = delete;
@@ -116,6 +119,10 @@ class TestPrintingContext : public PrintingContext {
 #endif
 
  private:
+  mojom::ResultCode AskUserForSettingsImpl(int max_pages,
+                                           bool has_selection,
+                                           bool is_scripted);
+
   // Simulation of platform drivers' default settings.
   base::flat_map<std::string, std::unique_ptr<PrintSettings>> device_settings_;
 
@@ -129,6 +136,13 @@ class TestPrintingContext : public PrintingContext {
   // Simulate this by capturing what the settings are whenever `settings_` is
   // applied to a device context.
   PrintSettings applied_settings_;
+
+#if BUILDFLAG(IS_MAC)
+  // When printing a new document, Preview app is a special macOS destination.
+  // This member is used to track when this was indicated as the destination to
+  // use in `UpdatePrinterSettings()`.
+  bool destination_is_preview_ = false;
+#endif
 
   bool use_default_settings_fails_ = false;
   bool ask_user_for_settings_cancel_ = false;

@@ -105,7 +105,7 @@
 #include "components/user_manager/user_manager.h"
 #else
 #include "chrome/browser/extensions/api/messaging/native_messaging_launch_from_native.h"
-#include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/profiles/profile_picker.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -139,7 +139,7 @@
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS)
-#include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_from_command_line.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_installation_manager.h"
 #endif
 
 using content::BrowserThread;
@@ -656,6 +656,7 @@ void StartupBrowserCreator::LaunchBrowser(
     chrome::startup::IsProcessStartup process_startup,
     chrome::startup::IsFirstRun is_first_run,
     std::unique_ptr<OldLaunchModeRecorder> launch_mode_recorder) {
+  TRACE_EVENT0("ui", "StartupBrowserCreator::LaunchBrowser");
   DCHECK(profile);
 #if BUILDFLAG(IS_WIN)
   DCHECK(!command_line.HasSwitch(credential_provider::kGcpwSigninSwitch));
@@ -701,6 +702,7 @@ void StartupBrowserCreator::LaunchBrowserForLastProfiles(
     chrome::startup::IsFirstRun is_first_run,
     StartupProfileInfo profile_info,
     const Profiles& last_opened_profiles) {
+  TRACE_EVENT0("ui", "StartupBrowserCreator::LaunchBrowserForLastProfiles");
   DCHECK_NE(profile_info.mode, StartupProfileMode::kError);
 
   Profile* profile = profile_info.profile;
@@ -898,9 +900,10 @@ bool StartupBrowserCreator::ShouldLoadProfileWithoutWindow(
     return true;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // If Lacros is the primary web browser, do not open a browser window.
-  if (crosapi::browser_util::IsLacrosPrimaryBrowser())
+  // If Lacros is enabled, do not open an Ash browser window.
+  if (crosapi::browser_util::IsLacrosEnabled()) {
     return true;
+  }
 #endif
 
   return false;
@@ -1072,7 +1075,8 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     }
   }
 
-  if (web_app::HasIwaInstallSwitch(command_line)) {
+  if (web_app::IsolatedWebAppInstallationManager::HasIwaInstallSwitch(
+          command_line)) {
     if (profile_info.mode == StartupProfileMode::kProfilePicker) {
       auto* profile_manager = g_browser_process->profile_manager();
       LOG(ERROR) << "Command line switches to install IWAs are incompatible "
@@ -1086,8 +1090,8 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
                  << "').";
       return false;
     } else {
-      web_app::MaybeInstallIwaFromCommandLine(command_line,
-                                              *privacy_safe_profile);
+      web_app::IsolatedWebAppInstallationManager::
+          MaybeInstallIwaFromCommandLine(command_line, *privacy_safe_profile);
     }
   }
 #endif  //  !BUILDFLAG(IS_CHROMEOS)

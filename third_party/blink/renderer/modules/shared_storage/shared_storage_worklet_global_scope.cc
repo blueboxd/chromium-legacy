@@ -245,8 +245,7 @@ SharedStorageWorkletGlobalScope::SharedStorageWorkletGlobalScope(
     WorkerThread* thread)
     : WorkletGlobalScope(std::move(creation_params),
                          thread->GetWorkerReportingProxy(),
-                         thread,
-                         /*create_microtask_queue=*/true) {
+                         thread) {
   ContextFeatureSettings::From(
       this, ContextFeatureSettings::CreationMode::kCreateIfNotExists)
       ->EnablePrivateAggregationInSharedStorage(
@@ -334,8 +333,12 @@ bool SharedStorageWorkletGlobalScope::FeatureEnabled(
     return true;
   }
 
-  // For unknown features, return false to be on the safe side.
-  return false;
+  if (feature == OriginTrialFeature::kJavaScriptCompileHintsMagicRuntime) {
+    return false;
+  }
+
+  NOTREACHED_NORETURN() << "Attempted to check OriginTrialFeature: "
+                        << static_cast<int32_t>(feature);
 }
 
 void SharedStorageWorkletGlobalScope::Trace(Visitor* visitor) const {

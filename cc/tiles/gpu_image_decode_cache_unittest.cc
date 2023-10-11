@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
@@ -64,19 +65,19 @@ class FakeDiscardableManager {
  public:
   void SetGLES2Interface(viz::TestGLES2Interface* gl) { gl_ = gl; }
   void Initialize(GLuint texture_id) {
-    EXPECT_EQ(textures_.end(), textures_.find(texture_id));
+    EXPECT_TRUE(!base::Contains(textures_, texture_id));
     textures_[texture_id] = kHandleLockedStart;
     live_textures_count_++;
   }
   void Unlock(GLuint texture_id) {
-    EXPECT_NE(textures_.end(), textures_.find(texture_id));
+    EXPECT_TRUE(base::Contains(textures_, texture_id));
     ExpectLocked(texture_id);
     textures_[texture_id]--;
   }
   bool Lock(GLuint texture_id) {
     EnforceLimit();
 
-    EXPECT_NE(textures_.end(), textures_.find(texture_id));
+    EXPECT_TRUE(base::Contains(textures_, texture_id));
     if (textures_[texture_id] >= kHandleUnlocked) {
       textures_[texture_id]++;
       return true;
@@ -85,8 +86,9 @@ class FakeDiscardableManager {
   }
 
   void DeleteTexture(GLuint texture_id) {
-    if (textures_.end() == textures_.find(texture_id))
+    if (!base::Contains(textures_, texture_id)) {
       return;
+    }
 
     ExpectLocked(texture_id);
     textures_[texture_id] = kHandleDeleted;
@@ -100,7 +102,7 @@ class FakeDiscardableManager {
   size_t live_textures_count() const { return live_textures_count_; }
 
   void ExpectLocked(GLuint texture_id) {
-    EXPECT_TRUE(textures_.end() != textures_.find(texture_id));
+    EXPECT_TRUE(base::Contains(textures_, texture_id));
 
     // Any value > kHandleLockedStart represents a locked texture. As we
     // increment this value with each lock, we need the entire range and can't
@@ -1548,7 +1550,20 @@ TEST_P(GpuImageDecodeCacheTest, GetHdrDecodedImageForDrawToSdr) {
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_TRUE(decoded_draw_image.is_budgeted());
-  EXPECT_NE(decoded_draw_image.image()->colorType(), kRGBA_F16_SkColorType);
+
+  // When testing in configurations that do not support rendering to F16, this
+  // will fall back to N32.
+  if (use_transfer_cache_) {
+    EXPECT_TRUE(decoded_draw_image.image()->colorType() ==
+                    kRGBA_F16_SkColorType ||
+                decoded_draw_image.image()->colorType() == kN32_SkColorType);
+  } else {
+    // Some non-OOP-R paths unconditionally create RGBA_8888 textures.
+    EXPECT_TRUE(
+        decoded_draw_image.image()->colorType() == kRGBA_F16_SkColorType ||
+        decoded_draw_image.image()->colorType() == kN32_SkColorType ||
+        decoded_draw_image.image()->colorType() == kRGBA_8888_SkColorType);
+  }
 
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 

@@ -125,7 +125,7 @@ inline const tensorflow::Feature& GetContext(
   // proto map's at function also checks whether key is present, but it doesn't
   // print the missing key when it check-fails.
   const auto it = sequence.context().feature().find(key);
-  CHECK(it != sequence.context().feature().end())
+  ABSL_CHECK(it != sequence.context().feature().end())
       << "Could not find context key " << key << ". Sequence: \n"
       << sequence.DebugString();
   return it->second;

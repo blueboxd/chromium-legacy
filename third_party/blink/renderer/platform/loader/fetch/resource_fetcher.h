@@ -195,9 +195,8 @@ class PLATFORM_EXPORT ResourceFetcher
     return cached_resources_map_;
   }
 
-  const HeapHashSet<Member<Resource>> MoveResourceStrongReferences() {
-    return std::move(document_resource_strong_refs_);
-  }
+  const HeapHashSet<Member<Resource>> MoveResourceStrongReferences();
+  bool HasStrongReferenceForTesting(Resource* resource);
 
   enum class ImageLoadBlockingPolicy {
     kDefault,
@@ -372,13 +371,10 @@ class PLATFORM_EXPORT ResourceFetcher
   bool StartLoad(Resource*,
                  ResourceRequestBody,
                  ImageLoadBlockingPolicy,
-                 RenderBlockingBehavior);
+                 RenderBlockingBehavior,
+                 absl::optional<mojom::blink::WebFeature> count_orb_block_as);
 
   void InitializeRevalidation(ResourceRequest&, Resource*);
-  // When |security_origin| of the ResourceLoaderOptions is not a nullptr, it'll
-  // be used instead of the associated FetchContext's SecurityOrigin.
-  scoped_refptr<const SecurityOrigin> GetSourceOrigin(
-      const ResourceLoaderOptions&) const;
   void AddToMemoryCacheIfNeeded(const FetchParameters&, Resource*);
   Resource* CreateResourceForLoading(const FetchParameters&,
                                      const ResourceFactory&);
@@ -518,7 +514,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void WarnUnusedPreloads();
 
-  void RemoveResourceStrongReference(Resource* image_resource);
+  void RemoveResourceStrongReference(Resource* resource);
 
   // Information about a resource fetch that had started but not completed yet.
   // Would be added to the response data when the response arrives.
@@ -570,6 +566,7 @@ class PLATFORM_EXPORT ResourceFetcher
   // document_resource_strong_refs_ keeps strong references for fonts, images,
   // scripts and stylesheets within their freshness lifetime.
   HeapHashSet<Member<Resource>> document_resource_strong_refs_;
+  size_t document_resource_strong_refs_total_size_ = 0;
 
   // |image_resources_| is the subset of all image resources for the document.
   HeapHashSet<WeakMember<Resource>> image_resources_;
@@ -642,8 +639,8 @@ class PLATFORM_EXPORT ResourceFetcher
   SubresourceLoadMetrics subresource_load_metrics_;
 
   // Number of of not-small images that get a priority boost.
-  // TODO(http://crbug.com/1431169): change this to a const after experiments
-  // determine an approopriate value.
+  // TODO(http://crbug.com/1431169): change this to a const after the
+  // feature flag is removed.
   uint32_t boosted_image_target_ = 0;
 
   // Number of images that have had their priority boosted by heuristics.

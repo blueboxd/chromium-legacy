@@ -22,6 +22,7 @@
 #include "base/supports_user_data.h"
 #include "base/uuid.h"
 #include "components/commerce/core/account_checker.h"
+#include "components/commerce/core/commerce_types.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -122,34 +123,6 @@ class WebWrapper;
 enum class SubscriptionType;
 struct CommerceSubscription;
 
-// Information returned by the product info APIs.
-struct ProductInfo {
- public:
-  ProductInfo();
-  ProductInfo(const ProductInfo&);
-  ProductInfo& operator=(const ProductInfo&);
-  ~ProductInfo();
-
-  std::string title;
-  std::string product_cluster_title;
-  GURL image_url;
-  absl::optional<uint64_t> product_cluster_id;
-  absl::optional<uint64_t> offer_id;
-  std::string currency_code;
-  int64_t amount_micros{0};
-  absl::optional<int64_t> previous_amount_micros;
-  std::string country_code;
-
- private:
-  friend class ShoppingService;
-
-  // This is used to track whether the server provided an image with the rest
-  // of the product info. This value being |true| does not necessarily mean an
-  // image is available in the ProductInfo struct (as it is flag gated) and is
-  // primarily used for recording metrics.
-  bool server_image_available{false};
-};
-
 // A struct that keeps track of cached product info related data about a url.
 struct ProductInfoCacheEntry {
  public:
@@ -174,65 +147,67 @@ struct ProductInfoCacheEntry {
   std::unique_ptr<ProductInfo> product_info;
 };
 
-// Information returned by the merchant info APIs.
-struct MerchantInfo {
-  MerchantInfo();
-  MerchantInfo(const MerchantInfo&);
-  MerchantInfo& operator=(const MerchantInfo&);
-  MerchantInfo(MerchantInfo&&);
-  MerchantInfo& operator=(MerchantInfo&&) = default;
-  ~MerchantInfo();
-
-  float star_rating;
-  uint32_t count_rating;
-  GURL details_page_url;
-  bool has_return_policy;
-  float non_personalized_familiarity_score;
-  bool contains_sensitive_content;
-  bool proactive_message_disabled;
-};
-
-// Position of current price with respect to the typical price range.
-enum class PriceBucket {
+// Types of shopping pages from backend.
+enum class ShoppingPageType {
   kUnknown = 0,
-  kLowPrice = 1,
-  kTypicalPrice = 2,
-  kHighPrice = 3,
-  kMaxValue = kHighPrice,
+  kShoppingPage = 1,
+  kMerchantDomainPage = 2,
+  kMultiProductPage = 3,
+  kSingleProductPage = 4,
+  kProductReviewPage = 5,
+  kProductComparisonPage = 6,
+  kProductTopNPage = 7,
+  kSoldOutPage = 8,
+  kBuyingGuidePage = 9,
+  kMaxValue = kBuyingGuidePage,
 };
 
-// Information returned by the price insights APIs.
-struct PriceInsightsInfo {
-  PriceInsightsInfo();
-  PriceInsightsInfo(const PriceInsightsInfo&);
-  PriceInsightsInfo& operator=(const PriceInsightsInfo&);
-  ~PriceInsightsInfo();
-
-  absl::optional<uint64_t> product_cluster_id;
-  std::string currency_code;
-  absl::optional<int64_t> typical_low_price_micros;
-  absl::optional<int64_t> typical_high_price_micros;
-  absl::optional<std::string> catalog_attributes;
-  std::vector<std::tuple<std::string, int64_t>> catalog_history_prices;
-  absl::optional<GURL> jackpot_url;
-  PriceBucket price_bucket;
-  bool has_multiple_catalogs;
-};
-
-// Callbacks for querying a single URL or observing information from all
-// navigated urls.
-using ProductInfoCallback =
-    base::OnceCallback<void(const GURL&, const absl::optional<ProductInfo>&)>;
-using MerchantInfoCallback =
-    base::OnceCallback<void(const GURL&, absl::optional<MerchantInfo>)>;
-using PriceInsightsInfoCallback =
-    base::OnceCallback<void(const GURL&,
-                            const absl::optional<PriceInsightsInfo>&)>;
+using DiscountsPair = std::pair<GURL, std::vector<DiscountInfo>>;
+using DiscountsOptGuideCallback = base::OnceCallback<void(DiscountsPair)>;
 
 // A callback for getting updated ProductInfo for a bookmark. This provides the
 // bookmark ID being updated, the URL, and the product info.
 using BookmarkProductInfoUpdatedCallback = base::RepeatingCallback<
     void(const base::Uuid&, const GURL&, absl::optional<ProductInfo>)>;
+
+// Under Desktop browser test or interactive ui test, use
+// ShoppingServiceFactory::SetTestingFactory to create a
+// MockShoppingService for testing. The test should use
+// BrowserContextDependencyManager to register a callback to create the
+// MockShoppingService when the BrowserContext is created.
+//
+// Example of an InteractiveBrowserTest setup for using a MockShoppingService:
+//
+// clang-format off
+// #include "components/commerce/core/mock_shopping_service.h"
+// #include "components/keyed_service/content/browser_context_dependency_manager.h"
+//
+// class MyTest : public InteractiveBrowserTest {
+//   void SetUpInProcessBrowserTestFixture() override {
+//     create_services_subscription_ =
+//         BrowserContextDependencyManager::GetInstance()
+//             ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
+//                 &MyTest::OnWillCreateBrowserContextServices,
+//                 weak_ptr_factory_.GetWeakPtr()));
+//   }
+//
+//   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
+//     commerce::ShoppingServiceFactory::GetInstance()->SetTestingFactory(
+//         context, base::BindRepeating([](content::BrowserContext* context) {
+//           return commerce::MockShoppingService::Build();
+//         }));
+//   }
+//
+//  private:
+//   base::CallbackListSubscription create_services_subscription_;
+//   base::WeakPtrFactory<MyTest> weak_ptr_factory_{this};
+// };
+//
+// To get the MockShoppingService:
+// auto* mock_shopping_service = static_cast<commerce::MockShoppingService*>(
+//     commerce::ShoppingServiceFactory::GetForBrowserContext(
+//         browser()->profile()));
+// clang-format on
 
 class ShoppingService : public KeyedService, public base::SupportsUserData {
  public:
@@ -294,6 +269,17 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   // null if there is none available.
   virtual void GetPriceInsightsInfoForUrl(const GURL& url,
                                           PriceInsightsInfoCallback callback);
+
+  // This API fetches valid discounts information on the provided |urls| and
+  // passes the payload back to the caller via |callback|. Call will run after
+  // the fetch is completed.
+  virtual void GetDiscountInfoForUrls(const std::vector<GURL>& urls,
+                                      DiscountInfoCallback callback);
+
+  // This API fetches whether the provided |url| is a shopping-related page and
+  // passes the result back to the caller via |callback|. Call will run after
+  // the fetch is completed.
+  virtual void IsShoppingPage(const GURL& url, IsShoppingPageCallback callback);
 
   // Create new subscriptions in batch if needed, and will notify |callback| if
   // the operation completes successfully.
@@ -383,6 +369,14 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   // this method can change at runtime, so it should not be used when deciding
   // whether to create critical, feature-related infrastructure.
   virtual bool IsPriceInsightsEligible();
+
+  // This is a feature check for "show discounts on navigation", which will
+  // return true if the user has the feature flag enabled, is signed-in and
+  // synced, has MSBB enabled, and (if applicable) is in an eligible country and
+  // locale. The value returned by this method can change at runtime, so it
+  // should not be used when deciding whether to create critical,
+  // feature-related infrastructure.
+  virtual bool IsDiscountEligibleToShowOnNavigation();
 
   // Get a weak pointer for this service instance.
   base::WeakPtr<ShoppingService> AsWeakPtr();
@@ -528,11 +522,40 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   // be used.
   bool IsPriceInsightsInfoApiEnabled();
 
+  // Whether APIs like |IsShoppingPage| are enabled and allowed to be used.
+  bool IsShoppingPageTypesApiEnabled();
+
   void HandleOptGuidePriceInsightsInfoResponse(
       const GURL& url,
       PriceInsightsInfoCallback callback,
       optimization_guide::OptimizationGuideDecision decision,
       const optimization_guide::OptimizationMetadata& metadata);
+
+  void HandleOptGuideShoppingPageTypesResponse(
+      const GURL& url,
+      IsShoppingPageCallback callback,
+      optimization_guide::OptimizationGuideDecision decision,
+      const optimization_guide::OptimizationMetadata& metadata);
+
+  // Whether APIs like |GetDiscountInfoForUrls| are enabled and allowed to be
+  // used.
+  bool IsDiscountInfoApiEnabled();
+
+  void GetDiscountInfoFromOptGuide(const GURL& url,
+                                   DiscountsOptGuideCallback callback);
+
+  void HandleOptGuideDiscountInfoResponse(
+      const GURL& url,
+      DiscountsOptGuideCallback callback,
+      optimization_guide::OptimizationGuideDecision decision,
+      const optimization_guide::OptimizationMetadata& metadata);
+
+  std::vector<DiscountInfo> OptGuideResultToDiscountInfos(
+      const optimization_guide::OptimizationMetadata& metadata);
+
+  void OnGetAllDiscountsFromOptGuide(const std::vector<GURL>& urls,
+                                     DiscountInfoCallback callback,
+                                     const std::vector<DiscountsPair>& results);
 
   // The two-letter country code as detected on startup.
   std::string country_on_startup_;

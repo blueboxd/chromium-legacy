@@ -405,6 +405,7 @@ template <typename T, typename I, typename... TArgs>
 // Does not create the directory if it does not exist.
 [[nodiscard]] absl::optional<base::FilePath> GetInstallDirectoryX86(
     UpdaterScope scope);
+
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_UTIL_WIN_UTIL_H_

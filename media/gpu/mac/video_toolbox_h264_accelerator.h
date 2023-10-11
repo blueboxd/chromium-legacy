@@ -11,12 +11,13 @@
 #include <memory>
 #include <vector>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
 #include "base/functional/callback.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/sequence_checker.h"
 #include "media/gpu/h264_decoder.h"
+#include "media/gpu/mac/video_toolbox_decode_metadata.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace media {
@@ -26,9 +27,10 @@ class MediaLog;
 class MEDIA_GPU_EXPORT VideoToolboxH264Accelerator
     : public H264Decoder::H264Accelerator {
  public:
-  using DecodeCB =
-      base::RepeatingCallback<void(base::ScopedCFTypeRef<CMSampleBufferRef>,
-                                   scoped_refptr<CodecPicture>)>;
+  using DecodeCB = base::RepeatingCallback<void(
+      base::apple::ScopedCFTypeRef<CMSampleBufferRef>,
+      VideoToolboxSessionMetadata,
+      scoped_refptr<CodecPicture>)>;
   using OutputCB = base::RepeatingCallback<void(scoped_refptr<CodecPicture>)>;
 
   VideoToolboxH264Accelerator(std::unique_ptr<MediaLog> media_log,
@@ -69,17 +71,17 @@ class MEDIA_GPU_EXPORT VideoToolboxH264Accelerator
   OutputCB output_cb_;
 
   // Raw parameter set bytes that have been observed.
-  base::flat_map<int, std::vector<uint8_t>> seen_sps_data_;
-  base::flat_map<int, std::vector<uint8_t>> seen_pps_data_;
+  base::flat_map<int, std::vector<uint8_t>> seen_sps_data_;  // IDs can be 0-31
+  base::flat_map<int, std::vector<uint8_t>> seen_pps_data_;  // IDs can be 0-255
 
   // Raw parameter set bytes used to produce |active_format_|, so that they
   // can be checked for changes.
   std::vector<uint8_t> active_sps_data_;
   std::vector<uint8_t> active_pps_data_;
 
-  base::ScopedCFTypeRef<CMFormatDescriptionRef> active_format_;
+  base::apple::ScopedCFTypeRef<CMFormatDescriptionRef> active_format_;
 
-  // Accumulated slace data for the current frame.
+  // Accumulated slice data for the current frame.
   std::vector<base::span<const uint8_t>> slice_nalu_data_;
 
   SEQUENCE_CHECKER(sequence_checker_);

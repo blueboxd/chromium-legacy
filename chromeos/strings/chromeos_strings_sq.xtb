@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">Shko te <ph name="BEGIN_LINK1" />faqja e Ndihmës ligjore<ph name="END_LINK1" /> për të kërkuar ndryshime të përmbajtjes për arsye ligjore. Disa prej informacioneve të llogarisë dhe të sistemit mund të dërgohen në Google. Informacionet që na jep do t'i përdorim për zgjidhjen e problemeve teknike për përmirësimin e shërbimeve tona, sipas <ph name="BEGIN_LINK2" />Politikës së privatësisë<ph name="END_LINK2" /> dhe <ph name="BEGIN_LINK3" />Kushteve të shërbimit<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">kalo median shpejt përpara</translation>
 <translation id="1887850431809612466">Rishikimi i harduerit</translation>
+<translation id="1897672602657312171">Shkurtorja pa tastin e kërkimit mund të jetë në konflikt me shkurtoren e një aplikacioni tjetër. Shtyp përsëri këtë shkurtore për të vazhduar ta përdorësh ose shtyp një shkurtore të re duke përdorur tastin e kërkimit.</translation>
 <translation id="1904932688895783618">Këtu janë disa burime të tjera të dobishme:</translation>
 <translation id="1905710495812624430">U kaluan përpjekjet maksimale të lejuara.</translation>
 <translation id="1908234395526491708">Dështimet e kërkesave UDP</translation>
@@ -191,7 +192,7 @@
 <translation id="2324354238778375592">Pluskuese</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Aktivizo "Bluetooth-in" për të zbuluar pajisjet në afërsi</translation>
-<translation id="2346474577291266260">E shkëlqyer (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="2346474577291266260">I shkëlqyer (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="2359808026110333948">Vazhdo</translation>
 <translation id="2364498172489649528">Kaloi</translation>
 <translation id="2367335866686097760">Tasti për organizimin e tasteve</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">Po riniset...</translation>
 <translation id="2533048460510040082">Përmbajtjet e sugjeruara të ndihmës</translation>
 <translation id="2536159006530886390">S'mund të lidhet me internetin.</translation>
-<translation id="2555662516429796509">Shtyp modifikuesit 1-4 dhe 1 tast tjetër në tastierën tënde</translation>
 <translation id="2570743873672969996">Po ekzekuton testin <ph name="TEST_NAME" />...</translation>
 <translation id="2584559707064218956">Për ta konfiguruar, shko te "Cilësimet"</translation>
 <translation id="2597774443162333062">Skedarët do të dërgohen te Google për korrigjimin e gabimeve</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">Çelësi i vërtetimit për TLS</translation>
 <translation id="2713444072780614174">E bardhë</translation>
 <translation id="2717139507051041123">Aktivizo modalitetin e ngjyrave të errëta</translation>
+<translation id="2728460467788544679">Pastro të gjithë historikun e printimeve</translation>
 <translation id="2740531572673183784">Në rregull</translation>
 <translation id="2744221223678373668">Të ndara</translation>
 <translation id="2751739896257479635">Vërtetimi EAP i fazës 2</translation>
 <translation id="2783010256799387990">KALOI</translation>
 <translation id="2787435249130282949">tastiera më e ndritshme</translation>
-<translation id="2789486458103222910">Në rregull</translation>
 <translation id="2805756323405976993">Aplikacionet</translation>
 <translation id="28232023175184696">S'mund të lidhet me internetin. Kliko për të provuar përsëri.</translation>
 <translation id="2859243502336719778">Përditësim kritik</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">Mbrojtësi i ekranit për rrjedhën e reve</translation>
 <translation id="2926057806159140518">Fut emrin e përdoruesit dhe fjalëkalimin ose skano kodin tënd QR</translation>
 <translation id="2940811910881150316">Pajisja nuk mund të testohet. Rihap kapakun për ta provuar.</translation>
+<translation id="2941112035454246133">E ulët</translation>
 <translation id="3008341117444806826">RIFRESKO</translation>
 <translation id="3009958530611748826">Zgjidh një dosje për ruajtje</translation>
 <translation id="3017079585324758401">Sfondi</translation>
@@ -330,7 +331,7 @@
 <translation id="3603829704940252505">Simboli</translation>
 <translation id="3604713164406837697">Ndrysho imazhin e sfondit</translation>
 <translation id="360565022852130722">Rrjeti Wi-Fi është i siguruar me protokollin e dobët WEP 802.1x</translation>
-<translation id="3606583719724308068">Vonesë e lartë në uebsajtet HTTPS</translation>
+<translation id="3606583719724308068">Vonesë e lartë në sajtet e uebit HTTPS</translation>
 <translation id="3607216139080387279">Shfaq mbrojtësin e ekranit</translation>
 <translation id="361575905210396100">Faleminderit për komentet e tua</translation>
 <translation id="3632579075709132555">Aktivizimi/çaktivizimi i ekranit të privatësisë</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">Zgjidhja e pritësit dështoi</translation>
 <translation id="3942420633017001071">Diagnostikimi</translation>
 <translation id="3954678691475912818">Lloji i pajisjes është i panjohur.</translation>
+<translation id="3959413315969265597">Kjo APN nuk mund të aktivizohet. Sigurohu që të të shtohet një APN e parazgjedhur.</translation>
 <translation id="3966286471246132217">Për rezultate më të sakta, mbylli të gjitha aplikacionet derisa të përfundojë testi.</translation>
 <translation id="3967822245660637423">Shkarkimi përfundoi</translation>
 <translation id="3969602104473960991">Fjalëkalimi i ChromeOS u përditësua</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">ul volumin</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> nga <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Përditëso <ph name="DEVICE_NAME" /></translation>
+<translation id="574392208103952083">Mesatar</translation>
 <translation id="5757187557809630523">pjesa tjetër muzikore</translation>
 <translation id="5760715441271661976">Gjendja e portalit</translation>
 <translation id="576835345334454681">Ngritja e ndriçimit të ekranit</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">Albumi i galerisë së artit</translation>
 <translation id="5860033963881614850">Çaktivizuar</translation>
 <translation id="5860491529813859533">Aktivizo</translation>
-<translation id="5866840822086176774">Shumë i fortë</translation>
 <translation id="5876385649737594562">Aktivizoje për të zgjedhur opsionet</translation>
 <translation id="588258955323874662">Ekrani i plotë</translation>
 <translation id="5895138241574237353">Rinis</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">I dobët (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Shko te cilësimet e llogarisë</translation>
-<translation id="6456394469623773452">I mirë</translation>
+<translation id="6461047516875166066">Më thuaj më shumë</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Të skanohet përsëri faqja?}=1{Të skanohet përsëri faqja {PAGE_NUMBER}?}other{Të skanohet përsëri faqja {PAGE_NUMBER}?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287">Menaxhuar nga <ph name="MANAGER" /></translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">Të rivendosen të gjitha shkurtoret te parazgjedhjet?</translation>
 <translation id="7058278511608979688">Mbaro dhe ruaj</translation>
 <translation id="7059230779847288458">Po karikohet, <ph name="TIME_VALUE" /> derisa të mbushet</translation>
+<translation id="7066538517128343186">tasti <ph name="KEY" /></translation>
 <translation id="7068619307603204412">Përgatit pajisjen</translation>
 <translation id="708426984172631313">NDALOI</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -808,7 +811,7 @@
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281657306185710294">Ndjeje puhizën</translation>
 <translation id="7287310195820267359">Koleksionet e imazheve të sfondit</translation>
-<translation id="7297226631177386107">Nuk mund të lidhesh me uebsajtet HTTPS nëpërmjet murit mbrojtës</translation>
+<translation id="7297226631177386107">Nuk mund të lidhesh me sajtet e uebit HTTPS nëpërmjet murit mbrojtës</translation>
 <translation id="7297726121602187087">E gjelbër e errët</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">Lidhu në një rrjet dhe ringarko faqen për të parë imazhin e sfondit.</translation>
 <translation id="8291967909914612644">Shteti i ofruesit të rrjetit bazë</translation>
 <translation id="8294431847097064396">Burimi</translation>
-<translation id="8297006494302853456">I dobët</translation>
 <translation id="8302368968391049045">Mur mbrojtës HTTPS</translation>
 <translation id="8312330582793120272">luaj median</translation>
 <translation id="8318753676953949627">Nuk ka imazhe</translation>
 <translation id="8329018942023753850">aplikacioni i makinës llogaritëse</translation>
 <translation id="8336739000755212683">Ndrysho imazhin e llogarisë së pajisjes</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> ose <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Printimet</translation>
 <translation id="8351855506390808906">Pika e prekjes për organizimin e tasteve</translation>
 <translation id="8352772353338965963">Shto një llogari në identifikimin e shumëfishtë. Të gjitha llogaritë e identifikuara mund të qasen pa fjalëkalim, prandaj ky funksion duhet të përdoret vetëm me llogari të besuara.</translation>
@@ -958,7 +961,7 @@
 <translation id="8476942730579767658">Dritaret dhe tavolinat e punës</translation>
 <translation id="8477551185774834963">Vonesa e DNS-së është pak më lart se pragu i lejueshëm</translation>
 <translation id="8483248364096924578">Adresa e IP-së</translation>
-<translation id="8491311378305535241">Nuk mund të lidhesh me uebsajtet HTTPS nëpërmjet murit mbrojtës nga aplikacionet për Android</translation>
+<translation id="8491311378305535241">Nuk mund të lidhesh me sajtet e uebit HTTPS nëpërmjet murit mbrojtës nga aplikacionet për Android</translation>
 <translation id="8498220429738806196">Matësit e trafikut</translation>
 <translation id="8503813439785031346">Emri i përdoruesit</translation>
 <translation id="8503836310948963452">Edhe vetëm pak minuta...</translation>
@@ -1001,7 +1004,7 @@
 <translation id="8834539327799336565">Të lidhur aktualisht</translation>
 <translation id="8845001906332463065">Kërko ndihmë</translation>
 <translation id="8851859208664803097">U ndalua - Printeri është i paarritshëm</translation>
-<translation id="8855781559874488009">Nuk mund të lidhesh me uebsajtet HTTP nëpërmjet murit mbrojtës</translation>
+<translation id="8855781559874488009">Nuk mund të lidhesh me sajtet e uebit HTTP nëpërmjet murit mbrojtës</translation>
 <translation id="885701979325669005">Hapësira ruajtëse</translation>
 <translation id="885704831271383379">tastiera më e errët</translation>
 <translation id="8863170912498892583">Aktivizo temën e errët</translation>
@@ -1019,7 +1022,7 @@
 <translation id="8923267550422472772">Dita e muajit për rivendosje</translation>
 <translation id="8928727111548978589">Dështoi - Nuk ka letër</translation>
 <translation id="8930521118335213258">Homolog</translation>
-<translation id="8930622219860340959">Wireless</translation>
+<translation id="8930622219860340959">Me valë</translation>
 <translation id="8936793075252196307">Adresa IP e klientit</translation>
 <translation id="8944651180182756621">Ngjyra e nisësit</translation>
 <translation id="894617464444543719">Pajisja është një telefon.</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">Për t'u rilidhur, shko te "Cilësimet"</translation>
 <translation id="9126720536733509015">Ruaj shumë faqe në një skedar PDF</translation>
 <translation id="9133104754938025929">Për të kursyer baterinë, mbrojtësi i ekranit funksionon vetëm gjatë karikimit.</translation>
+<translation id="9133772297793293778">Shtyp modifikuesit 1-4 dhe 1 tast tjetër në tastierën tënde. Për të dalë nga modaliteti i modifikimit, shtyp Alt + Esc.</translation>
 <translation id="9137526406337347448">Shërbimet e Google</translation>
 <translation id="9138630967333032450">Tasti i majtë "Shift"</translation>
 <translation id="9143347780818904997">për <ph name="MINUTES" /> minuta</translation>

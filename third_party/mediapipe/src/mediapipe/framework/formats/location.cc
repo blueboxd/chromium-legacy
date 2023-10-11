@@ -19,13 +19,13 @@
 #include <memory>
 
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/substitute.h"
 #include "mediapipe/framework/formats/annotation/locus.pb.h"
 #include "mediapipe/framework/formats/annotation/rasterization.pb.h"
 #include "mediapipe/framework/port/canonical_errors.h"
 #include "mediapipe/framework/port/integral_types.h"
-#include "mediapipe/framework/port/logging.h"
 #include "mediapipe/framework/port/point2.h"
 #include "mediapipe/framework/port/ret_check.h"
 #include "mediapipe/framework/port/status.h"
@@ -40,7 +40,7 @@ namespace {
 // the location_data, the tightest bounding box, that contains all pixels
 // encoded in the rasterizations.
 Rectangle_i MaskToRectangle(const LocationData& location_data) {
-  CHECK(location_data.mask().has_rasterization());
+  ABSL_CHECK(location_data.mask().has_rasterization());
   const auto& rasterization = location_data.mask().rasterization();
   if (rasterization.interval_size() == 0) {
     return Rectangle_i(0, 0, 0, 0);
@@ -64,7 +64,7 @@ Location::Location() {}
 
 Location::Location(const LocationData& location_data)
     : location_data_(location_data) {
-  CHECK(IsValidLocationData(location_data_));
+  ABSL_CHECK(IsValidLocationData(location_data_));
 }
 
 Location Location::CreateGlobalLocation() {
@@ -159,7 +159,7 @@ Rectangle_i Location::GetBBox<Rectangle_i>() const {
 }
 
 Location& Location::Scale(const float scale) {
-  CHECK(!location_data_.has_mask())
+  ABSL_CHECK(!location_data_.has_mask())
       << "Location mask scaling is not implemented.";
   ABSL_CHECK_GT(scale, 0.0f);
   switch (location_data_.format()) {
@@ -188,7 +188,8 @@ Location& Location::Scale(const float scale) {
       break;
     }
     case LocationData::MASK: {
-      LOG(FATAL) << "Scaling for location data of type MASK is not supported.";
+      ABSL_LOG(FATAL)
+          << "Scaling for location data of type MASK is not supported.";
       break;
     }
   }
@@ -233,7 +234,8 @@ Location& Location::Square(int image_width, int image_height) {
       break;
     }
     case LocationData::MASK: {
-      LOG(FATAL) << "Squaring for location data of type MASK is not supported.";
+      ABSL_LOG(FATAL)
+          << "Squaring for location data of type MASK is not supported.";
       break;
     }
   }
@@ -328,7 +330,7 @@ Location& Location::Crop(const Rectangle_i& crop_box) {
       break;
     }
     case LocationData::RELATIVE_BOUNDING_BOX:
-      LOG(FATAL)
+      ABSL_LOG(FATAL)
           << "Can't crop a relative bounding box using absolute coordinates. "
              "Use the 'Rectangle_f version of Crop() instead";
     case LocationData::MASK: {
@@ -362,7 +364,7 @@ Location& Location::Crop(const Rectangle_f& crop_box) {
       // Do nothing.
       break;
     case LocationData::BOUNDING_BOX:
-      LOG(FATAL)
+      ABSL_LOG(FATAL)
           << "Can't crop an absolute bounding box using relative coordinates. "
              "Use the 'Rectangle_i version of Crop() instead";
     case LocationData::RELATIVE_BOUNDING_BOX: {
@@ -378,8 +380,9 @@ Location& Location::Crop(const Rectangle_f& crop_box) {
       break;
     }
     case LocationData::MASK:
-      LOG(FATAL) << "Can't crop a mask using relative coordinates. Use the "
-                    "'Rectangle_i' version of Crop() instead";
+      ABSL_LOG(FATAL)
+          << "Can't crop a mask using relative coordinates. Use the "
+             "'Rectangle_i' version of Crop() instead";
   }
   return *this;
 }

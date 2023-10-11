@@ -48,6 +48,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/hats/mock_trust_safety_sentiment_service.h"
+#include "chrome/browser/ui/hats/trust_safety_sentiment_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
@@ -129,9 +131,12 @@
 // Delayed warnings feature checks if the Suspicious Site Reporter extension
 // is installed. These includes are to fake-install this extension.
 #include "chrome/browser/extensions/crx_installer.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #endif
 
 using chrome_browser_interstitials::SecurityInterstitialIDNTest;
@@ -441,7 +446,9 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
       const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options,
       bool should_trigger_reporting,
       bool is_proceed_anyway_disabled,
-      bool is_safe_browsing_surveys_enabled)
+      bool is_safe_browsing_surveys_enabled,
+      base::OnceCallback<void(bool, SBThreatType)>
+          trust_safety_sentiment_service_trigger)
       : SafeBrowsingBlockingPage(
             manager,
             web_contents,
@@ -463,6 +470,7 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
             g_browser_process->safe_browsing_service()->trigger_manager(),
             is_proceed_anyway_disabled,
             is_safe_browsing_surveys_enabled,
+            std::move(trust_safety_sentiment_service_trigger),
             /*url_loader_for_testing=*/nullptr),
         wait_for_delete_(false) {
     // Don't wait the whole 3 seconds for the browser test.
@@ -509,6 +517,10 @@ class TestSafeBrowsingBlockingPageFactory
     always_show_back_to_safety_ = value;
   }
 
+  MockTrustSafetySentimentService* GetMockSentimentService() {
+    return mock_sentiment_service_;
+  }
+
   SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
       BaseUIManager* delegate,
       WebContents* web_contents,
@@ -522,6 +534,8 @@ class TestSafeBrowsingBlockingPageFactory
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =
         prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled);
+    bool is_safe_browsing_surveys_enabled =
+        IsSafeBrowsingSurveysEnabled(*prefs);
 
     BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options(
         BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
@@ -535,10 +549,22 @@ class TestSafeBrowsingBlockingPageFactory
         /*is_enhanced_protection_message_enabled=*/true,
         IsSafeBrowsingPolicyManaged(*prefs),
         "cpn_safe_browsing" /* help_center_article_link */);
+
+    mock_sentiment_service_ = static_cast<MockTrustSafetySentimentService*>(
+        TrustSafetySentimentServiceFactory::GetInstance()
+            ->SetTestingFactoryAndUse(
+                Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+                base::BindRepeating(&BuildMockTrustSafetySentimentService)));
+
     return new TestSafeBrowsingBlockingPage(
         delegate, web_contents, main_frame_url, unsafe_resources,
         display_options, should_trigger_reporting, is_proceed_anyway_disabled,
-        IsSafeBrowsingSurveysEnabled(*prefs));
+        is_safe_browsing_surveys_enabled,
+        is_safe_browsing_surveys_enabled
+            ? base::BindOnce(&MockTrustSafetySentimentService::
+                                 InteractedWithSafeBrowsingInterstitial,
+                             base::Unretained(mock_sentiment_service_))
+            : base::NullCallback());
   }
 
   security_interstitials::SecurityInterstitialPage* CreateEnterpriseWarnPage(
@@ -562,6 +588,8 @@ class TestSafeBrowsingBlockingPageFactory
   }
 
  private:
+  raw_ptr<MockTrustSafetySentimentService, DanglingUntriaged>
+      mock_sentiment_service_;
   bool always_show_back_to_safety_;
 };
 
@@ -956,6 +984,10 @@ class SafeBrowsingBlockingPageBrowserTest
 
   void SetAlwaysShowBackToSafety(bool val) {
     raw_blocking_page_factory_->SetAlwaysShowBackToSafety(val);
+  }
+
+  MockTrustSafetySentimentService* mock_sentiment_service() {
+    return raw_blocking_page_factory_->GetMockSentimentService();
   }
 
  protected:
@@ -1426,6 +1458,8 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   safe_browsing::SetSafeBrowsingState(
       browser()->profile()->GetPrefs(),
       safe_browsing::SafeBrowsingState::STANDARD_PROTECTION);
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingSurveysEnabled, false);
   // Start navigation to bad page (kEmptyPage), which will be blocked before it
   // is committed.
   const GURL url = SetupWarningAndNavigate(browser());
@@ -1669,12 +1703,20 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
       1);
 }
 
+// TODO(https://crbug.com/1475285): Flaky on Linux and ChromeOS.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_Histograms_MultipleDangerousIframesInterstitial_DontProceed \
+  DISABLED_Histograms_MultipleDangerousIframesInterstitial_DontProceed
+#else
+#define MAYBE_Histograms_MultipleDangerousIframesInterstitial_DontProceed \
+  Histograms_MultipleDangerousIframesInterstitial_DontProceed
+#endif
 // Test that ensures the SHOW and DONT_PROCEED buckets are logged correctly if
 // multiple subresources are flagged on the same page. Regression test for
 // https://crbug.com/1195411.
 IN_PROC_BROWSER_TEST_P(
     SafeBrowsingBlockingPageBrowserTest,
-    Histograms_MultipleDangerousIframesInterstitial_DontProceed) {
+    MAYBE_Histograms_MultipleDangerousIframesInterstitial_DontProceed) {
   base::HistogramTester histograms;
   SBThreatType threat_type = GetThreatType();
 
@@ -1823,6 +1865,8 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        VerifyHitReportNotSentOnIncognito) {
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingSurveysEnabled, false);
   // The extended reporting opt-in is presented in the interstitial for malware,
   // phishing, and UwS threats.
   const bool expect_threat_details =
@@ -2491,6 +2535,74 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingHatsSurveyBrowserTest,
   observer.WaitForNavigationFinished();
 }
 
+class TrustSafetySentimentSurveyV2BrowserTest
+    : public SafeBrowsingBlockingPageBrowserTest {
+ public:
+  TrustSafetySentimentSurveyV2BrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kTrustSafetySentimentSurveyV2);
+  }
+  ~TrustSafetySentimentSurveyV2BrowserTest() override = default;
+
+  void SetUp() override {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    metrics::DesktopSessionDurationTracker::Initialize();
+#endif
+    SafeBrowsingBlockingPageBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    metrics::DesktopSessionDurationTracker::CleanupForTesting();
+#endif
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    TrustSafetySentimentSurveyV2BrowserTestWithThreatTypeAndIsolationSetting,
+    TrustSafetySentimentSurveyV2BrowserTest,
+    testing::Combine(
+        testing::Values(SB_THREAT_TYPE_URL_PHISHING,  // Threat types
+                        SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
+                        SB_THREAT_TYPE_URL_MALWARE,
+                        SB_THREAT_TYPE_URL_UNWANTED),
+        testing::Bool()));  // If isolate all sites for testing.
+
+IN_PROC_BROWSER_TEST_P(TrustSafetySentimentSurveyV2BrowserTest,
+                       TrustSafetySentimentTriggerredOnProceed) {
+  GURL url = SetupWarningAndNavigate(browser());
+  EXPECT_CALL(*mock_sentiment_service(),
+              InteractedWithSafeBrowsingInterstitial(/*did_proceed=*/true,
+                                                     GetThreatType()));
+  EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
+  AssertNoInterstitial(true);  // Assert the interstitial is gone.
+}
+
+IN_PROC_BROWSER_TEST_P(TrustSafetySentimentSurveyV2BrowserTest,
+                       TrustSafetySentimentTriggerredOnPrimaryButtonClick) {
+  GURL url = SetupWarningAndNavigate(browser());
+  EXPECT_CALL(*mock_sentiment_service(),
+              InteractedWithSafeBrowsingInterstitial(/*did_proceed=*/false,
+                                                     GetThreatType()));
+  EXPECT_TRUE(ClickAndWaitForDetach("primary-button"));
+  AssertNoInterstitial(true);  // Assert the interstitial is gone.
+}
+
+IN_PROC_BROWSER_TEST_P(TrustSafetySentimentSurveyV2BrowserTest,
+                       TrustSafetySentimentTriggeredOnCloseInterstitialTab) {
+  content::TestNavigationObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  GURL url = SetupWarningAndNavigate(browser());
+  EXPECT_CALL(*mock_sentiment_service(),
+              InteractedWithSafeBrowsingInterstitial(/*did_proceed=*/false,
+                                                     GetThreatType()));
+  chrome::CloseTab(browser());
+  observer.WaitForNavigationFinished();
+}
+
 class SafeBrowsingBlockingPageDelayedWarningBrowserTest
     : public InProcessBrowserTest,
       public testing::WithParamInterface<
@@ -2859,7 +2971,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   event.windows_key_code = ui::VKEY_ESCAPE;
   // Browser expects a non-synthesized event to have an os_event. Make the
   // browser ignore this event instead.
-  event.skip_in_browser = true;
+  event.skip_if_unhandled = true;
   contents->GetPrimaryMainFrame()
       ->GetRenderViewHost()
       ->GetWidget()
@@ -2891,7 +3003,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   event.windows_key_code = ui::VKEY_A;
   // Browser expects a non-synthesized event to have an os_event. Make the
   // browser ignore this event instead.
-  event.skip_in_browser = true;
+  event.skip_if_unhandled = true;
   contents->GetPrimaryMainFrame()
       ->GetRenderViewHost()
       ->GetWidget()
@@ -2921,7 +3033,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   event.windows_key_code = ui::VKEY_C;
   event.native_key_code = ui::VKEY_C;
-  // We don't set event.skip_in_browser = true here because the event will be
+  // We don't set event.skip_if_unhandled = true here because the event will be
   // consumed by UserInteractionObserver and not passed to the browser.
   contents->GetPrimaryMainFrame()
       ->GetRenderViewHost()
@@ -2957,7 +3069,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   event.windows_key_code = ui::VKEY_ESCAPE;
   // Browser expects a non-synthesized event to have an os_event. Make the
   // browser ignore this event instead.
-  event.skip_in_browser = true;
+  event.skip_if_unhandled = true;
   contents->GetPrimaryMainFrame()
       ->GetRenderViewHost()
       ->GetWidget()
@@ -3726,7 +3838,7 @@ class SafeBrowsingPrerenderBrowserTest
       const SafeBrowsingPrerenderBrowserTest&) = delete;
 
   void SetUp() override {
-    prerender_helper_.SetUp(embedded_test_server());
+    prerender_helper_.RegisterServerRequestMonitor(embedded_test_server());
     SafeBrowsingBlockingPageBrowserTest::SetUp();
   }
 
@@ -3955,7 +4067,7 @@ class SafeBrowsingBlockingPageDelayedWarningPrerenderingBrowserTest
   }
 
   void SetUpOnMainThread() override {
-    prerender_helper_->SetUp(embedded_test_server());
+    prerender_helper_->RegisterServerRequestMonitor(embedded_test_server());
     SafeBrowsingBlockingPageDelayedWarningBrowserTest::SetUpOnMainThread();
   }
 

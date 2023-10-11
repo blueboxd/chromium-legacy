@@ -26,18 +26,25 @@ ChromeVoxLearnModeTest = class extends ChromeVoxE2ETest {
   async setUpDeferred() {
     await super.setUpDeferred();
 
-    // Alphabetical based on file path.
-    await importModule(
-        'CommandHandlerInterface',
-        '/chromevox/background/command_handler_interface.js');
-    await importModule(
-        ['BrailleKeyEvent', 'BrailleKeyCommand'],
-        '/chromevox/common/braille/braille_key_types.js');
-    await importModule(
-        'LearnModeBridge', '/chromevox/common/learn_mode_bridge.js');
-    await importModule('QueueMode', '/chromevox/common/tts_types.js');
-    await importModule('AsyncUtil', '/common/async_util.js');
-    await importModule('KeyCode', '/common/key_code.js');
+    await Promise.all([
+      // Alphabetical based on file path.
+      importModule(
+          'BrailleCommandHandler',
+          '/chromevox/background/braille/braille_command_handler.js'),
+      importModule(
+          'CommandHandlerInterface',
+          '/chromevox/background/command_handler_interface.js'),
+      importModule(
+          'GestureCommandHandler',
+          '/chromevox/background/gesture_command_handler.js'),
+      importModule(
+          ['BrailleKeyEvent', 'BrailleKeyCommand'],
+          '/chromevox/common/braille/braille_key_types.js'),
+      importModule('LearnModeBridge', '/chromevox/common/learn_mode_bridge.js'),
+      importModule('QueueMode', '/chromevox/common/tts_types.js'),
+      importModule('AsyncUtil', '/common/async_util.js'),
+      importModule('KeyCode', '/common/key_code.js'),
+    ]);
   }
 
   async runOnLearnModePage() {
@@ -205,3 +212,12 @@ AX_TEST_F('ChromeVoxLearnModeTest', 'HardwareFunctionKeys', async function() {
 
   await mockFeedback.replay();
 });
+
+AX_TEST_F(
+    'ChromeVoxLearnModeTest', 'CommandHandlersDisabled', async function() {
+      const [mockFeedback, evt] = await this.runOnLearnModePage();
+      await LearnModeBridge.ready();
+      assertFalse(BrailleCommandHandler.instance.enabled_);
+      assertFalse(GestureCommandHandler.instance.enabled_);
+      await mockFeedback.replay();
+    });

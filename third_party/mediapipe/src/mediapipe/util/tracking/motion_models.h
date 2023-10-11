@@ -22,6 +22,7 @@
 
 #include "absl/container/node_hash_map.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "mediapipe/framework/port/logging.h"
 #include "mediapipe/framework/port/singleton.h"
 #include "mediapipe/framework/port/vector.h"
@@ -51,7 +52,7 @@ class ModelAdapter {
   static Model InvertChecked(const Model& model, bool* success);
 
   // Returns model^(-1), returns identity model if inversion is not possible,
-  // and warns via LOG(ERROR). It is recommended that InvertChecked is used
+  // and warns via ABSL_LOG(ERROR). It is recommended that InvertChecked is used
   // instead.
   // Note: Default implementation, motion models only need to supply above
   // function.
@@ -705,8 +706,8 @@ bool ModelDiffWithinBounds(const Model& ground_truth, const Model& predicted,
                               ModelAdapter<Model>::GetParameter(identity, p));
 
     if (diff_p > bound) {
-      LOG(WARNING) << "Param diff " << p << " out of bounds: " << diff_p
-                   << " > " << bound << " bound";
+      ABSL_LOG(WARNING) << "Param diff " << p << " out of bounds: " << diff_p
+                        << " > " << bound << " bound";
       return false;
     }
   }
@@ -867,7 +868,7 @@ inline MixtureRowWeights* MixtureRowWeightsFromCameraMotion(
 template <class Model>
 void SmoothModels(const Model& sigma_time_model, const Model* model_sigma,
                   std::vector<Model>* models) {
-  CHECK(models);
+  ABSL_CHECK(models);
 
   const int num_models = models->size();
 
@@ -967,7 +968,7 @@ inline TranslationModel ModelAdapter<TranslationModel>::FromArgs(float dx,
 
 inline TranslationModel ModelAdapter<TranslationModel>::FromFloatPointer(
     const float* args, bool) {
-  DCHECK(args);
+  ABSL_DCHECK(args);
   TranslationModel model;
   model.set_dx(args[0]);
   model.set_dy(args[1]);
@@ -976,7 +977,7 @@ inline TranslationModel ModelAdapter<TranslationModel>::FromFloatPointer(
 
 inline TranslationModel ModelAdapter<TranslationModel>::FromDoublePointer(
     const double* args, bool) {
-  DCHECK(args);
+  ABSL_DCHECK(args);
   TranslationModel model;
   model.set_dx(args[0]);
   model.set_dy(args[1]);
@@ -993,7 +994,7 @@ inline TranslationModel ModelAdapter<TranslationModel>::Invert(
   bool success = true;
   TranslationModel result = InvertChecked(model, &success);
   if (!success) {
-    LOG(ERROR) << "Model not invertible. Returning identity.";
+    ABSL_LOG(ERROR) << "Model not invertible. Returning identity.";
     return TranslationModel();
   }
 
@@ -1025,7 +1026,7 @@ inline float ModelAdapter<TranslationModel>::GetParameter(
     case 1:
       return model.dy();
     default:
-      LOG(FATAL) << "Parameter id is out of bounds";
+      ABSL_LOG(FATAL) << "Parameter id is out of bounds";
   }
   return 0;
 }
@@ -1038,7 +1039,7 @@ inline void ModelAdapter<TranslationModel>::SetParameter(
     case 1:
       return model->set_dy(value);
     default:
-      LOG(FATAL) << "Parameter id is out of bounds";
+      ABSL_LOG(FATAL) << "Parameter id is out of bounds";
   }
 }
 
@@ -1056,7 +1057,7 @@ inline LinearSimilarityModel ModelAdapter<LinearSimilarityModel>::FromArgs(
 inline LinearSimilarityModel
 ModelAdapter<LinearSimilarityModel>::FromFloatPointer(
     const float* args, bool identity_parametrization) {
-  DCHECK(args);
+  ABSL_DCHECK(args);
   LinearSimilarityModel model;
   const float id_shift = identity_parametrization ? 1.f : 0.f;
   model.set_dx(args[0]);
@@ -1069,7 +1070,7 @@ ModelAdapter<LinearSimilarityModel>::FromFloatPointer(
 inline LinearSimilarityModel
 ModelAdapter<LinearSimilarityModel>::FromDoublePointer(
     const double* args, bool identity_parametrization) {
-  DCHECK(args);
+  ABSL_DCHECK(args);
   LinearSimilarityModel model;
   const float id_shift = identity_parametrization ? 1.f : 0.f;
   model.set_dx(args[0]);
@@ -1090,7 +1091,7 @@ inline LinearSimilarityModel ModelAdapter<LinearSimilarityModel>::Invert(
   bool success = true;
   LinearSimilarityModel result = InvertChecked(model, &success);
   if (!success) {
-    LOG(ERROR) << "Model not invertible. Returning identity.";
+    ABSL_LOG(ERROR) << "Model not invertible. Returning identity.";
     return LinearSimilarityModel();
   } else {
     return result;
@@ -1144,7 +1145,7 @@ inline float ModelAdapter<LinearSimilarityModel>::GetParameter(
     case 3:
       return model.b();
     default:
-      LOG(FATAL) << "Parameter id is out of bounds";
+      ABSL_LOG(FATAL) << "Parameter id is out of bounds";
   }
 
   return 0;
@@ -1162,7 +1163,7 @@ inline void ModelAdapter<LinearSimilarityModel>::SetParameter(
     case 3:
       return model->set_b(value);
     default:
-      LOG(FATAL) << "Parameter id is out of bounds";
+      ABSL_LOG(FATAL) << "Parameter id is out of bounds";
   }
 }
 
@@ -1182,7 +1183,7 @@ inline AffineModel ModelAdapter<AffineModel>::FromArgs(float dx, float dy,
 
 inline AffineModel ModelAdapter<AffineModel>::FromFloatPointer(
     const float* args, bool identity_parametrization) {
-  DCHECK(args);
+  ABSL_DCHECK(args);
   AffineModel model;
   const float id_shift = identity_parametrization ? 1.f : 0.f;
   model.set_dx(args[0]);
@@ -1196,7 +1197,7 @@ inline AffineModel ModelAdapter<AffineModel>::FromFloatPointer(
 
 inline AffineModel ModelAdapter<AffineModel>::FromDoublePointer(
     const double* args, bool identity_parametrization) {
-  DCHECK(args);
+  ABSL_DCHECK(args);
   AffineModel model;
   const float id_shift = identity_parametrization ? 1.f : 0.f;
   model.set_dx(args[0]);
@@ -1219,7 +1220,7 @@ inline AffineModel ModelAdapter<AffineModel>::Invert(const AffineModel& model) {
   bool success = true;
   AffineModel result = InvertChecked(model, &success);
   if (!success) {
-    LOG(ERROR) << "Model not invertible. Returning identity.";
+    ABSL_LOG(ERROR) << "Model not invertible. Returning identity.";
     return AffineModel();
   } else {
     return result;
@@ -1280,7 +1281,7 @@ inline float ModelAdapter<AffineModel>::GetParameter(const AffineModel& model,
     case 5:
       return model.d();
     default:
-      LOG(FATAL) << "Parameter id is out of bounds";
+      ABSL_LOG(FATAL) << "Parameter id is out of bounds";
   }
 
   return 0;
@@ -1302,7 +1303,7 @@ inline void ModelAdapter<AffineModel>::SetParameter(int id, float value,
     case 5:
       return model->set_d(value);
     default:
-      LOG(FATAL) << "Parameter id is out of bounds";
+      ABSL_LOG(FATAL) << "Parameter id is out of bounds";
   }
 }
 
@@ -1325,7 +1326,7 @@ inline Homography ModelAdapter<Homography>::FromArgs(float h_00, float h_01,
 
 inline Homography ModelAdapter<Homography>::FromFloatPointer(
     const float* args, bool identity_parametrization) {
-  DCHECK(args);
+  ABSL_DCHECK(args);
   Homography model;
   const float id_shift = identity_parametrization ? 1.f : 0.f;
   model.set_h_00(id_shift + args[0]);
@@ -1341,7 +1342,7 @@ inline Homography ModelAdapter<Homography>::FromFloatPointer(
 
 inline Homography ModelAdapter<Homography>::FromDoublePointer(
     const double* args, bool identity_parametrization) {
-  DCHECK(args);
+  ABSL_DCHECK(args);
   Homography model;
   const float id_shift = identity_parametrization ? 1.f : 0.f;
   model.set_h_00(id_shift + args[0]);
@@ -1365,8 +1366,8 @@ inline Vector2_f ModelAdapter<Homography>::TransformPoint(
     // Enforce z can not assume very small values.
     constexpr float eps = 1e-12f;
     if (fabs(z) < eps) {
-      LOG(ERROR) << "Point mapped to infinity. "
-                 << "Degenerate homography. See proto.";
+      ABSL_LOG(ERROR) << "Point mapped to infinity. "
+                      << "Degenerate homography. See proto.";
       z = z >= 0 ? eps : -eps;
     }
     return Vector2_f(x / z, y / z);
@@ -1387,7 +1388,7 @@ inline Homography ModelAdapter<Homography>::Invert(const Homography& model) {
   bool success = true;
   Homography result = InvertChecked(model, &success);
   if (!success) {
-    LOG(ERROR) << "Model not invertible. Returning identity.";
+    ABSL_LOG(ERROR) << "Model not invertible. Returning identity.";
     return Homography();
   } else {
     return result;
@@ -1451,7 +1452,7 @@ inline float ModelAdapter<Homography>::GetParameter(const Homography& model,
     case 7:
       return model.h_21();
     default:
-      LOG(FATAL) << "Parameter id is out of bounds";
+      ABSL_LOG(FATAL) << "Parameter id is out of bounds";
   }
 
   return 0;
@@ -1477,7 +1478,7 @@ inline void ModelAdapter<Homography>::SetParameter(int id, float value,
     case 7:
       return model->set_h_21(value);
     default:
-      LOG(FATAL) << "Parameter id is out of bounds";
+      ABSL_LOG(FATAL) << "Parameter id is out of bounds";
   }
 }
 
@@ -1768,7 +1769,7 @@ inline Homography MixtureModelAdapter<HomographyTraits>::ToBaseModel(
     case MixtureHomography::CONST_DOF:
       return const_homog;
     default:
-      LOG(FATAL) << "Unknown type.";
+      ABSL_LOG(FATAL) << "Unknown type.";
   }
 
   return HomographyAdapter::FromFloatPointer(params, false);
@@ -1816,7 +1817,7 @@ inline Vector2_f MixtureModelAdapter<HomographyTraits>::TransformPoint(
     case MixtureHomography::CONST_DOF:
       return HomographyAdapter::TransformPoint(model.model(0), pt);
     default:
-      LOG(FATAL) << "Unknown type.";
+      ABSL_LOG(FATAL) << "Unknown type.";
   }
 
   ABSL_DCHECK_NE(result.z(), 0) << "Degenerate mapping.";

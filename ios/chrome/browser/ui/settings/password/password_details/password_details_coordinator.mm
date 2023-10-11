@@ -7,7 +7,7 @@
 #import <utility>
 #import <vector>
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/memory/scoped_refptr.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/password_manager_client.h"
@@ -35,18 +35,26 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_handler.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator+private.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/settings/password/reauthentication/reauthentication_coordinator.h"
 #import "ios/chrome/browser/ui/settings/utils/password_utils.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state.h"
 #import "ui/base/l10n/l10n_util.h"
 
+using password_manager::features::IsAuthOnEntryV2Enabled;
+
 @interface PasswordDetailsCoordinator () <PasswordDetailsHandler,
-                                          PasswordDetailsMediatorDelegate> {
+                                          PasswordDetailsMediatorDelegate,
+                                          ReauthenticationCoordinatorDelegate,
+                                          PasswordSharingCoordinatorDelegate> {
   password_manager::AffiliatedGroup _affiliatedGroup;
   password_manager::CredentialUIEntry _credential;
 
@@ -74,6 +82,10 @@
 // Coordinator for the password sharing flow.
 @property(nonatomic, strong)
     PasswordSharingCoordinator* passwordSharingCoordinator;
+
+// Coordinator for blocking password details until Local Authentication is
+// successful.
+@property(nonatomic, strong) ReauthenticationCoordinator* reauthCoordinator;
 
 @end
 
@@ -161,11 +173,21 @@
   if (self.showCancelButton) {
     [self.viewController setupLeftCancelButton];
   }
-  [self.baseNavigationController pushViewController:self.viewController
-                                           animated:YES];
+
+  // Disable animation when content will be blocked for reauth to prevent
+  // flickering in navigation bar.
+  [self.baseNavigationController
+      pushViewController:self.viewController
+                animated:![self shouldRequireAuthOnStart]];
+  if (IsAuthOnEntryV2Enabled()) {
+    [self startReauthCoordinator];
+  }
 }
 
 - (void)stop {
+  [_reauthCoordinator stop];
+  _reauthCoordinator.delegate = nil;
+  _reauthCoordinator = nil;
   [self dismissActionSheetCoordinator];
   [self.mediator disconnect];
   self.mediator = nil;
@@ -184,13 +206,11 @@
   [self.delegate passwordDetailsCoordinatorDidRemove:self];
 }
 
-- (void)showPasscodeDialogForReason:(PasscodeDialogReason)reason {
+- (void)showPasscodeDialog {
   NSString* title =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_TITLE);
-  NSString* message = l10n_util::GetNSString(
-      reason == PasscodeDialogReasonShowPassword
-          ? IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT
-          : IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT_FOR_MOVE_TO_ACCOUNT);
+  NSString* message =
+      l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT);
   self.alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:self.viewController
                                                    browser:self.browser
@@ -371,7 +391,9 @@
   [self.passwordSharingCoordinator stop];
   self.passwordSharingCoordinator = [[PasswordSharingCoordinator alloc]
       initWithBaseViewController:self.viewController
-                         browser:self.browser];
+                         browser:self.browser
+                     credentials:self.mediator.credentials];
+  self.passwordSharingCoordinator.delegate = self;
   [self.passwordSharingCoordinator start];
 }
 
@@ -427,6 +449,32 @@
   passwordManagerClient->UpdateFormManagers();
 }
 
+#pragma mark - ReauthenticationCoordinatorDelegate
+
+- (void)successfulReauthenticationWithCoordinator:
+    (ReauthenticationCoordinator*)coordinator {
+  // No-op.
+}
+
+- (void)willPushReauthenticationViewController {
+  // Dismiss modal ui before reauth view controller is pushed in front of
+  // password details.
+  [self dismissAlertCoordinator];
+  [self dismissActionSheetCoordinator];
+  [self dismissPasswordSharingCoordinator];
+}
+
+#pragma mark - PasswordSharingCoordinatorDelegate
+
+- (void)passwordSharingCoordinatorDidRemove:
+    (PasswordSharingCoordinator*)coordinator {
+  if (self.passwordSharingCoordinator == coordinator) {
+    [self.passwordSharingCoordinator stop];
+    self.passwordSharingCoordinator.delegate = nil;
+    self.passwordSharingCoordinator = nil;
+  }
+}
+
 #pragma mark - Private
 
 - (void)dismissActionSheetCoordinator {
@@ -437,6 +485,47 @@
 - (void)dismissAlertCoordinator {
   [self.alertCoordinator stop];
   self.alertCoordinator = nil;
+}
+
+- (void)dismissPasswordSharingCoordinator {
+  [_passwordSharingCoordinator stop];
+  _passwordSharingCoordinator = nil;
+}
+
+// Starts reauthCoordinator. If Password Details was opened from outside the
+// Password Manager, Local Authentication is required. Once started
+// reauthCoordinator observes scene state changes and requires authentication
+// when the scene is backgrounded and then foregrounded while Password Details
+// is opened.
+- (void)startReauthCoordinator {
+  _reauthCoordinator = [[ReauthenticationCoordinator alloc]
+      initWithBaseNavigationController:_baseNavigationController
+                               browser:self.browser
+                reauthenticationModule:_reauthenticationModule
+                           authOnStart:[self shouldRequireAuthOnStart]];
+  _reauthCoordinator.delegate = self;
+  [_reauthCoordinator start];
+}
+
+// Whether Local Authentication should be required before displaying the
+// contents of Password Details.
+- (BOOL)shouldRequireAuthOnStart {
+  if (!IsAuthOnEntryV2Enabled()) {
+    return NO;
+  }
+
+  // Authentication required only if opening Password Details from outside the
+  // Password Manager.
+  switch (_context) {
+    case DetailsContext::kWeakIssues:
+    case DetailsContext::kReusedIssues:
+    case DetailsContext::kPasswordSettings:
+    case DetailsContext::kCompromisedIssues:
+    case DetailsContext::kDismissedWarnings:
+      return NO;
+    case DetailsContext::kOutsideSettings:
+      return YES;
+  }
 }
 
 @end

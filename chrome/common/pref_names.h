@@ -166,15 +166,6 @@ inline constexpr char kURLsToRestoreOnStartup[] = "session.startup_urls";
 // Boolean that is true when user feedback to Google is allowed.
 inline constexpr char kUserFeedbackAllowed[] = "feedback_allowed";
 
-#if !BUILDFLAG(IS_ANDROID)
-// Replaced by kManagedSerialAllowAllPortsForUrls in M-93.
-inline constexpr char kManagedProfileSerialAllowAllPortsForUrlsDeprecated[] =
-    "profile.managed.serial_allow_all_ports_for_urls";
-// Replaced by kManagedSerialAllowUsbDevicesForUrls in M-93.
-inline constexpr char kManagedProfileSerialAllowUsbDevicesForUrlsDeprecated[] =
-    "profile.managed.serial_allow_usb_devices_for_urls";
-#endif  // !BUILDFLAG(IS_ANDROID)
-
 #if BUILDFLAG(ENABLE_RLZ)
 // Integer. RLZ ping delay in seconds.
 inline constexpr char kRlzPingDelaySeconds[] = "rlz_ping_delay";
@@ -629,10 +620,6 @@ inline constexpr char kLastSessionLength[] = "session.last_session_length";
 // The URL from which the Terms of Service can be downloaded. The value is only
 // honored for public accounts.
 inline constexpr char kTermsOfServiceURL[] = "terms_of_service.url";
-
-// TODO(b/285556135): Remove this pref together with AttestationEnabledForUser
-// Indicates whether the remote attestation is enabled for the user.
-inline constexpr char kAttestationEnabled[] = "attestation.enabled";
 
 // A boolean pref recording whether user has dismissed the multiprofile
 // introduction dialog show.
@@ -1331,8 +1318,6 @@ inline constexpr char kUseAshProxy[] = "lacros.proxy.use_ash_proxy";
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // Linux specific preference on whether we should match the system theme.
-inline constexpr char kUsesSystemThemeDeprecated[] =
-    "extensions.theme.use_system";
 inline constexpr char kSystemTheme[] = "extensions.theme.system_theme";
 #endif
 inline constexpr char kCurrentThemePackFilename[] = "extensions.theme.pack";
@@ -1418,6 +1403,12 @@ inline constexpr char kAccessibilityImageLabelsOnlyOnWifi[] =
 // A boolean pref which determines whether focus highlighting is enabled.
 inline constexpr char kAccessibilityFocusHighlightEnabled[] =
     "settings.a11y.focus_highlight";
+#endif
+
+#if defined(USE_AURA)
+// Whether horizontal overscroll will trigger history navigation.
+inline constexpr char kOverscrollHistoryNavigationEnabled[] =
+    "settings.a11y.overscroll_history_navigation";
 #endif
 
 // Whether the PDF OCR feature is set to be always active. The PDF OCR feature
@@ -1713,6 +1704,11 @@ inline constexpr char kMessageCenterDisabledExtensionIds[] =
 inline constexpr char kFullscreenAllowed[] = "fullscreen.allowed";
 
 #if BUILDFLAG(IS_ANDROID)
+// The user requested font weight adjustment from OS-level settings.
+// Exposed only to mobile Android.
+inline constexpr char kAccessibilityFontWeightAdjustment[] =
+    "settings.a11y.font_weight_adjustment";
+
 // Boolean pref indicating whether notification permissions were migrated to
 // notification channels (on Android O+ we use channels to store notification
 // permission, so any existing permissions must be migrated).
@@ -1848,11 +1844,6 @@ inline constexpr char kSuppressDifferentOriginSubframeJSDialogs[] =
 // or disabled. Defaults to blink::features::kReduceUserAgent field trial.
 inline constexpr char kUserAgentReduction[] = "user_agent_reduction";
 
-// Enum indicating if the user agent string should freeze the major version
-// at 99 and report the browser's major version in the minor position.
-inline constexpr char kForceMajorVersionToMinorPositionInUserAgent[] =
-    "force_major_version_to_minor_position_in_user_agent";
-
 #if (!BUILDFLAG(IS_ANDROID))
 // Boolean determining the side the side panel will be appear on (left / right).
 // True when the side panel is aligned to the right.
@@ -1866,18 +1857,6 @@ inline constexpr char kSidePanelCompanionEntryPinnedToToolbar[] =
 inline constexpr char kGoogleSearchSidePanelEnabled[] =
     "side_panel.google_search_side_panel_enabled";
 #endif
-
-// Number of minutes of inactivity before running actions from
-// kIdleTimeoutActions. Controlled via the IdleTimeout policy.
-inline constexpr char kIdleTimeout[] = "idle_timeout";
-
-// Actions to run when the idle timeout is reached. Controller via the
-// IdleTimeoutActions policy.
-inline constexpr char kIdleTimeoutActions[] = "idle_timeout_actions";
-
-// If true, show the IdleTimeout bubble when Chrome starts.
-inline constexpr char kIdleTimeoutShowBubbleOnStartup[] =
-    "idle_timeout_show_bubble_on_startup";
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
@@ -2101,6 +2080,20 @@ inline constexpr char kOfficeFileMovedToOneDrive[] =
 // The timestamp of the latest office file automatically moved to Google Drive.
 inline constexpr char kOfficeFileMovedToGoogleDrive[] =
     "filebrowser.office.file_moved_google_drive";
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+// Pref that contains the value of the MicrosoftOneDriveMount policy.
+inline constexpr char kMicrosoftOneDriveMount[] =
+    "filebrowser.office.microsoft_one_drive_mount";
+
+// Pref that contains the value of the MicrosoftOfficeCloudUpload policy.
+inline constexpr char kMicrosoftOfficeCloudUpload[] =
+    "filebrowser.office.microsoft_office_cloud_upload";
+
+// Pref that contains the value of the GoogleWorkspaceCloudUpload policy.
+inline constexpr char kGoogleWorkspaceCloudUpload[] =
+    "filebrowser.office.google_workspace_cloud_upload";
 #endif
 
 // A flag to enable/disable the Shared Clipboard feature which enables users to
@@ -2402,6 +2395,12 @@ inline constexpr char kMediaCdmOriginData[] = "media.cdm.origin_data";
 inline constexpr char kNetworkServiceSandboxEnabled[] =
     "net.network_service_sandbox";
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+
+#if BUILDFLAG(IS_LINUX)
+// Records whether the user has seen an HTTP auth "negotiate" header.
+inline constexpr char kReceivedHttpAuthNegotiateHeader[] =
+    "net.received_http_auth_negotiate_headers";
+#endif  // BUILDFLAG(IS_LINUX)
 
 // The last used printer and its settings.
 inline constexpr char kPrintPreviewStickySettings[] =
@@ -3015,9 +3014,6 @@ inline constexpr char kCloudPrintUserSettings[] = "cloud_print.user_settings";
 // List of printers settings.
 inline constexpr char kCloudPrintPrinters[] =
     "cloud_print.user_settings.printers";
-// A boolean indicating whether submitting jobs to Google Cloud Print is
-// blocked by policy.
-inline constexpr char kCloudPrintSubmitEnabled[] = "cloud_print.submit_enabled";
 
 // Preference to store proxy settings.
 inline constexpr char kMaxConnectionsPerProxy[] =
@@ -3233,6 +3229,13 @@ inline constexpr char kAnimationPolicy[] = "settings.a11y.animation_policy";
 // direct attestation of a Security Key.
 inline constexpr char kSecurityKeyPermitAttestation[] =
     "securitykey.permit_attestation";
+
+#if BUILDFLAG(IS_MAC)
+// Whether to create platform WebAuthn credentials in iCloud Keychain rather
+// than the Chrome profile.
+inline constexpr char kCreatePasskeysInICloudKeychain[] =
+    "webauthn.create_in_icloud_keychain";
+#endif
 
 // Records the last time the CWS Info Service downloaded information about
 // currently installed extensions from the Chrome Web Store, successfully
@@ -3655,18 +3658,6 @@ inline constexpr char kCertificateProvisioningStateForDevice[] =
 inline constexpr char kPromptOnMultipleMatchingCertificates[] =
     "prompt_on_multiple_matching_certificates";
 
-// This pref enables periodically fetching new Media Feed items for top feeds.
-inline constexpr char kMediaFeedsBackgroundFetching[] =
-    "media_feeds_background_fetching_enabled";
-
-// This pref enables checking of Media Feed items against the Safe Search API.
-inline constexpr char kMediaFeedsSafeSearchEnabled[] =
-    "media_feeds_safe_search_enabled";
-
-// This pref enables automated selection of Media Feeds to fetch.
-inline constexpr char kMediaFeedsAutoSelectEnabled[] =
-    "media_feeds_auto_select_enabled";
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Boolean pref indicating whether the notification informing the user that
 // adb sideloading had been disabled by their admin was shown.
@@ -3702,9 +3693,8 @@ inline constexpr char kShowCaretBrowsingDialog[] =
 // LacrosAvailability policy and can have one of the following values:
 // 0: User choice (default value).
 // 1: Lacros is disallowed.
-// 2: Lacros is enabled but not the pimary browser.
-// 3: Lacros is enabled as the primary browser.
 // 4: Lacros is the only available browser.
+// Values 2 and 3 were removed and should not be reused.
 inline constexpr char kLacrosLaunchSwitch[] = "lacros_launch_switch";
 
 // Enum pref indicating which Lacros browser to launch: rootfs or stateful. It
@@ -3953,6 +3943,10 @@ inline constexpr char kHttpsUpgradesEnabled[] =
 // Whether the hovercard image previews is enabled
 inline constexpr char kHoverCardImagesEnabled[] =
     "browser.hovercard.image_previews_enabled";
+
+// Boolean that specifies whether Compression Dictionary Transport is enabled.
+inline constexpr char kCompressionDictionaryTransportEnabled[] =
+    "net.compression_dictionary_transport_enabled";
 
 }  // namespace prefs
 

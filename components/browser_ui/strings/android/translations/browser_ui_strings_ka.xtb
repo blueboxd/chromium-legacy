@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">საიტისთვის თქვენს მოწყობილობაზე მონაცემთა შენახვის დაშვება</translation>
 <translation id="1383876407941801731">ძიება</translation>
 <translation id="1384959399684842514">ჩამოტვირთვა დაპაუზებულია</translation>
-<translation id="1409426117486808224">გამარტივებული ხედი გახსნილი ჩანართებისთვის</translation>
 <translation id="1415402041810619267">URL შემოკლებულია</translation>
 <translation id="1426410128494586442">დიახ</translation>
 <translation id="1446450296470737166">MIDI მოწყ. სრული კონტ. დაშვება</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">ნებადართულია, მესამე მხარის გარდა</translation>
 <translation id="1989112275319619282">დათვალიერება</translation>
 <translation id="1994173015038366702">საიტის URL</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{მოქმედების ვადა იწურება 1 დღეში}other{მოქმედების ვადა იწურება # დღეში}}</translation>
 <translation id="2004697686368036666">ფუნქციებმა, შესაძლოა, არ იმუშაოს ზოგიერთ საიტზე</translation>
 <translation id="2025115093177348061">აუგმენტური რეალობა</translation>
 <translation id="2030769033451695672">შეეხეთ <ph name="URL_OF_THE_CURRENT_TAB" />-ზე დასაბრუნებლად</translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">სათაური</translation>
 <translation id="4008040567710660924">ქუქი-ჩანაწერების დაშვება კონკრეტული საიტისთვის.</translation>
 <translation id="4046123991198612571">შემდეგი ჩანაწერი</translation>
+<translation id="4053720452172726777">Google Chrome-ის მორგება და კონტროლი</translation>
 <translation id="4149994727733219643">გამარტივებული ხედი ვებგვერდებისთვის</translation>
 <translation id="4151930093518524179">ნაგულისხმევი მასშტაბი</translation>
 <translation id="4165986682804962316">საიტის პარამეტრები</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">საიტები ვერ გამოიყენებს ქუქი-ჩანაწერებს სხვადასხვა საიტის თქვენ მიერ დათვალიერების აქტივობის სანახავად, მაგალითად, რეკლამის პერსონალიზების მიზნით. ფუნქციებმა, შესაძლოა, არ იმუშაოს ზოგიერთ საიტზე.</translation>
 <translation id="5553374991681107062">უახლესი</translation>
 <translation id="5556459405103347317">ხელახლა ჩატვირთვა</translation>
-<translation id="5596627076506792578">დამატებითი ვარიანტები</translation>
 <translation id="5649053991847567735">ავტომატური ჩამოტვირთვები</translation>
 <translation id="5668404140385795438">ვებსაიტის მიერ მასშტაბირების აკრძალვის გაუქმება</translation>
 <translation id="5677928146339483299">დაბლოკილი</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">გამორთულია Android-ის პარამეტრებიდან</translation>
 <translation id="7016516562562142042">დაშვებულია ამჟამინდელი საძიებო სისტემისთვის</translation>
 <translation id="702275896380648118">ეს საიტი ადგენს იმას, თუ რა მოგწონთ, შემდეგ კი უკარნახებს რეკლამას სხვა საიტებს. გარდა ამისა, ეს საიტი Chrome-იდან იღებს სარეკლამო თემებს, უფრო შესაფერისი რეკლამა რომ შემოგთავაზოთ.</translation>
-<translation id="702463548815491781">რეკომენდებულია, როცა ჩართულია TalkBack ან გადამრთველით წვდომა</translation>
 <translation id="7053983685419859001">დაბლოკვა</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{არჩეულია 1}other{არჩეულია #}}</translation>
 <translation id="7087918508125750058">არჩეულია <ph name="ITEM_COUNT" />. ვარიანტები ხელმისაწვდომია ეკრანის ზედა ნაწილთან</translation>

@@ -74,6 +74,7 @@ AutofillProviderAndroid::AutofillProviderAndroid(
     const JavaRef<jobject>& jcaller,
     content::WebContents* web_contents)
     : AutofillProvider(web_contents),
+      content::WebContentsObserver(web_contents),
       java_ref_(JavaObjectWeakGlobalRef(env, jcaller)),
       check_submission_(false) {}
 
@@ -97,6 +98,26 @@ void AutofillProviderAndroid::AttachToJavaAutofillProvider(
 void AutofillProviderAndroid::DetachFromJavaAutofillProvider(JNIEnv* env) {
   // Reset the reference to Java peer.
   java_ref_.reset();
+}
+
+void AutofillProviderAndroid::RenderFrameDeleted(
+    content::RenderFrameHost* rfh) {
+  // If the popup menu has been triggered from within an iframe and that frame
+  // is deleted, hide the popup. This is necessary because the popup may
+  // actually be shown by the AutofillExternalDelegate of an ancestor frame,
+  // which is not notified about `rfh`'s destruction and therefore won't close
+  // the popup.
+  if (manager_ &&
+      field_id_.frame_token == LocalFrameToken(rfh->GetFrameToken().value())) {
+    OnHidePopup(manager_.get());
+  }
+}
+
+void AutofillProviderAndroid::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility == content::Visibility::HIDDEN && manager_) {
+    OnHidePopup(manager_.get());
+  }
 }
 
 void AutofillProviderAndroid::OnAskForValuesToFill(
@@ -175,7 +196,8 @@ void AutofillProviderAndroid::StartNewSession(AndroidAutofillManager* manager,
   Java_AutofillProvider_startAutofillSession(
       env, obj, form_obj, index, transformed_bounding.x(),
       transformed_bounding.y(), transformed_bounding.width(),
-      transformed_bounding.height(), manager->has_server_prediction());
+      transformed_bounding.height(),
+      manager->has_server_prediction(form.global_id()));
 }
 
 void AutofillProviderAndroid::OnAutofillAvailable(JNIEnv* env,
@@ -376,23 +398,25 @@ void AutofillProviderAndroid::OnHidePopup(AndroidAutofillManager* manager) {
   }
 }
 
-void AutofillProviderAndroid::OnServerPredictionsAvailable(
-    AndroidAutofillManager* manager) {
+void AutofillProviderAndroid::OnServerPredictionsAvailable(FormGlobalId form) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (manager != manager_.get() || !form_.get())
+  if (!form_ || form_->form().global_id() != form) {
     return;
-
-  if (auto* form_structure =
-          manager_->FindCachedFormById(form_->form().global_id())) {
-    form_->UpdateFieldTypes(*form_structure);
-
-    JNIEnv* env = AttachCurrentThread();
-    ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-    if (obj.is_null())
-      return;
-
-    Java_AutofillProvider_onQueryDone(env, obj, /*success=*/true);
   }
+
+  CHECK(manager_);
+  const FormStructure* form_structure = manager_->FindCachedFormById(form);
+  if (!form_structure) {
+    return;
+  }
+
+  form_->UpdateFieldTypes(*form_structure);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null()) {
+    return;
+  }
+  Java_AutofillProvider_onQueryDone(env, obj, /*success=*/true);
 }
 
 void AutofillProviderAndroid::OnServerQueryRequestError(

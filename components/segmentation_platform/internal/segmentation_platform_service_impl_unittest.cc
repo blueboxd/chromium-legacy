@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/segmentation_platform/internal/constants.h"
@@ -91,8 +92,6 @@ class SegmentationPlatformServiceImplTest
     // TODO(ssid): use mock a history service here.
     SegmentationPlatformServiceTestBase::InitPlatform(
         ukm_data_manager_.get(), /*history_service=*/nullptr);
-
-    SetUpDefaultModelProviders();
 
     segmentation_platform_service_impl_->GetServiceProxy()->AddObserver(
         &observer_);
@@ -269,6 +268,10 @@ class SegmentationPlatformServiceImplTest
                         SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE);
     AssertCachedSegment(kTestSegmentationKey2, false);
     AssertCachedSegment(kTestSegmentationKey3, false);
+
+    ASSERT_TRUE(
+        model_provider_data_.default_provider_metadata.count(
+            SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER) == 1);
   }
 
   void FailInitializationFlow() {
@@ -321,6 +324,7 @@ TEST_F(SegmentationPlatformServiceImplTest,
   // segment on demand is executed.
   EXPECT_TRUE(segmentation_platform_service_impl_->IsPlatformInitialized());
   EXPECT_EQ(pending_queue_size, GetPendingActionsQueueSize());
+  SetUpDefaultModelProviders();
   AssertSelectedSegmentOnDemand(
       kTestSegmentationKey4, /*is_ready=*/true,
       SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER);

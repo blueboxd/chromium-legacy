@@ -28,6 +28,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/autofill/autofill_flow_test_util.h"
 #include "chrome/browser/autofill/autofill_uitest.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/translate/translate_test_utils.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
@@ -156,11 +158,11 @@ constexpr char kTestShippingFormString[] = R"(
     </form>
     )";
 
-// Version of `kTestShippingFormString` which uses <selectmenu> instead of
+// Version of `kTestShippingFormString` which uses <selectlist> instead of
 // <select>.
-std::string GenerateTestShippingFormWithSelectMenu() {
+std::string GenerateTestShippingFormWithSelectList() {
   std::string out = kTestShippingFormString;
-  RE2::GlobalReplace(&out, "<(/?)select", "<\\1selectmenu");
+  RE2::GlobalReplace(&out, "<(/?)select", "<\\1selectlist");
   return out;
 }
 
@@ -175,11 +177,8 @@ content::RenderFrameHost* RenderFrameHostForName(
       base::BindRepeating(&content::FrameMatchesName, name));
 }
 
-// Represents a JavaScript expression that evaluates to a HTMLElement.
-using ElementExpr = base::StrongAlias<struct ElementExprTag, std::string>;
-
-ElementExpr GetElementById(const std::string& id) {
-  return ElementExpr(
+autofill::ElementExpr GetElementById(const std::string& id) {
+  return autofill::ElementExpr(
       base::StringPrintf("document.getElementById(`%s`)", id.c_str()));
 }
 
@@ -225,93 +224,9 @@ std::vector<FieldValue> GetFieldValues(
   return fields;
 }
 
-// Returns the center point of a DOM element.
-gfx::Point GetCenter(const ElementExpr& e,
-                     content::ToRenderFrameHost execution_target) {
-  std::string x_script = base::StringPrintf(
-      R"( const bounds = (%s).getBoundingClientRect();
-          Math.floor(bounds.left + bounds.width / 2))",
-      e->c_str());
-  std::string y_script = base::StringPrintf(
-      R"( const bounds = (%s).getBoundingClientRect();
-          Math.floor(bounds.top + bounds.height / 2)
-      )",
-      e->c_str());
-  int x = content::EvalJs(execution_target, x_script).ExtractInt();
-  int y = content::EvalJs(execution_target, y_script).ExtractInt();
-  return gfx::Point(x, y);
-}
-
-// Triggers a JavaScript event like 'focus' and waits for the event to happen.
-[[nodiscard]] AssertionResult TriggerAndWaitForEvent(
-    const ElementExpr& e,
-    const std::string& event_name,
-    content::ToRenderFrameHost execution_target) {
-  std::string script = base::StringPrintf(
-      R"( new Promise(resolve => {
-            if (document.readyState === 'complete') {
-              function handler(e) {
-                e.target.removeEventListener(e.type, arguments.callee);
-                resolve(true);
-              }
-              const target = %s;
-              target.addEventListener('%s', handler);
-              target.%s();
-            } else {
-              resolve(false);
-            }
-          });
-          )",
-      e->c_str(), event_name.c_str(), event_name.c_str());
-  content::EvalJsResult result = content::EvalJs(execution_target, script);
-  if (!result.error.empty()) {
-    return AssertionFailure() << __func__ << "(): " << result.error;
-  } else if (false == result) {
-    return AssertionFailure()
-           << __func__ << "(): couldn't trigger " << event_name << " on " << *e;
-  } else {
-    return AssertionSuccess();
-  }
-}
-
-// True iff `e` is the deepest active element in the given frame.
-//
-// "Deepest" refers to the shadow DOM: if an <input> in the shadow DOM is
-// focused, then this <input> and the shadow host are active elements, but
-// IsFocusedField() only returns true for the <input>.
-bool IsFocusedField(const ElementExpr& e,
-                    content::ToRenderFrameHost execution_target) {
-  std::string script = base::StringPrintf(
-      "const e = (%s); e === e.getRootNode().activeElement", e->c_str());
-  return true == content::EvalJs(execution_target, script);
-}
-
-// Unfocuses the currently focused field.
-[[nodiscard]] AssertionResult BlurFocusedField(
-    content::ToRenderFrameHost execution_target) {
-  std::string script = R"(
-    if (document.activeElement !== null)
-      document.activeElement.blur();
-  )";
-  return content::ExecJs(execution_target, script);
-}
-
-// A helper function for focusing a field in AutofillFlow().
-// Consider using AutofillFlow() instead.
-[[nodiscard]] AssertionResult FocusField(
-    const ElementExpr& e,
-    content::ToRenderFrameHost execution_target) {
-  if (IsFocusedField(e, execution_target)) {
-    AssertionResult r = BlurFocusedField(execution_target);
-    if (!r)
-      return r;
-  }
-  return TriggerAndWaitForEvent(e, "focus", execution_target);
-}
-
 // Types the characters of `value` after focusing field `e`.
 [[nodiscard]] AssertionResult EnterTextIntoField(
-    const ElementExpr& e,
+    const autofill::ElementExpr& e,
     base::StringPiece value,
     AutofillUiTest* test,
     content::ToRenderFrameHost execution_target) {
@@ -333,7 +248,7 @@ bool IsFocusedField(const ElementExpr& e,
 
 // Executes `EnterTextIntoField()` for a series of fields.
 [[nodiscard]] AssertionResult EnterTextsIntoFields(
-    std::vector<std::pair<ElementExpr, std::string>> values,
+    std::vector<std::pair<autofill::ElementExpr, std::string>> values,
     AutofillUiTest* test,
     content::ToRenderFrameHost execution_target) {
   for (const auto& [element, value] : values) {
@@ -343,340 +258,6 @@ bool IsFocusedField(const ElementExpr& e,
       return AssertionFailure() << __func__ << "(): " << a;
     }
   }
-  return AssertionSuccess();
-}
-
-// The different ways of triggering the Autofill dropdown.
-//
-// A difference in their behaviour is that (only) ByArrow() opens implicitly
-// selects the top-most suggestion.
-struct ShowMethod {
-  constexpr static ShowMethod ByArrow() { return {.arrow = true}; }
-  constexpr static ShowMethod ByClick() { return {.click = true}; }
-  constexpr static ShowMethod ByChar(char c) { return {.character = c}; }
-
-  bool selects_first_suggestion() { return arrow; }
-
-  // Exactly one of the members should be evaluate to `true`.
-  const bool arrow = false;
-  const char character = '\0';
-  const bool click = false;
-};
-
-// We choose the timeout empirically. 250 ms are not enough; tests become flaky:
-// in ShowAutofillPopup(), the preview triggered by an "arrow down" sometimes
-// only arrives after >250 ms and thus arrives during the DoNothingAndWait(),
-// which causes a crash.
-constexpr base::TimeDelta kAutofillFlowDefaultTimeout = base::Seconds(2);
-
-struct ShowAutofillPopupParams {
-  ShowMethod show_method = ShowMethod::ByArrow();
-  int num_profile_suggestions = 1;
-  size_t max_tries = 5;
-  base::TimeDelta timeout = kAutofillFlowDefaultTimeout;
-  absl::optional<content::ToRenderFrameHost> execution_target = {};
-};
-
-// A helper function for showing the popup in AutofillFlow().
-// Consider using AutofillFlow() instead.
-[[nodiscard]] AssertionResult ShowAutofillPopup(const ElementExpr& e,
-                                                AutofillUiTest* test,
-                                                ShowAutofillPopupParams p) {
-  constexpr auto kSuggest = ObservedUiEvents::kSuggestionsShown;
-  constexpr auto kPreview = ObservedUiEvents::kPreviewFormData;
-
-  content::ToRenderFrameHost execution_target =
-      p.execution_target.value_or(test->GetWebContents());
-  content::RenderFrameHost* rfh = execution_target.render_frame_host();
-  content::RenderWidgetHostView* view = rfh->GetView();
-  content::RenderWidgetHost* widget = view->GetRenderWidgetHost();
-
-  auto ArrowDown = [&](std::list<ObservedUiEvents> exp) {
-    constexpr auto kDown = ui::DomKey::ARROW_DOWN;
-    if (base::Contains(exp, ObservedUiEvents::kSuggestionsShown)) {
-      return test->SendKeyToPageAndWait(kDown, std::move(exp), p.timeout);
-    } else {
-      return test->SendKeyToPopupAndWait(kDown, std::move(exp), widget,
-                                         p.timeout);
-    }
-  };
-  auto Backspace = [&]() {
-    return test->SendKeyToPageAndWait(ui::DomKey::BACKSPACE, {}, p.timeout);
-  };
-  auto Char = [&](const std::string& code, std::list<ObservedUiEvents> exp) {
-    ui::DomCode dom_code = ui::KeycodeConverter::CodeStringToDomCode(code);
-    ui::DomKey dom_key;
-    ui::KeyboardCode keyboard_code;
-    CHECK(ui::DomCodeToUsLayoutDomKey(dom_code, ui::EF_SHIFT_DOWN, &dom_key,
-                                      &keyboard_code));
-    return test->SendKeyToPageAndWait(dom_key, dom_code, keyboard_code,
-                                      std::move(exp), p.timeout);
-  };
-  auto Click = [&](std::list<ObservedUiEvents> exp) {
-    gfx::Point point = view->TransformPointToRootCoordSpace(GetCenter(e, rfh));
-    test->test_delegate()->SetExpectations(
-        {ObservedUiEvents::kSuggestionsShown}, p.timeout);
-    content::SimulateMouseClickAt(test->GetWebContents(), 0,
-                                  blink::WebMouseEvent::Button::kLeft, point);
-    return test->test_delegate()->Wait();
-  };
-
-  // It seems that due to race conditions with Blink's layouting
-  // (crbug.com/1175735#c9), the below focus events are sometimes too early:
-  // Autofill closes the popup right away because it is outside of the content
-  // area. To work around this, we attempt to bring up the Autofill popup
-  // multiple times, with some delay.
-  AssertionResult a = AssertionFailure()
-                      << __func__ << "(): with " << p.num_profile_suggestions
-                      << " profile suggestions";
-  bool field_was_focused_initially = IsFocusedField(e, rfh);
-  for (size_t i = 1; i <= p.max_tries; ++i) {
-    a = a << "Iteration " << i << "/" << p.max_tries << ". ";
-    // A Translate bubble may overlap with the Autofill popup, which causes
-    // flakiness. See crbug.com/1175735#c10.
-    // Also, the address-save prompts and others may overlap with the Autofill
-    // popup. So we preemptively close all bubbles, which however is not
-    // reliable on Windows.
-    translate::test_utils::CloseCurrentBubble(test->browser());
-    TryToCloseAllPrompts(test->GetWebContents());
-    if (i > 1) {
-      test->DoNothingAndWaitAndIgnoreEvents(p.timeout);
-      if (field_was_focused_initially) {
-        // The Autofill popup may have opened due to a severely delayed event on
-        // a slow bot. To reset the popup, we re-focus the field.
-        a << "Trying to re-focus the field. ";
-        if (AssertionResult b = BlurFocusedField(rfh); !b)
-          a = a << b;
-        if (AssertionResult b = FocusField(e, rfh); !b)
-          a = a << b;
-      }
-    }
-
-    bool has_preview = 0 < p.num_profile_suggestions;
-    if (p.show_method.arrow) {
-      // Press arrow down to open the popup and select first suggestion.
-      // Depending on the platform, this requires one or two arrow-downs.
-      if (!IsFocusedField(e, rfh))
-        return a << "Field " << *e << " must be focused. ";
-      if (!ShouldAutoselectFirstSuggestionOnArrowDown()) {
-        if (AssertionResult b = ArrowDown({kSuggest}); !b) {
-          a << "Cannot trigger suggestions by first arrow: " << b;
-          continue;
-        }
-        if (AssertionResult b =
-                has_preview ? ArrowDown({kPreview}) : ArrowDown({});
-            !b) {
-          a << "Cannot select first suggestion by second arrow: " << b;
-          continue;
-        }
-      } else if (AssertionResult b = has_preview
-                                         ? ArrowDown({kSuggest, kPreview})
-                                         : ArrowDown({kSuggest});
-                 !b) {
-        a << "Cannot trigger and select first suggestion by arrow: " << b;
-        continue;
-      }
-    } else if (p.show_method.character) {
-      // Enter character to open the popup, but do not select an option.
-      // If necessary, delete past iterations character first.
-      if (!IsFocusedField(e, rfh))
-        return a << "Field " << *e << " must be focused. ";
-      if (i > 1) {
-        if (AssertionResult b = Backspace(); !b) {
-          a << "Cannot undo past iteration's key: " << b;
-        }
-      }
-      std::string code = std::string("Key") + p.show_method.character;
-      if (AssertionResult b = Char(code, {kSuggest}); !b) {
-        a << "Cannot trigger suggestions by key: " << b;
-        continue;
-      }
-    } else if (p.show_method.click) {
-      // Click item to open the popup, but do not select an option.
-      if (AssertionResult b = Click({kSuggest}); !b) {
-        a << "Cannot trigger and select first suggestion by click: " << b;
-        continue;
-      }
-    }
-    return AssertionSuccess();
-  }
-  return a << "Couldn't show Autofill suggestions on " << *e << ". ";
-}
-
-struct AutofillSuggestionParams {
-  int num_profile_suggestions = 1;
-  int current_index = 0;
-  int target_index = 0;
-  base::TimeDelta timeout = kAutofillFlowDefaultTimeout;
-  absl::optional<content::ToRenderFrameHost> execution_target = {};
-};
-
-// A helper function for selecting a suggestion in AutofillFlow().
-// Consider using AutofillFlow() instead.
-[[nodiscard]] AssertionResult SelectAutofillSuggestion(
-    const ElementExpr& e,
-    AutofillUiTest* test,
-    AutofillSuggestionParams p) {
-  content::RenderWidgetHost* widget =
-      p.execution_target.value_or(test->GetWebContents())
-          .render_frame_host()
-          ->GetView()
-          ->GetRenderWidgetHost();
-
-  constexpr auto kPreview = ObservedUiEvents::kPreviewFormData;
-
-  auto ArrowDown = [&](std::list<ObservedUiEvents> exp) {
-    return test->SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN, std::move(exp),
-                                       widget, p.timeout);
-  };
-
-  for (int i = p.current_index + 1; i <= p.target_index; ++i) {
-    bool has_preview = i < p.num_profile_suggestions;
-    if (!(has_preview ? ArrowDown({kPreview}) : ArrowDown({}))) {
-      return AssertionFailure()
-             << __func__ << "(): Couldn't go to " << i << "th suggestion with"
-             << (has_preview ? "" : "out") << " preview";
-    }
-  }
-  return AssertionSuccess();
-}
-
-// A helper function for accepting a suggestion in AutofillFlow().
-// Consider using AutofillFlow() instead.
-[[nodiscard]] AssertionResult AcceptAutofillSuggestion(
-    const ElementExpr& e,
-    AutofillUiTest* test,
-    AutofillSuggestionParams p) {
-  content::RenderWidgetHost* widget =
-      p.execution_target.value_or(test->GetWebContents())
-          .render_frame_host()
-          ->GetView()
-          ->GetRenderWidgetHost();
-
-  // If `kAutofillPopupUseThresholdForKeyboardAndMobileAccept` is enabled,
-  // then all attempts to accept Autofill suggestions using keyboard "ENTER"
-  // keystrokes will be ignored for the first 500ms after the popup is first
-  // shown. This overrides this threshold.
-  if (base::WeakPtr<AutofillPopupControllerImpl> controller =
-          ChromeAutofillClient::FromWebContentsForTesting(
-              test->GetWebContents())
-              ->popup_controller_for_testing()) {
-    controller->DisableThresholdForTesting(true);
-  }
-
-  constexpr auto kSuggestionsHidden = ObservedUiEvents::kSuggestionsHidden;
-  constexpr auto kFill = ObservedUiEvents::kFormDataFilled;
-
-  auto Enter = [&](std::list<ObservedUiEvents> exp) {
-    return test->SendKeyToPopupAndWait(ui::DomKey::ENTER, std::move(exp),
-                                       widget);
-  };
-
-  bool has_fill = p.target_index < p.num_profile_suggestions;
-  if (AssertionResult a = SelectAutofillSuggestion(e, test, p); !a)
-    return a;
-  if (!(has_fill ? Enter({kSuggestionsHidden, kFill})
-                 : Enter({kSuggestionsHidden}))) {
-    return AssertionFailure()
-           << __func__ << "(): Couldn't accept to " << p.target_index
-           << "th suggestion with" << (has_fill ? "" : "out") << " fill";
-  }
-  return AssertionSuccess();
-}
-
-// An Autofill consists of four stages:
-// 1. focusing the field,
-// 2. showing the Autofill popup,
-// 3. selecting the desired suggestion,
-// 4. accepting the selected suggestion.
-//
-// To reduce flakiness when in Stage 2, this does multiple attempts.
-// Depending on the `show_method`, showing may already select the first
-// suggestion; see ShowMethod for details.
-//
-// Selecting a profile suggestion (address or credit card) also triggers
-// preview. By contrast, "Clear" and "Manage" do not cause a preview. The
-// Autofill flow expects a preview for (only) the indices less than
-// `num_profile_suggestions`. The selected `target_index` may be greater or
-// equal to `num_profile_suggestions` to select "Clear" or "Manager".
-//
-// A callback can be set to be executed after each stage. Again note that
-// `show_method` may select the first suggestion.
-//
-// The default `execution_target` is the main frame.
-struct AutofillFlowParams {
-  bool do_focus = true;
-  bool do_show = true;
-  bool do_select = true;
-  bool do_accept = true;
-  ShowMethod show_method = ShowMethod::ByArrow();
-  int num_profile_suggestions = 1;
-  int target_index = 0;
-  base::RepeatingClosure after_focus = {};
-  base::RepeatingClosure after_show = {};
-  base::RepeatingClosure after_select = {};
-  base::RepeatingClosure after_accept = {};
-  size_t max_show_tries = 5;
-  base::TimeDelta timeout = kAutofillFlowDefaultTimeout;
-  absl::optional<content::ToRenderFrameHost> execution_target = {};
-};
-
-[[nodiscard]] AssertionResult AutofillFlow(const ElementExpr& e,
-                                           AutofillUiTest* test,
-                                           AutofillFlowParams p = {}) {
-  content::ToRenderFrameHost execution_target =
-      p.execution_target.value_or(test->GetWebContents());
-
-  if (p.do_focus) {
-    AssertionResult a = FocusField(e, execution_target);
-    if (!a)
-      return a;
-    if (p.after_focus)
-      p.after_focus.Run();
-  }
-
-  if (p.do_show) {
-    AssertionResult a =
-        ShowAutofillPopup(e, test,
-                          {.show_method = p.show_method,
-                           .num_profile_suggestions = p.num_profile_suggestions,
-                           .max_tries = p.max_show_tries,
-                           .timeout = p.timeout,
-                           .execution_target = execution_target});
-    if (!a)
-      return a;
-    if (p.after_show)
-      p.after_show.Run();
-  }
-
-  if (p.do_select) {
-    AssertionResult a = SelectAutofillSuggestion(
-        e, test,
-        {.num_profile_suggestions = p.num_profile_suggestions,
-         .current_index = p.show_method.selects_first_suggestion() ? 0 : -1,
-         .target_index = p.target_index,
-         .timeout = p.timeout,
-         .execution_target = execution_target});
-    if (!a)
-      return a;
-    if (p.after_select)
-      p.after_select.Run();
-  }
-
-  if (p.do_accept) {
-    AssertionResult a = AcceptAutofillSuggestion(
-        e, test,
-        {.num_profile_suggestions = p.num_profile_suggestions,
-         .current_index = p.target_index,
-         .target_index = p.target_index,
-         .timeout = p.timeout,
-         .execution_target = execution_target});
-    if (!a)
-      return a;
-    if (p.after_accept)
-      p.after_accept.Run();
-  }
-
   return AssertionSuccess();
 }
 
@@ -1311,7 +892,7 @@ const char AutofillInteractiveTestBase::kTestUrlPath[] =
 class AutofillInteractiveTest : public AutofillInteractiveTestBase {
  protected:
   AutofillInteractiveTest()
-      : feature_list_(features::kAutofillEnableSelectMenu) {}
+      : feature_list_(features::kAutofillEnableSelectList) {}
   ~AutofillInteractiveTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1321,7 +902,7 @@ class AutofillInteractiveTest : public AutofillInteractiveTestBase {
         translate::switches::kTranslateScriptURL,
         embedded_test_server()->GetURL("/mock_translate_script.js").spec());
     command_line->AppendSwitchASCII("enable-blink-features",
-                                    "HTMLSelectMenuElement");
+                                    "HTMLSelectListElement");
   }
 
  private:
@@ -1398,40 +979,40 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FillHiddenSelect) {
   EXPECT_EQ(kDefaultAddressValues.state_short, GetFieldValueById("state"));
 }
 
-// AutofillInteractiveTest subclass which disables autofilling <selectmenu>.
-class AutofillInteractiveDisableAutofillSelectMenuTest
+// AutofillInteractiveTest subclass which disables autofilling <selectlist>.
+class AutofillInteractiveDisableAutofillSelectListTest
     : public AutofillInteractiveTest {
  protected:
-  AutofillInteractiveDisableAutofillSelectMenuTest() {
-    feature_list_.InitAndDisableFeature(features::kAutofillEnableSelectMenu);
+  AutofillInteractiveDisableAutofillSelectListTest() {
+    feature_list_.InitAndDisableFeature(features::kAutofillEnableSelectList);
   }
-  ~AutofillInteractiveDisableAutofillSelectMenuTest() override = default;
+  ~AutofillInteractiveDisableAutofillSelectListTest() override = default;
 
  private:
   base::test::ScopedFeatureList feature_list_;
 };
 
-// Test that the <selectmenu> is not filled if the <selectmenu> autofilling
+// Test that the <selectlist> is not filled if the <selectlist> autofilling
 // feature is disabled.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveDisableAutofillSelectMenuTest,
-                       DisableSelectMenuAutofilling) {
-  const char kFormWithSelectMenuString[] = R"(
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveDisableAutofillSelectListTest,
+                       DisableSelectListAutofilling) {
+  const char kFormWithSelectListString[] = R"(
     <!-- Disable extra network request for /favicon.ico -->
     <link rel="icon" href="data:,">
     <form action="https://www.example.com/" method="POST" id="shipping">
       <label for="firstname">First name:</label>
       <input type="text" id="firstname" autocomplete="given-name"><br>
       <label for="state">State:</label>
-      <selectmenu id="state" autocomplete="address-level1">
+      <selectlist id="state" autocomplete="address-level1">
         <option value="" selected="yes">--</option>
         <option value="CA">California</option>
         <option value="TX">Texas</option>
-      </selectmenu>
+      </selectlist>
     </form>
     )";
 
   CreateTestProfile();
-  SetTestUrlResponse(kFormWithSelectMenuString);
+  SetTestUrlResponse(kFormWithSelectListString);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
 
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
@@ -1543,7 +1124,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ClearTwoSection) {
 }
 
 // TODO(crbug.com/1468282) Flaky on Mac.
-#if BUILDFLAG(IS_MAC) 
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_ModifyTextFieldAndFill DISABLED_ModifyTextFieldAndFill
 #else
 #define MAYBE_ModifyTextFieldAndFill ModifyTextFieldAndFill
@@ -1564,10 +1145,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 }
 
 void DoModifySelectFieldAndFill(AutofillInteractiveTest* test,
-                                bool should_test_selectmenu) {
+                                bool should_test_selectlist) {
   test->CreateTestProfile();
-  test->SetTestUrlResponse(should_test_selectmenu
-                               ? GenerateTestShippingFormWithSelectMenu()
+  test->SetTestUrlResponse(should_test_selectlist
+                               ? GenerateTestShippingFormWithSelectList()
                                : kTestShippingFormString);
   ASSERT_TRUE(
       ui_test_utils::NavigateToURL(test->browser(), test->GetTestUrl()));
@@ -1585,13 +1166,13 @@ void DoModifySelectFieldAndFill(AutofillInteractiveTest* test,
 // Test that autofill doesn't refill a <select> field initially modified by the
 // user.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ModifySelectFieldAndFill) {
-  DoModifySelectFieldAndFill(this, /*should_test_selectmenu=*/false);
+  DoModifySelectFieldAndFill(this, /*should_test_selectlist=*/false);
 }
 
-// Test that autofill doesn't refill a <selectmenu> field initially modified by
+// Test that autofill doesn't refill a <selectlist> field initially modified by
 // the user.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ModifySelectMenuFieldAndFill) {
-  DoModifySelectFieldAndFill(this, /*should_test_selectmenu=*/true);
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ModifySelectListFieldAndFill) {
+  DoModifySelectFieldAndFill(this, /*should_test_selectlist=*/true);
 }
 
 // Test that autofill works when the website prefills the form when
@@ -1738,6 +1319,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this,
                            {.show_method = ShowMethod::ByChar('M'),
+                            .num_profile_suggestions = 2,
                             .after_select = ExpectValues(MergeValue(
                                 kEmptyAddress, {"firstname", "M"}))}));
   EXPECT_THAT(GetFormValues(), ValuesAre(kDefaultAddress));
@@ -1745,11 +1327,12 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // Delete some fields.
   ASSERT_TRUE(FocusField(GetElementById("city"), GetWebContents()));
   DeleteElementValue(GetElementById("city"));
-  ASSERT_TRUE(AutofillFlow(
-      GetElementById("address1"), this,
-      {.target_index = 1, .after_focus = base::BindLambdaForTesting([&]() {
-                            DeleteElementValue(GetElementById("address1"));
-                          })}));
+  ASSERT_TRUE(AutofillFlow(GetElementById("address1"), this,
+                           {.num_profile_suggestions = 2,
+                            .target_index = 1,
+                            .after_focus = base::BindLambdaForTesting([&]() {
+                              DeleteElementValue(GetElementById("address1"));
+                            })}));
   // Address line 1 and city from the second profile.
   EXPECT_THAT(
       GetFormValues(),
@@ -2342,10 +1925,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillEvents) {
           var selectinput = false;
           var selectchange = false;
           var selectblur = false;
-          var selectmenufocus = false;
-          var selectmenuinput = false;
-          var selectmenuchange = false;
-          var selectmenublur = false;
+          var selectlistfocus = false;
+          var selectlistinput = false;
+          var selectlistchange = false;
+          var selectlistblur = false;
           </script>
           A form for testing events.
           <form action="https://www.example.com/" method="POST" id="shipping">
@@ -2378,13 +1961,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillEvents) {
           <label for="zip">ZIP code:</label>
            <input type="text" id="zip"><br>
           <label for="country">Country:</label>
-           <selectmenu id="country"
-           onfocus="selectmenufocus = true" oninput="selectmenuinput = true"
-           onchange="selectmenuchange = true" onblur="selectmenublur = true" >
+           <selectlist id="country"
+           onfocus="selectlistfocus = true" oninput="selectlistinput = true"
+           onchange="selectlistchange = true" onblur="selectlistblur = true" >
            <option value="" selected="yes">--</option>
            <option value="CA">Canada</option>
            <option value="US">United States</option>
-           </selectmenu><br>
+           </selectlist><br>
           <label for="phone">Phone number:</label>
            <input type="text" id="phone"><br>
           </form> )";
@@ -2420,11 +2003,11 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillEvents) {
   EXPECT_EQ(true, content::EvalJs(GetWebContents(), "selectchange;"));
   EXPECT_EQ(true, content::EvalJs(GetWebContents(), "selectblur;"));
 
-  // Checks that all the events were fired for the selectmenu field.
-  EXPECT_EQ(true, content::EvalJs(GetWebContents(), "selectmenufocus;"));
-  EXPECT_EQ(true, content::EvalJs(GetWebContents(), "selectmenuinput;"));
-  EXPECT_EQ(true, content::EvalJs(GetWebContents(), "selectmenuchange;"));
-  EXPECT_EQ(true, content::EvalJs(GetWebContents(), "selectmenublur;"));
+  // Checks that all the events were fired for the selectlist field.
+  EXPECT_EQ(true, content::EvalJs(GetWebContents(), "selectlistfocus;"));
+  EXPECT_EQ(true, content::EvalJs(GetWebContents(), "selectlistinput;"));
+  EXPECT_EQ(true, content::EvalJs(GetWebContents(), "selectlistchange;"));
+  EXPECT_EQ(true, content::EvalJs(GetWebContents(), "selectlistblur;"));
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
@@ -2975,7 +2558,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, SomeAutocomplete) {
 
 // Test that we do not fill formless non-checkout forms when we enable the
 // formless form restrictions.
-// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, AllAutocomplete) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
@@ -3000,10 +2582,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, AllAutocomplete) {
   EXPECT_EQ("15125551234", GetFieldValueById("phone"));
 }
 
-// Test that an 'onchange' event is not fired when a <selectmenu> preview
+// Test that an 'onchange' event is not fired when a <selectlist> preview
 // suggestion is shown or hidden.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       NoEventFiredWhenExitingSelectMenuPreview) {
+                       NoEventFiredWhenExitingSelectListPreview) {
   // It is hard to test that an event will not happen in the future, but we
   // assume that applying similar operations on two elements in sequence results
   // in a consistent order of events triggered by the operations. So the test
@@ -3012,7 +2594,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
-      "/autofill/form_selectmenu_preview_no_onchange.html");
+      "/autofill/form_selectlist_preview_no_onchange.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Show autofill preview.
@@ -3114,6 +2696,11 @@ class AutofillInteractiveFencedFrameTest
       fenced_frame_test_helper_;
 };
 
+INSTANTIATE_TEST_SUITE_P(AutofillInteractiveTest,
+                         AutofillInteractiveFencedFrameTest,
+                         ::testing::Values(FrameType::kFencedFrame,
+                                           FrameType::kIFrame));
+
 // TODO(https://crbug.com/1175735): Check back if flakiness is fixed now.
 IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
                        SimpleCrossSiteFill) {
@@ -3135,8 +2722,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
           ->DriverForFrame(cross_frame_host);
   ASSERT_TRUE(cross_driver);
   // Let |test_delegate()| also observe autofill events in the iframe.
-  static_cast<BrowserAutofillManager*>(cross_driver->autofill_manager())
-      ->SetTestDelegate(test_delegate());
+  test_delegate()->Observe(*cross_driver->autofill_manager());
 
   ASSERT_TRUE(AutofillFlow(GetElementById("NAME_FIRST"), this,
                            {.execution_target = cross_frame_host}));
@@ -3163,8 +2749,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
           ->DriverForFrame(cross_frame_host);
   ASSERT_TRUE(cross_driver);
   // Let |test_delegate()| also observe autofill events in the iframe.
-  static_cast<BrowserAutofillManager*>(cross_driver->autofill_manager())
-      ->SetTestDelegate(test_delegate());
+  test_delegate()->Observe(*cross_driver->autofill_manager());
 
   auto Wait = [this]() { DoNothingAndWait(base::Seconds(2)); };
   ASSERT_TRUE(AutofillFlow(GetElementById("CREDIT_CARD_NUMBER"), this,
@@ -3172,15 +2757,17 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
                             .execution_target = cross_frame_host}));
 }
 
+// Tests that deleting the subframe that has opened the Autofill popup closes
+// the popup.
 // TODO(https://crbug.com/1175735): Check back if flakiness is fixed now.
 IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
-                       DeletingFrameUnderSuggestion) {
+                       DeletingFrameClosesPopup) {
   CreateTestProfile();
 
   // Main frame is on a.com, fenced frame is on b.com.
-  GURL url =
-      https_server()->GetURL("a.com", "/autofill/cross_origin_iframe.html");
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      https_server()->GetURL("a.com", "/autofill/cross_origin_iframe.html")));
 
   content::RenderFrameHost* cross_frame_host =
       LoadSubFrame("/autofill/autofill_test_form.html");
@@ -3198,11 +2785,10 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
           ->DriverForFrame(cross_frame_host);
   ASSERT_TRUE(cross_driver);
   // Let |test_delegate()| also observe autofill events in the iframe.
-  static_cast<BrowserAutofillManager*>(cross_driver->autofill_manager())
-      ->SetTestDelegate(test_delegate());
+  test_delegate()->Observe(*cross_driver->autofill_manager());
 
-  // Focus the form in the iframe/fenced frame and simulate choosing a
-  // suggestion via keyboard.
+  // Open the Autofill popup but do not accept the suggestion yet. Deleting the
+  // subframe should close the popup.
   ASSERT_TRUE(
       AutofillFlow(GetElementById("NAME_FIRST"), this,
                    {.do_accept = false, .execution_target = cross_frame_host}));
@@ -3215,14 +2801,27 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
       GetParam() == FrameType::kIFrame ? "crossFrame" : "crossFF");
   ASSERT_TRUE(content::ExecJs(GetWebContents(), script_delete));
 
-  // The popup should have disappeared with the iframe.
   EXPECT_FALSE(IsPopupShown());
 }
 
-INSTANTIATE_TEST_SUITE_P(AutofillInteractiveTest,
-                         AutofillInteractiveFencedFrameTest,
-                         ::testing::Values(FrameType::kFencedFrame,
-                                           FrameType::kIFrame));
+// Tests that when changing the tab while the popup is open, closes the popup.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ChangingTabClosesPopup) {
+  CreateTestProfile();
+  SetTestUrlResponse(kTestShippingFormString);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+  // Open the Autofill popup but do not accept the suggestion yet. Selecting
+  // another tab should close the popup.
+  content::WebContents* original_tab = GetWebContents();
+  ASSERT_TRUE(
+      AutofillFlow(GetElementById("firstname"), this, {.do_accept = false}));
+  EXPECT_TRUE(IsPopupShown());
+  AddBlankTabAndShow(browser());
+  ASSERT_NE(original_tab, GetWebContents());
+  chrome::CloseWebContents(browser(), GetWebContents(),
+                           /*add_to_history=*/false);
+  ASSERT_EQ(original_tab, GetWebContents());
+  EXPECT_FALSE(IsPopupShown());
+}
 
 // Test fixture for refill behavior.
 //
@@ -3258,7 +2857,6 @@ class AutofillInteractiveTestDynamicForm : public AutofillInteractiveTest {
 };
 
 // Test that we can Autofill dynamically generated forms.
-// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill) {
   CreateTestProfile();
@@ -3281,7 +2879,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
   EXPECT_EQ("15125551234", GetFieldValueById("phone_form1"));
 }
 
-// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
                        TwoDynamicChangingFormsFill) {
   CreateTestProfile();
@@ -3365,7 +2962,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
 }
 
 // Test that only field of a type group that was filled initially get refilled.
-// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_AddsNewFieldTypeGroups) {
   CreateTestProfile();
@@ -3421,7 +3017,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
 
 // Test that we can autofill forms that dynamically change the visibility of a
 // field after it's autofilled.
-// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
                        DynamicFormFill_VisibilitySwitch) {
   CreateTestProfile();
@@ -3471,7 +3066,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the form has no name.
-// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
                        DynamicFormFill_FirstElementDisappearsNoNameForm) {
   CreateTestProfile();
@@ -3550,7 +3144,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though there are multiple forms with no name.
-// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
 IN_PROC_BROWSER_TEST_F(
     AutofillInteractiveTestDynamicForm,
     DynamicFormFill_FirstElementDisappearsMultipleNoNameForms) {
@@ -3601,7 +3194,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
 
 // Test that credit card fields are re-filled.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
-                       DynamicChangingFormFill_AlsoForCreditCard) {
+                       // TODO(crbug.com/1478260): Re-enable this test
+                       DISABLED_DynamicChangingFormFill_AlsoForCreditCard) {
   CreateTestCreditCart();
   GURL url = https_server()->GetURL("a.com",
                                     "/autofill/dynamic_form_credit_card.html");
@@ -3623,19 +3217,19 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
 void DoDynamicChangingFormFill_SelectUpdated(
     AutofillInteractiveTestDynamicForm* test,
     net::EmbeddedTestServer* test_server,
-    bool should_test_selectmenu,
+    bool should_test_selectlist,
     bool should_test_async_update) {
   test->CreateTestProfile();
   GURL url = test_server->GetURL(
       "a.com",
       base::StringPrintf(
-          ("/autofill/dynamic_form_select_or_selectmenu_options_change.html"
-           "?is_selectmenu=%s&is_async=%s"),
-          should_test_selectmenu ? "true" : "false",
+          ("/autofill/dynamic_form_select_or_selectlist_options_change.html"
+           "?is_selectlist=%s&is_async=%s"),
+          should_test_selectlist ? "true" : "false",
           should_test_async_update ? "true" : "false"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(test->browser(), url));
 
-  // Check that the test page correctly parsed the 'is_selectmenu' GET parameter
+  // Check that the test page correctly parsed the 'is_selectlist' GET parameter
   // by checking type of the inserted field.
   auto has_n_controls_of_type = [](const std::string& control_type,
                                    size_t expected_number,
@@ -3650,8 +3244,8 @@ void DoDynamicChangingFormFill_SelectUpdated(
   };
   ASSERT_TRUE(WaitForMatchingForm(
       test->GetBrowserAutofillManager(),
-      should_test_selectmenu
-          ? base::BindRepeating(has_n_controls_of_type, "selectmenu", 1)
+      should_test_selectlist
+          ? base::BindRepeating(has_n_controls_of_type, "selectlist", 1)
           : base::BindRepeating(has_n_controls_of_type, "select-one", 2)));
 
   ValueWaiter refill = test->ListenForRefill("state");
@@ -3681,16 +3275,16 @@ void DoDynamicChangingFormFill_SelectUpdated(
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_SelectUpdated) {
   DoDynamicChangingFormFill_SelectUpdated(this, embedded_test_server(),
-                                          /*should_test_selectmenu=*/false,
+                                          /*should_test_selectlist=*/false,
                                           /*should_test_async_update=*/false);
 }
 
-// Test that we can Autofill dynamically changing selectmenus that have options
+// Test that we can Autofill dynamically changing selectlists that have options
 // added and removed.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
-                       DynamicChangingFormFill_SelectMenuUpdated) {
+                       DynamicChangingFormFill_SelectListUpdated) {
   DoDynamicChangingFormFill_SelectUpdated(this, embedded_test_server(),
-                                          /*should_test_selectmenu=*/true,
+                                          /*should_test_selectlist=*/true,
                                           /*should_test_async_update=*/false);
 }
 
@@ -3699,16 +3293,16 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_SelectUpdatedAsync) {
   DoDynamicChangingFormFill_SelectUpdated(this, embedded_test_server(),
-                                          /*should_test_selectmenu=*/false,
+                                          /*should_test_selectlist=*/false,
                                           /*should_test_async_update=*/true);
 }
 
-// Test that we can Autofill dynamically changing selectmenus that have options
+// Test that we can Autofill dynamically changing selectlists that have options
 // added and removed, when the updating occurs asynchronously.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
-                       DynamicChangingFormFill_SelectMenuUpdatedAsync) {
+                       DynamicChangingFormFill_SelectListUpdatedAsync) {
   DoDynamicChangingFormFill_SelectUpdated(this, embedded_test_server(),
-                                          /*should_test_selectmenu=*/true,
+                                          /*should_test_selectlist=*/true,
                                           /*should_test_async_update=*/true);
 }
 
@@ -3767,7 +3361,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed for forms with no names if the NameForAutofill of the first
 // field matches.
-// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_SelectUpdated_FormWithoutName) {
   CreateTestProfile();
@@ -3793,7 +3386,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
 
 // Test that we can Autofill dynamically generated synthetic forms if the
 // NameForAutofill of the first field matches.
-// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_SyntheticForm) {
   CreateTestProfile();
@@ -3819,7 +3411,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
 
 // Test that we can Autofill dynamically synthetic forms when the select options
 // change if the NameForAutofill of the first field matches
-// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_SelectUpdated_SyntheticForm) {
   CreateTestProfile();

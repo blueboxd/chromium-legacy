@@ -8,10 +8,13 @@
 
 #include <utility>
 
+#include "base/check.h"
+#include "base/debug/alias.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/win/current_module.h"
+#include "base/win/resource_exhaustion.h"
 #include "base/win/wrapped_window_proc.h"
 
 // To avoid conflicts with the macro from the Windows SDK...
@@ -62,6 +65,7 @@ MessageWindow::WindowClass::WindowClass() {
   if (atom_ == 0) {
     PLOG(ERROR)
         << "Failed to register the window class for a message-only window";
+    OnResourceExhausted();
   }
 }
 
@@ -115,7 +119,12 @@ bool MessageWindow::DoCreate(MessageCallback message_callback,
       CreateWindow(MAKEINTATOM(window_class.atom()), window_name, 0, 0, 0, 0, 0,
                    HWND_MESSAGE, nullptr, window_class.instance(), this);
   if (!window_) {
+    // TODO(crbug.com/1476285) : remove alias and dump after investigation is
+    // done.
+    DWORD error = ::GetLastError();
+    base::debug::Alias(&error);
     PLOG(ERROR) << "Failed to create a message-only window";
+    DUMP_WILL_BE_CHECK(false);
     return false;
   }
 

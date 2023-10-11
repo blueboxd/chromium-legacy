@@ -9,6 +9,7 @@
 #include "base/files/file.h"
 #include "base/functional/bind.h"
 #include "base/i18n/message_formatter.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ash/file_manager/copy_or_move_io_task.h"
@@ -40,9 +41,9 @@ constexpr char kUploadResultMetricName[] =
 // Runs the callback provided to `OneDriveUploadHandler::Upload`.
 void OnUploadDone(scoped_refptr<OneDriveUploadHandler> one_drive_upload_handler,
                   OneDriveUploadHandler::UploadCallback callback,
-                  const FileSystemURL& uploaded_file_url,
+                  absl::optional<FileSystemURL> uploaded_file_url,
                   int64_t upload_size) {
-  std::move(callback).Run(uploaded_file_url, upload_size);
+  std::move(callback).Run(std::move(uploaded_file_url), upload_size);
 }
 
 }  // namespace
@@ -151,26 +152,26 @@ void OneDriveUploadHandler::Run(UploadCallback callback) {
 }
 
 void OneDriveUploadHandler::OnEndUpload(
-    base::expected<storage::FileSystemURL, std::string> url_or_error,
+    base::expected<storage::FileSystemURL, std::string> url,
     OfficeFilesUploadResult result_metric) {
   UMA_HISTOGRAM_ENUMERATION(kUploadResultMetricName, result_metric);
-  if (result_metric != OfficeFilesUploadResult::kSuccess) {
-    UMA_HISTOGRAM_ENUMERATION(kOneDriveTaskResultMetricName,
-                              OfficeTaskResult::kFailedToUpload);
-  }
-  // Resolve notifications.
-  if (notification_manager_) {
-    if (url_or_error.has_value()) {
+  if (url.has_value()) {
+    // Resolve notifications.
+    if (notification_manager_) {
       notification_manager_->MarkUploadComplete();
-    } else if (const std::string& error_message = url_or_error.error();
-               !error_message.empty()) {
+    }
+    if (callback_) {
+      std::move(callback_).Run(url.value(), upload_size_);
+    }
+  } else {
+    if (const std::string& error_message = url.error();
+        notification_manager_ && !error_message.empty()) {
       LOG(ERROR) << "Upload to OneDrive: " << error_message;
       notification_manager_->ShowUploadError(error_message);
     }
-  }
-  if (callback_) {
-    std::move(callback_).Run(url_or_error.value_or(FileSystemURL()),
-                             upload_size_);
+    if (callback_) {
+      std::move(callback_).Run(absl::nullopt, 0);
+    }
   }
 }
 
@@ -252,16 +253,14 @@ void OneDriveUploadHandler::ShowIOTaskError(
   std::string error_message;
   bool copy = status.type == file_manager::io_task::OperationType::kCopy;
 
-  base::File::Error file_error = base::File::FILE_ERROR_FAILED;
   // TODO(b/242685536) Find most relevant error in a multi-file upload when
   // support for multi-files is added.
-  // Find the first not base::File::Error::FILE_OK.
-  if (status.sources.size() > 0 && status.sources[0].error.has_value() &&
-      status.sources[0].error.value() != base::File::Error::FILE_OK) {
-    file_error = status.sources[0].error.value();
-  } else if (status.outputs.size() > 0 && status.outputs[0].error.has_value()) {
-    file_error = status.outputs[0].error.value();
-  }
+  base::File::Error file_error =
+      GetFirstTaskError(status).value_or(base::File::FILE_ERROR_FAILED);
+
+  base::UmaHistogramExactLinear(
+      copy ? kOneDriveCopyErrorMetricName : kOneDriveMoveErrorMetricName,
+      -file_error, -base::File::FILE_ERROR_MAX);
 
   switch (file_error) {
     case base::File::FILE_ERROR_ACCESS_DENIED:
@@ -299,7 +298,6 @@ void OneDriveUploadHandler::ShowIOTaskError(
       }
       error_message = GetGenericErrorMessage();
   }
-
   OnEndUpload(base::unexpected(error_message), upload_result);
 }
 

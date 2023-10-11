@@ -6,6 +6,7 @@
 
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/state_transitions.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -451,6 +452,15 @@ void DocumentSpeculationRules::DocumentRestoredFromBFCache() {
   QueueUpdateSpeculationCandidates();
 }
 
+void DocumentSpeculationRules::InitiatePreview(const KURL& url) {
+  CHECK(base::FeatureList::IsEnabled(features::kLinkPreview));
+
+  auto* host = GetHost();
+  if (host) {
+    host->InitiatePreview(url);
+  }
+}
+
 void DocumentSpeculationRules::Trace(Visitor* visitor) const {
   Supplement::Trace(visitor);
   visitor->Trace(rule_sets_);
@@ -595,6 +605,20 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
 
   // Add candidates derived from document rule predicates.
   AddLinkBasedSpeculationCandidates(candidates);
+
+  // Remove candidates for links to fragments in the current document. These are
+  // unlikely to be useful to preload, because such navigations are likely to
+  // trigger fragment navigation (see
+  // |FrameLoader::ShouldPerformFragmentNavigation|).
+  // Note that the document's URL is not necessarily the same as the base URL
+  // (e,g., when a <base> element is present in the document).
+  const KURL& document_url = GetSupplementable()->Url();
+  auto* last = base::ranges::remove_if(candidates, [&](const auto& candidate) {
+    const KURL& url = candidate->url();
+    return url.HasFragmentIdentifier() &&
+           EqualIgnoringFragmentIdentifier(url, document_url);
+  });
+  candidates.Shrink(base::checked_cast<wtf_size_t>(last - candidates.begin()));
 
   if (!sent_is_part_of_no_vary_search_trial_ &&
       RuntimeEnabledFeatures::NoVarySearchPrefetchEnabled(execution_context)) {

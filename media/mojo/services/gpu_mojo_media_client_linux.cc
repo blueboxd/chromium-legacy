@@ -8,18 +8,18 @@
 #include "base/task/sequenced_task_runner.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_encoder.h"
+#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/gpu/chromeos/mailbox_video_frame_converter.h"
 #include "media/gpu/chromeos/platform_video_frame_pool.h"
 #include "media/gpu/chromeos/video_decoder_pipeline.h"
-#include "media/gpu/ipc/service/vda_video_decoder.h"
 
 namespace media {
 
 namespace {
 
 VideoDecoderType GetPreferredLinuxDecoderImplementation() {
-  // VaapiVideoDecoder flag is required for both VDA and VaapiVideoDecoder.
+  // VaapiVideoDecoder flag is required for VaapiVideoDecoder.
   if (!base::FeatureList::IsEnabled(kVaapiVideoDecodeLinux)) {
     return VideoDecoderType::kUnknown;
   }
@@ -50,7 +50,7 @@ std::vector<Fourcc> GetPreferredRenderableFourccs(
 VideoDecoderType GetActualPlatformDecoderImplementation(
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GPUInfo& gpu_info) {
-  // On linux, VDA and Vaapi have GL restrictions.
+  // On linux, Vaapi has GL restrictions.
   switch (GetPreferredLinuxDecoderImplementation()) {
     case VideoDecoderType::kUnknown:
       return VideoDecoderType::kUnknown;
@@ -128,8 +128,7 @@ std::unique_ptr<VideoDecoder> CreatePlatformVideoDecoder(
       auto frame_pool = std::make_unique<PlatformVideoFramePool>();
 
       auto frame_converter = MailboxVideoFrameConverter::Create(
-          traits.gpu_task_runner, traits.get_command_buffer_stub_cb,
-          traits.gpu_preferences.enable_unsafe_webgpu);
+          traits.gpu_task_runner, traits.get_command_buffer_stub_cb);
       return VideoDecoderPipeline::Create(
           *traits.gpu_workarounds, traits.task_runner, std::move(frame_pool),
           std::move(frame_converter),
@@ -140,8 +139,7 @@ std::unique_ptr<VideoDecoder> CreatePlatformVideoDecoder(
     case VideoDecoderType::kV4L2: {
       auto frame_pool = std::make_unique<PlatformVideoFramePool>();
       auto frame_converter = MailboxVideoFrameConverter::Create(
-          traits.gpu_task_runner, traits.get_command_buffer_stub_cb,
-          traits.gpu_preferences.enable_unsafe_webgpu);
+          traits.gpu_task_runner, traits.get_command_buffer_stub_cb);
       return VideoDecoderPipeline::Create(
           *traits.gpu_workarounds, traits.task_runner, std::move(frame_pool),
           std::move(frame_converter),

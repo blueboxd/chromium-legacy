@@ -6,15 +6,16 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/webui/settings/public/constants/routes.mojom-forward.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/input_method/editor_mediator.h"
 #include "chrome/browser/ash/input_method/input_method_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/webui/ash/settings/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_features_util.h"
-#include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
@@ -40,6 +41,7 @@ using ::chromeos::settings::mojom::kJapaneseManageUserDictionarySubpagePath;
 using ::chromeos::settings::mojom::kLanguagesAndInputSectionPath;
 using ::chromeos::settings::mojom::kLanguagesSubpagePath;
 using ::chromeos::settings::mojom::kSmartInputsSubpagePath;
+using ::chromeos::settings::mojom::kSystemPreferencesSectionPath;
 using ::chromeos::settings::mojom::Section;
 using ::chromeos::settings::mojom::Setting;
 using ::chromeos::settings::mojom::Subpage;
@@ -165,10 +167,12 @@ void AddSmartInputsStrings(content::WebUIDataSource* html_source,
       {"smartInputsTitle", IDS_SETTINGS_SUGGESTIONS_TITLE},
       {"emojiSuggestionTitle", IDS_SETTINGS_SUGGESTIONS_EMOJI_SUGGESTION_TITLE},
       {"emojiSuggestionDescription",
-       IDS_SETTINGS_SUGGESTIONS_EMOJI_SUGGESTION_DESCRIPTION},
-  };
+       IDS_SETTINGS_SUGGESTIONS_EMOJI_SUGGESTION_DESCRIPTION}};
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
+  html_source->AddBoolean(
+      "allowOrca", input_method::EditorMediator::HasInstance() &&
+                       input_method::EditorMediator::Get()->IsAllowedForUse());
   html_source->AddBoolean("allowEmojiSuggestion", is_emoji_suggestion_allowed);
 }
 
@@ -603,7 +607,9 @@ int LanguagesSection::GetSectionNameMessageId() const {
 }
 
 mojom::Section LanguagesSection::GetSection() const {
-  return mojom::Section::kLanguagesAndInput;
+  return ash::features::IsOsSettingsRevampWayfindingEnabled()
+             ? mojom::Section::kSystemPreferences
+             : mojom::Section::kLanguagesAndInput;
 }
 
 mojom::SearchResultIcon LanguagesSection::GetSectionIcon() const {
@@ -611,7 +617,9 @@ mojom::SearchResultIcon LanguagesSection::GetSectionIcon() const {
 }
 
 const char* LanguagesSection::GetSectionPath() const {
-  return mojom::kLanguagesAndInputSectionPath;
+  return ash::features::IsOsSettingsRevampWayfindingEnabled()
+             ? mojom::kSystemPreferencesSectionPath
+             : mojom::kLanguagesAndInputSectionPath;
 }
 
 bool LanguagesSection::LogMetric(mojom::Setting setting,

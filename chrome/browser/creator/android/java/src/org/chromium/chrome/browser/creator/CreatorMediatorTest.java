@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.UnownedUserDataSupplier;
@@ -50,13 +49,11 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.ButtonCompat;
 import org.chromium.url.JUnitTestGURLs;
-import org.chromium.url.ShadowGURL;
 
 /**
  * Tests for {@link CreatorMediator}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(shadows = {ShadowGURL.class})
 public class CreatorMediatorTest {
     @Mock
     private WebFeedBridge.Natives mWebFeedBridgeJniMock;
@@ -96,7 +93,7 @@ public class CreatorMediatorTest {
     public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
             new ActivityScenarioRule<>(TestActivity.class);
 
-    private final String mUrl = JUnitTestGURLs.EXAMPLE_URL;
+    private final String mUrl = JUnitTestGURLs.EXAMPLE_URL.getSpec();
     private final byte[] mWebFeedId = "webFeedId".getBytes();
     private CreatorCoordinator mCreatorCoordinator;
     private CreatorMediator mCreatorMediator;
@@ -114,7 +111,7 @@ public class CreatorMediatorTest {
         mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
 
         when(mUrlFormatterJniMock.formatUrlForDisplayOmitSchemePathAndTrivialSubdomains(any()))
-                .thenReturn(JUnitTestGURLs.URL_1);
+                .thenReturn(JUnitTestGURLs.URL_1.getSpec());
 
         when(mFeedServiceBridgeJniMock.isSignedIn()).thenReturn(true);
 
@@ -150,52 +147,46 @@ public class CreatorMediatorTest {
     public void testCreatorModel_FollowClickHandler_CallWebFeedBridgeCorrectly_Profile() {
         View creatorProfileView = mCreatorCoordinator.getProfileView();
         ButtonCompat followButton = creatorProfileView.findViewById(R.id.creator_follow_button);
-        ButtonCompat followingButton =
-                creatorProfileView.findViewById(R.id.creator_following_button);
         followButton.performClick();
 
         verify(mWebFeedBridgeJniMock)
                 .followWebFeedById(eq(mWebFeedId), eq(false),
-                        eq(WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU), any());
+                        eq(WebFeedBridge.CHANGE_REASON_SINGLE_WEB_FEED), any());
     }
 
     @Test
     public void testCreatorModel_UnfollowClickHandler_CallWebFeedBridgeCorrectly_Profile() {
         View creatorProfileView = mCreatorCoordinator.getProfileView();
-        ButtonCompat followButton = creatorProfileView.findViewById(R.id.creator_follow_button);
         ButtonCompat followingButton =
                 creatorProfileView.findViewById(R.id.creator_following_button);
         followingButton.performClick();
 
         verify(mWebFeedBridgeJniMock)
                 .unfollowWebFeed(eq(mWebFeedId), eq(false),
-                        eq(WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU), any());
+                        eq(WebFeedBridge.CHANGE_REASON_SINGLE_WEB_FEED), any());
     }
 
     @Test
     public void testCreatorModel_FollowClickHandler_CallWebFeedBridgeCorrectly_Toolbar() {
         View creatorView = mCreatorCoordinator.getView();
         ButtonCompat followButton = creatorView.findViewById(R.id.creator_follow_button_toolbar);
-        ButtonCompat followingButton =
-                creatorView.findViewById(R.id.creator_following_button_toolbar);
         followButton.performClick();
 
         verify(mWebFeedBridgeJniMock)
                 .followWebFeedById(eq(mWebFeedId), eq(false),
-                        eq(WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU), any());
+                        eq(WebFeedBridge.CHANGE_REASON_SINGLE_WEB_FEED), any());
     }
 
     @Test
     public void testCreatorModel_UnfollowClickHandler_CallWebFeedBridgeCorrectly_Toolbar() {
         View creatorView = mCreatorCoordinator.getView();
-        ButtonCompat followButton = creatorView.findViewById(R.id.creator_follow_button_toolbar);
         ButtonCompat followingButton =
                 creatorView.findViewById(R.id.creator_following_button_toolbar);
         followingButton.performClick();
 
         verify(mWebFeedBridgeJniMock)
                 .unfollowWebFeed(eq(mWebFeedId), eq(false),
-                        eq(WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU), any());
+                        eq(WebFeedBridge.CHANGE_REASON_SINGLE_WEB_FEED), any());
     }
 
     @Test
@@ -208,7 +199,7 @@ public class CreatorMediatorTest {
 
         verify(mWebFeedBridgeJniMock)
                 .followWebFeedById(eq(mWebFeedId), eq(false),
-                        eq(WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU),
+                        eq(WebFeedBridge.CHANGE_REASON_SINGLE_WEB_FEED),
                         mFollowResultsCallbackCaptor.capture());
         mFollowResultsCallbackCaptor.getValue().onResult(
                 new FollowResults(WebFeedSubscriptionRequestStatus.SUCCESS, null));
@@ -227,7 +218,7 @@ public class CreatorMediatorTest {
 
         verify(mWebFeedBridgeJniMock)
                 .unfollowWebFeed(eq(mWebFeedId), eq(false),
-                        eq(WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU),
+                        eq(WebFeedBridge.CHANGE_REASON_SINGLE_WEB_FEED),
                         mUnfollowResultsCallbackCaptor.capture());
         mUnfollowResultsCallbackCaptor.getValue().onResult(
                 new UnfollowResults(WebFeedSubscriptionRequestStatus.SUCCESS));
@@ -246,7 +237,7 @@ public class CreatorMediatorTest {
 
         verify(mWebFeedBridgeJniMock)
                 .followWebFeedById(eq(mWebFeedId), eq(false),
-                        eq(WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU),
+                        eq(WebFeedBridge.CHANGE_REASON_SINGLE_WEB_FEED),
                         mFollowResultsCallbackCaptor.capture());
         mFollowResultsCallbackCaptor.getValue().onResult(
                 new FollowResults(WebFeedSubscriptionRequestStatus.SUCCESS, null));
@@ -265,7 +256,7 @@ public class CreatorMediatorTest {
 
         verify(mWebFeedBridgeJniMock)
                 .unfollowWebFeed(eq(mWebFeedId), eq(false),
-                        eq(WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU),
+                        eq(WebFeedBridge.CHANGE_REASON_SINGLE_WEB_FEED),
                         mUnfollowResultsCallbackCaptor.capture());
         mUnfollowResultsCallbackCaptor.getValue().onResult(
                 new UnfollowResults(WebFeedSubscriptionRequestStatus.SUCCESS));

@@ -21,7 +21,8 @@ class AppServicePromiseAppItem : public ChromeAppListItem,
 
   AppServicePromiseAppItem(Profile* profile,
                            AppListModelUpdater* model_updater,
-                           const apps::PromiseAppUpdate& app_update);
+                           const apps::PromiseAppUpdate& app_update,
+                           const syncer::StringOrdinal position);
   AppServicePromiseAppItem(const AppServicePromiseAppItem&) = delete;
   AppServicePromiseAppItem& operator=(const AppServicePromiseAppItem&) = delete;
   ~AppServicePromiseAppItem() override;
@@ -48,11 +49,9 @@ class AppServicePromiseAppItem : public ChromeAppListItem,
 
   std::unique_ptr<app_list::AppContextMenu> context_menu_;
 
-  // Used to indicate the installation progress in the promise icon progress
-  // bar.
+  // TODO(261907495): Remove this field and replace it with one in the
+  // ChromeAppListItem metadata.
   const apps::PackageId package_id_;
-  absl::optional<float> progress_;
-  apps::PromiseStatus status_;
 
   base::WeakPtrFactory<AppServicePromiseAppItem> weak_ptr_factory_{this};
 };

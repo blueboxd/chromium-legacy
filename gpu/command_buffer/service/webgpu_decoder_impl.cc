@@ -409,7 +409,6 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   bool use_blocklist() const;
 
   scoped_refptr<SharedContextState> shared_context_state_;
-  const GrContextType gr_context_type_;
 
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
@@ -422,6 +421,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   WebGPUAdapterName use_webgpu_adapter_ = WebGPUAdapterName::kDefault;
   WebGPUPowerPreference use_webgpu_power_preference_ =
       WebGPUPowerPreference::kNone;
+  bool force_fallback_adapter_ = false;
   bool force_webgpu_compat_ = false;
   std::vector<std::string> require_enabled_toggles_;
   std::vector<std::string> require_disabled_toggles_;
@@ -1042,7 +1042,6 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
     IsolationKeyProvider* isolation_key_provider)
     : WebGPUDecoder(client, command_buffer_service, outputter),
       shared_context_state_(std::move(shared_context_state)),
-      gr_context_type_(gpu_preferences.gr_context_type),
       shared_image_representation_factory_(
           std::make_unique<SharedImageRepresentationFactory>(
               shared_image_manager,
@@ -1124,9 +1123,14 @@ void WebGPUDecoderImpl::Destroy(bool have_context) {
 
 ContextResult WebGPUDecoderImpl::Initialize(
     const GpuFeatureInfo& gpu_feature_info) {
+  // TODO(senorblanco): forceFallbackAdapter with --force-webgpu-compat
+  // overrides the OpenGLES backend and gives SwiftShader/Vk with Compat
+  // validation. Fix this is dawn, and then remove the "!= OpenGLES" clause
+  // below.
   if (kGpuFeatureStatusSoftware ==
-      gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGPU]) {
-    use_webgpu_adapter_ = WebGPUAdapterName::kSwiftShader;
+          gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGPU] &&
+      use_webgpu_adapter_ != WebGPUAdapterName::kOpenGLES) {
+    force_fallback_adapter_ = true;
   }
 
   dawn_instance_->EnableAdapterBlocklist(use_blocklist());
@@ -1152,15 +1156,14 @@ bool WebGPUDecoderImpl::IsFeatureExposed(wgpu::FeatureName feature) const {
     case wgpu::FeatureName::TimestampQueryInsidePasses:
     case wgpu::FeatureName::PipelineStatisticsQuery:
     case wgpu::FeatureName::ChromiumExperimentalDp4a:
+    case wgpu::FeatureName::ChromiumExperimentalReadWriteStorageTexture:
+    case wgpu::FeatureName::ChromiumExperimentalSubgroups:
+    case wgpu::FeatureName::ChromiumExperimentalSubgroupUniformControlFlow:
     // TODO(dawn:1664): Enable Float32Filterable by default once it is tested.
     case wgpu::FeatureName::Float32Filterable:
-    // TODO(crbug.com/1258986): DawnMultiPlanarFormats is a stable feature in
-    // Dawn, but currently we hide it from Render process as unsafe apis, so
-    // that 0-copy code path, which explicitly checks this feature, is protected
-    // under unsafe apis as well.
-    case wgpu::FeatureName::DawnMultiPlanarFormats:
     case wgpu::FeatureName::ShaderF16:
       return allow_unsafe_apis_;
+    case wgpu::FeatureName::DawnMultiPlanarFormats:
     case wgpu::FeatureName::Depth32FloatStencil8:
     case wgpu::FeatureName::DepthClipControl:
     case wgpu::FeatureName::TextureCompressionBC:
@@ -1186,25 +1189,27 @@ void WebGPUDecoderImpl::RequestAdapterImpl(
     options = &default_options;
   }
 
-  bool force_fallback_adapter = options->forceFallbackAdapter;
+  bool force_fallback_adapter = force_fallback_adapter_;
   if (use_webgpu_adapter_ == WebGPUAdapterName::kSwiftShader) {
     force_fallback_adapter = true;
   }
 
-  if (gr_context_type_ != GrContextType::kVulkan &&
-      use_webgpu_adapter_ != WebGPUAdapterName::kOpenGLES) {
 #if BUILDFLAG(IS_LINUX)
+  if (!shared_context_state_->GrContextIsVulkan() &&
+      !shared_context_state_->IsGraphiteDawnVulkan() &&
+      use_webgpu_adapter_ != WebGPUAdapterName::kOpenGLES) {
     callback(WGPURequestAdapterStatus_Unavailable, nullptr,
-             "WebGPU on Linux requires command-line flag "
-             "--enable-features=Vulkan",
+             "WebGPU on Linux requires GLES compat, or command-line flag "
+             "--enable-features=Vulkan, or command-line flag "
+             "--enable-features=SkiaGraphite (and skia_use_dawn = true GN arg)",
              userdata);
     return;
-#endif  // BUILDFLAG(IS_LINUX)
   }
+#endif  // BUILDFLAG(IS_LINUX)
 
   wgpu::Adapter adapter = CreatePreferredAdapter(
       static_cast<wgpu::PowerPreference>(options->powerPreference),
-      force_fallback_adapter,
+      options->forceFallbackAdapter || force_fallback_adapter,
       options->compatibilityMode || force_webgpu_compat_);
 
   if (adapter == nullptr) {
@@ -1213,7 +1218,7 @@ void WebGPUDecoderImpl::RequestAdapterImpl(
              "No available adapters.", userdata);
     return;
   }
-  callback(WGPURequestAdapterStatus_Success, adapter.Release(), nullptr,
+  callback(WGPURequestAdapterStatus_Success, adapter.MoveToCHandle(), nullptr,
            userdata);
 }
 
@@ -1272,10 +1277,17 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
   DCHECK_EQ(desc.nextInChain, nullptr);
 
   std::vector<wgpu::FeatureName> required_features;
+
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  if (desc.requiredFeatureCount) {
+    size_t requiredFeatureCount = desc.requiredFeatureCount;
+#else
   if (desc.requiredFeaturesCount) {
+    size_t requiredFeatureCount = desc.requiredFeaturesCount;
+#endif
     required_features = {
         desc.requiredFeatures,
-        desc.requiredFeatures + desc.requiredFeaturesCount,
+        desc.requiredFeatures + requiredFeatureCount,
     };
 
     // Check that no disallowed features were requested. They should be hidden
@@ -1300,8 +1312,20 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
     required_features.push_back(wgpu::FeatureName::DawnMultiPlanarFormats);
   }
 
+#if BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
+  // On Desktop GL via ANGLE, require GL texture sharing.
+  if (use_webgpu_adapter_ == WebGPUAdapterName::kOpenGLES &&
+      gl::GetANGLEImplementation() == gl::ANGLEImplementation::kOpenGL) {
+    required_features.push_back(wgpu::FeatureName::ANGLETextureSharing);
+  }
+#endif
+
   desc.requiredFeatures = required_features.data();
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  desc.requiredFeatureCount = required_features.size();
+#else
   desc.requiredFeaturesCount = required_features.size();
+#endif
 
   // If a new toggle is added here, ForceDawnTogglesForWebGPU() which collects
   // info for about:gpu should be updated as well.
@@ -1326,11 +1350,21 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
     require_device_disabled_toggles.push_back(toggles.c_str());
   }
   dawn_device_toggles.enabledToggles = require_device_enabled_toggles.data();
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  dawn_device_toggles.enabledToggleCount =
+      require_device_enabled_toggles.size();
+#else
   dawn_device_toggles.enabledTogglesCount =
       require_device_enabled_toggles.size();
+#endif
   dawn_device_toggles.disabledToggles = require_device_disabled_toggles.data();
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  dawn_device_toggles.disabledToggleCount =
+      require_device_disabled_toggles.size();
+#else
   dawn_device_toggles.disabledTogglesCount =
       require_device_disabled_toggles.size();
+#endif
   ChainStruct(desc, &dawn_device_toggles);
 
   // Dawn caching isolation key information needs to be passed per device. If an
@@ -1398,9 +1432,15 @@ struct WGPUDeviceDescriptorDeepCopy : WGPUDeviceDescriptor {
       label = device_label_.c_str();
     }
     if (desc.requiredFeatures) {
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+      required_features_ = std::vector<WGPUFeatureName>(
+          desc.requiredFeatures,
+          desc.requiredFeatures + desc.requiredFeatureCount);
+#else
       required_features_ = std::vector<WGPUFeatureName>(
           desc.requiredFeatures,
           desc.requiredFeatures + desc.requiredFeaturesCount);
+#endif
       requiredFeatures = required_features_.data();
     }
     if (desc.requiredLimits) {
@@ -1515,12 +1555,22 @@ wgpu::Adapter WebGPUDecoderImpl::CreatePreferredAdapter(
     require_adapter_disabled_toggles.push_back(toggles.c_str());
   }
   dawn_adapter_toggles.enabledToggles = require_adapter_enabled_toggles.data();
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  dawn_adapter_toggles.enabledToggleCount =
+      require_adapter_enabled_toggles.size();
+#else
   dawn_adapter_toggles.enabledTogglesCount =
       require_adapter_enabled_toggles.size();
+#endif
   dawn_adapter_toggles.disabledToggles =
       require_adapter_disabled_toggles.data();
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  dawn_adapter_toggles.disabledToggleCount =
+      require_adapter_disabled_toggles.size();
+#else
   dawn_adapter_toggles.disabledTogglesCount =
       require_adapter_disabled_toggles.size();
+#endif
   ChainStruct(adapter_options, &dawn_adapter_toggles);
 
 #if BUILDFLAG(IS_WIN)
@@ -1553,6 +1603,21 @@ wgpu::Adapter WebGPUDecoderImpl::CreatePreferredAdapter(
   dawn::native::d3d::RequestAdapterOptionsLUID adapter_options_luid = {};
   adapter_options_luid.adapterLUID = adapter_desc.AdapterLuid;
   ChainStruct(adapter_options, &adapter_options_luid);
+#endif
+
+#if BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
+  dawn::native::opengl::RequestAdapterOptionsGetGLProc
+      adapter_options_get_gl_proc = {};
+  adapter_options_get_gl_proc.getProc =
+      reinterpret_cast<void* (*)(const char*)>(gl::GetGLProcAddress);
+  gl::GLDisplayEGL* gl_display = gl::GLSurfaceEGL::GetGLDisplayEGL();
+  if (gl_display) {
+    adapter_options_get_gl_proc.display = gl_display->GetDisplay();
+  } else {
+    adapter_options_get_gl_proc.display = EGL_NO_DISPLAY;
+  }
+
+  ChainStruct(adapter_options, &adapter_options_get_gl_proc);
 #endif
 
   // Build a list of backend types we will search for, in order of preference.
@@ -1784,7 +1849,7 @@ WebGPUDecoderImpl::AssociateMailboxDawn(
   }
 
 #if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_APPLE) && \
-    !BUILDFLAG(IS_ANDROID)
+    !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_LINUX)
   if (usage & wgpu::TextureUsage::StorageBinding) {
     LOG(ERROR) << "AssociateMailbox: wgpu::TextureUsage::StorageBinding is NOT "
                   "supported yet on this platform.";

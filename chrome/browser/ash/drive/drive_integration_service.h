@@ -6,11 +6,9 @@
 #define CHROME_BROWSER_ASH_DRIVE_DRIVE_INTEGRATION_SERVICE_H_
 
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
-#include "base/feature_list.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -25,7 +23,7 @@
 #include "chromeos/ash/components/drivefs/drivefs_pin_manager.h"
 #include "chromeos/ash/components/drivefs/sync_status_tracker.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
-#include "components/drive/drive_notification_observer.h"
+#include "components/drive/event_logger.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -50,8 +48,6 @@ class DriveFs;
 }  // namespace drivefs
 
 namespace drive {
-
-class EventLogger;
 
 namespace internal {
 class ResourceMetadataStorage;
@@ -104,8 +100,7 @@ class DriveIntegrationServiceObserver : public base::CheckedObserver {
   virtual void OnBulkPinInitialized() {}
 
   // Triggered when the network connection to Drive could have changed.
-  virtual void OnDriveConnectionStatusChanged(
-      util::ConnectionStatusType status) {}
+  virtual void OnDriveConnectionStatusChanged(util::ConnectionStatus status) {}
 };
 
 // DriveIntegrationService is used to integrate Drive to Chrome. This class
@@ -120,8 +115,6 @@ class DriveIntegrationService : public KeyedService,
                                 public drivefs::DriveFsHost::MountObserver,
                                 public drivefs::pinning::PinManager::Observer {
  public:
-  class PreferenceWatcher;
-  class BulkPinningPrefUpdater;
   using DriveFsMojoListenerFactory = base::RepeatingCallback<
       std::unique_ptr<drivefs::DriveFsBootstrapListener>()>;
   using GetQuickAccessItemsCallback =
@@ -156,7 +149,7 @@ class DriveIntegrationService : public KeyedService,
   void SetEnabled(bool enabled);
   bool is_enabled() const { return enabled_; }
 
-  bool IsOnline() const;
+  bool IsOnline() const { return is_online_; }
 
   bool IsMounted() const;
 
@@ -168,6 +161,9 @@ class DriveIntegrationService : public KeyedService,
 
   // Returns the path of DriveFS log if enabled or empty path.
   base::FilePath GetDriveFsLogPath() const;
+
+  // Returns the path of the DriveFs content cache.
+  base::FilePath GetDriveFsContentCachePath() const;
 
   // Returns true if |local_path| resides inside |GetMountPointPath()|.
   // In this case |drive_path| will contain 'drive' path of this file, e.g.
@@ -191,9 +187,10 @@ class DriveIntegrationService : public KeyedService,
                      absl::optional<base::TimeDelta> remount_delay) override;
 
   // PinManager::Observer implementation
-  void OnProgress(const drivefs::pinning::Progress& progress) override;
+  using Progress = drivefs::pinning::Progress;
+  void OnProgress(const Progress& progress) override;
 
-  EventLogger* event_logger() { return logger_.get(); }
+  EventLogger* GetLogger() { return &logger_; }
 
   // Clears all the local cache folder and remounts the file system. |callback|
   // is called with true when this operation is done successfully. Otherwise,
@@ -204,7 +201,8 @@ class DriveIntegrationService : public KeyedService,
   drivefs::DriveFsHost* GetDriveFsHost() const;
 
   // Returns the PinManager if DriveFS is mounted and bulk-pinning is enabled.
-  drivefs::pinning::PinManager* GetPinManager() const;
+  using PinManager = drivefs::pinning::PinManager;
+  PinManager* GetPinManager() const;
 
   // Returns the mojo interface to the DriveFs daemon if it is enabled and
   // connected.
@@ -338,19 +336,17 @@ class DriveIntegrationService : public KeyedService,
   void GetDocsOfflineStats(
       drivefs::mojom::DriveFs::GetDocsOfflineStatsCallback callback);
 
-  void UpdateNetworkState(bool pause_syncing, bool is_offline);
-
  private:
-  enum State {
-    NOT_INITIALIZED,
-    INITIALIZING,
-    INITIALIZED,
-    REMOUNTING,
-  };
-  class DriveFsHolder;
+  void UpdateNetworkState();
 
-  // Manages passing changes in team drives to the drive notification manager.
-  class NotificationManager;
+  enum class State {
+    kNone,
+    kInitializing,
+    kInitialized,
+    kRemounting,
+  };
+
+  class DriveFsHolder;
 
   PrefService* GetPrefs() const;
 
@@ -463,9 +459,9 @@ class DriveIntegrationService : public KeyedService,
 
   friend class DriveIntegrationServiceFactory;
 
-  raw_ptr<Profile, ExperimentalAsh> profile_;
-  State state_;
-  bool enabled_;
+  const raw_ptr<Profile, ExperimentalAsh> profile_;
+  State state_ = State::kNone;
+  bool enabled_ = false;
   bool mount_failed_ = false;
   bool in_clear_cache_ = false;
 
@@ -478,7 +474,7 @@ class DriveIntegrationService : public KeyedService,
   bool mirroring_enabled_ = false;
 
   base::FilePath cache_root_directory_;
-  std::unique_ptr<EventLogger> logger_;
+  EventLogger logger_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::unique_ptr<internal::ResourceMetadataStorage, util::DestroyHelper>
       metadata_storage_;
@@ -486,11 +482,14 @@ class DriveIntegrationService : public KeyedService,
   base::ObserverList<Observer> observers_;
 
   std::unique_ptr<DriveFsHolder> drivefs_holder_;
-  std::unique_ptr<PreferenceWatcher> preference_watcher_;
-  std::unique_ptr<drivefs::pinning::PinManager> pin_manager_;
-  std::unique_ptr<BulkPinningPrefUpdater> bulk_pinning_pref_updater_;
+
+  class PrefWatcher;
+  std::unique_ptr<PrefWatcher> pref_watcher_;
+  std::unique_ptr<PinManager> pin_manager_;
+
   int drivefs_total_failures_count_ = 0;
   int drivefs_consecutive_failures_count_ = 0;
+  bool is_online_ = true;
   bool remount_when_online_ = false;
 
   // Used to fetch authentication and refresh tokens from Drive.

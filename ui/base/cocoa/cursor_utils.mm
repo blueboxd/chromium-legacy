@@ -7,9 +7,11 @@
 #import <AppKit/AppKit.h>
 #include <stdint.h>
 
+#include <algorithm>
+
+#include "base/apple/scoped_cftyperef.h"
 #include "base/check.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/notreached.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/cursor/cursor.h"
@@ -269,6 +271,23 @@ NSCursor* GetNativeCursor(const ui::Cursor& cursor) {
   }
   NOTREACHED();
   return nil;
+}
+
+float GetCursorAccessibilityScaleFactor(bool force_update) {
+  static absl::optional<float> scale;
+  if (@available(macOS 10.9, *)) {
+    if (!scale.has_value() || force_update) {
+      NSUserDefaults* defaults = [[NSUserDefaults alloc]
+          initWithSuiteName:@"com.apple.universalaccess"];
+      // This may be 0 in tests, but the expected production range is
+      // [1.0, 4.0].
+      scale =
+          std::clamp([defaults floatForKey:@"mouseDriverCursorSize"], 1.f, 4.f);
+    }
+    return scale.value();
+  } else {
+    return 1.0f;
+  }
 }
 
 }  // namespace ui

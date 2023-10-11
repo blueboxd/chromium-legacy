@@ -773,13 +773,16 @@ class BrowserView : public BrowserWindow,
   // Creates an accessible tab label for screen readers that includes the tab
   // status for the given tab index. This takes the form of
   // "Page title - Tab state".
-  std::u16string GetAccessibleTabLabel(bool include_app_name, int index) const;
+  std::u16string GetAccessibleTabLabel(int index) const;
 
   // Testing interface:
   views::View* GetContentsContainerForTest() { return contents_container_; }
   views::WebView* GetDevToolsWebViewForTest() { return devtools_web_view_; }
   FullscreenControlHost* fullscreen_control_host_for_test() {
     return fullscreen_control_host_.get();
+  }
+  views::View* GetSidePanelRoundedCorner() {
+    return side_panel_rounded_corner_;
   }
 
   // Returns all the NativeViewHosts attached to this BrowserView which should
@@ -809,6 +812,12 @@ class BrowserView : public BrowserWindow,
   WebAppFrameToolbarView* web_app_frame_toolbar_for_testing() {
     return web_app_frame_toolbar();
   }
+
+  // This value is used in a common calculation in NonClientFrameView
+  // subclasses. This must be added to the origin of the first painted pixel of
+  // NonClientFrameView to get the correct offset. See
+  // TopContainerBackground::PaintThemeCustomImage for details.
+  gfx::Point GetThemeOffsetFromBrowserView() const;
 
  private:
   // Do not friend BrowserViewLayout. Use the BrowserViewLayoutDelegate
@@ -994,6 +1003,12 @@ class BrowserView : public BrowserWindow,
   void PaintAsActiveChanged();
   void FrameColorsChanged();
 
+  // |allowed_without_policy| represents whether or not the browser is allowed
+  // to enter fullscreen, irrespective of policy. This is is necessary to
+  // prevent policy from incorrectly allowing the browser to enter fullscreen
+  // when it should not be able to.
+  void UpdateFullscreenAllowedFromPolicy(bool allowed_without_policy);
+
   // The BrowserFrame that hosts this view.
   raw_ptr<BrowserFrame, DanglingUntriaged> frame_ = nullptr;
 
@@ -1128,10 +1143,10 @@ class BrowserView : public BrowserWindow,
       nullptr;
   raw_ptr<views::View, AcrossTasksDanglingUntriaged>
       right_aligned_side_panel_separator_ = nullptr;
-
-  // The side search side panel.
   raw_ptr<views::View, AcrossTasksDanglingUntriaged>
       left_aligned_side_panel_separator_ = nullptr;
+  raw_ptr<views::View, AcrossTasksDanglingUntriaged>
+      side_panel_rounded_corner_ = nullptr;
 
   // Provides access to the toolbar buttons this browser view uses. Buttons may
   // appear in a hosted app frame or in a tabbed UI toolbar.
@@ -1260,6 +1275,8 @@ class BrowserView : public BrowserWindow,
 
   DevToolsDockedPlacement current_devtools_docked_placement_ =
       DevToolsDockedPlacement::kNone;
+
+  PrefChangeRegistrar registrar_;
 
   mutable base::WeakPtrFactory<BrowserView> weak_ptr_factory_{this};
 };

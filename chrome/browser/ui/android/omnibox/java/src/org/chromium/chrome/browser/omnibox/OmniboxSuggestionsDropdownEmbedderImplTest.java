@@ -31,11 +31,12 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownEmbedder.OmniboxAlignment;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.browser_ui.widget.InsetObserverView;
+import org.chromium.components.browser_ui.widget.InsetObserverViewSupplier;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowDelegate;
@@ -66,6 +67,7 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
     private @Mock ViewGroup mAnchorView;
     private @Mock View mHorizontalAlignmentView;
     private @Mock DisplayAndroid mDisplay;
+    private @Mock InsetObserverView mInsetObserverView;
 
     private OmniboxSuggestionsDropdownEmbedderImpl mImpl;
     private WeakReference<Context> mContextWeakRef;
@@ -73,6 +75,7 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
     @Before
     public void setUp() {
         mContextWeakRef = new WeakReference<>(ContextUtils.getApplicationContext());
+        InsetObserverViewSupplier.setInstanceForTesting(mInsetObserverView);
         doReturn(mContextWeakRef).when(mWindowAndroid).getContext();
         doReturn(mContextWeakRef.get()).when(mAnchorView).getContext();
         doReturn(mViewTreeObserver).when(mAnchorView).getViewTreeObserver();
@@ -94,7 +97,6 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
     }
 
     @Test
-    @DisabledTest(message = "https://crbug.com/1471093")
     public void testWindowAttachment() {
         verify(mAnchorView, never()).addOnLayoutChangeListener(mImpl);
         verify(mHorizontalAlignmentView, never()).addOnLayoutChangeListener(mImpl);
@@ -124,7 +126,7 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE)
     @CommandLineFlags.
     Add({"enable-features=" + ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE + "<Study",
             "force-fieldtrials=Study/Group",
@@ -225,7 +227,7 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.OMNIBOX_ADAPT_NARROW_TABLET_WINDOWS})
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_ADAPT_NARROW_TABLET_WINDOWS)
     @Config(qualifiers = "sw400dp")
     public void testAdaptToNarrowWindows_widePhoneScreen() {
         doReturn(mAnchorView).when(mHorizontalAlignmentView).getParent();
@@ -239,7 +241,7 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.OMNIBOX_ADAPT_NARROW_TABLET_WINDOWS})
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_ADAPT_NARROW_TABLET_WINDOWS)
     @Config(qualifiers = "sw600dp")
     public void testRecalculateOmniboxAlignment_tabletToPhoneSwitch_revampDisabled() {
         doReturn(mAnchorView).when(mHorizontalAlignmentView).getParent();
@@ -261,7 +263,7 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
 
     @Test
     @Config(qualifiers = "ldltr-sw600dp")
-    @EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE)
     @CommandLineFlags.
     Add({"enable-features=" + ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE + "<Study",
             "force-fieldtrials=Study/Group",
@@ -280,7 +282,7 @@ public class OmniboxSuggestionsDropdownEmbedderImplTest {
 
     @Test
     @Config(qualifiers = "ldrtl-sw600dp")
-    @EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE)
     @CommandLineFlags.
     Add({"enable-features=" + ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE + "<Study",
             "force-fieldtrials=Study/Group",

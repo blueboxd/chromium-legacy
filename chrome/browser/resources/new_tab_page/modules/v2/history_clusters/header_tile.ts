@@ -8,6 +8,7 @@ import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
+import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -16,9 +17,15 @@ import {MenuItem, ModuleHeaderElementV2} from '../module_header.js';
 
 import {getTemplate} from './header_tile.html.js';
 
+export interface HistoryClustersHeaderElementV2 {
+  $: {
+    moduleHeaderElementV2: ModuleHeaderElementV2,
+  };
+}
+
 /** Element that displays a header inside a module. */
-const ElementBase = I18nMixin(PolymerElement);
-export class HistoryClustersHeaderElementV2 extends ElementBase {
+export class HistoryClustersHeaderElementV2 extends I18nMixin
+(PolymerElement) {
   static get is() {
     return 'history-clusters-header-v2';
   }
@@ -31,19 +38,50 @@ export class HistoryClustersHeaderElementV2 extends ElementBase {
     return {
       clusterLabel: String,
 
-      /** Whether suggestion chip header style will show. */
+      /** Whether suggestion chip header will show. */
       suggestionChipHeaderEnabled_: {
         type: Boolean,
         reflectToAttribute: true,
         value: () => loadTimeData.getBoolean(
             'historyClustersSuggestionChipHeaderEnabled'),
       },
+
+      /* Whether the container is tabbable or not. If the suggestion chip
+       * feature is enabled, the container should not be tabbable.
+       */
+      containerTabIndex_: {
+        type: String,
+        value: () => loadTimeData.getBoolean(
+                         'historyClustersSuggestionChipHeaderEnabled') ?
+            '' :
+            '0',
+      },
     };
   }
 
-  clusterId: number;
-  clusterLabel: string;
-  normalizedUrl: Url;
+clusterId:
+  number;
+clusterLabel:
+  string;
+normalizedUrl:
+  Url;
+private suggestionChipHeaderEnabled_:
+  boolean;
+private eventTracker_:
+  EventTracker = new EventTracker();
+
+  override connectedCallback() {
+    super.connectedCallback();
+
+    if (!this.suggestionChipHeaderEnabled_) {
+      this.eventTracker_.add(this, 'click', this.onClick_);
+    }
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.eventTracker_.removeAll();
+  }
 
   private onClick_(e: Event) {
     e.stopPropagation();
@@ -59,9 +97,7 @@ export class HistoryClustersHeaderElementV2 extends ElementBase {
 
   private onMenuButtonClick_(e: Event) {
     e.stopPropagation();
-    const moduleHeader = this.shadowRoot!.querySelector<ModuleHeaderElementV2>(
-        'ntp-module-header-v2')!;
-    moduleHeader.showAt(e);
+    this.$.moduleHeaderElementV2.showAt(e);
   }
 
   private getMenuItemGroups_(): MenuItem[][] {
@@ -102,6 +138,12 @@ export class HistoryClustersHeaderElementV2 extends ElementBase {
         },
       ],
     ];
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'history-clusters-header-v2': HistoryClustersHeaderElementV2;
   }
 }
 

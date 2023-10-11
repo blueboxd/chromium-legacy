@@ -101,8 +101,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 // clang-format off
 @CommandLineFlags.
     Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "force-fieldtrials=Study/Group"})
-@EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-    ChromeFeatureList.START_SURFACE_RETURN_TIME + "<Study,",
+@EnableFeatures({ChromeFeatureList.START_SURFACE_RETURN_TIME + "<Study,",
     ChromeFeatureList.START_SURFACE_ANDROID + "<Study", ChromeFeatureList.INSTANT_START,
     ChromeFeatureList.EMPTY_STATES})
 @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE,
@@ -228,7 +227,6 @@ public class InstantStartTabSwitcherTest {
     @SmallTest
     @Feature({"RenderTest"})
     // clang-format off
-    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
         INSTANT_START_TEST_BASE_PARAMS + "/show_last_active_tab_only/false"})
     @DisableIf.Build(message = "Flaky. See https://crbug.com/1091311",
@@ -281,7 +279,6 @@ public class InstantStartTabSwitcherTest {
     @SmallTest
     @Feature({"RenderTest"})
     // clang-format off
-    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
         INSTANT_START_TEST_BASE_PARAMS + "/show_last_active_tab_only/false"})
     @DisableIf.Build(message = "Flaky. See https://crbug.com/1091311",

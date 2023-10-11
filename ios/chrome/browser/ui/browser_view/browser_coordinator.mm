@@ -20,8 +20,8 @@
 #import "components/segmentation_platform/embedder/default_model/device_switcher_result_dispatcher.h"
 #import "components/signin/ios/browser/active_state_manager.h"
 #import "components/translate/core/browser/translate_manager.h"
-#import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
-#import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
+#import "ios/chrome/browser/app_launcher/model/app_launcher_abuse_detector.h"
+#import "ios/chrome/browser/app_launcher/model/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
@@ -79,6 +79,8 @@
 #import "ios/chrome/browser/shared/public/commands/price_notifications_commands.h"
 #import "ios/chrome/browser/shared/public/commands/promos_manager_commands.h"
 #import "ios/chrome/browser/shared/public/commands/qr_generation_commands.h"
+#import "ios/chrome/browser/shared/public/commands/save_image_to_photos_command.h"
+#import "ios/chrome/browser/shared/public/commands/save_to_photos_commands.h"
 #import "ios/chrome/browser/shared/public/commands/share_highlight_command.h"
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
 #import "ios/chrome/browser/shared/public/commands/text_zoom_commands.h"
@@ -265,6 +267,7 @@ enum class ToolbarKind {
     RecentTabsCoordinatorDelegate,
     RepostFormCoordinatorDelegate,
     RepostFormTabHelperDelegate,
+    SaveToPhotosCommands,
     SigninPresenter,
     SnapshotGeneratorDelegate,
     StoreKitCoordinatorDelegate,
@@ -272,6 +275,7 @@ enum class ToolbarKind {
     URLLoadingDelegate,
     WebContentCommands,
     WebNavigationNTPDelegate>
+
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
 
@@ -796,6 +800,7 @@ enum class ToolbarKind {
     @protocol(PasswordsAccountStorageNoticeCommands),
     @protocol(PolicyChangeCommands),
     @protocol(PriceNotificationsCommands),
+    @protocol(SaveToPhotosCommands),
     @protocol(TextZoomCommands),
     @protocol(WebContentCommands),
     @protocol(DefaultBrowserPromoCommands),
@@ -1037,6 +1042,10 @@ enum class ToolbarKind {
   _viewControllerDependencies.popupMenuCommandsHandler = nil;
   _viewControllerDependencies.applicationCommandsHandler = nil;
   _viewControllerDependencies.findInPageCommandsHandler = nil;
+  _viewControllerDependencies.urlLoadingBrowserAgent = nil;
+  _viewControllerDependencies.urlLoadingNotifierBrowserAgent = nil;
+  _viewControllerDependencies.tabUsageRecorderBrowserAgent = nil;
+  _viewControllerDependencies.layoutGuideCenter = nil;
   _viewControllerDependencies.voiceSearchController = nil;
   _viewControllerDependencies.safeAreaProvider = nil;
   _viewControllerDependencies.pagePlaceholderBrowserAgent = nil;
@@ -2391,6 +2400,16 @@ enum class ToolbarKind {
                      [weakSelf showRestrictAccountSignedOutPrompt];
                    });
   }
+}
+
+#pragma mark - SaveToPhotosCommands
+
+- (void)saveImageToPhotos:(SaveImageToPhotosCommand*)command {
+  // TODO(crbug.com/1473314): Create a SaveToPhotosCoordinator.
+}
+
+- (void)stopSaveToPhotos {
+  // TODO(crbug.com/1473314): Create a SaveToPhotosCoordinator.
 }
 
 #pragma mark - WebContentCommands

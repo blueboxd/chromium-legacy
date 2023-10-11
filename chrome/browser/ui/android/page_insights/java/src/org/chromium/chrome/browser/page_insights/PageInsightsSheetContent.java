@@ -8,10 +8,11 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+import androidx.annotation.VisibleForTesting;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 
 public class PageInsightsSheetContent implements BottomSheetContent {
@@ -26,9 +27,14 @@ public class PageInsightsSheetContent implements BottomSheetContent {
      * @param context An Android context.
      */
     public PageInsightsSheetContent(Context context) {
+        // TODO(kamalchoudhury): Inflate with loading indicator instead
         mToolbarView = (ViewGroup) LayoutInflater.from(context).inflate(
-                R.layout.page_insights_sheet_toolbar, null);
-        mSheetContentView = new FrameLayout(context);
+            R.layout.page_insights_sheet_toolbar, null);
+        mToolbarView
+            .findViewById(R.id.page_insights_back_button)
+            .setOnClickListener((view)-> onBackButtonPressed());
+        mSheetContentView = (ViewGroup) LayoutInflater.from(context).inflate(
+                R.layout.page_insights_sheet_content, null);
     }
 
     @Override
@@ -115,5 +121,40 @@ public class PageInsightsSheetContent implements BottomSheetContent {
     @Override
     public int getSheetClosedAccessibilityStringId() {
         return R.string.page_insights_sheet_closed;
+    }
+
+    private void onBackButtonPressed(){
+        showFeedPage();
+    }
+
+    void showFeedPage() {
+        setVisibilityById(mToolbarView, R.id.page_insights_feed_header, View.VISIBLE);
+        setVisibilityById(mToolbarView, R.id.page_insights_child_page_header, View.GONE);
+        setVisibilityById(mSheetContentView, R.id.page_insights_feed_content, View.VISIBLE);
+        setVisibilityById(mSheetContentView, R.id.page_insights_child_content, View.GONE);
+    }
+
+    void setFeedPage(View feedPageView) {
+        ViewGroup feedContentView = mSheetContentView.findViewById(R.id.page_insights_feed_content);
+        feedContentView.removeAllViews();
+        feedContentView.addView(feedPageView);
+    }
+
+    @VisibleForTesting
+    void showChildPage(View childPageView, String childPageTitle) {
+        TextView childTitleView = mToolbarView.findViewById(R.id.page_insights_child_title);
+        childTitleView.setText(childPageTitle);
+        ViewGroup childContentView =
+                mSheetContentView.findViewById(R.id.page_insights_child_content);
+        childContentView.removeAllViews();
+        childContentView.addView(childPageView);
+        setVisibilityById(mToolbarView, R.id.page_insights_feed_header, View.GONE);
+        setVisibilityById(mToolbarView, R.id.page_insights_child_page_header, View.VISIBLE);
+        setVisibilityById(mSheetContentView, R.id.page_insights_feed_content, View.GONE);
+        setVisibilityById(mSheetContentView, R.id.page_insights_child_content, View.VISIBLE);
+    }
+
+    private void setVisibilityById(ViewGroup mViewGroup, int id, int visibility) {
+        mViewGroup.findViewById(id).setVisibility(visibility);
     }
 }

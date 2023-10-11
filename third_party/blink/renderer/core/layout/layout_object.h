@@ -728,6 +728,15 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return IsStackingContext(StyleRef());
   }
+  inline bool IsElementCaptureParticipant() const {
+    NOT_DESTROYED();
+    if (RuntimeEnabledFeatures::ElementCaptureEnabled()) {
+      if (Element* element = DynamicTo<Element>(GetNode())) {
+        return element->GetRegionCaptureCropId();
+      }
+    }
+    return false;
+  }
   inline bool IsStackingContext(const ComputedStyle& style) const {
     NOT_DESTROYED();
     // This is an inlined version of the following:
@@ -740,7 +749,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
            ((style.ContainsLayout() || style.ContainsPaint()) &&
             (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText() &&
             (!IsTablePart() || IsLayoutBlockFlow())) ||
-           ViewTransitionUtils::IsViewTransitionParticipant(*this);
+           ViewTransitionUtils::IsViewTransitionParticipant(*this) ||
+           IsElementCaptureParticipant();
   }
 
   inline bool IsStacked() const {
@@ -997,9 +1007,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectRubyBase);
   }
-  bool IsRubyRun() const {
+  bool IsRubyColumn() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectRubyRun);
+    return IsOfType(kLayoutObjectRubyColumn);
   }
   bool IsRubyText() const {
     NOT_DESTROYED();
@@ -1211,7 +1221,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // false if it's definitely *not* inside one.
   bool MightBeInsideFragmentationContext() const {
     NOT_DESTROYED();
-    return IsInsideFlowThread() || GetDocument().Printing();
+    return IsInsideFlowThread() ||
+           (GetDocument().Printing() && !IsLayoutView());
   }
 
   // FIXME: Until all SVG layoutObjects can be subclasses of
@@ -1392,11 +1403,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     return bitfields_.Floating();
   }
 
-  bool IsFloatingWithNonContainingBlockParent() const {
-    NOT_DESTROYED();
-    return IsFloating() && Parent() && !Parent()->IsLayoutBlockFlow();
-  }
-
   virtual bool IsInitialLetterBox() const {
     NOT_DESTROYED();
     return false;
@@ -1522,29 +1528,29 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   bool NeedsLayout() const {
     NOT_DESTROYED();
-    return bitfields_.SelfNeedsLayoutForStyle() ||
-           bitfields_.NormalChildNeedsLayout() ||
-           bitfields_.NeedsSimplifiedNormalFlowLayout();
+    return bitfields_.SelfNeedsFullLayout() ||
+           bitfields_.ChildNeedsFullLayout() ||
+           bitfields_.NeedsSimplifiedLayout();
   }
 
   bool NeedsSimplifiedLayoutOnly() const {
     NOT_DESTROYED();
-    return bitfields_.NeedsSimplifiedNormalFlowLayout() &&
-           !bitfields_.SelfNeedsLayoutForStyle() &&
-           !bitfields_.NormalChildNeedsLayout();
+    return bitfields_.NeedsSimplifiedLayout() &&
+           !bitfields_.SelfNeedsFullLayout() &&
+           !bitfields_.ChildNeedsFullLayout();
   }
 
-  bool SelfNeedsLayout() const {
+  bool SelfNeedsFullLayout() const {
     NOT_DESTROYED();
-    return bitfields_.SelfNeedsLayoutForStyle();
+    return bitfields_.SelfNeedsFullLayout();
   }
-  bool NeedsSimplifiedNormalFlowLayout() const {
+  bool ChildNeedsFullLayout() const {
     NOT_DESTROYED();
-    return bitfields_.NeedsSimplifiedNormalFlowLayout();
+    return bitfields_.ChildNeedsFullLayout();
   }
-  bool NormalChildNeedsLayout() const {
+  bool NeedsSimplifiedLayout() const {
     NOT_DESTROYED();
-    return bitfields_.NormalChildNeedsLayout();
+    return bitfields_.NeedsSimplifiedLayout();
   }
   bool NeedsCollectInlines() const {
     NOT_DESTROYED();
@@ -1577,15 +1583,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   void SetIntrinsicLogicalWidthsChildDependsOnBlockConstraints(bool b) {
     NOT_DESTROYED();
     bitfields_.SetIntrinsicLogicalWidthsChildDependsOnBlockConstraints(b);
-  }
-
-  void SetIntrinsicLogicalWidthsInFlexIntrinsicSizing(bool b) {
-    NOT_DESTROYED();
-    bitfields_.SetIntrinsicLogicalWidthsInFlexIntrinsicSizing(b);
-  }
-  bool IntrinsicLogicalWidthsInFlexIntrinsicSizing() const {
-    NOT_DESTROYED();
-    return bitfields_.IntrinsicLogicalWidthsInFlexIntrinsicSizing();
   }
 
   bool NeedsLayoutOverflowRecalc() const {
@@ -1758,8 +1755,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // from the originating element's style (because we can cache only one
   // version), while the uncached pseudo style can inherit from any style.
   const ComputedStyle* GetCachedPseudoElementStyle(PseudoId) const;
-  scoped_refptr<const ComputedStyle> GetUncachedPseudoElementStyle(
-      const StyleRequest&) const;
+  const ComputedStyle* GetUncachedPseudoElementStyle(const StyleRequest&) const;
 
   // Returns the ::selection style, which may be stored in StyleCachedData (old
   // impl) or StyleHighlightData (new impl).
@@ -2301,11 +2297,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // and new ComputedStyle like paint and size invalidations. If kNo, just set
   // the ComputedStyle member.
   enum class ApplyStyleChanges { kNo, kYes };
-  void SetStyle(scoped_refptr<const ComputedStyle>,
+  void SetStyle(const ComputedStyle*,
                 ApplyStyleChanges = ApplyStyleChanges::kYes);
 
   // Set the style of the object if it's generated content.
-  void SetPseudoElementStyle(scoped_refptr<const ComputedStyle>,
+  void SetPseudoElementStyle(const ComputedStyle*,
                              bool match_parent_size = false);
 
   // In some cases we modify the ComputedStyle after the style recalc, either
@@ -2315,7 +2311,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // that node with the new ComputedStyle. Modifying the ComputedStyle of a node
   // outside of style recalc can break invariants in the style engine, so this
   // function must not gain any new call sites.
-  void SetModifiedStyleOutsideStyleRecalc(scoped_refptr<const ComputedStyle>,
+  void SetModifiedStyleOutsideStyleRecalc(const ComputedStyle*,
                                           ApplyStyleChanges);
 
   // This function returns an enclosing non-anonymous LayoutBlock for this
@@ -2545,7 +2541,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   const ComputedStyle* Style() const {
     NOT_DESTROYED();
-    return style_.get();
+    return style_.Get();
   }
 
   // style_ can only be nullptr before the first style is set, thus most
@@ -2914,10 +2910,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   bool IsRelayoutBoundary() const;
 
-  PaintInvalidationReason FullPaintInvalidationReason() const {
+  PaintInvalidationReason PaintInvalidationReasonForPrePaint() const {
     NOT_DESTROYED();
     return static_cast<PaintInvalidationReason>(
-        full_paint_invalidation_reason_);
+        paint_invalidation_reason_for_pre_paint_);
   }
   bool ShouldDoFullPaintInvalidation() const {
     NOT_DESTROYED();
@@ -2925,8 +2921,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
       DCHECK(!bitfields_.SubtreeShouldDoFullPaintInvalidation());
       return false;
     }
-    if (FullPaintInvalidationReason() != PaintInvalidationReason::kNone) {
-      DCHECK(IsFullPaintInvalidationReason(FullPaintInvalidationReason()));
+    if (IsFullPaintInvalidationReason(PaintInvalidationReasonForPrePaint())) {
       DCHECK(ShouldCheckForPaintInvalidation());
       return true;
     }
@@ -2946,6 +2941,13 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
       PaintInvalidationReason = PaintInvalidationReason::kLayout);
   void SetShouldDoFullPaintInvalidationWithoutLayoutChange(
       PaintInvalidationReason reason);
+
+  void SetShouldInvalidatePaintForHitTest();
+  bool ShouldInvalidatePaintForHitTestOnly() const {
+    NOT_DESTROYED();
+    return PaintInvalidationReasonForPrePaint() ==
+           PaintInvalidationReason::kHitTest;
+  }
 
   void ClearPaintInvalidationFlags();
 
@@ -3540,7 +3542,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectReplaced,
     kLayoutObjectRuby,
     kLayoutObjectRubyBase,
-    kLayoutObjectRubyRun,
+    kLayoutObjectRubyColumn,
     kLayoutObjectRubyText,
     kLayoutObjectTable,
     kLayoutObjectTableCaption,
@@ -3587,7 +3589,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // Updates only the local style ptr of the object.  Does not update the state
   // of the object, and so only should be called when the style is known not to
   // have changed (or from SetStyle).
-  void SetStyleInternal(scoped_refptr<const ComputedStyle> style) {
+  void SetStyleInternal(const ComputedStyle* style) {
     NOT_DESTROYED();
     style_ = std::move(style);
   }
@@ -3792,11 +3794,12 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // These are not in LayoutObjectBitfields, to fill the gap between
   // the inherited DisplayItemClient data fields and bitfields_.
 
-  // This is set by Set[Subtree]ShouldDoFullPaintInvalidation, and cleared
-  // during PrePaint in this object's InvalidatePaint(). It's different from
+  // This is set by Set[Subtree]ShouldDoFullPaintInvalidation() or
+  // SetShouldInvalidatePaintForHitTest(), and cleared during PrePaint in this
+  // object's InvalidatePaint(). It's different from
   // DisplayItemClient::GetPaintInvalidationReason() which is set during
   // PrePaint and cleared in PaintController::FinishCycle().
-  unsigned full_paint_invalidation_reason_ : 6;
+  unsigned paint_invalidation_reason_for_pre_paint_ : 6;
 
   // This is the cached 'position' value of this object
   // (see ComputedStyle::position).
@@ -3856,10 +3859,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     // manner. This is based on growing LayoutObject in
     // https://codereview.chromium.org/44673003 and subsequent relaxations
     // of the memory constraints on layout objects.
-    LayoutObjectBitfields(Node* node)
-        : self_needs_layout_for_style_(false),
-          normal_child_needs_layout_(false),
-          needs_simplified_normal_flow_layout_(false),
+    explicit LayoutObjectBitfields(Node* node)
+        : self_needs_full_layout_(false),
+          child_needs_full_layout_(false),
+          needs_simplified_layout_(false),
           self_needs_layout_overflow_recalc_(false),
           child_needs_layout_overflow_recalc_(false),
           intrinsic_logical_widths_dirty_(false),
@@ -3937,26 +3940,22 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
           has_broken_spine_(false),
           has_valid_cached_geometry_(false) {}
 
-    // Self needs layout for style means that this layout object is marked for a
-    // full layout. This is the default layout but it is expensive as it
-    // recomputes everything. For CSS boxes, this includes the width (laying out
-    // the line boxes again), the margins (due to block collapsing margins), the
-    // positions, the height and the potential overflow.
-    ADD_BOOLEAN_BITFIELD(self_needs_layout_for_style_, SelfNeedsLayoutForStyle);
+    // Typically indicates that this object has had its style changed, and
+    // requires a "full" layout.
+    ADD_BOOLEAN_BITFIELD(self_needs_full_layout_, SelfNeedsFullLayout);
 
-    // This boolean is set when a normal flow ('position' == static || relative)
-    // child requires layout (but this object doesn't). Due to the nature of
-    // CSS, laying out a child can cause the parent to resize (e.g., if 'height'
-    // is auto).
-    ADD_BOOLEAN_BITFIELD(normal_child_needs_layout_, NormalChildNeedsLayout);
+    // Indicates that an *inflow* descendant of this object has been marked for
+    // full layout. We'll typically run a full layout for these cases.
+    ADD_BOOLEAN_BITFIELD(child_needs_full_layout_, ChildNeedsFullLayout);
 
-    // Simplified normal flow layout only relayouts the normal flow children,
-    // ignoring the out-of-flow descendants.
+    // Indicates that an *out-of-flow* positioned descendant requires layout.
     //
-    // The implementation of this layout is in
-    // LayoutBlock::simplifiedNormalFlowLayout.
-    ADD_BOOLEAN_BITFIELD(needs_simplified_normal_flow_layout_,
-                         NeedsSimplifiedNormalFlowLayout);
+    // This will attempt to run "simplified" layout on all inflow children (as
+    // they themselves may have OOF positioned children), and run the
+    // out-of-flow layout part.
+    //
+    // This is relatively cheap compuared to "full" layout.
+    ADD_BOOLEAN_BITFIELD(needs_simplified_layout_, NeedsSimplifiedLayout);
 
     ADD_BOOLEAN_BITFIELD(self_needs_layout_overflow_recalc_,
                          SelfNeedsLayoutOverflowRecalc);
@@ -3982,9 +3981,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     ADD_BOOLEAN_BITFIELD(
         intrinsic_logical_widths_child_depends_on_block_constraints_,
         IntrinsicLogicalWidthsChildDependsOnBlockConstraints);
-
-    ADD_BOOLEAN_BITFIELD(intrinsic_logical_widths_in_flex_intrinsic_sizing_,
-                         IntrinsicLogicalWidthsInFlexIntrinsicSizing);
 
     // This flag is set on inline container boxes that need to run the
     // Pre-layout phase in LayoutNG. See NGInlineNode::CollectInlines().
@@ -4284,28 +4280,28 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   LayoutObjectBitfields bitfields_;
 
-  void SetSelfNeedsLayoutForStyle(bool b) {
+  void SetSelfNeedsFullLayout(bool b) {
     NOT_DESTROYED();
-    bitfields_.SetSelfNeedsLayoutForStyle(b);
+    bitfields_.SetSelfNeedsFullLayout(b);
   }
-  void SetNormalChildNeedsLayout(bool b) {
+  void SetChildNeedsFullLayout(bool b) {
     NOT_DESTROYED();
     DCHECK(!GetDocument().InPostLifecycleSteps());
-    bitfields_.SetNormalChildNeedsLayout(b);
+    bitfields_.SetChildNeedsFullLayout(b);
     if (b)
       bitfields_.SetIsTableColumnsConstraintsDirty(true);
   }
-  void SetNeedsSimplifiedNormalFlowLayout(bool b) {
+  void SetNeedsSimplifiedLayout(bool b) {
     NOT_DESTROYED();
     DCHECK(!GetDocument().InPostLifecycleSteps());
-    bitfields_.SetNeedsSimplifiedNormalFlowLayout(b);
+    bitfields_.SetNeedsSimplifiedLayout(b);
   }
 
  private:
   friend class LineLayoutItem;
   friend class LocalFrameView;
 
-  scoped_refptr<const ComputedStyle> style_;
+  subtle::UncompressedMember<const ComputedStyle> style_;
 
   Member<Node> node_;
 
@@ -4370,8 +4366,8 @@ inline void LayoutObject::SetNeedsLayout(
 #if DCHECK_IS_ON()
   DCHECK(!IsSetNeedsLayoutForbidden());
 #endif
-  bool already_needed_layout = bitfields_.SelfNeedsLayoutForStyle();
-  SetSelfNeedsLayoutForStyle(true);
+  bool already_needed_layout = bitfields_.SelfNeedsFullLayout();
+  SetSelfNeedsFullLayout(true);
   SetNeedsOverflowRecalc();
   SetTableColumnConstraintDirty(true);
   if (!already_needed_layout) {
@@ -4396,13 +4392,13 @@ inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation() {
   // Set flags for later stages/cycles.
   SetEverHadLayout();
 
-  // Clear needsLayout flags.
-  SetSelfNeedsLayoutForStyle(false);
+  // Clear layout flags.
+  SetSelfNeedsFullLayout(false);
 
   if (!ChildLayoutBlockedByDisplayLock()) {
-    SetNormalChildNeedsLayout(false);
-    SetNeedsSimplifiedNormalFlowLayout(false);
-  } else if (!NormalChildNeedsLayout() && !NeedsSimplifiedNormalFlowLayout()) {
+    SetChildNeedsFullLayout(false);
+    SetNeedsSimplifiedLayout(false);
+  } else if (!ChildNeedsFullLayout() && !NeedsSimplifiedLayout()) {
     // We aren't clearing the child dirty bits because the node is locked and
     // layout for children is not done. If the children aren't dirty,  we need
     // to notify the display lock that child traversal was blocked so that when
@@ -4431,17 +4427,17 @@ inline void LayoutObject::SetChildNeedsLayout(MarkingBehavior mark_parents) {
 #if DCHECK_IS_ON()
   DCHECK(!IsSetNeedsLayoutForbidden());
 #endif
-  bool already_needed_layout = NormalChildNeedsLayout();
+  bool already_needed_layout = ChildNeedsFullLayout();
   SetNeedsOverflowRecalc();
-  SetNormalChildNeedsLayout(true);
+  SetChildNeedsFullLayout(true);
   if (!already_needed_layout && mark_parents == kMarkContainerChain) {
     MarkContainerChainForLayout();
   }
 }
 
 inline void LayoutObject::SetNeedsSimplifiedLayout() {
-  bool already_needed_layout = NeedsSimplifiedNormalFlowLayout();
-  SetNeedsSimplifiedNormalFlowLayout(true);
+  bool already_needed_layout = NeedsSimplifiedLayout();
+  SetNeedsSimplifiedLayout(true);
 #if DCHECK_IS_ON()
   DCHECK(!IsSetNeedsLayoutForbidden());
 #endif

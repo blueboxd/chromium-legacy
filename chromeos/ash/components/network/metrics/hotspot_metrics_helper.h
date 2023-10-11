@@ -88,7 +88,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotMetricsHelper
   FRIEND_TEST_ALL_PREFIXES(HotspotConfigurationHandlerTest,
                            SetAndGetHotspotConfig);
   FRIEND_TEST_ALL_PREFIXES(HotspotCapabilitiesProviderTest,
-                           CheckTetheringReadiness);
+                           CheckTetheringReadiness_Ready);
+  FRIEND_TEST_ALL_PREFIXES(HotspotCapabilitiesProviderTest,
+                           CheckTetheringReadiness_NotAllowed);
+  FRIEND_TEST_ALL_PREFIXES(HotspotCapabilitiesProviderTest,
+                           CheckTetheringReadiness_UpstreamNotAvailable);
+  FRIEND_TEST_ALL_PREFIXES(HotspotCapabilitiesProviderTest,
+                           CheckTetheringReadiness_EmptyResult);
+  FRIEND_TEST_ALL_PREFIXES(HotspotCapabilitiesProviderTest,
+                           CheckTetheringReadiness_Failure);
 
   enum class HotspotMetricsSetEnabledResult;
   enum class HotspotMetricsSetConfigResult;
@@ -237,7 +245,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotMetricsHelper
       nullptr;
   raw_ptr<HotspotConfigurationHandler, ExperimentalAsh>
       hotspot_configuration_handler_ = nullptr;
-  raw_ptr<HotspotEnabledStateNotifier, ExperimentalAsh>
+  raw_ptr<HotspotEnabledStateNotifier, DanglingUntriaged | ExperimentalAsh>
       hotspot_enabled_state_notifier_ = nullptr;
   raw_ptr<NetworkStateHandler, ExperimentalAsh> network_state_handler_ =
       nullptr;

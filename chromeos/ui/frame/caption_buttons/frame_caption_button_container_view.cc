@@ -10,9 +10,11 @@
 #include <tuple>
 
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "chromeos/ui/base/display_util.h"
 #include "chromeos/ui/base/tablet_state.h"
@@ -38,9 +40,11 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/strings/grit/ui_strings.h"  // Accessibility names
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -208,8 +212,9 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   }
 
   // Insert the buttons left to right.
-  if (custom_button)
+  if (custom_button) {
     custom_button_ = AddChildView(std::move(custom_button));
+  }
 
   menu_button_ = new views::FrameCaptionButton(
       base::BindRepeating(&FrameCaptionButtonContainerView::MenuButtonPressed,
@@ -363,8 +368,9 @@ void FrameCaptionButtonContainerView::OnWindowControlsOverlayEnabledChanged(
 
 void FrameCaptionButtonContainerView::UpdateBorderlessModeEnabled(
     bool enabled) {
-  if (is_borderless_mode_enabled_ == enabled)
+  if (is_borderless_mode_enabled_ == enabled) {
     return;
+  }
 
   // In borderless mode, the windowing controls will be drawn in web content,
   // so similarly to hiding the title bar, also the caption button container
@@ -432,7 +438,20 @@ void FrameCaptionButtonContainerView::SetButtonSize(const gfx::Size& size) {
   menu_button_->SetPreferredSize(size);
   minimize_button_->SetPreferredSize(size);
   size_button_->SetPreferredSize(size);
-  close_button_->SetPreferredSize(size);
+  if (features::IsRoundedWindowsEnabled()) {
+    // When rounded window is enabled, make the target width of close button
+    // 8 DIP wider to cover the rounded corners region.
+    constexpr int kExtraTargetSpaceForCloseButton = 8;
+    close_button_->SetPreferredSize(gfx::Size(
+        size.width() + kExtraTargetSpaceForCloseButton, size.height()));
+    // Add padding to trailing edge to keep distance between caption buttons
+    // unchanged.
+    close_button_->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+        0, base::i18n::IsRTL() ? kExtraTargetSpaceForCloseButton : 0, 0,
+        base::i18n::IsRTL() ? 0 : kExtraTargetSpaceForCloseButton)));
+  } else {
+    close_button_->SetPreferredSize(size);
+  }
 
   SetMinimumCrossAxisSize(size.height());
 }
@@ -456,8 +475,9 @@ void FrameCaptionButtonContainerView::Layout() {
 
   // This ensures that the first frame of the animation to show the size button
   // pushes the buttons to the left of the size button into the center.
-  if (tablet_mode_animation_->is_animating())
+  if (tablet_mode_animation_->is_animating()) {
     AnimationProgressed(tablet_mode_animation_.get());
+  }
 
 #if DCHECK_IS_ON()
   if (close_button_->GetVisible()) {
@@ -483,8 +503,9 @@ void FrameCaptionButtonContainerView::AnimationEnded(
   AnimationProgressed(animation);
 
   double current_value = tablet_mode_animation_->GetCurrentValue();
-  if (current_value == 0.0)
+  if (current_value == 0.0) {
     size_button_->SetVisible(false);
+  }
 }
 
 void FrameCaptionButtonContainerView::AnimationProgressed(
@@ -524,8 +545,9 @@ void FrameCaptionButtonContainerView::AnimationProgressed(
   // minimize button but it can also include a PWA menu button.
   int previous_x = 0;
   for (auto* button : children()) {
-    if (button == size_button_)
+    if (button == size_button_) {
       break;
+    }
     button->SetX(previous_x + x_slide);
     previous_x += button->width();
   }
@@ -565,8 +587,9 @@ void FrameCaptionButtonContainerView::SetButtonIcon(
       (animate == Animate::kYes) ? views::FrameCaptionButton::Animate::kYes
                                  : views::FrameCaptionButton::Animate::kNo;
   auto it = button_icon_map_.find(icon);
-  if (it != button_icon_map_.end())
+  if (it != button_icon_map_.end()) {
     button->SetImage(icon, fcb_animate, *it->second);
+  }
 }
 
 void FrameCaptionButtonContainerView::UpdateSizeButton() {
@@ -712,8 +735,10 @@ void FrameCaptionButtonContainerView::FloatButtonPressed() {
 
   aura::Window* window = GetWidget()->GetNativeWindow();
   if (window->GetProperty(kWindowStateTypeKey) == WindowStateType::kFloated) {
+    base::RecordAction(base::UserMetricsAction(kUnFloatUserAction));
     FloatControllerBase::Get()->UnsetFloat(window);
   } else {
+    base::RecordAction(base::UserMetricsAction(kFloatUserAction));
     FloatControllerBase::Get()->SetFloat(window,
                                          FloatStartLocation::kBottomRight);
   }
@@ -762,8 +787,9 @@ FrameCaptionButtonContainerView::GetButtonClosestTo(
   views::FrameCaptionButton* closest_button = nullptr;
   for (size_t i = 0; i < std::size(buttons); ++i) {
     views::FrameCaptionButton* button = buttons[i];
-    if (!button || !button->GetVisible())
+    if (!button || !button->GetVisible()) {
       continue;
+    }
 
     gfx::Point center_point = button->GetLocalBounds().CenterPoint();
     views::View::ConvertPointToTarget(button, this, &center_point);
@@ -785,13 +811,15 @@ void FrameCaptionButtonContainerView::SetHoveredAndPressedButtons(
                                           minimize_button_, size_button_,
                                           float_button_,    close_button_};
   for (views::FrameCaptionButton* button : buttons) {
-    if (!button)
+    if (!button) {
       continue;
+    }
     views::Button::ButtonState new_state = views::Button::STATE_NORMAL;
-    if (button == to_hover)
+    if (button == to_hover) {
       new_state = views::Button::STATE_HOVERED;
-    else if (button == to_press)
+    } else if (button == to_press) {
       new_state = views::Button::STATE_PRESSED;
+    }
     button->SetState(new_state);
   }
 }

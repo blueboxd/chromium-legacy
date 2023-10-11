@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">મોબાઇલ નેટવર્ક માટે શોધી રહ્યાં છીએ</translation>
 <translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">Google ડ્રાઇવ હાલમાં ઉપલબ્ધ નથી. Google ડ્રાઇવ પાછું આવી જાય તે પછી અપલોડિંગ ઑટોમૅટિક રીતે ફરીથી શરૂ થશે.</translation>
+<translation id="1306130176943817227">ડિલીટ કરી શકતા નથી. આઇટમનો ઉપયોગ ચાલુ છે.</translation>
 <translation id="1307931752636661898">Linux ફાઇલો બતાવી શકાતી નથી</translation>
 <translation id="1313405956111467313">ઑટોમૅટિક પ્રૉક્સી ગોઠવણ</translation>
 <translation id="134645005685694099">તમારા ડિવાઇસમાં ફાઇલ સિંક કરવાનું ચાલુ રાખવા માટે પર્યાપ્ત સ્ટોરેજ સ્પેસ નથી. નવી ફાઇલો હવેથી ઑટોમૅટિક રીતે સિંક થશે નહીં.</translation>
@@ -115,7 +116,6 @@
 <translation id="1920798810075583923">તરબૂચ</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" />ને ફોર્મેટ કરી</translation>
 <translation id="1931134289871235022">સ્લોવૅક</translation>
-<translation id="1933345018156373194">ખસેડવું નિષ્ફળ થયું, અનપેક્ષિત ભૂલ: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">ફિનિશ</translation>
 <translation id="1942765061641586207">છબી રિઝોલ્યુશન</translation>
 <translation id="1972984168337863910">ફાઇલોના પ્રતિસાદની પૅનલ મોટી કરો</translation>
@@ -502,7 +502,6 @@
 <translation id="4969785127455456148">આલ્બમ</translation>
 <translation id="4972330214479971536">ફાઇલ સિંકનું સેટઅપ પૂર્ણ કરી શકાયું નથી</translation>
 <translation id="4973523518332075481"><ph name="MAX_LENGTH" /> કે તેથી ઓછા અક્ષરોનું હોય તેવા નામનો ઉપયોગ કરો</translation>
-<translation id="4973970068702235170">ઝિપ કરવાનું નિષ્ફળ, અનપેક્ષિત ભૂલ: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">જાપાનીઝ</translation>
 <translation id="4987699874727873250">અંગ્રેજી (ભારત)</translation>
 <translation id="4988205478593450158">શું તમે ખરેખર "<ph name="FILE_NAME" />"ને ડિલીટ કરવા માંગો છો?</translation>
@@ -543,6 +542,7 @@
 <translation id="5218183485292899140">સ્વિસ ફ્રેંચ</translation>
 <translation id="5234764350956374838">કાઢી નાખો</translation>
 <translation id="5253070652067921974">આના દ્વારા બનાવેલ</translation>
+<translation id="5254207638927440400">ફાઇલ ખસેડી શકતા નથી. ફાઇલનો ઉપયોગ ચાલુ છે.</translation>
 <translation id="5257456363153333584">વાણિયો</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />ફાઇલોને ગમે ત્યાંથી ઍક્સેસ કરો, ઑફલાઇન હો ત્યારે પણ.<ph name="MARKUP_2" />
     Google Driveમાં ફાઇલો અપ ટૂ ડેટ છે અને કોઈ પણ ડિવાઇસમાંથી ઉપલબ્ધ છે.<ph name="MARKUP_3" />
@@ -638,7 +638,6 @@
 <translation id="5896749729057314184"><ph name="NETWORK_COUNT" />માંથી <ph name="NETWORK_INDEX" /> નેટવર્ક, <ph name="NETWORK_NAME" />, સક્રિય કર્યા વિનાનું, સિગ્નલની પ્રબળતા <ph name="SIGNAL_STRENGTH" />%, વિગતો</translation>
 <translation id="5911887972742538906">તમારી Linux ઍપ્લિકેશનના ઇન્સ્ટૉલેશન દરમિયાન ભૂલ આવી.</translation>
 <translation id="5912396950572065471">ફોર્મેટ</translation>
-<translation id="5913638992615760742">કૉપિ ઑપરેશન નિષ્ફળ થયું, અનપેક્ષિત ભૂલ: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">નવી શોધ સુવિધાઓ ઉપલબ્ધ છે</translation>
 <translation id="5926082595146149752">ડચ (નેધરલૅન્ડ), યુએસ આંતરરાષ્ટ્રીય PC કીબોર્ડ સાથે</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -646,7 +645,6 @@
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> આઇટમ</translation>
 <translation id="5957366693331451795">Chromeboxes</translation>
 <translation id="5982621672636444458">સૉર્ટ કરવા માટેના વિકલ્પો</translation>
-<translation id="6007237601604674381">ખસેડવું નિષ્ફળ થયું. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">ઇથરનેટ નેટવર્ક</translation>
 <translation id="60357267506638014">ચેક QWERTY</translation>
 <translation id="603895874132768835">જ્યાં સુધી તમે નવો પિન સેટઅપ નહીં કરો, ત્યાં સુધી તમે આ નેટવર્કનો ઉપયોગ કરી શકશો નહીં</translation>
@@ -863,6 +861,7 @@
 <translation id="76959938259365003">ટ્રેશને ખાલી કરવામાં નિષ્ફળ રહ્યાં.</translation>
 <translation id="770015031906360009">ગ્રીક</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> કૉપિ કરી.</translation>
+<translation id="7707941139430559579">ફાઇલ ખસેડી શકતા નથી. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">આ નેટવર્કનો ઉપયોગ કરવા માટે, તમારે મોબાઇલ ઑપરેટર દ્વારા પ્રદાન કરેલી 8-અંકની 'પર્સનલ અનબ્લૉકિંગ કી' (PUK) દાખલ કરવાની જરૂર છે.</translation>
 <translation id="7711920809702896782">છબીની માહિતી</translation>
 <translation id="7724603315864178912">કાપો</translation>
@@ -1048,6 +1047,7 @@
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" નામની ફાઇલ પહેલાંથી અસ્તિત્વમાં છે. કૃપા કરીને કોઈ અલગ નામ પસંદ કરો.</translation>
 <translation id="9046895021617826162">કનેક્ટ કરવું નિષ્ફળ</translation>
 <translation id="9065512565307033593">જો તમે ચકાસણી કરવામાં નિષ્ફળ રહ્યાં, તો તમારા નેટવર્કનો ઍક્સેસ બંધ થઈ જશે.</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 ચેતવણી.}one{<ph name="COUNT" /> ચેતવણી.}other{<ph name="COUNT" /> ચેતવણી.}}</translation>
 <translation id="908378762078012445">રશિયન, ફોનેટિક AATSEEL કીબોર્ડ સાથે</translation>
 <translation id="9086302186042011942">સમન્વય કરી રહ્યું છે</translation>
 <translation id="9099674669267916096">પેજની સંખ્યા</translation>

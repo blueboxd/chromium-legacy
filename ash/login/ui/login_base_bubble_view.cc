@@ -99,6 +99,11 @@ class LoginBubbleHandler : public ui::EventHandler {
       return;
     }
 
+    views::View* anchor = bubble_->GetAnchorView();
+    if (anchor && login_views_utils::HasFocusInAnyChildView(anchor)) {
+      return;
+    }
+
     if (!bubble_->is_persistent()) {
       bubble_->Hide();
     }
@@ -172,8 +177,9 @@ void LoginBaseBubbleView::EnsureLayer() {
   }
   // Layer rendering is needed for animation.
   SetPaintToLayer();
-  layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
   layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
+  layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
 }
 
 LoginBaseBubbleView::~LoginBaseBubbleView() = default;

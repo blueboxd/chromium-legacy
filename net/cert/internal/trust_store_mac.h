@@ -7,8 +7,8 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/gtest_prod_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "net/base/net_export.h"
 #include "net/cert/pki/trust_store.h"
 
@@ -145,7 +145,7 @@ class NET_EXPORT TrustStoreMac : public TrustStore {
   // macOS internally uses a normalized form of subject/issuer names for
   // comparing, roughly similar to RFC3280's normalization scheme. The
   // normalized form is used for any database lookups and comparisons.
-  static base::ScopedCFTypeRef<CFDataRef> GetMacNormalizedIssuer(
+  static base::apple::ScopedCFTypeRef<CFDataRef> GetMacNormalizedIssuer(
       const ParsedCertificate* cert);
 
   std::unique_ptr<TrustImpl> trust_cache_;

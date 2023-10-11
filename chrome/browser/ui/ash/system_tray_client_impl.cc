@@ -15,6 +15,8 @@
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/system_tray.h"
 #include "ash/public/cpp/update_types.h"
+#include "ash/webui/settings/public/constants/routes.mojom.h"
+#include "ash/webui/settings/public/constants/setting.mojom.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -25,6 +27,7 @@
 #include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
@@ -56,8 +59,6 @@
 #include "chrome/browser/ui/webui/ash/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/ash/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/ash/multidevice_setup/multidevice_setup_dialog.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/channel_info.h"
@@ -239,7 +240,12 @@ class SystemTrayClientImpl::EnterpriseAccountObserver
   }
 
   // session_manager::SessionManagerObserver:
-  void OnSessionStateChanged() override { UpdateProfile(); }
+  void OnSessionStateChanged() override {
+    TRACE_EVENT0("ui",
+                 "SystemTrayClientImpl::EnterpriseAccountObserver::"
+                 "OnSessionStateChanged");
+    UpdateProfile();
+  }
 
   // policy::CloudPolicyStore::Observer
   void OnStoreLoaded(policy::CloudPolicyStore* store) override {
@@ -558,7 +564,7 @@ void SystemTrayClientImpl::ShowEnterpriseInfo() {
   }
 
   // Otherwise show enterprise management info page.
-  if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
+  if (crosapi::browser_util::IsLacrosEnabled()) {
     crosapi::BrowserManager::Get()->SwitchToTab(
         GURL(chrome::kChromeUIManagementURL),
         /*path_behavior=*/NavigateParams::RESPECT);

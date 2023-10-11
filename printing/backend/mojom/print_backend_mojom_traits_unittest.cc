@@ -112,6 +112,11 @@ TEST(PrintBackendMojomTraitsTest, TestPaperCtors) {
       "display_name", "vendor_id", kNonEmptySize, kNonEmptyPrintableArea,
       /*max_height_um=*/200);
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Paper>(input, output));
+
+  input = PrinterSemanticCapsAndDefaults::Paper(
+      "display_name", "vendor_id", kNonEmptySize, kNonEmptyPrintableArea,
+      /*max_height_um=*/200, /*has_borderless_variant=*/true);
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Paper>(input, output));
 }
 
 TEST(PrintBackendMojomTraitsTest, TestPaperEmpty) {
@@ -130,7 +135,9 @@ TEST(PrintBackendMojomTraitsTest, TestPaperInvalidCustomSize) {
       /*vendor_id=*/"vendor_id",
       /*size_um=*/gfx::Size(4000, 7000),
       /*printable_area_um=*/gfx::Rect(0, 0, 4000, 7000),
-      /*max_height_um=*/6000};
+      /*max_height_um=*/6000,
+      /*has_borderless_variant=*/true,
+  };
   PrinterSemanticCapsAndDefaults::Paper output;
 
   EXPECT_FALSE(
@@ -240,6 +247,8 @@ TEST(PrintBackendMojomTraitsTest,
   EXPECT_TRUE(kDefaultPaper == output.default_paper);
   EXPECT_EQ(kDpis, output.dpis);
   EXPECT_EQ(kDefaultDpi, output.default_dpi);
+  EXPECT_EQ(kMediaTypes, output.media_types);
+  EXPECT_EQ(kDefaultMediaType, output.default_media_type);
 #if BUILDFLAG(IS_CHROMEOS)
   EXPECT_EQ(kPinSupported, output.pin_supported);
   EXPECT_EQ(kAdvancedCapabilities, output.advanced_capabilities);
@@ -308,6 +317,22 @@ TEST(PrintBackendMojomTraitsTest,
               mojom::PrinterSemanticCapsAndDefaults>(input, output));
 
   EXPECT_EQ(kEmptyPapers, output.papers);
+}
+
+TEST(PrintBackendMojomTraitsTest,
+     TestSerializeAndDeserializePrinterSemanticCapsAndDefaultsEmptyMediaTypes) {
+  PrinterSemanticCapsAndDefaults input =
+      GenerateSamplePrinterSemanticCapsAndDefaults({});
+  PrinterSemanticCapsAndDefaults output;
+
+  // Override sample with empty `media_types`.
+  const PrinterSemanticCapsAndDefaults::MediaTypes kEmptyMediaTypes;
+  input.media_types.clear();
+
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
+              mojom::PrinterSemanticCapsAndDefaults>(input, output));
+
+  EXPECT_EQ(kEmptyMediaTypes, output.media_types);
 }
 
 TEST(

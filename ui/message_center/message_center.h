@@ -182,6 +182,10 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   // center observers.
   virtual void ClickOnSettingsButton(const std::string& id) = 0;
 
+  // Called when the snooze buttons is clicked to trigger the notification's
+  // delegate.
+  virtual void ClickOnSnoozeButton(const std::string& id) = 0;
+
   // This should be called by UI classes when a user select from notification
   // inline settings to disable notifications from the same origin of the
   // notification.
@@ -230,6 +234,10 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual ExpandState GetNotificationExpandState(const std::string& id) = 0;
   virtual void SetNotificationExpandState(const std::string& id,
                                           const ExpandState state) = 0;
+
+  // Called when `MessageView::SetExpanded` or the overrides are called. It
+  // will trigger 'ExpandStateChanged' in the notification's delegate.
+  virtual void OnSetExpanded(const std::string& id, bool expanded) = 0;
 
   // Informs the MessageCenter whether there's a bubble anchored to a system
   // tray which holds notifications. If false, only toasts are shown (e.g. on

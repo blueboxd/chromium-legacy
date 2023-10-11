@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/autofill/autofill_profile_edit_table_view_controller.h"
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/autofill/core/browser/data_model/autofill_profile.h"
 #import "components/autofill/core/browser/field_types.h"
@@ -86,11 +86,17 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
 // If YES, denotes that the view is laid out for the migration prompt.
 @property(nonatomic, assign) BOOL migrationPrompt;
 
+// Denotes that the views are laid out to migrate an incomplete profile to
+// account from the settings.
+@property(nonatomic, assign) BOOL moveToAccountFromSettings;
+
 @end
 
 @implementation AutofillProfileEditTableViewController {
   NSString* _userEmail;
 }
+
+@synthesize moveToAccountFromSettings = _moveToAccountFromSettings;
 
 #pragma mark - Initialization
 
@@ -108,6 +114,7 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
     _requiredFieldsWithEmptyValue = [[NSMutableSet<NSString*> alloc] init];
     _controller = controller;
     _settingsView = settingsView;
+    _moveToAccountFromSettings = NO;
   }
 
   return self;
@@ -146,7 +153,7 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
       continue;
     }
 
-    AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
+    AutofillEditItem* item = base::apple::ObjCCastStrict<AutofillEditItem>(
         [model itemAtIndexPath:path]);
     [self.delegate updateProfileMetadataWithValue:item.textFieldValue
                                 forAutofillUIType:item.autofillUIType];
@@ -204,7 +211,7 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
 
   if (itemType == AutofillProfileDetailsItemTypeSaveButton) {
     TableViewTextButtonCell* tableViewTextButtonCell =
-        base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+        base::apple::ObjCCastStrict<TableViewTextButtonCell>(cell);
     [tableViewTextButtonCell.button addTarget:self
                                        action:@selector(didTapSaveButton)
                              forControlEvents:UIControlEventTouchUpInside];
@@ -213,14 +220,14 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
 
   if (itemType == AutofillProfileDetailsItemTypeCountry) {
     TableViewMultiDetailTextCell* multiDetailTextCell =
-        base::mac::ObjCCastStrict<TableViewMultiDetailTextCell>(cell);
+        base::apple::ObjCCastStrict<TableViewMultiDetailTextCell>(cell);
     multiDetailTextCell.accessibilityIdentifier =
         multiDetailTextCell.textLabel.text;
     return multiDetailTextCell;
   }
 
   TableViewTextEditCell* textFieldCell =
-      base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
+      base::apple::ObjCCastStrict<TableViewTextEditCell>(cell);
   textFieldCell.accessibilityIdentifier = textFieldCell.textLabel.text;
   textFieldCell.textField.delegate = delegate;
   return textFieldCell;
@@ -238,7 +245,7 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
       UITableViewCell* cell =
           [self.controller.tableView cellForRowAtIndexPath:indexPath];
       TableViewTextEditCell* textFieldCell =
-          base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
+          base::apple::ObjCCastStrict<TableViewTextEditCell>(cell);
       [textFieldCell.textField becomeFirstResponder];
     }
   }
@@ -293,6 +300,17 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
   return [self isItemTypeTextEditCell:itemType];
 }
 
+- (void)setMoveToAccountFromSettings:(BOOL)moveToAccountFromSettings {
+  if (_moveToAccountFromSettings == moveToAccountFromSettings) {
+    return;
+  }
+
+  _moveToAccountFromSettings = moveToAccountFromSettings;
+  if (moveToAccountFromSettings) {
+    [self findRequiredFieldsWithEmptyValues];
+  }
+}
+
 #pragma mark - TableViewTextEditItemDelegate
 
 - (void)tableViewItemDidBeginEditing:(TableViewTextEditItem*)tableViewItem {
@@ -300,7 +318,8 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
 }
 
 - (void)tableViewItemDidChange:(TableViewTextEditItem*)tableViewItem {
-  if ((self.accountProfile || self.migrationPrompt)) {
+  if ((self.accountProfile || self.migrationPrompt ||
+       self.moveToAccountFromSettings)) {
     [self computeErrorIfRequiredTextField:tableViewItem];
     if (self.settingsView) {
       [self updateDoneButtonStatus];
@@ -319,31 +338,7 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
 
 - (void)didSelectCountry:(NSString*)country {
   self.homeAddressCountry = country;
-
-  [self.requiredFieldsWithEmptyValue removeAllObjects];
-  for (TableViewItem* item in [self.controller.tableViewModel
-           itemsInSectionWithIdentifier:
-               AutofillProfileDetailsSectionIdentifierFields]) {
-    if (item.type == AutofillProfileDetailsItemTypeCountry) {
-      TableViewMultiDetailTextItem* multiDetailTextItem =
-          base::mac::ObjCCastStrict<TableViewMultiDetailTextItem>(item);
-      multiDetailTextItem.trailingDetailText = self.homeAddressCountry;
-    } else if ([self isItemTypeTextEditCell:item.type]) {
-      // No requirement checks for local profiles.
-      if (self.accountProfile || self.migrationPrompt) {
-        TableViewTextEditItem* tableViewTextEditItem =
-            base::mac::ObjCCastStrict<TableViewTextEditItem>(item);
-        [self computeErrorIfRequiredTextField:tableViewTextEditItem];
-      }
-    }
-    [self.controller reconfigureCellsForItems:@[ item ]];
-  }
-
-  if (self.settingsView) {
-    [self updateDoneButtonStatus];
-  } else {
-    [self updateSaveButtonStatus];
-  }
+  [self findRequiredFieldsWithEmptyValues];
 }
 
 #pragma mark - Actions
@@ -648,6 +643,10 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
     (AutofillProfileDetailsItemType)itemType {
   DCHECK([self isItemTypeRequiredField:itemType]);
 
+  if (self.moveToAccountFromSettings) {
+    return NO;
+  }
+
   return [self.delegate
       fieldValueEmptyOnProfileLoadForType:
           [self serverFieldTypeCorrespondingToRequiredItemType:itemType]];
@@ -740,7 +739,7 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
       footerForSectionWithIdentifier:
           AutofillProfileDetailsSectionIdentifierErrorFooter];
   TableViewAttributedStringHeaderFooterItem* attributedFooterItem =
-      base::mac::ObjCCastStrict<TableViewAttributedStringHeaderFooterItem>(
+      base::apple::ObjCCastStrict<TableViewAttributedStringHeaderFooterItem>(
           currentFooter);
   NSAttributedString* newFooter = [self errorAndFooterMessage];
   return ![attributedFooterItem.attributedString
@@ -755,9 +754,11 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
 // Returns the footer message.
 - (NSString*)footerMessage {
   CHECK([_userEmail length] > 0);
-  return l10n_util::GetNSStringF(
-      IDS_IOS_SETTINGS_AUTOFILL_ACCOUNT_ADDRESS_FOOTER_TEXT,
-      base::SysNSStringToUTF16(_userEmail));
+  return self.moveToAccountFromSettings
+             ? @""
+             : l10n_util::GetNSStringF(
+                   IDS_IOS_SETTINGS_AUTOFILL_ACCOUNT_ADDRESS_FOOTER_TEXT,
+                   base::SysNSStringToUTF16(_userEmail));
 }
 
 // Returns the error message combined with footer.
@@ -813,6 +814,36 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
       break;
   }
   return NO;
+}
+
+// Recomputes the required fields that are empty.
+- (void)findRequiredFieldsWithEmptyValues {
+  [self.requiredFieldsWithEmptyValue removeAllObjects];
+  for (TableViewItem* item in [self.controller.tableViewModel
+           itemsInSectionWithIdentifier:
+               AutofillProfileDetailsSectionIdentifierFields]) {
+    if (item.type == AutofillProfileDetailsItemTypeCountry) {
+      TableViewMultiDetailTextItem* multiDetailTextItem =
+          base::apple::ObjCCastStrict<TableViewMultiDetailTextItem>(item);
+      multiDetailTextItem.trailingDetailText = self.homeAddressCountry;
+    } else if ([self isItemTypeTextEditCell:item.type]) {
+      // No requirement checks for local profiles.
+      if (self.accountProfile || self.migrationPrompt ||
+          self.moveToAccountFromSettings) {
+        TableViewTextEditItem* tableViewTextEditItem =
+            base::apple::ObjCCastStrict<TableViewTextEditItem>(item);
+        [self computeErrorIfRequiredTextField:tableViewTextEditItem];
+      }
+    }
+  }
+
+  [self reconfigureCells];
+
+  if (self.settingsView) {
+    [self updateDoneButtonStatus];
+  } else {
+    [self updateSaveButtonStatus];
+  }
 }
 
 @end

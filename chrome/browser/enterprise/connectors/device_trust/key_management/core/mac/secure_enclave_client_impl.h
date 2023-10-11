@@ -13,8 +13,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/containers/span.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/mac/secure_enclave_helper.h"
 
 namespace enterprise_connectors {
@@ -27,8 +27,8 @@ class SecureEnclaveClientImpl : public SecureEnclaveClient {
   ~SecureEnclaveClientImpl() override;
 
   // SecureEnclaveClient:
-  base::ScopedCFTypeRef<SecKeyRef> CreatePermanentKey() override;
-  base::ScopedCFTypeRef<SecKeyRef> CopyStoredKey(KeyType type) override;
+  base::apple::ScopedCFTypeRef<SecKeyRef> CreatePermanentKey() override;
+  base::apple::ScopedCFTypeRef<SecKeyRef> CopyStoredKey(KeyType type) override;
   bool UpdateStoredKeyLabel(KeyType current_key_type,
                             KeyType new_key_type) override;
   bool DeleteKey(KeyType type) override;

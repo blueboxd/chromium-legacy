@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
+#include "base/test/bind.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -12,6 +14,7 @@
 #include "chrome/browser/dips/dips_service.h"
 #include "chrome/browser/dips/dips_storage.h"
 #include "chrome/browser/dips/dips_test_utils.h"
+#include "chrome/browser/dips/dips_utils.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/navigation_handle.h"
@@ -214,8 +217,16 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   ASSERT_TRUE(popup_tab_helper->popup_observer_for_testing());
 }
 
+// TODO(https://crbug.com/1469394): Flaky on android.
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_PopupsWithoutOpenerDoNotHavePopupState \
+  DISABLED_PopupsWithoutOpenerDoNotHavePopupState
+#else
+#define MAYBE_PopupsWithoutOpenerDoNotHavePopupState \
+  PopupsWithoutOpenerDoNotHavePopupState
+#endif
 IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
-                       PopupsWithoutOpenerDoNotHavePopupState) {
+                       MAYBE_PopupsWithoutOpenerDoNotHavePopupState) {
   WebContents* web_contents = GetActiveWebContents();
   GURL popup_url = embedded_test_server()->GetURL("a.test", "/title1.html");
 
@@ -369,6 +380,75 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
       1u);
 }
 
+IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
+                       PopupPastInteractionIsFollowedByPostPopupCookieAccess) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  GURL opener_url = embedded_test_server()->GetURL("a.test", "/title1.html");
+  GURL popup_url = embedded_test_server()->GetURL("b.test", "/title1.html");
+
+  // Initialize interaction and popup.
+  RecordInteraction(popup_url, clock_.Now() - base::Hours(3));
+  ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
+  ASSERT_TRUE(OpenPopup(popup_url).has_value());
+  GetDipsService()->storage()->FlushPostedTasksForTesting();
+
+  // Assert that the UKM events and DIPS entries were recorded.
+  int64_t access_id;
+  ASSERT_EQ(
+      ukm_recorder.GetEntriesByName("OpenerHeuristic.PopupPastInteraction")
+          .size(),
+      1u);
+  auto top_level_entries =
+      ukm_recorder.GetEntries("OpenerHeuristic.TopLevel", {"AccessId"});
+  ASSERT_EQ(top_level_entries.size(), 1u);
+  EXPECT_EQ(
+      ukm_recorder.GetSourceForSourceId(top_level_entries[0].source_id)->url(),
+      opener_url);
+  access_id = top_level_entries[0].metrics["AccessId"];
+
+  base::OnceCallback<void(absl::optional<PopupsStateValue>)> assert_popup =
+      base::BindLambdaForTesting([&](absl::optional<PopupsStateValue> state) {
+        ASSERT_TRUE(state.has_value());
+        EXPECT_EQ(access_id, static_cast<int64_t>(state->access_id));
+      });
+  GetDipsService()
+      ->storage()
+      ->AsyncCall(&DIPSStorage::ReadPopup)
+      .WithArgs(GetSiteForDIPS(opener_url), GetSiteForDIPS(popup_url))
+      .Then(std::move(assert_popup));
+  GetDipsService()->storage()->FlushPostedTasksForTesting();
+
+  // We host the "image" on an HTTPS server, because for it to write a
+  // cookie, the cookie needs to be SameSite=None and Secure.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  // Add a cookie access by popup_url on opener_url.
+  ASSERT_TRUE(NavigateToSetCookie(GetActiveWebContents(), &https_server,
+                                  "sub.b.test",
+                                  /*is_secure_cookie_set=*/true));
+  ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
+  CreateImageAndWaitForCookieAccess(
+      GetActiveWebContents(),
+      https_server.GetURL("sub.b.test", "/favicon/icon.png"));
+  GetDipsService()->storage()->FlushPostedTasksForTesting();
+
+  // Assert that the UKM event for the PostPopupCookieAccess was recorded.
+  auto access_entries = ukm_recorder.GetEntries(
+      "OpenerHeuristic.PostPopupCookieAccess",
+      {"AccessId", "AccessSucceeded", "HoursSincePopupOpened"});
+  ASSERT_EQ(access_entries.size(), 1u);
+  EXPECT_EQ(
+      ukm_recorder.GetSourceForSourceId(access_entries[0].source_id)->url(),
+      opener_url);
+  EXPECT_EQ(access_entries[0].metrics["AccessId"], access_id);
+  EXPECT_EQ(access_entries[0].metrics["AccessSucceeded"], true);
+  EXPECT_EQ(access_entries[0].metrics["HoursSincePopupOpened"], 0);
+}
+
 IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest, PopupInteraction) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   GURL popup_url = embedded_test_server()->GetURL("a.test", "/title1.html");
@@ -462,6 +542,83 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
                 base::Minutes(2), base::Minutes(3),
                 base::BindRepeating(&base::TimeDelta::InSeconds)));
   EXPECT_EQ(entries[0].metrics["UrlIndex"], 1);
+}
+
+IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
+                       PopupInteraction_IsFollowedByPostPopupCookieAccess) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  GURL opener_url = embedded_test_server()->GetURL("a.test", "/title1.html");
+  GURL popup_url_1 = embedded_test_server()->GetURL("c.test", "/title1.html");
+  GURL popup_url_2 =
+      embedded_test_server()->GetURL("b.test", "/server-redirect?title1.html");
+  GURL popup_url_3 = embedded_test_server()->GetURL("b.test", "/title1.html");
+
+  // Initialize popup and interaction.
+  ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
+  auto maybe_popup = OpenPopup(popup_url_1);
+  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
+
+  clock_.Advance(base::Minutes(1));
+  ASSERT_TRUE(content::NavigateToURL(*maybe_popup, popup_url_2, popup_url_3));
+
+  clock_.Advance(base::Minutes(1));
+  SimulateMouseClick(*maybe_popup);
+  GetDipsService()->storage()->FlushPostedTasksForTesting();
+
+  // Assert that the UKM events and DIPS entries were recorded.
+  int64_t access_id;
+  ASSERT_EQ(
+      ukm_recorder.GetEntriesByName("OpenerHeuristic.PopupInteraction").size(),
+      1u);
+  auto top_level_entries =
+      ukm_recorder.GetEntries("OpenerHeuristic.TopLevel", {"AccessId"});
+  ASSERT_EQ(top_level_entries.size(), 1u);
+  EXPECT_EQ(
+      ukm_recorder.GetSourceForSourceId(top_level_entries[0].source_id)->url(),
+      opener_url);
+  access_id = top_level_entries[0].metrics["AccessId"];
+
+  base::OnceCallback<void(absl::optional<PopupsStateValue>)> assert_popup =
+      base::BindLambdaForTesting([&](absl::optional<PopupsStateValue> state) {
+        ASSERT_TRUE(state.has_value());
+        EXPECT_EQ(access_id, static_cast<int64_t>(state->access_id));
+      });
+  GetDipsService()
+      ->storage()
+      ->AsyncCall(&DIPSStorage::ReadPopup)
+      .WithArgs(GetSiteForDIPS(opener_url), GetSiteForDIPS(popup_url_3))
+      .Then(std::move(assert_popup));
+  GetDipsService()->storage()->FlushPostedTasksForTesting();
+
+  // We host the "image" on an HTTPS server, because for it to write a
+  // cookie, the cookie needs to be SameSite=None and Secure.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  // Add a cookie access by popup_url on opener_url.
+  ASSERT_TRUE(NavigateToSetCookie(GetActiveWebContents(), &https_server,
+                                  "sub.b.test",
+                                  /*is_secure_cookie_set=*/true));
+  ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
+  CreateImageAndWaitForCookieAccess(
+      GetActiveWebContents(),
+      https_server.GetURL("sub.b.test", "/favicon/icon.png"));
+  GetDipsService()->storage()->FlushPostedTasksForTesting();
+
+  // Assert that the UKM event for the PostPopupCookieAccess was recorded.
+  auto access_entries = ukm_recorder.GetEntries(
+      "OpenerHeuristic.PostPopupCookieAccess",
+      {"AccessId", "AccessSucceeded", "HoursSincePopupOpened"});
+  ASSERT_EQ(access_entries.size(), 1u);
+  EXPECT_EQ(
+      ukm_recorder.GetSourceForSourceId(access_entries[0].source_id)->url(),
+      opener_url);
+  EXPECT_EQ(access_entries[0].metrics["AccessId"], access_id);
+  EXPECT_EQ(access_entries[0].metrics["AccessSucceeded"], true);
+  EXPECT_EQ(access_entries[0].metrics["HoursSincePopupOpened"], 0);
 }
 
 IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,

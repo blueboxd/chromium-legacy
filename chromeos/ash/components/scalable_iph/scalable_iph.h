@@ -5,12 +5,14 @@
 #ifndef CHROMEOS_ASH_COMPONENTS_SCALABLE_IPH_SCALABLE_IPH_H_
 #define CHROMEOS_ASH_COMPONENTS_SCALABLE_IPH_SCALABLE_IPH_H_
 
+#include <ostream>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/timer/timer.h"
+#include "chromeos/ash/components/scalable_iph/logger.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_constants.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_delegate.h"
 #include "components/feature_engagement/public/tracker.h"
@@ -78,12 +80,20 @@ class ScalableIph : public KeyedService,
                     public IphSession::Delegate {
  public:
   // List of events ScalableIph supports.
-  enum class Event { kFiveMinTick = 0, kUnlocked, kAppListShown };
+  enum class Event {
+    kFiveMinTick = 0,
+    kUnlocked,
+    kAppListShown,
+    kAppListItemActivationYouTube,
+    kAppListItemActivationGoogleDocs
+  };
 
   ScalableIph(feature_engagement::Tracker* tracker,
               std::unique_ptr<ScalableIphDelegate> delegate);
 
   void RecordEvent(Event event);
+
+  Logger* logger() { return &logger_; }
 
   ScalableIphDelegate* delegate_for_testing() { return delegate_.get(); }
 
@@ -93,9 +103,10 @@ class ScalableIph : public KeyedService,
 
   // ScalableIphDelegate::Observer:
   void OnConnectionChanged(bool online) override;
-  void OnLockStateChanged(bool locked) override;
+  void OnSessionStateChanged(ScalableIphDelegate::SessionState state) override;
   void OnSuspendDoneWithoutLockScreen() override;
   void OnAppListVisibilityChanged(bool shown) override;
+  void OnHasSavedPrintersChanged(bool has_saved_printers) override;
 
   // IphSession::Delegate:
   void PerformActionForIphSession(ActionType action_type) override;
@@ -117,6 +128,20 @@ class ScalableIph : public KeyedService,
   // should use `IphSession::PerformAction` instead of this method.
   void PerformAction(ActionType action_type);
 
+  // `SyncedPrintersManager` stores its observers in `ObserverListThreadSafe`,
+  // which invokes observers via `TaskRunner`. Test code can set a closure to
+  // this method to wait an observer of `ScalableIph` being called.
+  //
+  // Note:
+  // We cannot wait this by registering another observer in a test and wait it.
+  // Observers are stored in an unordered map. There is no guarantee on the
+  // order of calls.
+  void SetHasSavedPrintersChangedClosureForTesting(
+      base::RepeatingClosure has_saved_printers_closure);
+
+  // Maybe record an app list item activation of `id`.
+  void MaybeRecordAppListItemActivation(const std::string& id);
+
  private:
   void EnsureTimerStarted();
   void RecordTimeTickEvent();
@@ -131,6 +156,7 @@ class ScalableIph : public KeyedService,
   bool CheckCustomConditions(const base::Feature& feature);
   bool CheckNetworkConnection(const base::Feature& feature);
   bool CheckClientAge(const base::Feature& feature);
+  bool CheckHasSavedPrinters(const base::Feature& feature);
 
   const std::vector<const base::Feature*>& GetFeatureList() const;
 
@@ -138,8 +164,12 @@ class ScalableIph : public KeyedService,
   std::unique_ptr<ScalableIphDelegate> delegate_;
   base::RepeatingTimer timer_;
   bool online_ = false;
-  bool locked_ = false;
+  ScalableIphDelegate::SessionState session_state_ =
+      ScalableIphDelegate::SessionState::kUnknownInitialValue;
+  bool has_saved_printers_ = false;
+  Logger logger_;
 
+  base::RepeatingClosure has_saved_printers_closure_for_testing_;
   std::vector<const base::Feature*> feature_list_for_testing_;
 
   base::ScopedObservation<ScalableIphDelegate, ScalableIph>
@@ -147,6 +177,8 @@ class ScalableIph : public KeyedService,
 
   base::WeakPtrFactory<ScalableIph> weak_ptr_factory_{this};
 };
+
+std::ostream& operator<<(std::ostream& out, ScalableIph::Event event);
 
 }  // namespace scalable_iph
 

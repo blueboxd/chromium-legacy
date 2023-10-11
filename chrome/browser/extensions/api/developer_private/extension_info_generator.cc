@@ -27,12 +27,12 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/site_permissions_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/google_chrome_strings.h"
 #include "components/supervised_user/core/common/pref_names.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/blocklist_extension_prefs.h"
@@ -56,6 +56,7 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_message_util.h"
@@ -313,6 +314,19 @@ developer::RuntimeHostPermissions CreateRuntimeHostPermissionsInfo(
   return runtime_host_permissions;
 }
 
+// Returns if the extension can access site data. This checks for host
+// permissions, activeTab and API permissions that will surface a warning for
+// all hosts access.
+bool CanAccessSiteData(PermissionsManager* permissions_manager,
+                       const Extension& extension) {
+  return permissions_manager->ExtensionRequestsHostPermissionsOrActiveTab(
+             extension) ||
+         PermissionsParser::GetRequiredPermissions(&extension)
+             .ShouldWarnAllHosts() ||
+         PermissionsParser::GetOptionalPermissions(&extension)
+             .ShouldWarnAllHosts();
+}
+
 // Populates the |permissions| data for the given |extension|.
 void AddPermissionsInfo(content::BrowserContext* browser_context,
                         const Extension& extension,
@@ -333,6 +347,10 @@ void AddPermissionsInfo(content::BrowserContext* browser_context,
 
   PermissionsManager* permissions_manager =
       PermissionsManager::Get(browser_context);
+
+  permissions->can_access_site_data =
+      CanAccessSiteData(permissions_manager, extension);
+
   bool enable_runtime_host_permissions =
       permissions_manager->CanAffectExtension(extension);
 
@@ -772,6 +790,18 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   info->show_access_requests_in_toolbar =
       SitePermissionsHelper(profile).ShowAccessRequestsInToolbar(
           extension.id());
+
+  // Pinned to toolbar.
+  // TODO(crbug.com/1477884): Currently this information is only shown for
+  // enabled extensions as only enabled extensions can have actions. However,
+  // this information can be found in prefs, so disabled extensiosn can be
+  // included as well.
+  ToolbarActionsModel* toolbar_actions_model =
+      ToolbarActionsModel::Get(profile);
+  if (toolbar_actions_model->HasAction(extension.id())) {
+    info->pinned_to_toolbar =
+        toolbar_actions_model->IsActionPinned(extension.id());
+  }
 
   // The icon.
   ExtensionResource icon =

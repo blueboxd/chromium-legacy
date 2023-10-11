@@ -250,12 +250,13 @@ inline Containment& operator|=(Containment& a, Containment b) {
   return a = a | b;
 }
 
-static const size_t kContainerTypeBits = 3;
+static const size_t kContainerTypeBits = 4;
 enum EContainerType {
   kContainerTypeNormal = 0x0,
   kContainerTypeInlineSize = 0x1,
   kContainerTypeBlockSize = 0x2,
   kContainerTypeSticky = 0x4,
+  kContainerTypeSnap = 0x8,
   kContainerTypeSize = kContainerTypeInlineSize | kContainerTypeBlockSize,
 };
 inline EContainerType operator|(EContainerType a, EContainerType b) {
@@ -410,6 +411,20 @@ enum class CoordBox {
   kContentBox,
   kPaddingBox,
   kBorderBox,
+  kFillBox,
+  kStrokeBox,
+  kViewBox
+};
+
+// https://drafts.fxtf.org/css-masking/#typedef-geometry-box
+enum class GeometryBox {
+  // <box> = border-box | padding-box | content-box
+  kBorderBox,
+  kPaddingBox,
+  kContentBox,
+  // <shape-box> = <box> | margin-box
+  kMarginBox,
+  // <geometry-box> = <shape-box> | fill-box | stroke-box | view-box
   kFillBox,
   kStrokeBox,
   kViewBox

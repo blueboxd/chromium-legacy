@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">Inatafuta mitandao ya simu</translation>
 <translation id="1293556467332435079">Faili</translation>
 <translation id="1297922636971898492">Hifadhi ya Google haipatikani kwa sasa kupakia kutafungua upya kiotomatiki baada Hifadhi ya Google imerudi.</translation>
+<translation id="1306130176943817227">Imeshindwa kufuta. Kipengee kinatumika.</translation>
 <translation id="1307931752636661898">Imeshindwa kuona faili za Linux</translation>
 <translation id="1313405956111467313">Usanidi wa proksi kiotomatiki</translation>
 <translation id="134645005685694099">Kifaa chako hakina nafasi ya kuhifadhi ya kutosha kukuwezesha kuendelea kutumia usawazishwaji wa faili. Faili mpya hazitasawazishwa tena kiotomatiki.</translation>
@@ -115,7 +116,6 @@
 <translation id="1920798810075583923">Tikitimaji</translation>
 <translation id="1924372192547904021">Imebadilisha muundo <ph name="DRIVE_NAME" /></translation>
 <translation id="1931134289871235022">Kislovakia</translation>
-<translation id="1933345018156373194">Imeshindwa kusogeza, hitilafu isiyotarajiwa: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Kifinlandi</translation>
 <translation id="1942765061641586207">Ubora wa picha</translation>
 <translation id="1972984168337863910">Panua vidirisha vya maoni ya faili</translation>
@@ -502,7 +502,6 @@
 <translation id="4969785127455456148">Albamu</translation>
 <translation id="4972330214479971536">Imeshindwa kukamilisha mchakato wa kuweka mipangilio ya kusawazisha faili</translation>
 <translation id="4973523518332075481">Tumia jina lenye herufi <ph name="MAX_LENGTH" /> au chache</translation>
-<translation id="4973970068702235170">Imeshindwa kubana, hitilafu isiyotarajiwa imetokea: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Kijapani</translation>
 <translation id="4987699874727873250">Kiingereza (India)</translation>
 <translation id="4988205478593450158">Je, una uhakika unataka kufuta "<ph name="FILE_NAME" />"?</translation>
@@ -543,6 +542,7 @@
 <translation id="5218183485292899140">Kifaransa cha Uswisi</translation>
 <translation id="5234764350956374838">Ondoa</translation>
 <translation id="5253070652067921974">Imeundwa na</translation>
+<translation id="5254207638927440400">Imeshindwa kuhamisha faili. Faili inatumika.</translation>
 <translation id="5257456363153333584">Kereng'ende</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Fikia faili kutoka mahali popote, hata nje ya mtandao.<ph name="MARKUP_2" />
         Faili katika Hifadhi ya Google zimesasishwa na hupatikana kwenye kifaa chochote.<ph name="MARKUP_3" />
@@ -638,7 +638,6 @@
 <translation id="5896749729057314184">Mtandao wa <ph name="NETWORK_INDEX" /> kati ya <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Haijawashwa, Uthabiti wa Mtandao, asilimia <ph name="SIGNAL_STRENGTH" />, Maelezo</translation>
 <translation id="5911887972742538906">Hitilafu imetokea wakati wa kusakinisha programu yako ya Linux.</translation>
 <translation id="5912396950572065471">Muundo</translation>
-<translation id="5913638992615760742">Uendeshaji wa kunakili umeshindikana, hitilafu isiyotarajiwa: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">Vipengele vipya vya utafutaji vinapatikana</translation>
 <translation id="5926082595146149752">Kiholanzi (Uholanzi) kwenye kibodi ya Kimataifa ya Marekani (PC)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -646,7 +645,6 @@
 <translation id="5955954492236143329">Faili <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5957366693331451795">Chromebox</translation>
 <translation id="5982621672636444458">Chaguo za kupanga</translation>
-<translation id="6007237601604674381">Kusogezwa kumeshindika. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">Mtandao wa Ethaneti</translation>
 <translation id="60357267506638014">QWERTY ya Kicheki</translation>
 <translation id="603895874132768835">Hutaweza kutumia mtandao huu hadi utakapoweka PIN mpya</translation>
@@ -863,6 +861,7 @@
 <translation id="76959938259365003">Imeshindwa kufuta data iliyopo kwenye tupio.</translation>
 <translation id="770015031906360009">Kigiriki</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> imenakiliwa.</translation>
+<translation id="7707941139430559579">Imeshindwa kuhamisha faili. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">Ili utumie mtandao huu, unahitaji kuweka Nambari Binafsi ya Kufungua (PUK) yenye tarakimu 8 uliyopewa na mtoa huduma.</translation>
 <translation id="7711920809702896782">Maelezo ya picha</translation>
 <translation id="7724603315864178912">Kata</translation>
@@ -1050,6 +1049,7 @@
 <translation id="9038620279323455325">Faili yenye jina la "<ph name="FILE_NAME" />" tayari ipo. Tafadhali chagua jina tofauti.</translation>
 <translation id="9046895021617826162">Muunganisho umeshindikana</translation>
 <translation id="9065512565307033593">Usipothibitisha, ufikiaji wako wa mtandao utazimwa.</translation>
+<translation id="9083722265619106011">{0,plural, =1{Tahadhari 1.}other{Tahadhari <ph name="COUNT" />.}}</translation>
 <translation id="908378762078012445">Kirusi kwenye kibodi ya Fonetiki ya AATSEEL</translation>
 <translation id="9086302186042011942">Inasawazisha</translation>
 <translation id="9099674669267916096">Idadi ya kurasa</translation>

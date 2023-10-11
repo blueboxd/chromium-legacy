@@ -12,6 +12,7 @@
 #include "components/performance_manager/public/features.h"
 #include "components/permissions/features.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 
@@ -209,10 +210,6 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, PaymentsSectionCardRows) {
 
 IN_PROC_BROWSER_TEST_F(SettingsTest, PaymentsSectionIban) {
   RunTest("settings/payments_section_iban_test.js", "mocha.run()");
-}
-
-IN_PROC_BROWSER_TEST_F(SettingsTest, PaymentsSectionUpi) {
-  RunTest("settings/payments_section_upi_test.js", "mocha.run()");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsTest, PeoplePage) {
@@ -514,9 +511,8 @@ class SettingsCookiesPageTest : public SettingsBrowserTest {
         {
             privacy_sandbox::kPrivacySandboxSettings4,
             privacy_sandbox::kPrivacySandboxFirstPartySetsUI,
-            features::kPreloadingDesktopSettingsSubPage,
         },
-        {});
+        {features::kPerformanceSettingsPreloadingSubpage});
   }
 
  private:
@@ -565,9 +561,9 @@ IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest,
-                       PreloadingDesktopSettingsSubPageDisabled) {
+                       PreloadingSubpageMovedToPerformanceSettings) {
   RunTest("settings/cookies_page_test.js",
-          "runMochaSuite('PreloadingDesktopSettingsSubPageDisabled')");
+          "runMochaSuite('PreloadingSubpageMovedToPerformanceSettings')");
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -750,6 +746,11 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideFragmentsTest,
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideFragmentsTest, CookiesFragment) {
   RunTest("settings/privacy_guide_fragments_test.js",
           "runMochaSuite('CookiesFragment')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideFragmentsTest, PreloadFragment) {
+  RunTest("settings/privacy_guide_fragments_test.js",
+          "runMochaSuite('PreloadFragment')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideFragmentsTest, CompletionFragment) {
@@ -1002,7 +1003,18 @@ IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, All) {
           "mocha.run()");
 }
 
-using SettingsSecurityPageTest = SettingsBrowserTest;
+class SettingsSecurityPageTest : public SettingsBrowserTest {
+ protected:
+  SettingsSecurityPageTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {safe_browsing::kFriendlierSafeBrowsingSettingsEnhancedProtection,
+         safe_browsing::kFriendlierSafeBrowsingSettingsStandardProtection},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
 IN_PROC_BROWSER_TEST_F(SettingsSecurityPageTest, Main) {
   RunTest("settings/security_page_test.js", "runMochaSuite('Main')");

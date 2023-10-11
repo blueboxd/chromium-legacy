@@ -37,7 +37,7 @@
 #if BUILDFLAG(IS_MAC)
 #include <sys/types.h>
 #include <unistd.h>
-#include "base/mac/mach_logging.h"
+#include "base/apple/mach_logging.h"
 #include "sandbox/mac/system_services.h"
 #include "sandbox/policy/sandbox.h"
 #endif
@@ -79,7 +79,7 @@ extern sandbox::TargetServices* g_utility_target_services;
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_WIN)
-#include "media/mojo/mojom/media_foundation_service.mojom.h"  // nogncheck
+#include "media/mojo/mojom/media_foundation_service.mojom.h"      // nogncheck
 #include "media/mojo/services/media_foundation_service_broker.h"  // nogncheck
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -125,8 +125,9 @@ namespace {
 #if BUILDFLAG(IS_WIN)
 void EnsureSandboxedWin() {
   // |g_utility_target_services| can be null if --no-sandbox is specified.
-  if (g_utility_target_services)
+  if (g_utility_target_services) {
     g_utility_target_services->LowerToken();
+  }
 }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -208,9 +209,9 @@ auto RunAudio(mojo::PendingReceiver<audio::mojom::AudioService> receiver) {
 
   // Set the audio process to run with similar scheduling parameters as the
   // browser process.
-  task_category_policy category;
-  category.role = TASK_FOREGROUND_APPLICATION;
   if (__builtin_available(macOS 10.9, *)) {
+    task_category_policy category;
+    category.role = TASK_FOREGROUND_APPLICATION;
     kern_return_t result = task_policy_set(
         mach_task_self(), TASK_CATEGORY_POLICY,
         reinterpret_cast<task_policy_t>(&category), TASK_CATEGORY_POLICY_COUNT);
@@ -218,9 +219,10 @@ auto RunAudio(mojo::PendingReceiver<audio::mojom::AudioService> receiver) {
     MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
         << "task_policy_set TASK_CATEGORY_POLICY";
 
-    if (result != KERN_SUCCESS)
+    if (result != KERN_SUCCESS) {
       LOG(ERROR) << "task_policy_set(TASK_CATEGORY_POLICY) failed for pid:"
                  << getpid() << " role:TASK_FOREGROUND_APPLICATION";
+    }
 
     task_qos_policy qos;
     qos.task_latency_qos_tier = LATENCY_QOS_TIER_0;
@@ -232,8 +234,12 @@ auto RunAudio(mojo::PendingReceiver<audio::mojom::AudioService> receiver) {
     MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
         << "task_policy_set TASK_QOS_POLICY";
 
-    if(result!=KERN_SUCCESS)
-      LOG(ERROR) << "task_policy_set(TASK_BASE_QOS_POLICY) failed for pid:" << getpid() << " task_latency_qos_tier: LATENCY_QOS_TIER_0, task_throughput_qos_tier: THROUGHPUT_QOS_TIER_0";
+    if (result != KERN_SUCCESS) {
+      LOG(ERROR) << "task_policy_set(TASK_BASE_QOS_POLICY) failed for pid:"
+                 << getpid()
+                 << " task_latency_qos_tier: LATENCY_QOS_TIER_0, "
+                    "task_throughput_qos_tier: THROUGHPUT_QOS_TIER_0";
+    }
   }
 #endif
 
@@ -437,8 +443,9 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_ACCESSIBILITY_SERVICE)
-  if (::features::IsAccessibilityServiceEnabled())
+  if (::features::IsAccessibilityServiceEnabled()) {
     services.Add(RunAccessibilityService);
+  }
 #endif  // BUILDFLAG(ENABLE_ACCESSIBILITY_SERVICE)
 
   // Add new main-thread services above this line.

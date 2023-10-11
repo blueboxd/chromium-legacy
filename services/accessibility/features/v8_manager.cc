@@ -6,24 +6,26 @@
 
 #include <utility>
 
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "gin/arguments.h"
-#include "gin/array_buffer.h"
 #include "gin/converter.h"
-#include "gin/function_template.h"
 #include "gin/public/context_holder.h"
 #include "gin/public/isolate_holder.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "services/accessibility/assistive_technology_controller_impl.h"
 #include "services/accessibility/features/automation_internal_bindings.h"
+#include "services/accessibility/features/devtools/os_devtools_agent.h"
+#include "services/accessibility/features/interface_binder.h"
 #include "services/accessibility/features/mojo/mojo.h"
 #include "services/accessibility/features/tts_interface_binder.h"
+#include "services/accessibility/features/user_interface_interface_binder.h"
 #include "services/accessibility/features/v8_bindings_utils.h"
+#include "services/accessibility/public/mojom/accessibility_service.mojom-forward.h"
 #include "v8/include/v8-context.h"
 #include "v8/include/v8-object.h"
 #include "v8/include/v8-template.h"
@@ -38,6 +40,15 @@ namespace {
 static const int kV8ContextWrapperIndex = 0;
 
 }  // namespace
+
+void V8Environment::ConnectDevToolsAgent(
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent) {
+  if (!devtools_agent_) {
+    devtools_agent_ =
+        std::make_unique<OSDevToolsAgent>(*this, std::move(main_runner_));
+  }
+  devtools_agent_->Connect(std::move(agent));
+}
 
 // static
 base::SequenceBound<V8Environment> V8Environment::Create(
@@ -78,8 +89,11 @@ V8Environment::~V8Environment() {
     return;
 
   NotifyIsolateWillDestroy();
-
   isolate_holder_->isolate()->TerminateExecution();
+
+  // Devtools agent must be destroyed before context and isolate.
+  devtools_agent_.reset();
+
   context_holder_.reset();
   isolate_holder_.reset();
 }
@@ -231,9 +245,26 @@ void V8Manager::ConfigureTts(
       std::make_unique<TtsInterfaceBinder>(ax_service_client));
 }
 
+void V8Manager::ConfigureUserInterface(
+    mojom::AccessibilityServiceClient* ax_service_client) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(b/262637071): load the AccessibilityPrivate JS shim into V8 using
+  // v8_env_.AsyncCall.
+  interface_binders_.push_back(
+      std::make_unique<UserInterfaceInterfaceBinder>(ax_service_client));
+}
+
 void V8Manager::FinishContextSetUp() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   v8_env_.AsyncCall(&V8Environment::AddV8Bindings);
+}
+
+// Instructs V8Environment to create a devtools agent.
+void V8Manager::ConnectDevToolsAgent(
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  v8_env_.AsyncCall(&V8Environment::ConnectDevToolsAgent)
+      .WithArgs(std::move(agent));
 }
 
 void V8Manager::AddInterfaceForTest(

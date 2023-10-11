@@ -4,6 +4,7 @@
 import("//build/config/sanitizers/sanitizers.gni")
 import("//gpu/vulkan/features.gni")
 import("//skia/features.gni")
+import("//ui/gl/features.gni")
 
 import("//cc/cc.gni")
 
@@ -39,6 +40,8 @@ cc_component("cc") {
     "input/browser_controls_offset_manager_client.h",
     "input/browser_controls_state.h",
     "input/compositor_input_interfaces.h",
+    "input/hit_test_opaqueness.cc",
+    "input/hit_test_opaqueness.h",
     "input/input_handler.cc",
     "input/input_handler.h",
     "input/layer_selection_bound.cc",
@@ -674,6 +677,12 @@ cc_test_static_library("test_support") {
   if (!is_android) {
     data_deps = [ "//third_party/mesa_headers" ]
   }
+  if (skia_use_dawn) {
+    deps += [
+      "//third_party/dawn/src/dawn:proc",
+      "//third_party/dawn/src/dawn/native",
+    ]
+  }
 }
 
 if (is_ios) {
@@ -704,6 +713,7 @@ cc_test("cc_unittests") {
     "benchmarks/micro_benchmark_controller_unittest.cc",
     "debug/rendering_stats_unittest.cc",
     "input/browser_controls_offset_manager_unittest.cc",
+    "input/hit_test_opaqueness_unittest.cc",
     "input/main_thread_scrolling_reason_unittest.cc",
     "input/scroll_snap_data_unittest.cc",
     "input/scroll_state_unittest.cc",

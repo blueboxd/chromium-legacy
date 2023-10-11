@@ -65,6 +65,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/runtime_feature_state_controller_impl.h"
 #include "content/browser/renderer_host/transient_allow_popup.h"
+#include "content/browser/renderer_host/transient_focus_source_user_activation.h"
 #include "content/browser/site_instance_group.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -506,6 +507,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       PrepareForInnerWebContentsAttachCallback callback) override;
   blink::FrameOwnerElementType GetFrameOwnerElementType() override;
   bool HasTransientUserActivation() override;
+  bool FocusSourceHasTransientUserActivation();
   void NotifyUserActivation(
       blink::mojom::UserActivationNotificationType notification_type) override;
   bool Reload() override;
@@ -745,6 +747,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const blink::mojom::FrameOwnerProperties& frame_owner_properties,
       blink::FrameOwnerElementType owner_type,
       ukm::SourceId document_ukm_source_id);
+
+  void OnPreloadingHeuristicsModelDone(const GURL& url, float score) override;
 
   // Update this frame's state at the appropriate time when a navigation
   // commits. This is called by Navigator::DidNavigate as a helper, in the
@@ -2481,6 +2485,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const base::UnguessableToken& devtools_frame_token) override;
   void OnViewTransitionOptInChanged(blink::mojom::ViewTransitionSameOriginOptIn
                                         view_transition_opt_in) override;
+  void StartDragging(blink::mojom::DragDataPtr drag_data,
+                     blink::DragOperationsMask drag_operations_mask,
+                     const SkBitmap& unsafe_bitmap,
+                     const gfx::Vector2d& cursor_offset_in_dip,
+                     const gfx::Rect& drag_obj_rect_in_dip,
+                     blink::mojom::DragEventSourceInfoPtr event_info) override;
 
   // blink::mojom::BackForwardCacheControllerHost:
   void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason) override;
@@ -2930,6 +2940,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsHistoryUserActivationActive() const;
   void ConsumeHistoryUserActivation();
 
+  // Sets/resets a temporary UA state used to verify focus transfers that cross
+  // a fenced frame boundary.
+  void ActivateFocusSourceUserActivation();
+  void DeactivateFocusSourceUserActivation();
+
   // Parameter for `ClosePage()` that indicates whether the request comes from
   // the browser or the renderer. This is used to determine whether navigation
   // should prevent the page from closing, since navigations should not prevent
@@ -2987,6 +3002,36 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindFileBackedBlobFactory(
       mojo::PendingAssociatedReceiver<blink::mojom::FileBackedBlobFactory>
           receiver);
+
+  // Determine if a focus change coming from the renderer was allowed to happen.
+  // This only checks focus calls that crosses a fenced frame boundary. It will
+  // badmessage the renderer that made the focus call if it deems the focus
+  // should've been disallowed. Returns true is the focus change is allowed,
+  // false if it is disallowed.
+  bool VerifyFencedFrameFocusChange(RenderFrameHostImpl* focused_rfh);
+
+  // Returns whether moving focus into this RFH will cross a fenced frame
+  // boundary. A focus is only considered to cross a boundary if it is moving
+  // into a fenced frame, not out of a fenced frame.
+  bool TakingFocusWillCrossFencedBoundary(RenderFrameHostImpl* focused_rfh);
+
+  // Record back/forward cache disabling reason. When adding a disabling
+  // feature, you should normally call
+  // `OnBackForwardCacheDisablingFeatureUsed()` or
+  // `OnBackForwardCacheDisablingStickyFeatureUsed()`. Call this only when you
+  // don't want eviction to happen.
+  void RecordBackForwardCacheDisablingReason(
+      BackForwardCacheDisablingFeature feature);
+
+  void SetCreationInfoForBug1425281(const std::string& current_site_info,
+                                    const std::string& speculative_site_info,
+                                    const std::string& get_frame_host_reason,
+                                    const GURL& initial_url) {
+    current_site_info_ = current_site_info;
+    speculative_site_info_ = speculative_site_info;
+    get_frame_host_reason_ = get_frame_host_reason;
+    initial_url_ = initial_url;
+  }
 
  protected:
   friend class RenderFrameHostFactory;
@@ -3208,6 +3253,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(
       NavigationBrowserTest,
       NavigationSuddenTerminationDisablerTypeRecordUmaActivation);
+  FRIEND_TEST_ALL_PREFIXES(NavigationRequestTest, SharedStorageWritable);
 
   class SubresourceLoaderFactoriesConfig;
 
@@ -4044,6 +4090,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // passed into CalculateStorageKey.
   std::vector<RenderFrameHostImpl*> GetAncestorChainForStorageKeyCalculation(
       const url::Origin& new_rfh_origin);
+
+#if defined(USE_AURA)
+  bool CanUseWindowingControls();
+#endif
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
@@ -5095,6 +5145,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // CloseWatcher).
   blink::HistoryUserActivationState history_user_activation_state_;
 
+  // Manages a transient state tracking mechanism for this frame to verify focus
+  // transfer across a fenced frame boundary. This is essentially tracking focus
+  // capability. When focus is transferred to a new frame, this state is also
+  // passed to the new frame. This can be passed to multiple frames as part of a
+  // single focus event if a frame doesn't have any focusable elements.
+  TransientFocusSourceUserActivation focus_source_user_activation_state_;
+
   // Used to avoid sending AXTreeData to the renderer if the renderer has not
   // been told root ID yet. See UpdateAXTreeData() for more details.
   bool needs_ax_root_id_ = true;
@@ -5173,6 +5230,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(crbug.com/1425281): Temporary for debugging.
   const base::debug::StackTrace create_rfh_stack_trace_;
   absl::optional<base::debug::StackTrace> last_commit_navigation_stack_trace_;
+  std::string current_site_info_;
+  std::string speculative_site_info_;
+  std::string get_frame_host_reason_;
+  GURL initial_url_;
 
   // WeakPtrFactories are the last members, to ensure they are destroyed before
   // all other fields of `this`.

@@ -4,9 +4,6 @@
 
 #include "components/exo/shell_surface_base.h"
 
-#include <algorithm>
-
-#include "ash/constants/ash_constants.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
@@ -33,6 +30,7 @@
 #include "chromeos/ui/base/window_pin_type.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
+#include "chromeos/ui/frame/frame_utils.h"
 #include "chromeos/ui/frame/multitask_menu/float_controller_base.h"
 #include "components/app_restore/app_restore_utils.h"
 #include "components/app_restore/window_properties.h"
@@ -135,6 +133,20 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
       return ash::NonClientFrameViewAsh::GetBoundsForClientView();
     return bounds();
   }
+
+  // Overridden from views::NonClientFrameView:
+  void UpdateWindowRoundedCorners() override {
+    if (!GetFrameEnabled()) {
+      return;
+    }
+
+    // TODO(zoraiznaeem): Get frame radius from client.
+    header_view_->SetHeaderCornerRadius(
+        chromeos::GetFrameCornerRadius(frame()->GetNativeWindow()));
+
+    // TODO(crbug/1415486): Apply rounded corners to exo’s root surface.
+  }
+
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override {
     if (GetFrameEnabled()) {
@@ -271,7 +283,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   }
 
   raw_ptr<ShellSurfaceBase, ExperimentalAsh> shell_surface_;
-  const raw_ptr<views::Widget, ExperimentalAsh> widget_;
+  const raw_ptr<views::Widget, DanglingUntriaged | ExperimentalAsh> widget_;
 };
 
 void CloseAllShellSurfaceTransientChildren(aura::Window* window) {
@@ -324,6 +336,7 @@ ShellSurfaceBase::ShellSurfaceBase(Surface* surface,
 
   SetCanMinimize(can_minimize_);
   SetCanMaximize(ash::desks_util::IsDeskContainerId(container_));
+  SetCanFullscreen(ash::desks_util::IsDeskContainerId(container_));
   SetCanResize(true);
   SetShowTitle(false);
 }
@@ -903,6 +916,7 @@ void ShellSurfaceBase::RebindRootSurface(Surface* root_surface,
 
   SetCanMinimize(can_minimize_);
   SetCanMaximize(ash::desks_util::IsDeskContainerId(container_));
+  SetCanFullscreen(ash::desks_util::IsDeskContainerId(container_));
   SetCanResize(true);
   SetShowTitle(false);
 }
@@ -1965,6 +1979,8 @@ void ShellSurfaceBase::OnPostWidgetCommit() {
 void ShellSurfaceBase::SetContainerInternal(int container) {
   container_ = container;
   WidgetDelegate::SetCanMaximize(
+      !parent_ && ash::desks_util::IsDeskContainerId(container_));
+  WidgetDelegate::SetCanFullscreen(
       !parent_ && ash::desks_util::IsDeskContainerId(container_));
   if (widget_)
     widget_->OnSizeConstraintsChanged();

@@ -9,7 +9,8 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/signin/bound_session_credentials/bound_session_registration_params.pb.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_params.pb.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_params_util.h"
 #include "components/unexportable_keys/background_task_priority.h"
 #include "components/unexportable_keys/service_error.h"
 #include "components/unexportable_keys/unexportable_key_id.h"
@@ -27,27 +28,17 @@ namespace {
 constexpr char kSessionIdentifier[] = "session_identifier";
 const char kXSSIPrefix[] = ")]}'";
 
-bound_session_credentials::RegistrationParams CreateRegistrationParams(
+bound_session_credentials::BoundSessionParams CreateBoundSessionParams(
     const std::string& url,
     const std::string& session_id,
     const std::string& wrapped_key) {
-  bound_session_credentials::RegistrationParams params;
+  bound_session_credentials::BoundSessionParams params;
   params.set_site(url);
   params.set_session_id(session_id);
   params.set_wrapped_key(wrapped_key);
+  *params.mutable_creation_time() =
+      bound_session_credentials::TimeToTimestamp(base::Time::Now());
   return params;
-}
-
-std::string GetAlgoName(crypto::SignatureVerifier::SignatureAlgorithm algo) {
-  if (algo == crypto::SignatureVerifier::SignatureAlgorithm::ECDSA_SHA256) {
-    return "ES256";
-  }
-
-  if (algo == crypto::SignatureVerifier::SignatureAlgorithm::RSA_PKCS1_SHA256) {
-    return "RS256";
-  }
-
-  return std::string();
 }
 }  // namespace
 
@@ -65,12 +56,20 @@ BoundSessionRegistrationFetcherImpl::~BoundSessionRegistrationFetcherImpl() =
 void BoundSessionRegistrationFetcherImpl::Start(
     RegistrationCompleteCallback callback) {
   callback_ = std::move(callback);
+  // TODO: Make `key_service_` not optional. It was made optional to facilitate
+  // testing but we now have a feature flag for software emulation, so this
+  // should be no longer needed.
   if (key_service_) {
-    key_service_->GenerateSigningKeySlowlyAsync(
-        registration_params_.SupportedAlgos(),
-        unexportable_keys::BackgroundTaskPriority::kBestEffort,
-        base::BindOnce(&BoundSessionRegistrationFetcherImpl::OnKeyCreated,
-                       weak_ptr_factory_.GetWeakPtr()));
+    // base::Unretained() is safe since `this` owns
+    // `registration_token_helper_`.
+    registration_token_helper_ =
+        RegistrationTokenHelper::CreateForSessionBinding(
+            *key_service_, registration_params_.Challenge(),
+            registration_params_.RegistrationEndpoint(),
+            base::BindOnce(&BoundSessionRegistrationFetcherImpl::
+                               OnRegistrationTokenCreated,
+                           base::Unretained(this)));
+    registration_token_helper_->Start();
   } else {
     // Early fail of request, object is invalid after this
     std::move(callback_).Run(absl::nullopt);
@@ -83,7 +82,7 @@ void BoundSessionRegistrationFetcherImpl::OnURLLoaderComplete(
   net::Error net_error = static_cast<net::Error>(url_loader_->NetError());
 
   absl::optional<int> http_response_code;
-  absl::optional<bound_session_credentials::RegistrationParams> return_value =
+  absl::optional<bound_session_credentials::BoundSessionParams> return_value =
       absl::nullopt;
 
   if (head && head->headers) {
@@ -95,18 +94,18 @@ void BoundSessionRegistrationFetcherImpl::OnURLLoaderComplete(
                      http_response_code;
 
   // Parse JSON response
-  if (net_success && network::IsSuccessfulStatus(*http_response_code)) {
-    // JSON responses should start with XSSI-protection prefix which will be
-    // removed prior to parsing.
-    if (!base::StartsWith(*response_body, kXSSIPrefix,
-                          base::CompareCase::SENSITIVE)) {
-      // Incorrect format of response, XSSI prefix missing.
-      std::move(callback_).Run(absl::nullopt);
-      return;
+  if (response_body && net_success &&
+      network::IsSuccessfulStatus(*http_response_code)) {
+    // JSON responses normally should start with XSSI-protection prefix which
+    // should be removed prior to parsing.
+    base::StringPiece response_json = *response_body;
+    if (base::StartsWith(*response_body, kXSSIPrefix,
+                         base::CompareCase::SENSITIVE)) {
+      response_json = response_json.substr(strlen(kXSSIPrefix));
     }
-    *response_body = response_body->substr(strlen(kXSSIPrefix));
+
     absl::optional<base::Value::Dict> maybe_root =
-        base::JSONReader::ReadDict(*response_body);
+        base::JSONReader::ReadDict(response_json);
 
     std::string* session_id = nullptr;
     if (maybe_root) {
@@ -119,7 +118,7 @@ void BoundSessionRegistrationFetcherImpl::OnURLLoaderComplete(
       return;
     }
 
-    return_value = CreateRegistrationParams(
+    return_value = CreateBoundSessionParams(
         net::SchemefulSite(registration_params_.RegistrationEndpoint())
             .Serialize(),
         *session_id, wrapped_key_str_);
@@ -129,40 +128,21 @@ void BoundSessionRegistrationFetcherImpl::OnURLLoaderComplete(
   std::move(callback_).Run(return_value);
 }
 
-void BoundSessionRegistrationFetcherImpl::OnKeyCreated(
-    unexportable_keys::ServiceErrorOr<unexportable_keys::UnexportableKeyId>
-        created_key) {
-  if (!created_key.has_value()) {
-    std::move(callback_).Run(absl::nullopt);
-    return;
-  }
-  unexportable_keys::UnexportableKeyId key_id = *created_key;
-
-  unexportable_keys::ServiceErrorOr<std::vector<uint8_t>> public_key =
-      key_service_->GetSubjectPublicKeyInfo(key_id);
-  std::string pkey(reinterpret_cast<const char*>(public_key->data()),
-                   public_key->size());
-  std::string pkey_base64;
-  base::Base64Encode(pkey, &pkey_base64);
-
-  unexportable_keys::ServiceErrorOr<
-      crypto::SignatureVerifier::SignatureAlgorithm>
-      algo_used = key_service_->GetAlgorithm(key_id);
-  std::string algo_string = GetAlgoName(algo_used.value());
-  if (algo_string.empty()) {
+void BoundSessionRegistrationFetcherImpl::OnRegistrationTokenCreated(
+    absl::optional<RegistrationTokenHelper::Result> result) {
+  if (!result.has_value()) {
     std::move(callback_).Run(absl::nullopt);
     return;
   }
 
-  std::vector<uint8_t> wrapped_key = *key_service_->GetWrappedKey(key_id);
+  const std::vector<uint8_t>& wrapped_key = result->wrapped_binding_key;
   wrapped_key_str_ = std::string(wrapped_key.begin(), wrapped_key.end());
 
-  StartFetchingRegistration(std::move(pkey_base64), std::move(algo_string));
+  StartFetchingRegistration(result->registration_token);
 }
 
 void BoundSessionRegistrationFetcherImpl::StartFetchingRegistration(
-    std::string public_key,
-    std::string algo_used) {
+    const std::string& registration_token) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("device_bound_session_register",
                                           R"(
@@ -212,18 +192,11 @@ void BoundSessionRegistrationFetcherImpl::StartFetchingRegistration(
       net::IsolationInfo::CreateForInternalRequest(
           url::Origin::Create(registration_params_.RegistrationEndpoint()));
 
-  std::string body = *base::WriteJson(
-      base::Value::Dict()
-          .Set("binding_alg", std::move(algo_used))  // Algorithm
-          .Set("key",
-               std::move(public_key))  // Public key
-          .Set("client_constraints",
-               base::Value::Dict().Set("signature_quota_per_minute", 1)));
-  std::string content_type = "application/json";
+  std::string content_type = "application/jwt";
 
   url_loader_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
-  url_loader_->AttachStringForUpload(body, content_type);
+  url_loader_->AttachStringForUpload(registration_token, content_type);
   url_loader_->SetRetryOptions(
       3, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
   url_loader_->DownloadToString(

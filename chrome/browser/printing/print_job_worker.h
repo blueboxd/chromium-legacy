@@ -53,7 +53,7 @@ class PrintJobWorker {
   void OnNewPage();
 
   // Cancels the job.
-  void Cancel();
+  virtual void Cancel();
 
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
   // The job is canceled due to content analysis denying printing.  Called
@@ -87,6 +87,12 @@ class PrintJobWorker {
 
   // Setup the document in preparation for printing.
   bool SetupDocument(const std::u16string& document_name);
+
+  // Get the document.  Only to be called from the worker thread.
+  PrintedDocument* document() {
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
+    return document_.get();
+  }
 
 #if BUILDFLAG(IS_WIN)
   // Renders a page in the printer.  Returns false if any errors occur.
@@ -136,6 +142,7 @@ class PrintJobWorker {
   const std::unique_ptr<PrintingContext> printing_context_;
 
   // The printed document. Only has read-only access.
+  // Only accessed from worker thread.
   scoped_refptr<PrintedDocument> document_;
 
   // The print job owning this worker thread. It is guaranteed to outlive this

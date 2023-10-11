@@ -24,8 +24,8 @@
 
 #include "base/check_op.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
-#include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/thread_state_storage.h"
@@ -46,7 +46,7 @@ class NodeRareData;
 class Part;
 class ScrollTimeline;
 
-using PartsList = HeapLinkedHashSet<Member<Part>>;
+using PartsList = HeapDeque<Member<Part>>;
 
 class NodeMutationObserverData final
     : public GarbageCollected<NodeMutationObserverData> {
@@ -94,8 +94,7 @@ class NodeData : public GarbageCollected<NodeData> {
   virtual ~NodeData();
   virtual void Trace(Visitor*) const;
 
-  CORE_EXPORT NodeData(LayoutObject*,
-                       scoped_refptr<const ComputedStyle> computed_style);
+  CORE_EXPORT NodeData(LayoutObject*, const ComputedStyle* computed_style);
   NodeData(const NodeData&) = delete;
   NodeData(NodeData&&);
 
@@ -106,9 +105,9 @@ class NodeData : public GarbageCollected<NodeData> {
   }
 
   const ComputedStyle* GetComputedStyle() const {
-    return computed_style_.get();
+    return computed_style_.Get();
   }
-  void SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style);
+  void SetComputedStyle(const ComputedStyle* computed_style);
 
   void SetIsPseudoElement(bool value) { is_pseudo_element_ = value; }
   bool IsPseudoElement() const { return is_pseudo_element_; }
@@ -134,7 +133,7 @@ class NodeData : public GarbageCollected<NodeData> {
   }
 
  protected:
-  scoped_refptr<const ComputedStyle> computed_style_;
+  subtle::UncompressedMember<const ComputedStyle> computed_style_;
   Member<LayoutObject> layout_object_;
   BitField bit_field_;
   bool is_pseudo_element_ = false;
@@ -231,8 +230,7 @@ class NodeRareData : public NodeData {
 
   void AddDOMPart(Part& part);
   void RemoveDOMPart(Part& part);
-  bool HasDOMParts() const { return dom_parts_; }
-  PartsList GetDOMParts() const;
+  PartsList* GetDOMParts() const { return dom_parts_; }
 
   void Trace(blink::Visitor*) const override;
 

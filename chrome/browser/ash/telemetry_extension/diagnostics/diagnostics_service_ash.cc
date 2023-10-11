@@ -182,6 +182,33 @@ void DiagnosticsServiceAsh::RunBatteryHealthRoutine(
       std::move(callback)));
 }
 
+void DiagnosticsServiceAsh::RunBluetoothDiscoveryRoutine(
+    RunBluetoothDiscoveryRoutineCallback callback) {
+  GetService()->RunBluetoothDiscoveryRoutine(base::BindOnce(
+      [](crosapi::mojom::DiagnosticsService::
+             RunBluetoothDiscoveryRoutineCallback callback,
+         cros_healthd::mojom::RunRoutineResponsePtr ptr) {
+        std::move(callback).Run(
+            converters::diagnostics::ConvertDiagnosticsPtr(std::move(ptr)));
+      },
+      std::move(callback)));
+}
+
+void DiagnosticsServiceAsh::RunBluetoothPairingRoutine(
+    const std::string& peripheral_id,
+    RunBluetoothPairingRoutineCallback callback) {
+  GetService()->RunBluetoothPairingRoutine(
+      peripheral_id,
+      base::BindOnce(
+          [](crosapi::mojom::DiagnosticsService::
+                 RunBluetoothPairingRoutineCallback callback,
+             cros_healthd::mojom::RunRoutineResponsePtr ptr) {
+            std::move(callback).Run(
+                converters::diagnostics::ConvertDiagnosticsPtr(std::move(ptr)));
+          },
+          std::move(callback)));
+}
+
 void DiagnosticsServiceAsh::RunBluetoothPowerRoutine(
     RunBluetoothPowerRoutineCallback callback) {
   GetService()->RunBluetoothPowerRoutine(base::BindOnce(
@@ -192,6 +219,21 @@ void DiagnosticsServiceAsh::RunBluetoothPowerRoutine(
             converters::diagnostics::ConvertDiagnosticsPtr(std::move(ptr)));
       },
       std::move(callback)));
+}
+
+void DiagnosticsServiceAsh::RunBluetoothScanningRoutine(
+    uint32_t length_seconds,
+    RunBluetoothScanningRoutineCallback callback) {
+  GetService()->RunBluetoothScanningRoutine(
+      cros_healthd::mojom::NullableUint32::New(length_seconds),
+      base::BindOnce(
+          [](crosapi::mojom::DiagnosticsService::
+                 RunBluetoothScanningRoutineCallback callback,
+             cros_healthd::mojom::RunRoutineResponsePtr ptr) {
+            std::move(callback).Run(
+                converters::diagnostics::ConvertDiagnosticsPtr(std::move(ptr)));
+          },
+          std::move(callback)));
 }
 
 void DiagnosticsServiceAsh::RunCpuCacheRoutine(

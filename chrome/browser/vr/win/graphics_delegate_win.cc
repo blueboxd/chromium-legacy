@@ -34,10 +34,10 @@ bool GraphicsDelegateWin::InitializeOnMainThread() {
   attributes.bind_generates_resource = false;
 
   context_provider_ = base::MakeRefCounted<viz::ContextProviderCommandBuffer>(
-      host, factory->GetGpuMemoryBufferManager(), content::kGpuStreamIdDefault,
-      content::kGpuStreamPriorityUI, gpu::kNullSurfaceHandle,
-      GURL(std::string("chrome://gpu/VrUiWin")), false /* automatic flushes */,
-      false /* support locking */, false /* support grcontext */,
+      host, content::kGpuStreamIdDefault, content::kGpuStreamPriorityUI,
+      gpu::kNullSurfaceHandle, GURL(std::string("chrome://gpu/VrUiWin")),
+      false /* automatic flushes */, false /* support locking */,
+      false /* support grcontext */,
       gpu::SharedMemoryLimits::ForMailboxContext(), attributes,
       viz::command_buffer_metrics::ContextType::XR_COMPOSITING);
   gpu_memory_buffer_manager_ = factory->GetGpuMemoryBufferManager();
@@ -259,14 +259,14 @@ CameraModel CameraModelViewProjFromXRView(
   float x_scale = 2.0f / (left_tan + right_tan);
   float y_scale = 2.0f / (up_tan + down_tan);
   // clang-format off
-  model.proj_matrix = gfx::Transform::RowMajor(
+  gfx::Transform proj_matrix = gfx::Transform::RowMajor(
       x_scale, 0, -((left_tan - right_tan) * x_scale * 0.5), 0,
       0, y_scale, ((up_tan - down_tan) * y_scale * 0.5), 0,
       0, 0, (kZFar + kZNear) / (kZNear - kZFar),
           2 * kZFar * kZNear / (kZNear - kZFar),
       0, 0, -1, 0);
   // clang-format on
-  model.view_proj_matrix = model.proj_matrix * model.view_matrix;
+  model.view_proj_matrix = proj_matrix * model.view_matrix;
   return model;
 }
 

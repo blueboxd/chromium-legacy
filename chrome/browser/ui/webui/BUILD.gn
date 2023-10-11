@@ -38,6 +38,10 @@ source_set("configs") {
   }
 
   # Includes Ash Chrome and Lacros Chrome
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants" ]
+  }
+
   if (is_chromeos_ash) {
     sources += [
       "ash/chrome_untrusted_web_ui_configs_chromeos.cc",
@@ -64,6 +68,7 @@ source_set("configs") {
       "//ash/webui/shortcut_customization_ui",
       "//ash/webui/system_extensions_internals_ui",
       "//chrome/browser/ash",
+      "//components/cross_device/logging",
     ]
 
     if (!is_official_build) {

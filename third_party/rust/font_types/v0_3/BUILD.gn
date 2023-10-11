@@ -34,7 +34,7 @@ cargo_crate("lib") {
   # Unit tests skipped. Generate with --with-tests to include them.
   build_native_rust_unit_tests = false
   edition = "2021"
-  cargo_pkg_version = "0.3.0"
+  cargo_pkg_version = "0.3.4"
   cargo_pkg_name = "font-types"
   cargo_pkg_description = "Scalar types used in fonts."
   library_configs -= [ "//build/config/compiler:chromium_code" ]

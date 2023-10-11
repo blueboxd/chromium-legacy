@@ -28,7 +28,6 @@ class BrowserViewLayoutDelegate {
       const gfx::Rect& available_space,
       views::Label& window_title_label) const = 0;
   virtual int GetTopInsetInBrowserView() const = 0;
-  virtual int GetThemeBackgroundXInset() const = 0;
   virtual bool IsToolbarVisible() const = 0;
   virtual bool IsBookmarkBarVisible() const = 0;
   virtual bool IsContentsSeparatorEnabled() const = 0;
@@ -37,6 +36,7 @@ class BrowserViewLayoutDelegate {
   virtual float GetTopControlsSlideBehaviorShownRatio() const = 0;
   virtual bool SupportsWindowFeature(Browser::WindowFeature feature) const = 0;
   virtual gfx::NativeView GetHostView() const = 0;
+  virtual gfx::NativeView GetHostViewForAnchoring() const = 0;
   virtual bool BrowserIsSystemWebApp() const = 0;
   virtual bool BrowserIsWebApp() const = 0;
   virtual bool BrowserIsTypeApp() const = 0;

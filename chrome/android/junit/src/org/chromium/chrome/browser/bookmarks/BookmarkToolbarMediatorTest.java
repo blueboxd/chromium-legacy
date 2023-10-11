@@ -8,11 +8,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.content.Context;
@@ -79,6 +81,7 @@ public class BookmarkToolbarMediatorTest {
     @Rule
     public ActivityScenarioRule<TestActivity> mActivityScenarios =
             new ActivityScenarioRule<>(TestActivity.class);
+
     @Mock
     private BookmarkDelegate mBookmarkDelegate;
     @Mock
@@ -196,7 +199,7 @@ public class BookmarkToolbarMediatorTest {
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS})
+    @DisableFeatures({ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS})
     public void selectionStateChangeHidesKeyboard() {
         mMediator.onUiModeChanged(BookmarkUiMode.SEARCHING);
         assertEquals(true, mModel.get(BookmarkToolbarProperties.SOFT_KEYBOARD_VISIBLE));
@@ -206,7 +209,7 @@ public class BookmarkToolbarMediatorTest {
     }
 
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS})
+    @EnableFeatures({ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS})
     public void selectionStateChangeHidesKeyboard_improvedBookmarks() {
         mModel.addObserver(mPropertyObserver);
 
@@ -274,7 +277,7 @@ public class BookmarkToolbarMediatorTest {
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS})
+    @DisableFeatures({ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS})
     public void testOnMenuItemClick_editMenu() {
         mMediator.onFolderStateSet(mBookmarkId);
         assertTrue(mModel.get(BookmarkToolbarProperties.MENU_ID_CLICKED_FUNCTION)
@@ -283,7 +286,7 @@ public class BookmarkToolbarMediatorTest {
     }
 
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS})
+    @EnableFeatures({ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS})
     public void testOnMenuItemClick_editMenu_improvedBookmarks() {
         mMediator.onFolderStateSet(mBookmarkId);
         assertTrue(mModel.get(BookmarkToolbarProperties.MENU_ID_CLICKED_FUNCTION)
@@ -320,7 +323,7 @@ public class BookmarkToolbarMediatorTest {
         doReturn(true).when(mBookmarkItem).isFolder();
         assertTrue(mModel.get(BookmarkToolbarProperties.MENU_ID_CLICKED_FUNCTION)
                            .apply(R.id.selection_mode_edit_menu_id));
-        verifyActivityLaunched(BookmarkAddEditFolderActivity.class);
+        verifyActivityLaunched(BookmarkEditActivity.class);
     }
 
     @Test
@@ -390,21 +393,36 @@ public class BookmarkToolbarMediatorTest {
 
     @Test
     public void testOnMenuItemClick_sortOptions() {
+        assertTrue(mMediator.onMenuIdClick(R.id.sort_by_manual));
+        assertEquals(
+                R.id.sort_by_manual, mModel.get(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID));
+        verify(mBookmarkUiPrefs).setBookmarkRowSortOrder(BookmarkRowSortOrder.MANUAL);
+
         assertTrue(mMediator.onMenuIdClick(R.id.sort_by_newest));
         assertEquals(
                 R.id.sort_by_newest, mModel.get(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID));
+        verify(mBookmarkUiPrefs)
+                .setBookmarkRowSortOrder(BookmarkRowSortOrder.REVERSE_CHRONOLOGICAL);
 
         assertTrue(mMediator.onMenuIdClick(R.id.sort_by_oldest));
         assertEquals(
                 R.id.sort_by_oldest, mModel.get(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID));
+        verify(mBookmarkUiPrefs).setBookmarkRowSortOrder(BookmarkRowSortOrder.CHRONOLOGICAL);
+
+        assertTrue(mMediator.onMenuIdClick(R.id.sort_by_last_opened));
+        assertEquals(R.id.sort_by_last_opened,
+                mModel.get(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID));
+        verify(mBookmarkUiPrefs).setBookmarkRowSortOrder(BookmarkRowSortOrder.RECENTLY_USED);
 
         assertTrue(mMediator.onMenuIdClick(R.id.sort_by_alpha));
         assertEquals(
                 R.id.sort_by_alpha, mModel.get(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID));
+        verify(mBookmarkUiPrefs).setBookmarkRowSortOrder(BookmarkRowSortOrder.ALPHABETICAL);
 
         assertTrue(mMediator.onMenuIdClick(R.id.sort_by_reverse_alpha));
         assertEquals(R.id.sort_by_reverse_alpha,
                 mModel.get(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID));
+        verify(mBookmarkUiPrefs).setBookmarkRowSortOrder(BookmarkRowSortOrder.REVERSE_ALPHABETICAL);
     }
 
     @Test
@@ -482,5 +500,42 @@ public class BookmarkToolbarMediatorTest {
         initModelAndMediator();
         assertEquals(R.id.sort_by_reverse_alpha,
                 mModel.get(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID));
+    }
+
+    @Test
+    public void testTitleAndNavWhenSearching() {
+        String folderName = "test folder";
+        doReturn(folderName).when(mBookmarkItem).getTitle();
+        mMediator.onFolderStateSet(mBookmarkId);
+        assertEquals(folderName, mModel.get(BookmarkToolbarProperties.TITLE));
+
+        mMediator.onUiModeChanged(BookmarkUiMode.SEARCHING);
+        assertEquals("Search", mModel.get(BookmarkToolbarProperties.TITLE));
+        assertEquals(NavigationButton.BACK,
+                (long) mModel.get(BookmarkToolbarProperties.NAVIGATION_BUTTON_STATE));
+    }
+
+    @Test
+    public void testDisableSortOptionsInReadingList() {
+        doReturn(BookmarkRowSortOrder.MANUAL).when(mBookmarkUiPrefs).getBookmarkRowSortOrder();
+        mMediator.onFolderStateSet(mBookmarkId);
+        assertEquals(
+                R.id.sort_by_manual, mModel.get(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID));
+        assertTrue(mModel.get(BookmarkToolbarProperties.SORT_MENU_IDS_ENABLED));
+
+        doReturn(mBookmarkId).when(mBookmarkModel).getReadingListFolder();
+        mMediator.onFolderStateSet(mBookmarkId);
+        assertFalse(mModel.get(BookmarkToolbarProperties.SORT_MENU_IDS_ENABLED));
+        assertEquals(
+                R.id.sort_by_newest, mModel.get(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID));
+        verify(mBookmarkUiPrefs, times(0)).setBookmarkRowSortOrder(anyInt());
+
+        // Verify  we go back to manual sort order and don't actually update the sorting prefs.
+        doReturn(null).when(mBookmarkModel).getReadingListFolder();
+        mMediator.onFolderStateSet(mBookmarkId);
+        assertTrue(mModel.get(BookmarkToolbarProperties.SORT_MENU_IDS_ENABLED));
+        assertEquals(
+                R.id.sort_by_manual, mModel.get(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID));
+        verify(mBookmarkUiPrefs, times(0)).setBookmarkRowSortOrder(anyInt());
     }
 }

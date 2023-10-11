@@ -189,6 +189,11 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
             loadTimeData.getBoolean('enablePermissionStorageAccessApi'),
       },
 
+      autoPictureInPictureEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('autoPictureInPictureEnabled'),
+      },
+
       /**
        * Whether the File System Access Persistent Permissions UI should be
        * displayed.
@@ -289,6 +294,12 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
           return loadTimeData.getBoolean('enableSafetyHub');
         },
       },
+
+      showPreloadingSubpage_: {
+        type: Boolean,
+        value: () => !loadTimeData.getBoolean(
+            'isPerformanceSettingsPreloadingSubpageEnabled'),
+      },
     };
   }
 
@@ -311,9 +322,11 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
   private isPrivacySandboxRestrictedNoticeEnabled_: boolean;
   private isPrivacySandboxSettings4_: boolean;
   private privateStateTokensEnabled_: boolean;
+  private autoPictureInPictureEnabled_: boolean;
   private safetyCheckNotificationPermissionsEnabled_: boolean;
   private enablePermissionStorageAccessApi_: boolean;
   private enableSafetyHub_: boolean;
+  private showPreloadingSubpage_: boolean;
   private focusConfig_: FocusConfig;
   private searchFilter_: string;
   private browserProxy_: PrivacyPageBrowserProxy =

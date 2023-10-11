@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">Каб адправіць запыт на змяненне змесціва з юрыдычных прычын, перайдзіце на <ph name="BEGIN_LINK1" />старонку юрыдычнай даведкі<ph name="END_LINK1" />. Некаторыя звесткі аб вашым уліковым запісе і сістэме могуць быць адпраўлены ў Google. Мы будзем выкарыстоўваць вашу інфармацыю, каб у адпаведнасці з <ph name="BEGIN_LINK2" />Палітыкай прыватнасці<ph name="END_LINK2" /> і <ph name="BEGIN_LINK3" />Умовамі выкарыстання<ph name="END_LINK3" /> вызначаць тэхнічныя праблемы і ўдасканальваць нашы сэрвісы.</translation>
 <translation id="1885577615937958993">пераматаць медыязмесціва ўперад</translation>
 <translation id="1887850431809612466">Версія апаратнага забеспячэння</translation>
+<translation id="1897672602657312171">Спалучэнне клавіш, у якім не выкарыстоўваецца клавіша пошуку, можа канфліктаваць са спалучэннямі клавіш іншых праграм. Націсніце гэта спалучэнне клавіш яшчэ раз, калі вы хочаце выкарыстоўваць яго і далей, або націсніце іншае спалучэнне клавіш, у якім выкарыстоўваецца клавіша пошуку.</translation>
 <translation id="1904932688895783618">Вось яшчэ некалькі карысных рэсурсаў:</translation>
 <translation id="1905710495812624430">Перавышана максімальная колькасць спроб.</translation>
 <translation id="1908234395526491708">Збоі запытаў UDP</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">Ідзе перазапуск...</translation>
 <translation id="2533048460510040082">Прапанаванае даведачнае змесціва</translation>
 <translation id="2536159006530886390">Не ўдаецца падключыцца да інтэрнэту.</translation>
-<translation id="2555662516429796509">Націсніце 1 з 4 клавіш-мадыфікатараў і 1 іншую клавішу на клавіятуры</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> праходзіць праверку...</translation>
 <translation id="2584559707064218956">Каб задаць канфігурацыю, перайдзіце ў Налады</translation>
 <translation id="2597774443162333062">Файлы будуць адпраўлены ў Google на адладку</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">Ключ аўтэнтыфікацыі TLS</translation>
 <translation id="2713444072780614174">Белы</translation>
 <translation id="2717139507051041123">Уключыць рэжым цёмных колераў</translation>
+<translation id="2728460467788544679">Выдаленне ўсёй гісторыі друку</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2744221223678373668">Абагулена</translation>
 <translation id="2751739896257479635">Фаза 2 аўтэнтыфікацыі EAP</translation>
 <translation id="2783010256799387990">ПРОЙДЗЕНА</translation>
 <translation id="2787435249130282949">большая яркасць клавіятуры</translation>
-<translation id="2789486458103222910">OK</translation>
 <translation id="2805756323405976993">Праграмы</translation>
 <translation id="28232023175184696">Няма падключэння да інтэрнэту. Націсніце, каб паўтарыць спробу.</translation>
 <translation id="2859243502336719778">Важнае абнаўленне</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">Застаўка "Рух аблокаў"</translation>
 <translation id="2926057806159140518">Увядзіце імя карыстальніка і пароль або адсканіруйце QR-код</translation>
 <translation id="2940811910881150316">Не ўдаецца пратэсціраваць прыладу. Каб пачаць тэсціраванне, адкрыйце яе вечка.</translation>
+<translation id="2941112035454246133">Нізкі</translation>
 <translation id="3008341117444806826">АБНАВІЦЬ</translation>
 <translation id="3009958530611748826">Выберыце папку для захавання</translation>
 <translation id="3017079585324758401">Фон</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">Не ўдалося супаставіць хост</translation>
 <translation id="3942420633017001071">Дыягностыка</translation>
 <translation id="3954678691475912818">Гэта прылада невядомага тыпу.</translation>
+<translation id="3959413315969265597">Не ўдалося ўключыць APN. Пераканайцеся, што дададзены стандартны пункт доступу.</translation>
 <translation id="3966286471246132217">Каб атрымаць больш дакладныя вынікі, закрыйце ўсе ўкладкі, пакуль праверка не будзе завершана.</translation>
 <translation id="3967822245660637423">Спампоўка завершана</translation>
 <translation id="3969602104473960991">Пароль Chrome OS зменены</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">паменшыць гучнасць</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> з <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Абнавіць убудаванае ПЗ прылады "<ph name="DEVICE_NAME" />"</translation>
+<translation id="574392208103952083">Сярэдні</translation>
 <translation id="5757187557809630523">наступны трэк</translation>
 <translation id="5760715441271661976">Стан партала</translation>
 <translation id="576835345334454681">Павялічыць яркасць дысплэя</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">Альбом мастацкай галерэі</translation>
 <translation id="5860033963881614850">Выключана</translation>
 <translation id="5860491529813859533">Уключыць</translation>
-<translation id="5866840822086176774">Вельмі моцны</translation>
 <translation id="5876385649737594562">Уключыце, каб задаць параметры</translation>
 <translation id="588258955323874662">Поўнаэкранны рэжым</translation>
 <translation id="5895138241574237353">Перазапусціць</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Слабы (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Перайсці ў налады ўліковага запісу</translation>
-<translation id="6456394469623773452">Добры</translation>
+<translation id="6461047516875166066">Даведацца больш</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Сканіраваць старонку паўторна?}=1{Сканіраваць старонку {PAGE_NUMBER} паўторна?}one{Сканіраваць старонку {PAGE_NUMBER} паўторна?}few{Сканіраваць старонку {PAGE_NUMBER} паўторна?}many{Сканіраваць старонку {PAGE_NUMBER} паўторна?}other{Сканіраваць старонку {PAGE_NUMBER} паўторна?}}</translation>
 <translation id="6472207088655375767">Аднаразовы пароль</translation>
 <translation id="6480327114083866287">Кіруе <ph name="MANAGER" /></translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">Скінуць усе спалучэнні клавіш да стандартных?</translation>
 <translation id="7058278511608979688">Завяршыць і захаваць</translation>
 <translation id="7059230779847288458">Ідзе зарадка, <ph name="TIME_VALUE" /> да поўнай зарадкі</translation>
+<translation id="7066538517128343186">клавіша <ph name="KEY" /></translation>
 <translation id="7068619307603204412">Падрыхтоўка прылады</translation>
 <translation id="708426984172631313">СПЫНЕНА</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">Каб праглядаць шпалеры, падключыце прыладу да інтэрнэту і перазагрузіце старонку.</translation>
 <translation id="8291967909914612644">Родная краіна аператара</translation>
 <translation id="8294431847097064396">Крыніца</translation>
-<translation id="8297006494302853456">Слабы</translation>
 <translation id="8302368968391049045">Брандмаўар HTTPS</translation>
 <translation id="8312330582793120272">прайграць медыязмесціва</translation>
 <translation id="8318753676953949627">Няма відарысаў</translation>
 <translation id="8329018942023753850">праграма "Калькулятар"</translation>
 <translation id="8336739000755212683">Змяніць відарыс уліковага запісу на прыладзе</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> ці <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Заданні друку</translation>
 <translation id="8351855506390808906">Кропка дотыку для вызначэння клавіш</translation>
 <translation id="8352772353338965963">Дадайце ўліковы запіс для функцыі ўваходу ў некалькі ўліковых запісаў. Гэта функцыя дае магчымасць пераключацца паміж уліковымі запісамі, у якія выкананы ўваход, без уводу пароля. Таму выкарыстоўвайце яе толькі для ўліковых запісаў, якім давяраеце.</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">Каб зноў падключыцца да сеткі, перайдзіце ў Налады</translation>
 <translation id="9126720536733509015">Захаваць некалькі старонак у адзін PDF-файл</translation>
 <translation id="9133104754938025929">Для эканоміі зараду акумулятара застаўка працуе толькі падчас зарадкі.</translation>
+<translation id="9133772297793293778">Націсніце 1 з 4 клавіш-мадыфікатараў і 1 іншую клавішу на клавіятуры Каб выйсці з рэжыму рэдагавання, націсніце Alt + Esc.</translation>
 <translation id="9137526406337347448">Сэрвісы Google</translation>
 <translation id="9138630967333032450">Shift злева</translation>
 <translation id="9143347780818904997">цягам <ph name="MINUTES" /> хв</translation>

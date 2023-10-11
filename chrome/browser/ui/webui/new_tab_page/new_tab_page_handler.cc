@@ -131,8 +131,6 @@ new_tab_page::mojom::ThemePtr MakeTheme(
           ? ntp_custom_background_service->GetCustomBackground()
           : absl::nullopt;
   theme->background_color = color_provider.GetColor(kColorNewTabPageBackground);
-  const bool remove_scrim =
-      base::FeatureList::IsEnabled(ntp_features::kNtpRemoveScrim);
   const bool theme_has_custom_image =
       theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND);
   SkColor text_color;
@@ -143,15 +141,9 @@ new_tab_page::mojom::ThemePtr MakeTheme(
     most_visited->background_color =
         color_provider.GetColor(kColorNewTabPageMostVisitedTileBackground);
   } else if (theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
-    text_color = color_provider.GetColor(
-        remove_scrim ? kColorNewTabPageTextUnthemed : kColorNewTabPageText);
-    if (remove_scrim) {
-      theme->logo_color =
-          color_provider.GetColor(kColorNewTabPageLogoUnthemedLight);
-    } else if (theme_provider->GetDisplayProperty(
-                   ThemeProperties::NTP_LOGO_ALTERNATE) == 1) {
-      theme->logo_color = color_provider.GetColor(kColorNewTabPageLogo);
-    }
+    text_color = color_provider.GetColor(kColorNewTabPageTextUnthemed);
+    theme->logo_color =
+        color_provider.GetColor(kColorNewTabPageLogoUnthemedLight);
 
     // TODO(crbug.com/1375760): Post GM3 launch, we can remove the
     // kColorNewTabPageMostVisitedTileBackgroundUnthemed color and related
@@ -178,7 +170,6 @@ new_tab_page::mojom::ThemePtr MakeTheme(
   most_visited->use_white_tile_icon =
       color_utils::IsDark(most_visited->background_color);
   most_visited->is_dark = !color_utils::IsDark(text_color);
-  most_visited->use_title_pill = false;
   theme->text_color = text_color;
   theme->is_dark = !color_utils::IsDark(text_color);
   theme->theme_realbox_icons =
@@ -195,7 +186,6 @@ new_tab_page::mojom::ThemePtr MakeTheme(
           new_tab_page::mojom::NtpBackgroundImageSource::kThirdPartyTheme;
     }
     theme->is_custom_background = false;
-    most_visited->use_title_pill = !remove_scrim;
     auto theme_id = theme_service->GetThemeID();
     background_image->url = GURL(base::StrCat(
         {"chrome-untrusted://theme/IDR_THEME_NTP_BACKGROUND?", theme_id}));

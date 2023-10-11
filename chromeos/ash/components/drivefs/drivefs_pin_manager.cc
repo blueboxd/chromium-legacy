@@ -12,25 +12,23 @@
 
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
-#include "base/functional/callback_forward.h"
 #include "base/logging.h"
 #include "base/memory/raw_ref.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/drive/file_errors.h"
-#include "third_party/cros_system_api/constants/cryptohome.h"
 
 namespace drivefs::pinning {
 namespace {
 
 using ash::SpacedClient;
+using base::Seconds;
 using base::SequencedTaskRunner;
 using base::TimeDelta;
 using base::UmaHistogramBoolean;
@@ -153,18 +151,20 @@ ostream& operator<<(ostream& out, Quoter<std::string> q) {
 
 template <typename T>
 ostream& operator<<(ostream& out, Quoter<absl::optional<T>> q) {
-  if (!q.value.has_value()) {
+  const absl::optional<T>& v = *q.value;
+  if (!v.has_value()) {
     return out << "(nullopt)";
   }
 
-  return out << Quote(*q.value);
+  return out << Quote(*v);
 }
 
 ostream& operator<<(ostream& out, Quoter<ShortcutDetails> q) {
-  out << "{" << PinManager::Id(q.value->target_stable_id);
+  const ShortcutDetails& s = *q.value;
+  out << "{" << PinManager::Id(s.target_stable_id);
 
-  if (q.value->target_lookup_status != LookupStatus::kOk) {
-    out << " " << Quote(q.value->target_lookup_status);
+  if (s.target_lookup_status != LookupStatus::kOk) {
+    out << " " << Quote(s.target_lookup_status);
   }
 
   return out << "}";
@@ -218,9 +218,10 @@ ostream& operator<<(ostream& out, Quoter<mojom::ItemEvent> q) {
 
 ostream& operator<<(ostream& out, Quoter<mojom::ProgressEvent> q) {
   const mojom::ProgressEvent& e = *q.value;
-  return out << "{" << PinManager::Id(e.stable_id) << " " << Quote(e.path)
-             << ", progress: " << base::StringPrintf("%hhu", e.progress)
-             << "%}";
+  out << "{" << PinManager::Id(e.stable_id) << " "
+      << Quote(e.file_path ? *e.file_path : Path(e.path))
+      << ", progress: " << base::StringPrintf("%hhu", e.progress) << "%}";
+  return out;
 }
 
 ostream& operator<<(ostream& out, Quoter<mojom::FileChange> q) {
@@ -313,11 +314,11 @@ bool Progress::HasEnoughFreeSpace() const {
   // The free space should not go below this limit.
   const int64_t margin = int64_t(2) << 30;
   const bool enough = required_space + margin <= free_space;
-  LOG_IF(ERROR, !enough) << "Not enough space: Free space "
-                         << HumanReadableSize(free_space)
-                         << " is less than required space "
-                         << HumanReadableSize(required_space) << " + margin "
-                         << HumanReadableSize(margin);
+  VLOG_IF(1, !enough) << "Not enough space: Free space "
+                      << HumanReadableSize(free_space)
+                      << " is less than required space "
+                      << HumanReadableSize(required_space) << " + margin "
+                      << HumanReadableSize(margin);
   return enough;
 }
 
@@ -655,11 +656,11 @@ bool PinManager::Update(Files::value_type& entry,
 PinManager::PinManager(Path profile_path,
                        Path mount_path,
                        mojom::DriveFs* const drivefs,
-                       int64_t max_queue_size)
+                       int64_t queue_size)
     : profile_path_(std::move(profile_path)),
       mount_path_(std::move(mount_path)),
       drivefs_(drivefs),
-      max_queue_size_(max_queue_size),
+      queue_size_(queue_size),
       space_getter_(base::BindRepeating(&GetFreeSpace)) {
   DCHECK(drivefs_);
   ash::UserDataAuthClient::Get()->AddObserver(this);
@@ -917,6 +918,17 @@ void PinManager::OnSearchResult(const Id dir_id,
 
   progress_.time_spent_listing_items = timer_.Elapsed();
 
+  // Output a warning if the time spent listing files is taking longer than 30s
+  // but only log this every 30s after that.
+  if (progress_.time_spent_listing_items > Seconds(30) &&
+      (base::Time::Now() - Seconds(30) >
+       last_long_listing_files_warning_time_)) {
+    LOG(WARNING) << NiceNum << "Listing files is taking a long time, found "
+                 << progress_.listed_items << " items in "
+                 << Quote(progress_.time_spent_listing_items);
+    last_long_listing_files_warning_time_ = base::Time::Now();
+  }
+
   if (items.empty() && error != drive::FILE_ERROR_OK_WITH_MORE_RESULTS) {
     VLOG(1) << "Visited " << dir_id << " " << Quote(dir_path);
 
@@ -927,6 +939,12 @@ void PinManager::OnSearchResult(const Id dir_id,
       return;
     }
 
+    LOG_IF(WARNING, progress_.time_spent_listing_items > Seconds(30))
+        << "Listing files took a long time, found" << progress_.listed_items
+        << " items in " << Quote(progress_.time_spent_listing_items);
+    base::UmaHistogramLongTimes(
+        "FileBrowser.GoogleDrive.BulkPinning.TimeSpentListing",
+        progress_.time_spent_listing_items);
     VLOG(1) << "Finished listing files in "
             << Quote(progress_.time_spent_listing_items);
     VLOG(1) << NiceNum << "Total queries: " << progress_.total_queries;
@@ -1072,6 +1090,10 @@ void PinManager::Complete(const Stage stage) {
 
   switch (stage) {
     case Stage::kSuccess:
+      // This log line is currently used in a tast test to ensure file
+      // enumeration has completed before proceeding to the CHOOBE screen.
+      // Please do not remove it or change its level without updating the
+      // corresponding test.
       VLOG(1) << "Finished with success";
       break;
 
@@ -1088,6 +1110,12 @@ void PinManager::Complete(const Stage stage) {
       break;
 
     default:
+      LOG_IF(ERROR, progress_.stage == Stage::kNotEnoughSpace)
+          << "Not enough space: Free space "
+          << HumanReadableSize(progress_.free_space)
+          << " is less than required space "
+          << HumanReadableSize(progress_.required_space) << " + margin";
+
       LOG(ERROR) << "Finished with error: " << Quote(stage);
 
       switch (progress_.stage) {
@@ -1151,6 +1179,9 @@ void PinManager::StartPinning() {
         progress_.bytes_to_pin >> 20);
     is_first_sync_ = false;
   }
+
+  base::UmaHistogramSparse("FileBrowser.GoogleDrive.BulkPinning.QueueSize",
+                           queue_size_);
 
   timer_ = base::ElapsedTimer();
   progress_.stage = Stage::kSyncing;
@@ -1220,7 +1251,7 @@ void PinManager::PinSomeFiles() {
     return NotifyProgress();
   }
 
-  while (progress_.syncing_files < max_queue_size_ && !files_to_pin_.empty()) {
+  while (progress_.syncing_files < queue_size_ && !files_to_pin_.empty()) {
     const Id id = files_to_pin_.extract(files_to_pin_.begin()).value();
     const Files::iterator it = files_to_track_.find(id);
     DCHECK(it != files_to_track_.end()) << "Not tracked: " << id;
@@ -1323,6 +1354,8 @@ void PinManager::OnFilePinned(const Id id,
   DCHECK(!files_to_pin_.contains(id));
 }
 
+// TODO(b/297442320): Remove `OnSyncingStatusUpdate` now we entirely rely on
+// `OnItemProgress.
 void PinManager::OnSyncingStatusUpdate(const mojom::SyncingStatus& status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1349,6 +1382,7 @@ void PinManager::OnSyncingStatusUpdate(const mojom::SyncingStatus& status) {
   PinSomeFiles();
 }
 
+// TODO(b/297442320): Remove `OnSyncingEvent`.
 bool PinManager::OnSyncingEvent(mojom::ItemEvent& event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1398,6 +1432,9 @@ bool PinManager::OnSyncingEvent(mojom::ItemEvent& event) {
       UmaHistogramBoolean("FileBrowser.GoogleDrive.BulkPinning.PinnedFiles",
                           false);
       return true;
+    case State::kCancelledAndDeleted:
+    case State::kCancelledAndTrashed:
+      return false;
   }
 
   LOG(ERROR) << "Unexpected event type: " << Quote(event);
@@ -1418,7 +1455,9 @@ void PinManager::OnItemProgress(const mojom::ProgressEvent& event) {
   VLOG(3) << "Received " << Quote(event);
 
   Path relative_path("/");
-  if (!mount_path_.AppendRelativePath(Path(event.path), &relative_path)) {
+  if (!mount_path_.AppendRelativePath(
+          event.file_path ? *event.file_path : Path(event.path),
+          &relative_path)) {
     LOG(ERROR) << "Path not relative to drive mount";
     return;
   }

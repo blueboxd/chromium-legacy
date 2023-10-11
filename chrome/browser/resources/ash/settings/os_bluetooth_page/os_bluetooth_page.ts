@@ -32,7 +32,8 @@ import {getTemplate} from './os_bluetooth_page.html.js';
 
 const SettingsBluetoothPageElementBase = PrefsMixin(I18nMixin(PolymerElement));
 
-class SettingsBluetoothPageElement extends SettingsBluetoothPageElementBase {
+export class SettingsBluetoothPageElement extends
+    SettingsBluetoothPageElementBase {
   static get is() {
     return 'os-settings-bluetooth-page' as const;
   }
@@ -107,9 +108,7 @@ class SettingsBluetoothPageElement extends SettingsBluetoothPageElementBase {
       return false;
     }
 
-    return this.systemProperties_.systemState ===
-        BluetoothSystemState.kEnabled ||
-        this.systemProperties_.systemState === BluetoothSystemState.kEnabling;
+    return this.systemProperties_.systemState === BluetoothSystemState.kEnabled;
   }
 }
 

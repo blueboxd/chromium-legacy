@@ -75,6 +75,7 @@ import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -477,28 +478,15 @@ public class StartSurfaceToolbarMediatorUnitTest {
     }
 
     @Test
-    public void testNewTabButtonWithAccessibilityOnAndContinuationOn() {
+    public void testNewTabButtonWithAccessibilityOn() {
         ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
 
-        createMediator(false, true);
+        createMediator(false);
         mMediator.onStartSurfaceStateChanged(
                 StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
         // When accessibility is turned on and TAB_GROUPS_CONTINUATION_ANDROID is enabled, new tab
         // button shouldn't show on homepage.
         assertFalse(mPropertyModel.get(NEW_TAB_VIEW_IS_VISIBLE));
-    }
-
-    @Test
-    public void testNewTabButtonWithAccessibilityOnAndContinuationOff() {
-        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
-
-        createMediator(false, false);
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
-
-        // When accessibility is turned on and TAB_GROUPS_CONTINUATION_ANDROID is disabled, new tab
-        // button should show on homepage.
-        assertTrue(mPropertyModel.get(NEW_TAB_VIEW_IS_VISIBLE));
     }
 
     @Test
@@ -561,11 +549,52 @@ public class StartSurfaceToolbarMediatorUnitTest {
     }
 
     @Test
+    @EnableFeatures(ChromeFeatureList.SURFACE_POLISH)
+    public void testLogoLoadOrDestroy_SurfacePolishMoveDownLogoDisabled() {
+        StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO.setForTesting(false);
+        createMediator(false);
+        assertFalse(mMediator.isLogoVisibleForTesting());
+
+        mMediator.onStartSurfaceStateChanged(
+                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        assertTrue(mMediator.isLogoVisibleForTesting());
+
+        mMediator.onStartSurfaceStateChanged(
+                StartSurfaceState.SHOWN_TABSWITCHER, true, LayoutType.TAB_SWITCHER);
+        assertFalse(mMediator.isLogoVisibleForTesting());
+        verify(mLogoBridge).destroy(eq(1L), any());
+
+        mMediator.onStartSurfaceStateChanged(
+                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        assertTrue(mMediator.isLogoVisibleForTesting());
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.SURFACE_POLISH)
+    public void testNotShowLogo_SurfacePolishMoveDownLogoEnabled() {
+        StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO.setForTesting(true);
+        createMediator(false);
+        assertFalse(mMediator.isLogoVisibleForTesting());
+
+        mMediator.onStartSurfaceStateChanged(
+                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        assertFalse(mMediator.isLogoVisibleForTesting());
+
+        mMediator.onStartSurfaceStateChanged(
+                StartSurfaceState.SHOWN_TABSWITCHER, true, LayoutType.TAB_SWITCHER);
+        assertFalse(mMediator.isLogoVisibleForTesting());
+        verify(mLogoBridge, times(0)).destroy(eq(1L), any());
+
+        mMediator.onStartSurfaceStateChanged(
+                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
+        assertFalse(mMediator.isLogoVisibleForTesting());
+    }
+
+    @Test
     @EnableFeatures({ChromeFeatureList.SURFACE_POLISH})
     public void testUpdateStartSurfaceToolbarBackgroundColor() {
         assertTrue(ChromeFeatureList.sSurfacePolish.isEnabled());
-        createMediator(/*hideIncognitoSwitchWhenNoTabs =*/
-                false, /*isTabGroupsAndroidContinuationEnabled= */ false);
+        createMediator(/*hideIncognitoSwitchWhenNoTabs=*/false);
         @ColorInt
         int backgroundColor = ChromeColors.getPrimaryBackgroundColor(mActivity, false);
         assertEquals(backgroundColor, mPropertyModel.get(BACKGROUND_COLOR));
@@ -580,15 +609,12 @@ public class StartSurfaceToolbarMediatorUnitTest {
     }
 
     private void createMediator(boolean hideIncognitoSwitchWhenNoTabs) {
-        createMediator(hideIncognitoSwitchWhenNoTabs, false);
-    }
-
-    private void createMediator(
-            boolean hideIncognitoSwitchWhenNoTabs, boolean isTabGroupsAndroidContinuationEnabled) {
         boolean shouldCreateLogoInToolbar =
-                !ChromeFeatureList.sStartSurfaceDisabledFeedImprovement.isEnabled()
-                || SharedPreferencesManager.getInstance().readBoolean(
-                        ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE, true);
+                (!ChromeFeatureList.sStartSurfaceDisabledFeedImprovement.isEnabled()
+                        || SharedPreferencesManager.getInstance().readBoolean(
+                                ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE, true))
+                && !(ChromeFeatureList.sSurfacePolish.isEnabled()
+                        && StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO.getValue());
         mMediator = new StartSurfaceToolbarMediator(mActivity, mPropertyModel,
                 mMockIdentityIPHCallback, hideIncognitoSwitchWhenNoTabs, mMenuButtonCoordinator,
                 mIdentityDiscController,
@@ -596,7 +622,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
                         -> mIdentityDiscController.getForStartSurface(
                                 mMediator.getOverviewModeStateForTesting(),
                                 mMediator.getLayoutTypeForTesting()),
-                /*isTabToGtsFadeAnimationEnabled=*/false, isTabGroupsAndroidContinuationEnabled,
+                /*isTabToGtsFadeAnimationEnabled=*/false,
                 ()
                         -> false,
                 /*logoClickedCallback=*/null,

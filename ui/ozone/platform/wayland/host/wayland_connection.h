@@ -20,6 +20,7 @@
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/single_pixel_buffer.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_clipboard.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
@@ -347,6 +348,11 @@ class WaylandConnection {
 
   void DumpState(std::ostream& out) const;
 
+  bool UseImplicitSyncInterop() const {
+    return !linux_explicit_synchronization_v1() &&
+           WaylandBufferManagerHost::SupportsImplicitSyncInterop();
+  }
+
  private:
   friend class WaylandConnectionTestApi;
 
@@ -400,21 +406,26 @@ class WaylandConnection {
   // in place, i.e: wl_seat and wl_data_device_manager.
   void CreateDataObjectsIfReady();
 
-  // wl_registry_listener
-  static void Global(void* data,
-                     wl_registry* registry,
-                     uint32_t name,
-                     const char* interface,
-                     uint32_t version);
-  static void GlobalRemove(void* data, wl_registry* registry, uint32_t name);
+  // wl_registry_listener callbacks:
+  static void OnGlobal(void* data,
+                       wl_registry* registry,
+                       uint32_t name,
+                       const char* interface,
+                       uint32_t version);
+  static void OnGlobalRemove(void* data, wl_registry* registry, uint32_t name);
 
-  // xdg_wm_base_listener
-  static void Ping(void* data, xdg_wm_base* shell, uint32_t serial);
+  // xdg_wm_base_listener callbacks:
+  static void OnPing(void* data, xdg_wm_base* shell, uint32_t serial);
 
-  // xdg_wm_base_listener
-  static void ClockId(void* data,
-                      wp_presentation* presentation,
-                      uint32_t clk_id);
+  // wp_presentation_listener callbacks:
+  static void OnClockId(void* data,
+                        wp_presentation* presentation,
+                        uint32_t clk_id);
+
+  void HandleGlobal(wl_registry* registry,
+                    uint32_t name,
+                    const char* interface,
+                    uint32_t version);
 
   base::flat_map<std::string, wl::GlobalObjectFactory> global_object_factories_;
 

@@ -45,8 +45,6 @@ class ASH_EXPORT AudioEffectsController
   // CrasAudioHandler::AudioObserver:
   void OnActiveInputNodeChanged() override;
   void OnAudioNodesChanged() override;
-  void OnActiveOutputNodeChanged() override;
-  void OnNoiseCancellationStateChanged() override;
 
   // Refresh noise cancellation supported status.
   void RefreshNoiseCancellationSupported();

@@ -16,6 +16,8 @@
 
 #include "base/apple/bridging.h"
 #include "base/apple/bundle_locations.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/base_switches.h"
 #include "base/check_is_test.h"
 #include "base/command_line.h"
@@ -28,10 +30,8 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
 #import "base/mac/launch_application.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -270,7 +270,7 @@ bool AppShimRevealDisabledForTest() {
 
 base::FilePath GetWritableApplicationsDirectory() {
   base::FilePath path;
-  if (base::mac::GetUserDirectory(NSApplicationDirectory, &path)) {
+  if (base::apple::GetUserDirectory(NSApplicationDirectory, &path)) {
     if (!base::DirectoryExists(path)) {
       if (!base::CreateDirectory(path))
         return base::FilePath();
@@ -291,7 +291,7 @@ base::FilePath GetResourcesPath(const base::FilePath& app_path) {
 
 // Given the path to an app bundle, return the URL of the Info.plist file.
 NSURL* GetPlistURL(const base::FilePath& bundle_path) {
-  return base::mac::FilePathToNSURL(
+  return base::apple::FilePathToNSURL(
       bundle_path.Append("Contents").Append("Info.plist"));
 }
 
@@ -348,9 +348,9 @@ class BundleInfoPlist {
   base::FilePath GetFullProfilePath() const {
     // Figure out the profile_path. Since the user_data_dir could contain the
     // path to the web app data dir.
-    base::FilePath user_data_dir = base::mac::NSStringToFilePath(
+    base::FilePath user_data_dir = base::apple::NSStringToFilePath(
         plist_[app_mode::kCrAppModeUserDataDirKey]);
-    base::FilePath profile_base_name = base::mac::NSStringToFilePath(
+    base::FilePath profile_base_name = base::apple::NSStringToFilePath(
         plist_[app_mode::kCrAppModeProfileDirKey]);
     if (user_data_dir.DirName().DirName().BaseName() == profile_base_name)
       return user_data_dir.DirName().DirName();
@@ -420,10 +420,10 @@ base::CommandLine BuildCommandLineForShimLaunch() {
   // Manually append it.
   // https://crbug.com/1286681
   const base::FilePath framework_bundle_path =
-      base::mac::AmIBundled() ? base::apple::FrameworkBundlePath()
-                              : base::apple::FrameworkBundlePath()
-                                    .Append("Versions")
-                                    .Append(version_info::GetVersionNumber());
+      base::apple::AmIBundled() ? base::apple::FrameworkBundlePath()
+                                : base::apple::FrameworkBundlePath()
+                                      .Append("Versions")
+                                      .Append(version_info::GetVersionNumber());
   command_line.AppendSwitchPath(app_mode::kLaunchedByChromeFrameworkBundlePath,
                                 framework_bundle_path);
   command_line.AppendSwitchPath(
@@ -451,7 +451,7 @@ NSRunningApplication* FindRunningApplicationForBundleIdAndPath(
       runningApplicationsWithBundleIdentifier:base::SysUTF8ToNSString(
                                                   bundle_id)];
   for (NSRunningApplication* app in apps) {
-    if (base::mac::NSURLToFilePath(app.bundleURL) == bundle_path) {
+    if (base::apple::NSURLToFilePath(app.bundleURL) == bundle_path) {
       return app;
     }
   }
@@ -462,7 +462,7 @@ NSRunningApplication* FindRunningApplicationForBundleIdAndPath(
   apps = NSWorkspace.sharedWorkspace.runningApplications;
   for (NSRunningApplication* app in apps) {
     if (base::SysNSStringToUTF8(app.bundleIdentifier) == bundle_id &&
-        base::mac::NSURLToFilePath(app.bundleURL) == bundle_path) {
+        base::apple::NSURLToFilePath(app.bundleURL) == bundle_path) {
       return app;
     }
   }
@@ -521,52 +521,10 @@ void LaunchApplicationWithRetry(const base::FilePath& app_bundle_path,
           std::move(callback)));
 }
 
-// Wrapper around base::mac::LaunchApplication. This works around a OS bug
-// where sometimes LaunchApplication returns an error even though the launch did
-// actually succeed, by double checking if any running applications match the
-// application we were trying to launch. If one is found, that one is returned
-// rather than an error.
-void LaunchApplicationWithWorkaround(
-    const base::FilePath& app_bundle_path,
-    const base::CommandLine& command_line,
-    const std::vector<std::string>& url_specs,
-    base::mac::LaunchApplicationOptions options,
-    const std::string& bundle_id,
-    base::mac::LaunchApplicationCallback callback) {
-  LaunchApplicationWithRetry(
-      app_bundle_path, command_line, url_specs, options,
-      base::BindOnce(
-          [](const base::FilePath& app_bundle_path,
-             base::mac::LaunchApplicationOptions options,
-             const std::string& bundle_id,
-             base::mac::LaunchApplicationCallback callback,
-             NSRunningApplication* app, NSError* error) {
-            if (app) {
-              std::move(callback).Run(app, nil);
-              return;
-            }
-
-            LOG(ERROR) << "Failed to open application with path: "
-                       << app_bundle_path;
-            if (!options.create_new_instance) {
-              NSRunningApplication* actual_app =
-                  FindRunningApplicationForBundleIdAndPath(bundle_id,
-                                                           app_bundle_path);
-              if (actual_app) {
-                LOG(ERROR) << "But found a running application anyway.";
-                std::move(callback).Run(actual_app, nil);
-                return;
-              }
-            }
-
-            std::move(callback).Run(app, error);
-          },
-          app_bundle_path, options, bundle_id, std::move(callback)));
-}
-
 void LaunchTheFirstShimThatWorksOnFileThread(
     std::vector<base::FilePath> shim_paths,
     bool launched_after_rebuild,
+    ShimLaunchMode launch_mode,
     const std::string& bundle_id,
     ShimLaunchedCallback launched_callback,
     ShimTerminatedCallback terminated_callback) {
@@ -594,12 +552,15 @@ void LaunchTheFirstShimThatWorksOnFileThread(
     command_line.AppendSwitch(app_mode::kLaunchedAfterRebuild);
   }
 
-  LaunchApplicationWithWorkaround(
-      shim_path, command_line, /*url_specs=*/{}, {.activate = false}, bundle_id,
+  LaunchApplicationWithRetry(
+      shim_path, command_line, /*url_specs=*/{},
+      {.activate = false,
+       .hidden_in_background = launch_mode == ShimLaunchMode::kBackground},
       base::BindOnce(
           [](base::FilePath shim_path,
              std::vector<base::FilePath> remaining_shim_paths,
-             bool launched_after_rebuild, const std::string& bundle_id,
+             bool launched_after_rebuild, ShimLaunchMode launch_mode,
+             const std::string& bundle_id,
              ShimLaunchedCallback launched_callback,
              ShimTerminatedCallback terminated_callback,
              NSRunningApplication* app, NSError* error) {
@@ -615,14 +576,16 @@ void LaunchTheFirstShimThatWorksOnFileThread(
                 FROM_HERE,
                 base::BindOnce(&LaunchTheFirstShimThatWorksOnFileThread,
                                remaining_shim_paths, launched_after_rebuild,
-                               bundle_id, std::move(launched_callback),
+                               launch_mode, bundle_id,
+                               std::move(launched_callback),
                                std::move(terminated_callback)));
           },
-          shim_path, shim_paths, launched_after_rebuild, bundle_id,
+          shim_path, shim_paths, launched_after_rebuild, launch_mode, bundle_id,
           std::move(launched_callback), std::move(terminated_callback)));
 }
 
 void LaunchShimOnFileThread(LaunchShimUpdateBehavior update_behavior,
+                            ShimLaunchMode launch_mode,
                             ShimLaunchedCallback launched_callback,
                             ShimTerminatedCallback terminated_callback,
                             const ShortcutInfo& shortcut_info) {
@@ -638,17 +601,17 @@ void LaunchShimOnFileThread(LaunchShimUpdateBehavior update_behavior,
   std::vector<base::FilePath> shim_paths;
   bool shortcuts_updated = true;
   switch (update_behavior) {
-    case LaunchShimUpdateBehavior::DO_NOT_RECREATE:
+    case LaunchShimUpdateBehavior::kDoNotRecreate:
       // Attempt to locate the shim's path using LaunchServices.
       shim_paths = shortcut_creator.GetAppBundlesById();
       break;
-    case LaunchShimUpdateBehavior::RECREATE_IF_INSTALLED:
+    case LaunchShimUpdateBehavior::kRecreateIfInstalled:
       // Only attempt to launch shims that were updated.
       launched_after_rebuild = true;
       shortcuts_updated = shortcut_creator.UpdateShortcuts(
           /*create_if_needed=*/false, &shim_paths);
       break;
-    case LaunchShimUpdateBehavior::RECREATE_UNCONDITIONALLY:
+    case LaunchShimUpdateBehavior::kRecreateUnconditionally:
       // Likewise, only attempt to launch shims that were updated.
       launched_after_rebuild = true;
       shortcuts_updated = shortcut_creator.UpdateShortcuts(
@@ -658,8 +621,9 @@ void LaunchShimOnFileThread(LaunchShimUpdateBehavior update_behavior,
   LOG_IF(ERROR, !shortcuts_updated) << "Could not write shortcut for app shim.";
 
   LaunchTheFirstShimThatWorksOnFileThread(
-      shim_paths, launched_after_rebuild, shortcut_creator.GetAppBundleId(),
-      std::move(launched_callback), std::move(terminated_callback));
+      shim_paths, launched_after_rebuild, launch_mode,
+      shortcut_creator.GetAppBundleId(), std::move(launched_callback),
+      std::move(terminated_callback));
 }
 
 base::FilePath GetLocalizableAppShortcutsSubdirName() {
@@ -793,7 +757,7 @@ void SetWorkspaceIconOnWorkerThread(const base::FilePath& apps_directory,
   }
   [NSWorkspace.sharedWorkspace
       setIcon:folder_icon_image
-      forFile:base::mac::FilePathToNSString(apps_directory)
+      forFile:base::apple::FilePathToNSString(apps_directory)
       options:0];
 }
 
@@ -813,7 +777,7 @@ bool UpdateAppShortcutsSubdirLocalizedName(
   std::u16string localized_name =
       shell_integration::GetAppShortcutsSubdirName();
   NSDictionary* strings_dict = @{
-    base::mac::FilePathToNSString(directory_name) :
+    base::apple::FilePathToNSString(directory_name) :
         base::SysUTF16ToNSString(localized_name)
   };
 
@@ -821,7 +785,7 @@ bool UpdateAppShortcutsSubdirLocalizedName(
       l10n_util::GetApplicationLocale(std::string()));
 
   NSString* strings_path =
-      base::mac::FilePathToNSString(localized.Append(locale + ".strings"));
+      base::apple::FilePathToNSString(localized.Append(locale + ".strings"));
   [strings_dict writeToFile:strings_path atomically:YES];
 
   content::GetUIThreadTaskRunner({})->PostTask(
@@ -865,10 +829,10 @@ std::string GetBundleIdentifier(
     std::string normalized_profile_path;
     base::ReplaceChars(profile_path.BaseName().value(), " ", "-",
                        &normalized_profile_path);
-    return base::mac::BaseBundleID() + std::string(".app.") +
+    return base::apple::BaseBundleID() + std::string(".app.") +
            normalized_profile_path + "-" + app_id;
   }
-  return base::mac::BaseBundleID() + std::string(".app.") + app_id;
+  return base::apple::BaseBundleID() + std::string(".app.") + app_id;
 }
 
 // Return all bundles with the specified |bundle_id| which are for the current
@@ -894,7 +858,7 @@ static const LSCopyApplicationURLsForBundleIdentifierPtr LSCopyApplicationURLsFo
       bundle_urls = (@[ base::apple::CFToNSPtrCast(cf_url) ]);
   }
   for (NSURL* url : bundle_urls) {
-    base::FilePath bundle_path = base::mac::NSURLToFilePath(url);
+    base::FilePath bundle_path = base::apple::NSURLToFilePath(url);
     BundleInfoPlist info(bundle_path);
     if (!info.IsForCurrentUserDataDir())
       continue;
@@ -1330,7 +1294,7 @@ bool WebAppShortcutCreator::BuildShortcut(
   // base::CreateDirectory() routine forces mode 0700.
   NSError* error = nil;
   if (![NSFileManager.defaultManager
-                 createDirectoryAtURL:base::mac::FilePathToNSURL(
+                 createDirectoryAtURL:base::apple::FilePathToNSURL(
                                           destination_executable_path)
           withIntermediateDirectories:YES
                            attributes:@{
@@ -1483,7 +1447,7 @@ void WebAppShortcutCreator::CreateShortcutsAt(
 
     // LaunchServices will eventually detect the (updated) app, but explicitly
     // calling LSRegisterURL ensures tests see the right state immediately.
-    LSRegisterURL(base::mac::FilePathToCFURL(dst_app_path), true);
+    LSRegisterURL(base::apple::FilePathToCFURL(dst_app_path), true);
 
     updated_paths->push_back(dst_app_path);
   }
@@ -1572,7 +1536,7 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
   NSString* extension_title = base::SysUTF16ToNSString(info_->title);
   NSString* extension_url = base::SysUTF8ToNSString(info_->url.spec());
   NSString* chrome_bundle_id =
-      base::SysUTF8ToNSString(base::mac::BaseBundleID());
+      base::SysUTF8ToNSString(base::apple::BaseBundleID());
   NSDictionary* replacement_dict = @{
     app_mode::kShortcutIdPlaceholder : app_id,
     app_mode::kShortcutNamePlaceholder : extension_title,
@@ -1611,15 +1575,15 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
         base::SysUTF8ToNSString(GetBundleIdentifier(info_->app_id));
     base::FilePath data_dir = GetMultiProfileAppDataDir(app_data_dir_);
     plist[app_mode::kCrAppModeUserDataDirKey] =
-        base::mac::FilePathToNSString(data_dir);
+        base::apple::FilePathToNSString(data_dir);
   } else {
     plist[base::apple::CFToNSPtrCast(kCFBundleIdentifierKey)] =
         base::SysUTF8ToNSString(
             GetBundleIdentifier(info_->app_id, info_->profile_path));
     plist[app_mode::kCrAppModeUserDataDirKey] =
-        base::mac::FilePathToNSString(app_data_dir_);
+        base::apple::FilePathToNSString(app_data_dir_);
     plist[app_mode::kCrAppModeProfileDirKey] =
-        base::mac::FilePathToNSString(info_->profile_path.BaseName());
+        base::apple::FilePathToNSString(info_->profile_path.BaseName());
     plist[app_mode::kCrAppModeProfileNameKey] =
         base::SysUTF8ToNSString(info_->profile_name);
   }
@@ -1709,7 +1673,7 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
   // lines). See also crbug.com/1021804.
   base::FilePath app_name = app_path.BaseName().RemoveFinalExtension();
   plist[base::apple::CFToNSPtrCast(kCFBundleNameKey)] =
-      base::mac::FilePathToNSString(app_name);
+      base::apple::FilePathToNSString(app_name);
 
   return [plist writeToURL:plist_url atomically:YES];
 }
@@ -1749,8 +1713,8 @@ bool WebAppShortcutCreator::UpdateDisplayName(
     app_mode::kCFBundleDisplayNameKey : display_name
   };
 
-  NSString* localized_path =
-      base::mac::FilePathToNSString(localized_dir.Append("InfoPlist.strings"));
+  NSString* localized_path = base::apple::FilePathToNSString(
+      localized_dir.Append("InfoPlist.strings"));
   return [strings_plist writeToFile:localized_path atomically:YES];
 }
 
@@ -1864,7 +1828,7 @@ void WebAppShortcutCreator::RevealAppShimInFinder(
         if (AppShimRevealDisabledForTest()) {
           return;
         }
-        NSURL* path_url = base::mac::FilePathToNSURL(app_path);
+        NSURL* path_url = base::apple::FilePathToNSURL(app_path);
         [[NSWorkspace sharedWorkspace]
             activateFileViewerSelectingURLs:@[ path_url ]];
       },
@@ -1876,6 +1840,7 @@ void WebAppShortcutCreator::RevealAppShimInFinder(
 }
 
 void LaunchShim(LaunchShimUpdateBehavior update_behavior,
+                ShimLaunchMode launch_mode,
                 ShimLaunchedCallback launched_callback,
                 ShimTerminatedCallback terminated_callback,
                 std::unique_ptr<ShortcutInfo> shortcut_info) {
@@ -1887,7 +1852,7 @@ void LaunchShim(LaunchShimUpdateBehavior update_behavior,
   }
 
   internals::PostShortcutIOTask(
-      base::BindOnce(&LaunchShimOnFileThread, update_behavior,
+      base::BindOnce(&LaunchShimOnFileThread, update_behavior, launch_mode,
                      std::move(launched_callback),
                      std::move(terminated_callback)),
       std::move(shortcut_info));

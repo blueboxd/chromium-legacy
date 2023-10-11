@@ -41,16 +41,6 @@
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #endif
 
-namespace wl {
-
-bool g_disallow_setting_decoration_insets_for_testing = false;
-
-void AllowClientSideDecorationsForTesting(bool allow) {
-  g_disallow_setting_decoration_insets_for_testing = !allow;
-}
-
-}  // namespace wl
-
 namespace ui {
 
 namespace {
@@ -364,8 +354,7 @@ bool WaylandToplevelWindow::ShouldUpdateWindowShape() const {
 }
 
 bool WaylandToplevelWindow::CanSetDecorationInsets() const {
-  return connection()->SupportsSetWindowGeometry() &&
-         !wl::g_disallow_setting_decoration_insets_for_testing;
+  return connection()->SupportsSetWindowGeometry();
 }
 
 void WaylandToplevelWindow::SetOpaqueRegion(
@@ -510,6 +499,8 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
     int32_t width_dip,
     int32_t height_dip,
     const WindowStates& window_states) {
+  VLOG(1) << "Wayland XDG/Aura toplevel configure: states="
+          << window_states.ToString();
   // Store the old state to propagte state changes if Wayland decides to change
   // the state to something else.
   PlatformWindowState old_state = state_;
@@ -1040,6 +1031,9 @@ void WaylandToplevelWindow::SetSizeConstraints() {
 
   if (max_size_dip.has_value())
     shell_toplevel_->SetMaxSize(max_size_dip->width(), max_size_dip->height());
+
+  shell_toplevel_->SetCanMaximize(delegate()->CanMaximize());
+  shell_toplevel_->SetCanFullscreen(delegate()->CanFullscreen());
 
   connection()->Flush();
 }

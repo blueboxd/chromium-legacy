@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 
 namespace blink {
@@ -21,6 +22,7 @@ class ScriptPromiseResolver;
 class SmartCardReaderStateIn;
 
 class SmartCardGetStatusChangeOptions;
+class SmartCardConnection;
 class SmartCardConnectOptions;
 
 class SmartCardContext final : public ScriptWrappable,
@@ -53,9 +55,26 @@ class SmartCardContext final : public ScriptWrappable,
   // Called by SmartCardCancelAlgorithm
   void Cancel();
 
- private:
-  void CloseMojoConnection();
+  ////
+  // Called also by SmartCardConnection instances in this context.
+
   bool EnsureNoOperationInProgress(ExceptionState& exception_state) const;
+
+  void SetConnectionOperationInProgress(ScriptPromiseResolver*);
+  void ClearConnectionOperationInProgress(ScriptPromiseResolver*);
+
+  bool IsOperationInProgress() const;
+
+ private:
+  // Sets the PC/SC operation that is in progress in this context.
+  // CHECKs that there was no operation in progress.
+  void SetOperationInProgress(ScriptPromiseResolver*);
+
+  // Clears the operation in progress.
+  // CHECKs that the given operation matches the one set to be in progress.
+  void ClearOperationInProgress(ScriptPromiseResolver*);
+
+  void CloseMojoConnection();
   bool EnsureMojoConnection(ExceptionState& exception_state) const;
   void OnListReadersDone(ScriptPromiseResolver* resolver,
                          device::mojom::blink::SmartCardListReadersResultPtr);
@@ -71,6 +90,12 @@ class SmartCardContext final : public ScriptWrappable,
   HeapMojoRemote<device::mojom::blink::SmartCardContext> scard_context_;
   // The currently ongoing request, if any.
   Member<ScriptPromiseResolver> request_;
+
+  // Whether request_ comes from a blink::SmartCardConnection.
+  bool is_connection_request_ = false;
+
+  // The connections created by this context.
+  HeapHashSet<WeakMember<SmartCardConnection>> connections_;
 };
 }  // namespace blink
 

@@ -29,14 +29,24 @@ source_set("browser") {
     "features.h",
     "installable/installable_data.cc",
     "installable/installable_data.h",
+    "installable/installable_data_fetcher.cc",
+    "installable/installable_data_fetcher.h",
+    "installable/installable_evaluator.cc",
+    "installable/installable_evaluator.h",
+    "installable/installable_icon_fetcher.cc",
+    "installable/installable_icon_fetcher.h",
     "installable/installable_logging.cc",
     "installable/installable_logging.h",
     "installable/installable_manager.cc",
     "installable/installable_manager.h",
     "installable/installable_metrics.cc",
     "installable/installable_metrics.h",
+    "installable/installable_page_data.cc",
+    "installable/installable_page_data.h",
     "installable/installable_params.cc",
     "installable/installable_params.h",
+    "installable/installable_task.cc",
+    "installable/installable_task.h",
     "installable/installable_task_queue.cc",
     "installable/installable_task_queue.h",
     "installable/metrics/site_manifest_metrics_task.cc",
@@ -68,6 +78,7 @@ source_set("browser") {
     "//components/site_engagement/content",
     "//components/variations",
     "//components/webapps/common",
+    "//components/webapps/common:mojo_bindings",
     "//content/public/browser",
     "//content/public/common",
     "//net",
@@ -163,6 +174,7 @@ source_set("test_support") {
   deps = [
     ":browser",
     "//base",
+    "//components/webapps/common:mojo_bindings",
     "//content/test:test_support",
     "//skia",
     "//third_party/blink/public/common:headers",
@@ -176,7 +188,7 @@ source_set("unit_tests") {
   sources = [
     "banners/app_banner_settings_helper_unittest.cc",
     "install_result_code_unittest.cc",
-    "installable/installable_manager_unittest.cc",
+    "installable/installable_evaluator_unittest.cc",
     "installable/installable_task_queue_unittest.cc",
     "pwa_install_path_tracker_unittest.cc",
   ]
@@ -195,6 +207,13 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/blink/public/mojom:mojom_platform_headers",
   ]
+
+  if (is_ios) {
+    # TODO(crbug.com/1476736): AppBannerSettingsHelperTest are failing on iOS
+    # port.
+    sources -= [ "banners/app_banner_settings_helper_unittest.cc" ]
+    deps += [ "//components/test:webapps_test_bundle_data" ]
+  }
 
   if (is_android) {
     sources += [ "android/installable/installable_ambient_badge_message_controller_unittest.cc" ]

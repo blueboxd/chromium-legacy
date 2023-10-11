@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">साइटला तुमच्या डिव्हाइसवर डेटा सेव्ह करण्याची अनुमती द्या</translation>
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="1384959399684842514">डाउनलोडला विराम दिला</translation>
-<translation id="1409426117486808224">उघड्या टॅबसाठी सोपा केलेला व्ह्यू</translation>
 <translation id="1415402041810619267">URL कापली गेली</translation>
 <translation id="1426410128494586442">होय</translation>
 <translation id="1446450296470737166">MIDI डिव्हाइसेसच्या पूर्ण नियंत्रणास अनुमती द्या</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">तृतीय-पक्षाशिवाय, अनुमती असलेले</translation>
 <translation id="1989112275319619282">ब्राउझ करा</translation>
 <translation id="1994173015038366702">साइट URL</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{एका दिवसामध्ये एक्स्पायर होईल}other{# दिवसांमध्ये एक्स्पायर होईल}}</translation>
 <translation id="2004697686368036666">काही साइटवर वैशिष्ट्ये कदाचित काम करणार नाहीत</translation>
 <translation id="2025115093177348061">ऑगमेंटेड रीअ‍ॅलिटी</translation>
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> वर परत जाण्यासाठी टॅप करा</translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4008040567710660924">विशिष्ट साइटसाठी कुकीना अनुमती द्या.</translation>
 <translation id="4046123991198612571">पुढील ट्रॅक</translation>
+<translation id="4053720452172726777">Google Chrome कस्टमाइझ करा आणि नियंत्रित करा</translation>
 <translation id="4149994727733219643">वेब पेजसाठी सोपा केलेला व्ह्यू</translation>
 <translation id="4151930093518524179">डीफॉल्ट झूम</translation>
 <translation id="4165986682804962316">साइट सेटिंग्ज</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">वेगवेगळ्या साइटवरील तुमची ब्राउझिंग ॲक्टिव्हिटी पाहण्यासाठी साइट कुकी वापरू शकत नाहीत. उदाहरणार्थ, जाहिराती पर्सनलाइझ करण्याकरिता. काही साइटवर वैशिष्ट्ये कदाचित काम करणार नाहीत.</translation>
 <translation id="5553374991681107062">नवीनतम</translation>
 <translation id="5556459405103347317">रीलोड करा</translation>
-<translation id="5596627076506792578">अधिक पर्याय</translation>
 <translation id="5649053991847567735">स्वयंचलित डाउनलोड</translation>
 <translation id="5668404140385795438">झूम वाढविणे निर्बंधित करण्याची वेबसाइटची विनंती ओव्हरराइड करा</translation>
 <translation id="5677928146339483299">ब्लॉक केले</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Android सेटिंग्जमध्‍ये बंद केले</translation>
 <translation id="7016516562562142042">वर्तमान शोध इंजिनसाठी अनुमती दिली</translation>
 <translation id="702275896380648118">ही साइट तुमच्या पसंतीच्या गोष्टी निर्धारित करते आणि इतर साइटना जाहिराती सुचवते. तुम्हाला आणखी उपयुक्त जाहिराती दाखवण्यासाठी, ही साइट Chrome मधून तुमचे जाहिरातीचे विषयदेखील मिळवते.</translation>
-<translation id="702463548815491781">TalkBack किंवा स्विच ॲक्सेस सुरू असताना शिफारस केलेले</translation>
 <translation id="7053983685419859001">ब्लॉक करा</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 निवडला}other{# निवडले}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> निवडले.  स्क्रीनच्या वरच्या बाजूला पर्याय उपलब्ध आहेत</translation>

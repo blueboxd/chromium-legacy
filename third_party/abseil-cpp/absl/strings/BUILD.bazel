@@ -92,6 +92,7 @@ cc_library(
         "string_view.h",
     ],
     deps = [
+        ":charset",
         ":internal",
         ":string_view",
         "//absl/base",
@@ -115,7 +116,6 @@ cc_library(
         "internal/utf8.cc",
     ],
     hdrs = [
-        "internal/char_map.h",
         "internal/escaping.h",
         "internal/ostringstream.h",
         "internal/resize_uninitialized.h",
@@ -158,6 +158,7 @@ cc_test(
         ":strings",
         "//absl/base:core_headers",
         "//absl/container:fixed_array",
+        "//absl/log:check",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -302,6 +303,50 @@ cc_test(
         "//absl/base:config",
         "//absl/base:core_headers",
         "//absl/base:dynamic_annotations",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "charset_benchmark",
+    size = "small",
+    srcs = [
+        "charset_benchmark.cc",
+    ],
+    copts = ABSL_TEST_COPTS,
+    tags = [
+        "benchmark",
+    ],
+    visibility = ["//visibility:private"],
+    deps = [
+        ":charset",
+        "//absl/log:check",
+        "@com_github_google_benchmark//:benchmark_main",
+    ],
+)
+
+cc_library(
+    name = "charset",
+    hdrs = [
+        "charset.h",
+    ],
+    copts = ABSL_DEFAULT_COPTS,
+    linkopts = ABSL_DEFAULT_LINKOPTS,
+    deps = [
+        ":string_view",
+        "//absl/base:core_headers",
+    ],
+)
+
+cc_test(
+    name = "charset_test",
+    size = "small",
+    srcs = ["charset_test.cc"],
+    copts = ABSL_TEST_COPTS,
+    visibility = ["//visibility:private"],
+    deps = [
+        ":charset",
+        ":strings",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -485,8 +530,8 @@ cc_library(
         "//absl/base:core_headers",
         "//absl/base:endian",
         "//absl/base:raw_logging_internal",
-        "//absl/container:fixed_array",
         "//absl/container:inlined_vector",
+        "//absl/crc:crc32c",
         "//absl/crc:crc_cord_state",
         "//absl/functional:function_ref",
         "//absl/meta:type_traits",
@@ -773,6 +818,7 @@ cc_test(
         ":cord",
         ":cord_internal",
         ":cord_rep_test_util",
+        ":string_view",
         "//absl/base:config",
         "//absl/types:span",
         "@com_google_googletest//:gtest_main",
@@ -787,19 +833,24 @@ cc_test(
     visibility = ["//visibility:private"],
     deps = [
         ":cord",
+        ":cord_internal",
         ":cord_test_helpers",
         ":cordz_functions",
+        ":cordz_statistics",
         ":cordz_test_helpers",
+        ":cordz_update_tracker",
         ":str_format",
         ":strings",
         "//absl/base:config",
         "//absl/base:core_headers",
         "//absl/base:endian",
         "//absl/container:fixed_array",
+        "//absl/functional:function_ref",
         "//absl/hash",
         "//absl/log",
         "//absl/log:check",
         "//absl/random",
+        "//absl/types:optional",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -821,6 +872,7 @@ cc_test(
     visibility = ["//visibility:private"],
     deps = [
         ":cord",
+        ":cord_internal",
         ":cord_test_helpers",
         ":cordz_functions",
         ":cordz_info",
@@ -849,6 +901,7 @@ cc_test(
         "//absl/base:core_headers",
         "//absl/base:raw_logging_internal",
         "//absl/debugging:leak_check",
+        "//absl/types:span",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -862,8 +915,10 @@ cc_test(
     deps = [
         ":cord_internal",
         ":strings",
+        "//absl/base:config",
         "//absl/base:core_headers",
         "//absl/debugging:leak_check",
+        "//absl/types:span",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -1041,6 +1096,7 @@ cc_test(
         ":strings",
         "//absl/base:config",
         "//absl/log",
+        "//absl/numeric:int128",
         "//absl/random",
         "//absl/random:distributions",
         "@com_google_googletest//:gtest_main",
@@ -1071,27 +1127,6 @@ cc_test(
     deps = [
         ":strings",
         "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "char_map_test",
-    srcs = ["internal/char_map_test.cc"],
-    copts = ABSL_TEST_COPTS,
-    deps = [
-        ":internal",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "char_map_benchmark",
-    srcs = ["internal/char_map_benchmark.cc"],
-    copts = ABSL_TEST_COPTS,
-    tags = ["benchmark"],
-    deps = [
-        ":internal",
-        "@com_github_google_benchmark//:benchmark_main",
     ],
 )
 
@@ -1211,6 +1246,9 @@ cc_test(
         ":cord",
         ":str_format",
         ":strings",
+        "//absl/base:config",
+        "//absl/base:core_headers",
+        "//absl/types:span",
         "@com_google_googletest//:gtest_main",
     ],
 )

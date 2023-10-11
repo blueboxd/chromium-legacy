@@ -11,8 +11,8 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** Binds model properties to view methods for ImprovedBookmarkRow. */
-class ImprovedBookmarkRowViewBinder {
-    static void bind(PropertyModel model, View view, PropertyKey key) {
+public class ImprovedBookmarkRowViewBinder {
+    public static void bind(PropertyModel model, View view, PropertyKey key) {
         ImprovedBookmarkRow row = (ImprovedBookmarkRow) view;
         if (key == ImprovedBookmarkRowProperties.TITLE) {
             row.setTitle(model.get(ImprovedBookmarkRowProperties.TITLE));
@@ -51,6 +51,9 @@ class ImprovedBookmarkRowViewBinder {
             row.setBookmarkIdEditable(model.get(ImprovedBookmarkRowProperties.EDITABLE));
         } else if (key == ImprovedBookmarkRowProperties.ROW_CLICK_LISTENER) {
             row.setRowClickListener(model.get(ImprovedBookmarkRowProperties.ROW_CLICK_LISTENER));
+        } else if (key == ImprovedBookmarkRowProperties.ROW_LONG_CLICK_LISTENER) {
+            row.setRowLongClickListener(
+                    model.get(ImprovedBookmarkRowProperties.ROW_LONG_CLICK_LISTENER));
         } else if (key == BookmarkManagerProperties.BOOKMARK_ID) {
             row.setItem(model.get(BookmarkManagerProperties.BOOKMARK_ID));
         } else if (key == ImprovedBookmarkRowProperties.END_IMAGE_VISIBILITY) {

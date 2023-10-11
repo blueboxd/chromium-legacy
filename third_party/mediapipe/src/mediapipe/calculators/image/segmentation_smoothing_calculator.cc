@@ -15,13 +15,13 @@
 #include <algorithm>
 #include <memory>
 
+#include "absl/log/absl_log.h"
 #include "mediapipe/calculators/image/segmentation_smoothing_calculator.pb.h"
 #include "mediapipe/framework/calculator_framework.h"
 #include "mediapipe/framework/calculator_options.pb.h"
 #include "mediapipe/framework/formats/image.h"
 #include "mediapipe/framework/formats/image_format.pb.h"
 #include "mediapipe/framework/formats/image_frame.h"
-#include "mediapipe/framework/port/logging.h"
 #include "mediapipe/framework/port/status.h"
 #include "mediapipe/framework/port/vector.h"
 
@@ -32,7 +32,6 @@
 #endif  // !MEDIAPIPE_DISABLE_GPU
 
 #if !MEDIAPIPE_DISABLE_OPENCV
-#include "absl/log/absl_check.h"
 #include "mediapipe/framework/formats/image_frame_opencv.h"
 #include "mediapipe/framework/formats/image_opencv.h"
 #include "mediapipe/framework/port/opencv_core_inc.h"
@@ -111,7 +110,7 @@ REGISTER_CALCULATOR(SegmentationSmoothingCalculator);
 
 absl::Status SegmentationSmoothingCalculator::GetContract(
     CalculatorContract* cc) {
-  ABSL_CHECK_GE(cc->Inputs().NumEntries(), 1);
+  RET_CHECK_GE(cc->Inputs().NumEntries(), 1);
 
   cc->Inputs().Tag(kCurrentMaskTag).Set<Image>();
   cc->Inputs().Tag(kPreviousMaskTag).Set<Image>();
@@ -274,7 +273,7 @@ absl::Status SegmentationSmoothingCalculator::RenderGpu(CalculatorContext* cc) {
 
   const auto& previous_frame = cc->Inputs().Tag(kPreviousMaskTag).Get<Image>();
   if (previous_frame.format() != current_frame.format()) {
-    LOG(ERROR) << "Warning: mixing input format types. ";
+    ABSL_LOG(ERROR) << "Warning: mixing input format types. ";
   }
   auto previous_texture = gpu_helper_.CreateSourceTexture(previous_frame);
 

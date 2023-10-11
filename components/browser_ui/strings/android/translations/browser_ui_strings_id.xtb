@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Mengizinkan situs menyimpan data di perangkat Anda</translation>
 <translation id="1383876407941801731">Telusuri</translation>
 <translation id="1384959399684842514">Download dijeda</translation>
-<translation id="1409426117486808224">Tampilan sederhana untuk tab yang terbuka</translation>
 <translation id="1415402041810619267">URL dipotong</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1446450296470737166">Izinkan kontrol penuh perangkat MIDI</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Diizinkan, kecuali pihak ketiga</translation>
 <translation id="1989112275319619282">Jelajahi</translation>
 <translation id="1994173015038366702">URL situs</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Berakhir 1 hari lagi}other{Berakhir dalam # hari}}</translation>
 <translation id="2004697686368036666">Fitur tertentu di beberapa situs mungkin tidak berfungsi</translation>
 <translation id="2025115093177348061">Augmented reality</translation>
 <translation id="2030769033451695672">Ketuk untuk kembali ke <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Judul</translation>
 <translation id="4008040567710660924">Izinkan cookie untuk situs tertentu.</translation>
 <translation id="4046123991198612571">Lagu berikutnya</translation>
+<translation id="4053720452172726777">Sesuaikan dan kontrol Google Chrome</translation>
 <translation id="4149994727733219643">Tampilan sederhana untuk halaman web</translation>
 <translation id="4151930093518524179">Zoom default</translation>
 <translation id="4165986682804962316">Setelan situs</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Situs tidak dapat menggunakan cookie untuk melihat aktivitas penjelajahan Anda di berbagai situs, misalnya untuk mempersonalisasi iklan. Fitur tertentu di beberapa situs mungkin tidak berfungsi.</translation>
 <translation id="5553374991681107062">Terbaru</translation>
 <translation id="5556459405103347317">Muat ulang</translation>
-<translation id="5596627076506792578">Opsi lainnya</translation>
 <translation id="5649053991847567735">Download otomatis</translation>
 <translation id="5668404140385795438">Abaikan permintaan situs web untuk mencegah zoom</translation>
 <translation id="5677928146339483299">Diblokir</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Dinonaktifkan di setelan Android</translation>
 <translation id="7016516562562142042">Diizinkan untuk mesin telusur yang sedang digunakan</translation>
 <translation id="702275896380648118">Situs ini menentukan hal-hal yang Anda sukai, lalu menyarankan iklan ke situs lain. Situs ini juga mendapatkan topik iklan Anda dari Chrome untuk menampilkan iklan yang lebih relevan.</translation>
-<translation id="702463548815491781">Disarankan saat TalkBack atau Tombol Akses aktif</translation>
 <translation id="7053983685419859001">Blokir</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 dipilih}other{# dipilih}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> dipilih. Opsi yang tersedia di dekat bagian atas layar</translation>

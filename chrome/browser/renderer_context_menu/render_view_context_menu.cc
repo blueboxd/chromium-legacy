@@ -285,6 +285,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
+#include "ash/webui/settings/public/constants/routes.mojom.h"
 #include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/intent_helper/arc_intent_helper_mojo_ash.h"
@@ -294,7 +295,6 @@
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/ash/system_web_dialog_delegate.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "ui/aura/window.h"
 #endif
@@ -493,14 +493,16 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_SAVEPLUGINAS, 133},
        {IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED, 134},
        {IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB, 135},
+       {IDC_CONTENT_CONTEXT_ORCA, 136},
        {IDC_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION, 137},
+       {IDC_CONTENT_PASTE_FROM_CLIPBOARD, 138},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 138}});
+       {0, 139}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -1630,7 +1632,7 @@ void RenderViewContextMenu::AppendLinkItems() {
       // least one open window.
       std::vector<ProfileAttributesEntry*> entries =
           profile_manager->GetProfileAttributesStorage()
-              .GetAllProfilesAttributesSortedByName();
+              .GetAllProfilesAttributesSortedByNameWithCheck();
       std::vector<ProfileAttributesEntry*> target_profiles_entries;
       bool has_active_profiles = false;
       for (ProfileAttributesEntry* entry : entries) {
@@ -1871,8 +1873,7 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
   }
 
   menu_model_.AddItem(GetSearchForImageIdc(), menu_string);
-  if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser()) ||
-      companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser())) {
+  if (companion::IsNewBadgeEnabledForSearchImageMenuItem(GetBrowser())) {
     menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
   }
 
@@ -2167,11 +2168,10 @@ void RenderViewContextMenu::AppendSearchProvider() {
           l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
                                      default_provider->short_name(),
                                      printable_selection_text));
-      if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser())) {
-        menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
-      }
       if (companion::IsSearchWebInCompanionSidePanelSupported(GetBrowser())) {
-        menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
+        if (companion::IsNewBadgeEnabledForSearchWebMenuItem(GetBrowser())) {
+          menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
+        }
         // Add an "in new tab" item performing the non-side panel behavior.
         if (base::FeatureList::IsEnabled(
                 companion::features::
@@ -2218,7 +2218,7 @@ void RenderViewContextMenu::AppendSpellingAndSearchSuggestionItems() {
     }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    if (ash::features::IsOrcaEnabled()) {
+    if (chromeos::features::IsOrcaEnabled()) {
       render_separator = true;
       menu_model_.AddItem(IDC_CONTENT_CONTEXT_ORCA, kContentContextOrca);
     }
@@ -2470,8 +2470,7 @@ void RenderViewContextMenu::AppendRegionSearchItem() {
     menu_model_.AddItem(GetRegionSearchIdc(),
                         l10n_util::GetStringFUTF16(
                             resource_id, GetImageSearchProviderName(provider)));
-    if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser()) ||
-        companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser())) {
+    if (companion::IsNewBadgeEnabledForSearchImageMenuItem(GetBrowser())) {
       menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
     }
   }
@@ -2775,7 +2774,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case IDC_CONTENT_CONTEXT_ORCA:
-      return ash::features::IsOrcaEnabled() && params_.is_editable;
+      return chromeos::features::IsOrcaEnabled() && params_.is_editable;
 #endif
 
     case IDC_FOLLOW:
@@ -3241,7 +3240,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case IDC_CONTENT_CONTEXT_ORCA: {
-      CHECK(ash::features::IsOrcaEnabled());
+      CHECK(chromeos::features::IsOrcaEnabled());
       ash::input_method::EditorMediator::Get()->HandleTrigger();
       break;
     }

@@ -110,6 +110,17 @@ clang::ast_matchers::internal::Matcher<clang::QualType> StackAllocatedQualType(
 // RAW_PTR_EXCLUSION
 // - located under third_party/ except under third_party/blink as Blink
 // is part of chromium git repo.
+//
+// Additionally, if |options.should_exclude_stack_allocated_records|,
+// - Pointer pointing to a STACK_ALLOCATED() object.
+// - Pointer that are a member of STACK_ALLOCATED() object.
+//    struct Foo {
+//      STACK_ALLOCATED();
+//      int*         ptr2; // isDeclaredInStackAllocated(...)
+//    }
+//    struct Bar {
+//      Foo*         ptr2; // hasDescendant(StackAllocatedQualType(...))
+//    }
 clang::ast_matchers::internal::Matcher<clang::NamedDecl> PtrAndRefExclusions(
     const RawPtrAndRefExclusionsOptions& options) {
   if (!options.fix_crbug_1449812) {
@@ -134,7 +145,8 @@ clang::ast_matchers::internal::Matcher<clang::NamedDecl> PtrAndRefExclusions(
           isFieldDeclListedInFilterFile(options.fields_to_exclude),
           ImplicitFieldDeclaration(), isObjCSynthesize(),
           hasDescendant(
-              StackAllocatedQualType(options.stack_allocated_predicate)));
+              StackAllocatedQualType(options.stack_allocated_predicate)),
+          isDeclaredInStackAllocated(*options.stack_allocated_predicate));
     }
   } else {
     // After fix for crbug.com/1449812
@@ -149,14 +161,16 @@ clang::ast_matchers::internal::Matcher<clang::NamedDecl> PtrAndRefExclusions(
                    isFieldDeclListedInFilterFile(options.fields_to_exclude),
                    ImplicitFieldDeclaration(), isObjCSynthesize());
     } else {
-      return anyOf(isSpellingInSystemHeader(), isInExternCContext(),
-                   isRawPtrExclusionAnnotated(), isInThirdPartyLocation(),
-                   isInGeneratedLocation(), isNotSpelledInSource(),
-                   isInLocationListedInFilterFile(options.paths_to_exclude),
-                   isFieldDeclListedInFilterFile(options.fields_to_exclude),
-                   ImplicitFieldDeclaration(), isObjCSynthesize(),
-                   hasDescendant(StackAllocatedQualType(
-                       options.stack_allocated_predicate)));
+      return anyOf(
+          isSpellingInSystemHeader(), isInExternCContext(),
+          isRawPtrExclusionAnnotated(), isInThirdPartyLocation(),
+          isInGeneratedLocation(), isNotSpelledInSource(),
+          isInLocationListedInFilterFile(options.paths_to_exclude),
+          isFieldDeclListedInFilterFile(options.fields_to_exclude),
+          ImplicitFieldDeclaration(), isObjCSynthesize(),
+          hasDescendant(
+              StackAllocatedQualType(options.stack_allocated_predicate)),
+          isDeclaredInStackAllocated(*options.stack_allocated_predicate));
     }
   }
 }
@@ -301,6 +315,38 @@ RawPtrToStackAllocatedTypeLoc(
                               0, refersToType(pointee_type)))))))))
           .bind("stackAllocatedRawPtrTypeLoc");
   return stack_allocated_rawptr_type_loc;
+}
+
+clang::ast_matchers::internal::Matcher<clang::Stmt> BadRawPtrCastExpr(
+    const CastingUnsafePredicate& casting_unsafe_predicate) {
+  // Matches anything contains |raw_ptr<T>| / |raw_ref<T>|.
+  auto src_type =
+      type(isCastingUnsafe(casting_unsafe_predicate)).bind("srcType");
+  auto dst_type =
+      type(isCastingUnsafe(casting_unsafe_predicate)).bind("dstType");
+  // Matches |static_cast| on pointers, all |bit_cast|
+  // and all |reinterpret_cast|.
+  auto cast_kind = castExpr(anyOf(hasCastKind(clang::CK_BitCast),
+                                  hasCastKind(clang::CK_LValueBitCast),
+                                  hasCastKind(clang::CK_LValueToRValueBitCast),
+                                  hasCastKind(clang::CK_PointerToIntegral),
+                                  hasCastKind(clang::CK_IntegralToPointer)));
+
+  // |__bit/bit_cast.h| header is excluded to perform checking on
+  // |std::bit_cast<T>|.
+  auto exclusions = anyOf(isSpellingInSystemHeader(), isInRawPtrCastHeader());
+
+  // Implicit/explicit casting from/to |raw_ptr<T>| matches.
+  // Both casting direction is unsafe.
+  //   https://godbolt.org/z/zqKMzcKfo
+  auto cast_matcher =
+      castExpr(
+          allOf(anyOf(hasSourceExpression(hasType(src_type)),
+                      implicitCastExpr(hasImplicitDestinationType(dst_type)),
+                      explicitCastExpr(hasDestinationType(dst_type))),
+                cast_kind, anyOf(isInStdBitCastHeader(), unless(exclusions))))
+          .bind("castExpr");
+  return cast_matcher;
 }
 
 // If |field_decl| declares a field in an implicit template specialization, then

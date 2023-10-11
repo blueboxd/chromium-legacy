@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/history/history_clear_browsing_data_coordinator_delegate.h"
@@ -111,11 +111,6 @@
 - (void)clearBrowsingDataTableViewControllerWantsDismissal:
     (ClearBrowsingDataTableViewController*)controller {
   CHECK_EQ(controller, self.clearBrowsingDataTableViewController);
-  [self stopWithCompletion:nil];
-}
-
-- (void)dismissClearBrowsingData {
-  DCHECK(self.historyClearBrowsingDataNavigationController);
   [self.delegate dismissHistoryClearBrowsingData:self withCompletion:nil];
 }
 

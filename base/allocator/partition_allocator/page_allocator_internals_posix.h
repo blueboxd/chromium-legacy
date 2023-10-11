@@ -24,7 +24,7 @@
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_APPLE)
-#include "base/allocator/partition_allocator/partition_alloc_base/mac/foundation_util.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/apple/foundation_util.h"
 #if BUILDFLAG(IS_IOS)
 #include "base/allocator/partition_allocator/partition_alloc_base/ios/ios_util.h"
 #elif BUILDFLAG(IS_MAC)
@@ -32,7 +32,7 @@
 #else
 #error "Unknown platform"
 #endif
-#include "base/allocator/partition_allocator/partition_alloc_base/mac/scoped_cftyperef.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/apple/scoped_cftyperef.h"
 
 #include <Availability.h>
 #include <Security/Security.h>
@@ -131,7 +131,7 @@ bool UseMapJit() {
   // executable fails with EPERM. Although this is not enforced on x86_64,
   // MAP_JIT is harmless in that case.
 
-  base::ScopedCFTypeRef<SecTaskRef> task(
+  base::apple::ScopedCFTypeRef<SecTaskRef> task(
       SecTaskCreateFromSelf(kCFAllocatorDefault));
   if (!task) {
     return true;
@@ -149,14 +149,14 @@ bool UseMapJit() {
   // (EINVAL) to use MAP_JIT with the hardened runtime unless the JIT
   // entitlement is specified.
 
-  base::ScopedCFTypeRef<CFTypeRef> jit_entitlement(
+  base::apple::ScopedCFTypeRef<CFTypeRef> jit_entitlement(
       SecTaskCopyValueForEntitlement(
           task.get(), CFSTR("com.apple.security.cs.allow-jit"), nullptr));
   if (!jit_entitlement) {
     return false;
   }
 
-  return base::mac::CFCast<CFBooleanRef>(jit_entitlement.get()) ==
+  return base::apple::CFCast<CFBooleanRef>(jit_entitlement.get()) ==
          kCFBooleanTrue;
 }
 #elif BUILDFLAG(IS_IOS)

@@ -18,6 +18,7 @@
 
 #include "Eigen/Dense"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
@@ -149,7 +150,7 @@ absl::Status TensorsToObjectsCalculator::ProcessCPU(
   auto status = decoder_->Lift2DTo3D(projection_matrix_, /*portrait*/ true,
                                      output_objects);
   if (!status.ok()) {
-    LOG(ERROR) << status;
+    ABSL_LOG(ERROR) << status;
     return status;
   }
   Project3DTo2D(/*portrait*/ true, output_objects);

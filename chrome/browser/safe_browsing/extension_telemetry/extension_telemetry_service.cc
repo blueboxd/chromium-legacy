@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/extension_management.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/cookies_get_all_signal_processor.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/cookies_get_signal_processor.h"
@@ -28,9 +29,11 @@
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_config_manager.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_file_processor.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_persister.h"
+#include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_service_factory.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_uploader.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/potential_password_theft_signal_processor.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/remote_host_contacted_signal_processor.h"
+#include "chrome/browser/safe_browsing/extension_telemetry/tabs_api_signal_processor.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/tabs_execute_script_signal_processor.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/prefs/pref_service.h"
@@ -42,8 +45,10 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/blocklist_extension_prefs.h"
+#include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace safe_browsing {
@@ -54,6 +59,8 @@ using ::extensions::mojom::ManifestLocation;
 using ::google::protobuf::RepeatedPtrField;
 using ExtensionInfo =
     ::safe_browsing::ExtensionTelemetryReportRequest_ExtensionInfo;
+using OffstoreExtensionVerdict =
+    ::safe_browsing::ExtensionTelemetryReportResponse_OffstoreExtensionVerdict;
 
 // The ExtensionTelemetryService saves offstore extensions file data such as
 // filenames and hashes in Prefs. This information is stored in the following
@@ -193,19 +200,35 @@ ExtensionInfo::BlocklistState GetBlocklistState(
   }
 }
 
+extensions::BlocklistState ConvertTelemetryResponseVerdictToBlocklistState(
+    OffstoreExtensionVerdict::OffstoreExtensionVerdictType type) {
+  switch (type) {
+    case OffstoreExtensionVerdict::NONE:
+      return extensions::BlocklistState::NOT_BLOCKLISTED;
+    case OffstoreExtensionVerdict::MALWARE:
+      return extensions::BlocklistState::BLOCKLISTED_MALWARE;
+    default:
+      return extensions::BlocklistState::BLOCKLISTED_UNKNOWN;
+  }
+}
+
 }  // namespace
 
 ExtensionTelemetryService::~ExtensionTelemetryService() = default;
 
+// static
+ExtensionTelemetryService* ExtensionTelemetryService::Get(Profile* profile) {
+  return ExtensionTelemetryServiceFactory::GetInstance()->GetForProfile(
+      profile);
+}
+
 ExtensionTelemetryService::ExtensionTelemetryService(
     Profile* profile,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    extensions::ExtensionRegistry* extension_registry,
-    extensions::ExtensionPrefs* extension_prefs)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : profile_(profile),
       url_loader_factory_(url_loader_factory),
-      extension_registry_(extension_registry),
-      extension_prefs_(extension_prefs),
+      extension_registry_(extensions::ExtensionRegistry::Get(profile)),
+      extension_prefs_(extensions::ExtensionPrefs::Get(profile)),
       enabled_(false),
       current_reporting_interval_(
           base::Seconds(kExtensionTelemetryUploadIntervalSeconds.Get())) {
@@ -246,7 +269,7 @@ void ExtensionTelemetryService::SetEnabled(bool enable) {
   enabled_ = enable;
   if (enabled_) {
     // Create signal processors.
-    // Map the processors to the signals they eventually generate.
+    // Map the processors to the signals they output reports for.
     signal_processors_.emplace(ExtensionSignalType::kCookiesGet,
                                std::make_unique<CookiesGetSignalProcessor>());
     signal_processors_.emplace(
@@ -255,6 +278,8 @@ void ExtensionTelemetryService::SetEnabled(bool enable) {
     signal_processors_.emplace(
         ExtensionSignalType::kDeclarativeNetRequest,
         std::make_unique<DeclarativeNetRequestSignalProcessor>());
+    signal_processors_.emplace(ExtensionSignalType::kTabsApi,
+                               std::make_unique<TabsApiSignalProcessor>());
     signal_processors_.emplace(
         ExtensionSignalType::kTabsExecuteScript,
         std::make_unique<TabsExecuteScriptSignalProcessor>());
@@ -275,6 +300,8 @@ void ExtensionTelemetryService::SetEnabled(bool enable) {
         subscribers_for_declarative_net_request = {
             signal_processors_[ExtensionSignalType::kDeclarativeNetRequest]
                 .get()};
+    std::vector<ExtensionSignalProcessor*> subscribers_for_tabs_api = {
+        signal_processors_[ExtensionSignalType::kTabsApi].get()};
     std::vector<ExtensionSignalProcessor*> subscribers_for_tabs_execute_script =
         {signal_processors_[ExtensionSignalType::kTabsExecuteScript].get()};
     std::vector<ExtensionSignalProcessor*>
@@ -292,6 +319,8 @@ void ExtensionTelemetryService::SetEnabled(bool enable) {
     signal_subscribers_.emplace(
         ExtensionSignalType::kDeclarativeNetRequest,
         std::move(subscribers_for_declarative_net_request));
+    signal_subscribers_.emplace(ExtensionSignalType::kTabsApi,
+                                std::move(subscribers_for_tabs_api));
     signal_subscribers_.emplace(ExtensionSignalType::kTabsExecuteScript,
                                 std::move(subscribers_for_tabs_execute_script));
     signal_subscribers_.emplace(
@@ -453,11 +482,20 @@ void ExtensionTelemetryService::CreateAndUploadReport() {
   UploadReport(std::move(upload_data));
 }
 
-void ExtensionTelemetryService::OnUploadComplete(bool success) {
+void ExtensionTelemetryService::OnUploadComplete(
+    bool success,
+    const std::string& response_data) {
   // TODO(https://crbug.com/1408126): Add `config_manager_` implementation
   // to check server response and update config.
   if (success) {
     SetLastUploadTimeForExtensionTelemetry(*pref_service_, base::Time::Now());
+
+    ExtensionTelemetryReportResponse response;
+    if (base::FeatureList::IsEnabled(
+            kExtensionTelemetryDisableOffstoreExtensions) &&
+        response.ParseFromString(response_data)) {
+      ProcessOffstoreExtensionVerdicts(response);
+    }
   }
   if (base::FeatureList::IsEnabled(kExtensionTelemetryPersistence) &&
       enabled_ && !persister_.is_null()) {
@@ -689,6 +727,26 @@ void ExtensionTelemetryService::DumpReportForTest(
     const RepeatedPtrField<ExtensionTelemetryReportRequest_SignalInfo>&
         signals = report_pb.signals();
     for (const auto& signal_pb : signals) {
+      // Tabs Api
+      if (signal_pb.has_tabs_api_info()) {
+        const auto& tabs_api_info_pb = signal_pb.tabs_api_info();
+        const RepeatedPtrField<
+            ExtensionTelemetryReportRequest_SignalInfo_TabsApiInfo_CallDetails>&
+            call_details = tabs_api_info_pb.call_details();
+        if (!call_details.empty()) {
+          ss << "  Signal: TabsApi\n";
+          for (const auto& entry : call_details) {
+            ss << "    Call Details:\n"
+               << "      API method: "
+               << base::NumberToString(static_cast<int>(entry.method())) << "\n"
+               << "      current URL: " << entry.current_url() << "\n"
+               << "      new URL: " << entry.new_url() << "\n"
+               << "      count: " << entry.count() << "\n";
+          }
+        }
+        continue;
+      }
+
       // Tabs Execute Script
       if (signal_pb.has_tabs_execute_script_info()) {
         const auto& tabs_execute_script_info_pb =
@@ -1070,6 +1128,42 @@ void ExtensionTelemetryService::StopOffstoreFileDataCollection() {
   offstore_file_data_collection_timer_.Stop();
   offstore_extension_dirs_.clear();
   offstore_extension_file_data_contexts_.clear();
+}
+
+void ExtensionTelemetryService::ProcessOffstoreExtensionVerdicts(
+    const ExtensionTelemetryReportResponse& response) {
+  if (response.offstore_extension_verdicts_size() == 0) {
+    return;
+  }
+
+  std::map<std::string, extensions::BlocklistState> blocklist_states;
+  for (const auto& verdict : response.offstore_extension_verdicts()) {
+    const auto& extension_id = verdict.extension_id();
+    const extensions::Extension* extension =
+        extension_registry_->GetInstalledExtension(extension_id);
+
+    // Ignore the verdict if the extension is not an off-store extension. This
+    // should not happen and is just a sanity check.
+    if (!extension || extension->from_webstore() ||
+        extensions::Manifest::IsComponentLocation(extension->location())) {
+      continue;
+    }
+
+    blocklist_states[extension_id] =
+        ConvertTelemetryResponseVerdictToBlocklistState(verdict.verdict_type());
+  }
+
+  auto* extension_system = extensions::ExtensionSystem::Get(profile_);
+  if (!extension_system) {
+    return;
+  }
+  extensions::ExtensionService* extension_service =
+      extension_system->extension_service();
+  if (!extension_service) {
+    return;
+  }
+  extension_service->PerformActionBasedOnExtensionTelemetryServiceVerdicts(
+      blocklist_states);
 }
 
 }  // namespace safe_browsing

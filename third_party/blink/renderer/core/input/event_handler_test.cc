@@ -6,18 +6,14 @@
 
 #include <memory>
 
-#include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "cc/base/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
-#include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/range.h"
@@ -32,7 +28,6 @@
 #include "third_party/blink/renderer/core/editing/testing/selection_sample.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -2275,14 +2270,13 @@ TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
         <!DOCTYPE html>
         <style>
         div {
-          width: 300px;
-          height: 100px;
-          cursor: url('100x100.png') 100 100, auto;
+          width: 100vw;
+          height: 100vh;
+          cursor: url('100x100.png') 50 50, auto;
         }
         </style>
         <div>foo</div>
       )HTML");
-
   GetDocument().UpdateStyleAndLayoutTree();
 
   scoped_refptr<SharedBuffer> img =
@@ -2291,33 +2285,55 @@ TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
 
   Compositor().BeginFrame();
 
-  // Move the cursor so no part of it intersects the viewport.
-  {
-    WebMouseEvent mouse_move_event(
-        WebMouseEvent::Type::kMouseMove, gfx::PointF(101, 101),
-        gfx::PointF(101, 101), WebPointerProperties::Button::kNoButton, 0, 0,
-        WebInputEvent::GetStaticTimeStampForTests());
-    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
-        mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+  EventHandler& event_handler = GetDocument().GetFrame()->GetEventHandler();
 
+  struct TestCase {
+    gfx::PointF point;
+    bool custom_expected;
+    float cursor_accessibility_scale_factor = 1.f;
+    float device_scale_factor = 1.f;
+    std::string ToString() const {
+      return base::StringPrintf(
+          "point: (%s), cursor-scale: %g, device-scale: %g, custom?: %d",
+          point.ToString().c_str(), cursor_accessibility_scale_factor,
+          device_scale_factor, custom_expected);
+    }
+  } test_cases[] = {
+      // Test top left and bottom right, within viewport.
+      {gfx::PointF(60, 60), true},
+      {gfx::PointF(740, 540), true},
+      // Test top left and bottom right, beyond viewport.
+      {gfx::PointF(40, 40), false},
+      {gfx::PointF(760, 560), false},
+      // Test a larger cursor accessibility scale factor. crbug.com/1455005
+      {gfx::PointF(110, 110), true, 2.f},
+      {gfx::PointF(690, 490), true, 2.f},
+      {gfx::PointF(90, 90), false, 2.f},
+      {gfx::PointF(710, 510), false, 2.f},
+      // Test a larger display device scale factor. crbug.com/1357442
+      {gfx::PointF(110, 110), true, 1.f, 2.f},
+      {gfx::PointF(690, 490), true, 1.f, 2.f},
+      {gfx::PointF(90, 90), false, 1.f, 2.f},
+      {gfx::PointF(710, 510), false, 1.f, 2.f},
+  };
+  for (const TestCase& test_case : test_cases) {
+    SCOPED_TRACE(test_case.ToString());
+    DeviceEmulationParams params;
+    params.device_scale_factor = test_case.device_scale_factor;
+    WebView().EnableDeviceEmulation(params);
+    event_handler.set_cursor_accessibility_scale_factor(
+        test_case.cursor_accessibility_scale_factor);
+    WebMouseEvent mouse_move_event(
+        WebMouseEvent::Type::kMouseMove, test_case.point, test_case.point,
+        WebPointerProperties::Button::kNoButton, 0, 0,
+        WebInputEvent::GetStaticTimeStampForTests());
+    event_handler.HandleMouseMoveEvent(mouse_move_event, {}, {});
     const ui::Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(ui::mojom::blink::CursorType::kCustom, cursor.type());
-  }
-
-  // Now, move the cursor so that it intersects the visual viewport. The cursor
-  // should be removed.
-  {
-    WebMouseEvent mouse_move_event(
-        WebMouseEvent::Type::kMouseMove, gfx::PointF(99, 99),
-        gfx::PointF(99, 99), WebPointerProperties::Button::kNoButton, 0, 0,
-        WebInputEvent::GetStaticTimeStampForTests());
-    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
-        mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
-
-    const ui::Cursor& cursor =
-        GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(ui::mojom::blink::CursorType::kPointer, cursor.type());
+    const ui::mojom::blink::CursorType expected_type =
+        test_case.custom_expected ? ui::mojom::blink::CursorType::kCustom
+                                  : ui::mojom::blink::CursorType::kPointer;
+    EXPECT_EQ(expected_type, cursor.type());
   }
 }
 
@@ -3171,7 +3187,7 @@ TEST_F(EventHandlerSimTest, TestScrollendFiresOnKeyUpAfterScroll) {
       </style>
       <body>
         <p id='log'></p> <br>
-        <div id="scroller">
+        <div id="scroller" tabindex=0>
           <div id="spacer"></div>
         </div>
       </body>
@@ -3243,7 +3259,7 @@ TEST_F(EventHandlerSimTest, TestScrollendFiresAfterScrollWithEarlyKeyUp) {
       </style>
       <body>
         <p id='log'></p> <br>
-        <div id="scroller">
+        <div id="scroller" tabindex=0>
           <div id="spacer"></div>
         </div>
       </body>
@@ -3254,6 +3270,7 @@ TEST_F(EventHandlerSimTest, TestScrollendFiresAfterScrollWithEarlyKeyUp) {
         });
       </script>
       )HTML");
+
   Compositor().BeginFrame();
   WebKeyboardEvent e{WebInputEvent::Type::kRawKeyDown,
                      WebInputEvent::kNoModifiers,
@@ -3314,7 +3331,7 @@ TEST_F(EventHandlerSimTest, TestScrollendFiresOnKeyUpAfterScrollInstant) {
       </style>
       <body>
         <p id='log'></p> <br>
-        <div id="scroller">
+        <div id="scroller" tabindex=0>
           <div id="spacer"></div>
         </div>
       </body>
@@ -3360,6 +3377,155 @@ TEST_F(EventHandlerSimTest, TestScrollendFiresOnKeyUpAfterScrollInstant) {
   EXPECT_EQ(
       GetDocument().getElementById(AtomicString("log"))->innerHTML().Utf8(),
       "scrollend");
+}
+
+TEST_F(EventHandlerSimTest, DiscardEventsToRecentlyMovedIframe) {
+  base::FieldTrialParams field_trial_params;
+  field_trial_params["time_ms"] = "500";
+  field_trial_params["distance"] = "50";
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kDiscardInputEventsToRecentlyMovedFrames, field_trial_params);
+
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest frame_resource("https://cross-origin.com/iframe.html",
+                            "text/html");
+  LoadURL("https://example.com/test.html");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <iframe id='iframe' src='https://cross-origin.com/iframe.html'></iframe>
+  )HTML");
+  frame_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div>Hello, world!</div>
+  )HTML");
+
+  // The first BeginFrame() sets the last known position of the iframe. The
+  // second BeginFrame(), after a delay with no layout changes, will mark the
+  // iframe as having a stable position, so input events will not be discarded.
+  Compositor().BeginFrame();
+  GetDocument().GetFrame()->View()->ScheduleAnimation();
+  Compositor().BeginFrame(0.5);
+
+  // Iframe position is stable, do not discard events.
+  WebInputEventResult event_result =
+      GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+          WebMouseEvent(WebInputEvent::Type::kMouseDown, gfx::PointF(100, 50),
+                        gfx::PointF(100, 50),
+                        WebPointerProperties::Button::kLeft, 1,
+                        WebInputEvent::Modifiers::kLeftButtonDown,
+                        base::TimeTicks::Now()));
+  EXPECT_NE(event_result, WebInputEventResult::kHandledSuppressed);
+  event_result =
+      GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
+          WebMouseEvent(WebInputEvent::Type::kMouseUp, gfx::PointF(100, 50),
+                        gfx::PointF(100, 50),
+                        WebPointerProperties::Button::kLeft, 1,
+                        WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
+  EXPECT_NE(event_result, WebInputEventResult::kHandledSuppressed);
+
+  Element* iframe =
+      GetDocument().getElementById(AtomicString::FromUTF8("iframe"));
+  ASSERT_TRUE(iframe);
+
+  // Move iframe, but within the threshold for discarding. Events should not be
+  // discarded.
+  iframe->SetInlineStyleProperty(CSSPropertyID::kMarginLeft, "40px");
+  Compositor().BeginFrame();
+  event_result =
+      GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+          WebMouseEvent(WebInputEvent::Type::kMouseDown, gfx::PointF(100, 50),
+                        gfx::PointF(100, 50),
+                        WebPointerProperties::Button::kLeft, 1,
+                        WebInputEvent::Modifiers::kLeftButtonDown,
+                        base::TimeTicks::Now()));
+  EXPECT_NE(event_result, WebInputEventResult::kHandledSuppressed);
+  event_result =
+      GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
+          WebMouseEvent(WebInputEvent::Type::kMouseUp, gfx::PointF(100, 50),
+                        gfx::PointF(100, 50),
+                        WebPointerProperties::Button::kLeft, 1,
+                        WebInputEvent::kNoModifiers, base::TimeTicks::Now()));
+  EXPECT_NE(event_result, WebInputEventResult::kHandledSuppressed);
+
+  // Move iframe past threshold for discarding; events should be discarded.
+  iframe->SetInlineStyleProperty(CSSPropertyID::kMarginLeft, "60px");
+  Compositor().BeginFrame();
+  base::TimeTicks event_time =
+      Compositor().LastFrameTime() + base::Milliseconds(400);
+
+  event_result =
+      GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+          WebMouseEvent(WebInputEvent::Type::kMouseDown, gfx::PointF(100, 50),
+                        gfx::PointF(100, 50),
+                        WebPointerProperties::Button::kLeft, 1,
+                        WebInputEvent::Modifiers::kLeftButtonDown, event_time));
+  EXPECT_EQ(event_result, WebInputEventResult::kHandledSuppressed);
+  event_result =
+      GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
+          WebMouseEvent(WebInputEvent::Type::kMouseUp, gfx::PointF(100, 50),
+                        gfx::PointF(100, 50),
+                        WebPointerProperties::Button::kLeft, 1,
+                        WebInputEvent::kNoModifiers, event_time));
+  EXPECT_EQ(event_result, WebInputEventResult::kHandledSuppressed);
+
+  // A second click on the same target within 5 seconds of a discarded click
+  // should be recorded as "mistakenly discarded".
+  EXPECT_FALSE(
+      To<HTMLIFrameElement>(iframe)
+          ->contentDocument()
+          ->Loader()
+          ->GetUseCounter()
+          .IsCounted(
+              WebFeature::kInputEventToRecentlyMovedIframeMistakenlyDiscarded));
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      WebMouseEvent(WebInputEvent::Type::kMouseDown, gfx::PointF(100, 50),
+                    gfx::PointF(100, 50), WebPointerProperties::Button::kLeft,
+                    1, WebInputEvent::Modifiers::kLeftButtonDown, event_time));
+  EXPECT_TRUE(
+      To<HTMLIFrameElement>(iframe)
+          ->contentDocument()
+          ->Loader()
+          ->GetUseCounter()
+          .IsCounted(
+              WebFeature::kInputEventToRecentlyMovedIframeMistakenlyDiscarded));
+}
+
+// Tests that click.pointerId is valid for a gesture tap for which no low-level
+// pointer events (pointerdown, pointermove, pointerup etc) are sent from the
+// browser to the renderer because of absence of relevant event listeners.
+TEST_F(EventHandlerSimTest, ValidClickPointerIdForUnseenPointerEvent) {
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(200, 200));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div id='pointer_id' style='width:100px;height:100px'></div>
+    <script>
+      document.body.addEventListener('click', e => {
+        document.getElementById('pointer_id').textContent = e.pointerId;
+      });
+    </script>
+  )HTML");
+
+  WebElement pointer_id_elem =
+      GetDocument().getElementById(AtomicString("pointer_id"));
+  EXPECT_EQ("", pointer_id_elem.TextContent().Utf8());
+
+  TapEventBuilder tap_event(gfx::PointF(20, 20), 1);
+
+  // Blink-defined behavior: touch pointer-id starts at 2.
+  tap_event.primary_unique_touch_event_id = 321;
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(tap_event);
+  auto pointer_id_1 = stoi(pointer_id_elem.TextContent().Utf8());
+  EXPECT_GT(pointer_id_1, 1);
+
+  // Blink-defined behavior: pointer-id increases with each new event.
+  tap_event.primary_unique_touch_event_id = 123;
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(tap_event);
+  auto pointer_id_2 = stoi(pointer_id_elem.TextContent().Utf8());
+  EXPECT_GT(pointer_id_2, pointer_id_1);
 }
 
 }  // namespace blink

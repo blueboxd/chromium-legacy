@@ -48,6 +48,7 @@ using ::i18n::addressinput::NullStorage;
 using ::i18n::addressinput::Source;
 using ::i18n::addressinput::Storage;
 using ::i18n::addressinput::TestdataSource;
+using test::CreateTestFormField;
 using test::CreateTestSelectField;
 
 std::u16string kMidlineEllipsis2Dots = CreditCard::GetMidlineEllipsisDots(2);
@@ -82,7 +83,7 @@ AutofillField CreateTestSelectAutofillField(
     const std::vector<const char*>& values,
     ServerFieldType heuristic_type) {
   AutofillField field{CreateTestSelectField(values)};
-  field.set_heuristic_type(GetActivePatternSource(), heuristic_type);
+  field.set_heuristic_type(GetActiveHeuristicSource(), heuristic_type);
   return field;
 }
 
@@ -101,7 +102,7 @@ void TestFillingExpirationMonth(const std::vector<const char*>& values,
                                 const std::vector<const char*>& contents) {
   // Create the select field.
   AutofillField field{CreateTestSelectField("", "", "", values, contents)};
-  field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_EXP_MONTH);
+  field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_EXP_MONTH);
 
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
 
@@ -167,7 +168,7 @@ TEST_F(AutofillFieldFillerTest, Type) {
   EXPECT_EQ(UNKNOWN_TYPE, field.Type().GetStorableType());
 
   // Set the heuristic type and check it.
-  field.set_heuristic_type(GetActivePatternSource(), NAME_FIRST);
+  field.set_heuristic_type(GetActiveHeuristicSource(), NAME_FIRST);
   EXPECT_EQ(NAME_FIRST, field.Type().GetStorableType());
   EXPECT_EQ(FieldTypeGroup::kName, field.Type().group());
 
@@ -175,18 +176,18 @@ TEST_F(AutofillFieldFillerTest, Type) {
   field.set_server_predictions(
       {::autofill::test::CreateFieldPrediction(ADDRESS_HOME_LINE1)});
   EXPECT_EQ(ADDRESS_HOME_LINE1, field.Type().GetStorableType());
-  EXPECT_EQ(FieldTypeGroup::kAddressHome, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kAddress, field.Type().group());
 
   // Checks that overall_type trumps everything.
   field.SetTypeTo(AutofillType(ADDRESS_HOME_ZIP));
   EXPECT_EQ(ADDRESS_HOME_ZIP, field.Type().GetStorableType());
-  EXPECT_EQ(FieldTypeGroup::kAddressHome, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kAddress, field.Type().group());
 
   // Checks that setting server type resets overall type.
   field.set_server_predictions(
       {::autofill::test::CreateFieldPrediction(ADDRESS_HOME_LINE1)});
   EXPECT_EQ(ADDRESS_HOME_LINE1, field.Type().GetStorableType());
-  EXPECT_EQ(FieldTypeGroup::kAddressHome, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kAddress, field.Type().group());
 
   // Remove the server type to make sure the heuristic type is preserved.
   field.set_server_predictions(
@@ -197,10 +198,10 @@ TEST_F(AutofillFieldFillerTest, Type) {
   // Checks that overall_type trumps everything.
   field.SetTypeTo(AutofillType(ADDRESS_HOME_ZIP));
   EXPECT_EQ(ADDRESS_HOME_ZIP, field.Type().GetStorableType());
-  EXPECT_EQ(FieldTypeGroup::kAddressHome, field.Type().group());
+  EXPECT_EQ(FieldTypeGroup::kAddress, field.Type().group());
 
   // Set the heuristic type and check it and reset overall Type.
-  field.set_heuristic_type(GetActivePatternSource(), NAME_FIRST);
+  field.set_heuristic_type(GetActiveHeuristicSource(), NAME_FIRST);
   EXPECT_EQ(NAME_FIRST, field.Type().GetStorableType());
   EXPECT_EQ(FieldTypeGroup::kName, field.Type().group());
 }
@@ -213,18 +214,18 @@ TEST_F(AutofillFieldFillerTest, Type_CreditCardOverrideHtml_Heuristics) {
   field.SetHtmlType(HtmlFieldType::kUnrecognized, HtmlFieldMode::kNone);
 
   // A credit card heuristic prediction overrides the unrecognized type.
-  field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_NUMBER);
+  field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NUMBER);
   EXPECT_EQ(CREDIT_CARD_NUMBER, field.Type().GetStorableType());
 
   // A non credit card heuristic prediction doesn't override the unrecognized
   // type.
-  field.set_heuristic_type(GetActivePatternSource(), NAME_FIRST);
+  field.set_heuristic_type(GetActiveHeuristicSource(), NAME_FIRST);
   EXPECT_EQ(UNKNOWN_TYPE, field.Type().GetStorableType());
 
   // A credit card heuristic prediction doesn't override a known specified html
   // type.
   field.SetHtmlType(HtmlFieldType::kName, HtmlFieldMode::kNone);
-  field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_NUMBER);
+  field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NUMBER);
   EXPECT_EQ(NAME_FULL, field.Type().GetStorableType());
 }
 
@@ -323,7 +324,7 @@ TEST_F(AutofillFieldFillerTest, FieldSignatureAsStr) {
   EXPECT_EQ("502192749", field.FieldSignatureAsStr());
 
   // Heuristic type does not affect FieldSignature.
-  field.set_heuristic_type(GetActivePatternSource(), NAME_FIRST);
+  field.set_heuristic_type(GetActiveHeuristicSource(), NAME_FIRST);
   EXPECT_EQ("502192749", field.FieldSignatureAsStr());
 
   // Server type does not affect FieldSignature.
@@ -340,17 +341,17 @@ TEST_F(AutofillFieldFillerTest, IsFieldFillable) {
   EXPECT_FALSE(field.IsFieldFillable());
 
   // Only heuristic type is set.
-  field.set_heuristic_type(GetActivePatternSource(), NAME_FIRST);
+  field.set_heuristic_type(GetActiveHeuristicSource(), NAME_FIRST);
   EXPECT_TRUE(field.IsFieldFillable());
 
   // Only server type is set.
-  field.set_heuristic_type(GetActivePatternSource(), UNKNOWN_TYPE);
+  field.set_heuristic_type(GetActiveHeuristicSource(), UNKNOWN_TYPE);
   field.set_server_predictions(
       {::autofill::test::CreateFieldPrediction(NAME_LAST)});
   EXPECT_TRUE(field.IsFieldFillable());
 
   // Both types set.
-  field.set_heuristic_type(GetActivePatternSource(), NAME_FIRST);
+  field.set_heuristic_type(GetActiveHeuristicSource(), NAME_FIRST);
   field.set_server_predictions(
       {::autofill::test::CreateFieldPrediction(NAME_LAST)});
   EXPECT_TRUE(field.IsFieldFillable());
@@ -368,7 +369,7 @@ TEST_F(AutofillFieldFillerTest,
        FillFormField_AutocompleteOffNotRespected_AddressField) {
   AutofillField field;
   field.should_autocomplete = false;
-  field.set_heuristic_type(GetActivePatternSource(), NAME_FIRST);
+  field.set_heuristic_type(GetActiveHeuristicSource(), NAME_FIRST);
 
   // Non credit card related field.
   address()->SetRawInfo(NAME_FIRST, u"Test");
@@ -384,7 +385,7 @@ TEST_F(AutofillFieldFillerTest,
 // Verify that a forced fill_value takes precedence.
 TEST_F(AutofillFieldFillerTest, FillFormField_ForcedFillValues) {
   AutofillField field;
-  field.set_heuristic_type(GetActivePatternSource(), NAME_FIRST);
+  field.set_heuristic_type(GetActiveHeuristicSource(), NAME_FIRST);
 
   // Non credit card related field.
   address()->SetRawInfo(NAME_FIRST, u"Test");
@@ -404,7 +405,7 @@ TEST_F(AutofillFieldFillerTest, FillFormField_ForcedFillValues) {
 TEST_F(AutofillFieldFillerTest, FillFormField_AutocompleteOff_CreditCardField) {
   AutofillField field;
   field.should_autocomplete = false;
-  field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_NUMBER);
+  field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NUMBER);
 
   // Credit card related field.
   credit_card()->SetNumber(u"4111111111111111");
@@ -424,7 +425,7 @@ TEST_F(AutofillFieldFillerTest,
   AutofillField field;
   field.max_length = 30;
   field.set_credit_card_number_offset(2);
-  field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_NUMBER);
+  field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NUMBER);
 
   // Credit card related field.
   credit_card()->SetNumber(u"0123456789999999");
@@ -445,7 +446,7 @@ TEST_F(AutofillFieldFillerTest,
   AutofillField field;
   field.max_length = 18;
   field.set_credit_card_number_offset(19);
-  field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_NUMBER);
+  field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NUMBER);
 
   // Credit card related field.
   credit_card()->SetNumber(u"0123456789999999");
@@ -465,7 +466,7 @@ TEST_F(AutofillFieldFillerTest,
   AutofillField field;
   field.max_length = 1;
   field.set_credit_card_number_offset(3);
-  field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_NUMBER);
+  field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NUMBER);
 
   // Credit card related field.
   credit_card()->SetNumber(u"0123456789999999");
@@ -483,7 +484,7 @@ TEST_F(AutofillFieldFillerTest,
 TEST_F(AutofillFieldFillerTest, FillFormField_MaxLength_CreditCardField) {
   AutofillField field;
   field.max_length = 1;
-  field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_NUMBER);
+  field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NUMBER);
 
   // Credit card related field.
   credit_card()->SetNumber(u"4111111111111111");
@@ -500,7 +501,7 @@ TEST_F(AutofillFieldFillerTest, FillFormField_MaxLength_CreditCardField) {
 // Test that in the preview credit card numbers are obfuscated.
 TEST_F(AutofillFieldFillerTest, FillFormField_Preview_CreditCardField) {
   AutofillField field;
-  field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_NUMBER);
+  field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NUMBER);
 
   // Credit card related field.
   credit_card()->SetNumber(u"4111111111111111");
@@ -514,6 +515,54 @@ TEST_F(AutofillFieldFillerTest, FillFormField_Preview_CreditCardField) {
       base::ranges::count_if(field.value, &base::IsAsciiDigit<char16_t>);
   EXPECT_EQ(4u, num_digits);
 }
+
+class CreditCardVerificationCodeTest
+    : public AutofillFieldFillerTest,
+      public testing::WithParamInterface<mojom::AutofillActionPersistence> {};
+
+// Test that verify CVC should be expected value for Preview and Fill.
+TEST_P(CreditCardVerificationCodeTest,
+       FillFormField_CreditCardVerificationCode) {
+  const mojom::AutofillActionPersistence persistence = GetParam();
+  AutofillField field;
+  field.SetTypeTo(AutofillType(CREDIT_CARD_VERIFICATION_CODE));
+
+  // Credit card related field.
+  const std::u16string kCvc = u"1111";
+  credit_card()->set_cvc(kCvc);
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, credit_card(), /*forced_fill_values=*/{}, &field,
+                       /*cvc=*/std::u16string(), persistence);
+
+  if (persistence == mojom::AutofillActionPersistence::kPreview) {
+    EXPECT_EQ(kMidlineEllipsis4Dots, field.value);
+  } else {
+    EXPECT_EQ(kCvc, field.value);
+  }
+}
+
+// Test that verify CVC should be empty for Preview and Fill if CVC is empty.
+TEST_P(CreditCardVerificationCodeTest,
+       FillFormField_CreditCardVerificationCode_Empty) {
+  const mojom::AutofillActionPersistence persistence = GetParam();
+  AutofillField field;
+  field.SetTypeTo(AutofillType(CREDIT_CARD_VERIFICATION_CODE));
+
+  // Credit card related field.
+  const std::u16string kEmptyCvc = u"";
+  credit_card()->set_cvc(kEmptyCvc);
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field, credit_card(), /*forced_fill_values=*/{}, &field,
+                       /*cvc=*/std::u16string(), persistence);
+
+  EXPECT_EQ(kEmptyCvc, field.value);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AutofillFieldFillerTest,
+    CreditCardVerificationCodeTest,
+    testing::Values(mojom::AutofillActionPersistence::kPreview,
+                    mojom::AutofillActionPersistence::kFill));
 
 struct AutofillFieldFillerTestCase {
   HtmlFieldType field_type;
@@ -721,7 +770,7 @@ TEST_P(ExpirationDateTest, FillExpirationDateInput) {
       CreditCardField::DetermineExpirationDateFormat(
           field, CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, NO_SERVER_DATA,
           NO_SERVER_DATA);
-  field.set_heuristic_type(PatternSource::kLegacy,
+  field.set_heuristic_type(HeuristicSource::kLegacy,
                            format.digits_in_expiration_year == 2
                                ? CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR
                                : CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
@@ -1415,7 +1464,7 @@ TEST_F(AutofillFieldFillerTest, FillMonthControl) {
   AutofillField field;
   field.form_control_type = "month";
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  field.set_heuristic_type(GetActivePatternSource(),
+  field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_EXP_4_DIGIT_YEAR);
 
   // Try a month with two digits.
@@ -1438,7 +1487,7 @@ TEST_F(AutofillFieldFillerTest, FillStreetAddressTextArea) {
   AutofillField field;
   field.form_control_type = "textarea";
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  field.set_heuristic_type(GetActivePatternSource(),
+  field.set_heuristic_type(GetActiveHeuristicSource(),
                            ADDRESS_HOME_STREET_ADDRESS);
 
   std::u16string value = u"123 Fake St.\nApt. 42";
@@ -1485,7 +1534,7 @@ TEST_F(AutofillFieldFillerTest, FillStreetAddressTextField) {
 TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithoutSplits) {
   // Case 1: card number without any split.
   AutofillField cc_number_full;
-  cc_number_full.set_heuristic_type(GetActivePatternSource(),
+  cc_number_full.set_heuristic_type(GetActiveHeuristicSource(),
                                     CREDIT_CARD_NUMBER);
 
   credit_card()->SetNumber(u"41111111111111111");
@@ -1510,7 +1559,7 @@ TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithEqualSizeSplits) {
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   for (size_t i = 0; i < test.total_splits_; ++i) {
     AutofillField cc_number_part;
-    cc_number_part.set_heuristic_type(GetActivePatternSource(),
+    cc_number_part.set_heuristic_type(GetActiveHeuristicSource(),
                                       CREDIT_CARD_NUMBER);
     cc_number_part.max_length = test.splits_[i];
     cc_number_part.set_credit_card_number_offset(4 * i);
@@ -1529,7 +1578,7 @@ TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithEqualSizeSplits) {
 
   // Verify that full card-number shall get fill properly as well.
   AutofillField cc_number_full;
-  cc_number_full.set_heuristic_type(GetActivePatternSource(),
+  cc_number_full.set_heuristic_type(GetActiveHeuristicSource(),
                                     CREDIT_CARD_NUMBER);
 
   credit_card()->SetNumber(test.card_number_);
@@ -1558,7 +1607,7 @@ TEST_F(AutofillFieldFillerTest, PreviewCreditCardNumberWithEqualSizeSplits) {
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   for (size_t i = 0; i < test.total_splits_; ++i) {
     AutofillField cc_number_part;
-    cc_number_part.set_heuristic_type(GetActivePatternSource(),
+    cc_number_part.set_heuristic_type(GetActiveHeuristicSource(),
                                       CREDIT_CARD_NUMBER);
     cc_number_part.max_length = test.splits_[i];
     cc_number_part.set_credit_card_number_offset(4 * i);
@@ -1577,7 +1626,7 @@ TEST_F(AutofillFieldFillerTest, PreviewCreditCardNumberWithEqualSizeSplits) {
 
   // Verify that full card-number shall get fill properly as well.
   AutofillField cc_number_full;
-  cc_number_full.set_heuristic_type(GetActivePatternSource(),
+  cc_number_full.set_heuristic_type(GetActiveHeuristicSource(),
                                     CREDIT_CARD_NUMBER);
 
   credit_card()->SetNumber(test.card_number_);
@@ -1602,7 +1651,7 @@ TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithUnequalSizeSplits) {
   // Start executing test cases to verify parts and full credit card number.
   for (size_t i = 0; i < test.total_splits_; ++i) {
     AutofillField cc_number_part;
-    cc_number_part.set_heuristic_type(GetActivePatternSource(),
+    cc_number_part.set_heuristic_type(GetActiveHeuristicSource(),
                                       CREDIT_CARD_NUMBER);
     cc_number_part.max_length = test.splits_[i];
     cc_number_part.set_credit_card_number_offset(GetNumberOffset(i, test));
@@ -1622,7 +1671,7 @@ TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithUnequalSizeSplits) {
 
   // Verify that full card-number shall get fill properly as well.
   AutofillField cc_number_full;
-  cc_number_full.set_heuristic_type(GetActivePatternSource(),
+  cc_number_full.set_heuristic_type(GetActiveHeuristicSource(),
                                     CREDIT_CARD_NUMBER);
   credit_card()->SetNumber(test.card_number_);
   filler.FillFormField(
@@ -1654,7 +1703,7 @@ TEST_F(AutofillFieldFillerTest, PreviewCreditCardNumberWithUnequalSizeSplits) {
   // Start executing test cases to verify parts and full credit card number.
   for (size_t i = 0; i < test.total_splits_; ++i) {
     AutofillField cc_number_part;
-    cc_number_part.set_heuristic_type(GetActivePatternSource(),
+    cc_number_part.set_heuristic_type(GetActiveHeuristicSource(),
                                       CREDIT_CARD_NUMBER);
     cc_number_part.max_length = test.splits_[i];
     cc_number_part.set_credit_card_number_offset(GetNumberOffset(i, test));
@@ -1674,7 +1723,7 @@ TEST_F(AutofillFieldFillerTest, PreviewCreditCardNumberWithUnequalSizeSplits) {
 
   // Verify that full card-number shall get fill properly as well.
   AutofillField cc_number_full;
-  cc_number_full.set_heuristic_type(GetActivePatternSource(),
+  cc_number_full.set_heuristic_type(GetActiveHeuristicSource(),
                                     CREDIT_CARD_NUMBER);
   credit_card()->SetNumber(test.card_number_);
   filler.FillFormField(
@@ -1806,11 +1855,11 @@ class AutofillFillAugmentedPhoneCountryCodeTest
 void DoTestFillAugmentedPhoneCountryCodeField(
     const FillAugmentedPhoneCountryCodeTestCase& test_case,
     const char* field_type) {
-  AutofillField field(test::CreateTestSelectOrSelectMenuField(
+  AutofillField field(test::CreateTestSelectOrSelectListField(
       /*label=*/"", /*name=*/"", /*value=*/"", /*autocomplete=*/"",
       test_case.phone_country_code_selection_options,
       test_case.phone_country_code_selection_options, field_type));
-  field.set_heuristic_type(GetActivePatternSource(), PHONE_HOME_COUNTRY_CODE);
+  field.set_heuristic_type(GetActiveHeuristicSource(), PHONE_HOME_COUNTRY_CODE);
 
   AutofillProfile address;
   address.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
@@ -1828,8 +1877,8 @@ TEST_P(AutofillFillAugmentedPhoneCountryCodeTest,
 }
 
 TEST_P(AutofillFillAugmentedPhoneCountryCodeTest,
-       FillAugmentedPhoneCountryCodeSelectMenuField) {
-  DoTestFillAugmentedPhoneCountryCodeField(GetParam(), "selectmenu");
+       FillAugmentedPhoneCountryCodeSelectListField) {
+  DoTestFillAugmentedPhoneCountryCodeField(GetParam(), "selectlist");
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1878,9 +1927,6 @@ INSTANTIATE_TEST_SUITE_P(
 
 // Tests that the abbreviated state names are selected correctly.
 TEST_F(AutofillFieldFillerTest, FillSelectAbbreviatedState) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
-
   test::ClearAlternativeStateNameMapForTesting();
   test::PopulateAlternativeStateNameMapForTesting();
 
@@ -1899,9 +1945,6 @@ TEST_F(AutofillFieldFillerTest, FillSelectAbbreviatedState) {
 
 // Tests that the localized state names are selected correctly.
 TEST_F(AutofillFieldFillerTest, FillSelectLocalizedState) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
-
   test::ClearAlternativeStateNameMapForTesting();
   test::PopulateAlternativeStateNameMapForTesting();
 
@@ -1921,9 +1964,6 @@ TEST_F(AutofillFieldFillerTest, FillSelectLocalizedState) {
 // Tests that the state names are selected correctly when the state name exists
 // as a substring in the selection options.
 TEST_F(AutofillFieldFillerTest, FillSelectLocalizedStateSubstring) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
-
   test::ClearAlternativeStateNameMapForTesting();
   test::PopulateAlternativeStateNameMapForTesting();
 
@@ -1943,15 +1983,11 @@ TEST_F(AutofillFieldFillerTest, FillSelectLocalizedStateSubstring) {
 // Tests that the state abbreviations are filled in the text field when the
 // field length is limited.
 TEST_F(AutofillFieldFillerTest, FillStateAbbreviationInTextField) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
-
   test::ClearAlternativeStateNameMapForTesting();
   test::PopulateAlternativeStateNameMapForTesting();
 
-  AutofillField field;
-  test::CreateTestFormField("State", "state", "", "text", &field);
-  field.set_heuristic_type(GetActivePatternSource(), ADDRESS_HOME_STATE);
+  AutofillField field(CreateTestFormField("State", "state", "", "text"));
+  field.set_heuristic_type(GetActiveHeuristicSource(), ADDRESS_HOME_STATE);
   field.max_length = 4;
 
   AutofillProfile address;
@@ -1968,9 +2004,6 @@ TEST_F(AutofillFieldFillerTest, FillStateAbbreviationInTextField) {
 // Tests that the state names are selected correctly even though the state
 // value saved in the address is not recognized by the AlternativeStateNameMap.
 TEST_F(AutofillFieldFillerTest, FillStateFieldWithSavedValueInProfile) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
-
   test::ClearAlternativeStateNameMapForTesting();
   test::PopulateAlternativeStateNameMapForTesting();
 
@@ -1991,9 +2024,6 @@ TEST_F(AutofillFieldFillerTest, FillStateFieldWithSavedValueInProfile) {
 // state is not in the list of selection options given that the abbreviation is
 // saved in the profile.
 TEST_F(AutofillFieldFillerTest, FillStateFieldWhenStateIsNotInOptions) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
-
   test::ClearAlternativeStateNameMapForTesting();
   test::PopulateAlternativeStateNameMapForTesting(
       "US", "Colorado",
@@ -2018,9 +2048,6 @@ TEST_F(AutofillFieldFillerTest, FillStateFieldWhenStateIsNotInOptions) {
 // for filling when |AlternativeStateNameMap| is not populated.
 TEST_F(AutofillFieldFillerTest,
        FillStateFieldWhenAlternativeStateNameMapIsNotPopulated) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
-
   test::ClearAlternativeStateNameMapForTesting();
 
   AutofillField field = CreateTestSelectAutofillField(
@@ -2039,18 +2066,14 @@ TEST_F(AutofillFieldFillerTest,
 // Tests that Autofill fills upper case abbreviation in the input field when
 // field length is limited.
 TEST_F(AutofillFieldFillerTest, FillUpperCaseAbbreviationInStateTextField) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
-
   test::ClearAlternativeStateNameMapForTesting();
   test::PopulateAlternativeStateNameMapForTesting("DE", "Bavaria",
                                                   {{.canonical_name = "Bavaria",
                                                     .abbreviations = {"by"},
                                                     .alternative_names = {}}});
 
-  AutofillField field;
-  test::CreateTestFormField("State", "state", "", "text", &field);
-  field.set_heuristic_type(GetActivePatternSource(), ADDRESS_HOME_STATE);
+  AutofillField field{CreateTestFormField("State", "state", "", "text")};
+  field.set_heuristic_type(GetActiveHeuristicSource(), ADDRESS_HOME_STATE);
   field.max_length = 4;
 
   AutofillProfile address;
@@ -2068,9 +2091,6 @@ TEST_F(AutofillFieldFillerTest, FillUpperCaseAbbreviationInStateTextField) {
 // in the profile and none of the options match with the abbreviated state.
 TEST_F(AutofillFieldFillerTest,
        DoNotFillStateFieldWhenAbbrStoredInProfileAndNotInOptionsList) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillUseAlternativeStateNameMap);
-
   test::ClearAlternativeStateNameMapForTesting();
 
   AutofillField field = CreateTestSelectAutofillField(
@@ -2090,7 +2110,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualMonth) {
   AutofillField field;
   field.form_control_type = "text";
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_EXP_MONTH);
+  field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_EXP_MONTH);
 
   // A month with two digits should return two dots.
   CreditCard card = test::GetVirtualCard();
@@ -2114,7 +2134,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualYear) {
   AutofillField field;
   field.form_control_type = "text";
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  field.set_heuristic_type(GetActivePatternSource(),
+  field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_EXP_4_DIGIT_YEAR);
 
   CreditCard card = test::GetVirtualCard();
@@ -2125,7 +2145,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualYear) {
                        /*failure_to_fill*/ nullptr);
   EXPECT_EQ(kMidlineEllipsis4Dots, field.value);
 
-  field.set_heuristic_type(GetActivePatternSource(),
+  field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_EXP_2_DIGIT_YEAR);
   filler.FillFormField(field, &card, /*forced_fill_values=*/{}, &field,
                        /*cvc=*/std::u16string(),
@@ -2140,7 +2160,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualShortenedYear) {
   field.max_length = 2;
   field.form_control_type = "text";
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  field.set_heuristic_type(GetActivePatternSource(),
+  field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_EXP_4_DIGIT_YEAR);
 
   CreditCard card = test::GetVirtualCard();
@@ -2156,7 +2176,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualDate) {
   AutofillField field;
   field.form_control_type = "text";
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  field.set_heuristic_type(GetActivePatternSource(),
+  field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
   field.max_length = 7;
 
@@ -2175,7 +2195,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualDate) {
 
   // A date that has a year containing two digits should return two dots for
   // month and two for year.
-  field.set_heuristic_type(GetActivePatternSource(),
+  field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
   field.max_length = 5;
   filler.FillFormField(field, &card, /*forced_fill_values=*/{}, &field,
@@ -2193,7 +2213,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualShortenedDate) {
   field.form_control_type = "text";
   field.max_length = 4;
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  field.set_heuristic_type(GetActivePatternSource(),
+  field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
 
   CreditCard card = test::GetVirtualCard();
@@ -2243,7 +2263,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualCVC) {
   AutofillField field;
   field.form_control_type = "text";
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  field.set_heuristic_type(GetActivePatternSource(),
+  field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_VERIFICATION_CODE);
 
   CreditCard card = test::GetVirtualCard();
@@ -2259,7 +2279,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualCVCAmericanExpress) {
   AutofillField field;
   field.form_control_type = "text";
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  field.set_heuristic_type(GetActivePatternSource(),
+  field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_VERIFICATION_CODE);
 
   CreditCard card = test::GetVirtualCard();
@@ -2273,7 +2293,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualCVCAmericanExpress) {
 
 TEST_F(AutofillFieldFillerTest, PreviewVirtualCardNumber) {
   AutofillField field;
-  field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_NUMBER);
+  field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NUMBER);
   field.form_control_type = "text";
 
   CreditCard card = test::GetVirtualCard();
@@ -2302,7 +2322,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualCardNumber_OffsetExceedsLength) {
   field.max_length = 17;
   field.set_credit_card_number_offset(18);
   field.form_control_type = "text";
-  field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_NUMBER);
+  field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NUMBER);
 
   CreditCard card = test::GetVirtualCard();
   card.SetNumber(u"5454545454545454");
@@ -2328,7 +2348,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualCardholderName) {
   AutofillField field;
   field.form_control_type = "text";
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
-  field.set_heuristic_type(GetActivePatternSource(), CREDIT_CARD_NAME_FULL);
+  field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NAME_FULL);
 
   CreditCard card = test::GetVirtualCard();
   card.SetRawInfoWithVerificationStatus(CREDIT_CARD_NAME_FULL, name,

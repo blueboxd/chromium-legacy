@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">ဥပဒေဆိုင်ရာ အကြောင်းများကြောင့် အချက်အလက်များ ပြောင်းလိုပါက <ph name="BEGIN_LINK1" />'ဥပဒေဆိုင်ရာ အကူအညီ' စာမျက်နှာ<ph name="END_LINK1" /> သို့ သွားပါ။ အကောင့်နှင့် စနစ်အချက်အလက် အချို့ကို Google သို့ ပေးပို့နိုင်သည်။ ကျွန်ုပ်တို့၏ <ph name="BEGIN_LINK2" />ကိုယ်ရေးအချက်အလက်လုံခြုံမှုဆိုင်ရာ မူဝါဒ<ph name="END_LINK2" /> နှင့် <ph name="BEGIN_LINK3" />ဝန်ဆောင်မှု စည်းမျဉ်းများ<ph name="END_LINK3" /> အရ ကျွန်ုပ်တို့၏ ဝန်ဆောင်မှုများ တိုးတက်ကောင်းမွန်လာစေရန်နှင့် နည်းပညာဆိုင်ရာ ပြဿနာများ ကူညီဖြေရှင်းပေးနိုင်ရန် သင်ပေးသည့် အချက်အလက်များကို ကျွန်ုပ်တို့ အသုံးပြုသွားပါမည်။</translation>
 <translation id="1885577615937958993">မီဒီယာကို ရှေ့သို့အမြန်သွားရန်</translation>
 <translation id="1887850431809612466">စက်ပစ္စည်း စိစစ်သုံးသပ်ခြင်း</translation>
+<translation id="1897672602657312171">ရှာရန်ခလုတ်မပါသော ဖြတ်လမ်းလင့်ခ်သည် အက်ပ်အချို့၏ ဖြတ်လမ်းလင့်ခ်နှင့် ငြိနိုင်သည်။ ဆက်သုံးရန် ဤဖြတ်လမ်းလင့်ခ်ကို ထပ်နှိပ်ပါ (သို့) ရှာရန်ခလုတ်သုံးပြီး ဖြတ်လမ်းလင့်ခ်အသစ် နှိပ်ပါ။</translation>
 <translation id="1904932688895783618">အခြားအသုံးဝင်မည့် ရင်းမြစ်အချို့ကို ဤနေရာတွင် ဖော်ပြထားသည်-</translation>
 <translation id="1905710495812624430">အများဆုံးခွင့်ပြုပေးထားသည့် အခေါက်အရေအတွက်ထက် ကျော်လွန်သွားပါပြီ။</translation>
 <translation id="1908234395526491708">UDP တောင်းဆိုချက် ချွတ်ယွင်းမှုများ</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">ပြန်စနေသည်…</translation>
 <translation id="2533048460510040082">အကြံပြုထားသော အကူအညီ အကြောင်းအရာ</translation>
 <translation id="2536159006530886390">အင်တာနက်သို့ ချိတ်ဆက်၍မရပါ။</translation>
-<translation id="2555662516429796509">သင့်ကီးဘုတ်တွင် မွမ်းမံခလုတ် ၁-၄ ခုနှင့်အတူ အခြားခလုတ် ၁ ခုကို နှိပ်ပါ</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> စစ်ဆေးမှု လုပ်ဆောင်နေသည်...</translation>
 <translation id="2584559707064218956">စနစ်ထည့်သွင်းရန် ဆက်တင်များသို့ သွားပါ</translation>
 <translation id="2597774443162333062">အမှားရှာပြင်ရန် ဖိုင်များကို Google သို့ ပို့ပါမည်</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">TLS အထောက်အထားစိစစ်ခြင်းကီး</translation>
 <translation id="2713444072780614174">အဖြူ</translation>
 <translation id="2717139507051041123">အမှောင်မုဒ် ဖွင့်ရန်</translation>
+<translation id="2728460467788544679">ပုံနှိပ်ထုတ်ယူမှုမှတ်တမ်းအားလုံး ရှင်းခြင်း</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2744221223678373668">မျှဝေထား</translation>
 <translation id="2751739896257479635">EAP အဆင့် ၂ အထောက်အထားစိစစ်ခြင်း</translation>
 <translation id="2783010256799387990">အောင်မြင်သည်</translation>
 <translation id="2787435249130282949">ကီးဘုတ် ပိုလင်း</translation>
-<translation id="2789486458103222910">OK</translation>
 <translation id="2805756323405976993">အက်ပ်များ</translation>
 <translation id="28232023175184696">အင်တာနက်သို့ ချိတ်ဆက်၍မရပါ။ ထပ်စမ်းကြည့်ရန် နှိပ်ပါ။</translation>
 <translation id="2859243502336719778">အရေးကြီးသည့် အပ်ဒိတ်</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">တိမ်များလွှင့်နေသည့် စခရင်နားချိန်ပုံ</translation>
 <translation id="2926057806159140518">သင့်အသုံးပြုသူအမည်နှင့် စကားဝှက်ကို ထည့်ပါ (သို့) QR ကုဒ်ကို စကင်ဖတ်ပါ</translation>
 <translation id="2940811910881150316">စက်ကို စမ်းသပ်၍မရပါ။ စမ်းသပ်ရန် အဖုံးပြန်ဖွင့်ပါ။</translation>
+<translation id="2941112035454246133">နိမ့်</translation>
 <translation id="3008341117444806826">ပြန်လည်စတင်ရန်</translation>
 <translation id="3009958530611748826">သိမ်းရန် ဖိုင်တွဲကို ရွေးပါ</translation>
 <translation id="3017079585324758401">နောက်ခံ</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">ဆာဗာပင်ရင်းကို မဖြေရှင်းနိုင်ပါ</translation>
 <translation id="3942420633017001071">အမှားရှာဖွေမှုများ</translation>
 <translation id="3954678691475912818">ကိရိယာအမျိုးအစား မသိပါ။</translation>
+<translation id="3959413315969265597">ဤ APN ကို ဖွင့်၍မရပါ။ မူရင်း APN ကို ထည့်ထားကြောင်း သေချာပါစေ။</translation>
 <translation id="3966286471246132217">ပိုမိုတိကျသော ရလဒ်များအတွက် စစ်ဆေးမှုပြီးသည်အထိ အက်ပ်အားလုံးကို ပိတ်ပါ။</translation>
 <translation id="3967822245660637423">ဒေါင်းလုဒ်လုပ်ခြင်း ပြည့်စုံပါပြီ</translation>
 <translation id="3969602104473960991">ChromeOS စကားဝှက် အပ်ဒိတ်လုပ်ထားသည်</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">အသံ လျှော့ပါ</translation>
 <translation id="5707900041990977207"><ph name="TOTAL_PAGES" /> အနက် <ph name="CURRENT_PAGE" /></translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" /> ကို အပ်ဒိတ်လုပ်ရန်</translation>
+<translation id="574392208103952083">အလယ်အလတ်</translation>
 <translation id="5757187557809630523">နောက်တစ်ပုဒ်</translation>
 <translation id="5760715441271661976">စာမျက်နှာအခြေအနေ</translation>
 <translation id="576835345334454681">ဖန်သားပြင်တောက်ပမှု တိုးရန်</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">အနုပညာပြခန်း အယ်လ်ဘမ်</translation>
 <translation id="5860033963881614850">ပိတ်ထား</translation>
 <translation id="5860491529813859533">ဖွင့်ရန်</translation>
-<translation id="5866840822086176774">အလွန်အားကောင်းပါသည်</translation>
 <translation id="5876385649737594562">ရွေးရန် ဖွင့်ပါ</translation>
 <translation id="588258955323874662">မျက်နှာပြင် အပြည့်</translation>
 <translation id="5895138241574237353">ပြန်စတင်မည</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">အားမကောင်းပါ (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">အကောင့်ဆက်တင်များသို့ သွားရန်</translation>
-<translation id="6456394469623773452">ကောင်းပါသည်</translation>
+<translation id="6461047516875166066">နောက်ထပ် ပြောပြပါ</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{စာမျက်နှာကို စကင်ပြန်ဖတ်မလား။}=1{စာမျက်နှာ {PAGE_NUMBER} ကို စကင်ပြန်ဖတ်မလား။}other{စာမျက်နှာ {PAGE_NUMBER} ကို စကင်ပြန်ဖတ်မလား။}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" /> က စီမံခန့်ခွဲသည်</translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">ဖြတ်လမ်းလင့်ခ်အားလုံးကို မူရင်းအဖြစ် ပြင်ဆင်သတ်မှတ်မလား။</translation>
 <translation id="7058278511608979688">သိမ်းပြီး အဆုံးသတ်ရန်</translation>
 <translation id="7059230779847288458">အားသွင်းနေသည် (အားပြည့်ရန် <ph name="TIME_VALUE" /> ကျန်သည်)</translation>
+<translation id="7066538517128343186"><ph name="KEY" /> ကီး</translation>
 <translation id="7068619307603204412">သင့်စက်ကို အသင့်ပြင်ခြင်း</translation>
 <translation id="708426984172631313">ရပ်ထားသည်</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">နောက်ခံကိုကြည့်ရန် ကွန်ရက်ချိတ်ဆက်၍ စာမျက်နှာကို ပြန်လည် စတင်ပါ။</translation>
 <translation id="8291967909914612644">ပင်မထောက်ပံ့သူ နိုင်ငံ</translation>
 <translation id="8294431847097064396">အရင်းအမြစ်</translation>
-<translation id="8297006494302853456">အားမကောင်းပါ</translation>
 <translation id="8302368968391049045">HTTPS Firewall</translation>
 <translation id="8312330582793120272">မီဒီယာဖွင့်ရန်</translation>
 <translation id="8318753676953949627">ပုံများ မရှိပါ</translation>
 <translation id="8329018942023753850">ဂဏန်းတွက်စက် အက်ပ်</translation>
 <translation id="8336739000755212683">စက်ပစ္စည်း၏ အကောင့်ပုံ ပြောင်းရန်</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> (သို့) <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">ပရင့်ထုတ်ရန် ဖိုင်များ</translation>
 <translation id="8351855506390808906">ကီးနေရာချသည့် ထိမှတ်</translation>
 <translation id="8352772353338965963">အရာ အများအပြားထဲသို့ လက်မှတ်ထိုး ဝင်နိုင်ရန် အတွက် အကောင့် တစ်ခုကို ထည့်ပါ။ လက်မှတ်ထိုး ဝင်ထားသည့် အကောင့်များ အားလုံးကို စကားဝှက် မသုံးရဘဲ သုံးနိုင်မည် ဖြစ်ရာ၊ ဒီအင်္ဂါရပ်ကို ယုံကြည်ရသည့် အကောင့်များ အတွက်သာ အသုံးပြသင့်သည်။</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">ပြန်ချိတ်ဆက်ရန် ဆက်တင်များသို့ သွားပါ</translation>
 <translation id="9126720536733509015">စာမျက်နှာအများအပြားကို PDF တစ်ခုအဖြစ်သိမ်းရန်</translation>
 <translation id="9133104754938025929">ဘက်ထရီချွေတာရန် စခရင်နားချိန်ပုံသည် အားသွင်းချိန်တွင်သာ အလုပ်လုပ်သည်။</translation>
+<translation id="9133772297793293778">သင့်ကီးဘုတ်တွင် မွမ်းမံခလုတ် ၁-၄ ခုနှင့်အတူ အခြားခလုတ် ၁ ခုကို နှိပ်ပါ။ တည်းဖြတ်မုဒ်မှ ထွက်ရန် Alt + Esc နှိပ်ပါ။</translation>
 <translation id="9137526406337347448">Google ဝန်ဆောင်မှုများ</translation>
 <translation id="9138630967333032450">ဘယ်ဘက် shift</translation>
 <translation id="9143347780818904997"><ph name="MINUTES" /> မိနစ်ကြာ</translation>

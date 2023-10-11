@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@EnableFeatures({ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS})
+@EnableFeatures(ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS)
 public class ReaderModeActionProviderTest {
     @Rule
     public final TestRule mFeatureProcessor = new Features.JUnitProcessor();

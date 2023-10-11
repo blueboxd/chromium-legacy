@@ -9,8 +9,8 @@
 
 #include <memory>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/functional/callback.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
@@ -50,7 +50,7 @@ class VideoToolboxFrameConverter
       std::unique_ptr<MediaLog> media_log,
       GetCommandBufferStubCB get_stub_cb);
 
-  void Convert(base::ScopedCFTypeRef<CVImageBufferRef> image,
+  void Convert(base::apple::ScopedCFTypeRef<CVImageBufferRef> image,
                std::unique_ptr<VideoToolboxDecodeMetadata> metadata,
                OutputCB output_cb);
 
@@ -68,7 +68,7 @@ class VideoToolboxFrameConverter
 
   void OnVideoFrameReleased(
       base::OnceCallback<void(const gpu::SyncToken&)> destroy_shared_image_cb,
-      base::ScopedCFTypeRef<CVImageBufferRef> image,
+      base::apple::ScopedCFTypeRef<CVImageBufferRef> image,
       const gpu::SyncToken& sync_token);
 
   scoped_refptr<base::SequencedTaskRunner> gpu_task_runner_;

@@ -1,0 +1,57 @@
+<style include="settings-shared input-device-settings-shared">
+  #header {
+    display: flex;
+    height: 24px;
+    padding: 12px 0;
+  }
+
+  #deviceName {
+    color: var(--cros-text-color-secondary);
+    margin-inline-start: 20px;
+  }
+
+  #inputContainer {
+    height: 70px;
+  }
+
+  #renamingDialog {
+    --cr-dialog-width: 320px;
+  }
+</style>
+<template is="dom-repeat"
+    items="[[buttonRemappingList]]"
+    index-as="index">
+  <customize-button-row
+      button-remapping-list="[[buttonRemappingList]]"
+      remapping-index="[[index]]"
+      action-list$="[[actionList]]">
+  </customize-button-row>
+</template>
+<template is="dom-if" if="[[shouldShowRenamingDialog_]]" restamp>
+  <cr-dialog id="renamingDialog"
+      on-close="cancelRenamingDialogClicked_" show-on-attach>
+    <div slot="title">$i18n{buttonRenamingDialogTitle}</div>
+    <div slot="body">
+      <div id="inputContainer">
+        <cr-input label="$i18n{buttonRemappingDialogInputLabel}"
+          value="{{selectedButtonName_}}"
+          aria-label="$i18n{buttonRenamingDialogTitle}">
+      </cr-input>
+      </div>
+    </div>
+    <div slot="button-container">
+      <div>
+        <cr-button id="cancelButton"
+            on-click="cancelRenamingDialogClicked_">
+          $i18n{buttonRemappingDialogCancelLabel}
+        </cr-button>
+      </div>
+      <div>
+        <cr-button id="saveButton" class="action-button"
+            on-click="saveRenamingDialogClicked_">
+          $i18n{buttonRemappingDialogSaveLabel}
+        </cr-button>
+      </div>
+    </div>
+  </cr-dialog>
+</template>

@@ -32,7 +32,9 @@
 
 #include <memory>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
@@ -1504,25 +1506,37 @@ TEST_F(ResourceFetcherTest, BoostImagePriority) {
 }
 
 TEST_F(ResourceFetcherTest, IsPotentiallyLCPElement) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kBoostImagePriority);
-  auto& properties = *MakeGarbageCollected<TestResourceFetcherProperties>();
-  auto* fetcher = CreateFetcher(properties);
-  ResourceRequest request(KURL("https://www.example.com/"));
+  for (const auto& test_cases :
+       {std::make_pair("medium", ResourceLoadPriority::kMedium),
+        std::make_pair("high", ResourceLoadPriority::kHigh),
+        std::make_pair("very_high", ResourceLoadPriority::kVeryHigh)}) {
+    const char* kPrioritySetting = test_cases.first;
+    const ResourceLoadPriority kExpectedPriority = test_cases.second;
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeaturesAndParameters(
+        {{features::kLCPCriticalPathPredictor,
+          {{features::kLCPCriticalPathPredictorImageLoadPriority.name,
+            kPrioritySetting}}}},
+        {});
+    auto& properties = *MakeGarbageCollected<TestResourceFetcherProperties>();
+    auto* fetcher = CreateFetcher(properties);
+    ResourceRequest request(KURL("https://www.example.com/"));
 
-  // Resources for Potentially LCP Elements get VeryHigh priority.
-  {
-    properties.SetIsOutermostMainFrame(true);
-    properties.SetIsSubframeDeprioritizationEnabled(false);
-    const auto priority = fetcher->ComputeLoadPriorityForTesting(
-        ResourceType::kImage, request, ResourcePriority::kNotVisible,
-        FetchParameters::DeferOption::kNoDefer,
-        FetchParameters::SpeculativePreloadType::kInDocument,
-        RenderBlockingBehavior::kNonBlocking,
-        mojom::blink::ScriptType::kClassic, /* is_link_preload=*/false,
-        /* resource_width=*/10, /* resource_height=*/10,
-        /* is_potentially_lcp_element=*/true);
-    EXPECT_EQ(priority, ResourceLoadPriority::kVeryHigh);
+    // Resources for Potentially LCP Elements get a `kExpectedPriority`.
+    {
+      properties.SetIsOutermostMainFrame(true);
+      properties.SetIsSubframeDeprioritizationEnabled(false);
+      const auto priority = fetcher->ComputeLoadPriorityForTesting(
+          ResourceType::kImage, request, ResourcePriority::kNotVisible,
+          FetchParameters::DeferOption::kNoDefer,
+          FetchParameters::SpeculativePreloadType::kInDocument,
+          RenderBlockingBehavior::kNonBlocking,
+          mojom::blink::ScriptType::kClassic, /* is_link_preload=*/false,
+          /* resource_width=*/10, /* resource_height=*/10,
+          /* is_potentially_lcp_element=*/true);
+      EXPECT_EQ(priority, kExpectedPriority)
+          << "priority_setting: " << kPrioritySetting;
+    }
   }
 }
 
@@ -1545,6 +1559,98 @@ TEST_F(ResourceFetcherTest, Detach) {
   EXPECT_EQ(&properties, &fetcher->GetProperties());
 
   EXPECT_TRUE(properties.IsDetached());
+}
+
+TEST_F(ResourceFetcherTest, DuplicatePreloadAllowsPriorityChange) {
+  auto* fetcher = CreateFetcher();
+
+  KURL url("http://127.0.0.1:8000/foo.png");
+  RegisterMockedURLLoad(url);
+
+  FetchParameters fetch_params_for_request =
+      FetchParameters::CreateForTest(ResourceRequest(url));
+  FetchParameters fetch_params_for_preload =
+      FetchParameters::CreateForTest(ResourceRequest(url));
+  fetch_params_for_preload.SetSpeculativePreloadType(
+      FetchParameters::SpeculativePreloadType::kInDocument);
+  fetch_params_for_preload.SetFetchPriorityHint(
+      mojom::blink::FetchPriorityHint::kLow);
+
+  Resource* resource1 =
+      MockResource::Fetch(fetch_params_for_preload, fetcher, nullptr);
+  ASSERT_TRUE(resource1);
+  EXPECT_TRUE(resource1->IsUnusedPreload());
+  EXPECT_TRUE(fetcher->ContainsAsPreload(resource1));
+  EXPECT_EQ(ResourceLoadPriority::kLow,
+            resource1->GetResourceRequest().Priority());
+
+  // The second preload fetch returns the first preload but boosts the priority.
+  FetchParameters fetch_params_for_preload2 =
+      FetchParameters::CreateForTest(ResourceRequest(url));
+  fetch_params_for_preload2.SetSpeculativePreloadType(
+      FetchParameters::SpeculativePreloadType::kInDocument);
+  fetch_params_for_preload2.SetFetchPriorityHint(
+      mojom::blink::FetchPriorityHint::kHigh);
+  Resource* resource2 =
+      MockResource::Fetch(fetch_params_for_preload2, fetcher, nullptr);
+
+  EXPECT_TRUE(fetcher->ContainsAsPreload(resource1));
+  EXPECT_TRUE(resource1->IsUnusedPreload());
+  EXPECT_EQ(resource1, resource2);
+  EXPECT_EQ(ResourceLoadPriority::kHigh,
+            resource1->GetResourceRequest().Priority());
+
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+
+  // preload matching
+  Resource* resource3 =
+      MockResource::Fetch(fetch_params_for_request, fetcher, nullptr);
+  EXPECT_EQ(resource1, resource3);
+  EXPECT_FALSE(fetcher->ContainsAsPreload(resource1));
+  EXPECT_FALSE(resource1->IsUnusedPreload());
+}
+
+TEST_F(ResourceFetcherTest, StrongReferenceThreshold) {
+  // `kTestResourceFilename` has 103 bytes.
+  const int64_t kMockResourceSize = 103;
+
+  // Set up the strong reference feature so that the memory cache can keep
+  // strong references to `kTestResourcefilename` up to two resources.
+  const int64_t kTotalSizeThreshold = kMockResourceSize * 2;
+  const int64_t kResourceSizeThreshold = kMockResourceSize;
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      /*enabled_features=*/
+      {
+          {features::kMemoryCacheStrongReference,
+           {{"memory_cache_strong_ref_total_size_threshold",
+             base::NumberToString(kTotalSizeThreshold)},
+            {"memory_cache_strong_ref_resource_size_threshold",
+             base::NumberToString(kResourceSizeThreshold)}}},
+      },
+      /*disabled_features=*/{});
+
+  ResourceFetcher* fetcher = CreateFetcher();
+
+  // A closure that fetches the given URL with `kTestResourceFilename` and
+  // returns whether the memory cache has a strong reference to the resource.
+  auto perform_fetch = base::BindLambdaForTesting([&](const KURL& url) {
+    ResourceResponse response(url);
+    response.SetHttpHeaderField(http_names::kCacheControl,
+                                AtomicString("max-age=3600"));
+    platform_->GetURLLoaderMockFactory()->RegisterURL(
+        url, WrappedResourceResponse(response),
+        test::PlatformTestDataPath(kTestResourceFilename));
+    FetchParameters fetch_params =
+        FetchParameters::CreateForTest(ResourceRequest(url));
+    Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+    platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+    return fetcher->HasStrongReferenceForTesting(resource);
+  });
+
+  ASSERT_TRUE(perform_fetch.Run(KURL("http://127.0.0.1:8000/foo.png")));
+  ASSERT_TRUE(perform_fetch.Run(KURL("http://127.0.0.1:8000/bar.png")));
+  ASSERT_FALSE(perform_fetch.Run(KURL("http://127.0.0.1:8000/baz.png")));
 }
 
 }  // namespace blink

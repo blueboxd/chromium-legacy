@@ -24,7 +24,7 @@ const int kMinWindowHeight = 17;
 @end
 
 @implementation WindowSizeAutosaver {
-  NSWindow* __unsafe_unretained _window;
+  NSWindow* __weak _window;
   raw_ptr<PrefService> _prefService;  // weak
   const char* _path;
 }

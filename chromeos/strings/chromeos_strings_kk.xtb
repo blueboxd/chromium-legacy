@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">Контентке заңға сәйкес өзгерістер енгізуді сұрау үшін <ph name="BEGIN_LINK1" />Құқықтық анықтама бетіне<ph name="END_LINK1" /> өтіңіз. Аккаунт және жүйе туралы кейбір ақпарат Google-ға жіберілуі мүмкін. Сіз берген ақпарат <ph name="BEGIN_LINK2" />Құпиялық саясаты<ph name="END_LINK2" /> мен <ph name="BEGIN_LINK3" />Қызмет көрсету шарттарына<ph name="END_LINK3" /> сәйкес техникалық мәселелерді шешу және қызметтерімізді жақсарту үшін пайдаланылады.</translation>
 <translation id="1885577615937958993">мультимeдианы жылдам алға айналдыру</translation>
 <translation id="1887850431809612466">Жабдық нұсқасы</translation>
+<translation id="1897672602657312171">Іздеу пернесі жоқ жылдам пәрмен кейбір қолданбаның жылдам пәрменіне қайшы келуі мүмкін. Оны пайдалануды жалғастыру үшін осы жылдам пәрменді қайта басыңыз немесе іздеу пернесін пайдаланып жаңа жылдам пәрменді басыңыз.</translation>
 <translation id="1904932688895783618">Басқа да пайдалы ресурстар:</translation>
 <translation id="1905710495812624430">Максималды рұқсат етілетін әрекеттер шегінен асып кетті.</translation>
 <translation id="1908234395526491708">UDP сұрауының ақаулары</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">Қайта қосылуда…</translation>
 <translation id="2533048460510040082">Ұсынылған анықтамалық контент</translation>
 <translation id="2536159006530886390">Интернетке қосыла алмай жатыр.</translation>
-<translation id="2555662516429796509">Пернетақтада 1–4 өзгерткішті және 1 басқа пернені басыңыз.</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> сынағы жүруде…</translation>
 <translation id="2584559707064218956">Реттеу үшін "Параметрлер" бөліміне өтіңіз.</translation>
 <translation id="2597774443162333062">Қатесін түзету үшін файлдар Google-ға жіберіледі.</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">TLS аутентификация кілті</translation>
 <translation id="2713444072780614174">Ақ</translation>
 <translation id="2717139507051041123">Қараңғы түс режимін қосу</translation>
+<translation id="2728460467788544679">Барлық басып шығару тарихын өшіру</translation>
 <translation id="2740531572673183784">Жарайды</translation>
 <translation id="2744221223678373668">Ортақ</translation>
 <translation id="2751739896257479635">EAP 2-фаза аутентификациясы</translation>
 <translation id="2783010256799387990">ӨТТІ</translation>
 <translation id="2787435249130282949">пернетақтаны жарықтау</translation>
-<translation id="2789486458103222910">Жарайды</translation>
 <translation id="2805756323405976993">Қолданбалар</translation>
 <translation id="28232023175184696">Интернетке қосыла алмай жатыр. Әрекетті қайталау үшін түртіңіз.</translation>
 <translation id="2859243502336719778">Маңызды жаңарту</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">Бұлттар қозғалысы бейнеленген скринсейвер</translation>
 <translation id="2926057806159140518">Пайдаланушы аты мен құпия сөзді енгізіңіз немесе QR кодын сканерлеңіз.</translation>
 <translation id="2940811910881150316">Құрылғыны сынау мүмкін емес. Сынау үшін қақпақты қайта ашыңыз.</translation>
+<translation id="2941112035454246133">Төмен</translation>
 <translation id="3008341117444806826">ЖАҢАРТУ</translation>
 <translation id="3009958530611748826">Сканерленген контент сақталатын қалтаны таңдаңыз</translation>
 <translation id="3017079585324758401">Фон</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">Хост атауы түрлендірілмеді.</translation>
 <translation id="3942420633017001071">Диагностика</translation>
 <translation id="3954678691475912818">Құрылғының түрі белгісіз.</translation>
+<translation id="3959413315969265597">Бұл APN-ді қосу мүмкін емес. Әдепкі APN қосылғанына көз жеткізіңіз.</translation>
 <translation id="3966286471246132217">Нәтижелер нақтырақ болу үшін, сынақ аяқталғанша барлық қолданбаларды жабыңыз.</translation>
 <translation id="3967822245660637423">Жүктеп алынды</translation>
 <translation id="3969602104473960991">ChromeOS құпия сөзі жаңартылды</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">дыбыс деңгейін төмендету</translation>
 <translation id="5707900041990977207"><ph name="TOTAL_PAGES" />/<ph name="CURRENT_PAGE" /></translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" /> жаңарту</translation>
+<translation id="574392208103952083">Орташа</translation>
 <translation id="5757187557809630523">келесі трек</translation>
 <translation id="5760715441271661976">Портал күйі</translation>
 <translation id="576835345334454681">Дисплей жарықтығын арттыру</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">Өнер галереясы альбомы</translation>
 <translation id="5860033963881614850">Өшірулі</translation>
 <translation id="5860491529813859533">Қосу</translation>
-<translation id="5866840822086176774">Аса күшті</translation>
 <translation id="5876385649737594562">Опцияларды таңдау үшін қосыңыз</translation>
 <translation id="588258955323874662">Толық экран</translation>
 <translation id="5895138241574237353">Қайта іске қосу</translation>
@@ -640,7 +642,7 @@
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Әдепкі тұсқағаз</translation>
 <translation id="6017514345406065928">Жасыл</translation>
-<translation id="6019566113895157499">Key Shortcuts</translation>
+<translation id="6019566113895157499">Перне таңбашалары</translation>
 <translation id="6034694447310538551">Ай сайын автоматты түрде бастапқы күйге қайтаруды қосу</translation>
 <translation id="6037291330010597344">Сканердің құжат бергіші бос. Құжаттар қосып, әрекетті қайталаңыз.</translation>
 <translation id="6040143037577758943">Жабу</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Әлсіз (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Аккаунт параметрлеріне өту</translation>
-<translation id="6456394469623773452">Жақсы</translation>
+<translation id="6461047516875166066">Көбірек айтыңыз</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Бетті қайта сканерлеу керек пе?}=1{{PAGE_NUMBER}-бетті қайта сканерлеу керек пе?}other{{PAGE_NUMBER}-бетті қайта сканерлеу керек пе?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" /> басқарады</translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">Барлық пернелер тіркесімін әдепкі мәндерге қайта орнату керек пе?</translation>
 <translation id="7058278511608979688">Аяқтау және сақтау</translation>
 <translation id="7059230779847288458">Зарядталуда, толғанға дейінгі уақыт: <ph name="TIME_VALUE" /></translation>
+<translation id="7066538517128343186"><ph name="KEY" /> кілті</translation>
 <translation id="7068619307603204412">Құрылғыңызды дайындаңыз</translation>
 <translation id="708426984172631313">ТОҚТАТЫЛДЫ</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">Тұсқағазды көру үшін желіге қосылып, бетті қайта жүктеңіз.</translation>
 <translation id="8291967909914612644">Жергілікті провайдер елі</translation>
 <translation id="8294431847097064396">Дереккөз</translation>
-<translation id="8297006494302853456">Әлсіз</translation>
 <translation id="8302368968391049045">HTTPS брандмауэрі</translation>
 <translation id="8312330582793120272">мультимeдианы ойнату</translation>
 <translation id="8318753676953949627">Кескіндер жоқ.</translation>
 <translation id="8329018942023753850">calculator қолданбасы</translation>
 <translation id="8336739000755212683">Құрылғыда аккаунт суретін өзгерту</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> немесе <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Баспа жұмыстары</translation>
 <translation id="8351855506390808906">Кілтті түрлендірудің өзара әрекеттесу нүктесі</translation>
 <translation id="8352772353338965963">Бірнеше аккаунтға кіру үшін аккаунт қосыңыз. Барлық кірілген аккаунтларға құпия сөзсіз кіруге болады, сондықтан бұл мүмкіндікті тек сенімді аккаунтлар пайдалануы тиіс.</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">Қайта қосылу үшін "Параметрлер" бетіне өтіңіз.</translation>
 <translation id="9126720536733509015">Бірнеше бетті бір PDF файлына сақтау</translation>
 <translation id="9133104754938025929">Батареяны үнемдеу үшін скринсейвер тек зарядтау кезінде жұмыс істейді.</translation>
+<translation id="9133772297793293778">Пернетақтада 1–4 өзгерткішті және 1 басқа пернені басыңыз. Өзгерту режимінен шығу үшін alt + esc тіркесімін басыңыз.</translation>
 <translation id="9137526406337347448">Google қызметтері</translation>
 <translation id="9138630967333032450">Сол жақтағы Shift пернесі</translation>
 <translation id="9143347780818904997"><ph name="MINUTES" /> минут</translation>

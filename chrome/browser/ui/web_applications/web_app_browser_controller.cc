@@ -96,7 +96,7 @@ class SystemAppTabMenuModelFactory : public TabMenuModelFactory {
   }
 
  private:
-  raw_ptr<const ash::SystemWebAppDelegate> system_app_;
+  raw_ptr<const ash::SystemWebAppDelegate> system_app_ = nullptr;
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -319,8 +319,7 @@ void WebAppBrowserController::OnWebAppUninstalled(
 }
 
 void WebAppBrowserController::OnWebAppManifestUpdated(
-    const AppId& updated_app_id,
-    base::StringPiece old_name) {
+    const AppId& updated_app_id) {
   if (updated_app_id == app_id()) {
     UpdateThemePack();
     app_icon_.reset();

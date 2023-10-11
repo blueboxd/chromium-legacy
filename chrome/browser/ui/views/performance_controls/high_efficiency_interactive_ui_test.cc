@@ -735,16 +735,7 @@ IN_PROC_BROWSER_TEST_P(HighEfficiencyFaviconTreatmentTest,
       NameView(kFirstTabFavicon, base::BindLambdaForTesting([&]() {
                  return views::AsViewClass<views::View>(GetTabIcon(0));
                })),
-      Check(base::BindLambdaForTesting([&]() {
-        return GetTabIcon(0)
-            ->GetTabDiscardAnimationForTesting()
-            ->is_animating();
-      })),
-      Do(base::BindLambdaForTesting([&]() {
-        // Force animation to end as it may not have finished progressing
-        // before taking a screenshot
-        GetTabIcon(0)->GetTabDiscardAnimationForTesting()->End();
-      })),
+      WaitForEvent(kFirstTabFavicon, kDiscardAnimationFinishes), FlushEvents(),
       Screenshot(kFirstTabFavicon, GetParam().screenshot_name,
                  GetParam().cl_number));
 }
@@ -752,10 +743,10 @@ IN_PROC_BROWSER_TEST_P(HighEfficiencyFaviconTreatmentTest,
 std::vector<FaviconScreenShotTestConfig> HighEfficiencyTestConfig() {
   return {{performance_manager::features::DiscardTabTreatmentOptions::
                kFadeFullsizedFavicon,
-           "FadeFullSizedFaviconOnDiscard", "4492205"},
+           "FadeFullSizedFaviconOnDiscard", "4786929"},
           {performance_manager::features::DiscardTabTreatmentOptions::
                kFadeSmallFaviconWithRing,
-           "FadeSmallFaviconOnDiscard", "4633624"}};
+           "FadeSmallFaviconOnDiscard", "4786929"}};
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

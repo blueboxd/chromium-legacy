@@ -244,6 +244,7 @@ mojom("mojom_platform") {
     "worker/worker_content_settings_proxy.mojom",
     "worker/worker_main_script_load_params.mojom",
     "worker/worker_options.mojom",
+    "worker/worklet_global_scope_creation_params.mojom",
   ]
 
   if (is_android) {
@@ -260,6 +261,7 @@ mojom("mojom_platform") {
 
   if (use_blink_extensions_chromeos) {
     sources += [
+      "chromeos/diagnostics/cros_diagnostics.mojom",
       "chromeos/system_extensions/hid/cros_hid.mojom",
       "chromeos/system_extensions/managed_device_health_services/telemetry/cros_telemetry.mojom",
       "chromeos/system_extensions/managed_device_health_services/telemetry/nullable_primitives.mojom",

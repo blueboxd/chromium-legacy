@@ -4,11 +4,11 @@
 
 #include "components/sync/nigori/cross_user_sharing_keys.h"
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/notreached.h"
 #include "components/sync/protocol/nigori_local_data.pb.h"
 
 namespace syncer {
@@ -53,6 +53,8 @@ CrossUserSharingKeys CrossUserSharingKeys::CreateFromProto(
 
   return output;
 }
+
+CrossUserSharingKeys::CrossUserSharingKeys() = default;
 
 CrossUserSharingKeys::CrossUserSharingKeys(CrossUserSharingKeys&& other) =
     default;
@@ -115,7 +117,5 @@ const CrossUserSharingPublicPrivateKeyPair& CrossUserSharingKeys::GetKeyPair(
   CHECK(HasKeyPair(version));
   return key_pairs_map_.at(version);
 }
-
-CrossUserSharingKeys::CrossUserSharingKeys() = default;
 
 }  // namespace syncer

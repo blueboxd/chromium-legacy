@@ -10,9 +10,9 @@
 #include <utility>
 
 #include "base/apple/bridging.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 
@@ -43,19 +43,19 @@ class FontFamilyResolver {
   FontFamilyResolver& operator=(const FontFamilyResolver&) = delete;
 
   // Returns a localized font family name for the given family name.
-  base::ScopedCFTypeRef<CFStringRef> CopyLocalizedFamilyName(
+  base::apple::ScopedCFTypeRef<CFStringRef> CopyLocalizedFamilyName(
       CFStringRef family_name) {
     DCHECK(family_name != nullptr);
 
     CFDictionarySetValue(font_descriptor_attributes_.get(),
                          kCTFontFamilyNameAttribute, family_name);
-    base::ScopedCFTypeRef<CTFontDescriptorRef> raw_descriptor(
+    base::apple::ScopedCFTypeRef<CTFontDescriptorRef> raw_descriptor(
         CTFontDescriptorCreateWithAttributes(
             font_descriptor_attributes_.get()));
     DCHECK(raw_descriptor != nullptr)
         << "CTFontDescriptorCreateWithAttributes returned null";
 
-    base::ScopedCFTypeRef<CFArrayRef> normalized_descriptors(
+    base::apple::ScopedCFTypeRef<CFArrayRef> normalized_descriptors(
         CTFontDescriptorCreateMatchingFontDescriptors(
             raw_descriptor, mandatory_attributes_.get()));
     return CopyLocalizedFamilyNameFrom(family_name,
@@ -88,29 +88,28 @@ class FontFamilyResolver {
   // return null, even on macOS 11. Discovery documented in crbug.com/1235042.
   //
   // Returns null if none of the descriptors match.
-  static base::ScopedCFTypeRef<CTFontDescriptorRef> FindFirstWithFamilyName(
-      CFStringRef family_name,
-      CFArrayRef descriptors) {
+  static base::apple::ScopedCFTypeRef<CTFontDescriptorRef>
+  FindFirstWithFamilyName(CFStringRef family_name, CFArrayRef descriptors) {
     DCHECK(family_name != nullptr);
 
     CFIndex descriptor_count = descriptors ? CFArrayGetCount(descriptors) : 0;
     for (CFIndex i = 0; i < descriptor_count; ++i) {
       CTFontDescriptorRef descriptor =
-          base::mac::CFCastStrict<CTFontDescriptorRef>(
+          base::apple::CFCastStrict<CTFontDescriptorRef>(
               CFArrayGetValueAtIndex(descriptors, i));
       DCHECK(descriptor != nullptr)
           << "The descriptors array has a null element.";
 
-      base::ScopedCFTypeRef<CFStringRef> descriptor_family_name(
-          base::mac::CFCastStrict<CFStringRef>(CTFontDescriptorCopyAttribute(
+      base::apple::ScopedCFTypeRef<CFStringRef> descriptor_family_name(
+          base::apple::CFCastStrict<CFStringRef>(CTFontDescriptorCopyAttribute(
               descriptor, kCTFontFamilyNameAttribute)));
       if (CFStringCompare(family_name, descriptor_family_name,
                           /*compareOptions=*/0) == kCFCompareEqualTo) {
-        return base::ScopedCFTypeRef<CTFontDescriptorRef>(
+        return base::apple::ScopedCFTypeRef<CTFontDescriptorRef>(
             descriptor, base::scoped_policy::RETAIN);
       }
     }
-    return base::ScopedCFTypeRef<CTFontDescriptorRef>(nullptr);
+    return base::apple::ScopedCFTypeRef<CTFontDescriptorRef>(nullptr);
   }
 
   // Returns a localized font family name for the given family name.
@@ -124,22 +123,22 @@ class FontFamilyResolver {
   //
   // The given family name is returned as a fallback, if none of the descriptors
   // match the desired font family name.
-  static base::ScopedCFTypeRef<CFStringRef> CopyLocalizedFamilyNameFrom(
+  static base::apple::ScopedCFTypeRef<CFStringRef> CopyLocalizedFamilyNameFrom(
       CFStringRef family_name,
       CFArrayRef descriptors) {
     DCHECK(family_name != nullptr);
 
-    base::ScopedCFTypeRef<CTFontDescriptorRef> descriptor =
+    base::apple::ScopedCFTypeRef<CTFontDescriptorRef> descriptor =
         FindFirstWithFamilyName(family_name, descriptors);
     if (descriptor == nullptr) {
       DLOG(WARNING) << "Will use non-localized family name for font family: "
                     << family_name;
-      return base::ScopedCFTypeRef<CFStringRef>(family_name,
-                                                base::scoped_policy::RETAIN);
+      return base::apple::ScopedCFTypeRef<CFStringRef>(
+          family_name, base::scoped_policy::RETAIN);
     }
 
-    base::ScopedCFTypeRef<CFStringRef> localized_family_name(
-        base::mac::CFCastStrict<CFStringRef>(
+    base::apple::ScopedCFTypeRef<CFStringRef> localized_family_name(
+        base::apple::CFCastStrict<CFStringRef>(
             CTFontDescriptorCopyLocalizedAttribute(descriptor,
                                                    kCTFontFamilyNameAttribute,
                                                    /*language=*/nullptr)));
@@ -154,24 +153,24 @@ class FontFamilyResolver {
     if (localized_family_name == nullptr) {
       DLOG(WARNING) << "Will use non-localized family name for font family: "
                     << family_name;
-      return base::ScopedCFTypeRef<CFStringRef>(family_name,
-                                                base::scoped_policy::RETAIN);
+      return base::apple::ScopedCFTypeRef<CFStringRef>(
+          family_name, base::scoped_policy::RETAIN);
     }
     return localized_family_name;
   }
 
   // Creates the set stored in |mandatory_attributes_|.
-  static base::ScopedCFTypeRef<CFSetRef> CreateMandatoryAttributes() {
+  static base::apple::ScopedCFTypeRef<CFSetRef> CreateMandatoryAttributes() {
     CFStringRef set_values[] = {kCTFontFamilyNameAttribute};
-    return base::ScopedCFTypeRef<CFSetRef>(CFSetCreate(
+    return base::apple::ScopedCFTypeRef<CFSetRef>(CFSetCreate(
         kCFAllocatorDefault, reinterpret_cast<const void**>(set_values),
         std::size(set_values), &kCFTypeSetCallBacks));
   }
 
   // Creates the mutable dictionary stored in |font_descriptor_attributes_|.
-  static base::ScopedCFTypeRef<CFMutableDictionaryRef>
+  static base::apple::ScopedCFTypeRef<CFMutableDictionaryRef>
   CreateFontDescriptorAttributes() {
-    return base::ScopedCFTypeRef<CFMutableDictionaryRef>(
+    return base::apple::ScopedCFTypeRef<CFMutableDictionaryRef>(
         CFDictionaryCreateMutable(kCFAllocatorDefault, /*capacity=*/1,
                                   &kCFTypeDictionaryKeyCallBacks,
                                   &kCFTypeDictionaryValueCallBacks));
@@ -180,7 +179,7 @@ class FontFamilyResolver {
   // Used for all CTFontDescriptorCreateMatchingFontDescriptors() calls.
   //
   // Caching this dictionary saves one dictionary creation per lookup.
-  const base::ScopedCFTypeRef<CFSetRef> mandatory_attributes_ =
+  const base::apple::ScopedCFTypeRef<CFSetRef> mandatory_attributes_ =
       CreateMandatoryAttributes();
 
   // Used for all CTFontDescriptorCreateMatchingFontDescriptors() calls.
@@ -189,7 +188,7 @@ class FontFamilyResolver {
   // associated with the key is overwritten as needed.
   //
   // Caching this dictionary saves one dictionary creation per lookup.
-  const base::ScopedCFTypeRef<CFMutableDictionaryRef>
+  const base::apple::ScopedCFTypeRef<CFMutableDictionaryRef>
       font_descriptor_attributes_ = CreateFontDescriptorAttributes();
 };
 
@@ -212,11 +211,7 @@ base::Value::List GetFontList_SlowBlocking() {
           << "CTFontManagerCopyAvailableFontFamilyNames returned an array with "
           << "a null element";
 
-      if (FontFamilyResolver::IsHiddenFontFamily(family_name)) {
-        continue;
-      }
-
-      base::ScopedCFTypeRef<CFStringRef> cf_normalized_family_name =
+      base::apple::ScopedCFTypeRef<CFStringRef> cf_normalized_family_name =
           resolver.CopyLocalizedFamilyName(
               base::apple::NSToCFPtrCast(family_name));
       DCHECK(cf_normalized_family_name != nullptr)

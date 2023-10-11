@@ -13,11 +13,16 @@
 
 namespace feature_engagement {
 
-absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
+namespace {
+
+// Returns a config for a standard promo. This includes a rule for "only show
+// this feature once every month."
+absl::optional<FeatureConfig> GetStandardPromoConfig(
     const base::Feature* feature) {
+  absl::optional<FeatureConfig> config;
   if (kIPHiOSPromoAppStoreFeature.name == feature->name) {
     // Should trigger once every 365 days.
-    absl::optional<FeatureConfig> config = FeatureConfig();
+    config = FeatureConfig();
     config->valid = true;
     config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(ANY, 0);
@@ -28,13 +33,12 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
         EventConfig("app_store_promo_used", Comparator(EQUAL, 0), 365, 365);
     config->trigger =
         EventConfig("app_store_promo_trigger", Comparator(EQUAL, 0), 365, 365);
-    return config;
   }
 
   if (kIPHiOSPromoWhatsNewFeature.name == feature->name) {
     // Should trigger and display What's New when requested at most once a
     // month.
-    absl::optional<FeatureConfig> config = FeatureConfig();
+    config = FeatureConfig();
     config->valid = true;
     config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(ANY, 0);
@@ -46,13 +50,12 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
     // What's New promo should be trigger no more than once a month.
     config->trigger = EventConfig("whats_new_promo_trigger",
                                   Comparator(LESS_THAN, 1), 30, 365);
-    return config;
   }
 
   if (kIPHiOSPromoDefaultBrowserFeature.name == feature->name) {
     // Should trigger at most 4 times in a year, and only after Chrome has
     // been opened 7 or more times.
-    absl::optional<FeatureConfig> config = FeatureConfig();
+    config = FeatureConfig();
     config->valid = true;
     config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(ANY, 0);
@@ -70,32 +73,13 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
     config->event_configs.insert(
         EventConfig("post_restore_default_browser_promo_trigger",
                     Comparator(EQUAL, 0), 7, 365));
-    // The promo should only show once per month.
-    config->event_configs.insert(EventConfig("default_browser_promo_trigger",
-                                             Comparator(EQUAL, 0), 30, 365));
-    return config;
-  }
-
-  if (kIPHiOSPromoPostRestoreFeature.name == feature->name) {
-    // Should always trigger when asked, as it helps users recover from being
-    // signed-out after restoring their device.
-    absl::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(ANY, 0);
-    config->used =
-        EventConfig("post_restore_promo_used", Comparator(EQUAL, 0), 365, 365);
-    // Post Restore promo should always show when requested.
-    config->trigger =
-        EventConfig("post_restore_promo_trigger", Comparator(ANY, 0), 365, 365);
-    return config;
   }
 
   if (kIPHiOSPromoCredentialProviderExtensionFeature.name == feature->name) {
     // Should show no more than 3 times. Also, the promo is first shown in a
     // different form, and then shown via this feature one day later (after
     // snoozing).
-    absl::optional<FeatureConfig> config = FeatureConfig();
+    config = FeatureConfig();
     config->valid = true;
     config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(ANY, 0);
@@ -106,10 +90,6 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
                                Comparator(EQUAL, 0), 365, 365);
     config->trigger = EventConfig("credential_provider_extension_promo_trigger",
                                   Comparator(LESS_THAN, 3), 365, 365);
-    // Standard constraint of no more than once per month.
-    config->event_configs.insert(
-        EventConfig("credential_provider_extension_promo_trigger",
-                    Comparator(LESS_THAN, 1), 30, 365));
     // To track the fake snoozing, the snooze event must have happened once, but
     // not in the past day. This acts as waiting for a day to display the promo.
     config->event_configs.insert(
@@ -118,6 +98,36 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
     config->event_configs.insert(
         EventConfig("credential_provider_extension_promo_snoozed",
                     Comparator(EQUAL, 0), 1, 365));
+    return config;
+  }
+
+  // All standard promos can only be shown once per month.
+  if (config) {
+    config->event_configs.insert(
+        EventConfig(config->trigger.name, Comparator(EQUAL, 0), 30, 365));
+    return config;
+  }
+  return absl::nullopt;
+}
+
+// Returns a config for a custom feature that does not follow the standard
+// rules.
+absl::optional<FeatureConfig> GetCustomConfig(const base::Feature* feature) {
+  if (kIPHiOSPromoPostRestoreFeature.name == feature->name) {
+    // Should always trigger when asked, as it helps users recover from being
+    // signed-out after restoring their device.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    if (base::FeatureList::IsEnabled(kIPHGroups)) {
+      config->groups.push_back(kiOSFullscreenPromosGroup.name);
+    }
+    config->used =
+        EventConfig("post_restore_promo_used", Comparator(EQUAL, 0), 365, 365);
+    // Post Restore promo should always show when requested.
+    config->trigger =
+        EventConfig("post_restore_promo_trigger", Comparator(ANY, 0), 365, 365);
     return config;
   }
 
@@ -155,6 +165,9 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
     config->valid = true;
     config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(ANY, 0);
+    if (base::FeatureList::IsEnabled(kIPHGroups)) {
+      config->groups.push_back(kiOSFullscreenPromosGroup.name);
+    }
     config->used = EventConfig("post_restore_default_browser_promo_used",
                                Comparator(EQUAL, 0), 365, 365);
     // Post Restore Default Browser promo should always show when requested.
@@ -163,6 +176,20 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
     return config;
   }
 
+  return absl::nullopt;
+}
+}  // namespace
+
+absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
+    const base::Feature* feature) {
+  absl::optional<FeatureConfig> config = GetStandardPromoConfig(feature);
+  if (config) {
+    return config;
+  }
+  config = GetCustomConfig(feature);
+  if (config) {
+    return config;
+  }
   return absl::nullopt;
 }
 

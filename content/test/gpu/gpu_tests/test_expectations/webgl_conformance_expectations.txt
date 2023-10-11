@@ -18,11 +18,14 @@
 # tags: [ desktop
 #         mobile ]
 # Browser
-# tags: [ android-chromium android-webview-instrumentation
+# tags: [ android-chromium
+#         android-webview-instrumentation
 #         debug debug-x64
 #         release release-x64
-#         fuchsia-chrome web-engine-shell
-#         lacros-chrome cros-chrome ]
+#         fuchsia-chrome
+#         web-engine-shell
+#         lacros-chrome
+#         cros-chrome ]
 # GPU
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x67ef amd-0x6821 amd-0x7340
 #         apple apple-apple-m1 apple-apple-m2
@@ -31,7 +34,7 @@
 #         arm
 #         google google-0xffff google-0xc0de
 #         intel intel-gen-9 intel-gen-12 intel-0xa2e intel-0xd26 intel-0xa011
-#               intel-0x3e92 intel-0x3e9b intel-0x5912 intel-0x9bc5
+#             intel-0x3e92 intel-0x3e9b intel-0x5912 intel-0x9bc5
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm ]
 # Architecture
@@ -67,6 +70,8 @@
 # tags: [ webgpu-adapter-default webgpu-adapter-swiftshader ]
 # WebGPU Compat Mode
 # tags: [ webgpu-compat webgpu-not-compat ]
+# WebGPU DXC
+# tags: [ webgpu-dxc-enabled webgpu-dxc-disabled webgpu-dxc-default ]
 # Clang coverage
 # tags: [ clang-coverage no-clang-coverage ]
 # Skia Graphite
@@ -128,6 +133,10 @@
 crbug.com/808744 [ android ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/808744 [ fuchsia ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
+# KHR_parallel_shader_compile will not be exposed on OpenGL drivers that don't have support for it.
+crbug.com/angleproject/3031 [ android angle-opengles passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
+crbug.com/angleproject/3031 [ mac angle-opengl passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
+crbug.com/angleproject/3031 [ win angle-opengl passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
 crbug.com/776222 [ android ] WebglExtension_WEBGL_video_texture [ Skip ]
 
 # Extensions not available with SwiftShader
@@ -141,16 +150,35 @@ crbug.com/1099955 [ angle-swiftshader linux ] WebglExtension_EXT_texture_compres
 crbug.com/1099955 [ angle-swiftshader win   ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 
 # Extensions not available under D3D9
-crbug.com/867718 [ win angle-d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
-[ win amd angle-d3d9 ] WebglExtension_WEBGL_depth_texture [ Skip ]
-[ win angle-d3d9 ] WebglExtension_WEBGL_draw_buffers [ Skip ]
-[ win angle-d3d9 ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-[ win angle-d3d9 ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+[ win passthrough angle-d3d9 ] WebglExtension_EXT_clip_control [ Skip ]
+[ win passthrough angle-d3d9 ] WebglExtension_EXT_depth_clamp [ Skip ]
+crbug.com/867718 [ win passthrough angle-d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+[ win passthrough amd angle-d3d9 ] WebglExtension_WEBGL_depth_texture [ Skip ]
+[ win passthrough angle-d3d9 ] WebglExtension_WEBGL_draw_buffers [ Skip ]
+[ win passthrough angle-d3d9 ] WebglExtension_WEBGL_polygon_mode [ Skip ]
+[ win passthrough angle-d3d9 ] WebglExtension_EXT_polygon_offset_clamp [ Skip ]
+[ win passthrough angle-d3d9 ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ win passthrough angle-d3d9 ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+
+# Extensions only available via passthrough decoder
+[ no-passthrough ] WebglExtension_EXT_clip_control [ Skip ]
+[ no-passthrough ] WebglExtension_EXT_depth_clamp [ Skip ]
+[ no-passthrough ] WebglExtension_EXT_polygon_offset_clamp [ Skip ]
+[ no-passthrough ] WebglExtension_EXT_texture_mirror_clamp_to_edge [ Skip ]
+[ no-passthrough ] WebglExtension_WEBGL_polygon_mode [ Skip ]
+
+# Extensions not available under macOS OpenGL
+[ mac passthrough angle-opengl ] WebglExtension_EXT_clip_control [ Skip ]
+[ mac passthrough angle-opengl ] WebglExtension_EXT_polygon_offset_clamp [ Skip ]
 
 # Android general
 [ android ] WebglExtension_EXT_frag_depth [ Skip ]
 [ android ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
 [ android ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
+crbug.com/1473838 [ android passthrough ] WebglExtension_EXT_depth_clamp [ Skip ]
+crbug.com/1473838 [ android passthrough ] WebglExtension_EXT_polygon_offset_clamp [ Skip ]
+crbug.com/1473838 [ android passthrough ] WebglExtension_EXT_texture_mirror_clamp_to_edge [ Skip ]
+crbug.com/1473838 [ android passthrough ] WebglExtension_WEBGL_polygon_mode [ Skip ]
 
 # Android hardware-specific
 [ android nvidia ] WebglExtension_EXT_float_blend [ Skip ]
@@ -162,6 +190,7 @@ crbug.com/867718 [ win angle-d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Sk
 [ android qualcomm ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 [ android android-nexus-5x ] WebglExtension_WEBGL_depth_texture [ Skip ]
 [ android android-nexus-5x ] WebglExtension_EXT_sRGB [ Skip ]
+crbug.com/1473838 [ android android-nexus-5x passthrough ] WebglExtension_EXT_clip_control [ Skip ]
 crbug.com/1286830 [ android arm ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 crbug.com/1286830 [ android arm ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 
@@ -182,50 +211,39 @@ crbug.com/957807 [ chromeos ] WebglExtension_EXT_sRGB [ Skip ]
 crbug.com/957807 [ chromeos ] WebglExtension_EXT_shader_texture_lod [ Skip ]
 crbug.com/957807 [ chromeos ] WebglExtension_EXT_texture_filter_anisotropic [ Skip ]
 crbug.com/957807 [ chromeos ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
+crbug.com/1473838 [ chromeos passthrough ] WebglExtension_EXT_texture_mirror_clamp_to_edge [ Skip ]
+crbug.com/1473838 [ chromeos passthrough ] WebglExtension_WEBGL_polygon_mode [ Skip ]
+
+# Extensions not available on LaCrOS (ChromeOS / Intel bot).
+crbug.com/1473838 [ linux intel passthrough display-server-wayland ] WebglExtension_EXT_texture_mirror_clamp_to_edge [ Skip ]
+crbug.com/1473838 [ linux intel passthrough display-server-wayland ] WebglExtension_WEBGL_polygon_mode [ Skip ]
 
 # Extensions not available on Fuchsia
 [ fuchsia ] WebglExtension_EXT_shader_texture_lod [ Skip ]
 [ fuchsia ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-[ fuchsia fuchsia-board-astro ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
-[ fuchsia fuchsia-board-sherlock ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
-[ fuchsia fuchsia-board-astro ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
-[ fuchsia fuchsia-board-sherlock ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+[ fuchsia web-engine-shell ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
+[ fuchsia web-engine-shell ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+[ fuchsia web-engine-shell passthrough ] WebglExtension_WEBGL_polygon_mode [ Skip ]
+[ fuchsia web-engine-shell passthrough ] WebglExtension_EXT_depth_clamp [ Skip ]
 
 # Disabling as they cannot pass with protected memory.
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/texture-npot-video.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-astro ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/misc/texture-npot-video.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
-crbug.com/1417006 [ fuchsia fuchsia-board-sherlock ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/misc/texture-npot-video.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
+crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
 
 # This test uses H.264 and the ChromeOS and Fuchsia bots aren't compiled with
 # proprietary codecs.
@@ -237,16 +255,6 @@ crbug.com/1080360 [ chromeos chromeos-board-kevin ] WebglExtension_EXT_texture_c
 crbug.com/1080401 [ chromeos chromeos-board-kevin ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 crbug.com/1080408 [ chromeos chromeos-board-kevin ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
 crbug.com/1080377 [ chromeos chromeos-board-kevin ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
-
-# Video not supported on Fuchsia qemu boards.
-[ fuchsia fuchsia-board-qemu-x64 ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
-[ fuchsia fuchsia-board-qemu-x64 ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
-[ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/image_bitmap_from_video/* [ Skip ]
-[ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/video/* [ Skip ]
-[ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Skip ]
-[ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/texture-npot-video.html [ Skip ]
-[ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/texture-video-transparent.html [ Skip ]
-[ fuchsia fuchsia-board-qemu-x64 ] conformance/textures/misc/texture-upload-size.html [ Skip ]
 
 # The following test is very slow and therefore times out on Android bot.
 [ android ] conformance/rendering/multisample-corruption.html [ Skip ]
@@ -413,12 +421,10 @@ crbug.com/angleproject/6358 [ no-passthrough ] conformance/programs/program-test
 # Fuchsia failures #
 ####################
 
-crbug.com/1371306 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
-crbug.com/1371306 [ fuchsia fuchsia-board-sherlock ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
+crbug.com/1371306 [ fuchsia web-engine-shell ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
 
 # Flaky tests
-[ fuchsia fuchsia-board-astro ] WebglExtension_EXT_float_blend [ Failure ]
-[ fuchsia fuchsia-board-sherlock ] WebglExtension_EXT_float_blend [ Failure ]
+[ fuchsia web-engine-shell ] WebglExtension_EXT_float_blend [ Failure ]
 
 # Anti-aliasing disabled on Fuchsia
 [ fuchsia ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
@@ -440,6 +446,10 @@ crbug.com/956134 [ angle-d3d9 intel-0x9bc5 release-x64 target-cpu-64 win ] confo
 crbug.com/1409858 [ win amd-0x7340 angle-d3d11 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
 crbug.com/1152597 [ win amd-0x7340 angle-d3d11 ] conformance/renderbuffers/framebuffer-state-restoration.html [ Failure ]
 crbug.com/1152599 [ win amd-0x7340 angle-d3d11 ] conformance/rendering/polygon-offset.html [ Failure ]
+
+# New extensions failing on Win/AMD
+crbug.com/1473838 [ win amd-0x7340 angle-d3d11 ] conformance/extensions/ext-clip-control.html [ Failure ]
+crbug.com/1473838 [ win amd-0x7340 angle-d3d11 ] conformance/extensions/webgl-polygon-mode.html [ Failure ]
 
 ## D3D9 / AMD RX 5500 XT / Passthrough command decoder ##
 
@@ -479,7 +489,6 @@ crbug.com/844311 [ angle-opengl mac ] conformance/glsl/misc/fragcolor-fragdata-i
 ## Mac AMD failures ##
 
 crbug.com/642822 [ mac amd ] conformance/rendering/clipping-wide-points.html [ Failure ]
-crbug.com/1230781 [ amd-0x679e angle-opengl mac ] conformance/canvas/to-data-url-test.html [ Failure ]
 crbug.com/1230781 [ mac amd-0x67ef angle-opengl ] conformance/canvas/to-data-url-test.html [ Failure ]
 
 
@@ -544,7 +553,7 @@ crbug.com/angleproject/5038 [ android-pie android-shield-android-tv no-passthrou
 
 # Was too difficult to suppress these failures on individual bots.
 crbug.com/1165751 [ android-nougat ] conformance/glsl/bugs/vector-matrix-constructor-scalarization.html [ Failure ]
-
+crbug.com/1470376 [ android-oreo ] conformance/glsl/bugs/vector-matrix-constructor-scalarization.html [ Failure ]
 
 # These video tests are flakey on many configurations.
 crbug.com/1347077 [ android-nexus-5x android-nougat angle-opengles passthrough qualcomm renderer-skia-gl target-cpu-64 ] conformance/textures/misc/video-rotation.html [ Failure ]
@@ -560,6 +569,9 @@ crbug.com/1056830 [ android android-nexus-5x ] conformance/extensions/webgl-comp
 crbug.com/1122644 [ android android-nexus-5x angle-opengles passthrough ] conformance/textures/misc/texture-upload-size.html [ Failure ]
 # Flakily returning RGBA(0,0,0,0) for pixels in video related tests
 crbug.com/1295370 [ android android-nexus-5x passthrough ] conformance/textures/video/* [ Failure ]
+
+# Fails on android oreo
+crbug.com/1470373 [ android-oreo android-nexus-5x passthrough ] conformance/textures/misc/video-rotation.html [ Failure ]
 
 ## Android NVIDIA Shield TV ##
 
@@ -602,8 +614,8 @@ crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conf
 crbug.com/1276552 [ android-pixel-4 android-r passthrough qualcomm renderer-skia-gl target-cpu-32 ] conformance/canvas/render-after-resize-test.html [ Failure ]
 
 # Failing test when experiment DrDc is enabled via fieldtrial_testing_config.json.
-crbug.com/1289303 [ android angle-disabled no-passthrough qualcomm renderer-skia-gl target-cpu-32 ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
-crbug.com/1289303 [ android-pixel-4 android-r ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
+crbug.com/1289303 [ android android-sm-a235m ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
+crbug.com/1289303 [ android-r android-pixel-4 ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
 
 ## Samsung failures ##
 
@@ -650,11 +662,11 @@ crbug.com/1357064 [ chromeos chromeos-board-amd64-generic no-passthrough ] confo
 # Lacros failures #
 #####################
 
+
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi arm angle-opengles passthrough ] conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/glsl/bugs/constant-precision-qualifier.html [ Failure ]
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/misc/shader-precision-format.html [ Failure ]
-
 
 ###########################
 # Lacros/Wayland failures #

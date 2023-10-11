@@ -1,5 +1,5 @@
 # -*- bazel-starlark -*-
-# Copyright 2023 The Chromium Authors. All rights reserved.
+# Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Siso configuration for mojo."""
@@ -156,6 +156,20 @@ def __step_config(ctx, step_config):
             },
             "remote": True,
             "input_root_absolute_path": True,
+            "output_local": True,
+            "platform_ref": platform_ref,
+        },
+        {
+            "name": "mojo/validate_typemap_config",
+            "command_prefix": "python3 ../../mojo/public/tools/bindings/validate_typemap_config.py",
+            "remote": True,
+            "output_local": True,
+            "platform_ref": platform_ref,
+        },
+        {
+            "name": "mojo/generate_type_mappings",
+            "command_prefix": "python3 ../../mojo/public/tools/bindings/generate_type_mappings.py",
+            "remote": True,
             "output_local": True,
             "platform_ref": platform_ref,
         },

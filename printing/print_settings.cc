@@ -93,6 +93,14 @@ void GetColorModelForModel(mojom::ColorModel color_model,
       *color_setting_name = kColor;
       *color_value = kBlack;
       break;
+    case mojom::ColorModel::kHpPjlColorAsGrayNo:
+      *color_setting_name = kCUPSHpPjlColorAsGray;
+      *color_value = kHpPjlColorAsGrayNo;
+      break;
+    case mojom::ColorModel::kHpPjlColorAsGrayYes:
+      *color_setting_name = kCUPSHpPjlColorAsGray;
+      *color_value = kHpPjlColorAsGrayYes;
+      break;
     case mojom::ColorModel::kPrintoutModeNormal:
       *color_setting_name = kCUPSPrintoutMode;
       *color_value = kNormal;
@@ -223,6 +231,7 @@ absl::optional<bool> IsColorModelSelected(mojom::ColorModel color_model) {
     case mojom::ColorModel::kRGBA:
     case mojom::ColorModel::kColorModeColor:
     case mojom::ColorModel::kHPColorColor:
+    case mojom::ColorModel::kHpPjlColorAsGrayNo:
     case mojom::ColorModel::kPrintoutModeNormal:
     case mojom::ColorModel::kProcessColorModelCMYK:
     case mojom::ColorModel::kProcessColorModelRGB:
@@ -242,6 +251,7 @@ absl::optional<bool> IsColorModelSelected(mojom::ColorModel color_model) {
     case mojom::ColorModel::kGrayscale:
     case mojom::ColorModel::kColorModeMonochrome:
     case mojom::ColorModel::kHPColorBlack:
+    case mojom::ColorModel::kHpPjlColorAsGrayYes:
     case mojom::ColorModel::kPrintoutModeNormalGray:
     case mojom::ColorModel::kProcessColorModelGreyscale:
     case mojom::ColorModel::kBrotherCUPSMono:
@@ -298,12 +308,13 @@ PrintSettings& PrintSettings::operator=(const PrintSettings& settings) {
   device_name_ = settings.device_name_;
   requested_media_ = settings.requested_media_;
   page_setup_device_units_ = settings.page_setup_device_units_;
+  borderless_ = settings.borderless_;
+  media_type_ = settings.media_type_;
   dpi_ = settings.dpi_;
   scale_factor_ = settings.scale_factor_;
   rasterize_pdf_ = settings.rasterize_pdf_;
   rasterize_pdf_dpi_ = settings.rasterize_pdf_dpi_;
   landscape_ = settings.landscape_;
-  supports_alpha_blend_ = settings.supports_alpha_blend_;
 #if BUILDFLAG(IS_WIN)
   printer_language_type_ = settings.printer_language_type_;
 #endif
@@ -320,6 +331,9 @@ PrintSettings& PrintSettings::operator=(const PrintSettings& settings) {
   pin_value_ = settings.pin_value_;
   client_infos_ = settings.client_infos_;
 #endif  // BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENABLE_OOP_PRINTING_NO_OOP_BASIC_PRINT_DIALOG)
+  system_print_dialog_data_ = settings.system_print_dialog_data_.Clone();
+#endif
   return *this;
 }
 
@@ -330,7 +344,7 @@ bool PrintSettings::operator==(const PrintSettings& other) const {
                   display_header_footer_, should_print_backgrounds_, collate_,
                   color_, copies_, duplex_mode_, device_name_, requested_media_,
                   page_setup_device_units_, dpi_, scale_factor_, rasterize_pdf_,
-                  rasterize_pdf_dpi_, landscape_, supports_alpha_blend_,
+                  rasterize_pdf_dpi_, landscape_,
 #if BUILDFLAG(IS_WIN)
                   printer_language_type_,
 #endif
@@ -354,7 +368,6 @@ bool PrintSettings::operator==(const PrintSettings& other) const {
                   other.requested_media_, other.page_setup_device_units_,
                   other.dpi_, other.scale_factor_, other.rasterize_pdf_,
                   other.rasterize_pdf_dpi_, other.landscape_,
-                  other.supports_alpha_blend_,
 #if BUILDFLAG(IS_WIN)
                   other.printer_language_type_,
 #endif
@@ -389,12 +402,13 @@ void PrintSettings::Clear() {
   device_name_.clear();
   requested_media_ = RequestedMedia();
   page_setup_device_units_.Clear();
+  borderless_ = false;
+  media_type_.clear();
   dpi_ = gfx::Size();
   scale_factor_ = 1.0f;
   rasterize_pdf_ = false;
   rasterize_pdf_dpi_ = 0;
   landscape_ = false;
-  supports_alpha_blend_ = true;
 #if BUILDFLAG(IS_WIN)
   printer_language_type_ = mojom::PrinterLanguageType::kNone;
 #endif
@@ -410,6 +424,9 @@ void PrintSettings::Clear() {
   pin_value_.clear();
   client_infos_.clear();
 #endif  // BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENABLE_OOP_PRINTING_NO_OOP_BASIC_PRINT_DIALOG)
+  system_print_dialog_data_.clear();
+#endif
 }
 
 void PrintSettings::SetPrinterPrintableArea(

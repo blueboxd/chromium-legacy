@@ -442,12 +442,14 @@ void ResourceLoader::CodeCacheRequest::MaybeSendCachedCode(
   }
 }
 
-ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
-                               ResourceLoadScheduler* scheduler,
-                               Resource* resource,
-                               ContextLifecycleNotifier* context,
-                               ResourceRequestBody request_body,
-                               uint32_t inflight_keepalive_bytes)
+ResourceLoader::ResourceLoader(
+    ResourceFetcher* fetcher,
+    ResourceLoadScheduler* scheduler,
+    Resource* resource,
+    ContextLifecycleNotifier* context,
+    ResourceRequestBody request_body,
+    uint32_t inflight_keepalive_bytes,
+    absl::optional<mojom::blink::WebFeature> count_orb_block_as)
     : scheduler_client_id_(ResourceLoadScheduler::kInvalidClientId),
       fetcher_(fetcher),
       scheduler_(scheduler),
@@ -458,7 +460,8 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
       progress_receiver_(this, context),
       cancel_timer_(fetcher_->GetTaskRunner(),
                     this,
-                    &ResourceLoader::CancelTimerFired) {
+                    &ResourceLoader::CancelTimerFired),
+      count_orb_block_as_(count_orb_block_as) {
   DCHECK(resource_);
   DCHECK(fetcher_);
 
@@ -633,9 +636,11 @@ void ResourceLoader::DidFinishLoadingBody() {
 
   const ResourceResponse& response = resource_->GetResponse();
   if (deferred_finish_loading_info_) {
-    DidFinishLoading(deferred_finish_loading_info_->response_end_time,
-                     response.EncodedDataLength(), response.EncodedBodyLength(),
-                     response.DecodedBodyLength());
+    DidFinishLoading(
+        deferred_finish_loading_info_->response_end_time,
+        response.EncodedDataLength(), response.EncodedBodyLength(),
+        response.DecodedBodyLength(),
+        deferred_finish_loading_info_->should_report_corb_blocking);
   }
 }
 
@@ -1027,10 +1032,22 @@ void ResourceLoader::DidReceiveResponseInternal(
                             response_arrival - request_start);
   }
 
+  AtomicString content_encoding =
+      response.HttpHeaderField(http_names::kContentEncoding);
+  if (content_encoding.LowerASCII() == "zstd") {
+    fetcher_->GetUseCounter().CountUse(WebFeature::kZstdContentEncoding);
+  }
   if (response.DidUseSharedDictionary()) {
     fetcher_->GetUseCounter().CountUse(WebFeature::kSharedDictionaryUsed);
     fetcher_->GetUseCounter().CountUse(
         WebFeature::kSharedDictionaryUsedForSubresource);
+    if (content_encoding.LowerASCII() == "sbr") {
+      fetcher_->GetUseCounter().CountUse(
+          WebFeature::kSharedDictionaryUsedWithSharedBrotli);
+    } else if (content_encoding.LowerASCII() == "zstd-d") {
+      fetcher_->GetUseCounter().CountUse(
+          WebFeature::kSharedDictionaryUsedWithSharedZstd);
+    }
   }
 
   if (response.HasAuthorizationCoveredByWildcardOnPreflight()) {
@@ -1286,7 +1303,8 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
 void ResourceLoader::DidFinishLoading(base::TimeTicks response_end_time,
                                       int64_t encoded_data_length,
                                       uint64_t encoded_body_length,
-                                      int64_t decoded_body_length) {
+                                      int64_t decoded_body_length,
+                                      bool should_report_corb_blocking) {
   if (resource_->response_.WasFetchedViaServiceWorker()) {
     encoded_body_length = received_body_length_from_service_worker_;
     decoded_body_length = received_body_length_from_service_worker_;
@@ -1303,8 +1321,8 @@ void ResourceLoader::DidFinishLoading(base::TimeTicks response_end_time,
       (is_downloading_to_blob_ && !blob_finished_ && blob_response_started_)) {
     // If the body is still being loaded, we defer the completion until all the
     // body is received.
-    deferred_finish_loading_info_ =
-        DeferredFinishLoadingInfo{response_end_time};
+    deferred_finish_loading_info_ = DeferredFinishLoadingInfo{
+        response_end_time, should_report_corb_blocking};
 
     if (data_pipe_completion_notifier_) {
       data_pipe_completion_notifier_->SignalComplete();
@@ -1330,6 +1348,10 @@ void ResourceLoader::DidFinishLoading(base::TimeTicks response_end_time,
   fetcher_->HandleLoaderFinish(resource_.Get(), response_end_time,
                                ResourceFetcher::kDidFinishLoading,
                                inflight_keepalive_bytes_);
+
+  if (should_report_corb_blocking) {
+    CountOrbBlock();
+  }
 }
 
 void ResourceLoader::DidFail(const WebURLError& error,
@@ -1496,7 +1518,8 @@ void ResourceLoader::RequestSynchronously(const ResourceRequestHead& request) {
     FinishedCreatingBlob(std::move(downloaded_blob));
   }
   DidFinishLoading(base::TimeTicks::Now(), encoded_data_length,
-                   encoded_body_length, decoded_body_length);
+                   encoded_body_length, decoded_body_length,
+                   /* should_report_corb_blocking */ false);
 }
 
 void ResourceLoader::RequestAsynchronously(const ResourceRequestHead& request) {
@@ -1625,9 +1648,11 @@ void ResourceLoader::FinishedCreatingBlob(
   blob_finished_ = true;
   if (deferred_finish_loading_info_) {
     const ResourceResponse& response = resource_->GetResponse();
-    DidFinishLoading(deferred_finish_loading_info_->response_end_time,
-                     response.EncodedDataLength(), response.EncodedBodyLength(),
-                     response.DecodedBodyLength());
+    DidFinishLoading(
+        deferred_finish_loading_info_->response_end_time,
+        response.EncodedDataLength(), response.EncodedBodyLength(),
+        response.DecodedBodyLength(),
+        deferred_finish_loading_info_->should_report_corb_blocking);
   }
 }
 
@@ -1698,7 +1723,8 @@ void ResourceLoader::HandleDataUrl() {
 
   // DidFinishLoading() may deferred until the response body loader reaches to
   // end.
-  DidFinishLoading(base::TimeTicks::Now(), data_size, data_size, data_size);
+  DidFinishLoading(base::TimeTicks::Now(), data_size, data_size, data_size,
+                   false /* should_report_corb_blocking */);
 }
 
 bool ResourceLoader::ShouldBlockRequestBasedOnSubresourceFilterDnsAliasCheck(
@@ -1793,4 +1819,18 @@ void ResourceLoader::CancelIfWebBundleTokenMatches(
   }
 }
 
+void ResourceLoader::CountOrbBlock() const {
+  if (!count_orb_block_as_) {
+    return;
+  }
+
+  DCHECK_LE(WebFeature::kORBBlockWithoutAnyEventHandler, *count_orb_block_as_);
+  DCHECK_LE(*count_orb_block_as_,
+            WebFeature::kORBBlockWithOnLoadAndOnErrorEventHandler);
+  fetcher_->GetUseCounter().CountUse(*count_orb_block_as_);
+  if (*count_orb_block_as_ != WebFeature::kORBBlockWithoutAnyEventHandler) {
+    fetcher_->GetUseCounter().CountUse(
+        WebFeature::kORBBlockWithAnyEventHandler);
+  }
+}
 }  // namespace blink

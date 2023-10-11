@@ -24,6 +24,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -38,7 +39,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_select_element.h"
-#include "third_party/blink/public/web/web_select_menu_element.h"
+#include "third_party/blink/public/web/web_select_list_element.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "third_party/blink/public/web/win/web_font_rendering.h"
@@ -281,12 +282,12 @@ bool ClickElement(const WebDocument& document,
 
 class FormAutofillTest : public ChromeRenderViewTest {
  public:
-  FormAutofillTest() : ChromeRenderViewTest() {}
+  FormAutofillTest() = default;
 
   FormAutofillTest(const FormAutofillTest&) = delete;
   FormAutofillTest& operator=(const FormAutofillTest&) = delete;
 
-  ~FormAutofillTest() override {}
+  ~FormAutofillTest() override = default;
 
 #if BUILDFLAG(IS_WIN)
   void SetUp() override {
@@ -356,19 +357,19 @@ class FormAutofillTest : public ChromeRenderViewTest {
         values;
 
     id_attributes.push_back(u"firstname");
-    name_attributes.push_back(std::u16string());
+    name_attributes.emplace_back();
     labels.push_back(u"First name:");
     names.push_back(id_attributes.back());
     values.push_back(u"John");
 
     id_attributes.push_back(u"lastname");
-    name_attributes.push_back(std::u16string());
+    name_attributes.emplace_back();
     labels.push_back(u"Last name:");
     names.push_back(id_attributes.back());
     values.push_back(u"Smith");
 
     id_attributes.push_back(u"email");
-    name_attributes.push_back(std::u16string());
+    name_attributes.emplace_back();
     labels.push_back(u"Email:");
     names.push_back(id_attributes.back());
     values.push_back(u"john@example.com");
@@ -382,19 +383,19 @@ class FormAutofillTest : public ChromeRenderViewTest {
   void ExpectJohnSmithLabelsAndNameAttributes(const char* html) {
     std::vector<std::u16string> id_attributes, name_attributes, labels, names,
         values;
-    id_attributes.push_back(std::u16string());
+    id_attributes.emplace_back();
     name_attributes.push_back(u"firstname");
     labels.push_back(u"First name:");
     names.push_back(name_attributes.back());
     values.push_back(u"John");
 
-    id_attributes.push_back(std::u16string());
+    id_attributes.emplace_back();
     name_attributes.push_back(u"lastname");
     labels.push_back(u"Last name:");
     names.push_back(name_attributes.back());
     values.push_back(u"Smith");
 
-    id_attributes.push_back(std::u16string());
+    id_attributes.emplace_back();
     name_attributes.push_back(u"email");
     labels.push_back(u"Email:");
     names.push_back(name_attributes.back());
@@ -404,7 +405,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   typedef WebString (*GetValueFunction)(WebFormControlElement element);
 
-  // Test FormFillxxx functions.
+  // Test FormFill* functions.
   void TestFormFillFunctions(
       const char* html,
       bool unowned,
@@ -469,7 +470,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     }
 
     // Autofill the form using the given fill form function.
-    FillOrPreviewForm(form_data, input_element, action_persistence);
+    ApplyAutofillAction(form_data, input_element,
+                        mojom::AutofillActionType::kFill, action_persistence);
 
     // Validate Autofill or Preview results.
     for (size_t i = 0; i < number_of_field_cases; ++i) {
@@ -848,8 +850,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     form.fields[0].is_autofilled = true;
     form.fields[1].is_autofilled = true;
     form.fields[2].is_autofilled = true;
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kFill);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kFill);
 
     // Find the newly-filled form that contains the input element.
     FormData form2;
@@ -934,8 +936,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     form.fields[0].value = u"Brother";
     form.fields[1].value = u"Jonathan";
     form.fields[2].value = u"brotherj@example.com";
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kFill);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kFill);
 
     // Find the newly-filled form that contains the input element.
     FormData form2;
@@ -1012,8 +1014,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     form.fields[0].value = u"Wyatt";
     form.fields[1].value = u"Earp";
     form.fields[2].value = u"wyatt@example.com";
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kFill);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kFill);
 
     // Find the newly-filled form that contains the input element.
     FormData form2;
@@ -1101,8 +1103,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     form.fields[unowned_offset + 0].is_autofilled = true;
     form.fields[unowned_offset + 1].is_autofilled = true;
     form.fields[unowned_offset + 2].is_autofilled = true;
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kFill);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kFill);
 
     // Find the newly-filled form that contains the input element.
     FormData form2;
@@ -1224,15 +1226,15 @@ class FormAutofillTest : public ChromeRenderViewTest {
     form.fields[0].is_autofilled = true;
     form.fields[1].is_autofilled = true;
     form.fields[2].is_autofilled = true;
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kPreview);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kPreview);
     // The selection should be set after the second character.
     EXPECT_EQ(2, input_element.SelectionStart());
     EXPECT_EQ(2, input_element.SelectionEnd());
 
     // Fill the form.
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kFill);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kFill);
 
     // Find the newly-filled form that contains the input element.
     FormData form2;
@@ -1360,15 +1362,15 @@ class FormAutofillTest : public ChromeRenderViewTest {
     form.fields[3].is_autofilled = true;
     form.fields[4].is_autofilled = true;
     form.fields[5].is_autofilled = true;
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kPreview);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kPreview);
     // The selection should be set after the fifth character.
     EXPECT_EQ(5, input_element.SelectionStart());
     EXPECT_EQ(5, input_element.SelectionEnd());
 
     // Fill the form.
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kFill);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kFill);
 
     // Find the newly-filled form that contains the input element.
     FormData form2;
@@ -1518,15 +1520,15 @@ class FormAutofillTest : public ChromeRenderViewTest {
     form.fields[0].is_autofilled = true;
     form.fields[1].is_autofilled = true;
     form.fields[2].is_autofilled = false;
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kPreview);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kPreview);
     // The selection should be set after the fifth character.
     EXPECT_EQ(5, input_element.SelectionStart());
     EXPECT_EQ(5, input_element.SelectionEnd());
 
     // Fill the form.
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kFill);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kFill);
 
     // Find the newly-filled form that contains the input element.
     FormData form2;
@@ -1634,15 +1636,15 @@ class FormAutofillTest : public ChromeRenderViewTest {
     form.fields[0].is_autofilled = true;
     form.fields[1].is_autofilled = true;
     form.fields[2].is_autofilled = true;
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kPreview);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kPreview);
     // The selection should be set after the 19th character.
     EXPECT_EQ(19, input_element.SelectionStart());
     EXPECT_EQ(19, input_element.SelectionEnd());
 
     // Fill the form.
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kFill);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kFill);
 
     // Find the newly-filled form that contains the input element.
     FormData form2;
@@ -1753,15 +1755,15 @@ class FormAutofillTest : public ChromeRenderViewTest {
     form.fields[0].is_autofilled = true;
     form.fields[1].is_autofilled = true;
     form.fields[2].is_autofilled = true;
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kPreview);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kPreview);
     // The selection should be set after the 19th character.
     EXPECT_EQ(19, input_element.SelectionStart());
     EXPECT_EQ(19, input_element.SelectionEnd());
 
     // Fill the form.
-    FillOrPreviewForm(form, input_element,
-                      mojom::AutofillActionPersistence::kFill);
+    ApplyAutofillAction(form, input_element, mojom::AutofillActionType::kFill,
+                        mojom::AutofillActionPersistence::kFill);
 
     // Find the newly-filled form that contains the input element.
     FormData form2;
@@ -2148,7 +2150,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     }
 
     // Clear the previewed fields.
-    ClearPreviewedElements(elements, lastname, WebAutofillState::kNotFilled);
+    ClearPreviewedElements(mojom::AutofillActionType::kFill, elements, lastname,
+                           WebAutofillState::kNotFilled);
 
     // Verify the previewed fields are cleared.
     for (size_t i = 0; i < elements.size(); ++i) {
@@ -2195,7 +2198,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     elements[4].SetSuggestedValue(WebString::FromASCII("650-777-9999"));
 
     // Clear the previewed fields.
-    ClearPreviewedElements(elements, firstname, WebAutofillState::kNotFilled);
+    ClearPreviewedElements(mojom::AutofillActionType::kFill, elements,
+                           firstname, WebAutofillState::kNotFilled);
 
     // Fields with non-empty values are restored.
     EXPECT_EQ(u"W", firstname.Value().Utf16());
@@ -2245,7 +2249,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     elements[4].SetSuggestedValue(WebString::FromASCII("650-777-9999"));
 
     // Clear the previewed fields.
-    ClearPreviewedElements(elements, firstname, WebAutofillState::kAutofilled);
+    ClearPreviewedElements(mojom::AutofillActionType::kFill, elements,
+                           firstname, WebAutofillState::kAutofilled);
 
     // Fields with non-empty values are restored.
     EXPECT_EQ(u"W", firstname.Value().Utf16());
@@ -2563,6 +2568,46 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldLongSelect) {
   EXPECT_TRUE(result.options.empty());
 }
 
+// Test that we use the aria-label as the content if the <option> has no text.
+TEST_F(FormAutofillTest, WebFormControlElementToFormFieldSelectListAriaLabel) {
+  LoadHTML(
+      "<SELECTLIST id='element'>"
+      "<OPTION aria-label='usa'><img/></OPTION>"
+      "<OPTION aria-label='uk'><img/></OPTION>"
+      "</SELECTLIST>");
+
+  WebLocalFrame* frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+  WebFormControlElement element = GetFormControlElementById("element");
+
+  FormFieldData result;
+  WebFormControlElementToFormField(WebFormElement(), element, nullptr,
+                                   EXTRACT_OPTIONS, &result);
+  ASSERT_EQ(2u, result.options.size());
+  EXPECT_EQ(u"usa", result.options[0].content);
+  EXPECT_EQ(u"uk", result.options[1].content);
+}
+
+// Test that the content for the <option> can be computed when the <option>s
+// have nested HTML nodes.
+TEST_F(FormAutofillTest,
+       WebFormControlElementToFormFieldSelectListNestedNodes) {
+  LoadHTML(
+      "<SELECTLIST id='element'>"
+      "<OPTION><div><img/><b>+1</b> (Canada)</div></OPTION>"
+      "</SELECTLIST>");
+
+  WebLocalFrame* frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+  WebFormControlElement element = GetFormControlElementById("element");
+
+  FormFieldData result;
+  WebFormControlElementToFormField(WebFormElement(), element, nullptr,
+                                   EXTRACT_OPTIONS, &result);
+  ASSERT_EQ(1u, result.options.size());
+  EXPECT_EQ(u"+1 (Canada)", result.options[0].content);
+}
+
 // We should be able to extract a <textarea> field.
 TEST_F(FormAutofillTest, WebFormControlElementToFormFieldTextArea) {
   LoadHTML("<TEXTAREA id='element'>"
@@ -2736,25 +2781,25 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompletetype) {
   };
 
   WebDocument document = frame->GetDocument();
-  for (size_t i = 0; i < std::size(test_cases); ++i) {
-    WebFormControlElement element = GetFormControlElementById(
-        WebString::FromASCII(test_cases[i].element_id));
+  for (auto& test_case : test_cases) {
+    WebFormControlElement element =
+        GetFormControlElementById(WebString::FromASCII(test_case.element_id));
     FormFieldData result;
     WebFormControlElementToFormField(WebFormElement(), element, nullptr,
                                      EXTRACT_NONE, &result);
 
     FormFieldData expected;
-    expected.id_attribute = ASCIIToUTF16(test_cases[i].element_id);
+    expected.id_attribute = ASCIIToUTF16(test_case.element_id);
     expected.name = expected.id_attribute;
-    expected.form_control_type = test_cases[i].form_control_type;
-    expected.max_length = test_cases[i].form_control_type == "text"
+    expected.form_control_type = test_case.form_control_type;
+    expected.max_length = test_case.form_control_type == "text"
                               ? WebInputElement::DefaultMaxLength()
                               : 0;
-    expected.autocomplete_attribute = test_cases[i].autocomplete_attribute;
+    expected.autocomplete_attribute = test_case.autocomplete_attribute;
     expected.parsed_autocomplete =
-        ParseAutocompleteAttribute(test_cases[i].autocomplete_attribute);
+        ParseAutocompleteAttribute(test_case.autocomplete_attribute);
 
-    SCOPED_TRACE(test_cases[i].element_id);
+    SCOPED_TRACE(test_case.element_id);
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
   }
 }
@@ -2821,7 +2866,7 @@ TEST_F(FormAutofillTest, DetectTextDirectionFromParentDIRAttribute) {
   EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, result.text_direction);
 }
 
-TEST_F(FormAutofillTest, DetectTextDirectionWhenStyleAndDIRAttributMixed) {
+TEST_F(FormAutofillTest, DetectTextDirectionWhenStyleAndDIRAttributeMixed) {
   LoadHTML("<STYLE>input{direction:ltr}</STYLE>"
            "<FORM dir='rtl'>"
            "  <INPUT type='text' id='element'/>"
@@ -4472,19 +4517,19 @@ TEST_F(FormAutofillTest, LabelsInferredWithSameName) {
   name_attributes.push_back(u"Address");
   labels.push_back(u"Address Line 1:");
   names.push_back(name_attributes.back());
-  values.push_back(std::u16string());
+  values.emplace_back();
 
   id_attributes.push_back(u"");
   name_attributes.push_back(u"Address");
   labels.push_back(u"Address Line 2:");
   names.push_back(name_attributes.back());
-  values.push_back(std::u16string());
+  values.emplace_back();
 
   id_attributes.push_back(u"");
   name_attributes.push_back(u"Address");
   labels.push_back(u"Address Line 3:");
   names.push_back(name_attributes.back());
-  values.push_back(std::u16string());
+  values.emplace_back();
 
   ExpectLabels(
       "<FORM name='TestForm' action='http://cnn.com' method='post'>"
@@ -4507,31 +4552,31 @@ TEST_F(FormAutofillTest, LabelsInferredWithImageTags) {
   name_attributes.push_back(u"dayphone1");
   labels.push_back(u"Phone:");
   names.push_back(name_attributes.back());
-  values.push_back(std::u16string());
+  values.emplace_back();
 
   id_attributes.push_back(u"");
   name_attributes.push_back(u"dayphone2");
   labels.push_back(u"");
   names.push_back(name_attributes.back());
-  values.push_back(std::u16string());
+  values.emplace_back();
 
   id_attributes.push_back(u"");
   name_attributes.push_back(u"dayphone3");
   labels.push_back(u"");
   names.push_back(name_attributes.back());
-  values.push_back(std::u16string());
+  values.emplace_back();
 
   id_attributes.push_back(u"");
   name_attributes.push_back(u"dayphone4");
   labels.push_back(u"ext.:");
   names.push_back(name_attributes.back());
-  values.push_back(std::u16string());
+  values.emplace_back();
 
   id_attributes.push_back(u"");
   name_attributes.push_back(u"dummy");
-  labels.push_back(std::u16string());
+  labels.emplace_back();
   names.push_back(name_attributes.back());
-  values.push_back(std::u16string());
+  values.emplace_back();
 
   ExpectLabels(
       "<FORM name='TestForm' action='http://cnn.com' method='post'>"
@@ -5013,14 +5058,14 @@ TEST_F(FormAutofillTest, UndoAutofill) {
           <option value="undo_select_option_2">Foo</option>
           <option value="autofill_select_option_2">Bar</option>
         </select>
-        <selectmenu id="selectmenu_id_1">
-          <option value="undo_selectmenu_option_1">Foo</option>
-          <option value="autofill_selectmenu_option_1">Bar</option>
-        </selectmenu>
-        <selectmenu id="selectmenu_id_2">
-          <option value="undo_selectmenu_option_2">Foo</option>
-          <option value="autofill_selectmenu_option_2">Bar</option>
-        </selectmenu>
+        <selectlist id="selectlist_id_1">
+          <option value="undo_selectlist_option_1">Foo</option>
+          <option value="autofill_selectlist_option_1">Bar</option>
+        </selectlist>
+        <selectlist id="selectlist_id_2">
+          <option value="undo_selectlist_option_2">Foo</option>
+          <option value="autofill_selectlist_option_2">Bar</option>
+        </selectlist>
       </form>
   )");
   WebFormControlElement text_element_1 = GetFormControlElementById("text_id_1");
@@ -5039,13 +5084,13 @@ TEST_F(FormAutofillTest, UndoAutofill) {
   select_element_2.SetAutofillValue("autofill_select_option_2",
                                     WebAutofillState::kAutofilled);
 
-  WebFormControlElement selectmenu_element_1 =
-      GetFormControlElementById("selectmenu_id_1");
-  WebFormControlElement selectmenu_element_2 =
-      GetFormControlElementById("selectmenu_id_2");
-  selectmenu_element_1.SetAutofillValue("autofill_selectmenu_option_1",
+  WebFormControlElement selectlist_element_1 =
+      GetFormControlElementById("selectlist_id_1");
+  WebFormControlElement selectlist_element_2 =
+      GetFormControlElementById("selectlist_id_2");
+  selectlist_element_1.SetAutofillValue("autofill_selectlist_option_1",
                                         WebAutofillState::kAutofilled);
-  selectmenu_element_2.SetAutofillValue("autofill_selectmenu_option_2",
+  selectlist_element_2.SetAutofillValue("autofill_selectlist_option_2",
                                         WebAutofillState::kAutofilled);
 
   auto HasAutofillValue = [](const WebString& value,
@@ -5065,11 +5110,11 @@ TEST_F(FormAutofillTest, UndoAutofill) {
   ASSERT_THAT(select_element_2,
               HasAutofillValue("autofill_select_option_2",
                                WebAutofillState::kAutofilled));
-  ASSERT_THAT(selectmenu_element_1,
-              HasAutofillValue("autofill_selectmenu_option_1",
+  ASSERT_THAT(selectlist_element_1,
+              HasAutofillValue("autofill_selectlist_option_1",
                                WebAutofillState::kAutofilled));
-  ASSERT_THAT(selectmenu_element_2,
-              HasAutofillValue("autofill_selectmenu_option_2",
+  ASSERT_THAT(selectlist_element_2,
+              HasAutofillValue("autofill_selectlist_option_2",
                                WebAutofillState::kAutofilled));
 
   WebVector<WebFormElement> forms = GetMainFrame()->GetDocument().Forms();
@@ -5084,14 +5129,15 @@ TEST_F(FormAutofillTest, UndoAutofill) {
   for (size_t i = 0; i < 6; i += 2) {
     std::u16string type = i == 0   ? u"text"
                           : i == 2 ? u"select_option"
-                                   : u"selectmenu_option";
+                                   : u"selectlist_option";
     form.fields[i].value = u"undo_" + type + u"_1";
     form.fields[i].is_autofilled = false;
     undo_fields.push_back(form.fields[i]);
   }
 
   form.fields = undo_fields;
-  UndoForm(form, text_element_1);
+  ApplyAutofillAction(form, text_element_1, mojom::AutofillActionType::kUndo,
+                      mojom::AutofillActionPersistence::kFill);
   EXPECT_THAT(text_element_1,
               HasAutofillValue("undo_text_1", WebAutofillState::kNotFilled));
   EXPECT_THAT(text_element_2, HasAutofillValue("autofill_text_2",
@@ -5101,11 +5147,11 @@ TEST_F(FormAutofillTest, UndoAutofill) {
   EXPECT_THAT(select_element_2,
               HasAutofillValue("autofill_select_option_2",
                                WebAutofillState::kAutofilled));
-  EXPECT_THAT(selectmenu_element_1,
-              HasAutofillValue("undo_selectmenu_option_1",
+  EXPECT_THAT(selectlist_element_1,
+              HasAutofillValue("undo_selectlist_option_1",
                                WebAutofillState::kNotFilled));
-  EXPECT_THAT(selectmenu_element_2,
-              HasAutofillValue("autofill_selectmenu_option_2",
+  EXPECT_THAT(selectlist_element_2,
+              HasAutofillValue("autofill_selectlist_option_2",
                                WebAutofillState::kAutofilled));
 }
 
@@ -5294,19 +5340,19 @@ TEST_F(FormAutofillTest, MultipleLabelsPerElement) {
       values;
 
   id_attributes.push_back(u"firstname");
-  name_attributes.push_back(std::u16string());
+  name_attributes.emplace_back();
   labels.push_back(u"First Name:");
   names.push_back(id_attributes.back());
   values.push_back(u"John");
 
   id_attributes.push_back(u"lastname");
-  name_attributes.push_back(std::u16string());
+  name_attributes.emplace_back();
   labels.push_back(u"Last Name:");
   names.push_back(id_attributes.back());
   values.push_back(u"Smith");
 
   id_attributes.push_back(u"email");
-  name_attributes.push_back(std::u16string());
+  name_attributes.emplace_back();
   labels.push_back(u"Email: xxx@yyy.com");
   names.push_back(id_attributes.back());
   values.push_back(u"john@example.com");

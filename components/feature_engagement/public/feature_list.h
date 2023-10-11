@@ -235,7 +235,6 @@ DEFINE_VARIATION_PARAM(kIPHiOSDefaultBrowserOverflowMenuBadgeFeature,
 DEFINE_VARIATION_PARAM(kIPHiOSDefaultBrowserSettingsBadgeFeature,
                        "IPH_iOSDefaultBrowserSettingsBadge");
 DEFINE_VARIATION_PARAM(kIPHiOSPromoAppStoreFeature, "IPH_iOSPromoAppStore");
-DEFINE_VARIATION_PARAM(kIPHTabPinnedFeature, "IPH_TabPinnedFeature");
 DEFINE_VARIATION_PARAM(kIPHiOSPromoWhatsNewFeature, "IPH_iOSPromoWhatsNew");
 DEFINE_VARIATION_PARAM(kIPHiOSPromoPostRestoreFeature,
                        "IPH_iOSPromoPostRestore");
@@ -255,6 +254,8 @@ DEFINE_VARIATION_PARAM(kIPHiOSDefaultBrowserVideoPromoTriggerFeature,
                        "IPH_iOSDefaultBrowserVideoPromoTriggerFeature");
 DEFINE_VARIATION_PARAM(kIPHiOSPromoPostRestoreDefaultBrowserFeature,
                        "IPH_iOSPromoPostDefaultBrowserRestore");
+DEFINE_VARIATION_PARAM(kIPHiOSPromoPasswordManagerWidgetFeature,
+                       "IPH_iOSPromoPasswordManagerWidget");
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
@@ -527,7 +528,6 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHiOSDefaultBrowserOverflowMenuBadgeFeature),
         VARIATION_ENTRY(kIPHiOSDefaultBrowserSettingsBadgeFeature),
         VARIATION_ENTRY(kIPHiOSPromoAppStoreFeature),
-        VARIATION_ENTRY(kIPHTabPinnedFeature),
         VARIATION_ENTRY(kIPHiOSPromoWhatsNewFeature),
         VARIATION_ENTRY(kIPHiOSPromoPostRestoreFeature),
         VARIATION_ENTRY(kIPHiOSPromoCredentialProviderExtensionFeature),
@@ -537,6 +537,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHiOSHistoryOnOverflowMenuFeature),
         VARIATION_ENTRY(kIPHiOSShareToolbarItemFeature),
         VARIATION_ENTRY(kIPHiOSPromoPostRestoreDefaultBrowserFeature),
+        VARIATION_ENTRY(kIPHiOSPromoPasswordManagerWidgetFeature),
 #elif BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
         VARIATION_ENTRY(kIPHAutofillFeedbackNewBadgeFeature),

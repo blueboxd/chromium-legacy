@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/highlight_pseudo_marker.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/selection_state.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_highlight_overlay.h"
@@ -206,14 +207,15 @@ class CORE_EXPORT NGHighlightPainter {
 
   SelectionPaintState* Selection() { return selection_; }
 
- private:
   struct LayerPaintState {
     DISALLOW_NEW();
 
    public:
     LayerPaintState(NGHighlightOverlay::HighlightLayer id,
-                    const scoped_refptr<const ComputedStyle> style,
+                    const ComputedStyle* style,
                     TextPaintStyle text_style);
+
+    void Trace(Visitor* visitor) const { visitor->Trace(style); }
 
     // Equality on HighlightLayer id only, for Vector::Find.
     bool operator==(const LayerPaintState&) const = delete;
@@ -222,11 +224,12 @@ class CORE_EXPORT NGHighlightPainter {
     bool operator!=(const NGHighlightOverlay::HighlightLayer&) const;
 
     const NGHighlightOverlay::HighlightLayer id;
-    const scoped_refptr<const ComputedStyle> style;
+    const Member<const ComputedStyle> style;
     const TextPaintStyle text_style;
     const TextDecorationLine decorations_in_effect;
   };
 
+ private:
   Case ComputePaintCase() const;
   void FastPaintSpellingGrammarDecorations(const Text& text_node,
                                            const StringView& text,
@@ -256,6 +259,16 @@ class CORE_EXPORT NGHighlightPainter {
   void PaintSpellingGrammarDecorations(
       const NGHighlightOverlay::HighlightPart&);
 
+  // Paints text with a highlight color. For composition markers, omit the last
+  // two arguments. For PseudoHighlightMarkers, include both the PseudoId and
+  // PseudoArgument.
+  void PaintDecoratedText(const StringView& text,
+                          const Color& text_color,
+                          unsigned paint_start_offset,
+                          unsigned paint_end_offset,
+                          const PseudoId pseudo = PseudoId::kPseudoIdNone,
+                          const AtomicString& pseudo_argument = g_empty_atom);
+
   const NGTextFragmentPaintInfo& fragment_paint_info_;
   NGTextPainter& text_painter_;
   NGTextDecorationPainter& decoration_painter_;
@@ -275,12 +288,15 @@ class CORE_EXPORT NGHighlightPainter {
   DocumentMarkerVector spelling_;
   DocumentMarkerVector grammar_;
   DocumentMarkerVector custom_;
-  Vector<LayerPaintState> layers_;
+  HeapVector<LayerPaintState> layers_;
   Vector<NGHighlightOverlay::HighlightPart> parts_;
   const bool skip_backgrounds_;
   Case paint_case_;
 };
 
 }  // namespace blink
+
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(
+    blink::NGHighlightPainter::LayerPaintState)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_HIGHLIGHT_PAINTER_H_

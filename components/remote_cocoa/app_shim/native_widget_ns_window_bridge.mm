@@ -11,10 +11,10 @@
 #include <cmath>
 #include <memory>
 
+#import "base/apple/foundation_util.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
-#import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -227,9 +227,21 @@ NSComparisonResult SubviewSorter(__kindof NSView* lhs,
 // |child_windows| array ignoring the windows added by AppKit.
 NSUInteger CountBridgedWindows(NSArray* child_windows) {
   NSUInteger count = 0;
-  for (NSWindow* child in child_windows)
-    if ([[child delegate] isKindOfClass:[ViewsNSWindowDelegate class]])
+
+  for (NSWindow* child in child_windows) {
+    NativeWidgetMacNSWindow* parentWindow =
+        base::apple::ObjCCast<NativeWidgetMacNSWindow>([child parentWindow]);
+
+    // The child may be in an intermediary state where it's been removed from
+    // Views but not from the childWindow list (see the description of
+    // -willCloseLater in ViewsNSWindowDelegate). Child windows in this state
+    // essentially do not exist, so we should not count them.
+    if ([parentWindow willRemoveChildWindowOnActivation:child]) {
+      continue;
+    } else if ([[child delegate] isKindOfClass:[ViewsNSWindowDelegate class]]) {
       ++count;
+    }
+  }
 
   return count;
 }
@@ -271,7 +283,7 @@ NativeWidgetNSWindowBridge* NativeWidgetNSWindowBridge::GetFromNativeWindow(
     gfx::NativeWindow native_window) {
   NSWindow* window = native_window.GetNativeNSWindow();
   if (NativeWidgetMacNSWindow* widget_window =
-          base::mac::ObjCCast<NativeWidgetMacNSWindow>(window)) {
+          base::apple::ObjCCast<NativeWidgetMacNSWindow>(window)) {
     return GetFromId([widget_window bridgedNativeWidgetId]);
   }
   return nullptr;
@@ -426,11 +438,11 @@ void NativeWidgetNSWindowBridge::StackAbove(uint64_t sibling_id) {
   DCHECK(sibling_bridge);
 
   NSInteger sibling = sibling_bridge->ns_window().windowNumber;
-  [window_ reallyOrderWindow:NSWindowAbove relativeTo:sibling];
+  [window_ orderWindowByShuffling:NSWindowAbove relativeTo:sibling];
 }
 
 void NativeWidgetNSWindowBridge::StackAtTop() {
-  [window_ reallyOrderWindow:NSWindowAbove relativeTo:0];
+  [window_ orderWindowByShuffling:NSWindowAbove relativeTo:0];
 }
 
 void NativeWidgetNSWindowBridge::ShowEmojiPanel() {
@@ -555,6 +567,16 @@ void NativeWidgetNSWindowBridge::SetBounds(
   }
 }
 
+void NativeWidgetNSWindowBridge::SetSize(
+    const gfx::Size& new_size,
+    const gfx::Size& minimum_content_size) {
+  // Ensure the top-left corner stays in-place (rather than the bottom-left,
+  // which -[NSWindow setContentSize:] would do).
+  gfx::Rect new_window_bounds = gfx::ScreenRectFromNSRect([window_ frame]);
+  new_window_bounds.set_size(new_size);
+  SetBounds(new_window_bounds, minimum_content_size);
+}
+
 void NativeWidgetNSWindowBridge::SetSizeAndCenter(
     const gfx::Size& content_size,
     const gfx::Size& minimum_content_size) {
@@ -618,17 +640,17 @@ void NativeWidgetNSWindowBridge::CloseWindow() {
   if (fullscreen_controller_.HasDeferredWindowClose())
     return;
 
-  // Keep |window| on the stack so that the ObjectiveC block below can capture
-  // it and properly increment the reference count bound to the posted task.
+  // Make a local variable of the window on the stack so that the block can
+  // capture a reference to it.
   NSWindow* window = ns_window();
 
-  if (IsWindowModalSheet() && [ns_window() isSheet]) {
+  if (IsWindowModalSheet() && window.sheet) {
     // Sheets can't be closed normally. This starts the sheet closing. Once the
-    // sheet has finished animating, it will call sheetDidEnd: on the parent
-    // window's delegate. Note it still needs to be asynchronous, since code
-    // calling Widget::Close() doesn't expect things to be deleted upon return.
-    // Ensure |window| is retained by a block. Note in some cases during
-    // teardown, [window sheetParent] may be nil.
+    // sheet has finished animating, it will call the end-sheet block defined
+    // when the sheet was displayed. Note it still needs to be asynchronous,
+    // since code calling Widget::Close() doesn't expect things to be deleted
+    // upon return. Ensure |window| is retained by a block. Note in some cases
+    // during teardown, [window sheetParent] may be nil.
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(^{
           [NSApp endSheet:window];
@@ -759,7 +781,11 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
     // DCHECK(![window_ attachedSheet]);
 
     [window_ orderOut:nil];
-    DCHECK(!window_visible_);
+
+    NativeWidgetMacNSWindow* parentWindow =
+        base::apple::ObjCCast<NativeWidgetMacNSWindow>([window_ parentWindow]);
+    DCHECK(!window_visible_ ||
+           [parentWindow willRemoveChildWindowOnActivation:window_]);
     return;
   } else if (new_state == WindowVisibilityState::kMiniaturizeWindow) {
     [window_ miniaturize:nil];
@@ -1093,7 +1119,12 @@ void NativeWidgetNSWindowBridge::OnPositionChanged() {
 }
 
 void NativeWidgetNSWindowBridge::OnVisibilityChanged() {
-  const bool window_visible = [window_ isVisible];
+  NativeWidgetMacNSWindow* parentWindow =
+      base::apple::ObjCCast<NativeWidgetMacNSWindow>([window_ parentWindow]);
+  const bool window_visible =
+      [window_ isVisible] &&
+      ![parentWindow willRemoveChildWindowOnActivation:window_];
+
   if (window_visible_ == window_visible)
     return;
 
@@ -1692,10 +1723,17 @@ void NativeWidgetNSWindowBridge::NotifyVisibilityChangeDown() {
   const size_t child_count = child_windows_.size();
   if (!window_visible_) {
     for (NativeWidgetNSWindowBridge* child : child_windows_) {
-      if (child->window_visible_)
-        [child->ns_window() orderOut:nil];
+      NSWindow* childWindow = child->ns_window();
 
-      DCHECK(!child->window_visible_);
+      if (child->window_visible_) {
+        [childWindow orderOut:nil];
+      }
+      NativeWidgetMacNSWindow* parentWindow =
+          base::apple::ObjCCast<NativeWidgetMacNSWindow>(
+              [childWindow parentWindow]);
+
+      DCHECK(!child->window_visible_ ||
+             [parentWindow willRemoveChildWindowOnActivation:childWindow]);
       CHECK_EQ(child_count, child_windows_.size());
     }
     // The orderOut calls above should result in a call to OnVisibilityChanged()
@@ -1743,30 +1781,33 @@ bool NativeWidgetNSWindowBridge::IsWindowModalSheet() const {
 }
 
 void NativeWidgetNSWindowBridge::ShowAsModalSheet() {
-  // -[NSApp beginSheet:] will block the UI thread while the animation runs.
-  // So that it doesn't animate a fully transparent window, first wait for a
-  // frame. The first step is to pretend that the window is already visible.
+  // -[NSWindow beginSheet:completionHandler:] will block the UI thread while
+  // the animation runs. So that it doesn't animate a fully transparent window,
+  // first wait for a frame. The first step is to pretend that the window is
+  // already visible.
   window_visible_ = true;
   host_->OnVisibilityChanged(window_visible_);
 
   NSWindow* parent_window = parent_->ns_window();
   DCHECK(parent_window);
+  NSWindow* __weak weak_window = window_;
 
-  // -beginSheet: does not retain |modalDelegate| (and we would not want it to).
-  // Since |this| may destroy [window_ delegate], use |window_| itself as the
-  // delegate, which will forward to ViewsNSWindowDelegate if |this| is still
-  // alive (i.e. it has not set the window delegate to nil).
-  // TODO(https://crbug.com/1422060): Migrate to `[NSWindow
-  // beginSheet:completionHandler:]` instead of this method.
   auto begin_sheet_closure = base::BindOnce(^{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [NSApp beginSheet:window_
-        modalForWindow:parent_window
-         modalDelegate:window_
-        didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-           contextInfo:nullptr];
-#pragma clang diagnostic pop
+    [parent_window beginSheet:window_
+            completionHandler:^(NSModalResponse return_code) {
+              // This class, NativeWidgetNSWindowBridge, clears the window's
+              // delegate as an indication of its death, in which case this
+              // completion handler will no-op. This is necessary to handle
+              // AppKit invoking this selector via a posted task. See
+              // https://crbug.com/851376.
+              NSWindow* window = weak_window;
+              if (!window.delegate) {
+                return;
+              }
+
+              [window orderOut:nil];
+              OnWindowWillClose();
+            }];
   });
 
   if (host_helper_->MustPostTaskToRunModalSheetAnimation()) {

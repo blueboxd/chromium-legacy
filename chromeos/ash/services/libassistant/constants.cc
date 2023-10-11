@@ -8,7 +8,6 @@
 #include "build/chromeos_buildflags.h"
 
 #define ASSISTANT_DIR_STRING "google-assistant-library"
-#define ASSISTANT_SOCKETS_STRING "sockets"
 #define ASSISTANT_TEMP_DIR "/tmp/libassistant/"
 #define LIBASSISTANT_DLC_DIR "opt/google/chrome/"
 #define LIBASSISTANT_V1_NAME "libassistant.so"
@@ -37,7 +36,7 @@ const base::FilePath::CharType kAssistantBaseDirPath[] =
     FILE_PATH_LITERAL(ASSISTANT_TEMP_DIR ASSISTANT_DIR_STRING);
 
 const base::FilePath::CharType kLibAssistantSocketPath[] =
-    FILE_PATH_LITERAL(ASSISTANT_TEMP_DIR ASSISTANT_SOCKETS_STRING);
+    FILE_PATH_LITERAL(ASSISTANT_TEMP_DIR);
 
 const char kLibAssistantDlcRootPath[] = "";
 

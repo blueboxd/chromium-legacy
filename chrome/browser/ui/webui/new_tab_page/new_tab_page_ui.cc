@@ -238,9 +238,6 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
                      ntp_features::GetModulesLoadTimeout().InMilliseconds());
   source->AddInteger("modulesMaxColumnCount",
                      ntp_features::GetModulesMaxColumnCount());
-  source->AddInteger(
-      "multipleLoadedModulesMaxModuleInstanceCount",
-      ntp_features::GetMultipleLoadedModulesMaxModuleInstanceCount());
   source->AddBoolean("mostVisitedReflowOnOverflowEnabled",
                      base::FeatureList::IsEnabled(
                          ntp_features::kNtpMostVisitedReflowOnOverflow));
@@ -289,6 +286,7 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"backgroundsMenuItem", IDS_NTP_CUSTOMIZE_MENU_BACKGROUND_LABEL},
       {"cancelButton", IDS_CANCEL},
       {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
+      {"hueSliderTitle", IDS_NTP_CUSTOMIZE_COLOR_HUE_SLIDER_TITLE},
       {"customBackgroundDisabled",
        IDS_NTP_CUSTOMIZE_MENU_BACKGROUND_DISABLED_LABEL},
       {"customizeButton", IDS_NTP_CUSTOMIZE_BUTTON_LABEL},
@@ -594,9 +592,6 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       "moduleRecipeExtendedExperimentEnabled",
       !splitExperimentGroup.empty() && (splitExperimentGroup[0] == "historical" || splitExperimentGroup[0] == "mix"));
 
-  source->AddBoolean("removeScrim", base::FeatureList::IsEnabled(
-                                        ntp_features::kNtpRemoveScrim));
-
   source->AddBoolean("modulesChromeCartInHistoryClustersModuleEnabled",
                      base::FeatureList::IsEnabled(
                          ntp_features::kNtpChromeCartInHistoryClusterModule));
@@ -606,6 +601,10 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       IsCartModuleEnabled() &&
           base::FeatureList::IsEnabled(
               ntp_features::kNtpChromeCartInHistoryClusterModule));
+
+  source->AddBoolean("historyClustersModuleDiscountsEnabled",
+                     base::FeatureList::IsEnabled(
+                         ntp_features::kNtpHistoryClustersModuleDiscounts));
 
   webui::SetupChromeRefresh2023(source);
 

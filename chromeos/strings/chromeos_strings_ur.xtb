@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">‏قانونی وجوہات کی بنا پر مواد میں تبدیلی کی درخواست کرنے کے لیے <ph name="BEGIN_LINK1" />قانونی مدد کے صفحہ<ph name="END_LINK1" /> پر جائیں۔ اکاؤنٹ اور سسٹم کی کچھ معلومات Google کو بھیجی جا سکتی ہے۔ ہم اپنی <ph name="BEGIN_LINK2" />رازداری کی پالیسی<ph name="END_LINK2" /> اور <ph name="BEGIN_LINK3" />سروس کی شرائط<ph name="END_LINK3" /> کے ساتھ مشروط، تکنیکی مسائل حل کرنے اور اپنی سروسز کو بہتر بنانے کیلئے آپ کی فراہم کردہ معلومات کا استعمال کریں گے۔</translation>
 <translation id="1885577615937958993">فاسٹ فارورڈ میڈیا</translation>
 <translation id="1887850431809612466">ہارڈ ویئر سے متعلق نظر ثانی</translation>
+<translation id="1897672602657312171">تلاش کی کلید کے بغیر شارٹ کٹ کچھ ایپ کے شارٹ کٹ سے متصادم ہو سکتا ہے۔ اس شارٹ کٹ کا استعمال جاری رکھنے کے لیے اسے دوبارہ دبائیں، یا تلاش کی کلید کا استعمال کرتے ہوئے نیا شارٹ کٹ دبائیں۔</translation>
 <translation id="1904932688895783618">کچھ دوسرے مددگار وسائل یہ ہیں:</translation>
 <translation id="1905710495812624430">زیادہ سے زیادہ مجاز کوششوں سے تجاوز کرگیا۔</translation>
 <translation id="1908234395526491708">‏UDP درخواست کی ناکامیاں</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">ری سٹارٹ ہو رہا ہے...</translation>
 <translation id="2533048460510040082">تجویز کردہ مددگار مواد</translation>
 <translation id="2536159006530886390">انٹرنیٹ سے منسلک نہیں کر سکتے۔</translation>
-<translation id="2555662516429796509">اپنے کی بورڈ پر 1 سے 4 موڈیفائرز اور 1 دوسری کلید دبائیں</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> ٹیسٹ چل رہا ہے...</translation>
 <translation id="2584559707064218956">سیٹ اپ کرنے کیلئے، ترتیبات پر جائیں</translation>
 <translation id="2597774443162333062">‏ڈیبگ کرنے کیلئے فائلز Google کو بھیج دی جائے گی</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">‏TLS تصدیقی کلید</translation>
 <translation id="2713444072780614174">سفید</translation>
 <translation id="2717139507051041123">گہرے رنگ کے موڈ کو فعال کریں</translation>
+<translation id="2728460467788544679">پرنٹ کی تمام سرگزشت صاف کریں</translation>
 <translation id="2740531572673183784">ٹھیک ہے</translation>
 <translation id="2744221223678373668">اشتراک کردہ</translation>
 <translation id="2751739896257479635">‏EAP مرحلہ 2 توثیق</translation>
 <translation id="2783010256799387990">پاس ہو گیا</translation>
 <translation id="2787435249130282949">زیادہ روشن کی بورڈ</translation>
-<translation id="2789486458103222910">ٹھیک ہے</translation>
 <translation id="2805756323405976993">اطلاقات</translation>
 <translation id="28232023175184696">انٹرنیٹ سے منسلک نہیں کر سکتے۔ دوبارہ کوشش کرنے کے لیے کلک کریں۔</translation>
 <translation id="2859243502336719778">اہم اپ ڈیٹ</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">کلاؤڈ فلو اسکرین سیور</translation>
 <translation id="2926057806159140518">‏اپنا صارف نام اور پاس ورڈ درج کریں یا اپنا QR کوڈ اسکین کریں</translation>
 <translation id="2940811910881150316">آلہ کو ٹیسٹ نہیں کیا جا سکتا۔ ٹیسٹ کرنے کے لیے پپوٹوں کو دوبارہ کھولیں۔</translation>
+<translation id="2941112035454246133">کم</translation>
 <translation id="3008341117444806826">ریفریش کریں</translation>
 <translation id="3009958530611748826">محفوظ کرنے کے لئے فولڈر منتخب کریں</translation>
 <translation id="3017079585324758401">پس منظر</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">میزبان کو حل کرنے میں ناکام</translation>
 <translation id="3942420633017001071">تشخیصات</translation>
 <translation id="3954678691475912818">ڈیوائس کی قسم نامعلوم ہے۔</translation>
+<translation id="3959413315969265597">‏اس APN کو فعال نہیں کیا جا سکتا۔ یقینی بنائیں کہ ڈیفالٹ APN شامل ہے۔</translation>
 <translation id="3966286471246132217">مزید درست نتائج کیلئے، ٹیسٹ مکمل ہونے تک تمام ایپس کو بند کریں۔</translation>
 <translation id="3967822245660637423">ڈاؤن لوڈ مکمل ہوگیا ہے</translation>
 <translation id="3969602104473960991">‏ChromeOS پاس ورڈ اپ ڈیٹ کیا گيا</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">والیوم کم کریں</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> از <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" /> اپ ڈیٹ کریں</translation>
+<translation id="574392208103952083">متوسط</translation>
 <translation id="5757187557809630523">اگلا ٹریک</translation>
 <translation id="5760715441271661976">پورٹل صورت حال</translation>
 <translation id="576835345334454681">ڈسپلے کی چمک بڑھانے کی کلید</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">آرٹ گیلری البم</translation>
 <translation id="5860033963881614850">آف</translation>
 <translation id="5860491529813859533">آن کریں</translation>
-<translation id="5866840822086176774">کافی مضبوط</translation>
 <translation id="5876385649737594562">اختیارات کو منتخب کرنے کے لیے آن کریں</translation>
 <translation id="588258955323874662">پوری اسکرین</translation>
 <translation id="5895138241574237353">دوبارہ شروع کریں</translation>
@@ -640,7 +642,7 @@
 <translation id="5972388717451707488">انجن اپ ڈیٹ کریں</translation>
 <translation id="5984145644188835034">ڈیفالٹ وال پیپر</translation>
 <translation id="6017514345406065928">سبز</translation>
-<translation id="6019566113895157499">کی بورڈ شارٹ کٹس</translation>
+<translation id="6019566113895157499">اہم شارٹ کٹس</translation>
 <translation id="6034694447310538551">خودکار ماہانہ ری سیٹ فعال کریں</translation>
 <translation id="6037291330010597344">اسکینر کا دستاویز فیڈر خالی ہے۔ دستاویزات شامل کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="6040143037577758943">بند کریں</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">کمزور (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">اکاؤنٹ کی ترتیبات پر جائیں</translation>
-<translation id="6456394469623773452">لطیف</translation>
+<translation id="6461047516875166066">مجھے مزید بتائیں</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{صفحہ دوبارہ اسکین کریں؟}=1{{PAGE_NUMBER} صفحہ دوبارہ اسکین کریں؟}other{{PAGE_NUMBER} صفحہ دوبارہ اسکین کریں؟}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" /> کے زیر انتظام ہے</translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">تمام شارٹ کٹس کو ڈیفالٹس پر ری سیٹ کریں؟</translation>
 <translation id="7058278511608979688">ختم کریں اور محفوظ کریں</translation>
 <translation id="7059230779847288458">چارج ہو رہا ہے، مکمل ہونے میں <ph name="TIME_VALUE" /> باقی</translation>
+<translation id="7066538517128343186"><ph name="KEY" /> کلید</translation>
 <translation id="7068619307603204412">اپنا آلہ تیار کریں</translation>
 <translation id="708426984172631313">روک دیا گیا</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">براہ کرم کسی نیٹ ورک سے منسلک ہوں اور وال پیپر دیکھنے کے لیے صفحے کو دوبارہ لوڈ کریں۔</translation>
 <translation id="8291967909914612644">گھر فراہم کرنے والے کا ملک</translation>
 <translation id="8294431847097064396">ماخذ</translation>
-<translation id="8297006494302853456">کمزور</translation>
 <translation id="8302368968391049045">‏HTTPS فائروال</translation>
 <translation id="8312330582793120272">میڈیا چلائیں</translation>
 <translation id="8318753676953949627">کوئی تصویر نہیں ہے</translation>
 <translation id="8329018942023753850">کیلکولیٹر ایپ</translation>
 <translation id="8336739000755212683">آلے کے اکاؤنٹ کی تصویر تبدیل کریں</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> یا <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">پرنٹ جابز</translation>
 <translation id="8351855506390808906">کلید کی نقشہ سازی کا ٹچ پوائنٹ</translation>
 <translation id="8352772353338965963">متعدد سائن ان میں ایک اکاؤنٹ شامل کریں۔ سبھی سائن ان کردہ اکاؤنٹس تک پاس ورڈ کے بغیر رسائی کی جا سکتی ہے لہذا یہ خصوصیت صرف بھروسہ مند اکاؤنٹس کے ساتھ استعمال کی جانی چاہیے۔</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">دوبارہ منسلک ہونے کیلئے، ترتیبات پر جائیں</translation>
 <translation id="9126720536733509015">‏متعدد صفحات کو ایک PDF میں محفوظ کریں</translation>
 <translation id="9133104754938025929">بیٹری کی بچت کے لیے اسکرین سیور صرف چارج کرتے وقت کام کرتا ہے۔</translation>
+<translation id="9133772297793293778">‏اپنے کی بورڈ پر 1 سے 4 موڈیفائرز اور 1 دوسری کلید دبائیں۔ ترمیم کی وضع سے باہر نکلنے کے لیے، alt + Esc دبائیں۔</translation>
 <translation id="9137526406337347448">‏Google سروسز</translation>
 <translation id="9138630967333032450">بائیں شفٹ</translation>
 <translation id="9143347780818904997"><ph name="MINUTES" /> منٹ کے لیے</translation>

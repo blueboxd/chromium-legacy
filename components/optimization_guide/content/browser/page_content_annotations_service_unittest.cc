@@ -126,8 +126,11 @@ class PageContentAnnotationsServiceTest : public testing::Test {
          {features::kPageContentAnnotations,
           {
               {"write_to_history_service", "true"},
+              {"pca_service_wait_for_title_delay_in_milliseconds", "4999"},
           }},
-         {features::kPageVisibilityPageContentAnnotations, {}}},
+         {features::kPageVisibilityPageContentAnnotations, {}},
+         {features::kQueryInMemoryTextEmbeddings, {}},
+         {features::kTextEmbeddingPageContentAnnotations, {}}},
         /*disabled_features=*/{features::kPreventLongRunningPredictionModels});
   }
   ~PageContentAnnotationsServiceTest() override = default;
@@ -160,6 +163,11 @@ class PageContentAnnotationsServiceTest : public testing::Test {
     test_annotator_ = std::make_unique<TestPageContentAnnotator>();
     test_annotator_->UseVisibilityScores(/*model_info=*/absl::nullopt,
                                          {{"test", 0.5}});
+    test_annotator_->UseTextEmbeddings(
+        /*model_info=*/absl::nullopt,
+        {{"cat", {5.9957, 0.9872, 2.3524, 6.0717, 4.9405}},
+         {"dog", {2.2856, 1.2177, 1.5583, 7.5789, 7.2837}},
+         {"kitten", {6.6554, 4.7054, 9.8516, 2.589, 5.8918}}});
     service_->OverridePageContentAnnotatorForTesting(test_annotator_.get());
 #endif
   }
@@ -179,17 +187,39 @@ class PageContentAnnotationsServiceTest : public testing::Test {
                                            new_visit, local_navigation_id);
   }
 
+  // Simulates a callback to PageContentAnnotationsService::QueryEmbeddings.
+  history::QueryResults QueryEmbeddings() {
+    std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
+    history::QueryResults got_query_results;
+
+    service_->QueryEmbeddings(base::BindOnce(
+                                  [](base::RunLoop* run_loop,
+                                     history::QueryResults* out_query_results,
+                                     history::QueryResults& query_results) {
+                                    *out_query_results =
+                                        std::move(query_results);
+                                    run_loop->Quit();
+                                  },
+                                  run_loop.get(), &got_query_results),
+                              "kitten");
+    run_loop->Run();
+    return got_query_results;
+  }
+
   FakeOptimizationGuideDecider* optimization_guide_decider() {
     return optimization_guide_decider_.get();
   }
+
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+
+  PageContentAnnotationsService* service() { return service_.get(); }
 
  protected:
   std::unique_ptr<MockHistoryService> history_service_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<TestOptimizationGuideModelProvider>
       optimization_guide_model_provider_;
@@ -202,11 +232,16 @@ class PageContentAnnotationsServiceTest : public testing::Test {
 TEST_F(PageContentAnnotationsServiceTest, ObserveLocalVisitNonSearch) {
   history::VisitID visit_id = 1;
 
-  // Should not call history service at all.
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  EXPECT_CALL(*history_service_,
+              AddContentModelAnnotationsForVisit(_, visit_id));
+#endif
 
   VisitURL(GURL("https://example.com"), u"test", visit_id,
            /*local_navigation_id=*/1,
            /*is_synced_visit=*/false);
+
+  task_environment_.FastForwardBy(base::Seconds(5));
 }
 
 TEST_F(PageContentAnnotationsServiceTest, ObserveSyncedVisitsNonSearch) {
@@ -220,18 +255,30 @@ TEST_F(PageContentAnnotationsServiceTest, ObserveSyncedVisitsNonSearch) {
   VisitURL(GURL("https://example.com"), u"test", visit_id,
            /*local_navigation_id=*/1,
            /*is_synced_visit=*/true);
+
+  task_environment_.FastForwardBy(base::Seconds(5));
 }
 
 TEST_F(PageContentAnnotationsServiceTest, ObserveLocalVisitsSearch) {
   history::VisitID visit_id = 1;
+  base::HistogramTester histogram_tester;
 
   EXPECT_CALL(*history_service_, AddSearchMetadataForVisit(_, _, visit_id));
 
-  // Should not send for annotation.
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  EXPECT_CALL(*history_service_,
+              AddContentModelAnnotationsForVisit(_, visit_id));
+#endif
 
-  VisitURL(GURL("https://default-engine.com/search?q=test#frag"), u"Test Page",
+  VisitURL(GURL("http://www.google.com/search?q=test#frag"), u"Test Page",
            visit_id, /*local_navigation_id=*/1,
            /*is_synced_visit=*/false);
+
+  task_environment_.FastForwardBy(base::Seconds(5));
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PageContentAnnotations.GoogleSearchMetadataExtracted",
+      true, 1);
 }
 
 TEST_F(PageContentAnnotationsServiceTest, ObserveSyncedVisitsSearch) {
@@ -247,6 +294,42 @@ TEST_F(PageContentAnnotationsServiceTest, ObserveSyncedVisitsSearch) {
   VisitURL(GURL("https://default-engine.com/search?q=test#frag"), u"Test Page",
            visit_id, /*local_navigation_id=*/1,
            /*is_synced_visit=*/true);
+
+  task_environment_.FastForwardBy(base::Seconds(5));
+}
+
+TEST_F(PageContentAnnotationsServiceTest, QueryEmbeddings) {
+  history::VisitID visit_id = 1, visit_id2 = 2;
+
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  EXPECT_CALL(*history_service_,
+              AddContentModelAnnotationsForVisit(_, visit_id));
+#endif
+
+  VisitURL(GURL("https://cat.com"), u"cat", visit_id,
+           /*local_navigation_id=*/1,
+           /*is_synced_visit=*/true);
+
+  task_environment_.FastForwardBy(base::Seconds(5));
+
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  EXPECT_CALL(*history_service_,
+              AddContentModelAnnotationsForVisit(_, visit_id2));
+#endif
+
+  VisitURL(GURL("https://dog.com"), u"dog", visit_id2,
+           /*local_navigation_id=*/1,
+           /*is_synced_visit=*/true);
+
+  task_environment_.FastForwardBy(base::Seconds(5));
+
+  // Call QueryEmbeddings with the text "kitten". The two URLs above should be
+  // located inside the InMemoryTextEmbeddingManager and it should return
+  // QueryResults.
+  history::QueryResults query_results = QueryEmbeddings();
+  EXPECT_EQ(query_results.size(), 2U);
+  EXPECT_EQ(query_results[0].url(), GURL("https://cat.com"));
+  EXPECT_EQ(query_results[1].url(), GURL("https://dog.com"));
 }
 
 class PageContentAnnotationsServiceRemotePageMetadataTest

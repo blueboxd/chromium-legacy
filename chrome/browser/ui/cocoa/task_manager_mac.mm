@@ -285,9 +285,9 @@ NSString* ColumnIdentifier(int id) {
 
   // Create the button that terminates the selected process in the table.
   _endProcessButton =
-      [ButtonUtils buttonWithTitle:l10n_util::GetNSString(IDS_TASK_MANAGER_KILL)
-                            action:@selector(killSelectedProcesses:)
-                            target:self];
+      [NSButton buttonWithTitle:l10n_util::GetNSString(IDS_TASK_MANAGER_KILL)
+                         target:self
+                         action:@selector(killSelectedProcesses:)];
   _endProcessButton.autoresizingMask = NSViewMinXMargin | NSViewMaxYMargin;
   [_endProcessButton sizeToFit];
   NSRect buttonFrame = _endProcessButton.frame;
@@ -622,9 +622,7 @@ NSString* ColumnIdentifier(int id) {
                                      column:tableColumn.identifier.intValue];
     NSColor* textColor = [tableView isRowSelected:rowIndex]
                              ? NSColor.alternateSelectedControlTextColor
-                         : @available(macOS 10.10, *)
-                             ? NSColor.labelColor
-                             : NSColor.textColor;
+                             : NSColor.labelColor;
     NSAttributedString* attributedTitle = [[NSAttributedString alloc]
         initWithString:title
             attributes:@{

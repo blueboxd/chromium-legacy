@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/shared/model/prefs/browser_prefs.h"
 
+#import "base/containers/contains.h"
 #import "base/time/time.h"
 #import "base/types/cxx23_to_underlying.h"
 #import "components/autofill/core/common/autofill_prefs.h"
@@ -69,6 +70,7 @@
 #import "ios/chrome/browser/memory/memory_debugger_manager.h"
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
 #import "ios/chrome/browser/ntp/set_up_list_prefs.h"
+#import "ios/chrome/browser/ntp_tiles/tab_resumption/tab_resumption_prefs.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prerender/prerender_pref.h"
 #import "ios/chrome/browser/push_notification/push_notification_service.h"
@@ -153,6 +155,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   sessions::SessionIdGenerator::RegisterPrefs(registry);
   set_up_list_prefs::RegisterPrefs(registry);
+  tab_resumption_prefs::RegisterPrefs(registry);
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   component_updater::RegisterComponentUpdateServicePrefs(registry);
@@ -204,6 +207,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
                              PrefRegistry::LOSSY_PREF);
   registry->RegisterListPref(prefs::kOverflowMenuDestinationsOrder);
   registry->RegisterListPref(prefs::kOverflowMenuHiddenDestinations);
+  registry->RegisterDictionaryPref(prefs::kOverflowMenuDestinationBadgeData);
   registry->RegisterDictionaryPref(prefs::kOverflowMenuActionsOrder);
   registry->RegisterBooleanPref(
       prefs::kOverflowMenuDestinationUsageHistoryEnabled, true);
@@ -285,6 +289,11 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       prefs::kIosMagicStackSegmentationSafetyCheckImpressionsSinceFreshness,
       -1);
+  // Pref used to store the number of impressions of the tab resumption module
+  // in the Home Surface since a tab resumption freshness signal.
+  registry->RegisterIntegerPref(
+      prefs::kIosMagicStackSegmentationTabResumptionImpressionsSinceFreshness,
+      -1);
 
   // Preferences related to the new Safety Check Manager.
   registry->RegisterStringPref(
@@ -299,6 +308,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
       prefs::kIosSafetyCheckManagerSafeBrowsingCheckResult,
       NameForSafetyCheckState(SafeBrowsingSafetyCheckState::kDefault),
       PrefRegistry::LOSSY_PREF);
+  registry->RegisterTimePref(prefs::kIosSafetyCheckManagerLastRunTime,
+                             base::Time(), PrefRegistry::LOSSY_PREF);
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -479,6 +490,13 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Register pref used to detect addresses in web page
   registry->RegisterBooleanPref(prefs::kDetectAddressesEnabled, true);
   registry->RegisterBooleanPref(prefs::kDetectAddressesAccepted, false);
+
+  // Preferences related to Save to Photos settings.
+  registry->RegisterStringPref(prefs::kIosSaveToPhotosDefaultGaiaId,
+                               std::string());
+
+  registry->RegisterBooleanPref(prefs::kIosParcelTrackingOptInPromptDisplayed,
+                                false);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -540,7 +558,7 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
     std::string account_id =
         prefs->GetString(prefs::kGoogleServicesLastAccountIdDeprecated);
     prefs->ClearPref(prefs::kGoogleServicesLastAccountIdDeprecated);
-    DCHECK_EQ(account_id.find('@'), std::string::npos)
+    DCHECK(!base::Contains(account_id, '@'))
         << "kGoogleServicesLastAccountId is not expected to be an email: "
         << account_id;
     if (!account_id.empty()) {
@@ -567,4 +585,11 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   invalidation::InvalidatorRegistrarWithMemory::ClearDeprecatedPrefs(prefs);
   invalidation::PerUserTopicSubscriptionManager::ClearDeprecatedPrefs(prefs);
   invalidation::FCMInvalidationService::ClearDeprecatedPrefs(prefs);
+}
+
+void MigrateObsoleteUserDefault(void) {
+  // Added 08/2023.
+  [[NSUserDefaults standardUserDefaults]
+      setBool:NO
+       forKey:@"userHasInteractedWithPinnedTabsOverflow"];
 }

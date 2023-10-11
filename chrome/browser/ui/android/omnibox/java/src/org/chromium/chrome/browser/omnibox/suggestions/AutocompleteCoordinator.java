@@ -268,7 +268,7 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
         mUrlHasFocus = hasFocus;
-        mMediator.onUrlFocusChange(hasFocus);
+        mMediator.onOmniboxSessionStateChange(hasFocus);
     }
 
     @Override
@@ -382,15 +382,15 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
             return true;
         }
         if (KeyNavigationUtil.isEnter(event) && mParent.getVisibility() == View.VISIBLE) {
-            mMediator.loadTypedOmniboxText(event.getEventTime());
+            mMediator.loadTypedOmniboxText(event.getEventTime(), event.isAltPressed());
             return true;
         }
         return false;
     }
 
     @Override
-    public void onTextChanged(String textWithoutAutocomplete, String textWithAutocomplete) {
-        mMediator.onTextChanged(textWithoutAutocomplete, textWithAutocomplete);
+    public void onTextChanged(String textWithoutAutocomplete) {
+        mMediator.onTextChanged(textWithoutAutocomplete);
     }
 
     /**

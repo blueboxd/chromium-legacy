@@ -10,6 +10,7 @@
 
 #include "base/check_is_test.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/path_service.h"
@@ -48,7 +49,7 @@
 #include "components/policy/core/common/policy_loader_win.h"
 #elif BUILDFLAG(IS_MAC)
 #include <CoreFoundation/CoreFoundation.h>
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/policy/core/common/policy_loader_mac.h"
 #include "components/policy/core/common/preferences_mac.h"
@@ -275,6 +276,16 @@ ChromeBrowserPolicyConnector::CreatePolicyProviders() {
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   device_settings_ = std::make_unique<DeviceSettingsLacros>();
+  auto loader = std::make_unique<PolicyLoaderLacros>(
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+      PolicyPerProfileFilter::kFalse);
+  device_account_policy_loader_ = loader.get();
+  std::unique_ptr<AsyncPolicyProvider> ash_policy_provider =
+      std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
+                                            std::move(loader));
+  ash_policy_provider_ = ash_policy_provider.get();
+  providers.push_back(std::move(ash_policy_provider));
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   std::unique_ptr<CommandLinePolicyProvider> command_line_provider =
@@ -312,8 +323,8 @@ ChromeBrowserPolicyConnector::CreatePlatformProvider() {
   // policies.
   CFStringRef bundle_id = CFSTR("com.google.Chrome");
 #else
-  base::ScopedCFTypeRef<CFStringRef> bundle_id(
-      base::SysUTF8ToCFStringRef(base::mac::BaseBundleID()));
+  base::apple::ScopedCFTypeRef<CFStringRef> bundle_id(
+      base::SysUTF8ToCFStringRef(base::apple::BaseBundleID()));
 #endif
   auto loader = std::make_unique<PolicyLoaderMac>(
       base::ThreadPool::CreateSequencedTaskRunner(
@@ -322,17 +333,19 @@ ChromeBrowserPolicyConnector::CreatePlatformProvider() {
       new MacPreferences(), bundle_id);
   return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
                                                std::move(loader));
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  auto loader = std::make_unique<PolicyLoaderLacros>(
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
-      PolicyPerProfileFilter::kFalse);
-  device_account_policy_loader_ = loader.get();
-  return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
-                                               std::move(loader));
 #elif BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID)
   base::FilePath config_dir_path;
   if (base::PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
+#if BUILDFLAG(IS_CHROMEOS)
+    // If the folder containing the policy files doesn't exist, there's no need
+    // to have a provider for them. Note that in verified boot, the folder
+    // doesn't exist and there's no way for the user to create it.
+    // We don't do this for non-ChromeOS desktop platforms because there chrome
+    // should respect a local filesystem policy directory after it started.
+    if (!base::PathExists(config_dir_path)) {
+      return nullptr;
+    }
+#endif
     std::unique_ptr<AsyncPolicyLoader> loader(new ConfigDirPolicyLoader(
         base::ThreadPool::CreateSequencedTaskRunner(
             {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),

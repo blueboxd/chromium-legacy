@@ -98,27 +98,8 @@ bool ShippingAddressEditorViewController::ValidateModelAndSave() {
     std::move(on_added_).Run(profile);
     on_edited_.Reset();
   } else {
-    // The address fields to clear in the saved profile,
-    // if the address form did not show them.
-    autofill::ServerFieldTypeSet address_fields_to_clear;
-
-    profile_to_edit_->GetSupportedTypes(&address_fields_to_clear);
-
-    // Never clear fields that this form does not show or that are not
-    // part of an address (e.g., phone number or email address).
-    for (autofill::ServerFieldType field_type :
-         autofill::i18n::GetStaticEditorFields()) {
-      address_fields_to_clear.erase(field_type);
-    }
-
-    // Clear all the address data in |profile_to_edit_|, in anticipation of
-    // adding only the fields present in the editor. Prefer this method to
-    // copying |profile| into |profile_to_edit_|, because the latter object
-    // needs to retain other properties (use count, use date, guid, etc.).
-    for (autofill::ServerFieldType type : address_fields_to_clear) {
-      profile_to_edit_->SetRawInfo(type, std::u16string());
-    }
-
+    // Fields are only updated in the autofill profile to avoid clearing the
+    // parsed substructure.
     bool success = SaveFieldsToProfile(profile_to_edit_,
                                        /*ignore_errors=*/false);
     DCHECK(success);
@@ -137,7 +118,7 @@ ShippingAddressEditorViewController::CreateValidationDelegate(
     const EditorField& field) {
   return std::make_unique<
       ShippingAddressEditorViewController::ShippingAddressValidationDelegate>(
-      this, field);
+      weak_ptr_factory_.GetWeakPtr(), field);
 }
 
 std::unique_ptr<ui::ComboboxModel>
@@ -229,7 +210,7 @@ int ShippingAddressEditorViewController::GetPrimaryButtonId() {
 
 ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ShippingAddressValidationDelegate(
-        ShippingAddressEditorViewController* controller,
+        base::WeakPtr<ShippingAddressEditorViewController> controller,
         const EditorField& field)
     : field_(field), controller_(controller) {}
 
@@ -244,7 +225,8 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
 std::u16string
 ShippingAddressEditorViewController::ShippingAddressValidationDelegate::Format(
     const std::u16string& text) {
-  if (controller_->chosen_country_index_ < controller_->countries_.size()) {
+  if (controller_ &&
+      controller_->chosen_country_index_ < controller_->countries_.size()) {
     return base::UTF8ToUTF16(autofill::i18n::FormatPhoneForDisplay(
         base::UTF16ToUTF8(text),
         controller_->countries_[controller_->chosen_country_index_].first));
@@ -274,7 +256,9 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
 
   std::u16string error_message;
   bool is_valid = ValidateValue(textfield->GetText(), &error_message);
-  controller_->DisplayErrorMessageForField(field_.type, error_message);
+  if (controller_) {
+    controller_->DisplayErrorMessageForField(field_.type, error_message);
+  }
   return is_valid;
 }
 
@@ -284,18 +268,22 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
   bool is_valid = ValidateValue(
       combobox->GetTextForRow(combobox->GetSelectedIndex().value()),
       &error_message);
-  controller_->DisplayErrorMessageForField(field_.type, error_message);
+  if (controller_) {
+    controller_->DisplayErrorMessageForField(field_.type, error_message);
+  }
   return is_valid;
 }
 
 void ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ComboboxModelChanged(ValidatingCombobox* combobox) {
-  controller_->OnComboboxModelChanged(combobox);
+  if (controller_) {
+    controller_->OnComboboxModelChanged(combobox);
+  }
 }
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ValidateValue(const std::u16string& value, std::u16string* error_message) {
-  if (!controller_->spec())
+  if (!controller_ || !controller_->spec())
     return false;
 
   // Show errors from merchant's retry() call. Note that changing the selected

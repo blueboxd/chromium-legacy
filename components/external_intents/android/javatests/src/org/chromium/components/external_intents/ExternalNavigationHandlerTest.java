@@ -156,6 +156,8 @@ public class ExternalNavigationHandlerTest {
     private static final String WEBAPK_PACKAGE_NAME = WEBAPK_PACKAGE_PREFIX + ".template";
     private static final String INVALID_WEBAPK_PACKAGE_NAME = WEBAPK_PACKAGE_PREFIX + ".invalid";
 
+    private static final String SELF_SCHEME = "selfscheme";
+
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
@@ -2613,13 +2615,27 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testBlockCrossFrameReNavigation() {
+    public void testBlockHiddenCrossFrameReNavigation() {
         mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
 
         checkUrl(YOUTUBE_URL, redirectHandlerForLinkClick())
                 .withIsInitialNavigationInFrame(false)
-                .withIsCrossFrame(true)
+                .withIsHiddenCrossFrame(true)
                 .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
+    }
+
+    @Test
+    @SmallTest
+    // Tests googlechrome:// URLs.
+    public void testSelfSchemeUrl() {
+        mUrlHandler.mResolveInfoContainsSelf = true;
+
+        checkUrl(SELF_SCHEME + ExternalNavigationHandler.SELF_SCHEME_NAVIGATE_PREFIX
+                        + "https://www.example.com/",
+                redirectHandlerForLinkClick())
+                .withHasUserGesture(true)
+                .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_NAVIGATE_TAB, IGNORE);
+        Assert.assertEquals("https://www.example.com/", mUrlHandler.mNewUrlAfterClobbering);
     }
 
     private static List<ResolveInfo> makeResolveInfos(ResolveInfo... infos) {
@@ -2810,7 +2826,8 @@ public class ExternalNavigationHandlerTest {
             List<ResolveInfo> list = new ArrayList<>();
             String dataString = intent.getDataString();
             if (intent.getScheme() != null) {
-                if (dataString.startsWith("http://") || dataString.startsWith("https://")) {
+                if (dataString.startsWith("http://") || dataString.startsWith("https://")
+                        || intent.getScheme().equals(SELF_SCHEME)) {
                     list.add(newResolveInfo(SELF_PACKAGE_NAME));
                 }
                 for (IntentActivity intentActivity : mIntentActivities) {
@@ -2970,6 +2987,11 @@ public class ExternalNavigationHandlerTest {
             return mShouldEmbedderInitiatedNavigationsStayInBrowser;
         }
 
+        @Override
+        public String getSelfScheme() {
+            return SELF_SCHEME;
+        }
+
         public void reset() {
             startIncognitoIntentCalled = false;
         }
@@ -3095,7 +3117,7 @@ public class ExternalNavigationHandlerTest {
         private boolean mIsRendererInitiated = true;
         private boolean mIsMainFrame = true;
         private boolean mIsInitialNavigationInFrame;
-        private boolean mIsCrossFrame;
+        private boolean mIsHiddenCrossFrame;
 
         private ExternalNavigationTestParams(String url, RedirectHandler handler) {
             mUrl = url;
@@ -3161,8 +3183,8 @@ public class ExternalNavigationHandlerTest {
             return this;
         }
 
-        public ExternalNavigationTestParams withIsCrossFrame(boolean isCrossFrame) {
-            mIsCrossFrame = isCrossFrame;
+        public ExternalNavigationTestParams withIsHiddenCrossFrame(boolean isHiddenCrossFrame) {
+            mIsHiddenCrossFrame = isHiddenCrossFrame;
             return this;
         }
 
@@ -3212,7 +3234,7 @@ public class ExternalNavigationHandlerTest {
                             .setIsRendererInitiated(mIsRendererInitiated)
                             .setAsyncActionTakenCallback(callback)
                             .setIsInitialNavigationInFrame(mIsInitialNavigationInFrame)
-                            .setIsCrossFrameNavigation(mIsCrossFrame)
+                            .setIsHiddenCrossFrameNavigation(mIsHiddenCrossFrame)
                             .build();
             OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
 

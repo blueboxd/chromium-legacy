@@ -4,10 +4,9 @@
 
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_service_factory.h"
 
-#include "base/functional/bind.h"
 #include "base/no_destructor.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_management.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_service.h"
 #include "chrome/browser/safe_browsing/network_context_service.h"
@@ -46,21 +45,22 @@ ExtensionTelemetryServiceFactory::ExtensionTelemetryServiceFactory()
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
   DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
   DependsOn(extensions::ExtensionManagementFactory::GetInstance());
+  DependsOn(extensions::ExtensionSystemFactory::GetInstance());
 }
 
-KeyedService* ExtensionTelemetryServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+ExtensionTelemetryServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
   if (!base::FeatureList::IsEnabled(kExtensionTelemetry))
     return nullptr;
   NetworkContextService* network_service =
       NetworkContextServiceFactory::GetForBrowserContext(context);
-  if (!network_service)
+  if (!network_service) {
     return nullptr;
-  Profile* profile = Profile::FromBrowserContext(context);
-  return new ExtensionTelemetryService(
-      profile, network_service->GetURLLoaderFactory(),
-      extensions::ExtensionRegistry::Get(context),
-      extensions::ExtensionPrefs::Get(context));
+  }
+  return std::make_unique<ExtensionTelemetryService>(
+      Profile::FromBrowserContext(context),
+      network_service->GetURLLoaderFactory());
 }
 
 bool ExtensionTelemetryServiceFactory::ServiceIsCreatedWithBrowserContext()

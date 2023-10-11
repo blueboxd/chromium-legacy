@@ -29,7 +29,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "content_browsertests",
         "swarming": {
           "dimensions": {
             "device_os_type": "userdebug",
@@ -110,7 +109,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "content_browsertests",
         "swarming": {
           "dimensions": {
             "device_os_type": "userdebug",
@@ -197,7 +195,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "browser_tests",
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -235,7 +232,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "content_browsertests",
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -294,7 +290,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "content_unittests",
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -312,7 +307,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "remoting_unittests",
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -349,7 +343,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "browser_tests",
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -387,7 +380,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "content_browsertests",
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -446,7 +438,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "content_unittests",
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -464,7 +455,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "remoting_unittests",
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -501,7 +491,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "browser_tests",
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -539,7 +528,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "content_browsertests",
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -598,7 +586,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "content_unittests",
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -616,7 +603,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "remoting_unittests",
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -641,7 +627,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "15a5209g",
+          "15a5229m",
           "--xctest"
         ],
         "isolate_name": "ios_remoting_unittests",
@@ -663,11 +649,11 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13.4"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15a5209g",
+              "name": "xcode_ios_15a5229m",
               "path": "Xcode.app"
             },
             {
@@ -689,7 +675,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "15a5209g",
+          "15a5229m",
           "--xctest"
         ],
         "isolate_name": "ios_remoting_unittests",
@@ -711,11 +697,11 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13.4"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15a5209g",
+              "name": "xcode_ios_15a5229m",
               "path": "Xcode.app"
             },
             {
@@ -737,7 +723,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "15a5209g",
+          "15a5229m",
           "--xctest"
         ],
         "isolate_name": "ios_remoting_unittests",
@@ -759,11 +745,11 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13.4"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15a5209g",
+              "name": "xcode_ios_15a5229m",
               "path": "Xcode.app"
             },
             {
@@ -785,7 +771,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "15a5209g",
+          "15a5229m",
           "--xctest"
         ],
         "isolate_name": "ios_remoting_unittests",
@@ -807,11 +793,11 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13.4"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15a5209g",
+              "name": "xcode_ios_15a5229m",
               "path": "Xcode.app"
             },
             {

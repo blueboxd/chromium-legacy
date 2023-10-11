@@ -713,8 +713,15 @@ void PageSpecificContentSettings::SharedWorkerAccessed(
   PageSpecificContentSettings* settings = GetForFrame(
       content::RenderFrameHost::FromID(render_process_id, render_frame_id));
   if (settings) {
-    settings->OnSharedWorkerAccessed(worker_url, name, storage_key,
-                                     blocked_by_policy);
+    if (base::FeatureList::IsEnabled(
+            browsing_data::features::kMigrateStorageToBDM)) {
+      settings->OnBrowsingDataAccessed(
+          browsing_data::SharedWorkerInfo{worker_url, name, storage_key},
+          BrowsingDataModel::StorageType::kSharedWorker, blocked_by_policy);
+    } else {
+      settings->OnSharedWorkerAccessed(worker_url, name, storage_key,
+                                       blocked_by_policy);
+    }
   }
 }
 
@@ -1114,7 +1121,9 @@ void PageSpecificContentSettings::OnTrustTokenAccessed(
 void PageSpecificContentSettings::OnBrowsingDataAccessed(
     BrowsingDataModel::DataKey data_key,
     BrowsingDataModel::StorageType storage_type,
-    bool blocked) {
+    bool blocked,
+    content::Page* originating_page) {
+  originating_page = originating_page ? originating_page : &page();
   auto& model =
       blocked ? blocked_browsing_data_model_ : allowed_browsing_data_model_;
 
@@ -1134,12 +1143,17 @@ void PageSpecificContentSettings::OnBrowsingDataAccessed(
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
   MaybeUpdateParent(&PageSpecificContentSettings::OnBrowsingDataAccessed,
-                    data_key, storage_type, blocked);
+                    data_key, storage_type, blocked, originating_page);
 
   // TODO(njeunje): Look into populating an actual url for this access details.
   // Could be obtained from the `data_key`.
-  AccessDetails access_details{SiteDataType::kUnknown, AccessType::kUnknown,
-                               GURL(), blocked, false};
+  GURL accessing_url =
+      absl::holds_alternative<blink::StorageKey>(data_key)
+          ? absl::get<blink::StorageKey>(data_key).origin().GetURL()
+          : GURL();
+  AccessDetails access_details{SiteDataType::kStorage, AccessType::kUnknown,
+                               accessing_url, blocked,
+                               originating_page->IsPrimary()};
   MaybeNotifySiteDataObservers(access_details);
 }
 

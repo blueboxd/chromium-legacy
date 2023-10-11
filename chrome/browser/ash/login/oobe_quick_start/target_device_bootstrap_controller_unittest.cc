@@ -18,23 +18,20 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fake_target_device_connection_broker.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/qr_code.h"
+#include "chrome/browser/ash/login/oobe_quick_start/connectivity/session_context.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
 #include "chrome/browser/ash/login/oobe_quick_start/mock_second_device_auth_broker.h"
 #include "chrome/browser/ash/login/oobe_quick_start/oobe_quick_start_pref_names.h"
 #include "chrome/browser/ash/login/oobe_quick_start/second_device_auth_broker.h"
-#include "chrome/browser/nearby_sharing/fake_nearby_connections_manager.h"
+#include "chrome/browser/ash/nearby/fake_quick_start_connectivity_service.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/ash/components/quick_start/fake_quick_start_decoder.h"
 #include "chromeos/ash/components/quick_start/quick_start_metrics.h"
 #include "chromeos/ash/components/quick_start/types.h"
-#include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder.mojom.h"
-#include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom-shared.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -121,16 +118,17 @@ class TargetDeviceBootstrapControllerTest : public testing::Test {
     auto fake_accessibility_manager =
         std::make_unique<FakeAccessibilityManagerWrapper>();
     fake_accessibility_manager_ = fake_accessibility_manager.get();
+    fake_quick_start_connectivity_service_ =
+        std::make_unique<FakeQuickStartConnectivityService>();
 
     bootstrap_controller_ = std::make_unique<TargetDeviceBootstrapController>(
         std::move(auth_broker), std::move(fake_accessibility_manager),
-        fake_nearby_connections_manager_.GetWeakPtr(),
-        mojo::SharedRemote<mojom::QuickStartDecoder>(
-            fake_quick_start_decoder_.GetRemote()));
+        fake_quick_start_connectivity_service_.get());
 
     std::unique_ptr<FakeTargetDeviceConnectionBroker>
         fake_target_device_connection_broker =
-            std::make_unique<FakeTargetDeviceConnectionBroker>();
+            std::make_unique<FakeTargetDeviceConnectionBroker>(
+                fake_quick_start_connectivity_service_.get());
     fake_target_device_connection_broker_ =
         fake_target_device_connection_broker.get();
     bootstrap_controller_->set_connection_broker_for_testing(
@@ -156,17 +154,26 @@ class TargetDeviceBootstrapControllerTest : public testing::Test {
 
   PrefService* GetLocalState() { return local_state_.Get(); }
 
+  void ExpectQuickStartConnectivityServiceCleanupCalled() {
+    EXPECT_TRUE(
+        fake_quick_start_connectivity_service_->get_is_cleanup_called());
+  }
+
+  SessionContext GetSessionContext() {
+    return bootstrap_controller_->session_context_;
+  }
+
  protected:
   absl::optional<FidoAssertionInfo> assertion_info_;
   base::test::SingleThreadTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_factory_;
-  raw_ptr<FakeTargetDeviceConnectionBroker, ExperimentalAsh>
+  std::unique_ptr<FakeQuickStartConnectivityService>
+      fake_quick_start_connectivity_service_;
+  raw_ptr<FakeTargetDeviceConnectionBroker, DanglingUntriaged | ExperimentalAsh>
       fake_target_device_connection_broker_;
-  FakeNearbyConnectionsManager fake_nearby_connections_manager_;
-  FakeQuickStartDecoder fake_quick_start_decoder_;
   std::unique_ptr<FakeObserver> fake_observer_;
   raw_ptr<MockAuthBroker> auth_broker_;
-  raw_ptr<FakeAccessibilityManagerWrapper, ExperimentalAsh>
+  raw_ptr<FakeAccessibilityManagerWrapper, DanglingUntriaged | ExperimentalAsh>
       fake_accessibility_manager_ = nullptr;
   std::unique_ptr<TargetDeviceBootstrapController> bootstrap_controller_;
   ScopedTestingLocalState local_state_;
@@ -206,6 +213,7 @@ TEST_F(TargetDeviceBootstrapControllerTest,
       absl::holds_alternative<ErrorCode>(fake_observer_->last_status.payload));
   EXPECT_EQ(absl::get<ErrorCode>(fake_observer_->last_status.payload),
             ErrorCode::START_ADVERTISING_FAILED);
+  ExpectQuickStartConnectivityServiceCleanupCalled();
 }
 
 TEST_F(TargetDeviceBootstrapControllerTest,
@@ -241,6 +249,7 @@ TEST_F(TargetDeviceBootstrapControllerTest, StopAdvertising) {
 
   fake_target_device_connection_broker_->on_stop_advertising_callback().Run();
   EXPECT_EQ(fake_observer_->last_status.step, Step::NONE);
+  ExpectQuickStartConnectivityServiceCleanupCalled();
 }
 
 TEST_F(TargetDeviceBootstrapControllerTest, InitiateConnection_QRCode) {
@@ -332,6 +341,7 @@ TEST_F(TargetDeviceBootstrapControllerTest, CloseConnection) {
       absl::holds_alternative<ErrorCode>(fake_observer_->last_status.payload));
   EXPECT_EQ(absl::get<ErrorCode>(fake_observer_->last_status.payload),
             ErrorCode::CONNECTION_CLOSED);
+  ExpectQuickStartConnectivityServiceCleanupCalled();
 }
 
 TEST_F(TargetDeviceBootstrapControllerTest, GetPhoneInstanceId) {
@@ -630,6 +640,32 @@ TEST_F(TargetDeviceBootstrapControllerTest,
       quick_start_metrics::WifiTransferResultFailureReason::
           kConnectionDroppedDuringAttempt,
       1);
+  ExpectQuickStartConnectivityServiceCleanupCalled();
+}
+
+TEST_F(TargetDeviceBootstrapControllerTest, SessionContext) {
+  // The SessionContext is generated by the bootstrap controller. Ensure that
+  // the expected data is present when local state prefs indicate Quick
+  // Start is resuming after an update.
+  EXPECT_FALSE(GetSessionContext().is_resume_after_update());
+
+  GetLocalState()->SetBoolean(prefs::kShouldResumeQuickStartAfterReboot, true);
+  GetLocalState()->SetDict(prefs::kResumeQuickStartAfterRebootInfo,
+                           GetSessionContext().GetPrepareForUpdateInfo());
+
+  std::string expected_random_session_id =
+      GetSessionContext().random_session_id().ToString();
+  SessionContext::SharedSecret expected_shared_secret =
+      GetSessionContext().secondary_shared_secret();
+
+  auth_broker_ = nullptr;
+  bootstrap_controller_.reset();
+  CreateBootstrapController();
+
+  EXPECT_TRUE(GetSessionContext().is_resume_after_update());
+  EXPECT_EQ(expected_random_session_id,
+            GetSessionContext().random_session_id().ToString());
+  EXPECT_EQ(expected_shared_secret, GetSessionContext().shared_secret());
 }
 
 }  // namespace ash::quick_start

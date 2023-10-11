@@ -13,21 +13,23 @@
 #include "ash/glanceables/common/glanceables_view_id.h"
 #include "ash/glanceables/glanceables_v2_controller.h"
 #include "ash/shell.h"
+#include "ash/style/combobox.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/unified/classroom_bubble_base_view.h"
 #include "ash/system/unified/classroom_bubble_student_view.h"
 #include "ash/system/unified/classroom_bubble_teacher_view.h"
 #include "ash/test/ash_test_base.h"
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "components/account_id/account_id.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/view.h"
@@ -119,8 +121,13 @@ class ClassroomBubbleViewTest : public AshTestBase {
     widget_->SetFullscreen(true);
   }
 
-  views::Combobox* GetComboBoxView() {
-    return views::AsViewClass<views::Combobox>(view_->GetViewByID(
+  const views::View* GetHeaderIcon() const {
+    return views::AsViewClass<views::View>(view_->GetViewByID(
+        base::to_underlying(GlanceablesViewId::kClassroomBubbleHeaderIcon)));
+  }
+
+  Combobox* GetComboBoxView() {
+    return views::AsViewClass<Combobox>(view_->GetViewByID(
         base::to_underlying(GlanceablesViewId::kClassroomBubbleComboBox)));
   }
 
@@ -158,7 +165,13 @@ class ClassroomBubbleViewTest : public AshTestBase {
  protected:
   testing::StrictMock<TestClient> classroom_client_;
   std::unique_ptr<views::Widget> widget_;
-  raw_ptr<ClassroomBubbleBaseView, ExperimentalAsh> view_;
+  // Example of flake occurrence:
+  // - Test:
+  // ClassroomBubbleStudentViewTest.ReadsInitialComboBoxViewValueFromPrefs
+  // -
+  // https://ci.chromium.org/ui/p/chromium/builders/try/linux-chromeos-rel/1690881/overview
+  raw_ptr<ClassroomBubbleBaseView, FlakyDanglingUntriaged | ExperimentalAsh>
+      view_;
   DetailedViewDelegate detailed_view_delegate_{nullptr};
 
  private:
@@ -175,10 +188,18 @@ class ClassroomBubbleStudentViewTest : public ClassroomBubbleViewTest {
     EXPECT_CALL(classroom_client_,
                 GetStudentAssignmentsWithApproachingDueDate(_))
         .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
-          std::move(cb).Run(/*success=*/true, {});
+          std::move(cb).Run(/*success=*/true, CreateAssignments(1));
         });
     view_ = widget_->SetContentsView(
         std::make_unique<ClassroomBubbleStudentView>(&detailed_view_delegate_));
+  }
+
+  int GetLastSelectedAssignmentsListPrefValue() const {
+    return Shell::Get()
+        ->session_controller()
+        ->GetActivePrefService()
+        ->GetInteger(
+            "ash.glanceables.classroom.student.last_selected_assignments_list");
   }
 };
 
@@ -209,40 +230,130 @@ class ClassroomBubbleTeacherViewTest : public ClassroomBubbleViewTest {
 };
 
 TEST_F(ClassroomBubbleStudentViewTest, RendersComboBoxView) {
-  ASSERT_TRUE(GetComboBoxView());
-  ASSERT_EQ(GetComboBoxView()->GetModel()->GetItemCount(), 4u);
+  EXPECT_CALL(classroom_client_, GetStudentAssignmentsWithoutDueDate(_))
+      .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
+        std::move(cb).Run(/*success=*/true, {});
+      });
+  EXPECT_CALL(classroom_client_, GetStudentAssignmentsWithMissedDueDate(_))
+      .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
+        std::move(cb).Run(/*success=*/true, {});
+      });
+  EXPECT_CALL(classroom_client_, GetCompletedStudentAssignments(_))
+      .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
+        std::move(cb).Run(/*success=*/true, {});
+      });
+  Combobox* combobox_view = GetComboBoxView();
+  ASSERT_TRUE(combobox_view);
+  combobox_view->RequestFocus();
+  ASSERT_TRUE(combobox_view->GetSelectedIndex());
+  EXPECT_EQ(0u, *combobox_view->GetSelectedIndex());
+  EXPECT_EQ(u"Due soon", combobox_view->GetTextForRow(0u));
+  EXPECT_EQ(0, GetLastSelectedAssignmentsListPrefValue());
 
-  EXPECT_EQ(GetComboBoxView()->GetModel()->GetItemAt(0), u"Assigned");
-  EXPECT_EQ(GetComboBoxView()->GetModel()->GetItemAt(1), u"No due date");
-  EXPECT_EQ(GetComboBoxView()->GetModel()->GetItemAt(2), u"Missing");
-  EXPECT_EQ(GetComboBoxView()->GetModel()->GetItemAt(3), u"Done");
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
+  ASSERT_TRUE(combobox_view->GetSelectedIndex());
+  EXPECT_EQ(1u, *combobox_view->GetSelectedIndex());
+  EXPECT_EQ(u"No due date", combobox_view->GetTextForRow(1u));
+  EXPECT_EQ(1, GetLastSelectedAssignmentsListPrefValue());
 
-  EXPECT_EQ(GetComboBoxView()->GetSelectedIndex(), 0u);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
+  ASSERT_TRUE(combobox_view->GetSelectedIndex());
+  EXPECT_EQ(2u, *combobox_view->GetSelectedIndex());
+  EXPECT_EQ(u"Missing", combobox_view->GetTextForRow(2u));
+  EXPECT_EQ(2, GetLastSelectedAssignmentsListPrefValue());
+
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
+  ASSERT_TRUE(combobox_view->GetSelectedIndex());
+  EXPECT_EQ(3u, *combobox_view->GetSelectedIndex());
+  EXPECT_EQ(u"Done", combobox_view->GetTextForRow(3u));
+  EXPECT_EQ(3, GetLastSelectedAssignmentsListPrefValue());
+
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
+  ASSERT_TRUE(combobox_view->GetSelectedIndex());
+  EXPECT_EQ(3u, *combobox_view->GetSelectedIndex());
 }
 
 TEST_F(ClassroomBubbleTeacherViewTest, RendersComboBoxView) {
+  EXPECT_CALL(classroom_client_, GetTeacherAssignmentsRecentlyDue(_))
+      .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
+        std::move(cb).Run(/*success=*/true, {});
+      });
+  EXPECT_CALL(classroom_client_, GetTeacherAssignmentsWithoutDueDate(_))
+      .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
+        std::move(cb).Run(/*success=*/true, {});
+      });
+  EXPECT_CALL(classroom_client_, GetGradedTeacherAssignments(_))
+      .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
+        std::move(cb).Run(/*success=*/true, {});
+      });
+
+  Combobox* combobox_view = GetComboBoxView();
+  ASSERT_TRUE(combobox_view);
+  combobox_view->RequestFocus();
+  ASSERT_TRUE(combobox_view->GetSelectedIndex());
+  EXPECT_EQ(0u, *combobox_view->GetSelectedIndex());
+  EXPECT_EQ(u"Due Soon", combobox_view->GetTextForRow(0u));
+
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
+  ASSERT_TRUE(combobox_view->GetSelectedIndex());
+  EXPECT_EQ(1u, *combobox_view->GetSelectedIndex());
+  EXPECT_EQ(u"Recently Due", combobox_view->GetTextForRow(1u));
+
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
+  ASSERT_TRUE(combobox_view->GetSelectedIndex());
+  EXPECT_EQ(2u, *combobox_view->GetSelectedIndex());
+  EXPECT_EQ(u"No Due Date", combobox_view->GetTextForRow(2u));
+
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
+  ASSERT_TRUE(combobox_view->GetSelectedIndex());
+  EXPECT_EQ(3u, *combobox_view->GetSelectedIndex());
+  EXPECT_EQ(u"Graded", combobox_view->GetTextForRow(3u));
+
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
+  ASSERT_TRUE(combobox_view->GetSelectedIndex());
+  EXPECT_EQ(3u, *combobox_view->GetSelectedIndex());
+}
+
+TEST_F(ClassroomBubbleStudentViewTest, ReadsInitialComboBoxViewValueFromPrefs) {
+  EXPECT_CALL(classroom_client_, GetCompletedStudentAssignments(_))
+      .Times(2)
+      .WillRepeatedly(
+          [](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
+            std::move(cb).Run(/*success=*/true, {});
+          });
+
   ASSERT_TRUE(GetComboBoxView());
-  ASSERT_EQ(GetComboBoxView()->GetModel()->GetItemCount(), 4u);
 
-  EXPECT_EQ(GetComboBoxView()->GetModel()->GetItemAt(0), u"Due Soon");
-  EXPECT_EQ(GetComboBoxView()->GetModel()->GetItemAt(1), u"Recently Due");
-  EXPECT_EQ(GetComboBoxView()->GetModel()->GetItemAt(2), u"No Due Date");
-  EXPECT_EQ(GetComboBoxView()->GetModel()->GetItemAt(3), u"Graded");
-
+  // The first menu item is selected initially.
+  EXPECT_EQ(GetLastSelectedAssignmentsListPrefValue(), 0);
   EXPECT_EQ(GetComboBoxView()->GetSelectedIndex(), 0u);
+
+  // Update selection in the `combobox_view`, this should update prefs.
+  GetComboBoxView()->SelectMenuItemForTest(3u);
+  EXPECT_EQ(GetLastSelectedAssignmentsListPrefValue(), 3);
+  EXPECT_EQ(GetComboBoxView()->GetSelectedIndex(), 3u);
+
+  // Swap `widget_`'s content. Verify that the new `view_` contains a combobox
+  // with the correct initial value.
+  view_ = widget_->SetContentsView(
+      std::make_unique<ClassroomBubbleStudentView>(&detailed_view_delegate_));
+  ASSERT_TRUE(GetComboBoxView());
+  EXPECT_EQ(GetLastSelectedAssignmentsListPrefValue(), 3);
+  EXPECT_EQ(GetComboBoxView()->GetSelectedIndex(), 3u);
 }
 
 TEST_F(ClassroomBubbleStudentViewTest,
        CallsClassroomClientAfterChangingActiveList) {
+  base::UserActionTester user_actions;
   ASSERT_TRUE(GetComboBoxView());
   ASSERT_TRUE(GetListFooterSeeAllButton());
-  EXPECT_FALSE(GetListFooter()->GetVisible());
+  EXPECT_TRUE(GetListFooter()->GetVisible());
 
   EXPECT_CALL(classroom_client_, GetStudentAssignmentsWithoutDueDate(_))
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
         std::move(cb).Run(/*success=*/true, CreateAssignments(3));
       });
-  GetComboBoxView()->MenuSelectionAt(1);
+  GetComboBoxView()->SelectMenuItemForTest(1);
   // Trigger layout after receiving new items.
   widget_->LayoutRootViewIfNecessary();
   EXPECT_CALL(
@@ -255,7 +366,7 @@ TEST_F(ClassroomBubbleStudentViewTest,
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
         std::move(cb).Run(/*success=*/true, CreateAssignments(3));
       });
-  GetComboBoxView()->MenuSelectionAt(2);
+  GetComboBoxView()->SelectMenuItemForTest(2);
   // Trigger layout after receiving new items.
   widget_->LayoutRootViewIfNecessary();
   EXPECT_CALL(classroom_client_,
@@ -266,17 +377,21 @@ TEST_F(ClassroomBubbleStudentViewTest,
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
         std::move(cb).Run(/*success=*/true, CreateAssignments(3));
       });
-  GetComboBoxView()->MenuSelectionAt(3);
+  GetComboBoxView()->SelectMenuItemForTest(3);
   // Trigger layout after receiving new items.
   widget_->LayoutRootViewIfNecessary();
   EXPECT_CALL(
       classroom_client_,
       OpenUrl(GURL("https://classroom.google.com/u/0/a/turned-in/all")));
   LeftClickOn(GetListFooterSeeAllButton());
+
+  EXPECT_EQ(3,
+            user_actions.GetActionCount("Glanceables_Classroom_SeeAllPressed"));
 }
 
 TEST_F(ClassroomBubbleTeacherViewTest,
        CallsClassroomClientAfterChangingActiveList) {
+  base::UserActionTester user_actions;
   ASSERT_TRUE(GetComboBoxView());
   ASSERT_TRUE(GetListFooterSeeAllButton());
 
@@ -284,7 +399,7 @@ TEST_F(ClassroomBubbleTeacherViewTest,
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
         std::move(cb).Run(/*success=*/true, CreateAssignments(3));
       });
-  GetComboBoxView()->MenuSelectionAt(1);
+  GetComboBoxView()->SelectMenuItemForTest(1);
   // Trigger layout after receiving new items.
   widget_->LayoutRootViewIfNecessary();
   EXPECT_CALL(
@@ -296,7 +411,7 @@ TEST_F(ClassroomBubbleTeacherViewTest,
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
         std::move(cb).Run(/*success=*/true, CreateAssignments(3));
       });
-  GetComboBoxView()->MenuSelectionAt(2);
+  GetComboBoxView()->SelectMenuItemForTest(2);
   // Trigger layout after receiving new items.
   widget_->LayoutRootViewIfNecessary();
   EXPECT_CALL(
@@ -308,13 +423,16 @@ TEST_F(ClassroomBubbleTeacherViewTest,
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
         std::move(cb).Run(/*success=*/true, CreateAssignments(3));
       });
-  GetComboBoxView()->MenuSelectionAt(3);
+  GetComboBoxView()->SelectMenuItemForTest(3);
   // Trigger layout after receiving new items.
   widget_->LayoutRootViewIfNecessary();
   EXPECT_CALL(
       classroom_client_,
       OpenUrl(GURL("https://classroom.google.com/u/0/ta/reviewed/all")));
   LeftClickOn(GetListFooterSeeAllButton());
+
+  EXPECT_EQ(3,
+            user_actions.GetActionCount("Glanceables_Classroom_SeeAllPressed"));
 }
 
 TEST_F(ClassroomBubbleStudentViewTest, RendersListItems) {
@@ -324,9 +442,9 @@ TEST_F(ClassroomBubbleStudentViewTest, RendersListItems) {
       });
   ASSERT_TRUE(GetComboBoxView());
   ASSERT_TRUE(GetListContainerView());
-  EXPECT_FALSE(GetListFooter()->GetVisible());
+  EXPECT_TRUE(GetListFooter()->GetVisible());
 
-  GetComboBoxView()->MenuSelectionAt(3);
+  GetComboBoxView()->SelectMenuItemForTest(3);
   EXPECT_EQ(GetListContainerView()->children().size(), 3u);  // No more than 3.
 
   EXPECT_TRUE(GetListFooter()->GetVisible());
@@ -342,7 +460,7 @@ TEST_F(ClassroomBubbleTeacherViewTest, RendersListItems) {
   ASSERT_TRUE(GetComboBoxView());
   ASSERT_TRUE(GetListContainerView());
 
-  GetComboBoxView()->MenuSelectionAt(3);
+  GetComboBoxView()->SelectMenuItemForTest(3);
   EXPECT_EQ(GetListContainerView()->children().size(), 3u);  // No more than 3.
 
   ASSERT_TRUE(GetListFooterItemsCountLabel());
@@ -352,26 +470,27 @@ TEST_F(ClassroomBubbleTeacherViewTest, RendersListItems) {
 TEST_F(ClassroomBubbleStudentViewTest, RendersEmptyListLabel) {
   ASSERT_TRUE(GetComboBoxView());
   ASSERT_TRUE(GetListContainerView());
-  EXPECT_FALSE(GetListFooter()->GetVisible());
-  EXPECT_TRUE(GetEmptyListLabel()->GetVisible());
+  EXPECT_FALSE(GetEmptyListLabel()->GetVisible());
+  EXPECT_TRUE(GetListFooter()->GetVisible());
+  EXPECT_EQ(GetListFooterItemsCountLabel()->GetText(), u"Showing 1 out of 1");
+  EXPECT_EQ(GetListContainerView()->children().size(), 1u);
 
   EXPECT_CALL(classroom_client_, GetStudentAssignmentsWithoutDueDate(_))
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
-        std::move(cb).Run(/*success=*/true, CreateAssignments(5));
+        std::move(cb).Run(/*success=*/true, {});
       });
-  GetComboBoxView()->MenuSelectionAt(1);
-  EXPECT_EQ(GetListContainerView()->children().size(), 3u);  // No more than 3.
+  GetComboBoxView()->SelectMenuItemForTest(1);
+  EXPECT_EQ(GetListContainerView()->children().size(), 0u);
 
-  // The empty list label should be hidden, and the footer shown.
-  EXPECT_TRUE(GetListFooter()->GetVisible());
-  EXPECT_FALSE(GetEmptyListLabel()->GetVisible());
-  EXPECT_EQ(GetListFooterItemsCountLabel()->GetText(), u"Showing 3 out of 5");
+  // The empty list label should be shown, and the footer hidden.
+  EXPECT_FALSE(GetListFooter()->GetVisible());
+  EXPECT_TRUE(GetEmptyListLabel()->GetVisible());
 
   EXPECT_CALL(classroom_client_, GetStudentAssignmentsWithMissedDueDate(_))
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
         std::move(cb).Run(/*success=*/true, {});
       });
-  GetComboBoxView()->MenuSelectionAt(2);
+  GetComboBoxView()->SelectMenuItemForTest(2);
   EXPECT_EQ(GetListContainerView()->children().size(), 0u);
 
   // The empty list label should be shown, and the footer hidden.
@@ -389,7 +508,7 @@ TEST_F(ClassroomBubbleTeacherViewTest, RendersEmptyListLabel) {
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
         std::move(cb).Run(/*success=*/true, CreateAssignments(5));
       });
-  GetComboBoxView()->MenuSelectionAt(1);
+  GetComboBoxView()->SelectMenuItemForTest(1);
   EXPECT_EQ(GetListContainerView()->children().size(), 3u);  // No more than 3.
 
   // The empty list label should be hidden, and the footer shown.
@@ -401,7 +520,7 @@ TEST_F(ClassroomBubbleTeacherViewTest, RendersEmptyListLabel) {
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
         std::move(cb).Run(/*success=*/true, {});
       });
-  GetComboBoxView()->MenuSelectionAt(2);
+  GetComboBoxView()->SelectMenuItemForTest(2);
   EXPECT_EQ(GetListContainerView()->children().size(), 0u);
 
   // The empty list label should be shown, and the footer hidden.
@@ -410,12 +529,13 @@ TEST_F(ClassroomBubbleTeacherViewTest, RendersEmptyListLabel) {
 }
 
 TEST_F(ClassroomBubbleStudentViewTest, OpensClassroomUrlForListItem) {
+  base::UserActionTester user_actions;
   EXPECT_CALL(classroom_client_, GetCompletedStudentAssignments(_))
       .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
         std::move(cb).Run(/*success=*/true, CreateAssignments(1));
       });
   ASSERT_TRUE(GetComboBoxView());
-  GetComboBoxView()->MenuSelectionAt(3);
+  GetComboBoxView()->SelectMenuItemForTest(3);
 
   // Trigger layout for `GetListContainerView()` after receiving new items.
   widget_->LayoutRootViewIfNecessary();
@@ -426,6 +546,9 @@ TEST_F(ClassroomBubbleStudentViewTest, OpensClassroomUrlForListItem) {
   EXPECT_CALL(classroom_client_,
               OpenUrl(GURL("https://classroom.google.com/test-link-1")));
   LeftClickOn(GetListContainerView()->children().at(0));
+
+  EXPECT_EQ(1, user_actions.GetActionCount(
+                   "Glanceables_Classroom_AssignmentPressed"));
 }
 
 TEST_F(ClassroomBubbleTeacherViewTest, OpensClassroomUrlForListItem) {
@@ -434,7 +557,7 @@ TEST_F(ClassroomBubbleTeacherViewTest, OpensClassroomUrlForListItem) {
         std::move(cb).Run(/*success=*/true, CreateAssignments(1));
       });
   ASSERT_TRUE(GetComboBoxView());
-  GetComboBoxView()->MenuSelectionAt(3);
+  GetComboBoxView()->SelectMenuItemForTest(3);
 
   // Trigger layout for `GetListContainerView()` after receiving new items.
   widget_->LayoutRootViewIfNecessary();
@@ -461,7 +584,7 @@ TEST_F(ClassroomBubbleStudentViewTest, ShowsProgressBar) {
 
   ASSERT_TRUE(GetProgressBar());
   ASSERT_TRUE(GetComboBoxView());
-  GetComboBoxView()->MenuSelectionAt(3);
+  GetComboBoxView()->SelectMenuItemForTest(3);
 }
 
 TEST_F(ClassroomBubbleTeacherViewTest, ShowsProgressBar) {
@@ -478,7 +601,43 @@ TEST_F(ClassroomBubbleTeacherViewTest, ShowsProgressBar) {
 
   ASSERT_TRUE(GetProgressBar());
   ASSERT_TRUE(GetComboBoxView());
-  GetComboBoxView()->MenuSelectionAt(3);
+  GetComboBoxView()->SelectMenuItemForTest(3);
+}
+
+TEST_F(ClassroomBubbleStudentViewTest, ClickHeaderIconButton) {
+  base::UserActionTester user_actions;
+
+  EXPECT_CALL(classroom_client_,
+              OpenUrl(GURL("https://classroom.google.com/u/0/h")));
+  LeftClickOn(GetHeaderIcon());
+
+  EXPECT_EQ(1, user_actions.GetActionCount(
+                   "Glanceables_Classroom_HeaderIconPressed"));
+}
+
+TEST_F(ClassroomBubbleStudentViewTest, ClickItemViewUserAction) {
+  base::UserActionTester user_actions;
+
+  EXPECT_CALL(classroom_client_,
+              OpenUrl(GURL("https://classroom.google.com/test-link-1")));
+  LeftClickOn(GetListContainerView()->children().at(0));
+
+  EXPECT_EQ(1, user_actions.GetActionCount(
+                   "Glanceables_Classroom_AssignmentPressed_DefaultList"));
+
+  EXPECT_CALL(classroom_client_, GetCompletedStudentAssignments(_))
+      .WillOnce([](GlanceablesClassroomClient::GetAssignmentsCallback cb) {
+        std::move(cb).Run(/*success=*/true, CreateAssignments(2));
+      });
+  ASSERT_TRUE(GetComboBoxView());
+  GetComboBoxView()->SelectMenuItemForTest(3);
+
+  EXPECT_CALL(classroom_client_,
+              OpenUrl(GURL("https://classroom.google.com/test-link-2")));
+  LeftClickOn(GetListContainerView()->children().at(1));
+
+  EXPECT_EQ(2, user_actions.GetActionCount(
+                   "Glanceables_Classroom_AssignmentPressed"));
 }
 
 }  // namespace ash

@@ -573,6 +573,37 @@ void AutocompleteResult::TrimOmniboxActions(bool is_zero_suggest) {
   }
 }
 
+void AutocompleteResult::SplitActionsToSuggestions(
+    const AutocompleteInput& input) {
+  size_t size_before = size();
+  for (size_t i = 0; i < matches_.size(); i++) {
+    for (size_t j = 0; j < matches_[i].actions.size(); j++) {
+      if (matches_[i].actions[j]->ActionId() == OmniboxActionId::PEDAL) {
+        AutocompleteMatch& action_match =
+            *matches_.insert(matches_.begin() + i + 1, matches_[i]);
+        action_match.actions.clear();
+        action_match.takeover_action = matches_[i].actions[j];
+        action_match.ConvertFromTakeoverAction();
+
+        // Remove this action from the primary match and repeat checking at this
+        // same index, which will hence be the next action.
+        matches_[i].actions.erase(matches_[i].actions.begin() + j);
+        j--;
+      }
+    }
+  }
+  if (size() > size_before &&
+      OmniboxFieldTrial::kActionsUISimplificationTrimExtra.Get()) {
+    CompareWithDemoteByType<AutocompleteMatch> comparing_object(
+        input.current_page_classification());
+    const size_t limit =
+        CalculateNumMatches(input.IsZeroSuggest(), matches_, comparing_object);
+    if (size() > limit) {
+      matches_.resize(limit);
+    }
+  }
+}
+
 void AutocompleteResult::GroupAndDemoteMatchesInGroups() {
   bool any_matches_in_groups = false;
   for (auto& match : *this) {

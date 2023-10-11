@@ -4,11 +4,13 @@
 
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_mediator.h"
 
+#import "base/apple/foundation_util.h"
 #import "base/auto_reset.h"
 #import "base/check_op.h"
 #import "base/containers/fixed_flat_map.h"
-#import "base/mac/foundation_util.h"
+#import "base/i18n/message_formatter.h"
 #import "base/notreached.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/signin/public/base/consent_level.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/identity_manager/account_info.h"
@@ -36,10 +38,10 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/signin/constants.h"
+#import "ios/chrome/browser/sync/enterprise_utils.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_central_account_item.h"
-#import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_command_handler.h"
@@ -92,6 +94,7 @@ UIImageConfiguration* AccessoryConfiguration() {
 // Enterprise icon.
 NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 constexpr CGFloat kErrorSymbolPointSize = 22.;
+constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
 
 }  // namespace
 
@@ -106,6 +109,8 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
 @property(nonatomic, strong) TableViewImageItem* encryptionItem;
 // Sync error item.
 @property(nonatomic, strong) TableViewItem* syncErrorItem;
+// Batch upload item.
+@property(nonatomic, strong) SettingsImageDetailTextItem* batchUploadItem;
 // Sign out and turn off sync item.
 @property(nonatomic, strong) TableViewItem* signOutAndTurnOffSyncItem;
 // Returns YES if the sync data items should be enabled.
@@ -136,6 +141,10 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
       _accountAccountManagerServiceObserver;
   // Signed-in identity. Note: may be nil while signing out.
   id<SystemIdentity> _signedInIdentity;
+  // Number of local items to upload excluding passwords.
+  NSInteger _localItemsToUpload;
+  // Number of local passwords to upload.
+  NSInteger _localPasswordsToUpload;
 }
 
 - (instancetype)
@@ -161,6 +170,9 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
     _signedInIdentity = _authenticationService->GetPrimaryIdentity(
         signin::ConsentLevel::kSignin);
     _initialAccountState = initialAccountState;
+    // TODO(crbug.com/1451508):Remove initial values.
+    _localItemsToUpload = 0;
+    _localPasswordsToUpload = 0;
   }
   return self;
 }
@@ -299,7 +311,7 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
       BOOL shouldSyncEverythingItemBeOn =
           self.syncSetupService->IsSyncEverythingEnabled();
       SyncSwitchItem* syncEverythingItem =
-          base::mac::ObjCCastStrict<SyncSwitchItem>(self.syncEverythingItem);
+          base::apple::ObjCCastStrict<SyncSwitchItem>(self.syncEverythingItem);
       BOOL needsUpdate =
           (syncEverythingItem.on != shouldSyncEverythingItemBeOn) ||
           (syncEverythingItem.enabled != shouldSyncEverythingBeEditable);
@@ -323,7 +335,7 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
       indexPathForItemType:IdentityAccountItemType
          sectionIdentifier:AccountSectionIdentifier];
   TableViewCentralAccountItem* identityAccountItem =
-      base::mac::ObjCCast<TableViewCentralAccountItem>(
+      base::apple::ObjCCast<TableViewCentralAccountItem>(
           [self.consumer.tableViewModel itemAtIndexPath:accountCellIndexPath]);
   CHECK(identityAccountItem);
   CHECK(_signedInIdentity);
@@ -342,7 +354,8 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
     if ([item isKindOfClass:[TableViewInfoButtonItem class]])
       continue;
 
-    SyncSwitchItem* syncSwitchItem = base::mac::ObjCCast<SyncSwitchItem>(item);
+    SyncSwitchItem* syncSwitchItem =
+        base::apple::ObjCCast<SyncSwitchItem>(item);
     syncer::UserSelectableType dataType =
         static_cast<syncer::UserSelectableType>(syncSwitchItem.dataType);
     BOOL isDataTypeSynced =
@@ -511,6 +524,21 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
 
 #pragma mark - Loads sign out section
 
+// Creates a footer item to display below the sign out button when forced
+// sign-in is enabled.
+- (TableViewItem*)createForcedSigninFooterItem {
+  // Add information about the forced sign-in policy below the sign-out
+  // button when forced sign-in is enabled.
+  TableViewLinkHeaderFooterItem* footerItem =
+      [[TableViewLinkHeaderFooterItem alloc]
+          initWithType:SignOutItemFooterType];
+  footerItem.text = l10n_util::GetNSString(
+      IDS_IOS_ENTERPRISE_FORCED_SIGNIN_MESSAGE_WITH_LEARN_MORE);
+  footerItem.urls =
+      @[ [[CrURL alloc] initWithGURL:GURL("chrome://management/")] ];
+  return footerItem;
+}
+
 - (void)loadSignOutAndTurnOffSyncSection {
   // The SignOutAndTurnOffSyncSection only exists in
   // SyncSettingsAccountState::kSyncing state.
@@ -546,16 +574,7 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
       toSectionWithIdentifier:SignOutSectionIdentifier];
 
   if (self.forcedSigninEnabled) {
-    // Add information about the forced sign-in policy below the sign-out
-    // button when forced sign-in is enabled.
-    TableViewLinkHeaderFooterItem* footerItem =
-        [[TableViewLinkHeaderFooterItem alloc]
-            initWithType:SignOutItemFooterType];
-    footerItem.text = l10n_util::GetNSString(
-        IDS_IOS_ENTERPRISE_FORCED_SIGNIN_MESSAGE_WITH_LEARN_MORE);
-    footerItem.urls =
-        @[ [[CrURL alloc] initWithGURL:GURL("chrome://management/")] ];
-    [model setFooter:footerItem
+    [model setFooter:[self createForcedSigninFooterItem]
         forSectionWithIdentifier:SignOutSectionIdentifier];
   }
 }
@@ -641,6 +660,163 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
   item.text = GetNSString(IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_ITEM);
   item.textColor = [UIColor colorNamed:kBlueColor];
   [model addItem:item toSectionWithIdentifier:SignOutSectionIdentifier];
+
+  if (self.forcedSigninEnabled) {
+    [model setFooter:[self createForcedSigninFooterItem]
+        forSectionWithIdentifier:SignOutSectionIdentifier];
+  }
+}
+
+#pragma mark - Loads batch upload section
+
+- (TableViewTextItem*)batchUploadButtonItem {
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:BatchUploadButtonItemType];
+  item.text = l10n_util::GetNSString(
+      IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_BATCH_UPLOAD_BUTTON_ITEM);
+  item.textColor = [UIColor colorNamed:kBlueColor];
+  item.accessibilityIdentifier = kBatchUploadAccessibilityIdentifier;
+  return item;
+}
+
+- (NSString*)itemsToUploadRecommendationString {
+  // _localPasswordsToUpload and _localItemsToUpload should be updated by
+  // hasLocalDataToUpload before calling this method, which also checks for
+  // the case of having no items to upload, thus this case is not reached here.
+  if (!_localPasswordsToUpload && !_localItemsToUpload) {
+    NOTREACHED();
+  }
+
+  std::u16string userEmail =
+      base::SysNSStringToUTF16(_signedInIdentity.userEmail);
+
+  std::u16string itemsToUploadString;
+  if (_localPasswordsToUpload == 0) {
+    // No passwords, but there are other items to upload.
+    itemsToUploadString = base::i18n::MessageFormatter::FormatWithNamedArgs(
+        l10n_util::GetStringUTF16(
+            IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_BATCH_UPLOAD_ITEMS_ITEM),
+        "count", static_cast<int>(_localItemsToUpload), "email", userEmail);
+  } else if (_localItemsToUpload > 0) {
+    // Multiple passwords and items to upload.
+    itemsToUploadString = base::i18n::MessageFormatter::FormatWithNamedArgs(
+        l10n_util::GetStringUTF16(
+            IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_BATCH_UPLOAD_PASSWORDS_AND_ITEMS_ITEM),
+        "count", static_cast<int>(_localPasswordsToUpload), "email", userEmail);
+  } else {
+    // No items, but there are passwords to upload.
+    itemsToUploadString = base::i18n::MessageFormatter::FormatWithNamedArgs(
+        l10n_util::GetStringUTF16(
+            IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_BATCH_UPLOAD_PASSWORDS_ITEM),
+        "count", static_cast<int>(_localPasswordsToUpload), "email", userEmail);
+  }
+  return base::SysUTF16ToNSString(itemsToUploadString);
+}
+
+- (SettingsImageDetailTextItem*)batchUploadRecommendationItem {
+  SettingsImageDetailTextItem* item = [[SettingsImageDetailTextItem alloc]
+      initWithType:BatchUploadRecommendationItemType];
+  item.detailText = [self itemsToUploadRecommendationString];
+  item.image = CustomSymbolWithPointSize(kCloudAndArrowUpSymbol,
+                                         kBatchUploadSymbolPointSize);
+  item.imageViewTintColor = [UIColor colorNamed:kBlueColor];
+  return item;
+}
+
+- (BOOL)hasLocalDataToUpload {
+  if (self.syncAccountState != SyncSettingsAccountState::kSignedIn ||
+      !base::FeatureList::IsEnabled(syncer::kSyncEnableBatchUploadLocalData)) {
+    return NO;
+  }
+
+  // Batch upload option is not shown if sync is disabled by policy, or if the
+  // account is in a persistent error state that requires a user action.
+  if (self.syncErrorItem || self.isSyncDisabledByAdministrator) {
+    return NO;
+  }
+
+  // TODO(crbug.com/1451508): Use API counts to update the hard-coded ivars
+  // _localPasswordsToUpload and _localItemsToUpload. Make sure to ignore all
+  // types that are disabled by policy.
+  if (!_localPasswordsToUpload && !_localItemsToUpload) {
+    return NO;
+  }
+
+  return YES;
+}
+
+// Deletes the batch upload section. If `notifyConsumer` is YES, the consumer is
+// notified about model changes.
+- (void)removeBatchUploadSection:(BOOL)notifyConsumer {
+  TableViewModel* model = self.consumer.tableViewModel;
+  if (![model hasSectionForSectionIdentifier:BatchUploadSectionIdentifier]) {
+    return;
+  }
+  NSInteger sectionIndex =
+      [model sectionForSectionIdentifier:BatchUploadSectionIdentifier];
+  [model removeSectionWithIdentifier:BatchUploadSectionIdentifier];
+  self.batchUploadItem = nil;
+
+  // Remove the batch upload section from the table view model.
+  if (notifyConsumer) {
+    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
+    [self.consumer deleteSections:indexSet];
+  }
+}
+
+// Updates the batch upload section. If `notifyConsumer` is YES, the consumer is
+// notified about model changes.
+- (void)updateBatchUploadSection:(BOOL)notifyConsumer {
+  if (self.syncAccountState != SyncSettingsAccountState::kSignedIn) {
+    return;
+  }
+
+  if (![self hasLocalDataToUpload]) {
+    // The section should be removed if there is no more reason to offer the
+    // batch upload.
+    [self removeBatchUploadSection:notifyConsumer];
+    return;
+  }
+
+  TableViewModel* model = self.consumer.tableViewModel;
+  DCHECK(![model hasSectionForSectionIdentifier:SyncErrorsSectionIdentifier]);
+
+  NSInteger previousSection =
+      [model sectionForSectionIdentifier:AccountSectionIdentifier];
+  DCHECK_NE(NSNotFound, previousSection);
+  NSInteger batchUploadSectionIndex = previousSection + 1;
+
+  BOOL batchUploadSectionAlreadyExists = self.batchUploadItem;
+  if (!batchUploadSectionAlreadyExists) {
+    // Creates the batch upload section.
+    [model insertSectionWithIdentifier:BatchUploadSectionIdentifier
+                               atIndex:batchUploadSectionIndex];
+    self.batchUploadItem = [self batchUploadRecommendationItem];
+    [model addItem:self.batchUploadItem
+        toSectionWithIdentifier:BatchUploadSectionIdentifier];
+    [model addItem:[self batchUploadButtonItem]
+        toSectionWithIdentifier:BatchUploadSectionIdentifier];
+  } else if (notifyConsumer) {
+    // The section already exists, update it.
+    self.batchUploadItem.detailText = [self itemsToUploadRecommendationString];
+    [self.consumer reloadItem:self.batchUploadItem];
+  }
+
+  if (notifyConsumer) {
+    NSIndexSet* indexSet =
+        [NSIndexSet indexSetWithIndex:batchUploadSectionIndex];
+    if (batchUploadSectionAlreadyExists) {
+      // The section should be updated if it already exists.
+      [self.consumer reloadSections:indexSet];
+    } else {
+      [self.consumer insertSections:indexSet];
+    }
+  }
+}
+
+- (void)loadBatchUploadSection {
+  self.batchUploadItem = nil;
+  [self updateBatchUploadSection:NO];
 }
 
 #pragma mark - Private
@@ -810,6 +986,7 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
   }
   [self loadIdentityAccountSection];
   [self loadSyncErrorsSection];
+  [self loadBatchUploadSection];
   [self loadSyncDataTypeSection];
   [self loadSignOutAndTurnOffSyncSection];
   [self loadAdvancedSettingsSection];
@@ -824,6 +1001,7 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
     return;
   }
   [self updateSyncErrorsSection:YES];
+  [self updateBatchUploadSection:YES];
   [self updateSyncEverythingItemNotifyConsumer:YES];
   [self updateSyncItemsNotifyConsumer:YES];
   [self updateEncryptionItem:YES];
@@ -854,6 +1032,7 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
     [self updateIdentityAccountSection];
     [self updateSyncItemsNotifyConsumer:YES];
     [self updateSyncErrorsSection:YES];
+    [self updateBatchUploadSection:YES];
     [self updateEncryptionItem:YES];
   }
 }
@@ -866,7 +1045,8 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
     // Notifications are sent by SyncObserverModelBridge while changing
     // settings.
     base::AutoReset<BOOL> autoReset(&_ignoreSyncStateChanges, YES);
-    SyncSwitchItem* syncSwitchItem = base::mac::ObjCCast<SyncSwitchItem>(item);
+    SyncSwitchItem* syncSwitchItem =
+        base::apple::ObjCCast<SyncSwitchItem>(item);
     syncSwitchItem.on = value;
     SyncSettingsItemType itemType =
         static_cast<SyncSettingsItemType>(item.type);
@@ -940,12 +1120,16 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
       case TypesListHeaderOrFooterType:
       case IdentityAccountItemType:
       case AccountErrorMessageItemType:
+      case BatchUploadButtonItemType:
+      case BatchUploadRecommendationItemType:
         NOTREACHED();
         break;
     }
   }
   [self updateSyncEverythingItemNotifyConsumer:YES];
   [self updateSyncItemsNotifyConsumer:YES];
+  // Switching toggles might affect the batch upload recommendation.
+  [self updateBatchUploadSection:YES];
 }
 
 - (void)didSelectItem:(TableViewItem*)item cellRect:(CGRect)cellRect {
@@ -990,7 +1174,8 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
       [self.syncErrorHandler openTrustedVaultReauthForDegradedRecoverability];
       break;
     case SignOutAndTurnOffSyncItemType:
-      [self.commandHandler showTurnOffSyncOptionsFromTargetRect:cellRect];
+    case SignOutItemType:
+      [self.commandHandler signOutFromTargetRect:cellRect];
       break;
     case ManageGoogleAccountItemType:
       [self.commandHandler showManageYourGoogleAccount];
@@ -998,8 +1183,9 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
     case ManageAccountsItemType:
       [self.commandHandler showAccountsPage];
       break;
-    case SignOutItemType:
-      [self.commandHandler signOut];
+    case BatchUploadButtonItemType:
+      // TODO(crbug.com/1468246): Should show the batch upload UI. For now, the
+      // button is clickable but with no-op.
       break;
     case SyncEverythingItemType:
     case AutofillDataTypeItemType:
@@ -1015,6 +1201,7 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
     case TypesListHeaderOrFooterType:
     case IdentityAccountItemType:
     case AccountErrorMessageItemType:
+    case BatchUploadRecommendationItemType:
       // Nothing to do.
       break;
   }
@@ -1273,7 +1460,7 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
 
 // Returns YES if the given type is managed by policies (i.e. is not syncable)
 - (BOOL)isManagedSyncSettingsDataType:(syncer::UserSelectableType)type {
-  return IsManagedSyncDataType(_syncService, type) ||
+  return _syncService->GetUserSettings()->IsTypeManagedByPolicy(type) ||
          (self.syncAccountState == SyncSettingsAccountState::kSignedIn &&
           self.isSyncDisabledByAdministrator);
 }

@@ -14,6 +14,7 @@
 #include "ash/system/input_device_settings/input_device_notifier.h"
 #include "ash/system/input_device_settings/input_device_settings_metrics_manager.h"
 #include "ash/system/input_device_settings/input_device_settings_policy_handler.h"
+#include "ash/system/input_device_settings/pref_handlers/graphics_tablet_pref_handler.h"
 #include "ash/system/input_device_settings/pref_handlers/keyboard_pref_handler.h"
 #include "ash/system/input_device_settings/pref_handlers/mouse_pref_handler.h"
 #include "ash/system/input_device_settings/pref_handlers/pointing_stick_pref_handler.h"
@@ -35,13 +36,13 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
       public SessionObserver {
  public:
   explicit InputDeviceSettingsControllerImpl(PrefService* local_state);
-  InputDeviceSettingsControllerImpl();
   InputDeviceSettingsControllerImpl(
       PrefService* local_state,
       std::unique_ptr<KeyboardPrefHandler> keyboard_pref_handler,
       std::unique_ptr<TouchpadPrefHandler> touchpad_pref_handler,
       std::unique_ptr<MousePrefHandler> mouse_pref_handler,
       std::unique_ptr<PointingStickPrefHandler> pointing_stick_pref_handler,
+      std::unique_ptr<GraphicsTabletPrefHandler> graphics_tablet_pref_handler,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
   InputDeviceSettingsControllerImpl(const InputDeviceSettingsControllerImpl&) =
       delete;
@@ -56,6 +57,7 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   std::vector<mojom::TouchpadPtr> GetConnectedTouchpads() override;
   std::vector<mojom::MousePtr> GetConnectedMice() override;
   std::vector<mojom::PointingStickPtr> GetConnectedPointingSticks() override;
+  std::vector<mojom::GraphicsTabletPtr> GetConnectedGraphicsTablets() override;
   const mojom::KeyboardSettings* GetKeyboardSettings(DeviceId id) override;
   const mojom::MouseSettings* GetMouseSettings(DeviceId id) override;
   const mojom::TouchpadSettings* GetTouchpadSettings(DeviceId id) override;
@@ -71,6 +73,9 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   void SetPointingStickSettings(
       DeviceId id,
       mojom::PointingStickSettingsPtr settings) override;
+  void SetGraphicsTabletSettings(
+      DeviceId id,
+      mojom::GraphicsTabletSettingsPtr settings) override;
   void OnLoginScreenFocusedPodChanged(const AccountId& account_id) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
@@ -84,6 +89,9 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   void OnPointingStickListUpdated(
       std::vector<ui::InputDevice> pointing_sticks_to_add,
       std::vector<DeviceId> pointing_stick_ids_to_remove);
+  void OnGraphicsTabletListUpdated(
+      std::vector<ui::InputDevice> graphics_tablets_to_add,
+      std::vector<DeviceId> graphics_tablet_ids_to_remove);
   bool GetGeneralizedTopRowAreFKeys();
   void RestoreDefaultKeyboardRemappings(DeviceId id) override;
 
@@ -114,6 +122,10 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   void DispatchPointingStickConnected(DeviceId id);
   void DispatchPointingStickDisconnectedAndEraseFromList(DeviceId id);
   void DispatchPointingStickSettingsChanged(DeviceId id);
+
+  void DispatchGraphicsTabletConnected(DeviceId id);
+  void DispatchGraphicsTabletDisconnectedAndEraseFromList(DeviceId id);
+  void DispatchGraphicsTabletSettingsChanged(DeviceId id);
 
   void InitializePolicyHandler();
   void OnKeyboardPoliciesChanged();
@@ -148,11 +160,13 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   std::unique_ptr<TouchpadPrefHandler> touchpad_pref_handler_;
   std::unique_ptr<MousePrefHandler> mouse_pref_handler_;
   std::unique_ptr<PointingStickPrefHandler> pointing_stick_pref_handler_;
+  std::unique_ptr<GraphicsTabletPrefHandler> graphics_tablet_pref_handler_;
 
   base::flat_map<DeviceId, mojom::KeyboardPtr> keyboards_;
   base::flat_map<DeviceId, mojom::TouchpadPtr> touchpads_;
   base::flat_map<DeviceId, mojom::MousePtr> mice_;
   base::flat_map<DeviceId, mojom::PointingStickPtr> pointing_sticks_;
+  base::flat_map<DeviceId, mojom::GraphicsTabletPtr> graphics_tablets_;
 
   // Notifiers must be declared after the `flat_map` objects as the notifiers
   // depend on these objects.
@@ -164,6 +178,9 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
       mouse_notifier_;
   std::unique_ptr<InputDeviceNotifier<mojom::PointingStickPtr, ui::InputDevice>>
       pointing_stick_notifier_;
+  std::unique_ptr<
+      InputDeviceNotifier<mojom::GraphicsTabletPtr, ui::InputDevice>>
+      graphics_tablet_notifier_;
   std::unique_ptr<InputDeviceSettingsMetricsManager> metrics_manager_;
 
   raw_ptr<PrefService> active_pref_service_ = nullptr;  // Not owned.

@@ -121,7 +121,8 @@ class RefreshRateThrottleControllerTest : public AshTestBase {
   std::unique_ptr<ActionLogger> logger_;
   std::unique_ptr<RefreshRateThrottleController> controller_;
   // Owned by DisplayConfigurator.
-  raw_ptr<TestNativeDisplayDelegate, ExperimentalAsh> native_display_delegate_;
+  raw_ptr<TestNativeDisplayDelegate, DanglingUntriaged | ExperimentalAsh>
+      native_display_delegate_;
 };
 
 TEST_F(RefreshRateThrottleControllerTest, ShouldNotThrottleOnAC) {
@@ -150,6 +151,37 @@ TEST_F(RefreshRateThrottleControllerTest, ShouldNotThrottleOnAC) {
     ASSERT_NE(snapshot, nullptr);
     ASSERT_NE(snapshot->current_mode(), nullptr);
     EXPECT_EQ(snapshot->current_mode()->refresh_rate(), 120.f);
+  }
+}
+
+TEST_F(RefreshRateThrottleControllerTest, ShouldThrottleWithBatterySaverMode) {
+  constexpr int64_t kDisplayId = 12345;
+  std::vector<std::unique_ptr<DisplaySnapshot>> snapshots;
+  snapshots.push_back(BuildDualRefreshPanelSnapshot(
+      kDisplayId, display::DISPLAY_CONNECTION_TYPE_INTERNAL));
+  SetUpDisplays(snapshots);
+
+  // Expect the initial state to be 120 Hz.
+  {
+    const DisplaySnapshot* snapshot = GetDisplaySnapshot(kDisplayId);
+    ASSERT_NE(snapshot, nullptr);
+    ASSERT_NE(snapshot->current_mode(), nullptr);
+    EXPECT_EQ(snapshot->current_mode()->refresh_rate(), 120.f);
+  }
+
+  // Set power state to indicate the device is on battery, greater than 20%, and
+  // Battery Saver Mode is enabled.
+  PowerStatus::Get()->SetProtoForTesting(BuildFakePowerSupplyProperties(
+      PowerSupplyProperties::DISCONNECTED, kRegularBatteryLevel));
+  PowerStatus::Get()->SetBatterySaverStateForTesting(true);
+  controller_->OnPowerStatusChanged();
+
+  // Expect the new state to be 60Hz.
+  {
+    const DisplaySnapshot* snapshot = GetDisplaySnapshot(kDisplayId);
+    ASSERT_NE(snapshot, nullptr);
+    ASSERT_NE(snapshot->current_mode(), nullptr);
+    EXPECT_EQ(snapshot->current_mode()->refresh_rate(), 60.f);
   }
 }
 

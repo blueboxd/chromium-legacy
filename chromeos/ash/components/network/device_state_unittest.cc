@@ -27,7 +27,6 @@ const char kTestIpv4Address_1[] = "192.168.1.255";
 const char kTestIpv4Address_2[] = "192.168.1.123";
 const char kTestIpv6Address_1[] = "2600:1700:6900:f000:ab00:8a39:2099:72fd";
 const char kTestIpv6Address_2[] = "2600:1700:6900:f000:ab00:8a39:2099:12df";
-const char kTypeSLAAC[] = "slaac";
 
 // Creates a list of cellular SIM slots with an eSIM and pSIM slot.
 base::Value GenerateTestSimSlotInfos() {
@@ -156,7 +155,7 @@ TEST_F(DeviceStateTest, DeviceIPAddress) {
 
   auto slaac_ip_config = base::Value::Dict()
                              .Set(shill::kAddressProperty, kTestIpv6Address_1)
-                             .Set(shill::kMethodProperty, kTypeSLAAC);
+                             .Set(shill::kMethodProperty, shill::kTypeSLAAC);
   UpdateDeviceIpConfigProperties(kTestWifiDevicePath, kTestIpv6ConfigPath,
                                  std::move(slaac_ip_config));
   EXPECT_EQ(kTestIpv4Address_2,

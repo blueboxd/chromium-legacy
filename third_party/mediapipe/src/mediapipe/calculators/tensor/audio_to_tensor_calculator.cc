@@ -349,7 +349,7 @@ absl::Status AudioToTensorCalculator::Process(CalculatorContext* cc) {
     return absl::InvalidArgumentError(
         "The audio data should be stored in column-major.");
   }
-  CHECK(channels_match || mono_output);
+  ABSL_CHECK(channels_match || mono_output);
   const Matrix& input = channels_match ? input_frame
                                        // Mono mixdown.
                                        : input_frame.colwise().mean();

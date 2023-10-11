@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "mediapipe/util/tracking/motion_models.pb.h"
 #include "mediapipe/util/tracking/tone_models.pb.h"
 
@@ -83,7 +84,7 @@ void ToneEstimation::EstimateToneChange(
     ToneChange* tone_change, cv::Mat* debug_output) {
   ABSL_CHECK_EQ(original_height_, curr_frame_input.rows);
   ABSL_CHECK_EQ(original_width_, curr_frame_input.cols);
-  CHECK(tone_change != nullptr);
+  ABSL_CHECK(tone_change != nullptr);
 
   const cv::Mat& curr_frame =
       use_downsampling_ ? *resized_input_ : curr_frame_input;
@@ -213,8 +214,8 @@ void ToneEstimation::IntensityPercentiles(const cv::Mat& frame,
 void ToneEstimation::EstimateGainBiasModel(int irls_iterations,
                                            ColorToneMatches* color_tone_matches,
                                            GainBiasModel* gain_bias_model) {
-  CHECK(color_tone_matches != nullptr);
-  CHECK(gain_bias_model != nullptr);
+  ABSL_CHECK(color_tone_matches != nullptr);
+  ABSL_CHECK(gain_bias_model != nullptr);
 
   // Effectively estimate each model independently.
   float solution_ptr[6] = {1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f};
@@ -304,8 +305,8 @@ void ToneEstimation::EstimateGainBiasModel(int irls_iterations,
   const float det = gain_bias_model->gain_c1() * gain_bias_model->gain_c2() *
                     gain_bias_model->gain_c3();
   if (fabs(det) < 1e-6f) {
-    LOG(WARNING) << "Estimated gain bias model is not invertible. "
-                 << "Falling back to identity model.";
+    ABSL_LOG(WARNING) << "Estimated gain bias model is not invertible. "
+                      << "Falling back to identity model.";
     gain_bias_model->CopyFrom(GainBiasModel());
   }
 }

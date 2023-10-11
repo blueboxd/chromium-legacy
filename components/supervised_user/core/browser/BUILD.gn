@@ -50,6 +50,20 @@ static_library("fetcher_config") {
   ]
 }
 
+static_library("mocked") {
+  testonly = true
+  sources = [
+    "permission_request_creator_mock.cc",
+    "permission_request_creator_mock.h",
+  ]
+  deps = [
+    "//base",
+    "//components/supervised_user/core/browser",
+    "//components/supervised_user/core/common",
+    "//url",
+  ]
+}
+
 static_library("fetcher") {
   sources = [
     "api_access_token_fetcher.cc",
@@ -100,10 +114,10 @@ static_library("browser") {
     "supervised_user_service.cc",
     "supervised_user_service.h",
     "supervised_user_service_observer.h",
+    "supervised_user_settings_model_type_controller.cc",
+    "supervised_user_settings_model_type_controller.h",
     "supervised_user_settings_service.cc",
     "supervised_user_settings_service.h",
-    "supervised_user_sync_model_type_controller.cc",
-    "supervised_user_sync_model_type_controller.h",
     "supervised_user_url_filter.cc",
     "supervised_user_url_filter.h",
     "web_content_handler.cc",
@@ -165,8 +179,8 @@ source_set("unit_tests") {
     "supervised_user_pref_store_unittest.cc",
     "supervised_user_preferences_unittest.cc",
     "supervised_user_service_unittest.cc",
+    "supervised_user_settings_model_type_controller_unittest.cc",
     "supervised_user_settings_service_unittest.cc",
-    "supervised_user_sync_model_type_controller_unittest.cc",
     "supervised_user_url_filter_unittest.cc",
   ]
 

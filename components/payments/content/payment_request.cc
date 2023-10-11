@@ -311,12 +311,13 @@ void PaymentRequest::Show(bool wait_for_updated_details,
       DCHECK(!has_recorded_completion_);
       has_recorded_completion_ = true;
       journey_logger_.SetNotShown(JourneyLogger::NOT_SHOWN_REASON_OTHER);
-      client_->OnError(mojom::PaymentErrorReason::NOT_ALLOWED_ERROR,
+      client_->OnError(mojom::PaymentErrorReason::USER_ACTIVATION_REQUIRED,
                        errors::kCannotShowWithoutUserActivation);
       ResetAndDeleteThis();
       return;
     }
 
+    is_activationless_show_ = true;
     manager->RecordActivationlessShow();
   }
 
@@ -778,6 +779,9 @@ bool PaymentRequest::CheckSatisfiesSkipUIConstraintsAndRecordShownState() {
   } else if (state()->IsInitialized() && spec()->IsInitialized()) {
     // Set "shown" only after state() and spec() initialization.
     journey_logger_.SetShown();
+  }
+  if (is_activationless_show_) {
+    journey_logger_.SetActivationlessShow();
   }
   return skipped_payment_request_ui_;
 }

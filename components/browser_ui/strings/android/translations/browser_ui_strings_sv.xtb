@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Tillåt att en webbplats sparar data på enheten</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1384959399684842514">Nedladdningen har pausats</translation>
-<translation id="1409426117486808224">Förenklad vy för öppna flikar</translation>
 <translation id="1415402041810619267">Webbadressen har trunkerats</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1446450296470737166">Tillåt fullst. kontroll av MIDI</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Tillåts, men inte från tredje part</translation>
 <translation id="1989112275319619282">Bläddra</translation>
 <translation id="1994173015038366702">Webbadress</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Löper ut om en dag}other{Löper ut om # dagar}}</translation>
 <translation id="2004697686368036666">Vissa webbplatsers funktioner kanske inte fungerar</translation>
 <translation id="2025115093177348061">Förstärkt verklighet</translation>
 <translation id="2030769033451695672">Återgå till <ph name="URL_OF_THE_CURRENT_TAB" /> genom att trycka här</translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4008040567710660924">Tillåt cookies för en enskild webbplats.</translation>
 <translation id="4046123991198612571">Nästa spår</translation>
+<translation id="4053720452172726777">Anpassa och kontrollera Google Chrome</translation>
 <translation id="4149994727733219643">Förenklad vy för webbsidor</translation>
 <translation id="4151930093518524179">Standardzoom</translation>
 <translation id="4165986682804962316">Webbplatsinställningar</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Webbplatser får inte se din webbaktivitet på olika webbplatser med hjälp av cookies, för att till exempel anpassa annonser. Vissa webbplatsers funktioner kanske inte fungerar.</translation>
 <translation id="5553374991681107062">Senaste</translation>
 <translation id="5556459405103347317">Hämta igen</translation>
-<translation id="5596627076506792578">Fler alternativ</translation>
 <translation id="5649053991847567735">Automatiska nedladdningar</translation>
 <translation id="5668404140385795438">Åsidosätt en webbplats begäran att hindra inzoomning</translation>
 <translation id="5677928146339483299">Blockerat</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Inaktiverad i Android-inställningarna</translation>
 <translation id="7016516562562142042">Tillåt för den nuvarande sökmotorn</translation>
 <translation id="702275896380648118">Den här webbplatsen avgör vad du gillar och föreslår sedan annonser till andra webbplatser. Webbplatsen hämtar dessutom dina annonsämnen från Chrome för att visa mer relevanta annonser för dig.</translation>
-<translation id="702463548815491781">Rekommenderas när TalkBack eller brytarstyrning är aktiverat</translation>
 <translation id="7053983685419859001">Blockera</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 har valts}other{# har valts}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> har valts. Alternativ finns högt upp på skärmen</translation>

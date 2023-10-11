@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <string_view>
 
 #include "base/base_export.h"
 
@@ -161,6 +162,17 @@ DEFINE_IS_OS_FUNCS(14, IGNORE_DEPLOYMENT_TARGET)
 #undef OLD_TEST_DEPLOYMENT_TARGET
 #undef TEST_DEPLOYMENT_TARGET
 #undef IGNORE_DEPLOYMENT_TARGET
+// The following two functions return the version of the macOS currently
+// running. MacOSVersion() returns the full trio of version numbers, packed into
+// one int (e.g. macOS 12.6.5 returns 12'06'05), and MacOSMajorVersion() returns
+// only the major version number (e.g. macOS 12.6.5 returns 12). Use for runtime
+// OS version checking. Prefer to use @available in Objective-C files. Note that
+// this does not include any Rapid Security Response (RSR) suffixes (the "(a)"
+// at the end of version numbers.)
+BASE_EXPORT __attribute__((const)) int MacOSVersion();
+inline __attribute__((const)) int MacOSMajorVersion() {
+  return MacOSVersion() / 1'00'00;
+}
 
 // This should be infrequently used. It only makes sense to use this to avoid
 // codepaths that are very likely to break on future (unreleased, untested,
@@ -177,18 +189,6 @@ enum class CPUType {
 
 // Returns the type of CPU this is being executed on.
 BASE_EXPORT CPUType GetCPUType();
-
-// Retrieve the system's model identifier string from the IOKit registry:
-// for example, "MacPro4,1", "MacBookPro6,1". Returns empty string upon
-// failure.
-BASE_EXPORT std::string GetModelIdentifier();
-
-// Parse a model identifier string; for example, into ("MacBookPro", 6, 1).
-// If any error occurs, none of the input pointers are touched.
-BASE_EXPORT bool ParseModelIdentifier(const std::string& ident,
-                                      std::string* type,
-                                      int32_t* major,
-                                      int32_t* minor);
 
 // Returns an OS name + version string. e.g.:
 //
@@ -241,12 +241,21 @@ enum class SystemSettingsPane {
   // Privacy & Security > Screen Recording
   // Available on macOS 10.15 and later.
   kPrivacySecurity_ScreenRecording,
+
+  // Trackpad
+  kTrackpad,
 };
 
 // Opens the specified System Settings pane. If the specified subpane does not
 // exist on the release of macOS that is running, the parent pane will open
 // instead.
 BASE_EXPORT void OpenSystemSettingsPane(SystemSettingsPane pane);
+
+// ------- For testing --------
+
+// An implementation detail of `MacOSVersion()` above, exposed for testing.
+BASE_EXPORT int ParseOSProductVersionForTesting(
+    const std::string_view& version);
 
 }  // namespace base::mac
 

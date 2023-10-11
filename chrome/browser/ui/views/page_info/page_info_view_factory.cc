@@ -497,6 +497,10 @@ const ui::ImageModel PageInfoViewFactory::GetPermissionIcon(
     case ContentSettingsType::STORAGE_ACCESS:
       icon = &vector_icons::kStorageAccessIcon;
       break;
+    case ContentSettingsType::AUTO_PICTURE_IN_PICTURE:
+      // TODO(https://crbug.com/1471051): Use real icon.
+      icon = &vector_icons::kSelectWindowIcon;
+      break;
     default:
       // All other |ContentSettingsType|s do not have icons on desktop or are
       // not shown in the Page Info bubble.
@@ -591,6 +595,12 @@ const ui::ImageModel PageInfoViewFactory::GetConnectionNotSecureIcon() {
 }
 
 // static
+const ui::ImageModel PageInfoViewFactory::GetConnectionDangerousIcon() {
+  return ui::ImageModel::FromVectorIcon(
+      vector_icons::kDangerousIcon, ui::kColorAlertHighSeverity, GetIconSize());
+}
+
+// static
 const ui::ImageModel PageInfoViewFactory::GetConnectionSecureIcon() {
   return GetImageModel(features::IsChromeRefresh2023()
                            ? vector_icons::kHttpsValidChromeRefreshIcon
@@ -617,25 +627,21 @@ const ui::ImageModel PageInfoViewFactory::GetAboutThisSiteIcon() {
 // static
 const gfx::VectorIcon& PageInfoViewFactory::GetAboutThisSiteColorVectorIcon() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (page_info::IsAboutThisSiteNewIconFeatureEnabled()) {
-    return vector_icons::kPageInsightsColorIcon;
-  }
-#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
+  return vector_icons::kPageInsightsColorIcon;
+#else
   return features::IsChromeRefresh2023() ? views::kInfoChromeRefreshIcon
                                          : views::kInfoIcon;
+#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 // static
 const gfx::VectorIcon& PageInfoViewFactory::GetAboutThisSiteVectorIcon() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (page_info::IsAboutThisSiteNewIconFeatureEnabled()) {
-    return vector_icons::kPageInsightsIcon;
-  }
-#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
+  return vector_icons::kPageInsightsIcon;
+#else
   return features::IsChromeRefresh2023() ? views::kInfoChromeRefreshIcon
                                          : views::kInfoIcon;
+#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 // static
 const ui::ImageModel PageInfoViewFactory::GetHistoryIcon() {

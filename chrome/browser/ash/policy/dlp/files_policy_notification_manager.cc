@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
-#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
@@ -29,14 +28,15 @@
 #include "chrome/browser/chromeos/policy/dlp/dialogs/policy_dialog_base.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -436,6 +436,11 @@ void FilesPolicyNotificationManager::ShowBlockedNotifications() {
   }
 }
 
+void FilesPolicyNotificationManager::OnErrorItemDismissed(
+    file_manager::io_task::IOTaskId task_id) {
+  io_tasks_.erase(task_id);
+}
+
 std::map<DlpConfidentialFile, Policy>
 FilesPolicyNotificationManager::GetIOTaskBlockedFilesForTesting(
     file_manager::io_task::IOTaskId task_id) const {
@@ -608,7 +613,6 @@ void FilesPolicyNotificationManager::FileTaskInfo::AddWidget(
 
 void FilesPolicyNotificationManager::FileTaskInfo::CloseWidget() {
   if (!widget_) {
-    CHECK_IS_TEST();
     return;
   }
   widget_observation_.Reset();
@@ -771,14 +775,14 @@ void FilesPolicyNotificationManager::HandleFilesPolicyErrorNotificationClick(
 
   switch (button_index.value()) {
     case NotificationButton::CANCEL:
-      io_tasks_.erase(task_id);
+      OnErrorItemDismissed(task_id);
       return;
     case NotificationButton::OK:
       if (io_tasks_.at(task_id).blocked_files().size() == 1) {
         // Single file - open help page.
         dlp::OpenLearnMore();
         // Only delete if we don't need to show the dialog.
-        io_tasks_.erase(task_id);
+        OnErrorItemDismissed(task_id);
       } else {
         // Multiple files - review.
         ShowDialog(task_id, FilesDialogType::kError);
@@ -887,7 +891,7 @@ void FilesPolicyNotificationManager::LaunchFilesApp(
                                ash::SystemWebAppType::FILE_MANAGER, params);
 }
 
-void FilesPolicyNotificationManager::OnBrowserSetLastActive(Browser* browser) {
+void FilesPolicyNotificationManager::OnBrowserAdded(Browser* browser) {
   if (!ash::IsBrowserForSystemWebApp(browser,
                                      ash::SystemWebAppType::FILE_MANAGER)) {
     LOG(WARNING) << "Browser did not match Files app";
@@ -895,6 +899,7 @@ void FilesPolicyNotificationManager::OnBrowserSetLastActive(Browser* browser) {
   }
 
   // Files app successfully opened.
+  DlpBooleanHistogram(dlp::kFilesAppOpenTimedOutUMA, /*value=*/false);
   ShowPendingDialog(browser->window()->GetNativeWindow());
 }
 
@@ -905,12 +910,15 @@ void FilesPolicyNotificationManager::SetTaskRunnerForTesting(
 
 void FilesPolicyNotificationManager::OnIOTaskStatus(
     const file_manager::io_task::ProgressStatus& status) {
-  // Observe only Copy and Move tasks.
+  // Observe only Copy, Move, and RestoreToDestination tasks.
   if (status.type != file_manager::io_task::OperationType::kCopy &&
-      status.type != file_manager::io_task::OperationType::kMove) {
+      status.type != file_manager::io_task::OperationType::kMove &&
+      status.type !=
+          file_manager::io_task::OperationType::kRestoreToDestination) {
     return;
   }
-
+  // RestoreToDestination have an underlying Move task, so we show the same UI
+  // as for Move.
   dlp::FileAction action =
       status.type == file_manager::io_task::OperationType::kCopy
           ? dlp::FileAction::kCopy
@@ -1049,7 +1057,7 @@ void FilesPolicyNotificationManager::ShowDlpBlockNotification(
   const std::string notification_id = GetNotificationId(notification_count_++);
   std::unique_ptr<message_center::Notification> notification;
 
-  if (DlpFilesController::kNewFilesPolicyUXEnabled) {
+  if (base::FeatureList::IsEnabled(features::kNewFilesPolicyUX)) {
     // The notification should stay visible until actioned upon.
     message_center::RichNotificationData optional_fields;
     optional_fields.never_timeout = true;
@@ -1124,7 +1132,7 @@ void FilesPolicyNotificationManager::ShowDlpWarningNotification(
     std::vector<base::FilePath> warning_files,
     const DlpFileDestination& destination,
     dlp::FileAction action) {
-  if (DlpFilesController::kNewFilesPolicyUXEnabled) {
+  if (base::FeatureList::IsEnabled(features::kNewFilesPolicyUX)) {
     const std::string& notification_id =
         GetNotificationId(notification_count_++);
 
@@ -1235,6 +1243,7 @@ void FilesPolicyNotificationManager::OnIOTaskAppLaunchTimedOut(
   }
   DCHECK(pending_dialogs_.front()->task_id == task_id);
   // Stop waiting for the Files App and fallback to system modal.
+  DlpBooleanHistogram(dlp::kFilesAppOpenTimedOutUMA, /*value=*/true);
   ShowPendingDialog(/*modal_parent=*/nullptr);
 }
 
@@ -1247,6 +1256,7 @@ void FilesPolicyNotificationManager::OnNonIOTaskAppLaunchTimedOut(
   }
   DCHECK(pending_dialogs_.front()->notification_id == notification_id);
   // Stop waiting for the Files App and fallback to system modal.
+  DlpBooleanHistogram(dlp::kFilesAppOpenTimedOutUMA, /*value=*/true);
   ShowPendingDialog(/*modal_parent=*/nullptr);
 }
 

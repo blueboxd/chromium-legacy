@@ -15,13 +15,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/apple/foundation_util.h"
+#include "base/apple/osstatus_logging.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/containers/span.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_policy.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/synchronization/lock.h"
@@ -305,12 +305,12 @@ class API_AVAILABLE(macosx(10.12)) SSLPlatformKeySecKey
       digest = *pss_storage;
     }
 
-    base::ScopedCFTypeRef<CFDataRef> digest_ref(
+    base::apple::ScopedCFTypeRef<CFDataRef> digest_ref(
         CFDataCreate(kCFAllocatorDefault, digest.data(),
                      base::checked_cast<CFIndex>(digest.size())));
 
-    base::ScopedCFTypeRef<CFErrorRef> error;
-    base::ScopedCFTypeRef<CFDataRef> signature_ref(SecKeyCreateSignature(
+    base::apple::ScopedCFTypeRef<CFErrorRef> error;
+    base::apple::ScopedCFTypeRef<CFDataRef> signature_ref(SecKeyCreateSignature(
         key_, sec_algorithm, digest_ref, error.InitializeInto()));
     if (!signature_ref) {
       LOG(ERROR) << error;
@@ -349,7 +349,7 @@ class API_AVAILABLE(macosx(10.12)) SSLPlatformKeySecKey
 
   std::vector<uint16_t> preferences_;
   bssl::UniquePtr<EVP_PKEY> pubkey_;
-  base::ScopedCFTypeRef<SecKeyRef> key_;
+  base::apple::ScopedCFTypeRef<SecKeyRef> key_;
 };
 
 }  // namespace

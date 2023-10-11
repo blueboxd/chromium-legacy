@@ -6,13 +6,17 @@ import("//build/config/android/rules.gni")
 
 android_library("java") {
   sources = [
+    "java/src/org/chromium/chrome/modules/readaloud/ExpandedPlayer.java",
     "java/src/org/chromium/chrome/modules/readaloud/Playback.java",
+    "java/src/org/chromium/chrome/modules/readaloud/PlaybackArgs.java",
     "java/src/org/chromium/chrome/modules/readaloud/PlaybackListener.java",
     "java/src/org/chromium/chrome/modules/readaloud/ReadAloudPlaybackHooks.java",
     "java/src/org/chromium/chrome/modules/readaloud/ReadAloudPlaybackHooksProvider.java",
   ]
   deps = [
     "//chrome/browser/android/httpclient/public:java",
+    "//chrome/browser/readaloud/android:player_state_java",
+    "//components/browser_ui/bottomsheet/android:java",
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
 

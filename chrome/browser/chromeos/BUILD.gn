@@ -52,8 +52,12 @@ source_set("chromeos") {
     "arc/open_with_menu.h",
     "arc/start_smart_selection_action_menu.cc",
     "arc/start_smart_selection_action_menu.h",
+    "enterprise/cloud_storage/policy_utils.cc",
+    "enterprise/cloud_storage/policy_utils.h",
     "enterprise/incognito_navigation_throttle.cc",
     "enterprise/incognito_navigation_throttle.h",
+    "extensions/accessibility_service_private.cc",
+    "extensions/accessibility_service_private.h",
     "extensions/contact_center_insights/contact_center_insights_extension_manager.cc",
     "extensions/contact_center_insights/contact_center_insights_extension_manager.h",
     "extensions/device_local_account_external_policy_loader.cc",
@@ -155,6 +159,8 @@ source_set("chromeos") {
     "policy/dlp/dlp_rules_manager_impl.h",
     "policy/dlp/dlp_scoped_file_access_delegate.cc",
     "policy/dlp/dlp_scoped_file_access_delegate.h",
+    "quickoffice/quickoffice_prefs.cc",
+    "quickoffice/quickoffice_prefs.h",
     "reporting/metric_default_utils.cc",
     "reporting/metric_default_utils.h",
     "reporting/metric_reporting_manager_delegate_base.cc",
@@ -165,6 +171,7 @@ source_set("chromeos") {
     "reporting/network/network_bandwidth_sampler.h",
     "reporting/user_reporting_settings.cc",
     "reporting/user_reporting_settings.h",
+    "reporting/websites/website_metrics_retriever_interface.h",
     "smart_reader/smart_reader_client_impl.cc",
     "smart_reader/smart_reader_client_impl.h",
     "tablet_mode/chrome_content_browser_client_tablet_mode_part.cc",
@@ -253,6 +260,7 @@ source_set("chromeos") {
     "//chrome/browser:browser_process",
     "//chrome/browser:resources",
     "//chrome/browser/apps/app_service",
+    "//chrome/browser/apps/link_capturing",
     "//chrome/browser/browsing_data:constants",
     "//chrome/browser/enterprise/data_controls",
     "//chrome/browser/favicon",
@@ -341,6 +349,8 @@ source_set("chromeos") {
       "extensions/login_screen/login/login_api_lock_handler.h",
       "extensions/login_screen/login/shared_session_handler.cc",
       "extensions/login_screen/login/shared_session_handler.h",
+      "reporting/websites/website_metrics_retriever_ash.cc",
+      "reporting/websites/website_metrics_retriever_ash.h",
     ]
     allow_circular_includes_from += [ "//chrome/browser/ash/crosapi" ]
     public_deps += [
@@ -382,6 +392,8 @@ source_set("chromeos") {
       "reporting/device_reporting_settings_lacros.h",
       "reporting/metric_reporting_manager_lacros.cc",
       "reporting/metric_reporting_manager_lacros.h",
+      "reporting/websites/website_metrics_retriever_lacros.cc",
+      "reporting/websites/website_metrics_retriever_lacros.h",
     ]
     public_deps += [
       "//chromeos/lacros",
@@ -463,6 +475,7 @@ source_set("unit_tests") {
 
   sources = [
     "app_mode/chrome_kiosk_external_loader_broker_unittest.cc",
+    "app_mode/kiosk_app_service_launcher_unittest.cc",
     "app_mode/kiosk_browser_session_unittest.cc",
     "app_mode/kiosk_policies_unittest.cc",
     "arc/arc_external_protocol_dialog_unittest.cc",
@@ -507,6 +520,7 @@ source_set("unit_tests") {
     "//chrome/app:generated_resources",
     "//chrome/browser",
     "//chrome/browser:browser_process",
+    "//chrome/browser/apps/app_service:test_support",
     "//chrome/browser/enterprise/data_controls:data_controls",
     "//chrome/browser/extensions",
     "//chrome/browser/profiles:profile",
@@ -537,6 +551,7 @@ source_set("unit_tests") {
     "//components/reporting/util:test_callbacks_support",
     "//components/strings:components_strings",
     "//components/ukm",
+    "//components/user_manager",
     "//content/public/browser",
     "//content/test:test_support",
     "//extensions:test_support",
@@ -568,7 +583,6 @@ source_set("unit_tests") {
   if (is_chromeos_ash) {
     sources += [
       "app_mode/chrome_kiosk_app_launcher_unittest.cc",
-      "app_mode/kiosk_app_service_launcher_unittest.cc",
       "extensions/login_screen/login/cleanup/extension_cleanup_handler_unittest.cc",
       "extensions/login_screen/login/cleanup/lacros_cleanup_handler_unittest.cc",
       "extensions/login_screen/login/cleanup/print_jobs_cleanup_handler_unittest.cc",
@@ -576,12 +590,12 @@ source_set("unit_tests") {
       "extensions/login_screen/login/login_api_ash_unittest.cc",
       "extensions/login_screen/login_screen_storage/login_screen_storage_api_ash_unittest.cc",
       "extensions/login_screen/login_state/session_state_changed_event_dispatcher_ash_unittest.cc",
+      "reporting/websites/website_metrics_retriever_ash_unittest.cc",
       "tablet_mode/chrome_content_browser_client_tablet_mode_part_unittest.cc",
     ]
     deps += [
       "//ash:test_support",
       "//ash/constants",
-      "//chrome/browser/apps/app_service:test_support",
       "//chrome/browser/ash",
       "//chrome/browser/ash:test_support",
       "//chrome/browser/ash/crosapi",
@@ -622,6 +636,7 @@ source_set("unit_tests") {
       "policy/dlp/dlp_files_controller_lacros_unittest.cc",
       "reporting/device_reporting_settings_lacros_unittest.cc",
       "reporting/metric_reporting_manager_lacros_unittest.cc",
+      "reporting/websites/website_metrics_retriever_lacros_unittest.cc",
     ]
     deps += [
       "//chromeos/lacros",

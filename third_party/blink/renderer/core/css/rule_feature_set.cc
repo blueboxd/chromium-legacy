@@ -114,6 +114,8 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoRequired:
     case CSSSelector::kPseudoReadOnly:
     case CSSSelector::kPseudoReadWrite:
+    case CSSSelector::kPseudoUserInvalid:
+    case CSSSelector::kPseudoUserValid:
     case CSSSelector::kPseudoValid:
     case CSSSelector::kPseudoInvalid:
     case CSSSelector::kPseudoIndeterminate:
@@ -128,6 +130,8 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoDir:
     case CSSSelector::kPseudoNot:
     case CSSSelector::kPseudoPlaceholder:
+    case CSSSelector::kPseudoDetailsContent:
+    case CSSSelector::kPseudoDetailsSummary:
     case CSSSelector::kPseudoFileSelectorButton:
     case CSSSelector::kPseudoResizer:
     case CSSSelector::kPseudoRoot:
@@ -718,6 +722,8 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoReadOnly:
       case CSSSelector::kPseudoReadWrite:
       case CSSSelector::kPseudoState:
+      case CSSSelector::kPseudoUserInvalid:
+      case CSSSelector::kPseudoUserValid:
       case CSSSelector::kPseudoValid:
       case CSSSelector::kPseudoInvalid:
       case CSSSelector::kPseudoIndeterminate:

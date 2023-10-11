@@ -11,6 +11,7 @@
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_test_api.h"
+#include "ash/webui/settings/public/constants/routes.mojom.h"
 #include "base/barrier_closure.h"
 #include "base/check_deref.h"
 #include "base/functional/bind.h"
@@ -41,7 +42,6 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -55,6 +55,7 @@
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/mojom/manifest.mojom-shared.h"
 #include "extensions/components/native_app_window/native_app_window_views.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -127,7 +128,7 @@ class ScopedSettingsPages {
 class ExtensionReadyObserver : public extensions::ExtensionRegistryObserver {
  public:
   ExtensionReadyObserver(extensions::ExtensionRegistry* registry,
-                         const std::string& extension_id)
+                         const extensions::ExtensionId& extension_id)
       : extension_id_(extension_id) {
     extension_registry_observation_.Observe(registry);
   }
@@ -148,7 +149,7 @@ class ExtensionReadyObserver : public extensions::ExtensionRegistryObserver {
   base::ScopedObservation<extensions::ExtensionRegistry,
                           ExtensionRegistryObserver>
       extension_registry_observation_{this};
-  const std::string extension_id_;
+  const extensions::ExtensionId extension_id_;
 };
 
 }  // namespace

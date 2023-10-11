@@ -21,6 +21,7 @@
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
@@ -103,9 +104,15 @@ class ChromeAutofillClient : public ContentAutofillClient,
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   AutofillDownloadManager* GetDownloadManager() override;
   AutofillOptimizationGuide* GetAutofillOptimizationGuide() const override;
+  AutofillMlPredictionModelHandler* GetAutofillMlPredictionModelHandler()
+      override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
-  IBANManager* GetIBANManager() override;
+  IbanManager* GetIbanManager() override;
+  plus_addresses::PlusAddressService* GetPlusAddressService() override;
+  void OfferPlusAddressCreation(
+      const url::Origin& main_frame_origin,
+      plus_addresses::PlusAddressCallback callback) override;
   MerchantPromoCodeManager* GetMerchantPromoCodeManager() override;
   CreditCardCvcAuthenticator* GetCvcAuthenticator() override;
   CreditCardOtpAuthenticator* GetOtpAuthenticator() override;
@@ -125,7 +132,7 @@ class ChromeAutofillClient : public ContentAutofillClient,
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   const translate::LanguageState* GetLanguageState() override;
   translate::TranslateDriver* GetTranslateDriver() override;
-  std::string GetVariationConfigCountryCode() const override;
+  GeoIpCountryCode GetVariationConfigCountryCode() const override;
   profile_metrics::BrowserProfileType GetProfileType() const override;
   FastCheckoutClient* GetFastCheckoutClient() override;
   std::unique_ptr<webauthn::InternalAuthenticator>
@@ -177,18 +184,15 @@ class ChromeAutofillClient : public ContentAutofillClient,
       const std::u16string& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) override;
-  void ConfirmSaveIBANLocally(const IBAN& iban,
+  void ConfirmSaveIbanLocally(const Iban& iban,
                               bool should_show_prompt,
-                              LocalSaveIBANPromptCallback callback) override;
+                              LocalSaveIbanPromptCallback callback) override;
   void ShowWebauthnOfferDialog(
       WebauthnDialogCallback offer_dialog_callback) override;
   void ShowWebauthnVerifyPendingDialog(
       WebauthnDialogCallback verify_pending_dialog_callback) override;
   void UpdateWebauthnOfferDialogWithError() override;
   bool CloseWebauthnDialog() override;
-  void ConfirmSaveUpiIdLocally(
-      const std::string& upi_id,
-      base::OnceCallback<void(bool accept)> callback) override;
   void OfferVirtualCardOptions(
       const std::vector<CreditCard*>& candidates,
       base::OnceCallback<void(const std::string&)> callback) override;
@@ -212,6 +216,7 @@ class ChromeAutofillClient : public ContentAutofillClient,
   void CreditCardUploadCompleted(bool card_saved) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
+  void ShowEditAddressProfileDialog(const AutofillProfile& profile) override;
   void ShowDeleteAddressProfileDialog() override;
   void ConfirmSaveAddressProfile(
       const AutofillProfile& profile,
@@ -240,11 +245,12 @@ class ChromeAutofillClient : public ContentAutofillClient,
                    AutofillSuggestionTriggerSource trigger_source) override;
   void HideAutofillPopup(PopupHidingReason reason) override;
   void UpdateOfferNotification(const AutofillOfferData* offer,
-                               bool notification_has_been_shown) override;
+                               bool notification_has_been_shown,
+                               bool expand_notification_icon) override;
   void DismissOfferNotification() override;
   void OnVirtualCardDataAvailable(
       const VirtualCardManualFallbackBubbleOptions& options) override;
-  void ShowVirtualCardErrorDialog(
+  void ShowAutofillErrorDialog(
       const AutofillErrorDialogContext& context) override;
   void ShowAutofillProgressDialog(
       AutofillProgressDialogType autofill_progress_dialog_type,

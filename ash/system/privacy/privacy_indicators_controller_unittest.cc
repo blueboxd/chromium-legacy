@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/ash_message_popup_collection.h"
+#include "ash/system/message_center/message_center_utils.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/notification_center/notification_center_tray.h"
 #include "ash/system/notification_center/notification_center_view.h"
@@ -25,6 +26,7 @@
 #include "ash/system/video_conference/fake_video_conference_tray_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -200,7 +202,7 @@ TEST_F(PrivacyIndicatorsControllerTest, NotificationMetadata) {
           notification_id);
 
   // Notification message should contains app name.
-  EXPECT_NE(std::string::npos, notification->message().find(app_name));
+  EXPECT_TRUE(base::Contains((notification->message()), app_name));
 
   // Privacy indicators notification should not be a popup. It is silently added
   // to the tray.
@@ -354,7 +356,10 @@ TEST_F(PrivacyIndicatorsControllerTest, NotificationWithTwoApps) {
   // A group parent notification should also be created for these 2
   // notifications.
   std::string id_parent =
-      notification_id1 + message_center::kIdSuffixForGroupContainerNotification;
+      notification_id1 +
+      message_center_utils::GenerateGroupParentNotificationIdSuffix(
+          message_center->FindNotificationById(notification_id1)
+              ->notifier_id());
   EXPECT_TRUE(message_center->FindNotificationById(id_parent));
 
   // Update the state. All notifications should be removed.

@@ -130,34 +130,6 @@
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Force Language</string>
-			<key>Key</key>
-			<string>UILanguageOverride</string>
-			<key>DefaultValue</key>
-			<string></string>
-			<key>Values</key>
-			<array>
-				<string></string>
-				<string>ar</string>
-				<string>en</string>
-				<string>fr</string>
-				<string>he</string>
-				<string>hi</string>
-			</array>
-			<key>Titles</key>
-			<array>
-				<string>Default</string>
-				<string>Arabic</string>
-				<string>English</string>
-				<string>French</string>
-				<string>Hebrew</string>
-				<string>Hindi</string>
-			</array>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSMultiValueSpecifier</string>
-			<key>Title</key>
 			<string>Force Promo</string>
 			<key>Key</key>
 			<string>NextPromoForDisplayOverride</string>
@@ -209,6 +181,80 @@
 			<string>Simulate Post Phone Restore</string>
 			<key>Key</key>
 			<string>SimulatePostDeviceRestore</string>
+			<key>DefaultValue</key>
+			<false/>
+		</dict>
+                <dict>
+                        <key>Type</key>
+                        <string>PSMultiValueSpecifier</string>
+                        <key>Title</key>
+                        <string>Update Chrome Safety Check State</string>
+                        <key>Key</key>
+                        <string>SafetyCheckUpdateChromeStateOverride</string>
+                        <key>DefaultValue</key>
+                        <string></string>
+                        <key>Values</key>
+                        <array>
+                                <string></string>
+                                <string>UpdateChromeSafetyCheckState::kOutOfDate</string>
+                        </array>
+                        <key>Titles</key>
+                        <array>
+                                <string>None</string>
+                                <string>Out of date</string>
+                        </array>
+                </dict>
+                <dict>
+                        <key>Type</key>
+                        <string>PSMultiValueSpecifier</string>
+                        <key>Title</key>
+                        <string>Password Safety Check State</string>
+                        <key>Key</key>
+                        <string>SafetyCheckPasswordStateOverride</string>
+                        <key>DefaultValue</key>
+                        <string></string>
+                        <key>Values</key>
+                        <array>
+                                <string></string>
+                                <string>PasswordSafetyCheckState::kUnmutedCompromisedPasswords</string>
+                                <string>PasswordSafetyCheckState::kReusedPasswords</string>
+                                <string>PasswordSafetyCheckState::kWeakPasswords</string>
+                        </array>
+                        <key>Titles</key>
+                        <array>
+                                <string>None</string>
+                                <string>Compromised</string>
+                                <string>Re-used</string>
+                                <string>Weak</string>
+                        </array>
+                </dict>
+                <dict>
+                        <key>Type</key>
+                        <string>PSMultiValueSpecifier</string>
+                        <key>Title</key>
+                        <string>Safe Browsing Safety Check State</string>
+                        <key>Key</key>
+                        <string>SafetyCheckSafeBrowsingStateOverride</string>
+                        <key>DefaultValue</key>
+                        <string></string>
+                        <key>Values</key>
+                        <array>
+                                <string></string>
+                                <string>SafeBrowsingSafetyCheckState::kUnsafe</string>
+                        </array>
+                        <key>Titles</key>
+                        <array>
+                                <string>None</string>
+                                <string>Unsafe</string>
+                        </array>
+                </dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>WidgetKit refresh 5 minutes</string>
+			<key>Key</key>
+			<string>WidgetKitRefreshFiveMinutes</string>
 			<key>DefaultValue</key>
 			<false/>
 		</dict>

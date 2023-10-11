@@ -76,8 +76,8 @@ public class StaticLayoutUnitTest {
     private static final int TAB2_ID = 789;
     private static final int POSITION1 = 0;
     private static final int POSITION2 = 1;
-    private static final String TAB1_URL = JUnitTestGURLs.URL_1;
-    private static final String TAB2_URL = JUnitTestGURLs.URL_2;
+    private static final String TAB1_URL = JUnitTestGURLs.URL_1.getSpec();
+    private static final String TAB2_URL = JUnitTestGURLs.URL_2.getSpec();
 
     private static final int BACKGROUND_COLOR = Color.WHITE;
     private static final int TOOLBAR_BACKGROUND_COLOR = Color.BLUE;
@@ -144,8 +144,8 @@ public class StaticLayoutUnitTest {
         mCompositorAnimationHandler = new CompositorAnimationHandler(mUpdateHost::requestUpdate);
         CompositorAnimationHandler.setTestingMode(true);
 
-        mTab1 = prepareTab(TAB1_ID, JUnitTestGURLs.getGURL(TAB1_URL));
-        mTab2 = prepareTab(TAB2_ID, JUnitTestGURLs.getGURL(TAB2_URL));
+        mTab1 = prepareTab(TAB1_ID, new GURL(TAB1_URL));
+        mTab2 = prepareTab(TAB2_ID, new GURL(TAB2_URL));
 
         doReturn(mResources).when(mContext).getResources();
         doReturn(mDisplayMetrics).when(mResources).getDisplayMetrics();
@@ -337,8 +337,7 @@ public class StaticLayoutUnitTest {
                 .updateVisibleIds(eq(Collections.singletonList(TAB2_ID)), eq(TAB2_ID));
 
         // Index 1 is the TabObserver for mTab2.
-        mTabObserverCaptor.getAllValues().get(1).onPageLoadFinished(
-                mTab2, JUnitTestGURLs.getGURL(TAB2_URL));
+        mTabObserverCaptor.getAllValues().get(1).onPageLoadFinished(mTab2, new GURL(TAB2_URL));
 
         assertFalse(mModel.get(LayoutTab.SHOULD_STALL));
         assertEquals(0.0f, mModel.get(LayoutTab.STATIC_TO_VIEW_BLEND), 0);

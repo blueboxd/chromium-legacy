@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Сайттың деректерді құрылғыңызда сақтауына рұқсат ету</translation>
 <translation id="1383876407941801731">Іздеу</translation>
 <translation id="1384959399684842514">Жүктеу кідіртілді</translation>
-<translation id="1409426117486808224">Ашық қойындылардың қарапайым көрінісі</translation>
 <translation id="1415402041810619267">URL қысқартылды</translation>
 <translation id="1426410128494586442">Иә</translation>
 <translation id="1446450296470737166">MIDI толық бақылауға рұқсат беру</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Рұқсат етілген, үшінші тараптан басқа</translation>
 <translation id="1989112275319619282">Шолу</translation>
 <translation id="1994173015038366702">URL сайты</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{1 күннен кейін мерзімі бітеді}other{# күннен кейін мерзімі бітеді}}</translation>
 <translation id="2004697686368036666">Кейбір сайттың функциялары жұмыс істемеуі мүмкін.</translation>
 <translation id="2025115093177348061">Толықтырылған шындық</translation>
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> қойындысына оралу үшін түртіңіз.</translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Тақырып</translation>
 <translation id="4008040567710660924">Белгілі бір сайт үшін cookie файлдарына рұқсат беріңіз.</translation>
 <translation id="4046123991198612571">Келесі аудиотрек</translation>
+<translation id="4053720452172726777">Google Chrome реттеу және бақылау</translation>
 <translation id="4149994727733219643">Веб-беттердің қарапайым көрінісі</translation>
 <translation id="4151930093518524179">Әдепкі масштаб</translation>
 <translation id="4165986682804962316">Сайт параметрлері</translation>
@@ -190,7 +189,7 @@
 <translation id="4278390842282768270">Рұқсат етілген</translation>
 <translation id="429312253194641664">Сайтта мультимедиа ойнатылуда</translation>
 <translation id="42981349822642051">Жаю</translation>
-<translation id="4336434711095810371">Барлық деректі өшіру</translation>
+<translation id="4336434711095810371">Барлық деректерді өшіру</translation>
 <translation id="4338831206024587507"><ph name="DOMAIN" /> доменіндегі барлық сайт</translation>
 <translation id="4402755511846832236">Сайттарды бөгеу арқылы олардың құрылғыны қашан белсенді пайдаланғаныңыз туралы ақпаратты алуына жол берілмейді.</translation>
 <translation id="4412992751769744546">Үшінші тарап cookie файлдарына рұқсат беру</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Сайттар браузерді қолдану мәліметін көру (мысалы, жарнамаларды жекелендіру) үшін cookie файлдарын пайдалана алмайды. Кейбір сайттың функциялары жұмыс істемеуі мүмкін.</translation>
 <translation id="5553374991681107062">Ең соңғысы</translation>
 <translation id="5556459405103347317">Қайта жүктеу</translation>
-<translation id="5596627076506792578">Қосымша опциялар</translation>
 <translation id="5649053991847567735">Автоматты жүктеулер</translation>
 <translation id="5668404140385795438">Веб-сайттардың үлкейтуге тыйым салу туралы сұрауларын елемеу</translation>
 <translation id="5677928146339483299">Тыйым салынған</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Android параметрлері ішінде өшірілді</translation>
 <translation id="7016516562562142042">Ағымдағы іздеу жүйесіне рұқсат берілген</translation>
 <translation id="702275896380648118">Бұл сайт сізге ұнайтын нәрселерді анықтайды, одан кейін басқа сайттарға жарнамалар ұсынады. Сонымен қатар бұл сайт сізге көбірек сәйкес жарнамаларды көрсету үшін Chrome браузерінен жарнама тақырыптарын алады.</translation>
-<translation id="702463548815491781">TalkBack не Ауыстырғышпен кіру қосулы кезде пайдалануға ұсынылады</translation>
 <translation id="7053983685419859001">Бөгеу</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 таңдалды}other{# таңдалды}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> таңдалды. Опциялар экранның жоғарғы жағында тұр</translation>

@@ -5,14 +5,7 @@
 #include "media/gpu/mac/video_toolbox_decompression_session.h"
 
 #include "base/logging.h"
-#include "base/mac/mac_logging.h"
 #include "media/base/media_log.h"
-
-#define OSSTATUS_MEDIA_DLOG_ERROR(status, msg)                  \
-  do {                                                          \
-    OSSTATUS_DLOG(ERROR, status) << msg;                        \
-    OSSTATUS_MEDIA_LOG(ERROR, status, media_log_.get()) << msg; \
-  } while (0)
 
 namespace media {
 
@@ -29,7 +22,7 @@ void OnOutputThunk(void* decompression_output_refcon,
       static_cast<VideoToolboxDecompressionSessionImpl*>(
           decompression_output_refcon);
   vtdsi->OnOutputOnAnyThread(source_frame_refcon, status, info_flags,
-                             base::ScopedCFTypeRef<CVImageBufferRef>(
+                             base::apple::ScopedCFTypeRef<CVImageBufferRef>(
                                  image_buffer, base::scoped_policy::RETAIN));
 }
 
@@ -54,7 +47,8 @@ VideoToolboxDecompressionSessionImpl::~VideoToolboxDecompressionSessionImpl() {
 
 bool VideoToolboxDecompressionSessionImpl::Create(
     CMFormatDescriptionRef format,
-    CFMutableDictionaryRef decoder_config) {
+    CFDictionaryRef decoder_config,
+    CFDictionaryRef image_config) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!IsValid());
@@ -66,11 +60,12 @@ bool VideoToolboxDecompressionSessionImpl::Create(
       kCFAllocatorDefault,
       format,          // video_format_description
       decoder_config,  // video_decoder_specification
-      nullptr,         // destination_image_buffer_attributes
+      image_config,    // destination_image_buffer_attributes
       &callback,       // output_callback
       session_.InitializeInto());
   if (status != noErr) {
-    OSSTATUS_MEDIA_DLOG_ERROR(status, "VTDecompressionSessionCreate()");
+    OSSTATUS_MEDIA_LOG(ERROR, status, media_log_.get())
+        << "VTDecompressionSessionCreate()";
     DCHECK(!session_);
     return false;
   }
@@ -123,7 +118,8 @@ bool VideoToolboxDecompressionSessionImpl::DecodeFrame(CMSampleBufferRef sample,
   OSStatus status = VTDecompressionSessionDecodeFrame(
       session_, sample, decode_flags, context, nullptr);
   if (status != noErr) {
-    OSSTATUS_MEDIA_DLOG_ERROR(status, "VTDecompressionSessionDecodeFrame()");
+    OSSTATUS_MEDIA_LOG(ERROR, status, media_log_.get())
+        << "VTDecompressionSessionDecodeFrame()";
     return false;
   }
 
@@ -134,7 +130,7 @@ void VideoToolboxDecompressionSessionImpl::OnOutputOnAnyThread(
     void* context,
     OSStatus status,
     VTDecodeInfoFlags flags,
-    base::ScopedCFTypeRef<CVImageBufferRef> image) {
+    base::apple::ScopedCFTypeRef<CVImageBufferRef> image) {
   DVLOG(4) << __func__;
   task_runner_->PostTask(
       FROM_HERE,
@@ -146,7 +142,7 @@ void VideoToolboxDecompressionSessionImpl::OnOutput(
     void* context,
     OSStatus status,
     VTDecodeInfoFlags flags,
-    base::ScopedCFTypeRef<CVImageBufferRef> image) {
+    base::apple::ScopedCFTypeRef<CVImageBufferRef> image) {
   DVLOG(3) << __func__;
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   CHECK(session_);

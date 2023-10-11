@@ -6,9 +6,6 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#if !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/picture_in_picture/auto_pip_setting_overlay_view.h"
-#endif
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -26,9 +23,9 @@
 #include "components/omnibox/browser/location_bar_model_impl.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/document_picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
-#include "third_party/blink/public/common/features.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -69,6 +66,11 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/ui/frame/interior_resize_handler_targeter.h"
 #endif
+
+#if RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
+#include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/window.h"
+#endif  // RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
 
 namespace {
 
@@ -211,6 +213,141 @@ void DefinitelyExitPictureInPicture(
 }
 
 }  // namespace
+
+#if RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
+PictureInPictureBrowserFrameView::ChildDialogObserverHelper::
+    ChildDialogObserverHelper(views::Widget* pip_widget)
+    : pip_widget_(pip_widget) {
+  pip_widget_observation_.Observe(pip_widget_);
+  aura_window_observation_.Observe(pip_widget_->GetNativeWindow());
+  transient_window_observation_.Observe(
+      aura::client::GetTransientWindowClient());
+}
+
+PictureInPictureBrowserFrameView::ChildDialogObserverHelper::
+    ~ChildDialogObserverHelper() = default;
+
+void PictureInPictureBrowserFrameView::ChildDialogObserverHelper::
+    OnWidgetBoundsChanged(views::Widget* widget, const gfx::Rect& new_bounds) {
+  if (widget != pip_widget_) {
+    return;
+  }
+
+  // If this bounds change is due to a dialog opening, then track that adjusted
+  // bounds.
+  if (resizing_state_ == ResizingState::kDuringInitialResizeForNewChild) {
+    latest_child_dialog_forced_bounds_ = new_bounds;
+    return;
+  }
+
+  // Otherwise, this was due to a user resizing/moving the window, so track this
+  // new location as a user-desired one. If they've also changed the size from
+  // the child-dialog-forced size, then track that too, but otherwise only
+  // change the desired location.
+  latest_user_desired_bounds_.set_origin(new_bounds.origin());
+  if (resizing_state_ == ResizingState::kNormal ||
+      new_bounds.size() != latest_child_dialog_forced_bounds_.size()) {
+    latest_user_desired_bounds_.set_size(new_bounds.size());
+
+    // At this point, we'll no longer resize when the child dialog closes, so
+    // reset the state to normal.
+    resizing_state_ = ResizingState::kNormal;
+  }
+}
+
+void PictureInPictureBrowserFrameView::ChildDialogObserverHelper::
+    OnWidgetDestroying(views::Widget* widget) {
+  if (widget == pip_widget_) {
+    return;
+  }
+
+  invisible_child_dialogs_.erase(widget);
+  child_dialog_observations_.RemoveObservation(widget);
+
+  MaybeRevertSizeAfterChildDialogCloses();
+}
+
+void PictureInPictureBrowserFrameView::ChildDialogObserverHelper::
+    OnWidgetVisibilityChanged(views::Widget* widget, bool visible) {
+  if (widget == pip_widget_) {
+    return;
+  }
+
+  if (visible) {
+    invisible_child_dialogs_.erase(widget);
+    MaybeResizeForChildDialog(widget);
+  } else {
+    invisible_child_dialogs_.insert(widget);
+    MaybeRevertSizeAfterChildDialogCloses();
+  }
+}
+
+void PictureInPictureBrowserFrameView::ChildDialogObserverHelper::OnWindowAdded(
+    aura::Window* new_window) {
+  auto* child_dialog = views::Widget::GetWidgetForNativeWindow(new_window);
+  if (child_dialog) {
+    OnChildDialogOpened(child_dialog);
+  }
+}
+
+void PictureInPictureBrowserFrameView::ChildDialogObserverHelper::
+    OnTransientChildWindowAdded(aura::Window* parent,
+                                aura::Window* transient_child) {
+  if (parent != pip_widget_->GetNativeWindow()) {
+    return;
+  }
+
+  auto* child_dialog = views::Widget::GetWidgetForNativeWindow(transient_child);
+  if (child_dialog) {
+    OnChildDialogOpened(child_dialog);
+  }
+}
+
+void PictureInPictureBrowserFrameView::ChildDialogObserverHelper::
+    OnChildDialogOpened(views::Widget* child_dialog) {
+  child_dialog_observations_.AddObservation(child_dialog);
+  if (child_dialog->IsVisible()) {
+    MaybeResizeForChildDialog(child_dialog);
+  } else {
+    invisible_child_dialogs_.insert(child_dialog);
+  }
+}
+
+void PictureInPictureBrowserFrameView::ChildDialogObserverHelper::
+    MaybeResizeForChildDialog(views::Widget* child_dialog) {
+  gfx::Rect original_bounds = pip_widget_->GetWindowBoundsInScreen();
+  gfx::Rect dialog_bounds = child_dialog->GetWindowBoundsInScreen();
+
+  gfx::Rect adjusted_bounds = original_bounds;
+  adjusted_bounds.Union(dialog_bounds);
+
+  if (adjusted_bounds == original_bounds) {
+    return;
+  }
+
+  resizing_state_ = ResizingState::kDuringInitialResizeForNewChild;
+  pip_widget_->SetBoundsConstrained(adjusted_bounds);
+  resizing_state_ = ResizingState::kSizedToChildren;
+}
+
+void PictureInPictureBrowserFrameView::ChildDialogObserverHelper::
+    MaybeRevertSizeAfterChildDialogCloses() {
+  // If we still have another visible child dialog, continue to maintain the
+  // size.
+  if (child_dialog_observations_.GetSourcesCount() >
+      invisible_child_dialogs_.size()) {
+    return;
+  }
+
+  // If we no longer have any child dialogs and we had resized for one, then
+  // adjust back to the user-preferred size.
+  if (resizing_state_ == ResizingState::kNormal) {
+    return;
+  }
+  resizing_state_ = ResizingState::kNormal;
+  pip_widget_->SetBoundsConstrained(latest_user_desired_bounds_);
+}
+#endif  // RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
 
 PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
     BrowserFrame* frame,
@@ -388,14 +525,12 @@ PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
   hide_close_button_animation_.set_delegate(this);
 
 #if !BUILDFLAG(IS_ANDROID)
-  // TODO(crbug.com/1464066): Get the auto pip settings UI when needed, rather
-  // than create it here.
-  const bool is_auto_pip = base::FeatureList::IsEnabled(
-      blink::features::kMediaSessionEnterPictureInPicture);
-  const bool is_setting_ask = true;
-  if (is_auto_pip && is_setting_ask) {
-    auto_pip_setting_overlay_ = AddChildView(
-        std::make_unique<AutoPipSettingOverlayView>(base::DoNothing()));
+  // If the window manager wants us to display an overlay, get it.  In practice,
+  // this is the auto-pip Allow / Block content setting UI.
+  if (auto auto_pip_setting_overlay =
+          PictureInPictureWindowManager::GetInstance()->GetOverlayView()) {
+    auto_pip_setting_overlay_ =
+        AddChildView(std::move(auto_pip_setting_overlay));
   }
 #endif
 
@@ -440,10 +575,6 @@ void PictureInPictureBrowserFrameView::LayoutWebAppWindowTitle(
 
 int PictureInPictureBrowserFrameView::GetTopInset(bool restored) const {
   return GetTopAreaHeight();
-}
-
-int PictureInPictureBrowserFrameView::GetThemeBackgroundXInset() const {
-  return 0;
 }
 
 void PictureInPictureBrowserFrameView::OnBrowserViewInitViewsComplete() {
@@ -606,6 +737,10 @@ void PictureInPictureBrowserFrameView::Layout() {
 void PictureInPictureBrowserFrameView::AddedToWidget() {
   widget_observation_.Observe(GetWidget());
   window_event_observer_ = std::make_unique<WindowEventObserver>(this);
+#if RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
+  child_dialog_observer_helper_ =
+      std::make_unique<ChildDialogObserverHelper>(GetWidget());
+#endif  // RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
 
   // Creates an animation container to ensure all the animations update at the
   // same time.
@@ -630,6 +765,9 @@ void PictureInPictureBrowserFrameView::AddedToWidget() {
 void PictureInPictureBrowserFrameView::RemovedFromWidget() {
   widget_observation_.Reset();
   window_event_observer_.reset();
+#if RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
+  child_dialog_observer_helper_.reset();
+#endif  // RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
 
   BrowserNonClientFrameView::RemovedFromWidget();
 }
@@ -819,6 +957,9 @@ void PictureInPictureBrowserFrameView::OnWidgetDestroying(
     views::Widget* widget) {
   window_event_observer_.reset();
   widget_observation_.Reset();
+#if RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
+  child_dialog_observer_helper_.reset();
+#endif  // RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -889,8 +1030,9 @@ void PictureInPictureBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
     frame_background_->set_use_custom_frame(frame()->UseCustomFrame());
     frame_background_->set_is_active(ShouldPaintAsActive());
     frame_background_->set_theme_image(GetFrameImage());
-    frame_background_->set_theme_image_y_inset(
-        ThemeProperties::kFrameHeightAboveTabs - GetTopAreaHeight());
+
+    frame_background_->set_theme_image_inset(
+        browser_view()->GetThemeOffsetFromBrowserView());
     frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
     frame_background_->set_top_area_height(GetTopAreaHeight());
     PaintRestoredFrameBorderLinux(

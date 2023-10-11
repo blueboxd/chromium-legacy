@@ -147,10 +147,15 @@ bool WillCreateURLLoaderFactoryInternal(
         target_factory_receiver,
     network::mojom::URLLoaderFactoryOverridePtr* factory_override);
 
-void OnPrefetchRequestWillBeSent(FrameTreeNode* frame_tree_node,
-                                 const std::string& request_id,
-                                 const GURL& initiator,
-                                 const network::ResourceRequest& request);
+void OnPrefetchRequestWillBeSent(
+    FrameTreeNode* frame_tree_node,
+    const std::string& request_id,
+    const GURL& initiator,
+    const network::ResourceRequest& request,
+    absl::optional<
+        std::pair<const GURL&,
+                  const network::mojom::URLResponseHeadDevToolsInfo&>>
+        redirect_info);
 void OnPrefetchResponseReceived(FrameTreeNode* frame_tree_node,
                                 const std::string& request_id,
                                 const GURL& url,
@@ -407,7 +412,7 @@ void WillSendFedCmRequest(RenderFrameHost* render_frame_host,
                           bool* intercept,
                           bool* disable_delay);
 void WillShowFedCmDialog(RenderFrameHost* render_frame_host, bool* intercept);
-void OnFedCmAccountsDialogShown(RenderFrameHost* render_frame_host);
+void OnFedCmDialogShown(RenderFrameHost* render_frame_host);
 
 // Handles dev tools integration for fenced frame reporting beacons. Used in
 // `FencedFrameReporter`.
@@ -419,6 +424,8 @@ void OnFencedFrameReportResponseReceived(
     const std::string& devtools_request_id,
     const GURL& final_url,
     scoped_refptr<net::HttpResponseHeaders> headers);
+
+void DidChangeFrameLoadingState(FrameTreeNode& ftn);
 
 }  // namespace devtools_instrumentation
 

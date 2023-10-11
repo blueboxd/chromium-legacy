@@ -35,6 +35,7 @@
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_crash_keys.h"
 #include "gpu/config/gpu_finch_features.h"
+#include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/service/gpu_channel.h"
@@ -85,7 +86,7 @@ const int kMaxGpuIdleTimeMs = 40;
 const int kMaxKeepAliveTimeMs = 200;
 #endif
 #if BUILDFLAG(IS_WIN)
-void TrimD3DResources() {
+void TrimD3DResources(const scoped_refptr<SharedContextState>& context_state) {
   // Graphics drivers periodically allocate internal memory buffers in
   // order to speed up subsequent rendering requests. These memory allocations
   // in general lead to increased memory usage by the overall system.
@@ -97,11 +98,22 @@ void TrimD3DResources() {
   // during the first rendering operations after the Trim call, therefore
   // apps should only call Trim when going idle for a period of time or during
   // low memory conditions.
-  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device;
+  if (context_state) {
+    d3d11_device = context_state->GetD3D11Device();
+  }
   if (d3d11_device) {
     Microsoft::WRL::ComPtr<IDXGIDevice3> dxgi_device;
     if (SUCCEEDED(d3d11_device.As(&dxgi_device))) {
+      dxgi_device->Trim();
+    }
+  }
+
+  Microsoft::WRL::ComPtr<ID3D11Device> angle_d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+  if (angle_d3d11_device && angle_d3d11_device != d3d11_device) {
+    Microsoft::WRL::ComPtr<IDXGIDevice3> dxgi_device;
+    if (SUCCEEDED(angle_d3d11_device.As(&dxgi_device))) {
       dxgi_device->Trim();
     }
   }
@@ -323,7 +335,7 @@ GpuChannelManager::GpuChannelManager(
     SharedImageManager* shared_image_manager,
     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     const GpuFeatureInfo& gpu_feature_info,
-    GpuProcessActivityFlags activity_flags,
+    GpuProcessShmCount use_shader_cache_shm_count,
     scoped_refptr<gl::GLSurface> default_offscreen_surface,
     ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
     viz::VulkanContextProvider* vulkan_context_provider,
@@ -349,7 +361,7 @@ GpuChannelManager::GpuChannelManager(
       discardable_manager_(gpu_preferences_),
       passthrough_discardable_manager_(gpu_preferences_),
       image_decode_accelerator_worker_(image_decode_accelerator_worker),
-      activity_flags_(std::move(activity_flags)),
+      use_shader_cache_shm_count_(std::move(use_shader_cache_shm_count)),
       memory_pressure_listener_(
           FROM_HERE,
           base::BindRepeating(&GpuChannelManager::HandleMemoryPressure,
@@ -442,7 +454,7 @@ gles2::ProgramCache* GpuChannelManager::program_cache() {
       program_cache_ = std::make_unique<gles2::MemoryProgramCache>(
           gpu_preferences_.gpu_program_cache_size, disable_disk_cache,
           workarounds.disable_program_caching_for_transform_feedback,
-          &activity_flags_);
+          &use_shader_cache_shm_count_);
     }
   }
   return program_cache_.get();
@@ -858,7 +870,7 @@ void GpuChannelManager::HandleMemoryPressure(
   if (gr_shader_cache_)
     gr_shader_cache_->PurgeMemory(memory_pressure_level);
 #if BUILDFLAG(IS_WIN)
-  TrimD3DResources();
+  TrimD3DResources(shared_context_state_);
 #endif
 }
 
@@ -972,15 +984,28 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
     return nullptr;
   }
 
+  auto gr_context_type = gpu_preferences_.gr_context_type;
+#if BUILDFLAG(IS_APPLE)
+  const bool want_graphite = gr_context_type == GrContextType::kGraphiteDawn ||
+                             gr_context_type == GrContextType::kGraphiteMetal;
+  const bool force_graphite = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSkiaGraphiteBackend);
+  const bool is_angle_metal =
+      gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal;
+  // Fallback from Graphite to Ganesh/GL if ANGLE is not using Metal too.
+  if (want_graphite && !force_graphite && !is_angle_metal) {
+    gr_context_type = GrContextType::kGL;
+  }
+#endif
+
   // TODO(penghuang): https://crbug.com/899735 Handle device lost for Vulkan.
   auto shared_context_state = base::MakeRefCounted<SharedContextState>(
       std::move(share_group), std::move(surface), std::move(context),
       use_virtualized_gl_contexts,
       base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this),
                      context_lost_count_ + 1),
-      gpu_preferences_.gr_context_type, vulkan_context_provider_,
-      metal_context_provider_, dawn_context_provider_,
-      peak_memory_monitor_.GetWeakPtr());
+      gr_context_type, vulkan_context_provider_, metal_context_provider_,
+      dawn_context_provider_, peak_memory_monitor_.GetWeakPtr());
 
   // Initialize GL context, so Vulkan and GL interop can work properly.
   auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
@@ -1005,7 +1030,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
 
   if (!shared_context_state->InitializeSkia(
           gpu_preferences_, gpu_driver_bug_workarounds_, gr_shader_cache(),
-          &activity_flags_, watchdog_)) {
+          &use_shader_cache_shm_count_, watchdog_)) {
     LOG(ERROR) << "ContextResult::kFatalFailure: Failed to initialize Skia for "
                   "SharedContextState";
     *result = ContextResult::kFatalFailure;
@@ -1088,7 +1113,7 @@ void GpuChannelManager::OnContextLost(
 void GpuChannelManager::ScheduleGrContextCleanup() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  shared_context_state_->ScheduleGrContextCleanup();
+  shared_context_state_->ScheduleSkiaCleanup();
 }
 
 void GpuChannelManager::StoreShader(const std::string& key,

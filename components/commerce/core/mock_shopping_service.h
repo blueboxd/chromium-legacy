@@ -48,6 +48,10 @@ class MockShoppingService : public commerce::ShoppingService {
               GetMerchantInfoForUrl,
               (const GURL& url, MerchantInfoCallback callback),
               (override));
+  MOCK_METHOD(void,
+              IsShoppingPage,
+              (const GURL& url, IsShoppingPageCallback callback),
+              (override));
   MOCK_METHOD(absl::optional<ProductInfo>,
               GetAvailableProductInfoForUrl,
               (const GURL& url),
@@ -98,6 +102,11 @@ class MockShoppingService : public commerce::ShoppingService {
               (override));
   MOCK_METHOD(bool, IsMerchantViewerEnabled, (), (override));
   MOCK_METHOD(bool, IsPriceInsightsEligible, (), (override));
+  MOCK_METHOD(bool, IsDiscountEligibleToShowOnNavigation, (), (override));
+  MOCK_METHOD(void,
+              GetDiscountInfoForUrls,
+              (const std::vector<GURL>& urls, DiscountInfoCallback callback),
+              (override));
 
   void SetResponseForGetProductInfoForUrl(
       absl::optional<commerce::ProductInfo> product_info);
@@ -107,6 +116,7 @@ class MockShoppingService : public commerce::ShoppingService {
       std::map<base::Uuid, ProductInfo> bookmark_updates);
   void SetResponseForGetMerchantInfoForUrl(
       absl::optional<commerce::MerchantInfo> merchant_info);
+  void SetResponseForIsShoppingPage(absl::optional<bool> is_shopping_page);
   void SetSubscribeCallbackValue(bool subscribe_should_succeed);
   void SetUnsubscribeCallbackValue(bool unsubscribe_should_succeed);
   void SetIsSubscribedCallbackValue(bool is_subscribed);
@@ -121,6 +131,8 @@ class MockShoppingService : public commerce::ShoppingService {
   void SetGetAllShoppingBookmarksValue(
       std::vector<const bookmarks::BookmarkNode*> bookmarks);
   void SetIsPriceInsightsEligible(bool is_eligible);
+  void SetIsDiscountEligibleToShowOnNavigation(bool is_eligible);
+  void SetResponseForGetDiscountInfoForUrls(const DiscountsMap& discounts_map);
 };
 
 }  // namespace commerce

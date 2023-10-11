@@ -756,10 +756,7 @@ class CORE_EXPORT LocalFrameView final
     return EnsurePaintController();
   }
 
-  bool PaintDebugInfoEnabled() const {
-    return layer_debug_info_enabled_ ||
-           RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled();
-  }
+  bool PaintDebugInfoEnabled() const { return paint_debug_info_enabled_; }
 
   void AddPendingTransformUpdate(LayoutObject& object);
   bool RemovePendingTransformUpdate(const LayoutObject& object);
@@ -772,6 +769,10 @@ class CORE_EXPORT LocalFrameView final
 
   void AddPendingStickyUpdate(PaintLayerScrollableArea*);
   void ExecutePendingStickyUpdates();
+
+  void AddPendingSnapUpdate(PaintLayerScrollableArea*);
+  void RemovePendingSnapUpdate(PaintLayerScrollableArea*);
+  void ExecutePendingSnapUpdates();
 
   void ForAllChildLocalFrameViews(base::FunctionRef<void(LocalFrameView&)>);
 
@@ -992,8 +993,8 @@ class CORE_EXPORT LocalFrameView final
   // was prevented (e.g. by ancestor display-lock) or not needed.
   bool LayoutFromRootObject(LayoutObject& root);
 
-  // Returns true if the value of layer_debug_info_enabled_ changed.
-  bool UpdateLayerDebugInfoEnabled();
+  // Returns true if the value of paint_debug_info_enabled_ changed.
+  bool UpdatePaintDebugInfoEnabled();
 
   // Return the interstitial-ad detector for this frame, creating it if
   // necessary.
@@ -1135,7 +1136,7 @@ class CORE_EXPORT LocalFrameView final
 
   // Whether to collect layer debug information for debugging, tracing,
   // inspection, etc. Applies to local root only.
-  bool layer_debug_info_enabled_ = DCHECK_IS_ON();
+  bool paint_debug_info_enabled_ = DCHECK_IS_ON();
 
   LifecycleData lifecycle_data_;
 
@@ -1191,8 +1192,12 @@ class CORE_EXPORT LocalFrameView final
   Member<HeapHashSet<Member<LayoutObject>>> pending_opacity_updates_;
 
   // A set of objects needing sticky constraint updates. These updates are
-  // registered during layout deferred until the end of layout.
+  // registered during layout, and deferred until the end of layout.
   Member<HeapHashSet<Member<PaintLayerScrollableArea>>> pending_sticky_updates_;
+
+  // A set of objects needing snap-area constraint updates. These updates are
+  // registered during style/layout, and deferred until the end of layout.
+  Member<HeapHashSet<Member<PaintLayerScrollableArea>>> pending_snap_updates_;
 
   // These are elements that were disconnected while having a remembered
   // size. We need to clear the remembered at resize observer timing,

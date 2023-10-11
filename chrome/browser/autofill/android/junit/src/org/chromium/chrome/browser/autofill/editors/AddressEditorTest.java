@@ -68,14 +68,12 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillAddress;
-import org.chromium.chrome.browser.autofill.AutofillProfile;
 import org.chromium.chrome.browser.autofill.AutofillProfileBridge;
 import org.chromium.chrome.browser.autofill.AutofillProfileBridge.AutofillAddressUiComponent;
 import org.chromium.chrome.browser.autofill.AutofillProfileBridgeJni;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
 import org.chromium.chrome.browser.autofill.PhoneNumberUtilJni;
-import org.chromium.chrome.browser.autofill.Source;
 import org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.Delegate;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownKeyValue;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldItem;
@@ -87,7 +85,9 @@ import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.autofill.AutofillProfile;
 import org.chromium.components.autofill.ServerFieldType;
+import org.chromium.components.autofill.Source;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.sync.SyncService;
@@ -223,15 +223,6 @@ public class AddressEditorTest {
         })
                 .when(mAutofillProfileBridgeJni)
                 .getRequiredFields(anyString(), anyList());
-        doAnswer(invocation -> {
-            List<Integer> fields = (List<Integer>) invocation.getArguments()[0];
-            fields.addAll(
-                    List.of(ServerFieldType.EMAIL_ADDRESS, ServerFieldType.PHONE_HOME_WHOLE_NUMBER,
-                            ServerFieldType.NAME_HONORIFIC_PREFIX));
-            return null;
-        })
-                .when(mAutofillProfileBridgeJni)
-                .getStaticEditorFields(anyList());
         mJniMocker.mock(PhoneNumberUtilJni.TEST_HOOKS, mPhoneNumberUtilJni);
         when(mPhoneNumberUtilJni.isPossibleNumber(anyString(), anyString())).thenReturn(true);
 
@@ -984,7 +975,7 @@ public class AddressEditorTest {
 
     @Test
     @SmallTest
-    public void edit_AlterAddressProfile_CommitChanges_InvisibleFieldsGetReset() {
+    public void edit_AlterAddressProfile_CommitChanges_InvisibleFieldsNotReset() {
         // Whitelist only full name, admin area and locality.
         setUpAddressUiComponents(SUPPORTED_ADDRESS_FIELDS.subList(0, 3));
         mAddressEditor = new AddressEditorCoordinator(mActivity, mHelpLauncher, mDelegate, mProfile,
@@ -1015,10 +1006,10 @@ public class AddressEditorTest {
         AutofillAddress address = mAddressCapture.getValue();
         assertNotNull(address);
         AutofillProfile profile = address.getProfile();
-        assertEquals(profile.getStreetAddress(), "");
+        assertEquals(profile.getStreetAddress(), "111 First St");
         assertEquals(profile.getDependentLocality(), "");
-        assertEquals(profile.getCompanyName(), "");
-        assertEquals(profile.getPostalCode(), "");
+        assertEquals(profile.getCompanyName(), "Google");
+        assertEquals(profile.getPostalCode(), "90291");
         assertEquals(profile.getSortingCode(), "");
     }
 

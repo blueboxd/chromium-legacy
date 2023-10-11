@@ -175,7 +175,8 @@ export class ProfilePickerMainViewElement extends
       }
 
       this.dragDelegate_ = new DragDropReorderTileListDelegate(
-          this, this.profilesList_.length, this.dragDuration_);
+          this, this, 'profilesList_', this.profilesList_.length,
+          this.dragDuration_);
 
       listenOnce(this, 'dom-change', () => {
         afterNextRender(this, () => {
@@ -235,6 +236,11 @@ export class ProfilePickerMainViewElement extends
     this.dragDelegate_.toggleDrag(customEvent.detail.toggle);
   }
 
+  // @override
+  onDradEnd(initialIndex: number, finalIndex: number): void {
+    this.manageProfilesBrowserProxy_.updateProfileOrder(
+        initialIndex, finalIndex);
+  }
 
   // @override
   getDraggableTile(index: number): HTMLElement {
@@ -248,6 +254,10 @@ export class ProfilePickerMainViewElement extends
 
   setDraggingTransitionDurationForTesting(duration: number) {
     this.dragDuration_ = duration;
+  }
+
+  getProfileListForTesting(): ProfileState[] {
+    return this.profilesList_;
   }
 }
 

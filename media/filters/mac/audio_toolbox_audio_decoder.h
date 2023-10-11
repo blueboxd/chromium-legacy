@@ -9,7 +9,7 @@
 
 #include <AudioToolbox/AudioToolbox.h>
 
-#include "base/mac/scoped_typeref.h"
+#include "base/apple/scoped_typeref.h"
 #include "base/memory/free_deleter.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_decoder.h"
@@ -51,7 +51,8 @@ class MEDIA_EXPORT AudioToolboxAudioDecoder : public AudioDecoder {
     static void Release(AudioConverterRef converter);
   };
   using ScopedAudioConverterRef =
-      base::ScopedTypeRef<AudioConverterRef, ScopedAudioConverterRefTraits>;
+      base::apple::ScopedTypeRef<AudioConverterRef,
+                                 ScopedAudioConverterRefTraits>;
 
   bool CreateDecoder(const AudioDecoderConfig& config);
 

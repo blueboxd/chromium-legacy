@@ -39,6 +39,7 @@
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/customization/customization_document.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/login/choobe_flow_controller.h"
 #include "chrome/browser/ash/login/configuration_keys.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -51,6 +52,7 @@
 #include "chrome/browser/ash/login/login_wizard.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
+#include "chrome/browser/ash/login/quickstart_controller.h"
 #include "chrome/browser/ash/login/screens/add_child_screen.h"
 #include "chrome/browser/ash/login/screens/app_downloading_screen.h"
 #include "chrome/browser/ash/login/screens/arc_vm_data_migration_screen.h"
@@ -84,6 +86,7 @@
 #include "chrome/browser/ash/login/screens/kiosk_enable_screen.h"
 #include "chrome/browser/ash/login/screens/lacros_data_backward_migration_screen.h"
 #include "chrome/browser/ash/login/screens/lacros_data_migration_screen.h"
+#include "chrome/browser/ash/login/screens/local_password_setup_screen.h"
 #include "chrome/browser/ash/login/screens/local_state_error_screen.h"
 #include "chrome/browser/ash/login/screens/locale_switch_screen.h"
 #include "chrome/browser/ash/login/screens/management_transition_screen.h"
@@ -93,6 +96,7 @@
 #include "chrome/browser/ash/login/screens/network_screen.h"
 #include "chrome/browser/ash/login/screens/offline_login_screen.h"
 #include "chrome/browser/ash/login/screens/packaged_license_screen.h"
+#include "chrome/browser/ash/login/screens/password_selection_screen.h"
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
 #include "chrome/browser/ash/login/screens/quick_start_screen.h"
 #include "chrome/browser/ash/login/screens/recommend_apps_screen.h"
@@ -167,6 +171,7 @@
 #include "chrome/browser/ui/webui/ash/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/lacros_data_backward_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/lacros_data_migration_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/local_password_setup_handler.h"
 #include "chrome/browser/ui/webui/ash/login/local_state_error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/locale_switch_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/management_transition_screen_handler.h"
@@ -179,6 +184,7 @@
 #include "chrome/browser/ui/webui/ash/login/os_trial_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/packaged_license_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/parental_handoff_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/password_selection_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/pin_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/quick_start_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/recommend_apps_screen_handler.h"
@@ -362,7 +368,8 @@ WizardController* WizardController::default_controller() {
 PrefService* WizardController::local_state_for_testing_ = nullptr;
 
 WizardController::WizardController(WizardContext* wizard_context)
-    : screen_manager_(std::make_unique<ScreenManager>()),
+    : quickstart_controller_(std::make_unique<QuickStartController>()),
+      screen_manager_(std::make_unique<ScreenManager>()),
       wizard_context_(wizard_context),
       shared_url_loader_factory_(
           g_browser_process->shared_url_loader_factory()) {
@@ -589,6 +596,7 @@ WizardController::CreateScreens() {
 
     append(std::make_unique<QuickStartScreen>(
         oobe_ui->GetView<QuickStartScreenHandler>()->AsWeakPtr(),
+        quick_start_controller(),
         base::BindRepeating(&WizardController::OnQuickStartScreenExit,
                             weak_factory_.GetWeakPtr())));
   }
@@ -754,9 +762,7 @@ WizardController::CreateScreens() {
                           weak_factory_.GetWeakPtr())));
 
   append(std::make_unique<TpmErrorScreen>(
-      oobe_ui->GetView<TpmErrorScreenHandler>()->AsWeakPtr(),
-      base::BindRepeating(&WizardController::OnTpmErrorScreenExit,
-                          weak_factory_.GetWeakPtr())));
+      oobe_ui->GetView<TpmErrorScreenHandler>()->AsWeakPtr()));
 
   if (ash::features::IsCryptohomeRecoveryEnabled()) {
     auto gaia_password_change_screen =
@@ -871,7 +877,7 @@ WizardController::CreateScreens() {
                             weak_factory_.GetWeakPtr())));
   }
 
-  if (features::IsOobeDrivePinningEnabled()) {
+  if (drive::util::IsOobeDrivePinningEnabled()) {
     append(std::make_unique<DrivePinningScreen>(
         oobe_ui->GetView<DrivePinningScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnDrivePinningScreenExit,
@@ -886,6 +892,19 @@ WizardController::CreateScreens() {
                             weak_factory_.GetWeakPtr())));
   }
 
+  if (features::IsPasswordSelectionEnabledInOobe()) {
+    append(std::make_unique<PasswordSelectionScreen>(
+        oobe_ui->GetView<PasswordSelectionScreenHandler>()->AsWeakPtr(),
+        base::BindRepeating(&WizardController::OnPasswordSelectionScreenExit,
+                            weak_factory_.GetWeakPtr())));
+  }
+
+  if (features::AreLocalPasswordsEnabledForConsumers()) {
+    append(std::make_unique<LocalPasswordSetupScreen>(
+        oobe_ui->GetView<LocalPasswordSetupHandler>()->AsWeakPtr(),
+        base::BindRepeating([](LocalPasswordSetupScreen::Result result) {})));
+  }
+
   return result;
 }
 
@@ -893,8 +912,10 @@ void WizardController::ShowWelcomeScreen() {
   SetCurrentScreen(GetScreen(WelcomeView::kScreenId));
 }
 
-void WizardController::ShowQuickStartScreen() {
+void WizardController::ShowQuickStartScreen(
+    QuickStartScreen::EntryPoint quick_start_entry_point) {
   CHECK(wizard_context_->quick_start_enabled);
+  GetScreen<QuickStartScreen>()->SetEntryPoint(quick_start_entry_point);
   GetScreen<QuickStartScreen>()->SetFlowState(
       QuickStartScreen::FlowState::INITIAL);
   SetCurrentScreen(GetScreen(QuickStartView::kScreenId));
@@ -982,6 +1003,10 @@ void WizardController::ShowConsumerUpdateScreen() {
   SetCurrentScreen(GetScreen(ConsumerUpdateScreenView::kScreenId));
 }
 
+void WizardController::ShowPasswordSelectionScreen() {
+  SetCurrentScreen(GetScreen(PasswordSelectionScreenView::kScreenId));
+}
+
 void WizardController::ShowEnrollmentScreen() {
   // Update the enrollment configuration and start the screen.
   oobe_metrics_helper_.OnEnrollmentScreenShown();
@@ -999,7 +1024,7 @@ void WizardController::ShowDemoModeSetupScreen() {
 }
 
 void WizardController::ShowDrivePinningScreen() {
-  if (features::IsOobeDrivePinningEnabled()) {
+  if (drive::util::IsOobeDrivePinningEnabled()) {
     SetCurrentScreen(GetScreen(DrivePinningScreenView::kScreenId));
   } else {
     OnDrivePinningScreenExit(DrivePinningScreen::Result::NOT_APPLICABLE);
@@ -1278,15 +1303,26 @@ void WizardController::OnConsumerUpdateScreenExit(
   }
 }
 
-void WizardController::OnTpmErrorScreenExit(TpmErrorScreen::Result result) {
-  OnScreenExit(TpmErrorView::kScreenId,
-               TpmErrorScreen::GetResultString(result));
-
-  // On ChromeOS Flex devices TpmErrorScreen is shown when users try to enroll,
-  // but the TPM is owned by a previous OS. Users can either try restarting the
-  // device to reconfigure TPM in BIOS or continue using the device without
-  // enrollment. This is a non-blocking error.
-  SetCurrentScreen(GetScreen(UserCreationView::kScreenId));
+void WizardController::OnPasswordSelectionScreenExit(
+    PasswordSelectionScreen::Result result) {
+  OnScreenExit(PasswordSelectionScreenView::kScreenId,
+               PasswordSelectionScreen::GetResultString(result));
+  switch (result) {
+    case PasswordSelectionScreen::Result::NOT_APPLICABLE:
+      ShowAuthenticationSetupScreen();
+      return;
+    case PasswordSelectionScreen::Result::BACK: {
+      const bool did_go_back = MaybeSetToPreviousScreen();
+      DCHECK(did_go_back);
+      return;
+    }
+    case PasswordSelectionScreen::Result::LOCAL_PASSWORD:
+      // TODO(b/293295420): Go to the new local password screen.
+      return;
+    case PasswordSelectionScreen::Result::GAIA_PASSWORD:
+      AdvanceToSigninScreen();
+      return;
+  }
 }
 
 void WizardController::OnGaiaScreenExit(GaiaScreen::Result result) {
@@ -1356,7 +1392,7 @@ void WizardController::OnGaiaScreenExit(GaiaScreen::Result result) {
       LoginDisplayHost::default_host()->AttemptShowEnableConsumerKioskScreen();
       break;
     case GaiaScreen::Result::QUICK_START:
-      ShowQuickStartScreen();
+      ShowQuickStartScreen(QuickStartScreen::EntryPoint::SIGNIN_SCREEN);
       break;
   }
 }
@@ -1483,7 +1519,7 @@ void WizardController::OnConsolidatedConsentScreenExit(
   OnScreenExit(ConsolidatedConsentScreenView::kScreenId,
                ConsolidatedConsentScreen::GetResultString(result));
 
-  if (features::IsOobeDrivePinningEnabled()) {
+  if (drive::util::IsOobeDrivePinningEnabled()) {
     GetScreen<DrivePinningScreen>()->StartCalculatingRequiredSpace();
   }
 
@@ -1771,7 +1807,7 @@ void WizardController::OnWelcomeScreenExit(WelcomeScreen::Result result) {
       ShowNetworkScreen();
       return;
     case WelcomeScreen::Result::QUICK_START:
-      ShowQuickStartScreen();
+      ShowQuickStartScreen(QuickStartScreen::EntryPoint::WELCOME_SCREEN);
       return;
   }
 }
@@ -1780,11 +1816,15 @@ void WizardController::OnQuickStartScreenExit(QuickStartScreen::Result result) {
   OnScreenExit(QuickStartView::kScreenId,
                QuickStartScreen::GetResultString(result));
   switch (result) {
-    case QuickStartScreen::Result::CANCEL:
+    case QuickStartScreen::Result::CANCEL_AND_RETURN_TO_WELCOME:
       ShowWelcomeScreen();
       return;
     case QuickStartScreen::Result::WIFI_CONNECTED:
+    case QuickStartScreen::Result::CANCEL_AND_RETURN_TO_NETWORK:
       ShowNetworkScreen();
+      return;
+    case QuickStartScreen::Result::CANCEL_AND_RETURN_TO_SIGNIN:
+      AdvanceToSigninScreen();
       return;
   }
 }
@@ -1848,7 +1888,7 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
       ShowWelcomeScreen();
       break;
     case NetworkScreen::Result::QUICK_START:
-      ShowQuickStartScreen();
+      ShowQuickStartScreen(QuickStartScreen::EntryPoint::NETWORK_SCREEN);
       break;
   }
 }
@@ -2633,6 +2673,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowAddChildScreen();
   } else if (screen_id == ConsumerUpdateScreenView::kScreenId) {
     ShowConsumerUpdateScreen();
+  } else if (screen_id == PasswordSelectionScreenView::kScreenId) {
+    ShowPasswordSelectionScreen();
   } else if (screen_id == TpmErrorView::kScreenId ||
              screen_id == GaiaPasswordChangedView::kScreenId ||
              screen_id == FamilyLinkNoticeView::kScreenId ||

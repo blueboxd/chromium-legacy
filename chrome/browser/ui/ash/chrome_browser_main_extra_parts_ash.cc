@@ -15,8 +15,12 @@
 #include "ash/shell.h"
 #include "ash/system/video_conference/fake_video_conference_tray_controller.h"
 #include "ash/system/video_conference/video_conference_tray_controller.h"
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/functional/callback.h"
 #include "base/scoped_observation.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/ash/app_list/app_list_client_impl.h"
 #include "chrome/browser/ash/arc/util/arc_window_watcher.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -68,6 +72,7 @@
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_controller_impl.h"
+#include "chrome/browser/ui/views/editor_menu/editor_menu_controller_impl.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "chrome/browser/ui/views/tabs/tab_scrubber_chromeos.h"
@@ -79,6 +84,7 @@
 #include "chromeos/ash/services/bluetooth_config/in_process_instance.h"
 #include "chromeos/components/quick_answers/public/cpp/controller/quick_answers_controller.h"
 #include "chromeos/components/quick_answers/quick_answers_client.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
@@ -93,6 +99,10 @@
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
 #include "chrome/browser/exo_parts.h"
 #endif
+
+namespace {
+ChromeBrowserMainExtraPartsAsh* g_instance = nullptr;
+}  // namespace
 
 namespace internal {
 
@@ -119,6 +129,8 @@ class ChromeShelfControllerInitializer
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override {
+    TRACE_EVENT0("ui",
+                 "ChromeShelfControllerInitializer::OnSessionStateChanged");
     DCHECK(!chrome_shelf_controller_);
     DCHECK(!ChromeShelfController::instance());
 
@@ -142,9 +154,20 @@ class ChromeShelfControllerInitializer
 
 }  // namespace internal
 
-ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() = default;
+// static
+ChromeBrowserMainExtraPartsAsh* ChromeBrowserMainExtraPartsAsh::Get() {
+  return g_instance;
+}
 
-ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() = default;
+ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {
+  CHECK(!g_instance);
+  g_instance = this;
+}
+
+ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
+  CHECK_EQ(g_instance, this);
+  g_instance = nullptr;
+}
 
 void ChromeBrowserMainExtraPartsAsh::PreCreateMainMessageLoop() {
   user_profile_loaded_observer_ = std::make_unique<UserProfileLoadedObserver>();
@@ -338,10 +361,20 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit(Profile* profile,
 
   // Initialize TabScrubberChromeOS after the Ash Shell has been initialized.
   TabScrubberChromeOS::GetInstance();
+
+  if (chromeos::features::IsOrcaEnabled()) {
+    editor_menu_controller_ =
+        std::make_unique<chromeos::editor_menu::EditorMenuControllerImpl>();
+  }
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
   mobile_data_notifications_ = std::make_unique<MobileDataNotifications>();
+
+  did_post_browser_start_ = true;
+  if (post_browser_start_callback_) {
+    std::move(post_browser_start_callback_).Run();
+  }
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
@@ -360,6 +393,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 
   night_light_client_.reset();
   mobile_data_notifications_.reset();
+  editor_menu_controller_.reset();
   chrome_shelf_controller_initializer_.reset();
   attestation_cleanup_manager_.reset();
   desks_client_.reset();

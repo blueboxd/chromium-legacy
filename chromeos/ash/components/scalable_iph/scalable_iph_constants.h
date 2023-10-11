@@ -5,7 +5,21 @@
 #ifndef CHROMEOS_ASH_COMPONENTS_SCALABLE_IPH_SCALABLE_IPH_CONSTANTS_H_
 #define CHROMEOS_ASH_COMPONENTS_SCALABLE_IPH_SCALABLE_IPH_CONSTANTS_H_
 
+#include <ostream>
+
 namespace scalable_iph {
+
+constexpr char kScalableIphDebugHost[] = "scalable-iph-debug";
+constexpr char kScalableIphDebugURL[] =
+    "chrome-untrusted://scalable-iph-debug/";
+
+// Those ids are from //chrome/browser/web_applications/web_app_id_constants.h.
+// We cannot include the file from this component as //chromeos should not
+// depend on //chrome/browser. Those values are tested against values in
+// web_app_id_constants.h in `AppListItemActivationWebApp` test. Remember to add
+// one if you add new one.
+constexpr char kWebAppYouTubeAppId[] = "agimnkijcaahngcdmfeangaknmldooml";
+constexpr char kWebAppGoogleDocsAppId[] = "mpnpojknpmmopombnjdcgaaiekajbnjb";
 
 enum class ActionType {
   // `kInvalid` is reserved to be used as an initial value or when the server
@@ -23,6 +37,8 @@ enum class ActionType {
   kOpenFileManager = 10,
   kLastAction = kOpenFileManager,
 };
+
+std::ostream& operator<<(std::ostream& out, ActionType action_type);
 
 // Constants for action types, has 1 to 1 mapping with the ActionType.
 // Used in server side config.
@@ -64,6 +80,12 @@ constexpr char kEventNameHelpAppActionTypeOpenYouTube[] =
 constexpr char kEventNameHelpAppActionTypeOpenFileManager[] =
     "ScalableIphHelpAppActionOpenFileManager";
 
+// Constants for app list item activation in the launcher.
+constexpr char kEventNameAppListItemActivationYouTube[] =
+    "ScalableIphAppListItemActivationYouTube";
+constexpr char kEventNameAppListItemActivationGoogleDocs[] =
+    "ScalableIphAppListItemActivationGoogleDocs";
+
 // `FiveMinTick` event is recorded every five minutes after OOBE completion.
 constexpr char kEventNameFiveMinTick[] = "ScalableIphFiveMinTick";
 
@@ -98,7 +120,7 @@ constexpr int kCurrentVersionNumber = 1;
 //
 // Example:
 // "x_CustomConditionsNetworkConnection": "Online"
-
+//
 // `NetworkConnection` condition is satisfied if a device is online. For now, we
 // only support `Online` as the expected condition.
 constexpr char kCustomConditionNetworkConnectionParamName[] =
@@ -114,6 +136,13 @@ constexpr char kCustomConditionNetworkConnectionOnline[] = "Online";
 //   profile is created at 3 pm on May 1st, the day 0 ends at 3 pm on May 2nd.
 constexpr char kCustomConditionClientAgeInDaysParamName[] =
     "x_CustomConditionClientAgeInDays";
+
+// `HasSavedPrinters` condition is true if there is at least a saved printer.
+// Valid values are either `True` or `False`.
+constexpr char kCustomConditionHasSavedPrintersParamName[] =
+    "x_CustomConditionHasSavedPrinter";
+constexpr char kCustomConditionHasSavedPrintersValueTrue[] = "True";
+constexpr char kCustomConditionHasSavedPrintersValueFalse[] = "False";
 
 // `UiType` param indicates which IPH UI is used for an event config.
 constexpr char kCustomUiTypeParamName[] = "x_CustomUiType";
@@ -146,12 +175,18 @@ constexpr char kCustomNotificationImageTypeValueWallpaper[] = "Wallpaper";
 
 // Parameters for a bubble UI. All fields are required field.
 // - Bubble ID: the id used to add and remove a bubble.
-// - Text: a text of a bubble.
+// - Title: the title of a bubble.
+// - Text: the text of a bubble.
 // - Button text: a text of a button in a bubble.
+// Currently only used for the help app nudge:
+// - Anchor view app ID: app id of the view to which a bubble is anchored.
 constexpr char kCustomBubbleIdParamName[] = "x_CustomBubbleId";
+constexpr char kCustomBubbleTitleParamName[] = "x_CustomBubbleTitle";
 constexpr char kCustomBubbleTextParamName[] = "x_CustomBubbleText";
 constexpr char kCustomBubbleButtonTextParamName[] = "x_CustomBubbleButtonText";
 constexpr char kCustomBubbleIconParamName[] = "x_CustomBubbleIcon";
+constexpr char kCustomBubbleAnchorViewAppIdParamName[] =
+    "x_CustomBubbleAnchorViewAppId";
 
 // Constants for bubble icons, has 1 to 1 mapping with the BubbleIcon.
 // Used in server side config.

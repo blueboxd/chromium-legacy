@@ -118,7 +118,7 @@ CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
     return nullptr;
   }
   CSSFontFaceSrcValue* uri_value(CSSFontFaceSrcValue::Create(
-      url, context.CompleteURL(url), context.GetReferrer(),
+      url, context.CompleteNonEmptyURL(url), context.GetReferrer(),
       context.JavascriptWorld(),
       context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
       context.IsAdRelated()));
@@ -280,13 +280,15 @@ CSSValue* ConsumeDescriptor(StyleRule::RuleType rule_type,
 
   switch (rule_type) {
     case StyleRule::kFontFace:
-      return Parser::ParseFontFaceDescriptor(id, range, context);
+      return Parser::ParseFontFaceDescriptor(id, tokenized_value, context);
     case StyleRule::kFontPaletteValues:
       return Parser::ParseAtFontPaletteValuesDescriptor(id, range, context);
     case StyleRule::kProperty:
       return Parser::ParseAtPropertyDescriptor(id, tokenized_value, context);
     case StyleRule::kCounterStyle:
       return Parser::ParseAtCounterStyleDescriptor(id, range, context);
+    case StyleRule::kViewTransitions:
+      return Parser::ParseAtViewTransitionsDescriptor(id, range, context);
     case StyleRule::kCharset:
     case StyleRule::kContainer:
     case StyleRule::kStyle:
@@ -401,8 +403,30 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
     const String& string,
     const CSSParserContext& context) {
   CSSTokenizer tokenizer(string);
-  Vector<CSSParserToken, 32> tokens = tokenizer.TokenizeToEOF();
+  Vector<CSSParserToken, 32> tokens;
+
+  if (id == AtRuleDescriptorID::UnicodeRange) {
+    tokens = tokenizer.TokenizeToEOFWithUnicodeRanges();
+  } else {
+    tokens = tokenizer.TokenizeToEOF();
+  }
   CSSParserTokenRange range = CSSParserTokenRange(tokens);
+  return ParseFontFaceDescriptor(id, range, context);
+}
+
+CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
+    AtRuleDescriptorID id,
+    const CSSTokenizedValue& tokenized_value,
+    const CSSParserContext& context) {
+  CSSParserTokenRange range = tokenized_value.range;
+
+  if (id == AtRuleDescriptorID::UnicodeRange) {
+    CSSTokenizer tokenizer(tokenized_value.text);
+    Vector<CSSParserToken, 32> tokens =
+        tokenizer.TokenizeToEOFWithUnicodeRanges();
+    range = CSSParserTokenRange(tokens);
+    return ParseFontFaceDescriptor(id, range, context);
+  }
   return ParseFontFaceDescriptor(id, range, context);
 }
 
@@ -440,6 +464,29 @@ CSSValue* AtRuleDescriptorParser::ParseAtPropertyDescriptor(
       range.ConsumeWhitespace();
       parsed_value = css_parsing_utils::ConsumeIdent<CSSValueID::kTrue,
                                                      CSSValueID::kFalse>(range);
+      break;
+    default:
+      break;
+  }
+
+  if (!parsed_value || !range.AtEnd()) {
+    return nullptr;
+  }
+
+  return parsed_value;
+}
+
+CSSValue* AtRuleDescriptorParser::ParseAtViewTransitionsDescriptor(
+    AtRuleDescriptorID id,
+    CSSParserTokenRange& range,
+    const CSSParserContext& context) {
+  CSSValue* parsed_value = nullptr;
+  switch (id) {
+    case AtRuleDescriptorID::NavigationTrigger:
+      range.ConsumeWhitespace();
+      parsed_value =
+          css_parsing_utils::ConsumeIdent<CSSValueID::kCrossDocumentSameOrigin,
+                                          CSSValueID::kNone>(range);
       break;
     default:
       break;

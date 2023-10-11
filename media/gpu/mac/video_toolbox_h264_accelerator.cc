@@ -4,7 +4,8 @@
 
 #include "media/gpu/mac/video_toolbox_h264_accelerator.h"
 
-#include "base/mac/mac_logging.h"
+#include <utility>
+
 #include "base/sys_byteorder.h"
 #include "media/base/media_log.h"
 
@@ -89,8 +90,6 @@ VideoToolboxH264Accelerator::SubmitFrameMetadata(
         kNALUHeaderLength,  // nal_unit_header_length
         active_format_.InitializeInto());
     if (status != noErr) {
-      OSSTATUS_DLOG(ERROR, status)
-          << "CMVideoFormatDescriptionCreateFromH264ParameterSets()";
       OSSTATUS_MEDIA_LOG(ERROR, status, media_log_.get())
           << "CMVideoFormatDescriptionCreateFromH264ParameterSets()";
       return Status::kFail;
@@ -130,7 +129,7 @@ VideoToolboxH264Accelerator::Status VideoToolboxH264Accelerator::SubmitDecode(
   }
 
   // Allocate a buffer.
-  base::ScopedCFTypeRef<CMBlockBufferRef> data;
+  base::apple::ScopedCFTypeRef<CMBlockBufferRef> data;
   OSStatus status = CMBlockBufferCreateWithMemoryBlock(
       kCFAllocatorDefault,
       nullptr,              // memory_block
@@ -142,7 +141,6 @@ VideoToolboxH264Accelerator::Status VideoToolboxH264Accelerator::SubmitDecode(
       0,                    // flags
       data.InitializeInto());
   if (status != noErr) {
-    OSSTATUS_DLOG(ERROR, status) << "CMBlockBufferCreateWithMemoryBlock()";
     OSSTATUS_MEDIA_LOG(ERROR, status, media_log_.get())
         << "CMBlockBufferCreateWithMemoryBlock()";
     return Status::kFail;
@@ -150,7 +148,6 @@ VideoToolboxH264Accelerator::Status VideoToolboxH264Accelerator::SubmitDecode(
 
   status = CMBlockBufferAssureBlockMemory(data);
   if (status != noErr) {
-    OSSTATUS_DLOG(ERROR, status) << "CMBlockBufferAssureBlockMemory()";
     OSSTATUS_MEDIA_LOG(ERROR, status, media_log_.get())
         << "CMBlockBufferAssureBlockMemory()";
     return Status::kFail;
@@ -165,7 +162,6 @@ VideoToolboxH264Accelerator::Status VideoToolboxH264Accelerator::SubmitDecode(
     status =
         CMBlockBufferReplaceDataBytes(&header, data, offset, kNALUHeaderLength);
     if (status != noErr) {
-      OSSTATUS_DLOG(ERROR, status) << "CMBlockBufferReplaceDataBytes()";
       OSSTATUS_MEDIA_LOG(ERROR, status, media_log_.get())
           << "CMBlockBufferReplaceDataBytes()";
       return Status::kFail;
@@ -176,7 +172,6 @@ VideoToolboxH264Accelerator::Status VideoToolboxH264Accelerator::SubmitDecode(
     status = CMBlockBufferReplaceDataBytes(nalu_data.data(), data, offset,
                                            nalu_data.size());
     if (status != noErr) {
-      OSSTATUS_DLOG(ERROR, status) << "CMBlockBufferReplaceDataBytes()";
       OSSTATUS_MEDIA_LOG(ERROR, status, media_log_.get())
           << "CMBlockBufferReplaceDataBytes()";
       return Status::kFail;
@@ -185,7 +180,7 @@ VideoToolboxH264Accelerator::Status VideoToolboxH264Accelerator::SubmitDecode(
   }
 
   // Wrap in a sample.
-  base::ScopedCFTypeRef<CMSampleBufferRef> sample;
+  base::apple::ScopedCFTypeRef<CMSampleBufferRef> sample;
   status = CMSampleBufferCreate(kCFAllocatorDefault,
                                 data,            // data_buffer
                                 true,            // data_ready
@@ -199,13 +194,14 @@ VideoToolboxH264Accelerator::Status VideoToolboxH264Accelerator::SubmitDecode(
                                 &data_size,      // sample_size_array
                                 sample.InitializeInto());
   if (status != noErr) {
-    OSSTATUS_DLOG(ERROR, status) << "CMSampleBufferCreate()";
     OSSTATUS_MEDIA_LOG(ERROR, status, media_log_.get())
         << "CMSampleBufferCreate()";
     return Status::kFail;
   }
 
-  decode_cb_.Run(std::move(sample), std::move(pic));
+  VideoToolboxSessionMetadata session_metadata = {
+      /*allow_software_decoding=*/false, /*is_hbd=*/false};
+  decode_cb_.Run(std::move(sample), session_metadata, std::move(pic));
   return Status::kOk;
 }
 

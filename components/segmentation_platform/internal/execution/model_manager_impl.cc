@@ -36,16 +36,18 @@ ModelManagerImpl::ModelManagerImpl(
     ModelProviderFactory* model_provider_factory,
     base::Clock* clock,
     SegmentInfoDatabase* segment_database,
-    DefaultModelManager* default_model_manager,
     const SegmentationModelUpdatedCallback& model_updated_callback)
-    : clock_(clock),
+    : segment_ids_(segment_ids),
+      model_provider_factory_(model_provider_factory),
+      clock_(clock),
       segment_database_(segment_database),
-      default_model_manager_(default_model_manager),
-      model_updated_callback_(model_updated_callback) {
-  for (SegmentId segment_id : segment_ids) {
+      model_updated_callback_(model_updated_callback) {}
+
+void ModelManagerImpl::Initialize() {
+  for (SegmentId segment_id : segment_ids_) {
     // Server models
     std::unique_ptr<ModelProvider> provider =
-        model_provider_factory->CreateProvider(segment_id);
+        model_provider_factory_->CreateProvider(segment_id);
     provider->InitAndFetchModel(base::BindRepeating(
         &ModelManagerImpl::OnSegmentationModelUpdated,
         weak_ptr_factory_.GetWeakPtr(), ModelSource::SERVER_MODEL_SOURCE));
@@ -54,15 +56,22 @@ ModelManagerImpl::ModelManagerImpl(
         std::move(provider));
 
     // Default models
-    ModelProvider* default_provider =
-        default_model_manager_->GetDefaultProvider(segment_id);
-    if (!provider) {
+    std::unique_ptr<DefaultModelProvider> default_provider =
+        model_provider_factory_->CreateDefaultProvider(segment_id);
+    if (!default_provider) {
+      segment_database_->UpdateSegment(segment_id,
+                                       ModelSource::DEFAULT_MODEL_SOURCE,
+                                       absl::nullopt, base::DoNothing());
       continue;
     }
-    // TODO(ritikagup): Change use of InitAndFetch() to GetModelConfig().
-    default_provider->InitAndFetchModel(base::BindRepeating(
-        &ModelManagerImpl::OnSegmentationModelUpdated,
-        weak_ptr_factory_.GetWeakPtr(), ModelSource::DEFAULT_MODEL_SOURCE));
+    std::unique_ptr<DefaultModelProvider::ModelConfig> model_config =
+        default_provider->GetModelConfig();
+    model_providers_.emplace(
+        std::make_pair(segment_id, ModelSource::DEFAULT_MODEL_SOURCE),
+        std::move(default_provider));
+    OnSegmentationModelUpdated(ModelSource::DEFAULT_MODEL_SOURCE, segment_id,
+                               model_config->metadata,
+                               model_config->model_version);
   }
 }
 
@@ -71,37 +80,51 @@ ModelManagerImpl::~ModelManagerImpl() = default;
 ModelProvider* ModelManagerImpl::GetModelProvider(
     proto::SegmentId segment_id,
     proto::ModelSource model_source) {
-  // TODO(ritikagup) : Remove the explicit check once default models are stored
-  // in `model_providers_`.
-  if (model_source == ModelSource::DEFAULT_MODEL_SOURCE) {
-    return default_model_manager_->GetDefaultProvider(segment_id);
-  }
   auto it = model_providers_.find(std::make_pair(segment_id, model_source));
-  DCHECK(it != model_providers_.end());
+  if (it == model_providers_.end()) {
+    return nullptr;
+  }
   return it->second.get();
+}
+
+void ModelManagerImpl::SetSegmentationModelUpdatedCallbackForTesting(
+    ModelManager::SegmentationModelUpdatedCallback model_updated_callback) {
+  model_updated_callback_ = model_updated_callback;
 }
 
 void ModelManagerImpl::OnSegmentationModelUpdated(
     proto::ModelSource model_source,
     proto::SegmentId segment_id,
-    proto::SegmentationModelMetadata metadata,
+    absl::optional<proto::SegmentationModelMetadata> metadata,
     int64_t model_version) {
   TRACE_EVENT("segmentation_platform",
               "ModelManagerImpl::OnSegmentationModelUpdated");
-  // TODO(ritikagup@) : Add a variant for default model separately.
-  stats::RecordModelDeliveryReceived(segment_id);
+  stats::RecordModelDeliveryReceived(segment_id, model_source);
   if (segment_id == proto::SegmentId::OPTIMIZATION_TARGET_UNKNOWN) {
+    return;
+  }
+
+  if (!metadata.has_value()) {
+    if (!segment_database_->GetCachedSegmentInfo(segment_id, model_source)) {
+      return;
+    }
+
+    segment_database_->UpdateSegment(
+        segment_id, model_source, absl::nullopt,
+        base::BindOnce(&ModelManagerImpl::OnSegmentInfoDeleted,
+                       weak_ptr_factory_.GetWeakPtr(), segment_id,
+                       model_source));
     return;
   }
 
   // Set or overwrite name hashes for metadata features based on the name
   // field.
-  metadata_utils::SetFeatureNameHashesFromName(&metadata);
+  metadata_utils::SetFeatureNameHashesFromName(&metadata.value());
 
-  auto validation = metadata_utils::ValidateMetadataAndFeatures(metadata);
-  // TODO(ritikagup@) : Add a variant for default model separately.
+  auto validation =
+      metadata_utils::ValidateMetadataAndFeatures(metadata.value());
   stats::RecordModelDeliveryMetadataValidation(
-      segment_id, /* processed = */ false, validation);
+      segment_id, model_source, /* processed = */ false, validation);
   if (validation != metadata_utils::ValidationResult::kValidationSuccess) {
     return;
   }
@@ -109,7 +132,7 @@ void ModelManagerImpl::OnSegmentationModelUpdated(
   auto old_segment_info =
       segment_database_->GetCachedSegmentInfo(segment_id, model_source);
   OnSegmentInfoFetchedForModelUpdate(segment_id, model_source,
-                                     std::move(metadata), model_version,
+                                     std::move(metadata.value()), model_version,
                                      old_segment_info);
 }
 
@@ -143,9 +166,8 @@ void ModelManagerImpl::OnSegmentInfoFetchedForModelUpdate(
     // If does not match, we should just overwrite the old entry with one
     // that has a matching segment ID, otherwise we will keep ignoring it
     // forever and never be able to clean it up.
-    // TODO(ritikagup@) : Add a variant for default model separately.
     stats::RecordModelDeliverySegmentIdMatches(
-        new_segment_info.segment_id(),
+        new_segment_info.segment_id(), model_source,
         new_segment_info.segment_id() == old_segment_info->segment_id());
 
     if (old_segment_info->has_model_version()) {
@@ -174,16 +196,15 @@ void ModelManagerImpl::OnSegmentInfoFetchedForModelUpdate(
   // unless the metadata is valid.
   auto validation =
       metadata_utils::ValidateSegmentInfoMetadataAndFeatures(new_segment_info);
-  // TODO(ritikagup@) : Add a variant for default model separately.
   stats::RecordModelDeliveryMetadataValidation(
-      segment_id, /* processed = */ true, validation);
+      segment_id, model_source, /* processed = */ true, validation);
   if (validation != metadata_utils::ValidationResult::kValidationSuccess) {
     return;
   }
 
-  // TODO(ritikagup@) : Add a variant for default model separately.
   stats::RecordModelDeliveryMetadataFeatureCount(
-      segment_id, new_segment_info.model_metadata().features_size());
+      segment_id, model_source,
+      new_segment_info.model_metadata().features_size());
   // Now that we've merged the old and the new SegmentInfo, we want to store
   // the new version in the database.
   segment_database_->UpdateSegment(
@@ -192,14 +213,30 @@ void ModelManagerImpl::OnSegmentInfoFetchedForModelUpdate(
                      weak_ptr_factory_.GetWeakPtr(), new_segment_info));
 }
 
+void ModelManagerImpl::OnSegmentInfoDeleted(SegmentId segment_id,
+                                            proto::ModelSource model_source,
+                                            bool success) {
+  stats::RecordModelDeliveryDeleteResult(segment_id, model_source, success);
+
+  // `model_updated_callback_` only supports server models.
+  if (model_source == proto::ModelSource::DEFAULT_MODEL_SOURCE) {
+    return;
+  }
+
+  proto::SegmentInfo deleted_segment_info;
+  deleted_segment_info.set_segment_id(segment_id);
+  deleted_segment_info.set_model_source(model_source);
+  model_updated_callback_.Run(std::move(deleted_segment_info));
+}
+
 void ModelManagerImpl::OnUpdatedSegmentInfoStored(
     proto::SegmentInfo segment_info,
     bool success) {
   TRACE_EVENT("segmentation_platform",
               "ModelManagerImpl::OnUpdatedSegmentInfoStored");
 
-  // TODO(ritikagup@) : Add a variant for default model separately.
-  stats::RecordModelDeliverySaveResult(segment_info.segment_id(), success);
+  stats::RecordModelDeliverySaveResult(segment_info.segment_id(),
+                                       segment_info.model_source(), success);
   if (!success) {
     return;
   }

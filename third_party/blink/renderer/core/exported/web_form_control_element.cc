@@ -42,7 +42,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
-#include "third_party/blink/renderer/core/html/forms/html_select_menu_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_list_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
@@ -74,7 +74,18 @@ WebString WebFormControlElement::FormControlTypeForAutofill() const {
       return input_type_names::kPassword;
   }
 
-  return ConstUnwrap<HTMLFormControlElement>()->type();
+  auto* form_control = ConstUnwrap<HTMLFormControlElement>();
+  const AtomicString& type = form_control->type();
+  if (form_control->HasTagName(html_names::kButtonTag) &&
+      type == "selectlist") {
+    CHECK(RuntimeEnabledFeatures::HTMLSelectListElementEnabled());
+    // <selectlist>'s type() will return "selectlist". In order to prevent
+    // autofill from thinking that <button type=selectlist> is actually a
+    // <selectlist>, let's just say that <button type=selectlist> is just a
+    // "button".
+    return "button";
+  }
+  return type;
 }
 
 WebAutofillState WebFormControlElement::GetAutofillState() const {
@@ -90,9 +101,9 @@ bool WebFormControlElement::UserHasEditedTheField() const {
     return input->UserHasEditedTheField();
   if (auto* select_element = ::blink::DynamicTo<HTMLSelectElement>(*private_))
     return select_element->UserHasEditedTheField();
-  if (auto* select_menu_element =
-          ::blink::DynamicTo<HTMLSelectMenuElement>(*private_))
-    return select_menu_element->UserHasEditedTheField();
+  if (auto* select_list_element =
+          ::blink::DynamicTo<HTMLSelectListElement>(*private_))
+    return select_list_element->UserHasEditedTheField();
   return true;
 }
 
@@ -101,9 +112,9 @@ void WebFormControlElement::SetUserHasEditedTheField(bool value) {
     input->SetUserHasEditedTheField(value);
   if (auto* select_element = ::blink::DynamicTo<HTMLSelectElement>(*private_))
     select_element->SetUserHasEditedTheField(value);
-  if (auto* select_menu_element =
-          ::blink::DynamicTo<HTMLSelectMenuElement>(*private_))
-    select_menu_element->SetUserHasEditedTheField(value);
+  if (auto* select_list_element =
+          ::blink::DynamicTo<HTMLSelectListElement>(*private_))
+    select_list_element->SetUserHasEditedTheField(value);
 }
 
 void WebFormControlElement::SetUserHasEditedTheFieldForTest() {
@@ -238,12 +249,12 @@ void WebFormControlElement::SetAutofillValue(const WebString& value,
     select->SetAutofillValue(value, autofill_state);
     if (!Focused())
       DispatchBlurEvent();
-  } else if (auto* selectmenu =
-                 ::blink::DynamicTo<HTMLSelectMenuElement>(*private_)) {
+  } else if (auto* selectlist =
+                 ::blink::DynamicTo<HTMLSelectListElement>(*private_)) {
     if (!Focused()) {
       DispatchFocusEvent();
     }
-    selectmenu->SetAutofillValue(value, autofill_state);
+    selectlist->SetAutofillValue(value, autofill_state);
     if (!Focused()) {
       DispatchBlurEvent();
     }
@@ -257,8 +268,8 @@ WebString WebFormControlElement::Value() const {
     return textarea->Value();
   if (auto* select = ::blink::DynamicTo<HTMLSelectElement>(*private_))
     return select->Value();
-  if (auto* selectmenu = ::blink::DynamicTo<HTMLSelectMenuElement>(*private_)) {
-    return selectmenu->value();
+  if (auto* selectlist = ::blink::DynamicTo<HTMLSelectListElement>(*private_)) {
+    return selectlist->value();
   }
   return WebString();
 }
@@ -271,9 +282,9 @@ void WebFormControlElement::SetSuggestedValue(const WebString& value) {
     textarea->SetSuggestedValue(value);
   } else if (auto* select = ::blink::DynamicTo<HTMLSelectElement>(*private_)) {
     select->SetSuggestedValue(value);
-  } else if (auto* selectmenu =
-                 ::blink::DynamicTo<HTMLSelectMenuElement>(*private_)) {
-    selectmenu->SetSuggestedValue(value);
+  } else if (auto* selectlist =
+                 ::blink::DynamicTo<HTMLSelectListElement>(*private_)) {
+    selectlist->SetSuggestedValue(value);
   }
 }
 
@@ -284,8 +295,8 @@ WebString WebFormControlElement::SuggestedValue() const {
     return textarea->SuggestedValue();
   if (auto* select = ::blink::DynamicTo<HTMLSelectElement>(*private_))
     return select->SuggestedValue();
-  if (auto* selectmenu = ::blink::DynamicTo<HTMLSelectMenuElement>(*private_)) {
-    return selectmenu->SuggestedValue();
+  if (auto* selectlist = ::blink::DynamicTo<HTMLSelectListElement>(*private_)) {
+    return selectlist->SuggestedValue();
   }
   return WebString();
 }

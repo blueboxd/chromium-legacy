@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "cc/input/scroll_snap_data.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -17,11 +18,13 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -79,9 +82,31 @@ class SnapCoordinatorTest : public testing::Test,
   }
 
   unsigned SizeOfSnapAreas(const ContainerNode& node) {
-    if (node.GetLayoutBox()->SnapAreas())
-      return node.GetLayoutBox()->SnapAreas()->size();
+    auto* box = node.GetLayoutBox();
+    if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+      for (auto& fragment : box->PhysicalFragments()) {
+        if (fragment.PropagatedSnapAreas()) {
+          return 0u;
+        }
+        if (auto* snap_areas = fragment.SnapAreas()) {
+          return snap_areas->size();
+        }
+      }
+    } else {
+      if (auto* snap_areas = box->SnapAreas()) {
+        return snap_areas->size();
+      }
+    }
     return 0U;
+  }
+
+  bool IsUseCounted(mojom::WebFeature feature) {
+    return GetDocument().IsUseCounted(feature);
+  }
+
+  void ClearUseCounter(mojom::WebFeature feature) {
+    GetDocument().ClearUseCounterForTesting(feature);
+    DCHECK(!IsUseCounted(feature));
   }
 
   void SetUpSingleSnapArea() {
@@ -234,7 +259,7 @@ TEST_F(SnapCoordinatorTest, UpdateStyleForSnapElement) {
   EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
 }
 
-TEST_F(SnapCoordinatorTest, ViewpoertScrollSnapStyleComesFromDocumentElement) {
+TEST_F(SnapCoordinatorTest, ViewportScrollSnapStyleComesFromDocumentElement) {
   SetHTML(R"HTML(
     <style>
     :root {
@@ -245,6 +270,7 @@ TEST_F(SnapCoordinatorTest, ViewpoertScrollSnapStyleComesFromDocumentElement) {
     }
     </style>
     <body>
+      <div style='scroll-snap-align: start;'></div>
     </body>
     )HTML");
   UpdateAllLifecyclePhasesForTest();
@@ -734,6 +760,13 @@ TEST_F(SnapCoordinatorTest, VerticalRlSnapDataCalculation) {
 
 TEST_F(SnapCoordinatorTest, ChangeOverflowToVisible) {
   SetUpSingleSnapArea();
+
+  // Ensure we have at least one snap-area.
+  GetDocument()
+      .getElementById(AtomicString("area"))
+      ->setAttribute(kStyleAttr, AtomicString("scroll-snap-align: start;"));
+  UpdateAllLifecyclePhasesForTest();
+
   Element* scroller_element =
       GetDocument().getElementById(AtomicString("scroller"));
   const cc::SnapContainerData* data =
@@ -893,6 +926,108 @@ TEST_F(SnapCoordinatorTest, NegativeOverflowWithExpandedViewport) {
   EXPECT_EQ(
       GetSnapContainerData(*GetDocument().GetLayoutView())->max_position(),
       gfx::PointF(1000, 200));
+}
+
+TEST_F(SnapCoordinatorTest, UseCounterNestedSnap) {
+  ScopedLayoutNewSnapLogicForTest enabled_scope(true);
+  ClearUseCounter(WebFeature::kScrollSnapNestedSnapAreas);
+  // Create a few sibling areas, no nested snap areas should be reported.
+  SetHTML(R"HTML(
+    <style>
+      html { scroll-snap-type: y mandatory; }
+      .snap { scroll-snap-align: start; padding: 100px; }
+    </style>
+    <div class="snap">SNAP</div>
+    <div>
+      <div class="snap">SNAP</div>
+      <div class="snap">SNAP</div>
+    </div>
+    <div class="snap">SNAP</div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(IsUseCounted(WebFeature::kScrollSnapNestedSnapAreas));
+
+  ClearUseCounter(WebFeature::kScrollSnapNestedSnapAreas);
+  // Create a nested snap area and ensure it's counted.
+  SetHTML(R"HTML(
+    <style>
+      html { scroll-snap-type: y mandatory; }
+      .snap { scroll-snap-align: start; padding: 100px; }
+    </style>
+    <div class="snap">SNAP
+      <div class="snap">SNAP</div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsUseCounted(WebFeature::kScrollSnapNestedSnapAreas));
+
+  ClearUseCounter(WebFeature::kScrollSnapNestedSnapAreas);
+  // Create a nested snap area inside a sub-scroller and ensure it's counted.
+  SetHTML(R"HTML(
+    <style>
+      html { scroll-snap-type: y mandatory; }
+      .scroller { overflow: auto; height: 200px; }
+      .snap { scroll-snap-align: start; padding: 100px; }
+    </style>
+    <div class="scroller">
+      <div class="snap">SNAP
+        <div class="snap">SNAP</div>
+      </div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsUseCounted(WebFeature::kScrollSnapNestedSnapAreas));
+
+  ClearUseCounter(WebFeature::kScrollSnapNestedSnapAreas);
+  // Snap areas inside of an inner scroller should not be counted.
+  SetHTML(R"HTML(
+    <style>
+      html { scroll-snap-type: y mandatory; }
+      .scroller { overflow: auto; height: 200px; }
+      .snap { scroll-snap-align: start; padding: 100px; }
+    </style>
+    <div class="scroller">
+      <div class="snap">SNAP</div>
+      <div class="scroller">
+        <div class="snap">SNAP</div>
+      </div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(IsUseCounted(WebFeature::kScrollSnapNestedSnapAreas));
+}
+
+TEST_F(SnapCoordinatorTest, UseCounterCoveringSnapArea) {
+  ClearUseCounter(WebFeature::kScrollSnapCoveringSnapArea);
+  // Create some small snap areas. No covering areas should be reported.
+  SetHTML(R"HTML(
+    <style>
+      .scroller { overflow: auto; scroll-snap-type: y mandatory; height: 400px; }
+      .snap { scroll-snap-align: start; height: 100px; }
+    </style>
+    <div class="scroller">
+      <div class="snap"></div>
+      <div class="snap"></div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(IsUseCounted(WebFeature::kScrollSnapCoveringSnapArea));
+
+  ClearUseCounter(WebFeature::kScrollSnapCoveringSnapArea);
+  // Create a covering snap area and ensure it's reported.
+  SetHTML(R"HTML(
+    <style>
+      .scroller { overflow: auto; scroll-snap-type: y mandatory; height: 400px; }
+      .snap { scroll-snap-align: start; height: 100px; }
+      .tall { height: 800px; }
+    </style>
+    <div class="scroller">
+      <div class="snap"></div>
+      <div class="tall snap"></div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(IsUseCounted(WebFeature::kScrollSnapCoveringSnapArea));
 }
 
 }  // namespace blink

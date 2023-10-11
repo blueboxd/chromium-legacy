@@ -44,6 +44,7 @@
 #include "components/exo/wayland/wayland_display_observer.h"
 #include "components/exo/wayland/wl_output.h"
 #include "components/exo/wayland/xdg_shell.h"
+#include "components/version_info/version_info.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_occlusion_tracker.h"
@@ -933,6 +934,14 @@ void AuraToplevel::AckRotateFocus(uint32_t serial, uint32_t h) {
   shell_surface_->AckRotateFocus(serial, handled);
 }
 
+void AuraToplevel::SetCanMaximize(bool can_maximize) {
+  shell_surface_->SetCanMaximize(can_maximize);
+}
+
+void AuraToplevel::SetCanFullscreen(bool can_fullscreen) {
+  shell_surface_->SetCanFullscreen(can_fullscreen);
+}
+
 void AuraToplevel::IntentToSnap(uint32_t snap_direction) {
   switch (snap_direction) {
     case ZAURA_SURFACE_SNAP_DIRECTION_NONE:
@@ -1174,6 +1183,12 @@ class WaylandAuraShell : public ash::DesksController::Observer,
       zaura_shell_send_layout_mode(aura_shell_resource_, layout_mode);
     }
     if (wl_resource_get_version(aura_shell_resource_) >=
+        ZAURA_SHELL_COMPOSITOR_VERSION_SINCE_VERSION) {
+      const base::StringPiece ash_version = version_info::GetVersionNumber();
+      zaura_shell_send_compositor_version(aura_shell_resource_,
+                                          ash_version.data());
+    }
+    if (wl_resource_get_version(aura_shell_resource_) >=
         ZAURA_SHELL_BUG_FIX_SINCE_VERSION) {
       for (uint32_t bug_id : kFixedBugIds) {
         zaura_shell_send_bug_fix(aura_shell_resource_, bug_id);
@@ -1199,15 +1214,19 @@ class WaylandAuraShell : public ash::DesksController::Observer,
   // Overridden from ash::TabletModeObserver:
   void OnTabletModeStarted() override {
     if (wl_resource_get_version(aura_shell_resource_) >=
-        ZAURA_SHELL_LAYOUT_MODE_SINCE_VERSION)
+        ZAURA_SHELL_LAYOUT_MODE_SINCE_VERSION) {
       zaura_shell_send_layout_mode(aura_shell_resource_,
                                    ZAURA_SHELL_LAYOUT_MODE_TABLET);
+      wl_client_flush(wl_resource_get_client(aura_shell_resource_));
+    }
   }
   void OnTabletModeEnding() override {
     if (wl_resource_get_version(aura_shell_resource_) >=
-        ZAURA_SHELL_LAYOUT_MODE_SINCE_VERSION)
+        ZAURA_SHELL_LAYOUT_MODE_SINCE_VERSION) {
       zaura_shell_send_layout_mode(aura_shell_resource_,
                                    ZAURA_SHELL_LAYOUT_MODE_WINDOWED);
+      wl_client_flush(wl_resource_get_client(aura_shell_resource_));
+    }
   }
   void OnTabletModeEnded() override {}
 
@@ -1339,7 +1358,7 @@ class WaylandAuraShell : public ash::DesksController::Observer,
   }
 
   // The aura shell resource associated with observer.
-  const raw_ptr<wl_resource, ExperimentalAsh> aura_shell_resource_;
+  const raw_ptr<wl_resource, DanglingUntriaged> aura_shell_resource_;
   const raw_ptr<Seat, ExperimentalAsh> seat_;
 
   bool last_has_focused_client_ = false;
@@ -1546,6 +1565,25 @@ void aura_toplevel_ack_rotate_focus(wl_client* client,
   GetUserDataAs<AuraToplevel>(resource)->AckRotateFocus(serial, handled);
 }
 
+void aura_toplevel_set_can_maximize(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<AuraToplevel>(resource)->SetCanMaximize(true);
+}
+
+void aura_toplevel_unset_can_maximize(wl_client* client,
+                                      wl_resource* resource) {
+  GetUserDataAs<AuraToplevel>(resource)->SetCanMaximize(false);
+}
+
+void aura_toplevel_set_can_fullscreen(wl_client* client,
+                                      wl_resource* resource) {
+  GetUserDataAs<AuraToplevel>(resource)->SetCanFullscreen(true);
+}
+
+void aura_toplevel_unset_can_fullscreen(wl_client* client,
+                                        wl_resource* resource) {
+  GetUserDataAs<AuraToplevel>(resource)->SetCanFullscreen(false);
+}
+
 const struct zaura_toplevel_interface aura_toplevel_implementation = {
     aura_toplevel_set_orientation_lock,
     aura_toplevel_surface_submission_in_pixel_coordinates,
@@ -1573,6 +1611,10 @@ const struct zaura_toplevel_interface aura_toplevel_implementation = {
     aura_toplevel_set_shape,
     aura_toplevel_set_top_inset,
     aura_toplevel_ack_rotate_focus,
+    aura_toplevel_set_can_maximize,
+    aura_toplevel_unset_can_maximize,
+    aura_toplevel_set_can_fullscreen,
+    aura_toplevel_unset_can_fullscreen,
 };
 
 void aura_popup_surface_submission_in_pixel_coordinates(wl_client* client,

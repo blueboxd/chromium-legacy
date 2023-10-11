@@ -16,6 +16,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/icon_button.h"
@@ -837,10 +838,6 @@ void AshNotificationView::AnimateSingleToGroup(
 }
 
 void AshNotificationView::ToggleExpand() {
-  if (disable_expand_collapse_) {
-    return;
-  }
-
   const bool target_expanded_state = !IsExpanded();
 
   SetManuallyExpandedOrCollapsed(
@@ -1568,25 +1565,6 @@ void AshNotificationView::OnInlineReplyUpdated() {
       "Ash.NotificationView.InlineReply.FadeIn.AnimationSmoothness");
 }
 
-void AshNotificationView::SetExpandCollapseEnabled(bool enabled) {
-  if (disable_expand_collapse_ == !enabled) {
-    return;
-  }
-
-  disable_expand_collapse_ = !enabled;
-
-  expand_button_->SetExpandCollapseEnabled(enabled);
-
-  for (auto* child_notification :
-       grouped_notifications_container_->children()) {
-    auto* notification_view =
-        static_cast<AshNotificationView*>(child_notification);
-    if (notification_view) {
-      notification_view->SetExpandCollapseEnabled(enabled);
-    }
-  }
-}
-
 views::View* AshNotificationView::FindGroupNotificationView(
     const std::string& notification_id) {
   auto notification = base::ranges::find(
@@ -1704,14 +1682,17 @@ void AshNotificationView::UpdateMessageLabelInExpandedState(
 }
 
 void AshNotificationView::UpdateBackground(int top_radius, int bottom_radius) {
-  SkColor background_color;
+  SkColor background_color = gfx::kPlaceholderColor;
+  // `color_provider` might be nullptr in tests.
+  const auto* color_provider = GetColorProvider();
   if (shown_in_popup_) {
-    background_color = AshColorProvider::Get()->GetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparent80);
+    if (color_provider) {
+      background_color = color_provider->GetColor(kColorAshShieldAndBase80);
+    }
   } else {
     background_color =
-        chromeos::features::IsJellyEnabled() && GetColorProvider()
-            ? GetColorProvider()->GetColor(cros_tokens::kCrosSysSystemOnBase)
+        chromeos::features::IsJellyEnabled() && color_provider
+            ? color_provider->GetColor(cros_tokens::kCrosSysSystemOnBase)
             : AshColorProvider::Get()->GetControlsLayerColor(
                   AshColorProvider::ControlsLayerType::
                       kControlBackgroundColorInactive);
@@ -1810,8 +1791,11 @@ SkColor AshNotificationView::CalculateIconAndButtonsColor(
           : color_utils::kMinimumReadableContrastRatio;
 
   // Actual color is kTransparent80, but BlendForMinContrast requires opaque.
-  SkColor bg_color = AshColorProvider::Get()->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kOpaque);
+  // GetColorProvider might be nullptr in tests.
+  const auto* color_provider = GetColorProvider();
+  const SkColor bg_color =
+      color_provider ? color_provider->GetColor(kColorAshShieldAndBaseOpaque)
+                     : gfx::kPlaceholderColor;
   return color_utils::BlendForMinContrast(
              fg_color, bg_color,
              /*high_contrast_foreground=*/absl::nullopt, minContrastRatio)

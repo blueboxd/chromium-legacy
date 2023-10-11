@@ -671,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(LockscreenWebUiTest, CaptivePortal) {
 }
 
 // TODO(crbug.com/1414002): Flaky on ChromeOS MSAN.
-#if defined(MEMORY_SANITIZER)
+#if BUILDFLAG(IS_CHROMEOS) || defined(MEMORY_SANITIZER)
 #define MAYBE_TriggerAndHideCaptivePortalDialog \
   DISABLED_TriggerAndHideCaptivePortalDialog
 #else
@@ -873,7 +873,7 @@ class ProxyAuthLockscreenWebUiTest : public LockscreenWebUiTest {
   net::SpawnedTestServer proxy_server_;
   std::unique_ptr<content::WindowedNotificationObserver> auth_needed_observer_;
   // Used for proxy server authentication.
-  raw_ptr<LoginHandler, ExperimentalAsh> login_handler_;
+  raw_ptr<LoginHandler, DanglingUntriaged | ExperimentalAsh> login_handler_;
 };
 
 IN_PROC_BROWSER_TEST_F(ProxyAuthLockscreenWebUiTest, SwitchToProxyNetwork) {

@@ -22,14 +22,26 @@ PermissionRequest::PermissionRequest(
     bool has_gesture,
     PermissionDecidedCallback permission_decided_callback,
     base::OnceClosure delete_callback)
-    : requesting_origin_(requesting_origin),
-      request_type_(request_type),
-      has_gesture_(has_gesture),
+    : data_(
+          PermissionRequestData(request_type, has_gesture, requesting_origin)),
+      permission_decided_callback_(std::move(permission_decided_callback)),
+      delete_callback_(std::move(delete_callback)) {}
+
+PermissionRequest::PermissionRequest(
+    PermissionRequestData request_data,
+    PermissionDecidedCallback permission_decided_callback,
+    base::OnceClosure delete_callback)
+    : data_(std::move(request_data)),
       permission_decided_callback_(std::move(permission_decided_callback)),
       delete_callback_(std::move(delete_callback)) {}
 
 PermissionRequest::~PermissionRequest() {
   DCHECK(delete_callback_.is_null());
+}
+
+RequestType PermissionRequest::request_type() const {
+  CHECK(data_.request_type);
+  return data_.request_type.value();
 }
 
 bool PermissionRequest::IsDuplicateOf(PermissionRequest* other_request) const {
@@ -44,7 +56,7 @@ base::WeakPtr<PermissionRequest> PermissionRequest::GetWeakPtr() {
 #if BUILDFLAG(IS_ANDROID)
 std::u16string PermissionRequest::GetDialogMessageText() const {
   int message_id = 0;
-  switch (request_type_) {
+  switch (request_type()) {
     case RequestType::kAccessibilityEvents:
       message_id = IDS_ACCESSIBILITY_EVENTS_INFOBAR_TEXT;
       break;
@@ -71,7 +83,8 @@ std::u16string PermissionRequest::GetDialogMessageText() const {
       message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY_INFOBAR_TEXT;
       break;
     case RequestType::kMidi:
-      // TODO(crbug.com/1420307): Add dialog message text specific to MIDI.
+      message_id = IDS_MIDI_INFOBAR_TEXT;
+      break;
     case RequestType::kMidiSysex:
       message_id = IDS_MIDI_SYSEX_INFOBAR_TEXT;
       break;
@@ -105,18 +118,22 @@ std::u16string PermissionRequest::GetDialogMessageText() const {
 }
 #endif
 
+bool PermissionRequest::IsEmbeddedPermissionElementInitiated() const {
+  return data_.embedded_permission_element_initiated;
+}
+
 #if !BUILDFLAG(IS_ANDROID)
 
 bool PermissionRequest::IsConfirmationChipSupported() {
-  return permissions::IsConfirmationChipSupported(request_type_);
+  return permissions::IsConfirmationChipSupported(request_type());
 }
 
 IconId PermissionRequest::GetIconForChip() {
-  return permissions::GetIconId(request_type_);
+  return permissions::GetIconId(request_type());
 }
 
 IconId PermissionRequest::GetBlockedIconForChip() {
-  return permissions::GetBlockedIconId(request_type_);
+  return permissions::GetBlockedIconId(request_type());
 }
 
 absl::optional<std::u16string> PermissionRequest::GetRequestChipText(
@@ -154,8 +171,7 @@ absl::optional<std::u16string> PermissionRequest::GetRequestChipText(
          IDS_PERMISSIONS_MICROPHONE_ALLOWED_ONCE_CONFIRMATION_SCREENREADER_ANNOUNCEMENT,
          IDS_PERMISSIONS_MICROPHONE_NOT_ALLOWED_CONFIRMATION_SCREENREADER_ANNOUNCEMENT}},
        {RequestType::kMidi,
-        // TODO(crbug.com/1420307): Add text specific to MIDI.
-        {IDS_MIDI_SYSEX_PERMISSION_CHIP, -1, -1, -1, -1, -1, -1, -1}},
+        {IDS_MIDI_PERMISSION_CHIP, -1, -1, -1, -1, -1, -1, -1}},
        {RequestType::kMidiSysex,
         {IDS_MIDI_SYSEX_PERMISSION_CHIP, -1, -1, -1, -1, -1, -1, -1}},
        {RequestType::kNotifications,
@@ -175,7 +191,7 @@ absl::optional<std::u16string> PermissionRequest::GetRequestChipText(
        {RequestType::kVrSession,
         {IDS_VR_PERMISSION_CHIP, -1, -1, -1, -1, -1, -1, -1}}});
 
-  auto messages = kMessageIds->find(request_type_);
+  auto messages = kMessageIds->find(request_type());
   if (messages != kMessageIds->end() && messages->second[type] != -1)
     return l10n_util::GetStringUTF16(messages->second[type]);
 
@@ -184,7 +200,7 @@ absl::optional<std::u16string> PermissionRequest::GetRequestChipText(
 
 std::u16string PermissionRequest::GetMessageTextFragment() const {
   int message_id = 0;
-  switch (request_type_) {
+  switch (request_type()) {
     case RequestType::kAccessibilityEvents:
       message_id = IDS_ACCESSIBILITY_EVENTS_PERMISSION_FRAGMENT;
       break;
@@ -216,7 +232,8 @@ std::u16string PermissionRequest::GetMessageTextFragment() const {
       message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY_PERMISSION_FRAGMENT;
       break;
     case RequestType::kMidi:
-      // TODO(crbug.com/1420307): Add message text fragment specific to MIDI.
+      message_id = IDS_MIDI_PERMISSION_FRAGMENT;
+      break;
     case RequestType::kMidiSysex:
       message_id = IDS_MIDI_SYSEX_PERMISSION_FRAGMENT;
       break;
@@ -252,7 +269,7 @@ std::u16string PermissionRequest::GetMessageTextFragment() const {
 #endif
 
 bool PermissionRequest::ShouldUseTwoOriginPrompt() const {
-  return request_type_ == RequestType::kStorageAccess &&
+  return request_type() == RequestType::kStorageAccess &&
          base::FeatureList::IsEnabled(
              permissions::features::kPermissionStorageAccessAPI);
 }
@@ -279,11 +296,11 @@ void PermissionRequest::RequestFinished() {
 }
 
 PermissionRequestGestureType PermissionRequest::GetGestureType() const {
-  return PermissionUtil::GetGestureType(has_gesture_);
+  return PermissionUtil::GetGestureType(data_.user_gesture);
 }
 
 ContentSettingsType PermissionRequest::GetContentSettingsType() const {
-  auto type = RequestTypeToContentSettingsType(request_type_);
+  auto type = RequestTypeToContentSettingsType(request_type());
   if (type.has_value())
     return type.value();
   return ContentSettingsType::DEFAULT;

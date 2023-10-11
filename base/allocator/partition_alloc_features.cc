@@ -5,6 +5,7 @@
 #include "base/allocator/partition_alloc_features.h"
 
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
+#include "base/allocator/partition_allocator/partition_root.h"
 #include "base/base_export.h"
 #include "base/feature_list.h"
 #include "base/features.h"
@@ -104,7 +105,7 @@ BASE_FEATURE(kPartitionAllocLargeEmptySlotSpanRing,
 BASE_FEATURE(kPartitionAllocBackupRefPtr,
              "PartitionAllocBackupRefPtr",
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    BUILDFLAG(IS_CHROMEOS_ASH) ||                                      \
+    BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) ||     \
     (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)) ||                  \
     BUILDFLAG(ENABLE_BACKUP_REF_PTR_FEATURE_FLAG)
              FEATURE_ENABLED_BY_DEFAULT
@@ -116,7 +117,7 @@ BASE_FEATURE(kPartitionAllocBackupRefPtr,
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocBackupRefPtrForAsh);
 BASE_FEATURE(kPartitionAllocBackupRefPtrForAsh,
              "PartitionAllocBackupRefPtrForAsh",
-             FEATURE_DISABLED_BY_DEFAULT);
+             FEATURE_ENABLED_BY_DEFAULT);
 
 constexpr FeatureParam<BackupRefPtrEnabledProcesses>::Option
     kBackupRefPtrEnabledProcessesOptions[] = {
@@ -274,6 +275,34 @@ BASE_FEATURE(kPartitionAllocPCScanStackScanning,
 BASE_FEATURE(kPartitionAllocDCScan,
              "PartitionAllocDCScan",
              FEATURE_DISABLED_BY_DEFAULT);
+
+// Whether to straighten free lists for larger slot spans in PurgeMemory() ->
+// ... -> PartitionPurgeSlotSpan().
+BASE_FEATURE(kPartitionAllocStraightenLargerSlotSpanFreeLists,
+             "PartitionAllocStraightenLargerSlotSpanFreeLists",
+             FEATURE_ENABLED_BY_DEFAULT);
+const base::FeatureParam<
+    partition_alloc::StraightenLargerSlotSpanFreeListsMode>::Option
+    kPartitionAllocStraightenLargerSlotSpanFreeListsModeOption[] = {
+        {partition_alloc::StraightenLargerSlotSpanFreeListsMode::
+             kOnlyWhenUnprovisioning,
+         "only-when-unprovisioning"},
+        {partition_alloc::StraightenLargerSlotSpanFreeListsMode::kAlways,
+         "always"},
+};
+const base::FeatureParam<partition_alloc::StraightenLargerSlotSpanFreeListsMode>
+    kPartitionAllocStraightenLargerSlotSpanFreeListsMode = {
+        &kPartitionAllocStraightenLargerSlotSpanFreeLists,
+        "mode",
+        partition_alloc::StraightenLargerSlotSpanFreeListsMode::
+            kOnlyWhenUnprovisioning,
+        &kPartitionAllocStraightenLargerSlotSpanFreeListsModeOption,
+};
+
+// Whether to sort free lists for smaller slot spans in PurgeMemory().
+BASE_FEATURE(kPartitionAllocSortSmallerSlotSpanFreeLists,
+             "PartitionAllocSortSmallerSlotSpanFreeLists",
+             FEATURE_ENABLED_BY_DEFAULT);
 
 // Whether to sort the active slot spans in PurgeMemory().
 BASE_FEATURE(kPartitionAllocSortActiveSlotSpans,

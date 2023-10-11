@@ -14,6 +14,7 @@
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/window_tree_host_lookup.h"
+#include "ash/webui/settings/public/constants/routes_util.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/json/json_writer.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes_util.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -66,6 +66,17 @@ namespace {
 
 namespace accessibility_private = ::extensions::api::accessibility_private;
 using ::ash::AccessibilityManager;
+
+ash::AccessibilityToastType ConvertToastType(
+    accessibility_private::ToastType type) {
+  switch (type) {
+    case accessibility_private::ToastType::
+        TOAST_TYPE_DICTATIONNOFOCUSEDTEXTFIELD:
+      return ash::AccessibilityToastType::kDictationNoFocusedTextField;
+    case accessibility_private::ToastType::TOAST_TYPE_NONE:
+      NOTREACHED_NORETURN();
+  }
+}
 
 ash::DictationBubbleHintType ConvertDictationHintType(
     accessibility_private::DictationBubbleHintType hint_type) {
@@ -268,6 +279,10 @@ AccessibilityPrivateIsFeatureEnabledFunction::Run() {
     case accessibility_private::AccessibilityFeature::
         ACCESSIBILITY_FEATURE_CHROMEVOXSETTINGSMIGRATION:
       enabled = ::features::IsAccessibilityChromeVoxPageMigrationEnabled();
+      break;
+    case accessibility_private::AccessibilityFeature::
+        ACCESSIBILITY_FEATURE_GAMEFACEINTEGRATION:
+      enabled = ::features::IsAccessibilityGameFaceIntegrationEnabled();
       break;
     case accessibility_private::AccessibilityFeature::
         ACCESSIBILITY_FEATURE_NONE:
@@ -778,6 +793,15 @@ AccessibilityPrivateSetVirtualKeyboardVisibleFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+ExtensionFunction::ResponseAction AccessibilityPrivateShowToastFunction::Run() {
+  absl::optional<accessibility_private::ShowToast::Params> params(
+      accessibility_private::ShowToast::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  ash::AccessibilityController::Get()->ShowToast(
+      ConvertToastType(params->type));
+  return RespondNow(NoArguments());
+}
+
 ExtensionFunction::ResponseAction
 AccessibilityPrivateShowConfirmationDialogFunction::Run() {
   absl::optional<accessibility_private::ShowConfirmationDialog::Params> params =
@@ -962,7 +986,6 @@ AccessibilityPrivateUpdateSwitchAccessBubbleFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateIsLacrosPrimaryFunction::Run() {
-  const bool is_lacros_primary =
-      crosapi::lacros_startup_state::IsLacrosPrimaryEnabled();
-  return RespondNow(WithArguments(is_lacros_primary));
+  return RespondNow(
+      WithArguments(crosapi::lacros_startup_state::IsLacrosEnabled()));
 }

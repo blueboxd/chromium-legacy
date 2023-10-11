@@ -7,7 +7,7 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
-#import "base/mac/scoped_objc_class_swizzler.h"
+#import "base/apple/scoped_objc_class_swizzler.h"
 #include "base/memory/singleton.h"
 #include "base/time/time.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
@@ -176,12 +176,11 @@ void EmulateSendEvent(NSWindow* window, NSEvent* event) {
       [responder scrollWheel:event];
       break;
     case NSEventTypeMouseEntered:
+      [responder mouseEntered:event];
+      break;
     case NSEventTypeMouseExited:
-      // With the assumptions in NSEventTypeMouseMoved, it doesn't make sense
-      // for the generator to handle entered/exited separately. It's the
-      // responsibility of views::internal::RootView to convert the moved events
-      // into entered and exited events for the individual views.
-      NOTREACHED_NORETURN();
+      [responder mouseExited:event];
+      break;
     case NSEventTypeSwipe:
       // NSEventTypeSwipe events can't be generated using public interfaces on
       // NSEvent, so this will need to be handled at a higher level.
@@ -209,6 +208,18 @@ NSEvent* CreateMouseEventInWindow(NSWindow* window,
   NSPoint point = ConvertRootPointToTarget(window, point_in_root);
   NSUInteger modifiers = 0;
   NSEventType type = EventTypeToNative(event_type, flags, &modifiers);
+  if (event_type == ui::ET_MOUSE_ENTERED || event_type == ui::ET_MOUSE_EXITED) {
+    return
+        [NSEvent enterExitEventWithType:type
+                               location:point
+                          modifierFlags:modifiers
+                              timestamp:ui::EventTimeStampToSeconds(time_stamp)
+                           windowNumber:window.windowNumber
+                                context:nil
+                            eventNumber:0
+                         trackingNumber:0
+                               userData:nil];
+  }
   return [NSEvent mouseEventWithType:type
                             location:point
                        modifierFlags:modifiers
@@ -325,9 +336,9 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
 
   raw_ptr<ui::test::EventGenerator> owner_;
   NSWindow* __strong target_window_;
-  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_pressed_;
-  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_location_;
-  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_current_event_;
+  std::unique_ptr<base::apple::ScopedObjCClassSwizzler> swizzle_pressed_;
+  std::unique_ptr<base::apple::ScopedObjCClassSwizzler> swizzle_location_;
+  std::unique_ptr<base::apple::ScopedObjCClassSwizzler> swizzle_current_event_;
   NSMenu* __strong fake_menu_;
 
   // Mac always sends trackpad scroll events between begin/end phase event
@@ -396,12 +407,12 @@ EventGeneratorDelegateMac::EventGeneratorDelegateMac(
                                      firstResponder]];
 
   if (owner_) {
-    swizzle_pressed_ = std::make_unique<base::mac::ScopedObjCClassSwizzler>(
+    swizzle_pressed_ = std::make_unique<base::apple::ScopedObjCClassSwizzler>(
         [NSEvent class], [NSEventDonor class], @selector(pressedMouseButtons));
-    swizzle_location_ = std::make_unique<base::mac::ScopedObjCClassSwizzler>(
+    swizzle_location_ = std::make_unique<base::apple::ScopedObjCClassSwizzler>(
         [NSEvent class], [NSEventDonor class], @selector(mouseLocation));
     swizzle_current_event_ =
-        std::make_unique<base::mac::ScopedObjCClassSwizzler>(
+        std::make_unique<base::apple::ScopedObjCClassSwizzler>(
             [NSApplication class], [NSApplicationDonor class],
             @selector(currentEvent));
   }

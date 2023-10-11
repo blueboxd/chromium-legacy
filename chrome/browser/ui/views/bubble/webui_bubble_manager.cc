@@ -42,6 +42,8 @@ bool WebUIBubbleManager::ShowBubble(const absl::optional<gfx::Rect>& anchor,
 
   cache_timer_->Stop();
 
+  bubble_init_start_time_ = base::TimeTicks::Now();
+
   bubble_view_ = CreateWebUIBubbleDialog(anchor, arrow);
 
   bubble_widget_observation_.Observe(bubble_view_->GetWidget());

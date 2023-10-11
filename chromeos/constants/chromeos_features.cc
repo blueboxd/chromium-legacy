@@ -31,6 +31,14 @@ BASE_FEATURE(kCloudGamingDevice,
              "CloudGamingDevice",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables ChromeOS Apps APIs.
+BASE_FEATURE(kCrosAppsApis, "CrosAppsApis", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the ChromeOS Diagnostics API.
+BASE_FEATURE(kCrosDiagnosticsApi,
+             "CrosDiagnosticsApi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the use of cros-component UI elements. Contact:
 // cros-jellybean-team@google.com.
 BASE_FEATURE(kCrosComponents,
@@ -80,6 +88,9 @@ BASE_FEATURE(kJelly, "Jelly", base::FEATURE_ENABLED_BY_DEFAULT);
 // controls all system UI updates and new system components. go/jelly-flags
 BASE_FEATURE(kJellyroll, "Jellyroll", base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Controls enabling / disabling the orca feature.
+BASE_FEATURE(kOrca, "Orca", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether to enable quick answers V2 settings sub-toggles.
 BASE_FEATURE(kQuickAnswersV2SettingsSubToggle,
              "QuickAnswersV2SettingsSubToggle",
@@ -93,6 +104,12 @@ BASE_FEATURE(kQuickAnswersRichCard,
 // Enables the Office files upload workflow to improve Office files support.
 BASE_FEATURE(kUploadOfficeToCloud,
              "UploadOfficeToCloud",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the Office files upload workflow for enterprise users to improve
+// Office files support.
+BASE_FEATURE(kUploadOfficeToCloudForEnterprise,
+             "UploadOfficeToCloudForEnterprise",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsClipboardHistoryRefreshEnabled() {
@@ -118,6 +135,15 @@ bool IsCloudGamingDeviceEnabled() {
 #endif
 }
 
+bool IsCrosAppsApisEnabled() {
+  return base::FeatureList::IsEnabled(kCrosAppsApis);
+}
+
+bool IsCrosDiagnosticsApiEnabled() {
+  return base::FeatureList::IsEnabled(kCrosDiagnosticsApi) &&
+         IsCrosAppsApisEnabled();
+}
+
 bool IsCrosComponentsEnabled() {
   return base::FeatureList::IsEnabled(kCrosComponents) && IsJellyEnabled();
 }
@@ -134,6 +160,10 @@ bool IsJellyrollEnabled() {
   // Only enable Jellyroll if Jelly is also enabled as this is how tests expect
   // this to behave.
   return IsJellyEnabled() && base::FeatureList::IsEnabled(kJellyroll);
+}
+
+bool IsOrcaEnabled() {
+  return base::FeatureList::IsEnabled(kOrca);
 }
 
 bool IsQuickAnswersV2TranslationDisabled() {
@@ -156,6 +186,16 @@ bool IsUploadOfficeToCloudEnabled() {
 #endif
 }
 
+bool IsUploadOfficeToCloudForEnterpriseEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(b/296282654): Implement propagation if necessary.
+  return false;
+#else
+  return base::FeatureList::IsEnabled(kUploadOfficeToCloud) &&
+         base::FeatureList::IsEnabled(kUploadOfficeToCloudForEnterprise);
+#endif
+}
+
 bool IsRoundedWindowsEnabled() {
   // Rounded windows are under the Jelly feature.
   return base::FeatureList::IsEnabled(kRoundedWindows) &&
@@ -168,7 +208,7 @@ int RoundedWindowsRadius() {
   }
 
   return base::GetFieldTrialParamByFeatureAsInt(
-      kRoundedWindows, kRoundedWindowsRadius, /*default_value=*/8);
+      kRoundedWindows, kRoundedWindowsRadius, /*default_value=*/12);
 }
 
 }  // namespace chromeos::features

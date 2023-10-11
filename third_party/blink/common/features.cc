@@ -277,7 +277,7 @@ BASE_FEATURE(kBlockingDownloadsInAdFrameWithoutUserActivation,
 // crbug.com/1431169
 BASE_FEATURE(kBoostImagePriority,
              "BoostImagePriority",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 // The number of images to bopost the priority of before returning
 // to the default (low) priority.
 const base::FeatureParam<int> kBoostImagePriorityImageCount{
@@ -289,7 +289,7 @@ const base::FeatureParam<int> kBoostImagePriorityImageSize{&kBoostImagePriority,
 // Number of medium-priority requests to allow in tight-mode independent of the
 // total number of outstanding requests.
 const base::FeatureParam<int> kBoostImagePriorityTightMediumLimit{
-    &kBoostImagePriority, "tight_medium_limit", 1};
+    &kBoostImagePriority, "tight_medium_limit", 2};
 
 // https://github.com/patcg-individual-drafts/topics
 // Kill switch for the Topics API.
@@ -339,9 +339,9 @@ const base::FeatureParam<int> kBrowsingTopicsUseRandomTopicProbabilityPercent{
 // using that new epoch's topics. The time chosen is a per-site random point in
 // time between [calculation time, calculation time + max duration).
 const base::FeatureParam<base::TimeDelta>
-    kBrowsingTopicsMaxEpochIntroductionDelay{
-        &kBrowsingTopicsParameters,
-        "browsing_topics_max_epoch_introduction_delay", base::Days(2)};
+    kBrowsingTopicsMaxEpochIntroductionDelay{&kBrowsingTopicsParameters,
+                                             "max_epoch_introduction_delay",
+                                             base::Days(2)};
 // How many epochs (weeks) of API usage data (i.e. topics observations) will be
 // based off for the filtering of topics for a calling context.
 const base::FeatureParam<int>
@@ -379,7 +379,7 @@ const base::FeatureParam<int> kBrowsingTopicsTaxonomyVersion{
 // Comma separated Topic IDs to be blocked. Descendant topics of each blocked
 // topic will be blocked as well.
 const base::FeatureParam<std::string> kBrowsingTopicsDisabledTopicsList{
-    &kBrowsingTopicsParameters, "browsing_topics_disabled_topics_list", ""};
+    &kBrowsingTopicsParameters, "disabled_topics_list", ""};
 
 // Enables the deprecatedBrowsingTopics XHR attribute. For this feature to take
 // effect, the main Topics feature has to be enabled first (i.e.
@@ -399,12 +399,12 @@ BASE_FEATURE(kCORSErrorsIssueOnly,
 // (https://crbug.com/1260908).
 BASE_FEATURE(kCacheCodeOnIdle,
              "CacheCodeOnIdle",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<int> kCacheCodeOnIdleDelayParam{&kCacheCodeOnIdle,
-                                                         "delay-in-ms", 0};
+                                                         "delay-in-ms", 1};
 // Apply CacheCodeOnIdle only for service workers (https://crbug.com/1410082).
 const base::FeatureParam<bool> kCacheCodeOnIdleDelayServiceWorkerOnlyParam{
-    &kCacheCodeOnIdle, "service-worker-only", false};
+    &kCacheCodeOnIdle, "service-worker-only", true};
 
 // When enabled allows the header name used in the blink
 // CacheStorageCodeCacheHint runtime feature to be modified.  This runtime
@@ -449,21 +449,6 @@ BASE_FEATURE(kCheckHTMLParserBudgetLessOften,
              "CheckHTMLParserBudgetLessOften",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Dispatches a fake fetch event to a service worker to check the offline
-// capability of the site before promoting installation.
-// See https://crbug.com/965802 for more details.
-BASE_FEATURE(kCheckOfflineCapability,
-             "CheckOfflineCapability",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<CheckOfflineCapabilityMode>::Option
-    check_offline_capability_types[] = {
-        {CheckOfflineCapabilityMode::kWarnOnly, "warn_only"},
-        {CheckOfflineCapabilityMode::kEnforce, "enforce"}};
-const base::FeatureParam<CheckOfflineCapabilityMode>
-    kCheckOfflineCapabilityParam{&kCheckOfflineCapability, "check_mode",
-                                 CheckOfflineCapabilityMode::kWarnOnly,
-                                 &check_offline_capability_types};
-
 // Enable `sec-ch-dpr` client hint.
 BASE_FEATURE(kClientHintsDPR,
              "ClientHintsDPR",
@@ -487,6 +472,11 @@ BASE_FEATURE(kClientHintsDeviceMemory_DEPRECATED,
 // Enable `form-factor` client hint.
 BASE_FEATURE(kClientHintsFormFactor,
              "ClientHintsFormFactor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable `sec-ch-prefers-reduced-transparency` client hint.
+BASE_FEATURE(kClientHintsPrefersReducedTransparency,
+             "ClientHintsPrefersReducedTransparency",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable `sec-ch-width` client hint.
@@ -569,19 +559,6 @@ BASE_FEATURE(kDOMContentLoadedWaitForAsyncScript,
 
 BASE_FEATURE(kDecodeScriptSourceOffThread,
              "DecodeScriptSourceOffThread",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Decodes jpeg 4:2:0 formatted images to YUV instead of RGBX and stores in this
-// format in the image decode cache. See crbug.com/919627 for details on the
-// feature.
-BASE_FEATURE(kDecodeJpeg420ImagesToYUV,
-             "DecodeJpeg420ImagesToYUV",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Decodes lossy WebP images to YUV instead of RGBX and stores in this format
-// in the image decode cache. See crbug.com/900264 for details on the feature.
-BASE_FEATURE(kDecodeLossyWebPImagesToYUV,
-             "DecodeLossyWebPImagesToYUV",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, pages that don't specify a layout width will default to the
@@ -676,6 +653,10 @@ BASE_FEATURE(kDisableArrayBufferSizeLimitsForTesting,
              "DisableArrayBufferSizeLimitsForTesting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kDiscardInputEventsToRecentlyMovedFrames,
+             "DiscardInputEventsToRecentlyMovedFrames",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kDisableThirdPartyStoragePartitioningDeprecationTrial,
              "DisableThirdPartyStoragePartitioningDeprecationTrial",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -748,18 +729,14 @@ BASE_FEATURE(kEventTimingReportAllEarlyEntriesOnPaintedPresentation,
 BASE_FEATURE(kDeprecateUnload,
              "DeprecateUnload",
              base::FEATURE_DISABLED_BY_DEFAULT);
-// If enabled, each user experiences the deprecation on a certain % of origins.
-// Which origins varies per user. This has no effect with DeprecateUnload.
-BASE_FEATURE(kDeprecateUnloadByUserAndOrigin,
-             "DeprecateUnloadByUserAndOrigin",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-// This controls what % of origins have the deprecation for this user.
-const base::FeatureParam<int> kDeprecateUnloadPercent{
-    &kDeprecateUnloadByUserAndOrigin, "rollout_percent", 0};
+// If < 100, each user experiences the deprecation on this % of origins.
+// Which origins varies per user.
+const base::FeatureParam<int> kDeprecateUnloadPercent{&kDeprecateUnload,
+                                                      "rollout_percent", 100};
 // This buckets users, with users in each bucket having a consistent experience
 // of the unload deprecation rollout.
-const base::FeatureParam<int> kDeprecateUnloadBucket{
-    &kDeprecateUnloadByUserAndOrigin, "rollout_bucket", 0};
+const base::FeatureParam<int> kDeprecateUnloadBucket{&kDeprecateUnload,
+                                                     "rollout_bucket", 0};
 
 // Controls whether LCP calculations should exclude low-entropy images. If
 // enabled, then the associated parameter sets the cutoff, expressed as the
@@ -806,6 +783,10 @@ BASE_FEATURE(kFilteringScrollPrediction,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
+
+BASE_FEATURE(kFixGestureScrollQueuingBug,
+             "FixGestureScrollQueuingBug",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // See https://github.com/WICG/turtledove/blob/main/FLEDGE.md
 // Enables FLEDGE implementation. See https://crbug.com/1186444.
@@ -1070,6 +1051,12 @@ BASE_FEATURE(kLightweightNoStatePrefetch,
 
 BASE_FEATURE(kLinkPreview, "LinkPreview", base::FEATURE_DISABLED_BY_DEFAULT);
 
+// A feature to control whether the loading phase should be extended beyond
+// First Meaningful Paint by a configurable buffer.
+BASE_FEATURE(kLoadingPhaseBufferTimeAfterFirstMeaningfulPaint,
+             "LoadingPhaseBufferTimeAfterFirstMeaningfulPaint",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Makes network loading tasks unfreezable so that they can be processed while
 // the page is frozen.
 BASE_FEATURE(kLoadingTasksUnfreezable,
@@ -1135,7 +1122,7 @@ const base::FeatureParam<bool> kLowPriorityScriptLoadingMainFrameOnlyParam{
 
 BASE_FEATURE(kMainThreadHighPriorityImageLoading,
              "MainThreadHighPriorityImageLoading",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, the setTimeout(..., 0) will clamp to 4ms after a custom `nesting`
 // level.
@@ -1157,9 +1144,21 @@ BASE_FEATURE(kMemoryCacheStrongReferenceFilterScripts,
              "MemoryCacheStrongReferenceFilterScripts",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kMemoryCacheStrongReferenceFilterCrossOriginScripts,
+             "MemoryCacheStrongReferenceFilterCrossOriginScripts",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kMemoryCacheStrongReference,
              "MemoryCacheStrongReference",
              base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<int>
+    kMemoryCacheStrongReferenceTotalSizeThresholdParam{
+        &kMemoryCacheStrongReference,
+        "memory_cache_strong_ref_total_size_threshold", 10 * 1024 * 1024};
+const base::FeatureParam<int>
+    kMemoryCacheStrongReferenceResourceSizeThresholdParam{
+        &kMemoryCacheStrongReference,
+        "memory_cache_strong_ref_resource_size_threshold", 3 * 1024 * 1024};
 
 BASE_FEATURE(kMemoryCacheStrongReferenceSingleUnload,
              "MemoryCacheStrongReferenceSingleUnload",
@@ -1180,7 +1179,7 @@ BASE_FEATURE(kNavigationPredictor,
 
 BASE_FEATURE(kNewBaseUrlInheritanceBehavior,
              "NewBaseUrlInheritanceBehavior",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNoForcedFrameUpdatesForWebTests,
              "NoForcedFrameUpdatesForWebTests",
@@ -1311,6 +1310,10 @@ BASE_FEATURE(kPrefetchPrivacyChanges,
              "PrefetchPrivacyChanges",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPreloadingHeuristicsMLModel,
+             "PreloadingHeuristicsMLModel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kPrerender2InNewTab,
              "Prerender2InNewTab",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1404,6 +1407,10 @@ const base::FeatureParam<int> kProduceCompileHintsOnIdleDelayParam{
     &kProduceCompileHints, "delay-in-ms", 10000};
 const base::FeatureParam<double> kProduceCompileHintsNoiseLevel{
     &kProduceCompileHints, "noise probability", 0.5};
+
+BASE_FEATURE(kQueueBlockingGestureScrolls,
+             "QueueBlockingGestureScrolls",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kQuoteEmptySecChUaStringHeadersConsistently,
              "QuoteEmptySecChUaStringHeadersConsistently",
@@ -1518,6 +1525,10 @@ BASE_FEATURE(kScopeMemoryCachePerContext,
              "ScopeMemoryCachePerContext",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPausePagesPerBrowsingContextGroup,
+             "PausePagesPerBrowsingContextGroup",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls script streaming.
 BASE_FEATURE(kScriptStreaming,
              "ScriptStreaming",
@@ -1541,7 +1552,7 @@ BASE_FEATURE(kSendCnameAliasesToSubresourceFilterFromRenderer,
 
 BASE_FEATURE(kSerializeAccessibilityPostLifecycle,
              "SerializeAccessibilityPostLifecycle",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Experiment of the delay from navigation to starting an update of a service
 // worker's script.
@@ -1772,11 +1783,11 @@ const base::FeatureParam<base::TimeDelta>
 
 BASE_FEATURE(kStylusPointerAdjustment,
              "StylusPointerAdjustment",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStylusRichGestures,
              "StylusRichGestures",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // TODO(mahesh.ma): Enable for supported Android versions once feature is ready.
 BASE_FEATURE(kStylusWritingToInput,
@@ -2084,6 +2095,11 @@ bool IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled() {
 
 bool ParkableStringsUseSnappy() {
   return base::FeatureList::IsEnabled(kUseSnappyForParkableStrings);
+}
+
+bool IsKeepAliveInBrowserMigrationEnabled() {
+  return base::FeatureList::IsEnabled(kKeepAliveInBrowserMigration) ||
+         base::FeatureList::IsEnabled(kFetchLaterAPI);
 }
 
 }  // namespace features

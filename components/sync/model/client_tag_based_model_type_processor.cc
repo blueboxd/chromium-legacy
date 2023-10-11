@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "base/trace_event/trace_event.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
@@ -57,7 +58,7 @@ size_t CountDuplicateClientTags(const EntityMetadataMap& metadata_map) {
 ClientTagBasedModelTypeProcessor::ClientTagBasedModelTypeProcessor(
     ModelType type,
     const base::RepeatingClosure& dump_stack)
-    : type_(type), bridge_(nullptr), dump_stack_(dump_stack) {
+    : type_(type), dump_stack_(dump_stack) {
   ResetState(CLEAR_METADATA);
 }
 
@@ -93,6 +94,7 @@ void ClientTagBasedModelTypeProcessor::OnModelStarting(
 
 void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
     std::unique_ptr<MetadataBatch> batch) {
+  TRACE_EVENT0("sync", "ClientTagBasedModelTypeProcessor::ModelReadyToSync");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!entity_tracker_);
   DCHECK(!model_ready_to_sync_);

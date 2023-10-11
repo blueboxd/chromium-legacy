@@ -10,7 +10,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
@@ -61,6 +60,7 @@ import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.SessionHandler;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ActivityLayoutState;
+import org.chromium.chrome.browser.customtabs.ClientManager.CalledWarmup;
 import org.chromium.chrome.browser.customtabs.content.EngagementSignalsHandler;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -1089,6 +1089,11 @@ public class CustomTabsConnection {
         return mClientManager.shouldSpeculateLoadOnCellularForSession(session);
     }
 
+    /** @see ClientManager#getCanUseHiddenTab(CustomTabsSessionToken) */
+    public boolean canUseHiddenTabForSession(CustomTabsSessionToken session) {
+        return mClientManager.getCanUseHiddenTab(session);
+    }
+
     /** @see ClientManager#shouldSendNavigationInfoForSession(CustomTabsSessionToken) */
     public boolean shouldSendNavigationInfoForSession(CustomTabsSessionToken session) {
         return mClientManager.shouldSendNavigationInfoForSession(session);
@@ -1159,10 +1164,6 @@ public class CustomTabsConnection {
      */
     public void sendNavigationInfo(
             CustomTabsSessionToken session, String url, String title, Uri snapshotPath) {}
-
-    // TODO(yfriedman): Remove when internal code is deleted.
-    public void sendNavigationInfo(
-            CustomTabsSessionToken session, String url, String title, Bitmap snapshotPath) {}
 
     /**
      * Called when the bottom bar for the custom tab has been hidden or shown completely by user
@@ -1615,9 +1616,6 @@ public class CustomTabsConnection {
         if (PreloadPagesSettingsBridge.getState() == PreloadPagesState.NO_PRELOADING) {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_PREDICTION_DISABLED;
         }
-        ConnectivityManager cm =
-                (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.CONNECTIVITY_SERVICE);
         return SPECULATION_STATUS_ON_START_ALLOWED;
     }
 
@@ -1817,6 +1815,17 @@ public class CustomTabsConnection {
 
     protected void notifyClientOfTextFragmentLookupCompletionReportApp(
             CustomTabsSessionToken session, String stateKey, ArrayList<String> foundTextFragments) {
+    }
+
+    protected boolean isCCTAPIDeprecated(String featureParamName) {
+        return false;
+    }
+
+    /**
+     * @return The CalledWarmup state for the session.
+     */
+    public @CalledWarmup int getWarmupState(CustomTabsSessionToken session) {
+        return mClientManager.getWarmupState(session);
     }
 
     public static void setInstanceForTesting(CustomTabsConnection connection) {

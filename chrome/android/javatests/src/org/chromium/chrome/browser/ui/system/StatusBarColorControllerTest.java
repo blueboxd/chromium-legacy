@@ -39,12 +39,13 @@ import org.chromium.chrome.browser.tasks.tab_management.TabManagementFieldTrial;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeUtil;
 import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
+import org.chromium.chrome.features.start_surface.StartSurfaceTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.ThemeTestUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -65,7 +66,6 @@ import java.util.concurrent.TimeoutException;
 @Batch(Batch.PER_CLASS)
 // clang-format off
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
 public class StatusBarColorControllerTest {
     // clang-format on
     @ClassRule
@@ -95,7 +95,7 @@ public class StatusBarColorControllerTest {
     @LargeTest
     @Feature({"StatusBar"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE}) // Status bar is always black on tablets
-    public void testColorToggleIncognitoInOverview() throws Exception {
+    public void testColorToggleIncognitoInTabSwitcher() throws Exception {
         ChromeTabbedActivity activity = sActivityTestRule.getActivity();
         final int expectedOverviewStandardColor =
                 ChromeColors.getPrimaryBackgroundColor(activity, false);
@@ -124,7 +124,7 @@ public class StatusBarColorControllerTest {
     @LargeTest
     @Feature({"StatusBar"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE}) // Status bar is always black on tablets
-    public void testBrandColorIgnoredInOverview() throws Exception {
+    public void testBrandColorIgnoredInTabSwitcher() throws Exception {
         ChromeTabbedActivity activity = sActivityTestRule.getActivity();
         final int expectedDefaultStandardColor = ChromeColors.getDefaultThemeColor(activity, false);
 
@@ -134,6 +134,55 @@ public class StatusBarColorControllerTest {
         ThemeTestUtils.waitForThemeColor(activity, Color.RED);
         waitForStatusBarColor(activity, Color.RED);
 
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            activity.getLayoutManager().showLayout(LayoutType.TAB_SWITCHER, false /* animate */);
+        });
+        waitForStatusBarColor(activity, expectedDefaultStandardColor);
+    }
+
+    /**
+     * Test that the default color is used in Start surface without surface polish enabled.
+     */
+    @Test
+    @LargeTest
+    @Feature({"StatusBar"})
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_REFACTOR})
+    @DisableFeatures({ChromeFeatureList.SURFACE_POLISH})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE}) // Status bar is always black on tablets
+    public void testBrandColorIgnoredInStartSurface() throws Exception {
+        ChromeTabbedActivity activity = sActivityTestRule.getActivity();
+        final int expectedDefaultStandardColor = ChromeColors.getDefaultThemeColor(activity, false);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            activity.getLayoutManager().showLayout(LayoutType.START_SURFACE, false /* animate */);
+        });
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(activity);
+        waitForStatusBarColor(activity, expectedDefaultStandardColor);
+    }
+
+    /**
+     * Test that a polished color is used in Start surface with surface polish enabled, but not on
+     * Tab switcher.
+     */
+    @Test
+    @LargeTest
+    @Feature({"StatusBar"})
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_REFACTOR, ChromeFeatureList.SURFACE_POLISH})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE}) // Status bar is always black on tablets
+    public void testBrandColorNotIgnoredInStartSurfaceWithSurfacePolishEnabled() throws Exception {
+        ChromeTabbedActivity activity = sActivityTestRule.getActivity();
+        final int expectedPolishedStandardColor = ChromeColors.getSurfaceColor(
+                activity, R.dimen.home_surface_background_color_elevation);
+        final int expectedDefaultStandardColor = ChromeColors.getDefaultThemeColor(activity, false);
+
+        // Verifies that the status bar color uses a polished color for Start surface.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            activity.getLayoutManager().showLayout(LayoutType.START_SURFACE, false /* animate */);
+        });
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(activity);
+        waitForStatusBarColor(activity, expectedPolishedStandardColor);
+
+        // Verifies that the status bar color unchanged on Tab switcher.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             activity.getLayoutManager().showLayout(LayoutType.TAB_SWITCHER, false /* animate */);
         });
@@ -224,7 +273,7 @@ public class StatusBarColorControllerTest {
     @Test
     @LargeTest
     @Feature({"StatusBar"})
-    @Features.EnableFeatures({ChromeFeatureList.OMNIBOX_MATCH_TOOLBAR_AND_STATUS_BAR_COLOR})
+    @EnableFeatures({ChromeFeatureList.OMNIBOX_MATCH_TOOLBAR_AND_STATUS_BAR_COLOR})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE}) // Status bar is always black on tablets
     public void testBrandColorIgnoredWhenOmniboxIsFocused_FeatureMatchToolbarColorEnabled()
             throws Exception {
@@ -256,7 +305,7 @@ public class StatusBarColorControllerTest {
     @Test
     @LargeTest
     @Feature({"StatusBar"})
-    @Features.EnableFeatures({ChromeFeatureList.OMNIBOX_MATCH_TOOLBAR_AND_STATUS_BAR_COLOR})
+    @EnableFeatures({ChromeFeatureList.OMNIBOX_MATCH_TOOLBAR_AND_STATUS_BAR_COLOR})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE}) // Status bar is always black on tablets
     public void testColorWithStatusIndicator_FeatureMatchToolbarColorEnabled() {
         final ChromeActivity activity = sActivityTestRule.getActivity();
@@ -310,7 +359,7 @@ public class StatusBarColorControllerTest {
     @Test
     @LargeTest
     @Feature({"StatusBar"})
-    @EnableFeatures({ChromeFeatureList.TAB_STRIP_REDESIGN})
+    @EnableFeatures(ChromeFeatureList.TAB_STRIP_REDESIGN)
     @Restriction({UiRestriction.RESTRICTION_TYPE_TABLET})
     public void testStatusBarColorForTabStripRedesignFolioTablet() throws Exception {
         final ChromeActivity activity = sActivityTestRule.getActivity();
@@ -339,7 +388,7 @@ public class StatusBarColorControllerTest {
     @Test
     @LargeTest
     @Feature({"StatusBar"})
-    @EnableFeatures({ChromeFeatureList.TAB_STRIP_REDESIGN})
+    @EnableFeatures(ChromeFeatureList.TAB_STRIP_REDESIGN)
     @Restriction({UiRestriction.RESTRICTION_TYPE_TABLET})
     public void testStatusBarColorForTabStripRedesignDetachedTablet() throws Exception {
         final ChromeActivity activity = sActivityTestRule.getActivity();

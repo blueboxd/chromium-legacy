@@ -40,7 +40,6 @@ enum class PermissionRequest {
 
 }  // namespace
 
-// TODO(crbug.com/1479487): Add a sequence checker.
 @interface CRWWKUIHandler () {
   // Backs up property with the same name.
   std::unique_ptr<web::MojoFacade> _mojoFacade;
@@ -51,21 +50,9 @@ enum class PermissionRequest {
 // Facade for Mojo API.
 @property(nonatomic, readonly) web::MojoFacade* mojoFacade;
 
-// Task runner that creates this object.
-@property(nonatomic, readonly) scoped_refptr<base::SequencedTaskRunner>
-    mainTaskRunner;
-
 @end
 
 @implementation CRWWKUIHandler
-
-- (instancetype)init {
-  if (self = [super init]) {
-    _mainTaskRunner = base::SequencedTaskRunner::GetCurrentDefault();
-    CHECK(_mainTaskRunner);
-  }
-  return self;
-}
 
 #pragma mark - CRWWebViewHandler
 
@@ -88,7 +75,6 @@ enum class PermissionRequest {
 
 #pragma mark - WKUIDelegate
 
-// TODO(crbug.com/1479506): Avoid blocks capturing self.
 - (void)webView:(WKWebView*)webView
     requestMediaCapturePermissionForOrigin:(WKSecurityOrigin*)origin
                           initiatedByFrame:(WKFrameInfo*)frame
@@ -113,44 +99,21 @@ enum class PermissionRequest {
           @[ @(web::PermissionCamera), @(web::PermissionMicrophone) ];
       break;
   }
-
-  // Block to display the prompt; must be invoked on the main thread.
-  __weak __typeof(self) weakSelf = self;
-  void (^displayPrompt)(void) = ^{
-    __typeof(self) strongSelf = weakSelf;
-    if (!strongSelf) {
-      decisionHandler(WKPermissionDecisionDeny);
-      return;
-    }
-    [strongSelf displayPromptForPermissions:permissionsRequested
-                        withDecisionHandler:decisionHandler];
-  };
-
-  // This callback may be called on the background thread, but the
-  // implementation needs to access the WebState which is only safe to do on the
-  // main thread, post a task to execute on the main thread.
-  void (^displayPromptOnMainTaskRunner)(void) = ^{
-    scoped_refptr<base::SequencedTaskRunner> taskRunner =
-        weakSelf.mainTaskRunner;
-    if (!taskRunner) {
-      decisionHandler(WKPermissionDecisionDeny);
-      return;
-    }
-    taskRunner->PostTask(FROM_HERE, base::BindOnce(displayPrompt));
-  };
-
   base::UmaHistogramEnumeration(kPermissionRequestsHistogram, request);
   if (web::GetWebClient()->EnableFullscreenAPI()) {
     if (@available(iOS 16, *)) {
       if (webView.fullscreenState == WKFullscreenStateInFullscreen ||
           webView.fullscreenState == WKFullscreenStateEnteringFullscreen) {
-        [webView closeAllMediaPresentationsWithCompletionHandler:
-                     displayPromptOnMainTaskRunner];
+        [webView closeAllMediaPresentationsWithCompletionHandler:^{
+          [self displayPromptForPermissions:permissionsRequested
+                        withDecisionHandler:decisionHandler];
+        }];
         return;
       }
     }
   }
-  displayPromptOnMainTaskRunner();
+  [self displayPromptForPermissions:permissionsRequested
+                withDecisionHandler:decisionHandler];
 }
 
 - (WKWebView*)webView:(WKWebView*)webView
@@ -212,13 +175,13 @@ enum class PermissionRequest {
     // -webViewDidClose will typically trigger another webState to activate,
     // which may in turn also close. To prevent reentrant modificationre in
     // WebStateList, trigger a PostTask here.
-    self.mainTaskRunner->PostTask(FROM_HERE, base::BindOnce(^{
-                                    web::WebStateImpl* webStateImpl =
-                                        weakSelf.webStateImpl;
-                                    if (webStateImpl) {
-                                      webStateImpl->CloseWebState();
-                                    }
-                                  }));
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(^{
+          web::WebStateImpl* webStateImpl = weakSelf.webStateImpl;
+          if (webStateImpl) {
+            webStateImpl->CloseWebState();
+          }
+        }));
   }
 }
 

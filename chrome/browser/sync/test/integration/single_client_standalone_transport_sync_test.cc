@@ -293,7 +293,6 @@ class SingleClientStandaloneTransportWithReplaceSyncWithSigninSyncTest
         /*enabled_features=*/
         {syncer::kSyncEnableHistoryDataType,
          syncer::kEnablePreferencesAccountStorage,
-         syncer::kSyncEnableContactInfoDataType,
          syncer::kSyncEnableContactInfoDataTypeInTransportMode,
          syncer::kSyncEnableContactInfoDataTypeForCustomPassphraseUsers,
          syncer::kReplaceSyncPromosWithSignInPromos},
@@ -358,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     SingleClientStandaloneTransportWithReplaceSyncWithSigninSyncTest,
-    DataTypesEnabledInTransportModeWithCustomPassphrase) {
+    PRE_DataTypesEnabledInTransportModeWithCustomPassphrase) {
   // There's a custom passphrase on the server.
   const syncer::KeyParamsForTesting kKeyParams =
       syncer::Pbkdf2PassphraseKeyParamsForTesting("hunter2");
@@ -426,6 +425,27 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
 
   // CONTACT_INFO and AUTOFILL_WALLET_DATA should be enabled.
+  EXPECT_TRUE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
+  // TODO(crbug.com/1435431): This should be removed once kPayments is decoupled
+  // from kAutofill.
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+}
+
+// Tests that a custom passphrase user's opt-in to kAutofill (which happened in
+// the PRE_ test) survives a browser restart.
+IN_PROC_BROWSER_TEST_F(
+    SingleClientStandaloneTransportWithReplaceSyncWithSigninSyncTest,
+    DataTypesEnabledInTransportModeWithCustomPassphrase) {
+  ASSERT_TRUE(SetupClients());
+
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+
+  // CONTACT_INFO and AUTOFILL_WALLET_DATA should be enabled after restarting.
   EXPECT_TRUE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
   // TODO(crbug.com/1435431): This should be removed once kPayments is decoupled
@@ -513,7 +533,6 @@ class SingleClientStandaloneTransportReplaceSyncWithSigninMigrationSyncTest
          syncer::kReadingListEnableDualReadingListModel,
          syncer::kReadingListEnableSyncTransportModeUponSignIn,
          password_manager::features::kEnablePasswordsAccountStorage,
-         syncer::kSyncEnableContactInfoDataType,
          syncer::kSyncEnableContactInfoDataTypeInTransportMode,
          syncer::kEnablePreferencesAccountStorage},
         /*disabled_features=*/{});

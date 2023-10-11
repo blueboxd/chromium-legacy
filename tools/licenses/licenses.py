@@ -17,6 +17,8 @@ from __future__ import print_function
 
 import argparse
 import codecs
+import csv
+import io
 import json
 import logging
 import os
@@ -57,7 +59,6 @@ PRUNE_PATHS = set([
     # Used for development and test, not in the shipping product.
     os.path.join('build', 'secondary'),
     os.path.join('third_party', 'bison'),
-    os.path.join('third_party', 'blanketjs'),
     os.path.join('third_party', 'chromite'),
     os.path.join('third_party', 'cygwin'),
     os.path.join('third_party', 'gles2_conform'),
@@ -566,20 +567,21 @@ def ParseDir(path,
       raise LicenseError("missing README.chromium or licenses.py "
                          "SPECIAL_CASES entry in %s\n" % path)
 
-    for line in codecs.open(readme_path, encoding='utf-8'):
-      line = line.strip()
-      if not line:
-        break
-      for key in list(metadata.keys()) + optional_keys:
-        field = key + ": "
-        if line.startswith(field):
-          value = line[len(field):]
-          # Multiple license files can be specified.
-          if key == "License File":
-            licenses = value.split(LICENSE_FILE_DELIMITER)
-            metadata[key] = [license.strip() for license in licenses]
-          else:
-            metadata[key] = value
+    with codecs.open(readme_path, encoding='utf-8') as readme:
+      for line in readme:
+        line = line.strip()
+        if not line:
+          break
+        for key in list(metadata.keys()) + optional_keys:
+          field = key + ": "
+          if line.startswith(field):
+            value = line[len(field):]
+            # Multiple license files can be specified.
+            if key == "License File":
+              licenses = value.split(LICENSE_FILE_DELIMITER)
+              metadata[key] = [license.strip() for license in licenses]
+            else:
+              metadata[key] = value
 
   if enable_warnings:
     # Check for the deprecated special value used in the "License File" field.
@@ -780,6 +782,7 @@ def GetThirdPartyDepsFromGNDepsOutput(
 
   # Use non-capturing group with or's for all possible options.
   allowed_paths = '|'.join([re.escape(x) for x in allowed_paths_list])
+  sep = re.escape(os.path.sep)
   path_regex = re.compile(
       r'''^
             (                                     # capture
@@ -792,7 +795,7 @@ def GetThirdPartyDepsFromGNDepsOutput(
               {sep}
             )
             (.+{sep})?BUILD\.gn$                  # with filename BUILD.gn
-  '''.format(allowed_paths=allowed_paths, sep=r'[/\\]', nonsep=r'[^/\\]'),
+  '''.format(allowed_paths=allowed_paths, sep=sep, nonsep=f'[^{sep}]'),
       re.VERBOSE)
 
   third_party_deps = set()
@@ -1038,19 +1041,34 @@ def GenerateLicenseFile(args: argparse.Namespace):
         os.path.normpath(path) for path in extra_third_party_dirs
     ]
 
-  third_party_dirs = FindThirdPartyDeps(args.gn_out_dir, args.gn_target,
-                                        args.target_os, extra_third_party_dirs,
-                                        args.extra_allowed_dirs)
+  if args.gn_target is not None:
+    third_party_dirs = FindThirdPartyDeps(args.gn_out_dir, args.gn_target,
+                                          args.target_os,
+                                          extra_third_party_dirs,
+                                          args.extra_allowed_dirs)
+
+    # Sanity-check to raise a build error if invalid gn_... settings are
+    # somehow passed to this script.
+    if not third_party_dirs:
+      raise RuntimeError("No deps found.")
+
+  else:
+    third_party_dirs = FindThirdPartyDirs(PRUNE_PATHS, _REPOSITORY_ROOT,
+                                          extra_third_party_dirs)
 
   metadatas = {}
   for d in third_party_dirs:
-    md = ParseDir(
-        d,
-        _REPOSITORY_ROOT,
-        require_license_file=True,
-        enable_warnings=args.enable_warnings)
-    if md:
-      metadatas[d] = md
+    try:
+      md = ParseDir(d,
+                    _REPOSITORY_ROOT,
+                    require_license_file=True,
+                    enable_warnings=args.enable_warnings)
+      if md:
+        metadatas[d] = md
+    except LicenseError as lic_exp:
+      # TODO(phajdan.jr): Convert to fatal error (http://crbug.com/39240).
+      print(f"Error: {lic_exp}")
+      continue
 
   if args.format == 'spdx':
     license_txt = GenerateLicenseFileSpdx(metadatas, args.spdx_link,
@@ -1058,6 +1076,10 @@ def GenerateLicenseFile(args: argparse.Namespace):
                                           args.spdx_doc_namespace)
   elif args.format == 'txt':
     license_txt = GenerateLicenseFilePlainText(metadatas)
+
+  elif args.format == 'csv':
+    license_txt = GenerateLicenseFileCsv(metadatas)
+
   else:
     raise ValueError(f'Unknown license format: {args.format}')
 
@@ -1066,6 +1088,75 @@ def GenerateLicenseFile(args: argparse.Namespace):
       f.write(license_txt)
   else:
     print(license_txt)
+
+
+def GenerateLicenseFileCsv(
+    metadata: Dict[str, Dict[str, Any]],
+    repo_root: str = _REPOSITORY_ROOT,
+) -> str:
+  """Generates a CSV formatted file which contains license data to be used as
+    part of the submission to the Open Source Licensing Review process.
+  """
+  csv_content = io.StringIO()
+  csv_writer = csv.writer(csv_content, quoting=csv.QUOTE_NONNUMERIC)
+
+  # These values are applied statically to all dependencies which are included
+  # in the exported CSV.
+  # Static fields:
+  #   * Name of binary which uses dependency,
+  #   * License text for library included in product,
+  #   * Mirrored source for reciprocal licences.
+  #   * Signoff date.
+  static_data = ["Chromium", "Yes", "Yes", "N/A"]
+
+  # Add informative CSV header row to make it clear which columns represent
+  # which data in the review spreadsheet.
+  csv_writer.writerow([
+      "Library Name", "Link to LICENSE file", "License Name",
+      "Binary which uses library", "License text for library included?",
+      "Source code for library includes the mirrored source?",
+      "Authorization date"
+  ])
+
+  # Start with Chromium's LICENSE file
+  csv_writer.writerow([
+      "Chromium",
+      "https://chromium.googlesource.com/chromium/src.git/+/refs/heads/main/LICENSE",
+      "Chromium"
+  ] + static_data)
+
+  # Add necessary third_party.
+  for directory in sorted(metadata):
+    dir_metadata = metadata[directory]
+
+    # Only third party libraries which are shipped as part of a final product
+    # are in scope for license review.
+    if dir_metadata['Shipped'] == NO:
+      continue
+
+    data_row = [dir_metadata['Name'] or "UNKNOWN"]
+
+    urls = []
+    for lic in dir_metadata['License File']:
+      # The review process requires that a link is provided to each license
+      # which is included. We can achieve this by combining a static
+      # Chromium googlesource URL with the relative path to the license
+      # file from the top level Chromium src directory.
+      lic_url = (
+          "https://chromium.googlesource.com/chromium/src.git/+/refs/heads/main/"
+          + os.path.relpath(lic, repo_root))
+
+      # Since these are URLs and not paths, replace any Windows path `\`
+      # separators with a `/`
+      urls.append(lic_url.replace("\\", "/"))
+
+    data_row.append(", ".join(urls) or "UNKNOWN")
+    data_row.append(dir_metadata["License"] or "UNKNOWN")
+
+    # Join the default data which applies to each row
+    csv_writer.writerow(data_row + static_data)
+
+  return csv_content.getvalue()
 
 
 def GenerateLicenseFilePlainText(
@@ -1089,7 +1180,7 @@ def GenerateLicenseFilePlainText(
     license_files = dir_metadata['License File']
     if shipped == YES and license_files:
       content.append('-' * 20)
-      content.append(directory.split(os.sep)[-1])
+      content.append(dir_metadata["Name"])
       content.append('-' * 20)
       for license_file in license_files:
         content.append(read_file(os.path.join(repo_root, license_file)))
@@ -1160,7 +1251,7 @@ def main():
   parser.add_argument('--gn-target', help='GN target to scan for dependencies.')
   parser.add_argument('--format',
                       default='txt',
-                      choices=['txt', 'spdx'],
+                      choices=['txt', 'spdx', 'csv'],
                       help='What format to output in')
   parser.add_argument('--spdx-root',
                       default=_REPOSITORY_ROOT,

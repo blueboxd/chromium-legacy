@@ -61,28 +61,10 @@ id<GREYMatcher> TranslateManualTriggerBadge() {
       grey_ancestor(TranslateManualTriggerButton()), nil);
 }
 
-// Matcher for the Bottom Toolbar Tip Bubble.
-id<GREYMatcher> BottomToolbarTipBubble() {
-  return grey_accessibilityLabel(l10n_util::GetNSStringWithFixup(
-      IDS_IOS_BOTTOM_TOOLBAR_IPH_PROMOTION_TEXT));
-}
-
-// Matcher for the Long Press Tip Bubble.
-id<GREYMatcher> LongPressTipBubble() {
-  return grey_accessibilityLabel(l10n_util::GetNSStringWithFixup(
-      IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_TEXT));
-}
-
 // Matcher for the DefaultSiteView tip.
 id<GREYMatcher> DefaultSiteViewTip() {
   return grey_accessibilityLabel(
       l10n_util::GetNSStringWithFixup(IDS_IOS_DEFAULT_PAGE_MODE_TIP));
-}
-
-// Matcher for the TabPinned tip.
-id<GREYMatcher> TabPinnedTip() {
-  return grey_accessibilityLabel(
-      l10n_util::GetNSString(IDS_IOS_PINNED_TAB_OVERFLOW_ACTION_IPH_TEXT));
 }
 
 // Opens the tools menu and request the desktop version of the page.
@@ -116,10 +98,6 @@ void RequestDesktopVersion() {
   std::string enable_features = base::StringPrintf(
       "%s:chosen_feature/%s", feature_engagement::kIPHDemoMode.name,
       feature.c_str());
-  if ([self isRunningTest:@selector(testPinTabFromOverflowMenu)]) {
-    enable_features += base::StringPrintf(",%s:%s/true", kEnablePinnedTabs.name,
-                                          kEnablePinnedTabsOverflowParam);
-  }
   AppLaunchConfiguration config = [self appConfigurationForTestCase];
   config.additional_args.push_back("--enable-features=" + enable_features);
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
@@ -164,87 +142,6 @@ void RequestDesktopVersion() {
       assertWithMatcher:grey_notNil()];
 }
 
-// Verifies that the bottom toolbar tip is displayed when the phone is in split
-// toolbar mode.
-- (void)testBottomToolbarAppear {
-  if (![ChromeEarlGrey isSplitToolbarMode])
-    return;
-
-  // The IPH appears immediately on startup, so don't open a new tab when the
-  // app starts up.
-  [[self class] testForStartup];
-
-  // Scope for the synchronization disabled.
-  {
-    ScopedSynchronizationDisabler syncDisabler;
-
-    [self enableDemoModeForFeature:"IPH_BottomToolbarTip"];
-
-    // Verify that the Bottom toolbar Tip appeared.
-    ConditionBlock condition = ^{
-      NSError* error = nil;
-      [[EarlGrey selectElementWithMatcher:BottomToolbarTipBubble()]
-          assertWithMatcher:grey_sufficientlyVisible()
-                      error:&error];
-      return error == nil;
-    };
-    // The app relaunch (to enable a feature flag) may take a while, therefore
-    // the timeout is extended to 15 seconds.
-    GREYAssert(WaitUntilConditionOrTimeout(base::Seconds(15), condition),
-               @"Waiting for the Bottom Toolbar tip to appear");
-  }  // End of the sync disabler scope.
-}
-
-// Verifies that the bottom toolbar tip is not displayed when the phone is not
-// in split toolbar mode.
-- (void)testBottomToolbarDontAppearOnNonSplitToolbar {
-  if ([ChromeEarlGrey isSplitToolbarMode])
-    return;
-
-  // The IPH appears immediately on startup, so don't open a new tab when the
-  // app starts up.
-  [[self class] testForStartup];
-
-  [self enableDemoModeForFeature:"IPH_BottomToolbarTip"];
-
-  // Verify that the Bottom toolbar Tip didn't appear.
-  ConditionBlock condition = ^{
-    NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:BottomToolbarTipBubble()]
-        assertWithMatcher:grey_sufficientlyVisible()
-                    error:&error];
-    return error == nil;
-  };
-  GREYAssert(!WaitUntilConditionOrTimeout(base::Seconds(2), condition),
-             @"The Bottom Toolbar tip shouldn't appear");
-}
-
-// Verifies that the LongPress tip is displayed only after the Bottom Toolbar
-// tip is presented.
-// TODO(crbug.com/934248) The test is flaky.
-- (void)DISABLED_testLongPressTipAppearAfterBottomToolbar {
-  if (![ChromeEarlGrey isSplitToolbarMode])
-    return;
-
-  // The IPH appears immediately on startup, so don't open a new tab when the
-  // app starts up.
-  [[self class] testForStartup];
-
-  [self enableDemoModeForFeature:"IPH_LongPressToolbarTip"];
-
-  // Verify that the Long Press Tip appears now that the Bottom Toolbar tip has
-  // been shown.
-  ConditionBlock condition = ^{
-    NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:LongPressTipBubble()]
-        assertWithMatcher:grey_sufficientlyVisible()
-                    error:&error];
-    return error == nil;
-  };
-  GREYAssert(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition),
-             @"Waiting for the Long Press tip.");
-}
-
 // Verifies that the IPH for Request desktop shows when triggered
 - (void)testRequestDesktopTip {
   [self enableDemoModeForFeature:"IPH_DefaultSiteView"];
@@ -259,76 +156,6 @@ void RequestDesktopVersion() {
 
   [[EarlGrey selectElementWithMatcher:DefaultSiteViewTip()]
       assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-// Verifies that the IPH for Pinned tab is displayed after pinning a tab from
-// the overflow menu.
-- (void)testPinTabFromOverflowMenu {
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Skipped for iPad. The Pinned Tabs feature is only "
-                           @"supported on iPhone.");
-  }
-  if (@available(iOS 15, *)) {
-  } else {
-    // Only available for iOS 15+.
-    return;
-  }
-  [self enableDemoModeForFeature:"IPH_TabPinnedFeature"];
-
-  XCUIApplication* app = [[XCUIApplication alloc] init];
-
-  // Make sure that the pinned tabs feature has never been used from the
-  // overflow menu.
-  [ChromeEarlGrey setUserDefaultObject:@(0) forKey:kPinnedTabsOverflowEntryKey];
-
-  [ChromeEarlGreyUI openToolsMenu];
-
-  // Check that the "N" IPH badge is displayed before tapping on the action.
-  GREYAssert([[app images][@"overflowRowIPHBadgeIdentifier"] exists],
-             @"The 'N' IPH bagde should be displayed.");
-  [ChromeEarlGreyUI
-      tapToolsMenuAction:grey_accessibilityID(kToolsMenuPinTabId)];
-
-  NSString* pinTabSnackbarMessage =
-      l10n_util::GetNSString(IDS_IOS_SNACKBAR_MESSAGE_PINNED_TAB);
-  NSString* unpinTabSnackbarMessage =
-      l10n_util::GetNSString(IDS_IOS_SNACKBAR_MESSAGE_UNPINNED_TAB);
-
-  [[EarlGrey selectElementWithMatcher:TabPinnedTip()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(pinTabSnackbarMessage)]
-      assertWithMatcher:grey_nil()];
-
-  [ChromeEarlGreyUI openToolsMenu];
-
-  // Check that the "N" IPH bagde is not displayed before tapping on the action.
-  GREYAssertFalse([[app images][@"overflowRowIPHBadgeIdentifier"] exists],
-                  @"The 'N' IPH bagde should not be displayed.");
-  [ChromeEarlGreyUI
-      tapToolsMenuAction:grey_accessibilityID(kToolsMenuUnpinTabId)];
-  [[EarlGrey selectElementWithMatcher:TabPinnedTip()]
-      assertWithMatcher:grey_nil()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(unpinTabSnackbarMessage)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  // Tap the snackbar to make it disappear.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(unpinTabSnackbarMessage)]
-      performAction:grey_tap()];
-
-  [ChromeEarlGreyUI openToolsMenu];
-  [ChromeEarlGreyUI
-      tapToolsMenuAction:grey_accessibilityID(kToolsMenuPinTabId)];
-  [[EarlGrey selectElementWithMatcher:TabPinnedTip()]
-      assertWithMatcher:grey_nil()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(pinTabSnackbarMessage)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  // Tap the snackbar to make it disappear.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(pinTabSnackbarMessage)]
-      performAction:grey_tap()];
 }
 
 @end

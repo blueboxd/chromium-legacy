@@ -8,11 +8,13 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/one_shot_event.h"
@@ -345,8 +347,7 @@ ProcessManager::FrameSet ProcessManager::GetRenderFrameHostsForExtension(
 
 bool ProcessManager::IsRenderFrameHostRegistered(
     content::RenderFrameHost* render_frame_host) {
-  return all_extension_frames_.find(render_frame_host) !=
-         all_extension_frames_.end();
+  return base::Contains(all_extension_frames_, render_frame_host);
 }
 
 void ProcessManager::AddObserver(ProcessManagerObserver* observer) {
@@ -595,8 +596,9 @@ void ProcessManager::NetworkRequestDone(
   ExtensionHost* host = result->second;
   pending_network_requests_.erase(result);
 
-  if (background_hosts_.find(host) == background_hosts_.end())
+  if (!base::Contains(background_hosts_, host)) {
     return;
+  }
 
   DCHECK(IsFrameInExtensionHost(host, render_frame_host));
 
@@ -708,7 +710,7 @@ void ProcessManager::CloseBackgroundHost(ExtensionHost* host) {
         mojom::ViewType::kExtensionBackgroundPage);
   delete host;
   // |host| should deregister itself from our structures.
-  CHECK(background_hosts_.find(host) == background_hosts_.end());
+  CHECK(!base::Contains(background_hosts_, host));
 
   for (auto& observer : observer_list_)
     observer.OnBackgroundHostClose(extension_id);
@@ -755,7 +757,6 @@ base::Uuid ProcessManager::IncrementServiceWorkerKeepaliveCount(
     content::ServiceWorkerExternalRequestTimeoutType timeout_type,
     Activity::Type activity_type,
     const std::string& extra_data) {
-  // TODO(lazyboy): Use |activity_type| and |extra_data|.
   int64_t service_worker_version_id = worker_id.version_id;
   DCHECK(!worker_id.extension_id.empty());
   const Extension* extension =
@@ -765,12 +766,24 @@ base::Uuid ProcessManager::IncrementServiceWorkerKeepaliveCount(
   DCHECK(BackgroundInfo::IsServiceWorkerBased(extension));
 
   base::Uuid request_uuid = base::Uuid::GenerateRandomV4();
+
+
   content::ServiceWorkerContext* service_worker_context =
       util::GetServiceWorkerContextForExtensionId(extension->id(),
                                                   browser_context_);
 
-  service_worker_context->StartingExternalRequest(service_worker_version_id,
-                                                  timeout_type, request_uuid);
+  content::ServiceWorkerExternalRequestResult start_result =
+      service_worker_context->StartingExternalRequest(
+          service_worker_version_id, timeout_type, request_uuid);
+
+  service_worker_keepalives_[request_uuid] = ServiceWorkerKeepaliveData{
+      worker_id, activity_type, extra_data, timeout_type, start_result};
+
+  base::UmaHistogramEnumeration(
+      "Extensions.ServiceWorkerBackground."
+      "ProcessManagerStartingExternalRequestResult",
+      start_result);
+
   return request_uuid;
 }
 
@@ -821,22 +834,44 @@ void ProcessManager::DecrementServiceWorkerKeepaliveCount(
 
   DCHECK(BackgroundInfo::IsServiceWorkerBased(extension));
 
+  // Find and remove the entry from `service_worker_keepalives_`.
+  auto iter = service_worker_keepalives_.find(request_uuid);
+  CHECK(iter != service_worker_keepalives_.end());
+  CHECK_EQ(iter->second.worker_id, worker_id);
+  CHECK_EQ(iter->second.activity_type, activity_type);
+  CHECK_EQ(iter->second.extra_data, extra_data);
+  content::ServiceWorkerExternalRequestResult start_result =
+      iter->second.start_result;
+  service_worker_keepalives_.erase(iter);
+
   int64_t service_worker_version_id = worker_id.version_id;
   content::ServiceWorkerContext* service_worker_context =
       util::GetServiceWorkerContextForExtensionId(extension->id(),
                                                   browser_context_);
 
-  content::ServiceWorkerExternalRequestResult result =
+  content::ServiceWorkerExternalRequestResult finish_result =
       service_worker_context->FinishedExternalRequest(service_worker_version_id,
                                                       request_uuid);
+
+  if (start_result == content::ServiceWorkerExternalRequestResult::kOk) {
+    base::UmaHistogramEnumeration(
+        "Extensions.ServiceWorkerBackground."
+        "ProcessManagerFinishedExternalRequestResultWithSuccessfulStart",
+        finish_result);
+  } else {
+    base::UmaHistogramEnumeration(
+        "Extensions.ServiceWorkerBackground."
+        "ProcessManagerFinishedExternalRequestResultWithUnsuccessfulStart",
+        finish_result);
+  }
 
   // Example of when kWorkerNotRunning can happen is when the renderer process
   // is killed while handling a service worker request (e.g. because of a bad
   // IPC message).
-  DCHECK((result == content::ServiceWorkerExternalRequestResult::kOk) ||
-         (result ==
+  DCHECK((finish_result == content::ServiceWorkerExternalRequestResult::kOk) ||
+         (finish_result ==
           content::ServiceWorkerExternalRequestResult::kWorkerNotRunning))
-      << "; result = " << static_cast<int>(result);
+      << "; result = " << static_cast<int>(finish_result);
 }
 
 void ProcessManager::OnLazyBackgroundPageIdle(const std::string& extension_id,
@@ -1023,7 +1058,7 @@ void ProcessManager::OnExtensionHostDestroyed(ExtensionHost* host) {
   TRACE_EVENT0("browser,startup", "ProcessManager::OnExtensionHostDestroyed");
   host->RemoveObserver(this);
 
-  DCHECK(background_hosts_.find(host) != background_hosts_.end());
+  DCHECK(base::Contains(background_hosts_, host));
   background_hosts_.erase(host);
   // Note: |host->extension()| may be null at this point.
   ClearBackgroundPageData(host->extension_id());
@@ -1060,6 +1095,19 @@ base::Uuid ProcessManager::GetContextIdForWorker(
     const WorkerId& worker_id) const {
   auto iter = worker_context_ids_.find(worker_id);
   return iter != worker_context_ids_.end() ? iter->second : base::Uuid();
+}
+
+std::vector<ProcessManager::ServiceWorkerKeepaliveData>
+ProcessManager::GetServiceWorkerKeepaliveDataForRecords(
+    const ExtensionId& extension_id) const {
+  std::vector<ServiceWorkerKeepaliveData> result;
+  for (const auto& entry : service_worker_keepalives_) {
+    if (entry.second.worker_id.extension_id == extension_id) {
+      result.push_back(entry.second);
+    }
+  }
+
+  return result;
 }
 
 std::vector<WorkerId> ProcessManager::GetAllWorkersIdsForTesting() {

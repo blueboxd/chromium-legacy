@@ -59,53 +59,6 @@ void ContentAutofillRouter::UnregisterDriver(ContentAutofillDriver* driver,
       break;
     }
   }
-
-  if (last_queried_source_ == driver)
-    SetLastQueriedSource(nullptr);
-  if (last_queried_target_ == driver)
-    SetLastQueriedTarget(nullptr);
-}
-
-void ContentAutofillRouter::SetLastQueriedSource(
-    ContentAutofillDriver* source) {
-  if (last_queried_source_ && last_queried_source_ != source) {
-    last_queried_source_->UnsetKeyPressHandlerCallback();
-  }
-  last_queried_source_ = source;
-}
-
-void ContentAutofillRouter::SetLastQueriedTarget(
-    ContentAutofillDriver* target) {
-  last_queried_target_ = target;
-}
-
-void ContentAutofillRouter::SetKeyPressHandler(
-    ContentAutofillDriver* source,
-    const content::RenderWidgetHost::KeyPressEventCallback& handler,
-    void (*callback)(
-        ContentAutofillDriver* target,
-        const content::RenderWidgetHost::KeyPressEventCallback& handler)) {
-  // The asynchronous AutocompleteHistoryManager::OnAutofillValuesReturned()
-  // calls SetKeyPressHandler() through AutofillPopupControllerImpl::Show().
-  // Before this call, UnregisterDriver() may have reset |last_queried_source_|
-  // already to nullptr due to a race condition with AutocompleteHistoryManager
-  // (https://crbug.com/1254173).
-  if (!last_queried_source_)
-    return;
-
-  callback(last_queried_source_, handler);
-}
-
-void ContentAutofillRouter::UnsetKeyPressHandler(
-    ContentAutofillDriver* source,
-    void (*callback)(ContentAutofillDriver* target)) {
-  // When AutofillPopupControllerImpl::Hide() calls this function,
-  // UnregisterDriver() may have reset |last_queried_source_| already to
-  // nullptr due to Mojo race conditions (https://crbug.com/1240246).
-  if (!last_queried_source_)
-    return;
-
-  callback(last_queried_source_);
 }
 
 // Routing of events called by the renderer:
@@ -319,21 +272,13 @@ void ContentAutofillRouter::AskForValuesToFill(
   const FormData& browser_form = form_forest_.GetBrowserForm(form_id);
   auto* target = DriverOfFrame(browser_form.host_frame);
   CHECK(target);
-  SetLastQueriedSource(source);
-  SetLastQueriedTarget(target);
   callback(target, browser_form, field, bounding_box, trigger_source);
 }
 
 void ContentAutofillRouter::HidePopup(
     ContentAutofillDriver* source,
     void (*callback)(ContentAutofillDriver* target)) {
-  // For Password Manager forms, |last_queried_target_| is not set. Since these
-  // forms are not form-transcending, the we can unicast to the |source|.
-  if (!last_queried_target_) {
-    callback(source);
-  } else {
-    callback(last_queried_target_);
-  }
+  ForEachFrame(form_forest_, callback);
 }
 
 void ContentAutofillRouter::FocusNoLongerOnForm(
@@ -342,10 +287,9 @@ void ContentAutofillRouter::FocusNoLongerOnForm(
     void (*callback)(ContentAutofillDriver* target, bool had_interacted_form)) {
   // Suppresses FocusNoLongerOnForm() if the focus has already moved to a
   // different frame.
-  LocalFrameToken frame_token(
-      source->render_frame_host()->GetFrameToken().value());
-  if (focused_frame_ != frame_token)
+  if (focused_frame_ != source->GetFrameToken()) {
     return;
+  }
 
   // Prevents FocusOnFormField() from calling FocusNoLongerOnForm().
   focus_no_longer_on_form_has_fired_ = true;
@@ -367,22 +311,20 @@ void ContentAutofillRouter::FocusOnFormField(
     void (*callback)(ContentAutofillDriver* target,
                      const FormData& form,
                      const FormFieldData& field,
-                     const gfx::RectF& bounding_box)) {
+                     const gfx::RectF& bounding_box),
+    void (*focus_no_longer_on_form)(ContentAutofillDriver* target)) {
   FormGlobalId form_id = form.global_id();
   form_forest_.UpdateTreeOfRendererForm(std::move(form), source);
 
   // Calls FocusNoLongerOnForm() if the focus has already moved from a
   // different frame and FocusNoLongerOnForm() hasn't been called yet.
-  LocalFrameToken frame_token(
-      source->render_frame_host()->GetFrameToken().value());
-  if (focused_frame_ != frame_token && !focus_no_longer_on_form_has_fired_) {
-    ForEachFrame(form_forest_, [&](ContentAutofillDriver* some_driver) {
-      some_driver->FocusNoLongerOnFormCallback(true);
-    });
+  if (focused_frame_ != source->GetFrameToken() &&
+      !focus_no_longer_on_form_has_fired_) {
+    ForEachFrame(form_forest_, focus_no_longer_on_form);
   }
 
   // Suppresses late FocusNoLongerOnForm().
-  focused_frame_ = frame_token;
+  focused_frame_ = source->GetFrameToken();
   focus_no_longer_on_form_has_fired_ = false;
 
   TriggerFormExtractionExcept(source);
@@ -405,18 +347,8 @@ void ContentAutofillRouter::DidFillAutofillFormData(
 
   const FormData& browser_form = form_forest_.GetBrowserForm(form_id);
   auto* target = DriverOfFrame(browser_form.host_frame);
-  // Usually, `target == last_queried_target_`, but this is not guaranteed
-  // because ContentAutofillRouter may have learned about `form`'s parent form
-  // in between AskForValuesToFill() and DidFillAutofillFormData().
   CHECK(target);
   callback(target, browser_form, timestamp);
-}
-
-void ContentAutofillRouter::DidPreviewAutofillFormData(
-    ContentAutofillDriver* source,
-    void (*callback)(ContentAutofillDriver* target)) {
-  if (last_queried_target_)
-    callback(last_queried_target_);
 }
 
 void ContentAutofillRouter::DidEndTextFieldEditing(
@@ -429,7 +361,7 @@ void ContentAutofillRouter::DidEndTextFieldEditing(
   ForEachFrame(form_forest_, callback);
 }
 
-void ContentAutofillRouter::SelectOrSelectMenuFieldOptionsDidChange(
+void ContentAutofillRouter::SelectOrSelectListFieldOptionsDidChange(
     ContentAutofillDriver* source,
     FormData form,
     void (*callback)(ContentAutofillDriver* target, const FormData& form)) {

@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">ไปที่<ph name="BEGIN_LINK1" />หน้าความช่วยเหลือด้านกฎหมาย<ph name="END_LINK1" />เพื่อส่งคำขอเปลี่ยนแปลงเนื้อหาด้วยเหตุผลทางกฎหมาย อาจมีการส่งข้อมูลระบบและบัญชีบางอย่างไปยัง Google เราจะใช้ข้อมูลดังกล่าวเพื่อช่วยแก้ไขปัญหาทางเทคนิคและปรับปรุงบริการ โดยเป็นไปตาม<ph name="BEGIN_LINK2" />นโยบายความเป็นส่วนตัว<ph name="END_LINK2" />และ<ph name="BEGIN_LINK3" />ข้อกำหนดในการให้บริการ<ph name="END_LINK3" /></translation>
 <translation id="1885577615937958993">กรอสื่อไปข้างหน้า</translation>
 <translation id="1887850431809612466">การแก้ไขฮาร์ดแวร์</translation>
+<translation id="1897672602657312171">แป้นพิมพ์ลัดที่ไม่มีแป้นค้นหาอาจขัดแย้งกับแป้นพิมพ์ลัดของบางแอป กดแป้นพิมพ์ลัดนี้อีกครั้งเพื่อใช้ต่อไป หรือกดแป้นพิมพ์ลัดใหม่โดยใช้แป้นค้นหา</translation>
 <translation id="1904932688895783618">แหล่งข้อมูลอื่นๆ บางส่วนที่เป็นประโยชน์มีดังต่อไปนี้</translation>
 <translation id="1905710495812624430">ลองทำเกินจำนวนครั้งที่กำหนดไว้แล้ว</translation>
 <translation id="1908234395526491708">ขอ UDP ไม่สำเร็จ</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">กำลังรีสตาร์ท…</translation>
 <translation id="2533048460510040082">เนื้อหาช่วยเหลือที่แนะนำ</translation>
 <translation id="2536159006530886390">เชื่อมต่ออินเทอร์เน็ตไม่ได้</translation>
-<translation id="2555662516429796509">กดคีย์ตัวปรับแต่ง 1-4 รายการและแป้นอื่นอีก 1 แป้นบนแป้นพิมพ์</translation>
 <translation id="2570743873672969996">กำลังทำการทดสอบ <ph name="TEST_NAME" />...</translation>
 <translation id="2584559707064218956">ไปที่การตั้งค่าเพื่อตั้งค่า</translation>
 <translation id="2597774443162333062">ระบบจะส่งไฟล์ไปยัง Google เพื่อแก้ไขข้อบกพร่อง</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">คีย์การตรวจสอบสิทธิ์ TLS</translation>
 <translation id="2713444072780614174">สีขาว</translation>
 <translation id="2717139507051041123">เปิดใช้โหมดสีมืด</translation>
+<translation id="2728460467788544679">ล้างประวัติการพิมพ์ทั้งหมด</translation>
 <translation id="2740531572673183784">ตกลง</translation>
 <translation id="2744221223678373668">ที่แชร์</translation>
 <translation id="2751739896257479635">การตรวจสอบสิทธิ์ขั้นที่ 2 ของ EAP</translation>
 <translation id="2783010256799387990">ผ่าน</translation>
 <translation id="2787435249130282949">แป้นพิมพ์สว่างขึ้น</translation>
-<translation id="2789486458103222910">ตกลง</translation>
 <translation id="2805756323405976993">แอป</translation>
 <translation id="28232023175184696">เชื่อมต่ออินเทอร์เน็ตไม่ได้ คลิกเพื่อลองอีกครั้ง</translation>
 <translation id="2859243502336719778">การอัปเดตสำคัญ</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">ภาพพักหน้าจอการเคลื่อนตัวของเมฆ</translation>
 <translation id="2926057806159140518">ป้อนชื่อผู้ใช้และรหัสผ่าน หรือสแกนคิวอาร์โค้ด</translation>
 <translation id="2940811910881150316">ทดสอบอุปกรณ์ไม่ได้ เปิดฝาหน้าจออีกครั้งเพื่อทดสอบ</translation>
+<translation id="2941112035454246133">ต่ำ</translation>
 <translation id="3008341117444806826">รีเฟรช</translation>
 <translation id="3009958530611748826">เลือกโฟลเดอร์ที่จะใช้บันทึก</translation>
 <translation id="3017079585324758401">พื้นหลัง</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">แก้ไขโฮสต์ไม่สำเร็จ</translation>
 <translation id="3942420633017001071">การวินิจฉัย</translation>
 <translation id="3954678691475912818">อุปกรณ์เป็นประเภทที่ไม่รู้จัก</translation>
+<translation id="3959413315969265597">เปิดใช้ APN นี้ไม่ได้ ตรวจสอบว่าได้เพิ่ม APN เริ่มต้นแล้ว</translation>
 <translation id="3966286471246132217">ปิดแอปทั้งหมดจนกว่าการทดสอบจะเสร็จสมบูรณ์เพื่อให้ได้ผลลัพธ์ที่ถูกต้องยิ่งขึ้น</translation>
 <translation id="3967822245660637423">ดาวน์โหลดเสร็จสมบูรณ์</translation>
 <translation id="3969602104473960991">อัปเดตรหัสผ่าน Chrome OS แล้ว</translation>
@@ -495,7 +497,7 @@
 <translation id="4855250849489639581">ปัดลงเพื่อดูตัวเลือกเลย์เอาต์เพิ่มเติม</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> ลองได้อีก {0} ครั้ง}other{<ph name="ERROR_MESSAGE" /> ลองได้อีก {0} ครั้ง}}</translation>
 <translation id="4873827928179867585">อัลกอริทึมการตรวจสอบสิทธิ์</translation>
-<translation id="4880328057631981605">จุดเข้าใช้งาน</translation>
+<translation id="4880328057631981605">ชื่อจุดเข้าใช้งาน</translation>
 <translation id="488307179443832524">มีการใช้แป้นพิมพ์ลัดนี้สำหรับ "<ph name="CONFLICT_ACCEL_NAME" />" แล้ว โปรดกดแป้นพิมพ์ลัดใหม่</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4890353053343094602">อย่ารอช้า รีบเลือกรหัสผ่านใหม่</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">ลดระดับเสียง</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> จาก <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">อัปเดต <ph name="DEVICE_NAME" /></translation>
+<translation id="574392208103952083">ปานกลาง</translation>
 <translation id="5757187557809630523">แทร็กถัดไป</translation>
 <translation id="5760715441271661976">สถานะพอร์ทัล</translation>
 <translation id="576835345334454681">เพิ่มความสว่างของหน้าจอ</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">อัลบั้มแกลเลอรีศิลปะ</translation>
 <translation id="5860033963881614850">ปิด</translation>
 <translation id="5860491529813859533">เปิด</translation>
-<translation id="5866840822086176774">แรงมาก</translation>
 <translation id="5876385649737594562">เปิดเพื่อเลือกตัวเลือก</translation>
 <translation id="588258955323874662">เต็มหน้าจอ</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">เปิด VPN</translation>
 <translation id="6439505561246192797">อ่อน (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">ไปที่การตั้งค่าบัญชี</translation>
-<translation id="6456394469623773452">ดี</translation>
+<translation id="6461047516875166066">ต้องการข้อมูลเพิ่มเติม</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{สแกนหน้าอีกครั้งไหม}=1{สแกนหน้าที่ {PAGE_NUMBER} อีกครั้งไหม}other{สแกนหน้าที่ {PAGE_NUMBER} อีกครั้งไหม}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287">จัดการโดย <ph name="MANAGER" /></translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">รีเซ็ตแป้นพิมพ์ลัดทั้งหมดเป็นค่าเริ่มต้นใช่ไหม</translation>
 <translation id="7058278511608979688">สิ้นสุดและบันทึก</translation>
 <translation id="7059230779847288458">กำลังชาร์จ อีก <ph name="TIME_VALUE" />จะเต็ม</translation>
+<translation id="7066538517128343186">คีย์ <ph name="KEY" /></translation>
 <translation id="7068619307603204412">เตรียมอุปกรณ์ให้พร้อม</translation>
 <translation id="708426984172631313">หยุดแล้ว</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">โปรดเชื่อมต่อเครือข่ายและโหลดหน้าซ้ำเพื่อดูวอลเปเปอร์</translation>
 <translation id="8291967909914612644">ประเทศผู้ให้บริการหน้าแรก</translation>
 <translation id="8294431847097064396">แหล่งที่มา</translation>
-<translation id="8297006494302853456">อ่อน</translation>
 <translation id="8302368968391049045">ไฟร์วอลล์ HTTPS</translation>
 <translation id="8312330582793120272">เล่นสื่อ</translation>
 <translation id="8318753676953949627">ไม่มีภาพ</translation>
 <translation id="8329018942023753850">แอปเครื่องคิดเลข</translation>
 <translation id="8336739000755212683">เปลี่ยนรูปภาพของบัญชีอุปกรณ์</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> หรือ <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">งานพิมพ์</translation>
 <translation id="8351855506390808906">จุดสัมผัสการแมปคีย์</translation>
 <translation id="8352772353338965963">เพิ่มบัญชีเพื่อลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี บัญชีที่ลงชื่อเข้าใช้แล้วทั้งหมดสามารถเข้าถึงได้โดยไม่ต้องใช้รหัสผ่าน คุณจึงควรใช้ฟีเจอร์นี้กับบัญชีที่เชื่อถือเท่านั้น</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">ไปที่การตั้งค่าเพื่อเชื่อมต่ออีกครั้ง</translation>
 <translation id="9126720536733509015">บันทึกหลายหน้าเป็น PDF ไฟล์เดียว</translation>
 <translation id="9133104754938025929">ภาพพักหน้าจอจะทำงานขณะชาร์จเท่านั้นเพื่อประหยัดแบตเตอรี่</translation>
+<translation id="9133772297793293778">กดคีย์ตัวปรับแต่ง 1-4 รายการและคีย์อื่นๆ อีก 1 รายการบนแป้นพิมพ์ หากต้องการออกจากโหมแก้ไข ให้กด alt + esc</translation>
 <translation id="9137526406337347448">Google Services</translation>
 <translation id="9138630967333032450">Shift ซ้าย</translation>
 <translation id="9143347780818904997"><ph name="MINUTES" /> นาที</translation>

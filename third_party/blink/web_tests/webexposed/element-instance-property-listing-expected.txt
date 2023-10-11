@@ -672,6 +672,7 @@ html element hr
     property size
     property width
 html element html
+    property blocking
     property version
 html element i
 html element iframe
@@ -968,6 +969,7 @@ html element script
     property src
     property text
     property type
+html element search
 html element section
 html element select
     property add
@@ -993,7 +995,8 @@ html element select
     property validity
     property value
     property willValidate
-html element selectmenu
+html element selectedoption
+html element selectlist
     property checkValidity
     property disabled
     property form
@@ -2008,6 +2011,7 @@ svg element g
     property systemLanguage
     property transform
 svg element image
+    property crossOrigin
     property decode
     property decoding
     property farthestViewportElement

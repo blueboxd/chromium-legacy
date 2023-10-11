@@ -15,13 +15,12 @@
 #ifndef MEDIAPIPE_GPU_GL_CONTEXT_H_
 #define MEDIAPIPE_GPU_GL_CONTEXT_H_
 
-#include <pthread.h>
-
 #include <atomic>
 #include <functional>
 #include <memory>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_check.h"
 #include "absl/synchronization/mutex.h"
 #include "mediapipe/framework/executor.h"
 #include "mediapipe/framework/mediapipe_profiling.h"
@@ -276,8 +275,9 @@ class GlContext : public std::enable_shared_from_this<GlContext> {
   //
   // Therefore, instead of using std::function<void(void)>, we use a template
   // that only accepts arguments with a void result type.
-  template <typename T, typename = typename std::enable_if<std::is_void<
-                            typename std::result_of<T()>::type>::value>::type>
+  template <typename T,
+            typename = typename std::enable_if<std::is_void<
+                typename std::invoke_result<T>::type>::value>::type>
   void Run(T f) {
     Run([f] {
       f();
@@ -295,7 +295,7 @@ class GlContext : public std::enable_shared_from_this<GlContext> {
   // TOOD: const result?
   template <class T>
   T& GetCachedAttachment(const Attachment<T>& attachment) {
-    DCHECK(IsCurrent());
+    ABSL_DCHECK(IsCurrent());
     internal::AttachmentPtr<void>& entry = attachments_[&attachment];
     if (entry == nullptr) {
       entry = attachment.factory()(*this);

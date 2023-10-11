@@ -391,16 +391,16 @@ ScriptTimingInfo* AnimationFrameTimingMonitor::DidExecuteScript(
 
 void AnimationFrameTimingMonitor::OnMicrotasksCompleted(
     ExecutionContext* context) {
+  user_callback_depth_--;
   if (!ShouldAddScript(context)) {
     pending_script_info_ = absl::nullopt;
     return;
   }
 
-  DCHECK(pending_script_info_->type ==
-             ScriptTimingInfo::Type::kPromiseResolve ||
-         pending_script_info_->type == ScriptTimingInfo::Type::kPromiseReject);
-
-  MaybeAddScript(context, base::TimeTicks::Now());
+  if (pending_script_info_->type == ScriptTimingInfo::Type::kPromiseResolve ||
+      pending_script_info_->type == ScriptTimingInfo::Type::kPromiseReject) {
+    MaybeAddScript(context, base::TimeTicks::Now());
+  }
 }
 
 void AnimationFrameTimingMonitor::WillHandlePromise(
@@ -440,6 +440,8 @@ void AnimationFrameTimingMonitor::WillHandlePromise(
       .execution_start_time = now,
       .class_like_name = class_like_name,
       .property_like_name = property_like_name};
+
+  user_callback_depth_++;
 }
 
 void AnimationFrameTimingMonitor::Will(

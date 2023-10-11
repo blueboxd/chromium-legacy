@@ -10,7 +10,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/functional/bind.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -20,6 +19,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -30,8 +30,8 @@ class MockCursorImpl : public mojom::blink::IDBCursor {
   explicit MockCursorImpl(
       mojo::PendingAssociatedReceiver<mojom::blink::IDBCursor> receiver)
       : receiver_(this, std::move(receiver)) {
-    receiver_.set_disconnect_handler(base::BindOnce(
-        &MockCursorImpl::CursorDestroyed, base::Unretained(this)));
+    receiver_.set_disconnect_handler(WTF::BindOnce(
+        &MockCursorImpl::CursorDestroyed, WTF::Unretained(this)));
   }
 
   void Prefetch(int32_t count,
@@ -41,8 +41,7 @@ class MockCursorImpl : public mojom::blink::IDBCursor {
     std::move(callback).Run(mojom::blink::IDBCursorResult::NewEmpty(true));
   }
 
-  void PrefetchReset(int32_t used_prefetches,
-                     int32_t unused_prefetches) override {
+  void PrefetchReset(int32_t used_prefetches) override {
     ++reset_calls_;
     last_used_count_ = used_prefetches;
   }
@@ -53,10 +52,9 @@ class MockCursorImpl : public mojom::blink::IDBCursor {
     std::move(callback).Run(mojom::blink::IDBCursorResult::NewEmpty(true));
   }
 
-  void CursorContinue(
-      std::unique_ptr<IDBKey> key,
-      std::unique_ptr<IDBKey> primary_key,
-      mojom::blink::IDBCursor::CursorContinueCallback callback) override {
+  void Continue(std::unique_ptr<IDBKey> key,
+                std::unique_ptr<IDBKey> primary_key,
+                mojom::blink::IDBCursor::ContinueCallback callback) override {
     ++continue_calls_;
     std::move(callback).Run(mojom::blink::IDBCursorResult::NewEmpty(true));
   }

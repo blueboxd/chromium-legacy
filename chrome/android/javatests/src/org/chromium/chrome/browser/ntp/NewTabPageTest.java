@@ -99,7 +99,6 @@ import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
@@ -142,7 +141,7 @@ import java.util.concurrent.TimeUnit;
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "disable-features=IPH_FeedHeaderMenu"})
-@Features.DisableFeatures({ChromeFeatureList.QUERY_TILES})
+@DisableFeatures({ChromeFeatureList.QUERY_TILES})
 public class NewTabPageTest {
     /**
      * Parameter set controlling whether scrollable mvt is enabled.
@@ -1099,7 +1098,7 @@ public class NewTabPageTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage"})
-    @EnableFeatures({ChromeFeatureList.SURFACE_POLISH})
+    @EnableFeatures(ChromeFeatureList.SURFACE_POLISH)
     @DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID,
             ChromeFeatureList.FEED_POSITION_ANDROID})
     // clang-format off
@@ -1146,8 +1145,7 @@ public class NewTabPageTest {
 
         int expectedMvtTopMargin =
                 res.getDimensionPixelSize(R.dimen.mvt_container_top_margin_polish);
-        int expectedMvtBottomMargin =
-                res.getDimensionPixelSize(R.dimen.mvt_container_bottom_margin_polish);
+        int expectedMvtBottomMargin = 0;
         Assert.assertEquals("The top margin of the most visited tiles container is wrong.",
                 expectedMvtTopMargin,
                 ((MarginLayoutParams) mvTilesContainer.getLayoutParams()).topMargin, 1);

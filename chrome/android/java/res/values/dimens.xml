@@ -6,14 +6,6 @@ found in the LICENSE file.
 -->
 
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Accessibility tab switcher -->
-    <dimen name="accessibility_tab_height">65dp</dimen>
-    <dimen name="accessibility_tab_switcher_top_padding">8dp</dimen>
-    <dimen name="accessibility_tab_switcher_item_close_button_padding_start">23dp</dimen>
-    <dimen name="accessibility_tab_switcher_item_close_button_padding_end">13dp</dimen>
-
-    <!-- TabSwitcher - The minimum distance from the edge to commit a side swap. -->
-    <dimen name="swipe_commit_distance">120dp</dimen>
     <!-- TabSwitcher - The space between tabs in the toolbar swiping transition. -->
     <dimen name="toolbar_swipe_space_between_tabs">30dp</dimen>
     <!-- TabSwitcher - The minimum distance from the edge to commit a toolbar side swap. -->
@@ -163,7 +155,6 @@ found in the LICENSE file.
     <dimen name="mvt_container_bottom_padding_polish">22dp</dimen>
     <dimen name="tile_view_title_margin_top_modern_polish">63dp</dimen>
     <dimen name="mvt_container_top_margin_polish">31dp</dimen>
-    <dimen name="mvt_container_bottom_margin_polish">16dp</dimen>
     <dimen name="mvt_container_to_ntp_right_extra_margin_two_feed_tablet">16dp</dimen>
     <dimen name="mvt_container_bottom_margin_tablet">48dp</dimen>
     <dimen name="tile_grid_layout_landscape_edge_margin_tablet">100dp</dimen>
@@ -238,15 +229,18 @@ found in the LICENSE file.
      <dimen name="bookmark_favicon_display_size">20dp</dimen>
 
      <!-- Improved bookmark row properties. -->
-     <!-- The size of the start image for compact rows.. -->
+     <!-- The size of the start image for compact rows. -->
     <dimen name="improved_bookmark_start_image_size_compact">48dp</dimen>
-     <!-- The size of the start image for visual rows.. -->
+     <!-- The size of the start image for visual rows. -->
     <dimen name="improved_bookmark_start_image_size_visual">80dp</dimen>
     <dimen name="improved_bookmark_icon_radius">24dp</dimen>
     <dimen name="add_new_folder_dialog_horizontal_margin">22dp</dimen>
     <dimen name="bookmark_folder_picker_button_container_height">54dp</dimen>
+    <dimen name="improved_bookmark_row_start_margin">16dp</dimen>
+    <dimen name="improved_bookmark_row_start_negative_margin">-16dp</dimen>
+    <dimen name="shopping_chip_padding">8dp</dimen>
 
-    <!-- Improved bookamrk save flow properties-->
+    <!-- Improved bookmark save flow properties-->
     <dimen name="improved_bookmark_save_flow_outer_radius">8dp</dimen>
     <dimen name="improved_bookmark_save_flow_inner_radius">4dp</dimen>
     <dimen name="improved_bookmark_save_flow_image_size">75dp</dimen>
@@ -435,5 +429,28 @@ found in the LICENSE file.
     <dimen name="improved_bookmark_row_secondary_outer_size">41dp</dimen>
     <dimen name="improved_bookmark_row_secondary_inner_size">39dp</dimen>
     <dimen name="improved_bookmark_row_secondary_inner_half_size">19.5dp</dimen>
+
+    <!-- Autofill "save card" bottom sheet dimensions. -->
+    <dimen name="autofill_bottom_sheet_card_chip_top_margin">22dp</dimen>
+    <dimen name="autofill_bottom_sheet_confirm_button_top_margin">22dp</dimen>
+    <dimen name="autofill_bottom_sheet_credit_card_height">24dp</dimen>
+    <dimen name="autofill_bottom_sheet_credit_card_spacing">16dp</dimen>
+    <dimen name="autofill_bottom_sheet_credit_card_width">40dp</dimen>
+    <dimen name="autofill_bottom_sheet_drag_handlebar_spacing_top">8dp</dimen>
+    <dimen name="autofill_bottom_sheet_logo_height">32dp</dimen>
+    <dimen name="autofill_bottom_sheet_title_top_margin">24dp</dimen>
+
+    <!-- Autofill "virtual card number enrollment" bottom sheet dimensions. -->
+    <dimen name="autofill_bottom_sheet_drag_handlebar_height">4dp</dimen>
+    <dimen name="autofill_bottom_sheet_drag_handlebar_width">32dp</dimen>
+    <dimen name="autofill_bottom_sheet_illustration_min_height">93dp</dimen>
+    <dimen name="autofill_bottom_sheet_logo_min_height">32dp</dimen>
+    <dimen name="autofill_bottom_sheet_spacing_large">22dp</dimen>
+    <dimen name="autofill_bottom_sheet_spacing_small">12dp</dimen>
+
+    <!-- Common autofill bottom sheet dimensions. -->
+    <dimen name="autofill_bottom_sheet_padding_horizontal">24dp</dimen>
+    <dimen name="autofill_bottom_sheet_spacing_extra_small">8dp</dimen>
+    <dimen name="autofill_bottom_sheet_spacing_medium">16dp</dimen>
 
 </resources>

@@ -99,9 +99,8 @@ static float ComputeDecorationThickness(
   DCHECK(!text_decoration_thickness.IsFromFont());
 
   const Length& thickness_length = text_decoration_thickness.Thickness();
-  float font_size = font_data->PlatformData().size();
   float text_decoration_thickness_pixels =
-      FloatValueForLength(thickness_length, font_size);
+      FloatValueForLength(thickness_length, computed_font_size);
 
   return std::max(minimum_thickness, roundf(text_decoration_thickness_pixels));
 }
@@ -511,7 +510,7 @@ void TextDecorationInfo::SetSpellingOrGrammarErrorLineData(
   DCHECK(applied_text_decoration_);
   const int paint_underline_offset = decoration_offset.ComputeUnderlineOffset(
       FlippedUnderlinePosition(), TargetStyle().ComputedFontSize(), FontData(),
-      applied_text_decoration_->UnderlineOffset(), ResolvedThickness());
+      Length(), ResolvedThickness());
   SetLineData(HasSpellingError() ? TextDecorationLine::kSpellingError
                                  : TextDecorationLine::kGrammarError,
               paint_underline_offset);
@@ -541,6 +540,13 @@ ETextDecorationStyle TextDecorationInfo::DecorationStyle() const {
 }
 
 Color TextDecorationInfo::LineColor() const {
+  if (HasSpellingError()) {
+    return LayoutTheme::GetTheme().PlatformSpellingMarkerUnderlineColor();
+  }
+  if (HasGrammarError()) {
+    return LayoutTheme::GetTheme().PlatformGrammarMarkerUnderlineColor();
+  }
+
   if (highlight_override_)
     return *highlight_override_;
 

@@ -42,9 +42,9 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
-#include "chrome/browser/ui/profile_picker.h"
-#include "chrome/browser/ui/profile_view_utils.h"
-#include "chrome/browser/ui/signin/profile_colors_util.h"
+#include "chrome/browser/ui/profiles/profile_colors_util.h"
+#include "chrome/browser/ui/profiles/profile_picker.h"
+#include "chrome/browser/ui/profiles/profile_view_utils.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
@@ -67,7 +67,6 @@
 #include "components/vector_icons/vector_icons.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
@@ -706,7 +705,7 @@ void ProfileMenuView::BuildAvailableProfiles() {
 
   auto profile_entries = g_browser_process->profile_manager()
                              ->GetProfileAttributesStorage()
-                             .GetAllProfilesAttributesSortedByName();
+                             .GetAllProfilesAttributesSortedByNameWithCheck();
   for (ProfileAttributesEntry* profile_entry : profile_entries) {
     // The current profile is excluded.
     if (profile_entry->GetPath() == browser()->profile()->GetPath())
@@ -769,7 +768,3 @@ void ProfileMenuView::BuildProfileManagementFeatureButtons() {
   }
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-BEGIN_METADATA(ProfileMenuView, ProfileMenuViewBase)
-ADD_READONLY_PROPERTY_METADATA(gfx::ImageSkia, SyncIcon)
-END_METADATA

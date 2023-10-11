@@ -77,6 +77,7 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/private/chromium/GrDeferredDisplayList.h"
 #include "third_party/skia/modules/skcms/skcms.h"
+#include "third_party/skia/src/core/SkCanvasPriv.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_transform.h"
@@ -731,6 +732,9 @@ struct SkiaRenderer::DrawRPDQParams {
   // the draw can be skipped.
   gfx::Rect filter_bounds;
 
+  // Multiplier used for downscaling backdrop filter.
+  float backdrop_filter_quality = 1.0f;
+
   // Geometry from the bypassed RenderPassDrawQuad.
   absl::optional<BypassGeometry> bypass_geometry;
 
@@ -859,9 +863,7 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
       can_skip_render_pass_overlay_(
           base::FeatureList::IsEnabled(features::kCanSkipRenderPassOverlay)),
 #endif
-      is_using_raw_draw_(features::IsUsingRawDraw()),
-      is_using_graphite_(
-          base::FeatureList::IsEnabled(features::kSkiaGraphite)) {
+      is_using_raw_draw_(features::IsUsingRawDraw()) {
   DCHECK(skia_output_surface_);
   lock_set_for_external_use_.emplace(resource_provider, skia_output_surface_);
 
@@ -1502,9 +1504,9 @@ void SkiaRenderer::PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
   SkRect bounds = gfx::RectFToSkRect(
       rpdq_params.bypass_geometry ? rpdq_params.bypass_geometry->clip_rect
                                   : params->visible_rect);
-  current_canvas_->saveLayer(
-      SkCanvas::SaveLayerRec(&bounds, &layer_paint, backdrop_filter.get(), 0));
-
+  current_canvas_->saveLayer(SkCanvasPriv::ScaledBackdropLayer(
+      &bounds, &layer_paint, backdrop_filter.get(),
+      rpdq_params.backdrop_filter_quality, 0));
   // If we have backdrop filtered content (and not transparent black like with
   // regular render passes), we have to clear out the parts of the layer that
   // shouldn't show the backdrop
@@ -1627,34 +1629,6 @@ void SkiaRenderer::PrepareColorOrCanvasForRPDQ(
   }
 }
 
-bool SkiaRenderer::NeedsFlipY(const DrawQuad* quad) const {
-  // TODO(crbug.com/1449764): remove this workaround when bottom left origin
-  // image is supported by graphite.
-  if (!is_using_graphite_) {
-    return false;
-  }
-  switch (quad->material) {
-    case DrawQuad::Material::kTextureContent:
-      return TextureDrawQuad::MaterialCast(quad)->y_flipped;
-    case DrawQuad::Material::kAggregatedRenderPass: {
-      auto* render_pass_quad = AggregatedRenderPassDrawQuad::MaterialCast(quad);
-      auto bypass =
-          render_pass_bypass_quads_.find(render_pass_quad->render_pass_id);
-      if (bypass == render_pass_bypass_quads_.end()) {
-        return false;
-      }
-      const DrawQuad* bypass_quad = bypass->second;
-      if (RenderPassRemainsTransparent(
-              bypass_quad->shared_quad_state->blend_mode)) {
-        return false;
-      }
-      return NeedsFlipY(bypass_quad);
-    }
-    default:
-      return false;
-  }
-}
-
 SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
     const gfx::AxisTransform2d& target_to_device,
     const absl::optional<gfx::Rect>& scissor_rect,
@@ -1667,11 +1641,6 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
       GetSampling(quad), draw_region);
 
   params.content_device_transform.PostConcat(target_to_device);
-  if (NeedsFlipY(quad)) {
-    float height = quad->visible_rect.height();
-    params.content_device_transform.Scale(1, -1);
-    params.content_device_transform.Translate(0, -height);
-  }
   params.content_device_transform.Flatten();
 
   // Respect per-quad setting overrides as highest priority setting
@@ -2851,6 +2820,7 @@ void SkiaRenderer::ScheduleOverlays() {
                .supports_non_backed_solid_color_overlays &&
           !output_surface_->capabilities().supports_single_pixel_buffer) {
         overlay.mailbox = GetImageMailboxForColor(*overlay.color);
+        overlay.resource_size_in_pixels = gfx::Size(1, 1);
         // This can now be treated as a regular overlay with a mailbox backing.
         overlay.is_solid_color = false;
         locks.emplace_back(overlay.mailbox);
@@ -3037,6 +3007,7 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   // TODO(weiliangc): ChromeOS would need backdrop_filter_quality implemented
   if (backdrop_filters) {
     DCHECK(!backdrop_filters->IsEmpty());
+    rpdq_params.backdrop_filter_quality = quad->backdrop_filter_quality;
 
     // quad->rect represents the layer's bounds *after* any display scale has
     // been applied to it. The ZOOM FilterOperation uses the layer's bounds as
@@ -3646,7 +3617,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
 
     // For bypassed render pass, we use the same format and color space for the
     // framebuffer.
-    buffer_format = GetSharedImageFormat(reshape_buffer_format());
+    buffer_format = GetSinglePlaneSharedImageFormat(reshape_buffer_format());
     color_space = reshape_color_space();
   } else {
     // A real render pass that was turned into an image
@@ -3681,6 +3652,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
   const RenderPassBacking& dst_overlay_backing =
       overlay_params->render_pass_backing;
   overlay->mailbox = dst_overlay_backing.mailbox;
+  overlay->resource_size_in_pixels = dst_overlay_backing.size;
 
   if (can_skip_render_pass) {
     int pixel_size = quad->rect.width() * quad->rect.height();

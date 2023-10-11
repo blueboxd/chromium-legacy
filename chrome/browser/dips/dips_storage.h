@@ -31,6 +31,15 @@ class DIPSStorage {
 
   DIPSState Read(const GURL& url);
 
+  absl::optional<PopupsStateValue> ReadPopup(
+      const std::string& first_party_site,
+      const std::string& tracking_site);
+
+  bool WritePopup(const std::string& first_party_site,
+                  const std::string& tracking_site,
+                  const uint64_t access_id,
+                  const base::Time& popup_time);
+
   void RemoveEvents(base::Time delete_begin,
                     base::Time delete_end,
                     network::mojom::ClearDataFilterPtr filter,
@@ -76,8 +85,9 @@ class DIPSStorage {
 
   // Returns the list of sites that should have their state cleared by DIPS. How
   // these sites are determined is controlled by the value of
-  // `dips::kTriggeringAction`. Passing a non-NULL `grace_period` parameter
-  // overrides the use of `dips::kGracePeriod` when evaluating sites to clear.
+  // `features::kDIPSTriggeringAction`. Passing a non-NULL `grace_period`
+  // parameter overrides the use of `features::kDIPSGracePeriod` when
+  // evaluating sites to clear.
   std::vector<std::string> GetSitesToClear(
       absl::optional<base::TimeDelta> grace_period) const;
 

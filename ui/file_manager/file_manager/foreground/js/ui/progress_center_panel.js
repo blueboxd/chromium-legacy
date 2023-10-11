@@ -247,6 +247,7 @@ export class ProgressCenterPanel {
           case ProgressItemType.COPY:
             return str('DLP_FILES_COPY_REVIEW_TITLE');
           case ProgressItemType.MOVE:
+          case ProgressItemType.RESTORE_TO_DESTINATION:
             return str('DLP_FILES_MOVE_REVIEW_TITLE');
           default:
             console.error('Unexpected operation type: ' + item.type);
@@ -479,6 +480,9 @@ export class ProgressCenterPanel {
         if (signal === 'cancel' && item.cancelCallback) {
           item.cancelCallback();
         } else if (signal === 'dismiss') {
+          if (item.dismissCallback) {
+            item.dismissCallback();
+          }
           this.feedbackHost_.removePanelItem(panelItem);
           this.dismissErrorItemCallback(item.id);
         } else if (
@@ -486,7 +490,10 @@ export class ProgressCenterPanel {
           extraButton.callback();
           this.feedbackHost_.removePanelItem(panelItem);
           // The extra-button currently acts as a dismissal to invoke the
-          // error item callback as well.
+          // dismiss and error item callbacks as well.
+          if (item.dismissCallback) {
+            item.dismissCallback();
+          }
           this.dismissErrorItemCallback(item.id);
         }
       };

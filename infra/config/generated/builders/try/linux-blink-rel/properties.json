@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "try",
               "builder": "linux-blink-rel",
-              "project": "chromium-m117"
+              "project": "chromium"
             },
             "builder_spec": {
               "builder_group": "tryserver.blink",
@@ -31,7 +31,7 @@
         {
           "bucket": "try",
           "builder": "linux-blink-rel",
-          "project": "chromium-m117"
+          "project": "chromium"
         }
       ],
       "retry_failed_shards": false
@@ -51,6 +51,5 @@
     ]
   },
   "builder_group": "tryserver.blink",
-  "cq": "path-based",
   "recipe": "chromium_trybot"
 }

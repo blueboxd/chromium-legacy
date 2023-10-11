@@ -4,9 +4,9 @@
 
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 
+#import "base/apple/foundation_util.h"
 #import "base/ios/block_types.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
@@ -210,7 +210,11 @@ using base::UmaHistogramEnumeration;
 }
 
 - (void)dealloc {
-  [self disconnect];
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!_formActivityObserverBridge.get());
+  DUMP_WILL_BE_CHECK(!_personalDataManager);
+  DUMP_WILL_BE_CHECK(!_webState);
+  DUMP_WILL_BE_CHECK(!_webStateList);
 }
 
 - (void)disconnect {
@@ -218,6 +222,7 @@ using base::UmaHistogramEnumeration;
   if (_personalDataManager && _personalDataManagerObserver.get()) {
     _personalDataManager->RemoveObserver(_personalDataManagerObserver.get());
     _personalDataManagerObserver.reset();
+    _personalDataManager = nullptr;
   }
   if (_webState) {
     _webState->RemoveObserver(_webStateObserverBridge.get());

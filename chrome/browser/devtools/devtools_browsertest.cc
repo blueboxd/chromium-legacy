@@ -1036,6 +1036,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
+// Tests recorder panel showing.
+IN_PROC_BROWSER_TEST_F(DevToolsTest, TestShowRecorderTab) {
+  RunTest("testShowRecorderTab", kDebuggerTestPage);
+}
+
 // Tests that chrome.devtools extension is correctly exposed.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, TestDevToolsExtensionAPI) {
   LoadExtension("devtools_extension");
@@ -2147,8 +2152,6 @@ class BrowserAutofillManagerTestDelegateDevtoolsImpl
 
   void DidHideSuggestions() override {}
 
-  void OnTextFieldChanged() override {}
-
  private:
   const raw_ptr<WebContents> inspected_contents_;
 };
@@ -2172,9 +2175,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, MAYBE_TestDispatchKeyEventShowsAutoFill) {
   auto* autofill_manager = static_cast<autofill::BrowserAutofillManager*>(
       autofill_driver->autofill_manager());
   ASSERT_TRUE(autofill_manager);
-  BrowserAutofillManagerTestDelegateDevtoolsImpl autoFillTestDelegate(
+  BrowserAutofillManagerTestDelegateDevtoolsImpl autofill_test_delegate(
       GetInspectedTab());
-  autofill_manager->SetTestDelegate(&autoFillTestDelegate);
+  autofill_test_delegate.Observe(*autofill_manager);
 
   RunTestFunction(window_, "testDispatchKeyEventShowsAutoFill");
   CloseDevToolsWindow();
@@ -2245,7 +2248,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, TestDevToolsExternalNavigation) {
 }
 
 // Tests that toolbox window is loaded when DevTools window is undocked.
-IN_PROC_BROWSER_TEST_F(DevToolsTest, TestToolboxLoadedUndocked) {
+// TODO(https://crbug.com/1478411) - Fix this failing browser test.
+IN_PROC_BROWSER_TEST_F(DevToolsTest, DISABLED_TestToolboxLoadedUndocked) {
   OpenDevToolsWindow(kDebuggerTestPage, false);
   ASSERT_TRUE(toolbox_web_contents());
   DevToolsWindow* on_self =

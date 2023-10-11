@@ -15,6 +15,10 @@
 #include "chromeos/crosapi/mojom/telemetry_extension_exception.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/unloaded_extension_reason.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -22,12 +26,12 @@ namespace chromeos {
 
 class AppUiObserver;
 
-class EventManager : public extensions::BrowserContextKeyedAPI {
+class EventManager : public extensions::BrowserContextKeyedAPI,
+                     public extensions::ExtensionRegistryObserver {
  public:
   enum RegisterEventResult {
     kSuccess,
     kAppUiClosed,
-    kAppUiNotFocused,
   };
 
   // extensions::BrowserContextKeyedAPI:
@@ -43,6 +47,11 @@ class EventManager : public extensions::BrowserContextKeyedAPI {
   EventManager& operator=(const EventManager&) = delete;
 
   ~EventManager() override;
+
+  // `ExtensionRegistryObserver`:
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const extensions::Extension* extension,
+                           extensions::UnloadedExtensionReason reason) override;
 
   // Registers an extension for a certain event category. This results in a
   // subscription with cros_healthd which is cut when either:
@@ -75,12 +84,9 @@ class EventManager : public extensions::BrowserContextKeyedAPI {
   mojo::Remote<crosapi::mojom::TelemetryEventService>& GetRemoteService();
 
   void OnAppUiClosed(extensions::ExtensionId extension_id);
-  void OnAppUiFocusChanged(extensions::ExtensionId extension_id,
-                           bool is_focused);
 
   std::unique_ptr<AppUiObserver> CreateAppUiObserver(
-      extensions::ExtensionId extension_id,
-      bool focused_ui_required);
+      extensions::ExtensionId extension_id);
 
   base::flat_map<extensions::ExtensionId, std::unique_ptr<AppUiObserver>>
       app_ui_observers_;
@@ -91,5 +97,18 @@ class EventManager : public extensions::BrowserContextKeyedAPI {
 };
 
 }  // namespace chromeos
+
+namespace extensions {
+
+template <>
+struct BrowserContextFactoryDependencies<chromeos::EventManager> {
+  static void DeclareFactoryDependencies(
+      extensions::BrowserContextKeyedAPIFactory<chromeos::EventManager>*
+          factory) {
+    factory->DependsOn(ExtensionRegistryFactory::GetInstance());
+  }
+};
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_TELEMETRY_API_EVENTS_EVENT_MANAGER_H_

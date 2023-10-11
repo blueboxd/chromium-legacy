@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Allow a site to save data on your device</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1384959399684842514">Download paused</translation>
-<translation id="1409426117486808224">Simplified view for open tabs</translation>
 <translation id="1415402041810619267">URL truncated</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1446450296470737166">Allow full control of MIDI devices</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Allowed, except third-party</translation>
 <translation id="1989112275319619282">Browse</translation>
 <translation id="1994173015038366702">Site URL</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Expires in 1 day}other{Expires in # days}}</translation>
 <translation id="2004697686368036666">Features on some sites may not work</translation>
 <translation id="2025115093177348061">Augmented reality</translation>
 <translation id="2030769033451695672">Tap to return to <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -120,6 +118,7 @@
 <translation id="3008272652534848354">Reset permissions</translation>
 <translation id="301521992641321250">Automatically blocked</translation>
 <translation id="3069226013421428034">Allow third-party sign-in for a specific site.</translation>
+<translation id="3082992102194421695">{COUNT,plural, =1{Expires tomorrow}other{Expires in # days}}</translation>
 <translation id="310297983047869047">Previous slide</translation>
 <translation id="3109724472072898302">Collapsed</translation>
 <translation id="3114012059975132928">Video player</translation>
@@ -179,6 +178,7 @@
 <translation id="4002066346123236978">Title</translation>
 <translation id="4008040567710660924">Allow cookies for a specific site.</translation>
 <translation id="4046123991198612571">Next track</translation>
+<translation id="4053720452172726777">Customise and control Google Chrome</translation>
 <translation id="4149994727733219643">Simplified view for web pages</translation>
 <translation id="4151930093518524179">Default zoom</translation>
 <translation id="4165986682804962316">Site settings</translation>
@@ -257,7 +257,6 @@
 <translation id="5545693483061321551">Sites can't use your cookies to see your browsing activity across different sites, for example, to personalise ads. Features on some sites may not work.</translation>
 <translation id="5553374991681107062">Latest</translation>
 <translation id="5556459405103347317">Reload</translation>
-<translation id="5596627076506792578">More options</translation>
 <translation id="5649053991847567735">Automatic downloads</translation>
 <translation id="5668404140385795438">Override a website’s request to prevent zooming in</translation>
 <translation id="5677928146339483299">Blocked</translation>
@@ -341,7 +340,6 @@
 <translation id="7000754031042624318">Turned off in Android settings</translation>
 <translation id="7016516562562142042">Allowed for current search engine</translation>
 <translation id="702275896380648118">This site determines things that you like and then suggests ads to other sites. This site also gets your ad topics from Chrome to show you more relevant ads.</translation>
-<translation id="702463548815491781">Recommended when TalkBack or Switch Access are on</translation>
 <translation id="7053983685419859001">Block</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selected}other{# selected}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> selected. Options available near top of the screen</translation>

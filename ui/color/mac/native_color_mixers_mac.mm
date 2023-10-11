@@ -115,18 +115,20 @@ void AddNativeUiColorMixer(ColorProvider* provider,
       AddNativeColorSetInColorMixer(mixer);
     }
 
-    if (@available(macOS 10.14, *)) {
+    if (@available(macOS 10.15, *)) {
+      mixer[kColorTableBackgroundAlternate] = {skia::NSSystemColorToSkColor(
+          NSColor.alternatingContentBackgroundColors[1])};
+      if (!key.user_color.has_value()) {
+        mixer[kColorSysStateFocusRing] = {SkColorSetA(
+            skia::NSSystemColorToSkColor(NSColor.keyboardFocusIndicatorColor),
+            0x66)};
+      }
+    } else if (@available(macOS 10.14, *)) {
       mixer[kColorTableBackgroundAlternate] = {skia::NSSystemColorToSkColor(
           NSColor.alternatingContentBackgroundColors[1])};
     } else {
       mixer[kColorTableBackgroundAlternate] = {skia::NSSystemColorToSkColor(
           NSColor.controlAlternatingRowBackgroundColors[1])};
-    }
-
-    if (!key.user_color.has_value()) {
-      mixer[kColorSysStateFocusRing] = {SkColorSetA(
-          skia::NSSystemColorToSkColor(NSColor.keyboardFocusIndicatorColor),
-          0x66)};
     }
 
     if (!features::IsChromeRefresh2023()) {

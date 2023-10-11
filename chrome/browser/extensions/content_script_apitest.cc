@@ -1166,6 +1166,52 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ExecuteScriptBypassingSandbox) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+// Regression test for https://crbug.com/1407986.
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ExecuteScriptForSandboxFrame) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "Execute Script Sandbox CSP",
+           "description": "Execute scripts should work for CSP sandbox.",
+           "version": "0.1",
+           "manifest_version": 2,
+           "permissions": ["tabs","activeTab","http://*/*","https://*/*"],
+           "background": {
+            "scripts": [
+              "script.js"
+            ]}
+          })");
+
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
+                     R"(
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+  if (changeInfo.status === "complete" && tab.url) {
+    chrome.tabs.executeScript(
+      tabId,
+      { code: 'var x = 1;' },
+      () => {
+        let lastError = chrome.runtime.lastError;
+        if (lastError) {
+          chrome.test.notifyFail(lastError.message);
+        } else {
+          chrome.test.notifyPass();
+      }
+    });
+  }
+});)");
+
+  ResultCatcher catcher;
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  GURL url = embedded_test_server()->GetURL(
+      "example.com", "/extensions/page_with_sandbox_csp.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 // Regression test for https://crbug.com/883526.
 IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, InifiniteLoopInGetEffectiveURL) {
   // Create an extension that injects content scripts into about:blank frames
@@ -1814,29 +1860,6 @@ IN_PROC_BROWSER_TEST_F(ContentScriptRelatedFrameTest,
   EXPECT_FALSE(DidScriptRunInFrame(render_frame_host));
 }
 
-// Tests that content scripts can run on filesystem: URLs.
-IN_PROC_BROWSER_TEST_F(ContentScriptRelatedFrameTest,
-                       MatchAboutBlank_FilesystemFrame) {
-  // TODO(https://crbug.com/1332598): Remove this test when removing filesystem:
-  // navigation for good.
-  if (!base::FeatureList::IsEnabled(blink::features::kFileSystemUrlNavigation))
-    GTEST_SKIP();
-
-  content::WebContents* tab = NavigateTab(allowed_url_with_iframe());
-  GURL filesystem_url = CreateFilesystemURL(tab->GetPrimaryMainFrame());
-  NavigateIframe(tab->GetPrimaryMainFrame(), "frames[0]", filesystem_url);
-  content::RenderFrameHost* render_frame_host =
-      content::ChildFrameAt(tab->GetPrimaryMainFrame(), 0);
-  ASSERT_TRUE(render_frame_host);
-  EXPECT_EQ(filesystem_url, render_frame_host->GetLastCommittedURL());
-
-  // Even though match_about_blank won't consider filesystem: URLs when
-  // determining the URL to use, URLPatterns (used in permissions and
-  // content script URL pattern matching) do. As such, the content script
-  // still injects into the filesystem frame.
-  EXPECT_TRUE(DidScriptRunInFrame(render_frame_host));
-}
-
 // Test content script injection into iframes when the script has a
 // path-specific pattern.
 IN_PROC_BROWSER_TEST_F(ContentScriptRelatedFrameTest,
@@ -1939,41 +1962,6 @@ IN_PROC_BROWSER_TEST_F(ContentScriptMatchOriginAsFallbackTest,
       content::ChildFrameAt(tab->GetPrimaryMainFrame(), 0);
   ASSERT_TRUE(render_frame_host);
   EXPECT_EQ(blob_url, render_frame_host->GetLastCommittedURL());
-  EXPECT_FALSE(DidScriptRunInFrame(render_frame_host));
-}
-
-// Inject a content script on an iframe to a filesystem: URL on an allowed site.
-IN_PROC_BROWSER_TEST_F(ContentScriptMatchOriginAsFallbackTest,
-                       FilesystemURLInjection_SimpleIframe_Allowed) {
-  // TODO(https://crbug.com/1332598): Remove this test when removing filesystem:
-  // navigation for good.
-  if (!base::FeatureList::IsEnabled(blink::features::kFileSystemUrlNavigation))
-    GTEST_SKIP();
-  content::WebContents* tab = NavigateTab(allowed_url_with_iframe());
-  GURL filesystem_url = CreateFilesystemURL(tab->GetPrimaryMainFrame());
-  NavigateIframe(tab->GetPrimaryMainFrame(), "frames[0]", filesystem_url);
-  content::RenderFrameHost* render_frame_host =
-      content::ChildFrameAt(tab->GetPrimaryMainFrame(), 0);
-  ASSERT_TRUE(render_frame_host);
-  EXPECT_EQ(filesystem_url, render_frame_host->GetLastCommittedURL());
-  EXPECT_TRUE(DidScriptRunInFrame(render_frame_host));
-}
-
-// Fail to inject a content script on an iframe to a filesystem: URL on a
-// protected site.
-IN_PROC_BROWSER_TEST_F(ContentScriptMatchOriginAsFallbackTest,
-                       FilesystemURLInjection_SimpleIframe_Disallowed) {
-  // TODO(https://crbug.com/1332598): Remove this test when removing filesystem:
-  // navigation for good.
-  if (!base::FeatureList::IsEnabled(blink::features::kFileSystemUrlNavigation))
-    GTEST_SKIP();
-  content::WebContents* tab = NavigateTab(disallowed_url_with_iframe());
-  GURL filesystem_url = CreateFilesystemURL(tab->GetPrimaryMainFrame());
-  NavigateIframe(tab->GetPrimaryMainFrame(), "frames[0]", filesystem_url);
-  content::RenderFrameHost* render_frame_host =
-      content::ChildFrameAt(tab->GetPrimaryMainFrame(), 0);
-  ASSERT_TRUE(render_frame_host);
-  EXPECT_EQ(filesystem_url, render_frame_host->GetLastCommittedURL());
   EXPECT_FALSE(DidScriptRunInFrame(render_frame_host));
 }
 

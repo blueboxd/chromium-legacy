@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">‏يُرجى الانتقال إلى <ph name="BEGIN_LINK1" />صفحة المساعدة القانونية<ph name="END_LINK1" /> لطلب تغيير المحتوى لأسباب قانونية. قد يتم إرسال بعض المعلومات عن الحساب والنظام إلى Google. وسنستعين بالمعلومات التي تصلنا منك لحل المشاكل التقنية وتحسين خدماتنا وفقًا <ph name="BEGIN_LINK2" />لسياسة الخصوصية<ph name="END_LINK2" /> و<ph name="BEGIN_LINK3" />بنود الخدمة<ph name="END_LINK3" /> لدينا.</translation>
 <translation id="1885577615937958993">تقديم سريع للوسائط</translation>
 <translation id="1887850431809612466">مراجعة الأجهزة</translation>
+<translation id="1897672602657312171">قد يتعارض الاختصار بدون مفتاح البحث مع اختصار بعض التطبيقات. اضغط على هذا الاختصار مرة أخرى لمواصلة استخدامه، أو اضغط على اختصار جديد يستخدم مفتاح البحث.</translation>
 <translation id="1904932688895783618">إليك بعض المراجع المفيدة الأخرى:</translation>
 <translation id="1905710495812624430">تم تجاوز الحد الأقصى لعدد المحاولات المسموح بها.</translation>
 <translation id="1908234395526491708">‏تعذَّر طلب بروتوكول UDP.</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">جارٍ إعادة التشغيل…</translation>
 <translation id="2533048460510040082">المحتوى المساعِد المُقترَح</translation>
 <translation id="2536159006530886390">تعذَّر الاتصال بالإنترنت.</translation>
-<translation id="2555662516429796509">اضغط على أحد مفاتيح التعديل من 1 إلى 4 ثم اختَر مفتاحًا آخر في لوحة المفاتيح.</translation>
 <translation id="2570743873672969996">جارٍ تنفيذ اختبار <ph name="TEST_NAME" />...</translation>
 <translation id="2584559707064218956">لضبط إعدادات الشبكة، انتقِل إلى "الإعدادات".</translation>
 <translation id="2597774443162333062">‏سيتم إرسال الملفات إلى Google لتصحيح الأخطاء.</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">‏مفتاح مصادقة بروتوكول أمان طبقة النقل (TLS)</translation>
 <translation id="2713444072780614174">أبيض</translation>
 <translation id="2717139507051041123">تفعيل وضع الألوان الداكنة</translation>
+<translation id="2728460467788544679">محو سجلّ الطباعة بالكامل</translation>
 <translation id="2740531572673183784">حسنًا</translation>
 <translation id="2744221223678373668">مشتركة</translation>
 <translation id="2751739896257479635">‏مصادقة المرحلة الثانية عبر EAP</translation>
 <translation id="2783010256799387990">تم الاجتياز</translation>
 <translation id="2787435249130282949">إضاءة ساطعة للوحة المفاتيح</translation>
-<translation id="2789486458103222910">حسنًا</translation>
 <translation id="2805756323405976993">التطبيقات</translation>
 <translation id="28232023175184696">تعذَّر الاتصال بالإنترنت. يُرجى النقر لإعادة المحاولة.</translation>
 <translation id="2859243502336719778">تحديث مُهم</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">شاشة استراحة تعرض منظرًا انسيابيًا للسُحب</translation>
 <translation id="2926057806159140518">أدخِل اسم المستخدم وكلمة المرور أو امسَح رمز الاستجابة السريعة ضوئيًا.</translation>
 <translation id="2940811910881150316">يتعذّر اختبار لوحة المفاتيح الخاصة بالجهاز. أعِد فتح غطاء الجهاز لاختبار لوحة المفاتيح.</translation>
+<translation id="2941112035454246133">منخفضة</translation>
 <translation id="3008341117444806826">إعادة التحميل</translation>
 <translation id="3009958530611748826">اختيار مجلّد لحفظ عمليات المسح الضوئي فيه</translation>
 <translation id="3017079585324758401">الخلفية</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">تعذّرت مطابقة المضيف.</translation>
 <translation id="3942420633017001071">بيانات التشخيص</translation>
 <translation id="3954678691475912818">نوع الجهاز غير معروف.</translation>
+<translation id="3959413315969265597">‏يتعذّر تفعيل اسم نقطة الوصول (APN) هذا. يُرجى التأكّد من إضافة اسم نقطة وصول تلقائي.</translation>
 <translation id="3966286471246132217">للحصول على نتائج أكثر دقة، عليك إغلاق كل التطبيقات إلى أن يكتمل الاختبار.</translation>
 <translation id="3967822245660637423">اكتمل التنزيل</translation>
 <translation id="3969602104473960991">‏تم تعديل كلمة مرور نظام التشغيل Chrome</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">صوت منخفض</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> من <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">تحديث <ph name="DEVICE_NAME" /></translation>
+<translation id="574392208103952083">متوسط</translation>
 <translation id="5757187557809630523">المقطع الصوتي التالي</translation>
 <translation id="5760715441271661976">حالة المدخل</translation>
 <translation id="576835345334454681">زيادة سطوع الشاشة</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">ألبوم معرض الفنون</translation>
 <translation id="5860033963881614850">غير مفعّلة</translation>
 <translation id="5860491529813859533">تفعيل</translation>
-<translation id="5866840822086176774">قوية جدًا</translation>
 <translation id="5876385649737594562">يُرجى تفعيل "وضع الاستراحة" لتحديد الخيارات.</translation>
 <translation id="588258955323874662">ملء الشاشة</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">إشارة ضعيفة (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">الانتقال إلى إعدادات الحساب</translation>
-<translation id="6456394469623773452">جيدة</translation>
+<translation id="6461047516875166066">مزيد من المعلومات</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{هل تريد إعادة مسح الصفحة ضوئيًا؟}=1{هل تريد إعادة مسح الصفحة {PAGE_NUMBER} ضوئيًا؟}two{هل تريد إعادة مسح الصفحة {PAGE_NUMBER} ضوئيًا؟}few{هل تريد إعادة مسح الصفحة {PAGE_NUMBER} ضوئيًا؟}many{هل تريد إعادة مسح الصفحة {PAGE_NUMBER} ضوئيًا؟}other{هل تريد إعادة مسح الصفحة {PAGE_NUMBER} ضوئيًا؟}}</translation>
 <translation id="6472207088655375767">‏كلمة المرور لمرة واحدة (OTP)</translation>
 <translation id="6480327114083866287">تتم الإدارة من خلال <ph name="MANAGER" /></translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">هل تريد إعادة ضبط كل الاختصارات على الإعدادات التلقائية؟</translation>
 <translation id="7058278511608979688">إنهاء وحفظ</translation>
 <translation id="7059230779847288458">جارٍ الشحن. تتبقَّى <ph name="TIME_VALUE" /> حتى اكتمال الشحن.</translation>
+<translation id="7066538517128343186">المفتاح <ph name="KEY" /></translation>
 <translation id="7068619307603204412">تحضير جهازك لإجراء التحديث</translation>
 <translation id="708426984172631313">متوقّف</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">يُرجى الاتصال بإحدى الشبكات وإعادة تحميل الصفحة لعرض الخلفية.</translation>
 <translation id="8291967909914612644">بلد مقدم الخدمة الرئيسي</translation>
 <translation id="8294431847097064396">المصدر</translation>
-<translation id="8297006494302853456">ضعيفة</translation>
 <translation id="8302368968391049045">‏الجدار الناري لبروتوكول HTTPS</translation>
 <translation id="8312330582793120272">تشغيل الوسائط</translation>
 <translation id="8318753676953949627">ما مِن صور.</translation>
 <translation id="8329018942023753850">تطبيق "الآلة الحاسبة"</translation>
 <translation id="8336739000755212683">تغيير صورة حساب الجهاز</translation>
+<translation id="8347126826554447157">‫<ph name="SHORCTCUT1" /> أو <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">مهام الطباعة</translation>
 <translation id="8351855506390808906">نقطة لمس تحديد المفاتيح</translation>
 <translation id="8352772353338965963">يمكنك إضافة حساب إلى الدخول المتعدد. يمكن الدخول إلى جميع الحسابات التي تم تسجيل الدخول إليها بدون كلمة مرور، لذا فإن هذه الميزة لا يجب استخدامها إلا مع الحسابات الموثوق بها.</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">لإعادة الاتصال، انتقِل إلى "الإعدادات".</translation>
 <translation id="9126720536733509015">‏حفظ صفحات متعدّدة في ملف PDF واحد</translation>
 <translation id="9133104754938025929">للحفاظ على طاقة البطارية، لا تعمل شاشة الاستراحة إلا أثناء الشحن.</translation>
+<translation id="9133772297793293778">‏اضغط على ما بين 1 إلى 4 مفاتيح تعديل ومفتاح آخر على لوحة المفاتيح. للخروج من وضع التعديل، اضغط على Alt + مفتاح الخروج (Esc).</translation>
 <translation id="9137526406337347448">‏خدمات Google</translation>
 <translation id="9138630967333032450">‏المفتاح Shift الأيسر</translation>
 <translation id="9143347780818904997">لمدة <ph name="MINUTES" /> دقيقة</translation>

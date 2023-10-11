@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">La et nettsted lagre data på enheten din</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1384959399684842514">Nedlastingen er satt på pause</translation>
-<translation id="1409426117486808224">Forenklet visning for åpne faner</translation>
 <translation id="1415402041810619267">Nettadressen er avkortet</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1446450296470737166">Full kontroll over MIDI-enheter</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Tillatt – unntatt fra tredjeparter.</translation>
 <translation id="1989112275319619282">Bla gjennom</translation>
 <translation id="1994173015038366702">Nettadressen til nettstedet</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Utløper om 1 dag}other{Utløper om # dager}}</translation>
 <translation id="2004697686368036666">Det kan hende at funksjoner på noen nettsteder ikke fungerer</translation>
 <translation id="2025115093177348061">Utvidet virkelighet</translation>
 <translation id="2030769033451695672">Trykk for å gå tilbake til <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Tittel</translation>
 <translation id="4008040567710660924">Tillat informasjonskapsler for et spesifikt nettsted.</translation>
 <translation id="4046123991198612571">Neste spor</translation>
+<translation id="4053720452172726777">Tilpass og kontroller Google Chrome</translation>
 <translation id="4149994727733219643">Forenklet visning av nettsider</translation>
 <translation id="4151930093518524179">Standard zoom</translation>
 <translation id="4165986682804962316">Nettstedsinnstillinger</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Nettsteder kan ikke bruke informasjonskapsler til å se nettleseraktiviteten din på andre nettsteder, for eksempel for å vise deg personlig tilpassede annonser. Det kan hende at funksjoner på noen nettsteder ikke fungerer.</translation>
 <translation id="5553374991681107062">Nyeste</translation>
 <translation id="5556459405103347317">Last inn på nytt</translation>
-<translation id="5596627076506792578">Flere alternativer</translation>
 <translation id="5649053991847567735">Automatiske nedlastinger</translation>
 <translation id="5668404140385795438">Overstyr nettstedets forespørsel om å forhindre zooming</translation>
 <translation id="5677928146339483299">Blokkert</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Slått av i Android-innstillingene</translation>
 <translation id="7016516562562142042">tillatt for den aktive søkemotoren</translation>
 <translation id="702275896380648118">Dette nettstedet avgjør hva du liker, og foreslår deretter annonser til andre nettsteder. Dette nettstedet henter også annonseemnene dine fra Chrome for å kunne vise deg mer relevante annonser.</translation>
-<translation id="702463548815491781">Anbefalt når TalkBack eller brytertilgang er på</translation>
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 er valgt}other{# er valgt}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> er valgt. Du finner alternativer oppe på skjermen</translation>

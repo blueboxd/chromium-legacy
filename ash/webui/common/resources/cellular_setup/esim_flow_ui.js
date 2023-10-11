@@ -7,6 +7,7 @@ import './setup_loading_page.js';
 import './activation_code_page.js';
 import './activation_verification_page.js';
 import './final_page.js';
+import './profile_discovery_consent_page.js';
 import './profile_discovery_list_page_legacy.js';
 import './profile_discovery_list_page.js';
 import './confirmation_code_page_legacy.js';
@@ -124,13 +125,11 @@ Polymer({
     state_: {
       type: String,
       value: function() {
-        // TODO(b/290786978): Update this to set the initial page to
-        // PROFILE_SEARCH_CONSENT when the feature flag is enabled.
-        // if (loadTimeData.valueExists('isSmdsSupportEnabled') &&
-        //     loadTimeData.getBoolean('isSmdsSupportEnabled')) {
-        //       return ESimUiState.PROFILE_SEARCH_CONSENT;
-        //     }
-            return ESimUiState.PROFILE_SEARCH;
+        if (loadTimeData.valueExists('isSmdsSupportEnabled') &&
+            loadTimeData.getBoolean('isSmdsSupportEnabled')) {
+          return ESimUiState.PROFILE_SEARCH_CONSENT;
+        }
+        return ESimUiState.PROFILE_SEARCH;
       },
       observer: 'onStateChanged_',
     },
@@ -143,14 +142,23 @@ Polymer({
      */
     selectedESimPageName_: String,
 
-     /**
+    /**
      * Whether the user has consented to a scan for profiles.
      * @type {boolean}
      */
-     hasConsentedForDiscovery_: {
+    hasConsentedForDiscovery_: {
       type: Boolean,
       value: false,
-     },
+    },
+
+    /**
+     * Whether the user is setting up the eSIM profile manually.
+     * @type {boolean}
+     */
+    shouldSkipDiscovery_: {
+      type: Boolean,
+      value: false,
+    },
 
     /**
      * Whether error state should be shown for the current page.
@@ -352,21 +360,20 @@ Polymer({
   },
 
   initSubflow() {
-    this.fetchProfiles_();
+    if (!this.smdsSupportEnabled_) {
+      this.fetchProfiles_();
+    } else {
+      this.getEuicc_();
+    }
     this.onNetworkStateListChanged();
   },
 
   /** @private */
   async fetchProfiles_() {
-    const euicc = await getEuicc();
-    if (!euicc) {
-      this.hasFailedFetchingProfiles_ = true;
-      this.showError_ = true;
-      this.state_ = ESimUiState.SETUP_FINISH;
-      console.warn('No Euiccs found');
+    await this.getEuicc_();
+    if (!this.euicc_) {
       return;
     }
-    this.euicc_ = euicc;
 
     if (this.smdsSupportEnabled_) {
       await this.getAvailableProfileProperties_();
@@ -378,6 +385,19 @@ Polymer({
     } else {
       this.state_ = ESimUiState.PROFILE_SELECTION;
     }
+  },
+
+  /** @private */
+  async getEuicc_() {
+    const euicc = await getEuicc();
+    if (!euicc) {
+      this.hasFailedFetchingProfiles_ = true;
+      this.showError_ = true;
+      this.state_ = ESimUiState.SETUP_FINISH;
+      console.warn('No Euiccs found');
+      return;
+    }
+    this.euicc_ = euicc;
   },
 
   /**
@@ -448,6 +468,10 @@ Polymer({
   onStateChanged_(newState, oldState) {
     this.updateButtonBarState_();
     this.updateSelectedPage_();
+    if (this.hasConsentedForDiscovery_ &&
+        newState === ESimUiState.PROFILE_SEARCH) {
+      this.fetchProfiles_();
+    }
     this.initializePageState_(newState, oldState);
   },
 
@@ -561,6 +585,7 @@ Polymer({
           cancel: ButtonState.ENABLED,
           forward: ButtonState.ENABLED,
         };
+        break;
       case ESimUiState.ACTIVATION_CODE_ENTRY:
         buttonState = this.generateButtonStateForActivationPage_(
             /*enableForwardBtn*/ false, cancelButtonStateIfEnabled,
@@ -706,11 +731,16 @@ Polymer({
   navigateForward() {
     this.showError_ = false;
     switch (this.state_) {
-      // Set |this.hasConsentedForDiscovery_| to |true| since navigating
-      // forward is explicitly giving consent to perform SM-DS scans.
       case ESimUiState.PROFILE_SEARCH_CONSENT:
+        if (this.shouldSkipDiscovery_) {
+          this.state_ = ESimUiState.ACTIVATION_CODE_ENTRY;
+          break;
+        }
+        // Set |this.hasConsentedForDiscovery_| to |true| since navigating
+        // forward and not setting up manually is explicitly giving consent
+        // to perform SM-DS scans.
         this.hasConsentedForDiscovery_= true;
-        this.state_= ESimUiState.PROFILE_SEARCH;
+        this.state_ = ESimUiState.PROFILE_SEARCH;
         break;
       case ESimUiState.ACTIVATION_CODE_ENTRY_READY:
         // Assume installing the profile doesn't require a confirmation
@@ -812,7 +842,8 @@ Polymer({
   /** @private */
   onForwardNavigationRequested_() {
     if (this.state_ === ESimUiState.ACTIVATION_CODE_ENTRY_READY ||
-        this.state_ === ESimUiState.CONFIRMATION_CODE_ENTRY_READY) {
+        this.state_ === ESimUiState.CONFIRMATION_CODE_ENTRY_READY ||
+        this.state_ === ESimUiState.PROFILE_SEARCH_CONSENT) {
       this.navigateForward();
     }
   },
@@ -852,6 +883,10 @@ Polymer({
       return this.i18n('eSimFinalPageSuccessHeader');
     }
 
+    if (this.selectedESimPageName_ === ESimPageName.PROFILE_DISCOVERY_CONSENT) {
+      return this.i18n('profileDiscoveryConsentTitle');
+    }
+
     return '';
   },
 
@@ -877,7 +912,8 @@ Polymer({
    */
   noProfilesFound_() {
     if (this.smdsSupportEnabled_) {
-      return this.pendingProfileProperties_ &&
+      return this.hasConsentedForDiscovery_ &&
+          !!this.pendingProfileProperties_ &&
           this.pendingProfileProperties_.length === 0;
     } else {
       return (this.pendingProfiles_ && this.pendingProfiles_.length === 0);
@@ -887,7 +923,8 @@ Polymer({
   /** @private*/
   profilesFound_() {
     if (this.smdsSupportEnabled_) {
-      return this.pendingProfileProperties_ &&
+      return this.hasConsentedForDiscovery_ &&
+          !!this.pendingProfileProperties_ &&
           this.pendingProfileProperties_.length > 0;
     } else {
       return (this.pendingProfiles_ && this.pendingProfiles_.length > 0);

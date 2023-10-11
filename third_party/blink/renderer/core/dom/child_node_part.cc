@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/document_part_root.h"
 #include "third_party/blink/renderer/core/dom/node_cloning_data.h"
+#include "third_party/blink/renderer/core/dom/node_move_scope.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 
 namespace blink {
@@ -29,11 +30,10 @@ ChildNodePart::ChildNodePart(PartRoot& root,
     : Part(root, metadata),
       previous_sibling_(previous_sibling),
       next_sibling_(next_sibling) {
-  if (parentNode()) {
-    parentNode()->AddDOMPart(*this);
-  }
   previous_sibling.AddDOMPart(*this);
-  next_sibling.AddDOMPart(*this);
+  if (previous_sibling != next_sibling) {
+    next_sibling.AddDOMPart(*this);
+  }
 }
 
 void ChildNodePart::disconnect() {
@@ -41,11 +41,10 @@ void ChildNodePart::disconnect() {
     CHECK(!previous_sibling_ && !next_sibling_);
     return;
   }
-  if (parentNode()) {
-    parentNode()->RemoveDOMPart(*this);
-  }
   previous_sibling_->RemoveDOMPart(*this);
-  next_sibling_->RemoveDOMPart(*this);
+  if (next_sibling_ != previous_sibling_) {
+    next_sibling_->RemoveDOMPart(*this);
+  }
   previous_sibling_ = nullptr;
   next_sibling_ = nullptr;
   Part::disconnect();
@@ -55,6 +54,7 @@ PartRootUnion* ChildNodePart::clone(ExceptionState& exception_state) {
   // Since we're only cloning a part of the tree, not including this
   // ChildNodePart's `root`, we use a temporary DocumentFragment and its
   // PartRoot during the clone.
+  DCHECK(RuntimeEnabledFeatures::DOMPartsAPIEnabled());
   if (!IsValid()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -84,10 +84,10 @@ PartRootUnion* ChildNodePart::clone(ExceptionState& exception_state) {
     node = node->nextSibling();
     CHECK(node) << "IsValid should detect invalid siblings";
   }
+  NodeMoveScope node_move_scope(*new_parent, NodeMoveScopeType::kClone);
   data.Finalize();
   ChildNodePart* part_root =
       static_cast<ChildNodePart*>(data.ClonedPartRootFor(*this));
-  part_root->CachePartOrderAfterClone();
   return PartRoot::GetUnionFromPartRoot(part_root);
 }
 

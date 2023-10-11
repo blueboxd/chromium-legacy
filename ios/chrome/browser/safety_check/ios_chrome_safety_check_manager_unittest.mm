@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/upgrade/upgrade_recommended_details.h"
+#import "ios/chrome/test/testing_application_context.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/platform_test.h"
@@ -47,6 +48,8 @@ class IOSChromeSafetyCheckManagerTest : public PlatformTest {
     local_pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     PrefRegistrySimple* local_registry = local_pref_service_->registry();
 
+    local_registry->RegisterTimePref(prefs::kIosSafetyCheckManagerLastRunTime,
+                                     base::Time(), PrefRegistry::LOSSY_PREF);
     local_registry->RegisterStringPref(
         prefs::kIosSafetyCheckManagerPasswordCheckResult,
         NameForSafetyCheckState(PasswordSafetyCheckState::kDefault),
@@ -59,6 +62,9 @@ class IOSChromeSafetyCheckManagerTest : public PlatformTest {
         prefs::kIosSafetyCheckManagerSafeBrowsingCheckResult,
         NameForSafetyCheckState(SafeBrowsingSafetyCheckState::kDefault),
         PrefRegistry::LOSSY_PREF);
+    local_registry->RegisterIntegerPref(
+        prefs::kIosMagicStackSegmentationSafetyCheckImpressionsSinceFreshness,
+        -1);
 
     TestChromeBrowserState::Builder builder;
 
@@ -73,6 +79,8 @@ class IOSChromeSafetyCheckManagerTest : public PlatformTest {
                 web::BrowserState, password_manager::TestPasswordStore>));
 
     browser_state_ = builder.Build();
+    TestingApplicationContext::GetGlobal()->SetLocalState(
+        local_pref_service_.get());
 
     password_check_manager_ =
         IOSChromePasswordCheckManagerFactory::GetForBrowserState(
@@ -86,6 +94,7 @@ class IOSChromeSafetyCheckManagerTest : public PlatformTest {
   void TearDown() override {
     safety_check_manager_->StopSafetyCheck();
     safety_check_manager_->Shutdown();
+    TestingApplicationContext::GetGlobal()->SetLocalState(nullptr);
   }
 
  protected:
@@ -136,6 +145,36 @@ UpgradeRecommendedDetails OutdatedAppDetails() {
 }
 
 }  // namespace
+
+// Tests the the last run time of the Safety Check is unset if the Safety Check
+// hasn't been run, yet.
+TEST_F(IOSChromeSafetyCheckManagerTest,
+       ReturnsZeroSafetyCheckRunTimeIfNeverRun) {
+  EXPECT_EQ(safety_check_manager_->GetLastSafetyCheckRunTime(), base::Time());
+}
+
+// Tests the the last run time of the Safety Check is correctly returned if the
+// Safety Check has previously run.
+TEST_F(IOSChromeSafetyCheckManagerTest,
+       ReturnsLastSafetyCheckRunTimeIfPreviouslyRun) {
+  base::Time now = base::Time::Now();
+
+  safety_check_manager_->StartSafetyCheck();
+
+  EXPECT_EQ(safety_check_manager_->GetLastSafetyCheckRunTime(), now);
+}
+
+// Tests the the last run time of the Safety Check is correctly written to
+// Prefs.
+TEST_F(IOSChromeSafetyCheckManagerTest, LogsSafetyCheckRunTime) {
+  base::Time now = base::Time::Now();
+
+  safety_check_manager_->StartSafetyCheck();
+
+  EXPECT_EQ(
+      local_pref_service_->GetTime(prefs::kIosSafetyCheckManagerLastRunTime),
+      now);
+}
 
 // Tests the Safe Browsing Check state is `kSafe` when Safe Browsing is enabled,
 // but not managed.

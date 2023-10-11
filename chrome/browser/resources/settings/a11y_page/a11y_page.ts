@@ -38,6 +38,10 @@ import {getTemplate} from './a11y_page.html.js';
 // clang-format off
 // <if expr="not is_chromeos">
 import {LanguageHelper, LanguagesModel} from '../languages_page/languages_types.js';
+
+// </if>
+// <if expr="is_macosx">
+import {MacSystemSettingsBrowserProxyImpl} from './mac_system_settings_browser_proxy.js';
 // </if>
 // clang-format on
 
@@ -154,6 +158,21 @@ class SettingsA11yPageElement extends SettingsA11yPageElementBase {
           return opensExternally;
         },
       },
+
+      /**
+       * Whether to show the overscroll history navigation setting.
+       */
+      showOverscrollHistoryNavigationToggle_: {
+        type: Boolean,
+        value: function() {
+          let showOverscroll = false;
+          // <if expr="is_win or is_linux or is_macosx">
+          showOverscroll = loadTimeData.getBoolean(
+              'overscrollHistoryNavigationSettingEnabled');
+          // </if>
+          return showOverscroll;
+        },
+      },
     };
   }
 
@@ -168,6 +187,7 @@ class SettingsA11yPageElement extends SettingsA11yPageElementBase {
   private showAccessibilityLabelsSetting_: boolean;
   private showPdfOcrToggle_: boolean;
   private captionSettingsOpensExternally_: boolean;
+  private showOverscrollHistoryNavigationToggle_: boolean;
 
 
   override ready() {
@@ -246,6 +266,13 @@ class SettingsA11yPageElement extends SettingsA11yPageElementBase {
       Router.getInstance().navigateTo(routes.CAPTIONS);
     }
   }
+
+  // <if expr="is_macosx">
+  private onMacTrackpadGesturesLinkClick_() {
+    MacSystemSettingsBrowserProxyImpl.getInstance()
+        .openTrackpadGesturesSettings();
+  }
+  // </if>
 }
 
 customElements.define(SettingsA11yPageElement.is, SettingsA11yPageElement);

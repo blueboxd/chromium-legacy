@@ -212,6 +212,7 @@ declare global {
       export interface Permissions {
         simplePermissions: chrome.developerPrivate.Permission[];
         runtimeHostPermissions?: RuntimeHostPermissions;
+        canAccessSiteData: boolean;
       }
 
       export interface ExtensionInfo {
@@ -253,6 +254,7 @@ declare global {
         showSafeBrowsingAllowlistWarning: boolean;
         showAccessRequestsInToolbar: boolean;
         acknowledgeSafetyCheckWarning: boolean;
+        pinnedToToolbar?: boolean;
       }
 
       export interface ProfileInfo {
@@ -271,6 +273,7 @@ declare global {
         hostAccess?: HostAccess;
         showAccessRequestsInToolbar?: boolean;
         acknowledgeSafetyCheckWarning?: boolean;
+        pinnedToToolbar?: boolean;
       }
 
       export interface ProfileConfigurationUpdate {
@@ -329,6 +332,7 @@ declare global {
         SERVICE_WORKER_STARTED = 'SERVICE_WORKER_STARTED',
         SERVICE_WORKER_STOPPED = 'SERVICE_WORKER_STOPPED',
         CONFIGURATION_CHANGED = 'CONFIGURATION_CHANGED',
+        PINNED_ACTIONS_CHANGED = 'PINNED_ACTIONS_CHANGED',
       }
 
       export enum SiteSet {
@@ -423,6 +427,7 @@ declare global {
       export interface MatchingExtensionInfo {
         id: string;
         siteAccess: HostAccess;
+        canRequestAllSites: boolean;
       }
 
       export interface ExtensionSiteAccessUpdate {

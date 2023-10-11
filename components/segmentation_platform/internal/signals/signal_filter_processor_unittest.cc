@@ -15,7 +15,6 @@
 #include "components/segmentation_platform/internal/database/signal_storage_config.h"
 #include "components/segmentation_platform/internal/database/storage_service.h"
 #include "components/segmentation_platform/internal/database/test_segment_info_database.h"
-#include "components/segmentation_platform/internal/execution/default_model_manager.h"
 #include "components/segmentation_platform/internal/execution/mock_model_provider.h"
 #include "components/segmentation_platform/internal/mock_ukm_data_manager.h"
 #include "components/segmentation_platform/internal/signals/histogram_signal_handler.h"
@@ -53,44 +52,6 @@ class MockHistoryObserver : public HistoryServiceObserver {
                void(base::flat_set<proto::SegmentId> history_based_segments));
 };
 
-// Noop version. For database calls, just passes the calls to the DB.
-class TestDefaultModelManager : public DefaultModelManager {
- public:
-  TestDefaultModelManager()
-      : DefaultModelManager(nullptr, base::flat_set<SegmentId>()) {}
-  ~TestDefaultModelManager() override = default;
-
-  void GetAllSegmentInfoFromDefaultModel(
-      const base::flat_set<SegmentId>& segment_ids,
-      MultipleSegmentInfoCallback callback) override {
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  DefaultModelManager::SegmentInfoList()));
-  }
-
-  void GetAllSegmentInfoFromBothModels(
-      const base::flat_set<SegmentId>& segment_ids,
-      SegmentInfoDatabase* segment_database,
-      MultipleSegmentInfoCallback callback) override {
-    segment_database->GetSegmentInfoForSegments(
-        segment_ids,
-        base::BindOnce(
-            [](DefaultModelManager::MultipleSegmentInfoCallback callback,
-               std::unique_ptr<SegmentInfoDatabase::SegmentInfoList> db_list) {
-              DefaultModelManager::SegmentInfoList list;
-              for (auto& pair : *db_list) {
-                list.push_back(std::make_unique<
-                               DefaultModelManager::SegmentInfoWrapper>());
-                list.back()->segment_source =
-                    DefaultModelManager::SegmentSource::DATABASE;
-                list.back()->segment_info.Swap(&pair.second);
-              }
-              std::move(callback).Run(std::move(list));
-            },
-            std::move(callback)));
-  }
-};
-
 class SignalFilterProcessorTest : public testing::Test {
  public:
   SignalFilterProcessorTest() = default;
@@ -117,8 +78,10 @@ class SignalFilterProcessorTest : public testing::Test {
     storage_service_ = std::make_unique<StorageService>(
         std::move(moved_segment_database), nullptr,
         std::move(moved_signal_config),
-        std::make_unique<TestDefaultModelManager>(), nullptr,
-        ukm_data_manager_.get());
+        std::make_unique<ModelManagerImpl>(segment_ids, nullptr, nullptr,
+                                           segment_database_,
+                                           base::DoNothing()),
+        nullptr, ukm_data_manager_.get());
 
     signal_filter_processor_ = std::make_unique<SignalFilterProcessor>(
         storage_service_.get(), user_action_signal_handler_.get(),

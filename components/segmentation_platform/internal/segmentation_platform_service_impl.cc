@@ -67,6 +67,10 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
   if (init_params->storage_service) {
     // Test only:
     storage_service_ = std::move(init_params->storage_service);
+    storage_service_->model_manager()
+        ->SetSegmentationModelUpdatedCallbackForTesting(base::BindRepeating(
+            &SegmentationPlatformServiceImpl::OnSegmentationModelUpdated,
+            weak_ptr_factory_.GetWeakPtr()));
   } else {
     DCHECK(model_provider_factory_ && init_params->db_provider);
     DCHECK(!init_params->storage_dir.empty() && init_params->ukm_data_manager);
@@ -74,7 +78,10 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
         init_params->storage_dir, init_params->db_provider,
         init_params->task_runner, init_params->clock,
         init_params->ukm_data_manager, std::move(init_params->configs),
-        model_provider_factory_.get(), profile_prefs_);
+        model_provider_factory_.get(), profile_prefs_,
+        base::BindRepeating(
+            &SegmentationPlatformServiceImpl::OnSegmentationModelUpdated,
+            weak_ptr_factory_.GetWeakPtr()));
   }
 
   const auto* config_holder = storage_service_->config_holder();
@@ -95,8 +102,8 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
   field_trial_recorder_->RecordFieldTrialAtStartup(
       config_holder->configs(), storage_service_->cached_result_provider());
 
-  request_dispatcher_ = std::make_unique<RequestDispatcher>(
-      config_holder, storage_service_->cached_result_provider());
+  request_dispatcher_ =
+      std::make_unique<RequestDispatcher>(storage_service_.get());
 
   for (const auto& config : config_holder->configs()) {
     if (!metadata_utils::ConfigUsesLegacyOutput(config.get())) {
@@ -107,13 +114,11 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
             storage_service_->segment_info_database(),
             storage_service_->signal_storage_config(),
             init_params->profile_prefs, config.get(),
-            field_trial_register_.get(), init_params->clock, platform_options_,
-            storage_service_->default_model_manager());
+            field_trial_register_.get(), init_params->clock, platform_options_);
   }
 
   proxy_ = std::make_unique<ServiceProxyImpl>(
       storage_service_->segment_info_database(),
-      storage_service_->default_model_manager(),
       storage_service_->signal_storage_config(), &config_holder->configs(),
       platform_options_, &segment_selectors_);
   segment_score_provider_ =
@@ -246,12 +251,9 @@ void SegmentationPlatformServiceImpl::OnDatabaseInitialized(bool success) {
     observers.push_back(key_and_selector.second.get());
   observers.push_back(proxy_.get());
   execution_service_.Initialize(
-      storage_service_.get(), &signal_handler_, clock_,
-      base::BindRepeating(
-          &SegmentationPlatformServiceImpl::OnSegmentationModelUpdated,
-          weak_ptr_factory_.GetWeakPtr()),
-      task_runner_, config_holder->all_segment_ids(),
-      model_provider_factory_.get(), std::move(observers), platform_options_,
+      storage_service_.get(), &signal_handler_, clock_, task_runner_,
+      config_holder->all_segment_ids(), model_provider_factory_.get(),
+      std::move(observers), platform_options_,
       std::move(input_delegate_holder_), &config_holder->configs(),
       profile_prefs_, storage_service_->cached_result_provider());
 
@@ -286,6 +288,13 @@ void SegmentationPlatformServiceImpl::OnDatabaseInitialized(bool success) {
 
 void SegmentationPlatformServiceImpl::OnSegmentationModelUpdated(
     proto::SegmentInfo segment_info) {
+  CHECK(IsPlatformInitialized());
+  if (!segment_info.has_model_metadata()) {
+    signal_handler_.OnSignalListUpdated();
+    storage_service_->ExecuteDatabaseMaintenanceTasks(false);
+    return;
+  }
+
   DCHECK(metadata_utils::ValidateSegmentInfoMetadataAndFeatures(segment_info) ==
          metadata_utils::ValidationResult::kValidationSuccess);
 
@@ -339,8 +348,7 @@ std::unique_ptr<SegmentResultProvider>
 SegmentationPlatformServiceImpl::CreateSegmentResultProvider() {
   return SegmentResultProvider::Create(
       storage_service_->segment_info_database(),
-      storage_service_->signal_storage_config(),
-      storage_service_->default_model_manager(), &execution_service_, clock_,
+      storage_service_->signal_storage_config(), &execution_service_, clock_,
       platform_options_.force_refresh_results);
 }
 

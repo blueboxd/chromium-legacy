@@ -55,11 +55,9 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.Layout.LayoutState;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -77,7 +75,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurface;
@@ -85,7 +82,7 @@ import org.chromium.chrome.features.start_surface.StartSurface.TabSwitcherViewOb
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
-import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel.MockTabModelDelegate;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.components.browser_ui.widget.gesture.SwipeGestureListener.ScrollDirection;
@@ -93,7 +90,6 @@ import org.chromium.components.browser_ui.widget.gesture.SwipeGestureListener.Sw
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -414,72 +410,12 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
     @Test
     @MediumTest
-    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_LOW_END_DEVICE})
-    @Feature({"Android-TabSwitcher"})
-    // clang-format off
-    @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
-    public void testStartSurfaceLayout_Disabled_LowEndPhone() throws Exception {
-        // clang-format on
-        ChromeFeatureList.sTabGridLayoutAndroid.setForTesting(true);
-        launchAndVerifyOverviewListLayout();
-
-        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
-        ChromeFeatureList.sTabGroupsAndroid.setForTesting(false);
-        launchAndVerifyOverviewListLayout();
-
-        // Test accessibility
-        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
-        setAccessibilityEnabledForTesting(true);
-        launchAndVerifyOverviewListLayout();
-    }
-
-    @Test
-    @MediumTest
-    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
-    @Feature({"Android-TabSwitcher"})
-    // clang-format off
-    @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
-    public void testStartSurfaceLayout_Disabled_AllPhone_Accessibility_WithoutContinuationFlag() {
-        // clang-format on
-        final List<LayoutStateLayoutType> observationSequence = new ArrayList<>();
-        setAccessibilityEnabledForTesting(true);
-        launchChromeSimple();
-        observeLayoutManager(observationSequence);
-        showTabSwitcherLayout();
-
-        verifyOverviewListLayoutShown();
-        Assert.assertEquals(4, observationSequence.size());
-        Assert.assertEquals(LayoutState.STARTING_TO_HIDE, observationSequence.get(0).layoutState);
-        Assert.assertEquals(LayoutState.HIDDEN, observationSequence.get(1).layoutState);
-        Assert.assertEquals(LayoutState.STARTING_TO_SHOW, observationSequence.get(2).layoutState);
-        Assert.assertEquals(LayoutState.SHOWING, observationSequence.get(3).layoutState);
-    }
-
-    @Test
-    @MediumTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"Android-TabSwitcher"})
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
-            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testTabSwitcherLayout_Enabled_HighEndPhone() throws Exception {
         // clang-format on
-        ChromeFeatureList.sTabGridLayoutAndroid.setForTesting(true);
-        verifyTabSwitcherLayoutEnable(TabListCoordinator.TabListMode.GRID);
-
-        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
-        ChromeFeatureList.sTabGridLayoutAndroid.setForTesting(false);
-        verifyTabSwitcherLayoutEnable(TabListCoordinator.TabListMode.GRID);
-
-        // Verify accessibility
-        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
-        DeviceClassManager.GTS_ACCESSIBILITY_SUPPORT.setForTesting(true);
-        setAccessibilityEnabledForTesting(true);
         verifyTabSwitcherLayoutEnable(TabListCoordinator.TabListMode.GRID);
     }
 
@@ -489,18 +425,9 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Feature({"Android-TabSwitcher"})
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
-            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testTabSwitcherLayout_Enabled_LowEndPhone() throws Exception {
         // clang-format on
-        DeviceClassManager.GTS_LOW_END_SUPPORT.setForTesting(true);
-        verifyTabSwitcherLayoutEnable(TabListCoordinator.TabListMode.LIST);
-
-        // Test Accessibility
-        TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
-        DeviceClassManager.GTS_ACCESSIBILITY_SUPPORT.setForTesting(true);
-        setAccessibilityEnabledForTesting(true);
         verifyTabSwitcherLayoutEnable(TabListCoordinator.TabListMode.LIST);
     }
 
@@ -552,7 +479,6 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @MediumTest
     @DisableIf.Build(sdk_is_greater_than = N_MR1, message = "crbug.com/1139943")
     @DisabledTest(message = "crbug.com/1216438") // Failures on N.
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
     public void testLayoutObserverNotification_ShowAndHide_TabSwitcher() throws TimeoutException {
         LayoutObserverCallbackHelper startedShowingCallback = new LayoutObserverCallbackHelper();
         LayoutObserverCallbackHelper finishedShowingCallback = new LayoutObserverCallbackHelper();
@@ -764,26 +690,8 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
     @After
     public void tearDown() {
-        ChromeFeatureList.sTabGridLayoutAndroid.setForTesting(null);
-        ChromeFeatureList.sTabGroupsAndroid.setForTesting(null);
         setAccessibilityEnabledForTesting(null);
         CachedFeatureFlags.resetFlagsForTesting();
-    }
-
-    private void launchAndVerifyOverviewListLayout() {
-        launchedChromeAndEnterTabSwitcher();
-        verifyOverviewListLayoutShown();
-    }
-
-    /**
-     * Verify the {@link OverviewListLayout} is in used. The {@link OverviewListLayout} is used when
-     * accessibility is turned on. It is also used for low end device.
-     */
-    private void verifyOverviewListLayoutShown() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Layout activeLayout = getActiveLayout();
-            Assert.assertTrue(activeLayout instanceof OverviewListLayout);
-        });
     }
 
     private void verifyTabSwitcherLayoutEnable(

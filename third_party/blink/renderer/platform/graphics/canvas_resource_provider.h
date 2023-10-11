@@ -228,9 +228,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
   using RestoreMatrixClipStackCb =
       base::RepeatingCallback<void(cc::PaintCanvas*)>;
 
-  // TODO(juanmihd@ bug/1078518) Check whether FilterQuality is needed in all
-  // these Create methods below, or just call setFilterQuality explicitly.
-
   // Used to determine if the provider is going to be initialized or not,
   // ignored by PassThrough
   enum class ShouldInitialize { kNo, kCallClear };
@@ -252,7 +249,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
       ShouldInitialize initialize_provider,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       RasterMode raster_mode,
-      bool is_origin_top_left,
       uint32_t shared_image_usage_flags);
 
   static std::unique_ptr<CanvasResourceProvider> CreateWebGPUImageProvider(
@@ -271,8 +267,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
       cc::PaintFlags::FilterQuality filter_quality,
       ShouldInitialize initialize_provider,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      base::WeakPtr<CanvasResourceDispatcher>,
-      bool is_origin_top_left);
+      base::WeakPtr<CanvasResourceDispatcher>);
 
   // Use Snapshot() for capturing a frame that is intended to be displayed via
   // the compositor. Cases that are destined to be transferred via a

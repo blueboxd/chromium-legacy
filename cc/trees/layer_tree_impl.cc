@@ -1603,17 +1603,15 @@ bool LayerTreeImpl::UpdateDrawProperties(
     draw_property_utils::CalculateDrawProperties(
         this, &render_surface_list_, output_update_layer_list_for_testing);
 
-    if (const char* client_name = GetClientNameForMetrics()) {
+    if (settings().single_thread_proxy_scheduler) {
       // This metric is only recorded for the Browser.
-      if (settings().single_thread_proxy_scheduler) {
-        UMA_HISTOGRAM_COUNTS_1M(
-            base::StringPrintf(
-                "Compositing.%s.LayerTreeImpl.CalculateDrawPropertiesUs",
-                client_name),
-            timer.Elapsed().InMicroseconds());
-      }
+      UMA_HISTOGRAM_COUNTS_1M(
+          "Compositing.Browser.LayerTreeImpl.CalculateDrawPropertiesUs",
+          timer.Elapsed().InMicroseconds());
+    } else {
+      // This metric is only recorded for the Renderer.
       UMA_HISTOGRAM_COUNTS_100(
-          base::StringPrintf("Compositing.%s.NumRenderSurfaces", client_name),
+          "Compositing.Renderer.NumRenderSurfaces",
           base::saturated_cast<int>(render_surface_list_.size()));
     }
   }
@@ -2526,7 +2524,7 @@ LayerTreeImpl::FindLayersHitByPointInNonFastScrollableRegion(
 }
 
 std::vector<const LayerImpl*>
-LayerTreeImpl::FindAllLayersUpToAndIncludingFirstScrollable(
+LayerTreeImpl::FindLayersUpToFirstScrollableOrOpaqueToHitTest(
     const gfx::PointF& screen_space_point) {
   std::vector<const LayerImpl*> layers;
   if (layer_list_.empty())
@@ -2581,8 +2579,9 @@ LayerTreeImpl::FindAllLayersUpToAndIncludingFirstScrollable(
           std::pair<const LayerImpl*, float>(layer, distance_to_intersection));
     } else {
       layers.push_back(layer);
-      if (layer->IsScrollerOrScrollbar())
+      if (layer->IsScrollerOrScrollbar() || layer->OpaqueToHitTest()) {
         break;
+      }
     }
   }
 
@@ -2609,8 +2608,9 @@ LayerTreeImpl::FindAllLayersUpToAndIncludingFirstScrollable(
       const LayerImpl* layer = pair.first;
 
       result.push_back(layer);
-      if (layer->IsScrollerOrScrollbar())
+      if (layer->IsScrollerOrScrollbar() || layer->OpaqueToHitTest()) {
         return result;
+      }
     }
     // Append 2D layers if none of the 3D layers were scrollable.
     result.insert(result.end(), layers.begin(), layers.end());

@@ -75,7 +75,7 @@ void Surface::PresentationHelper::DidPresent(
     base::TimeTicks draw_start_timestamp,
     const gfx::SwapTimings& swap_timings,
     const gfx::PresentationFeedback& feedback) {
-  if (surface_client_ && frame_token_) {
+  if (surface_client_ && frame_token_ != kInvalidOrLocalFrameToken) {
     surface_client_->OnSurfacePresented(frame_token_, draw_start_timestamp,
                                         swap_timings, feedback);
   }
@@ -658,7 +658,7 @@ void Surface::UpdateActivationDependencies(
 
   bool should_block_on_dependencies =
       ShouldBlockActivationOnDependenciesWhenInteractive() ||
-      !current_frame.metadata.is_actively_scrolling;
+      !current_frame.metadata.is_handling_interaction;
 
   if (!should_block_on_dependencies) {
     return;

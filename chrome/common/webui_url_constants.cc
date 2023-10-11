@@ -225,6 +225,10 @@ const char kChromeUIThemeHost[] = "theme";
 const char kChromeUIThemeURL[] = "chrome://theme/";
 const char kChromeUITranslateInternalsHost[] = "translate-internals";
 const char kChromeUITopChromeDomain[] = "top-chrome";
+#if !BUILDFLAG(IS_ANDROID)
+const char kChromeUIUntrustedHatsHost[] = "hats";
+const char kChromeUIUntrustedHatsURL[] = "chrome-untrusted://hats/";
+#endif  // !BUILDFLAG(IS_ANDROID)
 const char kChromeUIUntrustedImageEditorURL[] =
     "chrome-untrusted://image-editor/";
 const char kChromeUIUntrustedPrintURL[] = "chrome-untrusted://print/";
@@ -318,6 +322,8 @@ const char kChromeUIAudioHost[] = "audio";
 const char kChromeUIAudioURL[] = "chrome://audio/";
 const char kChromeUIBluetoothPairingHost[] = "bluetooth-pairing";
 const char kChromeUIBluetoothPairingURL[] = "chrome://bluetooth-pairing/";
+const char kChromeUIBorealisInstallerHost[] = "borealis-installer";
+const char kChromeUIBorealisInstallerUrl[] = "chrome://borealis-installer";
 const char kChromeUICertificateManagerDialogURL[] =
     "chrome://certificate-manager/";
 const char kChromeUICertificateManagerHost[] = "certificate-manager";
@@ -393,6 +399,8 @@ const char kChromeUISmbShareHost[] = "smb-share-dialog";
 const char kChromeUISmbShareURL[] = "chrome://smb-share-dialog/";
 const char kChromeUISmbCredentialsHost[] = "smb-credentials-dialog";
 const char kChromeUISmbCredentialsURL[] = "chrome://smb-credentials-dialog/";
+const char kChromeUIStatusAreaInternalsHost[] = "status-area-internals";
+const char kChromeUIStatusAreaInternalsURL[] = "chrome://status-area-internals";
 const char kChromeUISysInternalsHost[] = "sys-internals";
 const char kChromeUISysInternalsUrl[] = "chrome://sys-internals";
 const char kChromeUIUntrustedCroshHost[] = "crosh";
@@ -447,6 +455,7 @@ bool IsSystemWebUIHost(base::StringPiece host) {
     kChromeUISetTimeHost,
     kChromeUISmbCredentialsHost,
     kChromeUISmbShareHost,
+    kChromeUIStatusAreaInternalsHost,
     kChromeUIVcTrayTesterHost,
     kChromeUIEmojiPickerHost,
 #if BUILDFLAG(PLATFORM_CFM)

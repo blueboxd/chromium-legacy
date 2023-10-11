@@ -4,6 +4,7 @@
 <translation id="1143896152279775643">A senha será salva no Gerenciador de senhas do Google da conta <ph name="EMAIL" />.</translation>
 <translation id="1180362651362502943">Continue usando os dados do Chrome na sua Conta do Google.</translation>
 <translation id="1282031177488366470">Ajudar a melhorar os recursos e o desempenho do Chrome</translation>
+<translation id="1333745675627230582">Iniciar o jogo do Dinossauro do Chrome</translation>
 <translation id="1352919863522755794">O Gerenciador de senhas do Google não conseguiu verificar suas senhas. Confira sua conexão de Internet.</translation>
 <translation id="1407843355326180937">Faça login neste site e no Google Chrome para conferir seus favoritos e muito mais em todos os seus dispositivos.</translation>
 <translation id="1462727070346936664">Faça login para aproveitar o Chrome ao máximo.</translation>
@@ -22,6 +23,8 @@ Considerações:
 
   • Se você sincroniza o histórico com sua Conta do Google, as métricas também podem incluir informações sobre os URLs que você acessa.<ph name="END_INDENT" /></translation>
 <translation id="1554731936187952550">Você tem a segurança reforçada do Chrome contra sites perigosos</translation>
+<translation id="1675955119303651351">Alguns dos seus dados do Chrome ainda não foram salvos na sua Conta do Google.
+        Aguarde alguns minutos antes de sair. Se você sair agora, esses dados serão excluídos.</translation>
 <translation id="1682483655351012182">Sincronizar seus dados do Chrome</translation>
 <translation id="1733654336159102143">Bloqueie o modo de navegação anônima ao sair do Chrome ou mudar para outro app.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -29,6 +32,7 @@ Considerações:
 <translation id="1917964099031477364">A conta e os dados não salvos serão removidos do Chrome e de outros apps do Google neste dispositivo.</translation>
 <translation id="2009224836393115614">Não foi possível verificar suas senhas com o Chrome. Verifique sua conexão de Internet.</translation>
 <translation id="2056123005618757196">Seja mais eficiente com um Google Chrome simples, seguro e mais rápido do que nunca.</translation>
+<translation id="2120238739383482109">Abre os favoritos do Chrome.</translation>
 <translation id="2147651015520127414">O Chrome verificou que <ph name="ISSUER" /> emitiu o certificado desse website.</translation>
 <translation id="2199719347983604670">Dados da "Sincronização do Chrome"</translation>
 <translation id="2339201583852607431">A senha será salva na sua Conta do Google (<ph name="EMAIL" />).</translation>
@@ -65,6 +69,7 @@ Considerações:
 <translation id="3594076341410558780">Ocultar "Aproveite o Chrome ao máximo"</translation>
 <translation id="3655656110921623717">Isso significa que o Chrome vai solicitar sempre o site para dispositivo móvel.</translation>
 <translation id="3720541637541300822">Bloquear guias anônimas ao fechar o Chrome</translation>
+<translation id="3741995255368156336">Abre a Lista de leitura do Chrome.</translation>
 <translation id="3827545470516145620">Você está usando a proteção padrão neste dispositivo</translation>
 <translation id="384394811301901750">O Google Chrome não pode usar a câmera agora</translation>
 <translation id="3901001113120561395">Aproveite o Chrome ao máximo.</translation>
@@ -76,7 +81,6 @@ Considerações:
 <translation id="417201473131094001">Indisponível no Chrome Canary</translation>
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> estava usando o Chrome e deixou favoritos, senhas e outras configurações neste dispositivo.</translation>
 <translation id="424864128008805179">Sair do Google Chrome?</translation>
-<translation id="4249068189593983585">Dica do Chrome. Para ver mais opções de guia, toque no botão "Mostrar guias" na barra de ferramentas localizada na parte superior ou inferior da tela e mantenha-o pressionado.</translation>
 <translation id="4508370294876102450">Abrir o Chrome por qualquer app</translation>
 <translation id="4523886039239821078">Alguns complementos causam a falha do Google Chrome. Desinstale-os.</translation>
 <translation id="4633328489441962921">Não é possível verificar se há atualizações</translation>
@@ -91,6 +95,7 @@ Considerações:
 <translation id="4903674399067644695">Este card mostra sugestões para você aproveitar o Chrome ao máximo.</translation>
 <translation id="5030102366287574140">O Chrome pode ajudar a proteger você de violações de dados, sites perigosos e muito mais.</translation>
 <translation id="5108659628347594808">Melhorar o Chrome</translation>
+<translation id="5112925986883715005">Visualizar Lista de leitura do Chrome</translation>
 <translation id="5119391094379141756">Selecione o Chrome</translation>
 <translation id="5162467219239570114">O Chrome está desatualizado. Se nenhuma atualização está disponível na <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, é possível que seu dispositivo não seja mais compatível com novas versões do Chrome.</translation>
 <translation id="5190139289262548459">Sua organização, <ph name="DOMAIN" />, gerencia a conta em que você fez login e a forma como o Chrome é usado.</translation>
@@ -108,7 +113,6 @@ Considerações:
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Off-line. Não é possível verificar se há atualizações</translation>
 <translation id="5716154293141027663">Abrir o Chrome sempre que você tocar nos links em outros apps</translation>
-<translation id="5854621639439811139">Dica do Chrome. Alguns botões agora estão na parte inferior da tela, como "Voltar", "Avançar" e "Pesquisar".</translation>
 <translation id="5998675059699164418">Sua organização exige que você faça login para usar o Chrome.</translation>
 <translation id="6054613632208573261">Usar o Chrome por padrão</translation>
 <translation id="6063091872902370735">Permitir login no Chrome</translation>
@@ -120,6 +124,7 @@ Considerações:
 <translation id="6427126399757991875">Sua organização está configurando o Chrome…</translation>
 <translation id="6600954340915313787">Copiado no Chrome</translation>
 <translation id="6634107063912726160">Quando você se desconecta, o Chrome não sincroniza nenhum dado novo com sua Conta do Google. Os dados sincronizados anteriormente permanecem na conta.</translation>
+<translation id="6646696210740573446">Envia apenas uma parte ofuscada do URL ao Google por um servidor de privacidade que oculta seu endereço IP. Se um site tentar roubar sua senha ou se você fizer o download de um arquivo nocivo, o Chrome também poderá enviar o URL, incluindo partes do conteúdo da página, ao Google.</translation>
 <translation id="6648150602980899529">Você está fazendo login com uma conta gerenciada por <ph name="DOMAIN" /> e dando ao administrador dela o controle sobre seus dados do Chrome, os quais ficarão permanentemente vinculados a essa conta. Se você sair do Chrome, seus dados serão excluídos desse dispositivo, mas permanecerão armazenados na sua Conta do Google.</translation>
 <translation id="6676840375528380067">Limpar seus dados do Chrome deste dispositivo?</translation>
 <translation id="6709398533399187136">Sua senha foi exposta em uma violação de dados. O Gerenciador de senhas do Google recomenda que ela seja mudada agora mesmo.</translation>
@@ -154,9 +159,11 @@ Só uma pessoa com sua senha longa pode ler seus dados criptografados. Essa senh
 <translation id="804638182476029347">Permitir notificações do Chrome para receber alertas de redução no preço</translation>
 <translation id="81358522153858150">O Chrome agora oferece suporte para políticas do usuário na sua conta gerenciada</translation>
 <translation id="8160472928944011082">Não é possível atualizar o Chrome</translation>
+<translation id="8213758103105806860">Visualizar favoritos do Chrome</translation>
 <translation id="8357607116237445042">Você quer apagar ou manter os dados do Chrome neste dispositivo?</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Todos os direitos reservados.</translation>
 <translation id="840168496893712993">Alguns complementos causam a falha do Google Chrome. Tente desinstalá-los.</translation>
+<translation id="8413795581997394485">Protege contra extensões, sites e downloads perigosos. Quando você acessa um site, o Chrome envia ao Google apenas uma parte ofuscada do URL por um servidor de privacidade que oculta seu endereço IP. Se um site fizer algo suspeito, o URL completo e partes do conteúdo da página também serão enviados.</translation>
 <translation id="8414886616817913619">Sua organização exige que você faça login para usar o Chrome. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="84594714173170813">Continue usando os dados do Chrome na sua Conta do Google</translation>
 <translation id="8459495907675268833">Os dados selecionados foram removidos do Chrome e dos dispositivos sincronizados. É possível que sua Conta do Google tenha outras formas de histórico de navegação, como pesquisas e atividades de outros serviços do Google em history.google.com.</translation>

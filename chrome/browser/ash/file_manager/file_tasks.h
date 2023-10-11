@@ -126,14 +126,16 @@ class PrefRegistrySyncable;
 
 namespace file_manager::file_tasks {
 
-extern const char kActionIdView[];
-extern const char kActionIdSend[];
-extern const char kActionIdSendMultiple[];
-extern const char kActionIdWebDriveOfficeWord[];
-extern const char kActionIdWebDriveOfficeExcel[];
-extern const char kActionIdWebDriveOfficePowerPoint[];
-extern const char kActionIdOpenInOffice[];
-extern const char kActionIdOpenWeb[];
+constexpr char kActionIdView[] = "view";
+constexpr char kActionIdSend[] = "send";
+constexpr char kActionIdSendMultiple[] = "send_multiple";
+constexpr char kActionIdQuickOffice[] = "qo_documents";
+constexpr char kActionIdWebDriveOfficeWord[] = "open-web-drive-office-word";
+constexpr char kActionIdWebDriveOfficeExcel[] = "open-web-drive-office-excel";
+constexpr char kActionIdWebDriveOfficePowerPoint[] =
+    "open-web-drive-office-powerpoint";
+constexpr char kActionIdOpenInOffice[] = "open-in-office";
+constexpr char kActionIdOpenWeb[] = "OPEN_WEB";
 
 // Task types as explained in the comment above. Search for <task-type>.
 enum TaskType {
@@ -207,8 +209,13 @@ enum class OfficeFilesUseOutsideDriveHook {
   kMaxValue = OPEN_FROM_FILES_APP,
 };
 
-// UMA metric name that tracks the result of using a MS Office file outside
-// of Drive.
+// UMA metric name that tracks the extension of Office files that are being
+// opened with Drive web.
+constexpr char kOfficeOpenExtensionDriveMetricName[] =
+    "FileBrowser.OfficeFiles.Open.FileType.GoogleDrive";
+
+// UMA metric name that tracks the extension of Office files that are being
+// opened with MS365.
 constexpr char kOfficeOpenExtensionOneDriveMetricName[] =
     "FileBrowser.OfficeFiles.Open.FileType.OneDrive";
 
@@ -400,11 +407,13 @@ void LaunchQuickOffice(Profile* profile,
 // If user's `choice` is `kDialogChoiceQuickOffice`, launch QuickOffice.
 // If user's `choice` is `kDialogChoiceTryAgain`, execute the `task`.
 // If user's `choice` is `kDialogChoiceCancel`, do nothing.
-void OnDialogChoiceReceived(Profile* profile,
-                            const TaskDescriptor& task,
-                            const std::vector<FileSystemURL>& file_urls,
-                            gfx::NativeWindow modal_parent,
-                            const std::string& choice);
+void OnDialogChoiceReceived(
+    Profile* profile,
+    const TaskDescriptor& task,
+    const std::vector<FileSystemURL>& file_urls,
+    gfx::NativeWindow modal_parent,
+    const std::string& choice,
+    ash::office_fallback::FallbackReason fallback_reason);
 
 // Shows a new dialog for users to choose what to do next. Returns True
 // if a new dialog has been effectively created.
@@ -447,17 +456,13 @@ bool IsWebDriveOfficeTask(const TaskDescriptor& task);
 
 bool IsOpenInOfficeTask(const TaskDescriptor& task);
 
-bool IsExtensionInstalled(Profile* profile, const std::string& extension_id);
+bool IsQuickOfficeInstalled(Profile* profile);
 
 // Returns whether |path| is an HTML file according to its extension.
 bool IsHtmlFile(const base::FilePath& path);
 
 // Returns whether |path| is a MS Office file according to its extension.
 bool IsOfficeFile(const base::FilePath& path);
-
-// Files encrypted with Google Drive CSE have a specific MIME type; this helper
-// returns whether the given MIME type denotes such a file.
-bool IsEncryptedMimeType(std::string mime_type);
 
 // Returns the group of extensions we consider to be 'Word', 'Excel' or
 // 'PowerPoint' files for the purpose of setting preferences. The extensions

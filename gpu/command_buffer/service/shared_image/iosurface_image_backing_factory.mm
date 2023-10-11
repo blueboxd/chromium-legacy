@@ -54,7 +54,7 @@ void SetIOSurfaceColorSpace(IOSurfaceRef io_surface,
   }
 
 #if BUILDFLAG(IS_MAC)
-  base::ScopedCFTypeRef<CFDataRef> cf_data =
+  base::apple::ScopedCFTypeRef<CFDataRef> cf_data =
       gfx::DisplayICCProfiles::GetInstance()->GetDataForColorSpace(color_space);
   if (cf_data) {
     IOSurfaceSetValue(io_surface, CFSTR("IOSurfaceColorSpace"), cf_data);
@@ -126,7 +126,8 @@ IOSurfaceImageBackingFactory::IOSurfaceImageBackingFactory(
       progress_reporter_(progress_reporter) {
   for (gfx::BufferFormat buffer_format : gpu_memory_buffer_formats_) {
     // Add supported single-plane formats.
-    viz::SharedImageFormat format = viz::GetSharedImageFormat(buffer_format);
+    viz::SharedImageFormat format =
+        viz::GetSinglePlaneSharedImageFormat(buffer_format);
     if (IsFormatSupported(format)) {
       supported_formats_.insert(format);
     }
@@ -213,7 +214,7 @@ IOSurfaceImageBackingFactory::CreateSharedImage(
   }
 
   const uint32_t io_surface_plane = GetPlaneIndex(plane, buffer_format);
-  auto format = viz::GetSharedImageFormat(buffer_format);
+  auto format = viz::GetSinglePlaneSharedImageFormat(buffer_format);
   // Format cannot be using external sampling due to checks in
   // `IsPlaneValidForGpuMemoryBufferFormat`.
   if (format.IsLegacyMultiplanar()) {
@@ -237,9 +238,40 @@ IOSurfaceImageBackingFactory::CreateSharedImage(
     std::string debug_label,
     bool is_thread_safe,
     gfx::BufferUsage buffer_usage) {
-  return CreateSharedImage(mailbox, format, surface_handle, size, color_space,
-                           surface_origin, alpha_type, usage, debug_label,
-                           is_thread_safe);
+  // |scoped_progress_reporter| will notify |progress_reporter_| upon
+  // construction and destruction. We limit the scope so that progress is
+  // reported immediately after allocation/upload and before other GL
+  // operations.
+  gfx::ScopedIOSurface io_surface;
+  {
+    gl::ScopedProgressReporter scoped_progress_reporter(progress_reporter_);
+    const gfx::BufferFormat buffer_format = ToBufferFormat(format);
+    const bool should_clear = true;
+    const bool override_rgba_to_bgra =
+#if BUILDFLAG(IS_IOS)
+        false;
+#else
+        gr_context_type_ == GrContextType::kGL;
+#endif
+    io_surface = gfx::CreateIOSurface(size, buffer_format, should_clear,
+                                      override_rgba_to_bgra);
+    if (!io_surface) {
+      LOG(ERROR) << "CreateSharedImage: Failed to create bindable image";
+      return nullptr;
+    }
+  }
+  SetIOSurfaceColorSpace(io_surface.get(), color_space);
+
+  gfx::GpuMemoryBufferHandle handle;
+  handle.type = gfx::IO_SURFACE_BUFFER;
+  handle.io_surface = std::move(io_surface);
+  handle.id = gfx::GpuMemoryBufferHandle::kInvalidId;
+
+  CHECK(!format.PrefersExternalSampler());
+  return CreateSharedImageGMBs(
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      std::move(handle), /*io_surface_plane=*/0, gfx::BufferPlane::DEFAULT,
+      /*is_plane_format=*/false, std::move(buffer_usage));
 }
 
 bool IOSurfaceImageBackingFactory::IsSupported(
@@ -378,7 +410,8 @@ IOSurfaceImageBackingFactory::CreateSharedImageGMBs(
     gfx::GpuMemoryBufferHandle handle,
     uint32_t io_surface_plane,
     gfx::BufferPlane buffer_plane,
-    bool is_plane_format) {
+    bool is_plane_format,
+    absl::optional<gfx::BufferUsage> buffer_usage) {
   if (handle.type != gfx::IO_SURFACE_BUFFER || !handle.io_surface) {
     LOG(ERROR) << "Invalid IOSurface GpuMemoryBufferHandle.";
     return nullptr;
@@ -437,18 +470,20 @@ IOSurfaceImageBackingFactory::CreateSharedImageGMBs(
 
   if (is_plane_format) {
     const gfx::Size plane_size = gpu::GetPlaneSize(buffer_plane, size);
-    auto plane_format = viz::GetSharedImageFormat(
+    auto plane_format = viz::GetSinglePlaneSharedImageFormat(
         GetPlaneBufferFormat(buffer_plane, buffer_format));
     return std::make_unique<IOSurfaceImageBacking>(
         io_surface, io_surface_plane, io_surface_id, mailbox, plane_format,
         plane_size, color_space, surface_origin, alpha_type, usage, target,
-        framebuffer_attachment_angle, /*is_cleared=*/true, retain_gl_texture);
+        framebuffer_attachment_angle, /*is_cleared=*/true, retain_gl_texture,
+        std::move(buffer_usage));
   }
 
   return std::make_unique<IOSurfaceImageBacking>(
       io_surface, /*io_surface_plane=*/0, io_surface_id, mailbox, format, size,
       color_space, surface_origin, alpha_type, usage, target,
-      framebuffer_attachment_angle, /*is_cleared=*/true, retain_gl_texture);
+      framebuffer_attachment_angle, /*is_cleared=*/true, retain_gl_texture,
+      std::move(buffer_usage));
 }
 
 }  // namespace gpu

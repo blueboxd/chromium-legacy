@@ -17,7 +17,6 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "content/public/browser/render_widget_host.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -151,26 +150,6 @@ class ContentAutofillRouter {
   // the parent frame).
   void UnregisterDriver(ContentAutofillDriver* driver, bool driver_is_dying);
 
-  // Returns the ContentAutofillDriver* for which AskForValuesToFill() was
-  // called last.
-  // TODO(crbug.com/1224846) QueryFormFieldAutofill() was renamed to
-  // AskForValuesToFill(), so we should rename last_queried_source() and
-  // last_queried_source_ as well.
-  ContentAutofillDriver* last_queried_source() const {
-    return last_queried_source_;
-  }
-
-  // Registers the key-press handler with the driver that last called
-  // AskForValuesToFill(), that is, |last_queried_source_|.
-  void SetKeyPressHandler(
-      ContentAutofillDriver* source,
-      const content::RenderWidgetHost::KeyPressEventCallback& handler,
-      void (*callback)(
-          ContentAutofillDriver* target,
-          const content::RenderWidgetHost::KeyPressEventCallback& handler));
-  void UnsetKeyPressHandler(ContentAutofillDriver* source,
-                            void (*callback)(ContentAutofillDriver* target));
-
   // Routing of events called by the renderer:
   void SetFormToBeProbablySubmitted(
       ContentAutofillDriver* source,
@@ -236,26 +215,25 @@ class ContentAutofillRouter {
                            bool had_interacted_form,
                            void (*callback)(ContentAutofillDriver* target,
                                             bool had_interacted_form));
-  void FocusOnFormField(ContentAutofillDriver* source,
-                        FormData form,
-                        const FormFieldData& field,
-                        const gfx::RectF& bounding_box,
-                        void (*callback)(ContentAutofillDriver* target,
-                                         const FormData& form,
-                                         const FormFieldData& field,
-                                         const gfx::RectF& bounding_box));
+  void FocusOnFormField(
+      ContentAutofillDriver* source,
+      FormData form,
+      const FormFieldData& field,
+      const gfx::RectF& bounding_box,
+      void (*callback)(ContentAutofillDriver* target,
+                       const FormData& form,
+                       const FormFieldData& field,
+                       const gfx::RectF& bounding_box),
+      void (*focus_no_longer_on_form)(ContentAutofillDriver* target));
   void DidFillAutofillFormData(ContentAutofillDriver* source,
                                FormData form,
                                base::TimeTicks timestamp,
                                void (*callback)(ContentAutofillDriver* target,
                                                 const FormData& form,
                                                 base::TimeTicks timestamp));
-  void DidPreviewAutofillFormData(
-      ContentAutofillDriver* source,
-      void (*callback)(ContentAutofillDriver* target));
   void DidEndTextFieldEditing(ContentAutofillDriver* source,
                               void (*callback)(ContentAutofillDriver* target));
-  void SelectOrSelectMenuFieldOptionsDidChange(
+  void SelectOrSelectListFieldOptionsDidChange(
       ContentAutofillDriver* source,
       FormData form,
       void (*callback)(ContentAutofillDriver* target, const FormData& form));
@@ -367,19 +345,8 @@ class ContentAutofillRouter {
   // |form_forest_| except for |exception|.
   void TriggerFormExtractionExcept(ContentAutofillDriver* exception);
 
-  // Update the last queried and source and do cleanup work.
-  void SetLastQueriedSource(ContentAutofillDriver* source);
-  void SetLastQueriedTarget(ContentAutofillDriver* target);
-
   // The forest of forms. See its documentation for the usage protocol.
   internal::FormForest form_forest_;
-
-  // The driver that triggered the last AskForValuesToFill() call.
-  // Update with SetLastQueriedSource().
-  raw_ptr<ContentAutofillDriver> last_queried_source_ = nullptr;
-  // The driver to which the last AskForValuesToFill() call was routed.
-  // Update with SetLastQueriedTarget().
-  raw_ptr<ContentAutofillDriver> last_queried_target_ = nullptr;
 
   // When the focus moves to a different frame, the order of the events
   // FocusNoLongerOnForm() and FocusOnFormField() may be reversed due to race

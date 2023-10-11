@@ -70,10 +70,6 @@ BASE_DECLARE_FEATURE(kFeedBackToTop);
 BASE_DECLARE_FEATURE(kFeedBottomSyncStringRemoval);
 #endif
 
-// When enabled, shows a sign in bottom sheet when p13n actions on boc are used
-// by signed out client.
-BASE_DECLARE_FEATURE(kFeedBoCSigninInterstitial);
-
 // Feature that enables StAMP cards in the feed.
 BASE_DECLARE_FEATURE(kFeedStamp);
 
@@ -99,9 +95,6 @@ std::string GetFeedReferrerUrl();
 
 // Personalize feed for unsigned users.
 BASE_DECLARE_FEATURE(kPersonalizeFeedUnsignedUsers);
-
-// Personalize feed for signed in users who haven't enabled sync.
-BASE_DECLARE_FEATURE(kPersonalizeFeedNonSyncUsers);
 
 // Returns the consent level needed to request a personalized feed.
 signin::ConsentLevel GetConsentLevelNeededForPersonalizedFeed();
@@ -155,6 +148,9 @@ BASE_DECLARE_FEATURE(kFeedDynamicColors);
 
 // Feature that enables UI update for Follow.
 BASE_DECLARE_FEATURE(kFeedFollowUiUpdate);
+
+// Feature that enables sports card in the feed.
+BASE_DECLARE_FEATURE(kFeedSportsCard);
 
 }  // namespace feed
 

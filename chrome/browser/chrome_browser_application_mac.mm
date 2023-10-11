@@ -6,9 +6,9 @@
 
 #include <Carbon/Carbon.h>  // for <HIToolbox/Events.h>
 
+#include "base/apple/call_with_eh_frame.h"
 #include "base/check.h"
 #include "base/command_line.h"
-#include "base/mac/call_with_eh_frame.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -153,8 +153,8 @@ std::string DescriptionForNSEvent(NSEvent* event) {
   // If the message loop was initialized before NSApp is setup, the
   // message pump will be setup incorrectly.  Failing this implies
   // that RegisterBrowserCrApp() should be called earlier.
-  CHECK(base::message_pump_mac::UsingCrApp())
-      << "message_pump_mac::Create() is using the wrong pump implementation"
+  CHECK(base::message_pump_apple::UsingCrApp())
+      << "message_pump_apple::Create() is using the wrong pump implementation"
       << " for " << [[self className] UTF8String];
 
   return app;
@@ -240,11 +240,11 @@ std::string DescriptionForNSEvent(NSEvent* event) {
                            inMode:(NSString*)mode
                           dequeue:(BOOL)dequeue {
   __block NSEvent* event = nil;
-  base::mac::CallWithEHFrame(^{
-      event = [super nextEventMatchingMask:mask
-                                 untilDate:expiration
-                                    inMode:mode
-                                   dequeue:dequeue];
+  base::apple::CallWithEHFrame(^{
+    event = [super nextEventMatchingMask:mask
+                               untilDate:expiration
+                                  inMode:mode
+                                 dequeue:dequeue];
   });
   return event;
 }
@@ -298,7 +298,7 @@ std::string DescriptionForNSEvent(NSEvent* event) {
   crash_reporter::ScopedCrashKeyString scopedKey(&sendActionKey, value);
 
   __block BOOL rv;
-  base::mac::CallWithEHFrame(^{
+  base::apple::CallWithEHFrame(^{
     rv = [super sendAction:anAction to:aTarget from:sender];
   });
   return rv;
@@ -323,7 +323,7 @@ std::string DescriptionForNSEvent(NSEvent* event) {
   crash_reporter::ScopedCrashKeyString scopedKey(&nseventKey,
                                                  DescriptionForNSEvent(event));
 
-  base::mac::CallWithEHFrame(^{
+  base::apple::CallWithEHFrame(^{
     static const bool kKioskMode =
         base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
     if (kKioskMode) {

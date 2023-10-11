@@ -152,7 +152,7 @@ class EnumSet {
       return i;
     }
 
-    raw_ptr<const EnumBitSet, DanglingUntriaged> enums_;
+    const raw_ptr<const EnumBitSet, DanglingUntriaged> enums_;
     size_t i_;
   };
 
@@ -170,7 +170,9 @@ class EnumSet {
     }
   }
 
-  // Returns an EnumSet with all possible values.
+  // Returns an EnumSet with all values between kMinValue and kMaxValue, which
+  // also contains undefined enum values if the enum in question has gaps
+  // between kMinValue and kMaxValue.
   static constexpr EnumSet All() {
     if (base::is_constant_evaluated()) {
       if (kValueCount == 0) {

@@ -41,7 +41,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     if (parent_space.ShouldRepeat())
       SetShouldRepeat(true);
     SetIsInsideRepeatableContent(parent_space.IsInsideRepeatableContent());
-    SetIsInFlexIntrinsicSizing(parent_space.IsInFlexIntrinsicSizing());
   }
 
   // The setters on this builder are in the writing mode of parent_writing_mode.
@@ -178,10 +177,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   void DisableFurtherFragmentation() { space_.DisableFurtherFragmentation(); }
-
-  void SetIsInFlexIntrinsicSizing(bool b) {
-    space_.bitfields_.is_in_flex_intrinsic_sizing = b;
-  }
 
   void SetIsFixedInlineSize(bool b) {
     if (LIKELY(is_in_parallel_flow_))
@@ -336,18 +331,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 #endif
     if (!is_new_fc_ && margin_strut != NGMarginStrut())
       space_.EnsureRareData()->SetMarginStrut(margin_strut);
-  }
-
-  // Set up a margin strut that discards all adjoining margins. This is used to
-  // discard block-start margins after fragmentainer breaks.
-  void SetDiscardingMarginStrut() {
-#if DCHECK_IS_ON()
-    DCHECK(!is_margin_strut_set_);
-    is_margin_strut_set_ = true;
-#endif
-    NGMarginStrut discarding_margin_strut;
-    discarding_margin_strut.discard_margins = true;
-    space_.EnsureRareData()->SetMarginStrut(discarding_margin_strut);
   }
 
   void SetBfcOffset(const NGBfcOffset& bfc_offset) {

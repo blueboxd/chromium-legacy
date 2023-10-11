@@ -10,7 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "third_party/blink/renderer/platform/graphics/parkable_image.h"
-#include "third_party/blink/renderer/platform/graphics/rw_buffer.h"
+#include "third_party/blink/renderer/platform/image-decoders/rw_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -72,6 +72,7 @@ class SharedBufferSegmentReader final : public SegmentReader {
   sk_sp<SkData> GetAsSkData() const override;
 
  private:
+  ~SharedBufferSegmentReader() override = default;
   scoped_refptr<SharedBuffer> shared_buffer_;
 };
 
@@ -119,6 +120,7 @@ class DataSegmentReader final : public SegmentReader {
   sk_sp<SkData> GetAsSkData() const override;
 
  private:
+  ~DataSegmentReader() override = default;
   sk_sp<SkData> data_;
 };
 
@@ -156,6 +158,7 @@ class ROBufferSegmentReader final : public SegmentReader {
   sk_sp<SkData> GetAsSkData() const override;
 
  private:
+  ~ROBufferSegmentReader() override = default;
   scoped_refptr<ROBuffer> ro_buffer_;
   mutable base::Lock read_lock_;
   // Position of the first char in the current block of iter_.
@@ -226,7 +229,6 @@ sk_sp<SkData> ROBufferSegmentReader::GetAsSkData() const {
 class ParkableImageSegmentReader : public SegmentReader {
  public:
   explicit ParkableImageSegmentReader(scoped_refptr<ParkableImage> image);
-  ~ParkableImageSegmentReader() override = default;
   size_t size() const override;
   size_t GetSomeData(const char*& data, size_t position) const override;
   sk_sp<SkData> GetAsSkData() const override;
@@ -234,6 +236,7 @@ class ParkableImageSegmentReader : public SegmentReader {
   void UnlockData() override;
 
  private:
+  ~ParkableImageSegmentReader() override = default;
   scoped_refptr<ParkableImage> parkable_image_;
   size_t available_;
 };

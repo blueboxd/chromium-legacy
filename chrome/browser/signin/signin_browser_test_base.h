@@ -15,6 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/trusted_vault/trusted_vault_histograms.h"
 #include "services/network/test/test_url_loader_factory.h"
 
 // Template for adding account management utilities to any test fixture which is
@@ -89,6 +90,10 @@ class SigninBrowserTestBaseT : public T {
     DCHECK_EQ(GetProfile()->IsMainProfile(), use_main_profile_);
 #endif
 
+    if (GetProfile()->IsOffTheRecord()) {
+      return;
+    }
+
     identity_test_env_profile_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(GetProfile());
     identity_test_env()->SetTestURLLoaderFactory(&test_url_loader_factory_);
@@ -113,18 +118,8 @@ class SigninBrowserTestBaseT : public T {
 
   virtual void OnWillCreateBrowserContextServices(
       content::BrowserContext* context) {
-    signin::AccountConsistencyMethod account_consistency_method =
-#if BUILDFLAG(ENABLE_MIRROR)
-        signin::AccountConsistencyMethod::kMirror;
-#elif BUILDFLAG(ENABLE_DICE_SUPPORT)
-        signin::AccountConsistencyMethod::kDice;
-#else
-        signin::AccountConsistencyMethod::kDisabled;
-#endif
-
     IdentityTestEnvironmentProfileAdaptor::
-        SetIdentityTestEnvironmentFactoriesOnBrowserContext(
-            context, account_consistency_method);
+        SetIdentityTestEnvironmentFactoriesOnBrowserContext(context);
     ChromeSigninClientFactory::GetInstance()->SetTestingFactory(
         context, base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
                                      &test_url_loader_factory_));

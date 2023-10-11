@@ -82,11 +82,11 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleUpdateCupsPrinter(const base::Value::List& args);
   void HandleRemoveCupsPrinter(const base::Value::List& args);
   void HandleRetrieveCupsPrinterPpd(const base::Value::List& args);
-  void OnSetUpPrinter(
-      const std::string& printer_id,
-      const std::string& printer_name,
-      const std::string& eula,
-      const absl::optional<printing::PrinterSemanticCapsAndDefaults>& caps);
+
+  void OnSetUpPrinter(const std::string& printer_id,
+                      const std::string& printer_name,
+                      const std::string& eula,
+                      PrinterSetupResult result);
 
   // For a CupsPrinterInfo in |args|, retrieves the relevant PrinterInfo object
   // using an IPP call to the printer.
@@ -208,8 +208,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   // Code common between the discovered and manual add printer code paths.
   void OnAddedOrEditedPrinterCommon(const chromeos::Printer& printer,
-                                    PrinterSetupResult result_code,
-                                    bool is_automatic);
+                                    PrinterSetupResult result_code);
 
   // CupsPrintersManager::Observer override:
   void OnPrintersChanged(
@@ -268,7 +267,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
       const std::string& callback_id,
       const chromeos::CupsPrinterStatus& printer_status);
 
-  raw_ptr<Profile, ExperimentalAsh> profile_;
+  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> profile_;
 
   // Discovery support.  discovery_active_ tracks whether or not the UI
   // currently wants updates about printer availability.  The two vectors track

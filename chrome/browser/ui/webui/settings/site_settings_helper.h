@@ -89,7 +89,6 @@ constexpr char kIncognito[] = "incognito";
 constexpr char kIsDirectory[] = "isDirectory";
 constexpr char kIsEmbargoed[] = "isEmbargoed";
 constexpr char kIsWritable[] = "isWritable";
-constexpr char kNotificationInfoString[] = "notificationInfoString";
 constexpr char kObject[] = "object";
 constexpr char kOpenDescription[] = "openDescription";
 constexpr char kOrigin[] = "origin";
@@ -277,11 +276,6 @@ std::string GetDisplayNameForGURL(Profile* profile,
 // Returns data about all currently installed Isolated Web Apps.
 std::vector<web_app::IsolatedWebAppUrlInfo> GetInstalledIsolatedWebApps(
     Profile* profile);
-
-// Returns a list of domains to be shown on the 'Review Notification
-// Permissions' module in site settings notification page. Those domains send
-// a lot of notifications, but have low site engagement.
-base::Value::List PopulateNotificationPermissionReviewData(Profile* profile);
 
 }  // namespace site_settings
 

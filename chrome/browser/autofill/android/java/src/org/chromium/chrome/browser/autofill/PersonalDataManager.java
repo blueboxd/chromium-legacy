@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.autofill;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.text.format.DateUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
@@ -20,6 +19,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileKey;
+import org.chromium.components.autofill.AutofillProfile;
 import org.chromium.components.autofill.VirtualCardEnrollmentState;
 import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.components.image_fetcher.ImageFetcherConfig;
@@ -55,42 +55,6 @@ public class PersonalDataManager {
          * Called when the data is changed.
          */
         void onPersonalDataChanged();
-    }
-
-    /**
-     * Callback for subKeys request.
-     */
-    public interface GetSubKeysRequestDelegate {
-        /**
-         * Called when the subkeys are received sucessfully.
-         * Here the subkeys are admin areas.
-         *
-         * @param subKeysCodes The subkeys' codes.
-         * @param subKeysNames The subkeys' names.
-         */
-        @CalledByNative("GetSubKeysRequestDelegate")
-        void onSubKeysReceived(String[] subKeysCodes, String[] subKeysNames);
-    }
-
-    /**
-     * Callback for normalized addresses.
-     */
-    public interface NormalizedAddressRequestDelegate {
-        /**
-         * Called when the address has been sucessfully normalized.
-         *
-         * @param profile The profile with the normalized address.
-         */
-        @CalledByNative("NormalizedAddressRequestDelegate")
-        void onAddressNormalized(AutofillProfile profile);
-
-        /**
-         * Called when the address could not be normalized.
-         *
-         * @param profile The non normalized profile.
-         */
-        @CalledByNative("NormalizedAddressRequestDelegate")
-        void onCouldNotNormalize(AutofillProfile profile);
     }
 
     /**
@@ -385,8 +349,6 @@ public class PersonalDataManager {
         return sManager;
     }
 
-    private static int sRequestTimeoutSeconds = 5;
-
     private final long mPersonalDataManagerAndroid;
     private final List<PersonalDataManagerObserver> mDataObservers =
             new ArrayList<PersonalDataManagerObserver>();
@@ -494,8 +456,9 @@ public class PersonalDataManager {
             String[] profileLabels, String[] profileGUIDs) {
         ArrayList<AutofillProfile> profiles = new ArrayList<AutofillProfile>(profileGUIDs.length);
         for (int i = 0; i < profileGUIDs.length; i++) {
-            AutofillProfile profile = PersonalDataManagerJni.get().getProfileByGUID(
-                    mPersonalDataManagerAndroid, PersonalDataManager.this, profileGUIDs[i]);
+            AutofillProfile profile = new AutofillProfile(
+                    PersonalDataManagerJni.get().getProfileByGUID(mPersonalDataManagerAndroid,
+                            PersonalDataManager.this, profileGUIDs[i]));
             profile.setLabel(profileLabels[i]);
             profiles.add(profile);
         }
@@ -505,8 +468,8 @@ public class PersonalDataManager {
 
     public AutofillProfile getProfile(String guid) {
         ThreadUtils.assertOnUiThread();
-        return PersonalDataManagerJni.get().getProfileByGUID(
-                mPersonalDataManagerAndroid, PersonalDataManager.this, guid);
+        return new AutofillProfile(PersonalDataManagerJni.get().getProfileByGUID(
+                mPersonalDataManagerAndroid, PersonalDataManager.this, guid));
     }
 
     public void deleteProfile(String guid) {
@@ -518,13 +481,13 @@ public class PersonalDataManager {
     public String setProfile(AutofillProfile profile) {
         ThreadUtils.assertOnUiThread();
         return PersonalDataManagerJni.get().setProfile(
-                mPersonalDataManagerAndroid, PersonalDataManager.this, profile);
+                mPersonalDataManagerAndroid, PersonalDataManager.this, profile, profile.getGUID());
     }
 
     public String setProfileToLocal(AutofillProfile profile) {
         ThreadUtils.assertOnUiThread();
         return PersonalDataManagerJni.get().setProfileToLocal(
-                mPersonalDataManagerAndroid, PersonalDataManager.this, profile);
+                mPersonalDataManagerAndroid, PersonalDataManager.this, profile, profile.getGUID());
     }
 
     /**
@@ -739,67 +702,6 @@ public class PersonalDataManager {
     }
 
     /**
-     * Starts loading the address validation rules for the specified {@code regionCode}.
-     *
-     * @param regionCode The code of the region for which to load the rules.
-     */
-    public void loadRulesForAddressNormalization(String regionCode) {
-        ThreadUtils.assertOnUiThread();
-        PersonalDataManagerJni.get().loadRulesForAddressNormalization(
-                mPersonalDataManagerAndroid, PersonalDataManager.this, regionCode);
-    }
-
-    /**
-     * Starts loading the sub-key request rules for the specified {@code regionCode}.
-     *
-     * @param regionCode The code of the region for which to load the rules.
-     */
-    public void loadRulesForSubKeys(String regionCode) {
-        ThreadUtils.assertOnUiThread();
-        PersonalDataManagerJni.get().loadRulesForSubKeys(
-                mPersonalDataManagerAndroid, PersonalDataManager.this, regionCode);
-    }
-
-    /**
-     * Starts requesting the subkeys for the specified {@code regionCode}, if the rules
-     * associated with the {@code regionCode} are done loading. Otherwise sets up the callback to
-     * start loading the subkeys when the rules are loaded. The received subkeys will be sent
-     * to the {@code delegate}. If the subkeys are not received in the specified
-     * {@code sRequestTimeoutSeconds}, the {@code delegate} will be notified.
-     *
-     * @param regionCode The code of the region for which to load the subkeys.
-     * @param delegate The object requesting the subkeys.
-     */
-    public void getRegionSubKeys(String regionCode, GetSubKeysRequestDelegate delegate) {
-        ThreadUtils.assertOnUiThread();
-        PersonalDataManagerJni.get().startRegionSubKeysRequest(mPersonalDataManagerAndroid,
-                PersonalDataManager.this, regionCode, sRequestTimeoutSeconds, delegate);
-    }
-
-    /** Cancels the pending subkeys request. */
-    public void cancelPendingGetSubKeys() {
-        ThreadUtils.assertOnUiThread();
-        PersonalDataManagerJni.get().cancelPendingGetSubKeys(mPersonalDataManagerAndroid);
-    }
-
-    /**
-     * Normalizes the address of the profile associated with the {@code guid} if the rules
-     * associated with the profile's region are done loading. Otherwise sets up the callback to
-     * start normalizing the address when the rules are loaded. The normalized profile will be sent
-     * to the {@code delegate}. If the profile is not normalized in the specified
-     * {@code sRequestTimeoutSeconds}, the {@code delegate} will be notified.
-     *
-     * @param profile The profile to normalize.
-     * @param delegate The object requesting the normalization.
-     */
-    public void normalizeAddress(
-            AutofillProfile profile, NormalizedAddressRequestDelegate delegate) {
-        ThreadUtils.assertOnUiThread();
-        PersonalDataManagerJni.get().startAddressNormalization(mPersonalDataManagerAndroid,
-                PersonalDataManager.this, profile, sRequestTimeoutSeconds, delegate);
-    }
-
-    /**
      * Checks whether the Autofill PersonalDataManager has profiles.
      *
      * @return True If there are profiles.
@@ -889,6 +791,21 @@ public class PersonalDataManager {
     }
 
     /**
+     * @return Whether the Autofill feature for payment cvc storage is enabled.
+     */
+    public static boolean isPaymentCvcStorageEnabled() {
+        return getPrefService().getBoolean(Pref.AUTOFILL_PAYMENT_CVC_STORAGE);
+    }
+
+    /**
+     * Enables or disables the Autofill feature for payment cvc storage.
+     * @param enable True to enable payment cvc storage, false otherwise.
+     */
+    public static void setAutofillPaymentCvcStorage(boolean enable) {
+        getPrefService().setBoolean(Pref.AUTOFILL_PAYMENT_CVC_STORAGE, enable);
+    }
+
+    /**
      * @return Whether the Autofill feature is managed.
      */
     public static boolean isAutofillManaged() {
@@ -909,21 +826,8 @@ public class PersonalDataManager {
         return PersonalDataManagerJni.get().isAutofillCreditCardManaged();
     }
 
-    public static void setRequestTimeoutForTesting(int timeout) {
-        var oldValue = sRequestTimeoutSeconds;
-        sRequestTimeoutSeconds = timeout;
-        ResettersForTesting.register(() -> sRequestTimeoutSeconds = oldValue);
-    }
-
     public void setSyncServiceForTesting() {
         PersonalDataManagerJni.get().setSyncServiceForTesting(mPersonalDataManagerAndroid);
-    }
-
-    /**
-     * @return The sub-key request timeout in milliseconds.
-     */
-    public static long getRequestTimeoutMS() {
-        return DateUtils.SECOND_IN_MILLIS * sRequestTimeoutSeconds;
     }
 
     private static PrefService getPrefService() {
@@ -1021,9 +925,9 @@ public class PersonalDataManager {
         boolean isCountryEligibleForAccountStorage(long nativePersonalDataManagerAndroid,
                 PersonalDataManager caller, String countryCode);
         String setProfile(long nativePersonalDataManagerAndroid, PersonalDataManager caller,
-                AutofillProfile profile);
+                AutofillProfile profile, String guid);
         String setProfileToLocal(long nativePersonalDataManagerAndroid, PersonalDataManager caller,
-                AutofillProfile profile);
+                AutofillProfile profile, String guid);
         String getShippingAddressLabelWithCountryForPaymentRequest(
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller,
                 AutofillProfile profile);
@@ -1076,16 +980,6 @@ public class PersonalDataManager {
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller);
         void clearUnmaskedCache(
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller, String guid);
-        void loadRulesForAddressNormalization(long nativePersonalDataManagerAndroid,
-                PersonalDataManager caller, String regionCode);
-        void loadRulesForSubKeys(long nativePersonalDataManagerAndroid, PersonalDataManager caller,
-                String regionCode);
-        void startAddressNormalization(long nativePersonalDataManagerAndroid,
-                PersonalDataManager caller, AutofillProfile profile, int timeoutSeconds,
-                NormalizedAddressRequestDelegate delegate);
-        void startRegionSubKeysRequest(long nativePersonalDataManagerAndroid,
-                PersonalDataManager caller, String regionCode, int timeoutSeconds,
-                GetSubKeysRequestDelegate delegate);
         boolean hasProfiles(long nativePersonalDataManagerAndroid);
         boolean hasCreditCards(long nativePersonalDataManagerAndroid);
         boolean isFidoAuthenticationAvailable(long nativePersonalDataManagerAndroid);
@@ -1093,7 +987,6 @@ public class PersonalDataManager {
         boolean isAutofillProfileManaged();
         boolean isAutofillCreditCardManaged();
         String toCountryCode(String countryName);
-        void cancelPendingGetSubKeys(long nativePersonalDataManagerAndroid);
         void setSyncServiceForTesting(long nativePersonalDataManagerAndroid);
     }
 }

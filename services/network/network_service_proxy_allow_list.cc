@@ -1,53 +1,43 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
 #include "services/network/network_service_proxy_allow_list.h"
-#include <memory>
-#include "base/command_line.h"
+
+#include "base/strings/strcat.h"
 #include "components/privacy_sandbox/masked_domain_list/masked_domain_list.pb.h"
+#include "net/base/features.h"
+#include "net/base/schemeful_site.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/network_switches.h"
 
 namespace network {
 namespace {
 
-std::string NormalizeHost(std::string s) {
-  return s.substr(0, 4) == "www." ? s.substr(4) : s;
+void AddBypassRulesForDomain(net::ProxyBypassRules& bypass_rules,
+                             const std::string& domain) {
+  CHECK(bypass_rules.AddRuleFromString(domain));
+  if (!(domain.starts_with(".") || domain.starts_with("*"))) {
+    // Also bypass proxy for any subdomains.
+    CHECK(bypass_rules.AddRuleFromString("." + domain));
+  }
 }
 
-// Extracts a suffix from the domain that is useful for comparing domains and
-// subdomains.
-std::string DomainSuffix(std::string domain) {
-  auto host_suffix_start = domain.rfind(".", domain.rfind("."));
-  return host_suffix_start != std::string::npos
-             ? domain.substr(host_suffix_start)
-             : domain;
+net::ProxyBypassRules BuildBypassRules(
+    const masked_domain_list::ResourceOwner& resource_owner) {
+  net::ProxyBypassRules bypass_rules;
+  for (auto resource : resource_owner.owned_resources()) {
+    AddBypassRulesForDomain(bypass_rules, resource.domain());
+  }
+  for (auto property : resource_owner.owned_properties()) {
+    AddBypassRulesForDomain(bypass_rules, property);
+  }
+  return bypass_rules;
 }
 
 }  // namespace
 
-NetworkServiceProxyAllowList::NetworkServiceProxyAllowList() {
-  custom_proxy_config_ = network::mojom::CustomProxyConfig::New();
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  std::string ip_protection_proxy_server =
-      command_line.HasSwitch(network::switches::kIPAnonymizationProxyServer)
-          ? command_line.GetSwitchValueASCII(
-                network::switches::kIPAnonymizationProxyServer)
-          : net::features::kIpPrivacyProxyServer.Get();
-
-  custom_proxy_config_->rules.ParseFromString(ip_protection_proxy_server);
-
-  custom_proxy_config_->rules.restrict_to_network_service_proxy_allow_list =
-      true;
-  custom_proxy_config_->should_replace_direct = true;
-  custom_proxy_config_->should_override_existing_config = false;
-  custom_proxy_config_->allow_non_idempotent_methods = true;
-}
-
+NetworkServiceProxyAllowList::NetworkServiceProxyAllowList() = default;
 NetworkServiceProxyAllowList::~NetworkServiceProxyAllowList() = default;
 
 NetworkServiceProxyAllowList::NetworkServiceProxyAllowList(
@@ -80,9 +70,28 @@ bool NetworkServiceProxyAllowList::IsPopulated() {
   return !allow_list_with_bypass_map_.empty();
 }
 
+// static
 mojom::CustomProxyConfigPtr
-NetworkServiceProxyAllowList::GetCustomProxyConfig() {
-  return custom_proxy_config_ ? custom_proxy_config_->Clone() : nullptr;
+NetworkServiceProxyAllowList::MakeIpProtectionCustomProxyConfig() {
+  auto custom_proxy_config = network::mojom::CustomProxyConfig::New();
+  // Indicate to the NetworkServiceProxyDelegate that this is for IP Protection
+  // and it should use the allow list. In this situation, the delegate does not
+  // use any other fields from the custom proxy config.
+  custom_proxy_config->rules.restrict_to_network_service_proxy_allow_list =
+      true;
+  return custom_proxy_config;
+}
+
+// static
+std::string NetworkServiceProxyAllowList::PartitionMapKey(std::string domain) {
+  auto last_dot = domain.rfind(".");
+  if (last_dot != std::string::npos) {
+    auto penultimate_dot = domain.rfind(".", last_dot - 1);
+    if (penultimate_dot != std::string::npos) {
+      return domain.substr(penultimate_dot + 1);
+    }
+  }
+  return domain;
 }
 
 void NetworkServiceProxyAllowList::AddDomainRules(
@@ -90,7 +99,7 @@ void NetworkServiceProxyAllowList::AddDomainRules(
     const net::ProxyBypassRules& bypass_rules) {
   auto rule = net::SchemeHostPortMatcherRule::FromUntrimmedRawString(domain);
 
-  std::string domain_suffix = DomainSuffix(domain);
+  std::string domain_suffix = PartitionMapKey(domain);
 
   if (rule) {
     allow_list_with_bypass_map_[domain_suffix][std::move(rule)] = bypass_rules;
@@ -110,31 +119,45 @@ void NetworkServiceProxyAllowList::AddDomainRules(
 
 bool NetworkServiceProxyAllowList::Matches(const GURL& request_url,
                                            const GURL& top_frame_url) {
+  auto vlog = [&](std::string message) {
+    VLOG(3) << "NSPAL::Matches(" << request_url << ", " << top_frame_url
+            << ") - " << message;
+  };
   // If there is no top frame URL, the request should not be proxied because it
   // is not to a 3P resource.
   if (!IsPopulated() || top_frame_url.is_empty()) {
+    vlog("false (not populated or empty top_frame_url)");
     return false;
   }
 
-  std::string resource_host = NormalizeHost(request_url.host());
+  net::SchemefulSite request_site(request_url);
+  net::SchemefulSite top_site(top_frame_url);
 
-  // Same site requests should not be proxied.
-  if (resource_host == NormalizeHost(top_frame_url.host())) {
+  // First-party requests should not be proxied.
+  if (request_site == top_site) {
+    VLOG(2) << " -> false (same-site)";
     return false;
   }
 
-  auto resource_host_suffix = DomainSuffix(resource_host);
+  auto partition_map_key = PartitionMapKey(request_url.host());
 
-  if (allow_list_with_bypass_map_.contains(resource_host_suffix)) {
+  if (allow_list_with_bypass_map_.contains(partition_map_key)) {
     for (const auto& [rule, bypass_rules] :
-         allow_list_with_bypass_map_.at(resource_host_suffix)) {
+         allow_list_with_bypass_map_.at(partition_map_key)) {
       auto result = rule->Evaluate(request_url);
       if (result == net::SchemeHostPortMatcherResult::kInclude) {
-        return bypass_rules.Matches(top_frame_url, true);
+        bool m = bypass_rules.Matches(top_frame_url, true);
+        if (m) {
+          vlog("true from bypass_rules.Matches");
+        } else {
+          vlog("false from bypass_rules.Matches");
+        }
+        return m;
       }
     }
   }
 
+  vlog("false (fall-through)");
   return false;
 }
 
@@ -144,14 +167,8 @@ void NetworkServiceProxyAllowList::UseMaskedDomainList(
   // domains that will allow proxy bypass.
   allow_list_with_bypass_map_.clear();
   for (auto owner : mdl.resource_owners()) {
-    net::ProxyBypassRules bypass_rules;
+    net::ProxyBypassRules bypass_rules = BuildBypassRules(owner);
     for (auto resource : owner.owned_resources()) {
-      for (auto property : owner.owned_properties()) {
-        CHECK(bypass_rules.AddRuleFromString(property));
-        // Also bypass proxy for any subdomains.
-        CHECK(bypass_rules.AddRuleFromString("." + property));
-      }
-
       AddDomainRules(resource.domain(), bypass_rules);
     }
   }

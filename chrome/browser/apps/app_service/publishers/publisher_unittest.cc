@@ -188,7 +188,7 @@ apps::IntentFilters CreateIntentFilters() {
 
   apps::ConditionValues values3;
   values3.push_back(std::make_unique<apps::ConditionValue>(
-      url.host(), apps::PatternMatchType::kLiteral));
+      apps_util::AuthorityView::Encode(url), apps::PatternMatchType::kLiteral));
   filter->conditions.push_back(std::make_unique<apps::Condition>(
       apps::ConditionType::kAuthority, std::move(values3)));
 
@@ -692,7 +692,7 @@ class LegacyPackagedAppLacrosPrimaryPublisherTest : public PublisherTest {
 
     PublisherTest::SetUp();
 
-    ASSERT_TRUE(crosapi::browser_util::IsLacrosPrimaryBrowser());
+    ASSERT_TRUE(crosapi::browser_util::IsLacrosEnabled());
   }
 
  private:

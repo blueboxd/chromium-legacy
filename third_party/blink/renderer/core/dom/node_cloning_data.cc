@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/dom/node_cloning_data.h"
+#include "third_party/blink/renderer/core/dom/node_move_scope.h"
 
 namespace blink {
 
@@ -14,7 +15,8 @@ void NodeCloningData::Finalize() {
   if (!Has(CloneOption::kPreserveDOMParts) || finalized_) {
     return;
   }
-  CHECK(RuntimeEnabledFeatures::DOMPartsAPIEnabled());
+  DCHECK(RuntimeEnabledFeatures::DOMPartsAPIEnabled());
+  DCHECK(NodeMoveScope::InScope() || part_queue_.empty());
   for (auto part : part_queue_) {
     if (!part->IsValid()) {
       // Only valid parts are cloned.
@@ -58,7 +60,8 @@ PartRoot* NodeCloningData::ClonedPartRootFor(const PartRoot& part_root) const {
 
 void NodeCloningData::QueueForCloning(const Part& to_clone) {
   CHECK(!finalized_);
-  part_queue_.insert(&to_clone);
+  DCHECK(!part_queue_.Contains(&to_clone));
+  part_queue_.push_back(&to_clone);
 }
 
 }  // namespace blink

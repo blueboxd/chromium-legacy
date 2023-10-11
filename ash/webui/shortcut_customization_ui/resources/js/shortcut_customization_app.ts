@@ -21,7 +21,7 @@ import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {AcceleratorsUpdatedObserverInterface, AcceleratorsUpdatedObserverReceiver} from '../mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
+import {AcceleratorsUpdatedObserverInterface, AcceleratorsUpdatedObserverReceiver, UserAction} from '../mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
 
 import {AcceleratorEditDialogElement} from './accelerator_edit_dialog.js';
 import {RequestUpdateAcceleratorEvent} from './accelerator_edit_view.js';
@@ -31,7 +31,7 @@ import {getShortcutProvider} from './mojo_interface_provider.js';
 import {RouteObserver, Router} from './router.js';
 import {getTemplate} from './shortcut_customization_app.html.js';
 import {AcceleratorConfigResult, AcceleratorInfo, AcceleratorSource, MojoAcceleratorConfig, MojoLayoutInfo, ShortcutProviderInterface} from './shortcut_types.js';
-import {getCategoryNameStringId, isCustomizationDisabled, isSearchEnabled} from './shortcut_utils.js';
+import {getCategoryNameStringId, isCustomizationDisabled} from './shortcut_utils.js';
 
 const oldKeyboardSettingsLink = 'chrome://os-settings/keyboard-overlay';
 const newKeyboardSettingsLink = 'chrome://os-settings/per-device-keyboard';
@@ -182,6 +182,10 @@ export class ShortcutCustomizationAppElement extends
         new AcceleratorsUpdatedObserverReceiver(this);
     this.shortcutProvider.addObserver(
         this.acceleratorsUpdatedReceiver.$.bindNewPipeAndPassRemote());
+    // Navigate to the selected shortcuts if one was set from the launcher
+    // search. If the url does not contain action or category info, the
+    // onRouteChanged does not do anything.
+    this.onRouteChanged(new URL(window.location.href));
   }
 
   // AcceleratorsUpdatedObserverInterface:
@@ -260,6 +264,7 @@ export class ShortcutCustomizationAppElement extends
     this.shortcutProvider.restoreAllDefaults().then(({result}) => {
       // TODO(jimmyxgong): Explore error state with restore all.
       if (result.result === AcceleratorConfigResult.kSuccess) {
+        this.shortcutProvider.recordUserAction(UserAction.kResetAll);
         this.closeRestoreAllDialog();
       }
     });
@@ -271,11 +276,6 @@ export class ShortcutCustomizationAppElement extends
 
   protected shouldHideRestoreAllButton(): boolean {
     return isCustomizationDisabled();
-  }
-
-  protected shouldHideSearchBox(): boolean {
-    // Hide the search box when flag is disabled.
-    return !isSearchEnabled();
   }
 
   static get template(): HTMLTemplateElement {

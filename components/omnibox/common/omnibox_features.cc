@@ -49,20 +49,11 @@ BASE_FEATURE(kOmniboxRemoveSuggestionsFromClipboard,
              "OmniboxRemoveSuggestionsFromClipboard",
              enabled_by_default_android_only);
 
-// When enabled, intermediate asynchronous updates will not be processed or
-// pushed to AutocompleteListeners. Only the first (synchronous) and the last
-// (final) AutocompleteResult will be pushed to listeners.
-// The change is expected to help help improve latency on low-end (Android)
-// devices.
-BASE_FEATURE(kIgnoreIntermediateResults,
-             "OmniboxIgnoreIntermediateResults",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When enabled, uses the grouping framework with zero prefix suggestions (i.e.
 // autocomplete_grouper_sections.h) to limit and group (but not sort) matches.
 BASE_FEATURE(kGroupingFrameworkForZPS,
              "OmniboxGroupingFrameworkForZPS",
-             enabled_by_default_android_only);
+             enabled_by_default_desktop_android);
 
 // When enabled, uses the grouping framework with prefixed suggestions (i.e.
 // autocomplete_grouper_sections.h) to limit and group (but not sort) matches.
@@ -205,7 +196,7 @@ BASE_FEATURE(kOmniboxOnClobberFocusTypeOnContent,
 // suggestions in the 2nd column of realbox.
 BASE_FEATURE(kRealboxSecondaryZeroSuggest,
              "RealboxSecondaryZeroSuggest",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             enabled_by_default_desktop_only);
 
 // If enabled, zero prefix suggestions will be stored using an in-memory caching
 // service, instead of using the existing prefs-based cache.
@@ -283,6 +274,12 @@ BASE_FEATURE(kDomainSuggestions,
              "OmniboxDomainSuggestions",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Feature to determine if omnibox should use a pref based data collection
+// consent helper instead of a history sync based one.
+BASE_FEATURE(kPrefBasedDataCollectionConsentHelper,
+             "PrefBasedDataCollectionConsentHelper",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Allows Omnibox to dynamically adjust number of offered suggestions to fill in
 // the space between Omnibox and the soft keyboard. The number of suggestions
 // shown will be no less than minimum for the platform (eg. 5 for Android).
@@ -328,6 +325,14 @@ BASE_FEATURE(kMostVisitedTiles,
              "OmniboxMostVisitedTiles",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// If enabled, makes Most Visited Tiles a Horizontal render group.
+// Horizontal render group decomposes aggregate suggestions (such as old Most
+// Visited Tiles), expecting individual AutocompleteMatch entry for every
+// element in the carousel.
+BASE_FEATURE(kMostVisitedTilesHorizontalRenderGroup,
+             "OmniboxMostVisitedTilesHorizontalRenderGroup",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, expands autocompletion to possibly (depending on params) include
 // suggestion titles and non-prefixes as opposed to be restricted to URL
 // prefixes. Will also adjust the location bar UI and omnibox text selection to
@@ -341,6 +346,11 @@ BASE_FEATURE(kNtpRealboxPedals,
              "NtpRealboxPedals",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Feature used to enable the simplified actions UI design.
+BASE_FEATURE(kOmniboxActionsUISimplification,
+             "OmniboxActionsUISimplification",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Feature used to enable URL suggestions for inputs that may contain typos.
 BASE_FEATURE(kOmniboxFuzzyUrlSuggestions,
              "OmniboxFuzzyUrlSuggestions",
@@ -351,15 +361,16 @@ BASE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor,
              "OmniboxMatchToolbarAndStatusBarColor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Feature used to add a recycled view pool on the most visited tile carousel.
-BASE_FEATURE(kOmniboxMostVisitedTilesAddRecycledViewPool,
-             "OmniboxMostVisitedTilesAddRecycledViewPool",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Feature used to add most visited tiles to the suggestions when the user is on
 // a search result page that does not do search term replacement.
 BASE_FEATURE(kOmniboxMostVisitedTilesOnSrp,
              "OmniboxMostVisitedTilesOnSrp",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, allows Search Ready Omnibox to populate original search query
+// when the user presses the <edit> button on EditUrl suggestion.
+BASE_FEATURE(kSearchReadyOmniboxAllowQueryEdit,
+             "SearchReadyOmniboxAllowQueryEdit",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, adds a grey square background to search icons, and makes answer
@@ -576,4 +587,11 @@ bool IsOmniboxCr23CustomizeGuardedFeatureEnabled(const base::Feature& feature) {
          base::FeatureList::IsEnabled(feature);
 }
 
+// If enabled, sends a signal when a user touches down on a search suggestion to
+// |SearchPrefetchService|. |SearchPrefetchService| will then prefetch
+// suggestion iff the SearchNavigationPrefetch feature and "touch_down" param
+// are enabled.
+BASE_FEATURE(kOmniboxTouchDownTriggerForPrefetch,
+             "OmniboxTouchDownTriggerForPrefetch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 }  // namespace omnibox

@@ -32,7 +32,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -63,7 +62,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
-import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator.TabListMode;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.TabSwitcherType;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.TabSwitcherViewObserver;
@@ -86,10 +84,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                                      TabSwitcherCustomViewManager.Delegate, BackPressHandler {
     private static final String TAG = "TabSwitcherMediator";
 
-    /** Field trial parameter for the {@link TabListRecyclerView} cleanup delay. */
-    private static final String SOFT_CLEANUP_DELAY_PARAM = "soft-cleanup-delay";
     private static final int DEFAULT_SOFT_CLEANUP_DELAY_MS = 3_000;
-    private static final String CLEANUP_DELAY_PARAM = "cleanup-delay";
     private static final int DEFAULT_CLEANUP_DELAY_MS = 30_000;
 
     private final Handler mHandler;
@@ -384,11 +379,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 }
                 if (mIsSelectingInTabSwitcher) {
                     mIsSelectingInTabSwitcher = false;
-                    TabModelFilter modelFilter = mTabModelSelector.getTabModelFilterProvider()
-                                                         .getCurrentTabModelFilter();
-                    if (modelFilter instanceof TabGroupModelFilter) {
-                        ((TabGroupModelFilter) modelFilter).recordSessionsCount(tab);
-                    }
 
                     // Use TabSelectionType.From_USER to filter the new tab creation case.
                     if (type == TabSelectionType.FROM_USER) recordUserSwitchedTab(tab, lastId);
@@ -592,13 +582,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
     private int getSoftCleanupDelay() {
         if (mSoftCleanupDelayMsForTesting != null) return mSoftCleanupDelayMsForTesting;
-        if (!LibraryLoader.getInstance().isInitialized()) {
-            return 0;
-        }
 
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, SOFT_CLEANUP_DELAY_PARAM,
-                DEFAULT_SOFT_CLEANUP_DELAY_MS);
+        return DEFAULT_SOFT_CLEANUP_DELAY_MS;
     }
 
     int getCleanupDelayForTesting() {
@@ -607,13 +592,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
     private int getCleanupDelay() {
         if (mCleanupDelayMsForTesting != null) return mCleanupDelayMsForTesting;
-        if (!LibraryLoader.getInstance().isInitialized()) {
-            return 0;
-        }
 
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, CLEANUP_DELAY_PARAM,
-                DEFAULT_CLEANUP_DELAY_MS);
+        return DEFAULT_CLEANUP_DELAY_MS;
     }
 
     private void setVisibility(boolean isVisible) {
@@ -707,8 +687,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 RecordUserAction.record("MobileTabSwitched");
             }
             // Only log when you switch a tab page directly from tab switcher.
-            if (!TabUiFeatureUtilities.isTabGroupsAndroidEnabled(mContext)
-                    || getRelatedTabs(tab.getId()).size() == 1) {
+            if (getRelatedTabs(tab.getId()).size() == 1) {
                 RecordUserAction.record(
                         "MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
             }
@@ -852,9 +831,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     public void finishedShowing() {
         mIsTabSwitcherShowing = true;
 
-        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) {
-            requestAccessibilityFocusOnCurrentTab();
-        }
+        requestAccessibilityFocusOnCurrentTab();
 
         for (TabSwitcherViewObserver observer : mObservers) {
             observer.finishedShowing();
@@ -927,9 +904,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         }
 
         // Going back to the Start surface isn't handled by the TabSwitcherMediator any more, but in
-        // {@link ReturnToChromeBackPressHandler} when it isn't in incognito mode.
-        if (mLastActiveLayoutType == LayoutType.START_SURFACE
-                && !mTabModelSelector.isIncognitoSelected()) {
+        // {@link ReturnToChromeBackPressHandler}.
+        if (mLastActiveLayoutType == LayoutType.START_SURFACE) {
             return false;
         }
 
@@ -1182,8 +1158,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     }
 
     private boolean ableToOpenDialog(Tab tab) {
-        return TabUiFeatureUtilities.isTabGroupsAndroidEnabled(mContext)
-                && mTabModelSelector.isIncognitoSelected() == tab.isIncognito()
+        return mTabModelSelector.isIncognitoSelected() == tab.isIncognito()
                 && getRelatedTabs(tab.getId()).size() != 1;
     }
 
@@ -1230,11 +1205,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         if (mTabModelSelector.getCurrentTab() == null) return false;
 
         // Going back to the Start surface isn't handled by the TabSwitcherMediator any more, but in
-        // {@link ReturnToChromeBackPressHandler} when it isn't in incognito mode.
-        if (mLastActiveLayoutType == LayoutType.START_SURFACE
-                && !mTabModelSelector.isIncognitoSelected()) {
-            return false;
-        }
+        // {@link ReturnToChromeBackPressHandler}.
+        if (mLastActiveLayoutType == LayoutType.START_SURFACE) return false;
 
         return true;
     }

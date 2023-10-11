@@ -13,14 +13,17 @@
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
+#include "ash/app_list/views/app_list_toast_view.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/app_list/views/search_notifier_controller.h"
 #include "ash/app_list/views/search_result_image_list_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/controls/rounded_scroll_bar.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
@@ -37,6 +40,7 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
 
 using views::BoxLayout;
@@ -97,6 +101,27 @@ AppListSearchView::AppListSearchView(
   search_box_view_->SetResultSelectionController(
       result_selection_controller_.get());
 
+  if (features::IsProductivityLauncherImageSearchEnabled()) {
+    // TODO(crbug.com/1352636): Update the strings with the l10n translated
+    // ones.
+    AppListToastView::Builder toast_view_builder(
+        u"You can now find your images by keyword");
+    toast_view_builder.SetButton(
+        u"Got it",
+        base::BindRepeating(&AppListSearchView::OnSearchNotifierButtonPressed,
+                            weak_ptr_factory_.GetWeakPtr()));
+    search_notifier_ = scroll_contents->AddChildView(
+        toast_view_builder.SetViewDelegate(view_delegate)
+            .SetIcon(ui::ImageModel::FromVectorIcon(kLauncherImageSearchIcon,
+                                                    ui::kColorMenuIcon))
+            .SetIconBackground(true)
+            .SetSubtitle(
+                u"Try \'cat\', \'dog\', \'building\', \'receipts\', etc")
+            .Build());
+    search_notifier_->SetProperty(views::kMarginsKey,
+                                  gfx::Insets::TLBR(16, 16, 0, 16));
+  }
+
   auto add_result_container = [&](SearchResultContainerView* new_container) {
     new_container->SetResults(
         AppListModelProvider::Get()->search_model()->results());
@@ -125,9 +150,12 @@ AppListSearchView::AppListSearchView(
 
   // Launcher image search container is always the third view shown.
   if (features::IsProductivityLauncherImageSearchEnabled()) {
+    search_notifier_controller_ = std::make_unique<SearchNotifierController>();
     image_search_container_ = scroll_contents->AddChildView(
         std::make_unique<SearchResultImageListView>(view_delegate));
     add_result_container(image_search_container_);
+    image_search_container_->SetVisible(
+        search_notifier_controller_->ShouldShowPrivacyNotice());
   }
 
   // SearchResultListViews are aware of their relative position in the
@@ -335,6 +363,16 @@ void AppListSearchView::UpdateForNewSearch(bool search_active) {
   }
 }
 
+void AppListSearchView::RemoveSearchNotifierView() {
+  if (!search_notifier_) {
+    return;
+  }
+
+  auto* scroll_contents = search_notifier_->parent();
+  scroll_contents->RemoveChildViewT(std::exchange(search_notifier_, nullptr));
+  scroll_contents->InvalidateLayout();
+}
+
 void AppListSearchView::OnBoundsChanged(const gfx::Rect& old_bounds) {
   if (image_search_container_ && width() != old_bounds.width()) {
     image_search_container_->ConfigureLayoutForAvailableWidth(width());
@@ -402,6 +440,15 @@ void AppListSearchView::MaybeNotifySelectedResultChanged() {
 
   search_box_view_->SetA11yActiveDescendant(
       selected_view->GetViewAccessibility().GetUniqueId().Get());
+}
+
+void AppListSearchView::OnSearchNotifierButtonPressed() {
+  search_notifier_controller_->SetPrivacyNoticeAcceptedPref();
+  RemoveSearchNotifierView();
+
+  // Update the search results as the image search category should be populated
+  // now.
+  search_box_view()->TriggerSearch();
 }
 
 bool AppListSearchView::CanSelectSearchResults() {

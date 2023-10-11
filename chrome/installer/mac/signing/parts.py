@@ -64,6 +64,7 @@ def get_parts(config):
                     config),
                 '{}.helper'.format(uncustomized_bundle_id),
                 options=CodeSignOptions.FULL_HARDENED_RUNTIME_OPTIONS,
+                entitlements='helper-entitlements.plist',
                 verify_options=verify_options),
         'helper-renderer-app':
             CodeSignedProduct(

@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/privacy/safe_browsing/safe_browsing_enhanced_protection_view_controller.h"
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "components/safe_browsing/core/common/features.h"
@@ -224,7 +224,7 @@ const CGFloat kSymbolSize = 20;
   if (sectionIdentifier == SectionIdentifierThingsToConsider) {
     // Might be a different type of footer.
     TableViewLinkHeaderFooterView* linkView =
-        base::mac::ObjCCast<TableViewLinkHeaderFooterView>(view);
+        base::apple::ObjCCast<TableViewLinkHeaderFooterView>(view);
     linkView.delegate = self;
   }
   return view;
@@ -406,6 +406,7 @@ const CGFloat kSymbolSize = 20;
     enhancedProtectionFooterItem.urls = urls;
     enhancedProtectionFooterItem.accessibilityIdentifier =
         kSafeBrowsingEnhancedProtectionTableViewFooterId;
+    enhancedProtectionFooterItem.forceIndents = YES;
     _safeBrowsingEnhancedProtectionFooterItem = enhancedProtectionFooterItem;
   }
 
@@ -418,6 +419,7 @@ const CGFloat kSymbolSize = 20;
           initWithType:ItemTypeEnhancedProtectionFirstHeader];
   firstHeaderItem.text = l10n_util::GetNSString(
       IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_WHEN_ON_HEADER);
+  firstHeaderItem.forceIndents = YES;
   firstHeaderItem.accessibilityIdentifier =
       kSafeBrowsingEnhancedProtectionTableViewFirstHeaderId;
 
@@ -430,6 +432,7 @@ const CGFloat kSymbolSize = 20;
           initWithType:ItemTypeEnhancedProtectionSecondHeader];
   secondHeaderItem.text = l10n_util::GetNSString(
       IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_THINGS_TO_CONSIDER_HEADER);
+  secondHeaderItem.forceIndents = YES;
   secondHeaderItem.accessibilityIdentifier =
       kSafeBrowsingEnhancedProtectionTableViewSecondHeaderId;
 

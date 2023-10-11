@@ -33,16 +33,7 @@ buildflag_header("buildflags") {
 
 if (use_typeface_fontations) {
   source_set("path_bridge") {
-    sources = [
-      "//third_party/skia/src/ports/fontations/src/skpath_bridge.cpp",
-      "//third_party/skia/src/ports/fontations/src/skpath_bridge.h",
-    ]
-    deps = [ ":skia_core_public_headers" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
+    sources = [ "//third_party/skia/src/ports/fontations/src/skpath_bridge.h" ]
   }
 
   rust_static_library("bridge_rust_side") {
@@ -53,8 +44,8 @@ if (use_typeface_fontations) {
     deps = [
       ":path_bridge",
       "//third_party/rust/font_types/v0_3:lib",
-      "//third_party/rust/read_fonts/v0_5:lib",
-      "//third_party/rust/skrifa/v0_4:lib",
+      "//third_party/rust/read_fonts/v0_10:lib",
+      "//third_party/rust/skrifa/v0_9:lib",
     ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
@@ -82,6 +73,7 @@ config("skia_config") {
     "SK_DISABLE_LEGACY_IMAGE_COLORSPACE_METHODS",
     "SK_DISABLE_LEGACY_IMAGE_RELEASE_PROCS",
     "SK_DISABLE_LEGACY_GL_BACKEND_SURFACE",
+    "SK_DISABLE_LEGACY_INIT_DECODERS",
   ]
 
   include_dirs = [
@@ -90,16 +82,12 @@ config("skia_config") {
   ]
 
   if (use_blink) {
+    # TODO(kjlubick) make these not necessary
     defines += [
       "SK_CODEC_DECODES_JPEG",
-      "SK_CODEC_DECODES_PNG",
-      "SK_CODEC_DECODES_WEBP",
       "SK_ENCODE_JPEG",
       "SK_ENCODE_PNG",
       "SK_ENCODE_WEBP",
-      "SK_HAS_WUFFS_LIBRARY",
-      "SK_DISABLE_LEGACY_CANVAS_FLUSH",
-      "SK_LEGACY_GPU_GETTERS_CONST",
     ]
     include_dirs += [ "//third_party/wuffs/src/release/c" ]
   } else {
@@ -387,7 +375,6 @@ component("skia") {
   # The imported Skia gni source paths are made absolute by gn.
   defines = []
   sources += skia_sksl_sources
-  sources += skia_needs_sksl_sources
   sources += skia_codec_core
   sources += skia_utils_private
   sources += skia_xps_sources
@@ -472,8 +459,8 @@ component("skia") {
     deps += [
       ":bridge_rust_side",
       ":path_bridge",
-      "//third_party/rust/read_fonts/v0_5:lib",
-      "//third_party/rust/skrifa/v0_4:lib",
+      "//third_party/rust/read_fonts/v0_10:lib",
+      "//third_party/rust/skrifa/v0_9:lib",
     ]
   }
 
@@ -640,15 +627,6 @@ component("skia") {
     public_deps += [ ":skia_graphite_public" ]
     deps += [ ":skia_graphite_private" ]
 
-    # Even though we only use Dawn and Metal with Graphite, we need to build the
-    # Ganesh sources, since both Ganesh and Graphite use the same defines for
-    # enabling backends, otherwise we'll get undefined symbol errors in Ganesh.
-    if (skia_use_dawn) {
-      # It's ok to not make these public since they aren't meant to be used
-      # outside of Skia.
-      sources += skia_gpu_dawn_public
-      sources += skia_gpu_dawn_private
-    }
     if (skia_use_metal) {
       deps += [ ":skia_ganesh_metal" ]
     }
@@ -738,7 +716,6 @@ skia_source_set("skia_core_and_effects") {
   defines = []
   sources = skia_core_sources
   sources += skia_colorfilters_sources
-  sources += skia_colorfilters_sksl_sources
   sources += skia_effects_sources
   sources += skia_effects_imagefilter_sources
   if (skia_support_gpu) {
@@ -758,26 +735,6 @@ skia_source_set("skia_core_and_effects") {
 
 # Bits that involve special vector-y hardware.
 if (current_cpu == "x86" || current_cpu == "x64") {
-  skia_source_set("skia_opts_sse3") {
-    sources = skia_opts.ssse3_sources
-    if (!is_win || is_clang) {
-      cflags = [ "-mssse3" ]
-    }
-    if (is_win) {
-      defines = [ "SK_CPU_SSE_LEVEL=31" ]
-    }
-    visibility = [ ":skia_opts" ]
-  }
-  skia_source_set("skia_opts_avx") {
-    sources = skia_opts.avx_sources
-    if (!is_win) {
-      cflags = [ "-mavx" ]
-    }
-    if (is_win) {
-      cflags = [ "/arch:AVX" ]
-    }
-    visibility = [ ":skia_opts" ]
-  }
   skia_source_set("skia_opts_hsw") {
     sources = skia_opts.hsw_sources
     if (!is_win) {
@@ -803,11 +760,7 @@ skia_source_set("skia_opts") {
   deps = [ "//base" ]
 
   if (current_cpu == "x86" || current_cpu == "x64") {
-    deps += [
-      ":skia_opts_avx",
-      ":skia_opts_hsw",
-      ":skia_opts_sse3",
-    ]
+    deps += [ ":skia_opts_hsw" ]
   } else if (current_cpu == "arm") {
     # The assembly uses the frame pointer register (r7 in Thumb/r11 in
     # ARM), the compiler doesn't like that.

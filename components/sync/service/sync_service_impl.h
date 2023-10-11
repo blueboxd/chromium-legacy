@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_SERVICE_SYNC_SERVICE_IMPL_H_
 #define COMPONENTS_SYNC_SERVICE_SYNC_SERVICE_IMPL_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -16,6 +17,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -154,6 +156,11 @@ class SyncServiceImpl : public SyncService,
   ModelTypeDownloadStatus GetDownloadStatusFor(ModelType type) const override;
   void GetTypesWithUnsyncedData(
       base::OnceCallback<void(ModelTypeSet)> callback) const override;
+  void GetLocalDataDescriptions(
+      ModelTypeSet types,
+      base::OnceCallback<void(std::map<ModelType, LocalDataDescription>)>
+          callback) override;
+  void TriggerLocalDataMigration(ModelTypeSet types) override;
 
   // SyncEngineHost implementation.
   void OnEngineInitialized(bool success,
@@ -440,7 +447,7 @@ class SyncServiceImpl : public SyncService,
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // The global NetworkConnectionTracker instance.
-  raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_;
+  const raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_;
 
   // Indicates if this is the first time sync is being configured.
   // This is set to true if last synced time is not set at the time of
@@ -519,6 +526,9 @@ class SyncServiceImpl : public SyncService,
 
   // Used to track download status changes during browser startup.
   std::unique_ptr<DownloadStatusRecorder> download_status_recorder_;
+
+  base::ScopedObservation<SyncPrefs, SyncPrefObserver> sync_prefs_observation_{
+      this};
 
 #if BUILDFLAG(IS_ANDROID)
   // Manage and fetch the java object that wraps this SyncService on

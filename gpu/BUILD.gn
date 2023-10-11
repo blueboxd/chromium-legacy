@@ -410,7 +410,6 @@ test("gl_tests") {
     "//mojo/core/embedder",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/angle:translator",
     "//third_party/libyuv",
     "//ui/gfx",
     "//ui/gfx:test_support",
@@ -419,6 +418,12 @@ test("gl_tests") {
     "//ui/gl:test_support",
     "//ui/gl/init",
   ]
+
+  if (use_static_angle) {
+    deps += [ "//third_party/angle:translator" ]
+  } else {
+    deps += [ "//third_party/angle:translator_gl_d3d_only" ]
+  }
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
@@ -466,6 +471,11 @@ test("gl_tests") {
       "//third_party/dawn/src/dawn:proc",
       "//third_party/dawn/src/dawn/native",
     ]
+
+    sources += [
+      "command_buffer/service/shared_image/dawn_image_representation_unittest_common.cc",
+      "command_buffer/service/shared_image/dawn_image_representation_unittest_common.h",
+    ]
   }
 
   data_deps = [ "//testing/buildbot/filters:gl_tests_filters" ]
@@ -501,7 +511,6 @@ test("gpu_unittests") {
     "command_buffer/client/vertex_array_object_manager_unittest.cc",
     "command_buffer/client/webgpu_implementation_unittest.cc",
     "command_buffer/client/webgpu_implementation_unittest_autogen.h",
-    "command_buffer/common/activity_flags_unittest.cc",
     "command_buffer/common/buffer_unittest.cc",
     "command_buffer/common/command_buffer_shared_test.cc",
     "command_buffer/common/debug_marker_manager_unittest.cc",
@@ -512,6 +521,7 @@ test("gpu_unittests") {
     "command_buffer/common/id_allocator_test.cc",
     "command_buffer/common/raster_cmd_format_test.cc",
     "command_buffer/common/raster_cmd_format_test_autogen.h",
+    "command_buffer/common/shm_count_unittest.cc",
     "command_buffer/common/unittest_main.cc",
     "command_buffer/common/webgpu_cmd_format_test.cc",
     "command_buffer/common/webgpu_cmd_format_test_autogen.h",
@@ -726,7 +736,6 @@ test("gpu_unittests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/angle:translator",
     "//third_party/mesa_headers",
     "//third_party/re2",
     "//ui/gfx",
@@ -737,6 +746,12 @@ test("gpu_unittests") {
     "//ui/gl:test_support",
     "//url",
   ]
+
+  if (use_static_angle) {
+    deps += [ "//third_party/angle:translator" ]
+  } else {
+    deps += [ "//third_party/angle:translator_gl_d3d_only" ]
+  }
 
   if (is_android) {
     deps += [

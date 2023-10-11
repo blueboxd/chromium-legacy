@@ -78,6 +78,7 @@ class BubbleViewPixelTest : public AshTestBase {
     cat_ears_ = std::make_unique<fake_video_conference::CatEarsEffect>();
     long_text_effect_ = std::make_unique<
         fake_video_conference::FakeLongTextLabelToggleEffect>();
+    shaggy_fur_ = std::make_unique<fake_video_conference::ShaggyFurEffect>();
 
     AshTestBase::SetUp();
 
@@ -87,6 +88,7 @@ class BubbleViewPixelTest : public AshTestBase {
 
   void TearDown() override {
     AshTestBase::TearDown();
+    shaggy_fur_.reset();
     long_text_effect_.reset();
     cat_ears_.reset();
     office_bunny_.reset();
@@ -154,6 +156,10 @@ class BubbleViewPixelTest : public AshTestBase {
     return long_text_effect_.get();
   }
 
+  fake_video_conference::ShaggyFurEffect* shaggy_fur() {
+    return shaggy_fur_.get();
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<FakeVideoConferenceTrayController> controller_;
@@ -161,7 +167,32 @@ class BubbleViewPixelTest : public AshTestBase {
   std::unique_ptr<fake_video_conference::CatEarsEffect> cat_ears_;
   std::unique_ptr<fake_video_conference::FakeLongTextLabelToggleEffect>
       long_text_effect_;
+  std::unique_ptr<fake_video_conference::ShaggyFurEffect> shaggy_fur_;
 };
+
+// Captures the basic bubble view with one media app, 2 toggle effects and 1 set
+// value effects.
+TEST_F(BubbleViewPixelTest, Basic) {
+  controller()->ClearMediaApps();
+  controller()->AddMediaApp(CreateFakeMediaApp(
+      /*is_capturing_camera=*/true, /*is_capturing_microphone=*/false,
+      /*is_capturing_screen=*/false, /*title=*/u"Meet",
+      /*url=*/kMeetTestUrl));
+
+  // Add 2 toggle effects.
+  controller()->effects_manager().RegisterDelegate(office_bunny());
+  controller()->effects_manager().RegisterDelegate(long_text_effect());
+
+  // Add one set-value effect.
+  controller()->effects_manager().RegisterDelegate(shaggy_fur());
+
+  LeftClickOn(video_conference_tray()->GetToggleBubbleButtonForTest());
+  ASSERT_TRUE(bubble_view());
+
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "video_conference_bubble_view_basic",
+      /*revision_number=*/1, bubble_view()));
+}
 
 // Pixel test that tests toggled on/off and focused/not focused for the toggle
 // effect button.
@@ -184,14 +215,14 @@ TEST_F(BubbleViewPixelTest, ToggleButton) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "video_conference_bubble_view_no_focus_not_toggled",
-      /*revision_number=*/2, toggle_effect_button_container));
+      /*revision_number=*/4, toggle_effect_button_container));
 
   // Toggle the first button, the UI should change.
   LeftClickOn(first_toggle_effect_button);
   ASSERT_EQ(1, office_bunny()->num_activations_for_testing());
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "video_conference_bubble_view_no_focus_toggled",
-      /*revision_number=*/2, toggle_effect_button_container));
+      /*revision_number=*/4, toggle_effect_button_container));
 
   // Un-toggle the button, then keyboard focus it.
   LeftClickOn(first_toggle_effect_button);
@@ -203,7 +234,7 @@ TEST_F(BubbleViewPixelTest, ToggleButton) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "video_conference_bubble_view_with_focus_not_toggled",
-      /*revision_number=*/2, toggle_effect_button_container));
+      /*revision_number=*/4, toggle_effect_button_container));
 
   // Re-toggle the button.
   event_generator->PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
@@ -212,7 +243,7 @@ TEST_F(BubbleViewPixelTest, ToggleButton) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "video_conference_bubble_view_with_focus_toggled",
-      /*revision_number=*/2, toggle_effect_button_container));
+      /*revision_number=*/4, toggle_effect_button_container));
 }
 
 // Pixel test that tests the expanded/collapsed state of the return to app panel
@@ -233,7 +264,7 @@ TEST_F(BubbleViewPixelTest, ReturnToApp) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "video_conference_tray_return_to_app_one_app",
-      /*revision_number=*/2, GetReturnToAppPanel()));
+      /*revision_number=*/3, GetReturnToAppPanel()));
 
   controller()->AddMediaApp(CreateFakeMediaApp(
       /*is_capturing_camera=*/false, /*is_capturing_microphone=*/true,
@@ -249,7 +280,7 @@ TEST_F(BubbleViewPixelTest, ReturnToApp) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "video_conference_tray_return_to_app_two_apps_collapsed",
-      /*revision_number=*/2, return_to_app_panel));
+      /*revision_number=*/3, return_to_app_panel));
 
   // Click the summary row to expand the panel.
   auto* summary_row = static_cast<video_conference::ReturnToAppButton*>(
@@ -259,7 +290,7 @@ TEST_F(BubbleViewPixelTest, ReturnToApp) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "video_conference_tray_return_to_app_two_apps_expanded",
-      /*revision_number=*/2, return_to_app_panel));
+      /*revision_number=*/3, return_to_app_panel));
 }
 
 TEST_F(BubbleViewPixelTest, ReturnToAppLinux) {
@@ -279,7 +310,7 @@ TEST_F(BubbleViewPixelTest, ReturnToAppLinux) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "video_conference_tray_linux_bubble_one_app",
-      /*revision_number=*/2, video_conference_tray()->GetBubbleView()));
+      /*revision_number=*/4, video_conference_tray()->GetBubbleView()));
 
   controller()->AddMediaApp(CreateFakeMediaApp(
       /*is_capturing_camera=*/true, /*is_capturing_microphone=*/true,
@@ -294,7 +325,7 @@ TEST_F(BubbleViewPixelTest, ReturnToAppLinux) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "video_conference_tray_linux_bubble_two_app",
-      /*revision_number=*/2, video_conference_tray()->GetBubbleView()));
+      /*revision_number=*/4, video_conference_tray()->GetBubbleView()));
 }
 
 TEST_F(BubbleViewPixelTest, OneToggleEffects) {
@@ -308,7 +339,7 @@ TEST_F(BubbleViewPixelTest, OneToggleEffects) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "video_conference_bubble_view_one_toggle_effect",
-      /*revision_number=*/0, GetToggleEffectsView()));
+      /*revision_number=*/2, GetToggleEffectsView()));
 }
 
 TEST_F(BubbleViewPixelTest, TwoToggleEffects) {
@@ -323,7 +354,7 @@ TEST_F(BubbleViewPixelTest, TwoToggleEffects) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "video_conference_bubble_view_two_toggle_effects",
-      /*revision_number=*/0, GetToggleEffectsView()));
+      /*revision_number=*/2, GetToggleEffectsView()));
 }
 
 TEST_F(BubbleViewPixelTest, ThreeToggleEffects) {
@@ -343,7 +374,7 @@ TEST_F(BubbleViewPixelTest, ThreeToggleEffects) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "video_conference_bubble_view_three_toggle_effects",
-      /*revision_number=*/0, GetToggleEffectsView()));
+      /*revision_number=*/2, GetToggleEffectsView()));
 }
 
 }  // namespace ash::video_conference

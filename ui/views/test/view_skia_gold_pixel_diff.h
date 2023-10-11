@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/base/test/skia_gold_pixel_diff.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -97,7 +97,7 @@ class ViewSkiaGoldPixelDiff {
                          gfx::Image* image) const;
 
   const std::string screenshot_prefix_;
-  base::raw_ptr<ui::test::SkiaGoldPixelDiff> pixel_diff_ = nullptr;
+  raw_ptr<ui::test::SkiaGoldPixelDiff> pixel_diff_ = nullptr;
 };
 
 }  // namespace views

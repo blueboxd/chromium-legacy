@@ -19,7 +19,6 @@
 #include "base/functional/overloaded.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequence_checker.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/types/expected.h"
 #include "base/values.h"
@@ -90,6 +89,18 @@ InstallIsolatedWebAppCommand::InstallIsolatedWebAppCommand(
             return result;
           })
           .Then(std::move(callback));
+
+  debug_log_ =
+      base::Value::Dict()
+          .Set("app_id", url_info_.app_id())
+          .Set("origin", url_info_.origin().Serialize())
+          .Set("bundle_id", url_info_.web_bundle_id().id())
+          .Set("bundle_type",
+               static_cast<int>(url_info_.web_bundle_id().type()))
+          .Set("location", IsolatedWebAppLocationAsDebugValue(location_))
+          .Set("expected_version", expected_version_.has_value()
+                                       ? expected_version_->GetString()
+                                       : "unknown");
 }
 
 InstallIsolatedWebAppCommand::~InstallIsolatedWebAppCommand() = default;
@@ -99,17 +110,7 @@ const LockDescription& InstallIsolatedWebAppCommand::lock_description() const {
 }
 
 base::Value InstallIsolatedWebAppCommand::ToDebugValue() const {
-  base::Value::Dict debug_value;
-  debug_value.Set("app_id", url_info_.app_id());
-  debug_value.Set("origin", url_info_.origin().Serialize());
-  debug_value.Set("bundle_id", url_info_.web_bundle_id().id());
-  debug_value.Set("bundle_type",
-                  static_cast<int>(url_info_.web_bundle_id().type()));
-  debug_value.Set("location", IsolatedWebAppLocationAsDebugValue(location_));
-  debug_value.Set("expected_version", expected_version_.has_value()
-                                          ? expected_version_->GetString()
-                                          : "unknown");
-  return base::Value(std::move(debug_value));
+  return base::Value(debug_log_.Clone());
 }
 
 void InstallIsolatedWebAppCommand::StartWithLock(
@@ -183,6 +184,11 @@ void InstallIsolatedWebAppCommand::ValidateManifestAndCreateInstallInfo(
 void InstallIsolatedWebAppCommand::RetrieveIconsAndPopulateInstallInfo(
     base::OnceCallback<void(WebAppInstallInfo)> next_step_callback,
     WebAppInstallInfo install_info) {
+  CHECK(!expected_version_ ||
+        *expected_version_ == install_info.isolated_web_app_version);
+  actual_version_ = install_info.isolated_web_app_version;
+  debug_log_.Set("actual_version", actual_version_.GetString());
+
   command_helper_->RetrieveIconsAndPopulateInstallInfo(
       std::move(install_info), *web_contents_.get(),
       base::BindOnce(&InstallIsolatedWebAppCommand::RunNextStepOnSuccess<
@@ -210,8 +216,8 @@ void InstallIsolatedWebAppCommand::OnFinalizeInstall(
     ReportSuccess();
   } else {
     std::stringstream os;
-    os << install_result_code;
-    ReportFailure(base::StrCat({"Error during finalization: ", os.str()}));
+    os << "Error during finalization: " << install_result_code;
+    ReportFailure(os.str());
   }
 }
 
@@ -219,7 +225,7 @@ void InstallIsolatedWebAppCommand::OnShutdown() {
   // Stop any potential ongoing operations by destroying the `command_helper_`.
   command_helper_.reset();
 
-  // TODO(kuragin): Test cancellation of pending installation during system
+  // TODO(cmfcmf): Test cancellation of pending installation during system
   // shutdown.
   ReportFailure("System is shutting down.");
 }
@@ -228,6 +234,7 @@ void InstallIsolatedWebAppCommand::ReportFailure(base::StringPiece message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback_.is_null());
 
+  debug_log_.Set("result", base::StrCat({"error: ", message}));
   SignalCompletionAndSelfDestruct(
       CommandResult::kFailure,
       base::BindOnce(std::move(callback_),
@@ -239,10 +246,11 @@ void InstallIsolatedWebAppCommand::ReportSuccess() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback_.is_null());
 
+  debug_log_.Set("result", "success");
   SignalCompletionAndSelfDestruct(
       CommandResult::kSuccess,
       base::BindOnce(std::move(callback_),
-                     InstallIsolatedWebAppCommandSuccess{}));
+                     InstallIsolatedWebAppCommandSuccess(actual_version_)));
 }
 
 Profile& InstallIsolatedWebAppCommand::profile() {

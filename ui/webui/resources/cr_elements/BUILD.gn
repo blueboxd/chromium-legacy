@@ -26,6 +26,7 @@ build_webui("build") {
       "cr_action_menu/cr_action_menu.ts",
       "cr_button/cr_button.ts",
       "cr_checkbox/cr_checkbox.ts",
+      "cr_chip/cr_chip.ts",
       "cr_dialog/cr_dialog.ts",
       "cr_drawer/cr_drawer.ts",
       "cr_expand_button/cr_expand_button.ts",
@@ -84,6 +85,7 @@ build_webui("build") {
       "list_property_update_mixin.ts",
       "mouse_hoverable_mixin.ts",
       "policy/cr_policy_indicator_mixin.ts",
+      "store_client/store_client.ts",
       "web_ui_listener_mixin.ts",
     ]
 

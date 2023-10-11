@@ -219,6 +219,10 @@ struct CellularStateProperties {
   // String representing the SIM lock type. This will be empty when the SIM
   // is unlocked.
   string sim_lock_type;
+  // True when a SIM has a custom name.
+  bool has_nick_name = false;
+  // String representing the network operator.
+  string network_operator;
 };
 
 struct EthernetStateProperties {
@@ -1047,6 +1051,9 @@ struct GlobalPolicy {
   // If true, allow PIN locking of SIMs attached to the device.
   // If false, PIN locking is prohibited.
   bool allow_cellular_sim_lock = true;
+
+  // If true, users will be allowed to turn on cellular hotspot.
+  bool allow_cellular_hotspot = true;
 
   // If true, only cellular networks present in policy may be connected to and
   // no new networks may be added or configured.

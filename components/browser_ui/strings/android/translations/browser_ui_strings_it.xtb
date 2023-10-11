@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Consenti a un sito di salvare dati sul dispositivo</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1384959399684842514">Download sospeso</translation>
-<translation id="1409426117486808224">Visualizzazione semplificata delle schede aperte</translation>
 <translation id="1415402041810619267">URL troncato</translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1446450296470737166">Controllo completo dispos. MIDI</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Consentiti, tranne i cookie di terze parti</translation>
 <translation id="1989112275319619282">Esplora</translation>
 <translation id="1994173015038366702">URL sito</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Scade tra 1 giorno}other{Scade tra # giorni}}</translation>
 <translation id="2004697686368036666">Le funzionalità su alcuni siti potrebbero non essere disponibili</translation>
 <translation id="2025115093177348061">Realtà aumentata</translation>
 <translation id="2030769033451695672">Tocca per tornare a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Titolo</translation>
 <translation id="4008040567710660924">Consenti i cookie per un sito specifico.</translation>
 <translation id="4046123991198612571">Traccia successiva</translation>
+<translation id="4053720452172726777">Personalizza e controlla Google Chrome</translation>
 <translation id="4149994727733219643">Visualizzazione semplificata delle pagine web</translation>
 <translation id="4151930093518524179">Zoom predefinito</translation>
 <translation id="4165986682804962316">Impostazioni sito</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">I siti non possono utilizzare i cookie per conoscere la tua attività di navigazione su diversi siti, ad esempio per personalizzare gli annunci. Le funzionalità su alcuni siti potrebbero non essere disponibili.</translation>
 <translation id="5553374991681107062">Più recenti</translation>
 <translation id="5556459405103347317">Ricarica</translation>
-<translation id="5596627076506792578">Altre opzioni</translation>
 <translation id="5649053991847567735">Download automatici</translation>
 <translation id="5668404140385795438">Ignora la richiesta di un sito per evitare l'aumento dello zoom</translation>
 <translation id="5677928146339483299">Autorizzazione bloccata</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Disattivata nelle impostazioni Android</translation>
 <translation id="7016516562562142042">Consentita per il motore di ricerca corrente</translation>
 <translation id="702275896380648118">Questo sito stabilisce i tuoi interessi per poi suggerire annunci ad altri siti. Questo sito riceve anche gli argomenti degli annunci da Chrome per mostrarti annunci più pertinenti.</translation>
-<translation id="702463548815491781">Consigliata quando TalkBack o Switch Access sono attivi</translation>
 <translation id="7053983685419859001">Blocca</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elemento selezionato}other{# elementi selezionati}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> elementi selezionati. Opzioni disponibili nella parte superiore dello schermo</translation>

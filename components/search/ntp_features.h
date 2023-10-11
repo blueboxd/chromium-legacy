@@ -23,6 +23,8 @@ namespace ntp_features {
 BASE_DECLARE_FEATURE(kConfirmSuggestionRemovals);
 BASE_DECLARE_FEATURE(kCacheOneGoogleBar);
 BASE_DECLARE_FEATURE(kCustomizeChromeColorExtraction);
+BASE_DECLARE_FEATURE(kCustomizeChromeSidePanelExtensionsCard);
+BASE_DECLARE_FEATURE(kCustomizeChromeWallpaperSearch);
 BASE_DECLARE_FEATURE(kCwsDarkLogo);
 BASE_DECLARE_FEATURE(kDismissPromos);
 BASE_DECLARE_FEATURE(kIframeOneGoogleBar);
@@ -66,7 +68,6 @@ BASE_DECLARE_FEATURE(kNtpOneGoogleBar);
 BASE_DECLARE_FEATURE(kNtpRealboxLensSearch);
 BASE_DECLARE_FEATURE(kNtpLensDirectUpload);
 BASE_DECLARE_FEATURE(kNtpRecipeTasksModule);
-BASE_DECLARE_FEATURE(kNtpRemoveScrim);
 BASE_DECLARE_FEATURE(kNtpSafeBrowsingModule);
 BASE_DECLARE_FEATURE(kNtpShortcuts);
 BASE_DECLARE_FEATURE(kNtpSingleRowShortcuts);
@@ -87,6 +88,7 @@ BASE_DECLARE_FEATURE(kNtpChromeCartHistoryClusterCoexist);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleFetchClustersUntilExhausted);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleIncludeSyncedVisits);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleEnableContentClustering);
+BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleDiscounts);
 
 // Parameter for controlling the luminosity difference for NTP elements on light
 // backgrounds.
@@ -97,12 +99,6 @@ extern const base::FeatureParam<double>
 // backgrounds.
 extern const base::FeatureParam<double>
     kNtpElementLuminosityChangeForDarkBackgroundParam;
-
-// Parameter for the CSS selector for the button elements on the OGB.
-extern const base::FeatureParam<std::string> kNtpOgbButtonSelectorParam;
-// Parameter for the CSS selector for the unprotected text on the OGB.
-extern const base::FeatureParam<std::string>
-    kNtpOgbUnprotectedTextSelectorParam;
 
 // Parameter determining the module load timeout.
 extern const char kNtpModulesLoadTimeoutMillisecondsParam[];
@@ -188,11 +184,6 @@ base::TimeDelta GetModulesLoadTimeout();
 // Returns the maximum number of columns to show on the redesigned modules UI
 // experience.
 int GetModulesMaxColumnCount();
-
-// Returns the maximum number of instances to render for a given module when the
-// module has loaded with other modules. A sentinel value of -1 implies there is
-// no limit.
-int GetMultipleLoadedModulesMaxModuleInstanceCount();
 
 // Returns a list of module IDs ordered by how they should appear on the NTP.
 std::vector<std::string> GetModulesOrder();

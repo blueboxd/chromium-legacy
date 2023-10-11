@@ -20,6 +20,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_test_util.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -73,7 +74,11 @@ const DeskMiniView* DesksTestApi::GetDeskBarDragView(
 DeskActionContextMenu* DesksTestApi::GetContextMenuForDesk(
     DeskBarViewBase::Type type,
     int index) {
-  return GetDeskBarView(type)->mini_views()[index]->context_menu_.get();
+  DeskMiniView* mini_view = GetDeskBarView(type)->mini_views()[index];
+
+  // The context menu is not created until it is opened, so open it first.
+  mini_view->OpenContextMenu(ui::MENU_SOURCE_MOUSE);
+  return mini_view->context_menu_.get();
 }
 
 // static
@@ -115,6 +120,11 @@ ui::LayerTreeOwner* DesksTestApi::GetMirroredContentsLayerTreeForRootAndDesk(
     }
   }
   return nullptr;
+}
+
+// static
+views::Label* DesksTestApi::GetDeskShortcutLabel(DeskMiniView* mini_view) {
+  return mini_view->desk_shortcut_label_;
 }
 
 // static

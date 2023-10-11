@@ -25,6 +25,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/ash/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ash/app_list/app_list_model_updater.h"
 #include "chrome/browser/ash/app_list/app_list_notifier_impl.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/scalable_iph/scalable_iph_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/ash/shelf/app_shortcut_shelf_item_controller.h"
@@ -52,7 +54,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
-#include "chromeos/crosapi/cpp/gurl_os_handler_utils.h"
+#include "chromeos/ash/components/scalable_iph/scalable_iph.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/session_manager/core/session_manager.h"
@@ -374,6 +376,14 @@ void AppListClientImpl::ActivateItem(int profile_id,
     search_controller_->Train(std::move(launch_data));
   }
 
+  CHECK_EQ(requested_model_updater, current_model_updater_);
+  scalable_iph::ScalableIph* scalable_iph =
+      ScalableIphFactory::GetForBrowserContext(profile_);
+  if (scalable_iph) {
+    // `ScalableIph` is not available for some profiles.
+    scalable_iph->MaybeRecordAppListItemActivation(id);
+  }
+
   MaybeRecordLauncherAction(launched_from);
   requested_model_updater->ActivateChromeItem(id, event_flags);
 }
@@ -577,6 +587,7 @@ void AppListClientImpl::InitializeAsIfNewUserLoginForTest() {
 }
 
 void AppListClientImpl::OnSessionStateChanged() {
+  TRACE_EVENT0("ui", "AppListClientImpl::OnSessionStateChanged");
   // Return early if the current user is not new or the session is not active.
   if (!user_manager::UserManager::Get()->IsCurrentUserNew() ||
       !IsSessionActive()) {
@@ -672,17 +683,11 @@ void AppListClientImpl::OpenURL(Profile* profile,
                                 const GURL& url,
                                 ui::PageTransition transition,
                                 WindowOpenDisposition disposition) {
-  if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
-    const GURL sanitized_url =
-        crosapi::gurl_os_handler_utils::SanitizeAshURL(url);
-    if (CanBeHandledAsSystemUrl(sanitized_url, transition)) {
-      crosapi::UrlHandlerAsh().OpenUrl(sanitized_url);
-    } else {
-      // Send the url to the current primary browser.
-      ash::NewWindowDelegate::GetPrimary()->OpenUrl(
-          url, ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
-          ConvertDisposition(disposition));
-    }
+  if (crosapi::browser_util::IsLacrosEnabled()) {
+    // Send the url to the current primary browser.
+    ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+        url, ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+        ConvertDisposition(disposition));
   } else {
     NavigateParams params(profile, url, transition);
     params.disposition = disposition;

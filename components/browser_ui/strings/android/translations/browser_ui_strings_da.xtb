@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Tillad, at et website gemmer data på din enhed</translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1384959399684842514">Download er sat på pause</translation>
-<translation id="1409426117486808224">Enkel visning af åbne faner</translation>
 <translation id="1415402041810619267">Webadressen er forkortet</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1446450296470737166">Tillad fuld kontrol over MIDI-enheder</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Tilladt, undtagen tredjepartscookies</translation>
 <translation id="1989112275319619282">Gennemse</translation>
 <translation id="1994173015038366702">Webadresse</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Udløber om 1 dag}one{Udløber om # dag}other{Udløber om # dage}}</translation>
 <translation id="2004697686368036666">Funktionerne på visse websites virker muligvis ikke</translation>
 <translation id="2025115093177348061">Augmented reality</translation>
 <translation id="2030769033451695672">Tryk for at vende tilbage til <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4008040567710660924">Tillad cookies for et bestemt website.</translation>
 <translation id="4046123991198612571">Næste nummer</translation>
+<translation id="4053720452172726777">Tilpas Google Chrome</translation>
 <translation id="4149994727733219643">Enkel visning af websider</translation>
 <translation id="4151930093518524179">Standardzoom</translation>
 <translation id="4165986682804962316">Websiteindstillinger</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Websites kan ikke bruge dine cookies til at se din browseraktivitet på forskellige websites for f.eks. at personligt tilpasse annoncer. Funktionerne på visse websites virker muligvis ikke.</translation>
 <translation id="5553374991681107062">Seneste</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
-<translation id="5596627076506792578">Flere valgmuligheder</translation>
 <translation id="5649053991847567735">Automatiske downloads</translation>
 <translation id="5668404140385795438">Tilsidesæt en anmodning fra et website om at undgå at zoome ind</translation>
 <translation id="5677928146339483299">Blokeret</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Deaktiveret i indstillingerne for Android</translation>
 <translation id="7016516562562142042">Tilladt for den nuværende søgemaskine</translation>
 <translation id="702275896380648118">Dette website foretager en vurdering af, hvad du kan lide, og foreslår derefter annoncer til andre websites. Dette website indhenter også dine annonceemner fra Chrome med henblik på at vise dig mere relevante annoncer.</translation>
-<translation id="702463548815491781">Anbefales, når TalkBack eller Kontaktadgang er aktiveret</translation>
 <translation id="7053983685419859001">Bloker</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 er valgt}one{# er valgt}other{# er valgt}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> er markeret. De tilgængelige valgmuligheder er øverst på skærmen</translation>

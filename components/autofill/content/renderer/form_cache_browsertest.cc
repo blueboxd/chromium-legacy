@@ -15,6 +15,7 @@
 #include "components/autofill/content/renderer/test_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -69,7 +70,7 @@ class FormCacheBrowserTest : public content::RenderViewTest {
         base::BindRepeating(&FormCacheBrowserTest::ExecuteJavaScriptForTests,
                             base::Unretained(this)));
     scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillEnableSelectMenu);
+        features::kAutofillEnableSelectList);
   }
   ~FormCacheBrowserTest() override = default;
   FormCacheBrowserTest(const FormCacheBrowserTest&) = delete;
@@ -426,8 +427,9 @@ void FillAndCheckState(
     value_to_fill->is_autofilled = true;
   }
 
-  form_util::FillOrPreviewForm(values_to_fill, autofill_initiating_element,
-                               mojom::AutofillActionPersistence::kFill);
+  form_util::ApplyAutofillAction(values_to_fill, autofill_initiating_element,
+                                 mojom::AutofillActionType::kFill,
+                                 mojom::AutofillActionPersistence::kFill);
 
   for (const FillElementData& field_to_fill : form_to_fill) {
     EXPECT_EQ(field_to_fill.value, field_to_fill.element.Value().Utf16());
@@ -440,7 +442,7 @@ void FillAndCheckState(
 }
 
 TEST_F(FormCacheBrowserTest, FillAndClear) {
-  // TODO(crbug.com/1422114): Make test work without explicit <selectmenu>
+  // TODO(crbug.com/1422114): Make test work without explicit <selectlist>
   // tabindex.
   LoadHTML(R"(
     <input type="text" name="text" id="text">
@@ -449,10 +451,10 @@ TEST_F(FormCacheBrowserTest, FillAndClear) {
       <option value="first">first</option>
       <option value="second" selected>second</option>
     </select>
-    <selectmenu name="selectmenu" id="selectmenu" tabindex=0>
+    <selectlist name="selectlist" id="selectlist" tabindex=0>
       <option value="uno">uno</option>
       <option value="dos" selected>dos</option>
-    </selectmenu>
+    </selectlist>
   )");
 
   FormCache form_cache(GetMainFrame());
@@ -466,12 +468,12 @@ TEST_F(FormCacheBrowserTest, FillAndClear) {
   auto text = GetFormControlElementById(doc, "text");
   auto checkbox = GetElementById(doc, "checkbox").To<WebInputElement>();
   auto select_element = GetFormControlElementById(doc, "select");
-  auto selectmenu_element = GetFormControlElementById(doc, "selectmenu");
+  auto selectlist_element = GetFormControlElementById(doc, "selectlist");
 
   FillAndCheckState(forms.updated_forms[0], text,
                     {{text, u"test"},
                      {select_element, u"first"},
-                     {selectmenu_element, u"uno"}},
+                     {selectlist_element, u"uno"}},
                     checkbox, CheckStatus::kCheckableButUnchecked);
 
   // Validate that clearing works, in particular that the previous values
@@ -481,7 +483,7 @@ TEST_F(FormCacheBrowserTest, FillAndClear) {
   EXPECT_EQ("", text.Value().Ascii());
   EXPECT_TRUE(checkbox.IsChecked());
   EXPECT_EQ("second", select_element.Value().Ascii());
-  EXPECT_EQ("dos", selectmenu_element.Value().Ascii());
+  EXPECT_EQ("dos", selectlist_element.Value().Ascii());
 }
 
 // Tests that correct focus, change and blur events are emitted during the
@@ -516,8 +518,9 @@ TEST_F(FormCacheBrowserTest,
       GetFormControlElementById(GetMainFrame()->GetDocument(), "fname");
 
   // Simulate filling the form using Autofill.
-  form_util::FillOrPreviewForm(values_to_fill, fname,
-                               mojom::AutofillActionPersistence::kFill);
+  form_util::ApplyAutofillAction(values_to_fill, fname,
+                                 mojom::AutofillActionType::kFill,
+                                 mojom::AutofillActionPersistence::kFill);
 
   // Simulate clearing the form.
   form_cache.ClearSectionWithElement(fname);
@@ -549,10 +552,10 @@ TEST_F(FormCacheBrowserTest, FreeDataOnElementRemoval) {
         <option value="first">first</option>
         <option value="second" selected>second</option>
       </select>
-      <selectmenu name="selectmenu" id="selectmenu">
+      <selectlist name="selectlist" id="selectlist">
         <option value="first">first</option>
         <option value="second" selected>second</option>
-      </selectmenu>
+      </selectlist>
     </div>
   )");
 
@@ -564,7 +567,7 @@ TEST_F(FormCacheBrowserTest, FreeDataOnElementRemoval) {
   EXPECT_TRUE(forms.removed_forms.empty());
 
   EXPECT_EQ(1u, test_api(form_cache).initial_select_values_size());
-  EXPECT_EQ(1u, test_api(form_cache).initial_selectmenu_values_size());
+  EXPECT_EQ(1u, test_api(form_cache).initial_selectlist_values_size());
   EXPECT_EQ(1u, test_api(form_cache).initial_checked_state_size());
 
   ExecuteJavaScriptForTests(R"(
@@ -578,7 +581,7 @@ TEST_F(FormCacheBrowserTest, FreeDataOnElementRemoval) {
   EXPECT_TRUE(forms.updated_forms.empty());
   EXPECT_THAT(forms.removed_forms, ElementsAre(FormRendererId()));
   EXPECT_EQ(0u, test_api(form_cache).initial_select_values_size());
-  EXPECT_EQ(0u, test_api(form_cache).initial_selectmenu_values_size());
+  EXPECT_EQ(0u, test_api(form_cache).initial_selectlist_values_size());
   EXPECT_EQ(0u, test_api(form_cache).initial_checked_state_size());
 }
 

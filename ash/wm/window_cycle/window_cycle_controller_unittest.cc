@@ -33,13 +33,14 @@
 #include "ash/style/tab_slider_button.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/raster_scale_change_tracker.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/gestures/wm_gesture_handler.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_highlight_controller.h"
+#include "ash/wm/overview/overview_focus_cycler.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
@@ -1788,6 +1789,31 @@ TEST_F(WindowCycleControllerTest, ArrowKeyBeforeCycleViewUI) {
   CompleteCycling(controller);
 }
 
+// Tests that raster scale is not set for alt-tab on visible windows.
+TEST_F(WindowCycleControllerTest, RasterScaleNotSetForVisibleWindows) {
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
+
+  std::unique_ptr<Window> window0(CreateAppWindow(gfx::Rect(600, 600)));
+  std::unique_ptr<Window> window1(CreateAppWindow(gfx::Rect(600, 600)));
+  wm::ActivateWindow(window0.get());
+
+  auto tracker0 = RasterScaleChangeTracker(window0.get());
+  auto tracker1 = RasterScaleChangeTracker(window1.get());
+
+  // Simulate pressing and releasing Alt-tab.
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+  controller->HandleCycleWindow(
+      WindowCycleController::WindowCyclingDirection::kForward);
+
+  EXPECT_EQ(std::vector<float>{}, tracker0.TakeRasterScaleChanges());
+  EXPECT_EQ(std::vector<float>{}, tracker1.TakeRasterScaleChanges());
+
+  CompleteCycling(controller);
+
+  EXPECT_EQ(std::vector<float>{}, tracker0.TakeRasterScaleChanges());
+  EXPECT_EQ(std::vector<float>{}, tracker1.TakeRasterScaleChanges());
+}
+
 // Tests the UAF issue reported in https://crbug.com/1350558. `OnFlingStep()`
 // triggers a `Layout()` which may trigger an `OnFlingEnd()` where the
 // `WmFlingHandler` is destroyed while still in the middle of its
@@ -1992,7 +2018,8 @@ class ModeSelectionWindowCycleControllerTest
   }
 
  private:
-  raw_ptr<ui::test::EventGenerator, ExperimentalAsh> generator_;
+  raw_ptr<ui::test::EventGenerator, DanglingUntriaged | ExperimentalAsh>
+      generator_;
 };
 
 // Tests that when user taps tab slider buttons, the active mode should
@@ -2836,13 +2863,12 @@ TEST_F(ModeSelectionWindowCycleControllerTest, ChromeVox) {
   EXPECT_EQ(1u, GetWindowCycleItemViews().size());
   EXPECT_EQ(win0.get(), GetTargetWindow());
   std::string last_alert_message = client.last_alert_message();
-  EXPECT_TRUE(last_alert_message.find(kCurrentDeskSelected) !=
-              std::string::npos);
-  EXPECT_TRUE(last_alert_message.find(l10n_util::GetStringFUTF8(
-                  IDS_ASH_ALT_TAB_WINDOW_SELECTED_TITLE, win0->GetTitle())) !=
-              std::string::npos);
-  EXPECT_TRUE(last_alert_message.find(kFocusWindowDirectionalCue) !=
-              std::string::npos);
+  EXPECT_TRUE(base::Contains(last_alert_message, kCurrentDeskSelected));
+  EXPECT_TRUE(base::Contains(
+      last_alert_message,
+      l10n_util::GetStringFUTF8(IDS_ASH_ALT_TAB_WINDOW_SELECTED_TITLE,
+                                win0->GetTitle())));
+  EXPECT_TRUE(base::Contains(last_alert_message, kFocusWindowDirectionalCue));
 
   // Pressing (<-) announces the new mode, the new focused window and the
   // Down-arrow directional cue.
@@ -2852,12 +2878,12 @@ TEST_F(ModeSelectionWindowCycleControllerTest, ChromeVox) {
   EXPECT_EQ(3u, GetWindowCycleItemViews().size());
   EXPECT_EQ(win1.get(), GetTargetWindow());
   last_alert_message = client.last_alert_message();
-  EXPECT_TRUE(last_alert_message.find(kAllDesksSelected) != std::string::npos);
-  EXPECT_TRUE(last_alert_message.find(l10n_util::GetStringFUTF8(
-                  IDS_ASH_ALT_TAB_WINDOW_SELECTED_TITLE, win1->GetTitle())) !=
-              std::string::npos);
-  EXPECT_TRUE(last_alert_message.find(kFocusWindowDirectionalCue) !=
-              std::string::npos);
+  EXPECT_TRUE(base::Contains(last_alert_message, kAllDesksSelected));
+  EXPECT_TRUE(base::Contains(
+      last_alert_message,
+      l10n_util::GetStringFUTF8(IDS_ASH_ALT_TAB_WINDOW_SELECTED_TITLE,
+                                win1->GetTitle())));
+  EXPECT_TRUE(base::Contains(last_alert_message, kFocusWindowDirectionalCue));
 
   // Clicking the current-desk button notifies the new mode and the new focused
   // window but not the Down-arrow directional cue because the focus is moved
@@ -2868,13 +2894,12 @@ TEST_F(ModeSelectionWindowCycleControllerTest, ChromeVox) {
   EXPECT_EQ(1u, GetWindowCycleItemViews().size());
   EXPECT_EQ(win0.get(), GetTargetWindow());
   last_alert_message = client.last_alert_message();
-  EXPECT_TRUE(last_alert_message.find(kCurrentDeskSelected) !=
-              std::string::npos);
-  EXPECT_TRUE(last_alert_message.find(l10n_util::GetStringFUTF8(
-                  IDS_ASH_ALT_TAB_WINDOW_SELECTED_TITLE, win0->GetTitle())) !=
-              std::string::npos);
-  EXPECT_FALSE(last_alert_message.find(kFocusWindowDirectionalCue) !=
-               std::string::npos);
+  EXPECT_TRUE(base::Contains(last_alert_message, kCurrentDeskSelected));
+  EXPECT_TRUE(base::Contains(
+      last_alert_message,
+      l10n_util::GetStringFUTF8(IDS_ASH_ALT_TAB_WINDOW_SELECTED_TITLE,
+                                win0->GetTitle())));
+  EXPECT_FALSE(base::Contains(last_alert_message, kFocusWindowDirectionalCue));
 
   // Pressing the Down arrow key while focusing the tab slider button should
   // alert only the focused window.
@@ -2885,13 +2910,12 @@ TEST_F(ModeSelectionWindowCycleControllerTest, ChromeVox) {
   EXPECT_TRUE(cycle_controller->IsAltTabPerActiveDesk());
   EXPECT_EQ(win0.get(), GetTargetWindow());
   last_alert_message = client.last_alert_message();
-  EXPECT_FALSE(last_alert_message.find(kCurrentDeskSelected) !=
-               std::string::npos);
-  EXPECT_TRUE(last_alert_message.find(l10n_util::GetStringFUTF8(
-                  IDS_ASH_ALT_TAB_WINDOW_SELECTED_TITLE, win0->GetTitle())) !=
-              std::string::npos);
-  EXPECT_FALSE(last_alert_message.find(kFocusWindowDirectionalCue) !=
-               std::string::npos);
+  EXPECT_FALSE(base::Contains(last_alert_message, kCurrentDeskSelected));
+  EXPECT_TRUE(base::Contains(
+      last_alert_message,
+      l10n_util::GetStringFUTF8(IDS_ASH_ALT_TAB_WINDOW_SELECTED_TITLE,
+                                win0->GetTitle())));
+  EXPECT_FALSE(base::Contains(last_alert_message, kFocusWindowDirectionalCue));
 
   CompleteCycling(cycle_controller);
   EXPECT_TRUE(wm::IsActiveWindow(win0.get()));
@@ -3019,11 +3043,9 @@ TEST_F(ModeSelectionWindowCycleControllerTest, ChromeVoxNoWindow) {
   EXPECT_EQ(nullptr, GetTargetWindow());
   EXPECT_TRUE(GetWindowCycleNoRecentItemsLabel()->GetVisible());
   std::string last_alert_message = client.last_alert_message();
-  EXPECT_TRUE(last_alert_message.find(kCurrentDeskSelected) !=
-              std::string::npos);
-  EXPECT_TRUE(last_alert_message.find(kNoRecentItems) != std::string::npos);
-  EXPECT_FALSE(last_alert_message.find(kFocusWindowDirectionalCue) !=
-               std::string::npos);
+  EXPECT_TRUE(base::Contains(last_alert_message, kCurrentDeskSelected));
+  EXPECT_TRUE(base::Contains(last_alert_message, kNoRecentItems));
+  EXPECT_FALSE(base::Contains(last_alert_message, kFocusWindowDirectionalCue));
 
   // Pressing (<-) announces the new mode, the new focused window and the
   // Down-arrow directional cue.
@@ -3045,11 +3067,9 @@ TEST_F(ModeSelectionWindowCycleControllerTest, ChromeVoxNoWindow) {
   EXPECT_EQ(nullptr, GetTargetWindow());
   EXPECT_TRUE(GetWindowCycleNoRecentItemsLabel()->GetVisible());
   last_alert_message = client.last_alert_message();
-  EXPECT_TRUE(last_alert_message.find(kCurrentDeskSelected) !=
-              std::string::npos);
-  EXPECT_TRUE(last_alert_message.find(kNoRecentItems) != std::string::npos);
-  EXPECT_FALSE(last_alert_message.find(kFocusWindowDirectionalCue) !=
-               std::string::npos);
+  EXPECT_TRUE(base::Contains(last_alert_message, kCurrentDeskSelected));
+  EXPECT_TRUE(base::Contains(last_alert_message, kNoRecentItems));
+  EXPECT_FALSE(base::Contains(last_alert_message, kFocusWindowDirectionalCue));
 
   CompleteCycling(cycle_controller);
   EXPECT_FALSE(wm::IsActiveWindow(win0.get()));
@@ -3166,10 +3186,12 @@ class MultiUserWindowCycleControllerTest
     // desks restore data before the user signs in.
     auto user_1_prefs = std::make_unique<TestingPrefServiceSimple>();
     user_1_prefs_ = user_1_prefs.get();
-    RegisterUserProfilePrefs(user_1_prefs_->registry(), /*for_test=*/true);
+    RegisterUserProfilePrefs(user_1_prefs_->registry(), /*country=*/"",
+                             /*for_test=*/true);
     auto user_2_prefs = std::make_unique<TestingPrefServiceSimple>();
     user_2_prefs_ = user_2_prefs.get();
-    RegisterUserProfilePrefs(user_2_prefs_->registry(), /*for_test=*/true);
+    RegisterUserProfilePrefs(user_2_prefs_->registry(), /*country=*/"",
+                             /*for_test=*/true);
     session_controller->AddUserSession(kUser1Email,
                                        user_manager::USER_TYPE_REGULAR,
                                        /*provide_pref_service=*/false);
@@ -3277,14 +3299,17 @@ class MultiUserWindowCycleControllerTest
   }
 
  private:
-  raw_ptr<ui::test::EventGenerator, ExperimentalAsh> generator_;
+  raw_ptr<ui::test::EventGenerator, DanglingUntriaged | ExperimentalAsh>
+      generator_;
 
   std::unique_ptr<ShelfViewTestAPI> shelf_view_test_;
 
   std::unique_ptr<MultiUserWindowManager> multi_user_window_manager_;
 
-  raw_ptr<TestingPrefServiceSimple, ExperimentalAsh> user_1_prefs_ = nullptr;
-  raw_ptr<TestingPrefServiceSimple, ExperimentalAsh> user_2_prefs_ = nullptr;
+  raw_ptr<TestingPrefServiceSimple, DanglingUntriaged | ExperimentalAsh>
+      user_1_prefs_ = nullptr;
+  raw_ptr<TestingPrefServiceSimple, DanglingUntriaged | ExperimentalAsh>
+      user_2_prefs_ = nullptr;
 };
 
 // Tests that when the active user prefs' |prefs::kAltTabPerDesk| is updated,

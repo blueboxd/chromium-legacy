@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "android-nougat-x86-rel",
-              "project": "chromium-m117"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -37,9 +37,12 @@
         {
           "bucket": "ci",
           "builder": "android-nougat-x86-rel",
-          "project": "chromium-m117"
+          "project": "chromium"
         }
-      ]
+      ],
+      "rts_config": {
+        "condition": "QUICK_RUN_ONLY"
+      }
     }
   },
   "$build/code_coverage": {
@@ -50,6 +53,7 @@
     "use_java_coverage": true
   },
   "$build/flakiness": {
+    "check_for_flakiness": true,
     "check_for_flakiness_with_resultdb": true
   },
   "$build/reclient": {

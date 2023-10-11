@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Permite que un sitio guarde datos en tu dispositivo</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1384959399684842514">Descarga en pausa</translation>
-<translation id="1409426117486808224">Vista simplificada de las pestañas abiertas</translation>
 <translation id="1415402041810619267">URL truncada</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1446450296470737166">Control total dispositivos MIDI</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Permitido (excepto cookies de terceros)</translation>
 <translation id="1989112275319619282">Examinar</translation>
 <translation id="1994173015038366702">URL del sitio</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Caduca dentro de 1 día}other{Caduca dentro de # días}}</translation>
 <translation id="2004697686368036666">Es posible que las funciones de algunos sitios no funcionen</translation>
 <translation id="2025115093177348061">Realidad aumentada</translation>
 <translation id="2030769033451695672">Toca para volver a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Título</translation>
 <translation id="4008040567710660924">Permitir cookies en un sitio específico.</translation>
 <translation id="4046123991198612571">Pista siguiente</translation>
+<translation id="4053720452172726777">Personaliza y controla Google Chrome</translation>
 <translation id="4149994727733219643">Vista simplificada de páginas web</translation>
 <translation id="4151930093518524179">Zoom predeterminado</translation>
 <translation id="4165986682804962316">Configuración de sitios</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Los sitios web no pueden usar cookies para ver tu actividad de navegación en otros sitios web con el objetivo de, por ejemplo, personalizar anuncios. Es posible que las funciones de algunos sitios no funcionen.</translation>
 <translation id="5553374991681107062">Más recientes</translation>
 <translation id="5556459405103347317">Volver a cargar</translation>
-<translation id="5596627076506792578">Más opciones</translation>
 <translation id="5649053991847567735">Descargas automáticas</translation>
 <translation id="5668404140385795438">Ignorar la solicitud de un sitio web para no ampliar la imagen</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Desactivado en los ajustes de Android</translation>
 <translation id="7016516562562142042">Permitido en el motor de búsqueda actual</translation>
 <translation id="702275896380648118">Este sitio determina qué cosas te gustan y, después, ofrece sugerencias de anuncios a otros sitios. Este sitio también consulta tus temas de anuncios de Chrome para mostrarte anuncios más relevantes.</translation>
-<translation id="702463548815491781">Se recomienda cuando TalkBack o la accesibilidad con interruptores están activados</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 seleccionada}other{# seleccionadas}}</translation>
 <translation id="7087918508125750058">Elementos seleccionados: <ph name="ITEM_COUNT" />. Hay opciones disponibles en la parte superior de la pantalla</translation>

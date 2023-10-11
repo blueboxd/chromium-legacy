@@ -6,8 +6,8 @@
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 
 #import "base/apple/bundle_locations.h"
+#import "base/apple/foundation_util.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/task/sequenced_task_runner.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
@@ -620,10 +620,6 @@ enum HeaderBehaviour {
   [self.omniboxCommandsHandler cancelOmniboxEdit];
 }
 
-- (void)userEnteredTabSwitcher {
-  [_bubblePresenter userEnteredTabSwitcher];
-}
-
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox
                     inheritOpener:(BOOL)inheritOpener {
@@ -953,8 +949,6 @@ enum HeaderBehaviour {
   self.viewVisible = YES;
   [self updateBroadcastState];
   [self updateToolbarState];
-  [self.helpHandler showHelpBubbleIfEligible];
-  [self.helpHandler showLongPressHelpBubbleIfEligible];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -1207,7 +1201,7 @@ enum HeaderBehaviour {
   if (firstRunLaunch &&
       [viewControllerToPresent isKindOfClass:[UINavigationController class]]) {
     UINavigationController* navController =
-        base::mac::ObjCCastStrict<UINavigationController>(
+        base::apple::ObjCCastStrict<UINavigationController>(
             viewControllerToPresent);
     if ([navController.topViewController
             isKindOfClass:[PromoStyleViewController class]]) {
@@ -1219,7 +1213,8 @@ enum HeaderBehaviour {
                                                owner:self
                                              options:nil];
       UIViewController* launchScreenController =
-          base::mac::ObjCCastStrict<UIViewController>([topObjects lastObject]);
+          base::apple::ObjCCastStrict<UIViewController>(
+              [topObjects lastObject]);
       // `launchScreenView` is loaded as an autoreleased object, and is retained
       // by the `completion` block below.
       UIView* launchScreenView = launchScreenController.view;

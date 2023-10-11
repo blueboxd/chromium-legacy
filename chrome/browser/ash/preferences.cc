@@ -26,11 +26,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
 #include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/input_method/editor_consent_store.h"
 #include "chrome/browser/ash/input_method/input_method_persistence.h"
 #include "chrome/browser/ash/input_method/input_method_syncer.h"
 #include "chrome/browser/ash/login/hid_detection_revamp_field_trial.h"
@@ -105,10 +107,6 @@ const char* const kCopyToKnownUserPrefs[] = {
     prefs::kLoginDisplayPasswordButtonEnabled,
     ::prefs::kUse24HourClock,
     prefs::kDarkModeEnabled};
-
-bool AreScrollSettingsAllowed() {
-  return base::FeatureList::IsEnabled(features::kAllowScrollSettings);
-}
 
 }  // namespace
 
@@ -278,12 +276,9 @@ void Preferences::RegisterProfilePrefs(
   // Do not sync kDriveFsBulkPinningEnabled as this maintains files that are
   // locally pinned to this device and should not sync the state across multiple
   // devices.
+  registry->RegisterBooleanPref(drive::prefs::kDriveFsBulkPinningVisible, true);
   registry->RegisterBooleanPref(drive::prefs::kDriveFsBulkPinningEnabled,
                                 false);
-  // Do not sync kDriveFsBulkPinningMaxQueueSize as the queue size is set
-  // per-device and should not sync the state across multiple devices.
-  registry->RegisterIntegerPref(drive::prefs::kDriveFsBulkPinningMaxQueueSize,
-                                5);
   // We don't sync ::prefs::kLanguageCurrentInputMethod and PreviousInputMethod
   // because they're just used to track the logout state of the device.
   registry->RegisterStringPref(::prefs::kLanguageCurrentInputMethod, "");
@@ -298,10 +293,15 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kAssistPredictiveWritingEnabled, true);
   registry->RegisterBooleanPref(prefs::kEmojiSuggestionEnabled, true);
   registry->RegisterBooleanPref(prefs::kEmojiSuggestionEnterpriseAllowed, true);
+  registry->RegisterBooleanPref(prefs::kOrcaEnabled, false);
   registry->RegisterBooleanPref(
       prefs::kManagedPhysicalKeyboardAutocorrectAllowed, true);
   registry->RegisterBooleanPref(
       prefs::kManagedPhysicalKeyboardPredictiveWritingAllowed, true);
+  registry->RegisterIntegerPref(
+      prefs::kOrcaConsentStatus,
+      base::to_underlying(input_method::ConsentStatus::kUnset));
+  registry->RegisterIntegerPref(prefs::kOrcaConsentWindowDismissCount, 0);
   registry->RegisterBooleanPref(prefs::kEmojiPickerGifSupportEnabled, true);
   registry->RegisterDictionaryPref(
       ::prefs::kLanguageInputMethodSpecificSettings);
@@ -906,8 +906,9 @@ void Preferences::ApplyPreferences(ApplyReason reason,
 
       // With the flag off, also set scroll sensitivity (legacy fallback).
       // TODO(https://crbug.com/836258): Remove check when flag is removed.
-      if (!AreScrollSettingsAllowed())
+      if (!features::IsAllowScrollSettingsEnabled()) {
         mouse_settings.SetScrollSensitivity(sensitivity_int);
+      }
     }
     ReportSensitivityPrefApplication(reason, "Mouse.PointerSensitivity.Changed",
                                      "Mouse.PointerSensitivity.Started",
@@ -917,7 +918,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       pref_name == prefs::kMouseScrollSensitivity) {
     // With the flag off, use to normal sensitivity (legacy fallback).
     // TODO(https://crbug.com/836258): Remove check when flag is removed.
-    const int sensitivity_int = AreScrollSettingsAllowed()
+    const int sensitivity_int = features::IsAllowScrollSettingsEnabled()
                                     ? mouse_scroll_sensitivity_.GetValue()
                                     : mouse_sensitivity_.GetValue();
     if (user_is_active)
@@ -941,8 +942,9 @@ void Preferences::ApplyPreferences(ApplyReason reason,
 
       // With the flag off, also set scroll sensitivity (legacy fallback).
       // TODO(https://crbug.com/836258): Remove check when flag is removed.
-      if (!AreScrollSettingsAllowed())
+      if (!features::IsAllowScrollSettingsEnabled()) {
         touchpad_settings.SetScrollSensitivity(sensitivity_int);
+      }
     }
     ReportSensitivityPrefApplication(
         reason, "Touchpad.PointerSensitivity.Changed",
@@ -952,7 +954,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       pref_name == prefs::kTouchpadScrollSensitivity) {
     // With the flag off, use normal sensitivity (legacy fallback).
     // TODO(https://crbug.com/836258): Remove check when flag is removed.
-    const int sensitivity_int = AreScrollSettingsAllowed()
+    const int sensitivity_int = features::IsAllowScrollSettingsEnabled()
                                     ? touchpad_scroll_sensitivity_.GetValue()
                                     : touchpad_sensitivity_.GetValue();
     if (user_is_active)

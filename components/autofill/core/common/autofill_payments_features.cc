@@ -80,12 +80,6 @@ BASE_FEATURE(kAutofillEnableFpanRiskBasedAuthentication,
              "AutofillEnableFpanRiskBasedAuthentication",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, client side URL filtering will be triggered for the IBAN
-// use-case, so that IBAN autofill is not offered on websites that are blocked.
-BASE_FEATURE(kAutofillEnableIbanClientSideUrlFiltering,
-             "AutofillEnableIbanClientSideUrlFiltering",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When enabled, enable manual falling component for virtual cards on Android.
 BASE_FEATURE(kAutofillEnableManualFallbackForVirtualCards,
              "AutofillEnableManualFallbackForVirtualCards",
@@ -102,6 +96,12 @@ BASE_FEATURE(kAutofillEnableMerchantOptOutClientSideUrlFiltering,
 // autofill dialogs and bubbles on desktop.
 BASE_FEATURE(kAutofillEnableMovingGPayLogoToTheRightOnDesktop,
              "AutofillEnableMovingGPayLogoToTheRightOnDesktop",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, the GPay logo will be moved to the right side in payments
+// autofill dialogs and bubbles on clank.
+BASE_FEATURE(kAutofillEnableMovingGPayLogoToTheRightOnClank,
+             "AutofillEnableMovingGPayLogoToTheRightOnClank",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, the user will see a new banner logo and text in the bubble
@@ -142,6 +142,12 @@ BASE_FEATURE(kAutofillEnableRemadeDownstreamMetrics,
              "AutofillEnableRemadeDownstreamMetrics",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// When enabled, Autofill will attempt to offer upload save for IBANs
+// (International Bank Account Numbers) and autofill server-based IBANs.
+BASE_FEATURE(kAutofillEnableServerIban,
+             "AutofillEnableServerIban",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, if the user interacts with the manual fallback bottom sheet
 // on Android, it'll remain sticky until the user dismisses it.
 BASE_FEATURE(kAutofillEnableStickyManualFallbackForCards,
@@ -160,12 +166,6 @@ BASE_FEATURE(kAutofillEnableUpdateVirtualCardEnrollment,
              base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 );
-
-// When enabled, the option of using cloud token virtual card will be offered
-// when all requirements are met.
-BASE_FEATURE(kAutofillEnableVirtualCard,
-             "AutofillEnableVirtualCard",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, after a successful authentication to autofill a virtual card,
 // the user will be prompted to opt-in to FIDO if the user is not currently
@@ -188,24 +188,6 @@ BASE_FEATURE(kAutofillEnableVirtualCardMetadata,
              "AutofillEnableVirtualCardMetadata",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, if the previous feature offer was declined, a delay will be
-// added before Chrome attempts to show offer again.
-BASE_FEATURE(kAutofillEnforceDelaysInStrikeDatabase,
-             "AutofillEnforceDelaysInStrikeDatabase_LAUNCHED",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, Autofill will attempt to fill IBAN (International Bank Account
-// Number) fields when data is available.
-BASE_FEATURE(kAutofillFillIbanFields,
-             "AutofillFillIbanFields",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, Autofill will attempt to fill merchant promo/coupon/gift code
-// fields when data is available.
-BASE_FEATURE(kAutofillFillMerchantPromoCodeFields,
-             "AutofillFillMerchantPromoCodeFields_LAUNCHED",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, legal term of save card view and virtual card enroll view will
 // be moved before action buttons and icon will be moved after titles in those
 // views.
@@ -218,13 +200,7 @@ BASE_FEATURE(kAutofillMoveLegalTermsAndIconForNewCardEnrollment,
 // card but has a different expiration date.
 BASE_FEATURE(kAutofillOfferToSaveCardWithSameLastFour,
              "AutofillOfferToSaveCardWithSameLastFour",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, Autofill will attempt to find International Bank Account Number
-// (IBAN) fields when parsing forms.
-BASE_FEATURE(kAutofillParseIBANFields,
-             "AutofillParseIBANFields",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, Autofill will attempt to find standalone CVC fields for VCN
 // card on file when parsing forms.
@@ -279,13 +255,6 @@ BASE_FEATURE(kAutofillUseEloRegexForBinMatching,
              "AutofillUseEloRegexForBinMatching_LAUNCHED",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// The delay required since the last strike before offering another virtual card
-// enrollment attempt.
-const base::FeatureParam<int>
-    kAutofillVirtualCardEnrollDelayInStrikeDatabaseInDays{
-        &kAutofillEnforceDelaysInStrikeDatabase,
-        "autofill_virtual_card_enroll_delay_in_strike_database_in_days", 7};
-
 #if BUILDFLAG(IS_IOS)
 // When enabled, use two '•' when displaying the last four digits of a credit
 // card number. (E.g., '•• 8888' rather than '•••• 8888').
@@ -299,6 +268,13 @@ BASE_FEATURE(kAutofillUseTwoDotsForLastFourDigits,
 // authentication on Bling.
 BASE_FEATURE(kAutofillEnablePaymentsMandatoryReauthOnBling,
              "AutofillEnablePaymentsMandatoryReauthOnBling",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+// When enabled, Chrome will offer to pay with accounts supporting Pix.
+BASE_FEATURE(kEnablePixPayments,
+             "EnablePixPayments",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 

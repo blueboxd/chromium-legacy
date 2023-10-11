@@ -2406,12 +2406,29 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
                 blink::ServiceWorkerRouterSource::SourceType::kFetchEvent;
             source.fetch_event_source.emplace();
             break;
+          case ServiceWorkerRegistrationData::RouterRules::RuleV1::Source::
+              kCacheSource:
+            source.type = blink::ServiceWorkerRouterSource::SourceType::kCache;
+            blink::ServiceWorkerRouterCacheSource cache_source;
+            if (s.cache_source().has_cache_name()) {
+              cache_source.cache_name = s.cache_source().cache_name();
+            }
+            source.cache_source = cache_source;
+            break;
         }
         router_rule.sources.emplace_back(source);
       }
       router_rules.rules.emplace_back(router_rule);
     }
     (*out)->router_rules = std::move(router_rules);
+  }
+
+  if (data.has_has_hid_event_handlers()) {
+    (*out)->has_hid_event_handlers = data.has_hid_event_handlers();
+  }
+
+  if (data.has_has_usb_event_handlers()) {
+    (*out)->has_usb_event_handlers = data.has_usb_event_handlers();
   }
 
   return Status::kOk;
@@ -2848,10 +2865,19 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
           case blink::ServiceWorkerRouterSource::SourceType::kFetchEvent:
             source->mutable_fetch_event_source();
             break;
+          case blink::ServiceWorkerRouterSource::SourceType::kCache:
+            auto* cache_source = source->mutable_cache_source();
+            if (s.cache_source->cache_name) {
+              cache_source->set_cache_name(*s.cache_source->cache_name);
+            }
+            break;
         }
       }
     }
   }
+
+  data.set_has_hid_event_handlers(registration.has_hid_event_handlers);
+  data.set_has_usb_event_handlers(registration.has_usb_event_handlers);
 
   std::string value;
   bool success = data.SerializeToString(&value);

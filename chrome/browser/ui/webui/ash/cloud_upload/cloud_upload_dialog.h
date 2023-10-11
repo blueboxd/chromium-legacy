@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "chrome/browser/ui/webui/ash/system_web_dialog_delegate.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 
 class Profile;
@@ -67,15 +68,15 @@ struct ODFSFileSystemAndPath {
 };
 
 // The string conversions of ash::cloud_upload::mojom::UserAction.
-const char kUserActionCancel[] = "cancel";
-const char kUserActionCancelGoogleDrive[] = "cancel-drive";
-const char kUserActionCancelOneDrive[] = "cancel-onedrive";
-const char kUserActionSetUpOneDrive[] = "setup-onedrive";
-const char kUserActionUploadToGoogleDrive[] = "upload-drive";
-const char kUserActionUploadToOneDrive[] = "upload-onedrive";
-const char kUserActionConfirmOrUploadToGoogleDrive[] =
+constexpr char kUserActionCancel[] = "cancel";
+constexpr char kUserActionCancelGoogleDrive[] = "cancel-drive";
+constexpr char kUserActionCancelOneDrive[] = "cancel-onedrive";
+constexpr char kUserActionSetUpOneDrive[] = "setup-onedrive";
+constexpr char kUserActionUploadToGoogleDrive[] = "upload-drive";
+constexpr char kUserActionUploadToOneDrive[] = "upload-onedrive";
+constexpr char kUserActionConfirmOrUploadToGoogleDrive[] =
     "confirm-or-upload-google-drive";
-const char kUserActionConfirmOrUploadToOneDrive[] =
+constexpr char kUserActionConfirmOrUploadToOneDrive[] =
     "confirm-or-upload-onedrive";
 
 // Either OneDrive for the Office PWA or Drive for Drive Web editing.
@@ -175,9 +176,12 @@ class CloudOpenTask : public BrowserListObserver,
   void ConfirmMoveOrStartUpload();
   void StartUpload();
 
-  void FinishedDriveUpload(const GURL& url, int64_t size);
+  // Callbacks from `DriveUploadHandler` and `OneDriveUploadHandler`. URL passed
+  // to these callbacks will be `absl::nullopt` and size will be 0 if upload
+  // fails.
+  void FinishedDriveUpload(absl::optional<GURL> url, int64_t size);
   void FinishedOneDriveUpload(base::WeakPtr<Profile> profile_weak_ptr,
-                              const storage::FileSystemURL& url,
+                              absl::optional<storage::FileSystemURL> url,
                               int64_t size);
 
   bool InitAndShowDialog(mojom::DialogPage dialog_page);
@@ -210,7 +214,7 @@ class CloudOpenTask : public BrowserListObserver,
       std::unique_ptr<std::vector<std::string>> mime_types);
   void RecordUploadLatencyUMA();
 
-  raw_ptr<Profile, ExperimentalAsh> profile_;
+  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> profile_;
   std::vector<storage::FileSystemURL> file_urls_;
   CloudProvider cloud_provider_;
   gfx::NativeWindow modal_parent_;
@@ -279,14 +283,6 @@ class CloudUploadDialog : public SystemWebDialogDelegate {
                     UploadRequestCallback callback,
                     const mojom::DialogPage dialog_page,
                     bool office_move_confirmation_shown);
-
-  // Request ODFS be mounted. If there is an existing mount, ODFS will unmount
-  // that one after authentication of the new mount.
-  static void RequestODFSMount(
-      Profile* profile,
-      file_system_provider::RequestMountCallback callback);
-  static bool IsODFSMounted(Profile* profile);
-  static bool IsOfficeWebAppInstalled(Profile* profile);
 
   void OnDialogShown(content::WebUI* webui) override;
   void OnDialogClosed(const std::string& json_retval) override;

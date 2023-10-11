@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -631,7 +631,9 @@ void InterestGroupAuctionReporter::RequestBidderWorklet(
   auction_worklet_manager_->RequestBidderWorklet(
       interest_group.bidding_url.value_or(GURL()),
       interest_group.bidding_wasm_helper_url,
-      interest_group.trusted_bidding_signals_url, experiment_group_id,
+      interest_group.trusted_bidding_signals_url,
+      /*needs_cors_for_additional_bid=*/
+      winning_bid_info_.provided_as_additional_bid, experiment_group_id,
       base::BindOnce(&InterestGroupAuctionReporter::OnBidderWorkletReceived,
                      base::Unretained(this), signals_for_winner),
       base::BindOnce(&InterestGroupAuctionReporter::OnBidderWorkletFatalError,
@@ -669,11 +671,15 @@ void InterestGroupAuctionReporter::OnBidderWorkletReceived(
         auction_worklet::mojom::ReportingIdField::kBuyerReportingId;
     reporting_id = *chosen_ad.buyer_reporting_id;
   }
-  // if k-anonymity enforcement is on we can only reveal the winning reporting
+  // If k-anonymity enforcement is on we can only reveal the winning reporting
   // id in reportWin if the winning ad's reporting_ads_kanon entry is
   // k-anonymous. Otherwise we simply provide the empty string, as well as hide
   // the field name.
-  if (!IsKAnonForReporting(*winning_bid_info_.storage_interest_group,
+  //
+  // An exception to this is contextual bids, which have access to page
+  // information anyway.
+  if (!winning_bid_info_.provided_as_additional_bid &&
+      !IsKAnonForReporting(*winning_bid_info_.storage_interest_group,
                            chosen_ad)) {
     reporting_id = "";
     reporting_id_field =
@@ -716,8 +722,8 @@ void InterestGroupAuctionReporter::OnBidderWorkletReceived(
           : winning_bid_info_.bid;
 
   bidder_worklet_handle_->GetBidderWorklet()->ReportWin(
-      reporting_id_field, reporting_id,
-      auction_config->non_shared_params.auction_signals.value(),
+      winning_bid_info_.provided_as_additional_bid, reporting_id_field,
+      reporting_id, auction_config->non_shared_params.auction_signals.value(),
       per_buyer_signals,
       InterestGroupAuction::GetDirectFromSellerPerBuyerSignals(
           seller_info.subresource_url_builder.get(),
@@ -753,8 +759,7 @@ void InterestGroupAuctionReporter::OnBidderWorkletReceived(
       component_seller_winning_bid_info_
           ? top_level_seller_winning_bid_info_.auction_config->seller
           : absl::optional<url::Origin>(),
-      winning_bid_info_.bidding_signals_data_version.value_or(0),
-      winning_bid_info_.bidding_signals_data_version.has_value(),
+      winning_bid_info_.bidding_signals_data_version,
       top_level_seller_winning_bid_info_.trace_id,
       base::BindOnce(&InterestGroupAuctionReporter::OnBidderReportWinComplete,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -868,10 +873,19 @@ bool InterestGroupAuctionReporter::AddReportWinResult(
       break;
     }
   }
+  // Convert `bidder_ad_macro_map` to a vector of (${macro_name}, macro_value)
+  // pairs as fenced frame reporter expects.
+  absl::optional<std::vector<std::pair<std::string, std::string>>>
+      bidder_macros = absl::nullopt;
+  if (bidder_ad_macro_map.has_value()) {
+    bidder_macros.emplace();
+    for (const auto& [macro_name, macro_value] : bidder_ad_macro_map.value()) {
+      bidder_macros->emplace_back("${" + macro_name + "}", macro_value);
+    }
+  }
   fenced_frame_reporter_->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      std::move(validated_bidder_ad_beacon_map),
-      std::move(bidder_ad_macro_map));
+      std::move(validated_bidder_ad_beacon_map), std::move(bidder_macros));
 
   if (bidder_report_url) {
     if (!IsEventLevelReportingUrlValid(*bidder_report_url)) {
@@ -926,9 +940,11 @@ void InterestGroupAuctionReporter::OnNavigateToWinningAd() {
 
   const blink::InterestGroup& winning_group =
       winning_bid_info_.storage_interest_group->interest_group;
-  interest_group_manager_->RecordInterestGroupWin(
-      blink::InterestGroupKey(winning_group.owner, winning_group.name),
-      winning_bid_info_.ad_metadata);
+  if (!winning_bid_info_.provided_as_additional_bid) {
+    interest_group_manager_->RecordInterestGroupWin(
+        blink::InterestGroupKey(winning_group.owner, winning_group.name),
+        winning_bid_info_.ad_metadata);
+  }
 
   interest_group_manager_->RegisterAdKeysAsJoined(
       std::move(k_anon_keys_to_join_));

@@ -23,10 +23,13 @@ const RasterInvalidationTracking* GetRasterInvalidationTracking(
     const String& name_regex) {
   if (auto* client = root_frame_view.GetPaintArtifactCompositor()
                          ->ContentLayerClientForTesting(index)) {
-    DCHECK(client->Layer().draws_content());
+    DCHECK(client->Layer().draws_content())
+        << index << ": " << client->Layer().DebugName();
     DCHECK(::testing::Matcher<std::string>(
                ::testing::ContainsRegex(name_regex.Utf8()))
-               .Matches(client->Layer().DebugName()));
+               .Matches(client->Layer().DebugName()))
+        << index << ": " << client->Layer().DebugName()
+        << " regex=" << name_regex;
     return client->GetRasterInvalidator().GetTracking();
   }
   return nullptr;
@@ -832,7 +835,7 @@ TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
   EXPECT_FALSE(target->ShouldDoFullPaintInvalidation());
   EXPECT_TRUE(target->ShouldDelayFullPaintInvalidation());
   EXPECT_EQ(PaintInvalidationReason::kStyle,
-            target->FullPaintInvalidationReason());
+            target->PaintInvalidationReasonForPrePaint());
   EXPECT_FALSE(target->ShouldCheckLayoutForPaintInvalidation());
   EXPECT_TRUE(target->ShouldCheckForPaintInvalidation());
   EXPECT_TRUE(target->Parent()->ShouldCheckForPaintInvalidation());
@@ -843,7 +846,7 @@ TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
   EXPECT_FALSE(target->ShouldDoFullPaintInvalidation());
   EXPECT_TRUE(target->ShouldDelayFullPaintInvalidation());
   EXPECT_EQ(PaintInvalidationReason::kStyle,
-            target->FullPaintInvalidationReason());
+            target->PaintInvalidationReasonForPrePaint());
   EXPECT_FALSE(target->ShouldCheckLayoutForPaintInvalidation());
   EXPECT_TRUE(target->ShouldCheckForPaintInvalidation());
   EXPECT_TRUE(target->Parent()->ShouldCheckForPaintInvalidation());
@@ -859,7 +862,7 @@ TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
           target->Id(), target->DebugName(), gfx::Rect(0, 4000, 100, 100),
           PaintInvalidationReason::kStyle}));
   EXPECT_EQ(PaintInvalidationReason::kNone,
-            target->FullPaintInvalidationReason());
+            target->PaintInvalidationReasonForPrePaint());
   EXPECT_FALSE(target->ShouldDelayFullPaintInvalidation());
   EXPECT_FALSE(target->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(target->Parent()->ShouldCheckForPaintInvalidation());

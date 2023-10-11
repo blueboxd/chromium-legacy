@@ -264,9 +264,8 @@ void AdAuctionServiceImpl::CreateAuctionNonce(
         "CreateAuctionNonce with FledgeNegativeTargeting off");
     return;
   }
-  base::Uuid token = base::Uuid::GenerateRandomV4();
-  pending_auction_nonces_.insert(token);
-  std::move(callback).Run(token);
+  std::move(callback).Run(
+      static_cast<base::Uuid>(auction_nonce_manager_.CreateAuctionNonce()));
 }
 
 void AdAuctionServiceImpl::RunAdAuction(
@@ -294,29 +293,19 @@ void AdAuctionServiceImpl::RunAdAuction(
     return;
   }
 
-  if (config.non_shared_params.auction_nonce) {
-    if (!base::FeatureList::IsEnabled(
-            blink::features::kFledgeNegativeTargeting)) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kFledgeNegativeTargeting)) {
+    if (config.non_shared_params.auction_nonce) {
       ReportBadMessageAndDeleteThis(
           "auction_nonce set with FledgeNegativeTargeting off");
       return;
     }
-
-    if (auto nonce_iter = pending_auction_nonces_.find(
-            *config.non_shared_params.auction_nonce);
-        nonce_iter != pending_auction_nonces_.end()) {
-      pending_auction_nonces_.erase(nonce_iter);
-    } else {
-      // No matching auction nonce from a prior call to CreateAuctionNonce.
-      devtools_instrumentation::LogWorkletMessage(
-          *GetFrame(), blink::mojom::ConsoleMessageLevel::kError,
-          "Invalid AuctionConfig passed to runAdAuction. The config provided "
-          "an auctionNonce value that was _not_ created by a previous call to "
-          "createAuctionNonce. Aborting the auction.");
-
-      std::move(callback).Run(/*manually_aborted=*/false,
-                              /*config=*/absl::nullopt);
-      return;
+    for (const auto& component : config.non_shared_params.component_auctions) {
+      if (component.non_shared_params.auction_nonce) {
+        ReportBadMessageAndDeleteThis(
+            "auction_nonce set with FledgeNegativeTargeting off");
+        return;
+      }
     }
   }
 
@@ -333,8 +322,9 @@ void AdAuctionServiceImpl::RunAdAuction(
   }
 
   std::unique_ptr<AuctionRunner> auction = AuctionRunner::CreateAndStart(
-      &auction_worklet_manager_, &GetInterestGroupManager(),
-      render_frame_host().GetBrowserContext(), private_aggregation_manager_,
+      &auction_worklet_manager_, &auction_nonce_manager_,
+      &GetInterestGroupManager(), render_frame_host().GetBrowserContext(),
+      private_aggregation_manager_,
       // Unlike other callbacks, this needs to be safe to call after destruction
       // of the AdAuctionServiceImpl, so that the reporter can outlive it.
       base::BindRepeating(
@@ -351,10 +341,11 @@ void AdAuctionServiceImpl::RunAdAuction(
           &AreAllowedReportingOriginsAttested,
           base::Unretained(render_frame_host().GetBrowserContext())),
       std::move(abort_receiver),
-      base::BindOnce(&AdAuctionServiceImpl::OnAuctionComplete,
-                     base::Unretained(this), std::move(callback),
-                     std::move(urn_uuid.value()),
-                     fenced_frame_urls_map.unique_id()));
+      base::BindOnce(
+          &AdAuctionServiceImpl::OnAuctionComplete, base::Unretained(this),
+          std::move(callback), std::move(urn_uuid.value()),
+          fenced_frame_urls_map.unique_id(), GetFrame()->GetGlobalId(),
+          GetFrame()->GetPage().GetWeakPtrImpl()));
   AuctionRunner* raw_auction = auction.get();
   auctions_.emplace(raw_auction, std::move(auction));
 }
@@ -593,6 +584,7 @@ AdAuctionServiceImpl::AdAuctionServiceImpl(
           GetTopWindowOrigin(),
           origin(),
           this),
+      auction_nonce_manager_(GetFrame()),
       private_aggregation_manager_(PrivateAggregationManager::GetManager(
           *render_frame_host.GetBrowserContext())) {}
 
@@ -608,25 +600,27 @@ AdAuctionServiceImpl::~AdAuctionServiceImpl() {
 
 bool AdAuctionServiceImpl::JoinOrLeaveApiAllowedFromRenderer(
     const url::Origin& owner) {
+  if (origin().scheme() != url::kHttpsScheme) {
+    ReportBadMessageAndDeleteThis(
+        "Unexpected request: Interest groups may only be joined or left from "
+        "https origins");
+    return false;
+  }
+
   // If the interest group API is not allowed for this context by Permissions
   // Policy, do nothing
   if (!render_frame_host().IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kJoinAdInterestGroup)) {
-    ReportBadMessageAndDeleteThis("Unexpected request");
+    ReportBadMessageAndDeleteThis(
+        "Unexpected request: Interest groups may only be joined or left when "
+        "feature join-ad-interest-group is enabled by Permissions Policy");
     return false;
   }
 
   if (owner.scheme() != url::kHttpsScheme) {
     ReportBadMessageAndDeleteThis(
-        "Unexpected request: Interest groups may only be owned by secure "
+        "Unexpected request: Interest groups may only be owned by https "
         "origins");
-    return false;
-  }
-
-  if (origin().scheme() != url::kHttpsScheme) {
-    ReportBadMessageAndDeleteThis(
-        "Unexpected request: Interest groups may only be joined or left from "
-        "secure origins");
     return false;
   }
 
@@ -651,6 +645,8 @@ void AdAuctionServiceImpl::OnAuctionComplete(
     RunAdAuctionCallback callback,
     GURL urn_uuid,
     FencedFrameURLMapping::Id fenced_frame_urls_map_id,
+    GlobalRenderFrameHostId render_frame_host_id,
+    const base::WeakPtr<PageImpl> page_impl,
     AuctionRunner* auction,
     bool manually_aborted,
     absl::optional<blink::InterestGroupKey> winning_group_key,
@@ -717,8 +713,28 @@ void AdAuctionServiceImpl::OnAuctionComplete(
   // mapping that was used at the beginning of the auction. If not, we fail the
   // auction and dump without crashing the browser. Once the root cause is known
   // and the issue fixed, convert it back to a CHECK.
-  if (fenced_frame_urls_map_id != current_fenced_frame_urls_map.unique_id()) {
+  //
+  // The fenced frame mapping may be changed because:
+  // 1. The render frame host has changed.
+  // 2. The page owned by the render frame host has changed.
+  // 3. The fenced frame mapping of the page has changed.
+  //
+  // Each possible scenario is checked below. They are put in separate if branch
+  // in order to identify from the dump.
+  bool mismatch_with_auction_start = false;
+  if (render_frame_host_id != GetFrame()->GetGlobalId()) {
     base::debug::DumpWithoutCrashing();
+    mismatch_with_auction_start = true;
+  } else if (page_impl.get() != &(GetFrame()->GetPage())) {
+    base::debug::DumpWithoutCrashing();
+    mismatch_with_auction_start = true;
+  } else if (fenced_frame_urls_map_id !=
+             current_fenced_frame_urls_map.unique_id()) {
+    base::debug::DumpWithoutCrashing();
+    mismatch_with_auction_start = true;
+  }
+
+  if (mismatch_with_auction_start) {
     if (auction_result_metrics) {
       auction_result_metrics->ReportAuctionResult(
           AdAuctionResultMetrics::AuctionResult::kFailed);

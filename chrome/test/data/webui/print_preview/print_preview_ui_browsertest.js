@@ -717,6 +717,14 @@ TEST_F(
       this.runMochaTest(
           printer_setup_info_cros_test.TestNames.ManagePrintersButtonMetrics);
     });
+
+TEST_F(
+    'PrintPreviewPrinterSetupInfoCrosTest', 'DoNotShowManagePrinters',
+    function() {
+      this.runMochaTest(
+          printer_setup_info_cros_test.TestNames.DoNotShowManagePrinters);
+    });
+
 GEN('#endif')
 
 GEN('#if BUILDFLAG(IS_CHROMEOS)');
@@ -836,6 +844,13 @@ TEST_F(
                             .ManagePrintersMetrics_HasNoDestinations);
     });
 
+TEST_F(
+    'PrintPreviewDestinationDialogCrosTest',
+    'ElementsDisplayedWithShowManagePrintersFalse', function() {
+      this.runMochaTest(
+          destination_dialog_cros_test.TestNames
+              .PrinterSetupAssistanceHasDestinations_ShowManagedPrintersFalse);
+    });
 GEN('#endif');
 
 var PrintPreviewAdvancedDialogTest = class extends PrintPreviewTest {
@@ -1344,10 +1359,17 @@ var PrintPreviewPrinterStatusTestCros = class extends PrintPreviewTest {
 };
 
 TEST_F(
-    'PrintPreviewPrinterStatusTestCros', 'PrinterStatusUpdatesColor',
+    'PrintPreviewPrinterStatusTestCros', 'PrinterStatusUpdatesColor_FlagOff',
     function() {
       this.runMochaTest(
-          printer_status_test_cros.TestNames.PrinterStatusUpdatesColor);
+          printer_status_test_cros.TestNames.PrinterStatusUpdatesColor_FlagOff);
+    });
+
+TEST_F(
+    'PrintPreviewPrinterStatusTestCros', 'PrinterStatusUpdatesColor_FlagOn',
+    function() {
+      this.runMochaTest(
+          printer_status_test_cros.TestNames.PrinterStatusUpdatesColor_FlagOn);
     });
 
 TEST_F(
@@ -1618,6 +1640,17 @@ var PrintPreviewMediaSizeSettingsTest = class extends PrintPreviewTest {
 };
 
 TEST_F('PrintPreviewMediaSizeSettingsTest', 'All', function() {
+  mocha.run();
+});
+
+var PrintPreviewMediaTypeSettingsTest = class extends PrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/test_loader.html?module=print_preview/media_type_settings_test.js';
+  }
+};
+
+TEST_F('PrintPreviewMediaTypeSettingsTest', 'All', function() {
   mocha.run();
 });
 

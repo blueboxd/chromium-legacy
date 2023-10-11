@@ -47,7 +47,6 @@
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 #include "components/permissions/permission_manager.h"
-#include "components/permissions/permission_result.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -814,7 +813,9 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
   // `render_frame_host` and we always use `requesting_origin` for
   // NOTIFICATIONS.
   profile_->GetPermissionController()->RequestPermissionFromCurrentDocument(
-      blink::PermissionType::NOTIFICATIONS, render_frame_host, user_gesture,
+      render_frame_host,
+      content::PermissionRequestDescription(
+          blink::PermissionType::NOTIFICATIONS, user_gesture),
       base::BindOnce(&PushMessagingServiceImpl::DoSubscribe,
                      weak_factory_.GetWeakPtr(), std::move(app_identifier),
                      std::move(options), std::move(callback), render_process_id,

@@ -238,7 +238,8 @@ class ArcAppsPublisherTest : public testing::Test {
   ArcAppTest arc_test_;
   std::unique_ptr<TestingProfile> profile_;
   apps::AppServiceTest app_service_test_;
-  raw_ptr<arc::ArcIntentHelperBridge, ExperimentalAsh> intent_helper_;
+  raw_ptr<arc::ArcIntentHelperBridge, DanglingUntriaged | ExperimentalAsh>
+      intent_helper_;
   std::unique_ptr<arc::FakeFileSystemInstance> file_system_instance_;
   std::unique_ptr<arc::ArcFileSystemBridge> arc_file_system_bridge_;
 };
@@ -776,6 +777,7 @@ TEST_F(ArcAppsPublisherTest, OnlyValidFilterIsPublished) {
   EXPECT_EQ(published_filters.size(), 1u);
 
   apps::IntentFilterPtr expected_filter =
-      apps_util::MakeIntentFilterForUrlScope(kTestUrl);
+      apps_util::MakeIntentFilterForUrlScope(kTestUrl,
+                                             /*omit_port_for_testing=*/true);
   EXPECT_EQ(*published_filters[0], *expected_filter);
 }

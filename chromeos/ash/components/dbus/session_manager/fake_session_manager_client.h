@@ -12,6 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
+#include "base/files/file_path.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
@@ -470,19 +472,19 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
 
   base::flat_map<std::string, std::string> login_screen_storage_;
 
+  base::flat_set<base::FilePath> files_to_clean_up_;
+
   base::WeakPtrFactory<FakeSessionManagerClient> weak_ptr_factory_{this};
 };
 
+// Helper class to create FakeSessionManagerClient. Note that the existing
+// SessionManagerClient instance will be released.
 class COMPONENT_EXPORT(SESSION_MANAGER) ScopedFakeSessionManagerClient {
  public:
   ScopedFakeSessionManagerClient();
+  explicit ScopedFakeSessionManagerClient(
+      FakeSessionManagerClient::PolicyStorageType policy_storage);
   ~ScopedFakeSessionManagerClient();
-};
-
-class COMPONENT_EXPORT(SESSION_MANAGER) ScopedFakeInMemorySessionManagerClient {
- public:
-  ScopedFakeInMemorySessionManagerClient();
-  ~ScopedFakeInMemorySessionManagerClient();
 };
 
 }  // namespace ash

@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Sayt maʼlumotlarni qurilmangizda saqlashiga ruxsat berish</translation>
 <translation id="1383876407941801731">Qidiruv</translation>
 <translation id="1384959399684842514">Yuklab olish pauza qilindi.</translation>
-<translation id="1409426117486808224">Ochiq varaqlarni ko‘rish uchun oddiy rejim</translation>
 <translation id="1415402041810619267">URL manzil qisqartirildi</translation>
 <translation id="1426410128494586442">Ha</translation>
 <translation id="1446450296470737166">MIDI qurilmalarini boshqarishga to‘liq ruxsat berish</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Tashqi saytlardan tashqarilarga ruxsat berilgan</translation>
 <translation id="1989112275319619282">Tanlash</translation>
 <translation id="1994173015038366702">Sayt URL manzili</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{1 kundan keyin muddati tugaydi}other{# kundan keyin muddati tugaydi}}</translation>
 <translation id="2004697686368036666">Ayrim saytlardagi funksiyalar ishlamay qolishi mumkin.</translation>
 <translation id="2025115093177348061">Boyitilgan reallik</translation>
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> sahifasiga qaytish uchun bosing</translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Nomi</translation>
 <translation id="4008040567710660924">Muayyan saytlar uchun cookie-fayllarga ruxsat berish</translation>
 <translation id="4046123991198612571">Keyingi musiqa</translation>
+<translation id="4053720452172726777">Google Chrome’ni sozlash va boshqarish</translation>
 <translation id="4149994727733219643">Veb sahifalarni ko‘rish uchun oddiy rejim</translation>
 <translation id="4151930093518524179">Asosiy masshtab</translation>
 <translation id="4165986682804962316">Sayt sozlamalari</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzata olmaydi Ayrim saytlardagi funksiyalar ishlamay qolishi mumkin.</translation>
 <translation id="5553374991681107062">Eng oxirgi</translation>
 <translation id="5556459405103347317">Qayta yuklash</translation>
-<translation id="5596627076506792578">Boshqa sozlamalar</translation>
 <translation id="5649053991847567735">Avtomatik yuklamalar</translation>
 <translation id="5668404140385795438">Saytlarda masshtab taqiqlarini chetlab matn hajmini o‘zgartirish</translation>
 <translation id="5677928146339483299">Bloklangan</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Android sozlamalari orqali faolsizlantirilgan</translation>
 <translation id="7016516562562142042">Joriy qidiruv tizimiga ruxsat berilgan</translation>
 <translation id="702275896380648118">Bu sayt sizga qiziq narsalarni aniqlashi va boshqa saytlarga taklif qilishi mumkin. Bu sayt ham mos reklamalarni chiqarish uchun reklamadagi mavzular haqidagi Chrome maʼlumotlaridan foydalanadi.</translation>
-<translation id="702463548815491781">TalkBack yoki Switch Access yoniq holatda tavsiya etiladi</translation>
 <translation id="7053983685419859001">Taqiqlash</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{ 1 ta belgilandi}other{# ta belgilandi}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ta element tanlandi. Parametrlar ekranning yuqoriroq qismida joylashgan</translation>

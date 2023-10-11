@@ -150,6 +150,15 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
   settings->SetAccessibilityIncludeSvgGElement(true);
 #endif
 
+#if BUILDFLAG(IS_FUCHSIA)
+  // TODO(crbug.com/1477047): WebSemanticsTest expects the events to be posted
+  // on a different thread.
+  // https://fuchsia.googlesource.com/fuchsia/+/refs/heads/main/src/ui/a11y/lib/semantics/tests/web_semantics_tests.cc#232
+  // The test facility needs to be updated, but we need sometime to make the
+  // change.
+  serialize_post_lifecycle_ = false;
+#endif
+
   // Optionally disable AXMenuList, which makes the internal pop-up menu
   // UI for a select element directly accessible. Disable by default on
   // Chrome OS, but some tests may override.
@@ -1476,12 +1485,7 @@ void RenderAccessibilityImpl::OnGetImageData(const ui::AXActionTarget* target,
     return;
   }
   const WebAXObject& obj = blink_target->WebAXObject();
-
   ScopedFreezeAXTreeSource freeze(ax_context_.get());
-  if (obj.ImageDataNodeId() == obj.AxID()) {
-    return;
-  }
-
   obj.SetImageAsDataNodeId(max_size);
 
   const WebDocument& document = GetMainDocument();
@@ -1691,6 +1695,13 @@ void RenderAccessibilityImpl::ConnectionClosed() {
     legacy_event_schedule_status_ = LegacyEventScheduleStatus::kNotWaiting;
   }
   serialization_in_flight_ = false;
+}
+
+void RenderAccessibilityImpl::RecordInaccessiblePdfUkm() {
+  ukm::builders::Accessibility_InaccessiblePDFs(
+      GetMainDocument().GetUkmSourceId())
+      .SetSeen(true)
+      .Record(ukm_recorder_.get());
 }
 
 void RenderAccessibilityImpl::MaybeSendUKM() {

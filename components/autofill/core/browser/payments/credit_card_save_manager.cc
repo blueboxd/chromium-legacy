@@ -239,8 +239,7 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   if ((should_request_name_from_user_ &&
        should_request_expiration_date_from_user_) ||
       (should_request_expiration_date_from_user_ &&
-       personal_data_manager_->GetSyncSigninState() ==
-           AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled)) {
+       personal_data_manager_->IsPaymentsWalletSyncTransportEnabled())) {
     LogCardUploadDecisions(upload_decision_metrics_);
     pending_upload_request_origin_ = url::Origin();
     return;
@@ -309,7 +308,8 @@ bool CreditCardSaveManager::IsCreditCardUploadEnabled() {
       client_->GetSyncService(),
       personal_data_manager_->GetAccountInfoForPaymentsServer().email,
       personal_data_manager_->GetCountryCodeForExperimentGroup(),
-      personal_data_manager_->GetSyncSigninState(), client_->GetLogManager());
+      personal_data_manager_->GetPaymentsSigninStateForMetrics(),
+      client_->GetLogManager());
 }
 
 void CreditCardSaveManager::OnDidUploadCard(
@@ -330,6 +330,16 @@ void CreditCardSaveManager::OnDidUploadCard(
     // removed.
     GetCreditCardSaveStrikeDatabase()->ClearStrikes(
         base::UTF16ToUTF8(upload_request_.card.LastFourDigits()));
+
+    if (personal_data_manager_->IsPaymentCvcStorageEnabled() &&
+        !upload_request_.card.cvc().empty() &&
+        upload_card_response_details.instrument_id.has_value()) {
+      // After a card is successfully saved to server, if CVC storage is
+      // enabled, save server CVC to AutofillTable if it exists.
+      personal_data_manager_->AddServerCvc(
+          upload_card_response_details.instrument_id.value(),
+          upload_request_.card.cvc());
+    }
 
     // After a card is successfully saved to server, notifies the
     // |personal_data_manager_|. PDM uses this information to update the avatar

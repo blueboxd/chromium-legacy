@@ -126,6 +126,13 @@ scoped_refptr<gfx::NativePixmap> OzoneImageBacking::GetNativePixmap() {
   return pixmap_;
 }
 
+gfx::GpuMemoryBufferHandle OzoneImageBacking::GetGpuMemoryBufferHandle() {
+  gfx::GpuMemoryBufferHandle handle;
+  handle.type = gfx::GpuMemoryBufferType::NATIVE_PIXMAP;
+  handle.native_pixmap_handle = pixmap_->ExportHandle();
+  return handle;
+}
+
 std::unique_ptr<DawnImageRepresentation> OzoneImageBacking::ProduceDawn(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
@@ -247,7 +254,8 @@ OzoneImageBacking::OzoneImageBacking(
     scoped_refptr<SharedContextState> context_state,
     scoped_refptr<gfx::NativePixmap> pixmap,
     const GpuDriverBugWorkarounds& workarounds,
-    bool use_passthrough)
+    bool use_passthrough,
+    absl::optional<gfx::BufferUsage> buffer_usage)
     : ClearTrackingSharedImageBacking(mailbox,
                                       format,
                                       size,
@@ -256,7 +264,8 @@ OzoneImageBacking::OzoneImageBacking(
                                       alpha_type,
                                       usage,
                                       GetPixmapSizeInBytes(*pixmap),
-                                      false),
+                                      false,
+                                      std::move(buffer_usage)),
       plane_(plane),
       pixmap_(std::move(pixmap)),
       context_state_(std::move(context_state)),

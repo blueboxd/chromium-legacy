@@ -297,26 +297,23 @@ public class TabGridDialogMediator
                 }
             }
 
-            if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) {
-                if (result == R.id.edit_group_name) {
-                    mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, true);
-                }
+            if (result == R.id.edit_group_name) {
+                mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, true);
             }
         };
 
-        // Setup toolbar button click listeners.
         setupToolbarClickHandlers();
-
-        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) {
-            // Setup toolbar edit text.
-            setupToolbarEditText();
-        }
+        setupToolbarEditText();
 
         mModel.set(TabGridPanelProperties.MENU_CLICK_LISTENER, getMenuButtonClickListener());
     }
 
     void hideDialog(boolean showAnimation) {
         if (!mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE)) return;
+
+        // Save the title first so that the animation has the correct title.
+        saveCurrentGroupModifiedTitle();
+        mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, false);
 
         if (!showAnimation) {
             mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
@@ -329,10 +326,6 @@ public class TabGridDialogMediator
         if (mTabSelectionEditorControllerSupplier != null
                 && mTabSelectionEditorControllerSupplier.hasValue()) {
             mTabSelectionEditorControllerSupplier.get().hide();
-        }
-        saveCurrentGroupModifiedTitle();
-        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) {
-            mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, false);
         }
         // Hide view first. Listener will reset tabs on #finishedHiding.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
@@ -428,21 +421,17 @@ public class TabGridDialogMediator
             Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
             String storedTitle = mTabGroupTitleEditor.getTabGroupTitle(getRootId(currentTab));
             if (storedTitle != null && tabsCount > 1) {
-                if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) {
-                    mModel.set(TabGridPanelProperties.COLLAPSE_BUTTON_CONTENT_DESCRIPTION,
-                            mContext.getResources().getQuantityString(
-                                    R.plurals.accessibility_dialog_back_button_with_group_name,
-                                    tabsCount, storedTitle, tabsCount));
-                }
+                mModel.set(TabGridPanelProperties.COLLAPSE_BUTTON_CONTENT_DESCRIPTION,
+                        mContext.getResources().getQuantityString(
+                                R.plurals.accessibility_dialog_back_button_with_group_name,
+                                tabsCount, storedTitle, tabsCount));
                 mModel.set(TabGridPanelProperties.HEADER_TITLE, storedTitle);
                 return;
             }
         }
-        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) {
-            mModel.set(TabGridPanelProperties.COLLAPSE_BUTTON_CONTENT_DESCRIPTION,
-                    mContext.getResources().getQuantityString(
-                            R.plurals.accessibility_dialog_back_button, tabsCount, tabsCount));
-        }
+        mModel.set(TabGridPanelProperties.COLLAPSE_BUTTON_CONTENT_DESCRIPTION,
+                mContext.getResources().getQuantityString(
+                        R.plurals.accessibility_dialog_back_button, tabsCount, tabsCount));
         mModel.set(TabGridPanelProperties.HEADER_TITLE,
                 TabGroupTitleEditor.getDefaultTitle(mContext, tabsCount));
     }
@@ -542,7 +531,6 @@ public class TabGridDialogMediator
 
         View.OnFocusChangeListener onFocusChangeListener = (v, hasFocus) -> {
             mIsUpdatingTitle = hasFocus;
-            if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) return;
             mModel.set(TabGridPanelProperties.IS_KEYBOARD_VISIBLE, hasFocus);
             mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, hasFocus);
         };
@@ -619,11 +607,9 @@ public class TabGridDialogMediator
             mTabGroupTitleEditor.deleteTabGroupTitle(getRootId(currentTab));
 
             String originalTitle = TabGroupTitleEditor.getDefaultTitle(mContext, tabsCount);
-            if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) {
                 mModel.set(TabGridPanelProperties.COLLAPSE_BUTTON_CONTENT_DESCRIPTION,
                         mContext.getResources().getQuantityString(
                                 R.plurals.accessibility_dialog_back_button, tabsCount, tabsCount));
-            }
             mModel.set(TabGridPanelProperties.HEADER_TITLE, originalTitle);
             mTabGroupTitleEditor.updateTabGroupTitle(currentTab, originalTitle);
             mCurrentGroupModifiedTitle = null;
@@ -631,13 +617,11 @@ public class TabGridDialogMediator
         }
         mTabGroupTitleEditor.storeTabGroupTitle(getRootId(currentTab), mCurrentGroupModifiedTitle);
         mTabGroupTitleEditor.updateTabGroupTitle(currentTab, mCurrentGroupModifiedTitle);
-        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) {
             int relatedTabsCount = getRelatedTabs(mCurrentTabId).size();
             mModel.set(TabGridPanelProperties.COLLAPSE_BUTTON_CONTENT_DESCRIPTION,
                     mContext.getResources().getQuantityString(
                             R.plurals.accessibility_dialog_back_button_with_group_name,
                             relatedTabsCount, mCurrentGroupModifiedTitle, relatedTabsCount));
-        }
         mModel.set(TabGridPanelProperties.HEADER_TITLE, mCurrentGroupModifiedTitle);
         RecordUserAction.record("TabGridDialog.TabGroupNamedInDialog");
         mCurrentGroupModifiedTitle = null;

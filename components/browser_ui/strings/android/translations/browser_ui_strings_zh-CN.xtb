@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">允许某个网站将数据保存在您的设备上</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1384959399684842514">已暂停下载</translation>
-<translation id="1409426117486808224">使用简化版视图查看打开的标签页</translation>
 <translation id="1415402041810619267">网址被截断了</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1446450296470737166">允许全面控制 MIDI 设备</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">允许（第三方除外）</translation>
 <translation id="1989112275319619282">浏览</translation>
 <translation id="1994173015038366702">网站网址</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{1 天后过期}other{# 天后过期}}</translation>
 <translation id="2004697686368036666">某些网站上的功能可能无法正常运行</translation>
 <translation id="2025115093177348061">增强现实</translation>
 <translation id="2030769033451695672">点按即可返回到 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">标题</translation>
 <translation id="4008040567710660924">允许特定网站使用 Cookie。</translation>
 <translation id="4046123991198612571">下一曲</translation>
+<translation id="4053720452172726777">自定义及控制 Google Chrome</translation>
 <translation id="4149994727733219643">使用简化版视图查看网页</translation>
 <translation id="4151930093518524179">默认缩放设置</translation>
 <translation id="4165986682804962316">网站设置</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">网站无法使用 Cookie 查看您在各个不同网站上的浏览活动，因而无法实现某些功能或目的（例如为您展示个性化广告）。某些网站上的功能可能无法正常运行。</translation>
 <translation id="5553374991681107062">最新</translation>
 <translation id="5556459405103347317">重新加载</translation>
-<translation id="5596627076506792578">更多选项</translation>
 <translation id="5649053991847567735">自动下载项</translation>
 <translation id="5668404140385795438">覆盖网站的请求，以防止放大</translation>
 <translation id="5677928146339483299">已禁止</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">已在 Android 设置中关闭</translation>
 <translation id="7016516562562142042">允许当前搜索引擎使用</translation>
 <translation id="702275896380648118">此网站会先判断您的喜好，然后向其他网站建议相关广告。此网站还会从 Chrome 中了解您的广告主题，从而向您展示与您更相关的广告。</translation>
-<translation id="702463548815491781">建议在开启 TalkBack 或“开关控制”时使用</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已选择 1 项}other{已选择 # 项}}</translation>
 <translation id="7087918508125750058">已选择 <ph name="ITEM_COUNT" /> 项。选项位于屏幕顶部附近</translation>

@@ -135,15 +135,23 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
   }
 
   // Called when a model file is available to load. Immediately loads model into
-  // memory when `should_unload_model_on_complete_` is false.
-  void UpdateModelFile(const base::FilePath& file_path) override {
+  // memory when `should_preload_model_` is set.
+  void UpdateModelFile(
+      base::optional_ref<const base::FilePath> file_path) override {
     DCHECK(execution_task_runner_ &&
            execution_task_runner_->RunsTasksInCurrentSequence());
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     UnloadModel();
+    DCHECK(!loaded_model_);
+    DCHECK(!model_fb_);
 
-    model_file_path_ = file_path;
+    // The model has been removed.
+    if (!file_path.has_value()) {
+      model_file_path_.reset();
+      return;
+    }
+    model_file_path_ = *file_path;
 
     // crbug/1257189: Histogram enums can't use dynamically created histogram
     // names, so factory create the local histogram (used in testing).
@@ -154,9 +162,8 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
         base::Histogram::kNoFlags);
     histogram->Add(true);
 
-    if (!should_unload_model_on_complete_) {
-      // Preload model without callback.
-      LoadModelFile(base::DoNothingAs<void(ExecutionStatus)>());
+    if (should_preload_model_) {
+      LoadModelFile(base::DoNothing());
     }
   }
 
@@ -164,11 +171,32 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
   // be overridden. Setting this to false will cause the model to remain loaded
   // afterwards a model execution (e.g.: "OnComplete"), until |UnloadModel| is
   // called. False is the default behavior (see class comment).
+  //
+  // Note that keeping the model in memory for a long duration may be detected
+  // as a memory leak in Chrome, and will always increase the private or shared
+  // memory used by the browser by the size of the model file and the
+  // constructed TFLite graph.
   void SetShouldUnloadModelOnComplete(
       bool should_unload_model_on_complete) override {
     DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     should_unload_model_on_complete_ = should_unload_model_on_complete;
+  }
+
+  // Calling this method allows the default model preloading behavior to
+  // be overridden. Setting this to true will cause the model to be loaded as
+  // soon as its file path is available. Callers may also need to call
+  // `SetShouldUnloadModelOnComplete(true)` to keep the model in memory for the
+  // lifetime of the entire browsing session.
+  //
+  // Note that keeping the model in memory for a long duration may be detected
+  // as a memory leak in Chrome, and will always increase the private or shared
+  // memory used by the browser by the size of the model file and the
+  // constructed TFLite graph.
+  void SetShouldPreloadModel(bool should_preload_model) override {
+    DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    should_preload_model_ = should_preload_model;
   }
 
   // Clears the loaded model from memory if it is loaded. Safe to call when the
@@ -523,6 +551,8 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
       proto::OptimizationTarget::OPTIMIZATION_TARGET_UNKNOWN;
 
   bool should_unload_model_on_complete_ = true;
+
+  bool should_preload_model_ = false;
 
   std::unique_ptr<ModelExecutionTimeoutWatchdog, base::OnTaskRunnerDeleter>
       watchdog_;

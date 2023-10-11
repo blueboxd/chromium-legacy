@@ -150,30 +150,7 @@ TEST_P(AshNotificationViewPixelTest, CloseButtonFocused) {
   EXPECT_TRUE(close_button->HasFocus());
   EXPECT_EQ(control_buttons_layer->opacity(), 1);
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "close_button_focused", /*revision_number=*/1, notification_view));
-}
-
-TEST_P(AshNotificationViewPixelTest, ExpandButtonDisabledState) {
-  // Create a notification and open the notification center bubble to view it.
-  const auto id = test_api()->AddNotification();
-  test_api()->ToggleBubble();
-
-  auto* notification_view = static_cast<AshNotificationView*>(
-      test_api()->GetNotificationViewForId(id));
-
-  notification_view->SetExpandCollapseEnabled(/*enabled=*/false);
-  ASSERT_TRUE(notification_view->disable_expand_collapse_for_test());
-
-  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "expand_button_disabled", /*revision_number=*/0,
-      notification_view->expand_button_for_test()));
-
-  notification_view->SetExpandCollapseEnabled(/*enabled=*/true);
-  ASSERT_FALSE(notification_view->disable_expand_collapse_for_test());
-
-  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "expand_button_enabled", /*revision_number=*/0,
-      notification_view->expand_button_for_test()));
+      "close_button_focused", /*revision_number=*/3, notification_view));
 }
 
 class AshNotificationViewTitlePixelTest
@@ -242,7 +219,7 @@ TEST_P(AshNotificationViewTitlePixelTest, NotificationTitleTest) {
   // Compare pixels.
   const std::string screenshot_name = GetScreenshotName();
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      screenshot_name, /*revision_number=*/1, notification_view));
+      screenshot_name, /*revision_number=*/3, notification_view));
 }
 
 class ScreenCaptureNotificationPixelTest
@@ -319,7 +296,7 @@ TEST_P(ScreenCaptureNotificationPixelTest, VerifyPopup) {
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       base::StrCat({"screen_capture_popup_notification_",
                     GetDisplayTypeName(GetDisplayType())}),
-      /*revision_number=*/3,
+      /*revision_number=*/7,
       test_api()->GetPopupViewForId(kScreenCaptureNotificationId)));
 }
 

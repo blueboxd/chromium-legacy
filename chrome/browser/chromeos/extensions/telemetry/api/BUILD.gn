@@ -32,7 +32,10 @@ source_set("keyed_service_factory") {
     "telemetry_extension_api_browser_context_keyed_service_factories.h",
   ]
 
-  deps = [ "events:event_manager" ]
+  deps = [
+    "events:event_manager",
+    "routines:routine_manager",
+  ]
 }
 
 source_set("browser_tests") {
@@ -42,6 +45,7 @@ source_set("browser_tests") {
     "common:browser_tests",
     "diagnostics:browser_tests",
     "events:browser_tests",
+    "routines:browser_tests",
     "telemetry:browser_tests",
   ]
 }
@@ -59,6 +63,7 @@ source_set("unit_tests") {
     "common:unit_tests",
     "diagnostics:unit_tests",
     "events:unit_tests",
+    "routines:unit_tests",
     "telemetry:unit_tests",
   ]
 }

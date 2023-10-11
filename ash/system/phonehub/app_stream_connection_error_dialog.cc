@@ -22,6 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/point.h"
@@ -67,7 +68,7 @@ constexpr int kMarginBetweenButtons = 8;
 // The real error dialog with content.
 class ConnectionErrorDialogDelegateView : public views::WidgetDelegateView {
  public:
-  explicit ConnectionErrorDialogDelegateView(
+  ConnectionErrorDialogDelegateView(
       StartTetheringCallback start_tethering_callback,
       bool is_on_different_network,
       bool is_phone_on_cellular)
@@ -77,6 +78,15 @@ class ConnectionErrorDialogDelegateView : public views::WidgetDelegateView {
     SetPaintToLayer();
     layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
     layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
+    layer()->SetRoundedCornerRadius(
+        gfx::RoundedCornersF(kDialogRoundedCornerRadius));
+
+    SetBackground(views::CreateThemedRoundedRectBackground(
+        static_cast<ui::ColorId>(cros_tokens::kCrosSysBaseElevated),
+        kDialogRoundedCornerRadius));
+    SetBorder(std::make_unique<views::HighlightBorder>(
+        kDialogRoundedCornerRadius,
+        views::HighlightBorder::Type::kHighlightBorder1));
 
     view_shadow_ = std::make_unique<ViewShadow>(this, kDialogShadowElevation);
     view_shadow_->SetRoundedCornerRadius(kDialogRoundedCornerRadius);
@@ -111,6 +121,9 @@ class ConnectionErrorDialogDelegateView : public views::WidgetDelegateView {
     if (chromeos::features::IsJellyrollEnabled()) {
       TypographyProvider::Get()->StyleLabel(ash::TypographyToken::kCrosTitle1,
                                             *title_);
+    } else {
+      title_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kTextColorPrimary));
     }
 
     title_->SetPaintToLayer();
@@ -227,20 +240,6 @@ class ConnectionErrorDialogDelegateView : public views::WidgetDelegateView {
 
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(kDialogWidth, GetHeightForWidth(kDialogWidth));
-  }
-
-  void OnThemeChanged() override {
-    views::WidgetDelegateView::OnThemeChanged();
-
-    SetBackground(views::CreateRoundedRectBackground(
-        AshColorProvider::Get()->GetBaseLayerColor(
-            AshColorProvider::BaseLayerType::kTransparent80),
-        kDialogRoundedCornerRadius));
-    SetBorder(std::make_unique<views::HighlightBorder>(
-        kDialogRoundedCornerRadius,
-        views::HighlightBorder::Type::kHighlightBorder1));
-    title_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
   }
 
   void OnStartTetheringClicked(const ui::Event& event) {

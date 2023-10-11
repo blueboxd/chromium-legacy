@@ -10,13 +10,15 @@
 
 #include "base/check.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/string_number_conversions.h"
+#include "components/autofill/core/browser/data_model/autofill_data_model.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
+#include "components/autofill/core/browser/webdata/autofill_table.h"
 
 namespace autofill {
-
-class CreditCard;
-class IBAN;
 
 // For classic Autofill form fields, the KeyType is AutofillKey.
 // Autofill++ types such as AutofillProfile and CreditCard simply use a string.
@@ -48,50 +50,67 @@ class AutofillChange : public GenericAutofillChange<AutofillKey> {
   }
 };
 
-typedef std::vector<AutofillChange> AutofillChangeList;
+using AutofillChangeList = std::vector<AutofillChange>;
 
-// Change notification details for Autofill profile or credit card changes.
+template <
+    typename DataType,
+    std::enable_if_t<std::disjunction_v<std::is_same<DataType, AutofillProfile>,
+                                        std::is_same<DataType, CreditCard>,
+                                        std::is_same<DataType, Iban>>,
+                     bool> = true>
+bool DataModelEntryMatchesKey(const DataType& model, const std::string& key) {
+  return model.guid() == key || model.server_id() == key;
+}
+
+template <typename DataType,
+          std::enable_if_t<std::is_same_v<DataType, ServerCvc>, bool> = true>
+bool DataModelEntryMatchesKey(const DataType& model, const std::string& key) {
+  return base::NumberToString(model.instrument_id) == key;
+}
+
+// Change notification details for Autofill related changes.
+// TODO(crbug/1476099): Update the name for `AutofillDataModelChange` as it now
+// captures non data model changes.
 template <typename DataType>
 class AutofillDataModelChange : public GenericAutofillChange<std::string> {
  public:
-  // The |type| input specifies the change type.  The |key| input is the key
-  // that identifies the |data_model|; it is the GUID of the entry for local
+  // The `type` input specifies the change type.  The `key` input is the key
+  // that identifies the `data_model`; it is the GUID of the entry for local
   // data and server_id of the entry for server data from GPay.
   AutofillDataModelChange(Type type,
                           const std::string& key,
-                          const DataType* data_model)
-      : GenericAutofillChange<std::string>(type, key), data_model_(data_model) {
-    DCHECK(data_model &&
-           (data_model->guid() == key || data_model->server_id() == key));
+                          DataType data_model)
+      : GenericAutofillChange<std::string>(type, key),
+        data_model_(std::move(data_model)) {
+    CHECK(DataModelEntryMatchesKey(data_model_, key));
   }
 
-  ~AutofillDataModelChange() override {}
+  ~AutofillDataModelChange() override = default;
 
-  const DataType* data_model() const { return data_model_; }
+  const DataType& data_model() const { return data_model_; }
 
   bool operator==(const AutofillDataModelChange<DataType>& change) const {
     return type() == change.type() && key() == change.key() &&
-           (type() == REMOVE || *data_model() == *change.data_model());
+           (type() == REMOVE || data_model() == change.data_model());
   }
 
  private:
-  // Weak reference, can be NULL.
-  raw_ptr<const DataType, AcrossTasksDanglingUntriaged> data_model_;
+  DataType data_model_;
 };
 
-typedef AutofillDataModelChange<AutofillProfile> AutofillProfileChange;
-typedef AutofillDataModelChange<CreditCard> CreditCardChange;
-typedef AutofillDataModelChange<IBAN> IBANChange;
+using AutofillProfileChange = AutofillDataModelChange<AutofillProfile>;
+using CreditCardChange = AutofillDataModelChange<CreditCard>;
+using IbanChange = AutofillDataModelChange<Iban>;
+using ServerCvcChange = AutofillDataModelChange<ServerCvc>;
 
 class AutofillProfileDeepChange : public AutofillProfileChange {
  public:
   AutofillProfileDeepChange(Type type, const AutofillProfile& profile)
-      : AutofillProfileChange(type, profile.guid(), &profile),
-        profile_(profile) {}
+      : AutofillProfileChange(type, profile.guid(), profile) {}
 
-  ~AutofillProfileDeepChange() override {}
-
-  const AutofillProfile* profile() const { return &profile_; }
+  const AutofillProfile& profile() const {
+    return static_cast<const AutofillProfile&>(data_model());
+  }
   bool is_ongoing_on_background() const { return is_ongoing_on_background_; }
   void set_is_ongoing_on_background() const {
     is_ongoing_on_background_ = true;
@@ -101,7 +120,6 @@ class AutofillProfileDeepChange : public AutofillProfileChange {
   bool enforced() const { return enforced_; }
 
  private:
-  AutofillProfile profile_;
   // Is true when the change is taking place on the database side on the
   // background.
   mutable bool is_ongoing_on_background_ = false;

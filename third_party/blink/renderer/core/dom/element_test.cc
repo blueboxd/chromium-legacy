@@ -33,12 +33,12 @@ class ElementTest : public EditingTestBase {
   ScopedFocusgroupForTest focusgroup_enabled{true};
 };
 
-TEST_F(ElementTest, SupportsFocus) {
+TEST_F(ElementTest, FocusableDesignMode) {
   Document& document = GetDocument();
   DCHECK(IsA<HTMLHtmlElement>(document.documentElement()));
   document.setDesignMode("on");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_TRUE(document.documentElement()->SupportsFocus())
+  EXPECT_TRUE(document.documentElement()->IsFocusable())
       << "<html> with designMode=on should be focusable.";
 }
 
@@ -699,7 +699,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrExtendCorrectly) {
           </div>
         </div>
         <div id=fg4-container>
-          <template shadowroot=open>
+          <template shadowrootmode=open>
             <div id=fg4 focusgroup=extend></div>
           </template>
         </div>

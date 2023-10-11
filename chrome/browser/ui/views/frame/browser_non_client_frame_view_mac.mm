@@ -58,8 +58,9 @@ constexpr int kCaptionButtonsLeadingPadding = 20;
 
 FullscreenToolbarStyle GetUserPreferredToolbarStyle(bool always_show) {
   // In Kiosk mode, we don't show top Chrome UI.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode)) {
     return FullscreenToolbarStyle::TOOLBAR_NONE;
+  }
   return always_show ? FullscreenToolbarStyle::TOOLBAR_PRESENT
                      : FullscreenToolbarStyle::TOOLBAR_HIDDEN;
 }
@@ -159,10 +160,18 @@ void BrowserNonClientFrameViewMac::OnFullscreenStateChanged() {
 }
 
 bool BrowserNonClientFrameViewMac::CaptionButtonsOnLeadingEdge() const {
-  // In OSX 10.10 and 10.11, caption buttons always get drawn on the left side
-  // of the browser frame instead of the leading edge. This causes a discrepancy
-  // in RTL mode.
-  return !base::i18n::IsRTL() || base::mac::IsAtLeastOS10_12();
+  if (@available(macOS 10.15, *)) {
+    // In "partial" RTL mode (where the OS is in LTR mode while Chrome is in RTL
+    // mode, or vice versa), the traffic lights are on the trailing edge rather
+    // than the leading edge.
+    return base::i18n::IsRTL() == (NSApp.userInterfaceLayoutDirection ==
+                                   NSUserInterfaceLayoutDirectionRightToLeft);
+  } else {
+    // In OSX 10.10 and 10.11, caption buttons always get drawn on the left side
+    // of the browser frame instead of the leading edge. This causes a
+    // discrepancy in RTL mode.
+    return !base::i18n::IsRTL() || base::mac::IsAtLeastOS10_12();
+  }
 }
 
 gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
@@ -178,10 +187,11 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
   // Do not draw caption buttons on fullscreen.
   if (!frame()->IsFullscreen() && (@available(macOS 10.10, *))) {
     const int kCaptionWidth = base::mac::IsAtMostOS10_15() ? 70 : 85;
-    if (CaptionButtonsOnLeadingEdge())
+    if (CaptionButtonsOnLeadingEdge()) {
       bounds.Inset(gfx::Insets::TLBR(0, kCaptionWidth, 0, 0));
-    else
+    } else {
       bounds.Inset(gfx::Insets::TLBR(0, 0, 0, kCaptionWidth));
+    }
   }
 
   return bounds;
@@ -189,8 +199,7 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
 
 gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForWebAppFrameToolbar(
     const gfx::Size& toolbar_preferred_size) const {
-  if (ShouldHideTopUIForFullscreen() ||
-      !(@available(macOS 10.10, *))) {
+  if (ShouldHideTopUIForFullscreen() || !(@available(macOS 10.10, *))) {
     return gfx::Rect();
   }
   gfx::Rect bounds(0, 0, width(),
@@ -264,10 +273,6 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
   }
 
   return y_offset + top_inset;
-}
-
-int BrowserNonClientFrameViewMac::GetThemeBackgroundXInset() const {
-  return 0;
 }
 
 void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI() {
@@ -347,8 +352,7 @@ bool BrowserNonClientFrameViewMac::ShouldHideTopUIForFullscreen() const {
   return false;
 }
 
-void BrowserNonClientFrameViewMac::UpdateThrobber(bool running) {
-}
+void BrowserNonClientFrameViewMac::UpdateThrobber(bool running) {}
 
 void BrowserNonClientFrameViewMac::PaintAsActiveChanged() {
   UpdateCaptionButtonPlaceholderContainerBackground();
@@ -385,8 +389,9 @@ gfx::Rect BrowserNonClientFrameViewMac::GetWindowBoundsForClientBounds(
 
 int BrowserNonClientFrameViewMac::NonClientHitTest(const gfx::Point& point) {
   int super_component = BrowserNonClientFrameView::NonClientHitTest(point);
-  if (super_component != HTNOWHERE)
+  if (super_component != HTNOWHERE) {
     return super_component;
+  }
 
   // BrowserView::NonClientHitTest will return HTNOWHERE for points that hit
   // the native title bar. On Mac, we need to explicitly return HTCAPTION for
@@ -399,11 +404,9 @@ int BrowserNonClientFrameViewMac::NonClientHitTest(const gfx::Point& point) {
 void BrowserNonClientFrameViewMac::GetWindowMask(const gfx::Size& size,
                                                  SkPath* window_mask) {}
 
-void BrowserNonClientFrameViewMac::UpdateWindowIcon() {
-}
+void BrowserNonClientFrameViewMac::UpdateWindowIcon() {}
 
-void BrowserNonClientFrameViewMac::SizeConstraintsChanged() {
-}
+void BrowserNonClientFrameViewMac::SizeConstraintsChanged() {}
 
 void BrowserNonClientFrameViewMac::UpdateMinimumSize() {
   GetWidget()->OnSizeConstraintsChanged();
@@ -424,9 +427,10 @@ void BrowserNonClientFrameViewMac::WindowControlsOverlayEnabledChanged() {
 
 gfx::Size BrowserNonClientFrameViewMac::GetMinimumSize() const {
   gfx::Size client_size = frame()->client_view()->GetMinimumSize();
-  if (browser_view()->browser()->is_type_normal())
+  if (browser_view()->browser()->is_type_normal()) {
     client_size.SetToMax(
         browser_view()->tab_strip_region_view()->GetMinimumSize());
+  }
 
   // macOS apps generally don't allow their windows to get shorter than a
   // certain height, which empirically seems to be related to their *minimum*
@@ -457,7 +461,7 @@ void BrowserNonClientFrameViewMac::PaintChildren(const views::PaintInfo& info) {
 
 gfx::Insets BrowserNonClientFrameViewMac::GetCaptionButtonInsets() const {
   const int kCaptionButtonInset =
-      base::mac::IsOS10_15()
+      base::mac::MacOSMajorVersion() < 11
           ? kCaptionButtonsInsetsCatalinaOrOlder
           : (kCaptionButtonsWidth + (kCaptionButtonsLeadingPadding * 2) -
              TabStyle::Get()->GetBottomCornerRadius());
@@ -484,13 +488,15 @@ void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
 
   auto* theme_service =
       ThemeServiceFactory::GetForProfile(browser_view()->browser()->profile());
-  if (!theme_service->UsingSystemTheme())
+  if (!theme_service->UsingSystemTheme()) {
     PaintThemedFrame(canvas);
+  }
 }
 
 void BrowserNonClientFrameViewMac::Layout() {
-  if (browser_view()->IsWindowControlsOverlayEnabled())
+  if (browser_view()->IsWindowControlsOverlayEnabled()) {
     LayoutWindowControlsOverlay();
+  }
   NonClientFrameView::Layout();
 }
 
@@ -511,9 +517,17 @@ gfx::Rect BrowserNonClientFrameViewMac::GetCenteredTitleBounds(
 }
 
 void BrowserNonClientFrameViewMac::PaintThemedFrame(gfx::Canvas* canvas) {
+  // On macOS the origin of the BrowserNonClientFrameViewMac is (0,0) so no
+  // further modification is necessary. See
+  // TopContainerBackground::PaintThemeCustomImage for details.
+  gfx::Point theme_image_offset =
+      browser_view()->GetThemeOffsetFromBrowserView();
+
   gfx::ImageSkia image = GetFrameImage();
-  canvas->TileImageInt(image, 0, TopUIFullscreenYOffset(), width(),
-                       image.height());
+  canvas->TileImageInt(image, theme_image_offset.x(), theme_image_offset.y(), 0,
+                       TopUIFullscreenYOffset(), width(), image.height(),
+                       /*tile_scale=*/1.0f, SkTileMode::kRepeat,
+                       SkTileMode::kMirror);
   gfx::ImageSkia overlay = GetFrameOverlayImage();
   canvas->DrawImageInt(overlay, 0, 0);
 }
@@ -523,18 +537,22 @@ CGFloat BrowserNonClientFrameViewMac::FullscreenBackingBarHeight() const {
   DCHECK(browser_view->IsFullscreen());
 
   CGFloat total_height = 0;
-  if (browser_view->GetTabStripVisible())
+  if (browser_view->GetTabStripVisible()) {
     total_height += browser_view->GetTabStripHeight();
+  }
 
-  if (browser_view->IsToolbarVisible())
+  if (browser_view->IsToolbarVisible()) {
     total_height += browser_view->toolbar()->bounds().height();
+  }
 
   return total_height;
 }
 
 int BrowserNonClientFrameViewMac::TopUIFullscreenYOffset() const {
-  if (!browser_view()->GetTabStripVisible() || !browser_view()->IsFullscreen())
+  if (!browser_view()->GetTabStripVisible() ||
+      !browser_view()->IsFullscreen()) {
     return 0;
+  }
 
   CGFloat menu_bar_height =
       [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
@@ -543,14 +561,16 @@ int BrowserNonClientFrameViewMac::TopUIFullscreenYOffset() const {
   if (@available(macos 12.0.1, *)) {
     id screen = [GetWidget()->GetNativeWindow().GetNativeNSWindow() screen];
     NSEdgeInsets insets = [screen safeAreaInsets];
-    if (insets.top != 0)
+    if (insets.top != 0) {
       menu_bar_height = 0;
+    }
   }
   CGFloat title_bar_height =
       NSHeight([NSWindow frameRectForContentRect:NSZeroRect
                                        styleMask:NSWindowStyleMaskTitled]);
-  if (browser_view()->UsesImmersiveFullscreenMode())
+  if (browser_view()->UsesImmersiveFullscreenMode()) {
     return menu_bar_height == 0 ? 0 : menu_bar_height + title_bar_height;
+  }
   return [[fullscreen_toolbar_controller_ menubarTracker] menubarFraction] *
          (menu_bar_height + title_bar_height);
 }

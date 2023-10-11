@@ -45,6 +45,7 @@
 #include "components/permissions/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
+#include "components/privacy_sandbox/tracking_protection_prefs.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/default_search_manager.h"
@@ -211,8 +212,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[::prefs::kPolicyThemeColor] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
 #if BUILDFLAG(IS_LINUX)
-  (*s_allowlist)[::prefs::kUsesSystemThemeDeprecated] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::prefs::kSystemTheme] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
 #endif
@@ -268,6 +267,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_STRING;
   (*s_allowlist)[drive::prefs::kDriveFsBulkPinningEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[drive::prefs::kDisableDriveOverCellular] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif
   (*s_allowlist)[::prefs::kDownloadBubblePartialViewEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -294,6 +295,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)
       [password_manager::prefs::kBiometricAuthenticationBeforeFilling] =
           settings_api::PrefType::PREF_TYPE_BOOLEAN;
+#endif
+#if BUILDFLAG(IS_MAC)
+  (*s_allowlist)[::prefs::kCreatePasskeysInICloudKeychain] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif
 
   // Privacy page
@@ -355,6 +360,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::prefs::kPrivacySandboxFirstPartySetsEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kBlockAll3pcToggleEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kTrackingProtectionLevel] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
 
   // Sync and personalization page.
   (*s_allowlist)[::prefs::kSearchSuggestEnabled] =
@@ -400,6 +409,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[ash::prefs::kAssistPersonalInfoEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[ash::prefs::kAssistPredictiveWritingEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kOrcaEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[ash::prefs::kEmojiSuggestionEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -518,6 +529,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
 #endif
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   (*s_allowlist)[::prefs::kAccessibilityPdfOcrAlwaysActive] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+#endif
+#if defined(USE_AURA)
+  (*s_allowlist)[::prefs::kOverscrollHistoryNavigationEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif
 

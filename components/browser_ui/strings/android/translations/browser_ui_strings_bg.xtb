@@ -20,7 +20,6 @@
 <translation id="1371239764779356792">Разрешаване на даден сайт да запазва данни на устройството ви</translation>
 <translation id="1383876407941801731">Търсене</translation>
 <translation id="1384959399684842514">Изтеглянето е на пауза</translation>
-<translation id="1409426117486808224">Опростен изглед на отворените раздели</translation>
 <translation id="1415402041810619267">URL адресът е съкратен</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="1446450296470737166">Разр. на пълния контрол над MIDI</translation>
@@ -51,7 +50,6 @@
 <translation id="1984937141057606926">Разрешено, но не и за трети страни</translation>
 <translation id="1989112275319619282">Сърфиране</translation>
 <translation id="1994173015038366702">URL адрес на сайт</translation>
-<translation id="1999195646219379110">{COUNT,plural, =1{Изтича след 1 ден}other{Изтича след # дни}}</translation>
 <translation id="2004697686368036666">Функциите в някои сайтове може да не работят</translation>
 <translation id="2025115093177348061">Обогатена реалност</translation>
 <translation id="2030769033451695672">Докоснете, за да се върнете към <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -179,6 +177,7 @@
 <translation id="4002066346123236978">Заглавие</translation>
 <translation id="4008040567710660924">Разрешаване на „бисквитките“ за конкретен сайт.</translation>
 <translation id="4046123991198612571">Следващ запис</translation>
+<translation id="4053720452172726777">Персонализиране и контролиране на Google Chrome</translation>
 <translation id="4149994727733219643">Опростен изглед на уеб страниците</translation>
 <translation id="4151930093518524179">Промяна на мащаба по подразбиране</translation>
 <translation id="4165986682804962316">Настройки за сайта</translation>
@@ -257,7 +256,6 @@
 <translation id="5545693483061321551">Сайтовете не могат да използват „бисквитките“ ви, за да следят активността ви при сърфиране в различни сайтове, например за да персонализират реклами. Функциите в някои сайтове може да не работят.</translation>
 <translation id="5553374991681107062">Най-новите</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
-<translation id="5596627076506792578">Още опции</translation>
 <translation id="5649053991847567735">Автоматични изтегляния</translation>
 <translation id="5668404140385795438">Отмяна на искането на уебсайта да не се допуска увеличаване на мащаба</translation>
 <translation id="5677928146339483299">Блокирано</translation>
@@ -341,7 +339,6 @@
 <translation id="7000754031042624318">Изключено от настройките на Android</translation>
 <translation id="7016516562562142042">Разрешено за текущата търсеща машина</translation>
 <translation id="702275896380648118">Този сайт определя какво харесвате и след това предлага реклами на други сайтове. Той също така получава информация за рекламните ви теми от Chrome, за да ви показва по-подходящи реклами.</translation>
-<translation id="702463548815491781">Препоръчва се, когато TalkBack или достъпът с превключване са задействани</translation>
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Избран е 1}other{Избрани са #}}</translation>
 <translation id="7087918508125750058">Избрани: <ph name="ITEM_COUNT" />. Налице са опции близо до горната част на екрана</translation>

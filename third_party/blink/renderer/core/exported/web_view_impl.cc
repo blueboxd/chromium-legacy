@@ -1528,8 +1528,6 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
       !prefs.disable_ipc_flooding_protection);
   settings->SetHyperlinkAuditingEnabled(prefs.hyperlink_auditing_enabled);
   settings->SetCookieEnabled(prefs.cookie_enabled);
-  settings->SetNavigateOnDragDrop(prefs.navigate_on_drag_drop);
-  settings->SetThreadedScrollingEnabled(prefs.threaded_scrolling_enabled);
 
   // By default, allow_universal_access_from_file_urls is set to false and thus
   // we mitigate attacks from local HTML files by not granting file:// URLs
@@ -1688,6 +1686,7 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 #if BUILDFLAG(IS_ANDROID)
   settings->SetAllowCustomScrollbarInMainFrame(false);
   settings->SetAccessibilityFontScaleFactor(prefs.font_scale_factor);
+  settings->SetAccessibilityFontWeightAdjustment(prefs.font_weight_adjustment);
   settings->SetDeviceScaleAdjustment(prefs.device_scale_adjustment);
   web_view_impl->SetIgnoreViewportTagScaleLimits(prefs.force_enable_zoom);
   settings->SetDefaultVideoPosterURL(
@@ -2438,7 +2437,11 @@ void WebViewImpl::SetPageLifecycleStateInternal(
     // we're navigating away from a page, if the page is already hidden.
     DispatchPagehide(new_state->pagehide_dispatch);
   }
-  if (hiding_page) {
+  // Both `kHidden` and `kHiddenButPainting` count as `hiding_page`, but we also
+  // want to dispatch events if we switch between the two.  Otherwise, things
+  // that might want to start painting (e.g., video), won't find out about it.
+  if (hiding_page ||
+      (!showing_page && old_state->visibility != new_state->visibility)) {
     SetVisibilityState(new_state->visibility, /*is_initial_state=*/false);
   }
   if (storing_in_bfcache) {
@@ -3743,7 +3746,7 @@ WebHitTestResult WebViewImpl::HitTestResultForTap(
               scaled_event, HitTestRequest::kReadOnly | HitTestRequest::kActive)
           .GetHitTestResult();
 
-  result.SetToShadowHostIfInRestrictedShadowRoot();
+  result.SetToShadowHostIfInUAShadowRoot();
   return result;
 }
 
@@ -3875,8 +3878,11 @@ void WebViewImpl::SetVisibilityState(
     bool is_initial_state) {
   DCHECK(GetPage());
   GetPage()->SetVisibilityState(visibility_state, is_initial_state);
+  // Do not throttle if the page should be painting.
   GetPage()->GetPageScheduler()->SetPageVisible(
-      visibility_state == mojom::blink::PageVisibilityState::kVisible);
+      visibility_state == mojom::blink::PageVisibilityState::kVisible ||
+      visibility_state ==
+          mojom::blink::PageVisibilityState::kHiddenButPainting);
   // Notify observers of the change.
   if (!is_initial_state) {
     for (auto& observer : observers_)

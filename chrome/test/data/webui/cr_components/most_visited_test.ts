@@ -17,7 +17,7 @@ import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {TestMock} from 'chrome://webui-test/test_mock.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
-import {$$, assertNotStyle, assertStyle, keydown} from './most_visited_test_support.js';
+import {$$, assertStyle, keydown} from './most_visited_test_support.js';
 
 let mostVisited: MostVisitedElement;
 let windowProxy: TestMock<MostVisitedWindowProxy>&MostVisitedWindowProxy;
@@ -206,7 +206,7 @@ function createLayoutsSuite(singleRow: boolean, reflowOnOverflow: boolean) {
     await addTiles(4);
     assertEquals(4, queryTiles().length);
     assertAddShortcutShown();
-    const tops = queryAll<HTMLElement>('a, #addShortcut')
+    const tops = queryAll<HTMLElement>('.tile, #addShortcut')
                      .map(({offsetTop}) => offsetTop);
     assertEquals(5, tops.length);
     tops.forEach(top => {
@@ -218,7 +218,7 @@ function createLayoutsSuite(singleRow: boolean, reflowOnOverflow: boolean) {
     await addTiles(5);
     assertEquals(5, queryTiles().length);
     assertAddShortcutShown();
-    const tops = queryAll<HTMLElement>('a, #addShortcut')
+    const tops = queryAll<HTMLElement>('.tile, #addShortcut')
                      .map(({offsetTop}) => offsetTop);
     assertEquals(6, tops.length);
     const firstRowTop = tops[0];
@@ -240,7 +240,7 @@ function createLayoutsSuite(singleRow: boolean, reflowOnOverflow: boolean) {
     await addTiles(9);
     assertEquals(9, queryTiles().length);
     assertAddShortcutShown();
-    const tops = queryAll<HTMLElement>('a, #addShortcut')
+    const tops = queryAll<HTMLElement>('.tile, #addShortcut')
                      .map(({offsetTop}) => offsetTop);
     assertEquals(10, tops.length);
     const firstRowTop = tops[0];
@@ -262,7 +262,8 @@ function createLayoutsSuite(singleRow: boolean, reflowOnOverflow: boolean) {
     await addTiles(10);
     assertEquals(10, queryTiles().length);
     assertAddShortcutHidden();
-    const tops = queryAll<HTMLElement>('a:not([hidden])').map(a => a.offsetTop);
+    const tops =
+        queryAll<HTMLElement>('.tile:not([hidden])').map(a => a.offsetTop);
     assertEquals(10, tops.length);
     const firstRowTop = tops[0];
     const secondRowTop = tops[5];
@@ -546,7 +547,7 @@ suite('LoggingAndUpdates', () => {
     await addTiles(1);
 
     // Act.
-    const tileLink = queryTiles()[0]!;
+    const tileLink = queryTiles()[0]!.querySelector('a')!;
     // Prevent triggering a navigation, which would break the test.
     tileLink.href = '#';
     tileLink.click();
@@ -946,7 +947,7 @@ suite('Modification', () => {
   test('tile url is set to href of <a>', async () => {
     await addTiles(1);
     const tile = queryTiles()[0]!;
-    assertEquals('https://a/', tile.href);
+    assertEquals('https://a/', tile!.querySelector('a')!.href);
   });
 
   test('delete first tile', async () => {
@@ -1054,9 +1055,9 @@ function createDragAndDropSuite(singleRow: boolean, reflowOnOverflow: boolean) {
     const tiles = queryTiles();
     const first = tiles[0]!;
     const second = tiles[1]!;
-    assertEquals('https://a/', first.href);
+    assertEquals('https://a/', first.querySelector('a')!.href);
     assertTrue(first.draggable);
-    assertEquals('https://b/', second.href);
+    assertEquals('https://b/', second.querySelector('a')!.href);
     assertTrue(second.draggable);
     const firstRect = first.getBoundingClientRect();
     const secondRect = second.getBoundingClientRect();
@@ -1074,8 +1075,8 @@ function createDragAndDropSuite(singleRow: boolean, reflowOnOverflow: boolean) {
     assertEquals('https://a/', url.url);
     assertEquals(1, newPos);
     const [newFirst, newSecond] = queryTiles();
-    assertEquals('https://b/', newFirst!.href);
-    assertEquals('https://a/', newSecond!.href);
+    assertEquals('https://b/', newFirst!.querySelector('a')!.href);
+    assertEquals('https://a/', newSecond!.querySelector('a')!.href);
   });
 
   test('drag second tile to first position', async () => {
@@ -1083,9 +1084,9 @@ function createDragAndDropSuite(singleRow: boolean, reflowOnOverflow: boolean) {
     const tiles = queryTiles();
     const first = tiles[0]!;
     const second = tiles[1]!;
-    assertEquals('https://a/', first.href);
+    assertEquals('https://a/', first.querySelector('a')!.href);
     assertTrue(first.draggable);
-    assertEquals('https://b/', second.href);
+    assertEquals('https://b/', second.querySelector('a')!.href);
     assertTrue(second.draggable);
     const firstRect = first.getBoundingClientRect();
     const secondRect = second.getBoundingClientRect();
@@ -1103,8 +1104,8 @@ function createDragAndDropSuite(singleRow: boolean, reflowOnOverflow: boolean) {
     assertEquals('https://b/', url.url);
     assertEquals(0, newPos);
     const [newFirst, newSecond] = queryTiles();
-    assertEquals('https://b/', newFirst!.href);
-    assertEquals('https://a/', newSecond!.href);
+    assertEquals('https://b/', newFirst!.querySelector('a')!.href);
+    assertEquals('https://a/', newSecond!.querySelector('a')!.href);
   });
 
   test('most visited tiles cannot be reordered', async () => {
@@ -1112,9 +1113,9 @@ function createDragAndDropSuite(singleRow: boolean, reflowOnOverflow: boolean) {
     const tiles = queryTiles();
     const first = tiles[0]!;
     const second = tiles[1]!;
-    assertEquals('https://a/', first.href);
+    assertEquals('https://a/', first.querySelector('a')!.href);
     assertTrue(first.draggable);
-    assertEquals('https://b/', second.href);
+    assertEquals('https://b/', second.querySelector('a')!.href);
     assertTrue(second.draggable);
     const firstRect = first.getBoundingClientRect();
     const secondRect = second.getBoundingClientRect();
@@ -1129,8 +1130,8 @@ function createDragAndDropSuite(singleRow: boolean, reflowOnOverflow: boolean) {
     await flushTasks();
     assertEquals(0, handler.getCallCount('reorderMostVisitedTile'));
     const [newFirst, newSecond] = queryTiles();
-    assertEquals('https://a/', newFirst!.href);
-    assertEquals('https://b/', newSecond!.href);
+    assertEquals('https://a/', newFirst!.querySelector('a')!.href);
+    assertEquals('https://b/', newSecond!.querySelector('a')!.href);
   });
 }
 
@@ -1202,24 +1203,6 @@ suite('Theming', () => {
         $$(mostVisited, '#addShortcutIcon'), 'background-color',
         'rgb(255, 255, 255)');
   });
-
-  test('add title pill', () => {
-    mostVisited.style.setProperty('--most-visited-text-shadow', '1px 2px');
-    queryAll('.tile-title').forEach(tile => {
-      assertStyle(tile, 'background-color', 'rgba(0, 0, 0, 0)');
-    });
-    queryAll('.tile-title span').forEach(tile => {
-      assertNotStyle(tile, 'text-shadow', 'none');
-    });
-    mostVisited.toggleAttribute('use-title-pill_', true);
-    queryAll('.tile-title').forEach(tile => {
-      assertStyle(tile, 'background-color', 'rgb(255, 255, 255)');
-    });
-    queryAll('.tile-title span').forEach(tile => {
-      assertStyle(tile, 'text-shadow', 'none');
-      assertStyle(tile, 'color', 'rgb(60, 64, 67)');
-    });
-  });
 });
 
 suite('Prerendering', () => {
@@ -1239,7 +1222,7 @@ suite('Prerendering', () => {
     await addTiles(1);
 
     // // Act.
-    const tileLink = queryTiles()[0]!;
+    const tileLink = queryTiles()[0]!.querySelector('a')!;
     // Prevent triggering a navigation, which would break the test.
     tileLink.href = '#';
     // simulate a mousedown event.
@@ -1256,7 +1239,7 @@ suite('Prerendering', () => {
     await addTiles(1);
 
     // // Act.
-    const tileLink = queryTiles()[0]!;
+    const tileLink = queryTiles()[0]!.querySelector('a')!;
     // Prevent triggering a navigation, which would break the test.
     tileLink.href = '#';
     // simulate a mousedown event.
@@ -1266,5 +1249,29 @@ suite('Prerendering', () => {
 
     // Make sure Prerendering has been triggered
     await handler.whenCalled('prerenderMostVisitedTile');
+  });
+
+  test('prerender cancelation', async () => {
+    // Arrange.
+    await addTiles(1);
+
+    // // Act.
+    const tileLink = queryTiles()[0]!.querySelector('a')!;
+    // Prevent triggering a navigation, which would break the test.
+    tileLink.href = '#';
+    // simulate a mousedown event.
+    const mouseEnterEvent = document.createEvent('MouseEvents');
+    mouseEnterEvent.initEvent('mouseenter', true, true);
+    tileLink.dispatchEvent(mouseEnterEvent);
+
+    // Make sure Prerendering has been triggered
+    await handler.whenCalled('prerenderMostVisitedTile');
+
+    const mouseExitEvent = document.createEvent('MouseEvents');
+    mouseExitEvent.initEvent('mouseleave', true, true);
+    tileLink.dispatchEvent(mouseExitEvent);
+
+    // Make sure Prerendering has been canceled.
+    await handler.whenCalled('cancelPrerender');
   });
 });

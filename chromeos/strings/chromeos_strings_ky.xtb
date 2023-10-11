@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">Эгер кандайдыр бир мыйзам бузулуп жатса, <ph name="BEGIN_LINK1" />Юридикалык жардам бетине<ph name="END_LINK1" /> өтүңүз. Аккаунт жана система жөнүндө айрым маалымат Google'га жөнөтүлүшү мүмкүн. Сиз берген маалыматты <ph name="BEGIN_LINK2" />Купуялык саясаты<ph name="END_LINK2" /> менен <ph name="BEGIN_LINK3" />Тейлөө шарттарына<ph name="END_LINK3" /> ылайык техникалык маселелерди чечүү жана кызматтарыбызды жакшыртуу үчүн пайдаланабыз.</translation>
 <translation id="1885577615937958993">медианы алдыга тез түрдүрүү</translation>
 <translation id="1887850431809612466">Жабдыкты оңдоо</translation>
+<translation id="1897672602657312171">Издөө баскычы жок ыкчам баскычтар айрым колдонмолордун ыкчам баскычына каршы келиши мүмкүн. Бул ыкчам баскычты колдоно берүү үчүн кайра басыңыз же издөө баскычын камтыган жаңы ыкчам баскычты басыңыз.</translation>
 <translation id="1904932688895783618">Бул жерде башка пайдалуу булактар келтирилди:</translation>
 <translation id="1905710495812624430">Аракеттер уруксат берилген чегинен ашты.</translation>
 <translation id="1908234395526491708">Ишке ашпай калган UDP сурамдары</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">Өчүрүлүп күйгүзүлүүдө…</translation>
 <translation id="2533048460510040082">Сунушталган пайдалуу материалдар</translation>
 <translation id="2536159006530886390">Интернетке туташпай жатат.</translation>
-<translation id="2555662516429796509">Баскычтоптон 1-4 өзгөрткүчтөрүн жана башка 1 баскычты басыңыз</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> тести аткарылууда...</translation>
 <translation id="2584559707064218956">Тууралоо үчүн Параметрлерге өтүңүз</translation>
 <translation id="2597774443162333062">Файлдар мүчүлүштүктөрдү оңдоо үчүн Google'га жөнөтүлөт</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">TLS аутентификация ачкычы</translation>
 <translation id="2713444072780614174">Ак</translation>
 <translation id="2717139507051041123">Караңгы түс режимин иштетүү</translation>
+<translation id="2728460467788544679">Бардык басып чыгаруу таржымалын өчүрүү</translation>
 <translation id="2740531572673183784">Ok</translation>
 <translation id="2744221223678373668">Бөлүшүлгөн</translation>
 <translation id="2751739896257479635">EAP 2-фазадагы аныктыгын текшерүү</translation>
 <translation id="2783010256799387990">ТЕКШЕРҮҮДӨН ӨТТҮ</translation>
 <translation id="2787435249130282949">баскычтоптун жарыктыгын көбөйтүү</translation>
-<translation id="2789486458103222910">Жарайт</translation>
 <translation id="2805756323405976993">Колдонмолор</translation>
 <translation id="28232023175184696">Интернетке туташпай жатат. Кайра аракет кылуу үчүн таптап коюңуз.</translation>
 <translation id="2859243502336719778">Олуттуу жаңыртуу</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">Булут көшөгөсү</translation>
 <translation id="2926057806159140518">Колдонуучу атыңызды жана сырсөзүңүздү киргизип же QR кодуңузду скандаңыз</translation>
 <translation id="2940811910881150316">Түзмөктү сыноого болбойт. Сынап көрүү үчүн капкагын кайра ачыңыз.</translation>
+<translation id="2941112035454246133">Төмөн</translation>
 <translation id="3008341117444806826">ЖАҢЫРТУУ</translation>
 <translation id="3009958530611748826">Скандалган нерселерди сактоо үчүн папка тандаңыз</translation>
 <translation id="3017079585324758401">Фон</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">Башкы түйүн чечилген жок</translation>
 <translation id="3942420633017001071">Мүчүлүштүктөрдү аныктоо</translation>
 <translation id="3954678691475912818">Түзмөктүн түрү белгисиз.</translation>
+<translation id="3959413315969265597">Бул APN'ди иштетүүгө болбойт. Демейки APN кошулганын текшериңиз.</translation>
 <translation id="3966286471246132217">Тагыраак жыйынтык алуу үчүн тест аягына чыкмайынча бардык колдонмолорду жаап туруңуз.</translation>
 <translation id="3967822245660637423">Жүктөп алуу аяктады</translation>
 <translation id="3969602104473960991">ChromeOS сырсөзү өзгөрдү</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">акырындатуу</translation>
 <translation id="5707900041990977207"><ph name="TOTAL_PAGES" /> ичинен <ph name="CURRENT_PAGE" /></translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" /> түзмөгүн жаңыртыңыз</translation>
+<translation id="574392208103952083">Орточо</translation>
 <translation id="5757187557809630523">кийинки трек</translation>
 <translation id="5760715441271661976">Порталдын абалы</translation>
 <translation id="576835345334454681">Дисплейдин жарыктыгын көбөйтүү</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">Көркөм галерея альбому</translation>
 <translation id="5860033963881614850">Өчүк</translation>
 <translation id="5860491529813859533">Күйгүзүү</translation>
-<translation id="5866840822086176774">Абдан күчтүү</translation>
 <translation id="5876385649737594562">Параметрлерди тандоо үчүн күйгүзүңүз</translation>
 <translation id="588258955323874662">Толук экран</translation>
 <translation id="5895138241574237353">Өчүрүп күйгүзүү</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Начар (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Аккаунттун параметрлерине өтүү</translation>
-<translation id="6456394469623773452">Жакшы</translation>
+<translation id="6461047516875166066">Кененирээк маалымат</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Бет кайра скандалсынбы?}=1{{PAGE_NUMBER} бет кайра скандалсынбы?}other{{PAGE_NUMBER} бет кайра скандалсынбы?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" /> башкарат</translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">Бардык ыкчам баскычтар баштапкы абалга келтирилсинби?</translation>
 <translation id="7058278511608979688">Бүтүрүү жана сактоо</translation>
 <translation id="7059230779847288458">Кубатталууда, толгонго чейин <ph name="TIME_VALUE" /> калды</translation>
+<translation id="7066538517128343186"><ph name="KEY" /> ачкычы</translation>
 <translation id="7068619307603204412">Түзмөгүңүздү даярдаңыз</translation>
 <translation id="708426984172631313">ТОКТОТУЛДУ</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">Тушкагазды көрүү үчүн тармакка туташып, баракты кайра жүктөңүз.</translation>
 <translation id="8291967909914612644">Баштапкы жабдуучу өлкө</translation>
 <translation id="8294431847097064396">Булак</translation>
-<translation id="8297006494302853456">Начар</translation>
 <translation id="8302368968391049045">HTTPS тармактык коргоосу</translation>
 <translation id="8312330582793120272">медианы ойнотуу</translation>
 <translation id="8318753676953949627">Сүрөттөр жок</translation>
 <translation id="8329018942023753850">эсептегич колдонмосу</translation>
 <translation id="8336739000755212683">Түзмөктөгү аккаунттун сүрөтүн өзгөртүү</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> же <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Басып чыгаруу тапшырмалары</translation>
 <translation id="8351855506390808906">Баскычтарды дайындоо үчүн тийүү чекити</translation>
 <translation id="8352772353338965963">Бир нече профиль менен кирүү үчүн каттоо эсебин кошуңуз. Катталган бардык аккаунттарына кирүүдө сырсөз талап кылынбагандыктан, бул мүмкүнчүлүктү ишенимдүү каттоо эсептери гана колдонушу керек.</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">Кайра туташуу үчүн Параметрлерге өтүңүз</translation>
 <translation id="9126720536733509015">Бир нече бетти бир PDF файлына сактаңыз</translation>
 <translation id="9133104754938025929">Батареянын кубатын үнөмдөө үчүн көшөгө түзмөк кубатталып жатканда гана иштейт.</translation>
+<translation id="9133772297793293778">Баскычтоптон 1-4 өзгөрткүчтөрүн жана башка 1 баскычты басыңыз. Түзөтүү режиминен чыгуу үчүн alt + esc баскычтарын бирге басыңыз.</translation>
 <translation id="9137526406337347448">Google кызматтары</translation>
 <translation id="9138630967333032450">Сол жактагы Shift баскычы</translation>
 <translation id="9143347780818904997"><ph name="MINUTES" /> мүнөткө</translation>

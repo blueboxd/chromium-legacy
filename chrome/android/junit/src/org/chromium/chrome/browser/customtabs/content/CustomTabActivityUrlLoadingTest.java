@@ -55,8 +55,8 @@ import org.chromium.url.Origin;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {CustomTabActivityUrlLoadingTest.ShadowOrigin.class})
-@DisableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
-@EnableFeatures({ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS})
+@DisableFeatures(ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS)
+@EnableFeatures(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)
 public class CustomTabActivityUrlLoadingTest {
     public static final String PASSWORD_CHANGE_USERNAME = "Peter";
 
@@ -155,7 +155,8 @@ public class CustomTabActivityUrlLoadingTest {
         env.changeTab(newTab);
 
         clearInvocations(env.tabFromFactory);
-        mNavigationController.navigate(OTHER_URL);
+        LoadUrlParams params = new LoadUrlParams(OTHER_URL);
+        mNavigationController.navigate(params, new Intent());
         verify(newTab).loadUrl(any());
         verify(env.tabFromFactory, never()).loadUrl(any());
     }
@@ -184,7 +185,7 @@ public class CustomTabActivityUrlLoadingTest {
 
         clearInvocations(env.tabFromFactory);
         LoadUrlParams params = new LoadUrlParams(SPECULATED_URL);
-        mNavigationController.navigate(params, 0);
+        mNavigationController.navigate(params, new Intent());
         verify(hiddenTab).loadUrl(params);
     }
 

@@ -10,6 +10,7 @@
 
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 
 class NotificationDispatcherMac;
 
@@ -21,9 +22,14 @@ class Notification;
 // send platform notifications to the MacOS notification center.
 class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
  public:
+  using WebAppDispatcherFactory =
+      base::RepeatingCallback<std::unique_ptr<NotificationDispatcherMac>(
+          const web_app::AppId& web_app_id)>;
+
   NotificationPlatformBridgeMac(
       std::unique_ptr<NotificationDispatcherMac> banner_dispatcher,
-      std::unique_ptr<NotificationDispatcherMac> alert_dispatcher);
+      std::unique_ptr<NotificationDispatcherMac> alert_dispatcher,
+      WebAppDispatcherFactory web_app_dispatcher_factory);
   NotificationPlatformBridgeMac(const NotificationPlatformBridgeMac&) = delete;
   NotificationPlatformBridgeMac& operator=(
       const NotificationPlatformBridgeMac&) = delete;
@@ -42,6 +48,13 @@ class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
   void DisplayServiceShutDown(Profile* profile) override;
 
  private:
+  // Closes the notification with the given `notification_id` and `profile` in
+  // every dispatcher except `excluded_dispatcher`. Pass nullptr to
+  // `excluded_dispatcher` to close the notification everywhere.
+  void CloseImpl(Profile* profile,
+                 const std::string& notification_id,
+                 NotificationDispatcherMac* excluded_dispatcher = nullptr);
+
   // Closes all notifications for the given |profile|.
   void CloseAllNotificationsForProfile(Profile* profile);
 
@@ -50,6 +63,13 @@ class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
 
   // The object in charge of dispatching remote notifications.
   std::unique_ptr<NotificationDispatcherMac> alert_dispatcher_;
+
+  // The objects in charge of dispatching per-app notifications.
+  // TODO(https://crbug.com/938661): Implement some logic for cleaning up no
+  // longer needed dispatchers.
+  std::map<web_app::AppId, std::unique_ptr<NotificationDispatcherMac>>
+      app_specific_dispatchers_;
+  WebAppDispatcherFactory web_app_dispatcher_factory_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_MAC_H_

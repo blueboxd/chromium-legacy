@@ -245,10 +245,14 @@ class VideoDecoderTest : public ::testing::Test {
     static const base::NoDestructor<base::CPU> cpuid;
     constexpr int kPentiumAndLaterFamily = 0x06;
     constexpr int kGeminiLakeModelId = 0x7A;
+    constexpr int kApolloLakeModelId = 0x5c;
     static const bool is_glk_device =
         cpuid->family() == kPentiumAndLaterFamily &&
         cpuid->model() == kGeminiLakeModelId;
-    return is_glk_device;
+    static const bool is_apl_device =
+        cpuid->family() == kPentiumAndLaterFamily &&
+        cpuid->model() == kApolloLakeModelId;
+    return is_glk_device || is_apl_device;
   }
 
   // TODO(hiroh): Move this to Video class or video_frame_helpers.h.
@@ -444,6 +448,13 @@ TEST_F(VideoDecoderTest, DecodeAndOutputAllFrames) {
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForEvent(DecoderListener::Event::kDecoderBufferAccepted,
                                 /*times=*/g_env->Video()->NumFrames()));
+
+  // This is a hack to allow Qualcomm devices (e.g. trogdor) to flush the pipes
+  // after the last resolution change event that comes out when running the
+  // resolution_change_500frames.vp9.ivf sequence. It should be fixed but since
+  // a new V4L2StatefulVideoDecoder backend is in the making, let's just leave
+  // the hack. See b/294611425.
+  base::PlatformThread::Sleep(base::Milliseconds(100));
 }
 #endif
 
@@ -474,7 +485,10 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream) {
 // Flush the decoder somewhere mid-stream, then continue as normal. This is a
 // contrived use case to exercise important V4L2 stateful areas.
 TEST_F(VideoDecoderTest, FlushMidStream) {
-  if (!base::FeatureList::IsEnabled(kV4L2FlatStatefulVideoDecoder)) {
+  // Skip this test on VP9 bitstreams exercising the show_existing_frame flag.
+  // This is because we cannot show frames from "before" the flush, see
+  // b/298028324.
+  if (g_env->Video()->IsVP9ShowExistingFrameBistream()) {
     GTEST_SKIP();
   }
 
@@ -495,7 +509,16 @@ TEST_F(VideoDecoderTest, FlushMidStream) {
 
   // Total flush count must be two: once mid-stream and once at the end.
   EXPECT_EQ(tvp->GetFlushDoneCount(), 2u);
-  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
+
+  // The H264 bitstreams in our test set have B-frames; by Flush()ing carelessly
+  // like we do here in this test, we're likely to lose needed references that
+  // later B-frames will need. Those B-frames will be discarded.
+  // TODO(mcasas): Flush at an IDR frame.
+  const bool has_b_frames = g_env->Video()->Codec() == VideoCodec::kH264;
+  if (!has_b_frames)
+    EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
+  else
+    EXPECT_LE(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
 #endif

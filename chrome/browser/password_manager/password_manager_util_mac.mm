@@ -9,9 +9,9 @@
 #include <Security/Authorization.h>
 
 #include "base/apple/bundle_locations.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/osstatus_logging.h"
 #include "base/mac/authorization_util.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/mac_logging.h"
 #include "base/mac/scoped_authorizationref.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/grit/chromium_strings.h"
@@ -70,7 +70,7 @@ bool AuthenticateUser(std::u16string prompt_string) {
   AuthorizationItem right_items[] = {{rightName.UTF8String, 0, nullptr, 0}};
   AuthorizationRights rights = {std::size(right_items), right_items};
 
-  base::ScopedCFTypeRef<CFStringRef> prompt =
+  base::apple::ScopedCFTypeRef<CFStringRef> prompt =
       base::SysUTF16ToCFStringRef(prompt_string);
 
   // Pass kAuthorizationFlagDestroyRights to prevent the OS from saving the

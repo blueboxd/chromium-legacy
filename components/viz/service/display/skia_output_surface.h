@@ -53,7 +53,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
  public:
   using OverlayList = std::vector<OverlayCandidate>;
 
-  explicit SkiaOutputSurface(OutputSurface::Type type);
+  SkiaOutputSurface();
 
   SkiaOutputSurface(const SkiaOutputSurface&) = delete;
   SkiaOutputSurface& operator=(const SkiaOutputSurface&) = delete;

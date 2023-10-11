@@ -51,10 +51,6 @@ class OmniboxPopupPresenter : public views::WebView,
   // views::WidgetObserver:
   void OnWidgetDestroyed(views::Widget* widget) override;
 
-  // Returns the target popup bounds in screen coordinates based on the bounds
-  // of `location_bar_view_` and given preferred size `start_height`.
-  gfx::Rect GetTargetBounds(int start_height) const;
-
  private:
   friend class OmniboxPopupViewWebUITest;
 
@@ -69,10 +65,10 @@ class OmniboxPopupPresenter : public views::WebView,
   void ReleaseWidget(bool close);
 
   // The location bar view that owns owners of this and thus outlives this.
-  base::raw_ptr<LocationBarView> location_bar_view_;
+  raw_ptr<LocationBarView> location_bar_view_;
 
   // Created by this, closed by this; owned and destroyed by OS.
-  base::raw_ptr<views::Widget> widget_;
+  raw_ptr<views::Widget> widget_;
 
   // Flags whether this waited for the handler and recorded associated metrics.
   bool waited_for_handler_;

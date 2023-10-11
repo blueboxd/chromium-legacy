@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/signin/profile_picker_handler.h"
 
 #include "base/check.h"
+#include "base/check_op.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
@@ -40,8 +41,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
-#include "chrome/browser/ui/profile_picker.h"
-#include "chrome/browser/ui/signin/profile_colors_util.h"
+#include "chrome/browser/ui/profiles/profile_colors_util.h"
+#include "chrome/browser/ui/profiles/profile_picker.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
@@ -68,11 +69,11 @@
 #include "ui/gfx/image/image.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "ash/webui/settings/public/constants/routes.mojom.h"
 #include "chrome/browser/lacros/account_manager/account_manager_util.h"
 #include "chrome/browser/lacros/account_manager/account_profile_mapper.h"
 #include "chrome/browser/lacros/identity_manager_lacros.h"
 #include "chrome/browser/lacros/lacros_url_handling.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chromeos/crosapi/mojom/login.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "components/account_manager_core/account.h"
@@ -443,6 +444,10 @@ void ProfilePickerHandler::RegisterMessages() {
       base::BindRepeating(
           &ProfilePickerHandler::HandleRecordSignInPromoImpression,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "updateProfileOrder",
+      base::BindRepeating(&ProfilePickerHandler::HandleUpdateProfileOrder,
+                          base::Unretained(this)));
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   web_ui()->RegisterMessageCallback(
       "getAvailableAccounts",
@@ -840,6 +845,21 @@ void ProfilePickerHandler::HandleRemoveProfile(const base::Value::List& args) {
   profile_statistics_keep_alive_.reset();
 }
 
+void ProfilePickerHandler::HandleUpdateProfileOrder(
+    const base::Value::List& args) {
+  CHECK_EQ(2U, args.size());
+  CHECK(args[0].is_int());
+  CHECK(args[1].is_int());
+
+  int from_index = args[0].GetInt();
+  int to_index = args[1].GetInt();
+  CHECK(from_index >= 0 && to_index >= 0);
+
+  g_browser_process->profile_manager()
+      ->GetProfileAttributesStorage()
+      .UpdateProfilesOrderPref(from_index, to_index);
+}
+
 void ProfilePickerHandler::HandleCloseProfileStatistics(
     const base::Value::List& args) {
   CHECK_EQ(0U, args.size());
@@ -1046,7 +1066,7 @@ ProfilePickerHandler::GetProfileAttributes() {
   std::vector<ProfileAttributesEntry*> ordered_entries =
       g_browser_process->profile_manager()
           ->GetProfileAttributesStorage()
-          .GetAllProfilesAttributesSortedWithCheck();
+          .GetAllProfilesAttributesSortedByLocalProfileNameWithCheck();
   base::EraseIf(ordered_entries, [](const ProfileAttributesEntry* entry) {
     return entry->IsOmitted();
   });

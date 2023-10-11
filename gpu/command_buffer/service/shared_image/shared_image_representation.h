@@ -50,7 +50,9 @@ extern "C" typedef struct AHardwareBuffer AHardwareBuffer;
 #endif
 
 typedef unsigned int GLenum;
-class GrBackendSurfaceMutableState;
+namespace skgpu {
+class MutableTextureState;
+}
 
 namespace cc {
 class PaintOpBuffer;
@@ -180,6 +182,15 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
     backing()->OnWriteSucceeded();
   }
   bool CopyToGpuMemoryBuffer() { return backing()->CopyToGpuMemoryBuffer(); }
+  void GetGpuMemoryBufferHandleInfo(gfx::GpuMemoryBufferHandle& handle,
+                                    viz::SharedImageFormat& format,
+                                    gfx::Size& size,
+                                    gfx::BufferUsage& buffer_usage) {
+    handle = backing()->GetGpuMemoryBufferHandle();
+    format = backing()->format();
+    size = backing()->size();
+    buffer_usage = backing()->buffer_usage();
+  }
   bool PresentSwapChain() { return backing()->PresentSwapChain(); }
   void RegisterImageFactory(SharedImageFactory* factory) {
     DCHECK(is_primary_);
@@ -229,6 +240,7 @@ class GPU_GLES2_EXPORT GLTextureImageRepresentationBase
  protected:
   friend class SkiaGLImageRepresentation;
   friend class DawnEGLImageRepresentation;
+  friend class DawnGLTextureRepresentation;
   friend class GLTextureGLCommonRepresentation;
 
   // Can be overridden to handle clear state tracking when GL access begins or
@@ -327,7 +339,7 @@ class GPU_GLES2_EXPORT SkiaImageRepresentation
     }
 
     // NOTE: Implemented only for Ganesh.
-    // Applies the GrBackendSurfaceMutableState for Vulkan layout and external
+    // Applies the skgpu::MutableTextureState for Vulkan layout and external
     // queue transitions needed for Vulkan/GL interop.
     virtual void ApplyBackendSurfaceEndState() = 0;
 
@@ -385,9 +397,9 @@ class GPU_GLES2_EXPORT SkiaImageRepresentation
         SharedContextState* context_state) = 0;
 
     // NOTE: Implemented only for Ganesh.
-    // Checks if need to apply GrBackendSurfaceMutableState.
+    // Checks if need to apply skgpu::MutableTextureState.
     virtual bool HasBackendSurfaceEndState() = 0;
-    // Applies the GrBackendSurfaceMutableState for Vulkan layout and external
+    // Applies the skgpu::MutableTextureState for Vulkan layout and external
     // queue transitions needed for Vulkan/GL interop.
     virtual void ApplyBackendSurfaceEndState() = 0;
 
@@ -459,15 +471,15 @@ class GPU_GLES2_EXPORT SkiaGaneshImageRepresentation
         base::PassKey<SkiaGaneshImageRepresentation> pass_key,
         SkiaImageRepresentation* representation,
         std::vector<sk_sp<SkSurface>> surfaces,
-        std::unique_ptr<GrBackendSurfaceMutableState> end_state);
+        std::unique_ptr<skgpu::MutableTextureState> end_state);
     ScopedGaneshWriteAccess(
         base::PassKey<SkiaGaneshImageRepresentation> pass_key,
         SkiaImageRepresentation* representation,
         std::vector<sk_sp<GrPromiseImageTexture>> promise_image_textures,
-        std::unique_ptr<GrBackendSurfaceMutableState> end_state);
+        std::unique_ptr<skgpu::MutableTextureState> end_state);
     ~ScopedGaneshWriteAccess() override;
 
-    // Applies the GrBackendSurfaceMutableState for Vulkan layout and external
+    // Applies the skgpu::MutableTextureState for Vulkan layout and external
     // queue transitions needed for Vulkan/GL interop.
     void ApplyBackendSurfaceEndState() override;
 
@@ -476,7 +488,7 @@ class GPU_GLES2_EXPORT SkiaGaneshImageRepresentation
       return static_cast<SkiaGaneshImageRepresentation*>(representation());
     }
 
-    std::unique_ptr<GrBackendSurfaceMutableState> end_state_;
+    std::unique_ptr<skgpu::MutableTextureState> end_state_;
   };
 
   class GPU_GLES2_EXPORT ScopedGaneshReadAccess : public ScopedReadAccess {
@@ -485,7 +497,7 @@ class GPU_GLES2_EXPORT SkiaGaneshImageRepresentation
         base::PassKey<SkiaGaneshImageRepresentation> pass_key,
         SkiaImageRepresentation* representation,
         std::vector<sk_sp<GrPromiseImageTexture>> promise_image_textures,
-        std::unique_ptr<GrBackendSurfaceMutableState> end_state);
+        std::unique_ptr<skgpu::MutableTextureState> end_state);
     ~ScopedGaneshReadAccess() override;
 
     // Creates an SkImage from GrBackendTexture for single planar formats or if
@@ -501,9 +513,9 @@ class GPU_GLES2_EXPORT SkiaGaneshImageRepresentation
         int plane_index,
         SharedContextState* context_state) override;
 
-    // Checks if need to apply GrBackendSurfaceMutableState.
+    // Checks if need to apply skgpu::MutableTextureState.
     bool HasBackendSurfaceEndState() override;
-    // Applies the GrBackendSurfaceMutableState for Vulkan layout and external
+    // Applies the skgpu::MutableTextureState for Vulkan layout and external
     // queue transitions needed for Vulkan/GL interop.
     void ApplyBackendSurfaceEndState() override;
 
@@ -512,7 +524,7 @@ class GPU_GLES2_EXPORT SkiaGaneshImageRepresentation
       return static_cast<SkiaGaneshImageRepresentation*>(representation());
     }
 
-    std::unique_ptr<GrBackendSurfaceMutableState> end_state_;
+    std::unique_ptr<skgpu::MutableTextureState> end_state_;
   };
 
   SkiaGaneshImageRepresentation(GrDirectContext* gr_context,
@@ -579,11 +591,11 @@ class GPU_GLES2_EXPORT SkiaGaneshImageRepresentation
       const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) = 0;
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) = 0;
   virtual std::vector<sk_sp<GrPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) = 0;
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) = 0;
 
   // Begin the read access. The implementations should insert semaphores into
   // begin_semaphores vector which client will wait on before reading the
@@ -599,7 +611,7 @@ class GPU_GLES2_EXPORT SkiaGaneshImageRepresentation
   virtual std::vector<sk_sp<GrPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) = 0;
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) = 0;
 
  private:
   raw_ptr<GrDirectContext> gr_context_ = nullptr;

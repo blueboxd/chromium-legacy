@@ -44,6 +44,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/embedder_support/switches.h"
 #include "components/language/core/browser/language_prefs.h"
@@ -247,6 +248,19 @@ void Update3pcdSettings(Profile* profile) {
       settings));
 }
 
+void Update3pcdMetadataGrantsSettings(Profile* profile) {
+  ContentSettingsForOneType settings =
+      HostContentSettingsMapFactory::GetForProfile(profile)
+          ->GetSettingsForOneType(ContentSettingsType::TPCD_METADATA_GRANTS);
+  profile->ForEachLoadedStoragePartition(base::BindRepeating(
+      [](ContentSettingsForOneType settings,
+         content::StoragePartition* storage_partition) {
+        storage_partition->GetCookieManagerForBrowserProcess()
+            ->SetContentSettingsFor3pcdMetadataGrants(settings);
+      },
+      settings));
+}
+
 // `kPermissionStorageAccessAPI` enables feature: Storage Access API with
 // Prompts (https://chromestatus.com/feature/5085655327047680). StorageAccessAPI
 // is considered enabled when either feature is enabled (by different field
@@ -362,6 +376,11 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
       base::BindRepeating(&ProfileNetworkContextService::
                               UpdateCorsNonWildcardRequestHeadersSupport,
                           base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kBlockTruncatedCookies,
+      base::BindRepeating(
+          &ProfileNetworkContextService::OnTruncatedCookieBlockingChanged,
+          base::Unretained(this)));
 }
 
 ProfileNetworkContextService::~ProfileNetworkContextService() = default;
@@ -463,6 +482,22 @@ void ProfileNetworkContextService::OnThirdPartyCookieBlockingChanged(
             ->BlockThirdPartyCookies(block_third_party_cookies);
       },
       block_third_party_cookies));
+}
+
+void ProfileNetworkContextService::OnTruncatedCookieBlockingChanged() {
+  const bool block_truncated_cookies =
+      profile_->GetPrefs()->GetBoolean(prefs::kBlockTruncatedCookies);
+
+  profile_->ForEachLoadedStoragePartition(base::BindRepeating(
+      [](bool block_truncated_cookies,
+         content::StoragePartition* storage_partition) {
+        // Update the main CookieManager's CookieSettings object to block
+        // truncated cookies, and since this is shared with all of the
+        // RestrictedCookieManager instances, those will get the change as well.
+        storage_partition->GetCookieManagerForBrowserProcess()
+            ->BlockTruncatedCookies(block_truncated_cookies);
+      },
+      block_truncated_cookies));
 }
 
 void ProfileNetworkContextService::OnFirstPartySetsEnabledChanged(
@@ -615,6 +650,10 @@ ProfileNetworkContextService::CreateCookieManagerParams(
   out->settings_for_3pcd = host_content_settings_map->GetSettingsForOneType(
       ContentSettingsType::TPCD_SUPPORT);
 
+  out->settings_for_3pcd_metadata_grants =
+      host_content_settings_map->GetSettingsForOneType(
+          ContentSettingsType::TPCD_METADATA_GRANTS);
+
   if (StorageAccessAPIEnabled()) {
     out->settings_for_storage_access =
         host_content_settings_map->GetSettingsForOneType(
@@ -630,7 +669,24 @@ ProfileNetworkContextService::CreateCookieManagerParams(
 
   out->cookie_access_delegate_type =
       network::mojom::CookieAccessDelegateType::USE_CONTENT_SETTINGS;
+
+  out->block_truncated_cookies =
+      profile->GetPrefs()->GetBoolean(prefs::kBlockTruncatedCookies);
+
   return out;
+}
+
+void ProfileNetworkContextService::FlushCachedClientCertIfNeeded(
+    const net::HostPortPair& host,
+    const scoped_refptr<net::X509Certificate>& certificate) {
+  profile_->ForEachLoadedStoragePartition(base::BindRepeating(
+      [](const net::HostPortPair& host,
+         const scoped_refptr<net::X509Certificate>& certificate,
+         content::StoragePartition* storage_partition) {
+        storage_partition->GetNetworkContext()->FlushCachedClientCertIfNeeded(
+            host, certificate);
+      },
+      host, certificate));
 }
 
 void ProfileNetworkContextService::FlushProxyConfigMonitorForTesting() {
@@ -1062,7 +1118,7 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   IpProtectionAuthTokenProvider* ip_protection_auth_token_getter =
       IpProtectionAuthTokenProvider::Get(profile_);
   if (ip_protection_auth_token_getter) {
-    ip_protection_auth_token_getter->SetReceiver(
+    ip_protection_auth_token_getter->AddReceiver(
         network_context_params->ip_protection_auth_token_getter
             .InitWithNewPipeAndPassReceiver());
   }
@@ -1093,6 +1149,9 @@ void ProfileNetworkContextService::OnContentSettingChanged(
     case ContentSettingsType::TPCD_SUPPORT:
       Update3pcdSettings(profile_);
       break;
+    case ContentSettingsType::TPCD_METADATA_GRANTS:
+      Update3pcdMetadataGrantsSettings(profile_);
+      break;
     case ContentSettingsType::STORAGE_ACCESS:
       UpdateStorageAccessSettings(profile_);
       break;
@@ -1104,6 +1163,7 @@ void ProfileNetworkContextService::OnContentSettingChanged(
       UpdateCookieSettings(profile_);
       UpdateLegacyCookieSettings(profile_);
       Update3pcdSettings(profile_);
+      Update3pcdMetadataGrantsSettings(profile_);
       UpdateAllStorageAccessSettings(profile_);
       break;
     default:

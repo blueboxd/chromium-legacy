@@ -41,7 +41,6 @@ class FakeChromeUserManager : public ChromeUserManager {
   user_manager::User* AddArcKioskAppUser(const AccountId& account_id);
   user_manager::User* AddWebKioskAppUser(const AccountId& account_id);
   user_manager::User* AddPublicAccountUser(const AccountId& account_id);
-  user_manager::User* AddActiveDirectoryUser(const AccountId& account_id);
 
   // Calculates the user name hash and calls UserLoggedIn to login a user.
   // Sets the user as having its profile created if `set_profile_created_flag`
@@ -125,10 +124,7 @@ class FakeChromeUserManager : public ChromeUserManager {
   bool IsGuestSessionAllowed() const override;
   bool IsGaiaUserAllowed(const user_manager::User& user) const override;
   bool IsUserAllowed(const user_manager::User& user) const override;
-  const AccountId& GetGuestAccountId() const override;
   void AsyncRemoveCryptohome(const AccountId& account_id) const override;
-  bool IsGuestAccountId(const AccountId& account_id) const override;
-  bool IsStubAccountId(const AccountId& account_id) const override;
   bool IsDeprecatedSupervisedAccountId(
       const AccountId& account_id) const override;
   const gfx::ImageSkia& GetResourceImagekiaNamed(int id) const override;

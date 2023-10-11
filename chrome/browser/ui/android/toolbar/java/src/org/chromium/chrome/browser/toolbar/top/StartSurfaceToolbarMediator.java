@@ -38,7 +38,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.logo.LogoCoordinator;
@@ -56,11 +55,11 @@ import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.ToolbarAlphaInOverviewObserver;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
-import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.interpolators.Interpolators;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelAnimatorFactory;
@@ -73,7 +72,6 @@ class StartSurfaceToolbarMediator implements ButtonDataProvider.ButtonDataObserv
     private final Callback<IPHCommandBuilder> mShowIdentityIPHCallback;
     private final boolean mHideIncognitoSwitchWhenNoTabs;
     private final Supplier<ButtonData> mIdentityDiscButtonSupplier;
-    private final boolean mIsTabGroupsAndroidContinuationEnabled;
     private final boolean mIsTabToGtsFadeAnimationEnabled;
     private final BooleanSupplier mIsIncognitoModeEnabledSupplier;
     private final MenuButtonCoordinator mMenuButtonCoordinator;
@@ -113,7 +111,6 @@ class StartSurfaceToolbarMediator implements ButtonDataProvider.ButtonDataObserv
             boolean hideIncognitoSwitchWhenNoTabs, MenuButtonCoordinator menuButtonCoordinator,
             ButtonDataProvider identityDiscController,
             Supplier<ButtonData> identityDiscButtonSupplier, boolean isTabToGtsFadeAnimationEnabled,
-            boolean isTabGroupsAndroidContinuationEnabled,
             BooleanSupplier isIncognitoModeEnabledSupplier,
             Callback<LoadUrlParams> logoClickedCallback, boolean isRefactorEnabled,
             boolean shouldFetchDoodle, boolean shouldCreateLogoInToolbar,
@@ -126,7 +123,6 @@ class StartSurfaceToolbarMediator implements ButtonDataProvider.ButtonDataObserv
         mMenuButtonCoordinator = menuButtonCoordinator;
         mIdentityDiscButtonSupplier = identityDiscButtonSupplier;
         mIsTabToGtsFadeAnimationEnabled = isTabToGtsFadeAnimationEnabled;
-        mIsTabGroupsAndroidContinuationEnabled = isTabGroupsAndroidContinuationEnabled;
         mIsIncognitoModeEnabledSupplier = isIncognitoModeEnabledSupplier;
         mLogoClickedCallback = logoClickedCallback;
         mDefaultSearchEngineHasLogo = true;
@@ -253,7 +249,7 @@ class StartSurfaceToolbarMediator implements ButtonDataProvider.ButtonDataObserv
      * search box are not shown and the real search box is focused.
      * @return Whether the real search box is focused.
      */
-    private boolean isRealSearchBoxFocused() {
+    boolean isRealSearchBoxFocused() {
         return isOnHomepage() && !mPropertyModel.get(IS_VISIBLE);
     }
 
@@ -375,10 +371,7 @@ class StartSurfaceToolbarMediator implements ButtonDataProvider.ButtonDataObserv
         // transition should also be immediate if touch exploration is enabled as the animation
         // causes races in the Android accessibility focus framework.
         if (shouldShowAnimation && !wasOnGridTabSwitcher
-                && ChromeFeatureList.sTabGroupsContinuationAndroid.isEnabled()
-                && ChromeFeatureList.sTabGroupsAndroid.isEnabled()
-                && DeviceClassManager.GTS_ACCESSIBILITY_SUPPORT.getValue()
-                && ChromeAccessibilityUtil.get().isTouchExplorationEnabled()) {
+                && AccessibilityState.isTouchExplorationEnabled()) {
             shouldShowAnimation = false;
         }
 
@@ -455,10 +448,7 @@ class StartSurfaceToolbarMediator implements ButtonDataProvider.ButtonDataObserv
 
         // New tab button is only shown for homepage when accessibility is enabled and
         // OverviewListLayout is shown as the tab switcher instead of the start surface.
-        mPropertyModel.set(NEW_TAB_VIEW_IS_VISIBLE,
-                isShownTabSwitcherState
-                        || (ChromeAccessibilityUtil.get().isAccessibilityEnabled()
-                                && !mIsTabGroupsAndroidContinuationEnabled));
+        mPropertyModel.set(NEW_TAB_VIEW_IS_VISIBLE, isShownTabSwitcherState);
         updateNewTabViewTextVisibility();
     }
 

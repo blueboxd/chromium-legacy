@@ -88,6 +88,7 @@ printer::Media ConvertPaperToMedia(
   return printer::MediaBuilder()
       .WithSizeAndPrintableArea(paper_size, paper_printable_area)
       .WithNameMaybeBasedOnSize(paper.display_name(), paper.vendor_id())
+      .WithBorderlessVariant(paper.has_borderless_variant())
       .Build();
 }
 
@@ -104,6 +105,7 @@ printer::MediaCapability GetMediaCapabilities(
                                     default_paper.printable_area_um())
           .WithNameMaybeBasedOnSize(default_paper.display_name(),
                                     default_paper.vendor_id())
+          .WithBorderlessVariant(default_paper.has_borderless_variant())
           .Build();
 
   for (const auto& paper : semantic_info.papers) {
@@ -133,6 +135,29 @@ printer::MediaCapability GetMediaCapabilities(
     media_capabilities.AddOption(new_media);
   }
   return media_capabilities;
+}
+
+printer::MediaTypeCapability GetMediaTypeCapabilities(
+    const printing::PrinterSemanticCapsAndDefaults& semantic_info) {
+  printer::MediaTypeCapability media_type_capabilities;
+
+  for (const auto& media_type : semantic_info.media_types) {
+    printer::MediaType new_media_type(media_type.vendor_id,
+                                      media_type.display_name);
+    if (!new_media_type.IsValid()) {
+      continue;
+    }
+
+    if (media_type_capabilities.Contains(new_media_type)) {
+      continue;
+    }
+
+    media_type_capabilities.AddDefaultOption(
+        new_media_type,
+        media_type.vendor_id == semantic_info.default_media_type.vendor_id);
+  }
+
+  return media_type_capabilities;
 }
 
 printer::DpiCapability GetDpiCapabilities(
@@ -260,6 +285,14 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
     printer::MediaCapability media = GetMediaCapabilities(semantic_info);
     DCHECK(media.IsValid());
     media.SaveTo(&description);
+  }
+
+  // Only create this capability if more than one media type is supported.
+  if (semantic_info.media_types.size() > 1) {
+    printer::MediaTypeCapability media_type =
+        GetMediaTypeCapabilities(semantic_info);
+    DCHECK(media_type.IsValid());
+    media_type.SaveTo(&description);
   }
 
   if (!semantic_info.dpis.empty()) {

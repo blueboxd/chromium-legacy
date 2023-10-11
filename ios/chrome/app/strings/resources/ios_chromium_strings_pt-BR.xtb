@@ -33,16 +33,20 @@
 <translation id="2426113998523353159">Sua organização exige que você faça login para usar o Chromium.</translation>
 <translation id="2450140762465183767">Agora você pode usar o Chromium sempre que toca em links em mensagens, documentos e outros apps.</translation>
 <translation id="2478931088402984578">Selecione o <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" />.</translation>
+<translation id="2574528844022712255">Visualizar favoritos do Chromium</translation>
 <translation id="2590893390871230428">Sincronizar seus dados do Chromium</translation>
 <translation id="2618596336309823556">Nas configurações do dispositivo, abra "<ph name="TEXT_OF_THE_SETTINGS_MENU_ITEM" />" e selecione "Chromium"</translation>
 <translation id="2650312721222849884">Para ver suas guias em qualquer lugar onde você usar o Chromium, ative a sincronização</translation>
 <translation id="2684230048001240293">Defina o Chromium como padrão para sincronizar guias, senhas e informações de pagamento em todos os seus dispositivos</translation>
 <translation id="2730884209570016437">O Chromium não pode usar a câmera porque ela está sendo usada por outro app</translation>
+<translation id="2798503587425057129">Abre a Lista de leitura do Chromium.</translation>
 <translation id="2915596697727466327">O Chromium usa o Face ID para garantir o acesso autorizado às suas senhas.</translation>
 <translation id="2918709798697875261">Sua organização exige que a conta permaneça desconectada do Chromium.</translation>
 <translation id="2942241131342758843">Use o Chromium como padrão para abrir links, pesquisar em widgets e preencher senhas automaticamente em outros apps</translation>
 <translation id="2977470724722393594">O Chromium está atualizado</translation>
 <translation id="3102849287235003384">Para sair da sua Conta do Google em todos os sites, <ph name="BEGIN_LINK" />saia do Chromium<ph name="END_LINK" />.</translation>
+<translation id="3228349498066165585">Alguns dos seus dados do Chromium ainda não foram salvos na sua Conta do Google.
+        Aguarde alguns minutos antes de sair. Se você sair agora, esses dados serão excluídos.</translation>
 <translation id="3256316712990552818">Copiado no Chromium</translation>
 <translation id="3344973607274501920">Não foi possível verificar suas senhas com o Chromium. Verifique sua conexão de Internet.</translation>
 <translation id="3472200483164753384">Indisponível no Chromium Canary</translation>
@@ -88,7 +92,6 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chromi
 <translation id="5453478652154926037">O Chromium não pode verificar suas senhas.</translation>
 <translation id="5521125884468363740">Para ver suas guias em qualquer lugar onde você usar o Chromium, faça login e ative a sincronização</translation>
 <translation id="5522297504975449419">Você vai perder o acesso a alguns recursos do Chromium.</translation>
-<translation id="5573014823074921752">Dica do Chromium. Para ver mais opções de guia, toque no botão "Mostrar guias" na barra de ferramentas localizada na parte superior ou inferior da tela e mantenha-o pressionado.</translation>
 <translation id="5688047395118852662">Este card mostra sugestões para você aproveitar o Chromium ao máximo.</translation>
 <translation id="5700709190537129682">Não é possível verificar suas senhas com o Chromium</translation>
 <translation id="5777187867430702742">Página do Chromium</translation>
@@ -140,7 +143,6 @@ Só uma pessoa com sua senha longa pode ler seus dados criptografados. Essa senh
 <translation id="7400689562045506105">Use o Chromium em qualquer lugar</translation>
 <translation id="7523464085759699266">Ative a opção "Bloquear guias anônimas ao fechar o Chromium".</translation>
 <translation id="7674213385180944843">Abra Ajustes &gt; Privacidade &gt; Câmera &gt; Chromium e ative a câmera.</translation>
-<translation id="7746854981345936341">Dica do Chromium. Alguns botões agora estão na parte inferior da tela, como "Voltar", "Avançar" e "Pesquisar".</translation>
 <translation id="7763454117143368771">Use o Chromium como navegador padrão para se proteger contra sites perigosos e garantir a segurança das suas senhas</translation>
 <translation id="7812317783196516890">Sua conta está conectada e seus dados estão sendo sincronizados com uma conta gerenciada por <ph name="DOMAIN" />, onde o administrador pode definir políticas do usuário específicas para a conta que podem mudar o comportamento do Chromium.</translation>
 <translation id="7859018312476869945">Quando você digita na barra de endereço ou na caixa de pesquisa, o Chromium envia o conteúdo digitado ao mecanismo de pesquisa padrão para melhorar as sugestões. Essa opção fica desativada na navegação anônima.</translation>
@@ -149,6 +151,7 @@ Só uma pessoa com sua senha longa pode ler seus dados criptografados. Essa senh
 <translation id="7905064834449738336">Quando você usa uma senha, o Chromium avisa se ela foi publicada on-line. Quando isso é feito, as senhas e os nomes de usuário são criptografados para que não possam ser lidos por ninguém, nem mesmo o Google.</translation>
 <translation id="7928628054454574139">Abrir o Chromium sempre que você tocar nos links em outros apps</translation>
 <translation id="7931842119211730154">Bloquear guias anônimas ao fechar o Chromium</translation>
+<translation id="7934404985878918282">Verificar Lista de leitura do Chromium</translation>
 <translation id="7980860476903281594">O Chromium compartilha sua localização com os sites aos quais você concede permissão.</translation>
 <translation id="8013573822802650211">Para ver suas guias em qualquer lugar onde você usar o Chromium, faça login em todos os seus dispositivos</translation>
 <translation id="8071041515667087705">Acesse as Configurações do Chromium.</translation>
@@ -171,6 +174,7 @@ Considerações:
 
   • Se você ativar a sincronização, as métricas também poderão incluir informações sobre os URLs que você acessa.<ph name="END_INDENT" /></translation>
 <translation id="8776843108004031667">A conta e os dados não salvos serão removidos do Chromium.</translation>
+<translation id="88376265765385899">Abre os favoritos do Chromium.</translation>
 <translation id="894437814105052438">Quando você se desconecta, o Chromium não sincroniza nenhum dado novo com sua Conta do Google. Os dados sincronizados anteriormente permanecem na conta.</translation>
 <translation id="8963279154877372067">Permitir notificações do Chromium para receber alertas de redução no preço</translation>
 <translation id="9022552996538154597">Fazer login no Chromium</translation>

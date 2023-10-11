@@ -35,9 +35,9 @@ namespace base {
 class CommandLine;
 
 #if BUILDFLAG(IS_MAC)
-namespace mac {
+namespace apple {
 class ScopedNSAutoreleasePool;
-}  // namespace mac
+}  // namespace apple
 #endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN)
@@ -48,6 +48,7 @@ class ScopedCOMInitializer;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 class Process;
+class Version;
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }  // namespace base
 
@@ -344,7 +345,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
 #if BUILDFLAG(IS_MAC)
   // Returns the autorelease pool in use inside RunTestOnMainThreadLoop().
-  base::mac::ScopedNSAutoreleasePool* AutoreleasePool() const {
+  base::apple::ScopedNSAutoreleasePool* AutoreleasePool() const {
     return autorelease_pool_;
   }
 #endif  // BUILDFLAG(IS_MAC)
@@ -374,6 +375,27 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   FakeAccountManagerUI* GetFakeAccountManagerUI() const;
+
+  // Return the Ash chrome version hooked with Lacros. This API does not
+  // depend on crosapi. So it is safe to call when crosapi is disabled and
+  // as early as in test SetUp().
+  static base::Version GetAshChromeVersion();
+
+  // The following are the helper functions to manage Ash browser based windows
+  // from Lacros browser tests. When running with Ash, Lacros browser tests can
+  // create some Ash browser based UIs, such as SWA, Web UI, etc. These UIs
+  // must be cleaned up when the test tears down, so that they won't pollute
+  // the tests running after, since Lacros browser tests are running with the
+  // shared Ash instance by default.
+  void VerifyNoAshBrowserWindowOpenRightNow();
+  void CloseAllAshBrowserWindows();
+  void WaitUntilAtLeastOneAshBrowserWindowOpen();
+  // Returns true if CloseAllAshBrowserWindows and
+  // WaitUntilAtLeaseOneAshBrowserWindowOpen is supported.
+  // TODO(crbug.com/1473375): Remove the following function once Ash stable
+  // channel supports the Ash Browser Window APIs in
+  // crosapi::mojom::TestController needed by the above functions.
+  bool IsCloseAndWaitAshBrowserWindowApisSupported() const;
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -426,7 +448,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   feature_engagement::test::ScopedIphFeatureList block_all_iph_feature_list_;
 
 #if BUILDFLAG(IS_MAC)
-  raw_ptr<base::mac::ScopedNSAutoreleasePool, DanglingUntriaged>
+  raw_ptr<base::apple::ScopedNSAutoreleasePool, DanglingUntriaged>
       autorelease_pool_ = nullptr;
   std::unique_ptr<ScopedBundleSwizzlerMac> bundle_swizzler_;
 

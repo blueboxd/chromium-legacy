@@ -134,6 +134,7 @@
 <translation id="1881188606372070653">ଆଇନଗତ କାରଣଗୁଡ଼ିକ ପାଇଁ ବିଷୟବସ୍ତୁ ପରିବର୍ତ୍ତନର ଅନୁରୋଧ କରିବାକୁ <ph name="BEGIN_LINK1" />ଆଇନଗତ ସହାୟତା ପୃଷ୍ଠା<ph name="END_LINK1" />କୁ ଯାଆନ୍ତୁ। କିଛି ଆକାଉଣ୍ଟ ଏବଂ ସିଷ୍ଟମ ସୂଚନା Googleକୁ ପଠାଯାଇପାରେ। ଆମର <ph name="BEGIN_LINK2" />ଗୋପନୀୟତା ନୀତି<ph name="END_LINK2" /> ଏବଂ <ph name="BEGIN_LINK3" />ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK3" /> ଅନୁସାରେ, ଟେକନିକାଲ ସମସ୍ୟାର ସମାଧାନ କରିବା ଏବଂ ଆମର ସେବାଗୁଡ଼ିକୁ ଉନ୍ନତ କରିବା ପାଇଁ ଆପଣ ଆମକୁ ଦେଇଥିବା ସୂଚନାକୁ ଆମେ ବ୍ୟବହାର କରିବୁ।</translation>
 <translation id="1885577615937958993">ମିଡିଆକୁ ଫାଷ୍ଟ ଫରୱାର୍ଡ କରନ୍ତୁ</translation>
 <translation id="1887850431809612466">ହାର୍ଡୱେୟାର୍ ପୁନରାବୃତ୍ତି</translation>
+<translation id="1897672602657312171">ସର୍ଚ୍ଚ କୀ ବିନା ସର୍ଟକଟ କିଛି ଆପର ସର୍ଟକଟ ସହ ବିବାଦ ସୃଷ୍ଟି କରିପାରେ। ଏହି ସର୍ଟକଟକୁ ବ୍ୟବହାର କରିବା ଜାରି ରଖିବା ପାଇଁ ପୁଣି ଏହାକୁ ଦବାନ୍ତୁ କିମ୍ବା ସର୍ଚ୍ଚ କୀ ବ୍ୟବହାର କରି ଏକ ନୂଆ ସର୍ଟକଟ ଦବାନ୍ତୁ।</translation>
 <translation id="1904932688895783618">ଏଠାରେ ଅନ୍ୟ କିଛି ଉପଯୋଗୀ ରିସୋର୍ସ ଅଛି:</translation>
 <translation id="1905710495812624430">ସର୍ବାଧିକ ଅନୁମୋଦିତ ପ୍ରଚେଷ୍ଟା ସୀମା ଅତିକ୍ରମ କଲା।</translation>
 <translation id="1908234395526491708">UDP ଅନୁରୋଧ ବିଫଳ</translation>
@@ -217,7 +218,6 @@
 <translation id="253029298928638905">ରିଷ୍ଟାର୍ଟ କରାଯାଉଛି...</translation>
 <translation id="2533048460510040082">ପ୍ରସ୍ତାବିତ ସହାୟତା ବିଷୟବସ୍ତୁ</translation>
 <translation id="2536159006530886390">ଇଣ୍ଟରନେଟ୍ ସହ ସଂଯୋଗ କରାଯାଇପାରିବ ନାହିଁ।</translation>
-<translation id="2555662516429796509">ଆପଣଙ୍କ କୀବୋର୍ଡରେ 1-4 ମୋଡିଫାୟର ଏବଂ 1 ଅନ୍ୟ କୀ ଦବାନ୍ତୁ</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> ପରୀକ୍ଷା ଚଲାଯାଉଛି...</translation>
 <translation id="2584559707064218956">ସେଟ ଅପ କରିବାକୁ, ସେଟିଂସକୁ ଯାଆନ୍ତୁ</translation>
 <translation id="2597774443162333062">ଡିବଗିଂ ପାଇଁ ଫାଇଲଗୁଡ଼ିକ Googleକୁ ପଠାଯିବ</translation>
@@ -232,12 +232,12 @@
 <translation id="2712812801627182647">TLS ପ୍ରମାଣୀକରଣ କୀ</translation>
 <translation id="2713444072780614174">ଧଳା</translation>
 <translation id="2717139507051041123">ଡାର୍କ କଲର ମୋଡକୁ ସକ୍ଷମ କରନ୍ତୁ</translation>
+<translation id="2728460467788544679">ସମସ୍ତ ପ୍ରିଣ୍ଟ ଇତିହାସକୁ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="2740531572673183784">ଠିକ୍ ଅଛି</translation>
 <translation id="2744221223678373668">ସେୟାର କରାଯାଇଛି</translation>
 <translation id="2751739896257479635">EAP ଫେଜ୍‍ 2 ପ୍ରମାଣିକରଣ</translation>
 <translation id="2783010256799387990">ପାସ୍ ହୋଇଛି</translation>
 <translation id="2787435249130282949">କୀବୋର୍ଡକୁ ଆହୁରି ଉଜ୍ଜ୍ୱଳ କରନ୍ତୁ</translation>
-<translation id="2789486458103222910">ଠିକ୍ ଅଛି</translation>
 <translation id="2805756323405976993">ଆପ୍ସ</translation>
 <translation id="28232023175184696">ଇଣ୍ଟରନେଟ୍ ସହ ସଂଯୋଗ କରାଯାଇପାରିବ ନାହିଁ। ପୁଣି ଚେଷ୍ଟା କରିବାକୁ କ୍ଲିକ୍ କରନ୍ତୁ।</translation>
 <translation id="2859243502336719778">ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ଅପଡେଟ</translation>
@@ -249,6 +249,7 @@
 <translation id="2880569433548999039">କ୍ଲାଉଡ ଫ୍ଲୋ ସ୍କ୍ରିନ ସେଭର</translation>
 <translation id="2926057806159140518">ଆପଣଙ୍କ ଉପଯୋଗକର୍ତ୍ତା ନାମ ଏବଂ ପାସୱାର୍ଡ ଲେଖନ୍ତୁ କିମ୍ବା ଆପଣଙ୍କର QR କୋଡ ସ୍କାନ କରନ୍ତୁ</translation>
 <translation id="2940811910881150316">ଡିଭାଇସକୁ ଟେଷ୍ଟ କରାଯାଇପାରିବ ନାହିଁ। ଟେଷ୍ଟ କରିବକୁ ଲିଡ ପୁଣି ଖୋଲନ୍ତୁ।</translation>
+<translation id="2941112035454246133">କମ୍</translation>
 <translation id="3008341117444806826">ରିଫ୍ରେଶ୍ କରନ୍ତୁ</translation>
 <translation id="3009958530611748826">ଏଥିରେ ସେଭ୍ କରିବାକୁ ଏକ ଫୋଲ୍ଡର୍ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="3017079585324758401">ପୃଷ୍ଠପଟ</translation>
@@ -369,6 +370,7 @@
 <translation id="3941014780699102620">ହୋଷ୍ଟ ସମ୍ବନ୍ଧିତ ସମସ୍ୟାର ସମାଧାନ କରିବାରେ ବିଫଳ ହୋଇଛି</translation>
 <translation id="3942420633017001071">ଡାଏଗ୍ନୋଷ୍ଟିକ୍ସ</translation>
 <translation id="3954678691475912818">ଡିଭାଇସର ପ୍ରକାର ଅଜଣା ଅଟେ।</translation>
+<translation id="3959413315969265597">ଏହି APNକୁ ସକ୍ଷମ କରାଯାଇପାରିବ ନାହିଁ। ଏକ ଡିଫଲ୍ଟ APN ଯୋଗ କରାଯାଇଛି ବୋଲି ସୁନିଶ୍ଚିତ କରନ୍ତୁ।</translation>
 <translation id="3966286471246132217">ଅଧିକ ସଠିକ୍ ଫଳାଫଳ ପାଇଁ, ଟେଷ୍ଟ ସମ୍ପୂର୍ଣ୍ଣ ନହେବା ପର୍ଯ୍ୟନ୍ତ ସମସ୍ତ ଆପକୁ ବନ୍ଦ କରନ୍ତୁ।</translation>
 <translation id="3967822245660637423">ଡାଉନ୍‍‍‍ଲୋଡ୍ ଶେଷ ହୋଇଛି</translation>
 <translation id="3969602104473960991">ChromeOSର ପାସୱାର୍ଡ ଅପଡେଟ ହୋଇଛି</translation>
@@ -607,6 +609,7 @@
 <translation id="5703716265115423771">ଭଲ୍ୟୁମ୍ କମାନ୍ତୁ</translation>
 <translation id="5707900041990977207"><ph name="TOTAL_PAGES" />ରୁ <ph name="CURRENT_PAGE" /></translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" />କୁ ଅପଡେଟ କରନ୍ତୁ</translation>
+<translation id="574392208103952083">ମଧ୍ୟମ</translation>
 <translation id="5757187557809630523">ପରବର୍ତ୍ତୀ ଟ୍ରାକ୍</translation>
 <translation id="5760715441271661976">ପୋର୍ଟାଲ୍ ସ୍ଥିତି</translation>
 <translation id="576835345334454681">ଡିସପ୍ଲେର ଉଜ୍ଜ୍ୱଳତା ବଢ଼ାନ୍ତୁ</translation>
@@ -622,7 +625,6 @@
 <translation id="5859603669299126575">ଆର୍ଟ ଗ୍ୟାଲେରୀ ଆଲବମ</translation>
 <translation id="5860033963881614850">ବନ୍ଦ ଅଛି</translation>
 <translation id="5860491529813859533">ଚାଲୁ କରନ୍ତୁ</translation>
-<translation id="5866840822086176774">ଅତି ଦୃଢ଼</translation>
 <translation id="5876385649737594562">ବିକଳ୍ପଗୁଡ଼ିକୁ ଚୟନ କରିବା ପାଇଁ ଚାଲୁ କରନ୍ତୁ</translation>
 <translation id="588258955323874662">ପୂର୍ଣ୍ଣସ୍କ୍ରିନ</translation>
 <translation id="5895138241574237353">ପୁନଃଆରମ୍ଭ</translation>
@@ -706,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">ଦୁର୍ବଳ (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">ଆକାଉଣ୍ଟ ସେଟିଂସକୁ ଯାଆନ୍ତୁ</translation>
-<translation id="6456394469623773452">ଉତ୍କୃଷ୍ଟ</translation>
+<translation id="6461047516875166066">ମୋତେ ଅଧିକ କୁହନ୍ତୁ</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{ପୃଷ୍ଠାକୁ ପୁଣି ସ୍କାନ୍ କରିବେ?}=1{{PAGE_NUMBER} ନମ୍ବର ପୃଷ୍ଠାକୁ ପୁଣି ସ୍କାନ୍ କରିବେ?}other{{PAGE_NUMBER} ନମ୍ବର ପୃଷ୍ଠାକୁ ପୁଣି ସ୍କାନ୍ କରିବେ?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି</translation>
@@ -777,6 +779,7 @@
 <translation id="7046522406494308071">ସମସ୍ତ ସର୍ଟକଟକୁ ଡିଫଲ୍ଟରେ ରିସେଟ କରିବେ?</translation>
 <translation id="7058278511608979688">ସମ୍ପୂର୍ଣ୍ଣ କରି ସେଭ୍ କରନ୍ତୁ</translation>
 <translation id="7059230779847288458">ଚାର୍ଜ କରାଯାଉଛି, ପୂର୍ଣ୍ଣ ହେବାକୁ <ph name="TIME_VALUE" /> ବାକି ଅଛି</translation>
+<translation id="7066538517128343186"><ph name="KEY" /> କୀ</translation>
 <translation id="7068619307603204412">ଆପଣଙ୍କ ଡିଭାଇସକୁ ପ୍ରସ୍ତୁତ କରନ୍ତୁ</translation>
 <translation id="708426984172631313">ବନ୍ଦ ହୋଇଯାଇଛି</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
@@ -930,12 +933,12 @@
 <translation id="8286154143153872371">ୱାଲପେପର୍ ଦେଖିବାକୁ ଦୟାକରି ଏକ ନେଟୱାର୍କରେ ସଂଯୋଗ କରି ପୃଷ୍ଠାଟିକୁ ପୁଣି ଲୋଡ୍ କରନ୍ତୁ।</translation>
 <translation id="8291967909914612644">ମୂଳ ପ୍ରଦାତା ଦେଶ</translation>
 <translation id="8294431847097064396">ଉତ୍ସ</translation>
-<translation id="8297006494302853456">ଦୁର୍ବଳ</translation>
 <translation id="8302368968391049045">HTTPS ଫାୟାରୱାଲ୍</translation>
 <translation id="8312330582793120272">ମିଡିଆ ପ୍ଲେ କରନ୍ତୁ</translation>
 <translation id="8318753676953949627">କୌଣସି ଇମେଜ୍ ନାହିଁ</translation>
 <translation id="8329018942023753850">କାଲକୁଲେଟର ଆପ</translation>
 <translation id="8336739000755212683">ଡିଭାଇସ୍ ଆକାଉଣ୍ଟ ଛବି ବଦଳାନ୍ତୁ</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> କିମ୍ବା <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">ପ୍ରିଣ୍ଟ ଜବ୍</translation>
 <translation id="8351855506390808906">କୀମେପିଂ ଟଚ ପଏଣ୍ଟ</translation>
 <translation id="8352772353338965963">ଏକାଧିକ ସାଇନ୍-ଇନ୍ କରିବାକୁ ଏକ ଆକାଉଣ୍ଟ ଯୋଗ କରନ୍ତୁ। ସାଇନ୍-ଇନ୍ ହୋଇଥିବା ସମସ୍ତ ଆକାଉଣ୍ଟ ବିନା ପାସ୍‌ୱର୍ଡରେ ଆକ୍ସେସ୍ କରାଯାଇପାରିବ, ତେଣୁ ଏହି ସୁବିଧା କେବଳ ବିଶ୍ୱସ୍ତ ଆକାଉଣ୍ଟ ସହ ବ୍ୟବହାର କରାଯିବା ଉଚିତ୍।</translation>
@@ -1053,6 +1056,7 @@
 <translation id="9122602430962285795">ପୁଣି ସଂଯୋଗ କରିବାକୁ, ସେଟିଂସକୁ ଯାଆନ୍ତୁ</translation>
 <translation id="9126720536733509015">ଗୋଟିଏ PDFରେ ଏକାଧିକ ପୃଷ୍ଠା ସେଭ୍ କରନ୍ତୁ</translation>
 <translation id="9133104754938025929">ବେଟେରୀ ସଂରକ୍ଷଣ କରିବା ପାଇଁ ସ୍କ୍ରିନ ସେଭର କେବଳ ଚାର୍ଜ ହେଉଥିବା ସମୟରେ କାର୍ଯ୍ୟ କରେ।</translation>
+<translation id="9133772297793293778">ଆପଣଙ୍କ କୀବୋର୍ଡରେ 1-4ଟି ମୋଡିଫାୟାର ଏବଂ ଅନ୍ୟ 1ଟି କୀ ଦବାନ୍ତୁ। ଏଡିଟିଂ ମୋଡରୁ ବାହାରି ଯିବା ପାଇଁ alt + esc ଦବାନ୍ତୁ।</translation>
 <translation id="9137526406337347448">Google ସେବାଗୁଡ଼ିକ</translation>
 <translation id="9138630967333032450">ବାମପଟ Shift</translation>
 <translation id="9143347780818904997"><ph name="MINUTES" /> ମିନିଟ ପାଇଁ</translation>

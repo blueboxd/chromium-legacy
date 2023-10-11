@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -16,10 +17,7 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
-#include "chrome/browser/web_applications/web_app_uninstall_dialog_user_options.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
-#include "content/public/browser/web_contents.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -56,6 +54,7 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   // WebAppUiManager:
   WebAppUiManagerImpl* AsImpl() override;
   size_t GetNumWindowsForApp(const AppId& app_id) override;
+  void CloseAppWindows(const AppId& app_id) override;
   void NotifyOnAllAppWindowsClosed(const AppId& app_id,
                                    base::OnceClosure callback) override;
   bool CanAddAppToQuickLaunchBar() const override;
@@ -63,6 +62,8 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   bool IsAppInQuickLaunchBar(const AppId& app_id) const override;
   bool IsInAppWindow(content::WebContents* web_contents,
                      const AppId* app_id) const override;
+  bool IsAppAffiliatedWindowOrNone(
+      content::WebContents* web_contents) const override;
   void NotifyOnAssociatedAppChanged(
       content::WebContents* web_contents,
       const absl::optional<AppId>& previous_app_id,
@@ -152,16 +153,11 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
       webapps::WebappUninstallSource uninstall_source,
       UninstallCompleteCallback complete_callback,
       UninstallScheduledCallback uninstall_scheduled_callback,
-      web_app::UninstallUserOptions uninstall_options);
+      bool user_wants_uninstall);
 
   void OnUninstallCancelled(
       UninstallCompleteCallback complete_callback,
       UninstallScheduledCallback uninstall_scheduled_callback);
-
-  void ClearWebAppSiteDataIfNeeded(
-      const GURL app_start_url,
-      UninstallCompleteCallback uninstall_complete_callback,
-      webapps::UninstallResultCode uninstall_code);
 
   const raw_ptr<Profile> profile_;
   std::map<AppId, std::vector<base::OnceClosure>> windows_closed_requests_map_;

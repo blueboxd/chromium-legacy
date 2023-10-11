@@ -39,6 +39,7 @@
 #include "chrome/browser/ash/app_list/reorder/app_list_reorder_core.h"
 #include "chrome/browser/ash/app_list/reorder/app_list_reorder_util.h"
 #include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_util.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
@@ -58,6 +59,7 @@
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
+#include "components/sync/model/string_ordinal.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/app_list_specifics.pb.h"
@@ -85,6 +87,7 @@ constexpr char kBackgroundColorKey[] = "background_color";
 constexpr char kHueKey[] = "hue";
 constexpr char kEmptyItemOrdinalFixable[] = "empty_item_ordinal_fixable";
 constexpr char kIsUserPinned[] = "is_user_pinned";
+constexpr char kPromisePackageIdKey[] = "promise_package_id";
 
 void GetSyncSpecificsFromSyncItem(const AppListSyncableService::SyncItem* item,
                                   sync_pb::AppListSpecifics* specifics) {
@@ -92,6 +95,7 @@ void GetSyncSpecificsFromSyncItem(const AppListSyncableService::SyncItem* item,
   specifics->set_item_id(item->item_id);
   specifics->set_item_type(item->item_type);
   specifics->set_item_name(item->item_name);
+  specifics->set_promise_package_id(item->promise_package_id);
   specifics->set_parent_id(item->parent_id);
   specifics->set_item_ordinal(item->item_ordinal.IsValid()
                                   ? item->item_ordinal.ToInternalValue()
@@ -187,6 +191,9 @@ void UpdateSyncItemInLocalStorage(
                                    prefs::kAppListLocalState);
   base::Value::Dict* dict_item = pref_update->EnsureDict(sync_item->item_id);
   dict_item->Set(kNameKey, sync_item->item_name);
+  dict_item->Set(kPromisePackageIdKey, !sync_item->promise_package_id.empty()
+                                           ? sync_item->promise_package_id
+                                           : std::string());
   dict_item->Set(kParentIdKey, sync_item->parent_id);
   dict_item->Set(kPositionKey, sync_item->item_ordinal.IsValid()
                                    ? sync_item->item_ordinal.ToInternalValue()
@@ -466,6 +473,13 @@ void AppListSyncableService::InitFromLocalStorage() {
     if (maybe_item_name)
       sync_item->item_name = *maybe_item_name;
     const std::string* maybe_parent_id = item_dict->FindString(kParentIdKey);
+
+    const std::string* maybe_promise_package_id =
+        item_dict->FindString(kPromisePackageIdKey);
+    if (maybe_promise_package_id && !maybe_promise_package_id->empty()) {
+      sync_item->promise_package_id = *maybe_promise_package_id;
+    }
+
     if (maybe_parent_id)
       sync_item->parent_id = *maybe_parent_id;
 
@@ -610,6 +624,7 @@ bool AppListSyncableService::TransferItemAttributes(
 
   auto attributes = std::make_unique<SyncItem>(
       from_app_id, sync_pb::AppListSpecifics::TYPE_APP);
+  attributes->promise_package_id = from_item->promise_package_id;
   attributes->parent_id = from_item->parent_id;
   attributes->item_ordinal = from_item->item_ordinal;
   attributes->item_pin_ordinal = from_item->item_pin_ordinal;
@@ -641,6 +656,7 @@ void AppListSyncableService::ApplyAppAttributes(
 
   HandleUpdateStarted();
 
+  item->promise_package_id = attributes->promise_package_id;
   item->parent_id = attributes->parent_id;
   item->item_ordinal = attributes->item_ordinal;
   item->item_pin_ordinal = attributes->item_pin_ordinal;
@@ -1003,6 +1019,17 @@ syncer::StringOrdinal AppListSyncableService::GetPositionAfterApp(
     return app_item->item_ordinal.CreateBetween(next_item);
 
   return app_item->item_ordinal.CreateAfter();
+}
+
+const syncer::StringOrdinal
+AppListSyncableService::GetSyncPositionForPromiseAppItem(
+    const std::string& promise_package_id) const {
+  for (const auto& [item_id, sync_item] : sync_items_) {
+    if (sync_item->promise_package_id == promise_package_id) {
+      return sync_item->item_ordinal;
+    }
+  }
+  return syncer::StringOrdinal();
 }
 
 void AppListSyncableService::RemoveItem(const std::string& id,
@@ -1572,6 +1599,9 @@ std::string AppListSyncableService::SyncItem::ToString() const {
     res += " [" + item_ordinal.ToDebugString() + "]";
   } else {
     res += " { " + item_name + " }";
+    if (!promise_package_id.empty()) {
+      res += " { " + promise_package_id + " }";
+    }
     res += " [" + item_ordinal.ToDebugString() + "]";
     if (!parent_id.empty()) {
       res += " <" + parent_id.substr(0, 8) + ">";
@@ -1656,6 +1686,9 @@ void AppListSyncableService::UpdateSyncItemFromSync(
   DCHECK_EQ(item->item_id, specifics.item_id());
   item->item_type = specifics.item_type();
   item->item_name = specifics.item_name();
+  if (specifics.has_promise_package_id()) {
+    item->promise_package_id = specifics.promise_package_id();
+  }
 
   // Ignore update to put item into the OEM folder in case app is not OEM.
   // This can happen when app is installed on several devices where app is OEM
@@ -1716,6 +1749,10 @@ bool AppListSyncableService::UpdateSyncItemFromAppItem(
   }
   if (sync_item->item_name != app_item->name()) {
     sync_item->item_name = app_item->name();
+    changed = true;
+  }
+  if (sync_item->promise_package_id != app_item->promise_package_id()) {
+    sync_item->promise_package_id = app_item->promise_package_id();
     changed = true;
   }
   if (!sync_item->item_ordinal.IsValid() ||
@@ -1827,16 +1864,19 @@ void AppListSyncableService::MaybeAddOrUpdateGuestOsFolderSyncData(
     return;
   }
 
-  int folder_name_resource = 0;
+  std::string folder_name;
   if (folder_id == ash::kCrostiniFolderId) {
-    folder_name_resource = IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME;
+    folder_name =
+        l10n_util::GetStringUTF8(IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME);
   } else if (folder_id == ash::kBruschettaFolderId) {
-    folder_name_resource = IDS_APP_LIST_BRUSCHETTA_DEFAULT_FOLDER_NAME;
+    folder_name =
+        l10n_util::GetStringFUTF8(IDS_APP_LIST_BRUSCHETTA_DEFAULT_FOLDER_NAME,
+                                  bruschetta::GetOverallVmName(profile_));
   } else {
     return;
   }
   ChromeAppListItem folder(profile_, folder_id, model_updater_.get());
-  folder.SetChromeName(l10n_util::GetStringUTF8(folder_name_resource));
+  folder.SetChromeName(folder_name);
   folder.SetIsSystemFolder(true);
   folder.SetChromeIsFolder(true);
 

@@ -101,8 +101,10 @@ bool DeskActivationAnimation::Replace(bool moving_left,
 
   // Do not log any EndSwipeAnimation smoothness metrics if the animation has
   // been canceled midway by an Replace call.
-  if (is_continuous_gesture_animation_)
-    throughput_tracker_.Cancel();
+  if (is_continuous_gesture_animation_ && throughput_tracker_.has_value()) {
+    // Reset will call cancellation on tracker.
+    throughput_tracker_.reset();
+  }
 
   // For fast swipes, we skip the implicit animation after ending screenshot in
   // DeskAnimationBase, unless the swipe has ended and is deemed fast. Since
@@ -221,7 +223,9 @@ bool DeskActivationAnimation::EndSwipeAnimation() {
 
   // Start tracking the animation smoothness after the continuous gesture swipe
   // has ended.
-  throughput_tracker_.Start(
+  throughput_tracker_ = desks_util::GetSelectedCompositorForPerformanceMetrics()
+                            ->RequestNewThroughputTracker();
+  throughput_tracker_->Start(
       metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
         UMA_HISTOGRAM_PERCENTAGE(kDeskEndGestureSmoothnessHistogramName,
                                  smoothness);
@@ -326,11 +330,13 @@ DeskRemovalAnimation::DeskRemovalAnimation(DesksController* controller,
             controller_->desks()[desk_to_remove_index_].get());
 
   for (auto* root : Shell::GetAllRootWindows()) {
-    desk_switch_animators_.emplace_back(
-        std::make_unique<RootWindowDeskSwitchAnimator>(
-            root, DeskSwitchAnimationType::kQuickAnimation,
-            desk_to_remove_index_, desk_to_activate_index, this,
-            /*for_remove=*/true));
+    auto animator = std::make_unique<RootWindowDeskSwitchAnimator>(
+        root, DeskSwitchAnimationType::kQuickAnimation, desk_to_remove_index_,
+        desk_to_activate_index, this,
+        /*for_remove=*/true);
+    animator->set_is_combine_desks_type(close_type ==
+                                        DeskCloseType::kCombineDesks);
+    desk_switch_animators_.emplace_back(std::move(animator));
   }
 }
 

@@ -7,10 +7,10 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
+#import "base/apple/foundation_util.h"
 #import "base/format_macros.h"
 #import "base/json/json_string_value_serializer.h"
 #import "base/logging.h"
-#import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
@@ -318,6 +318,11 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 
 - (void)closeCurrentTab {
   [ChromeEarlGreyAppInterface closeCurrentTab];
+  GREYWaitForAppToIdle(@"App failed to idle");
+}
+
+- (void)pinCurrentTab {
+  [ChromeEarlGreyAppInterface pinCurrentTab];
   GREYWaitForAppToIdle(@"App failed to idle");
 }
 
@@ -1003,6 +1008,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   EG_TEST_HELPER_ASSERT_TRUE(success, errorString);
 }
 
+- (BOOL)isSyncHistoryDataTypeSelected {
+  return [ChromeEarlGreyAppInterface isSyncHistoryDataTypeSelected];
+}
+
 #pragma mark - Window utilities (EG2)
 
 - (CGRect)screenPositionOfScreenWithNumber:(int)windowNumber {
@@ -1265,10 +1274,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   [ChromeEarlGreyAppInterface addBookmarkWithSyncPassphrase:syncPassphrase];
 }
 
-- (void)clearBookmarks {
-  EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface clearBookmarks]);
-}
-
 - (base::Value)evaluateJavaScript:(NSString*)javaScript {
   JavaScriptExecutionResult* result =
       [ChromeEarlGreyAppInterface executeJavaScript:javaScript];
@@ -1342,6 +1347,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 
 - (BOOL)isSyncHistoryDataTypeEnabled {
   return [ChromeEarlGreyAppInterface isSyncHistoryDataTypeEnabled];
+}
+
+- (BOOL)isReplaceSyncWithSigninEnabled {
+  return [ChromeEarlGreyAppInterface isReplaceSyncWithSigninEnabled];
 }
 
 - (BOOL)appHasLaunchSwitch:(const std::string&)launchSwitch {

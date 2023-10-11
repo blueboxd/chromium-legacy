@@ -5,6 +5,7 @@
 #include "chrome/updater/util/win_util.h"
 
 #include <aclapi.h>
+#include <combaseapi.h>
 #include <objidl.h>
 #include <regstr.h>
 #include <shellapi.h>
@@ -25,6 +26,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/callback_helpers.h"

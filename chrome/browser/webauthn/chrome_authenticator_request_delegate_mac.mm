@@ -7,5 +7,9 @@
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate_mac.h"
 
 bool IsICloudDriveEnabled() {
-  return [NSFileManager defaultManager].ubiquityIdentityToken != nil;
+  if(@available(macOS 10.8, *)) {
+    return [NSFileManager defaultManager].ubiquityIdentityToken != nil;
+  } else {
+    return false;
+  }
 }

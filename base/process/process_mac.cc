@@ -97,15 +97,19 @@ bool SetTaskSuppressionPolicy(mach_port_t task_port, bool activate) {
       .suppressed_cpu = activate,
       .background_sockets = activate,
   };
-  kern_return_t result =
-      task_policy_set(task_port, TASK_SUPPRESSION_POLICY,
-                      reinterpret_cast<task_policy_t>(&suppression_policy),
-                      TASK_SUPPRESSION_POLICY_COUNT);
-  if (result != KERN_SUCCESS) {
-    MACH_LOG(ERROR, result) << "task_policy_set TASK_SUPPRESSION_POLICY";
+  if (__builtin_available(macOS 10.9, *)) {
+    kern_return_t result =
+        task_policy_set(task_port, TASK_SUPPRESSION_POLICY,
+                        reinterpret_cast<task_policy_t>(&suppression_policy),
+                        TASK_SUPPRESSION_POLICY_COUNT);
+    if (result != KERN_SUCCESS) {
+      MACH_LOG(ERROR, result) << "task_policy_set TASK_SUPPRESSION_POLICY";
+      return false;
+    }
+    return true;
+  } else {
     return false;
   }
-  return true;
 }
 
 // Returns true if the task suppression policy is active for `task_port`.
@@ -116,20 +120,23 @@ bool IsTaskSuppressionPolicyActive(mach_port_t task_port) {
 
   mach_msg_type_number_t task_info_count = TASK_SUPPRESSION_POLICY_COUNT;
   boolean_t get_default = FALSE;
+  if (__builtin_available(macOS 10.9, *)) {
+    kern_return_t result =
+        task_policy_get(task_port, TASK_SUPPRESSION_POLICY,
+                        reinterpret_cast<task_policy_t>(&suppression_policy),
+                        &task_info_count, &get_default);
+    if (result != KERN_SUCCESS) {
+      MACH_LOG(ERROR, result) << "task_policy_get TASK_SUPPRESSION_POLICY";
+      return false;
+    }
+    CHECK(!get_default);
 
-  kern_return_t result =
-      task_policy_get(task_port, TASK_SUPPRESSION_POLICY,
-                      reinterpret_cast<task_policy_t>(&suppression_policy),
-                      &task_info_count, &get_default);
-  if (result != KERN_SUCCESS) {
-    MACH_LOG(ERROR, result) << "task_policy_get TASK_SUPPRESSION_POLICY";
+    // Only check the `active` property as it is sufficient to discern the
+    // state, even though other properties could be used.
+    return suppression_policy.active;
+  } else {
     return false;
   }
-  CHECK(!get_default);
-
-  // Only check the `active` property as it is sufficient to discern the state,
-  // even though other properties could be used.
-  return suppression_policy.active;
 }
 
 // Sets the task role and the suppression policy for `task_port`.

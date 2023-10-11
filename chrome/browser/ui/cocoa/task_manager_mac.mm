@@ -285,9 +285,9 @@ NSString* ColumnIdentifier(int id) {
 
   // Create the button that terminates the selected process in the table.
   _endProcessButton =
-      [NSButton buttonWithTitle:l10n_util::GetNSString(IDS_TASK_MANAGER_KILL)
-                         target:self
-                         action:@selector(killSelectedProcesses:)];
+      [ButtonUtils buttonWithTitle:l10n_util::GetNSString(IDS_TASK_MANAGER_KILL)
+                            action:@selector(killSelectedProcesses:)
+                            target:self];
   _endProcessButton.autoresizingMask = NSViewMinXMargin | NSViewMaxYMargin;
   [_endProcessButton sizeToFit];
   NSRect buttonFrame = _endProcessButton.frame;

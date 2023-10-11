@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/grit/components_scaled_resources.h"
+#include "ui/base/cocoa/controls/button_utils.h"
 #import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
@@ -150,16 +151,16 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
       GetCreditCardTouchBarImage(autofill::GetIconResourceID(suggestion.icon));
   NSButton* button = nil;
   if (cardIconImage) {
-    button = [NSButton buttonWithTitle:buttonTitle
-                                 image:cardIconImage
-                                target:self
-                                action:@selector(acceptCreditCard:)];
+    button = [ButtonUtils buttonWithTitle:buttonTitle
+                                    image:cardIconImage
+                                   action:@selector(acceptCreditCard:)
+                                   target:self];
     button.imageHugsTitle = YES;
     button.imagePosition = base::i18n::IsRTL() ? NSImageLeft : NSImageRight;
   } else {
-    button = [NSButton buttonWithTitle:buttonTitle
-                                target:self
-                                action:@selector(acceptCreditCard:)];
+    button = [ButtonUtils buttonWithTitle:buttonTitle
+                                   action:@selector(acceptCreditCard:)
+                                   target:self];
   }
 
   // Apply text attributes to the button so that the subtext will appear

@@ -26,4 +26,6 @@ void SetUpBundleOverrides();
 // the helper if it got killed unexpectedly.
 bool IsAlertsHelperLaunchedViaNotificationAction();
 
+void SetUpMissingMethods();
+
 #endif  // CHROME_APP_CHROME_MAIN_MAC_H_

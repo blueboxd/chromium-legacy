@@ -3160,13 +3160,13 @@ test("content_unittests") {
       "//ui/base/mojom",
     ]
     frameworks = [
-      "AVFAudio.framework",
       "Carbon.framework",
       "IOSurface.framework",
     ]
     weak_frameworks = [
       "AuthenticationServices.framework",
-      "ScreenCaptureKit.framework"  # macOS 12.3
+      "ScreenCaptureKit.framework",  # macOS 12.3
+      "AVFAudio.framework",
     ]
   }
   if (is_chromeos_ash) {

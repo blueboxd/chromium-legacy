@@ -62,15 +62,11 @@ BASE_EXPORT bool WasLaunchedAsHiddenLoginItem();
 // an error, or true otherwise.
 BASE_EXPORT bool RemoveQuarantineAttribute(const FilePath& file_path);
 
-namespace internal {
-
 // Returns the system's macOS major and minor version numbers combined into an
 // integer value. For example, for macOS Sierra this returns 1012, and for macOS
 // Big Sur it returns 1100. Note that the accuracy returned by this function is
 // as granular as the major version number of Darwin.
 BASE_EXPORT int MacOSVersion();
-
-}  // namespace internal
 
 // Run-time OS version checks. Prefer @available in Objective-C files. If that
 // is not possible, use these functions instead of
@@ -81,35 +77,35 @@ BASE_EXPORT int MacOSVersion();
 #define DEFINE_OLD_IS_OS_FUNCS_CR_MIN_REQUIRED(V, DEPLOYMENT_TARGET_TEST) \
   inline bool IsOS10_##V() {                                              \
     DEPLOYMENT_TARGET_TEST(>, V, false)                                   \
-    return internal::MacOSVersion() == 1000 + V;                          \
+    return base::mac::MacOSVersion() == 1000 + V;                         \
   }                                                                       \
   inline bool IsAtMostOS10_##V() {                                        \
     DEPLOYMENT_TARGET_TEST(>, V, false)                                   \
-    return internal::MacOSVersion() <= 1000 + V;                          \
+    return base::mac::MacOSVersion() <= 1000 + V;                         \
   }
 
 #define DEFINE_OLD_IS_OS_FUNCS(V, DEPLOYMENT_TARGET_TEST)           \
   DEFINE_OLD_IS_OS_FUNCS_CR_MIN_REQUIRED(V, DEPLOYMENT_TARGET_TEST) \
   inline bool IsAtLeastOS10_##V() {                                 \
     DEPLOYMENT_TARGET_TEST(>=, V, true)                             \
-    return internal::MacOSVersion() >= 1000 + V;                    \
+    return base::mac::MacOSVersion() >= 1000 + V;                   \
   }
 
 #define DEFINE_IS_OS_FUNCS_CR_MIN_REQUIRED(V, DEPLOYMENT_TARGET_TEST) \
   inline bool IsOS##V() {                                             \
     DEPLOYMENT_TARGET_TEST(>, V, false)                               \
-    return internal::MacOSVersion() == V * 100;                       \
+    return base::mac::MacOSVersion() == V * 100;                      \
   }                                                                   \
   inline bool IsAtMostOS##V() {                                       \
     DEPLOYMENT_TARGET_TEST(>, V, false)                               \
-    return internal::MacOSVersion() <= V * 100;                       \
+    return base::mac::MacOSVersion() <= V * 100;                      \
   }
 
 #define DEFINE_IS_OS_FUNCS(V, DEPLOYMENT_TARGET_TEST)           \
   DEFINE_IS_OS_FUNCS_CR_MIN_REQUIRED(V, DEPLOYMENT_TARGET_TEST) \
   inline bool IsAtLeastOS##V() {                                \
     DEPLOYMENT_TARGET_TEST(>=, V, true)                         \
-    return internal::MacOSVersion() >= V * 100;                 \
+    return base::mac::MacOSVersion() >= V * 100;                \
   }
 
 #define OLD_TEST_DEPLOYMENT_TARGET(OP, V, RET)                  \

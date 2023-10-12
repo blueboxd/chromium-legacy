@@ -5,7 +5,7 @@
 #include "services/shape_detection/barcode_detection_impl_mac.h"
 
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "services/shape_detection/detection_utils_mac.h"
 

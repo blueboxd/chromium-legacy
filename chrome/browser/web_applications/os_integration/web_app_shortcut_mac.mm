@@ -834,7 +834,7 @@ static const LSCopyApplicationURLsForBundleIdentifierPtr LSCopyApplicationURLsFo
         base::apple::CFToNSOwnershipCast(LSCopyApplicationURLsForBundleIdentifierFuncPtr(
             base::SysUTF8ToCFStringRef(bundle_id), /*outError=*/nullptr));
   } else {
-    base::ScopedCFTypeRef<CFURLRef> cf_url;
+    base::apple::ScopedCFTypeRef<CFURLRef> cf_url;
     LSFindApplicationForInfo(kLSUnknownCreator, base::SysUTF8ToCFStringRef(bundle_id), NULL, NULL,
                              cf_url.InitializeInto());
     if (cf_url)

@@ -8,10 +8,13 @@ static_library("eye_dropper") {
   sources = [
     "eye_dropper_view.cc",
     "eye_dropper_view.h",
-    "eye_dropper_view_aura.cc",
     "features.cc",
     "features.h",
   ]
+
+  if (use_aura) {
+    sources += [ "eye_dropper_view_aura.cc" ]
+  }
 
   deps = [
     "//base",

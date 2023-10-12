@@ -107,6 +107,11 @@
   E_CPONLY(kColorExtensionMenuPinButtonIconDisabled) \
   E_CPONLY(kColorExtensionsMenuHighlightedBackground) \
   E_CPONLY(kColorExtensionsToolbarControlsBackground) \
+  /* Eyedropper colors. */ \
+  E_CPONLY(kColorEyedropperBoundary) \
+  E_CPONLY(kColorEyedropperCentralPixelInnerRing) \
+  E_CPONLY(kColorEyedropperCentralPixelOuterRing) \
+  E_CPONLY(kColorEyedropperGrid) \
   /* Feature Promo bubble colors. */ \
   E_CPONLY(kColorFeaturePromoBubbleBackground) \
   E_CPONLY(kColorFeaturePromoBubbleButtonBorder) \

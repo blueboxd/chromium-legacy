@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/eye_dropper.h"
 #include "content/public/browser/eye_dropper_listener.h"
+#include "content/public/browser/render_frame_host.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -38,6 +39,8 @@ class EyeDropperView : public content::EyeDropper,
   METADATA_HEADER(EyeDropperView);
   EyeDropperView(gfx::NativeView parent,
                  gfx::NativeView event_handler,
+                 content::EyeDropperListener* listener);
+  EyeDropperView(content::RenderFrameHost* frame,
                  content::EyeDropperListener* listener);
   EyeDropperView(const EyeDropperView&) = delete;
   EyeDropperView& operator=(const EyeDropperView&) = delete;
@@ -98,6 +101,8 @@ class EyeDropperView : public content::EyeDropper,
   // Handles color selection and notifies the listener.
   void OnColorSelected();
   void OnColorSelectionCanceled();
+
+  raw_ptr<content::RenderFrameHost> render_frame_host_;
 
   gfx::Size GetSize() const;
   float GetDiameter() const;

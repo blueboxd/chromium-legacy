@@ -7,6 +7,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "components/color/color_id.h"
 #include "components/eye_dropper/features.h"
 #include "content/public/browser/desktop_capture.h"
@@ -231,6 +232,52 @@ EyeDropperView::EyeDropperView(gfx::NativeView parent,
 #endif
 }
 
+EyeDropperView::EyeDropperView(content::RenderFrameHost* frame,
+                               content::EyeDropperListener* listener)
+    : render_frame_host_(frame),
+      listener_(listener),
+      view_position_handler_(std::make_unique<ViewPositionHandler>(this)),
+      screen_capturer_(std::make_unique<ScreenCapturer>()) {
+  SetModalType(ui::MODAL_TYPE_WINDOW);
+  // This is owned as a unique_ptr<EyeDropper> elsewhere.
+  SetOwnedByWidget(false);
+  // TODO(pbos): Remove this, perhaps by separating the contents view from the
+  // EyeDropper/WidgetDelegate.
+  set_owned_by_client();
+  SetPreferredSize(GetSize());
+#if BUILDFLAG(IS_LINUX)
+  // Use TYPE_MENU for Linux to ensure that the eye dropper view is displayed
+  // above the color picker.
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_MENU);
+#else
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+#endif
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
+  // Use software compositing to prevent situations when the widget is not
+  // translucent when moved fast.
+  // TODO(iopopesc): Investigate if this is a compositor bug or this is indeed
+  // an intentional limitation.
+  params.force_software_compositing = true;
+  params.z_order = ui::ZOrderLevel::kFloatingWindow;
+  params.name = "MagnifierHost";
+  params.parent = content::WebContents::FromRenderFrameHost(render_frame_host_)
+                      ->GetNativeView();
+  params.delegate = this;
+  views::Widget* widget = new views::Widget();
+  widget->Init(std::move(params));
+  widget->SetContentsView(this);
+  MoveViewToFront();
+  HideCursor();
+  pre_dispatch_handler_ = std::make_unique<PreEventDispatchHandler>(
+      this, content::WebContents::FromRenderFrameHost(render_frame_host_)
+                ->GetNativeView());
+  widget->Show();
+  CaptureInputIfNeeded();
+  // The ignore selection time should be long enough to allow the user to see
+  // the UI.
+  ignore_selection_time_ = base::TimeTicks::Now() + base::Milliseconds(500);
+}
+
 EyeDropperView::~EyeDropperView() {
   if (GetWidget()) {
     GetWidget()->CloseNow();
@@ -297,7 +344,7 @@ void EyeDropperView::OnPaint(gfx::Canvas* view_canvas) {
   cc::PaintFlags flags;
   flags.setStrokeWidth(1);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
-  flags.setColor(color_provider->GetColor(color::kColorEyedropperGrid));
+  flags.setColor(color_provider->GetColor(kColorEyedropperGrid));
   for (int i = 0; i < pixel_count; ++i) {
     view_canvas->DrawLine(
         gfx::PointF(padding.width() + i * kPixelSize, padding.height()),
@@ -316,19 +363,19 @@ void EyeDropperView::OnPaint(gfx::Canvas* view_canvas) {
                    (size().height() - kPixelSize) / 2, kPixelSize, kPixelSize);
   flags.setAntiAlias(true);
   flags.setColor(
-      color_provider->GetColor(color::kColorEyedropperCentralPixelOuterRing));
+      color_provider->GetColor(kColorEyedropperCentralPixelOuterRing));
   flags.setStrokeWidth(2);
   pixel.Inset(-0.5f);
   view_canvas->DrawRect(pixel, flags);
   flags.setColor(
-      color_provider->GetColor(color::kColorEyedropperCentralPixelInnerRing));
+      color_provider->GetColor(kColorEyedropperCentralPixelInnerRing));
   flags.setStrokeWidth(1);
   pixel.Inset(0.5f);
   view_canvas->DrawRect(pixel, flags);
 
   // Paint outline.
   flags.setStrokeWidth(2);
-  flags.setColor(color_provider->GetColor(color::kColorEyedropperBoundary));
+  flags.setColor(color_provider->GetColor(kColorEyedropperBoundary));
   flags.setAntiAlias(true);
   if (GetWidget()->IsTranslucentWindowOpacitySupported()) {
     view_canvas->DrawCircle(

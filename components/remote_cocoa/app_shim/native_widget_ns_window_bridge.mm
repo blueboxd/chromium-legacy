@@ -1782,7 +1782,7 @@ void NativeWidgetNSWindowBridge::ShowAsModalSheet() {
 
   NSWindow* parent_window = parent_->ns_window();
   DCHECK(parent_window);
-  NSWindow* __weak weak_window = window_;
+  NSWindow* __unsafe_unretained weak_window = window_;
 
   auto begin_sheet_closure = base::BindOnce(^{
     [parent_window beginSheet:window_

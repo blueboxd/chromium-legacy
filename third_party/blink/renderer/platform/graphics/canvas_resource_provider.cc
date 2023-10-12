@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/paint/display_item_list.h"
+#include "cc/paint/paint_record.h"
 #include "cc/tiles/software_image_decode_cache.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -1520,7 +1521,7 @@ absl::optional<cc::PaintRecord> CanvasResourceProvider::FlushCanvas(
   cc::PaintRecord recording = recorder_.finishRecordingAsPicture();
   RasterRecord(recording);
   last_recording_ =
-      preserve_recording ? absl::optional(recording) : absl::nullopt;
+      preserve_recording ? absl::optional<cc::PaintRecord>(recording) : absl::nullopt;
   return recording;
 }
 

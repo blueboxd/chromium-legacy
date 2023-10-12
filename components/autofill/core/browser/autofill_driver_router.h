@@ -241,7 +241,7 @@ class AutofillDriverRouter {
       void (*callback)(AutofillDriver* target, const FormData& form));
   void SetFormToBeProbablySubmitted(
       AutofillDriver* source,
-      std::optional<FormData> form,
+      absl::optional<FormData> form,
       void (*callback)(AutofillDriver* target, const FormData* optional_form));
 
   // Events called by the browser, passed to the renderer:

@@ -31,6 +31,15 @@ namespace ui {
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
 void ReadCustomDataTypes(base::span<const uint8_t> data,
                          std::vector<std::u16string>* types);
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
+void ReadCustomDataTypes(const void* data,
+                         size_t data_length,
+                         std::vector<std::u16string>* types);
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
+void ReadCustomDataForType(const void* data,
+                           size_t data_length,
+                           const std::u16string& type,
+                           std::u16string* result);
 [[nodiscard]] COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
     absl::optional<std::u16string> ReadCustomDataForType(
         base::span<const uint8_t> data,
@@ -39,6 +48,11 @@ void ReadCustomDataTypes(base::span<const uint8_t> data,
     absl::optional<std::unordered_map<
         std::u16string,
         std::u16string>> ReadCustomDataIntoMap(base::span<const uint8_t> data);
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
+void ReadCustomDataIntoMap(
+    const void* data,
+    size_t data_length,
+    std::unordered_map<std::u16string, std::u16string>* result);
 
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
 void WriteCustomDataToPickle(

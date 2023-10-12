@@ -13,10 +13,10 @@
 #include <dlfcn.h>
 
 #include "base/allocator/buildflags.h"
-#include "base/allocator/partition_allocator/shim/allocator_shim.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_shim.h"
 #include "base/apple/bridging.h"
-#include "base/apple/scoped_objc_class_swizzler.h"
 #include "base/apple/foundation_util.h"
+#include "base/apple/scoped_objc_class_swizzler.h"
 #include "base/auto_reset.h"
 #include "base/check_op.h"
 #include "base/command_line.h"

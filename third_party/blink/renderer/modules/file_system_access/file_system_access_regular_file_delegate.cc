@@ -138,7 +138,7 @@ base::FileErrorOr<bool> FileSystemAccessRegularFileDelegate::SetLength(
     file_utilities_host_->SetLength(std::move(backing_file_), new_length,
                                     &backing_file_, &result);
     if (result) {
-      capacity_tracker_->CommitFileSizeChange(new_length);
+      capacity_tracker_->OnFileContentsModified(new_length);
       return true;
     }
     // Unfortunately we don't have access to the error code when using

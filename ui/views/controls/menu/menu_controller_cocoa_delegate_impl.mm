@@ -69,7 +69,7 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
   }
 
   // 2. Calculate the size required.
-
+  NSSize badge_size = [badge_attr_string size];
   NSSize text_size = [badge_attr_string size];
   NSSize canvas_size = NSMakeSize(
       trunc(text_size.width) + 2 * views::BadgePainter::kBadgeInternalPadding +
@@ -260,8 +260,11 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
                       atIndex:(size_t)index
             withColorProvider:(const ui::ColorProvider*)colorProvider {
   if (model->IsNewFeatureAt(index)) {
-    NSTextAttachment* attachment = [[NSTextAttachment alloc] initWithData:nil
-                                                                   ofType:nil];
+    // /!\ WARNING /!\ Do not update this to use NSTextAttachment.image until
+    // macOS 10.15 is the minimum required OS. See the details on the class
+    // comment above.
+    NSTextAttachment* attachment = [[NSTextAttachment alloc] init];
+
     attachment.image = NewTagImage(colorProvider);
     NSSize newTagSize = attachment.image.size;
 
@@ -273,10 +276,6 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
     NSMutableAttributedString* attrTitle =
         [[NSMutableAttributedString alloc] initWithString:menuItem.title];
 
-    // /!\ WARNING /!\ Do not update this to use NSTextAttachment.image until
-    // macOS 10.15 is the minimum required OS. See the details on the class
-    // comment above.
-    NSTextAttachment* attachment = [[NSTextAttachment alloc] init];
     attachment.attachmentCell =
         [[NewTagAttachmentCell alloc] initWithColorProvider:colorProvider];
 

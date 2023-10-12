@@ -91,7 +91,7 @@ class IndexedDBContextTest : public testing::Test {
   scoped_refptr<storage::MockQuotaManager> quota_manager_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
-  MockIndexedDBClientStateChecker example_checker;
+  MockIndexedDBClientStateChecker example_checker_;
 
   const blink::StorageKey example_storage_key_ =
       blink::StorageKey::CreateFromStringForTesting("https://example.com");
@@ -101,19 +101,19 @@ class IndexedDBContextTest : public testing::Test {
 
 TEST_F(IndexedDBContextTest, DefaultBucketCreatedOnBindIndexedDB) {
   mojo::Remote<blink::mojom::IDBFactory> example_remote;
-  mojo::AssociatedReceiver<storage::mojom::IndexedDBClientStateChecker>
-      example_checker_receiver(&example_checker);
+  mojo::Receiver<storage::mojom::IndexedDBClientStateChecker>
+      example_checker_receiver(&example_checker_);
   indexed_db_context_->BindIndexedDB(
-      example_storage_key_,
-      example_checker_receiver.BindNewEndpointAndPassDedicatedRemote(),
+      storage::BucketLocator::ForDefaultBucket(example_storage_key_),
+      example_checker_receiver.BindNewPipeAndPassRemote(),
       example_remote.BindNewPipeAndPassReceiver());
 
   mojo::Remote<blink::mojom::IDBFactory> google_remote;
-  mojo::AssociatedReceiver<storage::mojom::IndexedDBClientStateChecker>
-      google_checker_receiver(&example_checker);
+  mojo::Receiver<storage::mojom::IndexedDBClientStateChecker>
+      google_checker_receiver(&example_checker_);
   indexed_db_context_->BindIndexedDB(
-      google_storage_key_,
-      google_checker_receiver.BindNewEndpointAndPassDedicatedRemote(),
+      storage::BucketLocator::ForDefaultBucket(google_storage_key_),
+      google_checker_receiver.BindNewPipeAndPassRemote(),
       google_remote.BindNewPipeAndPassReceiver());
 
   storage::QuotaManagerProxySync quota_manager_proxy_sync(
@@ -124,29 +124,13 @@ TEST_F(IndexedDBContextTest, DefaultBucketCreatedOnBindIndexedDB) {
   base::test::TestFuture<std::vector<blink::mojom::IDBNameAndVersionPtr>,
                          blink::mojom::IDBErrorPtr>
       info_future;
-
-  auto example_bucket_info = storage::BucketInfo();
-  example_bucket_info.storage_key = example_storage_key_;
-  example_bucket_info.name = storage::kDefaultBucketName;
-  auto example_bucket_locator = example_bucket_info.ToBucketLocator();
-
-  indexed_db_context_->GetIDBFactory()->GetDatabaseInfo(
-      example_bucket_info,
-      indexed_db_context_->GetDataPath(example_bucket_locator),
-      info_future.GetCallback());
+  example_remote->GetDatabaseInfo(info_future.GetCallback());
   ASSERT_TRUE(info_future.Wait());
 
   base::test::TestFuture<std::vector<blink::mojom::IDBNameAndVersionPtr>,
                          blink::mojom::IDBErrorPtr>
       info_future2;
-  auto google_bucket_info = storage::BucketInfo();
-  google_bucket_info.storage_key = google_storage_key_;
-  google_bucket_info.name = storage::kDefaultBucketName;
-  auto google_bucket_locator = google_bucket_info.ToBucketLocator();
-  indexed_db_context_->GetIDBFactory()->GetDatabaseInfo(
-      google_bucket_info,
-      indexed_db_context_->GetDataPath(google_bucket_locator),
-      info_future2.GetCallback());
+  google_remote->GetDatabaseInfo(info_future2.GetCallback());
   ASSERT_TRUE(info_future2.Wait());
 
   // Check default bucket exists for https://example.com.
@@ -173,11 +157,11 @@ TEST_F(IndexedDBContextTest, GetDefaultBucketError) {
   quota_manager_->SetDisableDatabase(true);
 
   mojo::Remote<blink::mojom::IDBFactory> example_remote;
-  mojo::AssociatedReceiver<storage::mojom::IndexedDBClientStateChecker>
-      example_checker_receiver(&example_checker);
+  mojo::Receiver<storage::mojom::IndexedDBClientStateChecker>
+      example_checker_receiver(&example_checker_);
   indexed_db_context_->BindIndexedDB(
-      example_storage_key_,
-      example_checker_receiver.BindNewEndpointAndPassDedicatedRemote(),
+      storage::BucketLocator::ForDefaultBucket(example_storage_key_),
+      example_checker_receiver.BindNewPipeAndPassRemote(),
       example_remote.BindNewPipeAndPassReceiver());
 
   // IDBFactory::GetDatabaseInfo

@@ -82,25 +82,6 @@ struct CONTENT_EXPORT AttributionConfig {
     // destination.
     int max_reports_per_destination = 1024;
 
-    // Default constants for report window deadlines.
-    static constexpr base::TimeDelta kDefaultFirstReportWindowDeadline =
-        base::Days(2);
-    static constexpr base::TimeDelta kDefaultSecondReportWindowDeadline =
-        base::Days(7);
-
-    // Controls the report window deadlines for scheduling navigation report
-    // times.
-    base::TimeDelta first_navigation_report_window_deadline =
-        kDefaultFirstReportWindowDeadline;
-    base::TimeDelta second_navigation_report_window_deadline =
-        kDefaultSecondReportWindowDeadline;
-
-    // Controls the report window deadlines for scheduling event report times.
-    base::TimeDelta first_event_report_window_deadline =
-        kDefaultFirstReportWindowDeadline;
-    base::TimeDelta second_event_report_window_deadline =
-        kDefaultSecondReportWindowDeadline;
-
     // Default constants for max info gain in bits per source type.
     // Rounded up to nearest e-5 digit.
     static constexpr double kDefaultMaxNavigationInfoGain = 11.46173;
@@ -125,13 +106,6 @@ struct CONTENT_EXPORT AttributionConfig {
     // Controls how many reports can be in the storage per attribution
     // destination.
     int max_reports_per_destination = 1024;
-
-    // Controls the maximum sum of the contributions (values) across all buckets
-    // per source.
-    // When updating the value, the corresponding BUDGET_PER_SOURCE value in
-    // //content/browser/resources/attribution_reporting/attribution_internals.ts
-    // should also be updated.
-    int64_t aggregatable_budget_per_source = 65536;
 
     // Default constants for the report delivery time to be used when declaring
     // field trial params.

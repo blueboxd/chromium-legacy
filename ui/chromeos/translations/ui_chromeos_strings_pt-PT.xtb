@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3619593063686672873">Sem vídeos recentes</translation>
 <translation id="3634507049637220048">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, gerida pelo administrador, detalhes</translation>
+<translation id="36451918667380448">O fornecedor de rede móvel está bloqueado. Contacte o seu fornecedor para receber apoio técnico.</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> itens movidos.</translation>
 <translation id="3658269352872031728"><ph name="SELECTED_FILE_COUNT" /> ficheiros selecionados</translation>
 <translation id="3685122418104378273">Quando utiliza dados móveis, a sincronização do Google Drive é desativada por predefinição.</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">Este ficheiro é confidencial e está sujeito a restrições pela Política do Administrador.</translation>
 <translation id="8712637175834984815">OK</translation>
 <translation id="8713112442029511308">Maltês</translation>
+<translation id="8714138378966541668">Bloqueada pelo fornecedor</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
 <translation id="8719721339511222681">Selecionou <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">Croata</translation>

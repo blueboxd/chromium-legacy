@@ -8,7 +8,7 @@
 <translation id="1022628058306505708">Fluxo da Terra</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> subprocesos, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Novas funcións dispoñibles. Utilizar frecha arriba para obter máis información.</translation>
-<translation id="1059913517121127803">Non se puido iniciar o escaneo</translation>
+<translation id="1059913517121127803">Non se puido iniciar o escaneamento</translation>
 <translation id="1062823486781306604"><ph name="INDEX" /> de <ph name="COUNT" />, <ph name="NAME" />.</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Detectouse un firewall</translation>
@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Podes personalizar só 5 atallos. Elimina un para engadir outro novo.</translation>
 <translation id="1164939766849482256">Protector de pantalla Do amencer ao solpor</translation>
 <translation id="1167755866710282443">Abre o menú para personalizar as claves. Arrastra o menú para movelo.</translation>
+<translation id="1174073918202301297">Engadiuse un atallo</translation>
 <translation id="1175697296044146566">Este dispositivo (<ph name="DEVICE_TYPE" />) está xestionado por <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Intermedia (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Eliminar</translation>
@@ -48,7 +49,7 @@
 <translation id="1327977588028644528">Pasarela</translation>
 <translation id="1328223165223065150">Cor do fondo de pantalla</translation>
 <translation id="1330426557709298164">JPG</translation>
-<translation id="1337912285145772892">Axustar á zona de escaneo</translation>
+<translation id="1337912285145772892">Axustar á zona de escaneamento</translation>
 <translation id="1367951781824006909">Selecciona un ficheiro</translation>
 <translation id="1387854245479784695">Esta é a suma de todos os núcleos</translation>
 <translation id="1394661041439318933">Nivel de batería do estoxo do dispositivo: <ph name="BATTERY_PERCENTAGE" /> %.</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">Cambiar imaxe de fondo de pantalla todos os días</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="1651925268237749928">Seleccionaches un álbum compartido. Outras persoas poden engadir ou cambiar fotos. O fondo de pantalla pode usar fotos que actualmente non están neste álbum.</translation>
+<translation id="1661865805917886535">Pódese enviar parte da información da conta e do sistema a Google. Usamos esta información para tentar solucionar problemas técnicos e para mellorar os nosos servizos, sempre conforme o establecido na nosa Política de privacidade (<ph name="PRIVACYPOLICYURL" />) e nas Condicións de servizo (<ph name="TERMSOFSERVICEURL" />). Para solicitar cambios no contido, vai a Axuda legal (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Detívose (esgotouse a tinta)</translation>
 <translation id="1664796644829245314">Mostrar vista previa de: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN integrada</translation>
@@ -117,7 +119,7 @@
 <translation id="1768959921651994223">Tipo de autenticación</translation>
 <translation id="1776228893584526149">Ton do fondo de pantalla</translation>
 <translation id="1782199038061388045">tradución</translation>
-<translation id="1792647875738159689">Cancelando escaneo</translation>
+<translation id="1792647875738159689">Cancelando escaneamento</translation>
 <translation id="1801418420130173017">Desactivar tema escuro</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1827738518074806965">Galería de arte</translation>
@@ -131,7 +133,6 @@
 <translation id="1871569928317311284">Quitar tema escuro</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Quitar modo escuro</translation>
-<translation id="1881188606372070653">Accede á <ph name="BEGIN_LINK1" />páxina Axuda legal<ph name="END_LINK1" /> para solicitar cambios de contido por razóns legais. Pódese enviar parte da información da conta e do sistema a Google. Utilizaremos os datos que nos indiques para solucionar problemas técnicos e mellorar os nosos servizos segundo o estipulado na <ph name="BEGIN_LINK2" />Política de privacidade<ph name="END_LINK2" /> e nas <ph name="BEGIN_LINK3" />Condicións de servizo<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">avanzar rapidamente o contido multimedia</translation>
 <translation id="1887850431809612466">Revisión do hardware</translation>
 <translation id="1897672602657312171">Un atallo sen tecla de busca pode entrar en conflito co atallo dalgunha aplicación. Preme este atallo de novo para seguir usándoo ou preme un novo mediante a tecla de busca.</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">O dispositivo está conectado.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Queres quitar a páxina?}=1{Queres quitar a páxina {PAGE_NUMBER}?}other{Queres quitar a páxina {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Exclusivo de <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Datos móbiles</translation>
 <translation id="3156846309055100599">Escaneando páxina <ph name="PAGE_NUMBER" />…</translation>
 <translation id="315738237743207937">Detectouse un portal cativo</translation>
@@ -460,7 +462,7 @@
 <translation id="4593212453765072419">Requírese autenticación proxy</translation>
 <translation id="4609350030397390689">Reducir brillo do teclado</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> de <ph name="TOTAL_PAGE_NUMBER" />. Para cancelar o traballo de impresión, preme Intro.</translation>
-<translation id="463791356324567266">Cancelando escaneo…</translation>
+<translation id="463791356324567266">Cancelando escaneamento…</translation>
 <translation id="4646949265910132906">Conexión wifi segura</translation>
 <translation id="4650608062294027130">Maiúsculas (dereita)</translation>
 <translation id="4654549501020883054">Cambiar todos os días</translation>
@@ -654,7 +656,7 @@
 <translation id="6073292342939316679">reducir o brillo do teclado</translation>
 <translation id="6075872808778243331">(Android) latencia de HTTP</translation>
 <translation id="6078323886959318429">Engadir atallo</translation>
-<translation id="6104112872696127344">Cancelouse o escaneo</translation>
+<translation id="6104112872696127344">Cancelouse o escaneamento</translation>
 <translation id="6106186594183574873">Para finalizar, introduce o teu antigo contrasinal</translation>
 <translation id="6108689792487843350">Non se puido acceder á pasarela</translation>
 <translation id="6112878310391905610">Os teus administradores xestionan esta opción de configuración</translation>
@@ -687,6 +689,7 @@
 <translation id="6318437367327684789">sempre</translation>
 <translation id="6319207335391420837">Actualizar o firmware deste dispositivo: <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Activar o protector de pantalla</translation>
+<translation id="6324916366299863871">Editar atallo</translation>
 <translation id="6325525973963619867">Produciuse un erro</translation>
 <translation id="6331191339300272798">Tema escuro automático</translation>
 <translation id="6340526405444716530">Personalización</translation>
@@ -725,7 +728,7 @@
 <translation id="65587193855025101">Superficie plana</translation>
 <translation id="6560196641871357166">Intenso</translation>
 <translation id="6564646048574748301">Produciuse un erro: non se puido acceder á impresora</translation>
-<translation id="6566314079205407217">Escaneo de varias páxinas</translation>
+<translation id="6566314079205407217">Escaneamento de varias páxinas</translation>
 <translation id="6574762126505704998">Completar</translation>
 <translation id="6575134580692778371">Non configurado</translation>
 <translation id="6576005492601044801">esquerda</translation>
@@ -749,7 +752,7 @@
 <translation id="6747215703636344499">Detívose (a saída está chea)</translation>
 <translation id="6749473226660745022">Fotos</translation>
 <translation id="6753452347192452143">O dispositivo é un ordenador.</translation>
-<translation id="6756731097889387912">Non se puido cancelar o escaneo</translation>
+<translation id="6756731097889387912">Non se puido cancelar o escaneamento</translation>
 <translation id="6760706756348334449">Baixa o volume</translation>
 <translation id="6766275201586212568">Produciuse un erro coas resolucións de DNS</translation>
 <translation id="6768237774506518020">Hai un alto índice de erros relacionados coas resolucións de DNS</translation>
@@ -826,6 +829,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Panel táctil integrado</translation>
 <translation id="7397270852490618635">Quitar tema claro</translation>
+<translation id="7401543881546089382">Eliminar atallo</translation>
 <translation id="741244894080940828">conversión</translation>
 <translation id="7415801143053185905">Latencia de HTTP moi alta</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{O administrador configurou <ph name="APP_NAME_1" /> para que arranque automaticamente cada vez que inicies sesión.}=2{O administrador configurou <ph name="APP_NAME_1" /> e <ph name="APP_NAME_2" /> para que arranquen automaticamente cada vez que inicies sesión.}=3{O administrador configurou <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> e <ph name="APP_NAME_3" /> para que arranquen automaticamente cada vez que inicies sesión.}other{O administrador configurou <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> e # aplicacións máis para que arranquen automaticamente cada vez que inicies sesión.}}</translation>
@@ -864,6 +868,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">luz do teclado</translation>
+<translation id="7730077286107534951">Pódese enviar parte da información da conta e do sistema a Google. Utilizaremos esta información para solucionar problemas técnicos e mellorar os nosos servizos, segundo o estipulado na nosa <ph name="BEGIN_LINK2" />Política de privacidade<ph name="END_LINK2" /> e nas <ph name="BEGIN_LINK3" />Condicións de servizo<ph name="END_LINK3" />. Para solicitar cambios no contido, vai a <ph name="BEGIN_LINK1" />Axuda legal<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Número de ciclos</translation>
 <translation id="7747039790905080783">Clave compartida previamente</translation>
 <translation id="7752963721013053477">Do amencer ao solpor (exclusivo)</translation>
@@ -900,6 +905,7 @@
 <translation id="7978412674231730200">Clave privada</translation>
 <translation id="7994702968232966508">Método EAP</translation>
 <translation id="8004582292198964060">Navegador</translation>
+<translation id="8017679124341497925">Editouse o atallo</translation>
 <translation id="802154636333426148">Produciuse un erro na descarga</translation>
 <translation id="8031884997696620457">HSPA+</translation>
 <translation id="80398733265834479">Activar modo de cores automáticas</translation>

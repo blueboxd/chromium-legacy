@@ -13,11 +13,11 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_placement.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_view.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_anchor_query_map.h"
@@ -319,23 +319,9 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     const NGBlockNode& container_node,
     const NGConstraintSpace& container_space,
     NGBoxFragmentBuilder* container_builder)
-    : NGOutOfFlowLayoutPart(container_node.IsAbsoluteContainer(),
-                            container_node.IsFixedContainer(),
-                            container_node.IsGrid(),
-                            container_space,
-                            container_builder,
-                            InitialContainingBlockFixedSize(container_node)) {}
-
-NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
-    bool is_absolute_container,
-    bool is_fixed_container,
-    bool is_grid_container,
-    const NGConstraintSpace& container_space,
-    NGBoxFragmentBuilder* container_builder,
-    absl::optional<LogicalSize> initial_containing_block_fixed_size)
     : container_builder_(container_builder),
-      is_absolute_container_(is_absolute_container),
-      is_fixed_container_(is_fixed_container),
+      is_absolute_container_(container_node.IsAbsoluteContainer()),
+      is_fixed_container_(container_node.IsFixedContainer()),
       has_block_fragmentation_(
           InvolvedInBlockFragmentation(*container_builder)) {
   // TODO(almaher): Should we early return here in the case of block
@@ -352,7 +338,8 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
   const NGBoxStrut border_scrollbar =
       container_builder->Borders() + container_builder->Scrollbar();
   allow_first_tier_oof_cache_ = border_scrollbar.IsEmpty() &&
-                                !is_grid_container && !has_block_fragmentation_;
+                                !container_node.IsGrid() &&
+                                !has_block_fragmentation_;
   default_containing_block_info_for_absolute_.writing_direction =
       ConstraintSpace().GetWritingDirection();
   default_containing_block_info_for_fixed_.writing_direction =
@@ -361,9 +348,8 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     default_containing_block_info_for_absolute_.rect.size =
         ShrinkLogicalSize(container_builder_->Size(), border_scrollbar);
     default_containing_block_info_for_fixed_.rect.size =
-        initial_containing_block_fixed_size
-            ? *initial_containing_block_fixed_size
-            : default_containing_block_info_for_absolute_.rect.size;
+        InitialContainingBlockFixedSize(container_node)
+            .value_or(default_containing_block_info_for_absolute_.rect.size);
   }
   LogicalOffset container_offset = {border_scrollbar.inline_start,
                                     border_scrollbar.block_start};
@@ -2023,6 +2009,11 @@ NGOutOfFlowLayoutPart::TryCalculateOffset(
     }
   }
 
+  offset_info.needs_scroll_adjustment_in_x =
+      anchor_evaluator->NeedsScrollAdjustmentInX();
+  offset_info.needs_scroll_adjustment_in_y =
+      anchor_evaluator->NeedsScrollAdjustmentInY();
+
   return offset_info;
 }
 
@@ -2057,6 +2048,10 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::Layout(
 
   layout_result->GetMutableForOutOfFlow().SetOutOfFlowPositionedOffset(
       offset_info.offset);
+
+  layout_result->GetMutableForOutOfFlow().SetNeedsScrollAdjustment(
+      offset_info.needs_scroll_adjustment_in_x,
+      offset_info.needs_scroll_adjustment_in_y);
 
   if (offset_info.uses_fallback_style) {
     layout_result->GetMutableForOutOfFlow().SetPositionFallbackResult(
@@ -2375,6 +2370,7 @@ void NGOutOfFlowLayoutPart::AddOOFToFragmentainer(
   // in |AddChild|.
   container_builder_->PropagateChildAnchors(
       physical_fragment, oof_offset + relative_offset + offset_adjustment);
+  container_builder_->PropagateStickyDescendants(physical_fragment);
   LayoutUnit containing_block_adjustment =
       container_builder_->BlockOffsetAdjustmentForFragmentainer(
           fragmentainer_consumed_block_size_);

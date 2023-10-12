@@ -39,9 +39,6 @@
       "Android Release (Nexus 5X)": {
         "_default": "_default"
       },
-      "Android WebView N (dbg)": {
-        "_default": "_default"
-      },
       "Android WebView O (dbg)": {
         "_default": "_default"
       },
@@ -327,9 +324,6 @@
       "Mac13 Tests (dbg)": {
         "_default": "_default"
       },
-      "Nougat Phone Tester": {
-        "_default": "_default"
-      },
       "Oreo Phone Tester": {
         "_default": "_default"
       },
@@ -567,9 +561,6 @@
       "android-cronet-x86-rel": {
         "_default": "_default"
       },
-      "android-nougat-x86-rel": {
-        "_default": "_default"
-      },
       "android-official": {
         "_default": "_default"
       },
@@ -763,7 +754,7 @@
           "p50_mins": 20
         }
       },
-      "lacros-amd64-generic-rel-skylab": {
+      "lacros-amd64-generic-rel-non-skylab": {
         "build_time": {
           "p50_mins": 60
         },

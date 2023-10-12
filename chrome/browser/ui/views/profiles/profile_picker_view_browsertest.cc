@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/profiles/profile_picker_dice_reauth_provider.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_view.h"
 
 #include <set>
@@ -78,6 +79,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/profile_deletion_observer.h"
+#include "chrome/test/base/profile_destruction_waiter.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
@@ -144,6 +146,10 @@ const char kGaiaId[] = "some_gaia_id";
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 const char16_t kWork[] = u"Work";
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
+const char kReauthResultHistogramName[] = "ProfilePicker.ReauthResult";
+#endif
 
 AccountInfo FillAccountInfo(
     const CoreAccountInfo& core_info,
@@ -808,8 +814,8 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1368936) Test is flaky on Linux Tests
-#if BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/1368936): Test is flaky on Linux and Windows.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #define MAYBE_CreateForceSignedInProfile DISABLED_CreateForceSignedInProfile
 #else
 #define MAYBE_CreateForceSignedInProfile CreateForceSignedInProfile
@@ -878,8 +884,11 @@ class ForceSigninProfilePickerCreationFlowBrowserTest
     signin::MakeAccountAvailable(identity_manager, email);
   }
 
+  base::HistogramTester* histogram_tester() { return &histogram_tester_; }
+
  private:
   signin_util::ScopedForceSigninSetterForTesting force_signin_setter_{true};
+  base::HistogramTester histogram_tester_;
   base::test::ScopedFeatureList scoped_feature_list_{
       kForceSigninFlowInProfilePicker};
 };
@@ -1013,6 +1022,8 @@ IN_PROC_BROWSER_TEST_F(ForceSigninProfilePickerCreationFlowBrowserTest,
   EXPECT_TRUE(new_browser);
   EXPECT_EQ(new_browser->profile(), profile);
   EXPECT_FALSE(entry->IsSigninRequired());
+  histogram_tester()->ExpectUniqueSample(
+      kReauthResultHistogramName, ProfilePickerReauthResult::kSuccess, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ForceSigninProfilePickerCreationFlowBrowserTest,
@@ -1064,6 +1075,9 @@ IN_PROC_BROWSER_TEST_F(ForceSigninProfilePickerCreationFlowBrowserTest,
   EXPECT_TRUE(ProfilePicker::IsOpen());
   EXPECT_EQ(BrowserList::GetInstance()->size(), initial_browser_count);
   EXPECT_TRUE(entry->IsSigninRequired());
+  histogram_tester()->ExpectUniqueSample(
+      kReauthResultHistogramName, ProfilePickerReauthResult::kErrorUsedNewEmail,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(ForceSigninProfilePickerCreationFlowBrowserTest,
@@ -2018,6 +2032,58 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
                          ->GetProfileAttributesStorage()
                          .GetProfileAttributesWithPath(profile_path));
   EXPECT_TRUE(ProfilePicker::IsOpen());
+}
+
+IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest, DeleteProfile) {
+  // Create a second profile.
+  base::FilePath other_path = CreateNewProfileWithoutBrowser();
+  Profile* profile =
+      g_browser_process->profile_manager()->GetProfileByPath(other_path);
+  ASSERT_TRUE(profile);
+  // Open the picker.
+  ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
+      ProfilePicker::EntryPoint::kProfileMenuManageProfiles));
+  WaitForLoadStop(GURL("chrome://profile-picker"));
+  ProfilePickerHandler* handler = profile_picker_handler();
+
+  // Simulate profile deletion from the picker.
+  ProfileDestructionWaiter waiter(profile);
+  base::Value::List args;
+  args.Append(base::FilePathToValue(other_path));
+  handler->HandleGetProfileStatistics(args);
+  handler->HandleRemoveProfile(args);
+  waiter.Wait();
+}
+
+// Regression test for https://crbug.com/1488267
+IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
+                       DeleteProfileFromOwnTab) {
+  // Create a new profile and browser. This is required on Lacros because the
+  // main profile cannot be deleted.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::FilePath other_path =
+      profile_manager->GenerateNextProfileDirectoryPath();
+  Profile& other_profile =
+      profiles::testing::CreateProfileSync(profile_manager, other_path);
+  Browser* other_browser = CreateBrowser(&other_profile);
+
+  // Open the picker in a tab.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      other_browser, GURL(chrome::kChromeUIProfilePickerUrl)));
+  content::WebContents* contents =
+      other_browser->tab_strip_model()->GetActiveWebContents();
+  ProfilePickerHandler* handler = contents->GetWebUI()
+                                      ->GetController()
+                                      ->GetAs<ProfilePickerUI>()
+                                      ->GetProfilePickerHandlerForTesting();
+
+  // Simulate profile deletion from the picker.
+  ProfileDestructionWaiter waiter(&other_profile);
+  base::Value::List args;
+  args.Append(base::FilePathToValue(other_profile.GetPath()));
+  handler->HandleGetProfileStatistics(args);
+  handler->HandleRemoveProfile(args);
+  waiter.Wait();
 }
 
 class ProfilePickerEnterpriseCreationFlowBrowserTest

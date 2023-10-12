@@ -10,7 +10,6 @@
 
 #include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -74,15 +73,37 @@ class AuthenticatorRequestSheetView : public views::View {
   // changes.
   void ReInitChildViews();
 
-  views::Label* title_label() { return title_label_; }
+  // Returns the control on this sheet that should initially have focus instead
+  // of the OK/Cancel buttons on the dialog; or returns nullptr if the regular
+  // dialog button should have focus.
+  views::View* GetInitiallyFocusedView();
 
   AuthenticatorRequestSheetModel* model() { return model_.get(); }
 
  protected:
-  // Returns the step-specific view the derived sheet wishes to provide, if any.
-  virtual std::unique_ptr<views::View> BuildStepSpecificContent();
+  // AutoFocus is a named boolean that indicates whether step-specific content
+  // should automatically get focus when displayed.
+  enum class AutoFocus {
+    kNo,
+    kYes,
+  };
+
+  // Returns the step-specific view the derived sheet wishes to provide, if any,
+  // and whether that content should be initially focused.
+  virtual std::pair<std::unique_ptr<views::View>, AutoFocus>
+  BuildStepSpecificContent();
 
  private:
+  // Children of these views are removed by `ReInitChildViews`. To avoid
+  // dangling pointers, group references to the children in a struct that is
+  // easy to clear.
+  struct ChildViews {
+    raw_ptr<views::View> step_specific_content_ = nullptr;
+    raw_ptr<NonAccessibleImageView> step_illustration_image_ = nullptr;
+    raw_ptr<views::AnimatedImageView> step_illustration_animation_ = nullptr;
+    raw_ptr<views::Label> error_label_ = nullptr;
+  };
+
   // Creates the upper half of the sheet, consisting of a pretty illustration
   // overlayed with absolutely positioned controls (the activity indicator and
   // the back button) rendered on top.
@@ -95,21 +116,12 @@ class AuthenticatorRequestSheetView : public views::View {
   // Updates the illustration icon shown on the sheet.
   void UpdateIconImageFromModel();
 
-  // Updates the icon color.
-  void UpdateIconColors();
-
   // views::View:
   void OnThemeChanged() override;
 
   std::unique_ptr<AuthenticatorRequestSheetModel> model_;
-  raw_ptr<views::Label> title_label_ = nullptr;
-  raw_ptr<views::Button> back_arrow_button_ = nullptr;
-  raw_ptr<views::ImageButton> back_arrow_ = nullptr;
-  raw_ptr<views::ImageButton> close_button_ = nullptr;
-  raw_ptr<views::View, DanglingUntriaged> step_specific_content_ = nullptr;
-  raw_ptr<NonAccessibleImageView> step_illustration_image_ = nullptr;
-  raw_ptr<views::AnimatedImageView> step_illustration_animation_ = nullptr;
-  raw_ptr<views::Label, DanglingUntriaged> error_label_ = nullptr;
+  ChildViews child_views_;
+  AutoFocus should_focus_step_specific_content_ = AutoFocus::kNo;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_WEBAUTHN_AUTHENTICATOR_REQUEST_SHEET_VIEW_H_

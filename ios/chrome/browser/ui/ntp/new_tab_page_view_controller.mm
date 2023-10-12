@@ -10,11 +10,11 @@
 #import "base/ios/block_types.h"
 #import "base/task/sequenced_task_runner.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cells_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_constants.h"
@@ -55,8 +55,9 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 // TODO(crbug.com/1277504): Modify this comment when Web Channels is released.
 @property(nonatomic, assign, getter=isScrolledIntoFeed) BOOL scrolledIntoFeed;
 
-// Whether or not the fake omnibox is pineed to the top of the NTP.
-@property(nonatomic, assign) BOOL fakeOmniboxPinnedToTop;
+// Whether or not the fake omnibox is pinned to the top of the NTP. Redefined
+// to make readwrite.
+@property(nonatomic, assign) BOOL isFakeboxPinned;
 
 // Array of constraints used to pin the fake Omnibox header into the top of the
 // view.
@@ -131,6 +132,9 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 
 // YES if the NTP is in the middle of animating an omnibox focus.
 @property(nonatomic, assign) BOOL isAnimatingOmniboxFocus;
+
+// `YES` when notifications indicate the omnibox is focused.
+@property(nonatomic, assign) BOOL omniboxFocused;
 
 @end
 
@@ -603,7 +607,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 }
 
 - (void)updateScrollPositionForFeedTopSectionClosed {
-  if (self.fakeOmniboxPinnedToTop) {
+  if (self.isFakeboxPinned) {
     [self setContentOffset:[self scrollPosition] + [self feedTopSectionHeight]];
   }
 }
@@ -650,12 +654,30 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   return [self.headerViewController pinnedOffsetY] - [self heightAboveFeed];
 }
 
+- (void)omniboxDidBecomeFirstResponder {
+  self.omniboxFocused = YES;
+  if (IsIOSLargeFakeboxEnabled()) {
+    self.headerViewController.view.alpha = 0.01;
+  }
+}
+
+- (void)omniboxWillResignFirstResponder {
+  if (IsIOSLargeFakeboxEnabled() && [self isFakeboxPinned]) {
+    // Return early to allow the omnibox defocus animation show.
+    return;
+  }
+  [self omniboxDidResignFirstResponder];
+}
+
 - (void)omniboxDidResignFirstResponder {
   if (![self.headerViewController isShowing] && !self.scrolledToMinimumHeight) {
     return;
   }
 
   self.omniboxFocused = NO;
+  if (IsIOSLargeFakeboxEnabled()) {
+    self.headerViewController.view.alpha = 1;
+  }
   [self shiftTilesDownForOmniboxDefocus];
 }
 
@@ -806,7 +828,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 
   // If the fake omnibox is already at the final position, just focus it and
   // return early.
-  if (self.scrolledToMinimumHeight) {
+  if ([self shouldSkipScrollToFocusOmnibox]) {
     self.shouldAnimateHeader = NO;
     self.disableScrollAnimation = NO;
     [self.NTPContentDelegate focusOmnibox];
@@ -894,6 +916,13 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 
 #pragma mark - Private
 
+// Returns YES if scroll should be skipped when focusing the omnibox.
+- (BOOL)shouldSkipScrollToFocusOmnibox {
+  return self.scrolledToMinimumHeight ||
+         (IsIOSLargeFakeboxEnabled() &&
+          (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE));
+}
+
 // Returns the collection view containing all NTP content.
 - (UICollectionView*)collectionView {
   return self.feedWrapperViewController.contentCollectionView;
@@ -901,11 +930,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 
 // Returns the height of the fake omnibox to stick to the top of the NTP.
 - (CGFloat)stickyOmniboxHeight {
-  // Takes the height of the entire header and subtracts the margin to stick the
-  // fake omnibox. Adjusts this for the device by further subtracting the
-  // toolbar height.
-  return ToolbarExpandedHeight(
-      [UIApplication sharedApplication].preferredContentSizeCategory);
+  return content_suggestions::FakeToolbarHeight();
 }
 
 // Sets the feed collection contentOffset from the saved state to `offset` to
@@ -996,13 +1021,13 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 
 // Pins the fake omnibox to the top of the NTP.
 - (void)pinFakeOmniboxToTop {
-  self.fakeOmniboxPinnedToTop = YES;
+  self.isFakeboxPinned = YES;
   [self stickFakeOmniboxToTop];
 }
 
 // Resets the fake omnibox to its original position.
 - (void)resetFakeOmniboxConstraints {
-  self.fakeOmniboxPinnedToTop = NO;
+  self.isFakeboxPinned = NO;
   [self setInitialFakeOmniboxConstraints];
 }
 
@@ -1212,13 +1237,13 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   // Handles the sticky omnibox. Does not stick for iPads.
   if ([self shouldPinFakeOmnibox]) {
     if (scrollPosition > [self offsetToStickOmnibox] &&
-        (!self.fakeOmniboxPinnedToTop || force)) {
+        (!self.isFakeboxPinned || force)) {
       [self pinFakeOmniboxToTop];
     } else if (scrollPosition <= [self offsetToStickOmnibox] &&
-               (self.fakeOmniboxPinnedToTop || force)) {
+               (self.isFakeboxPinned || force)) {
       [self resetFakeOmniboxConstraints];
     }
-  } else if (self.fakeOmniboxPinnedToTop) {
+  } else if (self.isFakeboxPinned) {
     [self resetFakeOmniboxConstraints];
   }
 
@@ -1444,11 +1469,9 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   // for Discover infinite feed.
   CGFloat minimumHeight = collectionViewHeight + headerHeight;
   if (!IsRegularXRegularSizeClass(self.collectionView)) {
-    CGFloat toolbarHeight =
-        IsSplitToolbarMode(self.collectionView)
-            ? ToolbarExpandedHeight([UIApplication sharedApplication]
-                                        .preferredContentSizeCategory)
-            : 0;
+    CGFloat toolbarHeight = IsSplitToolbarMode(self.collectionView)
+                                ? [self stickyOmniboxHeight]
+                                : 0;
     CGFloat additionalHeight =
         toolbarHeight + self.collectionView.contentInset.bottom;
     minimumHeight -= additionalHeight;

@@ -112,37 +112,6 @@
       },
     },
 
-    'android_finch_smoke_tests': {
-      'chrome_finch_smoke_tests': {
-        'mixins': [
-          'skia_gold_test',
-        ],
-        'args': [
-          '--finch-seed-path',
-          '../../variations_seed',
-        ],
-      },
-      'monochrome_finch_smoke_tests': {
-        'mixins': [
-          'skia_gold_test',
-        ],
-        'args': [
-          '--finch-seed-path',
-          '../../variations_seed',
-        ],
-      },
-      'variations_smoke_tests': {
-        'test': 'variations_desktop_smoke_tests',
-        'mixins': [
-          'skia_gold_test',
-          'has_native_resultdb_integration',
-        ],
-        'args': [
-          '--target-platform=android',
-        ],
-      },
-    },
-
     'android_isolated_scripts': {
       'content_shell_crash_test': {
         'args': [
@@ -3969,15 +3938,6 @@
 
     'ios_eg2_cq_tests': {
       'ios_chrome_integration_eg2tests_module': {
-        'swarming': {
-          'shards': 8,
-        },
-      },
-      'ios_web_shell_eg2tests_module': {},
-    },
-
-    'ios_eg2_cq_tests_parallel': {
-      'ios_chrome_integration_eg2tests_module': {
         'mixins': [
           'ios_parallel_simulators',
         ],
@@ -3989,32 +3949,6 @@
     },
 
     'ios_eg2_tests': {
-      'ios_chrome_bookmarks_eg2tests_module': {},
-      'ios_chrome_settings_eg2tests_module': {
-        'swarming': {
-          'shards': 6,
-        },
-      },
-      'ios_chrome_signin_eg2tests_module': {
-        'swarming': {
-          'shards': 6,
-        },
-      },
-      'ios_chrome_smoke_eg2tests_module': {},
-      'ios_chrome_ui_eg2tests_module': {
-        'swarming': {
-          'shards': 12,
-        },
-      },
-      'ios_chrome_web_eg2tests_module': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
-      'ios_showcase_eg2tests_module': {},
-    },
-
-    'ios_eg2_tests_parallel': {
       'ios_chrome_bookmarks_eg2tests_module': {},
       'ios_chrome_settings_eg2tests_module': {
         'mixins': [
@@ -4107,9 +4041,7 @@
     },
 
     'lacros_device_or_vm_gtests': {
-      'aura_unittests': {},
       'cc_unittests': {},
-      'interactive_ui_tests': {},
       'ozone_unittests': {},
       'vaapi_unittest': {
         'args': [
@@ -4279,13 +4211,28 @@
       'sandbox_linux_unittests': {},
     },
 
-    'linux_lacros_chrome_browsertests_non_version_skew': {
-      'lacros_chrome_browsertests': {
-        'test': 'lacros_chrome_browsertests',
+    'linux_force_accessibility_gtests': {
+      'browser_tests': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter',
+          '--force-renderer-accessibility',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/accessibility-linux.browser_tests.filter',
         ],
+        'swarming': {
+          'shards': 8,
+        },
       },
+      'content_browsertests': {
+        'args': [
+          '--force-renderer-accessibility',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/accessibility-linux.content_browsertests.filter',
+        ],
+        'swarming': {
+          'shards': 8,
+        },
+      },
+    },
+
+    'linux_lacros_chrome_browsertests_non_version_skew': {
       'lacros_chrome_browsertests_run_in_series': {
         'test': 'lacros_chrome_browsertests_run_in_series',
         'args': [
@@ -4298,11 +4245,6 @@
     },
 
     'linux_lacros_chrome_browsertests_version_skew': {
-      'lacros_chrome_browsertests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
-        ],
-      },
       'lacros_chrome_browsertests_run_in_series': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
@@ -4314,42 +4256,6 @@
     },
 
     'linux_lacros_chrome_interactive_ui_tests_version_skew': {
-      'interactive_ui_tests': {
-        'test': 'interactive_ui_tests',
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter',
-        ],
-        'swarming': {
-          'shards': 3,
-        },
-      },
-    },
-
-    'linux_lacros_chrome_interactive_ui_tests_version_skew_beta': {
-      'interactive_ui_tests': {
-        'test': 'interactive_ui_tests',
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter',
-        ],
-        'swarming': {
-          'shards': 3,
-        },
-      },
-    },
-
-    'linux_lacros_chrome_interactive_ui_tests_version_skew_dev': {
-      'interactive_ui_tests': {
-        'test': 'interactive_ui_tests',
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter',
-        ],
-        'swarming': {
-          'shards': 3,
-        },
-      },
-    },
-
-    'linux_lacros_chrome_interactive_ui_tests_version_skew_stable': {
       'interactive_ui_tests': {
         'test': 'interactive_ui_tests',
         'args': [
@@ -4498,10 +4404,9 @@
 
     'model_validation_tests': {
       'model_validation_tests': {
-        'resultdb': {
-          'enable': True,
-          'result_format': 'single',
-        },
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
       },
     },
 
@@ -4563,6 +4468,12 @@
         'swarming': {
           'shards': 10,
         },
+      },
+      'extensions_browsertests_network_sandbox': {
+        'test': 'extensions_browsertests',
+        'args': [
+          '--enable-features=NetworkServiceSandbox',
+        ],
       },
       'interactive_ui_tests_network_sandbox': {
         'test': 'interactive_ui_tests',
@@ -5643,7 +5554,7 @@
           '--no-wpt-internal',
         ],
         'swarming': {
-          'shards': 15,
+          'shards': 4,
           'expiration': 18000,
           'hard_timeout': 14400,
         },
@@ -5846,7 +5757,7 @@
       'vr_platform_specific_chromium_gtests',
     ],
 
-    'android_nougat_emulator_gtests': [
+    'android_oreo_emulator_gtests': [
       'android_emulator_specific_chrome_public_tests',
       'android_monochrome_smoke_tests',
       'android_smoke_tests',
@@ -5858,13 +5769,6 @@
       'system_webview_shell_instrumentation_tests',
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
-    ],
-
-    'android_nougat_gtests': [
-      'android_ar_gtests',
-      'android_ddready_vr_gtests',
-      'android_monochrome_smoke_tests',
-      'android_smoke_tests',
     ],
 
     'android_oreo_gtests': [
@@ -6087,8 +5991,6 @@
       'telemetry_perf_unittests_isolated_scripts',
       'vulkan_swiftshader_isolated_scripts',
       'chromium_web_tests_high_dpi_isolated_scripts',
-      'wpt_web_tests_content_shell',
-      'wpt_web_tests_highdpi',
     ],
 
     'chromium_mac_gtests': [
@@ -6148,7 +6050,6 @@
       'mac_specific_isolated_scripts',
       'mojo_python_unittests_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
-      'wpt_web_tests_content_shell',
     ],
 
     'chromium_win10_gtests': [
@@ -6224,7 +6125,6 @@
       'telemetry_desktop_minidump_unittests_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
       'win_specific_isolated_scripts',
-      'wpt_web_tests_content_shell',
     ],
 
     'cronet_dbg_isolated_scripts': [
@@ -6679,7 +6579,7 @@
       'network_service_fyi_gtests',
     ],
 
-    'nougat_isolated_scripts': [
+    'oreo_isolated_scripts': [
       'android_isolated_scripts',
       'chromium_junit_tests_scripts',
       'components_perftests_isolated_scripts',
@@ -6948,32 +6848,27 @@
           'CROS_JACUZZI_RELEASE_LKGM',
         ],
       },
-      'gpu_mediapipe_validating_telemetry_tests': {
+      'gpu_mediapipe_passthrough_telemetry_tests': {
         'variants': [
           'CROS_JACUZZI_RELEASE_LKGM',
         ],
       },
-      'gpu_validating_telemetry_tests': {
+      'gpu_passthrough_telemetry_tests': {
         'variants': [
           'CROS_JACUZZI_RELEASE_LKGM',
         ],
       },
-      'gpu_webcodecs_validating_telemetry_test': {
+      'gpu_webcodecs_telemetry_test': {
         'variants': [
           'CROS_JACUZZI_RELEASE_LKGM',
         ],
       },
-      'gpu_webgl_conformance_validating_telemetry_tests': {
+      'gpu_webgl_conformance_gles_passthrough_telemetry_tests': {
         'variants': [
           'CROS_JACUZZI_RELEASE_LKGM',
         ],
       },
       'gpu_webgl2_conformance_gles_passthrough_telemetry_tests': {
-        'variants': [
-          'CROS_JACUZZI_RELEASE_LKGM',
-        ],
-      },
-      'gpu_webgl2_conformance_validating_telemetry_tests': {
         'variants': [
           'CROS_JACUZZI_RELEASE_LKGM',
         ],
@@ -7143,7 +7038,7 @@
           'SIM_IPAD_AIR_5TH_GEN_17_0',
         ],
       },
-      'ios_eg2_tests_parallel': {
+      'ios_eg2_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7152,7 +7047,7 @@
           'SIM_IPAD_AIR_5TH_GEN_17_0',
         ],
       },
-      'ios_eg2_cq_tests_parallel': {
+      'ios_eg2_cq_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7218,7 +7113,7 @@
           'SIM_IPHONE_14_17_0',
         ],
       },
-      'ios_eg2_cq_tests_parallel': {
+      'ios_eg2_cq_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7233,7 +7128,7 @@
           'SIM_IPAD_PRO_6TH_GEN_17_0',
         ],
       },
-      'ios_eg2_tests_parallel': {
+      'ios_eg2_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7327,7 +7222,7 @@
           'SIM_IPHONE_14_PLUS_17_0',
         ],
       },
-      'ios_eg2_tests_parallel': {
+      'ios_eg2_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7338,7 +7233,7 @@
           'SIM_IPAD_PRO_6TH_GEN_17_0',
         ],
       },
-      'ios_eg2_cq_tests_parallel': {
+      'ios_eg2_cq_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7450,7 +7345,7 @@
           'SIM_IPHONE_14_17_0',
         ],
       },
-      'ios_eg2_cq_tests_parallel': {
+      'ios_eg2_cq_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7478,7 +7373,7 @@
           'SIM_IPAD_AIR_5TH_GEN_17_0',
         ],
       },
-      'ios_eg2_cq_tests_parallel': {
+      'ios_eg2_cq_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7724,20 +7619,8 @@
       'linux_lacros_chrome_interactive_ui_tests_version_skew': {
         'variants': [
           'LACROS_VERSION_SKEW_CANARY',
-        ],
-      },
-      'linux_lacros_chrome_interactive_ui_tests_version_skew_beta': {
-        'variants': [
-          'LACROS_VERSION_SKEW_BETA',
-        ],
-      },
-      'linux_lacros_chrome_interactive_ui_tests_version_skew_dev': {
-        'variants': [
           'LACROS_VERSION_SKEW_DEV',
-        ],
-      },
-      'linux_lacros_chrome_interactive_ui_tests_version_skew_stable': {
-        'variants': [
+          'LACROS_VERSION_SKEW_BETA',
           'LACROS_VERSION_SKEW_STABLE',
         ],
       },
@@ -7878,14 +7761,6 @@
       'model_validation_tests': {
         'variants': [
           'MODEL_VALIDATION_BASE',
-          'MODEL_VALIDATION_TRUNK',
-        ],
-      },
-    },
-
-    'model_validation_tests_trunk': {
-      'model_validation_tests': {
-        'variants': [
           'MODEL_VALIDATION_TRUNK',
         ],
       },

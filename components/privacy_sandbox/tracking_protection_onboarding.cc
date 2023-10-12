@@ -14,9 +14,10 @@
 #include "components/privacy_sandbox/tracking_protection_prefs.h"
 
 namespace privacy_sandbox {
-
 namespace {
 
+using ::privacy_sandbox::tracking_protection::
+    TrackingProtectionOnboardingAckAction;
 using ::privacy_sandbox::tracking_protection::
     TrackingProtectionOnboardingStatus;
 
@@ -24,6 +25,22 @@ TrackingProtectionOnboardingStatus GetInternalOnboardingStatus(
     PrefService* pref_service) {
   return static_cast<TrackingProtectionOnboardingStatus>(
       pref_service->GetInteger(prefs::kTrackingProtectionOnboardingStatus));
+}
+
+TrackingProtectionOnboardingAckAction ToInternalAckAction(
+    TrackingProtectionOnboarding::NoticeAction action) {
+  switch (action) {
+    case TrackingProtectionOnboarding::NoticeAction::kOther:
+      return TrackingProtectionOnboardingAckAction::kOther;
+    case TrackingProtectionOnboarding::NoticeAction::kGotIt:
+      return TrackingProtectionOnboardingAckAction::kGotIt;
+    case TrackingProtectionOnboarding::NoticeAction::kSettings:
+      return TrackingProtectionOnboardingAckAction::kSettings;
+    case TrackingProtectionOnboarding::NoticeAction::kLearnMore:
+      return TrackingProtectionOnboardingAckAction::kLearnMore;
+    case TrackingProtectionOnboarding::NoticeAction::kClosed:
+      return TrackingProtectionOnboardingAckAction::kClosed;
+  }
 }
 
 void RecordActionMetrics(TrackingProtectionOnboarding::NoticeAction action) {
@@ -51,13 +68,6 @@ void RecordActionMetrics(TrackingProtectionOnboarding::NoticeAction action) {
   }
 }
 
-void ClearAllPrefs(PrefService* pref_service) {
-  pref_service->ClearPref(prefs::kTrackingProtectionOnboardingStatus);
-  pref_service->ClearPref(prefs::kTrackingProtectionEligibleSince);
-  pref_service->ClearPref(prefs::kTrackingProtectionOnboardedSince);
-  pref_service->ClearPref(prefs::kTrackingProtectionOnboardingAcked);
-}
-
 }  // namespace
 
 TrackingProtectionOnboarding::TrackingProtectionOnboarding(
@@ -76,13 +86,6 @@ TrackingProtectionOnboarding::TrackingProtectionOnboarding(
       base::BindRepeating(
           &TrackingProtectionOnboarding::OnOnboardingAckedChanged,
           base::Unretained(this)));
-
-  // If we're resetting eligibility, let's clear all our prefs first.
-  if (base::FeatureList::IsEnabled(
-          privacy_sandbox::
-              kTrackingProtectionOnboardingResetEligibilityForTesting)) {
-    ClearAllPrefs(pref_service_);
-  }
 
   // If we're forcing eligibility, then let' set it now.
   if (base::FeatureList::IsEnabled(
@@ -146,6 +149,9 @@ void TrackingProtectionOnboarding::NoticeShown() {
   base::RecordAction(
       base::UserMetricsAction("TrackingProtection.Notice.Shown"));
 
+  pref_service_->SetTime(prefs::kTrackingProtectionNoticeLastShown,
+                         base::Time::Now());
+
   auto status = GetInternalOnboardingStatus(pref_service_);
   if (status != TrackingProtectionOnboardingStatus::kEligible) {
     return;
@@ -162,17 +168,13 @@ void TrackingProtectionOnboarding::NoticeActionTaken(
     TrackingProtectionOnboarding::NoticeAction action) {
   RecordActionMetrics(action);
 
-  switch (action) {
-    case NoticeAction::kOther:
-      return;
-    case NoticeAction::kGotIt:
-    case NoticeAction::kSettings:
-    case NoticeAction::kLearnMore:
-    case NoticeAction::kClosed:
-      pref_service_->SetBoolean(prefs::kTrackingProtectionOnboardingAcked,
-                                true);
-      return;
+  if (pref_service_->GetBoolean(prefs::kTrackingProtectionOnboardingAcked)) {
+    return;
   }
+
+  pref_service_->SetBoolean(prefs::kTrackingProtectionOnboardingAcked, true);
+  pref_service_->SetInteger(prefs::kTrackingProtectionOnboardingAckAction,
+                            static_cast<int>(ToInternalAckAction(action)));
 }
 
 bool TrackingProtectionOnboarding::ShouldShowOnboardingNotice() {
@@ -186,6 +188,10 @@ bool TrackingProtectionOnboarding::ShouldShowOnboardingNotice() {
       return !pref_service_->GetBoolean(
           prefs::kTrackingProtectionOnboardingAcked);
   }
+}
+
+bool TrackingProtectionOnboarding::IsOffboarded() const {
+  return GetOnboardingStatus() == OnboardingStatus::kOffboarded;
 }
 
 TrackingProtectionOnboarding::OnboardingStatus

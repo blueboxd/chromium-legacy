@@ -327,7 +327,8 @@ TEST_F(PeripheralCustomizationEventRewriterTest,
        InvalidEventTypeMouseObserving) {
   TestEventRewriterContinuation continuation;
 
-  rewriter_->StartObservingMouse(kMouseDeviceId);
+  rewriter_->StartObservingMouse(kMouseDeviceId,
+                                 /*can_rewrite_key_event=*/true);
 
   ui::MouseEvent event =
       CreateMouseButtonEvent(ui::ET_MOUSE_DRAGGED, ui::EF_NONE, ui::EF_NONE);
@@ -502,7 +503,8 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(MouseButtonObserverTest, EventRewriting) {
   auto data = GetParam();
 
-  rewriter_->StartObservingMouse(kMouseDeviceId);
+  rewriter_->StartObservingMouse(kMouseDeviceId,
+                                 /*can_rewrite_key_event=*/true);
 
   TestEventRewriterContinuation continuation;
   rewriter_->RewriteEvent(GetEventFromVariant(data.incoming_event),
@@ -531,6 +533,63 @@ TEST_P(MouseButtonObserverTest, EventRewriting) {
   ASSERT_TRUE(continuation.passthrough_event);
   EXPECT_EQ(ConvertToString(data.incoming_event),
             ConvertToString(*continuation.passthrough_event));
+}
+
+TEST_F(MouseButtonObserverTest, BlockEventRewritingForKeyEvent) {
+  TestEventRewriterContinuation continuation;
+
+  rewriter_->StartObservingMouse(kMouseDeviceId,
+                                 /*can_rewrite_key_event=*/false);
+
+  ui::KeyEvent key_event =
+      CreateKeyButtonEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_COMMAND_DOWN);
+  rewriter_->RewriteEvent(key_event,
+                          continuation.weak_ptr_factory_.GetWeakPtr());
+  // Key event shouldn't be discarded if the mouse can't rewrite key
+  // events.
+  ASSERT_TRUE(continuation.passthrough_event);
+  ASSERT_TRUE(continuation.passthrough_event->IsKeyEvent());
+  EXPECT_EQ(ConvertToString(key_event),
+            ConvertToString(*continuation.passthrough_event));
+
+  ui::MouseEvent mouse_event =
+      CreateMouseButtonEvent(ui::ET_MOUSE_PRESSED, ui::EF_RIGHT_MOUSE_BUTTON,
+                             ui::EF_RIGHT_MOUSE_BUTTON);
+  continuation.reset();
+  rewriter_->RewriteEvent(mouse_event,
+                          continuation.weak_ptr_factory_.GetWeakPtr());
+  // Mouse event shouldn't be discarded if the mouse can't rewrite this
+  // mouse event.
+  ASSERT_TRUE(continuation.passthrough_event);
+  ASSERT_TRUE(continuation.passthrough_event->IsMouseEvent());
+  EXPECT_EQ(ConvertToString(mouse_event),
+            ConvertToString(*continuation.passthrough_event));
+
+  rewriter_->StopObserving();
+  continuation.reset();
+
+  rewriter_->StartObservingMouse(kMouseDeviceId,
+                                 /*can_rewrite_key_event=*/true);
+
+  ui::KeyEvent new_key_event =
+      CreateKeyButtonEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_COMMAND_DOWN);
+  rewriter_->RewriteEvent(new_key_event,
+                          continuation.weak_ptr_factory_.GetWeakPtr());
+  // New key event should be discarded if the mouse can rewrite key
+  // events.
+  ASSERT_TRUE(continuation.discarded());
+  EXPECT_EQ(nullptr, continuation.passthrough_event);
+
+  ui::MouseEvent new_mouse_event =
+      CreateMouseButtonEvent(ui::ET_MOUSE_PRESSED, ui::EF_MIDDLE_MOUSE_BUTTON,
+                             ui::EF_MIDDLE_MOUSE_BUTTON);
+  continuation.reset();
+  rewriter_->RewriteEvent(new_mouse_event,
+                          continuation.weak_ptr_factory_.GetWeakPtr());
+  // New mouse event should be discarded if the mouse can rewrite this
+  // mouse event.
+  ASSERT_TRUE(continuation.discarded());
+  EXPECT_EQ(nullptr, continuation.passthrough_event);
 }
 
 class GraphicsTabletButtonObserverTest
@@ -1079,6 +1138,33 @@ INSTANTIATE_TEST_SUITE_P(
                                   ui::DomCode::US_V,
                                   ui::DomKey::Constant<'v'>::Character)},
         })));
+
+TEST_F(StaticShortcutActionRewritingTest, StaticShortcutDisableMouseRewriting) {
+  mouse_settings_->button_remappings.push_back(mojom::ButtonRemapping::New(
+      "",
+      mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kForward),
+      mojom::RemappingAction::NewStaticShortcutAction(
+          mojom::StaticShortcutAction::kDisable)));
+
+  TestEventRewriterContinuation continuation;
+  ui::MouseEvent mouse_pressed_event =
+      CreateMouseButtonEvent(ui::ET_MOUSE_PRESSED, ui::EF_FORWARD_MOUSE_BUTTON,
+                             ui::EF_FORWARD_MOUSE_BUTTON, kMouseDeviceId);
+  rewriter_->RewriteEvent(mouse_pressed_event,
+                          continuation.weak_ptr_factory_.GetWeakPtr());
+  ASSERT_TRUE(continuation.discarded());
+  EXPECT_EQ(nullptr, continuation.passthrough_event);
+
+  ui::MouseEvent mouse_release_event =
+      CreateMouseButtonEvent(ui::ET_MOUSE_RELEASED, ui::EF_FORWARD_MOUSE_BUTTON,
+                             ui::EF_FORWARD_MOUSE_BUTTON, kMouseDeviceId);
+
+  continuation.reset();
+  rewriter_->RewriteEvent(mouse_release_event,
+                          continuation.weak_ptr_factory_.GetWeakPtr());
+  ASSERT_TRUE(continuation.discarded());
+  EXPECT_EQ(nullptr, continuation.passthrough_event);
+}
 
 TEST_P(StaticShortcutActionRewritingTest, StaticShortcutMouseRewriting) {
   const auto& [static_shortcut_action, expected_key_event] = GetParam();

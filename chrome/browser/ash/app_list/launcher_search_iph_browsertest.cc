@@ -11,13 +11,13 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/assistant/assistant_test_api_impl.h"
 #include "ash/app_list/views/contents_view.h"
-#include "ash/app_list/views/launcher_search_iph_view.h"
 #include "ash/app_list/views/pagination_model_transition_waiter.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/test/test_assistant_service.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/main_stage/assistant_zero_state_view.h"
+#include "ash/assistant/ui/main_stage/launcher_search_iph_view.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/test/app_list_test_api.h"
@@ -424,18 +424,6 @@ IN_PROC_BROWSER_TEST_P(AppListIphBrowserTestWithTestConfig,
 
   EXPECT_FALSE(IsLauncherSearchIphViewVisible());
   EXPECT_FALSE(search_box_view()->assistant_button()->GetBackground());
-}
-
-IN_PROC_BROWSER_TEST_P(AppListIphBrowserTestWithTestConfig, ClickLink) {
-  OpenAppListAndWaitForIphView();
-  views::View* link_label = search_box_view()->GetViewByID(
-      ash::LauncherSearchIphView::ViewId::kDescriptionLinkLabel);
-
-  ui_test_utils::TabAddedWaiter tab_added_waiter(browser());
-  Click(link_label);
-  tab_added_waiter.Wait();
-  EXPECT_EQ(GURL("https://www.google.com/"),
-            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // The bool param indicates if the AssistantLearnMore feature is enabled or not.

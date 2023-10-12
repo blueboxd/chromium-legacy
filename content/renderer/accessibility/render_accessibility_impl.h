@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -272,10 +273,11 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   static void IgnoreProtocolChecksForTesting();
 
   // The RenderAccessibilityManager that owns us.
-  RenderAccessibilityManager* render_accessibility_manager_;
+  raw_ptr<RenderAccessibilityManager, ExperimentalRenderer>
+      render_accessibility_manager_;
 
   // The associated RenderFrameImpl by means of the RenderAccessibilityManager.
-  RenderFrameImpl* render_frame_;
+  raw_ptr<RenderFrameImpl, ExperimentalRenderer> render_frame_;
 
   // This keeps accessibility enabled as long as it lives.
   std::unique_ptr<blink::WebAXContext> ax_context_;
@@ -286,7 +288,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   using PluginAXTreeSerializer =
       ui::AXTreeSerializer<const ui::AXNode*, std::vector<const ui::AXNode*>>;
   std::unique_ptr<PluginAXTreeSerializer> plugin_serializer_;
-  PluginAXTreeSource* plugin_tree_source_;
+  raw_ptr<PluginAXTreeSource, ExperimentalRenderer> plugin_tree_source_;
 
   // Token to return this token in the next IPC, so that RenderFrameHostImpl
   // can discard stale data, when the token does not match the expected token.
@@ -310,6 +312,21 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   // in SendPendingAccessibilityEvents. This is periodically uploaded as
   // a UKM and then reset.
   base::TimeDelta slowest_serialization_time_;
+
+  // Tracks the stage in the loading process for a document, which is used to
+  // determine if serialization is part of the loading process or post load.
+  enum class LoadingStage {
+    // Expect to process a kLoadComplete event.
+    kPreload,
+    // kLoadComplete event has been processed and waiting on next AXReady call
+    // to indicate that we have completed processing all events associated with
+    // loading the document.
+    kLoadCompleted,
+    // All accessibility events associated with the initial document load have
+    // been serialized.
+    kPostLoad
+  };
+  LoadingStage loading_stage_ = LoadingStage::kPreload;
 
   // This stores the last time during that a serialization was done, so that
   // serializations can be skipped if the time since the last serialization is

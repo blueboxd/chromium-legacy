@@ -79,7 +79,7 @@ enum ModelType {
   // An object representing a custom search engine.
   SEARCH_ENGINES,
   // An object representing a browser session, e.g. an open tab. This is used
-  // for "Tabs" (depending on PROXY_TABS).
+  // for "Open Tabs".
   SESSIONS,
   // An app object.
   APPS,
@@ -151,16 +151,7 @@ enum ModelType {
   INCOMING_PASSWORD_SHARING_INVITATION,
   OUTGOING_PASSWORD_SHARING_INVITATION,
 
-  // Proxy types are excluded from the sync protocol, but are still considered
-  // real user types. By convention, we prefix them with 'PROXY_' to distinguish
-  // them from normal protocol types.
-  //
-  // Tab sync. This is a placeholder type, which implicitly enables Sessions
-  // for tabs sync.
-  // TODO(crbug.com/1365291): Now that TYPED_URLS is gone, it should be possible
-  // to remove this type, and the whole concept of "proxy types".
-  PROXY_TABS,
-  LAST_USER_MODEL_TYPE = PROXY_TABS,
+  LAST_USER_MODEL_TYPE = OUTGOING_PASSWORD_SHARING_INVITATION,
 
   // ---- Control Types ----
   // An object representing a set of Nigori keys.
@@ -261,54 +252,12 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics);
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics);
 
 // Protocol types are those types that have actual protocol buffer
-// representations. This distinguishes them from Proxy types, which have no
-// protocol representation and are never sent to the server.
+// representations. This is the same as the "real" model types, i.e. all types
+// except UNSPECIFIED.
 constexpr ModelTypeSet ProtocolTypes() {
-  return {BOOKMARKS,
-          PREFERENCES,
-          PASSWORDS,
-          AUTOFILL_PROFILE,
-          AUTOFILL,
-          AUTOFILL_WALLET_CREDENTIAL,
-          AUTOFILL_WALLET_DATA,
-          AUTOFILL_WALLET_METADATA,
-          AUTOFILL_WALLET_OFFER,
-          AUTOFILL_WALLET_USAGE,
-          THEMES,
-          EXTENSIONS,
-          SEARCH_ENGINES,
-          SESSIONS,
-          APPS,
-          APP_SETTINGS,
-          EXTENSION_SETTINGS,
-          HISTORY_DELETE_DIRECTIVES,
-          DICTIONARY,
-          DEVICE_INFO,
-          PRIORITY_PREFERENCES,
-          SUPERVISED_USER_SETTINGS,
-          APP_LIST,
-          ARC_PACKAGE,
-          PRINTERS,
-          READING_LIST,
-          USER_EVENTS,
-          NIGORI,
-          USER_CONSENTS,
-          SEND_TAB_TO_SELF,
-          SECURITY_EVENTS,
-          WEB_APPS,
-          WIFI_CONFIGURATIONS,
-          OS_PREFERENCES,
-          OS_PRIORITY_PREFERENCES,
-          SHARING_MESSAGE,
-          WORKSPACE_DESK,
-          HISTORY,
-          PRINTERS_AUTHORIZATION_SERVERS,
-          CONTACT_INFO,
-          SAVED_TAB_GROUP,
-          POWER_BOOKMARK,
-          WEBAUTHN_CREDENTIAL,
-          INCOMING_PASSWORD_SHARING_INVITATION,
-          OUTGOING_PASSWORD_SHARING_INVITATION};
+  // Note that ModelTypeSet only covers the real types, not UNSPECIFIED.
+  static_assert(!ModelTypeSet::All().Has(ModelType::UNSPECIFIED));
+  return ModelTypeSet::All();
 }
 
 // These are the normal user-controlled types. This is to distinguish from

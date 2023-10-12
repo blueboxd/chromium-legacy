@@ -242,6 +242,12 @@ void TabSearchPageHandler::OpenRecentlyClosedEntry(int32_t session_id) {
       WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }
 
+void TabSearchPageHandler::RequestTabOrganization(
+    RequestTabOrganizationCallback callback) {
+  // TODO(emshack): Implement once the required API has landed
+  std::move(callback).Run("", {});
+}
+
 void TabSearchPageHandler::SaveRecentlyClosedExpandedPref(bool expanded) {
   Profile::FromWebUI(web_ui_)->GetPrefs()->SetBoolean(
       tab_search_prefs::kTabSearchRecentlyClosedSectionExpanded, expanded);
@@ -598,7 +604,7 @@ void TabSearchPageHandler::TabChangedAt(content::WebContents* contents,
   // out the changes we are not interested in.
   if (change_type != TabChangeType::kAll)
     return;
-  Browser* browser = chrome::FindBrowserWithWebContents(contents);
+  Browser* browser = chrome::FindBrowserWithTab(contents);
   if (!browser)
     return;
   Browser* active_browser = chrome::FindLastActive();

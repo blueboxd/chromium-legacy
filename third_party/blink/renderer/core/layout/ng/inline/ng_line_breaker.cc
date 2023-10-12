@@ -1372,8 +1372,10 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
           item_(item) {}
 
    protected:
-    scoped_refptr<ShapeResult> Shape(unsigned start, unsigned end) final {
-      return line_breaker_->ShapeText(*item_, start, end);
+    scoped_refptr<ShapeResult> Shape(unsigned start,
+                                     unsigned end,
+                                     ShapeOptions options) final {
+      return line_breaker_->ShapeText(*item_, start, end, options);
     }
 
    private:
@@ -1382,19 +1384,18 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
 
   } breaker(this, &item, &item_shape_result);
 
-  // Use kStartShouldBeSafe if at the beginning of a line.
-  unsigned options = ShapingLineBreaker::kDefaultOptions;
-  if (item_result->StartOffset() != line_info->StartOffset())
-    options |= ShapingLineBreaker::kDontReshapeStart;
+  const ComputedStyle& style = *item.Style();
+  breaker.SetTextSpacingTrim(style.GetFontDescription().GetTextSpacingTrim());
+  breaker.SetLineStart(line_info->StartOffset());
 
   // Reshaping between the last character and trailing spaces is needed only
   // when we need accurate end position, because kerning between trailing spaces
   // is not visible.
   if (!NeedsAccurateEndPosition(*line_info, item))
-    options |= ShapingLineBreaker::kDontReshapeEndIfAtSpace;
+    breaker.SetDontReshapeEndIfAtSpace();
 
   if (UNLIKELY(break_at_)) {
-    if (BreakTextAt(item_result, item, breaker, options, line_info)) {
+    if (BreakTextAt(item_result, item, breaker, line_info)) {
       return kBreakAt;
     }
     return kSuccess;
@@ -1404,7 +1405,7 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
   // because if this item overflows, we will rewind and break line again. The
   // overflowing ShapeResult is not needed.
   if (break_anywhere_if_overflow_ && !override_break_anywhere_)
-    options |= ShapingLineBreaker::kNoResultIfOverflow;
+    breaker.SetNoResultIfOverflow();
 
 #if DCHECK_IS_ON()
   unsigned try_count = 0;
@@ -1416,14 +1417,14 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
     ++try_count;
     DCHECK_LE(try_count, 2u);
 #endif
-    scoped_refptr<const ShapeResultView> shape_result = breaker.ShapeLine(
-        item_result->StartOffset(), available_width.ClampNegativeToZero(),
-        options, &result);
+    scoped_refptr<const ShapeResultView> shape_result =
+        breaker.ShapeLine(item_result->StartOffset(),
+                          available_width.ClampNegativeToZero(), &result);
 
     // If this item overflows and 'break-word' is set, this line will be
     // rewinded. Making this item long enough to overflow is enough.
     if (!shape_result) {
-      DCHECK(options & ShapingLineBreaker::kNoResultIfOverflow);
+      DCHECK(breaker.NoResultIfOverflow());
       item_result->inline_size = available_width_with_hyphens + 1;
       item_result->text_offset.end = item.EndOffset();
       item_result->text_offset.AssertNotEmpty();
@@ -1495,7 +1496,6 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
 bool NGLineBreaker::BreakTextAt(NGInlineItemResult* item_result,
                                 const NGInlineItem& item,
                                 ShapingLineBreaker& breaker,
-                                unsigned options,
                                 NGLineInfo* line_info) {
   DCHECK(break_at_);
   DCHECK_LE(current_.text_offset, break_at_.end.text_offset);
@@ -1510,7 +1510,7 @@ bool NGLineBreaker::BreakTextAt(NGInlineItemResult* item_result,
   }
   if (item_result->Length()) {
     scoped_refptr<const ShapeResultView> shape_result = breaker.ShapeLineAt(
-        item_result->StartOffset(), item_result->EndOffset(), options);
+        item_result->StartOffset(), item_result->EndOffset());
     item_result->inline_size =
         shape_result->SnappedWidth().ClampNegativeToZero();
     item_result->shape_result = std::move(shape_result);
@@ -1727,17 +1727,19 @@ void NGLineBreaker::HandleEmptyText(const NGInlineItem& item,
 // Re-shape the specified range of |NGInlineItem|.
 scoped_refptr<ShapeResult> NGLineBreaker::ShapeText(const NGInlineItem& item,
                                                     unsigned start,
-                                                    unsigned end) {
+                                                    unsigned end,
+                                                    ShapeOptions options) {
   scoped_refptr<ShapeResult> shape_result;
   if (!items_data_.segments) {
     RunSegmenter::RunSegmenterRange segment_range =
         NGInlineItemSegment::UnpackSegmentData(start, end, item.SegmentData());
     shape_result = shaper_.Shape(&item.Style()->GetFont(), item.Direction(),
-                                 start, end, segment_range);
+                                 start, end, segment_range, options);
   } else {
     shape_result = items_data_.segments->ShapeText(
         &shaper_, &item.Style()->GetFont(), item.Direction(), start, end,
-        base::checked_cast<unsigned>(&item - items_data_.items.begin()));
+        base::checked_cast<unsigned>(&item - items_data_.items.begin()),
+        options);
   }
   if (UNLIKELY(spacing_.HasSpacing()))
     shape_result->ApplySpacing(spacing_);

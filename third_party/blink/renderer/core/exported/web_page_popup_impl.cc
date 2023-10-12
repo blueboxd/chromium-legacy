@@ -297,14 +297,14 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     popup_->widget_base_->ClearKeyboardTriggeredTooltip();
   }
 
-  void InjectGestureScrollEvent(LocalFrame& local_frame,
-                                WebGestureDevice device,
-                                const gfx::Vector2dF& delta,
-                                ui::ScrollGranularity granularity,
-                                cc::ElementId scrollable_area_element_id,
-                                WebInputEvent::Type injected_type) override {
-    popup_->InjectGestureScrollEvent(device, delta, granularity,
-                                     scrollable_area_element_id, injected_type);
+  void InjectScrollbarGestureScroll(
+      LocalFrame& local_frame,
+      const gfx::Vector2dF& delta,
+      ui::ScrollGranularity granularity,
+      cc::ElementId scrollable_area_element_id,
+      WebInputEvent::Type injected_type) override {
+    popup_->InjectScrollbarGestureScroll(
+        delta, granularity, scrollable_area_element_id, injected_type);
   }
 
   WebPagePopupImpl* popup_;
@@ -444,7 +444,8 @@ void WebPagePopupImpl::InitializeCompositing(
   // much work here.
   widget_base_->InitializeCompositing(*page_->GetPageScheduler(), screen_infos,
                                       settings,
-                                      /*frame_widget_input_handler=*/nullptr);
+                                      /*frame_widget_input_handler=*/nullptr,
+                                      /*previous_widget=*/nullptr);
   cc::LayerTreeDebugState debug_state =
       widget_base_->LayerTreeHost()->GetDebugState();
   debug_state.TurnOffHudInfoDisplay();
@@ -1021,14 +1022,13 @@ gfx::Rect WebPagePopupImpl::WindowRectInScreen() const {
   return widget_base_->WindowRect();
 }
 
-void WebPagePopupImpl::InjectGestureScrollEvent(
-    WebGestureDevice device,
+void WebPagePopupImpl::InjectScrollbarGestureScroll(
     const gfx::Vector2dF& delta,
     ui::ScrollGranularity granularity,
     cc::ElementId scrollable_area_element_id,
     WebInputEvent::Type injected_type) {
-  widget_base_->input_handler().InjectGestureScrollEvent(
-      device, delta, granularity, scrollable_area_element_id, injected_type);
+  widget_base_->input_handler().InjectScrollbarGestureScroll(
+      delta, granularity, scrollable_area_element_id, injected_type);
 }
 
 void WebPagePopupImpl::ScreenRectToEmulated(gfx::Rect& screen_rect) {

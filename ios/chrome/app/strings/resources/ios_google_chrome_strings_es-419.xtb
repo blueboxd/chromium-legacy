@@ -69,7 +69,6 @@ Aspectos que debes tener en cuenta:
 <translation id="3345341804167540816">Usar Chrome en todas partes</translation>
 <translation id="3472587960215700950">Chrome usa Google Maps para brindarte instrucciones sobre cómo llegar, así como información local sobre las direcciones detectadas.</translation>
 <translation id="3503014945441706099">También obtén la Navegación segura mejorada para este perfil de Chrome</translation>
-<translation id="3506309791702511623">Chrome puede detectar los números de seguimiento que ingresas y hacer un seguimiento de tus paquetes en la página Nueva pestaña, al mismo tiempo que te ayuda con otras experiencias de compras de Google.</translation>
 <translation id="3522659714780527202">Para ver tus pestañas donde sea que uses Chrome, activa la sincronización</translation>
 <translation id="3533694711092285624">No hay contraseñas guardadas. Chrome puede revisar las contraseñas cuando las guardas.</translation>
 <translation id="3594076341410558780">Ocultar "Aprovecha Chrome al máximo"</translation>
@@ -118,6 +117,7 @@ Aspectos que debes tener en cuenta:
 <translation id="5389212809648216794">Google Chrome no puede utilizar tu cámara porque la está usando otra aplicación</translation>
 <translation id="5395376160638294582">Asegúrate de que siempre puedas usar los datos de Chrome en tu Cuenta de Google</translation>
 <translation id="5439191312780166229">Analiza más datos de los sitios que la protección estándar para advertirte sobre sitios peligrosos, incluso sobre los que Google no conocía. Puedes omitir las advertencias de Chrome.</translation>
+<translation id="5442013002200339429">Si ocultas "<ph name="MODULE_NAME" />", Chrome ya no realizará un seguimiento automático de tus paquetes futuros y borrará todos los datos de seguimiento de paquetes anteriores.</translation>
 <translation id="5460571915754665838">4. Selecciona Chrome.</translation>
 <translation id="546541279759910616">{COUNT,plural, =1{Chrome te ayudará a realizar el seguimiento de este paquete en la página Nueva pestaña.}other{Chrome te ayudará a realizar el seguimiento de estos paquetes en la página Nueva pestaña.}}</translation>
 <translation id="5492504007368565877">El Administrador de contraseñas de Google no puede revisar las contraseñas.</translation>
@@ -154,6 +154,7 @@ Aspectos que debes tener en cuenta:
 
 Solo alguien con tu frase de contraseña puede leer los datos encriptados. Google no envía ni almacena la frase de contraseña. Si olvidas tu frase de contraseña o quieres cambiar este parámetro de configuración, <ph name="BEGIN_LINK" />borra los datos de Chrome de tu cuenta<ph name="END_LINK" />.</translation>
 <translation id="6822673484890854830">Chrome no pudo verificar todas las contraseñas. Vuelve a intentarlo más tarde.</translation>
+<translation id="6851982868877411675">Abre la configuración de Chrome en iOS, presiona "App del navegador predeterminado" y selecciona Chrome.</translation>
 <translation id="6916015246697034114">Realizar búsquedas con la voz en Chrome</translation>
 <translation id="6964931465519938134">Ahora puedes usar Chrome cada vez que presionas vínculos que aparecen en mensajes, documentos u otras apps.</translation>
 <translation id="6975725306479268850">Elige Chrome para autocompletar</translation>
@@ -188,6 +189,7 @@ Solo alguien con tu frase de contraseña puede leer los datos encriptados. Googl
 <translation id="7933491483529363150">Abre Mi pestaña más reciente en Chrome.</translation>
 <translation id="8022947259858476807">Usa Chrome como tu navegador predeterminado para abrir vínculos, realizar búsquedas desde widgets y autocompletar contraseñas en otras apps</translation>
 <translation id="804638182476029347">Permite las notificaciones de Chrome para recibir alertas de descuentos</translation>
+<translation id="8069507567842347179">Ya se realizó un seguimiento de este paquete en Chrome.</translation>
 <translation id="81358522153858150">Chrome ahora es compatible con las políticas del usuario de tus dispositivos administrados</translation>
 <translation id="8160472928944011082">No se puede actualizar Chrome</translation>
 <translation id="8174679664544842874">Abre una nueva pestaña en Chrome.</translation>

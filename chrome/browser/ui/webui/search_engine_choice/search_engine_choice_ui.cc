@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/search_engine_choice/search_engine_choice_ui.h"
 
 #include "base/check_deref.h"
-#include "base/check_is_test.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
@@ -21,10 +20,10 @@
 #include "chrome/grit/search_engine_choice_resources_map.h"
 #include "chrome/grit/signin_resources.h"
 #include "components/grit/components_scaled_resources.h"
-#include "components/search_engines/search_engine_utils.h"
+#include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
-#include "components/signin/public/base/signin_switches.h"
 #include "components/strings/grit/components_branded_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -39,7 +38,6 @@ void AddGeneratedIconResources(content::WebUIDataSource* source) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   source->AddResourcePath("images/google_com.png", IDR_GOOGLE_COM_PNG);
 #endif
-  source->AddResourcePath("images/ask_com.png", IDR_ASK_COM_PNG);
   source->AddResourcePath("images/baidu_com.png", IDR_BAIDU_COM_PNG);
   source->AddResourcePath("images/bing_com.png", IDR_BING_COM_PNG);
   source->AddResourcePath("images/search_brave_com.png",
@@ -57,9 +55,6 @@ void AddGeneratedIconResources(content::WebUIDataSource* source) {
   source->AddResourcePath("images/nona_de.png", IDR_NONA_DE_PNG);
   source->AddResourcePath("images/panda_search_org.png",
                           IDR_PANDA_SEARCH_ORG_PNG);
-  source->AddResourcePath("images/petalsearch_com.png",
-                          IDR_PETALSEARCH_COM_PNG);
-  source->AddResourcePath("images/presearch_com.png", IDR_PRESEARCH_COM_PNG);
   source->AddResourcePath("images/quendu_com.png", IDR_QUENDU_COM_PNG);
   source->AddResourcePath("images/qwant_com.png", IDR_QWANT_COM_PNG);
   source->AddResourcePath("images/seznam_cz.png", IDR_SEZNAM_CZ_PNG);
@@ -116,7 +111,7 @@ std::string GetChoiceListJSON(Profile& profile) {
   base::Value::List choice_value_list;
   SearchEngineChoiceService* search_engine_choice_service =
       SearchEngineChoiceServiceFactory::GetForProfile(&profile);
-  const std::vector<std::unique_ptr<TemplateURLData>> choices =
+  const std::vector<std::unique_ptr<TemplateURL>> choices =
       search_engine_choice_service->GetSearchEngines();
 
   for (const auto& choice : choices) {
@@ -128,7 +123,7 @@ std::string GetChoiceListJSON(Profile& profile) {
     std::replace(engine_keyword.begin(), engine_keyword.end(), '-', '_');
     const std::u16string icon_path = u"images/" + engine_keyword + u".png";
 
-    choice_value.Set("prepopulate_id", choice->prepopulate_id);
+    choice_value.Set("prepopulate_id", choice->prepopulate_id());
     choice_value.Set("name", choice->short_name());
     choice_value.Set("icon_path", icon_path);
     choice_value.Set("url", choice->url());
@@ -143,7 +138,8 @@ std::string GetChoiceListJSON(Profile& profile) {
 SearchEngineChoiceUI::SearchEngineChoiceUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, true),
       profile_(CHECK_DEREF(Profile::FromWebUI(web_ui))) {
-  CHECK(base::FeatureList::IsEnabled(switches::kSearchEngineChoice));
+  CHECK(search_engines::IsChoiceScreenFlagEnabled(
+      search_engines::ChoicePromo::kAny));
 
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       web_ui->GetWebContents()->GetBrowserContext(),

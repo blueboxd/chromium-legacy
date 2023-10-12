@@ -590,6 +590,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
     return feature_info_.get();
   }
   Capabilities GetCapabilities() override;
+  GLCapabilities GetGLCapabilities() override;
   void RestoreState(const ContextState* prev_state) override;
 
   void RestoreActiveTexture() const override { state_.RestoreActiveTexture(); }
@@ -1115,6 +1116,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   void DoCreateAndConsumeTextureINTERNAL(GLuint client_id,
                                          const volatile GLbyte* key);
+  void DoTexImage2DSharedImageCHROMIUM(GLuint client_id,
+                                       const volatile GLbyte* mailbox);
   void DoCreateAndTexStorage2DSharedImageINTERNAL(
       GLuint client_id,
       const volatile GLbyte* mailbox);
@@ -1126,7 +1129,11 @@ class GLES2DecoderImpl : public GLES2Decoder,
       GLenum plane_config,
       GLenum subsampling,
       const volatile GLbyte* mailboxes_in);
-  void DoConvertYUVAMailboxesToRGBINTERNAL(GLenum yuv_color_space,
+  void DoConvertYUVAMailboxesToRGBINTERNAL(GLint src_x,
+                                           GLint src_y,
+                                           GLsizei width,
+                                           GLsizei height,
+                                           GLenum yuv_color_space,
                                            GLenum plane_config,
                                            GLenum subsampling,
                                            const volatile GLbyte* mailboxes_in);
@@ -1566,6 +1573,11 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   // Wrapper for glBindRenderbuffer since we need to track the current targets.
   void DoBindRenderbuffer(GLenum target, GLuint renderbuffer);
+
+  // Updates any targets to which `client_id` is bound to be bound to `texture`.
+  void UpdateTextureBinding(GLenum target,
+                            GLuint client_id,
+                            TextureRef* texture_ref);
 
   // Wrapper for glBindTexture since we need to track the current targets.
   void DoBindTexture(GLenum target, GLuint texture);
@@ -3479,10 +3491,106 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
 Capabilities GLES2DecoderImpl::GetCapabilities() {
   DCHECK(initialized());
   Capabilities caps;
+
+  DoGetIntegerv(GL_MAX_TEXTURE_SIZE, &caps.max_texture_size, 1);
+  if (workarounds().webgl_or_caps_max_texture_size) {
+    caps.max_texture_size =
+        std::min(caps.max_texture_size,
+                 feature_info_->workarounds().webgl_or_caps_max_texture_size);
+  }
+  if (feature_info_->IsWebGL2OrES3Context()) {
+    // TODO(zmo): once we switch to MANGLE, we should query version numbers.
+    caps.major_version = 3;
+    caps.minor_version = 0;
+  }
+
+  caps.egl_image_external =
+      feature_info_->feature_flags().oes_egl_image_external;
+  caps.egl_image_external_essl3 =
+      feature_info_->feature_flags().oes_egl_image_external_essl3;
+  caps.texture_format_bgra8888 =
+      feature_info_->feature_flags().ext_texture_format_bgra8888;
+  caps.texture_format_etc1_npot =
+      feature_info_->feature_flags().oes_compressed_etc1_rgb8_texture &&
+      !workarounds().etc1_power_of_two_only;
+  // Vulkan currently doesn't support single-component cross-thread shared
+  // images.
+  caps.disable_one_component_textures =
+      group_->shared_image_manager() &&
+      group_->shared_image_manager()->display_context_on_another_thread() &&
+      (workarounds().avoid_one_component_egl_images ||
+       features::IsUsingVulkan());
+  caps.sync_query = feature_info_->feature_flags().chromium_sync_query;
+
+  // Only query the kEnableMSAAOnNewIntelGPUs feature flag if the host device
+  // is affected by the experiment.
+  bool eligible_for_experiment =
+      workarounds().msaa_is_slow && !workarounds().msaa_is_slow_2;
+  caps.msaa_is_slow =
+      eligible_for_experiment
+          ? !base::FeatureList::IsEnabled(features::kEnableMSAAOnNewIntelGPUs)
+          : workarounds().msaa_is_slow;
+  caps.avoid_stencil_buffers = workarounds().avoid_stencil_buffers;
+  caps.texture_rg = feature_info_->feature_flags().ext_texture_rg;
+  caps.texture_norm16 = feature_info_->feature_flags().ext_texture_norm16;
+  caps.texture_half_float_linear =
+      feature_info_->oes_texture_half_float_linear_available();
+  caps.image_ycbcr_420v =
+      feature_info_->feature_flags().chromium_image_ycbcr_420v;
+  caps.image_ycbcr_420v_disabled_for_video_frames =
+      group_->gpu_preferences()
+          .disable_biplanar_gpu_memory_buffers_for_video_frames;
+  caps.image_ar30 = feature_info_->feature_flags().chromium_image_ar30;
+  caps.image_ab30 = feature_info_->feature_flags().chromium_image_ab30;
+  caps.image_ycbcr_p010 =
+      feature_info_->feature_flags().chromium_image_ycbcr_p010;
+  caps.max_copy_texture_chromium_size =
+      workarounds().max_copy_texture_chromium_size;
+  caps.render_buffer_format_bgra8888 =
+      feature_info_->feature_flags().ext_render_buffer_format_bgra8888;
+  caps.gpu_rasterization =
+      group_->gpu_feature_info()
+          .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
+      kGpuFeatureStatusEnabled;
+  if (workarounds().broken_egl_image_ref_counting &&
+      group_->gpu_preferences().enable_threaded_texture_mailboxes) {
+    caps.disable_2d_canvas_copy_on_write = true;
+  }
+  caps.supports_oop_raster = false;
+  caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
+  caps.mesa_framebuffer_flip_y =
+      feature_info_->feature_flags().mesa_framebuffer_flip_y;
+  caps.disable_legacy_mailbox =
+      group_->shared_image_manager() &&
+      group_->shared_image_manager()->display_context_on_another_thread();
+
+  caps.gpu_memory_buffer_formats =
+      feature_info_->feature_flags().gpu_memory_buffer_formats;
+  caps.texture_target_exception_list =
+      group_->gpu_preferences().texture_target_exception_list;
+
+  caps.angle_rgbx_internal_format =
+      feature_info_->feature_flags().angle_rgbx_internal_format;
+
+  // Technically, YUV readback is handled on the client side, but enable it here
+  // so that clients can use this to detect support.
+  caps.supports_yuv_readback = true;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  PopulateDRMCapabilities(&caps, feature_info_.get());
+#endif
+
+  return caps;
+}
+
+GLCapabilities GLES2DecoderImpl::GetGLCapabilities() {
+  CHECK(initialized());
+  GLCapabilities caps;
+
   const gl::GLVersionInfo& version_info = gl_version_info();
   caps.VisitPrecisions([&version_info](
                            GLenum shader, GLenum type,
-                           Capabilities::ShaderPrecision* shader_precision) {
+                           GLCapabilities::ShaderPrecision* shader_precision) {
     GLint range[2] = {0, 0};
     GLint precision = 0;
     QueryShaderPrecisionFormat(version_info, shader, type, range, &precision);
@@ -3490,6 +3598,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
     shader_precision->max_range = range[1];
     shader_precision->precision = precision;
   });
+
   DoGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
                 &caps.max_combined_texture_image_units, 1);
   DoGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &caps.max_cube_map_texture_size,
@@ -3498,12 +3607,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
                 &caps.max_fragment_uniform_vectors, 1);
   DoGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &caps.max_renderbuffer_size, 1);
   DoGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &caps.max_texture_image_units, 1);
-  DoGetIntegerv(GL_MAX_TEXTURE_SIZE, &caps.max_texture_size, 1);
-  if (workarounds().webgl_or_caps_max_texture_size) {
-    caps.max_texture_size =
-        std::min(caps.max_texture_size,
-                 feature_info_->workarounds().webgl_or_caps_max_texture_size);
-  }
+
   DoGetIntegerv(GL_MAX_VARYING_VECTORS, &caps.max_varying_vectors, 1);
   DoGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &caps.max_vertex_attribs, 1);
   DoGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,
@@ -3551,8 +3655,9 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
                     1);
     // Work around Linux NVIDIA driver bug where GL_TIMEOUT_IGNORED is
     // returned.
-    if (caps.max_server_wait_timeout < 0)
+    if (caps.max_server_wait_timeout < 0) {
       caps.max_server_wait_timeout = 0;
+    }
     DoGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &caps.max_texture_lod_bias, 1);
     DoGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS,
                   &caps.max_transform_feedback_interleaved_components, 1);
@@ -3572,113 +3677,21 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
                   &caps.max_vertex_uniform_components, 1);
     DoGetIntegerv(GL_MIN_PROGRAM_TEXEL_OFFSET, &caps.min_program_texel_offset,
                   1);
-    DoGetIntegerv(GL_NUM_EXTENSIONS, &caps.num_extensions, 1);
     // TODO(vmiura): Remove GL_NUM_PROGRAM_BINARY_FORMATS.
     DoGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS,
                   &caps.num_program_binary_formats, 1);
     DoGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT,
                   &caps.uniform_buffer_offset_alignment, 1);
-    // TODO(zmo): once we switch to MANGLE, we should query version numbers.
-    caps.major_version = 3;
-    caps.minor_version = 0;
   }
   if (feature_info_->feature_flags().multisampled_render_to_texture ||
       feature_info_->feature_flags().chromium_framebuffer_multisample ||
       feature_info_->IsWebGL2OrES3Context()) {
     caps.max_samples = ComputeMaxSamples();
   }
-
-  caps.egl_image_external =
-      feature_info_->feature_flags().oes_egl_image_external;
-  caps.egl_image_external_essl3 =
-      feature_info_->feature_flags().oes_egl_image_external_essl3;
-  caps.texture_format_bgra8888 =
-      feature_info_->feature_flags().ext_texture_format_bgra8888;
-  caps.texture_format_etc1_npot =
-      feature_info_->feature_flags().oes_compressed_etc1_rgb8_texture &&
-      !workarounds().etc1_power_of_two_only;
-  // Vulkan currently doesn't support single-component cross-thread shared
-  // images.
-  caps.disable_one_component_textures =
-      group_->shared_image_manager() &&
-      group_->shared_image_manager()->display_context_on_another_thread() &&
-      (workarounds().avoid_one_component_egl_images ||
-       features::IsUsingVulkan());
-  caps.sync_query = feature_info_->feature_flags().chromium_sync_query;
-
-  bool is_offscreen = !!offscreen_target_frame_buffer_.get();
-  caps.surface_origin =
-      !is_offscreen ? surface_->GetOrigin() : gfx::SurfaceOrigin::kBottomLeft;
-  // Only query the kEnableMSAAOnNewIntelGPUs feature flag if the host device
-  // is affected by the experiment.
-  bool eligible_for_experiment =
-      workarounds().msaa_is_slow && !workarounds().msaa_is_slow_2;
-  caps.msaa_is_slow =
-      eligible_for_experiment
-          ? !base::FeatureList::IsEnabled(features::kEnableMSAAOnNewIntelGPUs)
-          : workarounds().msaa_is_slow;
-  caps.avoid_stencil_buffers = workarounds().avoid_stencil_buffers;
-  caps.multisample_compatibility =
-      feature_info_->feature_flags().ext_multisample_compatibility;
-  caps.texture_rg = feature_info_->feature_flags().ext_texture_rg;
-  caps.texture_norm16 = feature_info_->feature_flags().ext_texture_norm16;
-  caps.texture_half_float_linear =
-      feature_info_->oes_texture_half_float_linear_available();
-  caps.image_ycbcr_422 =
-      feature_info_->feature_flags().chromium_image_ycbcr_422;
-  caps.image_ycbcr_420v =
-      feature_info_->feature_flags().chromium_image_ycbcr_420v;
-  caps.image_ycbcr_420v_disabled_for_video_frames =
-      group_->gpu_preferences()
-          .disable_biplanar_gpu_memory_buffers_for_video_frames;
-  caps.image_ar30 = feature_info_->feature_flags().chromium_image_ar30;
-  caps.image_ab30 = feature_info_->feature_flags().chromium_image_ab30;
-  caps.image_ycbcr_p010 =
-      feature_info_->feature_flags().chromium_image_ycbcr_p010;
-  caps.max_copy_texture_chromium_size =
-      workarounds().max_copy_texture_chromium_size;
-  caps.render_buffer_format_bgra8888 =
-      feature_info_->feature_flags().ext_render_buffer_format_bgra8888;
   caps.occlusion_query = feature_info_->feature_flags().occlusion_query;
   caps.occlusion_query_boolean =
       feature_info_->feature_flags().occlusion_query_boolean;
   caps.timer_queries = query_manager_->GPUTimingAvailable();
-  caps.gpu_rasterization =
-      group_->gpu_feature_info()
-          .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
-      kGpuFeatureStatusEnabled;
-  if (workarounds().broken_egl_image_ref_counting &&
-      group_->gpu_preferences().enable_threaded_texture_mailboxes) {
-    caps.disable_2d_canvas_copy_on_write = true;
-  }
-  caps.texture_npot = feature_info_->feature_flags().npot_ok;
-  caps.supports_luminance_shared_images =
-      !feature_info_->gl_version_info().is_angle_metal;
-  caps.supports_oop_raster = false;
-  caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
-  caps.chromium_nonblocking_readback =
-      feature_info_->context_type() == CONTEXT_TYPE_WEBGL2;
-  caps.mesa_framebuffer_flip_y =
-      feature_info_->feature_flags().mesa_framebuffer_flip_y;
-  caps.disable_legacy_mailbox =
-      group_->shared_image_manager() &&
-      group_->shared_image_manager()->display_context_on_another_thread();
-
-  caps.gpu_memory_buffer_formats =
-      feature_info_->feature_flags().gpu_memory_buffer_formats;
-  caps.texture_target_exception_list =
-      group_->gpu_preferences().texture_target_exception_list;
-
-  caps.angle_rgbx_internal_format =
-      feature_info_->feature_flags().angle_rgbx_internal_format;
-
-  // Technically, YUV readback is handled on the client side, but enable it here
-  // so that clients can use this to detect support.
-  caps.supports_yuv_readback = true;
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  PopulateDRMCapabilities(&caps, feature_info_.get());
-#endif
 
   return caps;
 }
@@ -5677,6 +5690,47 @@ void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
   state_.bound_renderbuffer = renderbuffer;
   state_.bound_renderbuffer_valid = true;
   api()->glBindRenderbufferEXTFn(GL_RENDERBUFFER, service_id);
+}
+
+void GLES2DecoderImpl::UpdateTextureBinding(GLenum target,
+                                            GLuint client_id,
+                                            TextureRef* texture) {
+  CHECK(texture);
+  size_t last_active_unit_index = state_.active_texture_unit;
+
+  for (size_t curr_unit_index = 0;
+       curr_unit_index < state_.texture_units.size(); curr_unit_index++) {
+    auto curr_unit = state_.texture_units[curr_unit_index];
+    auto* curr_texture = curr_unit.GetInfoForTarget(target);
+
+    if (!curr_texture) {
+      continue;
+    }
+
+    if (curr_texture->client_id() != client_id) {
+      continue;
+    }
+
+    // `target` is bound to `client_id` in this unit, so we need to update the
+    // service-side binding.
+
+    // First update the active texture unit if needed.
+    if (last_active_unit_index != curr_unit_index) {
+      api()->glActiveTextureFn(
+          static_cast<GLenum>(GL_TEXTURE0 + curr_unit_index));
+      last_active_unit_index = curr_unit_index;
+    }
+
+    // Now update the texture binding.
+    api()->glBindTextureFn(target, texture->service_id());
+    curr_unit.SetInfoForTarget(target, texture);
+  }
+
+  // Reset the active texture unit if it was changed.
+  if (last_active_unit_index != state_.active_texture_unit) {
+    api()->glActiveTextureFn(
+        static_cast<GLenum>(GL_TEXTURE0 + state_.active_texture_unit));
+  }
 }
 
 void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
@@ -17122,6 +17176,55 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
   texture_ref = texture_manager()->Consume(client_id, texture);
 }
 
+void GLES2DecoderImpl::DoTexImage2DSharedImageCHROMIUM(
+    GLuint client_id,
+    const volatile GLbyte* mailbox_data) {
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoTexImage2DSharedImageCHROMIUM",
+               "context", logger_.GetLogPrefix(), "mailbox[0]",
+               static_cast<unsigned char>(mailbox_data[0]));
+  Mailbox mailbox = Mailbox::FromVolatile(
+      *reinterpret_cast<const volatile Mailbox*>(mailbox_data));
+  DLOG_IF(ERROR, !mailbox.Verify())
+      << "DoTexImage2DSharedImageCHROMIUM was passed an invalid "
+         "mailbox.";
+  if (!client_id) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoTexImage2DSharedImageCHROMIUM",
+                       "invalid client id");
+    return;
+  }
+
+  std::unique_ptr<GLTextureImageRepresentation> shared_image =
+      group_->shared_image_representation_factory()->ProduceGLTexture(mailbox);
+
+  if (!shared_image) {
+    // Mailbox missing, generate a texture.
+    bool result = GenTexturesHelper(1, &client_id);
+    DCHECK(result);
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoTexImage2DSharedImageCHROMIUM",
+                       "invalid mailbox name");
+    return;
+  }
+
+  Texture* texture = shared_image->GetTexture();
+  if (texture->target() != GL_TEXTURE_2D) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoTexImage2DSharedImageCHROMIUM",
+                       "invalid texture target.");
+    return;
+  }
+
+  // Ensure that `client_id` is mapped to `shared_image`.
+  texture_manager()->RemoveTexture(client_id);
+  auto* texture_ref =
+      texture_manager()->ConsumeSharedImage(client_id, std::move(shared_image));
+
+  // If `client_id` is currently bound to `target` in any texture units, the
+  // binding was done when `client_id` did not necessarily map to
+  // `texture->service_id()`. Update any such binding so that
+  // `texture->service_id()` (which `client_id` now maps to) is now bound in the
+  // relevant texture unit(s).
+  UpdateTextureBinding(texture->target(), client_id, texture_ref);
+}
+
 void GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
     GLuint client_id,
     const volatile GLbyte* mailbox_data) {
@@ -17228,6 +17331,10 @@ void GLES2DecoderImpl::DoConvertRGBAToYUVAMailboxesINTERNAL(
 }
 
 void GLES2DecoderImpl::DoConvertYUVAMailboxesToRGBINTERNAL(
+    GLint src_x,
+    GLint src_y,
+    GLsizei width,
+    GLsizei height,
     GLenum yuv_color_space,
     GLenum plane_config,
     GLenum subsampling,

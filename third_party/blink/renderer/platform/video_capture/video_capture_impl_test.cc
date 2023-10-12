@@ -17,6 +17,7 @@
 #include "base/token.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/shared_image_capabilities.h"
 #include "media/capture/mojom/video_capture.mojom-blink.h"
 #include "media/capture/mojom/video_capture_buffer.mojom-blink.h"
 #include "media/capture/mojom/video_capture_types.mojom-blink.h"
@@ -186,12 +187,10 @@ class VideoCaptureImplTest : public ::testing::Test {
   VideoCaptureImplTest& operator=(const VideoCaptureImplTest&) = delete;
 
  protected:
-  // These four mocks are used to create callbacks for the different oeprations.
-  MOCK_METHOD3(OnFrameReady,
-               void(scoped_refptr<media::VideoFrame>,
-                    std::vector<scoped_refptr<media::VideoFrame>>,
-                    base::TimeTicks));
-  MOCK_METHOD1(OnFrameDroppedEarly, void(media::VideoCaptureFrameDropReason));
+  // These four mocks are used to create callbacks for the different operations.
+  MOCK_METHOD2(OnFrameReady,
+               void(scoped_refptr<media::VideoFrame>, base::TimeTicks));
+  MOCK_METHOD1(OnFrameDropped, void(media::VideoCaptureFrameDropReason));
   MOCK_METHOD1(OnStateUpdate, void(VideoCaptureState));
   MOCK_METHOD1(OnDeviceFormatsInUse,
                void(const Vector<media::VideoCaptureFormat>&));
@@ -204,7 +203,7 @@ class VideoCaptureImplTest : public ::testing::Test {
     const auto frame_ready_callback = WTF::BindRepeating(
         &VideoCaptureImplTest::OnFrameReady, base::Unretained(this));
     const auto frame_dropped_callback = WTF::BindRepeating(
-        &VideoCaptureImplTest::OnFrameDroppedEarly, base::Unretained(this));
+        &VideoCaptureImplTest::OnFrameDropped, base::Unretained(this));
 
     video_capture_impl_->StartCapture(
         client_id, params, state_update_callback, frame_ready_callback,
@@ -238,17 +237,9 @@ class VideoCaptureImplTest : public ::testing::Test {
             std::move(gmb_handle)));
   }
 
-  void SimulateBufferReceived(
-      BufferDescription buffer_description,
-      std::vector<BufferDescription> scaled_buffer_descriptions = {}) {
-    const base::TimeTicks now = base::TimeTicks::Now();
-    Vector<media::mojom::blink::ReadyBufferPtr> scaled_ready_buffers;
-    for (const auto& scaled_buffer_description : scaled_buffer_descriptions) {
-      scaled_ready_buffers.push_back(
-          scaled_buffer_description.ToReadyBuffer(now));
-    }
-    video_capture_impl_->OnBufferReady(buffer_description.ToReadyBuffer(now),
-                                       std::move(scaled_ready_buffers));
+  void SimulateBufferReceived(BufferDescription buffer_description) {
+    video_capture_impl_->OnBufferReady(
+        buffer_description.ToReadyBuffer(base::TimeTicks::Now()));
   }
 
   void SimulateBufferDestroyed(int buffer_id) {
@@ -264,6 +255,12 @@ class VideoCaptureImplTest : public ::testing::Test {
   void GetDeviceFormatsInUse() {
     video_capture_impl_->GetDeviceFormatsInUse(WTF::BindOnce(
         &VideoCaptureImplTest::OnDeviceFormatsInUse, base::Unretained(this)));
+  }
+
+  void SetSharedImageCapabilities(bool shared_image_d3d) {
+    gpu::SharedImageCapabilities shared_image_caps;
+    shared_image_caps.shared_image_d3d = shared_image_d3d;
+    platform_->SetSharedImageCapabilities(shared_image_caps);
   }
 
   const base::UnguessableToken session_id_ = base::UnguessableToken::Create();
@@ -378,7 +375,7 @@ TEST_F(VideoCaptureImplTest, BufferReceived) {
 
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
-  EXPECT_CALL(*this, OnFrameReady(_, _, _));
+  EXPECT_CALL(*this, OnFrameReady(_, _));
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
   EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kArbitraryBufferId, _))
@@ -405,7 +402,7 @@ TEST_F(VideoCaptureImplTest, BufferReceived_ReadOnlyShmemRegion) {
 
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
-  EXPECT_CALL(*this, OnFrameReady(_, _, _));
+  EXPECT_CALL(*this, OnFrameReady(_, _));
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
   EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kArbitraryBufferId, _))
@@ -433,18 +430,17 @@ TEST_F(VideoCaptureImplTest, BufferReceived_GpuMemoryBufferHandle) {
   base::WaitableEvent frame_ready_event;
   scoped_refptr<media::VideoFrame> frame;
 
-  fake_capabilities_.shared_image_d3d = true;
+  SetSharedImageCapabilities(/* shared_image_d3d = */ true);
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
-  EXPECT_CALL(*this, OnFrameReady(_, _, _))
-      .WillOnce(Invoke([&](scoped_refptr<media::VideoFrame> f,
-                           std::vector<scoped_refptr<media::VideoFrame>>,
-                           base::TimeTicks t) {
-        // Hold on a reference to the video frame to emulate that we're
-        // actively using the buffer.
-        frame = f;
-        frame_ready_event.Signal();
-      }));
+  EXPECT_CALL(*this, OnFrameReady(_, _))
+      .WillOnce(
+          Invoke([&](scoped_refptr<media::VideoFrame> f, base::TimeTicks t) {
+            // Hold on a reference to the video frame to emulate that we're
+            // actively using the buffer.
+            frame = f;
+            frame_ready_event.Signal();
+          }));
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
   EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kArbitraryBufferId, _))
@@ -491,150 +487,13 @@ TEST_F(VideoCaptureImplTest, BufferReceived_GpuMemoryBufferHandle) {
   EXPECT_EQ(mock_video_capture_host_.released_buffer_count(), 0);
 }
 
-TEST_F(VideoCaptureImplTest, ScaledBufferReceived_SoftwareOnly) {
-  const int kLargeBufferId = 11;
-  const int kSmallBufferId = 12;
-
-  const size_t large_frame_size = media::VideoFrame::AllocationSize(
-      media::PIXEL_FORMAT_I420, params_large_.requested_format.frame_size);
-  base::UnsafeSharedMemoryRegion large_region =
-      base::UnsafeSharedMemoryRegion::Create(large_frame_size);
-  ASSERT_TRUE(large_region.IsValid());
-
-  const size_t small_frame_size = media::VideoFrame::AllocationSize(
-      media::PIXEL_FORMAT_I420, params_small_.requested_format.frame_size);
-  base::UnsafeSharedMemoryRegion small_region =
-      base::UnsafeSharedMemoryRegion::Create(small_frame_size);
-  ASSERT_TRUE(small_region.IsValid());
-
-  base::WaitableEvent frame_ready_event;
-  scoped_refptr<media::VideoFrame> ready_frame;
-  std::vector<scoped_refptr<media::VideoFrame>> ready_scaled_frames;
-
-  EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
-  EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
-  EXPECT_CALL(*this, OnFrameReady(_, _, _))
-      .WillOnce(Invoke(
-          [&](scoped_refptr<media::VideoFrame> frame,
-              std::vector<scoped_refptr<media::VideoFrame>> scaled_frames,
-              base::TimeTicks timestamp) {
-            ready_frame = frame;
-            ready_scaled_frames = scaled_frames;
-            frame_ready_event.Signal();
-          }));
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_large_));
-  EXPECT_CALL(mock_video_capture_host_, Stop(_));
-  EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kLargeBufferId, _))
-      .Times(0);
-  EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kSmallBufferId, _))
-      .Times(0);
-
-  StartCapture(0, params_large_);
-  SimulateOnBufferCreated(kLargeBufferId, large_region);
-  SimulateOnBufferCreated(kSmallBufferId, small_region);
-  SimulateBufferReceived(
-      BufferDescription(kLargeBufferId,
-                        params_large_.requested_format.frame_size),
-      {BufferDescription(kSmallBufferId,
-                         params_small_.requested_format.frame_size)});
-  StopCapture(0);
-  SimulateBufferDestroyed(kLargeBufferId);
-  SimulateBufferDestroyed(kSmallBufferId);
-
-  frame_ready_event.Wait();
-  EXPECT_TRUE(ready_frame);
-  EXPECT_EQ(ready_scaled_frames.size(), 1u);
-}
-
-// Any combination of hardware and software frames works, but having the large
-// one be software and the small one be hardware is the most interesting one to
-// test since it would fail if the implementation would assume that the scaled
-// frames have the same type as the original frame.
-TEST_F(VideoCaptureImplTest, ScaledBufferReceived_SoftwareAndHardware) {
-  const int kLargeSoftwareBufferId = 11;
-  const int kSmallHardwareBufferId = 12;
-
-  const size_t large_frame_size = media::VideoFrame::AllocationSize(
-      media::PIXEL_FORMAT_NV12, params_large_.requested_format.frame_size);
-  base::UnsafeSharedMemoryRegion large_region =
-      base::UnsafeSharedMemoryRegion::Create(large_frame_size);
-  ASSERT_TRUE(large_region.IsValid());
-
-  // Buffes are received on IO thread but hardware buffers require a round-trip
-  // to the media thread.
-  base::Thread testing_io_thread("TestingIOThread");
-  base::WaitableEvent frame_ready_event;
-  scoped_refptr<media::VideoFrame> ready_frame;
-  std::vector<scoped_refptr<media::VideoFrame>> ready_scaled_frames;
-
-  fake_capabilities_.shared_image_d3d = true;
-  EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
-  EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
-  EXPECT_CALL(*this, OnFrameReady(_, _, _))
-      .WillOnce(Invoke(
-          [&](scoped_refptr<media::VideoFrame> frame,
-              std::vector<scoped_refptr<media::VideoFrame>> scaled_frames,
-              base::TimeTicks timestamp) {
-            ready_frame = frame;
-            ready_scaled_frames = scaled_frames;
-            frame_ready_event.Signal();
-          }));
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_large_));
-  EXPECT_CALL(mock_video_capture_host_, Stop(_));
-  EXPECT_CALL(mock_video_capture_host_,
-              ReleaseBuffer(_, kLargeSoftwareBufferId, _))
-      .Times(0);
-  EXPECT_CALL(mock_video_capture_host_,
-              ReleaseBuffer(_, kSmallHardwareBufferId, _))
-      .Times(0);
-
-  auto start_and_receive_buffers = [&]() {
-    gfx::GpuMemoryBufferHandle gmb_handle;
-    gmb_handle.type = gfx::NATIVE_PIXMAP;
-    gmb_handle.id = gfx::GpuMemoryBufferId(kSmallHardwareBufferId);
-    StartCapture(0, params_large_);
-    // Create both buffers.
-    SimulateOnBufferCreated(kLargeSoftwareBufferId, large_region);
-    SimulateGpuMemoryBufferCreated(kSmallHardwareBufferId,
-                                   std::move(gmb_handle));
-    // Receive buffers.
-    SimulateBufferReceived(
-        BufferDescription(kLargeSoftwareBufferId,
-                          params_large_.requested_format.frame_size,
-                          media::PIXEL_FORMAT_NV12),
-        {BufferDescription(kSmallHardwareBufferId,
-                           params_small_.requested_format.frame_size,
-                           media::PIXEL_FORMAT_NV12)});
-  };
-  auto stop_and_destroy_buffers = [&]() {
-    StopCapture(0);
-    SimulateBufferDestroyed(kLargeSoftwareBufferId);
-    SimulateBufferDestroyed(kSmallHardwareBufferId);
-    // Explicitly destroy |video_capture_impl_| to make sure it's destroyed on
-    // the right thread.
-    video_capture_impl_.reset();
-  };
-
-  testing_io_thread.Start();
-  testing_io_thread.task_runner()->PostTask(
-      FROM_HERE, base::BindLambdaForTesting(start_and_receive_buffers));
-
-  frame_ready_event.Wait();
-  EXPECT_TRUE(ready_frame);
-  EXPECT_EQ(ready_scaled_frames.size(), 1u);
-
-  testing_io_thread.task_runner()->PostTask(
-      FROM_HERE, base::BindLambdaForTesting(stop_and_destroy_buffers));
-  testing_io_thread.Stop();
-}
-
-TEST_F(VideoCaptureImplTest, OnFrameDroppedEarly) {
+TEST_F(VideoCaptureImplTest, OnFrameDropped) {
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_));
-  EXPECT_CALL(*this, OnFrameDroppedEarly(_));
+  EXPECT_CALL(*this, OnFrameDropped(_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
 
   StartCapture(0, params_small_);
-  video_capture_impl_->OnFrameDroppedEarly(
+  video_capture_impl_->OnFrameDropped(
       media::VideoCaptureFrameDropReason::kBufferPoolMaxBufferCountExceeded);
   StopCapture(0);
 }
@@ -650,7 +509,7 @@ TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
 
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
-  EXPECT_CALL(*this, OnFrameReady(_, _, _)).Times(0);
+  EXPECT_CALL(*this, OnFrameReady(_, _)).Times(0);
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_large_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
   EXPECT_CALL(mock_video_capture_host_,
@@ -678,7 +537,7 @@ TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop_ReadOnlyShmemRegion) {
 
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
-  EXPECT_CALL(*this, OnFrameReady(_, _, _)).Times(0);
+  EXPECT_CALL(*this, OnFrameReady(_, _)).Times(0);
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_large_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
   EXPECT_CALL(mock_video_capture_host_,
@@ -702,10 +561,10 @@ TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop_GpuMemoryBufferHandle) {
   gmb_handle.type = gfx::NATIVE_PIXMAP;
   gmb_handle.id = gfx::GpuMemoryBufferId(kArbitraryBufferId);
 
-  fake_capabilities_.shared_image_d3d = true;
+  SetSharedImageCapabilities(/* shared_image_d3d = */ true);
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
-  EXPECT_CALL(*this, OnFrameReady(_, _, _)).Times(0);
+  EXPECT_CALL(*this, OnFrameReady(_, _)).Times(0);
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_large_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
   EXPECT_CALL(mock_video_capture_host_,
@@ -1014,7 +873,7 @@ TEST_F(VideoCaptureImplTest, FallbacksToPremappedGmbsWhenNotSupported) {
   base::WaitableEvent frame_ready_event;
   media::VideoCaptureFeedback feedback;
 
-  fake_capabilities_.shared_image_d3d = false;
+  SetSharedImageCapabilities(/* shared_image_d3d = */ false);
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_));

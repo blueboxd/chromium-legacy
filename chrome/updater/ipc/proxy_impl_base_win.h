@@ -100,52 +100,24 @@ class ProxyImplBase {
 
     Microsoft::WRL::ComPtr<Interface> server_interface;
     REFIID iid = IsSystemInstall(scope_) ? iid_system : iid_user;
-    HRESULT hr = server.CopyTo(iid, IID_PPV_ARGS_Helper(&server_interface));
-    if (FAILED(hr)) {
-      VLOG(2) << "Failed to query the interface: "
-              << base::win::WStringFromGUID(iid) << ": " << std::hex << hr;
-      [&]() {
-        if (hr != E_NOINTERFACE) {
-          return;
-        }
-        static bool dumped_once = false;
-        if (dumped_once) {
-          return;
-        }
-        dumped_once = true;
+    constexpr int kNumTries = 2;
+    HRESULT hr = E_FAIL;
+    for (int i = 0; i != kNumTries; ++i) {
+      hr = server.CopyTo(iid, IID_PPV_ARGS_Helper(&server_interface));
+      if (SUCCEEDED(hr)) {
+        return server_interface;
+      }
+      if (hr != E_NOINTERFACE) {
+        return base::unexpected(hr);
+      }
 
-        base::ThreadPool::PostTask(
-            FROM_HERE, {base::MayBlock(), base::WithBaseSyncPrimitives()},
-            base::BindOnce(
-                [](const std::wstring& hkey_root,
-                   const std::vector<IID>& interface_iids) {
-                  for (const auto& iid : interface_iids) {
-                    const std::wstring interface_iid =
-                        base::win::WStringFromGUID(iid);
-                    const auto reg_key =
-                        base::StrCat({hkey_root,
-                                      L"\\SOFTWARE\\WOW6432Node\\Classes"
-                                      L"\\Interface\\",
-                                      interface_iid});
-                    absl::optional<std::wstring> contents =
-                        GetRegKeyContents(reg_key);
-                    LOG(ERROR)
-                        << reg_key << ": "
-                        << (contents && !base::ContainsOnlyChars(
-                                            *contents, base::kWhitespaceWide)
-                                ? *contents
-                                : L"*Missing*");
-                  }
-                  DUMP_WILL_BE_CHECK(false);
-                },
-                IsSystemInstall(scope_) ? L"HKLM" : L"HKCU", iids_));
-
-        base::PlatformThread::Sleep(base::Seconds(10));
-      }();
-      return base::unexpected(hr);
+      // Sleep before trying again.
+      base::PlatformThread::Sleep(kCreateUpdaterInstanceDelay);
     }
 
-    return server_interface;
+    VLOG(2) << "Failed to query the interface: "
+            << base::win::WStringFromGUID(iid) << ": " << std::hex << hr;
+    return base::unexpected(hr);
   }
 
   HRESULT hresult() const {
@@ -178,7 +150,8 @@ class ProxyImplBase {
   scoped_refptr<base::SequencedTaskRunner> task_runner_ =
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::TaskPriority::USER_BLOCKING,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
+           base::WithBaseSyncPrimitives(), base::MayBlock()});
 
   const UpdaterScope scope_;
   const std::vector<IID> iids_;

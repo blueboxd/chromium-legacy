@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/modules/credentialmanagement/credential_manager_type_converters.h"  // IWYU pragma: keep
 #include "third_party/blink/renderer/modules/credentialmanagement/federated_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/identity_credential.h"
+#include "third_party/blink/renderer/modules/credentialmanagement/identity_credential_error.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/otp_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/password_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/public_key_credential.h"
@@ -536,6 +537,7 @@ void OnRequestToken(ScriptPromiseResolver* resolver,
                     RequestTokenStatus status,
                     const absl::optional<KURL>& selected_idp_config_url,
                     const WTF::String& token,
+                    mojom::blink::TokenErrorPtr error,
                     bool is_account_auto_selected) {
   switch (status) {
     case RequestTokenStatus::kErrorTooManyRequests: {
@@ -559,8 +561,13 @@ void OnRequestToken(ScriptPromiseResolver* resolver,
       return;
     }
     case RequestTokenStatus::kError: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNetworkError, "Error retrieving a token."));
+      if (!RuntimeEnabledFeatures::FedCmErrorEnabled() || !error) {
+        resolver->Reject(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kNetworkError, "Error retrieving a token."));
+        return;
+      }
+      resolver->Reject(MakeGarbageCollected<IdentityCredentialError>(
+          "Error retrieving a token.", error->code, error->url));
       return;
     }
     case RequestTokenStatus::kSuccess: {
@@ -627,6 +634,18 @@ Vector<Vector<uint32_t>> UvmEntryToArray(
   return uvm_array;
 }
 #endif
+
+AuthenticationExtensionsPRFValues* GetPRFExtensionResults(
+    const mojom::blink::PRFValuesPtr& prf_results) {
+  auto* values = AuthenticationExtensionsPRFValues::Create();
+  values->setFirst(MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferView>(
+      VectorToDOMArrayBuffer(std::move(prf_results->first))));
+  if (prf_results->second) {
+    values->setSecond(MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferView>(
+        VectorToDOMArrayBuffer(std::move(prf_results->second.value()))));
+  }
+  return values;
+}
 
 void OnMakePublicKeyCredentialComplete(
     std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
@@ -716,6 +735,9 @@ void OnMakePublicKeyCredentialComplete(
   if (credential->echo_prf) {
     auto* prf_outputs = AuthenticationExtensionsPRFOutputs::Create();
     prf_outputs->setEnabled(credential->prf);
+    if (credential->prf_results) {
+      prf_outputs->setResults(GetPRFExtensionResults(credential->prf_results));
+    }
     extension_outputs->setPrf(prf_outputs);
   }
   resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
@@ -823,6 +845,24 @@ void OnGetAssertionComplete(
     AuthenticationExtensionsClientOutputsPtr& extensions =
         credential->extensions;
 
+    if (RuntimeEnabledFeatures::SecurePaymentConfirmationExtensionsEnabled()) {
+      AuthenticationExtensionsClientOutputs* extension_outputs =
+          ConvertTo<AuthenticationExtensionsClientOutputs*>(
+              credential->extensions);
+#if BUILDFLAG(IS_ANDROID)
+      if (extensions->echo_user_verification_methods) {
+        UseCounter::Count(resolver->GetExecutionContext(),
+                          WebFeature::kCredentialManagerGetSuccessWithUVM);
+      }
+#endif
+      resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
+          credential->info->id,
+          VectorToDOMArrayBuffer(std::move(credential->info->raw_id)),
+          authenticator_response, credential->authenticator_attachment,
+          extension_outputs));
+      return;
+    }
+
     AuthenticationExtensionsClientOutputs* extension_outputs =
         AuthenticationExtensionsClientOutputs::Create();
     if (extensions->echo_appid_extension) {
@@ -867,18 +907,8 @@ void OnGetAssertionComplete(
     if (extensions->echo_prf) {
       auto* prf_outputs = AuthenticationExtensionsPRFOutputs::Create();
       if (extensions->prf_results) {
-        auto* values = AuthenticationExtensionsPRFValues::Create();
-        values->setFirst(
-            MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferView>(
-                VectorToDOMArrayBuffer(
-                    std::move(extensions->prf_results->first))));
-        if (extensions->prf_results->second) {
-          values->setSecond(
-              MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferView>(
-                  VectorToDOMArrayBuffer(
-                      std::move(extensions->prf_results->second.value()))));
-        }
-        prf_outputs->setResults(values);
+        prf_outputs->setResults(
+            GetPRFExtensionResults(extensions->prf_results));
       }
       extension_outputs->setPrf(prf_outputs);
     }
@@ -1027,6 +1057,23 @@ const char* validatePRFInputs(
        DOMArrayPiece(values.second()).ByteLength() > kMaxInputSize)) {
     return "'prf' extension contains excessively large input";
   }
+  return nullptr;
+}
+
+const char* validateCreatePublicKeyCredentialPRFExtension(
+    const AuthenticationExtensionsPRFInputs& prf) {
+  if (prf.hasEval()) {
+    const char* error = validatePRFInputs(*prf.eval());
+    if (error != nullptr) {
+      return error;
+    }
+  }
+
+  if (prf.hasEvalByCredential()) {
+    return "The 'evalByCredential' field cannot be set when creating a "
+           "credential.";
+  }
+
   return nullptr;
 }
 
@@ -1474,6 +1521,14 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
     }
     base::UmaHistogramEnumeration("Blink.FedCm.RpContext", rp_context);
 
+    mojom::blink::RpMode rp_mode = mojom::blink::RpMode::kWidget;
+    if (options->identity()->hasMode()) {
+      // TODO(crbug.com/1429083): add use counters for rp mode.
+      rp_mode =
+          mojo::ConvertTo<mojom::blink::RpMode>(options->identity()->mode());
+    }
+    // TODO(crbug.com/1429083): add uma histograms for rp mode.
+
     CredentialMediationRequirement mediation_requirement;
     if (options->mediation() == "conditional") {
       resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -1521,7 +1576,7 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
       Vector<mojom::blink::IdentityProviderGetParametersPtr> idp_get_params;
       mojom::blink::IdentityProviderGetParametersPtr get_params =
           mojom::blink::IdentityProviderGetParameters::New(
-              std::move(identity_provider_ptrs), rp_context);
+              std::move(identity_provider_ptrs), rp_context, rp_mode);
       idp_get_params.push_back(std::move(get_params));
 
       auto* auth_request =
@@ -1545,8 +1600,9 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
           std::move(scoped_abort_state));
     }
 
-    web_identity_requester_->AppendGetCall(
-        WrapPersistent(resolver), options->identity()->providers(), rp_context);
+    web_identity_requester_->AppendGetCall(WrapPersistent(resolver),
+                                           options->identity()->providers(),
+                                           rp_context, rp_mode);
 
     return promise;
   }
@@ -1780,12 +1836,11 @@ ScriptPromise CredentialsContainer::create(
       return promise;
     }
     if (options->publicKey()->extensions()->hasPrf()) {
-      const auto& prf = *options->publicKey()->extensions()->prf();
-      if (prf.hasEvalByCredential()) {
+      const char* error = validateCreatePublicKeyCredentialPRFExtension(
+          *options->publicKey()->extensions()->prf());
+      if (error != nullptr) {
         resolver->Reject(MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kNotSupportedError,
-            "The 'evalByCredential' field cannot be set when creating a "
-            "credential."));
+            DOMExceptionCode::kNotSupportedError, error));
         return promise;
       }
     }

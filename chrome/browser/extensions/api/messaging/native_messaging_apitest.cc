@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_P(NativeMessagingLaunchExeTest,
   ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestExeHost(
       "native_messaging_test_echo_host.exe", /*user_level=*/true));
 
-  ASSERT(RunExtensionTest("native_messaging_send_native_message_exe"));
+  ASSERT_TRUE(RunExtensionTest("native_messaging_send_native_message_exe"));
 }
 
 // The Host's filename deliberately contains the character '&' which causes the
@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_P(NativeMessagingLaunchExeTest,
   ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestExeHost(
       "native_messaging_test_echo_&_host.exe", /*user_level=*/false));
 
-  ASSERT(RunExtensionTest("native_messaging_send_native_message_exe"));
+  ASSERT_TRUE(RunExtensionTest("native_messaging_send_native_message_exe"));
 }
 
 // Make sure that a filename with a space is supported.
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_P(NativeMessagingLaunchExeTest,
   ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestExeHost(
       "native_messaging_test_echo_ _host.exe", /*user_level=*/false));
 
-  ASSERT(RunExtensionTest("native_messaging_send_native_message_exe"));
+  ASSERT_TRUE(RunExtensionTest("native_messaging_send_native_message_exe"));
 }
 #endif
 

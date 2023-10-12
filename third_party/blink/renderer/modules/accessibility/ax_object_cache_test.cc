@@ -126,10 +126,9 @@ TEST_F(AccessibilityTest, PauseUpdatesAfterMaxNumberQueued) {
   ASSERT_EQ(0u, MockAXObject::num_children_changed_calls_);
 }
 
-class AXViewTransitionTest : public testing::Test,
-                             private ScopedViewTransitionForTest {
+class AXViewTransitionTest : public testing::Test {
  public:
-  AXViewTransitionTest() : ScopedViewTransitionForTest(true) {}
+  AXViewTransitionTest() {}
 
   void SetUp() override {
     web_view_helper_ = std::make_unique<frame_test_helpers::WebViewHelper>();
@@ -205,7 +204,8 @@ TEST_F(AXViewTransitionTest, TransitionPseudoNotRelevant) {
   auto* transition = ViewTransitionSupplement::startViewTransition(
       script_state, GetDocument(), view_transition_callback, exception_state);
 
-  ScriptPromiseTester finish_tester(script_state, transition->finished());
+  ScriptPromiseTester finish_tester(script_state,
+                                    transition->finished(script_state));
 
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(GetState(transition), State::kCapturing);

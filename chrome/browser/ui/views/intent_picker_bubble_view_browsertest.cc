@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/apps/intent_helper/intent_picker_features.h"
+#include "chrome/browser/apps/link_capturing/link_capturing_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -338,7 +338,14 @@ IN_PROC_BROWSER_TEST_F(IntentPickerIconBrowserTest,
 
 // Test that loading a page with pushState() call that changes URL updates the
 // intent picker view.
-IN_PROC_BROWSER_TEST_F(IntentPickerIconBrowserTest, PushStateURLChangeTest) {
+// TODO(crbug.com/1484208): Re-enable this test
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_PushStateURLChangeTest DISABLED_PushStateURLChangeTest
+#else
+#define MAYBE_PushStateURLChangeTest PushStateURLChangeTest
+#endif
+IN_PROC_BROWSER_TEST_F(IntentPickerIconBrowserTest,
+                       MAYBE_PushStateURLChangeTest) {
   // Note: The test page is served from embedded_test_server() as https_server()
   // always returns empty responses.
   ASSERT_TRUE(embedded_test_server()->Start());

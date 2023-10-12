@@ -5,7 +5,9 @@
 #ifndef UI_ACTIONS_ACTIONS_H_
 #define UI_ACTIONS_ACTIONS_H_
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_list.h"
@@ -138,6 +140,10 @@ class COMPONENT_EXPORT(ACTIONS) ActionItem : public BaseAction {
                                     ui::metadata::ArgType<T> value) && {
       return std::move(this->SetProperty(property, value));
     }
+    ActionItemBuilder& SetAccessibleName(
+        const std::u16string accessible_name) &;
+    ActionItemBuilder&& SetAccessibleName(
+        const std::u16string accessible_name) &&;
     ActionItemBuilder& SetActionId(absl::optional<ActionId> action_id) &;
     ActionItemBuilder&& SetActionId(absl::optional<ActionId> action_id) &&;
     ActionItemBuilder& SetAccelerator(ui::Accelerator accelerator) &;
@@ -190,6 +196,8 @@ class COMPONENT_EXPORT(ACTIONS) ActionItem : public BaseAction {
   static ActionItemBuilder Builder();
 
   // Configure action states and attributes.
+  std::u16string GetAccessibleName() const;
+  void SetAccessibleName(const std::u16string accessible_name);
   absl::optional<ActionId> GetActionId() const;
   void SetActionId(absl::optional<ActionId> action_id);
   ui::Accelerator GetAccelerator() const;
@@ -242,6 +250,7 @@ class COMPONENT_EXPORT(ACTIONS) ActionItem : public BaseAction {
   // `updated_` = true, the ActionChanged callbacks will trigger.
   int updating_ = 0;
   bool updated_ = false;
+  std::u16string accessible_name_;
   absl::optional<ActionId> action_id_;
   ui::Accelerator accelerator_;
   bool checked_ = false;
@@ -264,6 +273,8 @@ class COMPONENT_EXPORT(ACTIONS) ActionManager
 
   using ActionItemInitializerList =
       base::RepeatingCallbackList<void(ActionManager*)>;
+  using ActionIdToStringMap = base::flat_map<ActionId, std::string>;
+  using StringToActionIdMap = base::flat_map<std::string, ActionId>;
 
   ActionManager(const ActionManager&) = delete;
   ActionManager& operator=(const ActionManager&) = delete;
@@ -284,10 +295,8 @@ class COMPONENT_EXPORT(ACTIONS) ActionManager
   static std::vector<absl::optional<ActionId>> StringsToActionIds(
       std::vector<std::string> action_id_strings);
 
-  static void AddActionIdToStringMappings(
-      base::flat_map<ActionId, std::string_view> map);
-  static void AddStringToActionIdMappings(
-      base::flat_map<std::string_view, ActionId> map);
+  static void AddActionIdToStringMappings(ActionIdToStringMap map);
+  static void AddStringToActionIdMappings(StringToActionIdMap map);
 
   // The second element in the pair is set to true if a new ActionId is
   // created, or false if an ActionId with the given name already exists.
@@ -337,14 +346,14 @@ class COMPONENT_EXPORT(ACTIONS) ActionManager
   template <typename T, typename U>
   static void MergeMaps(base::flat_map<T, U>& map1, base::flat_map<T, U>& map2);
 
+  static ActionIdToStringMap& GetActionIdToStringMap();
+  static StringToActionIdMap& GetStringToActionIdMap();
+
   // Holds the chain of ActionManager initializer callbacks.
   std::unique_ptr<ActionItemInitializerList> initializer_list_;
 
   // All "root" actions are parented to this action.
   BaseAction root_action_parent_;
-
-  static base::flat_map<ActionId, std::string_view>& GetActionIdToStringMap();
-  static base::flat_map<std::string_view, ActionId>& GetStringToActionIdMap();
 };
 
 COMPONENT_EXPORT(ACTIONS)

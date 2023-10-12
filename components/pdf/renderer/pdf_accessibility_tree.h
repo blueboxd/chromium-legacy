@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "content/public/renderer/plugin_ax_tree_source.h"
@@ -133,7 +134,9 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
                                    const ui::AXTreeUpdate& tree_update);
 
     // `image_fetcher_` owns `this`.
-    chrome_pdf::PdfAccessibilityImageFetcher* const image_fetcher_;
+    const raw_ptr<chrome_pdf::PdfAccessibilityImageFetcher,
+                  ExperimentalRenderer>
+        image_fetcher_;
 
     uint32_t pages_per_batch_;
     uint32_t remaining_page_count_;
@@ -237,14 +240,21 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   virtual void OnOcrDataReceived(std::vector<PdfOcrRequest> ocr_requests,
                                  std::vector<ui::AXTreeUpdate> tree_updates);
 
-  ui::AXTree& tree_for_testing() { return tree_; }
-
   const ui::AXTreeUpdate* postamble_page_tree_update_for_testing() const {
     return postamble_page_tree_update_.get();
   }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   bool ShowContextMenu();
+
+  ui::AXTree& tree_for_testing() { return tree_; }
+
+  // Sets the ID of a child tree which this node will be hosting. In this way,
+  // multiple trees could be stitched together. Clears any existing descendants
+  // of the hosting node in order to maintain the consistency of the tree
+  // structure, and because they would be hidden by the child tree anyway.
+  bool SetChildTree(const ui::AXNodeID& target_node_id,
+                    const ui::AXTreeID& child_tree_id);
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
  protected:
@@ -325,11 +335,13 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   // ‌PdfAccessibilityTree belongs to the PDF plugin which is created by the
   // renderer. `render_frame_` is reset when renderer sends OnDestruct() to its
   // observers.
-  content::RenderFrame* render_frame_;
+  raw_ptr<content::RenderFrame, ExperimentalRenderer> render_frame_;
 
   // Unowned. Must outlive `this`.
-  chrome_pdf::PdfAccessibilityActionHandler* const action_handler_;
-  chrome_pdf::PdfAccessibilityImageFetcher* const image_fetcher_;
+  const raw_ptr<chrome_pdf::PdfAccessibilityActionHandler, ExperimentalRenderer>
+      action_handler_;
+  const raw_ptr<chrome_pdf::PdfAccessibilityImageFetcher, ExperimentalRenderer>
+      image_fetcher_;
 
   // `zoom_` signifies the zoom level set in for the browser content.
   // `scale_` signifies the scale level set by user. Scale is applied

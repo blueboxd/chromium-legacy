@@ -93,8 +93,10 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
 
     ContextResult result = ContextResult::kFatalFailure;
     Capabilities capabilities;
+    GLCapabilities gl_capabilities;
     CreateCommandBuffer(*channel, std::move(init_params), kRouteId,
-                        GetSharedMemoryRegion(), &result, &capabilities);
+                        GetSharedMemoryRegion(), &result, &capabilities,
+                        &gl_capabilities);
     EXPECT_EQ(result, ContextResult::kSuccess);
 
     auto raster_decoder_state =
@@ -132,7 +134,8 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
 
   ASSERT_TRUE(channel_manager());
   GpuChannel* channel = channel_manager()->EstablishChannel(
-      base::UnguessableToken::Create(), kClientId, kClientTracingId, false);
+      base::UnguessableToken::Create(), kClientId, kClientTracingId, false,
+      gfx::GpuExtraInfo(), /*gpu_memory_buffer_factory=*/nullptr);
   EXPECT_TRUE(channel);
   EXPECT_EQ(channel_manager()->LookupChannel(kClientId), channel);
 }

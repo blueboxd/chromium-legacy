@@ -53,9 +53,9 @@ static_library("service") {
     "variations_service_utils.h",
   ]
 
+  public_deps = [ "//base" ]
   deps = [
     ":buildflags",
-    "//base",
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
     "//build/config/chromebox_for_meetings:buildflags",
@@ -75,13 +75,6 @@ static_library("service") {
     "//services/network/public/cpp",
     "//ui/base",
   ]
-
-  if (is_chromeos_ash) {
-    deps += [
-      "//chromeos/ash/components/dbus/featured",
-      "//chromeos/ash/components/dbus/featured:proto",
-    ]
-  }
 }
 
 source_set("unit_tests") {
@@ -117,11 +110,4 @@ source_set("unit_tests") {
     "//services/network/public/cpp",
     "//testing/gtest",
   ]
-
-  if (is_chromeos_ash) {
-    deps += [
-      "//chromeos/ash/components/dbus/featured",
-      "//chromeos/ash/components/dbus/featured:proto",
-    ]
-  }
 }

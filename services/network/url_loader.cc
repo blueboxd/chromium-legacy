@@ -1108,8 +1108,7 @@ void URLLoader::FollowRedirect(
   deferred_redirect_url_.reset();
   new_redirect_url_ = new_url;
 
-  net::HttpRequestHeaders merged_modified_headers;
-  merged_modified_headers.CopyFrom(modified_headers);
+  net::HttpRequestHeaders merged_modified_headers = modified_headers;
   merged_modified_headers.MergeFrom(modified_cors_exempt_headers);
   url_request_->FollowDeferredRedirect(removed_headers,
                                        merged_modified_headers);
@@ -2241,7 +2240,7 @@ void URLLoader::SetRawRequestHeadersAndNotify(
       cookie_access_details_.emplace_back(mojom::CookieAccessDetails::New(
           mojom::CookieAccessDetails::Type::kRead, url_request_->url(),
           url_request_->site_for_cookies(), std::move(reported_cookies),
-          devtools_request_id()));
+          devtools_request_id(), 1));
     }
   }
 }
@@ -2594,7 +2593,7 @@ void URLLoader::ReportFlaggedResponseCookies(bool call_cookie_observer) {
     cookie_access_details_.emplace_back(mojom::CookieAccessDetails::New(
         mojom::CookieAccessDetails::Type::kChange, url_request_->url(),
         url_request_->site_for_cookies(), std::move(reported_cookies),
-        devtools_request_id()));
+        devtools_request_id(), 1));
     if (call_cookie_observer) {
       cookie_observer_->OnCookiesAccessed(std::move(cookie_access_details_));
     }

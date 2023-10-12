@@ -12,29 +12,35 @@
 
 namespace media {
 
-class FakeHlsDataSource : public HlsDataSource {
+class MockHlsDataSourceProvider : public HlsDataSourceProvider {
  public:
-  FakeHlsDataSource(std::vector<uint8_t> data);
-  ~FakeHlsDataSource() override;
-  void Read(uint64_t pos,
-            size_t size,
-            uint8_t* buf,
-            HlsDataSource::ReadCb cb) override;
-  base::StringPiece GetMimeType() const override;
-  void Stop() override;
-
- protected:
-  std::vector<uint8_t> data_;
+  MockHlsDataSourceProvider();
+  ~MockHlsDataSourceProvider() override;
+  MOCK_METHOD(void,
+              ReadFromUrl,
+              (GURL,
+               absl::optional<hls::types::ByteRange>,
+               HlsDataSourceProvider::ReadCb),
+              (override));
+  MOCK_METHOD(void,
+              ReadFromExistingStream,
+              (std::unique_ptr<HlsDataSourceStream>,
+               HlsDataSourceProvider::ReadCb),
+              (override));
+  MOCK_METHOD(void,
+              AbortPendingReads,
+              (base::OnceClosure callback),
+              (override));
 };
 
-class FileHlsDataSource : public FakeHlsDataSource {
+class StringHlsDataSourceStreamFactory {
  public:
-  FileHlsDataSource(const std::string& filename);
+  static std::unique_ptr<HlsDataSourceStream> CreateStream(std::string content);
 };
 
-class StringHlsDataSource : public FakeHlsDataSource {
+class FileHlsDataSourceStreamFactory {
  public:
-  StringHlsDataSource(base::StringPiece content);
+  static std::unique_ptr<HlsDataSourceStream> CreateStream(std::string file);
 };
 
 class MockManifestDemuxerEngineHost : public ManifestDemuxerEngineHost {
@@ -95,7 +101,7 @@ class MockHlsRenditionHost : public HlsRenditionHost {
               (GURL uri,
                bool read_chunked,
                absl::optional<hls::types::ByteRange> range,
-               HlsDataSourceStreamManager::ReadCb cb),
+               HlsDataSourceProvider::ReadCb cb),
               (override));
 
   MOCK_METHOD(hls::ParseStatus::Or<scoped_refptr<hls::MediaPlaylist>>,
@@ -105,18 +111,11 @@ class MockHlsRenditionHost : public HlsRenditionHost {
                hls::types::DecimalInteger version),
               (override));
 
-  void ReadStream(std::unique_ptr<HlsDataSourceStream> stream,
-                  HlsDataSourceStreamManager::ReadCb cb) override;
-
- private:
-  void ExchangeStreamId(HlsDataSourceStream::StreamId ticket,
-                        HlsDataSourceStreamManager::ReadCb cb,
-                        HlsDataSource::ReadStatus::Or<size_t> result);
-
-  HlsDataSourceStream::StreamId::Generator stream_ticket_generator_;
-  base::flat_map<HlsDataSourceStream::StreamId,
-                 std::unique_ptr<HlsDataSourceStream>>
-      stream_map_;
+  MOCK_METHOD(void,
+              ReadStream,
+              (std::unique_ptr<HlsDataSourceStream>,
+               HlsDataSourceProvider::ReadCb),
+              (override));
 };
 
 class MockHlsRendition : public HlsRendition {
@@ -130,8 +129,11 @@ class MockHlsRendition : public HlsRendition {
                double rate,
                ManifestDemuxer::DelayCallback cb),
               (override));
-  MOCK_METHOD(bool, Seek, (base::TimeDelta time), (override));
-  MOCK_METHOD(void, CancelPendingNetworkRequests, (), (override));
+  MOCK_METHOD(ManifestDemuxer::SeekResponse,
+              Seek,
+              (base::TimeDelta time),
+              (override));
+  MOCK_METHOD(void, StartWaitingForSeek, (), (override));
   MOCK_METHOD(absl::optional<base::TimeDelta>, GetDuration, (), (override));
   MOCK_METHOD(void, Stop, (), (override));
 };

@@ -368,7 +368,7 @@ void DemuxerManager::DisableDemuxerCanChangeType() {
 PipelineStatus DemuxerManager::CreateDemuxer(
     bool load_media_source,
     DataSource::Preload preload,
-    bool has_poster,
+    bool needs_first_frame,
     DemuxerManager::DemuxerCreatedCB on_demuxer_created) {
   // TODO(crbug/1377053) return a better error
   if (!client_) {
@@ -377,13 +377,14 @@ PipelineStatus DemuxerManager::CreateDemuxer(
 
   // We can only do a universal suspend for posters, unless the flag is enabled.
   auto suspended_mode = Pipeline::StartType::kSuspendAfterMetadataForAudioOnly;
-  if (has_poster || base::FeatureList::IsEnabled(kPreloadMetadataLazyLoad)) {
+  if (!needs_first_frame) {
     suspended_mode = Pipeline::StartType::kSuspendAfterMetadata;
   }
 
 #if BUILDFLAG(ENABLE_HLS_DEMUXER)
   if (hls_fallback_ == HlsFallbackImplementation::kBuiltinHlsPlayer ||
-      loaded_url_.path_piece().ends_with(".m3u8")) {
+      (base::FeatureList::IsEnabled(kBuiltInHlsPlayer) &&
+       loaded_url_.path_piece().ends_with(".m3u8"))) {
     SetDemuxer(CreateHlsDemuxer());
     return std::move(on_demuxer_created)
         .Run(demuxer_.get(), suspended_mode, /*is_streaming=*/false,

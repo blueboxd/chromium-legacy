@@ -69,7 +69,6 @@ Cuestións que debes ter en conta:
 <translation id="3345341804167540816">Usar Chrome en todas partes</translation>
 <translation id="3472587960215700950">Chrome usa Google Maps para darche indicacións e información local sobre os enderezos detectados.</translation>
 <translation id="3503014945441706099">Activa tamén neste perfil de Chrome a función Navegación segura mellorada</translation>
-<translation id="3506309791702511623">Chrome pode detectar os números de seguimento que indiques e levar un control dos teus paquetes na páxina Nova pestana, ademais de axudarche con outras experiencias de compra de Google.</translation>
 <translation id="3522659714780527202">Para ver as túas pestanas desde calquera dispositivo no que utilices Chrome, activa a sincronización</translation>
 <translation id="3533694711092285624">Non hai contrasinais gardados. Chrome pode comprobar os teus contrasinais cando os gardes.</translation>
 <translation id="3594076341410558780">Ocultar a mensaxe Tirar o máximo proveito de Chrome</translation>
@@ -118,6 +117,7 @@ Cuestións que debes ter en conta:
 <translation id="5389212809648216794">Google Chrome non pode usar a cámara porque a está usando outra aplicación</translation>
 <translation id="5395376160638294582">Asegúrate de poder usar sempre os datos de Chrome na túa Conta de Google</translation>
 <translation id="5439191312780166229">Analiza máis datos de sitios que a protección estándar para avisarte sobre os sitios perigosos (mesmo sobre os que Google non coñeza ata ese momento). Se queres, podes omitir as advertencias de Chrome.</translation>
+<translation id="5442013002200339429">Se ocultas <ph name="MODULE_NAME" />, Chrome deixará de facer o seguimento automático dos teus próximos paquetes e eliminará todos os datos de seguimento dos paquetes anteriores.</translation>
 <translation id="5460571915754665838">4. Selecciona Chrome</translation>
 <translation id="546541279759910616">{COUNT,plural, =1{Chrome axudarache a facer un seguimento deste paquete na páxina Nova pestana.}other{Chrome axudarache a facer un seguimento destes paquetes na páxina Nova pestana.}}</translation>
 <translation id="5492504007368565877">O xestor de contrasinais de Google non puido comprobar os teus contrasinais.</translation>
@@ -154,6 +154,7 @@ Cuestións que debes ter en conta:
 
 Só poderá ler os teus datos encriptados quen teña a túa frase de acceso (Google non a recibirá nin a almacenará). Se esqueces a frase de acceso ou queres cambiar esta opción de configuración, <ph name="BEGIN_LINK" />borra os datos de Chrome da túa conta<ph name="END_LINK" />.</translation>
 <translation id="6822673484890854830">Chrome non puido comprobar todos os contrasinais. Téntao de novo máis tarde.</translation>
+<translation id="6851982868877411675">Abre a configuración de Chrome en iOS, toca Default Browser App (Aplicación de navegador predeterminada) e selecciona Chrome.</translation>
 <translation id="6916015246697034114">Fai buscas por voz en Chrome</translation>
 <translation id="6964931465519938134">Xa podes utilizar Chrome sempre que toques ligazóns en mensaxes, en documentos e noutras aplicacións.</translation>
 <translation id="6975725306479268850">Escolle Chrome para autocompletar</translation>
@@ -188,6 +189,7 @@ Só poderá ler os teus datos encriptados quen teña a túa frase de acceso (Goo
 <translation id="7933491483529363150">Abre a pestana máis recente en Chrome.</translation>
 <translation id="8022947259858476807">Usa Chrome de forma predeterminada para abrir ligazóns, realizar buscas desde widgets e autocompletar contrasinais noutras aplicacións</translation>
 <translation id="804638182476029347">Permitir que as notificacións de Chrome avisen sobre as baixadas de prezo</translation>
+<translation id="8069507567842347179">Xa se fixo o seguimento deste paquete en Chrome.</translation>
 <translation id="81358522153858150">Chrome xa admite políticas de usuario para a túa conta xestionada</translation>
 <translation id="8160472928944011082">Non se puido actualizar Chrome</translation>
 <translation id="8174679664544842874">Abre unha pestana nova en Chrome.</translation>

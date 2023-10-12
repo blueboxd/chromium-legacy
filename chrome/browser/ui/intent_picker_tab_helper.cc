@@ -8,13 +8,14 @@
 #include <vector>
 
 #include "base/functional/bind.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/apps/intent_helper/intent_chip_display_prefs.h"
-#include "chrome/browser/apps/intent_helper/intent_picker_features.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_helpers.h"
+#include "chrome/browser/apps/link_capturing/intent_picker_info.h"
+#include "chrome/browser/apps/link_capturing/link_capturing_features.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -35,7 +36,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/intent_helper/chromeos_intent_picker_helpers.h"
-#include "chrome/browser/apps/intent_helper/metrics/intent_handling_metrics.h"
+#include "chrome/browser/apps/link_capturing/metrics/intent_handling_metrics.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace {
@@ -108,7 +109,7 @@ bool ShouldConsiderWebContentsForIntentPicker(
     return false;
   }
 
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
   if (browser && (browser->is_type_app() || browser->is_type_app_popup())) {
     return false;
   }
@@ -125,7 +126,7 @@ void ShowIntentPickerBubbleForApps(
     return;
   }
 
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
   if (!browser) {
     return;
   }
@@ -340,14 +341,15 @@ void IntentPickerTabHelper::ShowIconForLinkIntent(bool should_show_icon) {
 void IntentPickerTabHelper::ShowOrHideIconInternal(bool should_show_icon) {
   should_show_icon_ = should_show_icon;
 
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  Browser* browser = chrome::FindBrowserWithTab(web_contents());
   if (!browser)
     return;
   browser->window()->UpdatePageActionIcon(PageActionIconType::kIntentPicker);
 
   icon_resolved_after_last_navigation_ = true;
-  if (icon_update_closure_)
-    std::move(icon_update_closure_).Run();
+  if (icon_update_closure_for_testing_) {
+    std::move(icon_update_closure_for_testing_).Run();
+  }
 }
 
 void IntentPickerTabHelper::ShowIntentPickerOrLaunchAppImpl(
@@ -436,7 +438,7 @@ void IntentPickerTabHelper::SetIconUpdateCallbackForTesting(
     std::move(callback).Run();
     return;
   }
-  icon_update_closure_ = std::move(callback);
+  icon_update_closure_for_testing_ = std::move(callback);
 }
 
 void IntentPickerTabHelper::DidStartNavigation(

@@ -7,7 +7,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -120,9 +119,6 @@ class SyncServiceImpl : public SyncService,
   GoogleServiceAuthError GetAuthError() const override;
   base::Time GetAuthErrorTime() const override;
   bool RequiresClientUpgrade() const override;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  bool IsSyncFeatureDisabledViaDashboard() const override;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
   bool IsSetupInProgress() const override;

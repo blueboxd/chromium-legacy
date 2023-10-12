@@ -35,6 +35,7 @@
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom-forward.h"
 #include "third_party/blink/public/mojom/navigation/navigation_initiator_activation_and_ad_status.mojom.h"
+#include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/base/page_transition_types.h"
 
@@ -175,9 +176,6 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   virtual bool IsRendererInitiated() = 0;
 
   // The navigation initiator's user activation and ad status.
-  //
-  // TODO(yaoxia): this will be used for recording a page load UKM
-  // (https://crrev.com/c/4080612).
   virtual blink::mojom::NavigationInitiatorActivationAndAdStatus
   GetNavigationInitiatorActivationAndAdStatus() = 0;
 
@@ -302,12 +300,26 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // they don't commit a new document into a renderer process.
   virtual RenderFrameHost* GetRenderFrameHost() const = 0;
 
-  // Returns the id of the RenderFrameHost this navigation is committing from.
+  // Returns the id of the "current RenderFrameHost" before this navigation
+  // commits (which would potentially replace the "current RenderFrameHost").
   // In case a navigation happens within the same RenderFrameHost,
   // GetRenderFrameHost() and GetPreviousRenderFrameHostId() will refer to the
   // same RenderFrameHost.
-  // Note: This is not guaranteed to refer to a RenderFrameHost that still
-  // exists.
+  // Note: The value returned by this function may change over time, e.g. if
+  // another navigation committed a different RenderFrameHost during the
+  // lifetime of this navigation, causing the "current RenderFrameHost" to
+  // change to another RenderFrameHost. The value will only be guaranteed to
+  // not change again after the navigation reaches the "ReadyToCommit" stage,
+  // as at that point only that navigation can commit, guaranteeing no further
+  // changes to the "current RenderFrameHost" until that navigation itself
+  // potentially replaces the "current RenderFrameHost".
+  // Note 2: Because of the potential "current RenderFrameHost" changes in the
+  // middle of this navigation's lifetime, this function should not be assumed
+  // to be the value of the "original current RenderFrameHost" (i.e. the current
+  // RenderFrameHost value at NavigationHandle construction time). There is
+  // currently no way to get that value, but it is tracked internally in
+  // `NavigationRequest::current_render_frame_host_id_at_construction_`, so it
+  // can potentially be exposed if needed in the future.
   virtual GlobalRenderFrameHostId GetPreviousRenderFrameHostId() = 0;
 
   // Returns the id of the RenderProcessHost this navigation is expected to
@@ -683,6 +695,11 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // will be lost.
   virtual blink::RuntimeFeatureStateContext&
   GetMutableRuntimeFeatureStateContext() = 0;
+
+  // Some content settings must be enforced by the renderer (e.g. whether
+  // running javascript is allowed). See ContentSettingsType for more details.
+  virtual void SetContentSettings(
+      blink::mojom::RendererContentSettingsPtr content_settings) = 0;
 };
 
 }  // namespace content

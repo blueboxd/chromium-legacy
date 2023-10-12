@@ -1146,7 +1146,8 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
 
   auto channel_token = base::UnguessableToken::Create();
   gpu::GpuChannel* gpu_channel = gpu_channel_manager_->EstablishChannel(
-      channel_token, client_id, client_tracing_id, is_gpu_host);
+      channel_token, client_id, client_tracing_id, is_gpu_host, gpu_extra_info_,
+      gpu_memory_buffer_factory_.get());
 
   if (!gpu_channel) {
     // This returns a null handle, which is treated by the client as a failure
@@ -1161,7 +1162,6 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
 
   media_gpu_channel_manager_->AddChannel(client_id, channel_token);
 
-  gpu_channel->SetGpuExtraInfo(gpu_extra_info_);
   std::move(callback).Run(
       std::move(pipe.handle1), gpu_info_, gpu_feature_info_,
       gpu_channel->shared_image_stub()->factory()->MakeCapabilities());

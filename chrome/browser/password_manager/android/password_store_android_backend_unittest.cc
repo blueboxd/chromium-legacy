@@ -55,6 +55,8 @@ constexpr char kTestAccount[] = "test@gmail.com";
 const std::u16string kTestUsername(u"Todd Tester");
 const std::u16string kTestPassword(u"S3cr3t");
 constexpr char kTestUrl[] = "https://example.com";
+constexpr const char kTestAndroidName[] = "Example Android App 1";
+constexpr const char kTestAndroidIconURL[] = "https://example.com/icon_1.png";
 constexpr base::Time kTestDateCreated = base::Time::FromTimeT(1500);
 constexpr base::TimeDelta kTestLatencyDelta = base::Milliseconds(123u);
 constexpr const char kTestAndroidRealm[] =
@@ -204,7 +206,6 @@ class PasswordStoreAndroidBackendTest : public testing::Test {
         prefs::kCurrentMigrationVersionToGoogleMobileServices, 1);
     prefs_.registry()->RegisterDoublePref(prefs::kTimeOfLastMigrationAttempt,
                                           20.22);
-    prefs_.registry()->RegisterBooleanPref(prefs::kSettingsMigratedToUPM, true);
 
     backend_ = std::make_unique<PasswordStoreAndroidBackend>(
         base::PassKey<class PasswordStoreAndroidBackendTest>(),
@@ -696,7 +697,6 @@ TEST_F(PasswordStoreAndroidBackendTest,
                 prefs::kCurrentMigrationVersionToGoogleMobileServices),
             0);
   EXPECT_EQ(prefs()->GetDouble(prefs::kTimeOfLastMigrationAttempt), 0.0);
-  EXPECT_FALSE(prefs()->GetBoolean(prefs::kSettingsMigratedToUPM));
 
   const char kErrorCodeMetric[] =
       "PasswordManager.PasswordStoreAndroidBackend.ErrorCode";
@@ -741,7 +741,6 @@ TEST_F(PasswordStoreAndroidBackendTest,
                 prefs::kCurrentMigrationVersionToGoogleMobileServices),
             0);
   EXPECT_NE(prefs()->GetDouble(prefs::kTimeOfLastMigrationAttempt), 0.0);
-  EXPECT_TRUE(prefs()->GetBoolean(prefs::kSettingsMigratedToUPM));
 
   const char kErrorCodeMetric[] =
       "PasswordManager.PasswordStoreAndroidBackend.ErrorCode";
@@ -795,7 +794,6 @@ TEST_F(
                 prefs::kCurrentMigrationVersionToGoogleMobileServices),
             0);
   EXPECT_EQ(prefs()->GetDouble(prefs::kTimeOfLastMigrationAttempt), 0.0);
-  EXPECT_FALSE(prefs()->GetBoolean(prefs::kSettingsMigratedToUPM));
 
   const char kErrorCodeMetric[] =
       "PasswordManager.PasswordStoreAndroidBackend.ErrorCode";
@@ -864,7 +862,6 @@ TEST_F(PasswordStoreAndroidBackendTest,
                 prefs::kCurrentMigrationVersionToGoogleMobileServices),
             0);
   EXPECT_NE(prefs()->GetDouble(prefs::kTimeOfLastMigrationAttempt), 0.0);
-  EXPECT_TRUE(prefs()->GetBoolean(prefs::kSettingsMigratedToUPM));
 
   const char kErrorCodeMetric[] =
       "PasswordManager.PasswordStoreAndroidBackend.ErrorCode";
@@ -1046,7 +1043,6 @@ TEST_F(PasswordStoreAndroidBackendTest,
                 prefs::kCurrentMigrationVersionToGoogleMobileServices),
             0);
   EXPECT_EQ(prefs()->GetDouble(prefs::kTimeOfLastMigrationAttempt), 0.0);
-  EXPECT_FALSE(prefs()->GetBoolean(prefs::kSettingsMigratedToUPM));
 
   const char kErrorCodeMetric[] =
       "PasswordManager.PasswordStoreAndroidBackend.ErrorCode";
@@ -1477,6 +1473,52 @@ TEST_F(PasswordStoreAndroidBackendTest, CallsBridgeForGroupedMatchingLogins) {
       password_manager::metrics_util::GroupedPasswordFetchResult::
           kBetterMatchesExist,
       1);
+}
+
+TEST_F(PasswordStoreAndroidBackendTest,
+       GetAllLoginsWithAffiliationAndBrandingInformation) {
+  FakeAffiliationService fake_affiliation_service;
+  MockAffiliatedMatchHelper mock_affiliated_match_helper(
+      &fake_affiliation_service);
+  backend().InitBackend(&mock_affiliated_match_helper,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
+                        base::RepeatingClosure(), base::DoNothing());
+  std::vector<MockAffiliatedMatchHelper::AffiliationAndBrandingInformation>
+      affiliation_info_for_results = {
+          {kTestUrl, kTestAndroidName, GURL(kTestAndroidIconURL)},
+          {/* Pretend affiliation or branding info is unavailable. */}};
+
+  mock_affiliated_match_helper
+      .ExpectCallToInjectAffiliationAndBrandingInformation(
+          affiliation_info_for_results);
+
+  PasswordForm android_form = CreateTestLogin(
+      kTestUsername, kTestPassword, kTestAndroidRealm, kTestDateCreated);
+  PasswordForm form =
+      CreateTestLogin(kTestUsername, kTestPassword, kTestUrl, kTestDateCreated);
+
+  std::vector<std::unique_ptr<PasswordForm>> expected_results;
+  expected_results.push_back(std::make_unique<PasswordForm>(android_form));
+  // Expect branding info for android credential.
+  expected_results.back()->affiliated_web_realm = kTestUrl;
+  expected_results.back()->app_display_name = kTestAndroidName;
+  expected_results.back()->app_icon_url = GURL(kTestAndroidIconURL);
+  expected_results.push_back(std::make_unique<PasswordForm>(form));
+
+  EXPECT_CALL(*bridge_helper(), GetAllLogins).WillOnce(Return(kJobId));
+
+  base::MockCallback<LoginsOrErrorReply> mock_reply;
+  backend().GetAllLoginsWithAffiliationAndBrandingAsync(mock_reply.Get());
+  RunUntilIdle();
+
+  std::vector<std::unique_ptr<PasswordForm>> returned_forms;
+  returned_forms.push_back(std::make_unique<PasswordForm>(android_form));
+  returned_forms.push_back(std::make_unique<PasswordForm>(form));
+  consumer().OnCompleteWithLogins(kJobId,
+                                  UnwrapForms(std::move(returned_forms)));
+
+  EXPECT_CALL(mock_reply, Run(LoginsResultsOrErrorAre(&expected_results)));
+  RunUntilIdle();
 }
 
 class PasswordStoreAndroidBackendTestForMetrics

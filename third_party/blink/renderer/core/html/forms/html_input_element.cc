@@ -332,8 +332,6 @@ void HTMLInputElement::UpdateSelectionOnFocus(
     // TODO(tkent): scrollRectToVisible is a workaround of a bug of
     // FrameSelection::revealSelection().  It doesn't scroll correctly in a
     // case of RangeSelection. crbug.com/443061.
-    GetDocument().EnsurePaintLocationDataValidForNode(
-        this, DocumentUpdateReason::kFocus);
     if (!options->preventScroll()) {
       if (GetLayoutObject()) {
         scroll_into_view_util::ScrollRectToVisible(
@@ -2197,6 +2195,15 @@ bool HTMLInputElement::IsInteractiveContent() const {
   return input_type_->IsInteractiveContent();
 }
 
+const ComputedStyle* HTMLInputElement::CustomStyleForLayoutObject(
+    const StyleRecalcContext& style_recalc_context) {
+  // TODO(crbug.com/953707): Avoid marking style dirty in
+  // HTMLImageFallbackHelper and use AdjustStyle instead.
+  const ComputedStyle* original_style =
+      OriginalStyleForLayoutObject(style_recalc_context);
+  return input_type_view_->CustomStyleForLayoutObject(original_style);
+}
+
 void HTMLInputElement::AdjustStyle(ComputedStyleBuilder& builder) {
   return input_type_view_->AdjustStyle(builder);
 }
@@ -2291,13 +2298,9 @@ void HTMLInputElement::showPicker(ExceptionState& exception_state) {
   // https://github.com/whatwg/html/issues/6909#issuecomment-917138991
   if (type() != input_type_names::kFile && type() != input_type_names::kColor &&
       frame) {
-    const SecurityOrigin* security_origin =
-        frame->GetSecurityContext()->GetSecurityOrigin();
-    const SecurityOrigin* top_security_origin =
-        frame->Tree().Top().GetSecurityContext()->GetSecurityOrigin();
-    if (!security_origin->IsSameOriginWith(top_security_origin)) {
+    if (!frame->IsSameOrigin()) {
       exception_state.ThrowSecurityError(
-          "HTMLInputElement::showPicker() called from cross-origin iframe.");
+          "showPicker() called from cross-origin iframe.");
       return;
     }
   }

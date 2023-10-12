@@ -7,15 +7,16 @@
 
 #import "base/test/ios/wait_util.h"
 #import "components/password_manager/core/common/password_manager_features.h"
-#import "ios/chrome/browser/passwords/password_manager_app_interface.h"
+#import "ios/chrome/browser/metrics/metrics_app_interface.h"
+#import "ios/chrome/browser/passwords/model/password_manager_app_interface.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_app_interface.h"
-#import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_egtest_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings_app_interface.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
+#import "ios/chrome/common/ui/confirmation_alert/constants.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -84,11 +85,19 @@ id<GREYMatcher> ButtonWithAccessibilityID(NSString* id) {
   // Also reset the dismiss count pref to 0 to make sure the bottom sheet is
   // enabled by default.
   [PasswordSuggestionBottomSheetAppInterface setDismissCount:0];
+
+  GREYAssertNil([MetricsAppInterface setupHistogramTester],
+                @"Cannot setup histogram tester.");
+  [MetricsAppInterface overrideMetricsAndCrashReportingForTesting];
 }
 
 - (void)tearDown {
   [PasswordManagerAppInterface clearCredentials];
   [PasswordSuggestionBottomSheetAppInterface removeMockReauthenticationModule];
+
+  [MetricsAppInterface stopOverridingMetricsAndCrashReportingForTesting];
+  GREYAssertNil([MetricsAppInterface releaseHistogramTester],
+                @"Failed to release histogram tester.");
   [super tearDown];
 }
 
@@ -172,6 +181,13 @@ id<GREYMatcher> NavigationBarEditButton() {
                                    IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_PASSWORD))]
       performAction:grey_tap()];
 
+  // No histogram logged because there is only 1 credential shown to the user.
+  GREYAssertNil(
+      [MetricsAppInterface
+          expectTotalCount:0
+              forHistogram:@"PasswordManager.TouchToFill.CredentialIndex"],
+      @"Unexpected histogram error for touch to fill credential index");
+
   [self verifyPasswordFieldsHaveBeenFilled:@"user"];
 }
 
@@ -212,7 +228,7 @@ id<GREYMatcher> NavigationBarEditButton() {
   }
 }
 
-- (void)testOpenPasswordBottomSheetTapNoThanksShowKeyboard {
+- (void)testOpenPasswordBottomSheetTapUseKeyboardShowKeyboard {
   [PasswordManagerAppInterface
       storeCredentialWithUsername:@"user"
                          password:@"password"
@@ -229,8 +245,8 @@ id<GREYMatcher> NavigationBarEditButton() {
       waitForUIElementToAppearWithMatcher:grey_accessibilityID(@"user")];
 
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
-                                   IDS_IOS_PASSWORD_BOTTOM_SHEET_NO_THANKS))]
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_KEYBOARD)]
       performAction:grey_tap()];
 
   WaitForKeyboardToAppear();
@@ -527,16 +543,42 @@ id<GREYMatcher> NavigationBarEditButton() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"user")]
       performAction:grey_tap()];
 
+  GREYAssertNil(
+      [MetricsAppInterface
+           expectCount:1
+             forBucket:YES
+          forHistogram:@"IOS.PasswordBottomSheet.UsernameTapped."
+                       @"MinimizedState"],
+      @"Unexpected histogram error for password bottom sheet username tapped "
+      @"minimized state");
+
   [ChromeEarlGrey
       waitForUIElementToAppearWithMatcher:grey_accessibilityID(@"user2")];
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"user2")]
       performAction:grey_tap()];
 
+  GREYAssertNil(
+      [MetricsAppInterface
+           expectCount:1
+             forBucket:NO
+          forHistogram:@"IOS.PasswordBottomSheet.UsernameTapped."
+                       @"MinimizedState"],
+      @"Unexpected histogram error for password bottom sheet username tapped "
+      @"minimized state");
+
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
                                    IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_PASSWORD))]
       performAction:grey_tap()];
+
+  GREYAssertNil(
+      [MetricsAppInterface
+          expectUniqueSampleWithCount:1
+                            forBucket:1
+                         forHistogram:
+                             @"PasswordManager.TouchToFill.CredentialIndex"],
+      @"Unexpected histogram error for touch to fill credential index");
 
   [self verifyPasswordFieldsHaveBeenFilled:@"user2"];
 
@@ -582,9 +624,9 @@ id<GREYMatcher> NavigationBarEditButton() {
       performAction:grey_tap()];
 
   // Scroll to the last password.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kPasswordSuggestionBottomSheetTableViewId)]
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityID(
+                     kConfirmationAlertUnderTitleViewAccessibilityIdentifier)]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
 
   [ChromeEarlGrey
@@ -620,8 +662,8 @@ id<GREYMatcher> NavigationBarEditButton() {
       waitForUIElementToAppearWithMatcher:grey_accessibilityID(@"user")];
 
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
-                                   IDS_IOS_PASSWORD_BOTTOM_SHEET_NO_THANKS))]
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_KEYBOARD)]
       performAction:grey_tap()];
 
   WaitForKeyboardToAppear();
@@ -636,8 +678,8 @@ id<GREYMatcher> NavigationBarEditButton() {
       waitForUIElementToAppearWithMatcher:grey_accessibilityID(@"user")];
 
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
-                                   IDS_IOS_PASSWORD_BOTTOM_SHEET_NO_THANKS))]
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_KEYBOARD)]
       performAction:grey_tap()];
 
   WaitForKeyboardToAppear();
@@ -652,8 +694,8 @@ id<GREYMatcher> NavigationBarEditButton() {
       waitForUIElementToAppearWithMatcher:grey_accessibilityID(@"user")];
 
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
-                                   IDS_IOS_PASSWORD_BOTTOM_SHEET_NO_THANKS))]
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_KEYBOARD)]
       performAction:grey_tap()];
 
   WaitForKeyboardToAppear();
@@ -748,9 +790,9 @@ id<GREYMatcher> NavigationBarEditButton() {
                        IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_PASSWORD))]
         assertWithMatcher:grey_notNil()];
 
-    [[EarlGrey
-        selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
-                                     IDS_IOS_PASSWORD_BOTTOM_SHEET_NO_THANKS))]
+    [[EarlGrey selectElementWithMatcher:
+                   chrome_test_util::ButtonWithAccessibilityLabelId(
+                       IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_KEYBOARD)]
         assertWithMatcher:grey_notNil()];
 
     // Verify the credit card tablew view is still visible.

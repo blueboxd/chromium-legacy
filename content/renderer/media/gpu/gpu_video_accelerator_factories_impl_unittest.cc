@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/gtest_util.h"
@@ -391,7 +392,7 @@ class GpuVideoAcceleratorFactoriesImplTest : public testing::Test {
   void MockGpuChannel() {
     // Simulate success, since we're not actually talking to the service
     // in this test suite.
-    ON_CALL(mock_gpu_channel_, CreateCommandBuffer(_, _, _, _, _, _, _))
+    ON_CALL(mock_gpu_channel_, CreateCommandBuffer(_, _, _, _, _, _, _, _))
         .WillByDefault(Invoke(
             [&](gpu::mojom::CreateCommandBufferParamsPtr params,
                 int32_t routing_id, base::UnsafeSharedMemoryRegion shared_state,
@@ -399,8 +400,8 @@ class GpuVideoAcceleratorFactoriesImplTest : public testing::Test {
                     receiver,
                 mojo::PendingAssociatedRemote<gpu::mojom::CommandBufferClient>
                     client,
-                gpu::ContextResult* result,
-                gpu::Capabilities* capabilities) -> bool {
+                gpu::ContextResult* result, gpu::Capabilities* capabilities,
+                gpu::GLCapabilities* gl_capabilities) -> bool {
               // There's no real GpuChannel pipe for this endpoint to use, so
               // associate it with a dedicated pipe for these tests. This
               // allows the CommandBufferProxyImpl to make calls on its
@@ -426,7 +427,7 @@ class GpuVideoAcceleratorFactoriesImplTest : public testing::Test {
         gpu::kNullSurfaceHandle, nullptr, content::kGpuStreamPriorityDefault,
         gpu::ContextCreationAttribs(), GURL());
     ON_CALL(*mock_context_provider_, GetCommandBufferProxy())
-        .WillByDefault(Return(gpu_command_buffer_proxy_));
+        .WillByDefault(Return(gpu_command_buffer_proxy_.get()));
   }
 
   std::unique_ptr<CodecFactory> CreateCodecFactory(
@@ -494,7 +495,8 @@ class GpuVideoAcceleratorFactoriesImplTest : public testing::Test {
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   scoped_refptr<TestGpuChannelHost> gpu_channel_host_;
   scoped_refptr<MockContextProviderCommandBuffer> mock_context_provider_;
-  gpu::CommandBufferProxyImpl* gpu_command_buffer_proxy_;
+  raw_ptr<gpu::CommandBufferProxyImpl, DanglingUntriaged>
+      gpu_command_buffer_proxy_;
 
   FakeVEAProviderImpl fake_vea_provider_;
 

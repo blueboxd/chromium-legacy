@@ -13,6 +13,7 @@
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
@@ -164,9 +165,14 @@ void CookieManager::DeleteCanonicalCookie(
 }
 
 void CookieManager::SetContentSettings(
-    const ContentSettingsForOneType& settings) {
+    ContentSettingsType content_settings_type,
+    const ContentSettingsForOneType& settings,
+    SetContentSettingsCallback callback) {
   OnSettingsWillChange();
-  cookie_settings_.set_content_settings(settings);
+  cookie_settings_.set_content_settings(content_settings_type, settings);
+  if (callback) {
+    std::move(callback).Run();
+  }
 }
 
 void CookieManager::DeleteCookies(mojom::CookieDeletionFilterPtr filter,
@@ -322,44 +328,9 @@ void CookieManager::BlockTruncatedCookies(bool block) {
   cookie_settings_.set_block_truncated_cookies(block);
 }
 
-void CookieManager::SetContentSettingsForLegacyCookieAccess(
-    const ContentSettingsForOneType& settings) {
+void CookieManager::SetMitigationsEnabledFor3pcd(bool enable) {
   OnSettingsWillChange();
-  cookie_settings_.set_content_settings_for_legacy_cookie_access(settings);
-}
-
-void CookieManager::SetContentSettingsFor3pcd(
-    const ContentSettingsForOneType& settings) {
-  OnSettingsWillChange();
-  cookie_settings_.set_content_settings_for_3pcd(settings);
-}
-
-void CookieManager::SetContentSettingsFor3pcdMetadataGrants(
-    const ContentSettingsForOneType& settings) {
-  OnSettingsWillChange();
-  cookie_settings_.set_content_settings_for_3pcd_metadata_grants(settings);
-}
-
-void CookieManager::SetStorageAccessGrantSettings(
-    const ContentSettingsForOneType& settings,
-    SetStorageAccessGrantSettingsCallback callback) {
-  OnSettingsWillChange();
-  cookie_settings_.set_storage_access_grants(settings);
-
-  // Signal our storage update is complete.
-  std::move(callback).Run();
-}
-
-void CookieManager::SetAllStorageAccessSettings(
-    const ContentSettingsForOneType& standard_settings,
-    const ContentSettingsForOneType& top_level_settings,
-    SetStorageAccessGrantSettingsCallback callback) {
-  OnSettingsWillChange();
-  cookie_settings_.set_storage_access_grants(standard_settings);
-  cookie_settings_.set_top_level_storage_access_grants(top_level_settings);
-
-  // Signal our storage update is complete.
-  std::move(callback).Run();
+  cookie_settings_.set_mitigations_enabled_for_3pcd(enable);
 }
 
 void CookieManager::OnSettingsWillChange() {
@@ -374,18 +345,16 @@ void CookieManager::ConfigureCookieSettings(
     CookieSettings* out) {
   out->set_block_third_party_cookies(params.block_third_party_cookies);
   out->set_block_truncated_cookies(params.block_truncated_cookies);
-  out->set_content_settings(params.settings);
+  out->set_mitigations_enabled_for_3pcd(params.mitigations_enabled_for_3pcd);
   out->set_secure_origin_cookies_allowed_schemes(
       params.secure_origin_cookies_allowed_schemes);
   out->set_matching_scheme_cookies_allowed_schemes(
       params.matching_scheme_cookies_allowed_schemes);
   out->set_third_party_cookies_allowed_schemes(
       params.third_party_cookies_allowed_schemes);
-  out->set_content_settings_for_legacy_cookie_access(
-      params.settings_for_legacy_cookie_access);
-  out->set_storage_access_grants(params.settings_for_storage_access);
-  out->set_top_level_storage_access_grants(
-      params.settings_for_top_level_storage_access);
+  for (const auto& [type, settings] : params.content_settings) {
+    out->set_content_settings(type, settings);
+  }
 }
 
 void CookieManager::CrashOnGetCookieList() {

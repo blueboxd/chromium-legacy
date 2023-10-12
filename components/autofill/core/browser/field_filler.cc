@@ -678,7 +678,7 @@ std::u16string GetStreetAddressForInput(
     const std::u16string& address_value,
     const std::string& address_language_code,
     FormFieldData* field) {
-  if (field->form_control_type == StringToFormControlType("textarea")) {
+  if (field->form_control_type == FormControlType::kTextArea) {
     return address_value;
   }
 
@@ -761,10 +761,12 @@ std::u16string GetExpirationYearForVirtualCardPreviewInput(
     ServerFieldType storable_type,
     const AutofillField& field) {
   if (storable_type == CREDIT_CARD_EXP_2_DIGIT_YEAR &&
-      (field.max_length == 2 || field.max_length == 0)) {
+      (field.max_length == 2 ||
+       field.max_length == FormFieldData::kDefaultMaxLength)) {
     return CreditCard::GetMidlineEllipsisDots(2);
   } else if (storable_type == CREDIT_CARD_EXP_4_DIGIT_YEAR &&
-             (field.max_length == 4 || field.max_length == 0)) {
+             (field.max_length == 4 ||
+              field.max_length == FormFieldData::kDefaultMaxLength)) {
     return CreditCard::GetMidlineEllipsisDots(4);
   }
 
@@ -903,7 +905,7 @@ std::u16string GetValueForCreditCard(
     std::string* failure_to_fill) {
   ServerFieldType storable_type = field.Type().GetStorableType();
 
-  if (field.form_control_type == StringToFormControlType("month")) {
+  if (field.form_control_type == FormControlType::kInputMonth) {
     return GetExpirationForMonthControl(credit_card);
   } else {
     switch (storable_type) {

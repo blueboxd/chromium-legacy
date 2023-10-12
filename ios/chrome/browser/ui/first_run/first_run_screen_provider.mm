@@ -9,6 +9,7 @@
 #import "components/search_engines/search_engine_choice_utils.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/policy/browser_state_policy_connector.h"
+#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/screen/screen_provider+protected.h"
 #import "ios/chrome/browser/ui/screen/screen_type.h"
@@ -28,10 +29,14 @@
 
   BrowserStatePolicyConnector* policyConnector =
       browserState->GetPolicyConnector();
-  if (search_engines::ShouldShowChoiceScreen(
+  if (search_engines::IsChoiceScreenFlagEnabled(
+          search_engines::ChoicePromo::kFre) &&
+      search_engines::ShouldShowChoiceScreen(
           *policyConnector->GetPolicyService(),
-          /*profile_properties=*/{.is_regular_profile = true,
-                                  .pref_service = browserState->GetPrefs()})) {
+          /*profile_properties=*/
+          {.is_regular_profile = true,
+           .pref_service = browserState->GetPrefs()},
+          ios::TemplateURLServiceFactory::GetForBrowserState(browserState))) {
     [screens addObject:@(kChoice)];
   }
 

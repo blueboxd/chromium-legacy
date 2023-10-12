@@ -70,7 +70,6 @@ Bularni hisobga olish kerak:
 <translation id="3345341804167540816">Chrome’ni o‘zingiz bilan olib yuring</translation>
 <translation id="3472587960215700950">Manzillar aniqlanganda Chrome marshrut va mahalliy axborotlarni Google Xaritalar orqali ochadi.</translation>
 <translation id="3503014945441706099">Bu Chrome profili orqali xavfsiz qidiruvni ham kuchaytirilgan rejimda himoyalang</translation>
-<translation id="3506309791702511623">Chrome siz kiritgan kuzatuv raqamlarini aniqlay oladi va yangi varaq sahifasida paketlaringizni kuzatib boradi, shu bilan birga Google orqali boshqa xaridlarni amalga oshirishda yordam beradi.</translation>
 <translation id="3522659714780527202">Boshqa qurilmalardagi Chrome varaqlarini koʻrish uchun sinxronizatsiyani yoqing</translation>
 <translation id="3533694711092285624">Hech qanday parol saqlanmagan. Chrome faqat saqlangan parollaringizni tekshira oladi.</translation>
 <translation id="3594076341410558780">“Chromening barcha imkoniyatlaridan foydalanish” bildirgisini berkitish</translation>
@@ -119,6 +118,7 @@ Bularni hisobga olish kerak:
 <translation id="5389212809648216794">Google Chrome kamerangizdan foydalana olmaydi, chuki boshqa ilova allaqachon kamerani ishlatmoqda.</translation>
 <translation id="5395376160638294582">Chrome maʼlumotlari Google hisobingizga sinxronlanishini tekshiring</translation>
 <translation id="5439191312780166229">Standart himoyadan koʻra koʻproq saytlardan olingan maʼlumotlarni tahlil qilish orqali sizni xavfli saytlar, hatto Google ilgari bilmagan saytlar haqida ogohlantiradi. Chrome ogohlantirishlarini eʼtiborsiz qoldirishni tanlashingiz mumkin.</translation>
+<translation id="5442013002200339429">Agar “<ph name="MODULE_NAME" />”ni berkitsangiz, Chrome kelgusidagi paketlaringizni avtomatik kuzatmaydi va barcha avvalgi joʻnatmani kuzatish raqamlari oʻchiriladi.</translation>
 <translation id="5460571915754665838">4. Chrome brauzerini tanlang</translation>
 <translation id="546541279759910616">{COUNT,plural, =1{Chrome bu paketni Yangi varaqda kuzatishda yordam beradi.}other{Chrome bu paketlarni Yangi varaqda kuzatishda yordam beradi.}}</translation>
 <translation id="5492504007368565877">Google Parollar menejeri parollaringizni tekshira olmaydi.</translation>
@@ -155,6 +155,7 @@ Bularni hisobga olish kerak:
 
 Shifrlangan maʼlumotlarni faqatgina kodli ibora yordamida oʻqish mumkin. Kodli ibora ulashilmaydi va Google serverlarida saqlanmaydi. Agar kodli iborani unutsangiz yoki bu sozlamani oʻzgartirmoqchi boʻlsangiz, <ph name="BEGIN_LINK" />hisobingizda Chrome maʼlumotlarini tozalang<ph name="END_LINK" />.</translation>
 <translation id="6822673484890854830">Chrome ayrim parollarni tekshira olmadi. Keyinroq qayta urining.</translation>
+<translation id="6851982868877411675">iOSda Chrome sozlamalarini ochib, keyin “Birlamchi brauzer ilovasi” ustiga bosib, Chromeni tanlang.</translation>
 <translation id="6916015246697034114">Chromeda ovoz bilan qidirish</translation>
 <translation id="6964931465519938134">Siz endi Chrome brauzerini har doim xabarlar, hujjatlar va boshqa ilovalardagi havolalar ustiga bosib ishga tushirishingiz mumkin.</translation>
 <translation id="6975725306479268850">Avtomatik kiritish uchun Chromeni tanlang</translation>
@@ -189,6 +190,7 @@ Shifrlangan maʼlumotlarni faqatgina kodli ibora yordamida oʻqish mumkin. Kodli
 <translation id="7933491483529363150">Oxirgi varagʻimni Chromeda och.</translation>
 <translation id="8022947259858476807">Havolalarni ochish, vidjetlar orqali qidiruv, boshqa ilovalarda parollar avtomatik kitilishda Chrome birlamchi ilova sifatida ishlatilsin</translation>
 <translation id="804638182476029347">Chrome bildirishnomalari narx tushishi haqida xabar berishiga ruxsat bering</translation>
+<translation id="8069507567842347179">Bu joʻnatma Chrome brauzerida allaqachon kuzatilgan.</translation>
 <translation id="81358522153858150">Chrome endi boshqariladigan hisobingiz uchun foydalanuvchi siyosatlarini qoʻllab-quvvatlaydi</translation>
 <translation id="8160472928944011082">Chrome yangilanmadi</translation>
 <translation id="8174679664544842874">Chromeda yangi varaq ochadi.</translation>

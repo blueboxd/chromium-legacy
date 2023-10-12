@@ -30,8 +30,8 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_model.h"
-#import "ios/chrome/browser/sync/sync_observer_bridge.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
@@ -82,7 +82,6 @@ bool IsABookmarkNodeSectionForIdentifier(
   // The browser for this mediator.
   base::WeakPtr<Browser> _browser;
   // Base view controller to present sign-in UI.
-  UIViewController* _baseViewController;
 }
 
 // The controller managing the display of the promo cell and the promo view
@@ -108,7 +107,6 @@ bool IsABookmarkNodeSectionForIdentifier(
 }
 
 - (instancetype)initWithBrowser:(Browser*)browser
-              baseViewController:(UIViewController*)baseViewController
     localOrSyncableBookmarkModel:
         (bookmarks::BookmarkModel*)localOrSyncableBookmarkModel
             accountBookmarkModel:(bookmarks::BookmarkModel*)accountBookmarkModel
@@ -124,7 +122,6 @@ bool IsABookmarkNodeSectionForIdentifier(
       _accountBookmarkModel = accountBookmarkModel->AsWeakPtr();
     }
     _displayedNode = displayedNode;
-    _baseViewController = baseViewController;
   }
   return self;
 }
@@ -148,8 +145,7 @@ bool IsABookmarkNodeSectionForIdentifier(
       [[BookmarkPromoController alloc] initWithBrowser:_browser.get()
                                            syncService:_syncService
                                               delegate:self
-                                             presenter:self
-                                    baseViewController:_baseViewController];
+                                             presenter:self];
 
   _prefChangeRegistrar = std::make_unique<PrefChangeRegistrar>();
   _prefChangeRegistrar->Init(browserState->GetPrefs());

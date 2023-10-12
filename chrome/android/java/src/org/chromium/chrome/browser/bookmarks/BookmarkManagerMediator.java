@@ -310,22 +310,36 @@ class BookmarkManagerMediator
         }
     };
 
-    private final BookmarkUiPrefs.Observer mBookmarkUiPrefsObserver = new Observer() {
-        @Override
-        public void onBookmarkRowDisplayPrefChanged(@BookmarkRowDisplayPref int displayPref) {
-            Resources res = mContext.getResources();
-            mBookmarkImageFetcher.setupFetchProperties(
-                    BookmarkUtils.getRoundedIconGenerator(mContext, displayPref),
-                    BookmarkUtils.getImageIconSize(res, displayPref),
-                    BookmarkUtils.getFaviconDisplaySize(res, displayPref));
-            refresh();
-        }
+    private final BookmarkUiPrefs.Observer mBookmarkUiPrefsObserver =
+            new Observer() {
+                @Override
+                public void onBookmarkRowDisplayPrefChanged(
+                        @BookmarkRowDisplayPref int displayPref) {
+                    Resources res = mContext.getResources();
+                    mBookmarkImageFetcher.setupFetchProperties(
+                            BookmarkUtils.getRoundedIconGenerator(mContext, displayPref),
+                            BookmarkUtils.getImageIconSize(res, displayPref),
+                            BookmarkUtils.getFaviconDisplaySize(res));
+                    refresh();
 
-        @Override
-        public void onBookmarkRowSortOrderChanged(@BookmarkRowSortOrder int sortOrder) {
-            refresh();
-        }
-    };
+                    if (AccessibilityState.isTouchExplorationEnabled()) {
+                        mRecyclerView.announceForAccessibility(
+                                mBookmarkUiPrefs.getViewOptionsAccessibilityAnnouncementText(
+                                        mContext, displayPref));
+                    }
+                }
+
+                @Override
+                public void onBookmarkRowSortOrderChanged(@BookmarkRowSortOrder int sortOrder) {
+                    refresh();
+
+                    if (AccessibilityState.isTouchExplorationEnabled()) {
+                        mRecyclerView.announceForAccessibility(
+                                mBookmarkUiPrefs.getSortOrderAccessibilityAnnouncementText(
+                                        mContext, sortOrder));
+                    }
+                }
+            };
 
     private final ObserverList<BookmarkUiObserver> mUiObservers = new ObserverList<>();
     private final BookmarkDragStateDelegate mDragStateDelegate = new BookmarkDragStateDelegate();
@@ -870,10 +884,18 @@ class BookmarkManagerMediator
      * still be stored by {@link #mSelectionDelegate}, which causes incorrect selection counting.
      */
     private void syncAdapterAndSelectionDelegate() {
-        for (BookmarkId node : mSelectionDelegate.getSelectedItemsAsList()) {
+        List<BookmarkId> selectedItems = mSelectionDelegate.getSelectedItemsAsList();
+        Set<BookmarkId> removedIds = new HashSet<>();
+        for (BookmarkId node : selectedItems) {
             if (mSelectionDelegate.isItemSelected(node) && getPositionForBookmark(node) == -1) {
-                mSelectionDelegate.toggleSelectionForItem(node);
+                removedIds.add(node);
             }
+        }
+
+        if (!removedIds.isEmpty()) {
+            Set<BookmarkId> retainIds = new HashSet<>(selectedItems);
+            retainIds.removeAll(removedIds);
+            mSelectionDelegate.setSelectedItems(retainIds);
         }
     }
 
@@ -1404,7 +1426,7 @@ class BookmarkManagerMediator
     }
 
     private void onClearSearchTextRunnable() {
-        setSearchTextAndUpdateButtonVisibility("");
+        onSearchTextChangeCallback("");
     }
 
     private void setSearchTextAndUpdateButtonVisibility(String searchText) {

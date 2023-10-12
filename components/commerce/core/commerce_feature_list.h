@@ -17,10 +17,6 @@
 
 class PrefService;
 
-namespace variations {
-class VariationsService;
-}  // namespace variations
-
 namespace commerce {
 
 namespace switches {
@@ -97,6 +93,8 @@ extern const char kPriceInsightsChipLabelExpandOnHighPriceParam[];
 extern const base::FeatureParam<bool> kPriceInsightsChipLabelExpandOnHighPrice;
 extern const char kPriceInsightsShowFeedbackParam[];
 extern const base::FeatureParam<bool> kPriceInsightsShowFeedback;
+extern const char kPriceInsightsUseCacheParam[];
+extern const base::FeatureParam<bool> kPriceInsightsUseCache;
 BASE_DECLARE_FEATURE(kPriceTrackingIconColors);
 BASE_DECLARE_FEATURE(kShoppingCollection);
 BASE_DECLARE_FEATURE(kShoppingList);
@@ -109,8 +107,21 @@ BASE_DECLARE_FEATURE(kShoppingPDPMetrics);
 BASE_DECLARE_FEATURE(kShoppingPDPMetricsRegionLaunched);
 
 // Feature flag for Discounts on navigation.
+enum class DiscountDialogAutoPopupBehavior {
+  // Only popup for the first time
+  kAutoPopupOnce = 0,
+  kAlwaysAutoPopup = 1,
+  kNoAutoPopup = 2
+};
 BASE_DECLARE_FEATURE(kShowDiscountOnNavigation);
 BASE_DECLARE_FEATURE(kShowDiscountOnNavigationRegionLaunched);
+BASE_DECLARE_FEATURE(kDiscountDialogAutoPopupBehaviorSetting);
+extern const char kHistoryClustersBehaviorParam[];
+extern const base::FeatureParam<int> kHistoryClustersBehavior;
+extern const char kMerchantWideBehaviorParam[];
+extern const base::FeatureParam<int> kMerchantWideBehavior;
+extern const char kNonMerchantWideBehaviorParam[];
+extern const base::FeatureParam<int> kNonMerchantWideBehavior;
 
 BASE_DECLARE_FEATURE(kRetailCoupons);
 BASE_DECLARE_FEATURE(kCommerceDeveloper);
@@ -134,6 +145,7 @@ BASE_DECLARE_FEATURE(kChromeCartDomBasedHeuristics);
 
 // Feature flag for parcel tracking.
 BASE_DECLARE_FEATURE(kParcelTracking);
+BASE_DECLARE_FEATURE(kParcelTrackingRegionLaunched);
 
 // Shopping list update interval.
 constexpr base::FeatureParam<base::TimeDelta>
@@ -400,10 +412,6 @@ bool IsFakeDataEnabled();
 bool isContextualConsentEnabled();
 // Check if the shopping list feature is allowed for enterprise.
 bool IsShoppingListAllowedForEnterprise(PrefService* prefs);
-
-// Get the user's current country code. If access through variations fails,
-// the country_codes component is used.
-std::string GetCurrentCountryCode(variations::VariationsService* variations);
 
 // Check if commerce features are allowed to run for the specified country
 // and locale.

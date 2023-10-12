@@ -49,6 +49,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.memory.MemoryPurgeManager;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
@@ -102,7 +103,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.CachedFlagsSafeMode;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSessionState;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -137,8 +138,8 @@ import org.chromium.chrome.browser.page_info.ChromePageInfo;
 import org.chromium.chrome.browser.page_info.ChromePageInfoHighlight;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.readaloud.ReadAloudController;
@@ -336,7 +337,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private ActivityTabStartupMetricsTracker mActivityTabStartupMetricsTracker;
 
     /** A means of providing the foreground tab of the activity to different features. */
-    private ActivityTabProvider mActivityTabProvider = new ActivityTabProvider();
+    private final ActivityTabProvider mActivityTabProvider = new ActivityTabProvider();
 
     /** Whether or not the activity is in started state. */
     private boolean mStarted;
@@ -410,7 +411,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // point, with the counter to be reset in the native C++ code. Thus
         // this serves as a diagnostic tool in the cases where the native C++
         // code is not reached.
-        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+        SharedPreferencesManager prefs = ChromeSharedPreferences.getInstance();
         int count = prefs.readInt(key, 0);
         // Note that this is written asynchronously, so there is a chance that
         // this will not succeed.
@@ -420,15 +421,23 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Override
     protected void onPreCreate() {
         incrementCounter(ChromePreferenceKeys.UMA_ON_PRECREATE_COUNTER);
-        CachedFeatureFlags.onStartOrResumeCheckpoint();
+        CachedFlagsSafeMode.getInstance().onStartOrResumeCheckpoint();
+        if (earlyInitializeStartupMetrics()) {
+            mActivityTabStartupMetricsTracker =
+                    new ActivityTabStartupMetricsTracker(mTabModelSelectorSupplier);
+        }
         super.onPreCreate();
         initializeBackPressHandling();
+    }
+
+    private boolean earlyInitializeStartupMetrics() {
+        return ChromeFeatureList.sEarlyInitializeStartupMetrics.isEnabled();
     }
 
     @Override
     protected void onAbortCreate() {
         super.onAbortCreate();
-        CachedFeatureFlags.onPauseCheckpoint();
+        CachedFlagsSafeMode.getInstance().onPauseCheckpoint();
     }
 
     @Override
@@ -687,8 +696,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 ChromeActivitySessionTracker.getInstance();
         chromeActivitySessionTracker.registerTabModelSelectorSupplier(
                 this, mTabModelSelectorSupplier);
-        mActivityTabStartupMetricsTracker =
-                new ActivityTabStartupMetricsTracker(mTabModelSelectorSupplier);
+        if (!earlyInitializeStartupMetrics()) {
+            mActivityTabStartupMetricsTracker =
+                    new ActivityTabStartupMetricsTracker(mTabModelSelectorSupplier);
+        }
     }
 
     public ActivityTabStartupMetricsTracker getActivityTabStartupMetricsTracker() {
@@ -2226,9 +2237,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return true;
         }
 
-        // This only intercepts back press when back press refactor is disabled on T+. Otherwise,
-        // back press is intercepted in FindToolbarManager internally.
-        if (BuildInfo.isAtLeastT() && mRootUiCoordinator.getFindToolbarManager() != null
+        if (mRootUiCoordinator.getFindToolbarManager() != null
                 && mRootUiCoordinator.getFindToolbarManager().isShowing()) {
             BackPressManager.record(BackPressHandler.Type.FIND_TOOLBAR);
             mRootUiCoordinator.getFindToolbarManager().hideToolbar();

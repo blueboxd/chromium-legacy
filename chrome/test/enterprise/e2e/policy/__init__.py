@@ -14,8 +14,10 @@ from .force_google_safe_search.force_google_safe_search import *
 # Disable fullscreenallowed test due to pywinauto infra issue http://b/259118140
 # from .fullscreen_allowed.fullscreen_allowed import *
 from .homepage.homepage import *
+from .mergelist.mergelist import *
 from .password_manager_enabled.password_manager_enabled import *
 from .popups_allowed.popups_allowed import *
+from .precedence.precedence import *
 from .restore_on_startup.restore_on_startup import *
 # Disable safe_browsing test due to chrome://downloads shadow DOM issue http://b/298889715
 # from .safe_browsing.safe_browsing import *

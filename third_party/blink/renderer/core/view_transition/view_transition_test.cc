@@ -51,10 +51,9 @@
 namespace blink {
 
 class ViewTransitionTest : public testing::Test,
-                           public PaintTestConfigurations,
-                           private ScopedViewTransitionForTest {
+                           public PaintTestConfigurations {
  public:
-  ViewTransitionTest() : ScopedViewTransitionForTest(true) {}
+  ViewTransitionTest() {}
 
   void SetUp() override {
     web_view_helper_ = std::make_unique<frame_test_helpers::WebViewHelper>();
@@ -216,7 +215,8 @@ TEST_P(ViewTransitionTest, LayoutShift) {
   auto* transition = ViewTransitionSupplement::startViewTransition(
       script_state, GetDocument(), view_transition_callback, exception_state);
 
-  ScriptPromiseTester finished_tester(script_state, transition->finished());
+  ScriptPromiseTester finished_tester(script_state,
+                                      transition->finished(script_state));
   EXPECT_EQ(GetState(transition), State::kCaptureTagDiscovery);
 
   UpdateAllLifecyclePhasesAndFinishDirectives();
@@ -285,7 +285,8 @@ TEST_P(ViewTransitionTest, TransitionReadyPromiseResolves) {
   auto* transition = ViewTransitionSupplement::startViewTransition(
       script_state, GetDocument(), view_transition_callback, exception_state);
 
-  ScriptPromiseTester promise_tester(script_state, transition->ready());
+  ScriptPromiseTester promise_tester(script_state,
+                                     transition->ready(script_state));
 
   EXPECT_EQ(GetState(transition), State::kCaptureTagDiscovery);
   UpdateAllLifecyclePhasesAndFinishDirectives();
@@ -465,7 +466,8 @@ TEST_P(ViewTransitionTest, TransitionCleanedUpBeforePromiseResolution) {
 
   auto* transition = ViewTransitionSupplement::startViewTransition(
       script_state, GetDocument(), view_transition_callback, exception_state);
-  ScriptPromiseTester promise_tester(script_state, transition->finished());
+  ScriptPromiseTester promise_tester(script_state,
+                                     transition->finished(script_state));
 
   // ActiveScriptWrappable should keep the transition alive.
   ThreadState::Current()->CollectAllGarbageForTesting();
@@ -496,7 +498,8 @@ TEST_P(ViewTransitionTest, RenderingPausedTest) {
   auto* transition = ViewTransitionSupplement::startViewTransition(
       script_state, GetDocument(), view_transition_callback, exception_state);
 
-  ScriptPromiseTester finished_tester(script_state, transition->finished());
+  ScriptPromiseTester finished_tester(script_state,
+                                      transition->finished(script_state));
   EXPECT_EQ(GetState(transition), State::kCaptureTagDiscovery);
 
   UpdateAllLifecyclePhasesForTest();
@@ -534,7 +537,8 @@ TEST_P(ViewTransitionTest, Abandon) {
 
   auto* transition = ViewTransitionSupplement::startViewTransition(
       script_state, GetDocument(), view_transition_callback, exception_state);
-  ScriptPromiseTester finished_tester(script_state, transition->finished());
+  ScriptPromiseTester finished_tester(script_state,
+                                      transition->finished(script_state));
   EXPECT_EQ(GetState(transition), State::kCaptureTagDiscovery);
 
   transition->skipTransition();

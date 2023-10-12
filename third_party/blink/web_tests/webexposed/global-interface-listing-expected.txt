@@ -1278,6 +1278,7 @@ interface ChildNodePart : Part
     getter rootContainer
     method clone
     method constructor
+    method getPartNode
     method getParts
     method replaceChildren
 interface Clipboard : EventTarget
@@ -2201,6 +2202,7 @@ interface DocumentPartRoot
     getter rootContainer
     method clone
     method constructor
+    method getPartNode
     method getParts
 interface DocumentPictureInPicture : EventTarget
     attribute @@toStringTag
@@ -2806,7 +2808,6 @@ interface FileSystemObserver
     method unobserve
 interface FileSystemWritableFileStream : WritableStream
     attribute @@toStringTag
-    getter mode
     method constructor
     method seek
     method truncate
@@ -4620,6 +4621,15 @@ interface HTMLParamElement : HTMLElement
     setter type
     setter value
     setter valueType
+interface HTMLPermissionElement : HTMLElement
+    attribute @@toStringTag
+    getter ondismissed
+    getter onresolved
+    getter type
+    method constructor
+    setter ondismissed
+    setter onresolved
+    setter type
 interface HTMLPictureElement : HTMLElement
     attribute @@toStringTag
     method constructor
@@ -4704,6 +4714,7 @@ interface HTMLSelectElement : HTMLElement
     method remove
     method reportValidity
     method setCustomValidity
+    method showPicker
     setter autocomplete
     setter disabled
     setter length
@@ -4900,9 +4911,11 @@ interface HTMLTableSectionElement : HTMLElement
 interface HTMLTemplateElement : HTMLElement
     attribute @@toStringTag
     getter content
+    getter parseparts
     getter shadowRoot
     getter shadowRootMode
     method constructor
+    setter parseparts
     setter shadowRootMode
 interface HTMLTextAreaElement : HTMLElement
     attribute @@toStringTag
@@ -5237,6 +5250,11 @@ interface IdentityCredential : Credential
     attribute @@toStringTag
     getter isAccountAutoSelected
     getter token
+    method constructor
+interface IdentityCredentialError : DOMException
+    attribute @@toStringTag
+    getter code
+    getter url
     method constructor
 interface IdentityProvider
     static method close
@@ -6435,6 +6453,7 @@ interface Navigator
     getter permissions
     getter platform
     getter plugins
+    getter preferences
     getter presentation
     getter product
     getter productSub
@@ -6460,6 +6479,7 @@ interface Navigator
     method canLoadAdAuctionFencedFrame
     method canShare
     method clearAppBadge
+    method clearOriginJoinedAdInterestGroups
     method constructor
     method createAuctionNonce
     method createHandwritingRecognizer
@@ -6646,6 +6666,7 @@ interface OTPCredential : Credential
 interface Observable
     attribute @@toStringTag
     method constructor
+    method subscribe
 interface OfflineAudioCompletionEvent : Event
     attribute @@toStringTag
     getter renderedBuffer
@@ -7223,6 +7244,21 @@ interface PopStateEvent : Event
     getter hasUAVisualTransition
     getter state
     method constructor
+interface PreferenceManager
+    attribute @@toStringTag
+    getter colorScheme
+    getter contrast
+    getter reducedData
+    getter reducedMotion
+    getter reducedTransparency
+    method constructor
+interface PreferenceObject
+    attribute @@toStringTag
+    getter override
+    getter validValues
+    method clearOverride
+    method constructor
+    method requestOverride
 interface Presentation
     attribute @@toStringTag
     getter defaultRequest
@@ -9197,6 +9233,8 @@ interface ShadowRoot : DocumentFragment
     getter slotAssignment
     getter styleSheets
     method constructor
+    method createElement
+    method createElementNS
     method elementFromPoint
     method elementsFromPoint
     method getAnimations
@@ -9407,6 +9445,13 @@ interface SubmitEvent : Event
     attribute @@toStringTag
     getter submitter
     method constructor
+interface Subscriber
+    attribute @@toStringTag
+    getter signal
+    method complete
+    method constructor
+    method error
+    method next
 interface SubtleCrypto
     attribute @@toStringTag
     method constructor
@@ -12572,6 +12617,7 @@ namespace console
     method confirm
     method createImageBitmap
     method fetch
+    method fetchLater
     method find
     method focus
     method gc

@@ -9,7 +9,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 
 namespace network {
 namespace features {
@@ -38,8 +37,6 @@ extern const base::FeatureParam<std::string>
     kMaskedDomainListExperimentalVersion;
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kMdnsResponderGeneratedNameListing);
-COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kEnableNetworkServiceResourceBlockList);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kOpaqueResponseBlockingV02);
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kOpaqueResponseBlockingErrorsForAllFetches);
@@ -126,9 +123,6 @@ COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::FeatureParam<bool> kPrefetchDNSWithURLAllAnchorElements;
 
 COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kOutOfProcessSystemDnsResolution);
-
-COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant);
 
 // If enabled, then navigation requests should check the match responses in the
@@ -146,13 +140,6 @@ BASE_DECLARE_FEATURE(kPrefetchNoVarySearch);
 // interacts poorly with this metric that is recorded every 30s.
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kGetCookiesStringUma);
 
-#if BUILDFLAG(IS_ANDROID)
-// Create empty network service out of process only if canonical network service
-// is in process to see process overhead on Android.
-COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kNetworkServiceEmptyOutOfProcess);
-#endif
-
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kCompressionDictionaryTransportBackend);
 COMPONENT_EXPORT(NETWORK_CPP)
@@ -167,6 +154,10 @@ BASE_DECLARE_FEATURE(kVisibilityAwareResourceScheduler);
 // Enables Compression Dictionary Transport with Zstandard (aka Shared Zstd).
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kSharedZstd);
+
+// Enables de-duping of cookie access details sent to observers.
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kCookieAccessDetailsNotificationDeDuping);
 
 }  // namespace features
 }  // namespace network

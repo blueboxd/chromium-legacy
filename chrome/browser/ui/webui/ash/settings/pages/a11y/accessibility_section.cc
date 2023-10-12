@@ -441,15 +441,6 @@ bool IsLiveCaptionEnabled() {
   return captions::IsLiveCaptionFeatureSupported();
 }
 
-bool IsAccessibilityChromeVoxPageMigrationEnabled() {
-  return ::features::IsAccessibilityChromeVoxPageMigrationEnabled();
-}
-
-bool AreExperimentalAccessibilityColorEnhancementSettingsEnabled() {
-  return ::features::
-      AreExperimentalAccessibilityColorEnhancementSettingsEnabled();
-}
-
 bool IsSwitchAccessTextAllowed() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilitySwitchAccessText);
@@ -461,10 +452,7 @@ bool AreTabletNavigationButtonsAllowed() {
 }
 
 int GetDisplayAndMangificationLinkDescriptionResourceId() {
-  if (AreExperimentalAccessibilityColorEnhancementSettingsEnabled()) {
     return IDS_SETTINGS_ACCESSIBILITY_DISPLAY_AND_MAGNIFICATION_LINK_NEW_DESCRIPTION;
-  }
-  return IDS_SETTINGS_ACCESSIBILITY_DISPLAY_AND_MAGNIFICATION_LINK_DESCRIPTION;
 }
 
 bool IsAccessibilityGameFaceIntegrationEnabled() {
@@ -1126,13 +1114,6 @@ void AccessibilitySection::AddLoadTimeData(
   html_source->AddString("tabletModeShelfNavigationButtonsLearnMoreUrl",
                          chrome::kTabletModeGesturesLearnMoreURL);
 
-  html_source->AddBoolean("isAccessibilityChromeVoxPageMigrationEnabled",
-                          IsAccessibilityChromeVoxPageMigrationEnabled());
-
-  html_source->AddBoolean(
-      "areExperimentalAccessibilityColorEnhancementSettingsEnabled",
-      AreExperimentalAccessibilityColorEnhancementSettingsEnabled());
-
   html_source->AddBoolean("pdfOcrEnabled",
                           base::FeatureList::IsEnabled(::features::kPdfOcr));
 
@@ -1231,12 +1212,10 @@ void AccessibilitySection::RegisterHierarchy(
       mojom::Subpage::kTextToSpeechPage, mojom::SearchResultIcon::kA11y,
       mojom::SearchResultDefaultRank::kMedium, mojom::kTextToSpeechPagePath);
   // ChromeVox settings page.
-  if (IsAccessibilityChromeVoxPageMigrationEnabled()) {
-    generator->RegisterTopLevelSubpage(
-        IDS_SETTINGS_CHROMEVOX_OPTIONS_LABEL, mojom::Subpage::kChromeVox,
-        mojom::SearchResultIcon::kA11y, mojom::SearchResultDefaultRank::kMedium,
-        mojom::kChromeVoxSubpagePath);
-  }
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_CHROMEVOX_OPTIONS_LABEL, mojom::Subpage::kChromeVox,
+      mojom::SearchResultIcon::kA11y, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kChromeVoxSubpagePath);
   // Select to speak options page.
   generator->RegisterTopLevelSubpage(
       IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_LINK_TITLE,
@@ -1403,10 +1382,7 @@ void AccessibilitySection::UpdateSearchTags() {
         GetA11yFullscreenMagnifierFocusFollowingSearchConcepts());
   }
 
-  if (::features::
-          AreExperimentalAccessibilityColorEnhancementSettingsEnabled()) {
-    updater.AddSearchTags(GetA11yColorCorrectionSearchConcepts());
-  }
+  updater.AddSearchTags(GetA11yColorCorrectionSearchConcepts());
 
   if (!pref_service_->GetBoolean(prefs::kAccessibilitySwitchAccessEnabled)) {
     return;

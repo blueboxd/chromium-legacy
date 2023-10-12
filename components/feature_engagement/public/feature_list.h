@@ -244,6 +244,8 @@ DEFINE_VARIATION_PARAM(kIPHiOSPromoCredentialProviderExtensionFeature,
                        "IPH_iOSPromoCredentialProviderExtension");
 DEFINE_VARIATION_PARAM(kIPHiOSPromoDefaultBrowserFeature,
                        "IPH_iOSPromoDefaultBrowser");
+DEFINE_VARIATION_PARAM(kIPHiOSPromoDefaultBrowserReminderFeature,
+                       "IPH_iOSPromoDefaultBrowserReminder");
 DEFINE_VARIATION_PARAM(kIPHiOSNewTabToolbarItemFeature,
                        "IPH_iOSNewTabToolbarItemFeature");
 DEFINE_VARIATION_PARAM(kIPHiOSTabGridToolbarItemFeature,
@@ -252,8 +254,6 @@ DEFINE_VARIATION_PARAM(kIPHiOSHistoryOnOverflowMenuFeature,
                        "IPH_iOSHistoryOnOverflowMenuFeature");
 DEFINE_VARIATION_PARAM(kIPHiOSShareToolbarItemFeature,
                        "IPH_iOSShareToolbarItemFeature");
-DEFINE_VARIATION_PARAM(kIPHiOSDefaultBrowserVideoPromoTriggerFeature,
-                       "IPH_iOSDefaultBrowserVideoPromoTriggerFeature");
 DEFINE_VARIATION_PARAM(kIPHiOSPromoPostRestoreDefaultBrowserFeature,
                        "IPH_iOSPromoPostDefaultBrowserRestore");
 DEFINE_VARIATION_PARAM(kIPHiOSPromoPasswordManagerWidgetFeature,
@@ -268,6 +268,8 @@ DEFINE_VARIATION_PARAM(kIPHBatterySaverModeFeature, "IPH_BatterySaverMode");
 DEFINE_VARIATION_PARAM(kIPHCompanionSidePanelFeature, "IPH_CompanionSidePanel");
 DEFINE_VARIATION_PARAM(kIPHCompanionSidePanelRegionSearchFeature,
                        "IPH_CompanionSidePanelRegionSearch");
+DEFINE_VARIATION_PARAM(kIPHComposeNewBadgeFeature,
+                       "IPH_ComposeNewBadgeFeature");
 DEFINE_VARIATION_PARAM(kIPHDesktopCustomizeChromeFeature,
                        "IPH_DesktopCustomizeChrome");
 DEFINE_VARIATION_PARAM(kIPHDesktopCustomizeChromeRefreshFeature,
@@ -282,6 +284,8 @@ DEFINE_VARIATION_PARAM(kIPHExtensionsRequestAccessButtonFeature,
                        "IPH_ExtensionsRequestAccessButton");
 DEFINE_VARIATION_PARAM(kIPHGlobalMediaControls, "IPH_GlobalMediaControls");
 DEFINE_VARIATION_PARAM(kIPHGMCCastStartStopFeature, "IPH_GMCCastStartStop");
+DEFINE_VARIATION_PARAM(kIPHGMCLocalMediaCastingFeature,
+                       "IPH_GMCLocalMediaCasting");
 DEFINE_VARIATION_PARAM(kIPHHighEfficiencyModeFeature, "IPH_HighEfficiencyMode");
 DEFINE_VARIATION_PARAM(kIPHLiveCaption, "IPH_LiveCaption");
 DEFINE_VARIATION_PARAM(kIPHPasswordsAccountStorageFeature,
@@ -294,8 +298,6 @@ DEFINE_VARIATION_PARAM(kIPHPasswordsWebAppProfileSwitchFeature,
                        "IPH_PasswordsWebAppProfileSwitch");
 DEFINE_VARIATION_PARAM(kIPHPasswordManagerShortcutFeature,
                        "IPH_PasswordManagerShortcut");
-DEFINE_VARIATION_PARAM(kIPHPerformanceNewBadgeFeature,
-                       "IPH_PerformanceNewBadge");
 DEFINE_VARIATION_PARAM(kIPHPowerBookmarksSidePanelFeature,
                        "IPH_PowerBookmarksSidePanel");
 DEFINE_VARIATION_PARAM(kIPHPriceInsightsPageActionIconLabelFeature,
@@ -553,6 +555,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHBatterySaverModeFeature),
         VARIATION_ENTRY(kIPHCompanionSidePanelFeature),
         VARIATION_ENTRY(kIPHCompanionSidePanelRegionSearchFeature),
+        VARIATION_ENTRY(kIPHComposeNewBadgeFeature),
         VARIATION_ENTRY(kIPHDesktopCustomizeChromeFeature),
         VARIATION_ENTRY(kIPHDesktopCustomizeChromeRefreshFeature),
         VARIATION_ENTRY(kIPHDesktopTabGroupsNewGroupFeature),
@@ -562,6 +565,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHFocusModeFeature),
         VARIATION_ENTRY(kIPHGlobalMediaControls),
         VARIATION_ENTRY(kIPHGMCCastStartStopFeature),
+        VARIATION_ENTRY(kIPHGMCLocalMediaCastingFeature),
         VARIATION_ENTRY(kIPHHighEfficiencyModeFeature),
         VARIATION_ENTRY(kIPHLiveCaption),
         VARIATION_ENTRY(kIPHPasswordsAccountStorageFeature),
@@ -569,7 +573,6 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHPasswordsManagementBubbleDuringSigninFeature),
         VARIATION_ENTRY(kIPHPasswordsWebAppProfileSwitchFeature),
         VARIATION_ENTRY(kIPHPasswordManagerShortcutFeature),
-        VARIATION_ENTRY(kIPHPerformanceNewBadgeFeature),
         VARIATION_ENTRY(kIPHPowerBookmarksSidePanelFeature),
         VARIATION_ENTRY(kIPHPriceInsightsPageActionIconLabelFeature),
         VARIATION_ENTRY(kIPHPriceTrackingChipFeature),

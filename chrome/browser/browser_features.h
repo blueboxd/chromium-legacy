@@ -39,10 +39,6 @@ BASE_DECLARE_FEATURE(kQuickSettingsPWANotifications);
 BASE_DECLARE_FEATURE(kDoubleTapToZoomInTabletMode);
 #endif
 
-#if BUILDFLAG(IS_MAC)
-BASE_DECLARE_FEATURE(kEnableUniveralLinks);
-#endif
-
 #if !BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kCopyLinkToText);
 BASE_DECLARE_FEATURE(kMuteNotificationSnoozeAction);
@@ -131,10 +127,8 @@ BASE_DECLARE_FEATURE(kAutocompleteActionPredictorConfidenceCutoff);
 
 BASE_DECLARE_FEATURE(kOmniboxTriggerForNoStatePrefetch);
 
-#if !BUILDFLAG(IS_ANDROID)
-// This flag is used for enabling the Manta Service, a profile keyed service for
-// the google chrome Manta project.
-BASE_DECLARE_FEATURE(kMantaService);
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+BASE_DECLARE_FEATURE(kPayloadTestComponent);
 #endif
 
 }  // namespace features

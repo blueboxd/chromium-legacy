@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">Капучино</translation>
 <translation id="3619593063686672873">Нема неодамнешни видеа</translation>
 <translation id="3634507049637220048">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, управувана од администраторот, детали</translation>
+<translation id="36451918667380448">Операторот на мобилната мрежа е заклучен. За поддршка, контактирајте со операторот.</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> ставки се преместени.</translation>
 <translation id="3658269352872031728">Избрани се <ph name="SELECTED_FILE_COUNT" /> датотеки</translation>
 <translation id="3685122418104378273">Кога се користи мобилен интернет, синхронизацијата со Google Drive стандардно е оневозможена.</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">Датотекава е доверлива и подлежи на ограничувања според правилата на администраторот.</translation>
 <translation id="8712637175834984815">Сфатив</translation>
 <translation id="8713112442029511308">малтешки</translation>
+<translation id="8714138378966541668">Заклучено од операторот</translation>
 <translation id="8714406895390098252">Велосипед</translation>
 <translation id="8719721339511222681">Избрано е <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">хрватска</translation>

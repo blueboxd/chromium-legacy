@@ -48,6 +48,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/service/sync_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -56,11 +57,9 @@
 class PaymentsSuggestionBottomSheetMediatorTest;
 class Profile;
 class PrefService;
-class RemoveAutofillTester;
 
 namespace autofill {
 class AutofillImageFetcherBase;
-class AutofillInteractiveTest;
 struct CreditCardArtImage;
 class PersonalDataManagerObserver;
 class PersonalDataManagerFactory;
@@ -147,9 +146,10 @@ class PersonalDataManager : public KeyedService,
       std::unique_ptr<WDTypedResult> result) override;
 
   // AutofillWebDataServiceObserverOnUISequence:
-  void AutofillMultipleChangedBySync() override;
+  void AutofillMultipleChangedBySync(syncer::ModelType model_type) override;
   void AutofillAddressConversionCompleted() override;
   void SyncStarted(syncer::ModelType model_type) override;
+  void OnSyncUpdatesReceived(syncer::ModelType model_type) override;
 
   // SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
@@ -378,6 +378,8 @@ class PersonalDataManager : public KeyedService,
 
   // Returns local IBANs.
   virtual std::vector<Iban*> GetLocalIbans() const;
+  // Returns server IBANs.
+  virtual std::vector<const Iban*> GetServerIbans() const;
 
   // Returns the Payments customer data. Returns nullptr if no data is present.
   virtual PaymentsCustomerData* GetPaymentsCustomerData() const;
@@ -545,8 +547,8 @@ class PersonalDataManager : public KeyedService,
   // Returns the value of the AutofillProfileEnabled pref.
   virtual bool IsAutofillProfileEnabled() const;
 
-  // Returns the value of the AutofillCreditCardEnabled pref.
-  virtual bool IsAutofillCreditCardEnabled() const;
+  // Returns the value of the AutofillPaymentMethodsEnabled pref.
+  virtual bool IsAutofillPaymentMethodsEnabled() const;
 
   // Returns the value of the kAutofillHasSeenIban pref.
   bool IsAutofillHasSeenIbanPrefEnabled() const;
@@ -650,33 +652,8 @@ class PersonalDataManager : public KeyedService,
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, AddProfile_CrazyCharacters);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, AddProfile_Invalid);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           AddCreditCard_CrazyCharacters);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, AddCreditCard_Invalid);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, GetCreditCardByServerId);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            AddAndGetCreditCardArtImage);
-  FRIEND_TEST_ALL_PREFIXES(
-      PersonalDataManagerTest,
-      ConvertWalletAddressesAndUpdateWalletCards_NewProfile);
-  FRIEND_TEST_ALL_PREFIXES(
-      PersonalDataManagerTest,
-      ConvertWalletAddressesAndUpdateWalletCards_MergedProfile);
-  FRIEND_TEST_ALL_PREFIXES(
-      PersonalDataManagerTest,
-      ConvertWalletAddressesAndUpdateWalletCards_NewCrd_AddressAlreadyConverted);  // NOLINT
-  FRIEND_TEST_ALL_PREFIXES(
-      PersonalDataManagerTest,
-      ConvertWalletAddressesAndUpdateWalletCards_AlreadyConverted);
-  FRIEND_TEST_ALL_PREFIXES(
-      PersonalDataManagerTest,
-      ConvertWalletAddressesAndUpdateWalletCards_MultipleSimilarWalletAddresses);  // NOLINT
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           DoNotConvertWalletAddressesInEphemeralStorage);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           DeleteDisusedCreditCards_DoNothingWhenDisabled);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            GetProfilesToSuggest_ProfileAutofillDisabled);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
@@ -694,24 +671,10 @@ class PersonalDataManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerCleanerTest,
                            UpdateCardsBillingAddressReference);
 
-  friend class autofill::AutofillInteractiveTest;
   friend class autofill::PersonalDataManagerCleaner;
-  friend class autofill::PersonalDataManagerFactory;
-  friend class AutofillMetricsTest;
-  friend class FormDataImporterTestBase;
   friend class ::PaymentsSuggestionBottomSheetMediatorTest;
-  friend class PersonalDataManagerTest;
-  friend class PersonalDataManagerTestBase;
-  friend class PersonalDataManagerHelper;
-  friend class PersonalDataManagerMockTest;
   friend class VirtualCardEnrollmentManagerTest;
-  friend class ::RemoveAutofillTester;
   friend std::default_delete<PersonalDataManager>;
-  friend void autofill_helper::SetCreditCards(
-      int,
-      std::vector<autofill::CreditCard>*);
-  friend void SetTestProfiles(Profile* base_profile,
-                              std::vector<AutofillProfile>* profiles);
 
   // Used to get a pointer to the strike database for migrating existing
   // profiles. Note, the result can be a nullptr, for example, on incognito
@@ -817,8 +780,9 @@ class PersonalDataManager : public KeyedService,
   std::vector<std::unique_ptr<CreditCard>> local_credit_cards_;
   std::vector<std::unique_ptr<CreditCard>> server_credit_cards_;
 
-  // Cached versions of the local IBANs.
+  // Cached versions of the local and server IBANs.
   std::vector<std::unique_ptr<Iban>> local_ibans_;
+  std::vector<std::unique_ptr<Iban>> server_ibans_;
 
   // Cached version of the CreditCardCloudTokenData obtained from the database.
   std::vector<std::unique_ptr<CreditCardCloudTokenData>>
@@ -847,7 +811,8 @@ class PersonalDataManager : public KeyedService,
   WebDataServiceBase::Handle pending_server_creditcards_query_ = 0;
   WebDataServiceBase::Handle pending_server_creditcard_cloud_token_data_query_ =
       0;
-  WebDataServiceBase::Handle pending_ibans_query_ = 0;
+  WebDataServiceBase::Handle pending_local_ibans_query_ = 0;
+  WebDataServiceBase::Handle pending_server_ibans_query_ = 0;
   WebDataServiceBase::Handle pending_customer_data_query_ = 0;
   WebDataServiceBase::Handle pending_offer_data_query_ = 0;
   WebDataServiceBase::Handle pending_virtual_card_usage_data_query_ = 0;

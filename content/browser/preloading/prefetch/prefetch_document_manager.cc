@@ -17,6 +17,7 @@
 #include "content/browser/preloading/prefetch/prefetch_service.h"
 #include "content/browser/preloading/prefetch/prefetch_serving_page_metrics_container.h"
 #include "content/browser/preloading/prefetch/prefetch_url_loader_helper.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/prefetch_metrics.h"
@@ -87,6 +88,8 @@ SpeculationCandidateToPrefetchUrlParams(
 PrefetchDocumentManager::PrefetchDocumentManager(RenderFrameHost* rfh)
     : DocumentUserData(rfh),
       WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
+      document_token_(
+          static_cast<RenderFrameHostImpl*>(rfh)->GetDocumentToken()),
       prefetch_destruction_callback_(base::DoNothing()) {}
 
 PrefetchDocumentManager::~PrefetchDocumentManager() {
@@ -151,20 +154,8 @@ void PrefetchDocumentManager::DidStartNavigation(
   // navigations where the prefetch is used in a different tab.
   serving_page_metrics_container->SetSameTabAsPrefetchingTab(true);
 
-  base::WeakPtr<PrefetchContainer> prefetch_container = nullptr;
-
-  // Get the prefetch for the URL being navigated to. If there is no prefetch
-  // for that URL, then check if there is an equivalent prefetch using
-  // No-Vary-Search equivalence. If there is not then stop.
-  auto prefetch_iter = all_prefetches_.find(navigation_handle->GetURL());
-  if (prefetch_iter != all_prefetches_.end()) {
-    prefetch_container = prefetch_iter->second;
-  }
-
-  if (!prefetch_container && no_vary_search_support_enabled_ &&
-      base::FeatureList::IsEnabled(network::features::kPrefetchNoVarySearch)) {
-    prefetch_container = MatchUrl(navigation_handle->GetURL());
-  }
+  base::WeakPtr<PrefetchContainer> prefetch_container =
+      MatchUrl(navigation_handle->GetURL());
 
   if (!prefetch_container) {
     DVLOG(1) << "PrefetchDocumentManager::DidStartNavigation() for "
@@ -296,8 +287,8 @@ void PrefetchDocumentManager::PrefetchUrl(
   }
   // Create a new |PrefetchContainer| and take ownership of it
   auto container = std::make_unique<PrefetchContainer>(
-      render_frame_host().GetGlobalId(), url, prefetch_type, referrer,
-      std::move(no_vary_search_expected), world,
+      render_frame_host().GetGlobalId(), document_token_, url, prefetch_type,
+      referrer, std::move(no_vary_search_expected), world,
       weak_method_factory_.GetWeakPtr());
   container->SetDevToolsObserver(std::move(devtools_observer));
   DVLOG(1) << *container << ": created";

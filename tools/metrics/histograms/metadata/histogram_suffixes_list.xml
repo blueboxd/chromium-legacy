@@ -449,48 +449,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Autofill.FormEvents.CreditCard"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="AutofillSaveCreditCardPromptFromDynamicChangeForm"
-    separator=".">
-  <suffix name="FromDynamicChangeForm"
-      label="Prompt shown from dynamic change forms"/>
-  <affected-histogram name="Autofill.CreditCardInfoBar.Local"/>
-  <affected-histogram name="Autofill.CreditCardInfoBar.Server"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptOffer.Local.FirstShow"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptOffer.Local.Reshows"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptOffer.Upload.FirstShow"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptOffer.Upload.Reshows"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptResult.Local.FirstShow"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptResult.Local.Reshows"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptResult.Upload.FirstShow"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptResult.Upload.Reshows"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="AutofillSaveCreditCardPromptFromNonFocusableForm"
-    separator=".">
-  <suffix name="FromNonFocusableForm"
-      label="Prompt shown from non-focusable forms"/>
-  <affected-histogram name="Autofill.CreditCardInfoBar.Local"/>
-  <affected-histogram name="Autofill.CreditCardInfoBar.Server"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptOffer.Local.FirstShow"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptOffer.Local.Reshows"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptOffer.Upload.FirstShow"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptOffer.Upload.Reshows"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptResult.Local.FirstShow"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptResult.Local.Reshows"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptResult.Upload.FirstShow"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptResult.Upload.Reshows"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="AutofillSaveCreditCardPromptRequestingCardholderName"
     separator=".">
   <suffix name="RequestingCardholderName"
@@ -2386,32 +2344,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Memory.PressureWindowDuration"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="MemoryFDsAllProcesses" separator="."
-    ordering="prefix">
-  <suffix name="Browser" label="Browser process"/>
-  <suffix name="Chrome" label="chrome:// renderer process"/>
-  <suffix name="Extension" label="Extension process"/>
-  <suffix name="Gpu" label="GPU process"/>
-  <suffix name="NativeClient" label="Native client process"/>
-  <suffix name="NativeClientBroker" label="Native client broker process"/>
-  <suffix name="PeperPlugin" label="Pepper plugin process"/>
-  <suffix name="PepperPluginBroker" label="Pepper plugin broker process"/>
-  <suffix name="Renderer" label="Renderer process"/>
-  <suffix name="RendererAll" label="Renderer process"/>
-  <suffix name="SandboxHelper" label="Sandbox helper process"/>
-  <suffix name="Utility" label="Utility process"/>
-  <suffix name="Zygote" label="Zygot process"/>
-  <affected-histogram name="Memory.OpenFDs"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="MemoryFDsBroswerGpuAndRendererProcess" separator="."
-    ordering="prefix">
-  <suffix name="Browser" label="Browser process"/>
-  <suffix name="Gpu" label="GPU process"/>
-  <suffix name="RendererAll" label="Renderer process"/>
-  <affected-histogram name="Memory.OpenFDsSoftLimit"/>
-</histogram_suffixes>
-
 <histogram_suffixes
     name="MemoryRendererHighestPrivateMemoryFootprintAfterFirstNavigationStart"
     separator=".">
@@ -4194,6 +4126,18 @@ chromium-metrics-reviews@google.com.
   <suffix name="ParkableImage.UnparkedSize"
       label="Size of encoded image data of ParkableImages that are not
              written to disk."/>
+  <suffix name="PartitionAlloc.BRPQuarantined"
+      label="Memory used by objects quarantined by BRP, recorded when
+             USE_BACKUP_REF_PTR build flag is enabled."/>
+  <suffix name="PartitionAlloc.BRPQuarantined.ArrayBuffer"
+      label="Memory used by objects quarantined by BRP, recorded when
+             USE_BACKUP_REF_PTR build flag is enabled."/>
+  <suffix name="PartitionAlloc.BRPQuarantined.Buffer"
+      label="Memory used by objects quarantined by BRP, recorded when
+             USE_BACKUP_REF_PTR build flag is enabled."/>
+  <suffix name="PartitionAlloc.BRPQuarantined.FastMalloc"
+      label="Memory used by objects quarantined by BRP, recorded when
+             USE_BACKUP_REF_PTR build flag is enabled."/>
   <suffix name="PartitionAlloc.Partitions.FastMalloc.ThreadCache"
       label="Memory used by all thread caches for the FastMalloc partition.
              Recorded in blink processes, unless PartitionAlloc is used as
@@ -4288,6 +4232,18 @@ chromium-metrics-reviews@google.com.
   <suffix name="PartitionAlloc.AddressSpace.BlocklistSize.After24H"
       label="Monotonically increasing count of blocked addresses. Only
              recorded for 32-bit with process uptime 24H+."/>
+  <suffix name="PartitionAlloc.BRPQuarantinedCount"
+      label="Number of slots quarantined by BRP, recorded when
+             USE_BACKUP_REF_PTR build flag is enabled."/>
+  <suffix name="PartitionAlloc.BRPQuarantinedCount.ArrayBuffer"
+      label="Number of slots quarantined by BRP, recorded when
+             USE_BACKUP_REF_PTR build flag is enabled."/>
+  <suffix name="PartitionAlloc.BRPQuarantinedCount.Buffer"
+      label="Number of slots quarantined by BRP, recorded when
+             USE_BACKUP_REF_PTR build flag is enabled."/>
+  <suffix name="PartitionAlloc.BRPQuarantinedCount.FastMalloc"
+      label="Number of slots quarantined by BRP, recorded when
+             USE_BACKUP_REF_PTR build flag is enabled."/>
   <affected-histogram name="Memory.Experimental.Browser2.Tiny"/>
   <affected-histogram name="Memory.Experimental.Extension2.Tiny"/>
   <affected-histogram name="Memory.Experimental.Gpu2.Tiny"/>
@@ -5436,16 +5392,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="V8.WasmHugeFunctionSizeBytes"/>
   <affected-histogram name="V8.WasmInstantiateModuleMicroSeconds"/>
   <affected-histogram name="V8.WasmModuleSizeBytes"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="VideoCaptureFrameDrop" separator=".">
-  <suffix name="DeviceCapture" label=""/>
-  <suffix name="DisplayCapture" label=""/>
-  <suffix name="DisplayCaptureCurrentTab" label=""/>
-  <suffix name="GumDesktopCapture" label=""/>
-  <suffix name="GumTabCapture" label=""/>
-  <affected-histogram name="Media.VideoCapture.FrameDrop"/>
-  <affected-histogram name="Media.VideoCapture.MaxFrameDropExceeded"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="VideoFrameRateRange" separator=".">

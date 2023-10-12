@@ -71,6 +71,9 @@ class WebState;
 // Called when the user navigates away from the NTP.
 - (void)didNavigateAwayFromNTP;
 
+// The location bar will lose focus.
+- (void)locationBarWillResignFirstResponder;
+
 // The location bar has lost focus.
 - (void)locationBarDidResignFirstResponder;
 
@@ -93,6 +96,9 @@ class WebState;
 
 // Checks if NTP is active for the current webState.
 - (BOOL)isNTPActiveForCurrentWebState;
+
+// Returns YES if the fakebox is pinned or scrolled to the top.
+- (BOOL)isFakeboxPinned;
 
 @end
 

@@ -129,6 +129,7 @@
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/compose/core/browser/compose_features.h"
 #include "components/custom_handlers/protocol_handler.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/feed/feed_feature_list.h"
@@ -499,13 +500,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        // Removed: {IDC_CONTENT_CONTEXT_ORCA, 136},
        {IDC_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION, 137},
        {IDC_CONTENT_PASTE_FROM_CLIPBOARD, 138},
+       {IDC_CONTEXT_COMPOSE, 139},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 139}});
+       {0, 140}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -946,17 +948,19 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
   // For Panel, this happens when the panel is navigated to a url outside of the
   // extension's package.
   const Extension* extension = GetExtension();
-  if (!extension)
-    return;
-
   extensions::WebViewGuest* web_view_guest =
       extensions::WebViewGuest::FromRenderFrameHost(
           content::RenderFrameHost::FromID(render_process_id_,
                                            render_frame_id_));
   MenuItem::ExtensionKey key;
+  std::u16string title;
   if (web_view_guest) {
+    const std::string& extension_id =
+        extension ? extension->id() : std::string();
+    title = extension ? base::UTF8ToUTF16(extension->name())
+                      : web_view_guest->owner_web_contents()->GetTitle();
     key = MenuItem::ExtensionKey(
-        extension->id(), web_view_guest->owner_rfh()->GetProcess()->GetID(),
+        extension_id, web_view_guest->owner_rfh()->GetProcess()->GetID(),
         web_view_guest->view_instance_id());
   } else {
     key = MenuItem::ExtensionKey(extension->id());
@@ -965,7 +969,7 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
   // Only add extension items from this extension.
   int index = 0;
   extension_items_.AppendExtensionItems(key, PrintableSelectionText(), &index,
-                                        /*is_action_menu=*/false);
+                                        /*is_action_menu=*/false, title);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -1152,16 +1156,18 @@ void RenderViewContextMenu::InitMenu() {
     AppendPlatformEditableItems();
   }
 
-  // Show Read Anything option if text is selected and if it's not already open
-  // in the side panel.
   if (features::IsReadAnythingEnabled()) {
-    if (GetBrowser() && GetBrowser()->is_type_normal() &&
+    const bool is_content_type_supported =
+        content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY) ||
+        content_type_->SupportsGroup(
+            ContextMenuContentType::ITEM_GROUP_EDITABLE);
+    const bool should_append_read_anything_item =
+        GetBrowser() && GetBrowser()->is_type_normal() &&
         !IsReadAnythingEntryShowing(GetBrowser()) &&
-        (content_type_->SupportsGroup(
-             ContextMenuContentType::ITEM_GROUP_COPY) ||
-         content_type_->SupportsGroup(
-             ContextMenuContentType::ITEM_GROUP_EDITABLE))) {
-      AppendReadAnythingItem();
+        (is_content_type_supported ||
+         base::FeatureList::IsEnabled(features::kSidePanelPinning));
+    if (should_append_read_anything_item) {
+      AppendReadingModeItem();
     }
   }
 
@@ -1459,7 +1465,7 @@ void RenderViewContextMenu::RecordShownItem(int id, bool is_submenu) {
 }
 
 bool RenderViewContextMenu::IsHTML5Fullscreen() const {
-  Browser* browser = chrome::FindBrowserWithWebContents(embedder_web_contents_);
+  Browser* browser = chrome::FindBrowserWithTab(embedder_web_contents_);
   if (!browser)
     return false;
 
@@ -1469,7 +1475,7 @@ bool RenderViewContextMenu::IsHTML5Fullscreen() const {
 }
 
 bool RenderViewContextMenu::IsPressAndHoldEscRequiredToExitFullscreen() const {
-  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
+  Browser* browser = chrome::FindBrowserWithTab(source_web_contents_);
   if (!browser)
     return false;
 
@@ -1753,7 +1759,7 @@ void RenderViewContextMenu::AppendQuickAnswersItems() {
 #if BUILDFLAG(IS_CHROMEOS)
   if (!quick_answers_menu_observer_) {
     quick_answers_menu_observer_ =
-        std::make_unique<QuickAnswersMenuObserver>(this);
+        std::make_unique<QuickAnswersMenuObserver>(this, GetProfile());
   }
 
   observers_.AddObserver(quick_answers_menu_observer_.get());
@@ -1895,8 +1901,7 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
   }
 
   menu_model_.AddItem(GetSearchForImageIdc(), menu_string);
-  if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser()) ||
-      companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser())) {
+  if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser())) {
     menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
   }
 
@@ -2118,7 +2123,7 @@ void RenderViewContextMenu::AppendMediaRouterItem() {
   }
 }
 
-void RenderViewContextMenu::AppendReadAnythingItem() {
+void RenderViewContextMenu::AppendReadingModeItem() {
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE,
                                   IDS_CONTENT_CONTEXT_READING_MODE);
   menu_model_.SetIsNewFeatureAt(
@@ -2194,8 +2199,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
     SideSearchTabContentsHelper* helper =
         SideSearchTabContentsHelper::FromWebContents(embedder_web_contents_);
 
-    Browser* browser =
-        chrome::FindBrowserWithWebContents(embedder_web_contents_);
+    Browser* browser = chrome::FindBrowserWithTab(embedder_web_contents_);
     if (!side_search::IsSearchWebInSidePanelSupported(browser) ||
         (helper && helper->CanShowSidePanelFromContextMenuSearch())) {
       menu_model_.AddItem(
@@ -2207,7 +2211,6 @@ void RenderViewContextMenu::AppendSearchProvider() {
         menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
       }
       if (companion::IsSearchWebInCompanionSidePanelSupported(GetBrowser())) {
-        menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
         // Add an "in new tab" item performing the non-side panel behavior.
         if (base::FeatureList::IsEnabled(
                 companion::features::
@@ -2244,18 +2247,28 @@ void RenderViewContextMenu::AppendSpellingAndSearchSuggestionItems() {
     AppendSearchProvider();
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
+  bool render_separator = false;
   if (params_.misspelled_word.empty()) {
-    bool render_separator = false;
     if (DoesInputFieldTypeSupportEmoji(params_.input_field_type) &&
         ui::IsEmojiPanelSupported()) {
       render_separator = true;
       menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_EMOJI,
                                       IDS_CONTENT_CONTEXT_EMOJI);
     }
+  }
+  // TODO(b/301371110): Update enabling constraints.
+  if (base::FeatureList::IsEnabled(compose::features::kEnableCompose)) {
+    menu_model_.AddItemWithStringId(IDC_CONTEXT_COMPOSE,
+                                    IDS_COMPOSE_SUGGESTION_MAIN_TEXT);
+    // TODO(b/303646344): Remove new feature tag when no longer new.
+    menu_model_.SetIsNewFeatureAt(
+        menu_model_.GetItemCount() - 1,
+        !content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK));
 
-    if (render_separator) {
-      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-    }
+    render_separator = true;
+  }
+  if (render_separator) {
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 }
 
@@ -2499,8 +2512,7 @@ void RenderViewContextMenu::AppendRegionSearchItem() {
     menu_model_.AddItem(GetRegionSearchIdc(),
                         l10n_util::GetStringFUTF16(
                             resource_id, GetImageSearchProviderName(provider)));
-    if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser()) ||
-        companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser())) {
+    if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser())) {
       menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
     }
 
@@ -2781,6 +2793,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 #endif
 
     case IDC_CONTENT_CONTEXT_EMOJI:
+      return params_.is_editable;
+    case IDC_CONTEXT_COMPOSE:
       return params_.is_editable;
 
     case IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1:
@@ -3195,16 +3209,16 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       RecordAmbientSearchQuery(
           lens::AmbientSearchEntryPoint::CONTEXT_MENU_SEARCH_WEB_FOR);
       if (companion::IsSearchWebInCompanionSidePanelSupported(
-              chrome::FindBrowserWithWebContents(embedder_web_contents_))) {
+              chrome::FindBrowserWithTab(embedder_web_contents_))) {
         ExecSearchWebInCompanionSidePanel(selection_navigation_url_);
         break;
       }
       // Searching in this side panel is dependent on the companion feature
       // being disabled.
       if (side_search::IsSearchWebInSidePanelSupported(
-              chrome::FindBrowserWithWebContents(embedder_web_contents_)) &&
+              chrome::FindBrowserWithTab(embedder_web_contents_)) &&
           !companion::IsSearchInCompanionSidePanelSupported(
-              chrome::FindBrowserWithWebContents(embedder_web_contents_))) {
+              chrome::FindBrowserWithTab(embedder_web_contents_))) {
         ExecSearchWebInSidePanel(selection_navigation_url_);
         break;
       }
@@ -3259,6 +3273,11 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         // process. This fails in print preview for PWA windows on Mac.
         ui::ShowEmojiPanel();
       }
+      break;
+    }
+
+    case IDC_CONTEXT_COMPOSE: {
+      // TODO(b/301371110): implement the click functionality.
       break;
     }
 
@@ -3988,7 +4007,7 @@ void RenderViewContextMenu::ExecSearchLensForImage(bool is_image_translate) {
 }
 
 void RenderViewContextMenu::ExecAddANote() {
-  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
+  Browser* browser = chrome::FindBrowserWithTab(source_web_contents_);
   if (!browser) {
     return;
   }
@@ -4290,7 +4309,7 @@ void RenderViewContextMenu::PluginActionAt(
 }
 
 Browser* RenderViewContextMenu::GetBrowser() const {
-  return chrome::FindBrowserWithWebContents(embedder_web_contents_);
+  return chrome::FindBrowserWithTab(embedder_web_contents_);
 }
 
 bool RenderViewContextMenu::CanTranslate(bool menu_logging) {

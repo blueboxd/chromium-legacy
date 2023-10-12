@@ -13,18 +13,21 @@
 #import "ios/chrome/browser/follow/follow_iph_presenter.h"
 #import "ios/chrome/browser/follow/follow_tab_helper.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
+#import "ios/chrome/browser/lens/lens_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
+#import "ios/chrome/browser/overscroll_actions/model/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
-#import "ios/chrome/browser/passwords/password_tab_helper.h"
-#import "ios/chrome/browser/prerender/prerender_service.h"
+#import "ios/chrome/browser/passwords/model/password_tab_helper.h"
+#import "ios/chrome/browser/prerender/model/prerender_service.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/autofill_bottom_sheet_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/lens_commands.h"
 #import "ios/chrome/browser/shared/public/commands/mini_map_commands.h"
 #import "ios/chrome/browser/shared/public/commands/parcel_tracking_opt_in_commands.h"
+#import "ios/chrome/browser/shared/public/commands/unit_conversion_commands.h"
 #import "ios/chrome/browser/shared/public/commands/web_content_commands.h"
-#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/chrome/browser/snapshots/model/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
 #import "ios/chrome/browser/tab_insertion/model/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
@@ -39,6 +42,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_dependency_installer_bridge.h"
 #import "ios/chrome/browser/webui/model/net_export_tab_helper.h"
 #import "ios/chrome/browser/webui/model/net_export_tab_helper_delegate.h"
+#import "ios/public/provider/chrome/browser/lens/lens_api.h"
 #import "ui/base/device_form_factor.h"
 
 @interface TabLifecycleMediator () <DependencyInstalling>
@@ -89,6 +93,12 @@
   bottomSheetTabHelper->SetAutofillBottomSheetHandler(
       HandlerForProtocol(_commandDispatcher, AutofillBottomSheetCommands));
 
+  if (ios::provider::IsLensSupported()) {
+    LensTabHelper* lensTabHelper = LensTabHelper::FromWebState(webState);
+    lensTabHelper->SetLensCommandsHandler(
+        HandlerForProtocol(_commandDispatcher, LensCommands));
+  }
+
   DCHECK(_overscrollActionsDelegate);
   OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(
       _overscrollActionsDelegate);
@@ -138,6 +148,8 @@
     annotationsTabHelper->SetBaseViewController(_baseViewController);
     annotationsTabHelper->SetMiniMapCommands(
         HandlerForProtocol(_commandDispatcher, MiniMapCommands));
+    annotationsTabHelper->SetUnitConversionCommands(
+        HandlerForProtocol(_commandDispatcher, UnitConversionCommands));
     if (IsIOSParcelTrackingEnabled()) {
       annotationsTabHelper->SetParcelTrackingOptInCommands(
           HandlerForProtocol(_commandDispatcher, ParcelTrackingOptInCommands));
@@ -170,6 +182,11 @@
       AutofillBottomSheetTabHelper::FromWebState(webState);
   bottomSheetTabHelper->SetAutofillBottomSheetHandler(nil);
 
+  LensTabHelper* lensTabHelper = LensTabHelper::FromWebState(webState);
+  if (lensTabHelper) {
+    lensTabHelper->SetLensCommandsHandler(nil);
+  }
+
   OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(nil);
 
   DownloadManagerTabHelper::FromWebState(webState)->SetDelegate(nil);
@@ -197,6 +214,7 @@
   if (annotationsTabHelper) {
     annotationsTabHelper->SetBaseViewController(nil);
     annotationsTabHelper->SetMiniMapCommands(nil);
+    annotationsTabHelper->SetUnitConversionCommands(nil);
   }
 
   PriceNotificationsTabHelper* priceNotificationsTabHelper =

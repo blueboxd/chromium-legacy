@@ -26,9 +26,9 @@
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/net/crurl.h"
-#import "ios/chrome/browser/settings/sync/utils/account_error_ui_info.h"
-#import "ios/chrome/browser/settings/sync/utils/identity_error_util.h"
-#import "ios/chrome/browser/settings/sync/utils/sync_util.h"
+#import "ios/chrome/browser/settings/model/sync/utils/account_error_ui_info.h"
+#import "ios/chrome/browser/settings/model/sync/utils/identity_error_util.h"
+#import "ios/chrome/browser/settings/model/sync/utils/sync_util.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
@@ -43,9 +43,9 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/signin/constants.h"
-#import "ios/chrome/browser/sync/enterprise_utils.h"
-#import "ios/chrome/browser/sync/sync_observer_bridge.h"
-#import "ios/chrome/browser/sync/sync_setup_service.h"
+#import "ios/chrome/browser/sync/model/enterprise_utils.h"
+#import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
+#import "ios/chrome/browser/sync/model/sync_setup_service.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_central_account_item.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_utils.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
@@ -932,7 +932,21 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
   DCHECK_NE(itemType, 0);
   DCHECK_NE(textStringID, 0);
   DCHECK(accessibilityIdentifier);
-  if (![self isManagedSyncSettingsDataType:dataType]) {
+
+  BOOL isToggleEnabled = ![self isManagedSyncSettingsDataType:dataType];
+  if (self.syncAccountState == SyncSettingsAccountState::kSignedIn &&
+      dataType == syncer::UserSelectableType::kHistory) {
+    // kHistory toggle represents both kHistory and kTabs in this case.
+    // kHistory and kTabs should usually have the same value, but in some
+    // cases they may not, e.g. if one of them is disabled by policy. In that
+    // case, show the toggle as on if at least one of them is enabled. The
+    // toggle should reflect the value of the non-disabled type.
+    isToggleEnabled =
+        ![self isManagedSyncSettingsDataType:syncer::UserSelectableType::
+                                                 kHistory] ||
+        ![self isManagedSyncSettingsDataType:syncer::UserSelectableType::kTabs];
+  }
+  if (isToggleEnabled) {
     SyncSwitchItem* switchItem = [[SyncSwitchItem alloc] initWithType:itemType];
     switchItem.text = GetNSString(textStringID);
     switchItem.dataType = static_cast<NSInteger>(dataType);
@@ -1085,6 +1099,12 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
     [self updateEncryptionItem:YES];
     [self fetchLocalDataDescriptionsForBatchUpload];
   }
+}
+
+- (void)onChromeAccountManagerServiceShutdown:
+    (ChromeAccountManagerService*)accountManagerService {
+  // TODO(crbug.com/1489595): Remove `[self disconnect]`.
+  [self disconnect];
 }
 
 #pragma mark - ManageSyncSettingsServiceDelegate

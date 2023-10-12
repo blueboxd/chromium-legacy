@@ -156,7 +156,6 @@ class CORE_EXPORT ContainerNode : public Node {
       SubtreeModificationAction = kDispatchSubtreeModifiedEvent);
 
   void CloneChildNodesFrom(const ContainerNode&, NodeCloningData&);
-  void ClonePartsFrom(const ContainerNode& node, NodeCloningData& data);
 
   void AttachLayoutTree(AttachContext&) override;
   void DetachLayoutTree(bool performing_reattach = false) override;
@@ -518,6 +517,9 @@ class CORE_EXPORT ContainerNode : public Node {
   inline bool IsHostIncludingInclusiveAncestorOfThis(const Node&,
                                                      ExceptionState&) const;
   inline bool IsChildTypeAllowed(const Node& child) const;
+
+  void CheckSoftNavigationHeuristicsTracking(const Document& document,
+                                             Node& inserted_node);
 
   Member<Node> first_child_;
   Member<Node> last_child_;

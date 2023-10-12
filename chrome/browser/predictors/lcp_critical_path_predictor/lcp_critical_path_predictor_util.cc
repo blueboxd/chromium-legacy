@@ -4,6 +4,7 @@
 
 #include "chrome/browser/predictors/lcp_critical_path_predictor/lcp_critical_path_predictor_util.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace predictors {
 
@@ -24,6 +25,24 @@ std::vector<std::pair<double, std::string>> ConvertToFrequencyStringPair(
   // That is why `rbegin` and `rend` instead of `begin` and `end`.
   std::sort(frequency_and_string.rbegin(), frequency_and_string.rend());
   return frequency_and_string;
+}
+
+// Returns true if the given `url` is a valid URL to be used as a key
+// of `LcppStringFrequencyStatData`.
+bool IsValidUrlInLcppStringFrequencyStatData(const std::string& url) {
+  if (url.empty()) {
+    return false;
+  }
+
+  if (url.size() > ResourcePrefetchPredictorTables::kMaxStringLength) {
+    return false;
+  }
+
+  GURL parsed_url(url);
+  if (!parsed_url.is_valid() || !parsed_url.SchemeIsHTTPOrHTTPS()) {
+    return false;
+  }
+  return true;
 }
 
 // Returns LCP element locators in the past loads for a given `data`.  The
@@ -359,9 +378,7 @@ bool RecordLcpInfluencerScriptUrlsHistogram(
   CHECK(updater);
   for (auto& script_url : lcp_influencer_scripts) {
     const auto& lcpp_script = script_url.spec();
-    if (lcpp_script.size() >
-            ResourcePrefetchPredictorTables::kMaxStringLength ||
-        lcpp_script.empty()) {
+    if (!IsValidUrlInLcppStringFrequencyStatData(lcpp_script)) {
       continue;
     }
     updater->Update(lcpp_script);
@@ -380,10 +397,14 @@ bool RecordFetchedFontUrlsHistogram(const LoadingPredictorConfig& config,
   std::unique_ptr<LcppFrequencyStatDataUpdater> updater =
       LcppFrequencyStatDataUpdater::FromLcppStringFrequencyStatData(
           config, data.mutable_lcpp_stat()->fetched_font_url_stat());
+  std::set<GURL> used_urls;
   for (const auto& url : fetched_font_urls) {
+    // Deduplicate the font URLs.
+    if (!used_urls.insert(url).second) {
+      continue;
+    }
     const std::string& font_spec = url.spec();
-    if (font_spec.empty() ||
-        font_spec.size() > ResourcePrefetchPredictorTables::kMaxStringLength) {
+    if (!IsValidUrlInLcppStringFrequencyStatData(font_spec)) {
       continue;
     }
     updater->Update(font_spec);
@@ -391,6 +412,37 @@ bool RecordFetchedFontUrlsHistogram(const LoadingPredictorConfig& config,
   *data.mutable_lcpp_stat()->mutable_fetched_font_url_stat() =
       updater->ToLcppStringFrequencyStatData();
   return updater->has_updated();
+}
+
+bool IsValidLcpElementLocatorHistogram(
+    const LcpElementLocatorStat& lcp_element_locator_stat) {
+  if (lcp_element_locator_stat.other_bucket_frequency() < 0.0) {
+    return false;
+  }
+  for (const auto& it :
+       lcp_element_locator_stat.lcp_element_locator_buckets()) {
+    if (!it.has_lcp_element_locator() || !it.has_frequency() ||
+        it.frequency() < 0.0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool IsValidLcpUrlsHistogram(
+    const LcppStringFrequencyStatData& lcpp_stat_data) {
+  if (lcpp_stat_data.other_bucket_frequency() < 0.0) {
+    return false;
+  }
+  for (const auto& [entry, frequency] : lcpp_stat_data.main_buckets()) {
+    if (frequency < 0.0) {
+      return false;
+    }
+    if (!IsValidUrlInLcppStringFrequencyStatData(entry)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace
@@ -402,12 +454,49 @@ ConvertLcppDataToLCPCriticalPathPredictorNavigationTimeHint(
       PredictLcpElementLocators(lcpp_data);
   std::vector<GURL> lcp_influencer_scripts =
       PredictLcpInfluencerScripts(lcpp_data);
+  std::vector<GURL> fetched_fonts = PredictFetchedFontUrls(lcpp_data);
 
-  if (!lcp_element_locators.empty() || !lcp_influencer_scripts.empty()) {
+  if (!lcp_element_locators.empty() || !lcp_influencer_scripts.empty() ||
+      !fetched_fonts.empty()) {
     return blink::mojom::LCPCriticalPathPredictorNavigationTimeHint(
-        std::move(lcp_element_locators), std::move(lcp_influencer_scripts));
+        std::move(lcp_element_locators), std::move(lcp_influencer_scripts),
+        std::move(fetched_fonts));
   }
   return absl::nullopt;
+}
+
+std::vector<GURL> PredictFetchedFontUrls(const LcppData& data) {
+  std::vector<std::pair<double, std::string>> font_urls_with_frequency =
+      ConvertToFrequencyStringPair(data.lcpp_stat().fetched_font_url_stat());
+
+  const double threshold =
+      blink::features::kLCPPFontURLPredictorFrequencyThreshold.Get();
+  int num_open_spots =
+      blink::features::kLCPPFontURLPredictorMaxPreloadCount.Get();
+  if (num_open_spots <= 0) {
+    return std::vector<GURL>();
+  }
+
+  std::set<GURL> font_urls;  // Use std::set for deduplicate.
+  for (const auto& [frequency, font_url] : font_urls_with_frequency) {
+    // The frequencies are reverse sorted by `ConvertToFrequencyStringPair`.
+    // No need to see later frequencies if the frequency is smaller than the
+    // threshold.
+    if (frequency < threshold) {
+      break;
+    }
+    GURL parsed_url(font_url);
+    if (!parsed_url.is_valid() || !parsed_url.SchemeIsHTTPOrHTTPS()) {
+      continue;
+    }
+    if (!font_urls.insert(std::move(parsed_url)).second) {
+      continue;
+    }
+    if (--num_open_spots <= 0) {
+      break;
+    }
+  }
+  return std::vector(font_urls.begin(), font_urls.end());
 }
 
 LcppDataInputs::LcppDataInputs() = default;
@@ -424,6 +513,23 @@ bool UpdateLcppDataWithLcppDataInputs(const LoadingPredictorConfig& config,
   data_updated |=
       RecordFetchedFontUrlsHistogram(config, inputs.font_urls, data);
   return data_updated;
+}
+
+bool IsValidLcppStat(const LcppStat& lcpp_stat) {
+  if (lcpp_stat.has_lcp_element_locator_stat() &&
+      !IsValidLcpElementLocatorHistogram(
+          lcpp_stat.lcp_element_locator_stat())) {
+    return false;
+  }
+  if (lcpp_stat.has_lcp_script_url_stat() &&
+      !IsValidLcpUrlsHistogram(lcpp_stat.lcp_script_url_stat())) {
+    return false;
+  }
+  if (lcpp_stat.has_fetched_font_url_stat() &&
+      !IsValidLcpUrlsHistogram(lcpp_stat.fetched_font_url_stat())) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace predictors

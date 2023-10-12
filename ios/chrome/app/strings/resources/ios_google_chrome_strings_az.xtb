@@ -69,7 +69,6 @@ Nəzərə alın ki:
 <translation id="3345341804167540816">Chrome'u Hər yerdə İstifadə edin</translation>
 <translation id="3472587960215700950">Chrome aşkarlanan ünvanlar üzrə istiqamət və yerli məlumat təqdim etmək üçün Google Xəritədən istifadə edir.</translation>
 <translation id="3503014945441706099">Bu Chrome profili üçün də Qabaqcıl Güvənli Baxış əldə edin</translation>
-<translation id="3506309791702511623">Chrome daxil etdiyiniz izləmə nömrələrini aşkarlaya, yeni tab səhifəsində paketləri izləyə, Google-dakı digər şopinq təcrübələri ilə bağlı kömək edə bilər.</translation>
 <translation id="3522659714780527202">Chrome istifadə etdiyiniz hər yerdən tabları görmək üçün sinxronizasiyanı aktiv edin</translation>
 <translation id="3533694711092285624">Yadda saxlanmış parol yoxdur. Parollarınızı yadda saxladıqda Chrome onları yoxlaya bilər.</translation>
 <translation id="3594076341410558780">"Chrome-dan maksimum yararlanın" seçimini gizlədin</translation>
@@ -118,6 +117,7 @@ Nəzərə alın ki:
 <translation id="5389212809648216794">Digər tətbiq tərəfindən istifadə olunduğu üçün Google Chrome kameranı istifadə edə bilməz</translation>
 <translation id="5395376160638294582">Google Hesabında hər zaman Chrome datasından istifadə edə biləcəyinizdən əmin olun</translation>
 <translation id="5439191312780166229">Standart qoruma ilə müqayisədə saytlardan daha çox data təhlil edərək təhlükəli, hətta Google-un bilmədiyi saytlar haqqında xəbərdar edir. Chrome xəbərdarlıqlarını ötürə bilərsiniz.</translation>
+<translation id="5442013002200339429">"<ph name="MODULE_NAME" />" gizlədilsə, Chrome gələcək bağlamaları avtomatik izləməyəcək və keçmiş bağlama izləmə datasını siləcək.</translation>
 <translation id="5460571915754665838">4. Chrome seçin</translation>
 <translation id="546541279759910616">{COUNT,plural, =1{Chrome yeni tab səhifəsində bu paketi izləməyə kömək edəcək.}other{Chrome yeni tab səhifəsində bu paketləri izləməyə kömək edəcək.}}</translation>
 <translation id="5492504007368565877">Google Parol Meneceri parolları yoxlaya bilmir.</translation>
@@ -154,6 +154,7 @@ Nəzərə alın ki:
 
 Yalnız parol ifadəsini bilən şəxs şifrələnmiş datanı oxuya bilər. Google parol ifadəsini əldə etmir və ya saxlamır. Parol ifadəsini unutsanız, yaxud bu ayarı dəyişmək istəsəniz, <ph name="BEGIN_LINK" />hesabda Chrome datasını silin<ph name="END_LINK" />.</translation>
 <translation id="6822673484890854830">Chrome bütün parolları yoxlaya bilmədi. Sonra cəhd edin.</translation>
+<translation id="6851982868877411675">iOS-da Chrome ayarlarını açın, "Defolt brauzer tətbiqi" üzərinə toxunun və Chrome seçin.</translation>
 <translation id="6916015246697034114">Chrome-da səs ilə axtarın</translation>
 <translation id="6964931465519938134">İndi istənilən vaxt mesajlar, sənədlər və digər tətbiqlərdə keçidlərə toxunduqda Chrome'u istifadə edə bilərsiniz.</translation>
 <translation id="6975725306479268850">Avtodoldurma üçün Chrome'u seçin</translation>
@@ -188,6 +189,7 @@ Yalnız parol ifadəsini bilən şəxs şifrələnmiş datanı oxuya bilər. Goo
 <translation id="7933491483529363150">Chrome-da son tabı açın.</translation>
 <translation id="8022947259858476807">Defolt olaraq keçidləri açmaq, vidcetlərdən axtarış etmək və digər tətbiqlərdə parolları avtomatik doldurmaq üçün Chrome istifadə edin</translation>
 <translation id="804638182476029347">Chrome bildirişlərinə qiymətin düşməsi ilə bağlı xəbərdarlıq almaq icazəsi verin</translation>
+<translation id="8069507567842347179">Bu bağlama Chrome-da izlənib.</translation>
 <translation id="81358522153858150">Chrome indi idarə olunan hesabınız üçün istifadəçi siyasətlərini dəstəkləyir</translation>
 <translation id="8160472928944011082">Chrome güncəllənə bilmir</translation>
 <translation id="8174679664544842874">Chrome-da yeni tab açılır.</translation>

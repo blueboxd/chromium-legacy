@@ -186,14 +186,40 @@ bool HaveSameFormControlId(const WebFormControlElement& element,
 class FormAutofillUtilsTest : public content::RenderViewTest {
  public:
   FormAutofillUtilsTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillEnableSelectList);
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::
+                                  kAutofillUseDomNodeIdForRendererId,
+                              features::kAutofillContentEditables,
+                              features::kAutofillEnableSelectList},
+        /*disabled_features=*/{});
   }
   ~FormAutofillUtilsTest() override = default;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+// Tests that WebFormElementToFormData() sets the
+// Form[Field]Data::{name,id_attribute,name_attribute} correctly.
+TEST_F(FormAutofillUtilsTest, WebFormElementToFormDataIdAndNames) {
+  LoadHTML(R"(
+    <form id=form-id name=form-name>
+      <input type=text id=input-id name=input-name>
+    </form>
+  )");
+  FormData form_data;
+  ASSERT_TRUE(WebFormElementToFormData(
+      GetFormElementById(GetMainFrame()->GetDocument(), "form-id"),
+      WebFormControlElement(), /*field_data_manager=*/nullptr, EXTRACT_OPTIONS,
+      &form_data, /*field=*/nullptr));
+  EXPECT_EQ(form_data.name, u"form-name");
+  EXPECT_EQ(form_data.id_attribute, u"form-id");
+  EXPECT_EQ(form_data.name_attribute, u"form-name");
+  ASSERT_EQ(form_data.fields.size(), 1u);
+  EXPECT_EQ(form_data.fields[0].name, u"input-name");
+  EXPECT_EQ(form_data.fields[0].id_attribute, u"input-id");
+  EXPECT_EQ(form_data.fields[0].name_attribute, u"input-name");
+}
 
 // Tests that large option values/contents are truncated while building the
 // FormData.
@@ -644,12 +670,12 @@ TEST_F(FormAutofillUtilsTest, FindFormByUniqueId) {
   WebVector<WebFormElement> forms = doc.Forms();
 
   for (const auto& form : forms)
-    EXPECT_EQ(form, FindFormByUniqueRendererId(doc, GetFormRendererId(form)));
+    EXPECT_EQ(form, FindFormByRendererId(doc, GetFormRendererId(form)));
 
   // Expect null form element for non-existing form id.
   FormRendererId non_existing_form_id(GetFormRendererId(forms[0]).value() +
                                       1000);
-  EXPECT_TRUE(FindFormByUniqueRendererId(doc, non_existing_form_id).IsNull());
+  EXPECT_TRUE(FindFormByRendererId(doc, non_existing_form_id).IsNull());
 }
 
 // Used in ParameterizedFindFormControlByRendererIdTest.
@@ -659,13 +685,13 @@ struct FindFormControlTestParam {
   bool expectation;
 };
 
-// Tests FindFormControlElementByUniqueRendererId().
+// Tests FindFormControlByRendererId().
 class ParameterizedFindFormControlByRendererIdTest
     : public FormAutofillUtilsTest,
       public testing::WithParamInterface<FindFormControlTestParam> {};
 
 TEST_P(ParameterizedFindFormControlByRendererIdTest,
-       FindFormControlElementByUniqueRendererId) {
+       FindFormControlByRendererId) {
   LoadHTML(R"(
     <body>
       <input id="nonexistentField">
@@ -698,8 +724,8 @@ TEST_P(ParameterizedFindFormControlByRendererIdTest,
 
   EXPECT_EQ(
       GetParam().expectation,
-      queried_field == FindFormControlElementByUniqueRendererId(
-                           doc, queried_field_id, form_to_be_searched_id));
+      queried_field == FindFormControlByRendererId(doc, queried_field_id,
+                                                   form_to_be_searched_id));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -728,7 +754,7 @@ TEST_F(FormAutofillUtilsTest, FindFormControlElementsByUniqueId) {
                                                non_existing_field_id,
                                                GetFieldRendererId(input1)};
 
-  auto elements = FindFormControlElementsByUniqueRendererId(doc, renderer_ids);
+  auto elements = FindFormControlsByRendererId(doc, renderer_ids);
 
   ASSERT_EQ(3u, elements.size());
   EXPECT_EQ(input3, elements[0]);
@@ -1984,6 +2010,82 @@ TEST_F(FormAutofillUtilsTest, NextWebNode_Backward) {
   }
 
   EXPECT_THAT(found_elements, Pointwise(SameNode(), expected_elements));
+}
+
+// Tests that GetMaxLength() of non-text form controls is 0, and text form
+// controls default to the maximum 32 bit integer (and *not* 64 bit integer, so
+// that we can still do arithmetic with the maximum length).
+TEST_F(FormAutofillUtilsTest, GetMaxLength) {
+  struct TestCase {
+    const char* html;
+    uint64_t expected_max_length;
+  };
+  static constexpr TestCase test_cases[] = {
+      {"<input id=field>", FormFieldData::kDefaultMaxLength},
+      {"<input id=field type=text>", FormFieldData::kDefaultMaxLength},
+      {"<input id=field type=text maxlength=-1>",
+       FormFieldData::kDefaultMaxLength},
+      {"<input id=field type=password>", FormFieldData::kDefaultMaxLength},
+      {"<input id=field type=text maxlength=123>", 123},
+      {"<textarea id=field>", FormFieldData::kDefaultMaxLength},
+      {"<textarea id=field maxlength=123>", 123},
+      {"<input id=field type=submit>", 0},
+      {"<select id=field></select>", 0},
+  };
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case.html);
+    LoadHTML(test_case.html);
+    WebLocalFrame* web_frame = GetMainFrame();
+    ASSERT_NE(nullptr, web_frame);
+    WebFormControlElement field =
+        GetElementById(web_frame->GetDocument(), "field")
+            .DynamicTo<WebFormControlElement>();
+    EXPECT_FALSE(field.IsNull());
+    EXPECT_EQ(test_case.expected_max_length, GetMaxLength(field));
+  }
+}
+
+TEST_F(FormAutofillUtilsTest, FindFormForContentEditableSuccess) {
+  LoadHTML(
+      R"(<body>
+         <div id=my-id
+              name=my-name
+              class=my-class
+              autocomplete=given-name
+              contenteditable>
+         </div>
+         </body>)");
+  WebElement content_editable =
+      GetMainFrame()->GetDocument().GetElementById("my-id");
+  ASSERT_FALSE(content_editable.IsNull());
+  std::optional<FormData> form = FindFormForContentEditable(content_editable);
+  ASSERT_EQ(form->fields.size(), 1u);
+  const FormFieldData& field = form->fields[0];
+  EXPECT_TRUE(form->unique_renderer_id);
+  EXPECT_EQ(*form->unique_renderer_id, *field.unique_renderer_id);
+  EXPECT_EQ(form->unique_renderer_id, field.host_form_id);
+  EXPECT_EQ(field.parsed_autocomplete->field_type, HtmlFieldType::kGivenName);
+  EXPECT_EQ(field.name, u"my-id");
+  EXPECT_EQ(field.id_attribute, u"my-id");
+  EXPECT_EQ(field.name_attribute, u"my-name");
+  EXPECT_EQ(field.css_classes, u"my-class");
+  // TODO(crbug.com/1490372): Extract the value.
+  EXPECT_EQ(field.value, u"");
+}
+
+TEST_F(FormAutofillUtilsTest, FindFormForContentEditableFailures) {
+  LoadHTML(
+      R"(<body>
+         <div id=ce1></div>
+         <div contenteditable><div id=ce2 contenteditable></div></div>
+         <form id=ce3 contenteditable></form>
+         <textarea id=ce4 contenteditable><div contenteditable></textarea>
+         </body>)");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  ASSERT_FALSE(FindFormForContentEditable(doc.GetElementById("ce1")));
+  ASSERT_FALSE(FindFormForContentEditable(doc.GetElementById("ce2")));
+  ASSERT_FALSE(FindFormForContentEditable(doc.GetElementById("ce3")));
+  ASSERT_FALSE(FindFormForContentEditable(doc.GetElementById("ce4")));
 }
 
 }  // namespace

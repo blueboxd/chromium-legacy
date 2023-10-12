@@ -36,7 +36,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
@@ -286,6 +285,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -847,8 +847,13 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
     : views::ClientView(nullptr, nullptr),
       browser_(std::move(browser)),
       accessibility_mode_observer_(
-          std::make_unique<AccessibilityModeObserver>(this)),
-      browser_actions_(*browser_) {
+          std::make_unique<AccessibilityModeObserver>(this)) {
+  // Store the actions so that the access is available for other classes.
+  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+    browser_->SetUserData(BrowserActions::UserDataKey(),
+                          std::make_unique<BrowserActions>(*browser_));
+  }
+
   SetShowIcon(
       ::ShouldShowWindowIcon(browser_.get(), AppUsesWindowControlsOverlay()));
 
@@ -1086,7 +1091,7 @@ BrowserWindow* BrowserWindow::FindBrowserWindowWithWebContents(
     return BrowserView::GetBrowserViewForNativeWindow(
         widget->GetNativeWindow());
   }
-  const auto* browser = chrome::FindBrowserWithWebContents(web_contents);
+  const auto* browser = chrome::FindBrowserWithTab(web_contents);
   return browser ? browser->window() : nullptr;
 }
 
@@ -3579,8 +3584,12 @@ ui::ImageModel BrowserView::GetWindowIcon() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (browser_->is_type_normal())
-    return ui::ImageModel::FromImage(rb.GetImageNamed(IDR_CHROME_APP_ICON_192));
+  if (browser_->is_type_normal()) {
+    int resource_id = ash::switches::IsAshDebugBrowserEnabled()
+                          ? IDR_DEBUG_CHROME_APP_ICON_192
+                          : IDR_CHROME_APP_ICON_192;
+    return ui::ImageModel::FromImage(rb.GetImageNamed(resource_id));
+  }
   auto* window = GetNativeWindow();
   int override_window_icon_resource_id =
       window ? window->GetProperty(kOverrideWindowIconResourceIdKey) : -1;
@@ -4876,39 +4885,41 @@ bool BrowserView::IsFeaturePromoActive(const base::Feature& iph_feature) const {
              iph_feature, user_education::FeaturePromoStatus::kContinued);
 }
 
-bool BrowserView::CanShowFeaturePromo(const base::Feature& iph_feature) const {
-  return initialized_ && feature_promo_controller_ &&
-         feature_promo_controller_->CanShowPromo(iph_feature);
+user_education::FeaturePromoResult BrowserView::CanShowFeaturePromo(
+    const base::Feature& iph_feature) const {
+  if (!initialized_) {
+    return user_education::FeaturePromoResult::kError;
+  }
+
+  if (!feature_promo_controller_) {
+    return user_education::FeaturePromoResult::kBlockedByContext;
+  }
+
+  return feature_promo_controller_->CanShowPromo(iph_feature);
 }
 
-bool BrowserView::MaybeShowFeaturePromo(
-    const base::Feature& iph_feature,
-    user_education::FeaturePromoController::BubbleCloseCallback close_callback,
-    user_education::FeaturePromoSpecification::FormatParameters body_params,
-    user_education::FeaturePromoSpecification::FormatParameters title_params) {
+user_education::FeaturePromoResult BrowserView::MaybeShowFeaturePromo(
+    user_education::FeaturePromoParams params) {
   // Trying to show a promo before the browser is initialized can result in a
   // failure to retrieve accelerators, which can cause issues for screen reader
   // users.
   if (!initialized_) {
-    LOG(ERROR) << "Attempting to show IPH " << iph_feature.name
+    LOG(ERROR) << "Attempting to show IPH " << params.feature->name
                << " before browser initialization; IPH will not be shown.";
-    return false;
+    return user_education::FeaturePromoResult::kError;
   }
-  return feature_promo_controller_ &&
-         feature_promo_controller_->MaybeShowPromo(
-             iph_feature, std::move(close_callback), body_params, title_params);
+
+  if (!feature_promo_controller_) {
+    return user_education::FeaturePromoResult::kBlockedByContext;
+  }
+
+  return feature_promo_controller_->MaybeShowPromo(std::move(params));
 }
 
 bool BrowserView::MaybeShowStartupFeaturePromo(
-    const base::Feature& iph_feature,
-    user_education::FeaturePromoController::StartupPromoCallback promo_callback,
-    user_education::FeaturePromoController::BubbleCloseCallback close_callback,
-    user_education::FeaturePromoSpecification::FormatParameters body_params,
-    user_education::FeaturePromoSpecification::FormatParameters title_params) {
+    user_education::FeaturePromoParams params) {
   return feature_promo_controller_ &&
-         feature_promo_controller_->MaybeShowStartupPromo(
-             iph_feature, std::move(promo_callback), std::move(close_callback),
-             body_params, title_params);
+         feature_promo_controller_->MaybeShowStartupPromo(std::move(params));
 }
 
 bool BrowserView::CloseFeaturePromo(
@@ -4965,7 +4976,7 @@ void BrowserView::ActivateAppModalDialog() const {
     return;
 
   Browser* modal_browser =
-      chrome::FindBrowserWithWebContents(active_dialog->web_contents());
+      chrome::FindBrowserWithTab(active_dialog->web_contents());
   if (modal_browser && (browser_.get() != modal_browser)) {
     modal_browser->window()->FlashFrame(true);
     modal_browser->window()->Activate();

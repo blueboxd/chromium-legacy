@@ -50,6 +50,15 @@ class PolicyDialogBase : public views::DialogDelegateView {
   enum ViewIds {
     kScrollViewId = 1,
     kConfidentialRowTitleViewId,
+
+    // IDs related to file error dialog in a mixed error scenario.
+    kDlpSectionId,
+    kEnterpriseConnectorsUnknownScanResultSectionId,
+    kEnterpriseConnectorsSensitiveDataSectionId,
+    kEnterpriseConnectorsMalwareSectionId,
+    kEnterpriseConnectorsEncryptedFileSectionId,
+    kEnterpriseConnectorsLargeFileSectionId,
+    kEnterpriseConnectorsSectionId,
   };
 
   PolicyDialogBase();
@@ -83,9 +92,6 @@ class PolicyDialogBase : public views::DialogDelegateView {
 
   // Sets up and populates the scroll view.
   virtual void MaybeAddConfidentialRows() = 0;
-
-  // Returns the Cancel button label.
-  virtual std::u16string GetCancelButton() = 0;
 
   // Returns the Ok button label.
   virtual std::u16string GetOkButton() = 0;

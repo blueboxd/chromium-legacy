@@ -14,13 +14,16 @@
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/passkey_credential.h"
 #include "components/url_formatter/elide_url.h"
+#include "components/webauthn/android/webauthn_cred_man_delegate.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "ui/android/view_android.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace {
 using password_manager::PasskeyCredential;
 using password_manager::UiCredential;
+using webauthn::WebAuthnCredManDelegate;
 
 std::vector<UiCredential> SortCredentials(
     base::span<const UiCredential> credentials) {
@@ -50,18 +53,43 @@ TouchToFillController::~TouchToFillController() = default;
 void TouchToFillController::Show(
     base::span<const UiCredential> credentials,
     base::span<PasskeyCredential> passkey_credentials,
-    std::unique_ptr<TouchToFillControllerDelegate> delegate,
+    std::unique_ptr<TouchToFillControllerDelegate> ttf_delegate,
+    webauthn::WebAuthnCredManDelegate* cred_man_delegate,
     base::WeakPtr<password_manager::ContentPasswordManagerDriver>
         frame_driver) {
-  DCHECK(!delegate_);
-  delegate_ = std::move(delegate);
+  DCHECK(!ttf_delegate_);
+  ttf_delegate_ = std::move(ttf_delegate);
+  cred_man_delegate_ = cred_man_delegate;
   visibility_controller_->SetVisible(std::move(frame_driver));
 
-  delegate_->OnShow(credentials, passkey_credentials);
+  ttf_delegate_->OnShow(credentials, passkey_credentials);
+  GURL url = ttf_delegate_->GetFrameUrl();
+  int flags = TouchToFillView::kNone;
+  if (cred_man_delegate && cred_man_delegate->HasPasskeys() ==
+                               WebAuthnCredManDelegate::kHasPasskeys) {
+    cred_man_delegate->SetRequestCompletionCallback(base::BindRepeating(
+        &TouchToFillController::OnCredManUiClosed, this->AsWeakPtr()));
+    flags |= TouchToFillView::kShouldShowCredManEntry;
+  }
   if (credentials.empty() && passkey_credentials.empty()) {
     // Ideally this should never happen. However, in case we do end up invoking
     // Show() without credentials, we should not show Touch To Fill to the user
     // and treat this case as dismissal, in order to restore the soft keyboard.
+    if (!!(flags & TouchToFillView::kShouldShowCredManEntry)) {
+      OnShowCredManSelected();
+      return;
+    }
+    if (ttf_delegate_->ShouldShowNoPasskeysSheetIfRequired()) {
+      if (!no_passkeys_bridge_) {
+        no_passkeys_bridge_ = std::make_unique<NoPasskeysBottomSheetBridge>();
+      }
+      no_passkeys_bridge_->Show(
+          GetNativeView()->GetWindowAndroid(), url::Origin::Create(url).host(),
+          base::BindOnce(&TouchToFillController::OnDismiss, AsWeakPtr()),
+          base::BindOnce(&TouchToFillController::OnHybridSignInSelected,
+                         AsWeakPtr()));
+      return;
+    }
     OnDismiss();
     return;
   }
@@ -69,18 +97,16 @@ void TouchToFillController::Show(
   if (!view_)
     view_ = TouchToFillViewFactory::Create(this);
 
-  int flags = TouchToFillView::kNone;
-  if (delegate_->ShouldTriggerSubmission()) {
+  if (ttf_delegate_->ShouldTriggerSubmission()) {
     flags |= TouchToFillView::kTriggerSubmission;
   }
   if (password_manager_launcher::CanManagePasswordsWhenPasskeysPresent()) {
     flags |= TouchToFillView::kCanManagePasswordsWhenPasskeysPresent;
   }
-  if (delegate_->ShouldShowHybridOption()) {
+  if (ttf_delegate_->ShouldShowHybridOption()) {
     flags |= TouchToFillView::kShouldShowHybridOption;
   }
 
-  GURL url = delegate_->GetFrameUrl();
   view_->Show(
       url,
       TouchToFillView::IsOriginSecure(
@@ -92,7 +118,7 @@ void TouchToFillController::OnCredentialSelected(
     const UiCredential& credential) {
   view_.reset();
   // Unretained is safe here because TouchToFillController owns the delegate.
-  delegate_->OnCredentialSelected(
+  ttf_delegate_->OnCredentialSelected(
       credential, base::BindOnce(&TouchToFillController::ActionCompleted,
                                  base::Unretained(this)));
 }
@@ -101,7 +127,7 @@ void TouchToFillController::OnPasskeyCredentialSelected(
     const PasskeyCredential& credential) {
   view_.reset();
   // Unretained is safe here because TouchToFillController owns the delegate.
-  delegate_->OnPasskeyCredentialSelected(
+  ttf_delegate_->OnPasskeyCredentialSelected(
       credential, base::BindOnce(&TouchToFillController::ActionCompleted,
                                  base::Unretained(this)));
 }
@@ -109,31 +135,41 @@ void TouchToFillController::OnPasskeyCredentialSelected(
 void TouchToFillController::OnManagePasswordsSelected(bool passkeys_shown) {
   view_.reset();
   // Unretained is safe here because TouchToFillController owns the delegate.
-  delegate_->OnManagePasswordsSelected(
+  ttf_delegate_->OnManagePasswordsSelected(
       passkeys_shown, base::BindOnce(&TouchToFillController::ActionCompleted,
                                      base::Unretained(this)));
 }
 
 void TouchToFillController::OnHybridSignInSelected() {
   view_.reset();
-  delegate_->OnHybridSignInSelected(base::BindOnce(
+  ttf_delegate_->OnHybridSignInSelected(base::BindOnce(
       &TouchToFillController::ActionCompleted, base::Unretained(this)));
+}
+
+void TouchToFillController::OnShowCredManSelected() {
+  view_.reset();
+  cred_man_delegate_->TriggerCredManUi();
+}
+
+void TouchToFillController::OnCredManUiClosed(bool success) {
+  OnDismiss();
 }
 
 void TouchToFillController::OnDismiss() {
   view_.reset();
-  if (!delegate_) {
+  no_passkeys_bridge_.reset();
+  if (!ttf_delegate_) {
     // TODO(crbug/1462532): Remove this check when
     // PasswordSuggestionBottomSheetV2 is launched
     return;
   }
   // Unretained is safe here because TouchToFillController owns the delegate.
-  delegate_->OnDismiss(base::BindOnce(&TouchToFillController::ActionCompleted,
-                                      base::Unretained(this)));
+  ttf_delegate_->OnDismiss(base::BindOnce(
+      &TouchToFillController::ActionCompleted, base::Unretained(this)));
 }
 
 gfx::NativeView TouchToFillController::GetNativeView() {
-  return delegate_->GetNativeView();
+  return ttf_delegate_->GetNativeView();
 }
 
 void TouchToFillController::Close() {
@@ -156,5 +192,5 @@ void TouchToFillController::ActionCompleted() {
   if (visibility_controller_) {
     visibility_controller_->SetShown();
   }
-  delegate_.reset();
+  ttf_delegate_.reset();
 }

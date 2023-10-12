@@ -15,7 +15,7 @@ import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {skColorToRgba} from 'chrome://resources/js/color_utils.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {FocusOutlineManager} from 'chrome://resources/js/focus_outline_manager.js';
@@ -213,9 +213,9 @@ export class MostVisitedElement extends MostVisitedElementBase {
     };
   }
 
-  public theme: MostVisitedTheme|null;
-  public reflowOnOverflow: boolean;
-  public singleRow: boolean;
+  theme: MostVisitedTheme|null;
+  reflowOnOverflow: boolean;
+  singleRow: boolean;
   private useWhiteTileIcon_: boolean;
   private columnCount_: number;
   private rowCount_: number;

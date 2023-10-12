@@ -426,14 +426,6 @@ namespace autotestPrivate {
 
   callback GetAllInstalledAppsCallback = void (App[] apps);
 
-  dictionary CryptohomeRecoveryDataDict {
-    DOMString reauthProofToken;
-    DOMString refreshToken;
-  };
-
-  callback GetCryptohomeRecoveryDataCallback = void (
-    CryptohomeRecoveryDataDict dict);
-
   dictionary ShelfItem {
     DOMString appId;
     DOMString launchId;
@@ -950,10 +942,6 @@ namespace autotestPrivate {
         DOMString packageName,
         GetArcPackageCallback callback);
 
-    // Gets the data needed for Cryptohome Recovery.
-    [supportsPromises] static void getCryptohomeRecoveryData(
-        GetCryptohomeRecoveryDataCallback callback);
-
     // Waits for system web apps to complete the installation.
     [supportsPromises] static void waitForSystemWebAppsInstall(
         VoidCallback callback);
@@ -1091,12 +1079,6 @@ namespace autotestPrivate {
     [supportsPromises] static void takeScreenshotForDisplay(
         DOMString display_id,
         TakeScreenshotCallback callback);
-
-    // Makes a basic request to ML Service, triggering 1. ML Service
-    // daemon startup, and 2. the initial D-Bus -> Mojo IPC bootstrap.
-    // |callback|: Called when the operation has completed.
-    [supportsPromises] static void bootstrapMachineLearningService(
-        VoidCallback callback);
 
     // Triggers an on-demand update of smart dim component and checks whether
     // it's successfully loaded by smart dim ml_agent.

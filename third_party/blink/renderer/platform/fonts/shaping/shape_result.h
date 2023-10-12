@@ -315,6 +315,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
     unsigned start;
     unsigned end;
+    // TODO(crbug.com/1489080): When this member was given MiraclePtr
+    // protection, it was found dangling.
     ShapeResult* target;
   };
 

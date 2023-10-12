@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils.OfflinePageLoadUrlDelegate;
 import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.paint_preview.TabbedPaintPreview;
-import org.chromium.chrome.browser.privacy_sandbox.AdPersonalizationFragment;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxReferrer;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsBaseFragment;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -58,6 +58,7 @@ import org.chromium.components.page_info.PageInfoMainController;
 import org.chromium.components.page_info.PageInfoRowView;
 import org.chromium.components.page_info.PageInfoSubpageController;
 import org.chromium.components.page_info.PageInfoView;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -231,12 +232,8 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     @Override
     public void showAdPersonalizationSettings() {
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        if (getSiteSettingsDelegate().isPrivacySandboxSettings4Enabled()) {
             PrivacySandboxSettingsBaseFragment.launchPrivacySandboxSettings(mContext,
                     settingsLauncher, PrivacySandboxReferrer.PAGE_INFO_AD_PRIVACY_SECTION);
-        } else {
-            settingsLauncher.launchSettingsActivity(mContext, AdPersonalizationFragment.class);
-        }
     }
 
     @NonNull
@@ -339,5 +336,11 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     @Override
     public boolean isIncognito() {
         return mProfile.isOffTheRecord();
+    }
+
+    @Override
+    public boolean showTrackingProtectionUI() {
+        return (UserPrefs.get(mProfile).getBoolean(Pref.TRACKING_PROTECTION3PCD_ENABLED)
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.TRACKING_PROTECTION_3PCD));
     }
 }

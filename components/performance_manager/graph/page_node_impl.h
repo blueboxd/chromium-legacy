@@ -30,6 +30,7 @@ class FrozenFrameAggregatorAccess;
 class PageAggregatorAccess;
 class PageLoadTrackerAccess;
 class SiteDataAccess;
+class TabConnectednessAccess;
 
 // The starting state of various boolean properties of the PageNode.
 enum class PagePropertyFlag {
@@ -161,15 +162,8 @@ class PageNodeImpl
     SetHadUserEdits(had_user_edits);
   }
 
-  base::WeakPtr<PageNodeImpl> GetWeakPtrOnUIThread() {
-    // TODO(siggi): Validate thread context.
-    return weak_this_;
-  }
-
-  base::WeakPtr<PageNodeImpl> GetWeakPtr() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return weak_factory_.GetWeakPtr();
-  }
+  base::WeakPtr<PageNodeImpl> GetWeakPtrOnUIThread();
+  base::WeakPtr<PageNodeImpl> GetWeakPtr();
 
   // Accessors to some of the NodeAttachedData:
   std::unique_ptr<NodeAttachedData>& GetSiteData(
@@ -179,6 +173,10 @@ class PageNodeImpl
   std::unique_ptr<NodeAttachedData>& GetPageLoadTrackerData(
       base::PassKey<PageLoadTrackerAccess>) {
     return page_load_tracker_data_;
+  }
+  std::unique_ptr<NodeAttachedData>& GetTabConnectednessData(
+      base::PassKey<TabConnectednessAccess>) {
+    return tab_connectedness_data_;
   }
   FrozenFrameDataStorage& GetFrozenFrameData(
       base::PassKey<FrozenFrameAggregatorAccess>) {
@@ -418,6 +416,10 @@ class PageNodeImpl
 
   // Storage for SiteDataNodeData user data.
   std::unique_ptr<NodeAttachedData> site_data_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Storage for TabConnectednessDecorator user data.
+  std::unique_ptr<NodeAttachedData> tab_connectedness_data_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Inline storage for FrozenFrameAggregator user data.

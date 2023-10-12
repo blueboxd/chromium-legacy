@@ -76,7 +76,6 @@
 #include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_crypto_client_config.h"
 #include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quiche/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quiche/quic/platform/api/quic_test.h"
@@ -886,7 +885,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
       uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool fin,
-      absl::string_view data) {
+      std::string_view data) {
     return server_maker_.MakeDataPacket(packet_number, stream_id, fin, data);
   }
 

@@ -169,11 +169,12 @@ gfx::RectF GetTargetBoundsInScreen(aura::Window* window) {
     ::wm::TranslateRectToScreen(window_iter->parent(), &target_bounds);
     bounds.Union(target_bounds);
   }
+
   return bounds;
 }
 
 void SetTransform(aura::Window* window, const gfx::Transform& transform) {
-  gfx::PointF target_origin(GetTargetBoundsInScreen(window).origin());
+  const gfx::PointF target_origin(GetTargetBoundsInScreen(window).origin());
   for (auto* window_iter :
        window_util::GetVisibleTransientTreeIterator(window)) {
     aura::Window* parent_window = window_iter->parent();
@@ -373,8 +374,11 @@ gfx::Rect ToStableSizeRoundedRect(const gfx::RectF& rect) {
 }
 
 void MoveFocusToView(OverviewFocusableView* target_view) {
-  auto* focus_cycler =
-      Shell::Get()->overview_controller()->overview_session()->focus_cycler();
+  auto* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  CHECK(overview_session);
+
+  auto* focus_cycler = overview_session->focus_cycler();
   CHECK(focus_cycler);
 
   focus_cycler->MoveFocusToView(target_view);

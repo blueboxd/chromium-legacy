@@ -148,7 +148,10 @@ void PageInfoCookiesContentView::InitCookiesDialogButton() {
               },
               this),
           icon,
-          l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_DIALOG_BUTTON_TITLE),
+          l10n_util::GetStringUTF16(
+              presenter_->IsTrackingProtection3pcdEnabled()
+                  ? IDS_PAGE_INFO_TRACKING_PROTECTION_COOKIES_DIALOG_BUTTON_TITLE
+                  : IDS_PAGE_INFO_COOKIES_DIALOG_BUTTON_TITLE),
           std::u16string(),
 
           tooltip, /*subtitle_text=*/u" ",
@@ -281,18 +284,27 @@ void PageInfoCookiesContentView::SetThirdPartyCookiesInfo(
         : presenter_->IsTrackingProtection3pcdEnabled()
             ? IDS_PAGE_INFO_TRACKING_PROTECTION_SITE_NOT_WORKING_DESCRIPTION_TEMPORARY
             : IDS_PAGE_INFO_COOKIES_SITE_NOT_WORKING_DESCRIPTION_TEMPORARY);
-  } else {
-    title = is_permanent_exception
-                ? l10n_util::GetStringUTF16(
-                      IDS_PAGE_INFO_COOKIES_PERMANENT_ALLOWED_TITLE)
-                : l10n_util::GetPluralStringFUTF16(
-                      IDS_PAGE_INFO_COOKIES_BLOCKING_RESTART_TITLE,
-                      CookieControlsUtil::GetDaysToExpiration(
-                          cookie_info.expiration));
+  } else if (is_permanent_exception) {
+    title = l10n_util::GetStringUTF16(
+        IDS_PAGE_INFO_COOKIES_PERMANENT_ALLOWED_TITLE);
     description = l10n_util::GetStringUTF16(
-        is_permanent_exception
-            ? IDS_PAGE_INFO_COOKIES_PERMANENT_ALLOWED_DESCRIPTION
-            : IDS_PAGE_INFO_COOKIES_BLOCKING_RESTART_DESCRIPTION_TODAY);
+        presenter_->IsTrackingProtection3pcdEnabled()
+            ? IDS_PAGE_INFO_TRACKING_PROTECTION_COOKIES_PERMANENT_ALLOWED_DESCRIPTION
+            : IDS_PAGE_INFO_COOKIES_PERMANENT_ALLOWED_DESCRIPTION);
+  } else if (presenter_->IsTrackingProtection3pcdEnabled()) {
+    title = l10n_util::GetPluralStringFUTF16(
+        presenter_->AreAllThirdPartyCookiesBlocked()
+            ? IDS_PAGE_INFO_TRACKING_PROTECTION_COOKIES_3PC_BLOCKED_RESTART_TITLE
+            : IDS_PAGE_INFO_TRACKING_PROTECTION_COOKIES_LIMITING_RESTART_TITLE,
+        CookieControlsUtil::GetDaysToExpiration(cookie_info.expiration));
+    description = l10n_util::GetStringUTF16(
+        IDS_PAGE_INFO_COOKIES_TRACKING_PROTECTION_COOKIES_RESTART_DESCRIPTION);
+  } else {
+    title = l10n_util::GetPluralStringFUTF16(
+        IDS_PAGE_INFO_COOKIES_BLOCKING_RESTART_TITLE,
+        CookieControlsUtil::GetDaysToExpiration(cookie_info.expiration));
+    description = l10n_util::GetStringUTF16(
+        IDS_PAGE_INFO_COOKIES_BLOCKING_RESTART_DESCRIPTION_TODAY);
   }
   third_party_cookies_title_->SetText(title);
   third_party_cookies_description_->SetText(description);
@@ -306,14 +318,23 @@ void PageInfoCookiesContentView::SetThirdPartyCookiesInfo(
   third_party_cookies_toggle_->SetID(
       PageInfoViewFactory::VIEW_ID_PAGE_INFO_THIRD_PARTY_COOKIES_TOGGLE);
 
-  const std::u16string toggle_subtitle =
-      are_third_party_cookies_blocked
-          ? l10n_util::GetPluralStringFUTF16(
-                IDS_PAGE_INFO_COOKIES_BLOCKED_SITES_COUNT,
-                cookie_info.blocked_third_party_sites_count)
-          : l10n_util::GetPluralStringFUTF16(
-                IDS_PAGE_INFO_COOKIES_ALLOWED_SITES_COUNT,
-                cookie_info.allowed_third_party_sites_count);
+  std::u16string toggle_subtitle;
+  if (presenter_->IsTrackingProtection3pcdEnabled()) {
+    toggle_subtitle = l10n_util::GetStringUTF16(
+        are_third_party_cookies_blocked
+            ? presenter_->AreAllThirdPartyCookiesBlocked()
+                  ? IDS_PAGE_INFO_TRACKING_PROTECTION_COOKIES_BLOCKED
+                  : IDS_PAGE_INFO_TRACKING_PROTECTION_COOKIES_LIMITED
+            : IDS_PAGE_INFO_TRACKING_PROTECTION_COOKIES_ALLOWED);
+  } else {
+    toggle_subtitle = are_third_party_cookies_blocked
+                          ? l10n_util::GetPluralStringFUTF16(
+                                IDS_PAGE_INFO_COOKIES_BLOCKED_SITES_COUNT,
+                                cookie_info.blocked_third_party_sites_count)
+                          : l10n_util::GetPluralStringFUTF16(
+                                IDS_PAGE_INFO_COOKIES_ALLOWED_SITES_COUNT,
+                                cookie_info.allowed_third_party_sites_count);
+  }
   third_party_cookies_toggle_subtitle_->SetText(toggle_subtitle);
   if (features::IsChromeRefresh2023()) {
     third_party_cookies_toggle_subtitle_->SetTextStyle(

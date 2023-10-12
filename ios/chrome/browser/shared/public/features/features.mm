@@ -80,7 +80,7 @@ const base::FeatureParam<DefaultBrowserPromoGenericTailoredArm>
 
 BASE_FEATURE(kDefaultBrowserRefactoringPromoManager,
              "DefaultBrowserRefactoringPromoManager",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDefaultBrowserVideoPromo,
              "DefaultBrowserVideoPromo",
@@ -106,7 +106,7 @@ bool ShouldShowPartialTranslateInIncognito() {
   }
   return !base::GetFieldTrialParamByFeatureAsBool(
       kIOSEditMenuPartialTranslate,
-      kIOSEditMenuPartialTranslateNoIncognitoParam, true);
+      kIOSEditMenuPartialTranslateNoIncognitoParam, false);
 }
 
 const char kIOSEditMenuSearchWithTitleParamTitle[] =
@@ -255,8 +255,8 @@ bool IsBottomOmniboxSteadyStateEnabled() {
 BASE_FEATURE(kOnlyAccessClipboardAsync,
              "OnlyAccessClipboardAsync",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kDBVideoInSettings,
-             "DBVideoInSettings",
+BASE_FEATURE(kDefaultBrowserVideoInSettings,
+             "DefaultBrowserVideoInSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kDefaultBrowserTriggerCriteriaExperiment,
              "DefaultBrowserTriggerCriteriaExperiment",
@@ -272,7 +272,7 @@ BASE_FEATURE(kThemeColorInTopToolbar,
 
 BASE_FEATURE(kTabGridRefactoring,
              "TabGridRefactoring",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsSafetyCheckMagicStackEnabled() {
   return base::FeatureList::IsEnabled(kSafetyCheckMagicStack);
@@ -289,3 +289,7 @@ BASE_FEATURE(kIOSSaveToPhotos,
 BASE_FEATURE(kSettingsWillBeDismissedBugFixKillSwitch,
              "SettingsWillBeDismissedBugFixKillSwitch",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableUIEditMenuInteraction,
+             "EnableUIEditMenuInteraction",
+             base::FEATURE_DISABLED_BY_DEFAULT);

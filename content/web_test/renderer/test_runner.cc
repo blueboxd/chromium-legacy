@@ -17,6 +17,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -232,7 +233,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
     void OnDestruct() override { bindings_->OnFrameDestroyed(); }
 
    private:
-    TestRunnerBindings* const bindings_;
+    const raw_ptr<TestRunnerBindings, ExperimentalRenderer> bindings_;
   };
 
   explicit TestRunnerBindings(TestRunner* test_runner,
@@ -358,7 +359,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetPrinting();
   void SetPrintingForFrame(const std::string& frame_name);
   void SetPrintingSize(int width, int height);
-  void SetScriptsAllowed(bool allowed);
   void SetShouldGeneratePixelResults(bool);
   void SetShouldStayOnPageAfterHandlingBeforeUnload(bool value);
   void SetSpellCheckResolvedCallback(v8::Local<v8::Function> callback);
@@ -423,9 +423,9 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   // stop doing anything.
   bool invalid_ = false;
 
-  TestRunner* runner_;
-  WebFrameTestProxy* const frame_;
-  SpellCheckClient* const spell_check_;
+  raw_ptr<TestRunner, ExperimentalRenderer> runner_;
+  const raw_ptr<WebFrameTestProxy, ExperimentalRenderer> frame_;
+  const raw_ptr<SpellCheckClient, ExperimentalRenderer> spell_check_;
   TestPreferences prefs_;
   std::unique_ptr<AppBannerService> app_banner_service_;
 
@@ -778,7 +778,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setPrintingForFrame",
                  &TestRunnerBindings::SetPrintingForFrame)
       .SetMethod("setPrintingSize", &TestRunnerBindings::SetPrintingSize)
-      .SetMethod("setScriptsAllowed", &TestRunnerBindings::SetScriptsAllowed)
       .SetMethod("setScrollbarPolicy", &TestRunnerBindings::NotImplemented)
       .SetMethod("setShouldGeneratePixelResults",
                  &TestRunnerBindings::SetShouldGeneratePixelResults)
@@ -1552,12 +1551,6 @@ void TestRunnerBindings::SetImagesAllowed(bool allowed) {
   runner_->SetImagesAllowed(allowed);
 }
 
-void TestRunnerBindings::SetScriptsAllowed(bool allowed) {
-  if (invalid_)
-    return;
-  runner_->SetScriptsAllowed(allowed);
-}
-
 void TestRunnerBindings::SetStorageAllowed(bool allowed) {
   if (invalid_)
     return;
@@ -2253,7 +2246,7 @@ class TestRunner::MainWindowTracker : public blink::WebViewObserver {
   }
 
  private:
-  TestRunner* const test_runner_;
+  const raw_ptr<TestRunner, ExperimentalRenderer> test_runner_;
 };
 
 TestRunner::WorkQueue::WorkQueue(TestRunner* controller)
@@ -3205,11 +3198,6 @@ void TestRunner::DumpTitleChanges() {
 
 void TestRunner::SetImagesAllowed(bool allowed) {
   web_test_runtime_flags_.set_images_allowed(allowed);
-  OnWebTestRuntimeFlagsChanged();
-}
-
-void TestRunner::SetScriptsAllowed(bool allowed) {
-  web_test_runtime_flags_.set_scripts_allowed(allowed);
   OnWebTestRuntimeFlagsChanged();
 }
 

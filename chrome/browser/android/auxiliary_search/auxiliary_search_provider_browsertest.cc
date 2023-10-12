@@ -6,23 +6,35 @@
 
 #include "base/android/jni_android.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/android/persisted_tab_data/persisted_tab_data_android.h"
 #include "chrome/browser/android/persisted_tab_data/sensitivity_persisted_tab_data_android.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/test/base/android/android_browser_test.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
+namespace {
+constexpr size_t kMaxDonatedTabs = 2;
+constexpr char kMaxDonatedTabsValue[] = "2";
+}  // namespace
+
 class AuxiliarySearchProviderBrowserTest : public AndroidBrowserTest {
  public:
-  AuxiliarySearchProviderBrowserTest() = default;
+  AuxiliarySearchProviderBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        chrome::android::kAuxiliarySearchDonation,
+        {{"auxiliary_search_max_donation_tab", kMaxDonatedTabsValue}});
+  }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -33,6 +45,7 @@ class AuxiliarySearchProviderBrowserTest : public AndroidBrowserTest {
     auxiliary_search_provider_ =
         std::make_unique<AuxiliarySearchProvider>(profile());
     PersistedTabDataAndroid::OnDeferredStartup();
+    content::RunAllTasksUntilIdle();
   }
 
   content::WebContents* web_contents() {
@@ -62,6 +75,7 @@ class AuxiliarySearchProviderBrowserTest : public AndroidBrowserTest {
 
  private:
   std::unique_ptr<AuxiliarySearchProvider> auxiliary_search_provider_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(AuxiliarySearchProviderBrowserTest, QuerySensitiveTab) {
@@ -102,6 +116,45 @@ IN_PROC_BROWSER_TEST_F(AuxiliarySearchProviderBrowserTest,
           [](base::OnceClosure done,
              std::unique_ptr<std::vector<TabAndroid*>> non_sensitive_tab) {
             EXPECT_EQ(2u, non_sensitive_tab->size());
+            std::move(done).Run();
+          },
+          run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(AuxiliarySearchProviderBrowserTest,
+                       QueryNonSensitiveTab_flagTest) {
+  base::RunLoop run_loop;
+  std::vector<TabAndroid*> tab_vec = CreateOneTab(false);
+
+  TabModel* tab_model = TabModelList::GetTabModelForWebContents(web_contents());
+  TabAndroid* second_tab = TabAndroid::FromWebContents(web_contents());
+  std::unique_ptr<content::WebContents> contents = content::WebContents::Create(
+      content::WebContents::CreateParams(profile()));
+  content::WebContents* second_web_contents = contents.release();
+  tab_model->CreateTab(second_tab, second_web_contents);
+  std::unique_ptr<SensitivityPersistedTabDataAndroid> sptda2 =
+      std::make_unique<SensitivityPersistedTabDataAndroid>(second_tab);
+  sptda2->set_is_sensitive(false);
+  tab_vec.push_back(second_tab);
+
+  TabAndroid* third_tab = TabAndroid::FromWebContents(web_contents());
+  contents = content::WebContents::Create(
+      content::WebContents::CreateParams(profile()));
+  content::WebContents* third_web_contents = contents.release();
+  tab_model->CreateTab(third_tab, third_web_contents);
+  std::unique_ptr<SensitivityPersistedTabDataAndroid> sptda3 =
+      std::make_unique<SensitivityPersistedTabDataAndroid>(third_tab);
+  sptda3->set_is_sensitive(false);
+  tab_vec.push_back(third_tab);
+
+  provider()->GetNonSensitiveTabsInternal(
+      tab_vec,
+      base::BindOnce(
+          [](base::OnceClosure done,
+             std::unique_ptr<std::vector<TabAndroid*>> non_sensitive_tab) {
+            // Only 2 should be here since the flag is set to 2.
+            EXPECT_EQ(kMaxDonatedTabs, non_sensitive_tab->size());
             std::move(done).Run();
           },
           run_loop.QuitClosure()));

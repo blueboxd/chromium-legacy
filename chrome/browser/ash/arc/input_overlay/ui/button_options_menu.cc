@@ -23,6 +23,7 @@
 #include "chrome/browser/ash/arc/input_overlay/ui/ui_utils.h"
 #include "chrome/browser/ash/arc/input_overlay/util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
@@ -222,12 +223,11 @@ void ButtonOptionsMenu::AddActionSelection() {
   // ----------------------------------
   // | |feature_tile| |feature_title| |
   // ----------------------------------
-  auto* container = AddChildView(std::make_unique<ash::RoundedContainer>(
-      ash::RoundedContainer::Behavior::kTopRounded));
-  // Create a 1x2 table with a column padding of 8.
-  container->SetLayoutManager(std::make_unique<views::FlexLayout>())
-      ->SetOrientation(views::LayoutOrientation::kHorizontal)
-      .SetMainAxisAlignment(views::LayoutAlignment::kCenter);
+  auto* container = AddChildView(std::make_unique<views::View>());
+  container->SetBackground(views::CreateThemedRoundedRectBackground(
+      cros_tokens::kCrosSysSystemOnBase, /*top_radius=*/16,
+      /*bottom_radius=*/0, /*for_border_thickness=*/0));
+  container->SetUseDefaultFillLayout(true);
   container->SetProperty(views::kMarginsKey, gfx::Insets::TLBR(0, 0, 2, 0));
 
   button_group_ = container->AddChildView(
@@ -295,5 +295,8 @@ void ButtonOptionsMenu::OnActionNewStateRemoved(const Action& action) {
     action_edit_->RemoveNewState();
   }
 }
+
+BEGIN_METADATA(ButtonOptionsMenu, views::View)
+END_METADATA
 
 }  // namespace arc::input_overlay

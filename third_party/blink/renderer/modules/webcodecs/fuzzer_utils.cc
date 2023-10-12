@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
-#include "third_party/blink/renderer/modules/webcodecs/allow_shared_buffer_source_util.h"
 #include "third_party/blink/renderer/modules/webcodecs/fuzzer_inputs.pb.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
@@ -112,8 +111,8 @@ VideoEncoderConfig* MakeVideoEncoderConfig(
   config->setCodec(proto.codec().c_str());
   config->setHardwareAcceleration(ToAccelerationType(proto.acceleration()));
   config->setFramerate(proto.framerate());
-  config->setWidth(proto.width());
-  config->setHeight(proto.height());
+  config->setWidth(std::min(proto.width(), kMaxVideoFrameDimension));
+  config->setHeight(std::min(proto.height(), kMaxVideoFrameDimension));
   config->setDisplayWidth(proto.display_width());
   config->setDisplayHeight(proto.display_height());
 
@@ -270,6 +269,7 @@ int SampleFormatToSampleSize(V8AudioSampleFormat format) {
 }
 
 EncodedVideoChunk* MakeEncodedVideoChunk(
+    ScriptState* script_state,
     const wc_fuzzer::EncodedVideoChunk& proto) {
   auto* data = MakeGarbageCollected<AllowSharedBufferSource>(
       DOMArrayBuffer::Create(proto.data().data(), proto.data().size()));
@@ -282,10 +282,12 @@ EncodedVideoChunk* MakeEncodedVideoChunk(
   if (proto.has_duration())
     init->setDuration(proto.duration());
 
-  return EncodedVideoChunk::Create(init);
+  return EncodedVideoChunk::Create(script_state, init,
+                                   IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 EncodedAudioChunk* MakeEncodedAudioChunk(
+    ScriptState* script_state,
     const wc_fuzzer::EncodedAudioChunk& proto) {
   auto* data = MakeGarbageCollected<AllowSharedBufferSource>(
       DOMArrayBuffer::Create(proto.data().data(), proto.data().size()));
@@ -298,7 +300,8 @@ EncodedAudioChunk* MakeEncodedAudioChunk(
   if (proto.has_duration())
     init->setDuration(proto.duration());
 
-  return EncodedAudioChunk::Create(init);
+  return EncodedAudioChunk::Create(script_state, init,
+                                   IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 VideoEncoderEncodeOptions* MakeEncodeOptions(
@@ -474,7 +477,8 @@ VideoFrame* MakeVideoFrame(ScriptState* script_state,
                             IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-AudioData* MakeAudioData(const wc_fuzzer::AudioDataInit& proto) {
+AudioData* MakeAudioData(ScriptState* script_state,
+                         const wc_fuzzer::AudioDataInit& proto) {
   if (!proto.channels().size() ||
       proto.channels().size() > media::limits::kMaxChannels)
     return nullptr;
@@ -513,7 +517,7 @@ AudioData* MakeAudioData(const wc_fuzzer::AudioDataInit& proto) {
   init->setFormat(format);
   init->setData(MakeGarbageCollected<AllowSharedBufferSource>(buffer));
 
-  return AudioData::Create(init, IGNORE_EXCEPTION_FOR_TESTING);
+  return AudioData::Create(script_state, init, IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 AudioDataCopyToOptions* MakeAudioDataCopyToOptions(

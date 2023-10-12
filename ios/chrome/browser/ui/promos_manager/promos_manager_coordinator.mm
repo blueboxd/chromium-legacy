@@ -16,8 +16,8 @@
 #import "components/crash/core/common/crash_key.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/app/tests_hook.h"
-#import "ios/chrome/browser/credential_provider_promo/features.h"
-#import "ios/chrome/browser/default_browser/utils.h"
+#import "ios/chrome/browser/credential_provider_promo/model/features.h"
+#import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/promos_manager/features.h"
@@ -36,6 +36,7 @@
 #import "ios/chrome/browser/ui/default_promo/post_restore/features.h"
 #import "ios/chrome/browser/ui/default_promo/post_restore/post_restore_default_browser_promo_provider.h"
 #import "ios/chrome/browser/ui/default_promo/promo_handler/default_browser_promo_display_handler.h"
+#import "ios/chrome/browser/ui/default_promo/promo_handler/default_browser_remind_me_later_promo_display_handler.h"
 #import "ios/chrome/browser/ui/post_restore_signin/post_restore_signin_provider.h"
 #import "ios/chrome/browser/ui/promos_manager/bannered_promo_view_provider.h"
 #import "ios/chrome/browser/ui/promos_manager/promos_manager_mediator.h"
@@ -575,6 +576,8 @@
   if (IsDefaultBrowserInPromoManagerEnabled()) {
     _displayHandlerPromos[promos_manager::Promo::DefaultBrowser] =
         [[DefaultBrowserPromoDisplayHandler alloc] init];
+    _displayHandlerPromos[promos_manager::Promo::DefaultBrowserRemindMeLater] =
+        [[DefaultBrowserRemindMeLaterPromoDisplayHandler alloc] init];
   }
 
   // Choice Promo handler

@@ -13,12 +13,14 @@ import 'chrome://resources/ash/common/navigation_view_panel.js';
 import 'chrome://resources/ash/common/page_toolbar.js';
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
 
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {NavigationViewPanelElement} from 'chrome://resources/ash/common/navigation_view_panel.js';
+import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
 import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -48,6 +50,13 @@ declare global {
     'edit-dialog-closed': CustomEvent<void>;
     'request-update-accelerator': RequestUpdateAcceleratorEvent;
     'show-edit-dialog': ShowEditDialogEvent;
+    // Modifying the accelerator can trigger two dialog updates, one is by
+    // onAcceleratorsUpdated() the other is by onRequestUpdateAccelerators().
+    // This is used to prevent the onAcceleratorsUpdated() to update the
+    // dialog when accelerator update is in progress.
+    // TODO(longbowei): Revisit this and consider refactoring on how we manage
+    // updates within the app.
+    'accelerator-update-in-progress': CustomEvent<void>;
   }
 }
 
@@ -98,6 +107,11 @@ export class ShortcutCustomizationAppElement extends
         type: Boolean,
         value: false,
       },
+
+      isCustomizationAllowedByPolicy: {
+        type: Boolean,
+        value: true,
+      },
     };
   }
 
@@ -108,6 +122,8 @@ export class ShortcutCustomizationAppElement extends
   protected dialogSource: AcceleratorSource;
   protected showEditDialog: boolean;
   protected keyboardSettingsLink: string;
+  protected isCustomizationAllowedByPolicy: boolean;
+  protected acceleratorUpdateInProgress: boolean = false;
   private shortcutProvider: ShortcutProviderInterface = getShortcutProvider();
   private acceleratorlookupManager: AcceleratorLookupManager =
       AcceleratorLookupManager.getInstance();
@@ -134,12 +150,19 @@ export class ShortcutCustomizationAppElement extends
     this.policyUpdatedReceiver = new PolicyUpdatedObserverReceiver(this);
     this.shortcutProvider.addPolicyObserver(
         this.policyUpdatedReceiver.$.bindNewPipeAndPassRemote());
+    this.shortcutProvider.isCustomizationAllowedByPolicy().then(
+        ({isCustomizationAllowedByPolicy}) => {
+          this.isCustomizationAllowedByPolicy = isCustomizationAllowedByPolicy;
+        });
 
     this.fetchAccelerators();
     this.addEventListener('show-edit-dialog', this.showDialog);
     this.addEventListener('edit-dialog-closed', this.onDialogClosed);
     this.addEventListener(
+        'accelerator-update-in-progress', this.acceleratorUpdating);
+    this.addEventListener(
         'request-update-accelerator', this.onRequestUpdateAccelerators);
+    this.addEventListener('scroll-to-top', this.onScollToTop);
 
     this.keyboardSettingsLink =
         loadTimeData.getBoolean('isInputDeviceSettingsSplitEnabled') ?
@@ -157,6 +180,7 @@ export class ShortcutCustomizationAppElement extends
     this.removeEventListener('edit-dialog-closed', this.onDialogClosed);
     this.removeEventListener(
         'request-update-accelerator', this.onRequestUpdateAccelerators);
+    this.removeEventListener('scroll-to-top', this.onScollToTop);
 
     Router.getInstance().removeObserver(this);
   }
@@ -201,9 +225,14 @@ export class ShortcutCustomizationAppElement extends
     this.acceleratorlookupManager.setAcceleratorLookup(config);
     // Update subsections.
     this.$.navigationPanel.notifyEvent('updateSubsections');
-    // Update dialog accelerators.
-    if (this.acceleratorlookupManager.isStandardAcceleratorById(
-            getAcceleratorId(this.dialogSource, this.dialogAction))) {
+
+    // Check if an accelerator update is currently in progress and update
+    // dialog. This ensures the dialog isn't updated before receiving the
+    // AcceleratorConfigResult. Note: The dialog will get updated in
+    // onRequestUpdateAccelerators() when the accelerator is modified. The
+    // onAcceleratorsUpdated() handles dialog update for other types of changes
+    // like input, keyboard, and pref change.
+    if (!this.acceleratorUpdateInProgress && this.showEditDialog) {
       this.updateDialogAccelerators(this.dialogSource, this.dialogAction);
     }
 
@@ -247,6 +276,15 @@ export class ShortcutCustomizationAppElement extends
     this.dialogAccelerators = [];
   }
 
+  private onScollToTop(): void {
+    strictQuery('#topNavigationBody', this.shadowRoot, HTMLDivElement)
+        .scrollIntoView();
+  }
+
+  private acceleratorUpdating(): void {
+    this.acceleratorUpdateInProgress = true;
+  }
+
   onRouteChanged(url: URL): void {
     const action = url.searchParams.get('action');
     const category = url.searchParams.get('category');
@@ -266,10 +304,11 @@ export class ShortcutCustomizationAppElement extends
     // Update subsections.
     this.$.navigationPanel.notifyEvent('updateSubsections');
     // Update dialog accelerators.
-    if (this.acceleratorlookupManager.isStandardAcceleratorById(
-            getAcceleratorId(e.detail.source, e.detail.action))) {
+    if (this.showEditDialog) {
       this.updateDialogAccelerators(e.detail.source, e.detail.action);
     }
+    // Set acceleratorUpdateInProgress back to false.
+    this.acceleratorUpdateInProgress = false;
   }
 
   protected onRestoreAllDefaultClicked(): void {
@@ -307,6 +346,11 @@ export class ShortcutCustomizationAppElement extends
             source, action);
     this.shadowRoot!.querySelector<AcceleratorEditDialogElement>('#editDialog')!
         .updateDialogAccelerators(updatedAccels as AcceleratorInfo[]);
+  }
+
+  setAcceleratorUpdateInProgressForTesting(acceleratorUpdateInProgress:
+                                               boolean): void {
+    this.acceleratorUpdateInProgress = acceleratorUpdateInProgress;
   }
 
   static get template(): HTMLTemplateElement {

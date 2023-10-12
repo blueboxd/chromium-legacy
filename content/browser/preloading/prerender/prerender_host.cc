@@ -335,6 +335,11 @@ bool PrerenderHost::StartPrerendering() {
   if (!created_navigation_handle)
     return false;
 
+  if (attributes_.prerender_navigation_handle_callback) {
+    attributes_.prerender_navigation_handle_callback.value().Run(
+        *created_navigation_handle);
+  }
+
   // Even when LoadURLWithParams() returns a valid navigation handle, navigation
   // can fail during navigation start, for example, due to prerendering a
   // non-supported URL scheme that is filtered out in
@@ -1070,7 +1075,6 @@ void PrerenderHost::SetFailureReason(
     case PrerenderFinalStatus::kMemoryPressureOnTrigger:
     case PrerenderFinalStatus::kMemoryPressureAfterTriggered:
     case PrerenderFinalStatus::kPrerenderingDisabledByDevTools:
-    case PrerenderFinalStatus::kResourceLoadBlockedByClient:
     case PrerenderFinalStatus::kActivatedWithAuxiliaryBrowsingContexts:
     case PrerenderFinalStatus::kMaxNumOfRunningEagerPrerendersExceeded:
     case PrerenderFinalStatus::kMaxNumOfRunningNonEagerPrerendersExceeded:

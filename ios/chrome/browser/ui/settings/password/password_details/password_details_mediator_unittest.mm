@@ -12,13 +12,13 @@
 #import "components/password_manager/core/browser/test_password_store.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
-#import "ios/chrome/browser/passwords/ios_chrome_account_password_store_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_affiliation_service_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_affiliation_service_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator+private.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -131,14 +131,11 @@ class PasswordDetailsMediatorTest : public PlatformTest {
         stringWithUTF8String:affiliated_group().GetDisplayName().c_str()];
 
     mediator_ = [[PasswordDetailsMediator alloc]
-           initWithPasswords:GetAffiliatedGroupCredentials()
-                 displayName:display_name()
-        passwordCheckManager:password_check_manager()
-                 prefService:browser_state_->GetPrefs()
-                 syncService:SyncServiceFactory::GetForBrowserState(
-                                 browser_state_.get())
-                     context:DetailsContext::kPasswordSettings
-                    delegate:nil];
+        initWithPasswords:GetAffiliatedGroupCredentials()
+              displayName:display_name()
+             browserState:browser_state_.get()
+                  context:DetailsContext::kPasswordSettings
+                 delegate:nil];
     mediator_.consumer = consumer_;
   }
 

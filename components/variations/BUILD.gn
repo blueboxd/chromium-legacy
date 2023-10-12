@@ -82,6 +82,9 @@ component("variations") {
     "variations_murmur_hash.h",
     "variations_request_scheduler.cc",
     "variations_request_scheduler.h",
+    "variations_safe_seed_store.h",
+    "variations_safe_seed_store_local_state.cc",
+    "variations_safe_seed_store_local_state.h",
     "variations_seed_processor.cc",
     "variations_seed_processor.h",
     "variations_seed_simulator.cc",
@@ -140,6 +143,13 @@ component("variations") {
 
   if (is_android) {
     deps += [ "//components/variations/android:variations_jni" ]
+  }
+
+  if (is_chromeos_ash) {
+    deps += [
+      "//chromeos/ash/components/dbus/featured",
+      "//chromeos/ash/components/dbus/featured:proto",
+    ]
   }
 }
 
@@ -257,6 +267,13 @@ source_set("unit_tests") {
     "//third_party/zlib/google:compression_utils",
     "//url",
   ]
+
+  if (is_chromeos_ash) {
+    deps += [
+      "//chromeos/ash/components/dbus/featured",
+      "//chromeos/ash/components/dbus/featured:proto",
+    ]
+  }
 }
 
 # Convenience testing target

@@ -10,13 +10,15 @@
 #import "components/sync_sessions/session_sync_service.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/ntp/home/features.h"
+#import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/sync/session_sync_service_factory.h"
-#import "ios/chrome/browser/synced_sessions/distant_session.h"
-#import "ios/chrome/browser/synced_sessions/synced_sessions.h"
+#import "ios/chrome/browser/sync/model/session_sync_service_factory.h"
+#import "ios/chrome/browser/synced_sessions/model/distant_session.h"
+#import "ios/chrome/browser/synced_sessions/model/synced_sessions.h"
 #import "ios/chrome/browser/tabs/tab_pickup/features.h"
 #import "ios/chrome/browser/tabs/tab_pickup/tab_pickup_infobar_delegate.h"
 #import "ios/web/public/web_state.h"
@@ -123,6 +125,13 @@ void TabPickupBrowserAgent::ForeignSessionsChanged() {
   }
 
   if (!active_web_state_ || infobar_in_progress_ || infobar_displayed) {
+    return;
+  }
+
+  // Don't present a tab pickup banner on the NTP if the tab resumption feature
+  // is enabled.
+  if (IsTabResumptionEnabled() &&
+      IsURLNewTabPage(active_web_state_->GetVisibleURL())) {
     return;
   }
 

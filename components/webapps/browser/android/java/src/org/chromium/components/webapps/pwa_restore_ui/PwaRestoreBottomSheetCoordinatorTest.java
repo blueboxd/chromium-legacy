@@ -13,7 +13,6 @@ import android.app.Activity;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.core.content.ContextCompat;
 import androidx.test.filters.MediumTest;
 
 import org.junit.After;
@@ -61,21 +60,9 @@ public class PwaRestoreBottomSheetCoordinatorTest {
     public void testViewInitialization() {
         PwaRestoreBottomSheetCoordinator coordinator = new PwaRestoreBottomSheetCoordinator(
                 mActivity, mBottomSheetControllerMock, /* backArrowId= */ 0);
-        PwaRestoreBottomSheetCoordinator coordinatorDarkMode = new PwaRestoreBottomSheetCoordinator(
-                mActivity, mBottomSheetControllerMock, /* backArrowId= */ 0);
-
-        ContextCompat.getDrawable(mActivity, R.drawable.pwa_restore_icon_dark);
 
         View bottomSheetView = coordinator.getBottomSheetToolbarViewForTesting();
-        View bottomSheetViewDarkMode = coordinatorDarkMode.getBottomSheetToolbarViewForTesting();
         {
-            Assert.assertFalse(bottomSheetView.findViewById(R.id.icon)
-                                       .getBackground()
-                                       .getConstantState()
-                                       .equals(bottomSheetViewDarkMode.findViewById(R.id.icon)
-                                                       .getBackground()
-                                                       .getConstantState()));
-
             TextView title = bottomSheetView.findViewById(R.id.title);
             String expected = "Restore your web apps";
             Assert.assertEquals(expected, title.getText());
@@ -100,28 +87,15 @@ public class PwaRestoreBottomSheetCoordinatorTest {
                     + "your Chrome history.";
             Assert.assertEquals(expected, description.getText());
 
-            View button = contentSheetView.findViewById(R.id.restore_button);
-            Assert.assertTrue(button.isEnabled());
+            View pwaList = contentSheetView.findViewById(R.id.pwa_list);
+            Assert.assertTrue(pwaList.getVisibility() == View.VISIBLE);
+
+            View deselectButton = contentSheetView.findViewById(R.id.deselect_button);
+            Assert.assertTrue(deselectButton.isEnabled());
+
+            View restoreButton = contentSheetView.findViewById(R.id.restore_button);
+            Assert.assertTrue(restoreButton.isEnabled());
         }
-    }
-
-    @Test
-    @MediumTest
-    public void testDarkModeIcon() {
-        PwaRestoreBottomSheetCoordinator coordinatorLightMode =
-                new PwaRestoreBottomSheetCoordinator(
-                        mActivity, mBottomSheetControllerMock, /* backArrowId= */ 0);
-        ShadowColorUtils.sInNightMode = true;
-        PwaRestoreBottomSheetCoordinator coordinatorDarkMode = new PwaRestoreBottomSheetCoordinator(
-                mActivity, mBottomSheetControllerMock, /* backArrowId= */ 0);
-
-        View sheetLightMode = coordinatorLightMode.getBottomSheetToolbarViewForTesting();
-        View sheetDarkMode = coordinatorDarkMode.getBottomSheetToolbarViewForTesting();
-
-        Assert.assertEquals(
-                R.drawable.pwa_restore_icon_light, sheetLightMode.findViewById(R.id.icon).getTag());
-        Assert.assertEquals(
-                R.drawable.pwa_restore_icon_dark, sheetDarkMode.findViewById(R.id.icon).getTag());
     }
 
     @Test

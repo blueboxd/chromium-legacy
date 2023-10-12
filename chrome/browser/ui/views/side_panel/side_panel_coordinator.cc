@@ -38,6 +38,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/window_open_disposition.h"
@@ -63,9 +65,7 @@ constexpr int kSidePanelContentContainerViewId = 42;
 constexpr int kSidePanelContentWrapperViewId = 43;
 
 SidePanelEntry::Id GetDefaultEntry() {
-  return base::FeatureList::IsEnabled(features::kPowerBookmarksSidePanel)
-             ? SidePanelEntry::Id::kBookmarks
-             : SidePanelEntry::Id::kReadingList;
+  return SidePanelEntry::Id::kBookmarks;
 }
 
 void ConfigureControlButton(views::ImageButton* button) {
@@ -171,6 +171,7 @@ using PopulateSidePanelCallback = base::OnceCallback<void(
 // doesn't exist, the content is swapped immediately.
 class SidePanelContentSwappingContainer : public views::View {
  public:
+  METADATA_HEADER(SidePanelContentSwappingContainer);
   explicit SidePanelContentSwappingContainer(bool show_immediately_for_testing)
       : show_immediately_for_testing_(show_immediately_for_testing) {
     SetUseDefaultFillLayout(true);
@@ -238,6 +239,9 @@ class SidePanelContentSwappingContainer : public views::View {
   raw_ptr<SidePanelEntry> loading_entry_ = nullptr;
   PopulateSidePanelCallback loaded_callback_;
 };
+
+BEGIN_METADATA(SidePanelContentSwappingContainer, views::View)
+END_METADATA
 
 }  // namespace
 
@@ -458,6 +462,19 @@ void SidePanelCoordinator::Show(
 
   if (!entry) {
     return;
+  }
+
+  // TODO(b/301638334): Remove this if no longer needed after CSC launch.
+  if (entry->key().id() == SidePanelEntry::Id::kSearchCompanion ||
+      entry->key().id() == SidePanelEntry::Id::kLens) {
+    if (!combobox_model_->HasKey(entry->key())) {
+      combobox_model_->AddItem(entry);
+    }
+    auto remove_key =
+        entry->key().id() == SidePanelEntry::Id::kSearchCompanion
+            ? SidePanelEntry::Key(SidePanelEntry::Id::kLens)
+            : SidePanelEntry::Key(SidePanelEntry::Id::kSearchCompanion);
+    combobox_model_->RemoveItem(remove_key);
   }
 
   if (GetContentContainerView() == nullptr) {
@@ -914,7 +931,13 @@ SidePanelEntry* SidePanelCoordinator::GetNewActiveEntryOnTabChanged() {
 void SidePanelCoordinator::OnEntryRegistered(SidePanelRegistry* registry,
                                              SidePanelEntry* entry) {
   if (combobox_model_) {
-    combobox_model_->AddItem(entry);
+    // TODO(b/301638334): Remove this if no longer needed after CSC launch.
+    // Only add companion entries if Lens is not in the combobox model.
+    if (!(entry->key().id() == SidePanelEntry::Id::kSearchCompanion &&
+          combobox_model_->HasKey(
+              SidePanelEntry::Key(SidePanelEntry::Id::kLens)))) {
+      combobox_model_->AddItem(entry);
+    }
     if (GetContentContainerView()) {
       SetSelectedEntryInCombobox(GetLastActiveEntryKey().value_or(
           SidePanelEntry::Key(GetDefaultEntry())));

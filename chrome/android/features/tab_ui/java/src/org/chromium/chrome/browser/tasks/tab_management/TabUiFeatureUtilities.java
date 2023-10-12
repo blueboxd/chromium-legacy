@@ -50,6 +50,10 @@ public class TabUiFeatureUtilities {
     public static final MutableFlagWithSafeDefault sThumbnailPlaceholder =
             new MutableFlagWithSafeDefault(ChromeFeatureList.THUMBNAIL_PLACEHOLDER, false);
 
+    public static final MutableFlagWithSafeDefault sAdvancedPeripheralsSupportTabStrip =
+            new MutableFlagWithSafeDefault(
+                    ChromeFeatureList.ADVANCED_PERIPHERALS_SUPPORT_TAB_STRIP, false);
+
     // Cached and fixed values.
     private static boolean sTabSelectionEditorLongPressEntryEnabled;
     private static Boolean sIsTabToGtsAnimationEnabled;
@@ -135,8 +139,14 @@ public class TabUiFeatureUtilities {
     public static boolean isTabDragEnabled() {
         // Both flags should not be enabled together.
         assert !(ChromeFeatureList.sTabLinkDragDropAndroid.isEnabled()
-                && ChromeFeatureList.sTabDragDropAsWindowAndroid.isEnabled());
-        return ChromeFeatureList.sTabDragDropAsWindowAndroid.isEnabled()
-                || ChromeFeatureList.sTabLinkDragDropAndroid.isEnabled();
+                && isTabDragAsWindowEnabled());
+        return isTabDragAsWindowEnabled() || ChromeFeatureList.sTabLinkDragDropAndroid.isEnabled();
+    }
+
+    /**
+     * @return whether tab drag as window is enabled.
+     */
+    public static boolean isTabDragAsWindowEnabled() {
+        return ChromeFeatureList.sTabDragDropAsWindowAndroid.isEnabled();
     }
 }

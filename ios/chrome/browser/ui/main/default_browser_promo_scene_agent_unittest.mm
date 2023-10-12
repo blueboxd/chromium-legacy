@@ -11,8 +11,8 @@
 #import "components/sync_preferences/testing_pref_service_syncable.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/fake_startup_information.h"
-#import "ios/chrome/browser/default_browser/utils.h"
-#import "ios/chrome/browser/default_browser/utils_test_support.h"
+#import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/default_browser/model/utils_test_support.h"
 #import "ios/chrome/browser/promos_manager/constants.h"
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/promos_manager/mock_promos_manager.h"
@@ -265,6 +265,8 @@ TEST_F(DefaultBrowserPromoSceneAgentTest, TestPromoRegistrationPostRestore) {
 // Tests that the DefaultPromoTypeMadeForIOS tailored promo is shown when it was
 // detected that the user is likely interested in the promo.
 TEST_F(DefaultBrowserPromoSceneAgentTest, TestDefaultPromoTypeMadeForIOSShown) {
+  scoped_feature_list_.InitAndDisableFeature(
+      kDefaultBrowserRefactoringPromoManager);
   EXPECT_CALL(
       *promos_manager_.get(),
       RegisterPromoForSingleDisplay(promos_manager::Promo::DefaultBrowser))
@@ -286,6 +288,8 @@ TEST_F(DefaultBrowserPromoSceneAgentTest, TestDefaultPromoTypeMadeForIOSShown) {
 // Tests that the DefaultPromoTypeStaySafe tailored promo is shown when it was
 // detected that the user is likely interested in the promo.
 TEST_F(DefaultBrowserPromoSceneAgentTest, TestDefaultPromoTypeStaySafeShown) {
+  scoped_feature_list_.InitAndDisableFeature(
+      kDefaultBrowserRefactoringPromoManager);
   EXPECT_CALL(
       *promos_manager_.get(),
       RegisterPromoForSingleDisplay(promos_manager::Promo::DefaultBrowser))
@@ -307,6 +311,8 @@ TEST_F(DefaultBrowserPromoSceneAgentTest, TestDefaultPromoTypeStaySafeShown) {
 // Tests that the DefaultPromoTypeAllTabs tailored promo is shown when it was
 // detected that the user is likely interested in the promo.
 TEST_F(DefaultBrowserPromoSceneAgentTest, TestDefaultPromoTypeAllTabsShown) {
+  scoped_feature_list_.InitAndDisableFeature(
+      kDefaultBrowserRefactoringPromoManager);
   EXPECT_CALL(
       *promos_manager_.get(),
       RegisterPromoForSingleDisplay(promos_manager::Promo::DefaultBrowser))
@@ -328,6 +334,8 @@ TEST_F(DefaultBrowserPromoSceneAgentTest, TestDefaultPromoTypeAllTabsShown) {
 // Tests that the DefaultPromoTypeGeneral tailored promo is shown when it was
 // detected that the user is likely interested in the promo.
 TEST_F(DefaultBrowserPromoSceneAgentTest, TestDefaultPromoTypeGeneralShown) {
+  scoped_feature_list_.InitAndDisableFeature(
+      kDefaultBrowserRefactoringPromoManager);
   EXPECT_CALL(
       *promos_manager_.get(),
       RegisterPromoForSingleDisplay(promos_manager::Promo::DefaultBrowser))

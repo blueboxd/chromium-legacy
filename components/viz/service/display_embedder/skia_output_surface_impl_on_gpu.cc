@@ -19,6 +19,7 @@
 #include "base/task/bind_post_task.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/blit_request.h"
@@ -953,7 +954,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputRGBA(
                     is_downscale_or_identity_in_both_dimensions,
                     scoped_write->surface());
 
-      bool should_submit = !end_semaphores.empty();
+      bool should_submit_gr_context = !end_semaphores.empty();
 
       if (!FlushSurface(scoped_write->surface(), end_semaphores,
                         scoped_write.get())) {
@@ -962,8 +963,13 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputRGBA(
         return;
       }
 
-      if (should_submit && !gr_context()->submit()) {
+      if (should_submit_gr_context && !gr_context()->submit()) {
         DLOG(ERROR) << "CopyOutputRGBA gr_context->submit() failed";
+        return;
+      }
+
+      if (graphite_context() && !graphite_context()->submit()) {
+        DLOG(ERROR) << "CopyOutputRGBA graphite_context->submit() failed";
         return;
       }
 
@@ -2388,6 +2394,19 @@ void SkiaOutputSurfaceImplOnGpu::PostSubmit(
     output_device_->SchedulePrimaryPlane(output_surface_plane_);
 
     DCHECK(!frame->sub_buffer_rect || capabilities().supports_post_sub_buffer);
+
+    TRACE_EVENT(
+        "viz,benchmark,graphics.pipeline", "Graphics.Pipeline",
+        perfetto::Flow::Global(frame->data.swap_trace_id),
+        [swap_trace_id =
+             frame->data.swap_trace_id](perfetto::EventContext ctx) {
+          auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
+          auto* data = event->set_chrome_graphics_pipeline();
+          data->set_step(perfetto::protos::pbzero::ChromeGraphicsPipeline::
+                             StepName::STEP_BUFFER_SWAP_POST_SUBMIT);
+          data->set_display_trace_id(swap_trace_id);
+        });
+
     output_device_->Present(frame->sub_buffer_rect, buffer_presented_callback_,
                             std::move(*frame));
   }

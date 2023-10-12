@@ -10,6 +10,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/download/download_bubble_row_list_view_info.h"
 #include "chrome/browser/ui/download/download_display.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
@@ -71,7 +72,8 @@ class DownloadBubbleNavigationHandler {
 class DownloadToolbarButtonView : public ToolbarButton,
                                   public DownloadDisplay,
                                   public DownloadBubbleNavigationHandler,
-                                  public BrowserListObserver {
+                                  public BrowserListObserver,
+                                  public DownloadBubbleRowListViewInfoObserver {
  public:
   METADATA_HEADER(DownloadToolbarButtonView);
 
@@ -91,7 +93,6 @@ class DownloadToolbarButtonView : public ToolbarButton,
   void Enable() override;
   void Disable() override;
   void UpdateDownloadIcon(const IconUpdateInfo& updates) override;
-  void UpdateIconProgress(const ProgressInfo& info) override;
   void ShowDetails() override;
   void HideDetails() override;
   bool IsShowingDetails() const override;
@@ -188,7 +189,14 @@ class DownloadToolbarButtonView : public ToolbarButton,
 
   bool ShouldShowBubbleAsInactive() const;
 
+  // Whether to show the progress ring as a continuously spinning ring, during
+  // deep scanning or if the progress is indeterminate.
+  bool ShouldShowScanningAnimation() const;
+
   SkColor GetProgressColor(bool is_disabled, bool is_active) const;
+
+  // DownloadBubbleRowListViewInfoObserver implementation:
+  void OnAnyRowRemoved() override;
 
   raw_ptr<Browser> browser_;
   bool is_primary_partial_view_ = false;
@@ -206,6 +214,9 @@ class DownloadToolbarButtonView : public ToolbarButton,
 
   // Parameters determining how the progress ring should be drawn.
   ProgressInfo progress_info_;
+
+  // Whether we have a new progress_info_ and need to redraw the button.
+  bool redraw_progress_soon_ = false;
 
   // Marks whether there is a pending download started animation. This is needed
   // because the animation should only be triggered after the view has been

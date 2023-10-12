@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -152,7 +153,7 @@ class PPB_Graphics3D_Impl::ColorBuffer {
   enum class State { kDetached, kAttached, kInCompositor };
 
   State state = State::kDetached;
-  gpu::SharedImageInterface* const sii_;
+  const raw_ptr<gpu::SharedImageInterface, ExperimentalRenderer> sii_;
   const gfx::Size size_;
   gpu::Mailbox mailbox_;
   // SyncToken to wait on before re-using this color buffer.
@@ -188,6 +189,7 @@ PP_Resource PPB_Graphics3D_Impl::CreateRaw(
     PP_Resource share_context,
     const ppapi::Graphics3DContextAttribs& context_attribs,
     gpu::Capabilities* capabilities,
+    gpu::GLCapabilities* gl_capabilities,
     const base::UnsafeSharedMemoryRegion** shared_state_region,
     gpu::CommandBufferId* command_buffer_id) {
   PPB_Graphics3D_API* share_api = nullptr;
@@ -200,7 +202,8 @@ PP_Resource PPB_Graphics3D_Impl::CreateRaw(
   scoped_refptr<PPB_Graphics3D_Impl> graphics_3d(
       new PPB_Graphics3D_Impl(instance));
   if (!graphics_3d->InitRaw(share_api, context_attribs, capabilities,
-                            shared_state_region, command_buffer_id)) {
+                            gl_capabilities, shared_state_region,
+                            command_buffer_id)) {
     return 0;
   }
   return graphics_3d->GetReference();
@@ -290,6 +293,7 @@ bool PPB_Graphics3D_Impl::InitRaw(
     PPB_Graphics3D_API* share_context,
     const ppapi::Graphics3DContextAttribs& requested_attribs,
     gpu::Capabilities* capabilities,
+    gpu::GLCapabilities* gl_capabilities,
     const base::UnsafeSharedMemoryRegion** shared_state_region,
     gpu::CommandBufferId* command_buffer_id) {
   PepperPluginInstanceImpl* plugin_instance =
@@ -368,6 +372,9 @@ bool PPB_Graphics3D_Impl::InitRaw(
     *shared_state_region = &command_buffer_->GetSharedStateRegion();
   if (capabilities) {
     *capabilities = command_buffer_->GetCapabilities();
+  }
+  if (gl_capabilities) {
+    *gl_capabilities = command_buffer_->GetGLCapabilities();
   }
   if (command_buffer_id)
     *command_buffer_id = command_buffer_->GetCommandBufferID();

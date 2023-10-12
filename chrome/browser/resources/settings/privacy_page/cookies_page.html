@@ -15,20 +15,18 @@
       }
 
       #explanationText {
-        margin-top: 16px;
+        padding-top: 16px;
+        padding-bottom: var(--cr-section-vertical-padding);
       }
 
       #blockThirdPartyToggle {
-        padding: 0;
-      }
-
-      #trackingProtectionControls {
-        padding: var(--cr-section-vertical-padding) var(--cr-section-padding);
+        padding: 0 var(--cr-section-padding);
       }
 
       #advancedHeader {
-        padding-top: 24px;
+        padding-top: 16px;
         padding-bottom: 8px;
+        padding-left: var(--cr-section-padding);
       }
 
       .radio-group-sub-heading {
@@ -38,12 +36,12 @@
       .bullet-row {
         align-items: center;
         display: flex;
-        padding: var(--cr-section-vertical-padding) 0;
+        padding: var(--cr-section-vertical-padding) var(--cr-section-padding);
       }
 
       .bullet-row > div {
         padding-left: var(--cr-section-padding);
-        padding-right: 48px;
+        padding-right: 40px;
       }
 
       .bullet-line {
@@ -103,7 +101,7 @@
       <div id="explanationText" class="secondary">
         $i18n{trackingProtectionPageDescription}
       </div>
-      <div id="trackingProtectionControls">
+      <div>
         <div class="bullet-row">
           <iron-icon icon="settings:visibility-off"></iron-icon>
           <div>
@@ -131,6 +129,9 @@
             $i18n{trackingProtectionThirdPartyCookiesToggleSubLabel}"
           learn-more-url="
             $i18n{trackingProtectionThirdPartyCookiesLearnMoreUrl}"
+          learn-more-aria-label="
+            $i18n{trackingProtectionThirdPartyCookiesLearnMoreAriaLabel}"
+          on-settings-boolean-control-change="onBlockAll3pcToggleChanged_"
           icon="settings:visibility-off">
       </settings-toggle-button>
       <settings-do-not-track-toggle id="doNotTrack" prefs="{{prefs}}">
@@ -377,12 +378,12 @@
     </template>
     <template is="dom-if" if="[[is3pcdRedesignEnabled_]]">
       <div id="exceptionHeader3pcd">
-        <h2>$i18n{siteDataPageCustomized3pcdHeading}</h2>
+        <h2>$i18n{trackingProtectionSitesAllowedCookiesTitle}</h2>
       </div>
       <site-list id="allowExceptionsList"
           category="[[cookiesContentSettingType_]]"
           category-subtype="[[contentSetting_.ALLOW]]"
-          category-header="$i18n{siteSettings3pcdBehaviorsDescription}"
+          category-header="$i18n{trackingProtectionSitesAllowedCookiesDescription}"
           read-only-list="[[exceptionListsReadOnly_]]"
           search-filter="[[searchTerm]]"
           cookies-exception-type="third-party">

@@ -10,11 +10,11 @@
 #import "base/notreached.h"
 #import "build/branding_buildflags.h"
 #import "components/signin/public/base/signin_metrics.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -599,6 +599,7 @@ constexpr CGFloat kCompactStyleTextSize = 15.0;
       // Lays out content vertically for standard view.
       self.buttonVerticalStackView.spacing =
           kStandardPromoStyle.kButtonStackViewSubViewSpacing;
+      self.buttonVerticalStackView.alignment = UIStackViewAlignmentFill;
       self.mainPromoStackView.spacing =
           kStandardPromoStyle.kMainPromoSubViewSpacing;
       self.contentStackView.axis = UILayoutConstraintAxisVertical;
@@ -703,6 +704,7 @@ constexpr CGFloat kCompactStyleTextSize = 15.0;
       break;
     }
     case SigninPromoViewStyleCompactVertical: {
+      self.buttonVerticalStackView.alignment = UIStackViewAlignmentFill;
       self.contentStackView.axis = UILayoutConstraintAxisVertical;
       self.contentStackView.spacing =
           kCompactVerticalStyle.kContentStackViewSubViewSpacing;
@@ -762,6 +764,7 @@ constexpr CGFloat kCompactStyleTextSize = 15.0;
       break;
     }
     case SigninPromoViewStyleOnlyButton: {
+      self.buttonVerticalStackView.alignment = UIStackViewAlignmentCenter;
       self.textVerticalStackView.hidden = YES;
       self.secondaryButton.hidden = YES;
       self.imageView.hidden = YES;
@@ -775,23 +778,25 @@ constexpr CGFloat kCompactStyleTextSize = 15.0;
       self.primaryButton.clipsToBounds = YES;
 
       if (IsUIButtonConfigurationEnabled()) {
-        self.primaryButton.configuration.baseForegroundColor =
+        UIButtonConfiguration* buttonConfiguration =
+            self.primaryButton.configuration;
+        buttonConfiguration.baseForegroundColor =
             [UIColor colorNamed:kSolidButtonTextColor];
-        self.primaryButton.configuration.contentInsets =
-            NSDirectionalEdgeInsetsMake(
-                kStandardPromoStyle.kButtonTitleVerticalContentInset,
-                kStandardPromoStyle.kButtonTitleHorizontalContentInset,
-                kStandardPromoStyle.kButtonTitleVerticalContentInset,
-                kStandardPromoStyle.kButtonTitleHorizontalContentInset);
+        buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
+            kStandardPromoStyle.kButtonTitleVerticalContentInset,
+            kHorizontalPadding,
+            kStandardPromoStyle.kButtonTitleVerticalContentInset,
+            kHorizontalPadding);
+        self.primaryButton.configuration = buttonConfiguration;
       } else {
         [self.primaryButton
             setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
                  forState:UIControlStateNormal];
         UIEdgeInsets contentEdgeInsets = UIEdgeInsetsMake(
             kStandardPromoStyle.kButtonTitleVerticalContentInset,
-            kStandardPromoStyle.kButtonTitleHorizontalContentInset,
+            kHorizontalPadding,
             kStandardPromoStyle.kButtonTitleVerticalContentInset,
-            kStandardPromoStyle.kButtonTitleHorizontalContentInset);
+            kHorizontalPadding);
         SetContentEdgeInsets(self.primaryButton, contentEdgeInsets);
       }
 

@@ -98,12 +98,10 @@ DOMViewTransition* ViewTransitionSupplement::startViewTransition(
       callback->SetParentTask(tracker->RunningTask(script_state));
     }
   }
-  return supplement->StartTransition(script_state, document, callback,
-                                     exception_state);
+  return supplement->StartTransition(document, callback, exception_state);
 }
 
 DOMViewTransition* ViewTransitionSupplement::StartTransition(
-    ScriptState* script_state,
     Document& document,
     V8ViewTransitionCallback* callback,
     ExceptionState& exception_state) {
@@ -124,8 +122,7 @@ DOMViewTransition* ViewTransitionSupplement::StartTransition(
     return nullptr;
   }
 
-  transition_ =
-      ViewTransition::CreateFromScript(&document, script_state, callback, this);
+  transition_ = ViewTransition::CreateFromScript(&document, callback, this);
 
   // If there is a transition in a parent frame, give that precedence over a
   // transition in a child frame.
@@ -220,9 +217,11 @@ void ViewTransitionSupplement::StartTransition(
 
 void ViewTransitionSupplement::OnTransitionFinished(
     ViewTransition* transition) {
-  // TODO(vmpstr): Do we need to explicitly reset transition state?
-  if (transition == transition_)
-    transition_ = nullptr;
+  CHECK(transition);
+  CHECK_EQ(transition, transition_);
+  // Clear the transition so it can be garbage collected if needed (and to
+  // prevent callers of GetTransition thinking there's an ongoing transition).
+  transition_ = nullptr;
 }
 
 ViewTransition* ViewTransitionSupplement::GetTransition() {

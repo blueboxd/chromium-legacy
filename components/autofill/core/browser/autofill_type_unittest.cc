@@ -35,8 +35,8 @@ class AutofillTypeServerPredictionTest : public ::testing::Test {
 };
 
 TEST_F(AutofillTypeServerPredictionTest, PredictionFromAutofillField) {
-  AutofillField field = AutofillField(
-      test::CreateTestFormField("label", "name", "value", /*type=*/"text"));
+  AutofillField field = AutofillField(test::CreateTestFormField(
+      "label", "name", "value", /*type=*/FormControlType::kInputText));
   field.set_server_predictions(
       {test::CreateFieldPrediction(ServerFieldType::EMAIL_ADDRESS),
        test::CreateFieldPrediction(ServerFieldType::USERNAME)});
@@ -112,7 +112,7 @@ class AutofillTypeTestForHtmlFieldTypes
     : public ::testing::TestWithParam<std::underlying_type_t<HtmlFieldType>> {
  public:
   HtmlFieldType html_field_type() const {
-    return static_cast<HtmlFieldType>(GetParam());
+    return ToSafeHtmlFieldType(GetParam(), HtmlFieldType::kUnrecognized);
   }
 };
 
@@ -123,11 +123,8 @@ INSTANTIATE_TEST_SUITE_P(
                    base::to_underlying(HtmlFieldType::kMaxValue)));
 
 TEST_P(AutofillTypeTestForHtmlFieldTypes, GroupsOfHtmlFieldTypes) {
-  // Some HtmlFieldTypes have no ServerFieldType representation.
-  if (html_field_type() == HtmlFieldType::kFullAddress ||
-      html_field_type() == HtmlFieldType::kOneTimeCode ||
-      html_field_type() == HtmlFieldType::kTransactionAmount ||
-      html_field_type() == HtmlFieldType::kTransactionCurrency) {
+  if (HtmlFieldTypeToBestCorrespondingServerFieldType(html_field_type()) ==
+      UNKNOWN_TYPE) {
     return;
   }
   AutofillType t(html_field_type());

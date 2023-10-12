@@ -462,6 +462,7 @@ void ChromePasswordManagerClient::ShowKeyboardReplacingSurface(
               driver->GetLastCommittedURL().DeprecatedGetOriginAsURL()))
           .GetCredentials(),
       passkeys, std::move(ttf_controller_autofill_delegate),
+      GetWebAuthnCredManDelegateForDriver(driver),
       base::AsWeakPtr(content_driver));
 }
 #endif
@@ -967,7 +968,7 @@ void ChromePasswordManagerClient::NavigateToManagePasswordsPage(
   password_manager_launcher::ShowPasswordSettings(web_contents(), referrer,
                                                   /*manage_passkeys=*/false);
 #else
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  Browser* browser = chrome::FindBrowserWithTab(web_contents());
   if (!browser) {
     browser = chrome::FindLastActive();
   }
@@ -1027,10 +1028,6 @@ version_info::Channel ChromePasswordManagerClient::GetChannel() const {
 void ChromePasswordManagerClient::RefreshPasswordManagerSettingsIfNeeded()
     const {
 #if BUILDFLAG(IS_ANDROID)
-  // Settings need to be requested for android clients enrolled into the unified
-  // password manager experiment.
-  if (!password_manager::features::UsesUnifiedPasswordManagerUi())
-    return;
   PasswordManagerSettingsServiceFactory::GetForProfile(profile_)
       ->RequestSettingsFromBackend();
 #endif
@@ -1344,8 +1341,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
           &password_feature_manager_,
           base::BindRepeating(
               [](content::WebContents* web_contents) {
-                Browser* browser =
-                    chrome::FindBrowserWithWebContents(web_contents);
+                Browser* browser = chrome::FindBrowserWithTab(web_contents);
                 return browser ? browser->signin_view_controller() : nullptr;
               },
               web_contents)),

@@ -1358,7 +1358,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.IPv4Interfaces" units="units"
-    expires_after="2023-11-01">
+    expires_after="2024-05-01">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1370,7 +1370,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.IPv6Interfaces" units="units"
-    expires_after="2023-11-01">
+    expires_after="2024-05-01">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1696,6 +1696,20 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram
+    name="WebRTC.PeerConnection.SslPeerSignatureAlgorithm{WebRTCMediaType}"
+    enum="SSLSignatureAlgorithm" expires_after="2024-10-01">
+  <owner>hta@google.com</owner>
+  <owner>phancke@microsoft.com</owner>
+  <owner>webrtc-dev@chromium.org</owner>
+  <summary>
+    Counters on the type of SSL peer signature algorithm encountered by WebRTC.
+    This is collected whenever the transport signals the OnCompleted event.
+    {WebRTCMediaType}
+  </summary>
+  <token key="WebRTCMediaType" variants="WebRTCMediaType"/>
+</histogram>
+
 <histogram name="WebRTC.PeerConnection.ThermalState" enum="ThermalState"
     expires_after="2024-03-17">
   <owner>eshr@google.com</owner>
@@ -1880,7 +1894,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Stun.Integrity.{StunPacketType}"
-    enum="WebRtcStunIntegrityOutcome" expires_after="2023-10-07">
+    enum="WebRtcStunIntegrityOutcome" expires_after="2024-04-07">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>

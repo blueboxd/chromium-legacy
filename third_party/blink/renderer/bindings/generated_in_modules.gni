@@ -6,7 +6,10 @@ import("//third_party/blink/renderer/config.gni")
 
 # Generated sources for production
 
-generated_async_iterator_sources_in_modules = []
+generated_async_iterator_sources_in_modules = [
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_async_iterator_file_system_directory_handle.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_async_iterator_file_system_directory_handle.h",
+]
 
 generated_callback_function_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_animate_callback.cc",
@@ -489,6 +492,8 @@ generated_dictionary_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_origin_3d_dict.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_pipeline_descriptor_base.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_pipeline_descriptor_base.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_error_init.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_error_init.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_pipeline_error_init.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_pipeline_error_init.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_pipeline_layout_descriptor.cc",
@@ -675,8 +680,6 @@ generated_dictionary_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_media_recorder_options.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_details.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_details.h",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_media_session_picture_in_picture_action_details.cc",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_media_session_picture_in_picture_action_details.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_media_session_seek_to_action_details.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_media_session_seek_to_action_details.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_media_settings_range.cc",
@@ -1194,8 +1197,6 @@ generated_enumeration_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_aac_bitstream_format.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_ad_signals.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_ad_signals.h",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_ad_auction_coordinator.cc",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_ad_auction_coordinator.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_alpha_option.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_alpha_option.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_ancestor_status.cc",
@@ -1400,6 +1401,8 @@ generated_enumeration_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_idb_transaction_mode.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options_context.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options_context.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options_mode.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options_mode.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_image_smoothing_quality.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_image_smoothing_quality.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_item_type.cc",
@@ -1983,8 +1986,6 @@ generated_interface_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_file_system_change_record.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_file_system_directory_handle.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_file_system_directory_handle.h",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_file_system_directory_iterator.cc",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_file_system_directory_iterator.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_file_system_file_handle.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_file_system_file_handle.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_file_system_handle.cc",
@@ -2067,6 +2068,8 @@ generated_interface_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_out_of_memory_error.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_pipeline_error.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_pipeline_error.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_error.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_error.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_pipeline_layout.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_pipeline_layout.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_gpu_query_set.cc",
@@ -2747,8 +2750,6 @@ generated_interface_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_webgl_vertex_array_object.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_webgl_vertex_array_object_oes.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_webgl_vertex_array_object_oes.h",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_webgl_video_texture.cc",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_webgl_video_texture.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_websocket.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_websocket.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_websocket_stream.cc",

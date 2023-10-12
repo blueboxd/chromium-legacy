@@ -189,8 +189,24 @@ function getEntryIcon(
       case VolumeManagerCommon.VolumeType.SMB:
         return constants.ICON_TYPES.SMB;
       case VolumeManagerCommon.VolumeType.PROVIDED:
-      case VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER:
-        return entry.volumeInfo.iconSet!;
+      // Fallthrough
+      case VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER: {
+        // Only return IconSet if there's valid background image generated.
+        const iconSet = entry.volumeInfo.iconSet;
+        if (iconSet) {
+          const backgroundImage =
+              util.iconSetToCSSBackgroundImageValue(entry.volumeInfo.iconSet);
+          if (backgroundImage !== 'none') {
+            return iconSet;
+          }
+        }
+        // If no background is generated from IconSet, set the icon to the
+        // generic one for certain volume type.
+        if (volumeType && VolumeManagerCommon.shouldProvideIcons(volumeType)) {
+          return constants.ICON_TYPES.GENERIC;
+        }
+        return '';
+      }
       case VolumeManagerCommon.VolumeType.MTP:
         return constants.ICON_TYPES.MTP;
       case VolumeManagerCommon.VolumeType.ARCHIVE:
@@ -500,9 +516,11 @@ export function volumeNestingEntries(
       // Also remove it from the children field.
       myFilesFileData.children = myFilesFileData.children.filter(
           childKey => childKey !== uiEntryPlaceholder.toURL());
-      // And remove it from the uiEntries if existed.
-      state.uiEntries = state.uiEntries.filter(
-          uiEntryKey => uiEntryKey !== uiEntryPlaceholder.toURL());
+      // Do not remove the placeholder ui entry from the store. Removing it from
+      // the MyFiles is sufficient to prevent it from showing in the directory
+      // tree. We keep it in the store (`state["uiEntries"]`) because when
+      // the corresponding volume unmounts, we need to use its existence to
+      // decide if we need to re-add the placeholder back to MyFiles.
     }
     appendChildIfNotExisted(myFilesEntry, newVolumeEntry);
     // Push the new entry to the children of FileData and sort them.

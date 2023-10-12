@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Yalnız 5 qısayol fərdiləşdirmək olar. Yeni qısayol əlavə etmək üçün birini silin.</translation>
 <translation id="1164939766849482256">"Sübhdən axşama" ekran qoruyucusu</translation>
 <translation id="1167755866710282443">Düymələri fərdiləşdirmək üçün menyunu açın. Hərəkət etdirmək üçün menyunu sürüşdürün.</translation>
+<translation id="1174073918202301297">Qısayol əlavə edildi</translation>
 <translation id="1175697296044146566">Bu <ph name="DEVICE_TYPE" /> <ph name="MANAGER" /> tərəfindən idarə olunur.</translation>
 <translation id="1175951029573070619">Orta (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Silin</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">Hər gün divar kağızı şəklini dəyişdirin</translation>
 <translation id="1644574205037202324">Tarixçə</translation>
 <translation id="1651925268237749928">Paylaşılan albom seçmisiniz. Digər şəxslər foto əlavə edə və ya dəyişə bilər. Divar kağızında bu albomda olmayan fotolardan istifadə edilmiş ola bilər.</translation>
+<translation id="1661865805917886535">Bəzi hesab və sistem məlumatları Google-a göndərilə bilər. Texniki problemləri həll etmək və xidmətləri təkmilləşdirmək üçün bu məlumatı Məxfilik Siyasətimizə (<ph name="PRIVACYPOLICYURL" />) və Xidmət Şərtlərinə (<ph name="TERMSOFSERVICEURL" />) əsasən istifadə edirik. Kontent dəyişikliyi sorğusu göndərmək üçün Hüquqi Kömək (<ph name="LEGALHELPPAGEURL" />) bölməsinə keçin.</translation>
 <translation id="1662989795263954667">Dayanıb - Mürəkkəb yoxdur</translation>
 <translation id="1664796644829245314">Önizləyin: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Daxili VPN</translation>
@@ -131,7 +133,6 @@
 <translation id="1871569928317311284">Qaranlıq temanı deaktiv edin</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Qaranlıq rejimi deaktiv edin</translation>
-<translation id="1881188606372070653">Hüquqi səbəbdən məzmun dəyişikliyini tələb etmək üçün <ph name="BEGIN_LINK1" />Hüquqi Yardım səhifəsinə<ph name="END_LINK1" /> keçin. Bəzi hesab və sistem məlumatları Google'a göndərilə bilər. Verdiyiniz məlumatı <ph name="BEGIN_LINK2" />Məxfilik Siyasəti<ph name="END_LINK2" /> və <ph name="BEGIN_LINK3" />Xidmət Şərtləri<ph name="END_LINK3" /> subyekti olan xidmətlərimizin daha da qabaqcıl edilməsi üçün istifadə ediləcək.</translation>
 <translation id="1885577615937958993">medianı cəld irəli ötürün</translation>
 <translation id="1887850431809612466">Avadanlıq versiyası</translation>
 <translation id="1897672602657312171">Axtarış düyməsi olmayan qısayol bəzi tətbiq qısayolları ilə ziddiyyətli ola bilər. Bu qısayoldan istifadəyə davam etmək üçün ona yenidən basın, yaxud axtarış düyməsindən istifadə edərək yeni qısayola basın.</translation>
@@ -212,6 +213,7 @@
 <translation id="2505327257735685095">Cari divar kağızı şəklini yeniləyin</translation>
 <translation id="2512979179176933762">pəncərələri göstərin</translation>
 <translation id="2513396635448525189">Giriş şəkli</translation>
+<translation id="2515109918609218604">Qısayol əlçatan deyil. Funksiya və axtarış düymələrindən istifadə etmədən yeni qısayola basın.</translation>
 <translation id="2517472476991765520">Skan edin</translation>
 <translation id="2521835766824839541">əvvəlki trek</translation>
 <translation id="2526590354069164005">Masaüstü</translation>
@@ -265,6 +267,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Cihaz qoşulub.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Səhifə silinsin?}=1{{PAGE_NUMBER} saylı səhifə silinsin?}other{{PAGE_NUMBER} saylı səhifə silinsin?}}</translation>
+<translation id="3146655726035122603"><ph name="PRODUCT_NAME" /> üçün eksklüziv</translation>
 <translation id="315116470104423982">Mobil data</translation>
 <translation id="3156846309055100599"><ph name="PAGE_NUMBER" /> saylı səhifə skanlanır...</translation>
 <translation id="315738237743207937">Avtorizasiya portalı aşkarlanıb</translation>
@@ -687,6 +690,7 @@
 <translation id="6318437367327684789">həmişə</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> cihazında proqramı güncəlləyin</translation>
 <translation id="6321407676395378991">Ekran qoruyucusunu aktiv edin</translation>
+<translation id="6324916366299863871">Qısayola düzəliş edin</translation>
 <translation id="6325525973963619867">Alınmadı</translation>
 <translation id="6331191339300272798">Avtomatik qaranlıq tema</translation>
 <translation id="6340526405444716530">Fərdiləşdirmə</translation>
@@ -826,6 +830,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Quraşdırılmış taçped</translation>
 <translation id="7397270852490618635">İşıqlı temanı deaktiv edin</translation>
+<translation id="7401543881546089382">Qısayolu silin</translation>
 <translation id="741244894080940828">çevirmə</translation>
 <translation id="7415801143053185905">Çox yüksək HTTP gecikməsi</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Administrator <ph name="APP_NAME_1" /> tətbiqini hər girişdə avtomatik başlamağa ayarlayıb.}=2{Administrator <ph name="APP_NAME_1" /> və <ph name="APP_NAME_2" /> tətbiqini hər girişdə avtomatik başlamağa ayarlayıb.}=3{Administrator <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> və <ph name="APP_NAME_3" /> tətbiqini hər girişdə avtomatik başlamağa ayarlayıb.}other{Administrator <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> və digər # tətbiqi hər girişdə avtomatik başlamağa ayarlayıb.}}</translation>
@@ -864,6 +869,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">işıqlı klaviatura</translation>
+<translation id="7730077286107534951">Bəzi hesab və sistem məlumatları Google-a göndərilə bilər. <ph name="BEGIN_LINK2" />Məxfilik Siyasətinə<ph name="END_LINK2" /> və <ph name="BEGIN_LINK3" />Xidmət Şərtlərinə<ph name="END_LINK3" /> əsasən texniki problemləri həll etmək və xidmətləri təkmilləşdirmək üçün bu məlumatdan istifadə edirik. Kontent dəyişikliyi tələb etmək üçün <ph name="BEGIN_LINK1" />Hüquqi Kömək<ph name="END_LINK1" /> bölməsinə keçin.</translation>
 <translation id="773153675489693198">Dövrə sayı</translation>
 <translation id="7747039790905080783">Öncədən paylaşılan açar</translation>
 <translation id="7752963721013053477">Sübhdən axşama - eksklüziv</translation>
@@ -900,6 +906,7 @@
 <translation id="7978412674231730200">Şəxsi açar</translation>
 <translation id="7994702968232966508">EAP üsulu</translation>
 <translation id="8004582292198964060">Brauzer</translation>
+<translation id="8017679124341497925">Qısayol redaktə edildi</translation>
 <translation id="802154636333426148">Endirmə alınmadı</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Avtomatik rəng rejimini aktiv edin</translation>

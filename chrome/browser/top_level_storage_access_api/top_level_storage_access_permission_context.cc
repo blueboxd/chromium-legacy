@@ -4,6 +4,7 @@
 
 #include "chrome/browser/top_level_storage_access_api/top_level_storage_access_permission_context.h"
 
+#include "base/barrier_closure.h"
 #include "base/check.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
@@ -32,8 +33,6 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 
 namespace {
-
-constexpr base::TimeDelta kGrantDuration = base::Hours(24);
 
 void RecordOutcomeSample(TopLevelStorageAccessRequestOutcome outcome) {
   base::UmaHistogramEnumeration("API.TopLevelStorageAccess.RequestOutcome",
@@ -236,7 +235,8 @@ void TopLevelStorageAccessPermissionContext::NotifyPermissionSetInternal(
           ->Build();
 
   content_settings::ContentSettingConstraints constraints;
-  constraints.set_lifetime(kGrantDuration);
+  constraints.set_lifetime(
+      blink::features::kStorageAccessAPIRelatedWebsiteSetsLifetime.Get());
   constraints.set_session_model(
       content_settings::SessionModel::NonRestorableUserSession);
 
@@ -264,12 +264,15 @@ void TopLevelStorageAccessPermissionContext::NotifyPermissionSetInternal(
   // partition has updated and ack'd the update. This prevents a race where
   // the renderer could initiate a network request based on the response to this
   // request before the access grants have updated in the network service.
-  browser_context()
-      ->GetDefaultStoragePartition()
-      ->GetCookieManagerForBrowserProcess()
-      ->SetAllStorageAccessSettings(
-          storage_access_grants, top_level_grants,
-          base::BindOnce(std::move(callback), content_setting));
+  auto* cookie_manager = browser_context()
+                             ->GetDefaultStoragePartition()
+                             ->GetCookieManagerForBrowserProcess();
+  auto barrier = base::BarrierClosure(
+      2, base::BindOnce(std::move(callback), content_setting));
+  cookie_manager->SetContentSettings(ContentSettingsType::STORAGE_ACCESS,
+                                     storage_access_grants, barrier);
+  cookie_manager->SetContentSettings(
+      ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS, top_level_grants, barrier);
 }
 
 void TopLevelStorageAccessPermissionContext::UpdateContentSetting(

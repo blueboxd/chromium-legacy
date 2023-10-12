@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Prilagodite lahko največ 5 bližnjic. Izbrišite bližnjico, če želite dodati novo.</translation>
 <translation id="1164939766849482256">Ohranjevalnik zaslona od zore do mraka</translation>
 <translation id="1167755866710282443">Odprite meni za prilagajanje tipk. Povlecite meni, če ga želite premakniti.</translation>
+<translation id="1174073918202301297">Bližnjica je bila dodana</translation>
 <translation id="1175697296044146566">To napravo <ph name="DEVICE_TYPE" /> upravlja <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Povprečna (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Odstrani</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">Dnevna sprememba slike zaslonskega ozadja</translation>
 <translation id="1644574205037202324">Zgodovina</translation>
 <translation id="1651925268237749928">Izbrali ste deljeni album. Drugi lahko dodajajo ali spreminjajo fotografije. Vaše zaslonsko ozadje bo morda uporabljalo fotografije, ki jih trenutno ni v tem albumu.</translation>
+<translation id="1661865805917886535">Nekateri podatki o računu in sistemu bodo morda poslani Googlu. Te podatke uporabljamo za odpravljanje tehničnih težav in izboljšanje svojih storitev v skladu s pravilnikom o zasebnosti (<ph name="PRIVACYPOLICYURL" />) in pogoji storitve (<ph name="TERMSOFSERVICEURL" />). Če želite zahtevati spremembe vsebine, obiščite pravno pomoč (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Ustavljeno – zmanjkalo je črnila</translation>
 <translation id="1664796644829245314">Predogled datoteke <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Vgrajeno omrežje VPN</translation>
@@ -117,6 +119,7 @@
 <translation id="1768959921651994223">Vrsta preverjanja pristnosti</translation>
 <translation id="1776228893584526149">Ton zaslonskega ozadja</translation>
 <translation id="1782199038061388045">prevod</translation>
+<translation id="1788485524395674731">To aplikacijo upravlja skrbnik</translation>
 <translation id="1792647875738159689">Preklic optičnega branja</translation>
 <translation id="1801418420130173017">Onemogočanje temne teme</translation>
 <translation id="1807246157184219062">Svetlo</translation>
@@ -131,7 +134,6 @@
 <translation id="1871569928317311284">Izklop temne teme</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Izklop temnega načina</translation>
-<translation id="1881188606372070653">Če želite zahtevati spremembe vsebine zaradi pravnih razlogov, obiščite <ph name="BEGIN_LINK1" />stran s pravno pomočjo<ph name="END_LINK1" />. Nekateri podatki o računu in sistemu bodo morda poslani Googlu. Informacije, ki nam jih pošljete, bomo v skladu z našim <ph name="BEGIN_LINK2" />pravilnikom o zasebnosti<ph name="END_LINK2" /> in <ph name="BEGIN_LINK3" />pogoji storitve<ph name="END_LINK3" /> uporabljali za odpravljanje tehničnih težav in izboljševanje naših storitev.</translation>
 <translation id="1885577615937958993">previjanje predstavnosti naprej</translation>
 <translation id="1887850431809612466">Različica strojne opreme</translation>
 <translation id="1897672602657312171">Bližnjica brez tipke za iskanje je morda v sporu z bližnjico katere druge aplikacije. Če želite še naprej uporabljati to bližnjico, jo znova pritisnite, ali pritisnite novo bližnjico s tipko za iskanje.</translation>
@@ -212,6 +214,7 @@
 <translation id="2505327257735685095">Osveži trenutno sliko zaslonskega ozadja</translation>
 <translation id="2512979179176933762">prikaz oken</translation>
 <translation id="2513396635448525189">Slika za prijavo</translation>
+<translation id="2515109918609218604">Bližnjica ni na voljo. Pritisnite novo bližnjico brez uporabe funkcijskih tipk in tipk za iskanje.</translation>
 <translation id="2517472476991765520">Optično preberi</translation>
 <translation id="2521835766824839541">prejšnja skladba</translation>
 <translation id="2526590354069164005">Namizje</translation>
@@ -265,6 +268,7 @@
 <translation id="3122464029669770682">CPE</translation>
 <translation id="3124039320086536031">Naprava je povezana.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Želite odstrani stran?}=1{Želite odstraniti {PAGE_NUMBER}. stran?}one{Želite odstraniti {PAGE_NUMBER}. stran?}two{Želite odstraniti {PAGE_NUMBER}. stran?}few{Želite odstraniti {PAGE_NUMBER}. stran?}other{Želite odstraniti {PAGE_NUMBER}. stran?}}</translation>
+<translation id="3146655726035122603">Na voljo samo v napravi <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Prenos podatkov v mobilnih omrežjih</translation>
 <translation id="3156846309055100599">Optično branje <ph name="PAGE_NUMBER" />. strani ...</translation>
 <translation id="315738237743207937">Zaznan je bil prestrezni portal</translation>
@@ -622,6 +626,7 @@
 <translation id="584953448295717128">APN je samodejno zaznan.</translation>
 <translation id="5849570051105887917">Koda domačega ponudnika</translation>
 <translation id="5859603669299126575">Album umetnostne galerije</translation>
+<translation id="5859969039821714932">Bližnjica ni na voljo. Pritisnite novo bližnjico brez tipke <ph name="KEY" />.</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="5860491529813859533">Vklopi</translation>
 <translation id="5876385649737594562">Vklopite, če želite izbrati možnosti.</translation>
@@ -687,6 +692,7 @@
 <translation id="6318437367327684789">za vedno</translation>
 <translation id="6319207335391420837">Posodobitev vdelane programske opreme v napravi <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Vklop ohranjevalnika zaslona</translation>
+<translation id="6324916366299863871">Urejanje bližnjice</translation>
 <translation id="6325525973963619867">Ni uspelo</translation>
 <translation id="6331191339300272798">Samodejna temna tema</translation>
 <translation id="6340526405444716530">Prilagoditev</translation>
@@ -826,6 +832,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Vgrajena sledilna ploščica</translation>
 <translation id="7397270852490618635">Izklop svetle teme</translation>
+<translation id="7401543881546089382">Izbriši bližnjico</translation>
 <translation id="741244894080940828">pretvorba</translation>
 <translation id="7415801143053185905">Precejšnja zakasnitev HTTP</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Skrbnik je nastavil, da se aplikacija <ph name="APP_NAME_1" /> zažene samodejno ob vsaki prijavi.}=2{Skrbnik je nastavil, da se aplikaciji <ph name="APP_NAME_1" /> in <ph name="APP_NAME_2" /> zaženeta samodejno ob vsaki prijavi.}=3{Skrbnik je nastavil, da se aplikacije <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> in <ph name="APP_NAME_3" /> zaženejo samodejno ob vsaki prijavi.}one{Skrbnik je nastavil, da se <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> in še # druga aplikacija zaženejo samodejno ob vsaki prijavi.}two{Skrbnik je nastavil, da se <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> in še # drugi aplikaciji zaženejo samodejno ob vsaki prijavi.}few{Skrbnik je nastavil, da se <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> in še # druge aplikacije zaženejo samodejno ob vsaki prijavi.}other{Skrbnik je nastavil, da se <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> in še # drugih aplikacij zažene samodejno ob vsaki prijavi.}}</translation>
@@ -864,6 +871,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">lučka za osvetlitev tipkovnice</translation>
+<translation id="7730077286107534951">Nekateri podatki o računu in sistemu bodo morda poslani Googlu. Te podatke uporabljamo za odpravljanje tehničnih težav in izboljšanje svojih storitev v skladu s <ph name="BEGIN_LINK2" />pravilnikom o zasebnosti<ph name="END_LINK2" /> in <ph name="BEGIN_LINK3" />pogoji storitve<ph name="END_LINK3" />. Če želite zahtevati spremembe vsebine, obiščite stran s <ph name="BEGIN_LINK1" />pravno pomočjo<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Število ciklov</translation>
 <translation id="7747039790905080783">Vnaprej deljeni ključ</translation>
 <translation id="7752963721013053477">Od zore do mraka – ekskluzivno</translation>
@@ -900,6 +908,7 @@
 <translation id="7978412674231730200">Zasebni ključ</translation>
 <translation id="7994702968232966508">Način EAP</translation>
 <translation id="8004582292198964060">Brskalnik</translation>
+<translation id="8017679124341497925">Bližnjica je bila urejena</translation>
 <translation id="802154636333426148">Prenos ni uspel</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Omogoči način samodejne barve</translation>

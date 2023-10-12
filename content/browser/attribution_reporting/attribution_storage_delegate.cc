@@ -71,8 +71,7 @@ int AttributionStorageDelegate::GetMaxReportsPerDestination(
     case attribution_reporting::mojom::ReportType::kAggregatableAttribution:
       return config_.aggregate_limit.max_reports_per_destination;
     case attribution_reporting::mojom::ReportType::kNullAggregatable:
-      NOTREACHED();
-      return 0;
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -99,11 +98,6 @@ double AttributionStorageDelegate::GetMaxChannelCapacity(
   }
 }
 
-int64_t AttributionStorageDelegate::GetAggregatableBudgetPerSource() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return config_.aggregate_limit.aggregatable_budget_per_source;
-}
-
 int AttributionStorageDelegate::GetMaxAggregatableReportsPerSource() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return config_.aggregate_limit.max_aggregatable_reports_per_source;
@@ -113,15 +107,6 @@ AttributionConfig::DestinationRateLimit
 AttributionStorageDelegate::GetDestinationRateLimit() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return config_.destination_rate_limit;
-}
-
-uint64_t AttributionStorageDelegate::SanitizeTriggerData(
-    uint64_t trigger_data,
-    SourceType source_type) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  const uint64_t cardinality = TriggerDataCardinality(source_type);
-  return trigger_data % cardinality;
 }
 
 uint64_t AttributionStorageDelegate::TriggerDataCardinality(

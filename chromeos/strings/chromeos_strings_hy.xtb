@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Դուք կարող եք հարմարեցնել միայն 5 դյուրանցում։ Նոր դյուրանցում ավելացնելու համար ջնջեք եղածներից մեկը։</translation>
 <translation id="1164939766849482256">«Լուսաբացից մայրամուտ» էկրանապահ</translation>
 <translation id="1167755866710282443">Բացեք ընտրացանկը՝ ստեղները կարգավորելու համար։ Տեղաշարժելու համար քաշեք ընտրացանկը։</translation>
+<translation id="1174073918202301297">Դյուրանցումն ավելացվեց</translation>
 <translation id="1175697296044146566">Այս <ph name="DEVICE_TYPE" /> սարքը կառավարվում է <ph name="MANAGER" /> տիրույթի կողմից։</translation>
 <translation id="1175951029573070619">Միջին (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Ջնջել</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">Փոխել պաստառն ամեն օր</translation>
 <translation id="1644574205037202324">Պատմություն</translation>
 <translation id="1651925268237749928">Դուք ընտրել եք ընդհանուր ալբոմ։ Այլ մարդիկ կարող են ավելացնել լուսանկարներ կամ փոփոխել դրանք։ Որպես պաստառ կարելի է օգտագործել լուսանկարներ, որոնք ներկայումս այս ալբոմում չեն։</translation>
+<translation id="1661865805917886535">Հաշվի և համակարգի որոշ տվյալներ կարող են ուղարկվել Google-ին։ Այս տեղեկությունները կօգտագործվեն տեխնիկական խնդիրները լուծելու և մեր ծառայությունների որակը բարելավելու նպատակով՝ Գաղտնիության քաղաքականության (<ph name="PRIVACYPOLICYURL" />) և Օգտագործման պայմանների (<ph name="TERMSOFSERVICEURL" />) համաձայն։ Բովանդակության փոփոխություն պահանջելու համար անցեք Իրավական հարցերով օգնության էջ (<ph name="LEGALHELPPAGEURL" />)։</translation>
 <translation id="1662989795263954667">Դադարեցվել է – Թանաք չկա</translation>
 <translation id="1664796644829245314">Նախադիտում (<ph name="PREVIEW_OBJECT" />)</translation>
 <translation id="1668469839109562275">Ներկառուցված VPN</translation>
@@ -131,7 +133,6 @@
 <translation id="1871569928317311284">Անջատել մուգ թեման</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Անջատել մուգ ռեժիմը</translation>
-<translation id="1881188606372070653">Իրավական հիմքերով բովանդակության փոփոխություն պահանջելու համար անցեք <ph name="BEGIN_LINK1" />Իրավական հարցերով օգնության էջ<ph name="END_LINK1" />։ Հաշվի և համակարգի որոշ տվյալներ կարող են ուղարկվել Google-ին։ Ձեր տրամադրած տեղեկությունները կօգտագործվեն տեխնիկական խնդիրները լուծելու և մեր ծառայությունների որակը բարելավելու նպատակով՝ մեր <ph name="BEGIN_LINK2" />Գաղտնիության քաղաքականության<ph name="END_LINK2" /> և <ph name="BEGIN_LINK3" />Օգտագործման պայմանների<ph name="END_LINK3" /> համաձայն։</translation>
 <translation id="1885577615937958993">առաջ տալ մեդիաֆայլը</translation>
 <translation id="1887850431809612466">Սարքի տարբերակը</translation>
 <translation id="1897672602657312171">Առանց որոնման ստեղնի դյուրանցումը կարող է հակասել որոշ հավելվածների դյուրանցումներին։ Կրկին սեղմեք այս դյուրանցումը՝ դրա օգտագործումը շարունակելու համար, կամ սեղմեք նոր դյուրանցում՝ օգտագործելով որոնման ստեղնը։</translation>
@@ -212,6 +213,7 @@
 <translation id="2505327257735685095">Թարմացնել ընթացիկ պաստառը</translation>
 <translation id="2512979179176933762">ցուցադրել պատուհանները</translation>
 <translation id="2513396635448525189">Մուտքի պատկեր</translation>
+<translation id="2515109918609218604">Դյուրանցումը հասանելի չէ։ Սեղմեք նոր դյուրանցման՝ առանց օգտագործելու գործառնական և որոնման ստեղները։</translation>
 <translation id="2517472476991765520">Որոնել</translation>
 <translation id="2521835766824839541">նախորդ կատարումը</translation>
 <translation id="2526590354069164005">Աշխատասեղան</translation>
@@ -265,6 +267,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Սարքը միացված է։</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Հեռացնե՞լ էջը}=1{Հեռացնե՞լ էջ {PAGE_NUMBER}-ը}one{Հեռացնե՞լ էջ {PAGE_NUMBER}-ը}other{Հեռացնե՞լ էջ {PAGE_NUMBER}-ը}}</translation>
+<translation id="3146655726035122603">Հատուկ <ph name="PRODUCT_NAME" />-ի համար</translation>
 <translation id="315116470104423982">Բջջային կապի տվյալներ</translation>
 <translation id="3156846309055100599">Սկանավորվում է էջ <ph name="PAGE_NUMBER" />-ը...</translation>
 <translation id="315738237743207937">Հայտնաբերվել է մուտքի էջ</translation>
@@ -687,6 +690,7 @@
 <translation id="6318437367327684789">ընդմիշտ</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> սարքի ներկառուցված ծրագրի թարմացում</translation>
 <translation id="6321407676395378991">Միացնել էկրանապահը</translation>
+<translation id="6324916366299863871">Փոփոխել դյուրանցումը</translation>
 <translation id="6325525973963619867">Սխալ առաջացավ</translation>
 <translation id="6331191339300272798">Ավտոմատ մուգ թեմա</translation>
 <translation id="6340526405444716530">Անհատականացում</translation>
@@ -826,6 +830,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Ներկառուցված հպահարթակ</translation>
 <translation id="7397270852490618635">Անջատել բաց թեման</translation>
+<translation id="7401543881546089382">Ջնջել դյուրանցումը</translation>
 <translation id="741244894080940828">փոխարկում</translation>
 <translation id="7415801143053185905">HTTP-ի շատ բարձր հապաղում</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Ձեր ադմինիստրատորն այնպես է կարգավորել, որ ամեն անգամ, երբ մուտք գործեք, <ph name="APP_NAME_1" /> հավելվածն ավտոմատ գործարկվի։}=2{Ձեր ադմինիստրատորն այնպես է կարգավորել, որ ամեն անգամ, երբ մուտք գործեք, <ph name="APP_NAME_1" /> և <ph name="APP_NAME_2" /> հավելվածներն ավտոմատ գործարկվեն։}=3{Ձեր ադմինիստրատորն այնպես է կարգավորել, որ ամեն անգամ, երբ մուտք գործեք, <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> և <ph name="APP_NAME_3" /> հավելվածներն ավտոմատ գործարկվեն։}one{Ձեր ադմինիստրատորն այնպես է կարգավորել, որ ամեն անգամ, երբ մուտք գործեք, <ph name="APP_NAME_1" /> և <ph name="APP_NAME_2" /> հավելվածներն ու ևս # հավելված ավտոմատ գործարկվեն։}other{Ձեր ադմինիստրատորն այնպես է կարգավորել, որ ամեն անգամ, երբ մուտք գործեք, <ph name="APP_NAME_1" /> և <ph name="APP_NAME_2" /> հավելվածներն ու ևս # հավելված ավտոմատ գործարկվեն։}}</translation>
@@ -864,6 +869,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">ստեղնաշարի լույս</translation>
+<translation id="7730077286107534951">Հաշվի և համակարգի որոշ տվյալներ կարող են ուղարկվել Google-ին։ Այդ տեղեկություններն օգտագործվում են տեխնիկական խնդիրները լուծելու և մեր ծառայությունների որակը բարելավելու նպատակով՝ մեր <ph name="BEGIN_LINK2" />Գաղտնիության քաղաքականության<ph name="END_LINK2" /> և <ph name="BEGIN_LINK3" />Օգտագործման պայմանների<ph name="END_LINK3" /> համաձայն։ Բովանդակության փոփոխություն պահանջելու համար անցեք <ph name="BEGIN_LINK1" />Իրավական հարցերով օգնության էջ<ph name="END_LINK1" />։</translation>
 <translation id="773153675489693198">Շրջափուլերի թիվը</translation>
 <translation id="7747039790905080783">Ընդհանուր բանալի</translation>
 <translation id="7752963721013053477">Լուսաբացից մայրամուտ. բացառիկ</translation>
@@ -900,6 +906,7 @@
 <translation id="7978412674231730200">Մասնավոր բանալի</translation>
 <translation id="7994702968232966508">EAP եղանակ</translation>
 <translation id="8004582292198964060">Դիտարկիչ</translation>
+<translation id="8017679124341497925">Դյուրանցումը փոխվեց</translation>
 <translation id="802154636333426148">Ներբեռնումը ձախողվեց</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Միացնել գույների ինքնակարգավորման ռեժիմը</translation>

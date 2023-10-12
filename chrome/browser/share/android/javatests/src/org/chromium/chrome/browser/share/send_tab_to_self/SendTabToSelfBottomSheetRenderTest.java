@@ -113,25 +113,11 @@ public class SendTabToSelfBottomSheetRenderTest extends BlankUiTestActivityTestC
     @Test
     @MediumTest
     @Feature("RenderTest")
-    public void testNoTargetDeviceBottomSheetWithPromoFeatureDisabled() throws Throwable {
+    public void testNoTargetDeviceBottomSheet() throws Throwable {
         setUpAccountData(createFakeAccount());
         View view = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            NoTargetDeviceBottomSheetContent sheetContent = new NoTargetDeviceBottomSheetContent(
-                    getActivity(), /*isPromoFeatureEnabled=*/false);
-            getActivity().setContentView(sheetContent.getContentView());
-            return sheetContent.getContentView();
-        });
-        mRenderTestRule.render(view, "no_target_device");
-    }
-
-    @Test
-    @MediumTest
-    @Feature("RenderTest")
-    public void testNoTargetDeviceBottomSheetWithPromoFeatureEnabled() throws Throwable {
-        setUpAccountData(createFakeAccount());
-        View view = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            NoTargetDeviceBottomSheetContent sheetContent = new NoTargetDeviceBottomSheetContent(
-                    getActivity(), /*isPromoFeatureEnabled=*/true);
+            NoTargetDeviceBottomSheetContent sheetContent =
+                    new NoTargetDeviceBottomSheetContent(getActivity());
             getActivity().setContentView(sheetContent.getContentView());
             return sheetContent.getContentView();
         });
@@ -140,22 +126,18 @@ public class SendTabToSelfBottomSheetRenderTest extends BlankUiTestActivityTestC
 
     @Test
     @MediumTest
-    public void testNoTargetDeviceBottomSheetWithPromoFeatureEnabledWithNonDisplayableAccountEmail()
-            throws Throwable {
+    public void testNoTargetDeviceBottomSheetWithNonDisplayableAccountEmail() throws Throwable {
         AccountInfo account =
                 createFakeAccount(SigninTestRule.NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES);
         setUpAccountData(account);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            NoTargetDeviceBottomSheetContent sheetContent = new NoTargetDeviceBottomSheetContent(
-                    getActivity(), /*isPromoFeatureEnabled=*/true);
+            NoTargetDeviceBottomSheetContent sheetContent =
+                    new NoTargetDeviceBottomSheetContent(getActivity());
             getActivity().setContentView(sheetContent.getContentView());
         });
         onView(withText(account.getEmail())).check(doesNotExist());
     }
 
-    // TODO(crbug.com/1219434): This duplicates the account in AccountManagerTestRule, so tests can
-    // later adopt the rule without failing the golden diffs. That's not done now because it
-    // requires changing the device picker to depend on ProfileDataCache instead of IdentityManager.
     private AccountInfo createFakeAccount() {
         return createFakeAccount(new AccountCapabilities(new HashMap<>()));
     }

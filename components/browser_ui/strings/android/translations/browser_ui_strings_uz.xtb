@@ -55,6 +55,7 @@
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> sahifasiga qaytish uchun bosing</translation>
 <translation id="2079545284768500474">Bekor qilish</translation>
 <translation id="2091887806945687916">Tovush</translation>
+<translation id="2096716221239095980">Hammasini oʻchirish</translation>
 <translation id="2117655453726830283">Keyingi slayd</translation>
 <translation id="2148716181193084225">Bugun</translation>
 <translation id="216989819110952009">Doroti va uning doʻstlari boshida hatto himoya koʻzoynagi bilan ham koʻra olmas edi</translation>
@@ -115,7 +116,6 @@
 <translation id="2913331724188855103">Saytlarga cookie-fayllarini saqlash va o’qishga ruxsat berish (tavsiya etiladi)</translation>
 <translation id="2932883381142163287">Shikoyat xabari yuborish</translation>
 <translation id="2968755619301702150">Sertifikatlarni ko‘rish vositasi</translation>
-<translation id="300526633675317032">Veb-sayt xotirasidan <ph name="SIZE_IN_KB" /> tozalanadi.</translation>
 <translation id="3008272652534848354">Ruxsatlarni qasliga qaytarish</translation>
 <translation id="301521992641321250">Avtomatik bloklangan</translation>
 <translation id="3069226013421428034">Muayyan sayt uchun tashqi xizmatga kirishga ruxsat bering.</translation>
@@ -192,7 +192,6 @@
 <translation id="4278390842282768270">Berilgan ruxsatnomalar</translation>
 <translation id="429312253194641664">Saytda media-fayl ijro etilmoqda</translation>
 <translation id="42981349822642051">Kengaytirish</translation>
-<translation id="4336434711095810371">Barcha maʼlumotlarni tozalash</translation>
 <translation id="4338831206024587507">Barcha saytlar <ph name="DOMAIN" /> ostida</translation>
 <translation id="4402755511846832236">Bu qurilmadan foydalanish axborotlarini saytlar bilishini taqiqlash</translation>
 <translation id="4412992751769744546">Tashqi saytlarga cookie fayllarni saqlashga ruxsat berish</translation>
@@ -262,6 +261,7 @@
 <translation id="5545693483061321551">Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzata olmaydi Ayrim saytlardagi funksiyalar ishlamay qolishi mumkin.</translation>
 <translation id="5553374991681107062">Eng oxirgi</translation>
 <translation id="5556459405103347317">Qayta yuklash</translation>
+<translation id="5591840828808741583"><ph name="SITE_NAME" /> bloklandi</translation>
 <translation id="5649053991847567735">Avtomatik yuklamalar</translation>
 <translation id="5668404140385795438">Saytlarda masshtab taqiqlarini chetlab matn hajmini o‘zgartirish</translation>
 <translation id="5677928146339483299">Bloklangan</translation>
@@ -352,6 +352,7 @@
 <translation id="7180611975245234373">Yangilash</translation>
 <translation id="7188508872042490670">Qurilmada saqlangan sayt maʼlumotlari</translation>
 <translation id="7203150201908454328">Yoyilgan</translation>
+<translation id="7219254577985949841">Sayt maʼlumotlari oʻchirilsinmi?</translation>
 <translation id="723171743924126238">Tasvirni tanlang</translation>
 <translation id="7243308994586599757">Parametrlar ekranning quyi qismiga yaqinroq joyda</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ta element tanlandi</translation>
@@ -462,6 +463,7 @@
 <translation id="8959122750345127698">Sahifa topilmadi: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Olib tashlash</translation>
 <translation id="8990043154272859344">Barcha saytlardagi hisobingizdan chiqib ketasiz</translation>
+<translation id="9011903857143958461">Ruxsat berildi: <ph name="SITE_NAME" /></translation>
 <translation id="9019902583201351841">Ota-onangiz tomonidan boshqariladi</translation>
 <translation id="9039697262778250930">Bu saytlar sizdan hisobingizga qayta kirishingizni talab qilishi mumkin.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

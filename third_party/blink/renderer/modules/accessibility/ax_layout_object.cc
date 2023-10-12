@@ -501,12 +501,17 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     // To save processing, only walk up the ignored objects.
     // This means that other interesting objects inside the <label> will
     // cause the text to be unignored.
+    // TODO(aleventhal) Speed this up by only doing this work inside of a label.
+    // See IsUsedForLabelOrDescription() in upcoming crrev.com/c/4574033.
     AXObject* ancestor = ParentObject();
     while (ancestor && ancestor->AccessibilityIsIgnored()) {
-      if (ancestor->RoleValue() == ax::mojom::blink::Role::kLabelText) {
-        if (ignored_reasons)
-          ignored_reasons->push_back(IgnoredReason(kAXPresentational));
-        return true;
+      if (auto* label = DynamicTo<HTMLLabelElement>(ancestor->GetNode())) {
+        if (AXNodeObject::IsRedundantLabel(label)) {
+          if (ignored_reasons) {
+            ignored_reasons->push_back(IgnoredReason(kAXPresentational));
+          }
+          return true;
+        }
       }
       ancestor = ancestor->ParentObject();
     }
@@ -1035,11 +1040,11 @@ unsigned AXLayoutObject::ColumnCount() const {
   if (AriaRoleAttribute() != ax::mojom::blink::Role::kUnknown)
     return AXNodeObject::ColumnCount();
 
-  auto* table_section = FirstTableSection(GetLayoutObject());
-  if (!table_section)
-    return AXNodeObject::ColumnCount();
+  if (const auto* table = DynamicTo<LayoutNGTable>(GetLayoutObject())) {
+    return table->EffectiveColumnCount();
+  }
 
-  return table_section->NumEffectiveColumns();
+  return AXNodeObject::ColumnCount();
 }
 
 unsigned AXLayoutObject::RowCount() const {

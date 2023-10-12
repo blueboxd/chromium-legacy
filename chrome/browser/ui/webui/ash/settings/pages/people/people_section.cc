@@ -26,12 +26,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/people/account_manager_ui_handler.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/people/fingerprint_handler.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/people/os_sync_handler.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/people/parental_controls_handler.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/people/quick_unlock_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/search/search_tag_registry.h"
-#include "chrome/browser/ui/webui/ash/sync/os_sync_handler.h"
-#include "chrome/browser/ui/webui/settings/ash/fingerprint_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_features_util.h"
-#include "chrome/browser/ui/webui/settings/ash/parental_controls_handler.h"
-#include "chrome/browser/ui/webui/settings/ash/quick_unlock_handler.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
 #include "chrome/browser/ui/webui/settings/profile_info_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
@@ -76,10 +76,17 @@ using ::chromeos::settings::mojom::Subpage;
 
 namespace {
 
+const char* GetAccountsPath() {
+  return ash::features::IsOsSettingsRevampWayfindingEnabled()
+             ? mojom::kPeopleSectionPath
+             : mojom::kMyAccountsSubpagePath;
+}
+
 const std::vector<SearchConcept>& GetPeopleSearchConcepts() {
+  const char* kAccountsPath = GetAccountsPath();
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_PEOPLE_ACCOUNTS,
-       mojom::kMyAccountsSubpagePath,
+       kAccountsPath,
        mojom::SearchResultIcon::kAvatar,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
@@ -91,7 +98,7 @@ const std::vector<SearchConcept>& GetPeopleSearchConcepts() {
        mojom::SearchResultType::kSection,
        {.section = mojom::Section::kPeople}},
       {IDS_OS_SETTINGS_TAG_PEOPLE_ACCOUNTS_ADD_V2,
-       mojom::kMyAccountsSubpagePath,
+       kAccountsPath,
        mojom::SearchResultIcon::kAvatar,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
@@ -101,10 +108,11 @@ const std::vector<SearchConcept>& GetPeopleSearchConcepts() {
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetRemoveAccountSearchConcepts() {
+const std::vector<SearchConcept>& GetRemoveAccountSearchConcepts(
+    const char* accounts_path) {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_PEOPLE_ACCOUNTS_REMOVE,
-       mojom::kMyAccountsSubpagePath,
+       accounts_path,
        mojom::SearchResultIcon::kAvatar,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
@@ -577,6 +585,8 @@ PeopleSection::~PeopleSection() = default;
 void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"osPeoplePageTitle", IDS_OS_SETTINGS_PEOPLE_V2},
+      {"accountsMenuItemDescription",
+       IDS_OS_SETTINGS_ACCOUNTS_MENU_ITEM_DESCRIPTION},
       {"accountManagerSubMenuLabel",
        IDS_SETTINGS_ACCOUNT_MANAGER_SUBMENU_LABEL},
       {"accountManagerPageTitle", IDS_SETTINGS_ACCOUNT_MANAGER_PAGE_TITLE},
@@ -711,17 +721,25 @@ bool PeopleSection::LogMetric(mojom::Setting setting,
 void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kSetUpParentalControls);
 
-  // My accounts.
   generator->RegisterTopLevelSubpage(
       IDS_SETTINGS_ACCOUNT_MANAGER_PAGE_TITLE, mojom::Subpage::kMyAccounts,
       mojom::SearchResultIcon::kAvatar, mojom::SearchResultDefaultRank::kMedium,
       mojom::kMyAccountsSubpagePath);
-  static constexpr mojom::Setting kMyAccountsSettings[] = {
-      mojom::Setting::kAddAccount,
-      mojom::Setting::kRemoveAccount,
-  };
-  RegisterNestedSettingBulk(mojom::Subpage::kMyAccounts, kMyAccountsSettings,
-                            generator);
+
+  // My accounts.
+  if (ash::features::IsOsSettingsRevampWayfindingEnabled()) {
+    // Accounts settings are up-leveled to the top level page if the revamp
+    // wayfind is enabled.
+    generator->RegisterTopLevelSetting(mojom::Setting::kAddAccount);
+    generator->RegisterTopLevelSetting(mojom::Setting::kRemoveAccount);
+  } else {
+    static constexpr mojom::Setting kMyAccountsSettings[] = {
+        mojom::Setting::kAddAccount,
+        mojom::Setting::kRemoveAccount,
+    };
+    RegisterNestedSettingBulk(mojom::Subpage::kMyAccounts, kMyAccountsSettings,
+                              generator);
+  }
 
   // Combined browser/OS sync.
   generator->RegisterTopLevelSubpage(
@@ -785,7 +803,7 @@ void PeopleSection::UpdateAccountManagerSearchTags(
 
   // Start with no Account Manager search tags.
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
-  updater.RemoveSearchTags(GetRemoveAccountSearchConcepts());
+  updater.RemoveSearchTags(GetRemoveAccountSearchConcepts(GetAccountsPath()));
 
   user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile());
   DCHECK(user);
@@ -796,7 +814,7 @@ void PeopleSection::UpdateAccountManagerSearchTags(
     }
 
     // If a non-device account exists, add the "Remove Account" search tag.
-    updater.AddSearchTags(GetRemoveAccountSearchConcepts());
+    updater.AddSearchTags(GetRemoveAccountSearchConcepts(GetAccountsPath()));
     return;
   }
 }

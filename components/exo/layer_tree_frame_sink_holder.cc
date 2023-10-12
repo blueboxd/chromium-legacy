@@ -15,17 +15,21 @@
 namespace exo {
 namespace {
 
-// If in ReactiveFrameSubmission mode and the remote side supports
-// AutoNeedsBeginFrame, notifies the remote side to pause BeginFrame requests
-// after the client hasn't produced frames for kPauseBeginFrameThreshold frames.
-// Using a number so that the feature kicks in relatively quickly, but it is
-// also not overly sensitive when the system occasionally drops frames.
+// If in ReactiveFrameSubmission and AutoNeedsBeginFrame mode, notifies the
+// remote side to pause BeginFrame requests after the client hasn't produced
+// frames for kPauseBeginFrameThreshold frames. Using a number so that the
+// feature kicks in relatively quickly, but it is also not overly sensitive when
+// the system occasionally drops frames.
 constexpr int32_t kPauseBeginFrameThreshold = 5;
 
 }  // namespace
 
 BASE_FEATURE(kExoReactiveFrameSubmission,
              "ExoReactiveFrameSubmission",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kExoAutoNeedsBeginFrame,
+             "ExoAutoNeedsBeginFrame",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -117,15 +121,9 @@ void LayerTreeFrameSinkHolder::SubmitCompositorFrame(viz::CompositorFrame frame,
 
   DiscardCachedFrame(&frame);
 
-  // This needs to be called before ObserveBeginFrameSource(true) below. The
-  // reason is that ObserveBeginFrameSource(true) may update
-  // `observing_begin_frame_source_` and therefore affect the outcome of
-  // ShouldSubmitFrameNow().
-  const bool delay_submit = !ShouldSubmitFrameNow() && !submit_now;
-
   ObserveBeginFrameSource(true);
 
-  if (delay_submit) {
+  if (!ShouldSubmitFrameNow() && !submit_now) {
     cached_frame_ = std::move(frame);
     return;
   }
@@ -165,6 +163,13 @@ void LayerTreeFrameSinkHolder::SetBeginFrameSource(
 
   if (!frame_sink_->auto_needs_begin_frame()) {
     ObserveBeginFrameSource(true);
+  } else {
+    // Rely on SubmitCompositorFrame() to start observing begin frame source.
+
+    // SetBeginFrameSource() with a non-null `source` is supposed to be called
+    // during initialization. That must happen before any frame is submitted,
+    // and therefore there must be no `cached_frame_` at this point.
+    DCHECK(!cached_frame_ || source == nullptr);
   }
 }
 
@@ -509,8 +514,11 @@ void LayerTreeFrameSinkHolder::ObserveBeginFrameSource(bool start) {
 bool LayerTreeFrameSinkHolder::UnsolicitedFrameAllowed() const {
   DCHECK(reactive_frame_submission_);
 
+  // `frame_sink_->needs_begin_frames()` being false means the remote side is
+  // currently not configured to send us BeginFrames. In this case, an
+  // unsolicited frame should be allowed.
   return frame_sink_->auto_needs_begin_frame() &&
-         !observing_begin_frame_source_;
+         !frame_sink_->needs_begin_frames();
 }
 
 }  // namespace exo

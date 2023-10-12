@@ -9,6 +9,7 @@
 
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -119,7 +120,7 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   absl::optional<base::TimeTicks> start_timestamp_;
 
   // WebRTC real time clock, needed to determine NTP offset.
-  webrtc::Clock* clock_;
+  raw_ptr<webrtc::Clock, ExperimentalRenderer> clock_;
 
   // Offset between NTP clock and WebRTC clock.
   const int64_t ntp_offset_;
@@ -266,7 +267,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
                             base::TimeTicks estimated_capture_time) {
   DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RemoteVideoSourceDelegate::DoRenderFrameOnIOThread");
-  frame_callback_.Run(std::move(video_frame), {}, estimated_capture_time);
+  frame_callback_.Run(std::move(video_frame), estimated_capture_time);
 }
 
 void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(

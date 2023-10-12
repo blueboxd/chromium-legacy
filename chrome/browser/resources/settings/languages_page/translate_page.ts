@@ -23,7 +23,7 @@ import '../settings_shared.css.js';
 import {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -81,8 +81,8 @@ export class SettingsTranslatePageElement extends
 
   private onTargetLanguageChange_() {
     this.languageHelper.setTranslateTargetLanguage(
-        this.shadowRoot!.querySelector<HTMLSelectElement>('#targetLanguage')!
-            .value);
+        this.shadowRoot!.querySelector<HTMLSelectElement>(
+                            '#targetLanguage')!.value);
     this.languageSettingsMetricsProxy_.recordSettingsMetric(
         LanguageSettingsActionType.CHANGE_TRANSLATE_TARGET);
   }
@@ -91,7 +91,7 @@ export class SettingsTranslatePageElement extends
    * Helper function to get the text to display in the target language drop down
    * list. Returns the display name in the current UI language and the native
    * name of the language.
-  */
+   */
   private getTargetLanguageDisplayOption_(
       item: chrome.languageSettingsPrivate.Language): string {
     return this.languageHelper.getFullName(item);
@@ -111,7 +111,8 @@ export class SettingsTranslatePageElement extends
   /**
    * A function used for sorting languages alphabetically by display name.
    */
-  private alphabeticalSort_(first: chrome.languageSettingsPrivate.Language,
+  private alphabeticalSort_(
+      first: chrome.languageSettingsPrivate.Language,
       second: chrome.languageSettingsPrivate.Language) {
     return first.displayName.localeCompare(second.displayName);
   }

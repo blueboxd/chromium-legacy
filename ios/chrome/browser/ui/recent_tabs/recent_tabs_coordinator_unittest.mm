@@ -40,11 +40,11 @@
 #import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/signin/fake_system_identity_manager.h"
-#import "ios/chrome/browser/sync/session_sync_service_factory.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/sync/sync_setup_service.h"
-#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/sync/sync_setup_service_mock.h"
+#import "ios/chrome/browser/sync/model/session_sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_setup_service.h"
+#import "ios/chrome/browser/sync/model/sync_setup_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/sessions_sync_user_state.h"
@@ -78,8 +78,6 @@ class SessionSyncServiceMockForRecentTabsTableCoordinator
   MOCK_METHOD0(ScheduleGarbageCollection, void());
   MOCK_METHOD0(GetControllerDelegate,
                base::WeakPtr<syncer::ModelTypeControllerDelegate>());
-  MOCK_METHOD1(ProxyTabsStateChanged,
-               void(syncer::DataTypeController::State state));
 };
 
 std::unique_ptr<KeyedService>

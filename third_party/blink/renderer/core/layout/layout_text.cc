@@ -662,7 +662,7 @@ gfx::RectF LayoutText::LocalBoundingBoxRectForAccessibility() const {
       UNLIKELY(HasFlippedBlocksWritingMode()) ? ContainingBlock() : nullptr;
   CollectLineBoxRects(
       [this, &result, block_for_flipping](const PhysicalRect& r) {
-        LayoutRect rect = FlipForWritingMode(r, block_for_flipping);
+        DeprecatedLayoutRect rect = FlipForWritingMode(r, block_for_flipping);
         result.Union(gfx::RectF(rect));
       },
       kClipToEllipsis);
@@ -725,11 +725,11 @@ PositionWithAffinity LayoutText::PositionForPoint(
   return CreatePositionWithAffinity(0);
 }
 
-LayoutRect LayoutText::LocalCaretRect(
+PhysicalRect LayoutText::LocalCaretRect(
     int caret_offset,
     LayoutUnit* extra_width_to_end_of_line) const {
   NOT_DESTROYED();
-  return LayoutRect();
+  return PhysicalRect();
 }
 
 bool LayoutText::IsAllCollapsibleWhitespace() const {
@@ -1076,7 +1076,7 @@ PhysicalRect LayoutText::PhysicalLinesBoundingBox() const {
   return result;
 }
 
-PhysicalRect LayoutText::PhysicalVisualOverflowRect() const {
+PhysicalRect LayoutText::VisualOverflowRect() const {
   NOT_DESTROYED();
   DCHECK(IsInLayoutNGInlineFormattingContext());
   return NGFragmentItem::LocalVisualRectFor(*this);
@@ -1084,7 +1084,7 @@ PhysicalRect LayoutText::PhysicalVisualOverflowRect() const {
 
 PhysicalRect LayoutText::LocalVisualRectIgnoringVisibility() const {
   NOT_DESTROYED();
-  return UnionRect(PhysicalVisualOverflowRect(), LocalSelectionVisualRect());
+  return UnionRect(VisualOverflowRect(), LocalSelectionVisualRect());
 }
 
 PhysicalRect LayoutText::LocalSelectionVisualRect() const {
@@ -1133,7 +1133,7 @@ PhysicalRect LayoutText::LocalSelectionVisualRect() const {
   const unsigned start_pos = selection_status.start;
   const unsigned end_pos = selection_status.end;
   DCHECK_LE(start_pos, end_pos);
-  LayoutRect rect;
+  DeprecatedLayoutRect rect;
   return FlipForWritingMode(rect);
 }
 

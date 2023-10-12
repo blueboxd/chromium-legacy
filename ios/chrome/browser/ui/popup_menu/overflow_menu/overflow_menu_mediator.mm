@@ -17,6 +17,7 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper_observer_bridge.h"
+#import "components/password_manager/core/browser/manage_passwords_referrer.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/prefs/pref_change_registrar.h"
 #import "components/prefs/pref_service.h"
@@ -30,8 +31,8 @@
 #import "components/translate/core/browser/translate_prefs.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
-#import "ios/chrome/browser/default_browser/utils.h"
-#import "ios/chrome/browser/find_in_page/abstract_find_tab_helper.h"
+#import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/find_in_page/model/abstract_find_tab_helper.h"
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/follow_menu_updater.h"
 #import "ios/chrome/browser/follow/follow_tab_helper.h"
@@ -43,8 +44,8 @@
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/policy/browser_policy_connector_ios.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#import "ios/chrome/browser/reading_list/offline_url_utils.h"
-#import "ios/chrome/browser/settings/sync/utils/identity_error_util.h"
+#import "ios/chrome/browser/reading_list/model/offline_url_utils.h"
+#import "ios/chrome/browser/settings/model/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
@@ -65,7 +66,7 @@
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
+#import "ios/chrome/browser/translate/model/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/policy/user_policy_util.h"
@@ -2073,7 +2074,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
     _engagementTracker->NotifyEvent(
         feature_engagement::events::kHistoryOnOverflowMenuUsed);
   }
-  [IntentDonationHelper donateIntent:DonatedIntentType::kViewHistory];
+  [IntentDonationHelper donateIntent:IntentType::kViewHistory];
   [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher showHistory];
 }
@@ -2088,6 +2089,9 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 
 // Dismisses the menu and opens password list.
 - (void)openPasswords {
+  UmaHistogramEnumeration(
+      "PasswordManager.ManagePasswordsReferrer",
+      password_manager::ManagePasswordsReferrer::kChromeMenuItem);
   [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher
       showSavedPasswordsSettingsFromViewController:self.baseViewController

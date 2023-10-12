@@ -160,7 +160,10 @@ SafeBrowsingServiceImpl::CreateUrlChecker(
       hash_real_time_selection =
           safe_browsing::hash_realtime_utils::DetermineHashRealTimeSelection(
               web_state->GetBrowserState()->IsOffTheRecord(),
-              pref_change_registrar_->prefs(), /*log_usage_histograms=*/true);
+              pref_change_registrar_->prefs(),
+              safe_browsing::hash_realtime_utils::GetCountryCode(
+                  client->GetVariationsService()),
+              /*log_usage_histograms=*/true);
 
   return std::make_unique<safe_browsing::SafeBrowsingUrlCheckerImpl>(
       request_destination, url_checker_delegate, web_state->GetWeakPtr(),

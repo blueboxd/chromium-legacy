@@ -159,6 +159,7 @@ optional<ModelError> AutofillProfileSyncBridge::ApplyIncrementalSyncChanges(
   RETURN_IF_ERROR(FlushSyncTracker(std::move(metadata_change_list), &tracker));
 
   web_data_backend_->CommitChanges();
+  web_data_backend_->NotifyOnSyncUpdatesReceived(syncer::AUTOFILL_PROFILE);
   return absl::nullopt;
 }
 
@@ -244,9 +245,9 @@ absl::optional<syncer::ModelError> AutofillProfileSyncBridge::FlushSyncTracker(
     AutofillProfileSyncDifferenceTracker* tracker) {
   DCHECK(tracker);
 
-  RETURN_IF_ERROR(tracker->FlushToLocal(
-      base::BindOnce(&AutofillWebDataBackend::NotifyOfMultipleAutofillChanges,
-                     base::Unretained(web_data_backend_))));
+  RETURN_IF_ERROR(tracker->FlushToLocal(base::BindOnce(
+      &AutofillWebDataBackend::NotifyOfMultipleAutofillChanges,
+      base::Unretained(web_data_backend_), syncer::AUTOFILL_PROFILE)));
 
   std::vector<std::unique_ptr<AutofillProfile>> profiles_to_upload_to_sync;
   std::vector<std::string> profiles_to_delete_from_sync;

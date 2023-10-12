@@ -292,6 +292,13 @@ export class FeedbackFlowElement extends PolymerElement {
      * @private
      */
     this.dialogArgs_ = chrome.getVariableValue('dialogArguments');
+
+    /**
+     * Whether the user has logged in (not on oobe or on the login screen).
+     * @type {boolean}
+     * @private
+     */
+    this.isUserLoggedIn_;
   }
 
   connectedCallback() {
@@ -401,20 +408,23 @@ export class FeedbackFlowElement extends PolymerElement {
     assert(!!feedbackInfo);
     this.feedbackContext_ = {
       assistantDebugInfoAllowed: false,
-      fromSettingsSearch: feedbackInfo.fromSettingsSearch,
-      isInternalAccount: feedbackInfo.isInternalAccount,
-      traceId: feedbackInfo.traceId,
-      pageUrl: {url: feedbackInfo.pageUrl},
-      fromAssistant: feedbackInfo.fromAssistant,
-      fromAutofill: feedbackInfo.fromAutofill,
+      fromSettingsSearch: feedbackInfo.fromSettingsSearch ?? false,
+      isInternalAccount: feedbackInfo.isInternalAccount ?? false,
+      traceId: feedbackInfo.traceId ?? 0,
+      pageUrl: {url: feedbackInfo.pageUrl ?? ''},
+      fromAssistant: feedbackInfo.fromAssistant ?? false,
+      fromAutofill: feedbackInfo.fromAutofill ?? false,
       autofillMetadata: feedbackInfo.autofillMetadata ?
           JSON.stringify(feedbackInfo.autofillMetadata) :
-          '',
-      hasLinkedCrossDevicePhone: feedbackInfo.hasLinkedCrossDevicePhone,
-      categoryTag: feedbackInfo.categoryTag,
+          '{}',
+      hasLinkedCrossDevicePhone:
+          feedbackInfo.hasLinkedCrossDevicePhone ?? false,
+      categoryTag: feedbackInfo.categoryTag ?? '',
     };
-    this.descriptionTemplate_ = feedbackInfo.description;
-    this.descriptionPlaceholderText_ = feedbackInfo.descriptionPlaceholder;
+    this.descriptionTemplate_ = feedbackInfo.description ?? '';
+    this.descriptionPlaceholderText_ =
+        feedbackInfo.descriptionPlaceholder ?? '';
+    this.feedbackContext_.extraDiagnostics = '';
     if (feedbackInfo.systemInformation?.length == 1) {
       // Currently, one extra diagnostics string may be passed to feedback
       // app.
@@ -430,6 +440,7 @@ export class FeedbackFlowElement extends PolymerElement {
       this.feedbackContext_.extraDiagnostics =
           feedbackInfo.systemInformation[0].value;
     }
+    this.isUserLoggedIn_ = this.feedbackContext_.categoryTag !== 'Login';
     this.onFeedbackContextReceived_();
   }
 
@@ -439,6 +450,7 @@ export class FeedbackFlowElement extends PolymerElement {
   initializeForNonDialogMode_() {
     this.feedbackServiceProvider_.getFeedbackContext().then((response) => {
       this.feedbackContext_ = response.feedbackContext;
+      this.isUserLoggedIn_ = true;
       this.setAdditionalContextFromQueryParams_();
       this.onFeedbackContextReceived_();
     });
@@ -695,6 +707,13 @@ export class FeedbackFlowElement extends PolymerElement {
    */
   getDescriptionPlaceholderTextForTesting() {
     return this.descriptionPlaceholderText_;
+  }
+
+  /**
+   * @returns {boolean}
+   */
+  getIsUserLoggedInForTesting() {
+    return this.isUserLoggedIn_;
   }
 
   /**

@@ -68,6 +68,15 @@ class CONTENT_EXPORT InterestGroupStorage {
   // Remove the interest group if it exists.
   void LeaveInterestGroup(const blink::InterestGroupKey& group_key,
                           const url::Origin& main_frame);
+
+  // Removes all interest groups owned by `owner` joined from
+  // `main_frame_origin` except `interest_groups_to_keep`, if they exist.
+  // Returns a (possibly empty) list of all interest groups that were cleared.
+  std::vector<std::string> ClearOriginJoinedInterestGroups(
+      const url::Origin& owner,
+      const std::set<std::string>& interest_groups_to_keep,
+      const url::Origin& main_frame_origin);
+
   // Updates the interest group `name` of `owner` with the populated fields of
   // `update`.
   //
@@ -160,10 +169,13 @@ class CONTENT_EXPORT InterestGroupStorage {
   const base::FilePath path_to_database_;
   // Maximum number of interest groups, or interest group owners to keep in the
   // database.
-  // Set by the related blink::feature parameters kInterestGroupStorageMaxOwners
-  // and kInterestGroupStorageMaxGroupsPerOwner.
+  // Set by the related blink::feature parameters
+  // kInterestGroupStorageMaxOwners,
+  // kInterestGroupStorageMaxGroupsPerOwner, and
+  // kInterestGroupStorageMaxNegativeGroupsPerOwner.
   const size_t max_owners_;
-  const size_t max_owner_interest_groups_;
+  const size_t max_owner_regular_interest_groups_;
+  const size_t max_owner_negative_interest_groups_;
   const size_t max_owner_storage_size_;
 
   // Maximum number of operations allowed between maintenance calls.

@@ -54,6 +54,9 @@
 // not set.
 @property(nonatomic, copy) NSString* secondaryActionTextColor;
 
+// The icon for the secondary action. Must be set before the view is loaded.
+@property(nonatomic, strong) UIImage* secondaryActionImage;
+
 // The text for the tertiary action. Must be set before the view is loaded.
 @property(nonatomic, copy) NSString* tertiaryActionString;
 
@@ -137,6 +140,9 @@
 
 // Bottom margin for the action stack view.
 @property(nonatomic, assign) CGFloat actionStackBottomMargin;
+
+// Button for the primary action string.
+@property(nonatomic, readonly) UIButton* primaryActionButton;
 
 // Designated initializer.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;

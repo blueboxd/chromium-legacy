@@ -8,7 +8,9 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/system/sys_info.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/miracle_parameter/common/public/miracle_parameter.h"
 #include "net/base/mime_sniffer.h"
 
 namespace network::features {
@@ -122,14 +124,6 @@ BASE_FEATURE(kMdnsResponderGeneratedNameListing,
              "MdnsResponderGeneratedNameListing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, resource requests will be evaluated against the Network
-// Service's block list. The block list is populated by the MaskedDomainList, so
-// "MaskedDomainList" will need to also be enabled for the block list to have
-// any contents.
-BASE_FEATURE(kEnableNetworkServiceResourceBlockList,
-             "EnableNetworkServiceResourceBlockList",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables ORB blocked responses being treated as errors (according to the spec)
 // rather than the current, CORB-style handling of injecting an empty response.
 // This exempts fetches initiated by scripts. (Technically, fetches with an
@@ -235,34 +229,34 @@ BASE_FEATURE(kMaxNumConsumedBytesInTaskFeature,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // The default Mojo ring buffer size, used to send the content body.
-constexpr base::FeatureParam<int> kDefaultDataPipeAllocationSize(
-    &kDefaultDataPipeAllocationSizeFeature,
-    "DefaultDataPipeAllocationSize",
-    512 * 1024);
+MIRACLE_PARAMETER_FOR_INT(GetDefaultDataPipeAllocationSize,
+                          kDefaultDataPipeAllocationSizeFeature,
+                          "DefaultDataPipeAllocationSize",
+                          512 * 1024)
 
 // The larger ring buffer size, used primarily for network::URLLoader loads.
 // This value was optimized via Finch: see crbug.com/1041006.
-constexpr base::FeatureParam<int> kLargerDataPipeAllocationSize(
-    &kLargerDataPipeAllocationSizeFeature,
-    "LargerDataPipeAllocationSize",
-    2 * 1024 * 1024);
+MIRACLE_PARAMETER_FOR_INT(GetLargerDataPipeAllocationSize,
+                          kLargerDataPipeAllocationSizeFeature,
+                          "LargerDataPipeAllocationSize",
+                          2 * 1024 * 1024)
 
 // The max buffer size of NetToMojoPendingBuffer. This buffer size should be
 // smaller than the mojo ring buffer size.
-constexpr base::FeatureParam<int> kNetAdapterMaxBufSize(
-    &kNetAdapterMaxBufSizeFeature,
-    "NetAdapterMaxBufSize",
-    64 * 1024);
+MIRACLE_PARAMETER_FOR_INT(GetNetAdapterMaxBufSizeParam,
+                          kNetAdapterMaxBufSizeFeature,
+                          "NetAdapterMaxBufSize",
+                          64 * 1024)
 
 // The maximal number of bytes consumed in a loading task. When there are more
 // bytes in the data pipe, they will be consumed in following tasks. Setting too
 // small of a number will generate many tasks but setting a too large of a
 // number will lead to thread janks. This value was optimized via Finch:
 // see crbug.com/1041006.
-constexpr base::FeatureParam<int> kMaxNumConsumedBytesInTask(
-    &kMaxNumConsumedBytesInTaskFeature,
-    "MaxNumConsumedBytesInTask",
-    1024 * 1024);
+MIRACLE_PARAMETER_FOR_INT(GetMaxNumConsumedBytesInTask,
+                          kMaxNumConsumedBytesInTaskFeature,
+                          "MaxNumConsumedBytesInTask",
+                          1024 * 1024)
 
 }  // namespace
 
@@ -270,36 +264,36 @@ constexpr base::FeatureParam<int> kMaxNumConsumedBytesInTask(
 uint32_t GetDataPipeDefaultAllocationSize(DataPipeAllocationSize option) {
   // The smallest buffer size must be larger than the maximum MIME sniffing
   // chunk size. This is assumed several places in content/browser/loader.
-  CHECK_LE(kDefaultDataPipeAllocationSize.Get(),
-           kLargerDataPipeAllocationSize.Get());
-  CHECK_GE(kDefaultDataPipeAllocationSize.Get(), net::kMaxBytesToSniff)
+  CHECK_LE(GetDefaultDataPipeAllocationSize(),
+           GetLargerDataPipeAllocationSize());
+  CHECK_GE(GetDefaultDataPipeAllocationSize(), net::kMaxBytesToSniff)
       << "Smallest data pipe size must be at least as large as a "
          "MIME-type sniffing buffer.";
 
 #if BUILDFLAG(IS_CHROMEOS)
   // TODO(crbug.com/1306998): ChromeOS experiences a much higher OOM crash
   // rate if the larger data pipe size is used.
-  return kDefaultDataPipeAllocationSize.Get();
+  return GetDefaultDataPipeAllocationSize();
 #else
   // For low-memory devices, always use the (smaller) default buffer size.
   if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512)
-    return kDefaultDataPipeAllocationSize.Get();
+    return GetDefaultDataPipeAllocationSize();
   switch (option) {
     case DataPipeAllocationSize::kDefaultSizeOnly:
-      return kDefaultDataPipeAllocationSize.Get();
+      return GetDefaultDataPipeAllocationSize();
     case DataPipeAllocationSize::kLargerSizeIfPossible:
-      return kLargerDataPipeAllocationSize.Get();
+      return GetLargerDataPipeAllocationSize();
   }
 #endif
 }
 
 uint32_t GetNetAdapterMaxBufSize() {
-  return kNetAdapterMaxBufSize.Get();
+  return GetNetAdapterMaxBufSizeParam();
 }
 
 // static
 uint32_t GetLoaderChunkSize() {
-  return kMaxNumConsumedBytesInTask.Get();
+  return GetMaxNumConsumedBytesInTask();
 }
 
 // https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name
@@ -372,24 +366,6 @@ BASE_FEATURE(kPrivateNetworkAccessPermissionPrompt,
              "PrivateNetworkAccessPermissionPrompt",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables out-of-process system DNS resolution so getaddrinfo() never runs in
-// the network service sandbox. System DNS resolution will instead be brokered
-// out over Mojo, likely to run in the browser process.
-//
-// This is only necessary on Linux desktop and Android where system DNS
-// resolution cannot always run in a sandboxed network process. The Mac and
-// Windows sandboxing systems allow us to specify system DNS resolution as an
-// allowed action, and ChromeOS uses a simple, known system DNS configuration
-// that can be adequately sandboxed.
-BASE_FEATURE(kOutOfProcessSystemDnsResolution,
-             "OutOfProcessSystemDnsResolution",
-#if BUILDFLAG(IS_LINUX)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
-
 BASE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant,
              "AccessControlAllowMethodsInCORSPreflightSpecConformant",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -397,12 +373,6 @@ BASE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant,
 BASE_FEATURE(kPrefetchNoVarySearch,
              "PrefetchNoVarySearch",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-#if BUILDFLAG(IS_ANDROID)
-BASE_FEATURE(kNetworkServiceEmptyOutOfProcess,
-             "NetworkServiceEmptyOutOfProcess",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 
 // Enables the backend of the compression dictionary transport feature.
 // When this feature is enabled, the following will happen:
@@ -413,7 +383,7 @@ BASE_FEATURE(kNetworkServiceEmptyOutOfProcess,
 //     decompresses the response body using the dictionary.
 BASE_FEATURE(kCompressionDictionaryTransportBackend,
              "CompressionDictionaryTransportBackend",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When both this feature and the kCompressionDictionaryTransportBackend feature
 // are enabled, the following will happen:
@@ -434,5 +404,11 @@ BASE_FEATURE(kVisibilityAwareResourceScheduler,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSharedZstd, "SharedZstd", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// This feature will permits de-duplicating cookie access details that are sent
+// to observers via OnCookiesAccessed.
+BASE_FEATURE(kCookieAccessDetailsNotificationDeDuping,
+             "CookieAccessDetailsNotificationDeDuping",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace network::features

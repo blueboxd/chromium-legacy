@@ -285,6 +285,9 @@ crbug.com/1201009 [ fuchsia ] Pixel_VideoStreamFromWebGLCanvas_TwoCopy_Accelerat
 crbug.com/1353952 [ chromeos cros-chrome chromeos-board-amd64-generic ] Pixel_WebGLContextRestored [ Skip ]
 crbug.com/1353952 [ chromeos cros-chrome chromeos-board-kevin ] Pixel_WebGLContextRestored [ Skip ]
 
+# Flakily causes subsequent tests to fail.
+crbug.com/1488026 [ android android-chromium android-nexus-5x ] Pixel_Video_HEVC [ Skip ]
+
 ###################
 # Failures/Flakes #
 ###################
@@ -359,6 +362,9 @@ crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] Pixel_OffscreenCanvasWebGLPa
 crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] Pixel_WebGLDisplayP3 [ Failure ]
 crbug.com/1478354 [ linux amd-0x7340 angle-vulkan ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ RetryOnFailure ]
 
+# Flaky fails with the entire window being black
+crbug.com/1490570 [ linux amd-0x7340 angle-vulkan ] Pixel_VideoStreamFromWebGLCanvas [ Failure ]
+
 # Lacros consistent failures on CrOS devices, skip to save some time
 crbug.com/1392806 [ chromeos lacros-chrome ] Pixel_CanvasDisplaySRGBAccelerated2D [ Skip ]
 crbug.com/1392806 [ chromeos lacros-chrome ] Pixel_Video_Context_Loss_MP4 [ Skip ]
@@ -380,20 +386,19 @@ crbug.com/1471713 [ chromeos chromeos-board-amd64-generic ] Pixel_PrecisionRound
 crbug.com/1468826 [ ventura angle-opengl amd-0x67ef asan ] Pixel_WebGPUDisplayP3 [ Failure ]
 crbug.com/1468826 [ ventura angle-opengl amd-0x67ef asan ] Pixel_WebGPUToDataURL [ Failure ]
 
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_BackgroundImage [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_CSSFilterEffects [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_CSSFilterEffects_NoOverlays [ Failure ]
-crbug.com/1469875 [ amd-0x679e graphite-enabled mac-x86_64 monterey no-asan ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled amd release no-asan ] Pixel_SVGHuge [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled apple ] Pixel_SVGHuge [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled intel release no-asan ] Pixel_SVGHuge [ Failure ]
-crbug.com/1469875 [ apple-angle-metal-renderer:-apple-m2 graphite-enabled mac-arm64 no-asan ventura ] Pixel_WebGPUImportVideoFrame [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
-crbug.com/1469875 [ apple-angle-metal-renderer:-apple-m2 graphite-enabled mac-arm64 no-asan ventura ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
-crbug.com/1469875 [ apple graphite-enabled mac-arm64 no-asan ventura ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
+crbug.com/1469875 [ mac graphite-enabled intel release asan ] Pixel_CSSFilterEffects [ Failure ]
+crbug.com/1469875 [ mac graphite-enabled intel release asan ] Pixel_CSSFilterEffects_NoOverlays [ Failure ]
 
 crbug.com/1474611 [ mac nvidia angle-opengl graphite-disabled ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ Failure ]
 crbug.com/1477318 [ mac ] Pixel_WebGLPreservedAfterTabSwitch [ RetryOnFailure ]
+
+# GL Crash on Nexus 5X causing flakes
+crbug.com/1489248 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4_FourColors_Rot_270 [ RetryOnFailure ]
+crbug.com/1489248 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4_FourColors_Rot_90 [ RetryOnFailure ]
+crbug.com/1489248 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4_Rounded_Corner [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

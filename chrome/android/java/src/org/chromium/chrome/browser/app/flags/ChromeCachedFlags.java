@@ -22,17 +22,18 @@ import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.features.branding.BrandingController;
 import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.CachedFlag;
+import org.chromium.chrome.browser.flags.CachedFlagUtils;
 import org.chromium.chrome.browser.flags.CachedFlagsSafeMode;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.hub.HubFieldTrial;
 import org.chromium.chrome.browser.notifications.chime.ChimeFeatures;
 import org.chromium.chrome.browser.omaha.VersionNumberGetter;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuidePushNotificationManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.recent_tabs.RestoreTabsFeatureHelper;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementFieldTrial;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
@@ -76,7 +77,7 @@ public class ChromeCachedFlags {
         if (mIsFinishedCachingNativeFlags) return;
         FirstRunUtils.cacheFirstRunPrefs();
 
-        CachedFeatureFlags.cacheNativeFlags(ChromeFeatureList.sFlagsCachedFullBrowser);
+        CachedFlagUtils.cacheNativeFlags(ChromeFeatureList.sFlagsCachedFullBrowser);
         cacheAdditionalNativeFlags();
 
         //clang-format off
@@ -86,6 +87,9 @@ public class ChromeCachedFlags {
                 BrandingController.USE_TEMPORARY_STORAGE,
                 BrandingController.ANIMATE_TOOLBAR_ICON_TRANSITION, ChimeFeatures.ALWAYS_REGISTER,
                 FeedPlaceholderLayout.ENABLE_INSTANT_START_ANIMATION,
+                HubFieldTrial.FLOATING_ACTION_BUTTON, HubFieldTrial.PANE_SWITCHER_USES_TEXT,
+                HubFieldTrial.SUPPORTS_OTHER_TABS, HubFieldTrial.SUPPORTS_SEARCH,
+                HubFieldTrial.SUPPORTS_BOOKMARKS,
                 OptimizationGuidePushNotificationManager.MAX_CACHE_SIZE,
                 OmniboxFeatures.ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET,
                 OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_ACTIVE_COLOR_ON_OMNIBOX,
@@ -126,11 +130,12 @@ public class ChromeCachedFlags {
                 VersionNumberGetter.MIN_SDK_VERSION,
                 MinimizeAppAndCloseTabBackPressHandler.SYSTEM_BACK,
                 BackPressManager.TAB_HISTORY_RECOVER);
+
         // clang-format on
         tryToCatchMissingParameters(fieldTrialsToCache);
-        CachedFeatureFlags.cacheFieldTrialParameters(fieldTrialsToCache);
+        CachedFlagUtils.cacheFieldTrialParameters(fieldTrialsToCache);
 
-        CachedFeatureFlags.onEndCheckpoint();
+        CachedFlagsSafeMode.getInstance().onEndCheckpoint();
         mIsFinishedCachingNativeFlags = true;
     }
 
@@ -160,8 +165,8 @@ public class ChromeCachedFlags {
      */
     public void cacheMinimalBrowserFlags() {
         cacheMinimalBrowserFlagsTimeFromNativeTime();
-        CachedFeatureFlags.cacheNativeFlags(ChromeFeatureList.sFlagsCachedInMinimalBrowser);
-        CachedFeatureFlags.cacheFieldTrialParameters(MINIMAL_BROWSER_FIELD_TRIALS);
+        CachedFlagUtils.cacheNativeFlags(ChromeFeatureList.sFlagsCachedInMinimalBrowser);
+        CachedFlagUtils.cacheFieldTrialParameters(MINIMAL_BROWSER_FIELD_TRIALS);
     }
 
     /**
@@ -171,7 +176,6 @@ public class ChromeCachedFlags {
      * Do not add new simple boolean flags here, add them to {@link #cacheNativeFlags} instead.
      */
     public static void cacheAdditionalNativeFlags() {
-        CachedFlagsSafeMode.cacheSafeModeForCachedFlagsEnabled();
         cacheReachedCodeProfilerTrialGroup();
 
         // Propagate REACHED_CODE_PROFILER feature value to LibraryLoader. This can't be done in
@@ -199,7 +203,7 @@ public class ChromeCachedFlags {
             getReachedCodeProfilerTrialGroup();
         }
 
-        SharedPreferencesManager.getInstance().writeString(
+        ChromeSharedPreferences.getInstance().writeString(
                 ChromePreferenceKeys.REACHED_CODE_PROFILER_GROUP,
                 FieldTrialList.findFullName(ChromeFeatureList.REACHED_CODE_PROFILER));
     }
@@ -210,7 +214,7 @@ public class ChromeCachedFlags {
     @CalledByNative
     public static String getReachedCodeProfilerTrialGroup() {
         if (sReachedCodeProfilerTrialGroup == null) {
-            sReachedCodeProfilerTrialGroup = SharedPreferencesManager.getInstance().readString(
+            sReachedCodeProfilerTrialGroup = ChromeSharedPreferences.getInstance().readString(
                     ChromePreferenceKeys.REACHED_CODE_PROFILER_GROUP, "");
         }
 
@@ -219,13 +223,13 @@ public class ChromeCachedFlags {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     static void cacheMinimalBrowserFlagsTimeFromNativeTime() {
-        SharedPreferencesManager.getInstance().writeLong(
+        ChromeSharedPreferences.getInstance().writeLong(
                 ChromePreferenceKeys.FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS,
                 System.currentTimeMillis());
     }
 
     public static long getLastCachedMinimalBrowserFlagsTimeMillis() {
-        return SharedPreferencesManager.getInstance().readLong(
+        return ChromeSharedPreferences.getInstance().readLong(
                 ChromePreferenceKeys.FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS, 0);
     }
 

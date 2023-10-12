@@ -20,6 +20,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/trusted_vault/trusted_vault_encryption_keys_tab_helper.h"
@@ -273,12 +274,10 @@ void ProfilePickerDiceSignInProvider::FinishFlowInPicker(
 }
 
 GURL ProfilePickerDiceSignInProvider::BuildSigninURL() const {
-  // Activating `kSigninPageWithoutOutboundLinks` will use the embedded version
-  // of the gaia page with no outbound links.
-  signin::Flow signin_flow =
-      base::FeatureList::IsEnabled(kGaiaSigninUrlEmbedded)
-          ? signin::Flow::EMBEDDED_PROMO
-          : signin::Flow::PROMO;
+  // Use the Emebedded flow if we are in the context of ForceSignin.
+  signin::Flow signin_flow = signin_util::IsForceSigninEnabled()
+                                 ? signin::Flow::EMBEDDED_PROMO
+                                 : signin::Flow::PROMO;
 
   return signin::GetChromeSyncURLForDice({
       .request_dark_scheme = host_->ShouldUseDarkColors(),
@@ -325,5 +324,6 @@ void ProfilePickerDiceSignInProvider::InitializeDiceTabHelper(
       signin_metrics::Reason::kSigninPrimaryAccount,
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
       std::move(redirect_url), record_signin_started_metrics,
-      std::move(enable_sync_callback), std::move(show_signin_error_callback));
+      std::move(enable_sync_callback), DiceTabHelper::OnSigninHeaderReceived(),
+      std::move(show_signin_error_callback));
 }

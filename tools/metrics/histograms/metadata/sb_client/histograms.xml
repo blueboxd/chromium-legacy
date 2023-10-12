@@ -318,7 +318,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SBClientDownload.SafeDownloadOpenedLatencyByContentType.{DownloadContent}"
-    units="ms" expires_after="2023-12-14">
+    units="ms" expires_after="2024-03-31">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -502,6 +502,8 @@ chromium-metrics-reviews@google.com.
     accepted/bypassed. - Once when the scan is completed, either through
     cancelation or completion. This is logged for consumer scans of
     {Encryption}.
+
+    Note: Logging of PromptAccepted was lost in M118.
   </summary>
   <token key="Encryption">
     <variant name="" summary="a file"/>
@@ -804,7 +806,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.RTLookupForceRequest"
-    enum="BooleanForceRequest" expires_after="2024-01-28">
+    enum="BooleanForceRequest" expires_after="2024-03-31">
   <owner>andysjlim@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>

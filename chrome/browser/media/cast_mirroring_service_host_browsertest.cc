@@ -96,8 +96,7 @@ class MockVideoCaptureObserver final
   MOCK_METHOD1(OnBufferDestroyedCall, void(int buffer_id));
   MOCK_METHOD1(OnStateChangedCall, void(media::mojom::VideoCaptureState state));
   MOCK_METHOD1(OnVideoCaptureErrorCall, void(media::VideoCaptureError error));
-  MOCK_METHOD1(OnFrameDroppedEarly,
-               void(media::VideoCaptureFrameDropReason reason));
+  MOCK_METHOD1(OnFrameDropped, void(media::VideoCaptureFrameDropReason reason));
 
   // media::mojom::VideoCaptureObserver implementation.
   void OnNewBuffer(int32_t buffer_id,
@@ -108,9 +107,7 @@ class MockVideoCaptureObserver final
     OnBufferCreatedCall(buffer_id);
   }
 
-  void OnBufferReady(
-      media::mojom::ReadyBufferPtr buffer,
-      std::vector<media::mojom::ReadyBufferPtr> scaled_buffer) override {
+  void OnBufferReady(media::mojom::ReadyBufferPtr buffer) override {
     EXPECT_TRUE(buffers_.find(buffer->buffer_id) != buffers_.end());
     EXPECT_EQ(frame_infos_.find(buffer->buffer_id), frame_infos_.end());
     frame_infos_[buffer->buffer_id] = std::move(buffer->info);

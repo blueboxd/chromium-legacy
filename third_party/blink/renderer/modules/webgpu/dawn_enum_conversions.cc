@@ -932,4 +932,48 @@ const char* FromDawnEnum(WGPUBufferMapState dawn_enum) {
   return "";
 }
 
+const char* FromDawnEnum(WGPUBackendType dawn_enum) {
+  switch (dawn_enum) {
+    case WGPUBackendType_Undefined:
+      return "";
+    case WGPUBackendType_Null:
+      return "null";
+    case WGPUBackendType_WebGPU:
+      return "WebGPU";
+    case WGPUBackendType_D3D11:
+      return "D3D11";
+    case WGPUBackendType_D3D12:
+      return "D3D12";
+    case WGPUBackendType_Metal:
+      return "metal";
+    case WGPUBackendType_Vulkan:
+      return "vulkan";
+    case WGPUBackendType_OpenGL:
+      return "openGL";
+    case WGPUBackendType_OpenGLES:
+      return "openGLES";
+    case WGPUBackendType_Force32:
+    default:
+      NOTREACHED();
+  }
+  return "";
+}
+
+const char* FromDawnEnum(WGPUAdapterType dawn_enum) {
+  switch (dawn_enum) {
+    case WGPUAdapterType_DiscreteGPU:
+      return "discrete GPU";
+    case WGPUAdapterType_IntegratedGPU:
+      return "integrated GPU";
+    case WGPUAdapterType_CPU:
+      return "CPU";
+    case WGPUAdapterType_Unknown:
+      return "unknown";
+    case WGPUAdapterType_Force32:
+    default:
+      NOTREACHED();
+  }
+  return "";
+}
+
 }  // namespace blink

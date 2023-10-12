@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/profiles/profile_list_desktop.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -76,8 +75,11 @@ AvatarMenu::AvatarMenu(ProfileAttributesStorage* profile_storage,
   // Register this as an observer of the SupervisedUserService to be notified
   // of changes to the custodian info.
   if (browser_) {
-    supervised_user_observation_.Observe(
-        SupervisedUserServiceFactory::GetForProfile(browser_->profile()));
+    auto* supervised_user_service =
+        SupervisedUserServiceFactory::GetForProfile(browser_->profile());
+    if (supervised_user_service) {
+      supervised_user_observation_.Observe(supervised_user_service);
+    }
   }
 #endif
 }

@@ -53,6 +53,8 @@ class SegmentationPlatformServiceFactoryTest : public testing::Test {
   SegmentationPlatformServiceFactoryTest() {
     scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
         kSegmentationPlatformRefreshResultsSwitch);
+    scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
+        kSegmentationPlatformDisableModelExecutionDelaySwitch);
   }
 
   ~SegmentationPlatformServiceFactoryTest() override = default;
@@ -271,6 +273,18 @@ TEST_F(SegmentationPlatformServiceFactoryTest, TestLowUserEngagementModel) {
       /*expected_status=*/PredictionStatus::kSucceeded,
       /*expected_labels=*/
       std::vector<std::string>(1, kChromeLowUserEngagementUmaName));
+}
+
+TEST_F(SegmentationPlatformServiceFactoryTest, TestCrossDeviceModel) {
+  InitServiceAndCacheResults(segmentation_platform::kCrossDeviceUserKey);
+
+  segmentation_platform::PredictionOptions prediction_options;
+
+  ExpectGetClassificationResult(
+      segmentation_platform::kCrossDeviceUserKey, prediction_options, nullptr,
+      /*expected_status=*/segmentation_platform::PredictionStatus::kSucceeded,
+      /*expected_labels=*/
+      std::vector<std::string>(1, segmentation_platform::kNoCrossDeviceUsage));
 }
 
 TEST_F(SegmentationPlatformServiceFactoryTest, TestDeviceSwitcherModel) {

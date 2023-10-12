@@ -1228,6 +1228,14 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // https://drafts.csswg.org/css-anchor-1/#implicit-anchor-element
   Element* ImplicitAnchorElement();
 
+  void UpdateDirectionalityAndDescendant(TextDirection direction);
+  void UpdateDescendantHasDirAutoAttribute(bool has_dir_auto);
+  enum class UpdateAncestorTraversal {
+    IncludeSelf,  // self and ancestors
+    ExcludeSelf,  // ancestors, but not self
+  };
+  void UpdateAncestorWithDirAuto(UpdateAncestorTraversal traversal);
+
  protected:
   bool HasElementData() const { return element_data_; }
   const ElementData* GetElementData() const { return element_data_.Get(); }
@@ -1292,8 +1300,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // This method cannot be moved to LayoutObject because some focusable nodes
   // don't have layoutObjects. e.g., HTMLOptionElement.
   virtual bool IsFocusableStyle() const;
-  // Contains the base logic for IsFocusableStyle.
-  bool IsBaseElementFocusableStyle() const;
   // Similar to IsFocusableStyle, except that it will ensure that any deferred
   // work to create layout objects is completed (e.g. in display-locked trees).
   bool IsFocusableStyleAfterUpdate() const;
@@ -1335,6 +1341,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void LangAttributeChanged();
 
   TextDirection ParentDirectionality() const;
+  void AdjustDirectionalityIfNeededAfterChildrenChanged(
+      const ChildrenChange& change);
+  template <typename Traversal>
+  absl::optional<TextDirection> ResolveAutoDirectionality(
+      bool& is_deferred,
+      Node* stay_within) const;
 
  private:
   friend class AXObject;
@@ -1396,8 +1408,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // Determine whether pseudo highlight style must be recalculated,
   // either because full recalc is required or the parent has font relative
-  // units.
-  bool ShouldRecalcHighlightPseudoStyle(HighlightRecalc, const ComputedStyle*);
+  // units and the parent's font size differs from the originating element.
+  bool ShouldRecalcHighlightPseudoStyle(HighlightRecalc,
+                                        const ComputedStyle*,
+                                        const ComputedStyle&);
 
   // Recalc those custom highlights that require it.
   void RecalcCustomHighlightPseudoStyle(const StyleRecalcContext&,
@@ -1482,6 +1496,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   }
 
   void RecomputeDirectionFromParent();
+  bool RecalcSelfOrAncestorHasDirAuto();
 
   ShadowRoot& CreateAndAttachShadowRoot(ShadowRootType);
 

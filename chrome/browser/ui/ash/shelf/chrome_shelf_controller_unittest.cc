@@ -4891,7 +4891,7 @@ TEST_F(ChromeShelfControllerTest, PersistPinned) {
   EXPECT_EQ(0, app_icon_loader->fetch_count());
 
   PinAppWithIDToShelf("1");
-  const int app_index = model_->ItemIndexByID(ash::ShelfID("1"));
+  int app_index = model_->ItemIndexByID(ash::ShelfID("1"));
   EXPECT_EQ(1, app_icon_loader->fetch_count());
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[app_index].type);
   EXPECT_TRUE(shelf_controller_->IsAppPinned("1"));
@@ -4908,6 +4908,7 @@ TEST_F(ChromeShelfControllerTest, PersistPinned) {
   SetAppIconLoader(std::unique_ptr<AppIconLoader>(app_icon_loader));
   shelf_controller_->Init();
 
+  app_index = model_->ItemIndexByID(ash::ShelfID("1"));
   EXPECT_EQ(1, app_icon_loader->fetch_count());
   ASSERT_EQ(initial_size + 1, model_->items().size());
   EXPECT_TRUE(shelf_controller_->IsAppPinned("1"));
@@ -6198,9 +6199,17 @@ class ChromeShelfControllerPromiseAppsTest : public ChromeShelfControllerTest,
                                              public ash::ShelfModelObserver {
  public:
   ChromeShelfControllerPromiseAppsTest() {
+    auto_start_arc_test_ = true;
     feature_list_.InitAndEnableFeature(ash::features::kPromiseIcons);
   }
   ~ChromeShelfControllerPromiseAppsTest() override = default;
+
+  void SetUp() override {
+    // To prevent crash on test exit and pending decode request.
+    ArcAppIcon::DisableSafeDecodingForTesting();
+
+    ChromeShelfControllerTestBase::SetUp();
+  }
 
   SkBitmap ApplyEffectsToBitmap(SkBitmap bitmap, apps::IconEffects effects) {
     auto iv = std::make_unique<apps::IconValue>();
@@ -6275,9 +6284,8 @@ TEST_F(ChromeShelfControllerPromiseAppsTest, PromiseAppUpdatesShelfItem) {
   EXPECT_TRUE(model_->IsAppPinned(package_id.ToString()));
   ash::ShelfID id(package_id.ToString());
   const ash::ShelfItem* item = shelf_controller_->GetItem(id);
-  EXPECT_EQ(item->title,
-            base::UTF8ToUTF16(ShelfControllerHelper::GetLabelForPromiseStatus(
-                apps::PromiseStatus::kPending)));
+  EXPECT_EQ(item->title, ShelfControllerHelper::GetLabelForPromiseStatus(
+                             apps::PromiseStatus::kPending));
   EXPECT_EQ(item->progress, 0);
   EXPECT_EQ(item->app_status, ash::AppStatus::kPending);
 
@@ -6288,9 +6296,8 @@ TEST_F(ChromeShelfControllerPromiseAppsTest, PromiseAppUpdatesShelfItem) {
   cache()->OnPromiseApp(std::move(update));
 
   // Verify that the shelf item has updated details.
-  EXPECT_EQ(item->title,
-            base::UTF8ToUTF16(ShelfControllerHelper::GetLabelForPromiseStatus(
-                apps::PromiseStatus::kInstalling)));
+  EXPECT_EQ(item->title, ShelfControllerHelper::GetLabelForPromiseStatus(
+                             apps::PromiseStatus::kInstalling));
   EXPECT_EQ(item->progress, 0.3f);
   EXPECT_EQ(item->app_status, ash::AppStatus::kInstalling);
 }
@@ -6514,6 +6521,85 @@ TEST_F(ChromeShelfControllerPromiseAppsTest,
   EXPECT_FALSE(model_->IsAppPinned(package_id.ToString()));
 }
 
+// This test verifies that the sync data will trigger the creation of a
+// ShelfItem with specific promise app fields for a promise app registration, or
+// a regular ShelfItem for an installed app. We should not create a regular
+// ShelfItem for a promise app or a ShelfItem with promise app fields for an
+// installed app.
+TEST_F(ChromeShelfControllerPromiseAppsTest, SyncDataCreatesCorrectShelfItem) {
+  std::string package_name = "com.example.test";
+  const apps::PackageId package_id =
+      apps::PackageId(apps::AppType::kArc, package_name);
+  std::string app_id = "bijolhehmgkcaahdbconomepmenmeomc";
+
+  // Add entry in sync data that has a matching PackageId with our promise app.
+  SendPinChanges(syncer::SyncChangeList(), true);
+  StopAppSyncService();
+  syncer::SyncDataList sync_list;
+  sync_list.push_back((app_list::CreateAppRemoteData(
+      app_id, "App Name", /*parent_id=*/std::string(), "ordinal",
+      /*item_pin_ordinal=*/GeneratePinPosition(1).ToDebugString(),
+      /*item_type=*/sync_pb::AppListSpecifics_AppListItemType_TYPE_APP,
+      /*is_user_pinned=*/true,
+      /*promise_package_id=*/package_id.ToString())));
+  StartAppSyncService(sync_list);
+  base::RunLoop().RunUntilIdle();
+
+  InitShelfController();
+
+  // Start the promise app installation but don't allow it to be visible yet.
+  apps::PromiseAppPtr promise_app =
+      std::make_unique<apps::PromiseApp>(package_id);
+  promise_app->should_show = false;
+  cache()->OnPromiseApp(std::move(promise_app));
+
+  // Force an update to the shelf items pinned by sync.
+  SendPinChanges(syncer::SyncChangeList(), /*reset_pin_model=*/false);
+
+  // No shelf items should be created for the sync data.
+  EXPECT_FALSE(model_->IsAppPinned(app_id));
+  EXPECT_FALSE(model_->IsAppPinned(package_id.ToString()));
+
+  // Update the visibility of the promise app.
+  apps::PromiseAppPtr promise_app_update =
+      std::make_unique<apps::PromiseApp>(package_id);
+  promise_app_update->should_show = true;
+  promise_app_update->progress = 0.3;
+  cache()->OnPromiseApp(std::move(promise_app_update));
+
+  // Only the promise app ShelfItem should exist.
+  EXPECT_FALSE(model_->IsAppPinned(app_id));
+  EXPECT_TRUE(model_->IsAppPinned(package_id.ToString()));
+
+  // Confirm the promise app ShelfItem fields.
+  ash::ShelfID promise_shelf_id(package_id.ToString());
+  const ash::ShelfItem* promise_item =
+      shelf_controller_->GetItem(promise_shelf_id);
+  ASSERT_TRUE(promise_item);
+  EXPECT_TRUE(promise_item->is_promise_app);
+  EXPECT_EQ(promise_item->progress, 0.3f);
+
+  // Add an app in ArcAppListPrefs, which will register an app in App Service.
+  // We need to add an app into ArcAppListPrefs (and not just the
+  // AppRegistryCache) because ChromeShelfPrefs checks ArcAppListPrefs to
+  // confirm whether an app ID is valid when retrieving all the pinned apps from
+  // sync.
+  arc::mojom::AppInfoPtr app_info =
+      CreateAppInfo("Test Name", "Test Activity", "com.example.test");
+  AddArcAppAndShortcut(*app_info);
+
+  // Only the installed app shelf item should exist.
+  EXPECT_TRUE(model_->IsAppPinned(app_id));
+  EXPECT_FALSE(model_->IsAppPinned(package_id.ToString()));
+
+  // Confirm that the ShelfItem is not for the promise app.
+  ash::ShelfID shelf_id(app_id);
+  const ash::ShelfItem* app_item = shelf_controller_->GetItem(shelf_id);
+  ASSERT_TRUE(app_item);
+  EXPECT_FALSE(app_item->is_promise_app);
+  EXPECT_EQ(app_item->progress, -1);
+}
+
 class ChromeShelfControllerShortcutTest : public ChromeShelfControllerTest {
  public:
   ChromeShelfControllerShortcutTest() {
@@ -6594,9 +6680,13 @@ TEST_F(ChromeShelfControllerShortcutTest, LoadIcon) {
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->OverrideInnerIconLoaderForTesting(&app_stub_icon_loader);
   shortcut_stub_icon_loader.timelines_by_app_id_[shortcut_id.value()] = 1;
-  app_stub_icon_loader.timelines_by_app_id_[app_constants::kChromeAppId] = 1;
+  app_stub_icon_loader.timelines_by_app_id_["app_id"] = 1;
   EXPECT_EQ(0, shortcut_stub_icon_loader.NumLoadIconFromIconKeyCalls());
   EXPECT_EQ(0, app_stub_icon_loader.NumLoadIconFromIconKeyCalls());
+
+  gfx::ImageSkia stub_icon(gfx::ImageSkiaRep(gfx::Size(1, 1), 1.0f));
+  gfx::ImageSkia expected_image =
+      gfx::ImageSkiaOperations::CreateIconWithBadge(stub_icon, stub_icon);
 
   cache()->UpdateShortcut(std::move(shortcut));
   PinAppWithIDToShelf(shortcut_id.value());
@@ -6609,6 +6699,11 @@ TEST_F(ChromeShelfControllerShortcutTest, LoadIcon) {
   EXPECT_EQ(1, shortcut_stub_icon_loader.NumLoadIconFromIconKeyCalls());
   EXPECT_EQ(1, app_stub_icon_loader.NumLoadIconFromIconKeyCalls());
   EXPECT_FALSE(item->image.isNull());
+  EXPECT_TRUE(gfx::test::AreImagesEqual(gfx::Image(expected_image),
+                                        gfx::Image(item->image)));
+
+  // Set the image to a different icon so that we can verify the updates.
+  shelf_controller_->SetItemImage(id, stub_icon);
 
   // Verify icon update loads icon again.
   apps::ShortcutPtr delta =
@@ -6618,6 +6713,9 @@ TEST_F(ChromeShelfControllerShortcutTest, LoadIcon) {
 
   EXPECT_EQ(2, shortcut_stub_icon_loader.NumLoadIconFromIconKeyCalls());
   EXPECT_EQ(2, app_stub_icon_loader.NumLoadIconFromIconKeyCalls());
+  EXPECT_FALSE(item->image.isNull());
+  EXPECT_TRUE(gfx::test::AreImagesEqual(gfx::Image(expected_image),
+                                        gfx::Image(item->image)));
 
   apps::ShortcutPtr delta_no_icon_update =
       std::make_unique<apps::Shortcut>("app_id", "local_id");
@@ -6627,6 +6725,12 @@ TEST_F(ChromeShelfControllerShortcutTest, LoadIcon) {
   // Verify the icon is not updated.
   EXPECT_EQ(2, shortcut_stub_icon_loader.NumLoadIconFromIconKeyCalls());
   EXPECT_EQ(2, app_stub_icon_loader.NumLoadIconFromIconKeyCalls());
+  EXPECT_FALSE(item->image.isNull());
+  EXPECT_TRUE(gfx::test::AreImagesEqual(gfx::Image(expected_image),
+                                        gfx::Image(item->image)));
+
+  // Set the image to a different icon so that we can verify the updates.
+  shelf_controller_->SetItemImage(id, stub_icon);
 
   // Verify unpin then pin shortcut loads icon again.
   UnpinAppWithIDFromShelf(shortcut_id.value());
@@ -6634,11 +6738,41 @@ TEST_F(ChromeShelfControllerShortcutTest, LoadIcon) {
   EXPECT_EQ(3, shortcut_stub_icon_loader.NumLoadIconFromIconKeyCalls());
   EXPECT_EQ(3, app_stub_icon_loader.NumLoadIconFromIconKeyCalls());
 
+  item = shelf_controller_->GetItem(id);
+  ASSERT_TRUE(item);
+  EXPECT_FALSE(item->image.isNull());
+  EXPECT_TRUE(gfx::test::AreImagesEqual(gfx::Image(expected_image),
+                                        gfx::Image(item->image)));
+
+  // Set the image to a different icon so that we can verify the updates.
+  shelf_controller_->SetItemImage(id, stub_icon);
+
   // Verify UpdateItemImage uses the cache in memory and does not load icon
   // again.
   shelf_controller_->UpdateItemImage(shortcut_id.value());
   EXPECT_EQ(3, shortcut_stub_icon_loader.NumLoadIconFromIconKeyCalls());
   EXPECT_EQ(3, app_stub_icon_loader.NumLoadIconFromIconKeyCalls());
+  EXPECT_FALSE(item->image.isNull());
+  EXPECT_TRUE(gfx::test::AreImagesEqual(gfx::Image(expected_image),
+                                        gfx::Image(item->image)));
+
+  // Set the image to a different icon so that we can verify the updates.
+  shelf_controller_->SetItemImage(id, stub_icon);
+
+  // Verify remove then recreate the shortcut again still shows icon.
+  cache()->RemoveShortcut(shortcut_id);
+  apps::ShortcutPtr same_shortcut =
+      std::make_unique<apps::Shortcut>("app_id", "local_id");
+  same_shortcut->icon_key = apps::IconKey(100, 0, 0);
+  cache()->UpdateShortcut(std::move(same_shortcut));
+  // In this case icon loaded on shortcut creation.
+  EXPECT_EQ(4, shortcut_stub_icon_loader.NumLoadIconFromIconKeyCalls());
+  EXPECT_EQ(4, app_stub_icon_loader.NumLoadIconFromIconKeyCalls());
+
+  PinAppWithIDToShelf(shortcut_id.value());
+  EXPECT_FALSE(item->image.isNull());
+  EXPECT_TRUE(gfx::test::AreImagesEqual(gfx::Image(expected_image),
+                                        gfx::Image(item->image)));
 }
 
 TEST_F(ChromeShelfControllerShortcutTest, PinStatusSynced) {

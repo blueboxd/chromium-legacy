@@ -135,11 +135,10 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   button->accessibleNode()->setRole(AtomicString("radio"));
   button->accessibleNode()->setLabel(AtomicString("Radio"));
   button->accessibleNode()->setDisabled(false);
-  GetDocument().View()->UpdateLifecycleToLayoutClean(
-      DocumentUpdateReason::kTest);
+  cache->UpdateAXForAllDocuments();
 
   // Assert that AOM does not affect the AXObject.
-  axButton = cache->GetOrCreate(button);
+  axButton = cache->Get(button);
   EXPECT_EQ(ax::mojom::Role::kCheckBox, axButton->RoleValue());
   EXPECT_EQ("Check", axButton->GetName(name_from, &name_objects));
   EXPECT_EQ(axButton->Restriction(), kRestrictionDisabled);
@@ -148,11 +147,10 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   button->accessibleNode()->setRole(g_null_atom);
   button->accessibleNode()->setLabel(g_null_atom);
   button->accessibleNode()->setDisabled(absl::nullopt);
-  GetDocument().View()->UpdateLifecycleToLayoutClean(
-      DocumentUpdateReason::kTest);
+  cache->UpdateAXForAllDocuments();
 
   // The AX Object should now revert to ARIA.
-  axButton = cache->GetOrCreate(button);
+  axButton = cache->Get(button);
   EXPECT_EQ(ax::mojom::Role::kCheckBox, axButton->RoleValue());
   EXPECT_EQ("Check", axButton->GetName(name_from, &name_objects));
   EXPECT_EQ(axButton->Restriction(), kRestrictionDisabled);
@@ -281,7 +279,9 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
      aria-details=details
      aria-invalid=true
      aria-errormessage=error>
-    <div id=active role=option></div>
+    <div role=listbox>
+      <div id=active role=option></div>
+    </div>
     <div id=active2 role=gridcell></div>
     <div id=details role=contentinfo></div>
     <div id=details2 role=form></div>
@@ -294,7 +294,7 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
   cache->UpdateAXForAllDocuments();
-  auto* ax_target = cache->GetOrCreate(target);
+  auto* ax_target = cache->Get(target);
   ui::AXNodeData node_data;
   ax_target->Serialize(&node_data, ui::kAXModeComplete);
 
@@ -337,6 +337,7 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
       GetDocument().getElementById(AtomicString("error2"))->accessibleNode());
   target->accessibleNode()->setErrorMessage(error_message_node_list);
 
+  cache->UpdateAXForAllDocuments();
   ui::AXNodeData node_data2;
   ax_target->Serialize(&node_data2, ui::kAXModeComplete);
 

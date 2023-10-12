@@ -35,6 +35,7 @@
 #include "ash/system/progress_indicator/progress_indicator.h"
 #include "ash/user_education/user_education_class_properties.h"
 #include "ash/user_education/user_education_controller.h"
+#include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
@@ -1808,6 +1809,11 @@ void AppListItemView::ItemIsNewInstallChanged() {
   }
 }
 
+std::unique_ptr<ui::LayerTreeOwner> AppListItemView::RequestDuplicateLayer() {
+  CHECK(layer());
+  return ::wm::RecreateLayers(this);
+}
+
 void AppListItemView::ItemBeingDestroyed() {
   DCHECK(item_weak_);
   item_weak_->RemoveObserver(this);
@@ -1838,7 +1844,7 @@ void AppListItemView::ItemProgressUpdated() {
         ProgressIndicator::CreateDefaultInstance(base::BindRepeating(
             [](AppListItemView* view) -> absl::optional<float> {
               if (view->item()->app_status() == AppStatus::kPending) {
-                return absl::nullopt;
+                return 0.0f;
               }
               // If download is in-progress, return the progress as a decimal.
               // Otherwise, the progress indicator shouldn't be painted.
@@ -1855,7 +1861,7 @@ void AppListItemView::ItemProgressUpdated() {
           return view->GetColorProvider()->GetColor(color_id);
         },
         base::Unretained(this))));
-    progress_indicator_->SetColorId(cros_tokens::kCrosSysOnPrimaryContainer);
+    progress_indicator_->SetColorId(cros_tokens::kCrosRefPrimary70);
   }
 
   UpdateProgressRingBounds();

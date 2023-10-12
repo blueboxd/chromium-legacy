@@ -32,6 +32,24 @@ reviewer.
   <variant name="Server" summary="server-side"/>
 </variants>
 
+<histogram name="Privacy.3pcd.ProfileEligibilityMismatch"
+    enum="ProfileEligibilityMismatch" expires_after="2024-07-01">
+  <owner>trishalfonso@google.com</owner>
+  <owner>src/chrome/browser/tpcd/OWNERS</owner>
+  <summary>
+    Records the relationship between profile and client eligibility for 3PCD
+    Experiments.
+
+    All profiles on the same client share a single eligibility value for
+    experiment purposes, but it is possible that an individual profile on the
+    client has a different eligibility than the client value used. This
+    histogram records how often a profile's eligibility matches and mismatches
+    with the client eligibility used for the experiment.
+
+    Recorded each time a profile is first loaded in a browser session.
+  </summary>
+</histogram>
+
 <histogram name="Privacy.AccuracyTip.AccuracyTipInteraction"
     enum="AccuracyTipInteraction" expires_after="2022-08-21">
   <obsolete>
@@ -362,24 +380,6 @@ reviewer.
   </summary>
 </histogram>
 
-<histogram name="Privacy.DIPS.TimeFromInteractionToStorage{DIPSCookieMode}"
-    units="ms" expires_after="2023-11-01">
-  <owner>jdh@chromium.org</owner>
-  <owner>rtarpine@chromium.org</owner>
-  <owner>src/chrome/browser/dips/OWNERS</owner>
-  <summary>
-    The amount of time after a user interacts with a site until the site
-    persists state (e.g. cookies), {DIPSCookieMode} (where site = eTLD+1). Not
-    recorded if state is written before interaction takes place (see analogous
-    histogram below).
-
-    In M-109, the DIPS Service was updated to explicitly not collect metrics for
-    non-user profiles, such as system profiles and ChromeOS Signin, LockScreen,
-    and LockScreenApp profiles.
-  </summary>
-  <token key="DIPSCookieMode" variants="DIPSCookieMode"/>
-</histogram>
-
 <histogram name="Privacy.DIPS.TimeFromNavigationCommitToClientBounce"
     units="ms" expires_after="2024-04-22">
   <owner>jdh@chromium.org</owner>
@@ -395,24 +395,6 @@ reviewer.
     non-user profiles, such as system profiles and ChromeOS Signin, LockScreen,
     and LockScreenApp profiles.
   </summary>
-</histogram>
-
-<histogram name="Privacy.DIPS.TimeFromStorageToInteraction{DIPSCookieMode}"
-    units="ms" expires_after="2023-11-01">
-  <owner>jdh@chromium.org</owner>
-  <owner>rtarpine@chromium.org</owner>
-  <owner>src/chrome/browser/dips/OWNERS</owner>
-  <summary>
-    The amount of time after a site persists state (e.g. cookies) until the user
-    interacts with the site, {DIPSCookieMode} (where site = eTLD+1). Not
-    recorded if interaction takes place before state is written (see analogous
-    histogram above).
-
-    In M-109, the DIPS Service was updated to explicitly not collect metrics for
-    non-user profiles, such as system profiles and ChromeOS Signin, LockScreen,
-    and LockScreenApp profiles.
-  </summary>
-  <token key="DIPSCookieMode" variants="DIPSCookieMode"/>
 </histogram>
 
 <histogram name="Privacy.DoNotTrackSetting" enum="BooleanEnabled"
@@ -898,6 +880,19 @@ reviewer.
     cleared due to budget denial. Also breaks out the case of a report that
     started with no contributions. Recorded for each individual report request
     (but not each individual histogram contribution).
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.ProtectedAudience.JoiningTopFrameDisplayed"
+    enum="BooleanShown" expires_after="M125">
+  <owner>sauski@google.com</owner>
+  <owner>behamilton@chromium.org</owner>
+  <summary>
+    Records whether the joining site (including host fallback) for a Protected
+    Audience interest group was successfully displayed. True if it was, false if
+    the interest group was not displayed because no site or host could be
+    determined. Recorded on a per interest group data key basis when the user
+    opens the Protected Audience settings page.
   </summary>
 </histogram>
 

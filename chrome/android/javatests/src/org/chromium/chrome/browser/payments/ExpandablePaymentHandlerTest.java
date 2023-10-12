@@ -13,6 +13,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.test.core.app.ApplicationProvider;
@@ -30,6 +31,7 @@ import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
@@ -38,14 +40,19 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.payments.handler.PaymentHandlerContentFrameLayout;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
+import org.chromium.components.payments.InputProtector;
+import org.chromium.components.payments.test_support.FakeClock;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
@@ -62,6 +69,11 @@ import java.util.List;
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ExpandablePaymentHandlerTest {
+    private static final long IGNORED_INPUT_DELAY =
+            InputProtector.POTENTIALLY_UNINTENDED_INPUT_THRESHOLD - 100;
+    private static final long SAFE_INPUT_DELAY =
+            InputProtector.POTENTIALLY_UNINTENDED_INPUT_THRESHOLD;
+
     @Rule
     public ChromeTabbedActivityTestRule mRule = new ChromeTabbedActivityTestRule();
 
@@ -73,6 +85,7 @@ public class ExpandablePaymentHandlerTest {
     private boolean mDefaultIsIncognito;
     private ChromeActivity mDefaultActivity;
     private BottomSheetTestSupport mBottomSheetTestSupport;
+    private FakeClock mClock;
 
     /**
      * A list of bad server-certificates used for parameterized tests.
@@ -127,11 +140,13 @@ public class ExpandablePaymentHandlerTest {
         mDefaultActivity = mRule.getActivity();
         mBottomSheetTestSupport = new BottomSheetTestSupport(
                 mRule.getActivity().getRootUiCoordinatorForTesting().getBottomSheetController());
+        mClock = new FakeClock();
     }
 
     private PaymentHandlerCoordinator createPaymentHandlerAndShow(boolean isIncognito)
             throws Throwable {
         PaymentHandlerCoordinator paymentHandler = new PaymentHandlerCoordinator();
+        paymentHandler.setInputProtectorForTest(new InputProtector(mClock));
         mRule.runOnUiThread(
                 ()
                         -> paymentHandler.show(mDefaultActivity.getCurrentWebContents(),
@@ -237,6 +252,30 @@ public class ExpandablePaymentHandlerTest {
         createPaymentHandlerAndShow(mDefaultIsIncognito);
         waitForUiShown();
 
+        mClock.advanceCurrentTimeMillis(SAFE_INPUT_DELAY);
+        onView(withId(R.id.close)).perform(click());
+        waitForUiClosed();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void testCloseButtonInputProtection() throws Throwable {
+        startDefaultServer();
+        createPaymentHandlerAndShow(mDefaultIsIncognito);
+        waitForUiShown();
+
+        // Clicking close immediately is prevented.
+        onView(withId(R.id.close)).perform(click());
+        Assert.assertFalse(mUiClosedCalled);
+
+        // Clicking close after an interval less than the threshold is still prevented.
+        mClock.advanceCurrentTimeMillis(IGNORED_INPUT_DELAY);
+        onView(withId(R.id.close)).perform(click());
+        Assert.assertFalse(mUiClosedCalled);
+
+        // Clicking close after the threshold is no longer prevented and closes the dialog.
+        mClock.advanceCurrentTimeMillis(SAFE_INPUT_DELAY);
         onView(withId(R.id.close)).perform(click());
         waitForUiClosed();
     }
@@ -330,6 +369,51 @@ public class ExpandablePaymentHandlerTest {
                 .check(matches(withText(getOrigin(mServer))));
 
         mRule.runOnUiThread(() -> paymentHandler.hide());
+
+        waitForUiClosed();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    @DisabledTest(message = "https://crbug.com/1491094")
+    public void testWebContentsInputProtection() throws Throwable {
+        startDefaultServer();
+        PaymentHandlerCoordinator paymentHandler = createPaymentHandlerAndShow(mDefaultIsIncognito);
+        waitForUiShown();
+
+        CallbackHelper callbackHelper = new CallbackHelper();
+        WebContentsObserver observer = new WebContentsObserver() {
+            @Override
+            public void frameReceivedUserActivation() {
+                callbackHelper.notifyCalled();
+            }
+        };
+        mRule.runOnUiThread(
+                () -> { paymentHandler.getWebContentsForTest().addObserver(observer); });
+
+        DOMUtils.waitForNonZeroNodeBounds(paymentHandler.getWebContentsForTest(), "confirmButton");
+        // Before advancing the clock, input is intercepted from interacting with the page.
+        PaymentHandlerContentFrameLayout contentLayout =
+                (PaymentHandlerContentFrameLayout) mRule.getActivity().findViewById(
+                        R.id.payment_handler_content);
+        Assert.assertTrue(
+                contentLayout.onInterceptTouchEvent(MotionEvent.obtain(0, 0, 0, 0, 0, 0)));
+        Assert.assertTrue(
+                DOMUtils.clickNode(paymentHandler.getWebContentsForTest(), "confirmButton"));
+        Assert.assertEquals(0, callbackHelper.getCallCount());
+
+        mClock.advanceCurrentTimeMillis(SAFE_INPUT_DELAY);
+        Assert.assertFalse(
+                contentLayout.onInterceptTouchEvent(MotionEvent.obtain(0, 0, 0, 0, 0, 0)));
+        Assert.assertTrue(
+                DOMUtils.clickNode(paymentHandler.getWebContentsForTest(), "confirmButton"));
+        callbackHelper.waitForFirst();
+
+        mRule.runOnUiThread(() -> {
+            paymentHandler.getWebContentsForTest().removeObserver(observer);
+            paymentHandler.hide();
+        });
         waitForUiClosed();
     }
 

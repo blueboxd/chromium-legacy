@@ -23,6 +23,7 @@
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
+#include "chrome/browser/file_system_access/file_system_access_features.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
@@ -202,6 +203,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     // TODO(crbug.com/1011533): Update the name once the design is finalized
     // for the integration with Safety Hub.
     {ContentSettingsType::FILE_SYSTEM_ACCESS_EXTENDED_PERMISSION, nullptr},
+    {ContentSettingsType::TPCD_HEURISTICS_GRANTS, nullptr},
 };
 
 static_assert(std::size(kContentSettingsTypeGroupNames) ==

@@ -4,7 +4,6 @@
 
 import {AutomationPredicate} from '../../common/automation_predicate.js';
 import {AutomationUtil} from '../../common/automation_util.js';
-import {constants} from '../../common/constants.js';
 import {CursorRange} from '../../common/cursors/range.js';
 import {Flags} from '../../common/flags.js';
 import {InstanceChecker} from '../../common/instance_checker.js';
@@ -26,38 +25,33 @@ import {BrailleCommandHandler} from './braille/braille_command_handler.js';
 import {ChromeVox} from './chromevox.js';
 import {ChromeVoxRange} from './chromevox_range.js';
 import {ChromeVoxState} from './chromevox_state.js';
-import {ChromeVoxBackground} from './classic_background.js';
 import {ClipboardHandler} from './clipboard_handler.js';
-import {CommandHandler} from './command_handler.js';
 import {DownloadHandler} from './download_handler.js';
 import {Earcons} from './earcons.js';
 import {DesktopAutomationHandler} from './event/desktop_automation_handler.js';
-import {DesktopAutomationInterface} from './event/desktop_automation_interface.js';
 import {FocusAutomationHandler} from './event/focus_automation_handler.js';
 import {MediaAutomationHandler} from './event/media_automation_handler.js';
 import {PageLoadSoundHandler} from './event/page_load_sound_handler.js';
 import {RangeAutomationHandler} from './event/range_automation_handler.js';
 import {EventSource} from './event_source.js';
 import {FindHandler} from './find_handler.js';
-import {GestureCommandHandler} from './gesture_command_handler.js';
-import {BackgroundKeyboardHandler} from './keyboard_handler.js';
+import {InjectedScriptLoader} from './injected_script_loader.js';
+import {CommandHandler} from './input/command_handler.js';
+import {GestureCommandHandler} from './input/gesture_command_handler.js';
+import {BackgroundKeyboardHandler} from './input/keyboard_handler.js';
+import {SmartStickyMode} from './input/smart_sticky_mode.js';
 import {LiveRegions} from './live_regions.js';
 import {EventStreamLogger} from './logging/event_stream_logger.js';
 import {LogStore} from './logging/log_store.js';
 import {LogUrlWatcher} from './logging/log_url_watcher.js';
-import {MathHandler} from './math_handler.js';
-import {Output} from './output/output.js';
-import {OutputCustomEvent} from './output/output_types.js';
 import {PanelBackground} from './panel/panel_background.js';
 import {ChromeVoxPrefs} from './prefs.js';
-import {SmartStickyMode} from './smart_sticky_mode.js';
 import {TtsBackground} from './tts_background.js';
 
 /**
  * @fileoverview The entry point for all ChromeVox related code for the
  * background page.
  */
-const Dir = constants.Dir;
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
 
@@ -71,9 +65,6 @@ export class Background extends ChromeVoxState {
 
     /** @private {boolean} */
     this.isReadingContinuously_ = false;
-
-    /** @private {CursorRange} */
-    this.pageSel_ = null;
 
     /** @private {boolean} */
     this.talkBackEnabled_ = false;
@@ -112,7 +103,6 @@ export class Background extends ChromeVoxState {
     ChromeVoxPrefs.init();
     ChromeVoxRange.init();
     TtsBackground.init();
-    ChromeVoxBackground.init();
 
     ChromeVoxState.instance = new Background();
 
@@ -126,6 +116,7 @@ export class Background extends ChromeVoxState {
     EventSource.init();
     FindHandler.init();
     GestureCommandHandler.init();
+    InjectedScriptLoader.injectContentScriptForGoogleDocs();
     JaPhoneticData.init(JaPhoneticMap.MAP);
     LiveRegions.init();
     LocaleOutputHelper.init();
@@ -158,11 +149,6 @@ export class Background extends ChromeVoxState {
   }
 
   /** @override */
-  get pageSel() {
-    return this.pageSel_;
-  }
-
-  /** @override */
   get talkBackEnabled() {
     return this.talkBackEnabled_;
   }
@@ -170,112 +156,6 @@ export class Background extends ChromeVoxState {
   /** @override */
   set isReadingContinuously(newValue) {
     this.isReadingContinuously_ = newValue;
-  }
-
-  /** @override */
-  set pageSel(newPageSel) {
-    this.pageSel_ = newPageSel;
-  }
-
-  /**
-   * Navigate to the given range - it both sets the range and outputs it.
-   * @param {!CursorRange} range The new range.
-   * @param {boolean=} opt_focus Focus the range; defaults to true.
-   * @param {TtsSpeechProperties=} opt_speechProps Speech properties.
-   * @param {boolean=} opt_skipSettingSelection If true, does not set
-   *     the selection, otherwise it does by default.
-   * @override
-   */
-  navigateToRange(range, opt_focus, opt_speechProps, opt_skipSettingSelection) {
-    opt_focus = opt_focus ?? true;
-    opt_speechProps = opt_speechProps ?? new TtsSpeechProperties();
-    opt_skipSettingSelection = opt_skipSettingSelection ?? false;
-    const prevRange = ChromeVoxRange.getCurrentRangeWithoutRecovery();
-
-    // Specialization for math output.
-    let skipOutput = false;
-    if (MathHandler.init(range)) {
-      skipOutput = MathHandler.instance.speak();
-      opt_focus = false;
-    }
-
-    if (opt_focus) {
-      ChromeVoxState.instance.setFocusToRange(range, prevRange);
-    }
-
-    ChromeVoxRange.set(range);
-
-    const o = new Output();
-    let selectedRange;
-    let msg;
-
-    if (ChromeVoxState.instance.pageSel?.isValid() && range.isValid()) {
-      // Suppress hints.
-      o.withoutHints();
-
-      // Selection across roots isn't supported.
-      const pageRootStart = ChromeVoxState.instance.pageSel.start.node.root;
-      const pageRootEnd = ChromeVoxState.instance.pageSel.end.node.root;
-      const curRootStart = range.start.node.root;
-      const curRootEnd = range.end.node.root;
-
-      // Deny crossing over the start of the page selection and roots.
-      if (pageRootStart !== pageRootEnd || pageRootStart !== curRootStart ||
-          pageRootEnd !== curRootEnd) {
-        o.format('@end_selection');
-        DesktopAutomationInterface.instance.ignoreDocumentSelectionFromAction(
-            false);
-        ChromeVoxState.instance.pageSel = null;
-      } else {
-        // Expand or shrink requires different feedback.
-
-        // Page sel is the only place in ChromeVox where we used directed
-        // selections. It is important to keep track of the directedness in
-        // places, but when comparing to other ranges, take the undirected
-        // range.
-        const dir = ChromeVoxState.instance.pageSel.normalize().compare(range);
-
-        if (dir) {
-          // Directed expansion.
-          msg = '@selected';
-        } else {
-          // Directed shrink.
-          msg = '@unselected';
-          selectedRange = prevRange;
-        }
-        const wasBackwardSel =
-            ChromeVoxState.instance.pageSel.start.compare(
-                ChromeVoxState.instance.pageSel.end) === Dir.BACKWARD ||
-            dir === Dir.BACKWARD;
-        ChromeVoxState.instance.pageSel = new CursorRange(
-            ChromeVoxState.instance.pageSel.start,
-            wasBackwardSel ? range.start : range.end);
-        ChromeVoxState.instance.pageSel?.select();
-      }
-    } else if (!opt_skipSettingSelection) {
-      // Ensure we don't select the editable when we first encounter it.
-      let lca = null;
-      if (range.start.node && prevRange.start.node) {
-        lca = AutomationUtil.getLeastCommonAncestor(
-            prevRange.start.node, range.start.node);
-      }
-      if (!lca || lca.state[StateType.EDITABLE] ||
-          !range.start.node.state[StateType.EDITABLE]) {
-        range.select();
-      }
-    }
-
-    o.withRichSpeechAndBraille(
-         selectedRange ?? range, prevRange, OutputCustomEvent.NAVIGATE)
-        .withInitialSpeechProperties(opt_speechProps);
-
-    if (msg) {
-      o.format(msg);
-    }
-
-    if (!skipOutput) {
-      o.go();
-    }
   }
 
   /** @override */

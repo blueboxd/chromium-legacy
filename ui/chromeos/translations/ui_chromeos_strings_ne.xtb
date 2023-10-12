@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">कापाचिनो</translation>
 <translation id="3619593063686672873">हालसालै कुनै पनि भिडियो हेरिएको छैन</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /> मध्ये नेटवर्क <ph name="NETWORK_INDEX" />, तपाईंका प्रशासकले व्यवस्थित गर्नुभएको छ, विवरणहरू</translation>
+<translation id="36451918667380448">यो मोबाइल सेवा प्रदायकको SIM कार्ड लक गरिएको छ। सहायता प्राप्त गर्न आफ्नो प्रदायकलाई सम्पर्क गर्नुहोस्।</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> वटा वस्तु सारिए।</translation>
 <translation id="3658269352872031728"><ph name="SELECTED_FILE_COUNT" /> वटा फाइलहरू चयन गरिएका छन्</translation>
 <translation id="3685122418104378273">Google ड्राइभ सिंक डिफल्ट रूपमा अक्षम गरिएको हुन्छ, मोबाइल डेटाको खपत गर्ने क्रममा।</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">यो गोप्य फाइल हो र एड्मिनले तोकेको नीतिअनुसार यसमाथि प्रतिबन्ध लगाइन सक्छ।</translation>
 <translation id="8712637175834984815">भयो</translation>
 <translation id="8713112442029511308">माल्टिज</translation>
+<translation id="8714138378966541668">प्रदायकले लक गरेको छ</translation>
 <translation id="8714406895390098252">साइकल</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> चयन गरियो।</translation>
 <translation id="872537912056138402">क्रोएसियाली</translation>

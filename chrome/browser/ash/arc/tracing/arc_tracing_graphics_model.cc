@@ -61,8 +61,9 @@ constexpr char kKeyTitle[] = "title";
 constexpr char kDequeueBufferQuery[] = "android:dequeueBuffer";
 constexpr char kQueueBufferQuery[] = "android:queueBuffer";
 
-constexpr char kChromeTopEventsQuery[] =
-    "viz,benchmark:Graphics.Pipeline.DrawAndSwap";
+constexpr char kFrameDisplayedQuery[] =
+    "benchmark,viz," TRACE_DISABLED_BY_DEFAULT(
+        "display.framedisplayed") ":Display::FrameDisplayed";
 
 constexpr ssize_t kInvalidBufferIndex = -1;
 
@@ -143,40 +144,6 @@ class BufferGraphicsEventMapper {
                         "android:handleMessageRefresh"),
                     BufferEventType::kSurfaceFlingerCompositionStart,
                     BufferEventType::kSurfaceFlingerCompositionDone));
-
-    // viz,benchmark rules
-    auto matcher = std::make_unique<ArcTracingEventMatcher>(
-        "viz,benchmark:Graphics.Pipeline.DrawAndSwap");
-    matcher->SetPhase(TRACE_EVENT_PHASE_ASYNC_BEGIN);
-    rules_.emplace_back(MappingRule(std::move(matcher),
-                                    BufferEventType::kChromeOSDraw,
-                                    BufferEventType::kNone));
-    rules_.emplace_back(MappingRule(
-        std::make_unique<ArcTracingEventMatcher>(
-            "viz,benchmark:Graphics.Pipeline.DrawAndSwap(step=Draw)"),
-        BufferEventType::kNone, BufferEventType::kNone));
-    rules_.emplace_back(MappingRule(
-        std::make_unique<ArcTracingEventMatcher>(
-            "viz,benchmark:Graphics.Pipeline.DrawAndSwap(step=Swap)"),
-        BufferEventType::kChromeOSSwap, BufferEventType::kNone));
-    rules_.emplace_back(MappingRule(
-        std::make_unique<ArcTracingEventMatcher>(
-            "viz,benchmark:Graphics.Pipeline.DrawAndSwap(step=WaitForSwap)"),
-        BufferEventType::kChromeOSWaitForAck, BufferEventType::kNone));
-    rules_.emplace_back(MappingRule(
-        std::make_unique<ArcTracingEventMatcher>(
-            "viz,benchmark:Graphics.Pipeline.DrawAndSwap(step=WaitForAck)"),
-        BufferEventType::kChromeOSWaitForAck, BufferEventType::kNone));
-    rules_.emplace_back(MappingRule(
-        std::make_unique<ArcTracingEventMatcher>(
-            "viz,benchmark:Graphics.Pipeline.DrawAndSwap(step="
-            "WaitForPresentation)"),
-        BufferEventType::kChromeOSPresentationDone, BufferEventType::kNone));
-    matcher = std::make_unique<ArcTracingEventMatcher>(
-        "viz,benchmark:Graphics.Pipeline.DrawAndSwap");
-    matcher->SetPhase(TRACE_EVENT_PHASE_ASYNC_END);
-    rules_.emplace_back(MappingRule(std::move(matcher), BufferEventType::kNone,
-                                    BufferEventType::kChromeOSSwapDone));
   }
 
   BufferGraphicsEventMapper(const BufferGraphicsEventMapper&) = delete;
@@ -242,39 +209,6 @@ void DetermineHierarchy(std::vector<const ArcTracingEvent*>* route,
   }
 
   route->pop_back();
-}
-
-// Extracts buffer id from the surface flinger event. For example:
-// android|releaseBuffer
-//   android|com.android.vending/com.android.vending.AssetBrowserActivity#0: 2
-// Buffer id appears as a child event where name if the combination of the
-// current view of the Activity, its index and the number of buffer starting
-// from 0. This helps to exactly identify the particular buffer in context of
-// Android. Buffer id for this example is
-// "com.android.vending/com.android.vending.AssetBrowserActivity#0: 2"
-bool ExtractBufferIdFromSurfaceFlingerEvent(const ArcTracingEvent& event,
-                                            std::string* id) {
-  for (const auto& child : event.children()) {
-    if (child->GetPhase() != TRACE_EVENT_PHASE_COMPLETE)
-      continue;
-    const std::string& name = child->GetName();
-    size_t index = name.find(": ");
-    if (index == std::string::npos)
-      continue;
-    index += 2;
-    if (index >= name.length())
-      continue;
-    bool all_digits = true;
-    while (index < name.length() && all_digits) {
-      all_digits &= (name[index] >= '0' && name[index] <= '9');
-      ++index;
-    }
-    if (!all_digits)
-      continue;
-    *id = name;
-    return true;
-  }
-  return false;
 }
 
 // Extracts the activity name from the buffer id by discarding the buffer id
@@ -422,34 +356,16 @@ void AddJanks(ArcTracingGraphicsModel::EventsContainer* result,
 // and returns bands of sorted list of built events.
 void GetChromeTopLevelEvents(const ArcTracingModel& common_model,
                              ArcTracingGraphicsModel::EventsContainer* result) {
-  // There is a chance that Chrome top level events may overlap. This may happen
-  // in case on non-trivial GPU load. In this case notification about swap or
-  // presentation done may come after the next frame draw is started. As a
-  // result, it leads to confusion in case displayed on the same event band.
-  // Solution is to allocate extra band and interchange events per buffer.
-  // Events are grouped per frame's id that starts from 0x100000000 and has
-  // monotonous increment. So we can simple keep it in the tree map that
-  // provides us the right ordering.
-  std::map<std::string, std::vector<const ArcTracingEvent*>> per_frame_events;
-
+  result->buffer_events().resize(1);
   for (const ArcTracingEvent* event :
-       common_model.Select(kChromeTopEventsQuery)) {
-    per_frame_events[event->GetId()].emplace_back(event);
+       common_model.Select(kFrameDisplayedQuery)) {
+    result->buffer_events()[0].emplace_back(BufferEventType::kChromeOSSwapDone,
+                                            event->GetTimestamp());
   }
 
-  size_t band_index = 0;
-  result->buffer_events().resize(2);
-  for (const auto& it_frame : per_frame_events) {
-    for (const ArcTracingEvent* event : it_frame.second)
-      GetEventMapper().Produce(*event, &result->buffer_events()[band_index]);
-    band_index = (band_index + 1) % result->buffer_events().size();
-  }
+  SortBufferEventsByTimestamp(&result->buffer_events()[0]);
 
-  for (auto& chrome_top_level_band : result->buffer_events())
-    SortBufferEventsByTimestamp(&chrome_top_level_band);
-
-  AddJanks(result, BufferEventType::kChromeOSDraw,
-           BufferEventType::kChromeOSJank);
+  // TODO(matvore): Record Janks in the ChromeOS swap done pulse.
 }
 
 // Helper that serializes events |events| to the |base::Value::List|.

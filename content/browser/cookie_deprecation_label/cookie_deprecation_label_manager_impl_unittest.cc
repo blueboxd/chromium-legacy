@@ -19,7 +19,8 @@ namespace {
 
 class CookieDeprecationLabelManagerImplTest : public testing::Test {
  public:
-  CookieDeprecationLabelManagerImplTest() : label_manager_(&browser_context_) {
+  explicit CookieDeprecationLabelManagerImplTest()
+      : label_manager_(&browser_context_) {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kCookieDeprecationFacilitatedTesting,
         {{"label", "label_test"}});

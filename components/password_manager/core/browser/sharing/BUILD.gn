@@ -7,6 +7,8 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 source_set("sharing") {
   sources = [
+    "incoming_password_sharing_invitation_model_type_controller.cc",
+    "incoming_password_sharing_invitation_model_type_controller.h",
     "incoming_password_sharing_invitation_sync_bridge.cc",
     "incoming_password_sharing_invitation_sync_bridge.h",
     "outgoing_password_sharing_invitation_sync_bridge.cc",
@@ -31,6 +33,7 @@ source_set("sharing") {
     "//base",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser:password_form",
+    "//components/password_manager/core/browser/features:password_features",
     "//components/prefs",
     "//components/signin/public/identity_manager",
     "//components/sync/base",
@@ -43,6 +46,7 @@ source_set("sharing") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("test_support") {

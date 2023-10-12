@@ -18,7 +18,6 @@
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/webapps/browser/uninstall_result_code.h"
 #include "components/webapps/common/web_app_id.h"
@@ -27,6 +26,10 @@
 class Browser;
 class BrowserWindow;
 class Profile;
+
+namespace base {
+class FilePath;
+}  // namespace base
 
 namespace content {
 class WebContents;
@@ -196,6 +199,10 @@ class WebAppUiManager {
   // if there isn't one that is already open.
   virtual content::WebContents* CreateNewTab() = 0;
 
+  // Check if a tab is the currently active tab in the browser.
+  virtual bool IsWebContentsActiveTabInBrowser(
+      content::WebContents* web_contents) = 0;
+
   // Triggers the web app install dialog on the specified |web_contents| if
   // there is an installable web app. This will show the dialog even if the app
   // is already installed.
@@ -226,6 +233,10 @@ class WebAppUiManager {
       gfx::NativeWindow parent_window,
       UninstallCompleteCallback callback,
       UninstallScheduledCallback scheduled_callback) = 0;
+
+  // Launches the Isolated Web App installer for a bundle with the given path.
+  virtual void LaunchIsolatedWebAppInstaller(
+      const base::FilePath& bundle_path) = 0;
 
  private:
   base::ObserverList<WebAppUiManagerObserver, /*check_empty=*/true> observers_;

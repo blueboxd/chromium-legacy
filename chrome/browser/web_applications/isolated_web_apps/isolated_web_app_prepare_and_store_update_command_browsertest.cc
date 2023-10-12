@@ -9,6 +9,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/test/gmock_expected_support.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_builder.h"
@@ -28,8 +29,10 @@
 namespace web_app {
 namespace {
 
+using base::test::ValueIs;
 using ::testing::_;
 using ::testing::Eq;
+using ::testing::Field;
 using ::testing::IsTrue;
 using ::testing::Lt;
 using ::testing::Optional;
@@ -42,7 +45,7 @@ class IsolatedWebAppUpdatePrepareAndStoreCommandBrowserTest
   using InstallResult = base::expected<InstallIsolatedWebAppCommandSuccess,
                                        InstallIsolatedWebAppCommandError>;
   using PrepareAndStoreUpdateResult =
-      base::expected<void, IsolatedWebAppUpdatePrepareAndStoreCommandError>;
+      IsolatedWebAppUpdatePrepareAndStoreCommandResult;
 
   using PendingUpdateInfo = WebApp::IsolationData::PendingUpdateInfo;
 
@@ -101,10 +104,11 @@ class IsolatedWebAppUpdatePrepareAndStoreCommandBrowserTest
   }
 
   PrepareAndStoreUpdateResult PrepareAndStoreUpdateInfo(
-      const PendingUpdateInfo& pending_update_info) {
+      const IsolatedWebAppUpdatePrepareAndStoreCommand::UpdateInfo&
+          update_info) {
     base::test::TestFuture<PrepareAndStoreUpdateResult> future;
     provider()->scheduler().PrepareAndStoreIsolatedWebAppUpdate(
-        pending_update_info, url_info_,
+        update_info, url_info_,
         /*optional_keep_alive=*/nullptr,
         /*optional_profile_keep_alive=*/nullptr, future.GetCallback());
     return future.Take();
@@ -144,8 +148,14 @@ IN_PROC_BROWSER_TEST_P(IsolatedWebAppUpdatePrepareAndStoreCommandBrowserTest,
   ASSERT_NO_FATAL_FAILURE(Install());
 
   PrepareAndStoreUpdateResult result = PrepareAndStoreUpdateInfo(
-      PendingUpdateInfo(update_location_, update_version_));
-  EXPECT_THAT(result.has_value(), IsTrue()) << result.error();
+      IsolatedWebAppUpdatePrepareAndStoreCommand::UpdateInfo(update_location_,
+                                                             update_version_));
+  EXPECT_THAT(
+      result,
+      ValueIs(Field(
+          "update_version",
+          &IsolatedWebAppUpdatePrepareAndStoreCommandSuccess::update_version,
+          Eq(update_version_))));
 
   const WebApp* web_app =
       provider()->registrar_unsafe().GetAppById(url_info_.app_id());

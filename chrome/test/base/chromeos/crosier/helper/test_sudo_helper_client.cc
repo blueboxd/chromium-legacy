@@ -19,6 +19,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/test/base/chromeos/crosier/helper/switches.h"
 #include "chrome/test/base/chromeos/crosier/helper/utils.h"
@@ -30,21 +31,18 @@ inline constexpr char kKeyMethod[] = "method";
 inline constexpr char kMethodRunCommand[] = "runCommand";
 inline constexpr char kKeyCommand[] = "command";
 
-// Returns a JSON string that wraps a remote command line.
-std::string ToJsonRunCommand(const std::string_view command) {
-  base::Value::Dict dict;
-  dict.Set(kKeyMethod, kMethodRunCommand);
-  dict.Set(kKeyCommand, command);
-
-  std::string json_string;
-  CHECK(base::JSONWriter::Write(dict, &json_string));
-  return json_string;
+std::string GetServerSocketPath() {
+  base::CommandLine* command = base::CommandLine::ForCurrentProcess();
+  CHECK(command->HasSwitch(crosier::kSwitchSocketPath))
+      << "Switch " << crosier::kSwitchSocketPath
+      << " not specified, can't connect to the test_sudo_helper server.";
+  return command->GetSwitchValueASCII(crosier::kSwitchSocketPath);
 }
 
 }  // namespace
 
-TestSudoHelperClient::TestSudoHelperClient(const std::string_view server_path)
-    : server_path_(server_path) {
+TestSudoHelperClient::TestSudoHelperClient()
+    : server_path_(GetServerSocketPath()) {
   CHECK_LT(server_path_.size(), sizeof(sockaddr_un::sun_path));
 }
 
@@ -52,47 +50,22 @@ TestSudoHelperClient::~TestSudoHelperClient() = default;
 
 TestSudoHelperClient::Result TestSudoHelperClient::RunCommand(
     const std::string_view command) {
-  base::FilePath client_path;
-  CHECK(base::CreateTemporaryFile(&client_path));
+  // This is a test-only function that does a blocking call to the test helper
+  // process that should already be running. Synchronuos blocking operation is
+  // expected in this testing context.
+  base::ScopedAllowBlockingForTesting allow_blocking;
 
-  base::ScopedFD sock = ConnectToServer(client_path);
+  base::Value::Dict dict;
+  dict.Set(kKeyMethod, kMethodRunCommand);
+  dict.Set(kKeyCommand, command);
 
-  // Sends the command line.
-  crosier::SendString(sock, ToJsonRunCommand(command));
-
-  // Reads the 1 byte return code.
-  signed char return_code = 0;
-  crosier::ReadBuffer(sock, &return_code, 1);
-
-  // Reads the output.
-  std::string output = crosier::ReadString(sock);
-
-  LOG(INFO) << "RunCommand: " << command;
-  LOG(INFO) << "Return Code: " << base::NumberToString(return_code);
-  LOG(INFO) << "Output: " << output;
-
-  sock.reset();
-
-  // Clean up the client socket path.
-  unlink(client_path.value().c_str());
-
-  return Result(return_code, output);
+  return SendDictAndGetResult(dict);
 }
 
 // static
 TestSudoHelperClient::Result TestSudoHelperClient::ConnectAndRunCommand(
     const std::string_view command) {
-  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  if (!cmdline->HasSwitch(crosier::kSwitchSocketPath)) {
-    LOG(ERROR)
-        << "Switch " << crosier::kSwitchSocketPath
-        << " not specified, can't connect to the test_sudo_helper server.";
-    return Result();
-  }
-
-  TestSudoHelperClient client(
-      cmdline->GetSwitchValueASCII(crosier::kSwitchSocketPath));
-  return client.RunCommand(command);
+  return TestSudoHelperClient().RunCommand(command);
 }
 
 base::ScopedFD TestSudoHelperClient::ConnectToServer(
@@ -111,4 +84,39 @@ base::ScopedFD TestSudoHelperClient::ConnectToServer(
       << "means that the script didn't get started before the test or it "
       << "exited or crashed in the meantime.";
   return client_sock;
+}
+
+TestSudoHelperClient::Result TestSudoHelperClient::SendDictAndGetResult(
+    const base::Value::Dict& dict) {
+  std::string json_string;
+  CHECK(base::JSONWriter::Write(dict, &json_string));
+
+  base::FilePath client_path;
+  CHECK(base::CreateTemporaryFile(&client_path));
+
+  base::ScopedFD sock = ConnectToServer(client_path);
+
+  // Sends the json string.
+  crosier::SendString(sock, json_string);
+
+  Result result;
+
+  // Reads the 1 byte return code.
+  signed char byte_buffer = 0;
+  crosier::ReadBuffer(sock, &byte_buffer, 1);
+  result.return_code = byte_buffer;
+
+  // Reads the output.
+  result.output = crosier::ReadString(sock);
+
+  sock.reset();
+
+  // Clean up the client socket path.
+  unlink(client_path.value().c_str());
+
+  LOG(INFO) << "Json sent: " << json_string;
+  LOG(INFO) << "Return Code: " << result.return_code;
+  LOG(INFO) << "Output: " << result.output;
+
+  return result;
 }

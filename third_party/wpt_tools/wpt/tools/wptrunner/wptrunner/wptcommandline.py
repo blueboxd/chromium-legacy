@@ -11,7 +11,6 @@ from . import config
 from . import products
 from . import wpttest
 from .formatters import chromium, wptreport, wptscreenshot
-from manifest import mputil  # type: ignore
 
 def abs_path(path):
     return os.path.abspath(os.path.expanduser(path))
@@ -324,10 +323,7 @@ scheme host and port.""")
                              default=None, help="Don't preload a gecko instance for faster restarts")
     gecko_group.add_argument("--disable-e10s", dest="gecko_e10s", action="store_false", default=True,
                              help="Run tests without electrolysis preferences")
-    gecko_group.add_argument("--enable-fission", dest="enable_fission", action="store_true", default=None,
-                             help="Enable fission in Gecko (defaults to enabled; "
-                             "this option only exists for backward compatibility).")
-    gecko_group.add_argument("--no-enable-fission", dest="enable_fission", action="store_false",
+    gecko_group.add_argument("--disable-fission", dest="disable_fission", action="store_true", default=False,
                              help="Disable fission in Gecko.")
     gecko_group.add_argument("--stackfix-dir", dest="stackfix_dir", action="store",
                              help="Path to directory containing assertion stack fixing scripts")
@@ -614,6 +610,7 @@ def check_args(kwargs):
             sys.exit(1)
 
     if kwargs["processes"] is None:
+        from manifest import mputil  # type: ignore
         kwargs["processes"] = mputil.max_parallelism() if kwargs["fully_parallel"] else 1
 
     if kwargs["debugger"] is not None:

@@ -1002,17 +1002,10 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
 }
 
 // TODO(): Flaky crash on Chrome OS debug.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#define MAYBE_BrowserCommandFocusToolbarGeolocation \
-  DISABLED_BrowserCommandFocusToolbarGeolocation
-#else
-#define MAYBE_BrowserCommandFocusToolbarGeolocation \
-  BrowserCommandFocusToolbarGeolocation
-#endif
 // Tests that the focus toolbar command focuses content settings icons before
 // the app menu button when present in web-app windows.
 IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
-                       MAYBE_BrowserCommandFocusToolbarGeolocation) {
+                       DISABLED_BrowserCommandFocusToolbarGeolocation) {
   SetUpWebApp();
   ContentSettingImageView* geolocation_icon = GrantGeolocationPermission();
 
@@ -1300,24 +1293,33 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTest,
   EXPECT_EQ(inset_normal, inset_in_overview_mode);
 }
 
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTest,
+                       ToggleTabletModeWhileImmersiveModeEnabled) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  ImmersiveModeController* immersive_mode_controller =
+      browser_view->immersive_mode_controller();
+  ASSERT_FALSE(immersive_mode_controller->IsEnabled());
+  ASSERT_FALSE(browser_view->IsFullscreen());
+
+  // Enter immersive mode.
+  ToggleFullscreenModeAndWait(browser());
+  ASSERT_TRUE(immersive_mode_controller->IsEnabled());
+  ASSERT_TRUE(browser_view->IsFullscreen());
+
+  // Enable tablet mode.
+  ASSERT_NO_FATAL_FAILURE(
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
+
+  // Should exit immersive mode + fullscreen when tablet mode is enabled.
+  EXPECT_FALSE(immersive_mode_controller->IsEnabled());
+  EXPECT_FALSE(browser_view->IsFullscreen());
+}
+
 // TODO(b/270175923): Consider using WebUiTabStripOverrideTest, since it
 // makes sense for it to always be enabled.
-class FloatBrowserNonClientFrameViewChromeOSTest
-    : public TopChromeMdParamTest<InProcessBrowserTest> {
- public:
-  FloatBrowserNonClientFrameViewChromeOSTest() = default;
-  FloatBrowserNonClientFrameViewChromeOSTest(
-      const FloatBrowserNonClientFrameViewChromeOSTest&) = delete;
-  FloatBrowserNonClientFrameViewChromeOSTest& operator=(
-      const FloatBrowserNonClientFrameViewChromeOSTest&) = delete;
-  ~FloatBrowserNonClientFrameViewChromeOSTest() override = default;
+using FloatBrowserNonClientFrameViewChromeOSTest =
+    TopChromeMdParamTest<InProcessBrowserTest>;
 
- private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      chromeos::wm::features::kWindowLayoutMenu};
-};
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
                        TabletModeMultitaskMenu) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
@@ -1365,7 +1367,6 @@ IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
       ui_test_utils::WaitForViewFocus(browser(), VIEW_ID_OMNIBOX, true));
   EXPECT_FALSE(multitask_menu_event_handler->multitask_menu());
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
                        BrowserHeaderVisibilityInTabletModeTest) {

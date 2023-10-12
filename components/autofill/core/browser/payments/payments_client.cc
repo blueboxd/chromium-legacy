@@ -129,6 +129,7 @@ PaymentsClient::UnmaskRequestDetails::operator=(
   otp = other.otp;
   last_committed_primary_main_frame_origin =
       other.last_committed_primary_main_frame_origin;
+  merchant_domain_for_footprints = other.merchant_domain_for_footprints;
   selected_challenge_option = other.selected_challenge_option;
   client_behavior_signals = other.client_behavior_signals;
   return *this;
@@ -324,8 +325,7 @@ void PaymentsClient::GetUploadDetails(
           account_info_getter_->IsSyncFeatureEnabledForPaymentsServerMetrics(),
           app_locale, std::move(callback), billable_service_number,
           billing_customer_number, upload_card_source),
-      /*authenticate=*/base::FeatureList::IsEnabled(
-          features::kAutofillUpstreamAuthenticatePreflightCall));
+      /*authenticate=*/true);
 }
 
 void PaymentsClient::UploadCard(

@@ -4,10 +4,9 @@
 
 import {fakeInstallationProgress} from 'chrome://accessory-update/fake_data.js';
 import {FakeUpdateController} from 'chrome://accessory-update/fake_update_controller.js';
-import {UpdateProgressObserverRemote} from 'chrome://accessory-update/firmware_update_types.js';
-import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
-
+import {UpdateProgressObserverRemote} from 'chrome://accessory-update/firmware_update.mojom-webui.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 export function fakeUpdateControllerTest() {
   /** @type {?FakeUpdateController} */
@@ -19,14 +18,6 @@ export function fakeUpdateControllerTest() {
     controller.reset();
     controller = null;
   });
-
-  /**
-   * @suppress {visibility}
-   * @return {!Set<string>}
-   */
-  function getCompletedFirmwareUpdates() {
-    return controller.completedFirmwareUpdates_;
-  }
 
   test('StartUpdate', async () => {
     const deviceId = '1';
@@ -54,7 +45,8 @@ export function fakeUpdateControllerTest() {
     controller.beginUpdate(deviceId, /*filepath*/ {path: 'test1.cab'});
     // Allow firmware update to complete.
     await controller.getUpdateCompletedPromiseForTesting();
-    assertFalse(controller.isUpdateInProgress());
-    assertTrue(getCompletedFirmwareUpdates().has(deviceId));
+    assertFalse(controller.getIsUpdateInProgressForTesting());
+    assertTrue(
+        controller.getCompletedFirmwareUpdatesForTesting().has(deviceId));
   });
 }

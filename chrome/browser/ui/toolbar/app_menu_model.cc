@@ -79,7 +79,6 @@
 #include "components/dom_distiller/content/browser/uma_helper.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/url_utils.h"
-#include "components/feature_engagement/public/event_constants.h"
 #include "components/password_manager/content/common/web_ui_constants.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -142,6 +141,7 @@ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(AppMenuModel,
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(AppMenuModel, kPasswordManagerMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ToolsMenuModel, kPerformanceMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ToolsMenuModel, kChromeLabsMenuItem);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ToolsMenuModel, kReadingModeMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ExtensionsMenuModel,
                                       kManageExtensionsMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ExtensionsMenuModel,
@@ -677,6 +677,7 @@ ToolsMenuModel::~ToolsMenuModel() = default;
 // More tools submenu is constructed as follows:
 // - Page specific actions overflow (save page, adding to desktop).
 // - Browser / OS level tools (extensions, task manager).
+// - Reading mode.
 // - Developer tools.
 // - Option to enable profiling.
 void ToolsMenuModel::Build(Browser* browser) {
@@ -685,8 +686,17 @@ void ToolsMenuModel::Build(Browser* browser) {
     AddItemWithStringId(IDC_CREATE_SHORTCUT, IDS_ADD_TO_OS_LAUNCH_SURFACE);
   }
   AddItemWithStringId(IDC_NAME_WINDOW, IDS_NAME_WINDOW);
-  if (commander::IsEnabled())
+  if (commander::IsEnabled()) {
     AddItemWithStringId(IDC_TOGGLE_QUICK_COMMANDS, IDS_TOGGLE_QUICK_COMMANDS);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+    AddItemWithStringId(IDC_SHOW_READING_MODE_SIDE_PANEL,
+                        IDS_SHOW_READING_MODE_SIDE_PANEL);
+    SetElementIdentifierAt(
+        GetIndexOfCommandId(IDC_SHOW_READING_MODE_SIDE_PANEL).value(),
+        kReadingModeMenuItem);
+  }
 
   AddSeparator(ui::NORMAL_SEPARATOR);
   if (!features::IsChromeRefresh2023()) {
@@ -734,6 +744,8 @@ void ToolsMenuModel::Build(Browser* browser) {
     }
     SetCommandIcon(this, IDC_NAME_WINDOW, kNameWindowIcon);
     SetCommandIcon(this, IDC_TOGGLE_QUICK_COMMANDS, kQuickCommandsIcon);
+    SetCommandIcon(this, IDC_SHOW_READING_MODE_SIDE_PANEL,
+                   kMenuBookChromeRefreshIcon);
     SetCommandIcon(this, IDC_PERFORMANCE, kPerformanceIcon);
     SetCommandIcon(this, IDC_TASK_MANAGER, kTaskManagerIcon);
     SetCommandIcon(this, IDC_DEV_TOOLS, kDeveloperToolsIcon);
@@ -825,11 +837,6 @@ void AppMenuModel::ExecuteCommand(int command_id, int event_flags) {
     return;
   }
 
-  if (command_id == IDC_PERFORMANCE) {
-    browser()->window()->NotifyFeatureEngagementEvent(
-        feature_engagement::events::kPerformanceMenuItemActivated);
-  }
-
   if (command_id == IDC_VIEW_PASSWORDS) {
     browser()->profile()->GetPrefs()->SetBoolean(
         password_manager::prefs::kPasswordsPrefWithNewLabelUsed, true);
@@ -876,6 +883,13 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
                                    delta);
       }
       LogMenuAction(MENU_ACTION_SHOW_BOOKMARK_BAR);
+      break;
+    case IDC_SHOW_BOOKMARK_SIDE_PANEL:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "WrenchMenu.TimeToAction.ShowBookmarkSidePanel", delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_BOOKMARK_SIDE_PANEL);
       break;
     case IDC_SHOW_BOOKMARK_MANAGER:
       if (!uma_action_recorded_) {

@@ -125,7 +125,7 @@ _DEVICE_GOLD_DIR = 'skia_gold'
 # A map of Android product models to SDK ints.
 RENDER_TEST_MODEL_SDK_CONFIGS = {
     # Android x86 emulator.
-    'Android SDK built for x86': [23, 24],
+    'Android SDK built for x86': [24, 26],
     # We would like this to be supported, but it is currently too prone to
     # introducing flakiness due to a combination of Gold and Chromium issues.
     # See crbug.com/1233700 and skbug.com/12149 for more information.
@@ -1000,13 +1000,9 @@ class LocalDeviceInstrumentationTestRun(
 
             # Handling Clang coverage data.
             # TODO(b/293175593): Use device.ResolveSpecialPath for multi-user
-            if device.PathExists(device_clang_profile_dir, retries=0):
-              code_coverage_utils.PullAndMaybeMergeClangCoverageFiles(
-                  device, device_clang_profile_dir,
-                  self._test_instance.coverage_directory, coverage_basename)
-            else:
-              logging.warning('Clang coverage data folder does not exist: %s',
-                              device_clang_profile_dir)
+            code_coverage_utils.PullAndMaybeMergeClangCoverageFiles(
+                device, device_clang_profile_dir,
+                self._test_instance.coverage_directory, coverage_basename)
 
           except (OSError, base_error.BaseError) as e:
             logging.warning('Failed to handle coverage data after tests: %s', e)

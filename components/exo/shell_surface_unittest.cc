@@ -7,26 +7,27 @@
 #include <sstream>
 #include <vector>
 
-#include "ash/accessibility/accessibility_delegate.h"
-#include "ash/constants/ash_constants.h"
+#include "ash/constants/app_types.h"
 #include "ash/frame/non_client_frame_view_ash.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/test/test_widget_builder.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/resize_shadow.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/functional/bind.h"
-#include "base/functional/callback.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/app_restore/window_properties.h"
 #include "components/exo/buffer.h"
+#include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/permission.h"
 #include "components/exo/security_delegate.h"
 #include "components/exo/shell_surface_util.h"
@@ -59,6 +60,7 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_controller.h"
@@ -2806,6 +2808,51 @@ TEST_F(ShellSurfaceTest, ShadowBoundsWithScaleFactor) {
   EXPECT_EQ(gfx::Rect(0, 0, 256, 256), shadow->content_bounds());
 }
 
+TEST_F(ShellSurfaceTest, ShadowRoundedCornersForRoundedWindows) {
+  constexpr gfx::Point kOrigin(20, 20);
+  constexpr int kWindowCornerRadius = 12;
+
+  base::test::ScopedFeatureList scoped_feature_list(
+      chromeos::features::kRoundedWindows);
+
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({256, 256})
+          .SetOrigin(kOrigin)
+          .SetWindowState(chromeos::WindowStateType::kNormal)
+          .SetFrame(SurfaceFrameType::NORMAL)
+          .BuildShellSurface();
+
+  Surface* root_surface = shell_surface->root_surface();
+
+  root_surface->Commit();
+  views::Widget* widget = shell_surface->GetWidget();
+  ASSERT_TRUE(widget);
+
+  aura::Window* window = widget->GetNativeWindow();
+  ui::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
+  ASSERT_TRUE(shadow);
+
+  // Window shadow radius needs to match the window radius.
+  EXPECT_EQ(shadow->rounded_corner_radius_for_testing(), 0);
+
+  // Have a window with radius of 12dp.
+  shell_surface->SetWindowCornerRadii(
+      gfx::RoundedCornersF(kWindowCornerRadius));
+  root_surface->Commit();
+
+  shadow = wm::ShadowController::GetShadowForWindow(window);
+  ASSERT_TRUE(shadow);
+  EXPECT_EQ(shadow->rounded_corner_radius_for_testing(), kWindowCornerRadius);
+
+  // Have a window with radius of 0dp.
+  shell_surface->SetWindowCornerRadii(gfx::RoundedCornersF());
+  root_surface->Commit();
+
+  shadow = wm::ShadowController::GetShadowForWindow(window);
+  ASSERT_TRUE(shadow);
+  EXPECT_EQ(shadow->rounded_corner_radius_for_testing(), 0);
+}
+
 // Make sure that resize shadow does not update until commit when the window
 // property |aura::client::kUseWindowBoundsForShadow| is false.
 TEST_F(ShellSurfaceTest, ResizeShadowIndependentBounds) {
@@ -3988,6 +4035,73 @@ TEST_F(ShellSurfaceTest, SubpixelPositionOffset) {
   // 'root_surface_origin()'.
   EXPECT_EQ(gfx::Vector2dF(-0.5, -0.625),
             shell_surface->host_window()->layer()->GetSubpixelOffset());
+}
+
+// Make sure the shell surface with capture can be safely deleted
+// even if the widget is not visible.
+TEST_F(ShellSurfaceTest, DeleteWithGrab) {
+  auto shell_surface =
+      test::ShellSurfaceBuilder({200, 200}).BuildShellSurface();
+  auto popup_shell_surface = test::ShellSurfaceBuilder({100, 100})
+                                 .SetAsPopup()
+                                 .SetParent(shell_surface.get())
+                                 .SetGrab()
+                                 .BuildShellSurface();
+  popup_shell_surface->GetWidget()->GetNativeWindow()->layer()->SetVisible(
+      false);
+  popup_shell_surface.reset();
+
+  // Close with grab.
+  popup_shell_surface = test::ShellSurfaceBuilder({100, 100})
+                            .SetAsPopup()
+                            .SetParent(shell_surface.get())
+                            .SetGrab()
+                            .BuildShellSurface();
+  popup_shell_surface->GetWidget()->Close();
+  // Close is async.
+  base::RunLoop().RunUntilIdle();
+  popup_shell_surface.reset();
+
+  // CloseNow with grab.
+  popup_shell_surface = test::ShellSurfaceBuilder({100, 100})
+                            .SetAsPopup()
+                            .SetParent(shell_surface.get())
+                            .SetGrab()
+                            .BuildShellSurface();
+  popup_shell_surface->GetWidget()->CloseNow();
+  popup_shell_surface.reset();
+}
+
+TEST_F(ShellSurfaceTest, WindowPropertyChangedNotificationWithoutRootSurface) {
+  // Test OnWindowPropertyChanged() notification on a ShellSurface, whose root
+  // surface has gone.
+
+  auto* overview_controller = ash::Shell::Get()->overview_controller();
+
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({256, 256})
+          .SetAppType(ash::AppType::LACROS)
+          .BuildShellSurface();
+
+  std::unique_ptr<ShellSurface> shell_surface1 =
+      test::ShellSurfaceBuilder({256, 256})
+          .SetAppType(ash::AppType::LACROS)
+          .BuildShellSurface();
+
+  overview_controller->StartOverview(ash::OverviewStartAction::kTests);
+  ash::WaitForOverviewEnterAnimation();
+
+  test::ShellSurfaceBuilder::DestroyRootSurface(shell_surface1.get());
+
+  // Destroying `shell_surface` will close its aura window, causing update of
+  // frame throttling in the overview mode for the remaining Lacros window(s).
+  // In this case, the remaining window is associated with `shell_surface1`. It
+  // receives OnWindowPropertyChanged() notification with
+  // ash::kFrameRateThrottleKey key. The root surface of `shell_surface1` has
+  // gone at this point. Verify that it doesn't cause crash.
+  shell_surface.reset();
+
+  overview_controller->EndOverview(ash::OverviewEndAction::kTests);
 }
 
 }  // namespace exo

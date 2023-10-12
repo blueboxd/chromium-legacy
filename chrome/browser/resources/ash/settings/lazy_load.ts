@@ -130,6 +130,7 @@ import '/shared/settings/privacy_page/secure_dns_input.js';
  */
 export {SettingsRadioGroupElement} from '/shared/settings/controls/settings_radio_group.js';
 export {LifetimeBrowserProxyImpl} from '/shared/settings/lifetime_browser_proxy.js';
+export {NetworkListElement} from 'chrome://resources/ash/common/network/network_list.js';
 export {AddSmbShareDialogElement} from 'chrome://resources/ash/common/smb_shares/add_smb_share_dialog.js';
 export {SmbBrowserProxy, SmbBrowserProxyImpl, SmbMountResult} from 'chrome://resources/ash/common/smb_shares/smb_browser_proxy.js';
 export {AppManagementSupportedLinksItemElement} from 'chrome://resources/cr_components/app_management/supported_links_item.js';
@@ -137,7 +138,10 @@ export {AppManagementSupportedLinksOverlappingAppsDialogElement} from 'chrome://
 // Tests should use this export of `sanitizerInnerHtml` to prevent repeated
 // TrustedTypes policies from being created.
 export {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
-export {CrostiniBrowserProxy, CrostiniBrowserProxyImpl} from './crostini_page/crostini_browser_proxy.js';
+export {CrostiniBrowserProxy, CrostiniBrowserProxyImpl, CrostiniDiskInfo, CrostiniPortActiveSetting, CrostiniPortProtocol, CrostiniPortSetting} from './crostini_page/crostini_browser_proxy.js';
+export {ExtraContainersElement} from './crostini_page/crostini_extra_containers.js';
+export {ExtraContainersCreateDialog} from './crostini_page/crostini_extra_containers_create_dialog.js';
+export {SettingsCrostiniPageElement} from './crostini_page/crostini_page.js';
 export {CrostiniSettingsCardElement} from './crostini_page/crostini_settings_card.js';
 export {SettingsDateTimePageElement} from './date_time_page/date_time_page.js';
 export {DateTimeSettingsCardElement} from './date_time_page/date_time_settings_card.js';
@@ -153,11 +157,14 @@ export {SettingsCustomizeTabletButtonsSubpageElement} from './device_page/custom
 export {DragAndDropManager, getDataTransferOriginIndex, setDataTransferOriginIndex} from './device_page/drag_and_drop_manager.js';
 export {KeyCombinationInputDialogElement} from './device_page/key_combination_input_dialog.js';
 export {SettingsPowerElement} from './device_page/power.js';
-export {CROSTINI_TYPE, GuestOsBrowserProxy, GuestOsBrowserProxyImpl, GuestOsSharedUsbDevice, PLUGIN_VM_TYPE} from './guest_os/guest_os_browser_proxy.js';
+export {ContainerInfo, CROSTINI_TYPE, GuestId, GuestOsBrowserProxy, GuestOsBrowserProxyImpl, GuestOsSharedUsbDevice, PLUGIN_VM_TYPE, ShareableDevices} from './guest_os/guest_os_browser_proxy.js';
 export {SettingsGuestOsSharedPathsElement} from './guest_os/guest_os_shared_paths.js';
 export {SettingsGuestOsSharedUsbDevicesElement} from './guest_os/guest_os_shared_usb_devices.js';
+export {CellularNetworksListElement} from './internet_page/cellular_networks_list.js';
 export {EsimInstallErrorDialogElement} from './internet_page/esim_install_error_dialog.js';
 export {SettingsHotspotSubpageElement} from './internet_page/hotspot_subpage.js';
+export {SettingsInternetKnownNetworksPageElement} from './internet_page/internet_known_networks_subpage.js';
+export {SettingsInternetSubpageElement} from './internet_page/internet_subpage.js';
 export {SettingsInternetSubpageMenuElement} from './internet_page/internet_subpage_menu.js';
 export {NetworkAlwaysOnVpnElement} from './internet_page/network_always_on_vpn.js';
 export {NetworkDeviceInfoDialogElement} from './internet_page/network_device_info_dialog.js';
@@ -196,6 +203,7 @@ export {SettingsSwitchAccessSetupGuideDialogElement} from './os_a11y_page/switch
 export {SettingsSwitchAccessSubpageElement} from './os_a11y_page/switch_access_subpage.js';
 export {PdfOcrUserSelection, SettingsTextToSpeechSubpageElement} from './os_a11y_page/text_to_speech_subpage.js';
 export {SettingsTtsVoiceSubpageElement} from './os_a11y_page/tts_voice_subpage.js';
+export {SettingsAndroidAppsSubpageElement} from './os_apps_page/android_apps_subpage.js';
 export {AppManagementAppDetailViewElement} from './os_apps_page/app_management_page/app_detail_view.js';
 export {AppManagementAppDetailsItem} from './os_apps_page/app_management_page/app_details_item.js';
 export {AppManagementAppItemElement} from './os_apps_page/app_management_page/app_item.js';
@@ -211,6 +219,7 @@ export {AppManagementPluginVmDetailViewElement} from './os_apps_page/app_managem
 export {AppManagementPwaDetailViewElement} from './os_apps_page/app_management_page/pwa_detail_view.js';
 export {AppManagementResizeLockItemElement} from './os_apps_page/app_management_page/resize_lock_item.js';
 export {AppManagementSubAppsItemElement} from './os_apps_page/app_management_page/sub_apps_item.js';
+export {SettingsAppNotificationsManagerSubpage} from './os_apps_page/app_notifications_page/app_notifications_manager_subpage.js';
 export {AppNotificationsSubpage} from './os_apps_page/app_notifications_page/app_notifications_subpage.js';
 export {ManageIsolatedWebAppsSubpageElement} from './os_apps_page/manage_isolated_web_apps_page/manage_isolated_web_apps_subpage.js';
 export {SettingsBluetoothChangeDeviceNameDialogElement} from './os_bluetooth_page/os_bluetooth_change_device_name_dialog.js';

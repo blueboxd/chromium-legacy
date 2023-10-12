@@ -287,8 +287,12 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
         applicable_types->push_back(
             std::make_unique<CSSImageInterpolationType>(used_property));
         break;
-      case CSSPropertyID::kBackgroundImage:
       case CSSPropertyID::kWebkitMaskImage:
+        if (RuntimeEnabledFeatures::CSSMaskingInteropEnabled()) {
+          break;
+        }
+        [[fallthrough]];
+      case CSSPropertyID::kBackgroundImage:
         applicable_types->push_back(
             std::make_unique<CSSImageListInterpolationType>(used_property));
         break;
@@ -364,6 +368,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
         break;
       case CSSPropertyID::kBackgroundSize:
       case CSSPropertyID::kWebkitMaskSize:
+      case CSSPropertyID::kMaskSize:
         applicable_types->push_back(
             std::make_unique<CSSSizeListInterpolationType>(used_property));
         break;

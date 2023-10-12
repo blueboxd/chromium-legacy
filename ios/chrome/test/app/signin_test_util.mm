@@ -26,7 +26,7 @@
 #import "ios/chrome/browser/signin/fake_system_identity_manager.h"
 #import "ios/chrome/browser/signin/gaia_auth_fetcher_ios.h"
 #import "ios/chrome/browser/signin/system_identity_manager.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_utils.h"
@@ -119,8 +119,10 @@ void SignOutAndClearIdentities(ProceduralBlock completion) {
     }
 
     // Clear last signed in user preference.
-    browser_state->GetPrefs()->ClearPref(prefs::kGoogleServicesLastGaiaId);
-    browser_state->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
+    browser_state->GetPrefs()->ClearPref(
+        prefs::kGoogleServicesLastSyncingGaiaId);
+    browser_state->GetPrefs()->ClearPref(
+        prefs::kGoogleServicesLastSyncingUsername);
 
     // `SignOutAndClearIdentities()` is called during shutdown. Commit all pref
     // changes to ensure that clearing the last signed in account is saved on

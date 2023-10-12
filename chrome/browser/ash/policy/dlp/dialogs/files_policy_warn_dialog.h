@@ -10,7 +10,6 @@
 
 #include "base/functional/callback_forward.h"
 #include "chrome/browser/ash/policy/dlp/dialogs/files_policy_dialog.h"
-#include "chrome/browser/ash/policy/dlp/files_policy_warn_settings.h"
 #include "chrome/browser/chromeos/policy/dlp/dialogs/policy_dialog_base.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
@@ -29,11 +28,10 @@ class FilesPolicyWarnDialog : public FilesPolicyDialog {
   FilesPolicyWarnDialog() = delete;
   FilesPolicyWarnDialog(
       OnDlpRestrictionCheckedWithJustificationCallback callback,
-      const std::vector<DlpConfidentialFile>& files,
       dlp::FileAction action,
       gfx::NativeWindow modal_parent,
       absl::optional<DlpFileDestination> destination,
-      FilesPolicyWarnSettings settings);
+      Info dialog_info);
   FilesPolicyWarnDialog(const FilesPolicyWarnDialog&) = delete;
   FilesPolicyWarnDialog(FilesPolicyWarnDialog&&) = delete;
   FilesPolicyWarnDialog& operator=(const FilesPolicyWarnDialog&) = delete;
@@ -44,9 +42,11 @@ class FilesPolicyWarnDialog : public FilesPolicyDialog {
   // PolicyDialogBase overrides:
   void MaybeAddConfidentialRows() override;
   std::u16string GetOkButton() override;
-  std::u16string GetCancelButton() override;
   std::u16string GetTitle() override;
   std::u16string GetMessage() override;
+
+  // Returns the Cancel button label.
+  std::u16string GetCancelButton();
 
   // Called when the user proceeds the warning.
   void ProceedWarning(
@@ -54,9 +54,12 @@ class FilesPolicyWarnDialog : public FilesPolicyDialog {
   // Called when the user cancels the warning.
   void CancelWarning(OnDlpRestrictionCheckedWithJustificationCallback callback);
 
-  std::vector<DlpConfidentialFile> files_;
   // TODO(b/290329012): Remove.
   absl::optional<DlpFileDestination> destination_;
+
+  // Holds the information that allow to populate the dialog UI such as the list
+  // of warned files and the message shown.
+  Info dialog_info_;
 
   base::WeakPtrFactory<FilesPolicyWarnDialog> weak_ptr_factory_{this};
 };

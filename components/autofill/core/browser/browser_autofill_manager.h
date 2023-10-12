@@ -65,7 +65,6 @@ class AutofillField;
 class AutofillClient;
 class AutofillSuggestionGenerator;
 class AutofillProfile;
-class AutofillType;
 class CreditCard;
 
 struct FormData;
@@ -286,9 +285,9 @@ class BrowserAutofillManager : public AutofillManager,
   // the client supports Autofill.
   virtual bool IsAutofillProfileEnabled() const;
 
-  // Returns true if the value of the AutofillCreditCardEnabled pref is true and
-  // the client supports Autofill.
-  virtual bool IsAutofillCreditCardEnabled() const;
+  // Returns true if the value of the AutofillCreditCardEnabled pref is true
+  // and the client supports Autofill.
+  virtual bool IsAutofillPaymentMethodsEnabled() const;
 
   // Shared code to determine if |form| should be uploaded to the Autofill
   // server. It verifies that uploading is allowed and |form| meets conditions
@@ -359,11 +358,6 @@ class BrowserAutofillManager : public AutofillManager,
   GetAutocompleteUnrecognizedFallbackEventLogger() {
     return *autocomplete_unrecognized_fallback_logger_;
   }
-
-  // Sets the value of `consider_form_as_secure_for_testing_`. We want to
-  // set this to true for test purposes only.
-  void SetConsiderFormAsSecureForTesting(
-      absl::optional<bool> consider_form_as_secure_for_testing);
 
  protected:
   // Stores a `callback` for `form_signature`, possibly overriding an older
@@ -569,13 +563,14 @@ class BrowserAutofillManager : public AutofillManager,
       const AutofillField& autofill_field,
       AutofillSuggestionTriggerSource trigger_source) const;
 
-  // Returns a list of values from the stored credit cards that match |type| and
-  // the value of |field| and returns the labels of the matching credit cards.
-  // |should_display_gpay_logo| will be set to true if there is no credit card
-  // suggestions or all suggestions come from Payments server.
+  // Returns a list of values from the stored credit cards that match
+  // `trigger_field_type` and the value of `field` and returns the labels of the
+  // matching credit cards. `should_display_gpay_logo` will be set to true if
+  // there is no credit card suggestions or all suggestions come from Payments
+  // server.
   std::vector<Suggestion> GetCreditCardSuggestions(
       const FormFieldData& field,
-      const AutofillType& type,
+      ServerFieldType trigger_field_type,
       bool& should_display_gpay_logo) const;
 
   // Returns a mapping of credit card guid values to virtual card last fours for
@@ -726,6 +721,11 @@ class BrowserAutofillManager : public AutofillManager,
   // Returns a plus address suggestion, if eligible, using `client()`'s
   // `GetPlusAddressService`.
   absl::optional<Suggestion> MaybeGetPlusAddressSuggestion();
+
+  // Returns a compose suggestion if the compose service is available for
+  // `field`.
+  absl::optional<Suggestion> MaybeGetComposeSuggestion(
+      const FormFieldData& field);
 
   // Delegates to perform external processing (display, selection) on
   // our behalf.

@@ -592,10 +592,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     return AddChild(new_child, before_child);
   }
   virtual void RemoveChild(LayoutObject*);
-  virtual bool CreatesAnonymousWrapper() const {
-    NOT_DESTROYED();
-    return false;
-  }
   //////////////////////////////////////////
 
   UniqueObjectId UniqueId() const {
@@ -927,10 +923,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   bool IsLayoutTextCombine() const {
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectTextCombine);
-  }
-  bool IsLayoutNGView() const {
-    NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGView);
   }
   bool IsLayoutTableCol() const {
     NOT_DESTROYED();
@@ -1477,7 +1469,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // For non-boxes, for better performance, the caller can prepare
   // |block_for_flipping| (= ContainingBlock()) if it will loop through many
   // rects/points to flip to avoid the cost of repeated ContainingBlock() calls.
-  [[nodiscard]] LayoutRect FlipForWritingMode(
+  [[nodiscard]] DeprecatedLayoutRect FlipForWritingMode(
       const PhysicalRect& r,
       const LayoutBox* box_for_flipping = nullptr) const {
     NOT_DESTROYED();
@@ -1487,7 +1479,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
             r.Y(), r.Width(), r.Height()};
   }
   [[nodiscard]] PhysicalRect FlipForWritingMode(
-      const LayoutRect& r,
+      const DeprecatedLayoutRect& r,
       const LayoutBox* box_for_flipping = nullptr) const {
     NOT_DESTROYED();
     if (LIKELY(!HasFlippedBlocksWritingMode()))
@@ -2353,7 +2345,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   const LayoutBlock* InclusiveContainingBlock() const;
 
-  const LayoutBox* ContainingScrollContainer() const;
+  const LayoutBox* ContainingScrollContainer(
+      bool ignore_layout_view_for_fixed_pos = false) const;
+  const PaintLayer* ContainingScrollContainerLayer(
+      bool ignore_layout_view_for_fixed_pos = false) const;
 
   bool CanContainAbsolutePositionObjects() const {
     NOT_DESTROYED();
@@ -2730,28 +2725,14 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   /**
    * Returns the local coordinates of the caret within this layout object.
-   * @param caretOffset zero-based offset determining position within the
+   * @param caret_offset zero-based offset determining position within the
    * layout object.
-   * @param extraWidthToEndOfLine optional out arg to give extra width to end
-   * of line -
-   * useful for character range rect computations
+   * @param extra_width_to_end_of_line optional out arg to give extra width to
+   * end of line - useful for character range rect computations
    */
-  // TODO(crbug.com/1353190): Change the return type to PhysicalRect, and
-  // merge LocalCaretRect() and PhysicalLocalCaretRect().
-  virtual LayoutRect LocalCaretRect(
+  virtual PhysicalRect LocalCaretRect(
       int caret_offset,
       LayoutUnit* extra_width_to_end_of_line = nullptr) const;
-  PhysicalRect PhysicalLocalCaretRect(
-      int caret_offset,
-      LayoutUnit* extra_width_to_end_of_line = nullptr) const {
-    NOT_DESTROYED();
-    if (RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()) {
-      return PhysicalRect(
-          LocalCaretRect(caret_offset, extra_width_to_end_of_line));
-    }
-    return FlipForWritingMode(
-        LocalCaretRect(caret_offset, extra_width_to_end_of_line));
-  }
 
   // When performing a global document tear-down, the layoutObject of the
   // document is cleared. We use this as a hook to detect the case of document
@@ -3319,19 +3300,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     bitfields_.SetShouldSkipLayoutCache(b);
   }
 
-  BackgroundPaintLocation GetBackgroundPaintLocation() const {
-    NOT_DESTROYED();
-    return static_cast<BackgroundPaintLocation>(background_paint_location_);
-  }
-  void SetBackgroundPaintLocation(BackgroundPaintLocation location) {
-    NOT_DESTROYED();
-    if (GetBackgroundPaintLocation() != location) {
-      SetBackgroundNeedsFullPaintInvalidation();
-      background_paint_location_ = static_cast<unsigned>(location);
-      DCHECK_EQ(location, GetBackgroundPaintLocation());
-    }
-  }
-
   bool IsBackgroundAttachmentFixedObject() const {
     NOT_DESTROYED();
     return bitfields_.IsBackgroundAttachmentFixedObject();
@@ -3374,19 +3342,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     auto* context = GetDisplayLockContext();
     return context && !context->ShouldPaintChildren();
-  }
-
-  // This flag caches StyleRef().HasBorderDecoration() &&
-  // !Table()->ShouldCollapseBorders().
-  bool HasNonCollapsedBorderDecoration() const {
-    NOT_DESTROYED();
-    DCHECK_GE(GetDocument().Lifecycle().GetState(),
-              DocumentLifecycle::kInPerformLayout);
-    return bitfields_.HasNonCollapsedBorderDecoration();
-  }
-  void SetHasNonCollapsedBorderDecoration(bool b) {
-    NOT_DESTROYED();
-    bitfields_.SetHasNonCollapsedBorderDecoration(b);
   }
 
   bool BeingDestroyed() const {
@@ -3534,7 +3489,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectNGInsideListMarker,
     kLayoutObjectNGListItem,
     kLayoutObjectNGOutsideListMarker,
-    kLayoutObjectNGView,
     kLayoutObjectProgress,
     kLayoutObjectQuote,
     kLayoutObjectReplaced,
@@ -3726,6 +3680,22 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   bool HasValidCachedGeometry() const {
     NOT_DESTROYED();
     return bitfields_.HasValidCachedGeometry();
+  }
+
+  // For LayoutBox. They are here to use the bit fields.
+  BackgroundPaintLocation GetBackgroundPaintLocation() const {
+    NOT_DESTROYED();
+    DCHECK(IsBox());
+    return static_cast<BackgroundPaintLocation>(background_paint_location_);
+  }
+  void SetBackgroundPaintLocation(BackgroundPaintLocation location) {
+    NOT_DESTROYED();
+    DCHECK(IsBox());
+    if (GetBackgroundPaintLocation() != location) {
+      SetBackgroundNeedsFullPaintInvalidation();
+      background_paint_location_ = static_cast<unsigned>(location);
+      DCHECK_EQ(location, GetBackgroundPaintLocation());
+    }
   }
 
  private:
@@ -3924,7 +3894,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
           is_global_root_scroller_(false),
           registered_as_first_line_image_observer_(false),
           is_html_legend_element_(false),
-          has_non_collapsed_border_decoration_(false),
           being_destroyed_(false),
           is_table_column_constraints_dirty_(false),
           is_grid_placement_dirty_(true),
@@ -4187,11 +4156,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     // Whether this object's |Node| is a HTMLLegendElement. Used to increase
     // performance of |IsRenderedLegend| which is performance sensitive.
     ADD_BOOLEAN_BITFIELD(is_html_legend_element_, IsHTMLLegendElement);
-
-    // Caches StyleRef().HasBorderDecoration() &&
-    // !Table()->ShouldCollapseBorders().
-    ADD_BOOLEAN_BITFIELD(has_non_collapsed_border_decoration_,
-                         HasNonCollapsedBorderDecoration);
 
     // True at start of |Destroy()| before calling |WillBeDestroyed()|.
     ADD_BOOLEAN_BITFIELD(being_destroyed_, BeingDestroyed);

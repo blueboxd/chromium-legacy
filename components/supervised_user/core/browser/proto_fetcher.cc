@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ref.h"
@@ -127,6 +128,27 @@ std::unique_ptr<network::SimpleURLLoader> InitializeSimpleUrlLoader(
   return simple_url_loader;
 }
 
+// A stopwatch with two functions:
+// * measure total elapsed time,
+// * measure lap time (with automatic resetting after each lap).
+// The stopwatch is created started.
+class Stopwatch {
+ public:
+  // Time since start of last lap. Resets the lap timer.
+  TimeDelta Lap() {
+    TimeDelta lap = lap_timer_.Elapsed();
+    lap_timer_ = ElapsedTimer();
+    return lap;
+  }
+
+  // Time since start of last lap.
+  TimeDelta Elapsed() const { return elapsed_timer_.Elapsed(); }
+
+ private:
+  ElapsedTimer elapsed_timer_;
+  ElapsedTimer lap_timer_;
+};
+
 // Encapsulates metric functionalities.
 class Metrics {
  public:
@@ -135,6 +157,8 @@ class Metrics {
     kLatency,
     kHttpStatusOrNetError,
     kRetryCount,
+    kAccessTokenLatency,
+    kApiLatency,
   };
 
   Metrics() = delete;
@@ -148,6 +172,20 @@ class Metrics {
   void RecordLatency() const {
     base::UmaHistogramTimes(GetFullHistogramName(MetricType::kLatency),
                             stopwatch_.Elapsed());
+  }
+
+  void RecordAccessTokenLatency(
+      GoogleServiceAuthError::State auth_error_state) {
+    base::UmaHistogramTimes(
+        GetFullHistogramName(MetricType::kAccessTokenLatency, auth_error_state),
+        stopwatch_.Lap());
+  }
+
+  void RecordApiLatency(
+      ProtoFetcherStatus::HttpStatusOrNetErrorType http_status_or_net_error) {
+    base::UmaHistogramTimes(
+        GetFullHistogramName(MetricType::kApiLatency, http_status_or_net_error),
+        stopwatch_.Lap());
   }
 
   virtual void RecordStatusLatency(ProtoFetcherStatus status) const {
@@ -174,6 +212,10 @@ class Metrics {
         return "Latency";
       case MetricType::kHttpStatusOrNetError:
         return "HttpStatusOrNetError";
+      case MetricType::kAccessTokenLatency:
+        return "AccessTokenLatency";
+      case MetricType::kApiLatency:
+        return "ApiLatency";
       case MetricType::kRetryCount:
         NOTREACHED_NORETURN();
       default:
@@ -192,6 +234,27 @@ class Metrics {
                                    ProtoFetcherStatus status) const {
     return JoinString(
         {basename_, ToMetricEnumLabel(status), GetMetricKey(metric_type)}, ".");
+  }
+
+  // Returns fully-qualified name of histogram for specified metric_type with
+  // per-authentication status values.
+  std::string GetFullHistogramName(
+      MetricType metric_type,
+      GoogleServiceAuthError::State auth_error_state) const {
+    CHECK_EQ(auth_error_state, GoogleServiceAuthError::State::NONE)
+        << "Only authenticated case is supported.";
+    return JoinString({basename_, "NONE", GetMetricKey(metric_type)}, ".");
+  }
+
+  // Returns fully-qualified name of histogram for specified metric_type with
+  // per-net-or-http error values.
+  std::string GetFullHistogramName(MetricType metric_type,
+                                   ProtoFetcherStatus::HttpStatusOrNetErrorType
+                                       http_status_or_net_error) const {
+    CHECK_EQ(http_status_or_net_error,
+             ProtoFetcherStatus::HttpStatusOrNetErrorType(net::HTTP_OK))
+        << "Only successful api call case is supported.";
+    return JoinString({basename_, "HTTP_OK", GetMetricKey(metric_type)}, ".");
   }
 
  private:
@@ -218,7 +281,7 @@ class Metrics {
   }
 
   StringPiece basename_;
-  const ElapsedTimer stopwatch_;
+  Stopwatch stopwatch_;
 };
 
 // Metrics for retrying fetchers, which are aggregating individual
@@ -285,12 +348,16 @@ class FetcherImpl final : public ProtoFetcher<Response> {
               StringPiece payload,
               const FetcherConfig& fetcher_config,
               Callback callback)
-      : fetcher_(LaunchFetcher(identity_manager,
-                               url_loader_factory,
-                               fetcher_config,
-                               std::move(callback))),
-        payload_(payload),
-        config_(fetcher_config) {}
+      : payload_(payload),
+        config_(fetcher_config),
+        metrics_(fetcher_config.histogram_basename),
+        fetcher_(identity_manager,
+                 fetcher_config.access_token_config,
+                 BindOnce(&FetcherImpl::OnAccessTokenFetchComplete,
+                          Unretained(this),  // Unretained(.) is safe because
+                                             // `this` owns `fetcher_`.
+                          url_loader_factory,
+                          std::move(callback))) {}
 
   // Not copyable.
   FetcherImpl(const FetcherImpl&) = delete;
@@ -318,21 +385,6 @@ class FetcherImpl final : public ProtoFetcher<Response> {
     }
   }
 
-  // Launch of the fetch process.
-  std::unique_ptr<ApiAccessTokenFetcher> LaunchFetcher(
-      IdentityManager& identity_manager,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const FetcherConfig& fetcher_config,
-      Callback callback) {
-    CHECK(callback) << "Use base::DoNothing() instead of empty callback.";
-    return std::make_unique<ApiAccessTokenFetcher>(
-        identity_manager, fetcher_config.access_token_config,
-        BindOnce(&FetcherImpl::OnAccessTokenFetchComplete, Unretained(this),
-                 url_loader_factory,
-                 std::move(callback)));  // Unretained(.) is safe because `this`
-                                         // owns `access_token_fetcher_`.
-  }
-
   // First phase of fetching done: the access token response is ready.
   void OnAccessTokenFetchComplete(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -344,6 +396,8 @@ class FetcherImpl final : public ProtoFetcher<Response> {
               ProtoFetcherStatus::GoogleServiceAuthError(access_token.error()));
       return;
     }
+
+    metrics_.RecordAccessTokenLatency(GoogleServiceAuthError::State::NONE);
 
     simple_url_loader_ = InitializeSimpleUrlLoader(
         access_token.value(), config_, GetRequestPayload());
@@ -364,6 +418,9 @@ class FetcherImpl final : public ProtoFetcher<Response> {
                   HttpStatusOrNetError(*simple_url_loader_)));
       return;
     }
+
+    metrics_.RecordApiLatency(
+        ProtoFetcherStatus::HttpStatusOrNetErrorType(net::HTTP_OK));
 
     std::unique_ptr<Response> response = std::make_unique<Response>();
     if (!response->ParseFromString(*response_body)) {
@@ -394,14 +451,16 @@ class FetcherImpl final : public ProtoFetcher<Response> {
     std::move(callback).Run(ProtoFetcherStatus::Ok(), std::move(response));
   }
 
-  // Entrypoint of the fetch process, which starts with ApiAccessToken access
-  // followed by a request made with SimpleURLLoader.
-  std::unique_ptr<ApiAccessTokenFetcher> fetcher_;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   const std::string payload_;
   const FetcherConfig config_;
-  const Metrics metrics_{config_.histogram_basename};
+  Metrics metrics_;
+
+  // Entrypoint of the fetch process, which starts with ApiAccessToken access
+  // followed by a request made with SimpleURLLoader. Purposely made last field
+  // should it depend on other members of this class.
+  ApiAccessTokenFetcher fetcher_;
 };
 
 // Wraps FetcherImpl deferring its startup until explicitly invoked. This is the

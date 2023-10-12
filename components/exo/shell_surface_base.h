@@ -330,6 +330,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // SurfaceTreeHost:
   void SetRootSurface(Surface* root_surface) override;
+  float GetPendingScaleFactor() const override;
 
   bool frame_enabled() const {
     return frame_type_ != SurfaceFrameType::NONE &&
@@ -394,10 +395,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Creates, deletes and update the shadow bounds based on
   // |shadow_bounds_|.
   void UpdateShadow();
-
-  // Updates the corner radius depending on whether the |widget_| is in pip or
-  // not.
-  void UpdateCornerRadius();
 
   virtual void UpdateFrameType();
 
@@ -508,6 +505,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
       ShellSurfaceTest,
       LocalSurfaceIdUpdatedOnHostWindowOriginChangedWithScaleFactor);
   FRIEND_TEST_ALL_PREFIXES(ShellSurfaceTest, SubpixelPositionOffset);
+
+  // Updates the shadow's rounded corner associated with the `widget_`.
+  void UpdateShadowRoundedCorners();
 
   // Called on widget creation to initialize its window state.
   // TODO(reveman): Remove virtual functions below to avoid FBC problem.

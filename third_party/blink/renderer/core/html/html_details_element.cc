@@ -214,6 +214,8 @@ void HTMLDetailsElement::ParseAttribute(
       content->RemoveInlineStyleProperty(CSSPropertyID::kContentVisibility);
       content->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
 
+      // https://html.spec.whatwg.org/multipage/interactive-elements.html#ensure-details-exclusivity-by-closing-other-elements-if-needed
+      //
       // The name attribute links multiple details elements into an
       // exclusive accordion.  So if this one has a name, close the
       // other ones with the same name.
@@ -224,13 +226,17 @@ void HTMLDetailsElement::ParseAttribute(
       if (RuntimeEnabledFeatures::AccordionPatternEnabled() &&
           !GetName().empty() &&
           params.reason == AttributeModificationReason::kDirectly) {
-        // It's important that we have a copy of the set of details
-        // elements, because the setAttribute call can trigger mutation
-        // events that change the set.
+        // Don't fire mutation events for any changes to the open attribute
+        // that this causes.
+        MutationEventSuppressionScope scope(GetDocument());
+
         HeapVector<Member<HTMLDetailsElement>> details_with_name(
             OtherElementsInNameGroup());
         for (HTMLDetailsElement* other_details : details_with_name) {
           CHECK_NE(other_details, this);
+          UseCounter::Count(
+              GetDocument(),
+              WebFeature::kHTMLDetailsElementNameAttributeClosesOther);
           other_details->setAttribute(html_names::kOpenAttr, g_null_atom);
         }
       }
@@ -250,6 +256,10 @@ void HTMLDetailsElement::AttributeChanged(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
   if (name == html_names::kNameAttr) {
+    if (!params.new_value.empty()) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kHTMLDetailsElementNameAttribute);
+    }
     MaybeCloseForExclusivity();
   }
 
@@ -261,22 +271,21 @@ Node::InsertionNotificationRequest HTMLDetailsElement::InsertedInto(
   Node::InsertionNotificationRequest result =
       HTMLElement::InsertedInto(insertion_point);
 
-  {
-    // Don't fire mutation events for any changes to the open attribute
-    // that this causes.
-    MutationEventSuppressionScope scope(GetDocument());
-
-    MaybeCloseForExclusivity();
-  }
+  MaybeCloseForExclusivity();
 
   return result;
 }
 
+// https://html.spec.whatwg.org/multipage/C#ensure-details-exclusivity-by-closing-the-given-element-if-needed
 void HTMLDetailsElement::MaybeCloseForExclusivity() {
   if (!RuntimeEnabledFeatures::AccordionPatternEnabled() || GetName().empty() ||
       !is_open_) {
     return;
   }
+
+  // Don't fire mutation events for any changes to the open attribute
+  // that this causes.
+  MutationEventSuppressionScope scope(GetDocument());
 
   DCHECK(RuntimeEnabledFeatures::OptimizedNodeCloneOrderEnabled())
       << "OptimizedNodeCloneOrder should ship before AccordionPattern";
@@ -286,6 +295,8 @@ void HTMLDetailsElement::MaybeCloseForExclusivity() {
     CHECK_NE(other_details, this);
     if (other_details->is_open_) {
       // close this details element
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kHTMLDetailsElementNameAttributeClosesSelf);
       ToggleOpen();
       break;
     }

@@ -164,8 +164,8 @@ void PriceTrackingIconView::UpdateImpl() {
     if (!GetVisible()) {
       base::RecordAction(
           base::UserMetricsAction("Commerce.PriceTracking.OmniboxChipShown"));
-      MaybeShowPageActionLabel();
     }
+    MaybeShowPageActionLabel();
   } else {
     HidePageActionLabel();
   }
@@ -205,10 +205,11 @@ bool PriceTrackingIconView::MaybeShowIPH() {
   if (!browser_->window() || !ShouldShowFirstUseExperienceBubble()) {
     return false;
   }
-  return browser_->window()->MaybeShowFeaturePromo(
-      feature_engagement::kIPHPriceTrackingChipFeature,
-      base::BindOnce(&PriceTrackingIconView::UnpauseAnimation,
-                     base::Unretained(this)));
+  user_education::FeaturePromoParams params(
+      feature_engagement::kIPHPriceTrackingChipFeature);
+  params.close_callback = base::BindOnce(
+      &PriceTrackingIconView::UnpauseAnimation, base::Unretained(this));
+  return browser_->window()->MaybeShowFeaturePromo(std::move(params));
 }
 
 void PriceTrackingIconView::ForceVisibleForTesting(bool is_tracking_price) {
@@ -322,22 +323,16 @@ void PriceTrackingIconView::MaybeShowPageActionLabel() {
     return;
   }
 
-  auto* tracker =
-      feature_engagement::TrackerFactory::GetForBrowserContext(profile_);
-  if (!tracker ||
-      !tracker->ShouldTriggerHelpUI(
-          feature_engagement::kIPHPriceTrackingPageActionIconLabelFeature)) {
+  auto* tab_helper =
+      commerce::ShoppingListUiTabHelper::FromWebContents(GetWebContents());
+
+  if (!tab_helper || !tab_helper->ShouldExpandPageActionIcon(
+                         PageActionIconType::kPriceTracking)) {
     return;
   }
 
   should_extend_label_shown_duration_ = true;
   AnimateIn(absl::nullopt);
-
-  // Note that `Dismiss()` in this case does not dismiss the UI. It's telling
-  // the FE backend that the promo is done so that other promos can run. Showing
-  // the label should not block other promos from displaying.
-  tracker->Dismissed(
-      feature_engagement::kIPHPriceTrackingPageActionIconLabelFeature);
 }
 
 void PriceTrackingIconView::HidePageActionLabel() {

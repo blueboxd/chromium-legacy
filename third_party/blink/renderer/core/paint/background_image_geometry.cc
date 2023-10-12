@@ -53,6 +53,26 @@ LayoutUnit ComputeTilePhase(LayoutUnit position, LayoutUnit tile_extent) {
                      : LayoutUnit();
 }
 
+LayoutUnit ResolveWidthForRatio(LayoutUnit height,
+                                const PhysicalSize& natural_ratio) {
+  LayoutUnit resolved_width =
+      height.MulDiv(natural_ratio.width, natural_ratio.height);
+  if (natural_ratio.width >= 1 && resolved_width < 1) {
+    return LayoutUnit(1);
+  }
+  return resolved_width;
+}
+
+LayoutUnit ResolveHeightForRatio(LayoutUnit width,
+                                 const PhysicalSize& natural_ratio) {
+  LayoutUnit resolved_height =
+      width.MulDiv(natural_ratio.height, natural_ratio.width);
+  if (natural_ratio.height >= 1 && resolved_height < 1) {
+    return LayoutUnit(1);
+  }
+  return resolved_height;
+}
+
 }  // anonymous namespace
 
 bool NeedsFullSizeDestination(const FillLayer& fill_layer) {
@@ -385,6 +405,33 @@ void BackgroundImageGeometry::ComputeDestRectAdjustments(
     NGPhysicalBoxStrut& unsnapped_dest_adjust,
     NGPhysicalBoxStrut& snapped_dest_adjust) const {
   switch (fill_layer.Clip()) {
+    case EFillBox::kNoClip: {
+      PhysicalRect border_box;
+      if (positioning_box_->IsBox()) {
+        border_box = To<LayoutBox>(positioning_box_)->PhysicalBorderBoxRect();
+      } else {
+        border_box =
+            To<LayoutInline>(positioning_box_)->PhysicalLinesBoundingBox();
+      }
+      PhysicalRect visual_overflow =
+          positioning_box_->Layer()
+              ->LocalBoundingBoxIncludingSelfPaintingDescendants();
+      unsnapped_dest_adjust =
+          NGPhysicalBoxStrut(visual_overflow.Y() - border_box.Y(),
+                             border_box.Right() - visual_overflow.Right(),
+                             border_box.Bottom() - visual_overflow.Bottom(),
+                             visual_overflow.X() - border_box.X());
+      snapped_dest_adjust = unsnapped_dest_adjust;
+      return;
+    }
+    case EFillBox::kMarginBox:
+      unsnapped_dest_adjust = -positioning_box_->MarginOutsets();
+      snapped_dest_adjust = unsnapped_dest_adjust;
+      return;
+    case EFillBox::kFillBox:
+    // Spec: For elements with associated CSS layout box, the used values for
+    // fill-box compute to content-box.
+    // https://drafts.fxtf.org/css-masking/#the-mask-clip
     case EFillBox::kContent:
       // If the PaddingOutsets are zero then this is equivalent to
       // kPadding and we should apply the snapping logic.
@@ -422,6 +469,11 @@ void BackgroundImageGeometry::ComputeDestRectAdjustments(
                                      LayoutUnit(inner_border_rect.bottom());
       }
       return;
+    case EFillBox::kStrokeBox:
+    case EFillBox::kViewBox:
+    // Spec: For elements with associated CSS layout box, ... stroke-box and
+    // view-box compute to border-box.
+    // https://drafts.fxtf.org/css-masking/#the-mask-clip
     case EFillBox::kBorder: {
       if (disallow_border_derived_adjustment) {
         // All adjustments remain 0.
@@ -481,6 +533,13 @@ void BackgroundImageGeometry::ComputePositioningAreaAdjustments(
     NGPhysicalBoxStrut& unsnapped_box_outset,
     NGPhysicalBoxStrut& snapped_box_outset) const {
   switch (fill_layer.Origin()) {
+    case EFillBox::kMarginBox:
+    case EFillBox::kFillBox:
+    case EFillBox::kStrokeBox:
+    case EFillBox::kViewBox:
+      // TODO(pdr): These are not yet implemented for origin.
+      NOTREACHED();
+      break;
     case EFillBox::kContent:
       // If the PaddingOutsets are zero then this is equivalent to
       // kPadding and we should apply the snapping logic.
@@ -522,8 +581,10 @@ void BackgroundImageGeometry::ComputePositioningAreaAdjustments(
       // All adjustments remain 0.
       snapped_box_outset = unsnapped_box_outset = NGPhysicalBoxStrut();
       return;
+    case EFillBox::kNoClip:
     case EFillBox::kText:
-      return;
+      // These are not supported mask-origin values.
+      NOTREACHED();
   }
 }
 
@@ -628,13 +689,14 @@ void BackgroundImageGeometry::CalculateFillTileSize(
   // generated content) and unsnapped for content that has intrinsic
   // dimensions. Once we choose here we stop tracking whether the tile size is
   // snapped or unsnapped.
+  IntrinsicSizingInfo sizing_info = image->GetNaturalSizingInfo(
+      positioning_box_->StyleRef().EffectiveZoom(),
+      LayoutObject::ShouldRespectImageOrientation(box_));
+  PhysicalSize image_aspect_ratio =
+      PhysicalSize::FromSizeFFloor(sizing_info.aspect_ratio);
   PhysicalSize positioning_area_size = !image->HasIntrinsicSize()
                                            ? snapped_positioning_area_size
                                            : unsnapped_positioning_area_size;
-  PhysicalSize image_intrinsic_size = PhysicalSize::FromSizeFFloor(
-      image->ImageSize(positioning_box_->StyleRef().EffectiveZoom(),
-                       gfx::SizeF(positioning_area_size),
-                       LayoutObject::ShouldRespectImageOrientation(box_)));
   switch (type) {
     case EFillSizeType::kSizeLength: {
       tile_size_ = positioning_area_size;
@@ -656,35 +718,41 @@ void BackgroundImageGeometry::CalculateFillTileSize(
             ValueForLength(layer_height, positioning_area_size.height);
       }
 
-      // If one of the values is auto we have to use the appropriate
-      // scale to maintain our aspect ratio.
+      // An auto value for one dimension is resolved by using the image's
+      // natural aspect ratio and the size of the other dimension, or failing
+      // that, using the image's natural size, or failing that, treating it as
+      // 100%.
+      // If both values are auto then the natural width and/or height of the
+      // image should be used, if any, the missing dimension (if any)
+      // behaving as auto as described above. If the image has neither
+      // natural size, its size is determined as for contain.
       if (layer_width.IsAuto() && !layer_height.IsAuto()) {
-        if (!image->HasIntrinsicSize()) {
-          // Spec says that auto should be 100% in the absence of
-          // an intrinsic ratio or size.
+        if (!image_aspect_ratio.IsEmpty()) {
+          tile_size_.width =
+              ResolveWidthForRatio(tile_size_.height, image_aspect_ratio);
+        } else if (sizing_info.has_width) {
+          tile_size_.width =
+              LayoutUnit::FromFloatFloor(sizing_info.size.width());
+        } else {
           tile_size_.width = positioning_area_size.width;
-        } else if (image_intrinsic_size.height) {
-          LayoutUnit adjusted_width = tile_size_.height.MulDiv(
-              image_intrinsic_size.width, image_intrinsic_size.height);
-          if (image_intrinsic_size.width >= 1 && adjusted_width < 1)
-            adjusted_width = LayoutUnit(1);
-          tile_size_.width = adjusted_width;
         }
       } else if (!layer_width.IsAuto() && layer_height.IsAuto()) {
-        if (!image->HasIntrinsicSize()) {
-          // Spec says that auto should be 100% in the absence of
-          // an intrinsic ratio or size.
+        if (!image_aspect_ratio.IsEmpty()) {
+          tile_size_.height =
+              ResolveHeightForRatio(tile_size_.width, image_aspect_ratio);
+        } else if (sizing_info.has_height) {
+          tile_size_.height =
+              LayoutUnit::FromFloatFloor(sizing_info.size.height());
+        } else {
           tile_size_.height = positioning_area_size.height;
-        } else if (image_intrinsic_size.width) {
-          LayoutUnit adjusted_height = tile_size_.width.MulDiv(
-              image_intrinsic_size.height, image_intrinsic_size.width);
-          if (image_intrinsic_size.height >= 1 && adjusted_height < 1)
-            adjusted_height = LayoutUnit(1);
-          tile_size_.height = adjusted_height;
         }
       } else if (layer_width.IsAuto() && layer_height.IsAuto()) {
-        // If both width and height are auto, use the image's intrinsic size.
-        tile_size_ = image_intrinsic_size;
+        PhysicalSize concrete_image_size =
+            PhysicalSize::FromSizeFFloor(image->ImageSize(
+                positioning_box_->StyleRef().EffectiveZoom(),
+                gfx::SizeF(positioning_area_size),
+                LayoutObject::ShouldRespectImageOrientation(box_)));
+        tile_size_ = concrete_image_size;
       }
 
       tile_size_.ClampNegativeToZero();
@@ -692,7 +760,7 @@ void BackgroundImageGeometry::CalculateFillTileSize(
     }
     case EFillSizeType::kContain:
     case EFillSizeType::kCover: {
-      if (image_intrinsic_size.IsEmpty()) {
+      if (image_aspect_ratio.IsEmpty()) {
         tile_size_ = snapped_positioning_area_size;
         return;
       }
@@ -702,9 +770,9 @@ void BackgroundImageGeometry::CalculateFillTileSize(
       // Force the dimension that determines the size to exactly match the
       // positioning_area_size in that dimension.
       tile_size_ = snapped_positioning_area_size.FitToAspectRatio(
-          image_intrinsic_size, type == EFillSizeType::kCover
-                                    ? kAspectRatioFitGrow
-                                    : kAspectRatioFitShrink);
+          image_aspect_ratio, type == EFillSizeType::kCover
+                                  ? kAspectRatioFitGrow
+                                  : kAspectRatioFitShrink);
       // Snap the dependent dimension to avoid bleeding/blending artifacts
       // at the edge of the image when we paint it.
       if (type == EFillSizeType::kContain) {
@@ -884,12 +952,16 @@ void BackgroundImageGeometry::Calculate(const PaintInfo& paint_info,
   if (ShouldUseFixedAttachment(fill_layer))
     UseFixedAttachment(paint_rect.offset);
 
-  // Clip the final output rect to the paint rect.
-  unsnapped_dest_rect_.Intersect(paint_rect);
-
-  // Clip the snapped rect, and re-snap the dest rect as we may have
-  // adjusted it with unsnapped values.
-  snapped_dest_rect_.Intersect(paint_rect);
+  // The actual painting area can be bigger than the provided background
+  // geometry (`paint_rect`) for clip values 'margin-box' and 'no-clip', so
+  // avoid clipping in those cases.
+  if (fill_layer.Clip() != EFillBox::kMarginBox &&
+      fill_layer.Clip() != EFillBox::kNoClip) {
+    // Clip the final output rect to the paint rect.
+    unsnapped_dest_rect_.Intersect(paint_rect);
+    snapped_dest_rect_.Intersect(paint_rect);
+  }
+  // Re-snap the dest rect as we may have adjusted it with unsnapped values.
   snapped_dest_rect_ = PhysicalRect(ToPixelSnappedRect(snapped_dest_rect_));
 }
 
@@ -911,6 +983,12 @@ const ComputedStyle& BackgroundImageGeometry::ImageStyle(
 InterpolationQuality BackgroundImageGeometry::ImageInterpolationQuality()
     const {
   return box_->StyleRef().GetInterpolationQuality();
+}
+
+cc::PaintFlags::DynamicRangeLimit BackgroundImageGeometry::DynamicRangeLimit()
+    const {
+  return static_cast<cc::PaintFlags::DynamicRangeLimit>(
+      box_->StyleRef().DynamicRangeLimit());
 }
 
 PhysicalOffset BackgroundImageGeometry::OffsetInBackground(

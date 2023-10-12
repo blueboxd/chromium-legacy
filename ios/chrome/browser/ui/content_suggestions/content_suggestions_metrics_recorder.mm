@@ -13,13 +13,13 @@
 #import "components/ntp_tiles/ntp_tile_impression.h"
 #import "components/ntp_tiles/tile_visual_type.h"
 #import "components/prefs/pref_service.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
 #import "ios/chrome/browser/ntp/set_up_list_metrics.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/utils.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_with_payload.h"
@@ -91,7 +91,8 @@
           freshness_impression_count + 1);
       break;
     }
-    case ContentSuggestionsModuleType::kParcelTracking: {
+    case ContentSuggestionsModuleType::kParcelTracking:
+    case ContentSuggestionsModuleType::kParcelTrackingSeeMore: {
       // Increment freshness pref since it is an impression of
       // the latest Tab Resumption results as the top module.
       int freshness_impression_count = _localState->GetInteger(
@@ -156,6 +157,8 @@
 
 - (void)recordMostRecentTabOpened {
   base::RecordAction(base::UserMetricsAction(kOpenMostRecentTabAction));
+  [self recordMagicStackModuleEngagementForType:ContentSuggestionsModuleType::
+                                                    kTabResumption];
 }
 
 - (void)recordMostVisitedTilesShown {

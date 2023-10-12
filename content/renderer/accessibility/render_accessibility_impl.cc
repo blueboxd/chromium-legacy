@@ -18,6 +18,7 @@
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -114,7 +115,7 @@ class ScopedFreezeAXTreeSource {
   }
 
  private:
-  blink::WebAXContext* context_;
+  raw_ptr<blink::WebAXContext, ExperimentalRenderer> context_;
 };
 
 RenderAccessibilityImpl::RenderAccessibilityImpl(
@@ -149,15 +150,6 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
   // Do not ignore SVG grouping (<g>) elements on ChromeOS, which is needed so
   // Select-to-Speak can read SVG text nodes in natural reading order.
   settings->SetAccessibilityIncludeSvgGElement(true);
-#endif
-
-#if BUILDFLAG(IS_FUCHSIA)
-  // TODO(crbug.com/1477047): WebSemanticsTest expects the events to be posted
-  // on a different thread.
-  // https://fuchsia.googlesource.com/fuchsia/+/refs/heads/main/src/ui/a11y/lib/semantics/tests/web_semantics_tests.cc#232
-  // The test facility needs to be updated, but we need sometime to make the
-  // change.
-  serialize_post_lifecycle_ = false;
 #endif
 
   // Optionally disable AXMenuList, which makes the internal pop-up menu
@@ -245,18 +237,6 @@ void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
   SetAccessibilityCrashKey(mode);
 
   // Initialize features based on the accessibility mode.
-#if !BUILDFLAG(IS_ANDROID)
-  // Inline text boxes can be enabled globally on all except Android.
-  // On Android they can be requested for just a specific node.
-  WebView* web_view = render_frame_->GetWebView();
-  DCHECK(web_view);
-  WebSettings* settings = web_view->GetSettings();
-  DCHECK(settings);
-  // TODO(accessibility) Remove inline text box setting and just use the AXMode.
-  bool use_inline_textboxes = mode.has_mode(ui::AXMode::kInlineTextBoxes);
-  settings->SetInlineTextBoxAccessibilityEnabled(use_inline_textboxes);
-#endif  // !BUILDFLAG(IS_ANDROID)
-
   StartOrStopLabelingImages(old_mode, mode);
 
   if (ax_context_) {
@@ -460,6 +440,7 @@ void RenderAccessibilityImpl::PerformAction(const ui::AXActionData& data) {
     case ax::mojom::Action::kScrollDown:
     case ax::mojom::Action::kScrollLeft:
     case ax::mojom::Action::kScrollRight:
+    case ax::mojom::Action::kStitchChildTree:
       target->PerformAction(data);
       break;
     case ax::mojom::Action::kCustomAction:
@@ -581,6 +562,11 @@ void RenderAccessibilityImpl::HandleAXEvent(const ui::AXEvent& event) {
     } else {
       legacy_event_schedule_mode_ =
           LegacyEventScheduleMode::kProcessEventsImmediately;
+    }
+    if (event.event_type == ax::mojom::Event::kLoadStart) {
+      loading_stage_ = LoadingStage::kPreload;
+    } else if (event.event_type == ax::mojom::Event::kLoadComplete) {
+      loading_stage_ = LoadingStage::kLoadCompleted;
     }
   }
 
@@ -1419,6 +1405,18 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   UMA_HISTOGRAM_TIMES(
       "Accessibility.Performance.SendPendingAccessibilityEvents",
       elapsed_time_ms);
+
+  if (loading_stage_ == LoadingStage::kPostLoad) {
+    // Track serialization after document load in order to measure the
+    // contribution of serialization to interaction latency.
+    UMA_HISTOGRAM_TIMES(
+        "Accessibility.Performance.SendPendingAccessibilityEvents.PostLoad",
+        elapsed_time_ms);
+  }
+
+  if (loading_stage_ == LoadingStage::kLoadCompleted) {
+    loading_stage_ = LoadingStage::kPostLoad;
+  }
 
   if (ukm_timer_->Elapsed() >= kMinUKMDelay) {
     MaybeSendUKM();

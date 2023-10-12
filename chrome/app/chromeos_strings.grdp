@@ -214,6 +214,9 @@
   <message name="IDS_CELLULAR_SETUP_PROFILE_LIST_PAGE_MESSAGE" desc="Label informing the user that they are able to select multiple eSIM profiles for downloading.">
     We've found multiple profiles available to download. Select the ones you would like to download before proceeding.
   </message>
+  <message name="IDS_CELLULAR_SETUP_PROFILE_LIST_PAGE_MESSAGE_WITH_LINK" desc="Label informing the user that they can choose to setup an eSIM profile manually.">
+    You can also setup an eSIM profile <ph name="BEGIN_LINK">&lt;a href="#" &gt;</ph>manually<ph name="END_LINK">&lt;/a&gt;</ph>.
+  </message>
  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE" desc="Label for informing the user on ways to retrieve an eSim profile">
     Scan a QR Code using your device camera or enter the activation code provided by your carrier.
   </message>
@@ -613,10 +616,10 @@
     You can customize this device to fit your needs. These accessibility features can be changed later in Settings.
   </message>
   <message name="IDS_NETWORK_SELECTION_TITLE" desc="Title of network selection screen" meaning="A title of the dialog where user should select network to connect to Internet">
-    Connect to network
+    Get connected to enjoy all the features on your new <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
-  <message name="IDS_NETWORK_SELECTION_HINT" desc="Under-title line on the network selection screen" meaning="A hint to the user why device should be connected to the network">
-    To restore your data, connect to the internet
+  <message name="IDS_NETWORK_SELECTION_SUBTITLE" desc="Subtitle of the network selection screen">
+    We will remember your network the next time you use the <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_NETWORK_SELECTION_ERROR" desc="Error shown when connection to network failed or timed out.">
     <ph name="PRODUCT_NAME">$1<ex>ChromeOS</ex></ph> was unable to connect to <ph name="NETWORK_ID">$2<ex>Public Wifi</ex></ph>. Please select another network or try again.
@@ -1910,7 +1913,12 @@
   <message name="IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION" desc="Message when attempting to activate a mobile network that requires a connection">
     To activate '<ph name="name">$1<ex>Generic Wireless</ex></ph>' data, first connect to a Wi-Fi network
   </message>
-
+  <message name="IDS_NETWORK_CARRIER_UNLOCK_TITLE" desc="Title for notification shown when device is carrier unlocked">
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is now unlocked
+  </message>
+ <message name="IDS_NETWORK_CARRIER_UNLOCK_BODY" desc="Message in notification shown when device is carrier unlocked informing the user any eligible mobile network is available for connection">
+    You can connect to any eligible mobile network in Settings
+  </message>
   <!-- ONC (Open Network Configuration) strings have moved to //chromeos/chromeos_strings.grd -->
 
   <!-- Strings shown within Tether notifications -->
@@ -2809,10 +2817,10 @@
 
     <!-- Update Notification Strings -->
   <message name="IDS_UPDATE_NOTIFICATION_HEADER" desc="Notification title shown for a system update.">
-    Update <ph name="NAME">$1<ex>Chromebook</ex></ph>.
+    You’ve been upgraded to <ph name="NAME">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_UPDATE_NOTIFICATION_MESSAGE" desc="Notification shown for a system update.">
-    Your Chromebook is updated.
+     New features include Magic Eraser on Google Photos to remove distractions, improved video call tools, and more
   </message>
 
   <!-- Update Required Screen Strings-->
@@ -4549,7 +4557,7 @@
   </message>
   <message name="IDS_HW_DATA_COLLECTION_CONTENT" desc="Content of the hardware data collection notice screen.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>To provide the best experience, <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> collects hardware data about devices and shares it with Google to determine which updates should be delivered. Optionally, you can allow Google to use this data for additional purposes like support and improvements to the <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> experience and service.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can log in on this device and visit the CHROMEOSFLEX_HARDWARE_INFO section in chrome://system to see the data sent to Google for update filtering, as well as any other instances where you choose to share data with Google.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can log in on this device and view fields listed as chromeosflex_ in chrome://system to see the data sent to Google for update filtering, as well as any other instances where you choose to share data with Google.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>For more details on data <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> may share with Google, and how it is used visit g.co/flex/HWDataCollection.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_HW_DATA_COLLECTION_USAGE_INFO" desc="Checkbox description for additional hardware data usage. This message is followed by a 'Learn more' link.">
@@ -6327,6 +6335,9 @@ Permissions you've already given to websites and apps may apply to this account.
   </message>
   <message name="IDS_BOREALIS_INSTALLER_ERROR_BUTTON_STORAGE" desc="Button for Steam (noun, name of app) installer to free disk-space if needed.">
     Storage management
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_ERROR_LEARN_MORE" desc="Hyperlink to help page to learn more about the error encountered.">
+    Learn more
   </message>
   <message name="IDS_BOREALIS_LAUNCH_ERROR_TITLE" desc="Title of a dialog shown when Steam (noun, name of app, a gaming software distribution platform) fails to launch.">
     Can’t open Steam for Chromebook (Beta)

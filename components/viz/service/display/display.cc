@@ -802,7 +802,6 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
       resource_provider_.get(), /*allow_access_to_gpu_thread=*/true);
 
   base::ElapsedTimer aggregate_timer;
-  aggregate_timer.Begin();
   AggregatedFrame frame;
   {
     FrameRateDecider::ScopedAggregate scoped_aggregate(
@@ -942,7 +941,6 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
 
     draw_timer.emplace();
     overlay_processor_->SetFrameSequenceNumber(frame_sequence_number_);
-    overlay_processor_->SetIsVideoCaptureEnabled(frame.video_capture_enabled);
     overlay_processor_->SetIsPageFullscreen(frame.page_fullscreen_mode);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
                          current_surface_size, display_color_spaces_,
@@ -970,7 +968,8 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
     if (IsScroll(frame.latency_info)) {
       boost_type = HintSession::BoostType::kScrollBoost;
     }
-    presentation_group_timing.OnDraw(params.frame_time, draw_timer->Begin(),
+    presentation_group_timing.OnDraw(params.frame_time,
+                                     draw_timer->start_time(),
                                      std::move(thread_ids), boost_type);
 
     for (const auto& surface_id : aggregator_->previous_contained_surfaces()) {
@@ -1005,6 +1004,20 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
           *frame.top_controls_visible_height;
       last_top_controls_visible_height_ = *frame.top_controls_visible_height;
     }
+
+    swap_frame_data.swap_trace_id = swapped_trace_id_;
+
+    TRACE_EVENT(
+        "viz,benchmark,graphics.pipeline", "Graphics.Pipeline",
+        perfetto::Flow::Global(swap_frame_data.swap_trace_id),
+        [swap_trace_id =
+             swap_frame_data.swap_trace_id](perfetto::EventContext ctx) {
+          auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
+          auto* data = event->set_chrome_graphics_pipeline();
+          data->set_step(perfetto::protos::pbzero::ChromeGraphicsPipeline::
+                             StepName::STEP_SEND_BUFFER_SWAP);
+          data->set_display_trace_id(swap_trace_id);
+        });
 
 #if BUILDFLAG(IS_APPLE)
     swap_frame_data.ca_layer_error_code =
@@ -1071,6 +1084,17 @@ void Display::DidReceiveSwapBuffersAck(
   // have been done in DrawAndSwap(), and should not be popped until
   // DidReceiveSwapBuffersAck.
   DCHECK(!pending_presentation_group_timings_.empty());
+
+  TRACE_EVENT(
+      "viz,benchmark,graphics.pipeline", "Graphics.Pipeline",
+      perfetto::TerminatingFlow::Global(params.swap_trace_id),
+      [&](perfetto::EventContext ctx) {
+        auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
+        auto* data = event->set_chrome_graphics_pipeline();
+        data->set_step(perfetto::protos::pbzero::ChromeGraphicsPipeline::
+                           StepName::STEP_SWAP_BUFFERS_ACK);
+        data->set_display_trace_id(params.swap_trace_id);
+      });
 
   if (params.swap_response.result ==
       gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
@@ -1197,7 +1221,8 @@ void Display::DidReceivePresentationFeedback(
       "viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
       last_presented_trace_id_, copy_feedback.timestamp);
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
-      "benchmark,viz", "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
+      "benchmark,viz," TRACE_DISABLED_BY_DEFAULT("display.framedisplayed"),
+      "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
       copy_feedback.timestamp);
 
   if (renderer_->CompositeTimeTracingEnabled()) {

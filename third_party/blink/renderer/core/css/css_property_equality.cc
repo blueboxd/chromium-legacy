@@ -80,12 +80,14 @@ bool FillLayersEqual(const FillLayer& a_layers, const FillLayer& b_layers) {
         }
         break;
       case CSSPropertyID::kBackgroundClip:
+      case CSSPropertyID::kMaskClip:
       case CSSPropertyID::kWebkitMaskClip:
         if (a_layer->Clip() != b_layer->Clip()) {
           return false;
         }
         break;
       case CSSPropertyID::kBackgroundOrigin:
+      case CSSPropertyID::kMaskOrigin:
       case CSSPropertyID::kWebkitMaskOrigin:
         if (a_layer->Origin() != b_layer->Origin()) {
           return false;
@@ -123,6 +125,7 @@ bool FillLayersEqual(const FillLayer& a_layers, const FillLayer& b_layers) {
         break;
       case CSSPropertyID::kBackgroundSize:
       case CSSPropertyID::kWebkitMaskSize:
+      case CSSPropertyID::kMaskSize:
         if (!(a_layer->SizeLength() == b_layer->SizeLength())) {
           return false;
         }
@@ -602,8 +605,6 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.ScrollbarWidth() == b.ScrollbarWidth();
     case CSSPropertyID::kScrollBehavior:
       return a.GetScrollBehavior() == b.GetScrollBehavior();
-    case CSSPropertyID::kScrollCustomization:
-      return a.ScrollCustomization() == b.ScrollCustomization();
     case CSSPropertyID::kScrollMarginBottom:
       return a.ScrollMarginBottom() == b.ScrollMarginBottom();
     case CSSPropertyID::kScrollMarginLeft:
@@ -711,7 +712,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kTextSizeAdjust:
       return a.GetTextSizeAdjust() == b.GetTextSizeAdjust();
     case CSSPropertyID::kTextSpacingTrim:
-      return a.TextSpacingTrim() == b.TextSpacingTrim();
+      return a.GetFontDescription().GetTextSpacingTrim() ==
+             b.GetFontDescription().GetTextSpacingTrim();
     case CSSPropertyID::kTextTransform:
       return a.TextTransform() == b.TextTransform();
     case CSSPropertyID::kTextUnderlineOffset:
@@ -782,11 +784,18 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
                                     b.MaskBoxImageSource());
     case CSSPropertyID::kWebkitMaskBoxImageWidth:
       return a.MaskBoxImageWidth() == b.MaskBoxImageWidth();
+    case CSSPropertyID::kMaskClip:
+      return FillLayersEqual<CSSPropertyID::kMaskClip>(a.MaskLayers(),
+                                                       b.MaskLayers());
     case CSSPropertyID::kWebkitMaskClip:
       return FillLayersEqual<CSSPropertyID::kWebkitMaskClip>(a.MaskLayers(),
                                                              b.MaskLayers());
+    case CSSPropertyID::kMaskImage:
     case CSSPropertyID::kWebkitMaskImage:
       return base::ValuesEquivalent(a.MaskImage(), b.MaskImage());
+    case CSSPropertyID::kMaskOrigin:
+      return FillLayersEqual<CSSPropertyID::kMaskOrigin>(a.MaskLayers(),
+                                                         b.MaskLayers());
     case CSSPropertyID::kWebkitMaskOrigin:
       return FillLayersEqual<CSSPropertyID::kWebkitMaskOrigin>(a.MaskLayers(),
                                                                b.MaskLayers());
@@ -802,6 +811,9 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kWebkitMaskRepeatY:
       return FillLayersEqual<CSSPropertyID::kWebkitMaskRepeatY>(a.MaskLayers(),
                                                                 b.MaskLayers());
+    case CSSPropertyID::kMaskSize:
+      return FillLayersEqual<CSSPropertyID::kMaskSize>(a.MaskLayers(),
+                                                       b.MaskLayers());
     case CSSPropertyID::kWebkitMaskSize:
       return FillLayersEqual<CSSPropertyID::kWebkitMaskSize>(a.MaskLayers(),
                                                              b.MaskLayers());
@@ -914,6 +926,10 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kAliasWebkitAlternativeAnimationDelay:
     case CSSPropertyID::kAliasWebkitAlternativeAnimationWithDelayStartEnd:
     case CSSPropertyID::kAliasWebkitAlternativeAnimationWithTimeline:
+    case CSSPropertyID::kAliasWebkitAlternativeMaskClip:
+    case CSSPropertyID::kAliasWebkitAlternativeMaskImage:
+    case CSSPropertyID::kAliasWebkitAlternativeMaskOrigin:
+    case CSSPropertyID::kAliasWebkitAlternativeMaskSize:
     case CSSPropertyID::kAliasWebkitAnimation:
     case CSSPropertyID::kAliasWebkitAnimationDelay:
     case CSSPropertyID::kAliasWebkitAnimationDirection:
@@ -1214,6 +1230,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kTransition:
     case CSSPropertyID::kViewTimeline:
     case CSSPropertyID::kAlternativeViewTimelineWithInset:
+    case CSSPropertyID::kWebkitAlternativeMask:
     case CSSPropertyID::kWebkitColumnBreakAfter:
     case CSSPropertyID::kWebkitColumnBreakBefore:
     case CSSPropertyID::kWebkitColumnBreakInside:

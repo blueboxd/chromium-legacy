@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/escape.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -56,8 +57,26 @@ class InterestGroupStorageTest : public testing::Test {
         blink::features::kInterestGroupStorage,
         {{"max_owners", "10"},
          {"max_groups_per_owner", "10"},
+         {"max_negative_groups_per_owner", "30"},
          {"max_ops_before_maintenance", "100"},
-         {"max_storage_per_owner", "2048"}});
+         {"max_storage_per_owner", "4096"}});
+  }
+
+  // Returns a summary of all interest groups. Each interest group is returned
+  // as a string of the form:
+  // "<origin>;<name>". This allows for easily checking that only the expected
+  // interest groups remain.
+  std::vector<std::string> GetInterestGroupSummary(
+      InterestGroupStorage& storage) {
+    std::vector<content::StorageInterestGroup> groups =
+        storage.GetAllInterestGroupsUnfilteredForTesting();
+    std::vector<std::string> summary;
+    for (const auto& group : groups) {
+      summary.emplace_back(base::StringPrintf(
+          "%s;%s", group.interest_group.owner.Serialize().c_str(),
+          group.interest_group.name.c_str()));
+    }
+    return summary;
   }
 
   std::unique_ptr<InterestGroupStorage> CreateStorage() {
@@ -82,6 +101,20 @@ class InterestGroupStorageTest : public testing::Test {
     result.expiry = base::Time::Now() + base::Days(30);
     result.execution_mode =
         blink::InterestGroup::ExecutionMode::kCompatibilityMode;
+    return result;
+  }
+
+  InterestGroup NewNegativeInterestGroup(url::Origin owner, std::string name) {
+    constexpr blink::InterestGroup::AdditionalBidKey kAdditionalBidKey = {
+        0x7d, 0x4d, 0x0e, 0x7f, 0x61, 0x53, 0xa6, 0x9b, 0x62, 0x42, 0xb5,
+        0x22, 0xab, 0xbe, 0xe6, 0x85, 0xfd, 0xa4, 0x42, 0x0f, 0x88, 0x34,
+        0xb1, 0x08, 0xc3, 0xbd, 0xae, 0x36, 0x9e, 0xf5, 0x49, 0xfa};
+
+    InterestGroup result;
+    result.owner = owner;
+    result.name = name;
+    result.additional_bid_key = kAdditionalBidKey;
+    result.expiry = base::Time::Now() + base::Days(30);
     return result;
   }
 
@@ -148,6 +181,8 @@ class InterestGroupStorageTest : public testing::Test {
             .SetAuctionServerRequestFlags(
                 {blink::AuctionServerRequestFlagsEnum::kOmitAds,
                  blink::AuctionServerRequestFlagsEnum::kIncludeFullAds})
+            .SetAggregationCoordinatorOrigin(
+                url::Origin::Create(GURL("https://coordinator.test/")))
             .Build();
 
     std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
@@ -403,6 +438,148 @@ TEST_F(InterestGroupStorageTest, JoinJoinLeave) {
   origins = storage->GetAllInterestGroupOwners();
   EXPECT_EQ(1u, origins.size());
   EXPECT_EQ(test_origin, origins[0]);
+}
+
+// Test ClearOriginJoinedInterestGroups().
+//
+// Join the following interest groups:
+// * With joining origin A, join 3 interest groups with owner B, 2 with an
+//   `executionMode` of "group-by-origin".
+// * With joining origin A, join 1 interest group with owner C.
+// * With joining origin site C, join 1 interest group with owner B.
+//
+// Then call ClearOriginJoinedInterestGroups() from origin A with owner B
+// a number of times, making sure that only the expected IGs are deleted
+// each time.
+TEST_F(InterestGroupStorageTest, ClearOriginJoinedInterestGroups) {
+  const url::Origin kOriginA = url::Origin::Create(GURL("https://a.test"));
+  const url::Origin kOriginB = url::Origin::Create(GURL("https://b.test"));
+  const url::Origin kOriginC = url::Origin::Create(GURL("https://c.test"));
+  const char kName1[] = "name1";
+  const char kName2[] = "name2";
+  const char kName3[] = "name3";
+  const char kName4[] = "name4";
+
+  std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
+
+  // Join 3 interest groups owned by kOriginB on kOriginA, with kName1, kName2,
+  // and kName3. The latter two have "group-by-origin" execution mode.
+  storage->JoinInterestGroup(NewInterestGroup(kOriginB, kName1),
+                             kOriginA.GetURL());
+  InterestGroup interest_group = NewInterestGroup(kOriginB, kName2);
+  interest_group.execution_mode =
+      blink::InterestGroup::ExecutionMode::kGroupedByOriginMode;
+  storage->JoinInterestGroup(interest_group, kOriginA.GetURL());
+  interest_group = NewInterestGroup(kOriginB, kName3);
+  interest_group.execution_mode =
+      blink::InterestGroup::ExecutionMode::kGroupedByOriginMode;
+  storage->JoinInterestGroup(interest_group, kOriginA.GetURL());
+
+  // Join an interest group owned by kOriginC from kOriginA. This should not be
+  // left by when calling ClearOriginJoinedInterestGroups() from kOriginA for
+  // kOriginB's interest groups.
+  storage->JoinInterestGroup(NewInterestGroup(kOriginC, kName1),
+                             kOriginA.GetURL());
+
+  // Join an interest group owned by kOriginB from kOriginC. This should not be
+  // left by when calling ClearOriginJoinedInterestGroups() from kOriginA for
+  // kOriginB's interest groups.
+  storage->JoinInterestGroup(NewInterestGroup(kOriginB, kName4),
+                             kOriginC.GetURL());
+
+  // Clear all of origin B's interest groups joined from origin B. This should
+  // leave no interest groups.
+  storage->ClearOriginJoinedInterestGroups(kOriginB, {},
+                                           /*main_frame_origin=*/kOriginB);
+  EXPECT_THAT(GetInterestGroupSummary(*storage),
+              testing::UnorderedElementsAre(
+                  // Origin B's groups that were joined on origin A.
+                  "https://b.test;name1", "https://b.test;name2",
+                  "https://b.test;name3",
+                  // Other groups.
+                  "https://c.test;name1", "https://b.test;name4"));
+
+  // Leave all of origin's B's interest groups joined from origin A, except for
+  // a list that contains all of the groups actually joined that way (plus an
+  // extra group). No groups should be left.
+  EXPECT_THAT(storage->ClearOriginJoinedInterestGroups(
+                  kOriginB, {kName1, kName2, kName3, "not-present-group"},
+                  /*main_frame_origin=*/kOriginA),
+              testing::UnorderedElementsAre());
+  EXPECT_THAT(GetInterestGroupSummary(*storage),
+              testing::UnorderedElementsAre(
+                  // Origin B's groups that were joined on origin A.
+                  "https://b.test;name1", "https://b.test;name2",
+                  "https://b.test;name3",
+                  // Other groups.
+                  "https://c.test;name1", "https://b.test;name4"));
+
+  // Leave all of origin's B's interest groups joined from origin A, except for
+  // kName1 and kName3. Only the kName2 group should be left. Despite kName2 and
+  // kName3 groups both having "group-by-origin" execution mode, group kName3
+  // should not have been left.
+  EXPECT_THAT(
+      storage->ClearOriginJoinedInterestGroups(kOriginB, {kName1, kName3},
+                                               /*main_frame_origin=*/kOriginA),
+      testing::UnorderedElementsAre(kName2));
+  EXPECT_THAT(GetInterestGroupSummary(*storage),
+              testing::UnorderedElementsAre(
+                  // Origin B's groups that were joined on origin A.
+                  "https://b.test;name1", "https://b.test;name3",
+                  // Other groups.
+                  "https://c.test;name1", "https://b.test;name4"));
+
+  // Leave all of origin's B's interest groups joined from origin A.
+  EXPECT_THAT(
+      storage->ClearOriginJoinedInterestGroups(kOriginB, {},
+                                               /*main_frame_origin=*/kOriginA),
+      testing::UnorderedElementsAre(kName1, kName3));
+  EXPECT_THAT(GetInterestGroupSummary(*storage),
+              testing::UnorderedElementsAre("https://c.test;name1",
+                                            "https://b.test;name4"));
+}
+
+// Make sure that ClearOriginJoinedInterestGroups() clears join, bid, and win
+// history.
+TEST_F(InterestGroupStorageTest, ClearOriginJoinedInterestGroupsClearsHistory) {
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://a.test"));
+  const char kName[] = "name";
+  const blink::InterestGroupKey kGroupKey(kOrigin, kName);
+
+  std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
+
+  storage->JoinInterestGroup(NewInterestGroup(kOrigin, kName),
+                             kOrigin.GetURL());
+
+  // Increment each history count by 1.
+  storage->JoinInterestGroup(NewInterestGroup(kOrigin, kName),
+                             kOrigin.GetURL());
+  storage->RecordInterestGroupBids({kGroupKey});
+  storage->RecordInterestGroupWin(kGroupKey, "{\"url\": \"https://ad.test\"}");
+
+  // Check the group is in the expected state.
+  absl::optional<content::StorageInterestGroup> group =
+      storage->GetInterestGroup(kGroupKey);
+  ASSERT_TRUE(group);
+  EXPECT_EQ(2, group->bidding_browser_signals->join_count);
+  EXPECT_EQ(1, group->bidding_browser_signals->bid_count);
+  EXPECT_EQ(1u, group->bidding_browser_signals->prev_wins.size());
+
+  // Clear the group.
+  storage->ClearOriginJoinedInterestGroups(kOrigin, {},
+                                           /*main_frame_origin=*/kOrigin);
+  EXPECT_FALSE(storage->GetInterestGroup(kGroupKey));
+
+  // Join the group again.
+  storage->JoinInterestGroup(NewInterestGroup(kOrigin, kName),
+                             kOrigin.GetURL());
+
+  // Check that none of the history was retained.
+  group = storage->GetInterestGroup(kGroupKey);
+  ASSERT_TRUE(group);
+  EXPECT_EQ(1, group->bidding_browser_signals->join_count);
+  EXPECT_EQ(0, group->bidding_browser_signals->bid_count);
+  EXPECT_EQ(0u, group->bidding_browser_signals->prev_wins.size());
 }
 
 // Join 5 interest groups in the same origin, and one interest group in another
@@ -1093,7 +1270,7 @@ TEST_F(InterestGroupStorageTest, DeleteOwnerJoinerPair) {
 
 // Maintenance should prune the number of interest groups and interest group
 // owners based on the set limit.
-TEST_F(InterestGroupStorageTest, JoinTooManyGroupNames) {
+TEST_F(InterestGroupStorageTest, JoinTooManyRegularGroupNames) {
   base::HistogramTester histograms;
   const size_t kExcessOwners = 10;
   const url::Origin test_origin =
@@ -1133,6 +1310,63 @@ TEST_F(InterestGroupStorageTest, JoinTooManyGroupNames) {
   ASSERT_EQ(max_groups_per_owner, interest_groups.size());
   histograms.ExpectBucketCount("Storage.InterestGroup.PerSiteCount",
                                max_groups_per_owner, 1);
+  histograms.ExpectTotalCount("Storage.InterestGroup.PerSiteCount", 2);
+
+  std::vector<std::string> remaining_groups;
+  for (const auto& db_group : interest_groups) {
+    remaining_groups.push_back(db_group.interest_group.name);
+  }
+  std::vector<std::string> remaining_groups_expected(
+      added_groups.begin() + kExcessOwners, added_groups.end());
+  EXPECT_THAT(remaining_groups,
+              UnorderedElementsAreArray(remaining_groups_expected));
+  histograms.ExpectTotalCount("Storage.InterestGroup.DBSize", 1);
+  histograms.ExpectTotalCount("Storage.InterestGroup.DBMaintenanceTime", 1);
+}
+
+// Maintenance should prune the number of interest groups and interest group
+// owners based on the set limit.
+TEST_F(InterestGroupStorageTest, JoinTooManyNegativeGroupNames) {
+  base::HistogramTester histograms;
+  const size_t kExcessOwners = 10;
+  const url::Origin test_origin =
+      url::Origin::Create(GURL("https://owner.example.com"));
+  const size_t max_negative_groups_per_owner =
+      blink::features::kInterestGroupStorageMaxNegativeGroupsPerOwner.Get();
+  const size_t num_groups = max_negative_groups_per_owner + kExcessOwners;
+  std::vector<std::string> added_groups;
+
+  std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
+  for (size_t i = 0; i < num_groups; i++) {
+    const std::string group_name = base::NumberToString(i);
+    // Allow time to pass so that they have different expiration times.
+    // This makes which groups get removed deterministic as they are sorted by
+    // expiration time.
+    task_environment().FastForwardBy(base::Microseconds(1));
+
+    storage->JoinInterestGroup(
+        NewNegativeInterestGroup(test_origin, group_name),
+        test_origin.GetURL());
+    added_groups.push_back(group_name);
+  }
+
+  std::vector<url::Origin> origins = storage->GetAllInterestGroupOwners();
+  EXPECT_EQ(1u, origins.size());
+
+  std::vector<StorageInterestGroup> interest_groups =
+      storage->GetInterestGroupsForOwner(test_origin);
+  EXPECT_EQ(num_groups, interest_groups.size());
+  histograms.ExpectBucketCount("Storage.InterestGroup.PerSiteCount", num_groups,
+                               1);
+
+  // Allow enough idle time to trigger maintenance.
+  task_environment().FastForwardBy(InterestGroupStorage::kIdlePeriod +
+                                   base::Seconds(1));
+
+  interest_groups = storage->GetInterestGroupsForOwner(test_origin);
+  ASSERT_EQ(max_negative_groups_per_owner, interest_groups.size());
+  histograms.ExpectBucketCount("Storage.InterestGroup.PerSiteCount",
+                               max_negative_groups_per_owner, 1);
   histograms.ExpectTotalCount("Storage.InterestGroup.PerSiteCount", 2);
 
   std::vector<std::string> remaining_groups;
@@ -1524,6 +1758,87 @@ TEST_F(InterestGroupStorageTest, UpgradeFromV6) {
   ASSERT_TRUE(sql::test::CreateDatabaseFromSQL(db_path(), file_path));
 
   auto expected_interest_group_matcher = testing::UnorderedElementsAre(
+      testing::AllOf(
+          Field(
+              "interest_group", &StorageInterestGroup::interest_group,
+              testing::AllOf(
+                  Field("expiry", &InterestGroup::expiry,
+                        base::Time::FromDeltaSinceWindowsEpoch(
+                            base::Microseconds(13293932603076872))),
+                  Field("owner", &InterestGroup::owner,
+                        url::Origin::Create(GURL("https://owner.example.com"))),
+                  Field("name", &InterestGroup::name,
+                        "groupNullUserBiddingSignals"),
+                  Field("priority", &InterestGroup::priority, 0.0),
+                  Field("enable_bidding_signals_prioritization",
+                        &InterestGroup::enable_bidding_signals_prioritization,
+                        false),
+                  Field("priority_vector", &InterestGroup::priority_vector,
+                        absl::nullopt),
+                  Field("priority_signals_overrides",
+                        &InterestGroup::priority_signals_overrides,
+                        absl::nullopt),
+                  Field("seller_capabilities",
+                        &InterestGroup::seller_capabilities, absl::nullopt),
+                  Field("all_sellers_capabilities",
+                        &InterestGroup::all_sellers_capabilities,
+                        SellerCapabilitiesType()),
+                  Field("bidding_url", &InterestGroup::bidding_url,
+                        GURL("https://owner.example.com/bidder.js")),
+                  Field("bidding_wasm_helper_url",
+                        &InterestGroup::bidding_wasm_helper_url, absl::nullopt),
+                  Field("update_url", &InterestGroup::update_url,
+                        GURL("https://owner.example.com/update")),
+                  Field("trusted_bidding_signals_url",
+                        &InterestGroup::trusted_bidding_signals_url,
+                        GURL("https://owner.example.com/signals")),
+                  Field(
+                      "trusted_bidding_signals_keys",
+                      &InterestGroup::trusted_bidding_signals_keys,
+                      std::vector<std::string>{"groupNullUserBiddingSignals"}),
+                  Field("user_bidding_signals",
+                        &InterestGroup::user_bidding_signals, absl::nullopt),
+                  Field("ads", &InterestGroup::ads,
+                        testing::Property(
+                            "value()",
+                            &absl::optional<
+                                std::vector<blink::InterestGroup::Ad>>::value,
+                            testing::ElementsAre(testing::AllOf(
+                                Field("render_url",
+                                      &InterestGroup::Ad::render_url,
+                                      GURL("https://ads.example.com/1")),
+                                Field("metadata", &InterestGroup::Ad::metadata,
+                                      "[\"4\",\"5\",null,\"6\"]"))))),
+                  Field("ad_components", &InterestGroup::ad_components,
+                        absl::nullopt),
+                  Field("ad_sizes", &InterestGroup::ad_components,
+                        absl::nullopt),
+                  Field("size_groups", &InterestGroup::ad_components,
+                        absl::nullopt))),
+          Field(
+              "bidding_browser_signals",
+              &StorageInterestGroup::bidding_browser_signals,
+              testing::AllOf(
+                  Pointee(Field("join_count",
+                                &auction_worklet::mojom::BiddingBrowserSignals::
+                                    join_count,
+                                0)),
+                  Pointee(Field(
+                      "bid_count",
+                      &auction_worklet::mojom::BiddingBrowserSignals::bid_count,
+                      0)))),
+          Field("bidding_ads_kanon", &StorageInterestGroup::bidding_ads_kanon,
+                testing::IsEmpty()),
+          Field("reporting_ads_kanon",
+                &StorageInterestGroup::reporting_ads_kanon, testing::IsEmpty()),
+          Field("joining_origin", &StorageInterestGroup::joining_origin,
+                url::Origin::Create(GURL("https://publisher.example.com"))),
+          Field("join_time", &StorageInterestGroup::join_time,
+                base::Time::FromDeltaSinceWindowsEpoch(
+                    base::Microseconds(13291340603081533))),
+          Field("last_updated", &StorageInterestGroup::last_updated,
+                base::Time::FromDeltaSinceWindowsEpoch(
+                    base::Microseconds(13291340603081533)))),
       testing::AllOf(
           Field(
               "interest_group", &StorageInterestGroup::interest_group,
@@ -2412,66 +2727,6 @@ TEST_F(InterestGroupStorageTest, OnlyDeletesExpiredKAnon) {
             storage->GetLastKAnonymityReported(k_anon_key_1));
   EXPECT_EQ(base::Time::Min(),
             storage->GetLastKAnonymityReported(k_anon_key_2));
-}
-
-TEST_F(InterestGroupStorageTest, UpdateAdditionalBidKey) {
-  const url::Origin test_origin =
-      url::Origin::Create(GURL("https://example.com"));
-
-  constexpr blink::InterestGroup::AdditionalBidKey kAdditionalBidKey1 = {
-      0x7d, 0x4d, 0x0e, 0x7f, 0x61, 0x53, 0xa6, 0x9b, 0x62, 0x42, 0xb5,
-      0x22, 0xab, 0xbe, 0xe6, 0x85, 0xfd, 0xa4, 0x42, 0x0f, 0x88, 0x34,
-      0xb1, 0x08, 0xc3, 0xbd, 0xae, 0x36, 0x9e, 0xf5, 0x49, 0xfa};
-  constexpr blink::InterestGroup::AdditionalBidKey kAdditionalBidKey2 = {
-      0x10, 0x0f, 0xdf, 0x47, 0xfb, 0x94, 0xf1, 0x53, 0x6a, 0x4f, 0x7c,
-      0x3f, 0xda, 0x27, 0x38, 0x3f, 0xa0, 0x33, 0x75, 0xa8, 0xf5, 0x27,
-      0xc5, 0x37, 0xe6, 0xf1, 0x70, 0x3c, 0x47, 0xf9, 0x4f, 0x86};
-
-  InterestGroup negative_interest_group =
-      blink::TestInterestGroupBuilder(/*owner=*/test_origin,
-                                      /*name=*/"negative")
-          .SetBiddingUrl(GURL("https://example.com/bid"))
-          .SetAdditionalBidKey(kAdditionalBidKey1)
-          .Build();
-  std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
-
-  storage->JoinInterestGroup(negative_interest_group, test_origin.GetURL());
-
-  std::vector<StorageInterestGroup> storage_interest_groups =
-      storage->GetInterestGroupsForOwner(test_origin);
-  ASSERT_EQ(1u, storage_interest_groups.size());
-  EXPECT_TRUE(negative_interest_group.IsEqualForTesting(
-      storage_interest_groups[0].interest_group));
-  base::Time join_time = base::Time::Now();
-  EXPECT_EQ(storage_interest_groups[0].join_time, join_time);
-  EXPECT_EQ(storage_interest_groups[0].last_updated, join_time);
-
-  // Test update as well.
-
-  // Pass time, so can check if `join_time` or `last_updated` is updated.
-  task_environment().FastForwardBy(base::Seconds(1234));
-
-  InterestGroupUpdate update;
-  update.additional_bid_key = kAdditionalBidKey2;
-  storage->UpdateInterestGroup(
-      blink::InterestGroupKey(negative_interest_group.owner,
-                              negative_interest_group.name),
-      update);
-
-  InterestGroup updated = negative_interest_group;
-  updated.additional_bid_key = kAdditionalBidKey2;
-
-  storage_interest_groups = storage->GetInterestGroupsForOwner(test_origin);
-  ASSERT_EQ(1u, storage_interest_groups.size());
-  EXPECT_TRUE(
-      updated.IsEqualForTesting(storage_interest_groups[0].interest_group));
-  // `join_time` should not be modified be updates, but `last_updated` should
-  // be.
-  EXPECT_EQ(storage_interest_groups[0].join_time, join_time);
-  EXPECT_EQ(storage_interest_groups[0].last_updated, base::Time::Now());
-  // Make sure the clock was advanced.
-  EXPECT_NE(storage_interest_groups[0].join_time,
-            storage_interest_groups[0].last_updated);
 }
 
 }  // namespace

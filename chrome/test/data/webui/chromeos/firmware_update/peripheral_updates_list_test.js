@@ -4,7 +4,6 @@
 
 import {fakeFirmwareUpdates} from 'chrome://accessory-update/fake_data.js';
 import {FakeUpdateProvider} from 'chrome://accessory-update/fake_update_provider.js';
-import {FirmwareUpdate} from 'chrome://accessory-update/firmware_update_types.js';
 import {setUpdateProviderForTesting} from 'chrome://accessory-update/mojo_interface_provider.js';
 import {PeripheralUpdateListElement} from 'chrome://accessory-update/peripheral_updates_list.js';
 import {UpdateCardElement} from 'chrome://accessory-update/update_card.js';
@@ -53,20 +52,18 @@ export function peripheralUpdatesListTest() {
   }
 
   /**
-   * @suppress {visibility}
    * @return {!Promise}
    */
   function clearFirmwareUpdates() {
-    peripheralUpdateListElement.firmwareUpdates_ = [];
+    peripheralUpdateListElement.setFirmwareUpdatesForTesting([]);
     return flushTasks();
   }
 
   /**
-   * @suppress {visibility}
    * @return {!Array<!FirmwareUpdate>}
    */
   function getFirmwareUpdates() {
-    return peripheralUpdateListElement.firmwareUpdates_;
+    return peripheralUpdateListElement.getFirmwareUpdatesForTesting();
   }
 
   /**

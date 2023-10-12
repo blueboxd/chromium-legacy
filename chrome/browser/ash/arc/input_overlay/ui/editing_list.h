@@ -7,6 +7,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector_observer.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/events/event.h"
 #include "ui/views/view.h"
 
@@ -35,6 +36,7 @@ class DisplayOverlayController;
 //
 class EditingList : public views::View, public TouchInjectorObserver {
  public:
+  METADATA_HEADER(EditingList);
   explicit EditingList(DisplayOverlayController* display_overlay_controller);
   EditingList(const EditingList&) = delete;
   EditingList& operator=(const EditingList&) = delete;
@@ -59,8 +61,8 @@ class EditingList : public views::View, public TouchInjectorObserver {
   void Init();
   bool HasControls() const;
 
-  // Add UI components to `container` as children.
-  void AddHeader(views::View* container);
+  // Add top buttons and title.
+  void AddHeader();
   // Add the zero state view when there are no actions / controls.
   void AddZeroStateContent();
   // Add the list view for the actions / controls.

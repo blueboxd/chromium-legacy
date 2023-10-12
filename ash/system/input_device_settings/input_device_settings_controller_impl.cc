@@ -37,8 +37,10 @@
 #include "base/strings/strcat.h"
 #include "base/strings/to_string.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/values.h"
 #include "components/account_id/account_id.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
@@ -168,10 +170,13 @@ mojom::KeyboardPtr BuildMojomKeyboard(const ui::KeyboardDevice& keyboard) {
   return mojom_keyboard;
 }
 
-mojom::MousePtr BuildMojomMouse(const ui::InputDevice& mouse) {
+mojom::MousePtr BuildMojomMouse(
+    const ui::InputDevice& mouse,
+    mojom::CustomizationRestriction customization_restriction) {
   mojom::MousePtr mojom_mouse = mojom::Mouse::New();
   mojom_mouse->id = mouse.id;
   mojom_mouse->name = mouse.name;
+  mojom_mouse->customization_restriction = customization_restriction;
   mojom_mouse->device_key =
       Shell::Get()->input_device_key_alias_manager()->GetAliasedDeviceKey(
           mouse);
@@ -493,6 +498,12 @@ InputDeviceSettingsControllerImpl::InputDeviceSettingsControllerImpl(
 void InputDeviceSettingsControllerImpl::Init() {
   Shell::Get()->session_controller()->AddObserver(this);
   InitializePolicyHandler();
+  // Initialize the duplicate id finder first then the notifiers to make sure
+  // duplicate ids are up to date before the controller gets updates about
+  // connected devices.
+  if (features::IsPeripheralCustomizationEnabled()) {
+    duplicate_id_finder_ = std::make_unique<InputDeviceDuplicateIdFinder>();
+  }
   keyboard_notifier_ = std::make_unique<
       InputDeviceNotifier<mojom::KeyboardPtr, ui::KeyboardDevice>>(
       &keyboards_,
@@ -523,8 +534,6 @@ void InputDeviceSettingsControllerImpl::Init() {
         base::BindRepeating(
             &InputDeviceSettingsControllerImpl::OnGraphicsTabletListUpdated,
             base::Unretained(this)));
-
-    duplicate_id_finder_ = std::make_unique<InputDeviceDuplicateIdFinder>();
   }
   metrics_manager_ = std::make_unique<InputDeviceSettingsMetricsManager>();
 }
@@ -558,9 +567,35 @@ void InputDeviceSettingsControllerImpl::RegisterProfilePrefs(
   pref_registry->RegisterDictionaryPref(
       prefs::kPointingStickDeviceSettingsDictPref);
   pref_registry->RegisterDictionaryPref(prefs::kTouchpadDeviceSettingsDictPref);
+  pref_registry->RegisterDictionaryPref(prefs::kKeyboardInternalSettings);
+
   pref_registry->RegisterDictionaryPref(
       prefs::kTouchpadInternalSettings,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  pref_registry->RegisterDictionaryPref(
+      prefs::kTouchpadDefaultSettings,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  pref_registry->RegisterDictionaryPref(
+      prefs::kPointingStickInternalSettings,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  pref_registry->RegisterDictionaryPref(
+      prefs::kMouseDefaultSettings,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  pref_registry->RegisterDictionaryPref(
+      prefs::kKeyboardDefaultChromeOSSettings,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  pref_registry->RegisterDictionaryPref(
+      prefs::kKeyboardDefaultNonChromeOSSettings,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+
+  pref_registry->RegisterDictionaryPref(
+      prefs::kKeyboardUpdateSettingsMetricInfo);
+  pref_registry->RegisterDictionaryPref(prefs::kMouseUpdateSettingsMetricInfo);
+  pref_registry->RegisterDictionaryPref(
+      prefs::kTouchpadUpdateSettingsMetricInfo);
+  pref_registry->RegisterDictionaryPref(
+      prefs::kPointingStickUpdateSettingsMetricInfo);
+
   pref_registry->RegisterListPref(prefs::kKeyboardDeviceImpostersListPref);
   pref_registry->RegisterDictionaryPref(prefs::kMouseButtonRemappingsDictPref);
   pref_registry->RegisterDictionaryPref(
@@ -589,6 +624,13 @@ void InputDeviceSettingsControllerImpl::OnActiveUserPrefServiceChanged(
     pref_service->SetDict(prefs::kPointingStickDeviceSettingsDictPref, {});
     pref_service->SetDict(prefs::kTouchpadDeviceSettingsDictPref, {});
     pref_service->SetList(prefs::kKeyboardDeviceImpostersListPref, {});
+
+    pref_service->ClearPref(prefs::kKeyboardInternalSettings);
+    pref_service->ClearPref(prefs::kKeyboardUpdateSettingsMetricInfo);
+    pref_service->ClearPref(prefs::kMouseUpdateSettingsMetricInfo);
+    pref_service->ClearPref(prefs::kTouchpadUpdateSettingsMetricInfo);
+    pref_service->ClearPref(prefs::kPointingStickUpdateSettingsMetricInfo);
+
     DeleteLoginScreenSettingsPrefWhenInputDeviceSettingsSplitDisabled(
         local_state_);
     return;
@@ -616,6 +658,14 @@ void InputDeviceSettingsControllerImpl::OnActiveUserPrefServiceChanged(
     pref_service->SetDict(prefs::kKeyboardDeviceSettingsDictPref,
                           std::move(updated_keyboard_dict));
 
+    // Remove six pack remappings from internal keyboard as well.
+    base::Value::Dict updated_internal_keyboard_dict =
+        pref_service->GetDict(prefs::kKeyboardInternalSettings).Clone();
+    updated_internal_keyboard_dict.Remove(
+        prefs::kKeyboardSettingSixPackKeyRemappings);
+    pref_service->SetDict(prefs::kKeyboardInternalSettings,
+                          std::move(updated_internal_keyboard_dict));
+
     pref_service->ClearPref(prefs::kRemapToRightClickNotificationsRemaining);
     pref_service->ClearPref(prefs::kSixPackKeyDeleteNotificationsRemaining);
     pref_service->ClearPref(prefs::kSixPackKeyHomeNotificationsRemaining);
@@ -627,6 +677,23 @@ void InputDeviceSettingsControllerImpl::OnActiveUserPrefServiceChanged(
   active_pref_service_ = pref_service;
   active_account_id_ = Shell::Get()->session_controller()->GetActiveAccountId();
   InitializePolicyHandler();
+
+  // Observe changes to synced prefs to ensure updates made on other devices are
+  // properly reflected.
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  if (active_pref_service_) {
+    pref_change_registrar_->Init(active_pref_service_);
+    pref_change_registrar_->Add(
+        prefs::kPointingStickInternalSettings,
+        base::BindRepeating(&InputDeviceSettingsControllerImpl::
+                                RefreshInternalPointingStickSettings,
+                            weak_ptr_factory_.GetWeakPtr()));
+    pref_change_registrar_->Add(
+        prefs::kTouchpadInternalSettings,
+        base::BindRepeating(
+            &InputDeviceSettingsControllerImpl::RefreshInternalTouchpadSettings,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
 
   // Device settings must be refreshed when the user pref service is updated,
   // but all dependencies of `InputDeviceSettingsControllerImpl` must be
@@ -665,9 +732,9 @@ void InputDeviceSettingsControllerImpl::RefreshAllDeviceSettings() {
     DispatchPointingStickSettingsChanged(id);
   }
 
-  RefreshStoredLoginScreenKeyboardSettings();
-  RefreshStoredLoginScreenMouseSettings();
-  RefreshStoredLoginScreenTouchpadSettings();
+  RefreshCachedKeyboardSettings();
+  RefreshCachedMouseSettings();
+  RefreshCachedTouchpadSettings();
   RefreshStoredLoginScreenPointingStickSettings();
 
   if (features::IsPeripheralCustomizationEnabled()) {
@@ -1006,7 +1073,7 @@ void InputDeviceSettingsControllerImpl::SetKeyboardSettings(
       base::BindRepeating(
           &InputDeviceSettingsControllerImpl::DispatchKeyboardSettingsChanged,
           base::Unretained(this)));
-  RefreshStoredLoginScreenKeyboardSettings();
+  RefreshCachedKeyboardSettings();
 }
 
 void InputDeviceSettingsControllerImpl::SetTouchpadSettings(
@@ -1040,7 +1107,7 @@ void InputDeviceSettingsControllerImpl::SetTouchpadSettings(
       base::BindRepeating(
           &InputDeviceSettingsControllerImpl::DispatchTouchpadSettingsChanged,
           base::Unretained(this)));
-  RefreshStoredLoginScreenTouchpadSettings();
+  RefreshCachedTouchpadSettings();
 }
 
 void InputDeviceSettingsControllerImpl::SetMouseSettings(
@@ -1074,7 +1141,7 @@ void InputDeviceSettingsControllerImpl::SetMouseSettings(
       base::BindRepeating(
           &InputDeviceSettingsControllerImpl::DispatchMouseSettingsChanged,
           base::Unretained(this)));
-  RefreshStoredLoginScreenMouseSettings();
+  RefreshCachedMouseSettings();
 }
 
 void InputDeviceSettingsControllerImpl::SetPointingStickSettings(
@@ -1313,6 +1380,55 @@ void InputDeviceSettingsControllerImpl::DispatchGraphicsTabletSettingsChanged(
   }
 }
 
+mojom::CustomizationRestriction
+InputDeviceSettingsControllerImpl::GetMouseCustomizationRestriction(
+    const ui::InputDevice& mouse) {
+  if (!features::IsPeripheralCustomizationEnabled()) {
+    return mojom::CustomizationRestriction::kAllowCustomizations;
+  }
+
+  // If the mouse is not customizable, then the CustomizationRestriction is
+  // kDisallowCustomizations.
+  if (!IsMouseCustomizable(mouse)) {
+    return mojom::CustomizationRestriction::kDisallowCustomizations;
+  }
+
+  // If the mouse is customizable based on its vid and pid but there exists
+  // duplicate ids in the keyboard list, then the CustomizationRestriction is
+  // kDisableKeyEventRewrites to disable the key event rewrite from the mouse.
+  auto* duplicate_ids = duplicate_id_finder_->GetDuplicateDeviceIds(mouse.id);
+  CHECK(duplicate_ids);
+  for (const auto& duplicate_id : *duplicate_ids) {
+    if (keyboards_.contains(duplicate_id)) {
+      return mojom::CustomizationRestriction::kDisableKeyEventRewrites;
+    }
+  }
+
+  return mojom::CustomizationRestriction::kAllowCustomizations;
+}
+
+void InputDeviceSettingsControllerImpl::
+    ApplyCustomizationRestrictionFromKeyboard(DeviceId keyboard_id) {
+  if (!features::IsPeripheralCustomizationEnabled()) {
+    return;
+  }
+
+  auto* duplicate_ids =
+      duplicate_id_finder_->GetDuplicateDeviceIds(keyboard_id);
+  CHECK(duplicate_ids);
+  for (const auto& duplicate_id : *duplicate_ids) {
+    auto iter = mice_.find(duplicate_id);
+    if (iter == mice_.end()) {
+      return;
+    }
+    auto& mouse = *iter->second;
+    mouse.customization_restriction =
+        mojom::CustomizationRestriction::kDisableKeyEventRewrites;
+    InitializeMouseSettings(&mouse);
+    DispatchMouseSettingsChanged(mouse.id);
+  }
+}
+
 void InputDeviceSettingsControllerImpl::OnKeyboardListUpdated(
     std::vector<ui::KeyboardDevice> keyboards_to_add,
     std::vector<DeviceId> keyboard_ids_to_remove) {
@@ -1323,13 +1439,15 @@ void InputDeviceSettingsControllerImpl::OnKeyboardListUpdated(
     InitializeKeyboardSettings(mojom_keyboard.get());
     keyboards_.insert_or_assign(keyboard.id, std::move(mojom_keyboard));
     DispatchKeyboardConnected(keyboard.id);
+    // Update mouse restrictions if we have a keyboard with the same id.
+    ApplyCustomizationRestrictionFromKeyboard(keyboard.id);
   }
 
   for (const auto id : keyboard_ids_to_remove) {
     DispatchKeyboardDisconnectedAndEraseFromList(id);
   }
 
-  RefreshStoredLoginScreenKeyboardSettings();
+  RefreshCachedKeyboardSettings();
 }
 
 void InputDeviceSettingsControllerImpl::OnTouchpadListUpdated(
@@ -1346,14 +1464,15 @@ void InputDeviceSettingsControllerImpl::OnTouchpadListUpdated(
     DispatchTouchpadDisconnectedAndEraseFromList(id);
   }
 
-  RefreshStoredLoginScreenTouchpadSettings();
+  RefreshCachedTouchpadSettings();
 }
 
 void InputDeviceSettingsControllerImpl::OnMouseListUpdated(
     std::vector<ui::InputDevice> mice_to_add,
     std::vector<DeviceId> mouse_ids_to_remove) {
   for (const auto& mouse : mice_to_add) {
-    auto mojom_mouse = BuildMojomMouse(mouse);
+    auto mojom_mouse =
+        BuildMojomMouse(mouse, GetMouseCustomizationRestriction(mouse));
     InitializeMouseSettings(mojom_mouse.get());
     mice_.insert_or_assign(mouse.id, std::move(mojom_mouse));
     DispatchMouseConnected(mouse.id);
@@ -1363,7 +1482,7 @@ void InputDeviceSettingsControllerImpl::OnMouseListUpdated(
     DispatchMouseDisconnectedAndEraseFromList(id);
   }
 
-  RefreshStoredLoginScreenMouseSettings();
+  RefreshCachedMouseSettings();
 }
 
 void InputDeviceSettingsControllerImpl::OnPointingStickListUpdated(
@@ -1567,11 +1686,14 @@ void InputDeviceSettingsControllerImpl::StartObservingButtons(DeviceId id) {
           ->peripheral_customization_event_rewriter();
   CHECK(rewriter);
   auto* mouse = FindMouse(id);
-  if (mouse) {
+  if (mouse && mouse->customization_restriction ==
+                   ash::mojom::CustomizationRestriction::kAllowCustomizations) {
     const auto* duplicate_ids =
         duplicate_id_finder_->GetDuplicateDeviceIds(mouse->id);
+    CHECK(duplicate_ids);
     for (const auto& duplicate_id : *duplicate_ids) {
-      rewriter->StartObservingMouse(duplicate_id);
+      rewriter->StartObservingMouse(duplicate_id,
+                                    /*can_rewrite_key_event=*/true);
     }
     return;
   }
@@ -1580,6 +1702,7 @@ void InputDeviceSettingsControllerImpl::StartObservingButtons(DeviceId id) {
   if (graphics_tablet) {
     const auto* duplicate_ids =
         duplicate_id_finder_->GetDuplicateDeviceIds(graphics_tablet->id);
+    CHECK(duplicate_ids);
     for (const auto& duplicate_id : *duplicate_ids) {
       rewriter->StartObservingGraphicsTablet(duplicate_id);
     }
@@ -1703,6 +1826,92 @@ void InputDeviceSettingsControllerImpl::DispatchCustomizablePenButtonPressed(
   for (auto& observer : observers_) {
     observer.OnCustomizablePenButtonPressed(graphics_tablet, button);
   }
+}
+
+void InputDeviceSettingsControllerImpl::RefreshInternalPointingStickSettings() {
+  for (auto& [id, pointing_stick] : pointing_sticks_) {
+    if (pointing_stick->is_external) {
+      continue;
+    }
+
+    InitializePointingStickSettings(pointing_stick.get());
+    DispatchPointingStickSettingsChanged(id);
+  }
+}
+
+void InputDeviceSettingsControllerImpl::RefreshInternalTouchpadSettings() {
+  for (auto& [id, touchpad] : touchpads_) {
+    if (touchpad->is_external) {
+      continue;
+    }
+
+    InitializeTouchpadSettings(touchpad.get());
+    DispatchTouchpadSettingsChanged(id);
+  }
+}
+
+void InputDeviceSettingsControllerImpl::RefreshCachedMouseSettings() {
+  RefreshStoredLoginScreenMouseSettings();
+  RefreshMouseDefaultSettings();
+}
+
+void InputDeviceSettingsControllerImpl::RefreshCachedKeyboardSettings() {
+  RefreshStoredLoginScreenKeyboardSettings();
+  RefreshKeyboardDefaultSettings();
+}
+
+void InputDeviceSettingsControllerImpl::RefreshCachedTouchpadSettings() {
+  RefreshStoredLoginScreenTouchpadSettings();
+  RefreshTouchpadDefaultSettings();
+}
+
+void InputDeviceSettingsControllerImpl::RefreshMouseDefaultSettings() {
+  if (!active_pref_service_ || mice_.empty()) {
+    return;
+  }
+
+  mouse_pref_handler_->UpdateDefaultMouseSettings(
+      active_pref_service_, policy_handler_->mouse_policies(),
+      *mice_.rbegin()->second);
+}
+
+void InputDeviceSettingsControllerImpl::RefreshKeyboardDefaultSettings() {
+  if (!active_pref_service_) {
+    return;
+  }
+
+  auto chromeos_iter =
+      base::ranges::find(keyboards_.rbegin(), keyboards_.rend(), /*value=*/true,
+                         [](const auto& keyboard) {
+                           return IsChromeOSKeyboard(*keyboard.second);
+                         });
+  auto non_chromeos_iter =
+      base::ranges::find(keyboards_.rbegin(), keyboards_.rend(),
+                         /*value=*/false, [](const auto& keyboard) {
+                           return IsChromeOSKeyboard(*keyboard.second);
+                           ;
+                         });
+
+  if (chromeos_iter != keyboards_.rend()) {
+    keyboard_pref_handler_->UpdateDefaultChromeOSKeyboardSettings(
+        active_pref_service_, policy_handler_->keyboard_policies(),
+        *chromeos_iter->second);
+  }
+
+  if (non_chromeos_iter != keyboards_.rend()) {
+    keyboard_pref_handler_->UpdateDefaultNonChromeOSKeyboardSettings(
+        active_pref_service_, policy_handler_->keyboard_policies(),
+        *non_chromeos_iter->second);
+  }
+}
+
+void InputDeviceSettingsControllerImpl::RefreshTouchpadDefaultSettings() {
+  if (!active_pref_service_ || touchpads_.empty()) {
+    return;
+  }
+
+  touchpad_pref_handler_->UpdateDefaultTouchpadSettings(
+      active_pref_service_, *touchpads_.rbegin()->second);
 }
 
 }  // namespace ash

@@ -120,9 +120,8 @@ void MediaBrowserTest::CleanupTest() {
 std::string MediaBrowserTest::EncodeErrorMessage(
     const std::string& original_message) {
   url::RawCanonOutputT<char> buffer;
-  url::EncodeURIComponent(original_message.data(), original_message.size(),
-                          &buffer);
-  return std::string(buffer.data(), buffer.length());
+  url::EncodeURIComponent(original_message, &buffer);
+  return std::string(buffer.view());
 }
 
 void MediaBrowserTest::AddTitlesToAwait(content::TitleWatcher* title_watcher) {
@@ -206,13 +205,21 @@ class MediaTest : public testing::WithParamInterface<bool>,
 };
 
 // Android doesn't support Theora.
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearTheora) {
-  PlayVideo("bear.ogv");
+  if (base::FeatureList::IsEnabled(media::kTheoraVideoCodec)) {
+    PlayVideo("bear.ogv");
+  } else {
+    GTEST_SKIP() << "Theora isn't supported";
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearSilentTheora) {
-  PlayVideo("bear_silent.ogv");
+  if (base::FeatureList::IsEnabled(media::kTheoraVideoCodec)) {
+    PlayVideo("bear_silent.ogv");
+  } else {
+    GTEST_SKIP() << "Theora isn't supported";
+  }
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 

@@ -186,6 +186,12 @@ content_settings::PatternPair GetPatternsFromScopingType(
       patterns.second =
           content_settings::URLToSchemefulSitePattern(secondary_url);
       break;
+    case WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_SCHEMEFUL_SITE_SCOPE:
+      CHECK(!secondary_url.is_empty());
+      patterns.first = ContentSettingsPattern::FromURLNoWildcard(primary_url);
+      patterns.second =
+          content_settings::URLToSchemefulSitePattern(secondary_url);
+      break;
     case WebsiteSettingsInfo::REQUESTING_SCHEMEFUL_SITE_ONLY_SCOPE:
       patterns.first = content_settings::URLToSchemefulSitePattern(primary_url);
       patterns.second = ContentSettingsPattern::Wildcard();
@@ -788,18 +794,25 @@ void HostContentSettingsMap::UpdateLastVisitedTime(
   }
 }
 
-bool HostContentSettingsMap::RenewContentSetting(
+absl::optional<base::TimeDelta> HostContentSettingsMap::RenewContentSetting(
     const GURL& primary_url,
     const GURL& secondary_url,
     ContentSettingsType type,
     absl::optional<ContentSetting> setting_to_match) {
-  bool any_updated = false;
+  absl::optional<base::TimeDelta> delta_to_nearest_expiration = absl::nullopt;
   for (auto* provider : user_modifiable_providers_) {
-    any_updated = provider->RenewContentSetting(primary_url, secondary_url,
-                                                type, setting_to_match) ||
-                  any_updated;
+    absl::optional<base::TimeDelta> delta_to_expiration =
+        provider->RenewContentSetting(primary_url, secondary_url, type,
+                                      setting_to_match);
+
+    if (!delta_to_nearest_expiration.has_value()) {
+      delta_to_nearest_expiration = delta_to_expiration;
+    } else if (delta_to_expiration.has_value()) {
+      delta_to_nearest_expiration =
+          std::min(delta_to_nearest_expiration, delta_to_expiration);
+    }
   }
-  return any_updated;
+  return delta_to_nearest_expiration;
 }
 
 void HostContentSettingsMap::ClearSettingsForOneType(

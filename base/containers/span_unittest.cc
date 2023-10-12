@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "base/containers/adapters.h"
@@ -25,6 +26,132 @@ using ::testing::Eq;
 using ::testing::Pointwise;
 
 namespace base {
+
+namespace {
+
+// Tests for span(It, StrictNumeric<size_t>) deduction guide. These tests use a
+// helper function to wrap the static_asserts, as most STL containers don't work
+// well in a constexpr context. std::array<T, N> does, but base::span has
+// specific overloads for std::array<T, n>, so that ends up being less helpful
+// than it would initially appear.
+//
+// Another alternative would be to use std::declval, but that would be fairly
+// verbose.
+[[maybe_unused]] void TestDeductionGuides() {
+  // Tests for span(It, StrictNumeric<size_t>) deduction guide.
+  {
+    const std::vector<int> v;
+    static_assert(
+        std::is_same_v<decltype(span(v.cbegin(), v.size())), span<const int>>);
+    static_assert(
+        std::is_same_v<decltype(span(v.begin(), v.size())), span<const int>>);
+    static_assert(
+        std::is_same_v<decltype(span(v.data(), v.size())), span<const int>>);
+  }
+
+  {
+    std::vector<int> v;
+    static_assert(
+        std::is_same_v<decltype(span(v.cbegin(), v.size())), span<const int>>);
+    static_assert(
+        std::is_same_v<decltype(span(v.begin(), v.size())), span<int>>);
+    static_assert(
+        std::is_same_v<decltype(span(v.data(), v.size())), span<int>>);
+  }
+
+  // Tests for span(It, End) deduction guide.
+  {
+    const std::vector<int> v;
+    static_assert(
+        std::is_same_v<decltype(span(v.cbegin(), v.cend())), span<const int>>);
+    static_assert(
+        std::is_same_v<decltype(span(v.begin(), v.end())), span<const int>>);
+  }
+
+  {
+    std::vector<int> v;
+    static_assert(
+        std::is_same_v<decltype(span(v.cbegin(), v.cend())), span<const int>>);
+    static_assert(
+        std::is_same_v<decltype(span(v.begin(), v.end())), span<int>>);
+  }
+
+  // Tests for span(T (&)[N]) deduction guide.
+  {
+    const int kArray[] = {1, 2, 3};
+    static_assert(std::is_same_v<decltype(span(kArray)), span<const int, 3>>);
+  }
+  {
+    int kArray[] = {1, 2, 3};
+    static_assert(std::is_same_v<decltype(span(kArray)), span<int, 3>>);
+  }
+
+  // Tests for span(std::array<T, N>&) deduction guide.
+  static_assert(
+      std::is_same_v<decltype(span(std::declval<std::array<const bool, 3>&>())),
+                     span<const bool, 3>>);
+  static_assert(
+      std::is_same_v<decltype(span(std::declval<std::array<bool, 3>&>())),
+                     span<bool, 3>>);
+
+  // Tests for span(const std::array<T, N>&) deduction guide.
+  static_assert(
+      std::is_same_v<decltype(span(
+                         std::declval<const std::array<const bool, 3>&>())),
+                     span<const bool, 3>>);
+  static_assert(
+      std::is_same_v<decltype(span(
+                         std::declval<const std::array<const bool, 3>&&>())),
+                     span<const bool, 3>>);
+  static_assert(std::is_same_v<
+                decltype(span(std::declval<std::array<const bool, 3>&&>())),
+                span<const bool, 3>>);
+  static_assert(
+      std::is_same_v<decltype(span(std::declval<const std::array<bool, 3>&>())),
+                     span<const bool, 3>>);
+  static_assert(std::is_same_v<
+                decltype(span(std::declval<const std::array<bool, 3>&&>())),
+                span<const bool, 3>>);
+  static_assert(
+      std::is_same_v<decltype(span(std::declval<std::array<bool, 3>&&>())),
+                     span<const bool, 3>>);
+
+  // Tests for span(Container&&) deduction guide.
+  static_assert(
+      std::is_same_v<decltype(span(std::declval<const std::string&>())),
+                     span<const char>>);
+  static_assert(
+      std::is_same_v<decltype(span(std::declval<const std::string&&>())),
+                     span<const char>>);
+  static_assert(
+      std::is_same_v<decltype(span(std::declval<std::string&>())), span<char>>);
+  static_assert(std::is_same_v<decltype(span(std::declval<std::string&&>())),
+                               span<const char>>);
+  static_assert(
+      std::is_same_v<decltype(span(std::declval<const std::u16string&>())),
+                     span<const char16_t>>);
+  static_assert(
+      std::is_same_v<decltype(span(std::declval<const std::u16string&&>())),
+                     span<const char16_t>>);
+  static_assert(std::is_same_v<decltype(span(std::declval<std::u16string&>())),
+                               span<char16_t>>);
+  static_assert(std::is_same_v<decltype(span(std::declval<std::u16string&&>())),
+                               span<const char16_t>>);
+  static_assert(std::is_same_v<
+                decltype(span(std::declval<const std::array<float, 9>&>())),
+                span<const float, 9>>);
+  static_assert(std::is_same_v<
+                decltype(span(std::declval<const std::array<float, 9>&&>())),
+                span<const float, 9>>);
+  static_assert(
+      std::is_same_v<decltype(span(std::declval<std::array<float, 9>&>())),
+                     span<float, 9>>);
+  static_assert(
+      std::is_same_v<decltype(span(std::declval<std::array<float, 9>&&>())),
+                     span<const float, 9>>);
+}
+
+}  // namespace
 
 TEST(SpanTest, DefaultConstructor) {
   span<int> dynamic_span;

@@ -126,6 +126,7 @@ class TabHoverCardBubbleView::ThumbnailView
     : public views::View,
       public views::AnimationDelegateViews {
  public:
+  METADATA_HEADER(ThumbnailView);
   explicit ThumbnailView(TabHoverCardBubbleView* bubble_view)
       : AnimationDelegateViews(this),
         bubble_view_(bubble_view),
@@ -340,6 +341,9 @@ class TabHoverCardBubbleView::ThumbnailView
   ImageType image_type_ = ImageType::kNone;
 };
 
+BEGIN_METADATA(TabHoverCardBubbleView, ThumbnailView, views::View)
+END_METADATA
+
 // TabHoverCardBubbleView:
 // ----------------------------------------------------------
 
@@ -492,7 +496,7 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
 
   std::u16string title;
   absl::optional<TabAlertState> old_alert_state = alert_state_;
-  TabRendererData tab_data = tab->data();
+  const TabRendererData& tab_data = tab->data();
   GURL domain_url;
   // Use committed URL to determine if no page has yet loaded, since the title
   // can be blank for some web pages.

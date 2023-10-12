@@ -15,7 +15,7 @@ import './os_japanese_manage_user_dictionary_page.js';
 
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {afterNextRender, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -202,7 +202,7 @@ export class SettingsInputMethodOptionsPageElement extends
     const submenuButtonType =
         (e.target as Element).getAttribute('submenu-button-type');
     if (submenuButtonType ===
-        SubmenuButton.JAPANESE_CLEAR_PERSONALIZATION_DATA) {
+        SubmenuButton.JAPANESE_DELETE_PERSONALIZATION_DATA) {
       this.showClearPersonalizedData_ = true;
       return;
     }

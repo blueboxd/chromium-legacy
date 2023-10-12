@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
@@ -375,7 +374,8 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
   {
     base::RunLoop run_loop;
     // This does the initial fetch and stores the initial key.
-    policy_service->RefreshPolicies(run_loop.QuitClosure());
+    policy_service->RefreshPolicies(run_loop.QuitClosure(),
+                                    PolicyFetchReason::kTest);
     run_loop.Run();
   }
 
@@ -391,7 +391,8 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
   {
     base::RunLoop run_loop;
     // This fetches the new policies, using the same key.
-    policy_service->RefreshPolicies(run_loop.QuitClosure());
+    policy_service->RefreshPolicies(run_loop.QuitClosure(),
+                                    PolicyFetchReason::kTest);
     run_loop.Run();
   }
   EXPECT_TRUE(expected.Equals(policy_service->GetPolicies(
@@ -405,7 +406,8 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, EnsureDefaultPoliciesSet) {
   {
     base::RunLoop run_loop;
     // This does the initial fetch and stores the initial key.
-    policy_service->RefreshPolicies(run_loop.QuitClosure());
+    policy_service->RefreshPolicies(run_loop.QuitClosure(),
+                                    PolicyFetchReason::kTest);
     run_loop.Run();
   }
 
@@ -437,7 +439,8 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, MAYBE_InvalidatePolicy) {
                                           kPolicyInvalidationTopic));
   {
     base::RunLoop run_loop;
-    policy_service->RefreshPolicies(run_loop.QuitClosure());
+    policy_service->RefreshPolicies(run_loop.QuitClosure(),
+                                    PolicyFetchReason::kTest);
     run_loop.Run();
   }
 
@@ -472,7 +475,8 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicyWithRotatedKey) {
   {
     base::RunLoop run_loop;
     // This does the initial fetch and stores the initial key.
-    policy_service->RefreshPolicies(run_loop.QuitClosure());
+    policy_service->RefreshPolicies(run_loop.QuitClosure(),
+                                    PolicyFetchReason::kTest);
     run_loop.Run();
   }
 
@@ -496,7 +500,8 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicyWithRotatedKey) {
   {
     base::RunLoop run_loop;
     // This fetches the new policies and does a key rotation.
-    policy_service->RefreshPolicies(run_loop.QuitClosure());
+    policy_service->RefreshPolicies(run_loop.QuitClosure(),
+                                    PolicyFetchReason::kTest);
     run_loop.Run();
   }
   EXPECT_TRUE(expected.Equals(policy_service->GetPolicies(
@@ -513,7 +518,8 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicyWithRotatedKey) {
   // Another refresh using the same key won't rotate it again.
   {
     base::RunLoop run_loop;
-    policy_service->RefreshPolicies(run_loop.QuitClosure());
+    policy_service->RefreshPolicies(run_loop.QuitClosure(),
+                                    PolicyFetchReason::kTest);
     run_loop.Run();
   }
   EXPECT_TRUE(expected.Equals(policy_service->GetPolicies(

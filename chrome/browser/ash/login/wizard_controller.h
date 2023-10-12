@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_controller.h"
 #include "chrome/browser/ash/login/choobe_flow_controller.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen.h"
@@ -72,7 +73,6 @@
 #include "chrome/browser/ash/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/ash/login/screens/theme_selection_screen.h"
 #include "chrome/browser/ash/login/screens/touchpad_scroll_screen.h"
-#include "chrome/browser/ash/login/screens/tpm_error_screen.h"
 #include "chrome/browser/ash/login/screens/update_screen.h"
 #include "chrome/browser/ash/login/screens/user_allowlist_check_screen.h"
 #include "chrome/browser/ash/login/screens/user_creation_screen.h"
@@ -416,7 +416,6 @@ class WizardController : public OobeUI::Observer {
   void OnFamilyLinkNoticeScreenExit(FamilyLinkNoticeScreen::Result result);
   void OnOnlineAuthenticationScreenExit(OnlineAuthenticationScreen::Result);
   void OnUserAllowlistCheckScreenExit(UserAllowlistCheckScreen::Result);
-  void OnTpmErrorScreenExit(TpmErrorScreen::Result result);
   void OnPasswordChangeLegacyScreenExit(
       GaiaPasswordChangedScreenLegacy::Result result);
   void OnPasswordChangeScreenExit(GaiaPasswordChangedScreen::Result result);
@@ -482,8 +481,8 @@ class WizardController : public OobeUI::Observer {
   // Update the status area visibility for `screen`.
   void UpdateStatusAreaVisibilityForScreen(OobeScreenId screen_id);
 
-  // Launched kiosk app configured for auto-launch.
-  void AutoLaunchKioskApp(KioskAppType app_type);
+  // Launch the given `app` configured for Kiosk auto-launch.
+  void AutoLaunchKioskApp(const KioskApp& app);
 
   // Called when LocalState is initialized.
   void OnLocalStateInitialized(bool /* succeeded */);

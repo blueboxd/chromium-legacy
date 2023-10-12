@@ -27,7 +27,9 @@ namespace base {
 // [views.constants]
 constexpr size_t dynamic_extent = std::numeric_limits<size_t>::max();
 
-template <typename T, size_t Extent = dynamic_extent>
+template <typename T,
+          size_t Extent = dynamic_extent,
+          typename InternalPtrType = T*>
 class span;
 
 namespace internal {
@@ -233,7 +235,7 @@ constexpr size_t must_not_be_dynamic_extent() {
 // appropriate make_span() utility functions are provided.
 
 // [span], class template span
-template <typename T, size_t Extent>
+template <typename T, size_t Extent, typename InternalPtrType>
 class GSL_POINTER span : public internal::ExtentStorage<Extent> {
  private:
   using ExtentStorage = internal::ExtentStorage<Extent>;
@@ -434,11 +436,11 @@ class GSL_POINTER span : public internal::ExtentStorage<Extent> {
 
   // [span.iter], span iterator support
   constexpr iterator begin() const noexcept {
-    return iterator(data_, data_ + size());
+    return iterator(data(), data() + size());
   }
 
   constexpr iterator end() const noexcept {
-    return iterator(data_, data_ + size(), data_ + size());
+    return iterator(data(), data() + size(), data() + size());
   }
 
   constexpr reverse_iterator rbegin() const noexcept {
@@ -452,13 +454,38 @@ class GSL_POINTER span : public internal::ExtentStorage<Extent> {
  private:
   // This field is not a raw_ptr<> because it was filtered by the rewriter
   // for: #constexpr-ctor-field-initializer, #global-scope, #union
-  RAW_PTR_EXCLUSION T* data_;
+  InternalPtrType data_;
 };
 
 // span<T, Extent>::extent can not be declared inline prior to C++17, hence this
 // definition is required.
-template <class T, size_t Extent>
-constexpr size_t span<T, Extent>::extent;
+template <class T, size_t Extent, typename InternalPtrType>
+constexpr size_t span<T, Extent, InternalPtrType>::extent;
+
+template <typename It,
+          typename T = std::remove_reference_t<iter_reference_t<It>>>
+span(It, StrictNumeric<size_t>) -> span<T>;
+
+template <typename It,
+          typename End,
+          typename = std::enable_if_t<!std::is_convertible_v<End, size_t>>,
+          typename T = std::remove_reference_t<iter_reference_t<It>>>
+span(It, End) -> span<T>;
+
+template <typename T, size_t N>
+span(T (&)[N]) -> span<T, N>;
+
+template <typename T, size_t N>
+span(std::array<T, N>&) -> span<T, N>;
+
+template <typename T, size_t N>
+span(const std::array<T, N>&) -> span<const T, N>;
+
+template <typename Container,
+          typename T = std::remove_pointer_t<
+              decltype(std::data(std::declval<Container>()))>,
+          size_t X = internal::Extent<Container>::value>
+span(Container&&) -> span<T, X>;
 
 // [span.objectrep], views of object representation
 template <typename T, size_t X>

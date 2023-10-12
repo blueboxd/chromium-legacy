@@ -1134,7 +1134,7 @@ void ShelfAppButton::UpdateProgressRingBounds() {
         ProgressIndicator::CreateDefaultInstance(base::BindRepeating(
             [](ShelfAppButton* view) -> absl::optional<float> {
               if (view->app_status() == AppStatus::kPending) {
-                return absl::nullopt;
+                return 0.0f;
               }
               // If download is in-progress, return the progress as a decimal.
               // Otherwise, the progress indicator shouldn't be painted.
@@ -1151,7 +1151,7 @@ void ShelfAppButton::UpdateProgressRingBounds() {
           return view->GetColorProvider()->GetColor(color_id);
         },
         base::Unretained(this))));
-    progress_indicator_->SetColorId(cros_tokens::kCrosSysOnPrimaryContainer);
+    progress_indicator_->SetColorId(cros_tokens::kCrosRefPrimary70);
   }
 
   const gfx::Rect button_bounds(GetContentsBounds());

@@ -379,7 +379,8 @@ void StructuredMetricsRecorder::RecordEvent(const Event& event) {
   // Validates the event. If valid, retrieve the metadata associated
   // with the event.
   auto maybe_project_validator =
-      validator::GetProjectValidator(event.project_name());
+      Recorder::GetInstance()->GetValidator()->GetProjectValidator(
+          event.project_name());
 
   DCHECK(maybe_project_validator.has_value());
   if (!maybe_project_validator.has_value()) {
@@ -434,6 +435,13 @@ void StructuredMetricsRecorder::RecordEvent(const Event& event) {
         event.recorded_time_since_boot().InMilliseconds());
     event_sequence_metadata->set_event_unique_id(
         base::HashMetricName(event.event_sequence_metadata().event_unique_id));
+
+    int days_since_rotation =
+        profile_key_data->LastKeyRotation(project_validator->project_hash())
+            .value_or(0);
+    event_sequence_metadata->set_client_id_rotation_weeks(days_since_rotation /
+                                                          7);
+
     event_proto->set_device_project_id(
         device_key_data->Id(project_validator->project_hash(),
                             project_validator->key_rotation_period()));
@@ -551,6 +559,8 @@ void StructuredMetricsRecorder::RecordEvent(const Event& event) {
 
   // Log size information about the event.
   LogEventSerializedSizeBytes(event_proto->ByteSizeLong());
+
+  Recorder::GetInstance()->OnEventRecorded(event_proto);
 }
 
 void StructuredMetricsRecorder::HashUnhashedEventsAndPersist() {

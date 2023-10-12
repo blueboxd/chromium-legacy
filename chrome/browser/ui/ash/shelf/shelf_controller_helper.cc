@@ -9,6 +9,7 @@
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/metrics/arc_metrics_constants.h"
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut.h"
@@ -44,12 +46,9 @@
 #include "extensions/browser/extension_util.h"
 #include "net/base/url_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
-
-// TODO(b/297453039): Replace with correct UXW when available.
-constexpr char kPendingString[] = "Waiting...";
-constexpr char kInstallingString[] = "Installing...";
 
 constexpr float kProgressNone = 0;
 constexpr float kProgressNotApplicable = -1;
@@ -72,16 +71,16 @@ ShelfControllerHelper::ShelfControllerHelper(Profile* profile)
 
 ShelfControllerHelper::~ShelfControllerHelper() {}
 
-std::string ShelfControllerHelper::GetLabelForPromiseStatus(
+std::u16string ShelfControllerHelper::GetLabelForPromiseStatus(
     apps::PromiseStatus status) {
   switch (status) {
     case apps::PromiseStatus::kUnknown:
     case apps::PromiseStatus::kPending:
-      return kPendingString;
+      return l10n_util::GetStringUTF16(IDS_PROMISE_STATUS_WAITING);
     case apps::PromiseStatus::kInstalling:
     case apps::PromiseStatus::kSuccess:
     case apps::PromiseStatus::kCancelled:
-      return kInstallingString;
+      return l10n_util::GetStringUTF16(IDS_PROMISE_STATUS_INSTALLING);
   }
 }
 
@@ -200,7 +199,7 @@ std::u16string ShelfControllerHelper::GetPromiseAppTitle(
     return std::u16string();
   }
 
-  return base::UTF8ToUTF16(GetLabelForPromiseStatus(promise_app->status));
+  return GetLabelForPromiseStatus(promise_app->status);
 }
 
 // static
@@ -226,6 +225,9 @@ float ShelfControllerHelper::GetPromiseAppProgress(
 // static
 bool ShelfControllerHelper::IsPromiseApp(Profile* profile,
                                          const std::string& id) {
+  if (!ash::features::ArePromiseIconsEnabled()) {
+    return false;
+  }
   return apps::AppServiceProxyFactory::GetForProfile(profile)
       ->PromiseAppRegistryCache()
       ->GetPromiseAppForStringPackageId(id);
@@ -242,10 +244,9 @@ ash::AppStatus ShelfControllerHelper::ConvertPromiseStatusToAppStatus(
     case apps::PromiseStatus::kInstalling:
       return ash::AppStatus::kInstalling;
     case apps::PromiseStatus::kSuccess:
+      return ash::AppStatus::kInstallSuccess;
     case apps::PromiseStatus::kCancelled:
-      // Set to kInstalling, as that would've been the last valid status before
-      // the promise app was removed.
-      return ash::AppStatus::kInstalling;
+      return ash::AppStatus::kInstallCancelled;
   }
 }
 
@@ -397,14 +398,4 @@ bool ShelfControllerHelper::IsValidIDFromAppService(
     is_valid = true;
   }
   return is_valid;
-}
-
-bool ShelfControllerHelper::IsValidPromisePackageIdFromAppService(
-    const std::string& promise_package_id) const {
-  if (!ash::features::ArePromiseIconsEnabled()) {
-    return false;
-  }
-  return apps::AppServiceProxyFactory::GetForProfile(profile_)
-      ->PromiseAppRegistryCache()
-      ->GetPromiseAppForStringPackageId(promise_package_id);
 }

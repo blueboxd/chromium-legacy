@@ -312,7 +312,8 @@ void PrivacySandboxAttestations::LoadAttestationsInternal(
   // vCPUs and 512 GB memory. The estimated dynamic memory usage is around 880
   // KB.
   base::UmaHistogramTimes(kAttestationsFileParsingUMA, parsing_timer.Elapsed());
-  base::UmaHistogramMemoryKB(
+  // Count up to 10000 KB with a minimum of 1 KB.
+  base::UmaHistogramCounts10000(
       kAttestationsMapMemoryUsageUMA,
       base::trace_event::EstimateMemoryUsage(attestations_map.value()) / 1024);
 
@@ -322,6 +323,8 @@ void PrivacySandboxAttestations::LoadAttestationsInternal(
     RunLoadAttestationsDoneCallbackForTesting();  // IN-TEST
     return;
   }
+
+  attestations_parse_progress_ = Progress::kFinished;
 
   // Queries on Privacy Sandbox APIs attestation status may happen on the UI
   // thread. The final assignment of the attestations map and its version is
@@ -339,7 +342,6 @@ void PrivacySandboxAttestations::SetParsedAttestations(
     PrivacySandboxAttestationsMap attestations_map) {
   file_version_ = std::move(version);
   attestations_map_ = std::move(attestations_map);
-  attestations_parse_progress_ = Progress::kFinished;
 
   RunLoadAttestationsDoneCallbackForTesting();  // IN-TEST
 }

@@ -5,12 +5,14 @@
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_video_frame_pool.h"
 
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/shared_image_capabilities.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/video_frame_rgba_to_yuva_converter.h"
 #include "media/video/gpu_video_accelerator_factories.h"
@@ -96,7 +98,7 @@ class Context : public media::RenderableGpuMemoryBufferVideoFramePool::Context {
 
   base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
       weak_context_provider_;
-  gpu::GpuMemoryBufferManager* gmb_manager_;
+  raw_ptr<gpu::GpuMemoryBufferManager, ExperimentalRenderer> gmb_manager_;
 };
 
 }  // namespace
@@ -152,8 +154,11 @@ bool WebGraphicsContext3DVideoFramePool::CopyRGBATextureToVideoFrame(
 #if BUILDFLAG(IS_WIN)
   // CopyRGBATextureToVideoFrame below needs D3D shared images on Windows so
   // early out before creating the GMB since it's going to fail anyway.
-  if (!context_provider->GetCapabilities().shared_image_d3d)
+  if (!context_provider->SharedImageInterface()
+           ->GetCapabilities()
+           .shared_image_d3d) {
     return false;
+  }
 #endif  // BUILDFLAG(IS_WIN)
 
   auto dst_frame = pool_->MaybeCreateVideoFrame(src_size, dst_color_space);

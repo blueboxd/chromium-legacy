@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">You can only customise five shortcuts. Delete a shortcut to add a new one.</translation>
 <translation id="1164939766849482256">Dawn to dark screen saver</translation>
 <translation id="1167755866710282443">Open menu to customise keys. Drag menu to move.</translation>
+<translation id="1174073918202301297">Shortcut added</translation>
 <translation id="1175697296044146566">This <ph name="DEVICE_TYPE" /> is managed by <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Average (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Remove</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">Change wallpaper image daily</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="1651925268237749928">You’ve selected a shared album. Other people can add or change photos. Your wallpaper might use photos that are not currently in this album.</translation>
+<translation id="1661865805917886535">Some account and system information may be sent to Google. We use this information to help address technical issues and improve our services, subject to our Privacy Policy (<ph name="PRIVACYPOLICYURL" />) and Terms of Service (<ph name="TERMSOFSERVICEURL" />). To request content changes, go to Legal Help (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Stopped – out of ink</translation>
 <translation id="1664796644829245314">Preview <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Built-in VPN</translation>
@@ -117,6 +119,7 @@
 <translation id="1768959921651994223">Authentication type</translation>
 <translation id="1776228893584526149">Wallpaper tone</translation>
 <translation id="1782199038061388045">translation</translation>
+<translation id="1788485524395674731">This app is managed by your administrator</translation>
 <translation id="1792647875738159689">Cancelling scanning</translation>
 <translation id="1801418420130173017">Disable Dark theme</translation>
 <translation id="1807246157184219062">Light</translation>
@@ -131,7 +134,6 @@
 <translation id="1871569928317311284">Turn Dark theme off</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Turn dark mode off</translation>
-<translation id="1881188606372070653">Go to the <ph name="BEGIN_LINK1" />legal help page<ph name="END_LINK1" /> to request content changes for legal reasons. Some account and system information may be sent to Google. We will use the information that you give us to help address technical issues and to improve our services, subject to our <ph name="BEGIN_LINK2" />privacy policy<ph name="END_LINK2" /> and <ph name="BEGIN_LINK3" />Terms of Service<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">fast forward media</translation>
 <translation id="1887850431809612466">Hardware revision</translation>
 <translation id="1897672602657312171">Shortcut without search key might conflict with some apps' shortcut. Press this shortcut again to continue using it, or press a new shortcut using the search key.</translation>
@@ -212,6 +214,7 @@
 <translation id="2505327257735685095">Refresh the current wallpaper image</translation>
 <translation id="2512979179176933762">show windows</translation>
 <translation id="2513396635448525189">Login image</translation>
+<translation id="2515109918609218604">Shortcut not available. Press a new shortcut without using function and search keys.</translation>
 <translation id="2517472476991765520">Scan</translation>
 <translation id="2521835766824839541">previous track</translation>
 <translation id="2526590354069164005">Desktop</translation>
@@ -265,6 +268,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Device is connected.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Remove page?}=1{Remove page {PAGE_NUMBER}?}other{Remove page {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Exclusive to <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Mobile data</translation>
 <translation id="3156846309055100599">Scanning page <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">Captive portal detected</translation>
@@ -622,6 +626,7 @@
 <translation id="584953448295717128">APN is automatically detected.</translation>
 <translation id="5849570051105887917">Home provider code</translation>
 <translation id="5859603669299126575">Art gallery album</translation>
+<translation id="5859969039821714932">Shortcut not available. Press a new shortcut without <ph name="KEY" />.</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5860491529813859533">Turn on</translation>
 <translation id="5876385649737594562">Turn on to select options</translation>
@@ -687,6 +692,7 @@
 <translation id="6318437367327684789">forever</translation>
 <translation id="6319207335391420837">Update firmware on <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Turn on screensaver</translation>
+<translation id="6324916366299863871">Edit shortcut</translation>
 <translation id="6325525973963619867">Failed</translation>
 <translation id="6331191339300272798">Automatic Dark theme</translation>
 <translation id="6340526405444716530">Personalisation</translation>
@@ -826,6 +832,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Built-in touchpad</translation>
 <translation id="7397270852490618635">Turn Light theme off</translation>
+<translation id="7401543881546089382">Delete shortcut</translation>
 <translation id="741244894080940828">conversion</translation>
 <translation id="7415801143053185905">Very high HTTP latency</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Your administrator has set <ph name="APP_NAME_1" /> to start automatically every time you log in.}=2{Your administrator has set <ph name="APP_NAME_1" /> and <ph name="APP_NAME_2" /> to start automatically every time you log in.}=3{Your administrator has set <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> and <ph name="APP_NAME_3" /> to start automatically every time you log in.}other{Your administrator has set <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> and # other apps to start automatically every time you log in.}}</translation>
@@ -864,6 +871,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">keyboard light</translation>
+<translation id="7730077286107534951">Some account and system information may be sent to Google. We use this information to help address technical issues and improve our services, subject to our <ph name="BEGIN_LINK2" />Privacy Policy<ph name="END_LINK2" /> and <ph name="BEGIN_LINK3" />Terms of Service<ph name="END_LINK3" />. To request content changes, go to <ph name="BEGIN_LINK1" />Legal Help<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Cycle count</translation>
 <translation id="7747039790905080783">Pre-shared key</translation>
 <translation id="7752963721013053477">Dawn to dark – exclusive</translation>
@@ -900,6 +908,7 @@
 <translation id="7978412674231730200">Private key</translation>
 <translation id="7994702968232966508">EAP method</translation>
 <translation id="8004582292198964060">Browser</translation>
+<translation id="8017679124341497925">Shortcut edited</translation>
 <translation id="802154636333426148">Download failed</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Enable auto colour mode</translation>

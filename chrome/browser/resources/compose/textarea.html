@@ -1,0 +1,88 @@
+<style include="cr-hidden-style">
+  textarea {
+    appearance: none;
+    background: transparent;
+    border: solid 1px var(--color-compose-dialog-textarea-outline);
+    border-radius: 8px;
+    color: var(--color-compose-dialog-textarea);
+    font: inherit;
+    font-size: 12px;
+    line-height: 16px;
+    resize: none;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+  }
+
+  textarea::placeholder {
+    color: var(--color-compose-dialog-textarea-placeholder);
+  }
+
+  :host([too-long_]) textarea {
+    outline: solid 2px var(--color-compose-dialog-error);
+    outline-offset: -2px;
+  }
+
+  #error {
+    margin: 4px 10px 0;
+    color: var(--color-compose-dialog-error);
+    font-size: 11px;
+    line-height: 16px;
+  }
+
+  textarea:focus {
+    outline: solid 2px var(--cr-focus-outline-color);
+    outline-offset: -2px;
+  }
+
+  #readonlyContainer {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: var(--color-compose-dialog-textarea-readonly-background);
+    color: var(--color-compose-dialog-textarea-readonly-foreground)
+  }
+
+  #readonlyText {
+    overflow: hidden;
+    line-height: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  #editButtonContainer {
+    --cr-icon-button-icon-size: var(--cr-icon-size);
+    width: var(--cr-icon-size);
+    height: var(--cr-icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-inline-start: 16px;
+  }
+
+  cr-icon-button {
+    margin: 0;
+  }
+</style>
+
+<div id="inputContainer" hidden$="[[readonly]]">
+  <textarea id="input"
+      placeholder="Some placeholder text"
+      value="{{value::input}}"
+      rows="4"
+      required>
+  </textarea>
+  <div id="error" hidden$="[[!tooLong_]]">
+    This is too long. Shorten and try again.
+  </div>
+</div>
+
+<div id="readonlyContainer" hidden$="[[!readonly]]">
+  <div id="readonlyText">[[value]]</div>
+  <div id="editButtonContainer"
+      hidden$="[[!shouldShowEditIcon_(allowExitingReadonlyMode)]]">
+    <cr-icon-button iron-icon="cr:create" title="Edit"></cr-icon-button>
+  </div>
+</div>

@@ -7,6 +7,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
+#import "build/branding_buildflags.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #import "components/policy/policy_constants.h"
 #import "components/signin/ios/browser/features.h"
@@ -301,6 +302,11 @@ void CompleteSigninFlow() {
       "-" + base::SysNSStringToUTF8(kPolicyLoaderIOSConfigurationKey));
   config.additional_args.push_back(
       "<dict><key>BrowserSignin</key><integer>2</integer></dict>");
+  if ([self isRunningTest:@selector
+            (testSignOutFromAccountsOnThisDeviceSyncDisabled)]) {
+    config.features_enabled.push_back(
+        syncer::kReplaceSyncPromosWithSignInPromos);
+  }
   return config;
 }
 
@@ -810,9 +816,8 @@ void CompleteSigninFlow() {
   SetSigninEnterprisePolicyValue(BrowserSigninMode::kForced);
 
   // Dismiss the regular sign-in prompt by skipping it.
-  [[EarlGrey selectElementWithMatcher:
-                 ButtonWithAccessibilityLabelId(
-                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::WebSigninSkipButtonMatcher()]
       performAction:grey_tap()];
 
   // Wait and verify that the forced sign-in screen is shown when the policy is
@@ -923,9 +928,8 @@ void CompleteSigninFlow() {
   SimulateExternalAppURLOpeningWithURL(URLToOpen);
 
   // Dismiss the regular sign-in prompt by skipping it.
-  [[EarlGrey selectElementWithMatcher:
-                 ButtonWithAccessibilityLabelId(
-                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::WebSigninSkipButtonMatcher()]
       performAction:grey_tap()];
 
   // Wait and verify that the forced sign-in screen is shown when the policy is

@@ -66,6 +66,7 @@ android_library("javatests") {
     "//chrome/browser/signin/services/android:java",
     "//chrome/test/android:chrome_java_unit_test_support",
     "//components/browser_ui/device_lock/android:java",
+    "//components/browser_ui/widget/android:java",
     "//components/signin/public/android:java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:espresso_java",
@@ -117,9 +118,9 @@ robolectric_library("junit") {
 
 android_resources("java_resources") {
   sources = [
-    "java/res/drawable-night/device_lock_illustration.xml",
-    "java/res/drawable/device_lock_illustration.xml",
+    "java/res/drawable/device_lock_alert_illustration.xml",
     "java/res/drawable/missing_device_lock_illustration.xml",
+    "java/res/drawable/rounded_corner_card.xml",
     "java/res/layout/device_lock_view.xml",
     "java/res/layout/missing_device_lock_view.xml",
     "java/res/values-night/colors.xml",

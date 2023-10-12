@@ -262,6 +262,13 @@ chromium-metrics-reviews@google.com.
   <variant name=".Unknown" summary="Unknown form type"/>
 </variants>
 
+<variants name="AutofillPlusAddressNetworkRequestType">
+  <variant name="Create" summary="Create a Plus Address after reservation"/>
+  <variant name="GetOrCreate" summary="Get or create a Plus Address"/>
+  <variant name="List" summary="Retrieve all Plus Addresses"/>
+  <variant name="Reserve" summary="Reserve a Plus Address"/>
+</variants>
+
 <variants name="AutofillProfileCategory">
   <variant name="AccountChrome"
       summary="kAccount profiles originating from Chrome"/>
@@ -419,7 +426,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.AddressesSuppressedForDisuse" units="addresses"
-    expires_after="2023-12-12">
+    expires_after="2024-03-31">
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -657,7 +664,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.Autocomplete.SingleEntryRemovalMethod"
     enum="AutofillAutocompleteSingleEntryRemovalMethod"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>jkeitel@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
   <summary>
@@ -1385,10 +1392,6 @@ chromium-metrics-reviews@google.com.
   </token>
   <token key="SaveSituation">
     <variant name="" summary="aggregated across all situations"/>
-    <variant name=".FromDynamicChangeForm"
-        summary="shown dynamic change forms"/>
-    <variant name=".FromNonFocusableForm"
-        summary="shown from non-focusable forms"/>
     <variant name=".RequestingCardholderName"
         summary="explicitly requesting cardholder name"/>
     <variant name=".RequestingExpirationDate"
@@ -1678,6 +1681,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Autofill.ExtendedMenu.DeleteAddress"
+    enum="BooleanAutofillExtendedMenuDeleteAddress" expires_after="2024-10-01">
+  <owner>tchudakov@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    This metric measures how many users Clicked on the Delete Address option in
+    the extended Autofill menu and the next action. The metric is logged when
+    the user closes the delete address profile dialog.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.ExtendedMenu.EditAddress"
+    enum="BooleanAutofillExtendedMenuEditAddress" expires_after="2024-10-01">
+  <owner>tchudakov@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    This metric measures how many users Clicked on the Edit Address option in
+    the extended Autofill menu and the next action. The metric is logged when
+    the user closes the edit address profile dialog.
+  </summary>
+</histogram>
+
 <histogram
     name="Autofill.ExtractNewForms.ShallowEqualityDiffersFromDeepEquality"
     enum="FormDataEquality" expires_after="M108">
@@ -1708,7 +1733,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Autofill.FastCheckout.CapabilitiesFetcher.CacheStateForIsTriggerFormSupported"
     enum="FastCheckoutCacheStateForIsTriggerFormSupported"
-    expires_after="2024-02-20">
+    expires_after="2024-11-15">
   <owner>bwolfgang@google.com</owner>
   <owner>jkeitel@google.com</owner>
   <owner>vizcay@google.com</owner>
@@ -1720,7 +1745,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.FastCheckout.CapabilitiesFetcher.HttpResponseAndNetErrorCode"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-02-20">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-11-15">
   <owner>vizcay@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1729,7 +1754,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FastCheckout.CapabilitiesFetcher.ParsingResult"
-    enum="FastCheckoutCapabilitiesParsingResult" expires_after="2024-02-20">
+    enum="FastCheckoutCapabilitiesParsingResult" expires_after="2024-11-15">
   <owner>bwolfgang@google.com</owner>
   <owner>jkeitel@google.com</owner>
   <owner>vizcay@google.com</owner>
@@ -1739,7 +1764,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FastCheckout.CapabilitiesFetcher.ResponseTime"
-    units="ms" expires_after="2024-02-20">
+    units="ms" expires_after="2024-11-15">
   <owner>vizcay@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1749,7 +1774,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FastCheckout.RunOutcome"
-    enum="FastCheckoutRunOutcome" expires_after="2023-11-15">
+    enum="FastCheckoutRunOutcome" expires_after="2024-11-15">
   <owner>bwolfgang@google.com</owner>
   <owner>jkeitel@google.com</owner>
   <owner>vizcay@google.com</owner>
@@ -1761,7 +1786,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FastCheckout.TriggerOutcome"
-    enum="FastCheckoutTriggerOutcome" expires_after="2024-02-11">
+    enum="FastCheckoutTriggerOutcome" expires_after="2024-11-15">
   <owner>bwolfgang@google.com</owner>
   <owner>jkeitel@google.com</owner>
   <owner>vizcay@google.com</owner>
@@ -2672,7 +2697,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.LabelInference.InferredLabelSource.AtSubmission2"
-    enum="InferredLabelSource" expires_after="2024-01-28">
+    enum="InferredLabelSource" expires_after="2024-03-31">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
   <summary>
@@ -3584,6 +3609,65 @@ chromium-metrics-reviews@google.com.
     out if desired. Written when the user clicks either of the cancel or ok
     buttons, and when the modal is presented to the user.
   </summary>
+</histogram>
+
+<histogram name="Autofill.PlusAddresses.NetworkRequest.OauthError"
+    enum="GoogleServiceAuthError" expires_after="2024-09-24">
+  <owner>mreichhoff@chromium.org</owner>
+  <owner>kaklilu@chromium.org</owner>
+  <summary>
+    Records any OAuth error that the experimental plus addresses feature
+    encounters. This is recorded when the PlusAddressClient needs to fetch an
+    OAuth token to make a network request. This enum also captures the non-error
+    case with NONE.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.PlusAddresses.NetworkRequest.{Type}.Latency"
+    units="ms" expires_after="2024-09-24">
+  <owner>mreichhoff@chromium.org</owner>
+  <owner>kaklilu@chromium.org</owner>
+  <summary>
+    Measures the latency of network requests made by the experimental plus
+    addresses feature. Latency is measured as the difference between when the
+    PlusAddressClient issues the request and when it receives a response. The
+    PlusAddressClient records this whenever it gets a response for the network
+    requests it makes.
+  </summary>
+  <token key="Type">
+    <variant name="AutofillPlusAddressNetworkRequestType"
+        summary="The relevant network request."/>
+  </token>
+</histogram>
+
+<histogram name="Autofill.PlusAddresses.NetworkRequest.{Type}.ResponseByteSize"
+    units="bytes" expires_after="2024-09-24">
+  <owner>mreichhoff@chromium.org</owner>
+  <owner>kaklilu@chromium.org</owner>
+  <summary>
+    Records the response body size of network requests made by the experimental
+    plus addresses feature. The PlusAddressClient records this whenever it gets
+    a response for the network requests it makes.
+  </summary>
+  <token key="Type">
+    <variant name="AutofillPlusAddressNetworkRequestType"
+        summary="The relevant network request."/>
+  </token>
+</histogram>
+
+<histogram name="Autofill.PlusAddresses.NetworkRequest.{Type}.ResponseCode"
+    enum="HttpResponseCode" expires_after="2024-09-24">
+  <owner>mreichhoff@chromium.org</owner>
+  <owner>kaklilu@chromium.org</owner>
+  <summary>
+    Records HTTP response codes of network requests made by the experimental
+    plus addresses feature. The PlusAddressClient records this whenever it gets
+    a response for the network requests it makes.
+  </summary>
+  <token key="Type">
+    <variant name="AutofillPlusAddressNetworkRequestType"
+        summary="The relevant network request."/>
+  </token>
 </histogram>
 
 <histogram name="Autofill.PlusAddresses.Suggestion.Events"
@@ -5658,7 +5742,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Autofill.Webview.Events" units="Bitmask"
+<histogram name="Autofill.WebView.Events" units="Bitmask"
     expires_after="2024-08-31">
   <owner>jkeitel@google.com</owner>
   <owner>battre@chromium.org</owner>

@@ -8,6 +8,7 @@
 #import "base/ios/ios_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "base/test/metrics/histogram_tester.h"
 #import "base/test/scoped_feature_list.h"
 #import "base/time/default_clock.h"
 #import "components/bookmarks/browser/bookmark_model.h"
@@ -43,12 +44,12 @@
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_dialog_overlay.h"
 #import "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_constants.h"
 #import "ios/chrome/browser/policy/enterprise_policy_test_helper.h"
 #import "ios/chrome/browser/promos_manager/mock_promos_manager.h"
-#import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#import "ios/chrome/browser/reading_list/reading_list_test_utils.h"
+#import "ios/chrome/browser/reading_list/model/reading_list_model_factory.h"
+#import "ios/chrome/browser/reading_list/model/reading_list_test_utils.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -67,13 +68,14 @@
 #import "ios/chrome/browser/signin/fake_system_identity_manager.h"
 #import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/signin/system_identity_manager.h"
-#import "ios/chrome/browser/supervised_user/supervised_user_service_factory.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_service_factory.h"
 #import "ios/chrome/browser/ui/popup_menu//overflow_menu/overflow_menu_orderer.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/destination_usage_history/constants.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
+#import "ios/chrome/browser/ui/whats_new/constants.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
 #import "ios/chrome/browser/web/font_size/font_size_java_script_feature.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
@@ -1064,4 +1066,37 @@ TEST_F(OverflowMenuMediatorTest, DestinationHideShowsActionSubtitle) {
   EXPECT_NE(addToBookmarksAction, nil);
   EXPECT_TRUE(addToBookmarksAction.highlighted);
   EXPECT_NE(addToBookmarksAction.subtitle, nil);
+}
+
+// Tests that when the the right metric is recorder when the Password Manager
+// item is tapped.
+TEST_F(OverflowMenuMediatorTest, OpenPasswordsMetricLogged) {
+  CreateMediator(/*is_incognito=*/NO);
+
+  mediator_.model = model_;
+
+  // Find the Password Manager destination.
+  OverflowMenuDestination* passwordsDestination;
+  for (OverflowMenuDestination* destination in mediator_.model.destinations) {
+    if (destination.accessibilityIdentifier == kToolsMenuPasswordsId) {
+      passwordsDestination = destination;
+      break;
+    }
+  }
+  EXPECT_NSNE(nil, passwordsDestination);
+
+  base::HistogramTester histogram_tester;
+
+  // Verify that bucker count is zero.
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.ManagePasswordsReferrer",
+      password_manager::ManagePasswordsReferrer::kChromeMenuItem, 0);
+
+  // Call Password Manager destination's handler.
+  passwordsDestination.handler();
+
+  // Bucket count should now be one.
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.ManagePasswordsReferrer",
+      password_manager::ManagePasswordsReferrer::kChromeMenuItem, 1);
 }

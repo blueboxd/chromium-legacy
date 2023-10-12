@@ -555,7 +555,11 @@ GpuImageDecodeCache::InUseCacheKey::InUseCacheKey(const DrawImage& draw_image,
     : frame_key(draw_image.frame_key()),
       upload_scale_mip_level(mip_level),
       filter_quality(CalculateDesiredFilterQuality(draw_image)),
-      target_color_params(draw_image.target_color_params()) {}
+      target_color_params(draw_image.target_color_params()) {
+  // TODO(https://crbug.com/1483235): Remove HDR headroom from the cache key,
+  // since it is not used.
+  target_color_params.hdr_max_luminance_relative = 1.f;
+}
 
 bool GpuImageDecodeCache::InUseCacheKey::operator==(
     const InUseCacheKey& other) const {
@@ -618,7 +622,7 @@ class GpuImageDecodeTaskImpl : public TileTask {
         image_metadata ? image_metadata->image_type : ImageType::kInvalid;
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         &image_.paint_image(),
-        devtools_instrumentation::ScopedImageDecodeTask::kGpu,
+        devtools_instrumentation::ScopedImageDecodeTask::DecodeType::kGpu,
         ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type),
         ImageDecodeCache::ToScopedImageType(image_type));
     cache_->DecodeImageInTask(image_, tracing_info_.task_type);
@@ -2595,11 +2599,9 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
   if (target_color_space) {
     target_color_params = draw_image.target_color_params();
     target_color_params->color_space = gfx::ColorSpace(*target_color_space);
-    if (const auto* image_metadata =
-            draw_image.paint_image().GetImageHeaderMetadata()) {
-      target_color_params->hdr_metadata = image_metadata->hdr_metadata;
-    }
   }
+  const absl::optional<gfx::HDRMetadata> hdr_metadata =
+      draw_image.paint_image().GetHDRMetadata();
 
   if (image_data->mode == DecodedDataMode::kTransferCache) {
     DCHECK(use_transfer_cache_);
@@ -2615,7 +2617,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
         }
       }
       UploadImageIfNecessary_TransferCache_SoftwareDecode(
-          draw_image, image_data, decoded_target_colorspace,
+          draw_image, image_data, decoded_target_colorspace, hdr_metadata,
           target_color_params);
     }
   } else {
@@ -2685,6 +2687,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary_TransferCache_SoftwareDecode(
     const DrawImage& draw_image,
     ImageData* image_data,
     sk_sp<SkColorSpace> decoded_target_colorspace,
+    const absl::optional<gfx::HDRMetadata>& hdr_metadata,
     absl::optional<TargetColorParams> target_color_params) {
   DCHECK_EQ(image_data->mode, DecodedDataMode::kTransferCache);
   DCHECK(use_transfer_cache_);
@@ -2717,9 +2720,9 @@ void GpuImageDecodeCache::UploadImageIfNecessary_TransferCache_SoftwareDecode(
           ? ClientImageTransferCacheEntry(
                 image[kAuxImageIndexDefault], image[kAuxImageIndexGainmap],
                 draw_image.paint_image().GetGainmapInfo(),
-                image_data->needs_mips, target_color_params)
+                image_data->needs_mips)
           : ClientImageTransferCacheEntry(image[kAuxImageIndexDefault],
-                                          image_data->needs_mips,
+                                          image_data->needs_mips, hdr_metadata,
                                           target_color_params);
   if (!image_entry.IsValid())
     return;
@@ -3354,8 +3357,8 @@ bool GpuImageDecodeCache::IsCompatible(const ImageData* image_data,
     color_is_compatible = image_data->target_color_params.color_space ==
                           draw_image.target_color_space();
   } else {
-    color_is_compatible =
-        image_data->target_color_params == draw_image.target_color_params();
+    color_is_compatible = TargetColorParams::EqualIgnoringHdrHeadroom(
+        image_data->target_color_params, draw_image.target_color_params());
   }
   if (!color_is_compatible)
     return false;

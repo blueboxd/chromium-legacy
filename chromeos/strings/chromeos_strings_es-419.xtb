@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Solo puedes personalizar 5 combinaciones de teclas. Borra una combinación de teclas para agregar una nueva.</translation>
 <translation id="1164939766849482256">Protector de pantalla Del amanecer a la noche</translation>
 <translation id="1167755866710282443">Abre el menú para personalizar las teclas. Arrastra el menú para moverlo.</translation>
+<translation id="1174073918202301297">Acceso directo agregado</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> administra el dispositivo <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1175951029573070619">Promedio (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Quitar</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">Cambiar la imagen del fondo de pantalla diariamente</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="1651925268237749928">Seleccionaste un álbum compartido. Otras personas pueden agregar o cambiar fotos. Es posible que el fondo de pantalla use fotos que actualmente no están en este álbum.</translation>
+<translation id="1661865805917886535">Es posible que se envíe a Google cierta información de la cuenta y el sistema. Usamos esta información para resolver problemas técnicos y mejorar nuestros servicios, conforme a nuestra Política de Privacidad (<ph name="PRIVACYPOLICYURL" />) y nuestras Condiciones del Servicio (<ph name="TERMSOFSERVICEURL" />). Para solicitar cambios de contenido, ve a la Ayuda legal (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Se detuvo: sin tinta</translation>
 <translation id="1664796644829245314">Vista previa de <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN integrada</translation>
@@ -131,7 +133,6 @@
 <translation id="1871569928317311284">Desactivar el tema oscuro</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Desactivar el modo oscuro</translation>
-<translation id="1881188606372070653">Ve a la <ph name="BEGIN_LINK1" />página de ayuda legal<ph name="END_LINK1" /> para solicitar cambios de contenido por motivos legales. Es posible que se envíe a Google cierta información de la cuenta y el sistema. Usaremos los datos que nos proporciones para solucionar problemas técnicos y mejorar nuestros servicios, sujeto a nuestra <ph name="BEGIN_LINK2" />Política de Privacidad<ph name="END_LINK2" /> y nuestras <ph name="BEGIN_LINK3" />Condiciones del Servicio<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">adelantar contenido multimedia</translation>
 <translation id="1887850431809612466">Revisión de hardware</translation>
 <translation id="1897672602657312171">La combinación de teclas sin la tecla de búsqueda puede interferir con la combinación de teclas de alguna app. Vuelve a presionar esta combinación de teclas para seguir usándola o presiona una nueva con la tecla de búsqueda.</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">El dispositivo está conectado.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{¿Deseas quitar la página?}=1{¿Deseas quitar la página {PAGE_NUMBER}?}other{¿Deseas quitar la página {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Exclusivo de <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Datos móviles</translation>
 <translation id="3156846309055100599">Escaneando la página <ph name="PAGE_NUMBER" />…</translation>
 <translation id="315738237743207937">Se detectó un portal cautivo.</translation>
@@ -687,6 +689,7 @@
 <translation id="6318437367327684789">siempre</translation>
 <translation id="6319207335391420837">Actualizar el firmware en <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Activar el protector de pantalla</translation>
+<translation id="6324916366299863871">Editar acceso directo</translation>
 <translation id="6325525973963619867">Se ha producido un error.</translation>
 <translation id="6331191339300272798">Tema oscuro automático</translation>
 <translation id="6340526405444716530">Personalización</translation>
@@ -826,6 +829,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Panel táctil integrado</translation>
 <translation id="7397270852490618635">Desactivar el tema claro</translation>
+<translation id="7401543881546089382">Eliminar acceso directo</translation>
 <translation id="741244894080940828">conversión</translation>
 <translation id="7415801143053185905">Latencia de HTTP muy alta</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Tu administrador configuró <ph name="APP_NAME_1" /> para se inicie automáticamente cada vez que accedas.}=2{Tu administrador configuró <ph name="APP_NAME_1" /> y <ph name="APP_NAME_2" /> para que se inicien automáticamente cada vez que accedas.}=3{Tu administrador configuró <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> y <ph name="APP_NAME_3" /> para que se inicien automáticamente cada vez que accedas.}other{Tu administrador configuró <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> y # apps más para que se inicien automáticamente cada vez que accedas.}}</translation>
@@ -864,6 +868,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">luz del teclado</translation>
+<translation id="7730077286107534951">Es posible que se envíe a Google cierta información de la cuenta y el sistema. Usamos esta información para resolver problemas técnicos y mejorar nuestros servicios, sujeto a nuestra <ph name="BEGIN_LINK2" />Política de Privacidad<ph name="END_LINK2" /> y las <ph name="BEGIN_LINK3" />Condiciones del Servicio<ph name="END_LINK3" />. Para solicitar cambios de contenido, ve a <ph name="BEGIN_LINK1" />Ayuda legal<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Conteo de ciclos</translation>
 <translation id="7747039790905080783">Clave compartida previamente</translation>
 <translation id="7752963721013053477">Del amanecer a la noche: Exclusivo</translation>
@@ -900,6 +905,7 @@
 <translation id="7978412674231730200">Clave privada</translation>
 <translation id="7994702968232966508">Método EAP</translation>
 <translation id="8004582292198964060">Navegador</translation>
+<translation id="8017679124341497925">Se editó el acceso directo</translation>
 <translation id="802154636333426148">Error en la descarga</translation>
 <translation id="8031884997696620457">HSPA+</translation>
 <translation id="80398733265834479">Habilitar el modo de color automático</translation>

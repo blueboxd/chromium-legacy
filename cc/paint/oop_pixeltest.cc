@@ -19,6 +19,7 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/raster/playback_image_provider.h"
+#include "cc/test/fake_paint_image_generator.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/tiles/gpu_image_decode_cache.h"
@@ -216,7 +217,7 @@ class OopPixelTest : public testing::Test,
           /*needs_clear=*/options.preclear, options.msaa_sample_count,
           msaa_mode, options.use_lcd_text,
           /*visible=*/true, options.target_color_params.color_space,
-          mailbox.name);
+          options.target_color_params.hdr_max_luminance_relative, mailbox.name);
       ri->EndRasterCHROMIUM();
     }
 
@@ -229,7 +230,7 @@ class OopPixelTest : public testing::Test,
         /*needs_clear=*/!options.preclear, options.msaa_sample_count, msaa_mode,
         options.use_lcd_text,
         /*visible=*/true, options.target_color_params.color_space,
-        mailbox.name);
+        options.target_color_params.hdr_max_luminance_relative, mailbox.name);
     size_t max_op_size_limit =
         gpu::raster::RasterInterface::kDefaultMaxOpSizeHint;
     ri->RasterCHROMIUM(display_item_list.get(), &image_provider,
@@ -646,8 +647,6 @@ TEST_F(OopPixelTest, DrawImageWithTargetColorSpace) {
 TEST_F(OopPixelTest, DrawHdrImageWithMetadata) {
   constexpr gfx::Size kSize(8, 8);
   constexpr gfx::Rect kRect(kSize);
-
-  constexpr float kImageNits = 500.f;
   constexpr float kContentAvgNits = 100;
 
 #if BUILDFLAG(IS_ANDROID)
@@ -661,7 +660,7 @@ TEST_F(OopPixelTest, DrawHdrImageWithMetadata) {
   constexpr float kEpsilon = 1 / 32.f;
 #endif
 
-  // Create `image` with `kImageNits` in PQ color space.
+  // Create `image` with 500 nits in PQ color space.
   sk_sp<SkImage> image;
   {
     constexpr float kImagePixelValue = 0.6765848107833876f;
@@ -681,36 +680,49 @@ TEST_F(OopPixelTest, DrawHdrImageWithMetadata) {
         gfx::ColorSpace::CreateHDR10().ToSkColorSpace());
   }
 
-  // Create a DisplayItemList drawing `image`.
-  const PaintImage::Id kSomeId = 32;
-  auto builder =
-      PaintImageBuilder::WithDefault().set_image(image, 0).set_id(kSomeId);
-  auto paint_image = builder.TakePaintImage();
-  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
-  display_item_list->StartPaint();
-  SkSamplingOptions sampling(
-      PaintFlags::FilterQualityToSkSamplingOptions(kDefaultFilterQuality));
-  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
-                                       nullptr);
-  display_item_list->EndPaintOfUnpaired(kRect);
-  display_item_list->Finalize();
+  const auto make_display_item_list = [&](int i, float peak_luminance,
+                                          PaintFlags* paint_flags = nullptr) {
+    auto image_generator =
+        sk_make_sp<FakePaintImageGenerator>(image->imageInfo());
+    {
+      ImageHeaderMetadata image_metadata;
+      image_metadata.hdr_metadata.emplace(
+          gfx::HdrMetadataCta861_3(peak_luminance, kContentAvgNits));
+      image_generator->SetImageHeaderMetadata(image_metadata);
+      EXPECT_TRUE(image->peekPixels(&image_generator->GetPixmap()));
+    }
+
+    const PaintImage::Id kSomeId = 32 + i;
+    auto paint_image = PaintImageBuilder::WithDefault()
+                           .set_id(kSomeId)
+                           .set_paint_image_generator(image_generator)
+                           .TakePaintImage();
+
+    auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+    display_item_list->StartPaint();
+    SkSamplingOptions sampling(
+        PaintFlags::FilterQualityToSkSamplingOptions(kDefaultFilterQuality));
+    display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, sampling,
+                                         paint_flags);
+    display_item_list->EndPaintOfUnpaired(kRect);
+    display_item_list->Finalize();
+
+    return display_item_list;
+  };
+  // Create a DisplayItemList drawing `image` with 10k nits and 500 nits HDR
+  // metadata.
+  scoped_refptr<DisplayItemList> display_item_list_10k_nits =
+      make_display_item_list(0, 10000.f);
+  scoped_refptr<DisplayItemList> display_item_list_500_nits =
+      make_display_item_list(1, 500.f);
   RasterOptions options(kSize);
-  {
-    options.target_color_params.color_space =
-        gfx::ColorSpace::CreateSRGBLinear();
-    options.target_color_params.enable_tone_mapping = true;
-  }
+  options.target_color_params.color_space = gfx::ColorSpace::CreateSRGBLinear();
 
-  // Draw using image HDR metadata indicating that `kImageNits` is the
-  // maximum luminance. The result should map the image to solid white (up
-  // to rounding error).
+  // Draw using image HDR metadata indicating that 500 is the maximum luminance.
+  // The result should map the image to solid white (up to rounding error).
   {
-    constexpr float kContentMaxNits = kImageNits;
     constexpr float kExpected = 1.0;
-
-    options.target_color_params.hdr_metadata = gfx::HDRMetadata(
-        gfx::HdrMetadataCta861_3(kContentMaxNits, kContentAvgNits));
-    auto actual = Raster(display_item_list, options);
+    auto actual = Raster(display_item_list_500_nits, options);
     auto color = actual.getColor4f(0, 0);
     EXPECT_NEAR(color.fR, kExpected, kEpsilon);
     EXPECT_NEAR(color.fG, kExpected, kEpsilon);
@@ -720,33 +732,41 @@ TEST_F(OopPixelTest, DrawHdrImageWithMetadata) {
   // Draw using image HDR metadata indicating that 10,000 nits is the maximum
   // luminance. The result should map the image to something darker than solid
   // white.
+  constexpr float kExpected10kToSdr = 0.7114198123454021f;
   {
-    constexpr float kContentMaxNits = 10000;
-    constexpr float kExpected = 0.7114198123454021f;
+    auto actual = Raster(display_item_list_10k_nits, options);
+    auto color = actual.getColor4f(0, 0);
+    EXPECT_NEAR(color.fR, kExpected10kToSdr, kEpsilon);
+    EXPECT_NEAR(color.fG, kExpected10kToSdr, kEpsilon);
+    EXPECT_NEAR(color.fB, kExpected10kToSdr, kEpsilon);
+  }
 
-    options.target_color_params.hdr_metadata = gfx::HDRMetadata(
-        gfx::HdrMetadataCta861_3(kContentMaxNits, kContentAvgNits));
-    auto actual = Raster(display_item_list, options);
+  // Increase the destination HDR headroom. The result should now be brighter.
+  {
+    constexpr float kExpected = 0.933675419515227f;
+    constexpr float kDstHeadroom = 1.5f;
+    options.target_color_params.hdr_max_luminance_relative = kDstHeadroom;
+    auto actual = Raster(display_item_list_10k_nits, options);
     auto color = actual.getColor4f(0, 0);
     EXPECT_NEAR(color.fR, kExpected, kEpsilon);
     EXPECT_NEAR(color.fG, kExpected, kEpsilon);
     EXPECT_NEAR(color.fB, kExpected, kEpsilon);
   }
 
-  // Increase the destination HDR headroom. The result should now be brighter.
+  // Draw with PaintFlags constraining the dynamic range as if by CSS property
+  // `dynamic-range-limit`. The result should therefore be back to being darker,
+  // despite the (still) increased headroom.
   {
-    constexpr float kContentMaxNits = 10000;
-    constexpr float kExpected = 0.933675419515227f;
-    constexpr float kDstHeadroom = 1.5f;
-
-    options.target_color_params.hdr_max_luminance_relative = kDstHeadroom;
-    options.target_color_params.hdr_metadata = gfx::HDRMetadata(
-        gfx::HdrMetadataCta861_3(kContentMaxNits, kContentAvgNits));
-    auto actual = Raster(display_item_list, options);
+    PaintFlags sdr_paint_flags;
+    sdr_paint_flags.setDynamicRangeLimit(
+        PaintFlags::DynamicRangeLimit::kStandard);
+    scoped_refptr<DisplayItemList> display_item_list_10k_nits_sdr =
+        make_display_item_list(2, 10000.f, &sdr_paint_flags);
+    auto actual = Raster(display_item_list_10k_nits_sdr, options);
     auto color = actual.getColor4f(0, 0);
-    EXPECT_NEAR(color.fR, kExpected, kEpsilon);
-    EXPECT_NEAR(color.fG, kExpected, kEpsilon);
-    EXPECT_NEAR(color.fB, kExpected, kEpsilon);
+    EXPECT_NEAR(color.fR, kExpected10kToSdr, kEpsilon);
+    EXPECT_NEAR(color.fG, kExpected10kToSdr, kEpsilon);
+    EXPECT_NEAR(color.fB, kExpected10kToSdr, kEpsilon);
   }
 }
 
@@ -2380,12 +2400,13 @@ TEST_P(OopYUVToRGBPixelTest, ConvertYUVToRGB) {
   UploadPixels(ri, yuv_mailboxes[1], uv_info, u_bitmap);
   UploadPixels(ri, yuv_mailboxes[2], uv_info, v_bitmap);
 
-  ri->ConvertYUVAMailboxesToRGB(dest_mailbox, kJPEG_SkYUVColorSpace,
-                                TestColorSpaceConversion()
-                                    ? source_color_space.ToSkColorSpace().get()
-                                    : nullptr,
-                                SkYUVAInfo::PlaneConfig::kY_U_V,
-                                SkYUVAInfo::Subsampling::k420, yuv_mailboxes);
+  ri->ConvertYUVAMailboxesToRGB(
+      dest_mailbox, 0, 0, options.resource_size.width(),
+      options.resource_size.height(), kJPEG_SkYUVColorSpace,
+      TestColorSpaceConversion() ? source_color_space.ToSkColorSpace().get()
+                                 : nullptr,
+      SkYUVAInfo::PlaneConfig::kY_U_V, SkYUVAInfo::Subsampling::k420,
+      yuv_mailboxes);
   SkBitmap actual_bitmap =
       ReadbackMailbox(ri, dest_mailbox, options.resource_size,
                       dest_color_space.ToSkColorSpace());
@@ -2461,10 +2482,11 @@ TEST_F(OopPixelTest, ConvertNV12ToRGB) {
   UploadPixels(ri, y_uv_mailboxes[0], y_info, y_bitmap);
   UploadPixels(ri, y_uv_mailboxes[1], uv_info, uv_bitmap);
 
-  ri->ConvertYUVAMailboxesToRGB(dest_mailbox, kJPEG_SkYUVColorSpace,
-                                SkColorSpace::MakeSRGB().get(),
-                                SkYUVAInfo::PlaneConfig::kY_UV,
-                                SkYUVAInfo::Subsampling::k420, y_uv_mailboxes);
+  ri->ConvertYUVAMailboxesToRGB(
+      dest_mailbox, 0, 0, options.resource_size.width(),
+      options.resource_size.height(), kJPEG_SkYUVColorSpace,
+      SkColorSpace::MakeSRGB().get(), SkYUVAInfo::PlaneConfig::kY_UV,
+      SkYUVAInfo::Subsampling::k420, y_uv_mailboxes);
   SkBitmap actual_bitmap =
       ReadbackMailbox(ri, dest_mailbox, options.resource_size);
 

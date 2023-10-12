@@ -12,6 +12,7 @@
 
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -35,7 +35,9 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/commands/launch_web_app_command.h"
+#include "chrome/browser/ui/web_applications/isolated_web_apps/isolated_web_app_installer_coordinator.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/ui/web_applications/web_app_run_on_os_login_notification.h"
@@ -260,7 +262,7 @@ bool WebAppUiManagerImpl::IsAppInQuickLaunchBar(
 
 bool WebAppUiManagerImpl::IsInAppWindow(content::WebContents* web_contents,
                                         const webapps::AppId* app_id) const {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
   if (app_id) {
     return AppBrowserController::IsForWebApp(browser, *app_id);
   }
@@ -304,8 +306,8 @@ void WebAppUiManagerImpl::ShowWebAppFileLaunchDialog(
     const std::vector<base::FilePath>& file_paths,
     const webapps::AppId& app_id,
     WebAppLaunchAcceptanceCallback launch_callback) {
-  chrome::ShowWebAppFileLaunchDialog(file_paths, profile_, app_id,
-                                     std::move(launch_callback));
+  ::web_app::ShowWebAppFileLaunchDialog(file_paths, profile_, app_id,
+                                        std::move(launch_callback));
 }
 
 void WebAppUiManagerImpl::ShowWebAppIdentityUpdateDialog(
@@ -318,7 +320,7 @@ void WebAppUiManagerImpl::ShowWebAppIdentityUpdateDialog(
     const SkBitmap& new_icon,
     content::WebContents* web_contents,
     web_app::AppIdentityDialogCallback callback) {
-  chrome::ShowWebAppIdentityUpdateDialog(
+  ::web_app::ShowWebAppIdentityUpdateDialog(
       app_id, title_change, icon_change, old_title, new_title, old_icon,
       new_icon, web_contents, std::move(callback));
 }
@@ -395,6 +397,14 @@ content::WebContents* WebAppUiManagerImpl::CreateNewTab() {
   return handle->GetWebContents();
 }
 
+bool WebAppUiManagerImpl::IsWebContentsActiveTabInBrowser(
+    content::WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
+  return browser &&
+         browser->tab_strip_model() &&
+         browser->tab_strip_model()->GetActiveWebContents() == web_contents;
+}
+
 void WebAppUiManagerImpl::TriggerInstallDialog(
     content::WebContents* web_contents) {
   web_app::CreateWebAppFromManifest(
@@ -452,6 +462,25 @@ void WebAppUiManagerImpl::PresentUserUninstallDialog(
                      parent_window, std::move(parent_window_tracker),
                      std::move(uninstall_complete_callback),
                      std::move(uninstall_scheduled_callback)));
+}
+
+void WebAppUiManagerImpl::LaunchIsolatedWebAppInstaller(
+    const base::FilePath& bundle_path) {
+  auto installer = std::make_unique<IsolatedWebAppInstallerCoordinator>(
+      profile_, bundle_path);
+  IsolatedWebAppInstallerCoordinator* installer_ptr = installer.get();
+  isolated_web_app_installers_.insert(std::move(installer));
+
+  installer_ptr->Show(base::BindOnce(
+      &WebAppUiManagerImpl::OnIsolatedWebAppInstallerClosed,
+      weak_ptr_factory_.GetWeakPtr(), base::Unretained(installer_ptr)));
+}
+
+void WebAppUiManagerImpl::OnIsolatedWebAppInstallerClosed(
+    IsolatedWebAppInstallerCoordinator* installer,
+    absl::optional<webapps::AppId> result) {
+  isolated_web_app_installers_.erase(
+      isolated_web_app_installers_.find(installer));
 }
 
 void WebAppUiManagerImpl::OnBrowserAdded(Browser* browser) {
@@ -531,7 +560,7 @@ void WebAppUiManagerImpl::OnIconsReadForUninstall(
     return;
   }
 
-  chrome::ShowWebAppUninstallDialog(
+  ShowWebAppUninstallDialog(
       profile_, app_id, uninstall_source, parent_window,
       std::move(icon_bitmaps),
       base::BindOnce(&WebAppUiManagerImpl::ScheduleUninstallIfUserRequested,

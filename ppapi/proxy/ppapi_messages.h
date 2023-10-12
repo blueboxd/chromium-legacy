@@ -733,13 +733,14 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_ReleaseResource,
                     ppapi::HostResource)
 
 // PPB_Graphics3D.
-IPC_SYNC_MESSAGE_ROUTED3_4(
+IPC_SYNC_MESSAGE_ROUTED3_5(
     PpapiHostMsg_PPBGraphics3D_Create,
     PP_Instance /* instance */,
     ppapi::HostResource /* share_context */,
     ppapi::Graphics3DContextAttribs /* context_attribs */,
     ppapi::HostResource /* result */,
     gpu::Capabilities /* capabilities */,
+    gpu::GLCapabilities /* gl_capabilities */,
     ppapi::proxy::SerializedHandle /* shared_state */,
     gpu::CommandBufferId /* command_buffer_id */)
 IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBGraphics3D_SetGetBuffer,
@@ -1678,7 +1679,8 @@ IPC_MESSAGE_CONTROL4(PpapiHostMsg_VideoDecoder_Initialize,
                      PP_VideoProfile /* profile */,
                      PP_HardwareAcceleration /* acceleration */,
                      uint32_t /* min_picture_count */)
-IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoDecoder_InitializeReply)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoDecoder_InitializeReply,
+                     bool /* use_shared_images */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_VideoDecoder_GetShm,
                      uint32_t /* shm_id */,
                      uint32_t /* shm_size */)
@@ -1703,8 +1705,15 @@ IPC_MESSAGE_CONTROL3(PpapiPluginMsg_VideoDecoder_PictureReady,
                      int32_t /* decode_id */,
                      uint32_t /* texture_id */,
                      PP_Rect /* visible_rect */)
+IPC_MESSAGE_CONTROL4(PpapiPluginMsg_VideoDecoder_SharedImageReady,
+                     int32_t /* decode_id */,
+                     gpu::Mailbox /* mailbox */,
+                     PP_Size /* size */,
+                     PP_Rect /* visible_rect */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_VideoDecoder_RecyclePicture,
                      uint32_t /* texture_id */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_VideoDecoder_RecycleSharedImage,
+                     gpu::Mailbox /* mailbox */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoDecoder_DismissPicture,
                      uint32_t /* texture_id */)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoDecoder_Flush)

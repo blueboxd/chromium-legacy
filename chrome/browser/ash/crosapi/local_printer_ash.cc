@@ -42,6 +42,7 @@
 #include "chrome/browser/printing/prefs_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/printing/ppd_provider.h"
@@ -401,6 +402,18 @@ void LocalPrinterAsh::OnServerPrintersChanged(
   }
 }
 
+void LocalPrinterAsh::OnLocalPrintersUpdated() {
+  CHECK(base::FeatureList::IsEnabled(::features::kLocalPrinterObserving));
+
+  Profile* profile = GetProfile();
+  DCHECK(profile);
+  const std::vector<mojom::LocalDestinationInfoPtr> printers =
+      ConvertPrintersToMojom(GetLocalPrinters(profile));
+  for (const auto& remote : local_printers_observer_remotes_) {
+    remote->OnLocalPrintersUpdated(mojo::Clone(printers));
+  }
+}
+
 void LocalPrinterAsh::GetPrinters(GetPrintersCallback callback) {
   std::move(callback).Run(
       ConvertPrintersToMojom(GetLocalPrinters(GetProfile())));
@@ -684,6 +697,21 @@ void LocalPrinterAsh::AddPrintJobObserver(
       break;
   }
   std::move(callback).Run();
+}
+
+void LocalPrinterAsh::AddLocalPrintersObserver(
+    mojo::PendingRemote<mojom::LocalPrintersObserver> remote,
+    AddLocalPrintersObserverCallback callback) {
+  CHECK(base::FeatureList::IsEnabled(::features::kLocalPrinterObserving));
+
+  Profile* profile = GetProfile();
+  DCHECK(profile);
+  ash::CupsPrintersManager* printers_manager =
+      ash::CupsPrintersManagerFactory::GetForBrowserContext(profile);
+  printers_manager->AddLocalPrintersObserver(this);
+
+  local_printers_observer_remotes_.Add(std::move(remote));
+  std::move(callback).Run(ConvertPrintersToMojom(GetLocalPrinters(profile)));
 }
 
 void LocalPrinterAsh::GetOAuthAccessToken(

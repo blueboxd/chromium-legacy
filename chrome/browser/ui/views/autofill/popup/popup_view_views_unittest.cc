@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/autofill/mock_autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_cell_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_separator_view.h"
@@ -31,6 +32,7 @@
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/input/native_web_keyboard_event.h"
@@ -51,6 +53,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/test/ax_event_counter.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_utils.h"
 
@@ -59,8 +62,11 @@ namespace autofill {
 namespace {
 
 using ::testing::_;
+using ::testing::AllOf;
+using ::testing::Field;
 using ::testing::Mock;
 using ::testing::NiceMock;
+using ::testing::Optional;
 using ::testing::Return;
 using CellIndex = PopupViewViews::CellIndex;
 using CellType = PopupRowView::CellType;
@@ -390,31 +396,36 @@ TEST_F(PopupViewViewsTest, AccessibilityTest) {
       node_data_3.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
 }
 
-TEST_F(PopupViewViewsTest, Gestures) {
-  CreateAndShowView({PopupItemId::kPasswordEntry, PopupItemId::kSeparator,
-                     PopupItemId::kAllSavedPasswordsEntry});
+// Gestures are not supported on MacOS.
+#if !BUILDFLAG(IS_MAC)
+TEST_F(PopupViewViewsTest, AcceptingOnTap) {
+  ON_CALL(controller(), ShouldIgnoreMouseObservedOutsideItemBoundsCheck)
+      .WillByDefault(Return(true));
 
-  // Tap down will select an element.
-  ui::GestureEvent tap_down_event(
-      /*x=*/0, /*y=*/0, /*flags=*/0, ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
-  EXPECT_CALL(controller(), SelectSuggestion(absl::optional<size_t>(0u)));
-  GetPopupRowViewAt(0).GetContentView().OnGestureEvent(&tap_down_event);
+  CreateAndShowView({PopupItemId::kPasswordEntry});
 
   // Tapping will accept the selection.
-  ui::GestureEvent tap_event(/*x=*/0, /*y=*/0, /*flags=*/0,
-                             ui::EventTimeForNow(),
-                             ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   EXPECT_CALL(controller(), AcceptSuggestion(0, _));
-  GetPopupRowViewAt(0).GetContentView().OnGestureEvent(&tap_event);
+  generator().GestureTapAt(
+      GetPopupRowViewAt(0).GetBoundsInScreen().CenterPoint());
+}
+
+TEST_F(PopupViewViewsTest, SelectionOnTouchAndUnselectionOnCancel) {
+  ON_CALL(controller(), ShouldIgnoreMouseObservedOutsideItemBoundsCheck)
+      .WillByDefault(Return(true));
+
+  CreateAndShowView({PopupItemId::kPasswordEntry});
+
+  // Tap down (initiated by generating a touch press) will select an element.
+  EXPECT_CALL(controller(), SelectSuggestion(absl::optional<size_t>(0u)));
+  generator().PressTouch(
+      GetPopupRowViewAt(0).GetBoundsInScreen().CenterPoint());
 
   // Canceling gesture clears any selection.
-  ui::GestureEvent tap_cancel(
-      /*x=*/0, /*y=*/0, /*flags=*/0, ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_TAP_CANCEL));
   EXPECT_CALL(controller(), SelectSuggestion(absl::optional<size_t>()));
-  GetPopupRowViewAt(2).GetContentView().OnGestureEvent(&tap_cancel);
+  generator().CancelTouch();
 }
+#endif  // !BUILDFLAG(IS_MAC)
 
 TEST_F(PopupViewViewsTest, ClickDisabledEntry) {
   Suggestion opt_int_suggestion("", "", "",
@@ -999,6 +1010,49 @@ TEST_F(PopupViewViewsTest, SubPopupOwnSelectionPreventsHiding) {
 
   EXPECT_NE(test_api(view()).GetOpenSubPopupCell(), absl::nullopt);
   EXPECT_EQ(test_api(*sub_view).GetOpenSubPopupCell(), absl::nullopt);
+}
+
+// TODO(crbug.com/1489673): Enable once the view shows itself properly.
+#if !BUILDFLAG(IS_MAC)
+// Tests that `GetPopupScreenLocation` returns the bounds and arrow position of
+// the popup.
+TEST_F(PopupViewViewsTest, GetPopupScreenLocation) {
+  CreateAndShowView({PopupItemId::kCompose});
+
+  using PopupScreenLocation = AutofillClient::PopupScreenLocation;
+  auto MatchesScreenLocation =
+      [](gfx::Rect bounds, PopupScreenLocation::ArrowPosition arrow_position) {
+        return Optional(
+            AllOf(Field(&PopupScreenLocation::bounds, bounds),
+                  Field(&PopupScreenLocation::arrow_position, arrow_position)));
+      };
+  EXPECT_THAT(
+      view().GetPopupScreenLocation(),
+      MatchesScreenLocation(widget().GetWindowBoundsInScreen(),
+                            PopupScreenLocation::ArrowPosition::kTopLeft));
+}
+#endif  // !BUILDFLAG(IS_MAC)
+
+TEST_F(PopupViewViewsTest, StandaloneCvcSuggestion_ElementId) {
+  Suggestion suggestion;
+  suggestion.feature_for_iph =
+      feature_engagement::kIPHAutofillVirtualCardCVCSuggestionFeature.name;
+  controller().set_suggestions({suggestion});
+  CreateAndShowView();
+
+  EXPECT_EQ(GetPopupRowViewAt(0).GetProperty(views::kElementIdentifierKey),
+            kAutofillStandaloneCvcSuggestionElementId);
+}
+
+TEST_F(PopupViewViewsTest, VirtualCardSuggestion_ElementId) {
+  Suggestion suggestion;
+  suggestion.feature_for_iph =
+      feature_engagement::kIPHAutofillVirtualCardSuggestionFeature.name;
+  controller().set_suggestions({suggestion});
+  CreateAndShowView();
+
+  EXPECT_EQ(GetPopupRowViewAt(0).GetProperty(views::kElementIdentifierKey),
+            kAutofillCreditCardSuggestionEntryElementId);
 }
 
 #if defined(MEMORY_SANITIZER) && BUILDFLAG(IS_CHROMEOS)

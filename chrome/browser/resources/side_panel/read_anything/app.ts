@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import '//read-anything-side-panel.top-chrome/shared/sp_empty_state.js';
+import '//read-anything-side-panel.top-chrome/shared/sp_shared_style.css.js';
 import '//resources/cr_elements/cr_hidden_style.css.js';
 import '../strings.m.js';
 import './read_anything_toolbar.js';
@@ -333,8 +334,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         loadTimeData.getString('readAnythingLoadingMessage');
     this.emptyStateSubheading_ = '';
     this.hasContent_ = false;
-    this.synth.cancel();
-    this.onSpeechStopped();
+    if (this.isReadAloudEnabled_) {
+      this.synth.cancel();
+      this.onSpeechStopped();
+    }
   }
 
   // TODO(crbug.com/1474951): Handle focus changes for speech, including
@@ -426,14 +429,35 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   defaultVoice(): SpeechSynthesisVoice|undefined {
     // TODO(crbug.com/1474951): Additional logic to find default voice if there
     // isn't a voice marked as default
-    return this.synth.getVoices().find(
-        ({localService, default: isDefaultVoice}) =>
-            localService && isDefaultVoice);
+
+    // TODO(crbug.com/1474951): Filter by localService. Doing this now prevents
+    // voices from loading on Linux, which slows down development.
+    const languageCode = chrome.readingMode.speechSynthesisLanguageCode;
+    // TODO(crbug.com/1474951): Ensure various locales are handled such as
+    // "en-US" vs. "en-UK." This should be fixed by using page language instead
+    // of browser language.
+    const voices = this.synth.getVoices().filter(
+        voice => voice.lang.startsWith(languageCode));
+    if (!voices || (voices.length === 0)) {
+      // If no voices in the given language are found, use the default voice.
+      return this.synth.getVoices().find(
+          ({default: isDefaultVoice}) => isDefaultVoice);
+    }
+
+    // The default voice doesn't always match with the actual default voice
+    // of the device, therefore use the language code to find a voice first.
+    const voice = voices.find(({default: isDefaultVoice}) => isDefaultVoice);
+    if (!voice) {
+      return voices[0];
+    }
+
+    return voice;
   }
 
   getVoices(): VoicesByLanguage {
+    // TODO(crbug.com/1474951): Filter by localService. Doing this now prevents
+    // voices from loading on Linux, which slows down development.
     return this.synth.getVoices()
-        .filter(({localService}) => localService)
         .reduce(
             (voicesByLang: VoicesByLanguage, voice: SpeechSynthesisVoice) => {
               (voicesByLang[voice.lang] = voicesByLang[voice.lang] || [])
@@ -460,6 +484,23 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     utterance.volume = defaultUtteranceSettings.volume;
     utterance.pitch = defaultUtteranceSettings.pitch;
     utterance.rate = defaultUtteranceSettings.rate;
+
+    // TODO(crbug.com/1474951): Add tests for pause button
+    utterance.onstart = event => {
+      const toolbar = this.shadowRoot?.getElementById('toolbar');
+      assert(toolbar);
+      if (toolbar instanceof ReadAnythingToolbar) {
+        toolbar.showVoicePreviewPlaying(event.utterance.voice);
+      }
+    };
+
+    utterance.onend = () => {
+      const toolbar = this.shadowRoot?.getElementById('toolbar');
+      assert(toolbar);
+      if (toolbar instanceof ReadAnythingToolbar) {
+        toolbar.showVoicePreviewDone();
+      }
+    };
 
     this.synth.speak(utterance);
   }
@@ -928,6 +969,19 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     const toolbar = shadowRoot.getElementById('toolbar');
     if (toolbar instanceof ReadAnythingToolbar) {
       toolbar.updateFonts();
+    }
+  }
+
+  private onKeyDown_(e: KeyboardEvent) {
+    if (e.key === 'k') {
+      e.stopPropagation();
+      const shadowRoot = this.shadowRoot;
+      assert(shadowRoot);
+      const toolbar = shadowRoot.getElementById('toolbar');
+      assert(toolbar);
+      if (toolbar instanceof ReadAnythingToolbar) {
+        toolbar.onPlayPauseClick();
+      }
     }
   }
 }

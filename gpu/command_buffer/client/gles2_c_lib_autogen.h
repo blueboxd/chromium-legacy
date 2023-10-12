@@ -1642,6 +1642,10 @@ void GL_APIENTRY GLES2FramebufferTextureMultiviewOVR(GLenum target,
 void GL_APIENTRY GLES2MaxShaderCompilerThreadsKHR(GLuint count) {
   gles2::GetGLContext()->MaxShaderCompilerThreadsKHR(count);
 }
+void GL_APIENTRY GLES2TexImage2DSharedImageCHROMIUM(GLuint texture,
+                                                    const GLbyte* mailbox) {
+  gles2::GetGLContext()->TexImage2DSharedImageCHROMIUM(texture, mailbox);
+}
 GLuint GL_APIENTRY
 GLES2CreateAndTexStorage2DSharedImageCHROMIUM(const GLbyte* mailbox) {
   return gles2::GetGLContext()->CreateAndTexStorage2DSharedImageCHROMIUM(
@@ -1663,12 +1667,17 @@ GLES2ConvertRGBAToYUVAMailboxesINTERNAL(GLenum planes_yuv_color_space,
       planes_yuv_color_space, plane_config, subsampling, mailboxes);
 }
 void GL_APIENTRY
-GLES2ConvertYUVAMailboxesToRGBINTERNAL(GLenum planes_yuv_color_space,
+GLES2ConvertYUVAMailboxesToRGBINTERNAL(GLint src_x,
+                                       GLint src_y,
+                                       GLsizei width,
+                                       GLsizei height,
+                                       GLenum planes_yuv_color_space,
                                        GLenum plane_config,
                                        GLenum subsampling,
                                        const GLbyte* mailboxes) {
   gles2::GetGLContext()->ConvertYUVAMailboxesToRGBINTERNAL(
-      planes_yuv_color_space, plane_config, subsampling, mailboxes);
+      src_x, src_y, width, height, planes_yuv_color_space, plane_config,
+      subsampling, mailboxes);
 }
 void GL_APIENTRY GLES2CopySharedImageINTERNAL(GLint xoffset,
                                               GLint yoffset,
@@ -3170,6 +3179,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glMaxShaderCompilerThreadsKHR",
         reinterpret_cast<GLES2FunctionPointer>(glMaxShaderCompilerThreadsKHR),
+    },
+    {
+        "glTexImage2DSharedImageCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glTexImage2DSharedImageCHROMIUM),
     },
     {
         "glCreateAndTexStorage2DSharedImageCHROMIUM",

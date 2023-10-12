@@ -139,18 +139,6 @@ BASE_FEATURE(kClobberTriggersSRPZeroSuggest,
              "OmniboxClobberTriggersSRPZeroSuggest",
              enabled_by_default_desktop_android);
 
-// Enables on-focus zero-prefix suggestions on the Open Web, that are contextual
-// to the current URL. Will only work if user is signed-in and syncing, or is
-// otherwise eligible to send the current page URL to the suggest server.
-BASE_FEATURE(kFocusTriggersContextualWebZeroSuggest,
-             "OmniboxFocusTriggersContextualWebZeroSuggest",
-             enabled_by_default_android_ios);
-
-// Enables on-focus zero-prefix suggestions on the SRP.
-BASE_FEATURE(kFocusTriggersSRPZeroSuggest,
-             "OmniboxFocusTriggersSRPZeroSuggest",
-             enabled_by_default_android_ios);
-
 // Enables local history zero-prefix suggestions in every context in which the
 // remote zero-prefix suggestions are enabled.
 BASE_FEATURE(kLocalHistoryZeroSuggestBeyondNTP,
@@ -284,6 +272,11 @@ BASE_FEATURE(kSuppressClipboardSuggestionAfterFirstUsed,
              "SuppressClipboardSuggestionAfterFirstUsed",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, company entity icons may be replaced by a search loupe.
+BASE_FEATURE(kCompanyEntityIconAdjustment,
+             "CompanyEntityIconAdjustment",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, uses the Chrome Refresh 2023 design's shape for action chips in
 // the omnibox suggestion popup.
 BASE_FEATURE(kCr2023ActionChips,
@@ -302,12 +295,6 @@ BASE_FEATURE(kCr2023ActionChipsIcons,
 // given country/culture
 BASE_FEATURE(kSuggestionAnswersColorReverse,
              "SuggestionAnswersColorReverse",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// If enabled, frequently visited sites are presented in form of a single row
-// with a carousel of tiles, instead of one URL per row.
-BASE_FEATURE(kMostVisitedTiles,
-             "OmniboxMostVisitedTiles",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, makes Most Visited Tiles a Horizontal render group.
@@ -346,16 +333,15 @@ BASE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor,
              "OmniboxMatchToolbarAndStatusBarColor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Feature used to add most visited tiles to the suggestions when the user is on
-// a search result page that does not do search term replacement.
-BASE_FEATURE(kOmniboxMostVisitedTilesOnSrp,
-             "OmniboxMostVisitedTilesOnSrp",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // If enabled, allows Search Ready Omnibox to populate original search query
 // when the user presses the <edit> button on EditUrl suggestion.
 BASE_FEATURE(kSearchReadyOmniboxAllowQueryEdit,
              "SearchReadyOmniboxAllowQueryEdit",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, appends Query Tiles to the Omnibox ZPS on New Tab Page.
+BASE_FEATURE(kQueryTilesInZPSOnNTP,
+             "OmniboxQueryTilesInZPSOnNTP",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, adds a grey square background to search icons, and makes answer
@@ -508,10 +494,6 @@ BASE_FEATURE(kMlUrlScoring, "MlUrlScoring", base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kUrlScoringModel,
              "UrlScoringModel",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, appends additional Trending and Recent Search Related Queries to
-// the suggestion list on the NTP and SRP.
-BASE_FEATURE(kInspireMe, "OmniboxInspireMe", enabled_by_default_android_only);
 
 // Actions in Suggest is a data-driven feature; it's considered enabled when the
 // data is available.

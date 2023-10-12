@@ -14,6 +14,8 @@
 #import "components/signin/public/base/signin_switches.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
+#import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
@@ -27,7 +29,6 @@
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/lens/lens_entrypoint.h"
 #import "ios/chrome/browser/ui/ntp/logo_vendor.h"
@@ -167,12 +168,14 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
   self.headerView.searchHintLabel.alpha = 1;
   self.headerView.voiceSearchButton.alpha = 1;
   if (finalPosition == UIViewAnimatingPositionEnd &&
-      self.delegate.scrolledToMinimumHeight) {
+      (self.delegate.scrolledToMinimumHeight || IsIOSLargeFakeboxEnabled())) {
     // Check to see if the collection are still scrolled to the top --
     // it's possible (and difficult) to unfocus the omnibox and initiate a
     // -shiftTilesDownForOmniboxDefocus before the animation here completes.
     if (IsSplitToolbarMode(self)) {
       [self.dispatcher onFakeboxAnimationComplete];
+    } else {
+      [self.toolbarDelegate setScrollProgressForTabletOmnibox:1];
     }
   }
 }
@@ -229,8 +232,7 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
 - (CGFloat)pinnedOffsetY {
   CGFloat offsetY = [self headerHeight];
   if (IsSplitToolbarMode(self)) {
-    offsetY -= ToolbarExpandedHeight(
-        self.traitCollection.preferredContentSizeCategory);
+    offsetY -= content_suggestions::FakeToolbarHeight();
   }
 
   return AlignValueToPixel(offsetY);
@@ -697,6 +699,11 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
 
 - (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
                        styleForRegion:(UIPointerRegion*)region {
+  // If the view is no longer in a window due to a race condition, no
+  // pointer style is needed.
+  if (!interaction.view.window) {
+    return nil;
+  }
   // Without this, the hover effect looks slightly oversized.
   CGRect rect = CGRectInset(interaction.view.bounds, 1, 1);
   UIBezierPath* path =

@@ -15,7 +15,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
 #include "base/callback_list.h"
 #include "base/containers/flat_map.h"
 #include "base/functional/callback_helpers.h"
@@ -882,7 +882,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       PreloadingHoldbackStatus holdback_status_override,
       PreloadingAttempt* preloading_attempt,
       absl::optional<base::RepeatingCallback<bool(const GURL&)>>
-          url_match_predicate = absl::nullopt) override;
+          url_match_predicate = absl::nullopt,
+      absl::optional<base::RepeatingCallback<void(NavigationHandle&)>>
+          prerender_navigation_handle_callback = absl::nullopt) override;
   void BackNavigationLikely(PreloadingPredictor predictor,
                             WindowOpenDisposition disposition) override;
   void SetOwnerLocationForDebug(
@@ -1599,13 +1601,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
     // Exposed to deal with IPC message handlers which need to stop iteration
     // early.
-    const base::ObserverList<WebContentsObserver>::Unchecked& observer_list() {
+    const base::ObserverList<WebContentsObserver>& observer_list() {
       return observers_;
     }
 
    private:
     bool is_notifying_observers_ = false;
-    base::ObserverList<WebContentsObserver>::Unchecked observers_;
+    base::ObserverList<WebContentsObserver> observers_;
   };
 
   // See WebContents::Create for a description of these parameters.
@@ -1824,7 +1826,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void ClearTargetURL();
 
   // Called each time |fullscreen_frames_| is updated. Find the new
-  // |current_fullscreen_frame_| and notify observers whenever it changes.
+  // |current_fullscreen_frame_id_| and notify observers whenever it changes.
   void FullscreenFrameSetUpdated();
 
   // ui::NativeThemeObserver:
@@ -2307,9 +2309,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // See https://fullscreen.spec.whatwg.org.
   std::set<RenderFrameHostImpl*> fullscreen_frames_;
 
-  // Store the frame that is currently fullscreen, nullptr if there is none.
-  raw_ptr<RenderFrameHostImpl, DanglingUntriaged> current_fullscreen_frame_ =
-      nullptr;
+  // Store an ID for the frame that is currently fullscreen, or an invalid ID if
+  // there is none.
+  GlobalRenderFrameHostId current_fullscreen_frame_id_ =
+      GlobalRenderFrameHostId();
 
   // Whether location bar should be focused by default. This is computed in
   // DidStartNavigation/DidFinishNavigation and only set for an initial

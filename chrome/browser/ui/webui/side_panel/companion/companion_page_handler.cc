@@ -14,7 +14,6 @@
 #include "chrome/browser/companion/core/utils.h"
 #include "chrome/browser/companion/text_finder/text_finder_manager.h"
 #include "chrome/browser/companion/text_finder/text_highlighter_manager.h"
-#include "chrome/browser/companion/visual_search/features.h"
 #include "chrome/browser/companion/visual_search/visual_search_suggestions_service_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/ui/webui/side_panel/companion/companion_side_panel_untrusted_ui.h"
 #include "chrome/browser/ui/webui/side_panel/companion/signin_delegate_impl.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
+#include "chrome/common/companion/visual_search/features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -77,8 +77,7 @@ CompanionPageHandler::CompanionPageHandler(
         base::BindRepeating(&CompanionPageHandler::OnPageContentPrefChanged,
                             base::Unretained(this)));
   }
-  if (base::FeatureList::IsEnabled(
-          visual_search::features::kVisualSearchSuggestions)) {
+  if (visual_search::features::IsVisualSearchSuggestionsEnabled()) {
     visual_search_host_ =
         std::make_unique<visual_search::VisualSearchClassifierHost>(
             visual_search::VisualSearchSuggestionsServiceFactory::GetForProfile(
@@ -146,12 +145,6 @@ void CompanionPageHandler::DidFinishNavigation(
   ukm::SourceId ukm_source_id =
       web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId();
   metrics_logger_ = std::make_unique<CompanionMetricsLogger>(ukm_source_id);
-  auto* tab_helper =
-      companion::CompanionTabHelper::FromWebContents(web_contents());
-  auto open_trigger = tab_helper->GetAndResetMostRecentSidePanelOpenTrigger();
-  if (open_trigger.has_value()) {
-    metrics_logger_->RecordOpenTrigger(open_trigger);
-  }
 
   // Only notify the companion UI the page changed if we can share
   // information about the page URL by user consent.

@@ -76,16 +76,6 @@ BASE_FEATURE(kDownloadTailoredWarnings,
              "DownloadTailoredWarnings",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEsbIphBubbleAndCollapseSettings,
-             "EsbIphBubbleAndCollapseSettings",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-const base::FeatureParam<bool> kEsbIphBubbleAndCollapseSettingsEnableIph{
-    &kEsbIphBubbleAndCollapseSettings, "EnableEsbIphBubble", true};
-
-const base::FeatureParam<bool> kEsbIphBubbleAndCollapseSettingsEnableCollapse{
-    &kEsbIphBubbleAndCollapseSettings, "EnableEsbSettingCollapse", true};
-
 BASE_FEATURE(kEvaluateProtectedPasswordLengthMinimum,
              "EvaluateProtectedPasswordLengthMinimum",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -93,18 +83,6 @@ BASE_FEATURE(kEvaluateProtectedPasswordLengthMinimum,
 const base::FeatureParam<int> kEvaluateProtectedPasswordLengthMinimumValue{
     &kEvaluateProtectedPasswordLengthMinimum, "MinimumValue",
     /*default_value=*/4};
-
-BASE_FEATURE(kExtensionTelemetry,
-             "SafeBrowsingExtensionTelemetry",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-const base::FeatureParam<int> kExtensionTelemetryUploadIntervalSeconds{
-    &kExtensionTelemetry, "UploadIntervalSeconds",
-    /*default_value=*/3600};
-
-const base::FeatureParam<int> kExtensionTelemetryWritesPerInterval{
-    &kExtensionTelemetry, "NumberOfWritesInInterval",
-    /*default_value=*/1};
 
 BASE_FEATURE(kExtensionTelemetryConfiguration,
              "SafeBrowsingExtensionTelemetryConfiguration",
@@ -223,10 +201,6 @@ constexpr base::FeatureParam<std::string> kRedWarningSurveyDidProceedFilter{
     &kRedWarningSurvey, "RedWarningSurveyDidProceedFilter",
     /*default_value=*/"TRUE,FALSE"};
 
-BASE_FEATURE(kRealTimeUrlFilteringForEnterprise,
-             "RealTimeUrlFilteringForEnterprise",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kRedInterstitialFacelift,
              "RedInterstitialFacelift",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -244,7 +218,7 @@ constexpr base::FeatureParam<int> kReferrerChainEventMaximumCount{
 
 BASE_FEATURE(kSafeBrowsingCsbrrNewDownloadTrigger,
              "SafeBrowsingCsbrrNewDownloadTrigger",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSafeBrowsingLookupMechanismExperiment,
              "SafeBrowsingLookupMechanismExperiment",
@@ -278,6 +252,10 @@ BASE_FEATURE(kSafeBrowsingSkipImageCssFont,
 
 BASE_FEATURE(kSafeBrowsingSkipSubresources,
              "SafeBrowsingSkipSubResources",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSafeBrowsingSkipSubresources2,
+             "SafeBrowsingSkipSubResources2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSevenZipEvaluationEnabled,
@@ -364,7 +342,6 @@ constexpr struct {
     {&kDownloadBubbleV2, true},
     {&kDownloadTailoredWarnings, true},
     {&kEvaluateProtectedPasswordLengthMinimum, false},
-    {&kExtensionTelemetry, true},
     {&kExtensionTelemetryDisableOffstoreExtensions, true},
     {&kExtensionTelemetryFileData, true},
     {&kExtensionTelemetryInterceptRemoteHostsContactedInRenderer, true},
@@ -380,13 +357,13 @@ constexpr struct {
     {&kLogAccountEnhancedProtectionStateInProtegoPings, true},
     {&kMmapSafeBrowsingDatabase, true},
     {&kNestedArchives, true},
-    {&kRealTimeUrlFilteringForEnterprise, true},
     {&kRedInterstitialFacelift, false},
     {&kSafeBrowsingCsbrrNewDownloadTrigger, true},
     {&kSafeBrowsingLookupMechanismExperiment, true},
     {&kSafeBrowsingRemoveCookiesInAuthRequests, true},
     {&kSafeBrowsingSkipImageCssFont, true},
     {&kSafeBrowsingSkipSubresources, true},
+    {&kSafeBrowsingSkipSubresources2, true},
     {&kSevenZipEvaluationEnabled, true},
     {&kSimplifiedUrlDisplay, true},
     {&kStrictDownloadTimeout, true},

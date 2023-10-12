@@ -4,6 +4,7 @@
 <translation id="1046370274005147998">Претражујте гласом у Chromium-у.</translation>
 <translation id="1047130070405668746">Изаберите Chromium</translation>
 <translation id="1091252999271033193">То значи да ће Chromium сваки пут захтевати мобилни сајт.</translation>
+<translation id="1171824629317156389">Отворите подешавања Chromium-а у iOS-у, па додирните Default Browser App (Подразумевана апликација за прегледач) и изаберите Chromium.</translation>
 <translation id="1185134272377778587">О Chromium-у</translation>
 <translation id="1257458525759135959">Да бисте сачували слике, додирните Подешавања да бисте омогућили Chromium-у да додаје слике</translation>
 <translation id="1289216811211435351">Пређите на Chromium</translation>
@@ -16,6 +17,7 @@
 <translation id="1591119736686995611">Отвара мрежу Chromium картица.</translation>
 <translation id="1617663976202781617">Подаци из Chromium синхронизације</translation>
 <translation id="1647558790457890304">Подешавања Chromium-а</translation>
+<translation id="164952285225495380">Овај пакет се већ прати у Chromium-у.</translation>
 <translation id="1722370509450468186">Лозинка се чува на вашем налогу (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Chromium подаци су обрисани</translation>
 <translation id="1791845338122684020">Отвара страницу историје Chromium-а.</translation>
@@ -94,7 +96,6 @@
 <translation id="4736424910885271643">Налогом управља <ph name="HOSTED_DOMAIN" />, па ће се Chromium подаци обрисати са овог уређаја</translation>
 <translation id="4790638144988730920">Наставите да користите Chromium податке на Google налогу.</translation>
 <translation id="4828317641996116749">Chromium није успео да провери све лозинке. Пробајте поново касније.</translation>
-<translation id="4935539884203837577">Chromium може да открије бројеве за праћење које уносите и да прати пакете на страници нове картице, а да истовремено помаже друге доживљаје куповине из Chromium-а.</translation>
 <translation id="4985291216379576555">Офлајн сте. Chromium не може да тражи ажурирања.</translation>
 <translation id="4996471330284142407">Урадите више помоћу још једноставнијег, безбеднијег и бржег Chromium-а.</translation>
 <translation id="4999538639245140991">Одјављујете се са налога којим управља <ph name="SIGNOUT_MANAGED_DOMAIN" />, што ће избрисати Chromium податке са овог уређаја. Подаци ће остати на Google налогу.</translation>
@@ -140,6 +141,7 @@
 1. Отворите подешавања
 2. Додирните Подразумевана апликација за прегледање
 3. Изаберите Chromium.</translation>
+<translation id="6197255575340902638">Ако сакријете „<ph name="MODULE_NAME" />“, Chromium више неће аутоматски пратити будуће пакете и избрисаће све раније податке о праћењу пакета.</translation>
 <translation id="6247557882553405851">Google менаџеру лозинки</translation>
 <translation id="6268381023930128611">Желите ли да се одјавите из Chromium-а?</translation>
 <translation id="6324041800010509197">Посетите мрежу картица у Chromium-у</translation>

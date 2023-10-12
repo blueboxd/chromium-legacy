@@ -77,6 +77,8 @@ const base::FilePath::CharType kDatabasePath[] =
 // Version 15 - 2023/08 - crrev.com/c/4808727
 // Version 16 - 2023/08 - crrev.com/c/4822944
 // Version 17 - 2023/09 - crrev.com/c/4852051
+// Version 18 - 2023/09 - crrev.com/c/4902233
+// Version 19 - 2023/10 - crrev.com/c/4891458
 //
 // Version 1 adds a table for interest groups.
 // Version 2 adds a column for rate limiting interest group updates.
@@ -97,11 +99,15 @@ const base::FilePath::CharType kDatabasePath[] =
 // table to protobuf format.
 // Version 17 adds interest group name and owner columns to the  k-anonymity
 // table.
-const int kCurrentVersionNumber = 17;
+// Version 18 adds a new index on IG type (regular vs negative) to support
+// split caps on max interest groups per owner.
+// Version 19 adds the aggregation_coordinator_origin and storage_size columns
+// to the interest group table.
+const int kCurrentVersionNumber = 19;
 
 // Earliest version of the code which can use a |kCurrentVersionNumber|
 // database without failing.
-const int kCompatibleVersionNumber = 17;
+const int kCompatibleVersionNumber = 19;
 
 // Latest version of the database that cannot be upgraded to
 // |kCurrentVersionNumber| without razing the database.
@@ -553,8 +559,11 @@ void MergePrioritySignalsOverrides(
   }
 }
 
-// Adds indices to the `interest_group` table. Called after the table has been
-// created.
+// Adds indices to the `interest_group` table.
+// Call this function after the table has been created,
+// both when creating a new database in CreateVxxSchema
+// and after dropping/recreating the `interest_groups` table
+// in the *latest* UpgradeVxxSchemaToVxx function to do so.
 bool CreateInterestGroupIndices(sql::Database& db) {
   // Index on group expiration. Owner and Name are only here to speed up
   // queries that don't need the full group.
@@ -579,6 +588,29 @@ bool CreateInterestGroupIndices(sql::Database& db) {
     return false;
   }
 
+  // Index on group expiration by owner and IG type (regular vs negative)
+  DCHECK(!db.DoesIndexExist("interest_group_owner_and_type"));
+  static const char kInterestGroupOwnerAndTypeIndexSql[] =
+      // clang-format off
+      "CREATE INDEX interest_group_owner_and_type"
+      " ON interest_groups("
+      "LENGTH(additional_bid_key) == 0,owner,expiration DESC,name)";
+  // clang-format on
+  if (!db.Execute(kInterestGroupOwnerAndTypeIndexSql)) {
+    return false;
+  }
+
+  // Index on storage size. Used for ClearExcessiveStorage().
+  DCHECK(!db.DoesIndexExist("interest_group_owner_size"));
+  static const char kInterestGroupOwnerSizeIndexSql[] =
+      // clang-format off
+      "CREATE INDEX interest_group_owner_size"
+      " ON interest_groups(owner,expiration DESC,storage_size)";
+  // clang-format on
+  if (!db.Execute(kInterestGroupOwnerSizeIndexSql)) {
+    return false;
+  }
+
   // Index on group expiration by joining origin. Owner and Name are only here
   // to speed up queries that don't need the full group.
   DCHECK(!db.DoesIndexExist("interest_group_joining_origin"));
@@ -594,7 +626,11 @@ bool CreateInterestGroupIndices(sql::Database& db) {
   return true;
 }
 
-// Create indices on the k_anon table.
+// Adds indices to the `kanon` table.
+// Call this function after the table has been created,
+// both when creating a new database in CreateVxxSchema
+// and after dropping/recreating the `kanon` table
+// in the *latest* UpgradeVxxSchemaToVxx function to do so.
 bool CreateKAnonIndices(sql::Database& db) {
   DCHECK(!db.DoesIndexExist("kanon_key_idx"));
   static const char kCreateKAnonIndexSQL[] =
@@ -721,10 +757,7 @@ bool InsertKAnonForJoinedInterestGroup(sql::Database& db,
 
 // Initializes the tables, returning true on success.
 // The tables cannot exist when calling this function.
-bool CreateV17Schema(sql::Database& db) {
-  // IMPORTANT: If you add or remove fields, you need to update
-  // `ClearExcessiveStorage()` to consider the size of added/removed fields for
-  // storage usage calculations.
+bool CreateV19Schema(sql::Database& db) {
   DCHECK(!db.DoesTableExist("interest_groups"));
   static const char kInterestGroupTableSql[] =
       // clang-format off
@@ -760,6 +793,8 @@ bool CreateV17Schema(sql::Database& db) {
         "size_groups TEXT NOT NULL,"
         "auction_server_request_flags INTEGER NOT NULL,"
         "additional_bid_key BLOB NOT NULL,"
+        "aggregation_coordinator_origin TEXT,"
+        "storage_size INTEGER NOT NULL, "
       "PRIMARY KEY(owner,name))";
   // clang-format on
   if (!db.Execute(kInterestGroupTableSql)) {
@@ -846,6 +881,126 @@ bool CreateV17Schema(sql::Database& db) {
     return false;
   }
 
+  return true;
+}
+
+bool UpgradeV18SchemaToV19(sql::Database& db, sql::MetaTable& meta_table) {
+  static const char kInterestGroupTableSql[] =
+      // clang-format off
+      "CREATE TABLE new_interest_groups("
+        "expiration INTEGER NOT NULL,"
+        "last_updated INTEGER NOT NULL,"
+        "next_update_after INTEGER NOT NULL,"
+        "owner TEXT NOT NULL,"
+        "joining_origin TEXT NOT NULL,"
+        "exact_join_time INTEGER NOT NULL,"
+        "name TEXT NOT NULL,"
+        "priority DOUBLE NOT NULL,"
+        "enable_bidding_signals_prioritization INTEGER NOT NULL,"
+        "priority_vector TEXT NOT NULL,"
+        "priority_signals_overrides TEXT NOT NULL,"
+        "seller_capabilities TEXT NOT NULL,"
+        "all_sellers_capabilities INTEGER NOT NULL,"
+        "execution_mode INTEGER NOT NULL,"
+        "joining_url TEXT NOT NULL,"
+        "bidding_url TEXT NOT NULL,"
+        "bidding_wasm_helper_url TEXT NOT NULL,"
+        "update_url TEXT NOT NULL,"
+        "trusted_bidding_signals_url TEXT NOT NULL,"
+        "trusted_bidding_signals_keys TEXT NOT NULL,"
+        "user_bidding_signals TEXT,"
+        "ads_pb BLOB NOT NULL,"
+        "ad_components_pb BLOB NOT NULL,"
+        "ad_sizes TEXT NOT NULL,"
+        "size_groups TEXT NOT NULL,"
+        "auction_server_request_flags INTEGER NOT NULL,"
+        "additional_bid_key BLOB NOT NULL,"
+        "aggregation_coordinator_origin TEXT,"
+        "storage_size INTEGER NOT NULL, "
+      "PRIMARY KEY(owner,name))";
+
+  // clang-format on
+  if (!db.Execute(kInterestGroupTableSql)) {
+    return false;
+  }
+
+  static const char kCopyInterestGroupTableSql[] =
+      // clang-format off
+      "INSERT INTO new_interest_groups "
+      "SELECT expiration,"
+             "last_updated,"
+             "next_update_after,"
+             "owner,"
+             "joining_origin,"
+             "exact_join_time,"
+             "name,"
+             "priority,"
+             "enable_bidding_signals_prioritization,"
+             "priority_vector,"
+             "priority_signals_overrides,"
+             "seller_capabilities,"
+             "all_sellers_capabilities,"
+             "execution_mode,"
+             "joining_url,"
+             "bidding_url,"
+             "bidding_wasm_helper_url,"
+             "update_url,"
+             "trusted_bidding_signals_url,"
+             "trusted_bidding_signals_keys,"
+             "user_bidding_signals,"
+             "ads_pb,"
+             "ad_components_pb,"
+             "ad_sizes,"
+             "size_groups,"
+             "auction_server_request_flags,"
+             "additional_bid_key,"
+             "NULL," // aggregation_coordinator_origin
+             "(LENGTH(interest_groups.owner)+"
+              "LENGTH(interest_groups.joining_origin)+"
+              "LENGTH(interest_groups.name)+"
+              "LENGTH(interest_groups.priority_vector)+"
+              "LENGTH(interest_groups.priority_signals_overrides)+"
+              "LENGTH(interest_groups.seller_capabilities)+"
+              "LENGTH(interest_groups.joining_url)+"
+              "LENGTH(interest_groups.bidding_url)+"
+              "LENGTH(interest_groups.bidding_wasm_helper_url)+"
+              "LENGTH(interest_groups.update_url)+"
+              "LENGTH(interest_groups.trusted_bidding_signals_url)+"
+              "LENGTH(interest_groups.trusted_bidding_signals_keys)+"
+              "IFNULL(LENGTH(interest_groups.user_bidding_signals),0)+"
+              "LENGTH(interest_groups.ads_pb)+"
+              "LENGTH(interest_groups.ad_components_pb)+"
+              "LENGTH(interest_groups.ad_sizes)+"
+              "LENGTH(interest_groups.size_groups)+"
+              "LENGTH(interest_groups.additional_bid_key)+"
+              "40) " // storage_size -- start with the old estimated size.
+      "FROM interest_groups";
+  // clang-format on
+
+  if (!db.Execute(kCopyInterestGroupTableSql)) {
+    return false;
+  }
+
+  static const char kDropInterestGroupTableSql[] = "DROP TABLE interest_groups";
+  if (!db.Execute(kDropInterestGroupTableSql)) {
+    return false;
+  }
+
+  static const char kRenameInterestGroupTableSql[] =
+      // clang-format off
+      "ALTER TABLE new_interest_groups "
+      "RENAME TO interest_groups";
+  // clang-format on
+  if (!db.Execute(kRenameInterestGroupTableSql)) {
+    return false;
+  }
+
+  return CreateInterestGroupIndices(db);
+}
+
+bool UpgradeV17SchemaToV18(sql::Database& db, sql::MetaTable& meta_table) {
+  // The only difference was the addition of the `interest_group_owner_and_type`
+  // index, which would be removed and recreated in UpgradeV18SchemaToV19.
   return true;
 }
 
@@ -1050,8 +1205,7 @@ bool UpgradeV15SchemaToV16(sql::Database& db, sql::MetaTable& meta_table) {
   if (!db.Execute(kRenameInterestGroupTableSql)) {
     return false;
   }
-
-  return CreateInterestGroupIndices(db);
+  return true;
 }
 
 bool UpgradeV14SchemaToV15(sql::Database& db, sql::MetaTable& meta_table) {
@@ -1141,7 +1295,7 @@ bool UpgradeV14SchemaToV15(sql::Database& db, sql::MetaTable& meta_table) {
     return false;
   }
 
-  return CreateInterestGroupIndices(db);
+  return true;
 }
 
 bool UpgradeV13SchemaToV14(sql::Database& db, sql::MetaTable& meta_table) {
@@ -1229,7 +1383,7 @@ bool UpgradeV13SchemaToV14(sql::Database& db, sql::MetaTable& meta_table) {
     return false;
   }
 
-  return CreateInterestGroupIndices(db);
+  return true;
 }
 
 bool UpgradeV12SchemaToV13(sql::Database& db, sql::MetaTable& meta_table) {
@@ -1315,7 +1469,7 @@ bool UpgradeV12SchemaToV13(sql::Database& db, sql::MetaTable& meta_table) {
     return false;
   }
 
-  return CreateInterestGroupIndices(db);
+  return true;
 }
 
 bool UpgradeV11SchemaToV12(sql::Database& db, sql::MetaTable& meta_table) {
@@ -1397,7 +1551,7 @@ bool UpgradeV11SchemaToV12(sql::Database& db, sql::MetaTable& meta_table) {
     return false;
   }
 
-  return CreateInterestGroupIndices(db);
+  return true;
 }
 
 bool UpgradeV10SchemaToV11(sql::Database& db, sql::MetaTable& meta_table) {
@@ -1475,7 +1629,7 @@ bool UpgradeV10SchemaToV11(sql::Database& db, sql::MetaTable& meta_table) {
     return false;
   }
 
-  return CreateInterestGroupIndices(db);
+  return true;
 }
 
 bool UpgradeV9SchemaToV10(sql::Database& db, sql::MetaTable& meta_table) {
@@ -1770,6 +1924,57 @@ bool DoClearClusteredBiddingGroups(sql::Database& db,
   return transaction.Commit();
 }
 
+// Leaves all the interest groups joined on `joining_origin` except
+// `interest_groups_to_keep`. Returns absl::nullopt on error, and a (possibly
+// empty) list of left interest groups on success.
+absl::optional<std::vector<std::string>> DoClearOriginJoinedInterestGroups(
+    sql::Database& db,
+    const url::Origin owner,
+    const std::set<std::string>& interest_groups_to_keep,
+    const url::Origin joining_origin) {
+  sql::Transaction transaction(&db);
+  if (!transaction.Begin()) {
+    return absl::nullopt;
+  }
+
+  // Have to select interest groups and then use DoRemoveInterestGroup() in
+  // order to remove data in other tables about any removed groups. Can't just
+  // do a single delete.
+
+  // clang-format off
+  sql::Statement same_cluster_groups(
+    db.GetCachedStatement(SQL_FROM_HERE,
+      "SELECT name "
+      "FROM interest_groups "
+      "WHERE owner = ? AND joining_origin = ?"));
+  // clang-format on
+
+  if (!same_cluster_groups.is_valid()) {
+    return absl::nullopt;
+  }
+
+  same_cluster_groups.Reset(true);
+  same_cluster_groups.BindString(0, Serialize(owner));
+  same_cluster_groups.BindString(1, Serialize(joining_origin));
+
+  std::vector<std::string> cleared_interest_groups;
+
+  while (same_cluster_groups.Step()) {
+    std::string name = same_cluster_groups.ColumnString(0);
+    if (interest_groups_to_keep.find(name) != interest_groups_to_keep.end()) {
+      continue;
+    }
+    if (!DoRemoveInterestGroup(db, blink::InterestGroupKey(owner, name))) {
+      return absl::nullopt;
+    }
+    cleared_interest_groups.emplace_back(std::move(name));
+  }
+  if (!transaction.Commit()) {
+    return absl::nullopt;
+  }
+  return cleared_interest_groups;
+}
+
 bool DoLoadInterestGroup(sql::Database& db,
                          const blink::InterestGroupKey& group_key,
                          blink::InterestGroup& group,
@@ -1801,7 +2006,8 @@ bool DoLoadInterestGroup(sql::Database& db,
           "ad_sizes,"
           "size_groups,"
           "auction_server_request_flags,"
-          "additional_bid_key "
+          "additional_bid_key,"
+          "aggregation_coordinator_origin "
         "FROM interest_groups "
         "WHERE owner = ? AND name = ? "));
   // clang-format on
@@ -1858,6 +2064,10 @@ bool DoLoadInterestGroup(sql::Database& db,
   group.auction_server_request_flags =
       DeserializeAuctionServerRequestFlags(load.ColumnInt64(21));
   group.additional_bid_key = DeserializeAdditionalBidKey(load.ColumnBlob(22));
+  if (load.GetColumnType(23) != sql::ColumnType::kNull) {
+    group.aggregation_coordinator_origin =
+        DeserializeOrigin(load.ColumnString(23));
+  }
   return true;
 }
 
@@ -1985,8 +2195,10 @@ bool DoJoinInterestGroup(sql::Database& db,
             "ad_sizes,"
             "size_groups,"
             "auction_server_request_flags,"
-            "additional_bid_key) "
-          "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+            "additional_bid_key,"
+            "aggregation_coordinator_origin,"
+            "storage_size) "
+          "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
 
   // clang-format on
   if (!join_group.is_valid()) {
@@ -2024,6 +2236,12 @@ bool DoJoinInterestGroup(sql::Database& db,
   join_group.BindString(24, Serialize(data.size_groups));
   join_group.BindInt64(25, Serialize(data.auction_server_request_flags));
   join_group.BindBlob(26, Serialize(data.additional_bid_key));
+  if (data.aggregation_coordinator_origin) {
+    join_group.BindString(27, Serialize(*data.aggregation_coordinator_origin));
+  } else {
+    join_group.BindNull(27);
+  }
+  join_group.BindInt64(28, data.EstimateSize());
 
   if (!join_group.Run()) {
     return false;
@@ -2065,8 +2283,10 @@ bool DoStoreInterestGroupUpdate(sql::Database& db,
             "ad_components_pb=?,"
             "ad_sizes=?,"
             "size_groups=?,"
-            "auction_server_request_flags=?, "
-            "additional_bid_key=? "
+            "auction_server_request_flags=?,"
+            "additional_bid_key=?,"
+            "aggregation_coordinator_origin=?,"
+            "storage_size=? "
           "WHERE owner=? AND name=?"));
 
   // clang-format on
@@ -2096,8 +2316,16 @@ bool DoStoreInterestGroupUpdate(sql::Database& db,
   store_group.BindString(17, Serialize(group.size_groups));
   store_group.BindInt64(18, Serialize(group.auction_server_request_flags));
   store_group.BindBlob(19, Serialize(group.additional_bid_key));
-  store_group.BindString(20, Serialize(group.owner));
-  store_group.BindString(21, group.name);
+  if (group.aggregation_coordinator_origin) {
+    store_group.BindString(20,
+                           Serialize(*group.aggregation_coordinator_origin));
+  } else {
+    store_group.BindNull(20);
+  }
+  store_group.BindInt64(21, group.EstimateSize());
+
+  store_group.BindString(22, Serialize(group.owner));
+  store_group.BindString(23, group.name);
 
   return store_group.Run();
 }
@@ -2189,8 +2417,10 @@ bool DoUpdateInterestGroup(sql::Database& db,
     stored_group.auction_server_request_flags =
         *update.auction_server_request_flags;
   }
-  if (update.additional_bid_key) {
-    stored_group.additional_bid_key = std::move(update.additional_bid_key);
+
+  if (update.aggregation_coordinator_origin) {
+    stored_group.aggregation_coordinator_origin =
+        std::move(update.aggregation_coordinator_origin);
   }
 
   if (!stored_group.IsValid()) {
@@ -2694,6 +2924,66 @@ absl::optional<std::vector<std::string>> DoGetInterestGroupNamesForOwner(
   return result;
 }
 
+absl::optional<std::vector<std::string>>
+DoGetAllRegularInterestGroupNamesForOwner(sql::Database& db,
+                                          const url::Origin& owner) {
+  // clang-format off
+  sql::Statement get_names(
+    db.GetCachedStatement(SQL_FROM_HERE,
+    "SELECT name "
+    "FROM interest_groups "
+    "WHERE LENGTH(additional_bid_key) == 0 AND owner=? "
+    "ORDER BY expiration DESC"));
+  // clang-format on
+
+  if (!get_names.is_valid()) {
+    return absl::nullopt;
+  }
+
+  get_names.Reset(true);
+  get_names.BindString(0, Serialize(owner));
+
+  std::vector<std::string> result;
+  while (get_names.Step()) {
+    result.push_back(get_names.ColumnString(0));
+  }
+  if (!get_names.Succeeded()) {
+    return absl::nullopt;
+  }
+
+  return result;
+}
+
+absl::optional<std::vector<std::string>>
+DoGetAllNegativeInterestGroupNamesForOwner(sql::Database& db,
+                                           const url::Origin& owner) {
+  // clang-format off
+  sql::Statement get_names(
+    db.GetCachedStatement(SQL_FROM_HERE,
+    "SELECT name "
+    "FROM interest_groups "
+    "WHERE NOT LENGTH(additional_bid_key) == 0 AND owner=? "
+    "ORDER BY expiration DESC"));
+  // clang-format on
+
+  if (!get_names.is_valid()) {
+    return absl::nullopt;
+  }
+
+  get_names.Reset(true);
+  get_names.BindString(0, Serialize(owner));
+
+  std::vector<std::string> result;
+  while (get_names.Step()) {
+    result.push_back(get_names.ColumnString(0));
+  }
+  if (!get_names.Succeeded()) {
+    return absl::nullopt;
+  }
+
+  return result;
+}
+
 absl::optional<std::vector<StorageInterestGroup::KAnonymityData>>
 DoGetKAnonymityData(sql::Database& db,
                     const blink::InterestGroupKey& group_key) {
@@ -3047,9 +3337,30 @@ bool DeleteOldWins(sql::Database& db, base::Time cutoff) {
   return true;
 }
 
+bool DoClearExcessInterestGroups(
+    sql::Database& db,
+    const url::Origin& affected_origin,
+    const absl::optional<std::vector<std::string>> maybe_interest_groups,
+    size_t max_owner_interest_groups) {
+  if (!maybe_interest_groups) {
+    return false;
+  }
+  for (size_t group_idx = max_owner_interest_groups;
+       group_idx < maybe_interest_groups.value().size(); group_idx++) {
+    if (!DoRemoveInterestGroup(
+            db,
+            blink::InterestGroupKey(
+                affected_origin, maybe_interest_groups.value()[group_idx]))) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool ClearExcessInterestGroups(sql::Database& db,
                                size_t max_owners,
-                               size_t max_owner_interest_groups) {
+                               size_t max_owner_regular_interest_groups,
+                               size_t max_owner_negative_interest_groups) {
   const base::Time distant_past = base::Time::Min();
   const absl::optional<std::vector<url::Origin>> maybe_all_origins =
       DoGetAllInterestGroupOwners(db, distant_past);
@@ -3059,23 +3370,17 @@ bool ClearExcessInterestGroups(sql::Database& db,
   for (size_t owner_idx = 0; owner_idx < maybe_all_origins.value().size();
        owner_idx++) {
     const url::Origin& affected_origin = maybe_all_origins.value()[owner_idx];
-    const absl::optional<std::vector<std::string>> maybe_interest_groups =
-        DoGetInterestGroupNamesForOwner(db, affected_origin, distant_past);
-    if (!maybe_interest_groups) {
+    if (!DoClearExcessInterestGroups(
+            db, affected_origin,
+            DoGetAllRegularInterestGroupNamesForOwner(db, affected_origin),
+            owner_idx < max_owners ? max_owner_regular_interest_groups : 0)) {
       return false;
     }
-    size_t first_idx = max_owner_interest_groups;
-    if (owner_idx >= max_owners) {
-      first_idx = 0;
-    }
-    for (size_t group_idx = first_idx;
-         group_idx < maybe_interest_groups.value().size(); group_idx++) {
-      if (!DoRemoveInterestGroup(
-              db,
-              blink::InterestGroupKey(
-                  affected_origin, maybe_interest_groups.value()[group_idx]))) {
-        return false;
-      }
+    if (!DoClearExcessInterestGroups(
+            db, affected_origin,
+            DoGetAllNegativeInterestGroupNamesForOwner(db, affected_origin),
+            owner_idx < max_owners ? max_owner_negative_interest_groups : 0)) {
+      return false;
     }
   }
   return true;
@@ -3136,27 +3441,7 @@ bool ClearExcessiveStorage(sql::Database& db, size_t max_owner_storage_size) {
   // clang-format off
   sql::Statement excessive_storage_groups(db.GetCachedStatement(
       SQL_FROM_HERE,
-        "SELECT owner, name, "
-          "(LENGTH(interest_groups.owner)+"
-              "LENGTH(interest_groups.joining_origin)+"
-              "LENGTH(interest_groups.name)+"
-              "LENGTH(interest_groups.priority_vector)+"
-              "LENGTH(interest_groups.priority_signals_overrides)+"
-              "LENGTH(interest_groups.seller_capabilities)+"
-              "LENGTH(interest_groups.joining_url)+"
-              "LENGTH(interest_groups.bidding_url)+"
-              "LENGTH(interest_groups.bidding_wasm_helper_url)+"
-              "LENGTH(interest_groups.update_url)+"
-              "LENGTH(interest_groups.trusted_bidding_signals_url)+"
-              "LENGTH(interest_groups.trusted_bidding_signals_keys)+"
-              "LENGTH(interest_groups.user_bidding_signals)+"
-              "LENGTH(interest_groups.ads_pb)+"
-              "LENGTH(interest_groups.ad_components_pb)+"
-              "LENGTH(interest_groups.ad_sizes)+"
-              "LENGTH(interest_groups.size_groups)+"
-              "LENGTH(interest_groups.additional_bid_key)+"
-              "40) "  // other fields are fixed at 40 bytes
-            "AS cum_size "
+        "SELECT owner, name, storage_size "
         "FROM interest_groups "
         "ORDER BY owner, expiration DESC"
       ));
@@ -3227,13 +3512,16 @@ bool DoPerformDatabaseMaintenance(sql::Database& db,
                                   base::Time now,
                                   size_t max_owners,
                                   size_t max_owner_storage_size,
-                                  size_t max_owner_interest_groups) {
+                                  size_t max_owner_regular_interest_groups,
+                                  size_t max_owner_negative_interest_groups) {
   SCOPED_UMA_HISTOGRAM_TIMER_MICROS("Storage.InterestGroup.DBMaintenanceTime");
   sql::Transaction transaction(&db);
   if (!transaction.Begin()) {
     return false;
   }
-  if (!ClearExcessInterestGroups(db, max_owners, max_owner_interest_groups)) {
+  if (!ClearExcessInterestGroups(db, max_owners,
+                                 max_owner_regular_interest_groups,
+                                 max_owner_negative_interest_groups)) {
     return false;
   }
   if (!ClearExpiredInterestGroups(db, now)) {
@@ -3276,8 +3564,11 @@ constexpr base::TimeDelta InterestGroupStorage::kUpdateFailedBackoffPeriod;
 InterestGroupStorage::InterestGroupStorage(const base::FilePath& path)
     : path_to_database_(DBPath(path)),
       max_owners_(blink::features::kInterestGroupStorageMaxOwners.Get()),
-      max_owner_interest_groups_(
+      max_owner_regular_interest_groups_(
           blink::features::kInterestGroupStorageMaxGroupsPerOwner.Get()),
+      max_owner_negative_interest_groups_(
+          blink::features::kInterestGroupStorageMaxNegativeGroupsPerOwner
+              .Get()),
       max_owner_storage_size_(
           blink::features::kInterestGroupStorageMaxStoragePerOwner.Get()),
       max_ops_before_maintenance_(
@@ -3383,7 +3674,7 @@ bool InterestGroupStorage::InitializeSchema() {
   }
 
   if (new_db) {
-    return CreateV17Schema(*db_);
+    return CreateV19Schema(*db_);
   }
 
   const int db_version = meta_table.GetVersionNumber();
@@ -3459,7 +3750,16 @@ bool InterestGroupStorage::InitializeSchema() {
         if (!UpgradeV16SchemaToV17(*db_, meta_table)) {
           return false;
         }
-
+        ABSL_FALLTHROUGH_INTENDED;
+      case 17:
+        if (!UpgradeV17SchemaToV18(*db_, meta_table)) {
+          return false;
+        }
+        ABSL_FALLTHROUGH_INTENDED;
+      case 18:
+        if (!UpgradeV18SchemaToV19(*db_, meta_table)) {
+          return false;
+        }
         if (!meta_table.SetVersionNumber(kCurrentVersionNumber)) {
           return false;
         }
@@ -3517,6 +3817,25 @@ void InterestGroupStorage::LeaveInterestGroup(
   if (!DoRemoveInterestGroup(*db_, group_key)) {
     DLOG(ERROR) << "Could not leave interest group: " << db_->GetErrorMessage();
   }
+}
+
+std::vector<std::string> InterestGroupStorage::ClearOriginJoinedInterestGroups(
+    const url::Origin& owner,
+    const std::set<std::string>& interest_groups_to_keep,
+    const url::Origin& main_frame_origin) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!EnsureDBInitialized()) {
+    return std::vector<std::string>();
+  }
+
+  absl::optional<std::vector<std::string>> left_interest_groups =
+      DoClearOriginJoinedInterestGroups(*db_, owner, interest_groups_to_keep,
+                                        main_frame_origin);
+  if (!left_interest_groups) {
+    DLOG(ERROR) << "Could not leave interest group: " << db_->GetErrorMessage();
+    return std::vector<std::string>();
+  }
+  return std::move(left_interest_groups.value());
 }
 
 bool InterestGroupStorage::UpdateInterestGroup(
@@ -3810,7 +4129,10 @@ void InterestGroupStorage::PerformDBMaintenance() {
     DoPerformDatabaseMaintenance(
         *db_, last_maintenance_time_, /*max_owners=*/max_owners_,
         /*max_owner_storage_size=*/max_owner_storage_size_,
-        /*max_owner_interest_groups=*/max_owner_interest_groups_);
+        /*max_owner_regular_interest_groups=*/
+        max_owner_regular_interest_groups_,
+        /*max_owner_negative_interest_groups=*/
+        max_owner_negative_interest_groups_);
   }
 }
 

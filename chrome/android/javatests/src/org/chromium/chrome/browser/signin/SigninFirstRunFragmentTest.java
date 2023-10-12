@@ -22,7 +22,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -30,6 +29,10 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.ui.test.util.MockitoHelper.doCallback;
+import static org.chromium.ui.test.util.MockitoHelper.doRunnable;
+
+import android.accounts.Account;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
@@ -46,7 +49,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.AdditionalAnswers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -85,6 +87,7 @@ import org.chromium.chrome.browser.signin.services.FREMobileIdentityConsistencyF
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninChecker;
 import org.chromium.chrome.browser.signin.services.SigninManager;
+import org.chromium.chrome.browser.signin.services.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.ui.signin.fre.SigninFirstRunMediator.LoadPoint;
 import org.chromium.chrome.test.AutomotiveContextWrapperTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -95,7 +98,6 @@ import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.externalauth.ExternalAuthUtils;
-import org.chromium.components.policy.PolicyService;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
@@ -156,8 +158,6 @@ public class SigninFirstRunFragmentTest {
     private FirstRunPageDelegate mFirstRunPageDelegateMock;
     @Mock
     public FirstRunUtils.Natives mFirstRunUtils;
-    @Mock
-    public PolicyService mPolicyService;
     @Mock
     private PolicyLoadListener mPolicyLoadListenerMock;
     @Mock
@@ -376,11 +376,7 @@ public class SigninFirstRunFragmentTest {
                          Profile.getLastUsedRegularProfile()))
                     .thenReturn(mIdentityManagerMock);
         });
-        doAnswer(invocation -> {
-            SigninManager.SignInCallback callback = invocation.getArgument(2);
-            callback.onSignInAborted();
-            return null;
-        })
+        doCallback(/*index*/ 2, (SignInCallback callback) -> callback.onSignInAborted())
                 .when(mSigninManagerMock)
                 .signin(eq(AccountUtils.createAccountFromName(TEST_EMAIL1)), anyInt(), any());
         launchActivityWithFragment();
@@ -677,7 +673,7 @@ public class SigninFirstRunFragmentTest {
                 R.string.sync_promo_continue_as, GIVEN_NAME1);
         clickContinueButton(continueAsText);
 
-        verify(mSigninManagerMock, never()).signin(any(), anyInt(), any());
+        verify(mSigninManagerMock, never()).signin(any(Account.class), anyInt(), any());
         verify(mFirstRunPageDelegateMock).acceptTermsOfService(true);
         verify(mFirstRunPageDelegateMock).advanceToNextPage();
     }
@@ -1042,17 +1038,11 @@ public class SigninFirstRunFragmentTest {
     @MediumTest
     public void testFragmentWithTosDialogBehaviorPolicy() throws Exception {
         CallbackHelper callbackHelper = new CallbackHelper();
-        doAnswer(invocation -> {
-            callbackHelper.notifyCalled();
-            return null;
-        })
-                .when(mFirstRunPageDelegateMock)
-                .exitFirstRun();
+        doRunnable(callbackHelper::notifyCalled).when(mFirstRunPageDelegateMock).exitFirstRun();
         when(mFirstRunPageDelegateMock.isLaunchedFromCct()).thenReturn(true);
         mFakeEnterpriseInfo.initialize(new OwnedState(
                 /*isDeviceOwned=*/true, /*isProfileOwned=*/false));
-        doAnswer(AdditionalAnswers.answerVoid(
-                         (Callback<Boolean> callback) -> callback.onResult(true)))
+        doCallback((Callback<Boolean> callback) -> callback.onResult(true))
                 .when(mPolicyLoadListenerMock)
                 .onAvailable(any());
         when(mPolicyLoadListenerMock.get()).thenReturn(true);
@@ -1325,8 +1315,9 @@ public class SigninFirstRunFragmentTest {
         verify(mFirstRunPageDelegateMock).advanceToNextPage();
 
         // Sign-in isn't processed by SigninFirstRunFragment for child accounts.
-        verify(mSigninManagerMock, never()).signin(any(), anyInt(), any());
-        verify(mSigninManagerMock, never()).signinAndEnableSync(any(), anyInt(), any());
+        verify(mSigninManagerMock, never()).signin(any(Account.class), anyInt(), any());
+        verify(mSigninManagerMock, never())
+                .signinAndEnableSync(any(Account.class), anyInt(), any());
     }
 
     @SuppressWarnings("CheckReturnValue")

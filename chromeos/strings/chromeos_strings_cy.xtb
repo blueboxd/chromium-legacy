@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Dim ond 5 llwybr byr y gallwch chi eu haddasu. Dileu llwybr byr i ychwanegu un newydd.</translation>
 <translation id="1164939766849482256">Arbedwr sgrîn o wawr i dywyll</translation>
 <translation id="1167755866710282443">Agorwch y ddewislen i bersonoleiddio allweddi. Llusgwch y ddewislen i'w symud.</translation>
+<translation id="1174073918202301297">Ychwanegwyd llwybr byr</translation>
 <translation id="1175697296044146566">Rheolir y <ph name="DEVICE_TYPE" /> hwn gan <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Cymedrol <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1181037720776840403">Dileu</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">Newid y llun papur wal yn ddyddiol</translation>
 <translation id="1644574205037202324">Hanes</translation>
 <translation id="1651925268237749928">Rydych wedi dewis albwm a rennir. Gall pobl eraill ychwanegu neu newid lluniau. Mae'n bosib y bydd eich papur wal yn defnyddio lluniau nad ydynt yn yr albwm hwn ar hyn o bryd.</translation>
+<translation id="1661865805917886535">Mae'n bosib y byddwn yn anfon peth gwybodaeth system a chyfrif at Google. Rydym yn defnyddio'r wybodaeth hon i helpu i fynd i'r afael â materion technegol a gwella'n gwasanaethau, yn amodol ar ein Polisi Preifatrwydd (<ph name="PRIVACYPOLICYURL" />) a Thelerau Gwasanaeth (<ph name="TERMSOFSERVICEURL" />). I wneud cais am newidiadau cynnwys, ewch i Gymorth Cyfreithiol (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Wedi stopio - Allan o inc</translation>
 <translation id="1664796644829245314">Rhagolwg <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN integredig</translation>
@@ -117,6 +119,7 @@
 <translation id="1768959921651994223">Math o ddilysu</translation>
 <translation id="1776228893584526149">Tôn papur wal</translation>
 <translation id="1782199038061388045">cyfieithiad</translation>
+<translation id="1788485524395674731">Mae'r ap hwn yn cael ei reoli gan eich gweinyddwr</translation>
 <translation id="1792647875738159689">Wrthi'n canslo sganio</translation>
 <translation id="1801418420130173017">Analluogi'r thema dywyll</translation>
 <translation id="1807246157184219062">Golau</translation>
@@ -131,7 +134,6 @@
 <translation id="1871569928317311284">Diffodd y thema dywyll</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Diffodd y modd tywyll</translation>
-<translation id="1881188606372070653">Ewch i'r <ph name="BEGIN_LINK1" />dudalen Cymorth Cyfreithiol<ph name="END_LINK1" /> i ofyn i ni wneud newidiadau i'r cynnwys am resymau cyfreithiol. Mae'n bosib y byddwn yn anfon peth gwybodaeth system a chyfrif i Google. Byddwn yn defnyddio'r wybodaeth rydych yn ei rhoi i ni i helpu i fynd i'r afael â phroblemau technegol ac i wella ein gwasanaethau, yn amodol ar ein <ph name="BEGIN_LINK2" />Polisi Preifatrwydd <ph name="END_LINK2" /> a'n <ph name="BEGIN_LINK3" />Telerau Gwasanaeth<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">cyflymu cyfryngau</translation>
 <translation id="1887850431809612466">Adolygu caledwedd</translation>
 <translation id="1897672602657312171">Gallai llwybr byr heb allwedd chwilio wrthdaro â llwybr byr rhai apiau. Pwyswch y llwybr byr hwn eto i barhau i'w ddefnyddio, neu pwyswch lwybr byr newydd gan ddefnyddio'r allwedd chwilio.</translation>
@@ -212,6 +214,7 @@
 <translation id="2505327257735685095">Ail-lwytho'r llun papur wal presennol</translation>
 <translation id="2512979179176933762">dangos ffenestri</translation>
 <translation id="2513396635448525189">Llun mewngofnodi</translation>
+<translation id="2515109918609218604">Nid yw'r llwybr byr ar gael. Pwyswch lwybr byr newydd heb ddefnyddio bysellau swyddogaeth a chwilio.</translation>
 <translation id="2517472476991765520">Sganio</translation>
 <translation id="2521835766824839541">trac blaenorol</translation>
 <translation id="2526590354069164005">Bwrdd gwaith</translation>
@@ -265,6 +268,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Mae'r ddyfais wedi'i chysylltu.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Tynnu'r dudalen?}=1{Tynnu tudalen {PAGE_NUMBER}?}two{Tynnu tudalen {PAGE_NUMBER}?}few{Tynnu tudalen {PAGE_NUMBER}?}many{Tynnu tudalen {PAGE_NUMBER}?}other{Tynnu tudalen {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Ar gyfer <ph name="PRODUCT_NAME" /> yn unig</translation>
 <translation id="315116470104423982">Data symudol</translation>
 <translation id="3156846309055100599">Wrthi'n sganio tudalen <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">Mae porth caeth wedi'i ganfod</translation>
@@ -622,6 +626,7 @@
 <translation id="584953448295717128">Mae APN yn cael ei ganfod yn awtomatig.</translation>
 <translation id="5849570051105887917">Cod darparwr cartref</translation>
 <translation id="5859603669299126575">Albwm oriel gelf</translation>
+<translation id="5859969039821714932">Nid yw'r llwybr byr ar gael. Pwyswch lwybr byr newydd heb <ph name="KEY" />.</translation>
 <translation id="5860033963881614850">Diffodd</translation>
 <translation id="5860491529813859533">Troi ymlaen</translation>
 <translation id="5876385649737594562">Trowch ymlaen i ddewis opsiynau</translation>
@@ -687,6 +692,7 @@
 <translation id="6318437367327684789">am byth</translation>
 <translation id="6319207335391420837">Diweddaru'r gadarnwedd ar <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Troi'r arbedydd sgrîn ymlaen</translation>
+<translation id="6324916366299863871">Golygu'r llwybr byr</translation>
 <translation id="6325525973963619867">Wedi methu</translation>
 <translation id="6331191339300272798">Thema dywyll awtomatig</translation>
 <translation id="6340526405444716530">Personoleiddio</translation>
@@ -864,6 +870,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">golau bysellfwrdd</translation>
+<translation id="7730077286107534951">Mae'n bosib y byddwn yn anfon peth gwybodaeth system a chyfrif at Google. Rydym yn defnyddio'r wybodaeth hon i helpu i fynd i'r afael â materion technegol a gwella ein gwasanaethau, yn amodol ar ein <ph name="BEGIN_LINK2" />Polisi Preifatrwydd<ph name="END_LINK2" /> a'n <ph name="BEGIN_LINK3" />Telerau Gwasanaeth<ph name="END_LINK3" />. I ofyn am newidiadau cynnwys, ewch i <ph name="BEGIN_LINK1" />Gymorth Cyfreithiol<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Cyfrif cylch gwefru</translation>
 <translation id="7747039790905080783">Allwedd a rannwyd ymlaen llaw</translation>
 <translation id="7752963721013053477">O'r wawr i'r tywyllwch - unigryw</translation>
@@ -900,6 +907,7 @@
 <translation id="7978412674231730200">Allwedd breifat</translation>
 <translation id="7994702968232966508">Dull EAP</translation>
 <translation id="8004582292198964060">Porwr</translation>
+<translation id="8017679124341497925">Mae'r llwybr byr wedi'i newid</translation>
 <translation id="802154636333426148">Wedi methu â lawrlwytho</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Galluogi'r modd lliw awtomatig</translation>

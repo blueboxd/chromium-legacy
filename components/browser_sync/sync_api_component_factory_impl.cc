@@ -30,6 +30,7 @@
 #include "components/history/core/browser/sync/history_delete_directives_model_type_controller.h"
 #include "components/history/core/browser/sync/history_model_type_controller.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/sharing/incoming_password_sharing_invitation_model_type_controller.h"
 #include "components/password_manager/core/browser/sharing/password_receiver_service.h"
 #include "components/password_manager/core/browser/sharing/password_sender_service.h"
 #include "components/password_manager/core/browser/sync/credential_model_type_controller.h"
@@ -57,7 +58,6 @@
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "components/sync_sessions/proxy_tabs_data_type_controller.h"
 #include "components/sync_sessions/session_model_type_controller.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_user_events/user_event_model_type_controller.h"
@@ -363,14 +363,6 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
             sync_client_->GetHistoryService(), sync_client_->GetPrefService()));
   }
 
-  if (!disabled_types.Has(syncer::PROXY_TABS)) {
-    controllers.push_back(
-        std::make_unique<sync_sessions::ProxyTabsDataTypeController>(
-            sync_service, sync_client_->GetPrefService(),
-            base::BindRepeating(
-                &sync_sessions::SessionSyncService::ProxyTabsStateChanged,
-                base::Unretained(sync_client_->GetSessionSyncService()))));
-  }
   if (!disabled_types.Has(syncer::SESSIONS)) {
     syncer::ModelTypeControllerDelegate* delegate =
         sync_client_->GetSessionSyncService()->GetControllerDelegate().get();
@@ -405,16 +397,11 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
       // Couple password sharing invitations with password data type.
       if (!disabled_types.Has(syncer::INCOMING_PASSWORD_SHARING_INVITATION) &&
           sync_client_->GetPasswordReceiverService()) {
-        syncer::ModelTypeControllerDelegate* delegate =
-            sync_client_->GetPasswordReceiverService()
-                ->GetControllerDelegate()
-                .get();
-        controllers.push_back(std::make_unique<syncer::ModelTypeController>(
-            syncer::INCOMING_PASSWORD_SHARING_INVITATION,
-            std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-                delegate),
-            std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-                delegate)));
+        controllers.push_back(
+            std::make_unique<
+                password_manager::
+                    IncomingPasswordSharingInvitationModelTypeController>(
+                sync_service, sync_client_->GetPasswordReceiverService()));
       }
 
       if (!disabled_types.Has(syncer::OUTGOING_PASSWORD_SHARING_INVITATION) &&
@@ -533,7 +520,7 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
         CreateForwardingControllerDelegate(syncer::USER_CONSENTS)));
   }
 
-#if !BUILDFLAG(IS_ANDROID) || !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   if (base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials) &&
       !disabled_types.Has(syncer::WEBAUTHN_CREDENTIAL)) {
     controllers.push_back(

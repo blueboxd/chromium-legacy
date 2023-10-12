@@ -7,18 +7,30 @@
 #include <memory>
 
 #include "base/containers/contains.h"
+#include "chrome/browser/ui/tabs/organization/request_factory.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_session.h"
 
-TabOrganizationService::TabOrganizationService() = default;
+TabOrganizationService::TabOrganizationService(
+    content::BrowserContext* browser_context)
+    : trigger_observer_(
+          base::BindRepeating(&TabOrganizationService::OnTriggerOccured,
+                              base::Unretained(this)),
+          browser_context) {}
 TabOrganizationService::~TabOrganizationService() = default;
 
-void TabOrganizationService::OnTriggerOccured(Browser* browser) {
+void TabOrganizationService::OnTriggerOccured(const Browser* browser) {
   if (base::Contains(browser_session_map_, browser)) {
-    return;
+    // If the organizations havent been fully accepted or rejected, then it does
+    // not need to be reset.
+    if (!GetSessionForBrowser(browser)->IsComplete()) {
+      return;
+    } else {
+      browser_session_map_.erase(browser);
+    }
   }
 
-  browser_session_map_.emplace(browser,
-                               std::make_unique<TabOrganizationSession>());
+  browser_session_map_.emplace(
+      browser, TabOrganizationSession::CreateSessionForBrowser(browser));
 
   for (TabOrganizationObserver& observer : observers_) {
     observer.OnToggleActionUIState(browser, true);
@@ -26,7 +38,24 @@ void TabOrganizationService::OnTriggerOccured(Browser* browser) {
 }
 
 const TabOrganizationSession* TabOrganizationService::GetSessionForBrowser(
-    Browser* browser) {
+    const Browser* browser) const {
   CHECK(base::Contains(browser_session_map_, browser));
   return browser_session_map_.at(browser).get();
+}
+
+TabOrganizationSession* TabOrganizationService::GetSessionForBrowser(
+    const Browser* browser) {
+  CHECK(base::Contains(browser_session_map_, browser));
+  return browser_session_map_.at(browser).get();
+}
+
+TabOrganizationSession* TabOrganizationService::CreateSessionForBrowser(
+    const Browser* browser) {
+  CHECK(!base::Contains(browser_session_map_, browser));
+
+  std::pair<BrowserSessionMap::iterator, bool> pair =
+      browser_session_map_.emplace(
+          browser, TabOrganizationSession::CreateSessionForBrowser(browser));
+
+  return pair.first->second.get();
 }

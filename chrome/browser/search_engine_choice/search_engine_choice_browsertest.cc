@@ -22,6 +22,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
@@ -44,6 +46,7 @@
 #include "components/signin/public/base/signin_switches.h"
 #include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -206,6 +209,14 @@ class SearchEngineChoiceBrowserTest : public InProcessBrowserTest {
     histogram_tester_.ExpectBucketCount(
         search_engines::kSearchEngineChoiceScreenEventsHistogram,
         search_engines::SearchEngineChoiceScreenEvents::kDefaultWasSet, 1);
+  }
+
+  void CheckNavigationConditionRecorded(
+      search_engines::SearchEngineChoiceScreenConditions condition,
+      int count) {
+    histogram_tester_.ExpectBucketCount(
+        search_engines::kSearchEngineChoiceScreenNavigationConditionsHistogram,
+        condition, count);
   }
 
  private:
@@ -431,6 +442,9 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
 
   EXPECT_TRUE(service->IsShowingDialog(browser()));
 
+  CheckNavigationConditionRecorded(
+      search_engines::SearchEngineChoiceScreenConditions::kEligible, 1);
+
   // Set the pref and simulate a dialog closing event.
   service->NotifyChoiceMade(/*prepopulate_id=*/1);
   EXPECT_FALSE(service->IsShowingDialog(browser()));
@@ -460,8 +474,12 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
 }
 #endif
 
+// This test is disabled because we currently don't want to show the dialog for
+// users who have custom search engines.
+// TODO(b/302687046): Modify the test based on the decision towards custom
+// search engines.
 IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
-                       ChooseCustomDefaultSearchProvider) {
+                       DISABLED_ChooseCustomDefaultSearchProvider) {
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(browser()->profile());
   SetUserSelectedDefaultSearchProvider(template_url_service);
@@ -472,7 +490,7 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
 
   // Navigate to a URL to display the dialog.
   ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUIVersionURL),
+      browser(), GURL(chrome::kChromeUINewTabPageURL),
       WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
 
@@ -504,10 +522,14 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
 
   EXPECT_FALSE(search_engine_choice_service->IsShowingDialog(browser()));
+
+  CheckNavigationConditionRecorded(
+      search_engines::SearchEngineChoiceScreenConditions::kExtensionContolled,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
-                       DialogDoesNotShowForWebApp) {
+                       DialogDoesNotShownForWebApp) {
   Profile* profile = browser()->profile();
   auto* service = static_cast<MockSearchEngineChoiceService*>(
       SearchEngineChoiceServiceFactory::GetForProfile(profile));
@@ -524,4 +546,44 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
       browser(), start_url, WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
   EXPECT_TRUE(service->IsShowingDialog(browser()));
+}
+
+IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
+                       DialogNotShownOverSpecificBrowserTypes) {
+  Profile* profile = browser()->profile();
+  auto* search_engine_choice_service =
+      static_cast<MockSearchEngineChoiceService*>(
+          SearchEngineChoiceServiceFactory::GetForProfile(profile));
+
+  Browser* app_browser = Browser::Create(Browser::CreateParams::CreateForApp(
+      "Test", false /* trusted_source */, gfx::Rect(), profile, true));
+  chrome::AddTabAt(app_browser, GURL(), -1, true);
+  EXPECT_TRUE(app_browser->is_type_app());
+
+  NavigateParams params(app_browser, GURL("http://www.google.com/"),
+                        ui::PAGE_TRANSITION_LINK);
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  params.disposition = WindowOpenDisposition::NEW_POPUP;
+  Navigate(&params);
+  // Navigate() should have opened a new `TYPE_APP_POPUP` window.
+  Browser* app_popup_browser = params.browser;
+  EXPECT_TRUE(app_popup_browser->is_type_app_popup());
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUINewTabPageURL),
+      WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
+
+  // Dialog shown over normal browser.
+  EXPECT_TRUE(search_engine_choice_service->IsShowingDialog(browser()));
+  // Dialog not shown over browser of type `TYPE_APP_POPUP`.
+  EXPECT_FALSE(
+      search_engine_choice_service->IsShowingDialog(app_popup_browser));
+  // Dialog not shown over browser of type `TYPE_APP`
+  EXPECT_FALSE(search_engine_choice_service->IsShowingDialog(app_browser));
+
+  CheckNavigationConditionRecorded(
+      search_engines::SearchEngineChoiceScreenConditions::
+          kUnsupportedBrowserType,
+      2);
 }

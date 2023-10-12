@@ -10,7 +10,6 @@
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
 #include "ash/public/cpp/rounded_corner_utils.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_controller.h"
@@ -78,6 +77,12 @@
 namespace exo {
 namespace {
 
+bool IsRadiiUniform(const gfx::RoundedCornersF& radii) {
+  return radii.upper_left() == radii.upper_right() &&
+         radii.lower_left() == radii.lower_right() &&
+         radii.upper_left() == radii.lower_left();
+}
+
 // The accelerator keys used to close ShellSurfaces.
 const struct {
   ui::KeyboardCode keycode;
@@ -143,29 +148,57 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
 
   // Overridden from views::NonClientFrameView:
   void UpdateWindowRoundedCorners() override {
-    if (!GetFrameEnabled()) {
+    if (!chromeos::features::IsRoundedWindowsEnabled() && GetFrameEnabled()) {
+      header_view_->SetHeaderCornerRadius(
+          chromeos::GetFrameCornerRadius(frame()->GetNativeWindow()));
+    }
+
+    if (!GetWidget()) {
       return;
     }
 
-    if (!chromeos::features::IsRoundedWindowsEnabled()) {
-      header_view_->SetHeaderCornerRadius(
-          chromeos::GetFrameCornerRadius(frame()->GetNativeWindow()));
+    // TODO(b/302034956): Use `ApplyRoundedCornersToSurfaceTree()` to round pip
+    // window as well.
+    // Round a pip window. Pip windows are rounded by applying rounded corner
+    // to host window using ui::Layer API.
+    const ash::WindowState* window_state =
+        ash::WindowState::Get(GetWidget()->GetNativeWindow());
+
+    // When un-pipped (window state changed from pip), we must undo the
+    // rounded corners from the host_window.
+    const int pip_corner_radius =
+        window_state->IsPip() ? chromeos::kPipRoundedCornerRadius : 0;
+    const gfx::RoundedCornersF pip_radii(pip_corner_radius);
+
+    ui::Layer* layer = shell_surface_->host_window()->layer();
+    if (layer->rounded_corner_radii() != pip_radii) {
+      layer->SetRoundedCornerRadius(pip_radii);
+      layer->SetIsFastRoundedCorner(/*enable=*/!pip_radii.IsEmpty());
+    }
+
+    // If we have a pip window, ignore `window_radii`.
+    if (window_state->IsPip()) {
       return;
     }
 
     absl::optional<gfx::RoundedCornersF> window_radii =
         shell_surface_->window_corners_radii();
 
-    if (!window_radii) {
+    if (!chromeos::features::IsRoundedWindowsEnabled() || !window_radii) {
       return;
     }
 
-    // TODO(crbug.com/1415486): Support variable radius corner for header_view.
-    DCHECK_EQ(window_radii->upper_left(), window_radii->upper_right());
-    header_view_->SetHeaderCornerRadius(window_radii->upper_left());
+    // TODO(crbug.com/1415486): Support variable window radii.
+    DCHECK(IsRadiiUniform(window_radii.value()));
+
+    if (GetFrameEnabled()) {
+      header_view_->SetHeaderCornerRadius(window_radii->upper_left());
+    }
 
     const gfx::RoundedCornersF root_surface_radii = {
-        0, 0, window_radii->lower_right(), window_radii->lower_left()};
+        GetFrameEnabled() ? 0 : window_radii->upper_left(),
+        GetFrameEnabled() ? 0 : window_radii->upper_right(),
+        window_radii->lower_right(), window_radii->lower_left()};
 
     Surface* root_surface = shell_surface_->root_surface();
     DCHECK(root_surface);
@@ -184,8 +217,9 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
     return client_bounds;
   }
   int NonClientHitTest(const gfx::Point& point) override {
-    if (GetFrameEnabled() || shell_surface_->server_side_resize())
+    if (GetFrameEnabled() || shell_surface_->server_side_resize()) {
       return ash::NonClientFrameViewAsh::NonClientHitTest(point);
+    }
     return GetWidget()->client_view()->NonClientHitTest(point);
   }
   void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {
@@ -390,6 +424,10 @@ ShellSurfaceBase::~ShellSurfaceBase() {
   surface_destroyed_callback_.Reset();
 
   if (widget_) {
+    if (has_grab_) {
+      widget_->ReleaseCapture();
+      WMHelper::GetInstance()->GetCaptureClient()->RemoveObserver(this);
+    }
     widget_->GetNativeWindow()->RemoveObserver(this);
     widget_->RemoveObserver(this);
     // Remove transient children which are shell surfaces so they are not
@@ -403,8 +441,6 @@ ShellSurfaceBase::~ShellSurfaceBase() {
     parent_->RemoveObserver(this);
   if (root_surface())
     root_surface()->RemoveSurfaceObserver(this);
-  if (has_grab_)
-    WMHelper::GetInstance()->GetCaptureClient()->RemoveObserver(this);
   WMHelper::GetInstance()->RemoveTooltipObserver(this);
   CHECK(!views::WidgetObserver::IsInObserverList());
 }
@@ -1109,8 +1145,9 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
   if (widget_->non_client_view()) {
     CustomFrameView* frame_view =
         static_cast<CustomFrameView*>(widget_->non_client_view()->frame_view());
-    if (frame_view->GetFrameEnabled() == frame_enabled())
+    if (frame_view->GetFrameEnabled() == frame_enabled()) {
       return;
+    }
 
     frame_view->SetFrameEnabled(frame_enabled());
     frame_view->SetShouldPaintHeader(frame_enabled());
@@ -1432,7 +1469,7 @@ void ShellSurfaceBase::OnWindowDestroying(aura::Window* window) {
   if (window == parent_)
     SetParentInternal(nullptr);
   window->RemoveObserver(this);
-  if (widget_ && window == widget_->GetNativeWindow() && root_surface()) {
+  if (IsShellSurfaceWindow(window) && root_surface()) {
     root_surface()->ThrottleFrameRate(false);
   }
 }
@@ -1440,19 +1477,21 @@ void ShellSurfaceBase::OnWindowDestroying(aura::Window* window) {
 void ShellSurfaceBase::OnWindowPropertyChanged(aura::Window* window,
                                                const void* key,
                                                intptr_t old_value) {
-  if (IsShellSurfaceWindow(window)) {
-    if (key == aura::client::kSkipImeProcessing) {
-      SetSkipImeProcessingToDescendentSurfaces(
-          window, window->GetProperty(aura::client::kSkipImeProcessing));
-    } else if (key == chromeos::kFrameRestoreLookKey) {
-      root_surface()->SetFrameLocked(
-          window->GetProperty(chromeos::kFrameRestoreLookKey));
-    } else if (key == aura::client::kWindowWorkspaceKey) {
-      root_surface()->OnDeskChanged(GetWindowDeskStateChanged(window));
-    } else if (key == ash::kFrameRateThrottleKey) {
-      root_surface()->ThrottleFrameRate(
-          window->GetProperty(ash::kFrameRateThrottleKey));
-    }
+  if (!IsShellSurfaceWindow(window) || !root_surface()) {
+    return;
+  }
+
+  if (key == aura::client::kSkipImeProcessing) {
+    SetSkipImeProcessingToDescendentSurfaces(
+        window, window->GetProperty(aura::client::kSkipImeProcessing));
+  } else if (key == chromeos::kFrameRestoreLookKey) {
+    root_surface()->SetFrameLocked(
+        window->GetProperty(chromeos::kFrameRestoreLookKey));
+  } else if (key == aura::client::kWindowWorkspaceKey) {
+    root_surface()->OnDeskChanged(GetWindowDeskStateChanged(window));
+  } else if (key == ash::kFrameRateThrottleKey) {
+    root_surface()->ThrottleFrameRate(
+        window->GetProperty(ash::kFrameRateThrottleKey));
   }
 }
 
@@ -1465,7 +1504,7 @@ void ShellSurfaceBase::OnWindowAddedToRootWindow(aura::Window* window) {
 
 void ShellSurfaceBase::OnWindowParentChanged(aura::Window* window,
                                              aura::Window* parent) {
-  if (!IsShellSurfaceWindow(window)) {
+  if (!IsShellSurfaceWindow(window) || !root_surface()) {
     return;
   }
   root_surface()->OnDeskChanged(GetWindowDeskStateChanged(window));
@@ -1543,6 +1582,20 @@ void ShellSurfaceBase::SetRootSurface(Surface* root_surface) {
   if (widget_) {
     SetShellRootSurface(widget_->GetNativeWindow(), root_surface);
   }
+}
+
+float ShellSurfaceBase::GetPendingScaleFactor() const {
+  if (!host_window()->parent() && !HasDoubleBufferedPendingScaleFactor()) {
+    // Before the initial commit, `host_window()` has not been a descendant of
+    // the root window yet so we need to fetch the scale factor directly from
+    // the pending target display.
+    display::Display display;
+    if (display::Screen::GetScreen()->GetDisplayWithDisplayId(
+            pending_display_id_, &display)) {
+      return display.device_scale_factor();
+    }
+  }
+  return SurfaceTreeHost::GetPendingScaleFactor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1919,21 +1972,36 @@ void ShellSurfaceBase::UpdateShadow() {
     if (!CanActivate())
       shadow->SetElevation(wm::kShadowElevationMenuOrTooltip);
 
-    UpdateCornerRadius();
+    UpdateShadowRoundedCorners();
   }
 }
 
-void ShellSurfaceBase::UpdateCornerRadius() {
-  if (!widget_)
+void ShellSurfaceBase::UpdateShadowRoundedCorners() {
+  if (!widget_) {
     return;
-
-  ash::WindowState* window_state =
-      ash::WindowState::Get(widget_->GetNativeWindow());
-  if (window_state) {
-    ash::SetCornerRadius(
-        window_state->window(), host_window()->layer(),
-        window_state->IsPip() ? chromeos::kPipRoundedCornerRadius : 0);
   }
+
+  aura::Window* window = widget_->GetNativeWindow();
+  ui::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
+
+  if (!shadow) {
+    return;
+  }
+
+  int shadow_radius = 0;
+
+  const ash::WindowState* window_state = ash::WindowState::Get(window);
+  if (window_state && window_state->IsPip()) {
+    shadow_radius = chromeos::kPipRoundedCornerRadius;
+  } else if (chromeos::features::IsRoundedWindowsEnabled() &&
+             window_corners_radii_dp_) {
+    // TODO(crbug.com/1415486): Support shadow with variable radius corners.
+    // We expect to have windows with same rounded corners.
+    DCHECK(IsRadiiUniform(window_corners_radii_dp_.value()));
+    shadow_radius = window_corners_radii_dp_->upper_left();
+  }
+
+  shadow->SetRoundedCornerRadius(shadow_radius);
 }
 
 void ShellSurfaceBase::UpdateFrameType() {
@@ -1942,7 +2010,7 @@ void ShellSurfaceBase::UpdateFrameType() {
 }
 
 void ShellSurfaceBase::UpdateWindowRoundedCorners() {
-  // If non_client_view is not avaliable, it means that widget_ is neither a
+  // If non_client_view is not available, it means that widget_ is neither a
   // normal window or a bubble. Therefore it should not have any decorations
   // including a rounded window.
   if (!widget_ || !widget_->non_client_view()) {
@@ -2111,12 +2179,6 @@ void ShellSurfaceBase::CommitWidget() {
   UpdateFrameType();
   UpdateWidgetBounds();
   UpdateHostWindowSizeAndRootSurfaceOrigin();
-  gfx::Rect bounds = geometry_;
-  if (!bounds.IsEmpty() && !widget_->GetNativeWindow()->GetProperty(
-                               aura::client::kUseWindowBoundsForShadow)) {
-    SetBoundsForShadows(absl::make_optional(bounds));
-  }
-  UpdateShadow();
 
   // System modal container is used by clients to implement overlay
   // windows using a single ShellSurface instance.  If hit-test
@@ -2144,7 +2206,17 @@ void ShellSurfaceBase::CommitWidget() {
 
   UpdateHostWindowOrigin();
   UpdateShape();
+
+  gfx::Rect bounds = geometry_;
+  if (!bounds.IsEmpty() && !widget_->GetNativeWindow()->GetProperty(
+                               aura::client::kUseWindowBoundsForShadow)) {
+    SetBoundsForShadows(absl::make_optional(bounds));
+  }
+
+  // The calling order matters. Updated window radius is need to correctly
+  // update the radius of the shadow.
   UpdateWindowRoundedCorners();
+  UpdateShadow();
 
   // Don't show yet if the shell surface doesn't have content or is minimized
   // while waiting for content.

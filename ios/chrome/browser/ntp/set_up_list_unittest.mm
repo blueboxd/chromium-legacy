@@ -5,12 +5,14 @@
 #import "ios/chrome/browser/ntp/set_up_list.h"
 
 #import "base/test/gtest_util.h"
+#import "base/test/scoped_feature_list.h"
 #import "components/password_manager/core/browser/password_manager_util.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/sync/base/pref_names.h"
 #import "components/sync_preferences/testing_pref_service_syncable.h"
-#import "ios/chrome/browser/default_browser/utils.h"
-#import "ios/chrome/browser/default_browser/utils_test_support.h"
+#import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/default_browser/model/utils_test_support.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/ntp/set_up_list_delegate.h"
 #import "ios/chrome/browser/ntp/set_up_list_item.h"
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
@@ -24,7 +26,7 @@
 #import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/signin/fake_system_identity_manager.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/fakes/fake_browser_state.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -54,6 +56,7 @@ class SetUpListTest : public PlatformTest {
 
   // Builds a new instance of SetUpList.
   void BuildSetUpList() {
+    [set_up_list_ disconnect];
     set_up_list_ =
         [SetUpList buildFromPrefs:prefs_
                        localState:local_state_.Get()
@@ -121,8 +124,18 @@ class SetUpListTest : public PlatformTest {
     set_up_list_prefs::SetItemState(local_state_.Get(), type, state);
   }
 
+  NSUInteger GetItemIndex(SetUpListItemType type) {
+    for (NSUInteger i = 0; i < [set_up_list_.items count]; i++) {
+      if (set_up_list_.items[i].type == type) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
  protected:
   web::WebTaskEnvironment task_environment_;
+  base::test::ScopedFeatureList feature_list_;
   PrefService* prefs_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
@@ -270,4 +283,14 @@ TEST_F(SetUpListTest, Disable) {
 
   BuildSetUpList();
   EXPECT_EQ(set_up_list_, nil);
+}
+
+// Tests that the Set Up List item order is correct with kMagicStack enabled.
+TEST_F(SetUpListTest, MagicStackItemOrder) {
+  feature_list_.InitWithFeatures({kMagicStack}, {});
+  BuildSetUpList();
+
+  EXPECT_EQ(GetItemIndex(SetUpListItemType::kDefaultBrowser), 0u);
+  EXPECT_EQ(GetItemIndex(SetUpListItemType::kAutofill), 1u);
+  EXPECT_EQ(GetItemIndex(SetUpListItemType::kSignInSync), 2u);
 }

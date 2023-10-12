@@ -20,7 +20,7 @@ source_set("safety_check") {
   ]
   public_deps = [
     "//base",
-    "//ios/chrome/browser/safety_check:constants",
+    "//ios/chrome/browser/safety_check/model:constants",
     "//third_party/abseil-cpp:absl",
   ]
   deps = [
@@ -31,7 +31,7 @@ source_set("safety_check") {
     "//components/version_info",
     "//components/version_info",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/passwords:password_checkup_utils",
+    "//ios/chrome/browser/passwords/model:password_checkup_utils",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/ui/symbols",
     "//ios/chrome/browser/shared/ui/util",
@@ -54,4 +54,17 @@ source_set("constants") {
     "constants.mm",
   ]
   frameworks = [ "Foundation.framework" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "safety_check_view_unittest.mm" ]
+  deps = [
+    ":constants",
+    ":safety_check",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/test:test_support",
+    "//ui/base:test_support",
+  ]
 }

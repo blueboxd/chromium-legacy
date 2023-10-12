@@ -21,7 +21,7 @@
       label="$i18n{cameraToggleTitle}"
       sub-label="$i18n{cameraToggleFallbackSubtext}"
       deep-link-focus-id$="[[Setting.kCameraOnOff]]"
-      disabled="[[isCameraListEmpty_]]"
+      disabled="[[shouldDisableCameraToggle_]]"
       on-change="onCameraToggleChanged_">
   </settings-toggle-button>
   </template>
@@ -32,7 +32,7 @@
       label="$i18n{cameraToggleTitle}"
       sub-label="$i18n{cameraToggleSubtext}"
       deep-link-focus-id$="[[Setting.kCameraOnOff]]"
-      disabled="[[isCameraListEmpty_]]"
+      disabled="[[shouldDisableCameraToggle_]]"
       on-change="onCameraToggleChanged_">
   </settings-toggle-button>
   </template>
@@ -168,9 +168,8 @@
   </settings-metrics-consent-toggle-button>
 </if>
 
-<settings-toggle-button
+<settings-toggle-button id="contentRecommendationsToggle"
     class="hr"
-    id="suggested-content"
     pref="{{prefs.settings.suggested_content_enabled}}"
     label="$i18n{enableSuggestedContent}"
     sub-label="$i18n{enableSuggestedContentDesc}"

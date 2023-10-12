@@ -41,3 +41,8 @@ NSString* const kWidgetPromoDisabledImageName =
 NSString* const kWidgetPromoId = @"WidgetPromoId";
 
 NSString* const kWidgetPromoCloseButtonId = @"WidgetPromoCloseButtonId";
+
+NSString* const kWidgetPromoImageID = @"WidgetPromoImageID";
+
+const char kPasswordManagerWidgetPromoActionHistogram[] =
+    "IOS.PasswordManager.WidgetPromo.Action";

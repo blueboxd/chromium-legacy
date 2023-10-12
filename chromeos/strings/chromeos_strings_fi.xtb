@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Voit valita vain viisi pikanäppäintä. Poista pikanäppäin, jotta voit lisätä uuden.</translation>
 <translation id="1164939766849482256">Aamusta iltaan ‑näytönsäästäjä</translation>
 <translation id="1167755866710282443">Avaa valikko muokataksesi avaimia. Siirrä vetämällä valikkoa.</translation>
+<translation id="1174073918202301297">Pikanäppäin lisätty</translation>
 <translation id="1175697296044146566">Laitetta (<ph name="DEVICE_TYPE" />) ylläpitää <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Keskitasoa (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Poista</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">Vaihda taustakuva päivittäin</translation>
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1651925268237749928">Olet valinnut jaetun albumin. Muut voivat lisätä tai muuttaa kuvia. Taustakuvaan saatetaan käyttää kuvia, jotka eivät tällä hetkellä sisälly tähän albumiin.</translation>
+<translation id="1661865805917886535">Joitakin tili- ja järjestelmätietoja voidaan lähettää Googlelle. Tietojen avulla ratkomme teknisiä ongelmia ja kehitämme palveluitamme tietosuojakäytännön (<ph name="PRIVACYPOLICYURL" />) ja käyttöehtojen (<ph name="TERMSOFSERVICEURL" />) mukaisesti. Jos haluat pyytää sisältöön muutoksia, siirry lakiasioiden ohjesivulle (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Pysähtynyt – Muste loppu</translation>
 <translation id="1664796644829245314">Esikatsele: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Sisäänrakennettu VPN</translation>
@@ -131,7 +133,6 @@
 <translation id="1871569928317311284">Laita tumma teema pois päältä</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Laita tumma tila pois päältä</translation>
-<translation id="1881188606372070653">Voit pyytää juridisiin syihin perustuvia sisältömuutoksia <ph name="BEGIN_LINK1" />Oikeudellinen apu ‑sivulla<ph name="END_LINK1" />. Joitakin tili- ja järjestelmätietoja voidaan lähettää Googlelle. Käytämme ilmoittamiasi tietoja teknisten ongelmien ratkaisemiseen ja palvelujemme kehittämiseen <ph name="BEGIN_LINK2" />tietosuojakäytäntömme<ph name="END_LINK2" /> ja <ph name="BEGIN_LINK3" />käyttöehtojemme<ph name="END_LINK3" /> mukaisesti.</translation>
 <translation id="1885577615937958993">kelaa mediaa eteenpäin</translation>
 <translation id="1887850431809612466">Laitteistoversio</translation>
 <translation id="1897672602657312171">Pikakomento ilman hakuanäppäintä voi olla ristiriidassa toisen sovelluksen pikakomennon kanssa. Jatka pikakomennon käyttöä painamalla sitä uudelleen tai paina uutta pikakomentoa hakuavaimella.</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">Keskusyksikkö</translation>
 <translation id="3124039320086536031">Laite on yhdistetty.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Poistetaanko sivu?}=1{Poistetaanko sivu {PAGE_NUMBER}?}other{Poistetaanko sivu {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Vain käyttäjille, joilla on <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Mobiilidata</translation>
 <translation id="3156846309055100599">Skannataan sivu <ph name="PAGE_NUMBER" />…</translation>
 <translation id="315738237743207937">Captive portal havaittu</translation>
@@ -687,6 +689,7 @@
 <translation id="6318437367327684789">ikuisesti</translation>
 <translation id="6319207335391420837">Päivitä laiteohjelmisto: <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Laita näytönsäästäjä päälle</translation>
+<translation id="6324916366299863871">Muokkaa pikanäppäintä</translation>
 <translation id="6325525973963619867">Epäonnistui</translation>
 <translation id="6331191339300272798">Automaattinen tumma teema</translation>
 <translation id="6340526405444716530">Personointi</translation>
@@ -826,6 +829,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Sisäänrakennettu kosketuslevy</translation>
 <translation id="7397270852490618635">Laita vaalea teema pois päältä</translation>
+<translation id="7401543881546089382">Poista pikakuvake</translation>
 <translation id="741244894080940828">muunnos</translation>
 <translation id="7415801143053185905">Erittäin suuri HTTP-viive</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Järjestelmänvalvoja on määrittänyt, että <ph name="APP_NAME_1" /> käynnistyy automaattisesti aina, kun kirjaudut sisään.}=2{Järjestelmänvalvoja on määrittänyt, että <ph name="APP_NAME_1" /> ja <ph name="APP_NAME_2" /> käynnistyvät automaattisesti aina, kun kirjaudut sisään.}=3{Järjestelmänvalvoja on määrittänyt, että <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> ja <ph name="APP_NAME_3" /> käynnistyvät automaattisesti aina, kun kirjaudut sisään.}other{Järjestelmänvalvoja on määrittänyt, että <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> ja # muuta sovellusta käynnistyy automaattisesti aina, kun kirjaudut sisään.}}</translation>
@@ -864,6 +868,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">näppäimistön valo</translation>
+<translation id="7730077286107534951">Joitakin tili- ja järjestelmätietoja voidaan lähettää Googlelle. Tietojen avulla ratkomme teknisiä ongelmia ja kehitämme palveluitamme <ph name="BEGIN_LINK2" />tietosuojakäytännön<ph name="END_LINK2" /> ja <ph name="BEGIN_LINK3" />käyttöehtojen<ph name="END_LINK3" /> mukaisesti. Jos haluat pyytää sisältöön muutoksia, siirry <ph name="BEGIN_LINK1" />lakiasioiden ohjesivulle<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Syklien määrä</translation>
 <translation id="7747039790905080783">Esijaettu avain</translation>
 <translation id="7752963721013053477">Aamusta iltaan – eksklusiivinen</translation>
@@ -900,6 +905,7 @@
 <translation id="7978412674231730200">Yksityinen avain</translation>
 <translation id="7994702968232966508">EAP-tapa</translation>
 <translation id="8004582292198964060">Selain</translation>
+<translation id="8017679124341497925">Pikanäppäintä muokattu</translation>
 <translation id="802154636333426148">Lataus epäonnistui.</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Ota automaattinen väritila käyttöön</translation>

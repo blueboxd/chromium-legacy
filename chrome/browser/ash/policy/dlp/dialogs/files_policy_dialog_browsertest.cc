@@ -6,6 +6,7 @@
 
 #include <tuple>
 
+#include "base/files/file_path.h"
 #include "base/functional/callback_helpers.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/policy/dlp/dialogs/files_policy_error_dialog.h"
 #include "chrome/browser/ash/policy/dlp/dialogs/files_policy_warn_dialog.h"
+#include "chrome/browser/ash/policy/dlp/files_policy_string_util.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
@@ -28,6 +30,7 @@
 #include "components/enterprise/data_controls/component.h"
 #include "content/public/test/browser_test.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/controls/label.h"
 
 namespace policy {
 class FilesPolicyDialogBrowserTest
@@ -82,12 +85,12 @@ class WarningDialogBrowserTest : public FilesPolicyDialogBrowserTest {
   void SetUpOnMainThread() override {
     FilesPolicyDialogBrowserTest::SetUpOnMainThread();
 
-    warning_files_.emplace_back(base::FilePath("file1.txt"));
-    warning_files_.emplace_back(base::FilePath("file2.txt"));
+    warning_paths_.emplace_back("file1.txt");
+    warning_paths_.emplace_back("file2.txt");
   }
 
  protected:
-  std::vector<DlpConfidentialFile> warning_files_;
+  std::vector<base::FilePath> warning_paths_;
   base::MockCallback<OnDlpRestrictionCheckedWithJustificationCallback> cb_;
 };
 
@@ -96,9 +99,11 @@ class WarningDialogBrowserTest : public FilesPolicyDialogBrowserTest {
 IN_PROC_BROWSER_TEST_P(WarningDialogBrowserTest, NoParent) {
   dlp::FileAction action = GetParam();
 
-  auto* widget =
-      FilesPolicyDialog::CreateWarnDialog(cb_.Get(), warning_files_, action,
-                                          /*modal_parent=*/nullptr);
+  auto* widget = FilesPolicyDialog::CreateWarnDialog(
+      cb_.Get(), action,
+      /*modal_parent=*/nullptr,
+      FilesPolicyDialog::Info::Warn(FilesPolicyDialog::BlockReason::kDlp,
+                                    warning_paths_));
   ASSERT_TRUE(widget);
 
   FilesPolicyWarnDialog* dialog = static_cast<FilesPolicyWarnDialog*>(
@@ -131,8 +136,9 @@ IN_PROC_BROWSER_TEST_P(WarningDialogBrowserTest, WithParent) {
   ASSERT_EQ(files_app, FindFilesApp());
 
   auto* widget = FilesPolicyDialog::CreateWarnDialog(
-      cb_.Get(), warning_files_, action,
-      files_app->window()->GetNativeWindow());
+      cb_.Get(), action, files_app->window()->GetNativeWindow(),
+      FilesPolicyDialog::Info::Warn(FilesPolicyDialog::BlockReason::kDlp,
+                                    warning_paths_));
   ASSERT_TRUE(widget);
 
   FilesPolicyWarnDialog* dialog = static_cast<FilesPolicyWarnDialog*>(
@@ -170,14 +176,49 @@ class ErrorDialogBrowserTest : public FilesPolicyDialogBrowserTest {
   void SetUpOnMainThread() override {
     FilesPolicyDialogBrowserTest::SetUpOnMainThread();
 
-    blocked_files_.emplace(DlpConfidentialFile(base::FilePath("file1.txt")),
-                           FilesPolicyDialog::BlockReason::kDlp);
-    blocked_files_.emplace(DlpConfidentialFile(base::FilePath("file2.txt")),
-                           FilesPolicyDialog::BlockReason::kDlp);
+    const std::vector<base::FilePath> paths = {base::FilePath("file1.txt"),
+                                               base::FilePath("file2.txt")};
+
+    dialog_info_map_.insert({FilesPolicyDialog::BlockReason::kDlp,
+                             FilesPolicyDialog::Info::Error(
+                                 FilesPolicyDialog::BlockReason::kDlp, paths)});
+  }
+
+  // Checks that a error dialog with mixed errors only contains the sections for
+  // the given `reasons`.
+  void ContainMixedErrorSections(
+      FilesPolicyErrorDialog* dialog,
+      const std::vector<FilesPolicyDialog::BlockReason>& reasons) {
+    std::set<FilesPolicyDialog::BlockReason> reasons_without_sections(
+        std::begin(FilesPolicyDialog::available_reasons),
+        std::end(FilesPolicyDialog::available_reasons));
+    for (FilesPolicyDialog::BlockReason reason : reasons) {
+      // The view ID is attached to the title label.
+      views::View* title_label = dialog->GetViewByID(
+          FilesPolicyDialog::MapBlockReasonToViewID(reason));
+      EXPECT_TRUE(title_label);
+      reasons_without_sections.erase(reason);
+    }
+    for (FilesPolicyDialog::BlockReason reason : reasons_without_sections) {
+      EXPECT_FALSE(dialog->GetViewByID(
+          FilesPolicyDialog::MapBlockReasonToViewID(reason)));
+    }
+  }
+
+  std::u16string GetTitle(FilesPolicyErrorDialog* dialog,
+                          FilesPolicyDialog::BlockReason reason) {
+    views::View* title_label =
+        dialog->GetViewByID(FilesPolicyDialog::MapBlockReasonToViewID(reason));
+    if (!title_label) {
+      return u"";
+    }
+    // The view ID is attached to the title label.
+    return static_cast<views::Label*>(title_label)->GetText();
   }
 
  protected:
-  std::map<DlpConfidentialFile, FilesPolicyDialog::BlockReason> blocked_files_;
+  std::map<FilesPolicyDialog::BlockReason, FilesPolicyDialog::Info>
+      dialog_info_map_;
 };
 
 // Tests that the error dialog is created as a system modal if no parent is
@@ -185,11 +226,21 @@ class ErrorDialogBrowserTest : public FilesPolicyDialogBrowserTest {
 IN_PROC_BROWSER_TEST_P(ErrorDialogBrowserTest, NoParent) {
   dlp::FileAction action = GetParam();
   // Add another blocked file to test the mixed error case.
-  blocked_files_.emplace(
-      DlpConfidentialFile(base::FilePath("file3.txt")),
-      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData);
+  const std::vector<base::FilePath> paths = {base::FilePath("file3.txt")};
 
-  auto* widget = FilesPolicyDialog::CreateErrorDialog(blocked_files_, action,
+  auto dialog_settings = FilesPolicyDialog::Info::Error(
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData,
+      paths);
+
+  // Override default dialog settings.
+  dialog_settings.SetMessage(u"Custom message");
+  dialog_settings.SetLearnMoreURL(GURL("https://learnmore.com"));
+
+  dialog_info_map_.insert(
+      {FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData,
+       std::move(dialog_settings)});
+
+  auto* widget = FilesPolicyDialog::CreateErrorDialog(dialog_info_map_, action,
                                                       /*modal_parent=*/nullptr);
   ASSERT_TRUE(widget);
 
@@ -209,8 +260,8 @@ IN_PROC_BROWSER_TEST_P(ErrorDialogBrowserTest, NoParent) {
 }
 
 // Tests that the error dialog is created as a window modal if a Files app
-// window is passed as the parent, and that cancelling the dialog opens the help
-// article page.
+// window is passed as the parent, and that accepting the dialog dismisses it
+// without any other action.
 IN_PROC_BROWSER_TEST_P(ErrorDialogBrowserTest, WithParent) {
   dlp::FileAction action = GetParam();
 
@@ -220,7 +271,7 @@ IN_PROC_BROWSER_TEST_P(ErrorDialogBrowserTest, WithParent) {
   ASSERT_EQ(files_app, FindFilesApp());
 
   auto* widget = FilesPolicyDialog::CreateErrorDialog(
-      blocked_files_, action, files_app->window()->GetNativeWindow());
+      dialog_info_map_, action, files_app->window()->GetNativeWindow());
   ASSERT_TRUE(widget);
 
   FilesPolicyErrorDialog* dialog = static_cast<FilesPolicyErrorDialog*>(
@@ -230,20 +281,169 @@ IN_PROC_BROWSER_TEST_P(ErrorDialogBrowserTest, WithParent) {
   EXPECT_EQ(dialog->GetModalType(), ui::ModalType::MODAL_TYPE_WINDOW);
   EXPECT_EQ(widget->parent()->GetNativeWindow(),
             files_app->window()->GetNativeWindow());
-  // Cancel -> Learn more.
-  EXPECT_NE(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
-      dlp::kDlpLearnMoreUrl);
-  dialog->CancelDialog();
+  // Accept -> dismiss.
+  dialog->AcceptDialog();
   EXPECT_TRUE(widget->IsClosed());
-  EXPECT_EQ(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
-      dlp::kDlpLearnMoreUrl);
 
   EXPECT_THAT(histogram_tester_.GetAllSamples(
                   GetDlpHistogramPrefix() +
                   std::string(dlp::kFileActionBlockReviewedUMA)),
               base::BucketsAre(base::Bucket(action, 1)));
+}
+
+// Tests that the error dialog is populated with one section for every available
+// block reason.
+IN_PROC_BROWSER_TEST_P(ErrorDialogBrowserTest, AllErrorSections) {
+  dlp::FileAction action = GetParam();
+
+  std::map<FilesPolicyDialog::BlockReason, FilesPolicyDialog::Info> info_map;
+
+  size_t count = 0;
+  for (FilesPolicyDialog::BlockReason reason :
+       FilesPolicyDialog::available_reasons) {
+    const base::FilePath path1("file" + base::NumberToString(count++) + ".txt");
+    const base::FilePath path2("file" + base::NumberToString(count++) + ".txt");
+
+    auto dialog_settings =
+        FilesPolicyDialog::Info::Error(reason, {path1, path2});
+    info_map.insert({reason, std::move(dialog_settings)});
+  }
+
+  // Sensitive data and malware have theur own section only when a custom
+  // message is defined.
+  const std::u16string sensitive_data_message =
+      u"Sensitive data custom message";
+  info_map
+      .at(FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData)
+      .SetMessage(sensitive_data_message);
+
+  const std::u16string malware_message = u"Malware data custom message";
+  info_map.at(FilesPolicyDialog::BlockReason::kEnterpriseConnectorsMalware)
+      .SetMessage(malware_message);
+
+  auto* widget = FilesPolicyDialog::CreateErrorDialog(info_map, action,
+                                                      /*modal_parent=*/nullptr);
+  ASSERT_TRUE(widget);
+
+  FilesPolicyErrorDialog* dialog = static_cast<FilesPolicyErrorDialog*>(
+      widget->widget_delegate()->AsDialogDelegate());
+  ASSERT_TRUE(dialog);
+
+  std::vector<FilesPolicyDialog::BlockReason> expected_sections = {
+      FilesPolicyDialog::BlockReason::kDlp,
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData,
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsMalware,
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsEncryptedFile,
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsLargeFile,
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectors};
+
+  ContainMixedErrorSections(dialog, expected_sections);
+
+  for (FilesPolicyDialog::BlockReason reason : expected_sections) {
+    if (reason == FilesPolicyDialog::BlockReason::kEnterpriseConnectors) {
+      // In this case we also expect files with
+      // FilesPolicyDialog::BlockReason::kEnterpriseConnectorsUnknownScanResult
+      // block reason.
+      size_t files_num = info_map.at(reason).GetFiles().size() +
+                         info_map
+                             .at(FilesPolicyDialog::BlockReason::
+                                     kEnterpriseConnectorsUnknownScanResult)
+                             .GetFiles()
+                             .size();
+      ASSERT_EQ(GetTitle(dialog, reason),
+                files_string_util::GetBlockReasonMessage(reason, files_num));
+      continue;
+    }
+    ASSERT_EQ(GetTitle(dialog, reason), info_map.at(reason).GetMessage());
+  }
+}
+
+// Tests that when no custom message is specified for Enterprise Connectors
+// malware and sensitive data, the error dialog is a single error dialog.
+IN_PROC_BROWSER_TEST_P(ErrorDialogBrowserTest,
+                       NoEnterpriseConnectorsCustomMessage) {
+  dlp::FileAction action = GetParam();
+
+  std::map<FilesPolicyDialog::BlockReason, FilesPolicyDialog::Info> info_map;
+
+  auto sensitive_data_file_dialog_settings = FilesPolicyDialog::Info::Error(
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData,
+      {base::FilePath("file1.txt"), base::FilePath("file2.txt")});
+
+  auto malware_file_dialog_settings = FilesPolicyDialog::Info::Error(
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsMalware,
+      {base::FilePath("file3.txt"), base::FilePath("file4.txt")});
+
+  info_map.insert(
+      {FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData,
+       std::move(sensitive_data_file_dialog_settings)});
+  info_map.insert({FilesPolicyDialog::BlockReason::kEnterpriseConnectorsMalware,
+                   std::move(malware_file_dialog_settings)});
+
+  auto* widget = FilesPolicyDialog::CreateErrorDialog(info_map, action,
+                                                      /*modal_parent=*/nullptr);
+  ASSERT_TRUE(widget);
+
+  FilesPolicyErrorDialog* dialog = static_cast<FilesPolicyErrorDialog*>(
+      widget->widget_delegate()->AsDialogDelegate());
+  ASSERT_TRUE(dialog);
+
+  // The dialog is a single error dialog, and thus it does not contain mixed
+  // error sections.
+  ContainMixedErrorSections(dialog, {});
+}
+
+// Tests that when files are blocked because of Enterprise Connectors malware
+// and sensitive data reasons, but a custom message is only defined for one of
+// them, e.g., malware, the error dialog should have two sections: one for
+// malware with the custom message, and a generic one section with a default
+// message for the other files.
+IN_PROC_BROWSER_TEST_P(ErrorDialogBrowserTest,
+                       EnterpriseConnectorsCustomMessage) {
+  dlp::FileAction action = GetParam();
+
+  std::map<FilesPolicyDialog::BlockReason, FilesPolicyDialog::Info> info_map;
+
+  std::vector<base::FilePath> sensitive_data_paths = {
+      base::FilePath("file1.txt"), base::FilePath("file2.txt")};
+  auto sensitive_data_file_dialog_settings = FilesPolicyDialog::Info::Error(
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData,
+      sensitive_data_paths);
+
+  auto malware_file_dialog_settings = FilesPolicyDialog::Info::Error(
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsMalware,
+      {base::FilePath("file3.txt"), base::FilePath("file4.txt")});
+  const std::u16string malware_message = u"Malware data custom message";
+  malware_file_dialog_settings.SetMessage(malware_message);
+
+  info_map.insert(
+      {FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData,
+       std::move(sensitive_data_file_dialog_settings)});
+  info_map.insert({FilesPolicyDialog::BlockReason::kEnterpriseConnectorsMalware,
+                   std::move(malware_file_dialog_settings)});
+
+  auto* widget = FilesPolicyDialog::CreateErrorDialog(info_map, action,
+                                                      /*modal_parent=*/nullptr);
+  ASSERT_TRUE(widget);
+
+  FilesPolicyErrorDialog* dialog = static_cast<FilesPolicyErrorDialog*>(
+      widget->widget_delegate()->AsDialogDelegate());
+  ASSERT_TRUE(dialog);
+
+  ContainMixedErrorSections(
+      dialog, {FilesPolicyDialog::BlockReason::kEnterpriseConnectorsMalware,
+               FilesPolicyDialog::BlockReason::kEnterpriseConnectors});
+
+  ASSERT_EQ(
+      GetTitle(dialog,
+               FilesPolicyDialog::BlockReason::kEnterpriseConnectorsMalware),
+      malware_message);
+
+  ASSERT_EQ(
+      GetTitle(dialog, FilesPolicyDialog::BlockReason::kEnterpriseConnectors),
+      files_string_util::GetBlockReasonMessage(
+          FilesPolicyDialog::BlockReason::kEnterpriseConnectors,
+          sensitive_data_paths.size()));
 }
 
 INSTANTIATE_TEST_SUITE_P(FilesPolicyDialog,
@@ -269,12 +469,12 @@ class DlpWarningDialogDestinationBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
 
-    warning_files_.emplace_back(base::FilePath("file1.txt"));
-    warning_files_.emplace_back(base::FilePath("file2.txt"));
+    warning_paths_.emplace_back("file1.txt");
+    warning_paths_.emplace_back("file2.txt");
   }
 
  protected:
-  std::vector<DlpConfidentialFile> warning_files_;
+  std::vector<base::FilePath> warning_paths_;
 };
 
 // (b/273269211): This is a test for the crash that happens upon showing a
@@ -282,8 +482,10 @@ class DlpWarningDialogDestinationBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(DlpWarningDialogDestinationBrowserTest,
                        ComponentDestination) {
   ASSERT_TRUE(FilesPolicyDialog::CreateWarnDialog(
-      base::DoNothing(), warning_files_, dlp::FileAction::kMove,
+      base::DoNothing(), dlp::FileAction::kMove,
       /*modal_parent=*/nullptr,
+      FilesPolicyDialog::Info::Warn(FilesPolicyDialog::BlockReason::kDlp,
+                                    warning_paths_),
       DlpFileDestination(data_controls::Component::kDrive)));
 }
 
@@ -291,20 +493,22 @@ IN_PROC_BROWSER_TEST_F(DlpWarningDialogDestinationBrowserTest,
 // warning dialog when a file is dragged to a webpage.
 IN_PROC_BROWSER_TEST_F(DlpWarningDialogDestinationBrowserTest, UrlDestination) {
   ASSERT_TRUE(FilesPolicyDialog::CreateWarnDialog(
-      base::DoNothing(), warning_files_, dlp::FileAction::kCopy,
+      base::DoNothing(), dlp::FileAction::kCopy,
       /*modal_parent=*/nullptr,
+      FilesPolicyDialog::Info::Warn(FilesPolicyDialog::BlockReason::kDlp,
+                                    warning_paths_),
       DlpFileDestination(GURL("https://example.com"))));
 }
 
 // (b/281495499): This is a test for the crash that happens upon showing a
 // warning dialog for downloads.
 IN_PROC_BROWSER_TEST_F(DlpWarningDialogDestinationBrowserTest, Download) {
+  auto paths = std::vector<base::FilePath>({base::FilePath("file1.txt")});
   ASSERT_TRUE(FilesPolicyDialog::CreateWarnDialog(
-      base::DoNothing(),
-      std::vector<DlpConfidentialFile>{
-          DlpConfidentialFile(base::FilePath("file1.txt"))},
-      dlp::FileAction::kDownload,
+      base::DoNothing(), dlp::FileAction::kDownload,
       /*modal_parent=*/nullptr,
+      FilesPolicyDialog::Info::Warn(FilesPolicyDialog::BlockReason::kDlp,
+                                    paths),
       DlpFileDestination(data_controls::Component::kDrive)));
 }
 
@@ -317,8 +521,11 @@ IN_PROC_BROWSER_TEST_P(WarningComponentBrowserTest, CreateDialog) {
   auto [action, destination] = GetParam();
 
   ASSERT_TRUE(FilesPolicyDialog::CreateWarnDialog(
-      base::DoNothing(), warning_files_, action,
-      /*modal_parent=*/nullptr, destination));
+      base::DoNothing(), action,
+      /*modal_parent=*/nullptr,
+      FilesPolicyDialog::Info::Warn(FilesPolicyDialog::BlockReason::kDlp,
+                                    warning_paths_),
+      destination));
 }
 
 INSTANTIATE_TEST_SUITE_P(

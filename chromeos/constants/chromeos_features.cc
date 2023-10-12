@@ -47,6 +47,11 @@ BASE_FEATURE(kCrosComponents,
              "CrosComponents",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the more detailed, OS-level dialog for web app installs.
+BASE_FEATURE(kCrosWebAppInstallDialog,
+             "CrosWebAppInstallDialog",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Disable idle sockets closing on memory pressure for NetworkContexts that
 // belong to Profiles. It only applies to Profiles because the goal is to
 // improve perceived performance of web browsing within the ChromeOS user
@@ -81,7 +86,7 @@ BASE_FEATURE(kExperimentalWebAppStoragePartitionIsolation,
 // Enable IWA support for Telemetry Extension API.
 BASE_FEATURE(kIWAForTelemetryExtensionAPI,
              "IWAForTelemetryExtensionAPI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables Jelly features. go/jelly-flags
 BASE_FEATURE(kJelly, "Jelly", base::FEATURE_ENABLED_BY_DEFAULT);

@@ -32,7 +32,7 @@ namespace password_manager {
 
 namespace {
 
-using sync_util::IsPasswordSyncEnabled;
+using sync_util::IsSyncFeatureEnabledIncludingPasswords;
 
 bool ShouldErrorResultInFallback(PasswordStoreBackendError error) {
   switch (error.recovery_type) {
@@ -132,6 +132,12 @@ void PasswordStoreProxyBackend::Shutdown(base::OnceClosure shutdown_completed) {
 
 void PasswordStoreProxyBackend::GetAllLoginsAsync(LoginsOrErrorReply callback) {
   main_backend()->GetAllLoginsAsync(std::move(callback));
+}
+
+void PasswordStoreProxyBackend::GetAllLoginsWithAffiliationAndBrandingAsync(
+    LoginsOrErrorReply callback) {
+  main_backend()->GetAllLoginsWithAffiliationAndBrandingAsync(
+      std::move(callback));
 }
 
 void PasswordStoreProxyBackend::GetAutofillableLoginsAsync(
@@ -355,7 +361,7 @@ bool PasswordStoreProxyBackend::UsesAndroidBackendAsMainBackend() {
     return false;
   }
 
-  if (!IsPasswordSyncEnabled(sync_service_)) {
+  if (!IsSyncFeatureEnabledIncludingPasswords(sync_service_)) {
     return false;
   }
   return true;

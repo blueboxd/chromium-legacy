@@ -12,10 +12,12 @@
 
 TabOrganizationResponse::Organization::Organization(
     std::u16string label_,
-    std::vector<TabData::TabID> tabs_)
-    : label(label_), tabs(tabs_) {}
+    std::vector<TabData::TabID> tab_ids_)
+    : label(label_), tab_ids(std::move(tab_ids_)) {}
 TabOrganizationResponse::Organization::Organization(
     const Organization& organization) = default;
+TabOrganizationResponse::Organization::Organization(
+    Organization&& organization) = default;
 TabOrganizationResponse::Organization::~Organization() = default;
 
 TabOrganizationResponse::TabOrganizationResponse(
@@ -40,11 +42,22 @@ void TabOrganizationRequest::SetResponseCallback(OnResponseCallback callback) {
   response_callback_ = std::move(callback);
 }
 
+TabData* TabOrganizationRequest::AddTabData(std::unique_ptr<TabData> tab_data) {
+  TabData* tab_data_ptr = tab_data.get();
+  tab_datas_.emplace_back(std::move(tab_data));
+  return tab_data_ptr;
+}
+
 void TabOrganizationRequest::StartRequest() {
   CHECK(state_ == State::NOT_STARTED);
   state_ = State::STARTED;
 
-  std::move(backend_start_request_lambda_).Run(this);
+  std::move(backend_start_request_lambda_)
+      .Run(this,
+           base::BindOnce(&TabOrganizationRequest::CompleteRequest,
+                          base::Unretained(this)),
+           base::BindOnce(&TabOrganizationRequest::FailRequest,
+                          base::Unretained(this)));
 }
 
 void TabOrganizationRequest::CompleteRequest(

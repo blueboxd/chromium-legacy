@@ -306,7 +306,6 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kOfferToSavePasswordsEnabledGMS, true);
   registry->RegisterBooleanPref(prefs::kSavePasswordsSuspendedByError, false);
   registry->RegisterBooleanPref(prefs::kAutoSignInEnabledGMS, true);
-  registry->RegisterBooleanPref(prefs::kSettingsMigratedToUPM, false);
   registry->RegisterBooleanPref(prefs::kSettingsMigratedToUPMLocal, false);
   registry->RegisterIntegerPref(
       prefs::kCurrentMigrationVersionToGoogleMobileServices, 0);
@@ -1072,6 +1071,12 @@ void PasswordManager::OnLoginSuccessful() {
   CHECK(submitted_manager);
   const PasswordForm* submitted_form = submitted_manager->GetSubmittedForm();
   CHECK(submitted_form);
+
+  // User might fill several login flows during their user journey. For example,
+  // Forgot Password Flow followed by sign-in flow. To not suggest usernames
+  // from the old flow, clear after successful login.
+  possible_usernames_.Clear();
+
   client_->MaybeReportEnterpriseLoginEvent(
       submitted_form->url, submitted_form->IsFederatedCredential(),
       submitted_form->federation_origin,
@@ -1152,8 +1157,9 @@ void PasswordManager::OnLoginSuccessful() {
           submitted_manager->Clone());
     }
 
-    if (submitted_manager->HasGeneratedPassword())
+    if (submitted_manager->HasGeneratedPassword()) {
       client_->AutomaticPasswordSave(MoveOwnedSubmittedManager());
+    }
   }
   ResetSubmittedManager();
 }

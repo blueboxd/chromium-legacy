@@ -12,6 +12,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/task/thread_pool.h"
+#import "base/uuid.h"
 #import "base/values.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
 #import "ios/chrome/browser/mailto_handler/mailto_handler_service.h"
@@ -64,6 +65,11 @@ void AnnotationsTabHelper::SetParcelTrackingOptInCommands(
   parcel_tracking_handler_ = parcel_tracking_handler;
 }
 
+void AnnotationsTabHelper::SetUnitConversionCommands(
+    id<UnitConversionCommands> unit_conversion_handler) {
+  unit_conversion_handler_ = unit_conversion_handler;
+}
+
 #pragma mark - WebStateObserver methods.
 
 void AnnotationsTabHelper::WebStateDestroyed(web::WebState* web_state) {
@@ -71,6 +77,15 @@ void AnnotationsTabHelper::WebStateDestroyed(web::WebState* web_state) {
   auto* manager = web::AnnotationsTextManager::FromWebState(web_state);
   manager->RemoveObserver(this);
   web_state_ = nullptr;
+}
+
+void AnnotationsTabHelper::PageLoaded(
+    web::WebState* web_state,
+    web::PageLoadCompletionStatus load_completion_status) {
+  DCHECK_EQ(web_state_, web_state);
+  if (load_completion_status == web::PageLoadCompletionStatus::SUCCESS) {
+    match_cache_.clear();
+  }
 }
 
 #pragma mark - AnnotationsTextObserver methods.
@@ -102,7 +117,7 @@ void AnnotationsTabHelper::OnTextExtracted(web::WebState* web_state,
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&ios::provider::ExtractDataElementsFromText,
+      base::BindOnce(&ios::provider::ExtractTextAnnotationFromText,
                      metadata.Clone(), text,
                      ios::provider::GetHandledIntentTypesForOneTap(web_state),
                      ukm::GetSourceIdForWebStateDocument(web_state),
@@ -126,26 +141,27 @@ void AnnotationsTabHelper::OnClick(web::WebState* web_state,
                                    CGRect rect,
                                    const std::string& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NSTextCheckingResult* match =
-      web::DecodeNSTextCheckingResultData(base::SysUTF8ToNSString(data));
-  if (!match) {
+  if (match_cache_.find(data) == match_cache_.end()) {
     return;
   }
+  NSTextCheckingResult* match = match_cache_.at(data);
   auto* manager = web::AnnotationsTextManager::FromWebState(web_state_);
   if (manager) {
     manager->RemoveHighlight();
   }
 
   NSString* ns_text = base::SysUTF8ToNSString(text);
-  DCHECK(ios::provider::HandleIntentTypesForOneTap(
-      web_state, match, ns_text, base_view_controller_, mini_map_handler_));
+  const BOOL success = ios::provider::HandleIntentTypesForOneTap(
+      web_state, match, ns_text, rect.origin, base_view_controller_,
+      mini_map_handler_, unit_conversion_handler_);
+  DCHECK(success);
 }
 
 #pragma mark - Private Methods
 
 void AnnotationsTabHelper::ApplyDeferredProcessing(
     int seq_id,
-    absl::optional<base::Value> deferred) {
+    absl::optional<std::vector<web::TextAnnotation>> deferred) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   web::ContentWorld content_world =
@@ -155,33 +171,42 @@ void AnnotationsTabHelper::ApplyDeferredProcessing(
   if (main_frame && deferred) {
     auto* manager = web::AnnotationsTextManager::FromWebState(web_state_);
     DCHECK(manager);
-    base::Value annotations(std::move(deferred.value()));
+    std::vector<web::TextAnnotation> annotations(std::move(deferred.value()));
     if (IsIOSParcelTrackingEnabled()) {
-      AnnotationsTabHelper::ProcessParcelTrackingNumbers(annotations.GetList());
+      AnnotationsTabHelper::ProcessParcelTrackingNumbers(annotations);
     }
-    manager->DecorateAnnotations(web_state_, annotations, seq_id);
+    base::Value::List decorations_list;
+    BuildCacheAndDecorations(annotations, decorations_list);
+    base::Value decorations(std::move(decorations_list));
+    manager->DecorateAnnotations(web_state_, decorations, seq_id);
+  }
+}
+
+void AnnotationsTabHelper::BuildCacheAndDecorations(
+    std::vector<web::TextAnnotation>& annotations_list,
+    base::Value::List& decorations) {
+  for (web::TextAnnotation& data : annotations_list) {
+    const std::string key = base::Uuid::GenerateRandomV4().AsLowercaseString();
+    match_cache_[key] = data.second;
+    data.first.Set("data", key);
+    decorations.Append(base::Value(std::move(data.first)));
   }
 }
 
 void AnnotationsTabHelper::ProcessParcelTrackingNumbers(
-    base::Value::List& annotations_list) {
-  // Return early if not currently active WebState.
-  if (!web_state_->IsVisible()) {
-    return;
-  }
+    std::vector<web::TextAnnotation>& annotations_list) {
   NSMutableArray<CustomTextCheckingResult*>* unique_parcels =
       [[NSMutableArray alloc] init];
   NSMutableSet* existing_parcel_numbers = [NSMutableSet set];
-  for (size_t i = 0; i < annotations_list.size();) {
-    const base::Value::Dict& entity = annotations_list[i].GetDict();
-    NSTextCheckingResult* match = web::DecodeNSTextCheckingResultData(
-        base::SysUTF8ToNSString(entity.FindString("data")->c_str()));
+  for (auto annotation = annotations_list.begin();
+       annotation != annotations_list.end();) {
+    NSTextCheckingResult* match = annotation->second;
     if (!match || match.resultType != TCTextCheckingTypeParcelTracking) {
-      i++;
+      annotation++;
       continue;
     }
     CustomTextCheckingResult* parcel =
-        base::apple::ObjCCast<CustomTextCheckingResult>(match);
+        static_cast<CustomTextCheckingResult*>(match);
     // Avoid adding duplicates to `unique_parcels`.
     if (![existing_parcel_numbers containsObject:[parcel carrierNumber]]) {
       [existing_parcel_numbers addObject:[parcel carrierNumber]];
@@ -189,9 +214,10 @@ void AnnotationsTabHelper::ProcessParcelTrackingNumbers(
     }
     // Remove the parcel from annotations_list to prevent decorating the
     // tracking number.
-    annotations_list.EraseValue(annotations_list[i]);
+    annotation = annotations_list.erase(annotation);
   }
-  if ([unique_parcels count] > 0) {
+  // Show UI only if this is the currently active WebState.
+  if ([unique_parcels count] > 0 && web_state_->IsVisible()) {
     // Call asynchronously to allow the rest of the annotations to be decorated
     // first.
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
@@ -203,7 +229,7 @@ void AnnotationsTabHelper::ProcessParcelTrackingNumbers(
 
 void AnnotationsTabHelper::MaybeShowParcelTrackingUI(
     NSArray<CustomTextCheckingResult*>* parcels) {
-  [parcel_tracking_handler_ showParcelTrackingUIWithParcels:parcels];
+  [parcel_tracking_handler_ showTrackingForParcels:parcels];
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(AnnotationsTabHelper)

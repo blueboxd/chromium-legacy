@@ -77,6 +77,11 @@ size_t SharedImageInterface::ScopedMapping::Stride(const uint32_t plane_index) {
   return buffer_->stride(plane_index);
 }
 
+gfx::Size SharedImageInterface::ScopedMapping::Size() {
+  CHECK(buffer_);
+  return buffer_->GetSize();
+}
+
 gfx::BufferFormat SharedImageInterface::ScopedMapping::Format() {
   CHECK(buffer_);
   return buffer_->GetFormat();
@@ -102,19 +107,6 @@ uint32_t SharedImageInterface::UsageForMailbox(const Mailbox& mailbox) {
 void SharedImageInterface::NotifyMailboxAdded(const Mailbox& /*mailbox*/,
                                               uint32_t /*usage*/) {}
 
-Mailbox SharedImageInterface::CreateSharedImage(
-    gfx::GpuMemoryBuffer* gpu_memory_buffer,
-    GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    const gfx::ColorSpace& color_space,
-    GrSurfaceOrigin surface_origin,
-    SkAlphaType alpha_type,
-    uint32_t usage,
-    base::StringPiece debug_label) {
-  return CreateSharedImage(gpu_memory_buffer, gpu_memory_buffer_manager,
-                           gfx::BufferPlane::DEFAULT, color_space,
-                           surface_origin, alpha_type, usage, debug_label);
-}
-
 void SharedImageInterface::CopyToGpuMemoryBuffer(const SyncToken& sync_token,
                                                  const Mailbox& mailbox) {
   NOTREACHED();
@@ -124,10 +116,6 @@ std::unique_ptr<SharedImageInterface::ScopedMapping>
 SharedImageInterface::MapSharedImage(const Mailbox& mailbox) {
   NOTIMPLEMENTED();
   return nullptr;
-}
-
-void SharedImageInterface::WaitForMailboxToBeMappable(const Mailbox& mailbox) {
-  NOTIMPLEMENTED();
 }
 
 }  // namespace gpu

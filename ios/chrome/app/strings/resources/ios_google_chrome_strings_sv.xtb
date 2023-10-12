@@ -69,7 +69,6 @@ Tänk på detta:
 <translation id="3345341804167540816">Använd Chrome överallt</translation>
 <translation id="3472587960215700950">Google Maps används i Chrome för att ge dig vägbeskrivningar och lokal information om identifierade adresser.</translation>
 <translation id="3503014945441706099">Få Förbättrad säker webbsökning även för den här Chromium-profilen</translation>
-<translation id="3506309791702511623">Chrome kan identifiera de spårningsnummer du anger och spåra dina paket på sidan Ny flik samtidigt som andra shoppingupplevelser från Google främjas.</translation>
 <translation id="3522659714780527202">Aktivera synkronisering om du vill ha samma flikar tillgängliga på alla enheter där du använder Chrome</translation>
 <translation id="3533694711092285624">Det finns inga sparade lösenord. Chrome kan bara kontrollera dina lösenord om du sparar dem.</translation>
 <translation id="3594076341410558780">Dölj Få ut mesta möjliga av Chrome</translation>
@@ -118,6 +117,7 @@ Tänk på detta:
 <translation id="5389212809648216794">Google Chrome kan inte använda kameran eftersom den används av en annan app</translation>
 <translation id="5395376160638294582">Se till att du alltid kan använda Chrome-data i Google-kontot</translation>
 <translation id="5439191312780166229">Varnar dig om farliga webbplatser, även sådana som Google inte kände till tidigare, genom att analysera mer data från webbplatser än standardskyddet. Du kan välja att hoppa över Chrome-varningar.</translation>
+<translation id="5442013002200339429">Om du döljer <ph name="MODULE_NAME" /> spåras inte längre framtida försändelser automatiskt i Chrome, och all tidigare spårningsdata för försändelser raderas.</translation>
 <translation id="5460571915754665838">4. Välj Chrome</translation>
 <translation id="546541279759910616">{COUNT,plural, =1{Du spårar det här paketet på sidan Ny flik i Chrome.}other{Du spårar de här paketen på sidan Ny flik i Chrome.}}</translation>
 <translation id="5492504007368565877">Google Lösenordshantering kan inte kontrollera dina lösenord.</translation>
@@ -154,6 +154,7 @@ Tänk på detta:
 
 Din krypterade data kan endast läsas av en person som har din lösenfras. Lösenfrasen varken skickas till eller lagras av Google. Om du glömmer lösenfrasen eller vill ändra den här inställningen <ph name="BEGIN_LINK" />rensar du kontots Chrome-data<ph name="END_LINK" />.</translation>
 <translation id="6822673484890854830">Chrome kunde inte kontrollera alla lösenord. Försök igen senare.</translation>
+<translation id="6851982868877411675">Öppna Chrome-inställningarna i iOS, tryck på Standardwebbläsarapp och välj Chrome.</translation>
 <translation id="6916015246697034114">Sök med rösten i Chrome</translation>
 <translation id="6964931465519938134">Nu kan du använda Chrome varje gång du trycker på länkar i meddelanden, dokument och andra appar.</translation>
 <translation id="6975725306479268850">Välj Chrome för Autofyll</translation>
@@ -188,6 +189,7 @@ Din krypterade data kan endast läsas av en person som har din lösenfras. Löse
 <translation id="7933491483529363150">Öppna Min senaste flik i Chrome.</translation>
 <translation id="8022947259858476807">Använd Chrome som standard när du öppnar länkar och söker med en widget och få lösenord ifyllda i andra appar automatiskt</translation>
 <translation id="804638182476029347">Tillåt Chrome-aviseringar om sänkt pris</translation>
+<translation id="8069507567842347179">Den här försändelsen spåras redan i Chrome.</translation>
 <translation id="81358522153858150">Chrome har nu stöd för användarpolicyer för dina hanterade konton</translation>
 <translation id="8160472928944011082">Uppdatering inte möjlig</translation>
 <translation id="8174679664544842874">Öppnar en ny flik i Chrome.</translation>

@@ -190,7 +190,7 @@
   </if>
   <if expr="is_win or is_linux">
     <message name="IDS_SETTINGS_OVERSCROLL_HISTORY_NAVIGATION_SUBTITLE" desc="Subtitle for the overscroll history navigation setting, which allows you to navigate back and forward by swiping left or right with a touch device.">
-      Navigate back and forward with swipe gesture
+      Navigate back and forward with a swipe gesture
     </message>
   </if>
   <if expr="is_macosx">
@@ -1015,6 +1015,9 @@
   <message name="IDS_SETTINGS_CLEAR_PERIOD_EVERYTHING" desc="The option to delete browsing data from the beginning of time.">
     All time
   </message>
+  <message name="IDS_SETTINGS_CLEAR_PERIOD_15_MINUTES" desc="The option to delete browsing data from the last 15 minutes.">
+    Last 15 minutes
+  </message>
   <message name="IDS_SETTINGS_NOTIFICATION_WARNING" desc="A warning that notifications will be disabled by deleting cookies for this site.">
     Notifications will be disabled
   </message>
@@ -1331,7 +1334,7 @@
   <message name="IDS_SETTINGS_PRELOAD_PAGES_STANDARD_PRELOADING_SUMMARY" desc="Short explanation of what the standard preloading mode does in the Preload Pages setting.">
     Some of the pages you visit are preloaded
   </message>
-  <message name="IDS_SETTINGS_PRELOAD_PAGES_STANDARD_PRELOADING_WHEN_ON_BULLET_ONE" desc="First bullet point in the standard preloading and when on column. Informs the user about what the standard preloading setting does.">
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_STANDARD_PRELOADING_WHEN_ON_BULLET_ONE" desc="Bullet point in the standard preloading and when on column. Informs the user about what the standard preloading setting does.">
     Browsing and searching is faster
   </message>
   <message name="IDS_SETTINGS_PRELOAD_PAGES_EXTENDED_PRELOADING_TITLE" desc="Name of the extended preloading option for the Preload Pages settings page. This option enables more extensive preloading of pages that Chrome believes the user is likely to navigate to.">
@@ -1340,7 +1343,7 @@
   <message name="IDS_SETTINGS_PRELOAD_PAGES_EXTENDED_PRELOADING_SUMMARY" desc="Subtitle for Preload Pages extended preloading mode. Informs the user about which preloading setting is being described on this page.">
     More pages are preloaded. Pages may be preloaded through Google servers when requested by other sites.
   </message>
-  <message name="IDS_SETTINGS_PRELOAD_PAGES_EXTENDED_PRELOADING_WHEN_ON_BULLET_ONE" desc="First bullet point in the extended preloading and when on column. Informs the user about what the extended preloading setting does.">
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_EXTENDED_PRELOADING_WHEN_ON_BULLET_ONE" desc="Bullet point in the extended preloading and when on column. Informs the user about what the extended preloading setting does.">
     Browsing and searching is faster than standard preloading
   </message>
 
@@ -2128,43 +2131,43 @@
   <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the detailed description of safe browsing enhanced protection. Only visible by screen reader software.">
     Show enhanced protection details
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_ONE" desc="First bullet point under the safe browsing enhanced protection mode">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_ONE" desc="Bullet point under the safe browsing enhanced protection mode">
     Predicts and warns you about dangerous events before they happen
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_THREE" desc="Third bullet point under the safe browsing enhanced protection mode">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_THREE" desc="Bullet point under the safe browsing enhanced protection mode">
     Improves security for you and everyone on the web
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_FOUR" desc="Fourth bullet point under the safe browsing enhanced protection mode">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_FOUR" desc="Bullet point under the safe browsing enhanced protection mode">
     Warns you if passwords are exposed in a data breach
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_FIVE" desc="Fourth bullet point under the safe browsing enhanced protection mode">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_FIVE" desc="Bullet point under the safe browsing enhanced protection mode">
     Sends URLs to Safe Browsing to check them. Also sends a small sample of pages, downloads, extension activity, and system information to help discover new threats. Temporarily links this data to your Google Account when you're signed in, to protect you across Google apps.
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_LABEL" desc="Label of 'When on' section under the Safe Browsing enhanced protection mode">
     When on
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_BULLET_TWO" desc="Second bullet point under the Safe Browsing enhanced protection mode section titled 'When on'">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_BULLET_TWO" desc="Bullet point under the Safe Browsing enhanced protection mode section titled 'When on'">
     In-depth scans for suspicious downloads.
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_BULLET_THREE" desc="Third bullet point under the Safe Browsing enhanced protection mode section titled 'When on'">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_BULLET_THREE" desc="Bullet point under the Safe Browsing enhanced protection mode section titled 'When on'">
     When you're signed in, protects you across Google services.
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_BULLET_FOUR" desc="Fourth bullet point under the Safe Browsing enhanced protection mode section titled 'When on'">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_BULLET_FOUR" desc="Bullet point under the Safe Browsing enhanced protection mode section titled 'When on'">
     Improves security for you and everyone on the web.
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_BULLET_FIVE" desc="Fifth bullet point under the Safe Browsing enhanced protection mode section titled 'When on'">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_BULLET_FIVE" desc="Bullet point under the Safe Browsing enhanced protection mode section titled 'When on'">
     Warns you if you use a password that has been compromised in a data breach.
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_THINGS_TO_CONSIDER_LABEL" desc="Label of 'Things to consider' section under the Safe Browsing enhanced protection mode">
     Things to consider
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_THINGS_TO_CONSIDER_BULLET_ONE" desc="First bullet point under the Safe Browsing enhanced protection mode section titled 'Things to consider'">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_THINGS_TO_CONSIDER_BULLET_ONE" desc="Bullet point under the Safe Browsing enhanced protection mode section titled 'Things to consider'">
     Sends the URLs of sites you visit and a small sample of page content, downloads, extension activity, and system information to Google Safe Browsing to check if they're harmful.
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_THINGS_TO_CONSIDER_BULLET_TWO" desc="Second bullet point under the Safe Browsing enhanced protection mode section titled 'Things to consider'">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_THINGS_TO_CONSIDER_BULLET_TWO" desc="Bullet point under the Safe Browsing enhanced protection mode section titled 'Things to consider'">
     When you're signed in, this data is linked to your Google Account to protect you across Google services, for example increasing protection in Gmail after a security incident.
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_THINGS_TO_CONSIDER_BULLET_THREE" desc="Third bullet point under the Safe Browsing enhanced protection mode section titled 'Things to consider'">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_THINGS_TO_CONSIDER_BULLET_THREE" desc="Bullet point under the Safe Browsing enhanced protection mode section titled 'Things to consider'">
     Doesn't noticeably slow down your browser or device.
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_STANDARD" desc="Label for safe browsing standard protection mode">
@@ -2180,14 +2183,14 @@
     <message name="IDS_SETTINGS_SAFEBROWSING_STANDARD_DESC_UPDATED_PROXY" desc="Description for safe browsing standard protection mode">
       Protects against sites, downloads, and extensions that are known to be dangerous. When you visit a site, Chrome sends an obfuscated portion of the URL to Google through a privacy server that hides your IP address. If a site does something suspicious, full URLs and bits of page content are also sent.
     </message>
-    <message name="IDS_SETTINGS_SAFEBROWSING_STANDARD_BULLET_TWO_PROXY" desc="First bullet point under the safe browsing standard protection mode">
+    <message name="IDS_SETTINGS_SAFEBROWSING_STANDARD_BULLET_TWO_PROXY" desc="Bullet point under the safe browsing standard protection mode">
       Sends an obfuscated portion of the URL to Google through a privacy server that hides your IP address. If a site tries to steal your password, or when you download a harmful file, Chrome may also send URLs, including bits of page content, to Google.
     </message>
   </if>
   <message name="IDS_SETTINGS_SAFEBROWSING_STANDARD_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the detailed description of safe browsing standard protection. Only visible by screen reader software.">
     Show standard protection details
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_STANDARD_BULLET_ONE" desc="First bullet point under the safe browsing standard protection mode">
+  <message name="IDS_SETTINGS_SAFEBROWSING_STANDARD_BULLET_ONE" desc="Bullet point under the safe browsing standard protection mode">
     Detects and warns you about dangerous events when they happen
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_STANDARD_HELP_IMPROVE" desc="The name of the toggle to enable reporting to help improve safe browsing">
@@ -2555,8 +2558,11 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALL_SITES_SORT_METHOD_NAME" desc="A selection menu option to sort the All Sites list by the name of the site, which is derived from its URL." meaning="Name of an inanimate object">
     Name
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_FILE_SYSTEM_SITE_LIST_HEADER" desc="The header name for a list of origins that the user has granted edit permissions from the File System Access API.">
+    Allowed to edit files or folders on your device
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_FILE_SYSTEM_SITE_LIST_EDIT_HEADER" desc="The header name for a list of files that the user has granted edit permissions from the File System Access API.">
-    Edit
+    Can edit files or folders on your device
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_FILE_SYSTEM_SITE_LIST_REMOVE_GRANT_LABEL" desc="A label that represents removing a site's permission to access a file or folder, previously granted access from the File System Access API.">
     Remove grant
@@ -2565,7 +2571,7 @@
     Remove
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_FILE_SYSTEM_SITE_LIST_VIEW_HEADER" desc="The header name for a list of files that the user has granted view permissions from the File System Access API.">
-    View
+    Can view files or folders on your device
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_FILE_SYSTEM_SITE_LIST_VIEW_SITE_DETAILS" desc="A menu option that navigates to the site details page for the selected site.">
     View site details
@@ -2588,14 +2594,8 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS" desc="Label for the site settings exceptions.">
     Customized behaviors
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_3PCD_BEHAVIORS" desc="Label for the site settings exceptions if 3PCD enabled." translateable="false">
-    Sites allowed to use third-party cookies
-  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS_DESCRIPTION" desc="Description for the site settings exceptions.">
     Sites listed below follow a custom setting instead of the default
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_3PCD_BEHAVIORS_DESCRIPTION" desc="Description for the site settings exceptions if 3PCD enabled." translateable="false">
-   Affects the sites listed here and their subdomains. For example, adding “google.com” means that third-party cookies can also be active for mail.google.com, because it’s part of google.com.
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS_DESCRIPTION_SHORT" desc="Short description for the site settings exceptions.">
     Sites listed below follow a custom setting
@@ -3233,41 +3233,53 @@
   <message name="IDS_SETTINGS_COOKIES_BLOCK_EXCEPTIONS" desc="Title of the list containing site exceptions always blocking them from using cookies">
     Sites that can never use cookies
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_LINK_ROW_LABEL" desc="Label for the 'Tracking Protection' page entry point." translateable="false">
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_LINK_ROW_LABEL" desc="Label for the Tracking Protection page entry point.">
     Tracking Protection
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_LINK_ROW_SUB_LABEL" desc="Sub-label for the 'Tracking Protection' page entry point." translateable="false">
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_LINK_ROW_SUB_LABEL" desc="Sub-label for the Tracking Protection page entry point.">
     Manage third-party cookies and tracking protections
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_PAGE_TITLE" translateable="false" desc="The title of a new settings page that allows users to manage settings related to tracking, for example third-party cookies. This settings page will replace the existing cookie settings page at chrome://settings/cookies.">
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_PAGE_TITLE" desc="The title of a new settings page that allows users to manage settings related to tracking, for example third-party cookies. This settings page will replace the existing cookie settings page at chrome://settings/cookies.">
     Tracking Protection
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_PAGE_DESCRIPTION" translateable="false" desc="Explanatory text for the tracking protection settings page.">
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_PAGE_DESCRIPTION" desc="Explanatory text for the Tracking Protection settings page.">
     Chrome limits the type of information sites can use to track you as you browse. You can change your settings to choose your own level of protection.
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_ONE" translateable="false" desc="The first bullet for tracking protection settings. Informs users that Chrome will limit third-party cookies.">
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_ONE" desc="The first bullet for Tracking Protection settings. Informs users that Chrome will limit third-party cookies.">
     Chrome automatically limits third-party cookies
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_ONE_DESCRIPTION" translateable="false" desc="Description of the first bullet for tracking protection settings. Explains what limiting third-party cookies means.">
-    Most sites can’t use third-party cookies to track you as you browse, and sites can’t use third-party cookies in Incognito mode.
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_ONE_DESCRIPTION" desc="Description of the first bullet for tracking protection settings. Explains what limiting third-party cookies means.">
+    Most sites can’t use third-party cookies to track you as you browse and sites can’t use third-party cookies in Incognito mode.
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_TWO" translateable="false" desc="The second bullet for tracking protection settings. Informs users that most sites should work as expected.">
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_TWO" desc="The second bullet for Tracking Protection settings. Informs users that most sites should work as expected.">
     Most sites should work as expected
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_TWO_DESCRIPTION" translateable="false" desc="Description of the second bullet for tracking protection settings. Explains that you can temporarilty allow a site to use third-party cookies if it isn't working.">
-    If a site isn’t working, you can try giving it temporary permission to use third-party cookies. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_TWO_DESCRIPTION" desc="Description of the second bullet for Tracking Protection settings. Explains that you can temporarilty allow a site to use third-party cookies if it isn't working. Contains a learn more link to a help center article.">
+    If a site isn’t working, you can try giving it temporary permission to use third-party cookies. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1" aria-label="$2"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_TOGGLE_LABEL" translateable="false" desc="Label for a toggle that allows the user to block all third-party cookies.">
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_TWO_LEARN_MORE_ARIA_LABEL" desc="Screenreader text for the 'Learn more' link in the second bullet of Tracking Protection settings.">
+    Learn more about giving a site temporary permission to use third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_ADVANCED_LABEL" desc="Label for a section on the Tracking Protection settings page containing advanced options.">
+    Advanced
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_TOGGLE_LABEL" desc="Label for a toggle that blocks all third-party cookies when on.">
     Block all third-party cookies
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_TOGGLE_SUB_LABEL" translateable="false" desc="Sub-label for the third-party cookie blocking toggle. Explains that features on some sites may not work.">
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_TOGGLE_SUB_LABEL" desc="Sub-label for the third-party cookie blocking toggle. Explains that features on some sites may not work when the toggle is on and third-party cookies are blocked.">
     Features on some sites may not work.
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_DO_NOT_TRACK_TOGGLE_SUB_LABEL" translateable="false" desc="Sub-label for the 'do not track' toggle. Explains that sites may not respond to the 'do not track' request even when enabled.">
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_LEARN_MORE_ARIA_LABEL" desc="Screenreader text for the 'Learn more' link in the sub-label of the third-party cookie blocking toggle.">
+    Learn more about sites that may not work when blocking third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_DO_NOT_TRACK_TOGGLE_SUB_LABEL" desc="Sub-label for the Do Not Track toggle. Explains that sites may not respond to 'do not track' requests even when this toggle is on.">
     Sites use their discretion when responding to this request
   </message>
-  <message name="IDS_SETTINGS_TRACKING_PROTECTION_ADVANCED_LABEL" translateable="false" desc="Label for an expandable section containing advanced tracking protection options.">
-    Advanced
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_SITES_ALLOWED_COOKIES_TITLE" desc="Title of the section on the Tracking Protection settings page that lets users manage which sites are allowed to use third-party cookies.">
+    Sites allowed to use third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_SITES_ALLOWED_COOKIES_DESCRIPTION" desc="Description of the section on the Tracking Protection settings page that lets users manage which sites are allowed to use third-party cookies. Explains that third-party cookies are also allowed for subdomains of the listed sites.">
+   Affects the sites listed here and their subdomains. For example, adding “google.com” means that third-party cookies can also be active for mail.google.com, because it’s part of google.com.
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_APP_PROTOCOL_HANDLERS" desc="Label for the app protocol handlers (e.g. mailto) in site settings.">
     Apps
@@ -3699,7 +3711,7 @@
   <message name="IDS_SETTINGS_STORAGE_ACCESS_RESET_ALL" desc="Label for the trashcan button to reset the permission for allowing or blocking a website to access its unpartitioned cookies while embedded in all other sites.">
     Remove <ph name="SITE">$1<ex>google.com</ex></ph>
   </message>
-  <message name="IDS_SETTINGS_STORAGE_ACCESS_RESET_SITE" desc="Label for the trashcan button to reset all the permissions for allowing or blocking a website (embedded.com) to “use their info“ while on another website (top-level.com).">
+  <message name="IDS_SETTINGS_STORAGE_ACCESS_RESET_SITE" desc="Label for the trashcan button to reset the permission for allowing or blocking a website (embedded.com) to “use their info“ while on another website (top-level.com).">
     Remove <ph name="EMBEDDED_SITE">$1<ex>embedding.com</ex></ph> from <ph name="SITE">$2<ex>top-level.com</ex></ph>
   </message>
   <message name="IDS_SETTINGS_STORAGE_ACCESS_OPEN_EXPAND" desc="Label for an expand button to open a collapse row with the websites an origin website (top-level.com) is allowed or blocked to “use their info“ on">

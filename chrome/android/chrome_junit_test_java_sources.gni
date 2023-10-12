@@ -1,6 +1,7 @@
 chrome_junit_test_java_sources = [
   "java/src/org/chromium/chrome/browser/auxiliary_search/AuxiliarySearchBridgeTest.java",
   "java/src/org/chromium/chrome/browser/auxiliary_search/AuxiliarySearchProviderTest.java",
+  "java/src/org/chromium/chrome/browser/hub/HubLayoutUnitTest.java",
   "java/src/org/chromium/chrome/browser/segmentation_platform/ContextualPageActionControllerUnitTest.java",
   "java/src/org/chromium/chrome/browser/segmentation_platform/PriceTrackingActionProviderTest.java",
   "java/src/org/chromium/chrome/browser/segmentation_platform/ReaderModeActionProviderTest.java",
@@ -13,6 +14,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/ChromeBackupAgentTest.java",
   "junit/src/org/chromium/chrome/browser/ChromeBaseAppCompatActivityUnitTest.java",
   "junit/src/org/chromium/chrome/browser/ChromeLocalizationUtilsTest.java",
+  "junit/src/org/chromium/chrome/browser/ChromeRobolectricTestRunner.java",
   "junit/src/org/chromium/chrome/browser/DeferredStartupHandlerTest.java",
   "junit/src/org/chromium/chrome/browser/DragAndDropLauncherActivityUnitTest.java",
   "junit/src/org/chromium/chrome/browser/HomeSurfaceTrackerUnitTest.java",
@@ -248,6 +250,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/notifications/NotificationTriggerBackgroundTaskTest.java",
   "junit/src/org/chromium/chrome/browser/notifications/NotificationTriggerSchedulerTest.java",
   "junit/src/org/chromium/chrome/browser/ntp/FeedPositionUtilUnitTest.java",
+  "junit/src/org/chromium/chrome/browser/ntp/NewTabPageUtilUnitTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/BackgroundSchedulerTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/ClientIdTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/OfflineBackgroundTaskTest.java",

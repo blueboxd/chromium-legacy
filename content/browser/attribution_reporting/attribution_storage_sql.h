@@ -164,6 +164,8 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
     kError,
   };
 
+  void RecordValidReports() VALID_CONTEXT_REQUIRED(sequence_checker_);
+
   void RecordSourcesPerSourceOrigin() VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   ReportAlreadyStoredStatus ReportAlreadyStored(
@@ -340,7 +342,6 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       int64_t aggregatable_budget_consumed,
       int num_aggregatable_reports,
       absl::optional<uint64_t> dedup_key,
-      absl::optional<int64_t>& aggregatable_budget_per_source,
       absl::optional<int>& max_aggregatable_reports_per_source)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
@@ -360,6 +361,10 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   // Randomly assigns trigger verification data to the given reports.
   void AssignTriggerVerificationData(std::vector<AttributionReport>&,
                                      const AttributionTrigger&)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
+
+  uint64_t SanitizeTriggerData(uint64_t trigger_data,
+                               attribution_reporting::mojom::SourceType)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // If set, database errors will not crash the client when run in debug mode.

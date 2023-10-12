@@ -37,6 +37,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/shared_image_capabilities.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "media/base/video_frame.h"
@@ -111,8 +112,6 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_uniform_location.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object_oes.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_video_texture.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_video_texture_enum.h"
 #include "third_party/blink/renderer/modules/xr/xr_system.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -208,6 +207,30 @@ WebGLRenderingContextBaseMap& ForciblyEvictedContexts() {
     LEAK_SANITIZER_IGNORE_OBJECT(&forcibly_evicted_contexts_persistent);
   }
   return *forcibly_evicted_contexts_persistent;
+}
+
+WebGLVideoFrameUploadMetadata CreateVideoFrameUploadMetadata(
+    const media::VideoFrame* frame,
+    media::VideoFrame::ID already_uploaded_id) {
+  DCHECK(frame);
+  WebGLVideoFrameUploadMetadata metadata = {};
+  if (!RuntimeEnabledFeatures::ExtraWebGLVideoTextureMetadataEnabled()) {
+    return metadata;
+  }
+
+  metadata.frame_id = frame->unique_id();
+  metadata.visible_rect = frame->visible_rect();
+  metadata.timestamp = frame->timestamp();
+  if (frame->metadata().frame_duration.has_value()) {
+    metadata.expected_timestamp =
+        frame->timestamp() + *frame->metadata().frame_duration;
+  };
+
+  // Skip uploading frames which have already been uploaded.
+  if (already_uploaded_id == frame->unique_id()) {
+    metadata.skipped = true;
+  }
+  return metadata;
 }
 
 }  // namespace
@@ -1166,8 +1189,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       task_runner_(task_runner),
       num_gl_errors_to_console_allowed_(kMaxGLErrorsAllowedToConsole),
       context_type_(context_type),
-      program_completion_queries_(
-          base::LRUCache<WebGLProgram*, GLuint>::NO_AUTO_EVICT),
       number_of_user_allocated_multisampled_renderbuffers_(0) {
   DCHECK(context_provider);
 
@@ -1251,9 +1272,10 @@ scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
       Host()->IsOffscreenCanvas() ? DrawingBuffer::kDisallowChromiumImage
                                   : DrawingBuffer::kAllowChromiumImage;
 
-  bool using_swap_chain =
-      context_provider->GetCapabilities().shared_image_swap_chain &&
-      desynchronized;
+  bool using_swap_chain = context_provider->SharedImageInterface()
+                              ->GetCapabilities()
+                              .shared_image_swap_chain &&
+                          desynchronized;
 
   ScopedPixelLocalStorageInterrupt scoped_pls_interrupt(this);
   return DrawingBuffer::Create(
@@ -2152,14 +2174,6 @@ void WebGLRenderingContextBase::bindTexture(GLenum target,
     texture_units_[active_texture_unit_].texture2d_array_binding_ = texture;
   } else if (IsWebGL2() && target == GL_TEXTURE_3D) {
     texture_units_[active_texture_unit_].texture3d_binding_ = texture;
-  } else if (target == GL_TEXTURE_VIDEO_IMAGE_WEBGL) {
-    if (!ExtensionEnabled(kWebGLVideoTextureName)) {
-      SynthesizeGLError(
-          GL_INVALID_VALUE, "bindTexture",
-          "unhandled type, WEBGL_video_texture extension not enabled");
-      return;
-    }
-    texture_units_[active_texture_unit_].texture_video_image_binding_ = texture;
   } else if (target == GL_TEXTURE_EXTERNAL_OES) {
     SynthesizeGLError(GL_INVALID_ENUM, "bindTexture",
                       "GL_TEXTURE_EXTERNAL_OES textures not supported");
@@ -2173,29 +2187,7 @@ void WebGLRenderingContextBase::bindTexture(GLenum target,
     return;
   }
 
-  // We use TEXTURE_EXTERNAL_OES to implement video texture on Android platform
-  if (target == GL_TEXTURE_VIDEO_IMAGE_WEBGL) {
-#if BUILDFLAG(IS_ANDROID)
-    // TODO(crbug.com/776222): Support extension on Android
-    NOTIMPLEMENTED();
-    return;
-#else
-    // TODO(crbug.com/776222): Using GL_TEXTURE_VIDEO_IMAGE_WEBGL in blink
-    ContextGL()->BindTexture(GL_TEXTURE_2D, ObjectOrZero(texture));
-    if (texture && !texture->GetTarget()) {
-      ContextGL()->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                                 GL_LINEAR);
-      ContextGL()->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                                 GL_LINEAR);
-      ContextGL()->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-                                 GL_CLAMP_TO_EDGE);
-      ContextGL()->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-                                 GL_CLAMP_TO_EDGE);
-    }
-#endif  // BUILDFLAG(IS_ANDROID)
-  } else {
-    ContextGL()->BindTexture(target, ObjectOrZero(texture));
-  }
+  ContextGL()->BindTexture(target, ObjectOrZero(texture));
   if (texture) {
     texture->SetTarget(target);
     one_plus_max_non_default_texture_unit_ =
@@ -4338,16 +4330,6 @@ ScriptValue WebGLRenderingContextBase::getUniform(
             base_type = GL_INT;
             length = 1;
             break;
-          case GL_SAMPLER_VIDEO_IMAGE_WEBGL:
-            if (!ExtensionEnabled(kWebGLVideoTextureName)) {
-              SynthesizeGLError(
-                  GL_INVALID_VALUE, "getUniform",
-                  "unhandled type, WEBGL_video_texture extension not enabled");
-              return ScriptValue::CreateNull(script_state->GetIsolate());
-            }
-            base_type = GL_INT;
-            length = 1;
-            break;
           default:
             if (!IsWebGL2()) {
               // Can't handle this type
@@ -6166,7 +6148,7 @@ void WebGLRenderingContextBase::TexImageHelperVideoFrame(
   if (auto sk_img = local_handle->sk_image()) {
     DCHECK(!sk_img->isTextureBacked());
     // For WebGL last-uploaded-frame-metadata API. https://crbug.com/639174
-    auto metadata = WebGLVideoTexture::CreateVideoFrameUploadMetadata(
+    auto metadata = CreateVideoFrameUploadMetadata(
         local_handle->frame().get(), texture->GetLastUploadedVideoFrameId());
     if (metadata.skipped) {
       texture->UpdateLastUploadedFrame(metadata);
@@ -6193,7 +6175,7 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
   DCHECK(texture);
   DCHECK(media_video_frame);
 
-  auto metadata = WebGLVideoTexture::CreateVideoFrameUploadMetadata(
+  auto metadata = CreateVideoFrameUploadMetadata(
       media_video_frame.get(), texture->GetLastUploadedVideoFrameId());
   if (metadata.skipped) {
     texture->UpdateLastUploadedFrame(metadata);
@@ -6263,7 +6245,7 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
             raster_context_provider, ContextGL(), media_video_frame,
             params.target, texture->Object(), adjusted_internalformat,
             params.format, params.type, params.level, unpack_premultiply_alpha_,
-            unpack_flip_y_)) {
+            unpack_flip_y_, /*allow_shared_image_for_direct_upload=*/true)) {
       texture->UpdateLastUploadedFrame(metadata);
       return;
     }
@@ -6280,7 +6262,7 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
             raster_context_provider, ContextGL(), media_video_frame,
             params.target, texture->Object(), adjusted_internalformat,
             params.format, params.type, params.level, unpack_premultiply_alpha_,
-            unpack_flip_y_)) {
+            unpack_flip_y_, /*allow_shared_image_for_direct_upload=*/true)) {
       texture->UpdateLastUploadedFrame(metadata);
       return;
     }
@@ -6489,14 +6471,6 @@ void WebGLRenderingContextBase::TexParameter(GLenum target,
     return;
   switch (pname) {
     case GL_TEXTURE_MIN_FILTER:
-      if (target == GL_TEXTURE_VIDEO_IMAGE_WEBGL) {
-        if ((is_float && paramf != GL_NEAREST && paramf != GL_LINEAR) ||
-            (!is_float && parami != GL_NEAREST && parami != GL_LINEAR)) {
-          SynthesizeGLError(GL_INVALID_ENUM, "texParameter",
-                            "invalid parameter name");
-          return;
-        }
-      }
       break;
     case GL_TEXTURE_MAG_FILTER:
       break;
@@ -6525,15 +6499,6 @@ void WebGLRenderingContextBase::TexParameter(GLenum target,
            parami != GL_MIRRORED_REPEAT && parami != GL_REPEAT)) {
         SynthesizeGLError(GL_INVALID_ENUM, "texParameter", "invalid parameter");
         return;
-      }
-
-      if (target == GL_TEXTURE_VIDEO_IMAGE_WEBGL) {
-        if ((is_float && paramf != GL_CLAMP_TO_EDGE) ||
-            (!is_float && parami != GL_CLAMP_TO_EDGE)) {
-          SynthesizeGLError(GL_INVALID_ENUM, "texParameter",
-                            "invalid parameter");
-          return;
-        }
       }
       break;
     case GL_TEXTURE_MAX_ANISOTROPY_EXT:  // EXT_texture_filter_anisotropic
@@ -7792,15 +7757,6 @@ WebGLTexture* WebGLRenderingContextBase::ValidateTextureBinding(
       }
       tex = texture_units_[active_texture_unit_].texture2d_array_binding_.Get();
       break;
-    case GL_TEXTURE_VIDEO_IMAGE_WEBGL:
-      if (!ExtensionEnabled(kWebGLVideoTextureName)) {
-        SynthesizeGLError(GL_INVALID_ENUM, function_name,
-                          "invalid texture target");
-        return nullptr;
-      }
-      tex = texture_units_[active_texture_unit_]
-                .texture_video_image_binding_.Get();
-      break;
     default:
       SynthesizeGLError(GL_INVALID_ENUM, function_name,
                         "invalid texture target");
@@ -8051,8 +8007,6 @@ GLint WebGLRenderingContextBase::GetMaxTextureLevelForTarget(GLenum target) {
     case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
     case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
       return max_cube_map_texture_level_;
-    case GL_TEXTURE_VIDEO_IMAGE_WEBGL:
-      return 1;
   }
   return 0;
 }
@@ -8090,7 +8044,6 @@ bool WebGLRenderingContextBase::ValidateTexFuncDimensions(
 
   switch (target) {
     case GL_TEXTURE_2D:
-    case GL_TEXTURE_VIDEO_IMAGE_WEBGL:
       if (width > (max_texture_size_ >> level) ||
           height > (max_texture_size_ >> level)) {
         SynthesizeGLError(GL_INVALID_VALUE, function_name,
@@ -9050,6 +9003,8 @@ void WebGLRenderingContextBase::Trace(Visitor* visitor) const {
   visitor->Trace(texture_units_);
   visitor->Trace(extensions_);
   visitor->Trace(make_xr_compatible_resolver_);
+  visitor->Trace(program_completion_query_list_);
+  visitor->Trace(program_completion_query_map_);
   CanvasRenderingContext::Trace(visitor);
 }
 
@@ -9104,33 +9059,45 @@ WebGLRenderingContextBase::getHTMLOrOffscreenCanvas() const {
 
 void WebGLRenderingContextBase::addProgramCompletionQuery(WebGLProgram* program,
                                                           GLuint query) {
-  auto old_query = program_completion_queries_.Get(program);
-  if (old_query != program_completion_queries_.end()) {
-    ContextGL()->DeleteQueriesEXT(1, &old_query->second);
+  auto old_query = program_completion_query_map_.find(program);
+  if (old_query != program_completion_query_map_.end()) {
+    ContextGL()->DeleteQueriesEXT(1, &old_query->value);
+    // If this program's been inserted into the map already, then it
+    // exists in the list, too. Clear it out from there so that its
+    // new addition doesn't introduce a duplicate.
+    wtf_size_t old_index = program_completion_query_list_.Find(program);
+    DCHECK_NE(old_index, WTF::kNotFound);
+    program_completion_query_list_.EraseAt(old_index);
   }
-  program_completion_queries_.Put(program, query);
-  if (program_completion_queries_.size() > kMaxProgramCompletionQueries) {
-    auto oldest = program_completion_queries_.rbegin();
-    ContextGL()->DeleteQueriesEXT(1, &oldest->second);
-    program_completion_queries_.Erase(oldest);
+  program_completion_query_map_.Set(program, query);
+  program_completion_query_list_.push_back(program);
+  if (program_completion_query_map_.size() > kMaxProgramCompletionQueries) {
+    DCHECK_GT(program_completion_query_list_.size(), 0u);
+    WebGLProgram* program_to_remove = program_completion_query_list_[0];
+    auto program_iter = program_completion_query_map_.find(program_to_remove);
+    DCHECK_NE(program_iter, program_completion_query_map_.end());
+    ContextGL()->DeleteQueriesEXT(1, &program_iter->value);
+    program_completion_query_map_.erase(program_iter);
+    program_completion_query_list_.EraseAt(0);
   }
 }
 
 void WebGLRenderingContextBase::clearProgramCompletionQueries() {
-  for (auto query : program_completion_queries_) {
-    ContextGL()->DeleteQueriesEXT(1, &query.second);
+  for (auto iter : program_completion_query_map_) {
+    ContextGL()->DeleteQueriesEXT(1, &iter.value);
   }
-  program_completion_queries_.Clear();
+  program_completion_query_map_.clear();
+  program_completion_query_list_.clear();
 }
 
 bool WebGLRenderingContextBase::checkProgramCompletionQueryAvailable(
     WebGLProgram* program,
     bool* completed) {
   GLuint id = 0;
-  auto found = program_completion_queries_.Get(program);
-  if (found != program_completion_queries_.end()) {
-    id = found->second;
-    GLuint available;
+  auto found = program_completion_query_map_.find(program);
+  if (found != program_completion_query_map_.end()) {
+    id = found->value;
+    GLuint available = 0;
     ContextGL()->GetQueryObjectuivEXT(id, GL_QUERY_RESULT_AVAILABLE,
                                       &available);
     if (available) {

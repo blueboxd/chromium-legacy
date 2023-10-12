@@ -30,7 +30,6 @@ class IdentityManager;
 }  // namespace signin
 
 namespace commerce {
-class AccountChecker;
 class ParcelsServerProxy;
 class ParcelsStorage;
 
@@ -41,8 +40,7 @@ class ParcelsManager {
       signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       SessionProtoStorage<parcel_tracking_db::ParcelTrackingContent>*
-          parcel_tracking_proto_db,
-      AccountChecker* account_checker);
+          parcel_tracking_proto_db);
   // Ctor used for testing purposes.
   ParcelsManager(std::unique_ptr<ParcelsServerProxy> parcels_server_proxy,
                  std::unique_ptr<ParcelsStorage> parcels_storage,
@@ -62,8 +60,15 @@ class ParcelsManager {
   void GetAllParcelStatuses(GetParcelStatusCallback callback);
 
   // Called to stop tracking a given parcel.
+  // DEPRECATED.
   void StopTrackingParcel(const std::string& tracking_id,
                           StopParcelTrackingCallback callback);
+
+  // Called to stop tracking multiple parcels.
+  void StopTrackingParcels(
+      const std::vector<std::pair<ParcelIdentifier::Carrier, std::string>>&
+          parcel_identifiers,
+      StopParcelTrackingCallback callback);
 
   // Called to stop tracking all parcels.
   void StopTrackingAllParcels(StopParcelTrackingCallback callback);
@@ -95,6 +100,11 @@ class ParcelsManager {
   void GetAllParcelStatusesInternal(GetParcelStatusCallback callback);
   void StopTrackingParcelInternal(const std::string& tracking_id,
                                   StopParcelTrackingCallback callback);
+  void StopTrackingParcelsInternal(
+      const std::vector<std::pair<ParcelIdentifier::Carrier, std::string>>&
+          parcel_identifiers,
+      StopParcelTrackingCallback callback);
+
   void StopTrackingAllParcelsInternal(StopParcelTrackingCallback callback);
 
   // Called when parcel status is retrieved from the network. If
@@ -111,6 +121,12 @@ class ParcelsManager {
   void OnStopTrackingParcelDone(const std::string& tracking_id,
                                 StopParcelTrackingCallback callback,
                                 bool success);
+
+  // Called when stop all parcel tracking is completed.
+  void OnStopTrackingParcelsDone(
+      const std::vector<ParcelIdentifier>& parcel_identifiers,
+      StopParcelTrackingCallback callback,
+      bool success);
 
   // Called when stop all parcel tracking is completed.
   void OnStopTrackingAllParcelsDone(StopParcelTrackingCallback callback,

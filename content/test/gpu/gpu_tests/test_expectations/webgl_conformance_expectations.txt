@@ -138,7 +138,6 @@ crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [
 crbug.com/angleproject/3031 [ android angle-opengles passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
 crbug.com/angleproject/3031 [ mac angle-opengl passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
 crbug.com/angleproject/3031 [ win angle-opengl passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
-crbug.com/776222 [ android ] WebglExtension_WEBGL_video_texture [ Skip ]
 
 # Extensions not available with SwiftShader
 [ passthrough angle-swiftshader ] WebglExtension_EXT_blend_func_extended [ Skip ]
@@ -221,11 +220,15 @@ crbug.com/1473838 [ chromeos passthrough ] WebglExtension_EXT_texture_mirror_cla
 crbug.com/1473838 [ chromeos passthrough ] WebglExtension_WEBGL_polygon_mode [ Skip ]
 
 # Extensions not available on jacuzzi ChromeOS devices.
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi passthrough angle-opengles ] WebglExtension_EXT_blend_func_extended [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_EXT_clip_control [ Skip ]
 crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_EXT_color_buffer_half_float [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_EXT_depth_clamp [ Skip ]
 crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_EXT_frag_depth [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_EXT_polygon_offset_clamp [ Skip ]
 crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
-crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_OES_texture_float [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi passthrough angle-opengles ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
 crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_OES_texture_float_linear [ Skip ]
 crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_OES_texture_half_float [ Skip ]
 crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_OES_texture_half_float_linear [ Skip ]
@@ -448,7 +451,17 @@ crbug.com/angleproject/6358 [ no-passthrough ] conformance/programs/program-test
 crbug.com/1371306 [ fuchsia web-engine-shell ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
 
 # Flaky tests
-[ fuchsia web-engine-shell ] WebglExtension_EXT_float_blend [ Failure ]
+crbug.com/1489477 [ fuchsia fuchsia-board-astro ] conformance/more/conformance/quickCheck* [ Failure ]
+crbug.com/1489477 [ fuchsia web-engine-shell ] WebglExtension_EXT_float_blend [ Failure ]
+crbug.com/1489477 [ fuchsia ] conformance/buffers/buffer-data-array-buffer-delete.html [ Failure ]
+crbug.com/1489477 [ fuchsia ] conformance/buffers/element-array-buffer-delete-recreate.html [ Failure ]
+crbug.com/1489477 [ fuchsia ] conformance/state/gl-object-get-calls.html [ Failure ]
+crbug.com/1489477 [ fuchsia ] conformance/textures/canvas/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+crbug.com/1489477 [ fuchsia ] conformance/textures/canvas/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
+crbug.com/1489477 [ fuchsia ] conformance/textures/misc/texture-size-limit.html [ Failure ]
+crbug.com/1489477 [ fuchsia ] conformance/textures/misc/texture-sub-image-cube-maps.html [ Failure ]
+crbug.com/1489477 [ fuchsia ] conformance/textures/misc/texture-upload-size.html [ Failure ]
+crbug.com/1489477 [ fuchsia ] conformance/textures/svg_image/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 
 # Anti-aliasing disabled on Fuchsia
 [ fuchsia ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
@@ -519,7 +532,7 @@ crbug.com/1230781 [ mac amd-0x67ef angle-opengl ] conformance/canvas/to-data-url
 # been made more robust.
 # crbug.com/735483 [ mac amd release ] conformance/rendering/texture-switch-performance.html [ Failure ]
 
-crbug.com/1435021 [ mac amd-0x67ef angle-metal ] conformance/canvas/draw-webgl-to-canvas-test.html [ Failure ]
+crbug.com/1435021 [ amd-0x67ef angle-metal mac no-clang-coverage release ] conformance/canvas/draw-webgl-to-canvas-test.html [ Failure ]
 
 ## Mac Intel ##
 
@@ -671,13 +684,18 @@ crbug.com/angleproject/5038 [ chromeos passthrough ] conformance/extensions/ext-
 # Failures on validating command decoder only; won't fix.
 crbug.com/angleproject/5038 [ chromeos chromeos-board-amd64-generic mesa_ge_21.0 no-passthrough target-cpu-64 ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
 
-
-
 ## VM Issues ##
 
 # Failing on chromeos-amd64-generic-rel.
 crbug.com/1232446 [ chromeos chromeos-board-amd64-generic ] conformance/rendering/gl-scissor-test.html [ Failure ]
 crbug.com/1357064 [ chromeos chromeos-board-amd64-generic no-passthrough ] conformance/rendering/blending.html [ Failure ]
+crbug.com/1455026 [ chromeos chromeos-board-amd64-generic ] conformance/extensions/ext-disjoint-timer-query.html [ Failure ]
+
+## Jacuzzi ##
+crbug.com/1410164 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_TestCoverage [ Failure ]
+crbug.com/1488973 [ chromeos cros-chrome chromeos-board-jacuzzi ] conformance/glsl/bugs/constant-precision-qualifier.html [ Failure ]
+crbug.com/1488978 [ chromeos cros-chrome chromeos-board-jacuzzi ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
+crbug.com/1488979 [ chromeos cros-chrome chromeos-board-jacuzzi ] conformance/misc/shader-precision-format.html [ Failure ]
 
 #####################
 # Lacros failures #

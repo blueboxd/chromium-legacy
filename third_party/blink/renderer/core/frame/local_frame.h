@@ -53,7 +53,6 @@
 #include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/reporting_observer.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom-blink-forward.h"
@@ -615,8 +614,6 @@ class CORE_EXPORT LocalFrame final
 
   void ResumeSubresourceLoading();
 
-  void AnimateSnapFling(base::TimeTicks monotonic_time);
-
   ClientHintsPreferences& GetClientHintsPreferences() {
     return client_hints_preferences_;
   }
@@ -889,6 +886,8 @@ class CORE_EXPORT LocalFrame final
   // Sets a ResourceCache hosted by another frame in a different renderer.
   void SetResourceCacheRemote(mojo::PendingRemote<mojom::blink::ResourceCache>);
 
+  bool IsSameOrigin();
+
  private:
   friend class FrameNavigationDisabler;
   // LocalFrameMojoHandler is a part of LocalFrame.
@@ -1059,8 +1058,6 @@ class CORE_EXPORT LocalFrame final
   Member<FrameOverlay> frame_color_overlay_;
 
   absl::optional<base::UnguessableToken> embedding_token_;
-
-  mojom::FrameLifecycleState lifecycle_state_;
 
   std::unique_ptr<WebPrescientNetworking> prescient_networking_;
 

@@ -32,16 +32,16 @@
 #import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/follow/follow_java_script_feature.h"
-#import "ios/chrome/browser/https_upgrades/https_upgrade_service_factory.h"
-#import "ios/chrome/browser/link_to_text/link_to_text_java_script_feature.h"
+#import "ios/chrome/browser/https_upgrades/model/https_upgrade_service_factory.h"
+#import "ios/chrome/browser/link_to_text/model/link_to_text_java_script_feature.h"
 #import "ios/chrome/browser/ntp/browser_policy_new_tab_page_rewriter.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#import "ios/chrome/browser/prerender/prerender_service.h"
-#import "ios/chrome/browser/prerender/prerender_service_factory.h"
-#import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
-#import "ios/chrome/browser/reading_list/offline_url_utils.h"
-#import "ios/chrome/browser/safe_browsing/password_protection_java_script_feature.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
+#import "ios/chrome/browser/prerender/model/prerender_service.h"
+#import "ios/chrome/browser/prerender/model/prerender_service_factory.h"
+#import "ios/chrome/browser/reading_list/model/offline_page_tab_helper.h"
+#import "ios/chrome/browser/reading_list/model/offline_url_utils.h"
+#import "ios/chrome/browser/safe_browsing/model/password_protection_java_script_feature.h"
+#import "ios/chrome/browser/safe_browsing/model/safe_browsing_blocking_page.h"
 #import "ios/chrome/browser/search_engines/search_engine_java_script_feature.h"
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -98,11 +98,11 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #import "components/supervised_user/core/browser/supervised_user_interstitial.h"
-#import "ios/chrome/browser/supervised_user/supervised_user_error.h"
-#import "ios/chrome/browser/supervised_user/supervised_user_error_container.h"
-#import "ios/chrome/browser/supervised_user/supervised_user_interstitial_java_script_feature.h"
-#import "ios/chrome/browser/supervised_user/supervised_user_service_factory.h"
-#import "ios/chrome/browser/supervised_user/supervised_user_url_filter_tab_helper.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_error.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_error_container.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_interstitial_java_script_feature.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_service_factory.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_url_filter_tab_helper.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #import <UIKit/UIKit.h>
@@ -559,21 +559,16 @@ bool ChromeWebClient::IsMixedContentAutoupgradeEnabled(
 
 bool ChromeWebClient::IsBrowserLockdownModeEnabled(
     web::BrowserState* browser_state) {
-  if (base::FeatureList::IsEnabled(web::kBrowserLockdownModeAvailable)) {
-    ChromeBrowserState* chrome_browser_state =
-        ChromeBrowserState::FromBrowserState(browser_state);
-    PrefService* prefs = chrome_browser_state->GetPrefs();
-    return prefs->GetBoolean(prefs::kBrowserLockdownModeEnabled);
-  }
-  return false;
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(browser_state);
+  PrefService* prefs = chrome_browser_state->GetPrefs();
+  return prefs->GetBoolean(prefs::kBrowserLockdownModeEnabled);
 }
 
 void ChromeWebClient::SetOSLockdownModeEnabled(web::BrowserState* browser_state,
                                                bool enabled) {
-  if (base::FeatureList::IsEnabled(web::kBrowserLockdownModeAvailable)) {
-    ChromeBrowserState* chrome_browser_state =
-        ChromeBrowserState::FromBrowserState(browser_state);
-    PrefService* prefs = chrome_browser_state->GetPrefs();
-    prefs->SetBoolean(prefs::kOSLockdownModeEnabled, enabled);
-  }
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(browser_state);
+  PrefService* prefs = chrome_browser_state->GetPrefs();
+  prefs->SetBoolean(prefs::kOSLockdownModeEnabled, enabled);
 }

@@ -105,11 +105,6 @@ MATCHER_P(CreateReportMaxAttributionsLimitIs, matcher, "") {
                             result_listener);
 }
 
-MATCHER_P(CreateReportAggreggatableBudgetPerSourceIs, matcher, "") {
-  return ExplainMatchResult(
-      matcher, arg.limits().aggregatable_budget_per_source, result_listener);
-}
-
 MATCHER_P(CreateReportMaxAttributionReportingOriginsLimitIs, matcher, "") {
   return ExplainMatchResult(
       matcher, arg.limits().rate_limits_max_attribution_reporting_origins,
@@ -224,8 +219,9 @@ TEST_F(AttributionStorageTest, UniqueReportWindowsStored_ValuesIdentical) {
       SourceBuilder()
           .SetExpiry(base::Days(30))
           .SetEventReportWindows(
-              *attribution_reporting::EventReportWindows::CreateSingularWindow(
-                  base::Days(15)))
+              *attribution_reporting::EventReportWindows::Create(
+                  /*start_time=*/base::Days(3),
+                  /*end_times=*/{base::Days(15)}))
           .SetAggregatableReportWindow(base::Days(5))
           .Build());
   EXPECT_THAT(storage()->GetActiveSources(),
@@ -233,8 +229,9 @@ TEST_F(AttributionStorageTest, UniqueReportWindowsStored_ValuesIdentical) {
                   SourceBuilder()
                       .SetExpiry(base::Days(30))
                       .SetEventReportWindows(
-                          *attribution_reporting::EventReportWindows::
-                              CreateSingularWindow(base::Days(15)))
+                          *attribution_reporting::EventReportWindows::Create(
+                              /*start_time=*/base::Days(3),
+                              /*end_times=*/{base::Days(15)}))
                       .SetAggregatableReportWindow(base::Days(5))
                       .BuildCommonInfo())));
 }
@@ -389,7 +386,7 @@ TEST_F(AttributionStorageTest,
   storage()->StoreSource(
       SourceBuilder()
           .SetEventReportWindows(
-              *attribution_reporting::EventReportWindows::CreateWindows(
+              *attribution_reporting::EventReportWindows::Create(
                   base::Milliseconds(1), {base::Days(30)}))
           .Build());
 
@@ -402,52 +399,14 @@ TEST_F(AttributionStorageTest,
   storage()->StoreSource(
       SourceBuilder()
           .SetEventReportWindows(
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Milliseconds(0), {base::Milliseconds(1)}))
+              *attribution_reporting::EventReportWindows::Create(
+                  base::Milliseconds(0), {base::Hours(1)}))
           .Build());
 
-  task_environment_.FastForwardBy(base::Milliseconds(2));
+  task_environment_.FastForwardBy(base::Hours(1) + base::Microseconds(1));
 
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kReportWindowPassed,
             MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
-}
-
-TEST_F(AttributionStorageTest,
-       ImpressionWithReportWindowsOverDefault_WindowsTruncated) {
-  storage()->StoreSource(
-      SourceBuilder()
-          .SetEventReportWindows(
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Seconds(0), {base::Days(10)}))
-          .SetExpiry(base::Days(5))
-          .Build());
-
-  ASSERT_THAT(storage()->GetActiveSources(),
-              ElementsAre(EventReportWindowsIs(
-                  attribution_reporting::EventReportWindows::CreateWindows(
-                      base::Seconds(0), {base::Days(5)}))));
-}
-
-TEST_F(AttributionStorageTest,
-       ImpressionWithReportWindowsStartGTEDefaultEnd_RegistrationFailure) {
-  auto source =
-      SourceBuilder()
-          .SetEventReportWindows(
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(2), {base::Days(5)}))
-          .SetExpiry(base::Days(1))
-          .Build();
-  EXPECT_EQ(storage()->StoreSource(source).status,
-            StorableSource::Result::kEventReportWindowsInvalidStartTime);
-
-  source = SourceBuilder()
-               .SetEventReportWindows(
-                   *attribution_reporting::EventReportWindows::CreateWindows(
-                       base::Days(1), {base::Days(5)}))
-               .SetExpiry(base::Days(1))
-               .Build();
-  EXPECT_EQ(storage()->StoreSource(source).status,
-            StorableSource::Result::kEventReportWindowsInvalidStartTime);
 }
 
 TEST_F(AttributionStorageTest, OneConversion_OneReportScheduled) {
@@ -635,126 +594,6 @@ TEST_F(
 
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()),
               ElementsAre(ReportSourceIs(SourceEventIdIs(10))));
-}
-
-TEST_F(AttributionStorageTest, ReportTimes) {
-  const attribution_reporting::DestinationSet destinations =
-      *attribution_reporting::DestinationSet::Create(
-          {net::SchemefulSite::Deserialize("https://dest.test")});
-
-  const auto reporting_origin =
-      *SuitableOrigin::Deserialize("https://report.test");
-
-  const base::Time kSourceTime = base::Time::Now();
-
-  const struct {
-    const char* desc;
-    absl::optional<base::TimeDelta> expiry;
-    absl::optional<base::TimeDelta> event_report_window;
-    absl::optional<base::TimeDelta> aggregatable_report_window;
-    base::Time expected_expiry_time;
-    attribution_reporting::EventReportWindows expected_event_report_windows;
-    base::Time expected_aggregatable_report_window_time;
-  } kTestCases[] = {
-      {
-          .desc = "expiry",
-          .expiry = base::Days(4),
-          .expected_expiry_time = kSourceTime + base::Days(4),
-          .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(0), {base::Days(4)}),
-          .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(4),
-      },
-      {
-          .desc = "event-report-window",
-          .event_report_window = base::Days(4),
-          .expected_expiry_time = kSourceTime + base::Days(30),
-          .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(0), {base::Days(4)}),
-          .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(30),
-      },
-      {
-          .desc = "clamp-event-report-window",
-          .expiry = base::Days(4),
-          .event_report_window = base::Days(30),
-          .expected_expiry_time = kSourceTime + base::Days(4),
-          .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(0), {base::Days(4)}),
-          .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(4),
-      },
-      {
-          .desc = "aggregatable-report-window",
-          .aggregatable_report_window = base::Days(4),
-          .expected_expiry_time = kSourceTime + base::Days(30),
-          .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(0), {base::Days(30)}),
-          .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(4),
-      },
-      {
-          .desc = "clamp-aggregatable-report-window",
-          .expiry = base::Days(4),
-          .aggregatable_report_window = base::Days(30),
-          .expected_expiry_time = kSourceTime + base::Days(4),
-          .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(0), {base::Days(4)}),
-          .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(4),
-      },
-      {
-          .desc = "all",
-          .expiry = base::Days(9),
-          .event_report_window = base::Days(7),
-          .aggregatable_report_window = base::Days(5),
-          .expected_expiry_time = kSourceTime + base::Days(9),
-          .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(0), {base::Days(7)}),
-          .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(5),
-      },
-  };
-
-  for (const auto& test_case : kTestCases) {
-    attribution_reporting::SourceRegistration reg(destinations);
-    reg.expiry = test_case.expiry.value_or(base::Days(30));
-    reg.event_report_windows =
-        attribution_reporting::EventReportWindows::CreateSingularWindow(
-            test_case.event_report_window.value_or(reg.expiry));
-    reg.aggregatable_report_window = test_case.aggregatable_report_window;
-
-    storage()->StoreSource(
-        StorableSource(reporting_origin, std::move(reg),
-                       *SuitableOrigin::Deserialize("https://source.test"),
-                       attribution_reporting::mojom::SourceType::kNavigation,
-                       /*is_within_fenced_frame=*/false));
-
-    std::vector<StoredSource> sources = storage()->GetActiveSources();
-    ASSERT_THAT(sources, SizeIs(1)) << test_case.desc;
-    const StoredSource& actual = sources.front();
-
-    EXPECT_EQ(actual.expiry_time(), test_case.expected_expiry_time)
-        << test_case.desc;
-
-    EXPECT_EQ(actual.event_report_windows(),
-              test_case.expected_event_report_windows)
-        << test_case.desc;
-
-    EXPECT_EQ(actual.aggregatable_report_window_time(),
-              test_case.expected_aggregatable_report_window_time)
-        << test_case.desc;
-
-    storage()->ClearData(/*delete_begin=*/base::Time::Min(),
-                         /*delete_end=*/base::Time::Max(),
-                         /*filter=*/base::NullCallback());
-  }
 }
 
 TEST_F(AttributionStorageTest,
@@ -1283,15 +1122,15 @@ TEST_F(AttributionStorageTest, DeleteAllNullDeleteBegin) {
 }
 
 TEST_F(AttributionStorageTest, MaxAttributionsBetweenSites) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = 2;
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = 2;
+    return r;
+  }());
 
   SourceBuilder source_builder = TestAggregatableSourceProvider().GetBuilder();
   storage()->StoreSource(source_builder.Build());
@@ -1342,15 +1181,15 @@ TEST_F(AttributionStorageTest, MaxAttributionsBetweenSites) {
 
 TEST_F(AttributionStorageTest,
        MaxAttributionReportsBetweenSites_IgnoresSourceType) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = 1;
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = 1;
+    return r;
+  }());
 
   storage()->StoreSource(
       SourceBuilder().SetSourceType(SourceType::kNavigation).Build());
@@ -1444,15 +1283,15 @@ TEST_F(AttributionStorageTest,
 }
 
 TEST_F(AttributionStorageTest, NeverAttributeImpression_RateLimitsChanged) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = 1;
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = 1;
+    return r;
+  }());
 
   delegate()->set_randomized_response(
       std::vector<AttributionStorageDelegate::FakeReport>{});
@@ -1474,15 +1313,15 @@ TEST_F(AttributionStorageTest, NeverAttributeImpression_RateLimitsChanged) {
 
 TEST_F(AttributionStorageTest,
        NeverAttributeSource_AggregatableReportStoredAndRateLimitsChanged) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = 2;
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = 2;
+    return r;
+  }());
 
   SourceBuilder builder = TestAggregatableSourceProvider().GetBuilder();
 
@@ -1890,15 +1729,15 @@ TEST_F(AttributionStorageTest, MultipleImpressions_CorrectDeactivation) {
 }
 
 TEST_F(AttributionStorageTest, FalselyAttributeImpression_ReportStored) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = 2;
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = 2;
+    return r;
+  }());
 
   const base::Time fake_report_time = base::Time::Now() + kReportDelay;
   const base::Time fake_trigger_time = fake_report_time - base::Microseconds(1);
@@ -3067,14 +2906,14 @@ TEST_F(AttributionStorageTest, MaybeCreateAndStoreReport_ReturnsNewReport) {
 // This is tested more thoroughly by the `RateLimitTable` unit tests. Here just
 // ensure that the rate limits are consulted at all.
 TEST_F(AttributionStorageTest, MaxReportingOriginsPerSource) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins = 2;
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = std::numeric_limits<int64_t>::max();
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins = 2;
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = std::numeric_limits<int64_t>::max();
+    return r;
+  }());
 
   auto result = storage()->StoreSource(
       SourceBuilder()
@@ -3104,14 +2943,15 @@ TEST_F(AttributionStorageTest, MaxReportingOriginsPerSource) {
 // This is tested more thoroughly by the `RateLimitTable` unit tests. Here just
 // ensure that the rate limits are consulted at all.
 TEST_F(AttributionStorageTest, MaxReportingOriginsPerAttribution) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins = 2;
-        r.max_attributions = std::numeric_limits<int64_t>::max();
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = 2;
+    r.max_attributions = std::numeric_limits<int64_t>::max();
+    return r;
+  }());
 
   const auto origin1 = *SuitableOrigin::Deserialize("https://r1.test");
   const auto origin2 = *SuitableOrigin::Deserialize("https://r2.test");
@@ -3167,62 +3007,54 @@ TEST_F(AttributionStorageTest, SourceBudgetValueRetrieved) {
 }
 
 TEST_F(AttributionStorageTest, MaxAggregatableBudgetPerSource) {
-  delegate()->set_aggregatable_budget_per_source(16);
-
   auto provider = TestAggregatableSourceProvider(/*size=*/2);
   storage()->StoreSource(provider.GetBuilder().Build());
 
-  // A single contribution exceeds the budget.
-  EXPECT_THAT(
-      storage()->MaybeCreateAndStoreReport(DefaultAggregatableTriggerBuilder(
-                                               /*histogram_values=*/{17})
-                                               .Build()),
-      AllOf(CreateReportAggregatableStatusIs(
-                AttributionTrigger::AggregatableResult::kInsufficientBudget),
-            CreateReportAggreggatableBudgetPerSourceIs(16)));
+  // Note: A single contribution can't exceed the budget because
+  // `AggregatableValues::Create()`, which is used by
+  // `DefaultAggregatableTriggerBuilder()`, prevents such an instance from being
+  // constructed.
 
   EXPECT_THAT(
       storage()->MaybeCreateAndStoreReport(DefaultAggregatableTriggerBuilder(
                                                /*histogram_values=*/{2, 5})
                                                .Build()),
-      AllOf(CreateReportAggregatableStatusIs(
-                AttributionTrigger::AggregatableResult::kSuccess),
-            CreateReportAggreggatableBudgetPerSourceIs(absl::nullopt)));
+      CreateReportAggregatableStatusIs(
+          AttributionTrigger::AggregatableResult::kSuccess));
 
-  EXPECT_THAT(
-      storage()->MaybeCreateAndStoreReport(DefaultAggregatableTriggerBuilder(
-                                               /*histogram_values=*/{10})
-                                               .Build()),
-      AllOf(CreateReportAggregatableStatusIs(
-                AttributionTrigger::AggregatableResult::kInsufficientBudget),
-            CreateReportAggreggatableBudgetPerSourceIs(16)));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder(
+                      /*histogram_values=*/{
+                          attribution_reporting::kMaxAggregatableValue - 6})
+                      .Build()),
+              CreateReportAggregatableStatusIs(
+                  AttributionTrigger::AggregatableResult::kInsufficientBudget));
 
-  EXPECT_THAT(
-      storage()->MaybeCreateAndStoreReport(DefaultAggregatableTriggerBuilder(
-                                               /*histogram_values=*/{9})
-                                               .Build()),
-      AllOf(CreateReportAggregatableStatusIs(
-                AttributionTrigger::AggregatableResult::kSuccess),
-            CreateReportAggreggatableBudgetPerSourceIs(absl::nullopt)));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder(
+                      /*histogram_values=*/{
+                          attribution_reporting::kMaxAggregatableValue - 7})
+                      .Build()),
+              CreateReportAggregatableStatusIs(
+                  AttributionTrigger::AggregatableResult::kSuccess));
 
   EXPECT_THAT(
       storage()->MaybeCreateAndStoreReport(DefaultAggregatableTriggerBuilder(
                                                /*histogram_values=*/{1})
                                                .Build()),
-      AllOf(CreateReportAggregatableStatusIs(
-                AttributionTrigger::AggregatableResult::kInsufficientBudget),
-            CreateReportAggreggatableBudgetPerSourceIs(16)));
+      CreateReportAggregatableStatusIs(
+          AttributionTrigger::AggregatableResult::kInsufficientBudget));
 
   // The second source has higher priority and should have capacity.
   storage()->StoreSource(provider.GetBuilder().SetPriority(10).Build());
 
-  EXPECT_THAT(
-      storage()->MaybeCreateAndStoreReport(DefaultAggregatableTriggerBuilder(
-                                               /*histogram_values=*/{9})
-                                               .Build()),
-      AllOf(CreateReportAggregatableStatusIs(
-                AttributionTrigger::AggregatableResult::kSuccess),
-            CreateReportAggreggatableBudgetPerSourceIs(absl::nullopt)));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder(
+                      /*histogram_values=*/{
+                          attribution_reporting::kMaxAggregatableValue})
+                      .Build()),
+              CreateReportAggregatableStatusIs(
+                  AttributionTrigger::AggregatableResult::kSuccess));
 }
 
 TEST_F(AttributionStorageTest, BudgetConsumedAfterTriggerIsRetrieved) {
@@ -3840,15 +3672,15 @@ TEST_F(AttributionStorageTest, AggregationCoordinator_RoundTrip) {
 
 TEST_F(AttributionStorageTest, MaxAttributions_BoundedBySourceTimeWindow) {
   constexpr base::TimeDelta kTimeWindow = base::Days(1);
-  delegate()->set_rate_limits(
-      RateLimitWith([kTimeWindow](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = kTimeWindow;
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = 1;
-      }));
+  delegate()->set_rate_limits([kTimeWindow]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = kTimeWindow;
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = 1;
+    return r;
+  }());
 
   storage()->StoreSource(SourceBuilder().SetExpiry(base::Days(7)).Build());
 
@@ -4009,10 +3841,11 @@ TEST_F(AttributionStorageTest, MaximumAggregatableReportsPerSource) {
 }
 
 TEST_F(AttributionStorageTest, MaxSourceReportingOriginsPerSite) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.max_reporting_origins_per_source_reporting_site = 1;
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.max_reporting_origins_per_source_reporting_site = 1;
+    return r;
+  }());
 
   auto store_source = [&](std::string source, std::string reporting) {
     return storage()

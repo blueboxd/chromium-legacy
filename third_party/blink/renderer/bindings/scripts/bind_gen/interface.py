@@ -4189,7 +4189,8 @@ def bind_installer_local_vars(code_node, cg_context):
     local_vars.extend([
         S("is_cross_origin_isolated",
           ("const bool ${is_cross_origin_isolated} = "
-           "${execution_context}->CrossOriginIsolatedCapability();")),
+           "${execution_context}"
+           "->CrossOriginIsolatedCapabilityOrDisabledWebSecurity();")),
         S("is_in_isolated_context",
           ("const bool ${is_in_isolated_context} = "
            "${execution_context}->IsIsolatedContext();")),
@@ -5147,22 +5148,6 @@ ${prototype_object}->Delete(
 """
         nodes.append(FormatNode(pattern, property_name=property_name))
 
-    if class_like.identifier == "FileSystemDirectoryHandle":
-        pattern = """\
-// Temporary @@asyncIterator support for FileSystemDirectoryHandle
-// TODO(https://crbug.com/1087157): Replace with proper bindings support.
-// @@asyncIterator == "{property_name}"
-{{
-  v8::Local<v8::Value> v8_value = ${prototype_object}->Get(
-      ${v8_context}, V8AtomicString(${isolate}, "{property_name}"))
-      .ToLocalChecked();
-  ${prototype_object}->DefineOwnProperty(
-      ${v8_context}, v8::Symbol::GetAsyncIterator(${isolate}), v8_value,
-      v8::DontEnum).ToChecked();
-}}
-"""
-        nodes.append(TextNode(_format(pattern, property_name="entries")))
-
     if class_like.identifier == "SharedStorage":
         pattern = """\
 // Temporary @@asyncIterator support for SharedStorage
@@ -5355,24 +5340,6 @@ def make_install_interface_template(cg_context, function_name, class_name,
       V8AtomicString(${isolate}, "prototype"), v8::kErrorPrototype);
   ${interface_function_template}->Inherit(
       intrinsic_error_prototype_interface_template);
-}
-"""))
-
-    if class_like.identifier == "FileSystemDirectoryIterator":
-        body.append(
-            T("""\
-// Temporary @@asyncIterator support for FileSystemDirectoryHandle
-// TODO(https://crbug.com/1087157): Replace with proper bindings support.
-{
-  v8::Local<v8::FunctionTemplate>
-      intrinsic_iterator_prototype_interface_template =
-      v8::FunctionTemplate::New(${isolate}, nullptr, v8::Local<v8::Value>(),
-                                v8::Local<v8::Signature>(), 0,
-                                v8::ConstructorBehavior::kThrow);
-  intrinsic_iterator_prototype_interface_template->SetIntrinsicDataProperty(
-      V8AtomicString(${isolate}, "prototype"), v8::kAsyncIteratorPrototype);
-  ${interface_function_template}->Inherit(
-      intrinsic_iterator_prototype_interface_template);
 }
 """))
 
@@ -7049,6 +7016,7 @@ def generate_class_like(class_like,
         # Blink implementation class' header (e.g. node.h for Node)
         (class_like.code_generator_info.blink_headers
          and class_like.code_generator_info.blink_headers[0]),
+        "third_party/blink/public/mojom/origin_trial_feature/origin_trial_feature.mojom-shared.h",
     ])
     if interface and interface.inherited:
         api_source_node.accumulator.add_include_headers(
@@ -7070,6 +7038,7 @@ def generate_class_like(class_like,
         "third_party/blink/renderer/platform/bindings/idl_member_installer.h",
         "third_party/blink/renderer/platform/bindings/runtime_call_stats.h",
         "third_party/blink/renderer/platform/bindings/v8_binding.h",
+        "third_party/blink/public/mojom/origin_trial_feature/origin_trial_feature.mojom-shared.h",
     ])
     impl_source_node.accumulator.add_include_headers(
         _collect_include_headers(class_like))
@@ -7248,7 +7217,7 @@ def generate_install_properties_per_feature(function_name,
     # Function nodes
     arg_decls = [
         "ScriptState* script_state",
-        "OriginTrialFeature feature",
+        "mojom::blink::OriginTrialFeature feature",
     ]
     func_decl = CxxFuncDeclNode(
         name=function_name, arg_decls=arg_decls, return_type="void")
@@ -7262,7 +7231,7 @@ def generate_install_properties_per_feature(function_name,
         name="InstallPropertiesPerFeatureInternal",
         arg_decls=[
             "ScriptState* script_state",
-            "OriginTrialFeature feature",
+            "mojom::blink::OriginTrialFeature feature",
             "base::span<const WrapperTypeInfo* const> wrapper_type_info_list",
         ],
         return_type="void")
@@ -7286,6 +7255,7 @@ def generate_install_properties_per_feature(function_name,
         "base/containers/span.h",
         "third_party/blink/renderer/platform/bindings/script_state.h",
         "third_party/blink/renderer/platform/bindings/v8_per_context_data.h",
+        "third_party/blink/public/mojom/origin_trial_feature/origin_trial_feature.mojom-shared.h",
     ])
     source_node.extend([
         make_copyright_header(),
@@ -7354,7 +7324,7 @@ def generate_install_properties_per_feature(function_name,
             TextNode("};"),
         ])
         switch_node.append(
-            case="OriginTrialFeature::k{}".format(feature),
+            case="mojom::blink::OriginTrialFeature::k{}".format(feature),
             body=[
                 table_def,
                 TextNode("selected_wti_list = wti_list;"),

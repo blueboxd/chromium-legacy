@@ -939,6 +939,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.DeviceTrust.Key.LoadPersistedKeyResult"
+    enum="DTLoadPersistedKeyResult" expires_after="2024-06-01">
+  <owner>seblalancette@google.com</owner>
+  <owner>cbe-device-trust-eng@google.com</owner>
+  <summary>
+    Recorded when a key loading attempt was made with an enum value representing
+    either a successful attempt, or different possible errors.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.DeviceTrust.Key.Signing.Latency.{Variant}"
     units="ms" expires_after="2024-06-01">
   <owner>seblalancette@chromium.org</owner>
@@ -1211,7 +1221,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.CaptureModeInitBlocked" enum="BooleanBlocked"
-    expires_after="2023-10-08">
+    expires_after="2024-10-08">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -1566,7 +1576,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.RestrictionConfigured"
-    enum="EnterpriseDlpPolicyRestriction" expires_after="2023-10-08">
+    enum="EnterpriseDlpPolicyRestriction" expires_after="2024-10-08">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -2517,7 +2527,7 @@ chromium-metrics-reviews@google.com.
     <variant name="CopyToJson" summary="Copy To JSON"/>
     <variant name="ExportToJson" summary="Export To JSON"/>
     <variant name="ReloadPolicies" summary="Reload Policies"/>
-    <variant name="Upload Report" summary="Upload Report"/>
+    <variant name="UploadReport" summary="Upload Report"/>
   </token>
 </histogram>
 
@@ -2615,17 +2625,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Enterprise.RealtimeReportingSuccess"
-    enum="EnterpriseDMServerRequestSuccess" expires_after="2020-07-01">
-  <owner>rogerta@chromium.org</owner>
-  <summary>
-    Number of retries the client did to execute a real-time reporting upload
-    request. It's recorded after the request has been completed, either
-    successfully after 0 or more retries, with a failure (too many retries or
-    non-retriable error) or with a server error.
-  </summary>
-</histogram>
-
 <histogram name="Enterprise.RegularUserSession.SessionLength" units="minutes"
     expires_after="2024-03-17">
   <owner>bfranz@chromium.org</owner>
@@ -2672,6 +2671,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     Reporting events successfully uploaded to the reporting server bucketed by
     event type.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.SafeSites.Latency" units="ms"
+    expires_after="2024-02-11">
+  <owner>ftirelo@chromium.org</owner>
+  <owner>ljjlee@google.com</owner>
+  <owner>cbe-eng@google.com</owner>
+  <summary>
+    The latency of the request to the SafeSites API to classify URLs for users
+    with the SafeSitesFilterBehavior policy. This is measured once per
+    classified URL that requires a network request (URLs returned from the cache
+    are not recorded).
   </summary>
 </histogram>
 

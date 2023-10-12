@@ -6,6 +6,7 @@
 
 #import "base/time/time.h"
 #import "ios/chrome/browser/first_run/first_run.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/ntp/set_up_list_prefs.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 
@@ -42,7 +43,8 @@ bool IsSetUpListActive(PrefService* local_state) {
 
 bool ShouldShowCompactedSetUpListModule() {
   absl::optional<base::Time> firstRunTime = GetFirstRunTime();
-  base::Time expiry_time = firstRunTime.value() + base::Days(3);
+  base::Time expiry_time =
+      firstRunTime.value() + base::Days(TimeUntilShowingCompactedSetUpList());
   if (base::Time::Now() > expiry_time) {
     return true;
   }

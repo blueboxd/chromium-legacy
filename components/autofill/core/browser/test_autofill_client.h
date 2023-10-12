@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/logging/log_router.h"
 #include "components/autofill/core/browser/logging/text_log_receiver.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/ml_model/autofill_ml_prediction_model_handler.h"
 #include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
 #include "components/autofill/core/browser/mock_autofill_optimization_guide.h"
 #include "components/autofill/core/browser/mock_iban_manager.h"
@@ -34,9 +35,11 @@
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
 #include "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
+#include "components/autofill/core/browser/payments/credit_card_risk_based_authenticator.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/test/mock_mandatory_reauth_manager.h"
+#include "components/autofill/core/browser/payments/test/test_credit_card_risk_based_authenticator.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/strike_databases/payments/test_strike_database.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
@@ -49,6 +52,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/device_reauth/mock_device_authenticator.h"
+#include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/plus_addresses/plus_address_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -155,6 +159,14 @@ class TestAutofillClientTemplate : public T {
     return otp_authenticator_.get();
   }
 
+  CreditCardRiskBasedAuthenticator* GetRiskBasedAuthenticator() override {
+    if (!risk_based_authenticator_) {
+      risk_based_authenticator_ =
+          std::make_unique<TestCreditCardRiskBasedAuthenticator>(this);
+    }
+    return risk_based_authenticator_.get();
+  }
+
   PrefService* GetPrefs() override {
     if (!prefs_) {
       prefs_ = autofill::test::PrefServiceForTesting();
@@ -211,6 +223,18 @@ class TestAutofillClientTemplate : public T {
   FastCheckoutClient* GetFastCheckoutClient() override {
     return &mock_fast_checkout_client_;
   }
+
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  AutofillMlPredictionModelHandler* GetAutofillMlPredictionModelHandler()
+      override {
+    return ml_prediction_model_handler_.get();
+  }
+
+  void set_ml_prediction_model_handler(
+      std::unique_ptr<AutofillMlPredictionModelHandler> handler) {
+    ml_prediction_model_handler_ = std::move(handler);
+  }
+#endif
 
   const GURL& GetLastCommittedPrimaryMainFrameURL() const override {
     return last_committed_primary_main_frame_url_;
@@ -272,15 +296,6 @@ class TestAutofillClientTemplate : public T {
   }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-
-  std::vector<std::string> GetAllowedMerchantsForVirtualCards() override {
-    return allowed_merchants_;
-  }
-
-  std::vector<std::string> GetAllowedBinRangesForVirtualCards() override {
-    return allowed_bin_ranges_;
-  }
-
   void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) override {
     std::move(show_migration_dialog_closure).Run();
@@ -392,7 +407,10 @@ class TestAutofillClientTemplate : public T {
       AutofillClient::AddressProfileSavePromptCallback
           on_user_decision_callback) override {}
 
-  void ShowDeleteAddressProfileDialog() override {}
+  void ShowDeleteAddressProfileDialog(
+      const AutofillProfile& profile,
+      AutofillClient::AddressProfileDeleteDialogCallback delete_dialog_callback)
+      override {}
 
   bool HasCreditCardScanFeature() override { return false; }
 
@@ -445,6 +463,12 @@ class TestAutofillClientTemplate : public T {
       const AutofillErrorDialogContext& context) override {
     autofill_error_dialog_shown_ = true;
     autofill_error_dialog_context_ = context;
+  }
+
+  void ShowAutofillProgressDialog(
+      AutofillProgressDialogType autofill_progress_dialog_type,
+      base::OnceClosure cancel_callback) override {
+    autofill_progress_dialog_shown_ = true;
   }
 
   void CloseAutofillProgressDialog(
@@ -591,18 +615,6 @@ class TestAutofillClientTemplate : public T {
     variation_config_country_code_ = variation_config_country_code;
   }
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  void set_allowed_merchants(
-      const std::vector<std::string>& merchant_allowlist) {
-    allowed_merchants_ = merchant_allowlist;
-  }
-
-  void set_allowed_bin_ranges(
-      const std::vector<std::string>& bin_range_allowlist) {
-    allowed_bin_ranges_ = bin_range_allowlist;
-  }
-#endif
-
   void set_save_card_offer_user_decision(
       AutofillClient::SaveCardOfferUserDecision decision) {
     save_card_offer_user_decision_ = decision;
@@ -643,9 +655,18 @@ class TestAutofillClientTemplate : public T {
 
   bool autofill_error_dialog_shown() { return autofill_error_dialog_shown_; }
 
+  bool autofill_progress_dialog_shown() {
+    return autofill_progress_dialog_shown_;
+  }
+
   bool virtual_card_error_dialog_is_permanent_error() {
     return autofill_error_dialog_context().type ==
            AutofillErrorDialogType::kVirtualCardPermanentError;
+  }
+
+  bool risk_based_authentication_invoked() {
+    return risk_based_authenticator_ &&
+           risk_based_authenticator_->authenticate_invoked();
   }
 
   AutofillErrorDialogContext autofill_error_dialog_context() {
@@ -736,6 +757,11 @@ class TestAutofillClientTemplate : public T {
   std::unique_ptr<device_reauth::MockDeviceAuthenticator>
       device_authenticator_ = nullptr;
 
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  std::unique_ptr<AutofillMlPredictionModelHandler>
+      ml_prediction_model_handler_;
+#endif
+
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;
   std::unique_ptr<TestStrikeDatabase> test_strike_database_;
@@ -751,6 +777,8 @@ class TestAutofillClientTemplate : public T {
   // (or their members) keep a reference to it.
   std::unique_ptr<CreditCardCvcAuthenticator> cvc_authenticator_;
   std::unique_ptr<CreditCardOtpAuthenticator> otp_authenticator_;
+  std::unique_ptr<TestCreditCardRiskBasedAuthenticator>
+      risk_based_authenticator_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
 
   GURL form_origin_{"https://example.test"};
@@ -769,6 +797,8 @@ class TestAutofillClientTemplate : public T {
   bool confirm_save_iban_locally_called_ = false;
 
   bool autofill_error_dialog_shown_ = false;
+
+  bool autofill_progress_dialog_shown_ = false;
 
   // Context parameters that are used to display an error dialog during card
   // number retrieval. This context will have information that the autofill
@@ -826,11 +856,6 @@ class TestAutofillClientTemplate : public T {
   // The last URL submitted in the primary main frame by the user. Set in the
   // constructor.
   GURL last_committed_primary_main_frame_url_{"https://example.test"};
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  std::vector<std::string> allowed_merchants_;
-  std::vector<std::string> allowed_bin_ranges_;
-#endif
 
   LogRouter log_router_;
   struct LogToTerminal {

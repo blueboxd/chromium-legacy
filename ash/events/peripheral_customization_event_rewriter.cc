@@ -39,6 +39,8 @@ constexpr int kGraphicsTabletRemappableFlags =
 mojom::KeyEvent GetStaticShortcutAction(mojom::StaticShortcutAction action) {
   mojom::KeyEvent key_event;
   switch (action) {
+    case mojom::StaticShortcutAction::kDisable:
+      NOTREACHED_NORETURN();
     case mojom::StaticShortcutAction::kCopy:
       key_event = mojom::KeyEvent(
           ui::VKEY_C, static_cast<int>(ui::DomCode::US_C),
@@ -277,7 +279,12 @@ PeripheralCustomizationEventRewriter::GetDeviceTypeToObserve(int device_id) {
   return absl::nullopt;
 }
 
-void PeripheralCustomizationEventRewriter::StartObservingMouse(int device_id) {
+void PeripheralCustomizationEventRewriter::StartObservingMouse(
+    int device_id,
+    bool can_rewrite_key_event) {
+  if (can_rewrite_key_event) {
+    mice_to_observe_key_events_.insert(device_id);
+  }
   mice_to_observe_.insert(device_id);
 }
 
@@ -289,6 +296,7 @@ void PeripheralCustomizationEventRewriter::StartObservingGraphicsTablet(
 void PeripheralCustomizationEventRewriter::StopObserving() {
   graphics_tablets_to_observe_.clear();
   mice_to_observe_.clear();
+  mice_to_observe_key_events_.clear();
 }
 
 bool PeripheralCustomizationEventRewriter::NotifyMouseEventObserving(
@@ -336,6 +344,13 @@ bool PeripheralCustomizationEventRewriter::NotifyMouseEventObserving(
 bool PeripheralCustomizationEventRewriter::NotifyKeyEventObserving(
     const ui::KeyEvent& key_event,
     DeviceType device_type) {
+  // Only mice that are in the mice_to_observe_key_events_ set should be allowed
+  // to observe key events.
+  if (device_type == DeviceType::kMouse &&
+      !mice_to_observe_key_events_.contains(key_event.source_device_id())) {
+    return false;
+  }
+
   // Observers should only be notified on key presses.
   if (key_event.type() != ui::ET_KEY_PRESSED) {
     return true;
@@ -384,6 +399,11 @@ bool PeripheralCustomizationEventRewriter::RewriteEventFromButton(
   }
 
   if (remapping_action->is_static_shortcut_action()) {
+    if (remapping_action->get_static_shortcut_action() ==
+        mojom::StaticShortcutAction::kDisable) {
+      // Return true to discard the event.
+      return true;
+    }
     rewritten_event = RewriteEventToKeyEvent(
         event, GetStaticShortcutAction(
                    remapping_action->get_static_shortcut_action()));
@@ -474,14 +494,14 @@ PeripheralCustomizationEventRewriter::RewriteMouseEvent(
     }
     UpdatePressedButtonMap(std::move(button), mouse_event, rewritten_event);
   }
-
   if (!rewritten_event) {
-    if (mouse_event.IsMouseWheelEvent()) {
-      rewritten_event = std::make_unique<ui::MouseWheelEvent>(
-          *mouse_event.AsMouseWheelEvent());
-    } else {
-      rewritten_event = std::make_unique<ui::MouseEvent>(mouse_event);
-    }
+    rewritten_event = mouse_event.Clone();
+    // SetNativeEvent must be called explicitly as native events are not copied
+    // on ChromeOS by default. This is because `PlatformEvent` is a pointer by
+    // default, so its lifetime can not be guaranteed in general. In this case,
+    // the lifetime of  `rewritten_event` is guaranteed to be less than the
+    // original `mouse_event`.
+    SetNativeEvent(*rewritten_event, mouse_event.native_event());
   }
 
   RemoveRemappedModifiers(*rewritten_event);

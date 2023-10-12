@@ -809,8 +809,9 @@ void OverviewSession::SetWindowListNotAnimatedWhenExiting(
 
 void OverviewSession::UpdateRoundedCornersAndShadow() {
   for (auto& grid : grid_list_)
-    for (auto& window : grid->window_list())
+    for (auto& window : grid->window_list()) {
       window->UpdateRoundedCornersAndShadow();
+    }
 }
 
 void OverviewSession::OnStartingAnimationComplete(bool canceled,
@@ -1631,8 +1632,9 @@ void OverviewSession::OnItemAdded(aura::Window* window) {
 
   OverviewGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
   // The drop target window is non-activatable, so no need to transfer focus.
-  if (grid && grid->IsDropTargetWindow(window))
+  if (grid && grid->IsDropTargetItem(grid->GetOverviewItemContaining(window))) {
     return;
+  }
 
   // Transfer focus from `window` to `overview_focus_widget_` to match the
   // behavior of entering overview mode in the beginning.

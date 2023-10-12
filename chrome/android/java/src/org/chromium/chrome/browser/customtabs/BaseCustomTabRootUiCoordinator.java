@@ -242,6 +242,9 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
             mBrandingController.onToolbarInitialized(toolbar.getBrandingDelegate());
         }
         toolbar.setCloseButtonPosition(mIntentDataProvider.get().getCloseButtonPosition());
+        if (mMinimizationManager != null) {
+            toolbar.setMinimizeDelegate(mMinimizationManager);
+        }
         if (mIntentDataProvider.get().isPartialCustomTab()) {
             Callback<Runnable> softInputCallback;
             if (ChromeFeatureList.sCctResizableSideSheet.isEnabled()) {
@@ -295,14 +298,6 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 controller.tryToReengageTheUser();
             }));
         }
-
-        if (MinimizedFeatureUtils.isMinimizedCustomTabAvailable(mActivity)) {
-            // The method above already checks for the minimum API level.
-            //
-            // noinspection NewApi
-            mMinimizationManager =
-                    new CustomTabMinimizationManager(mActivity, mActivityTabProvider);
-        }
     }
 
     private void maybeCreatePageInsightsComponent() {
@@ -317,10 +312,19 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 mActivity.getWindow(), mWindowAndroid.getKeyboardDelegate(),
                 () -> mActivity.findViewById(R.id.page_insights_hub_container));
 
-        mPageInsightsCoordinator = new PageInsightsCoordinator(mActivity, mActivityTabProvider,
-                mShareDelegateSupplier, controller, getBottomSheetController(),
-                mExpandedBottomSheetHelper, mBrowserControlsManager, mBrowserControlsManager,
-                this::isPageInsightsHubEnabled, mPageInsightsFirstLoadTimeMs);
+        mPageInsightsCoordinator =
+                new PageInsightsCoordinator(
+                        mActivity,
+                        mActivityTabProvider,
+                        mShareDelegateSupplier,
+                        mProfileSupplier,
+                        controller,
+                        getBottomSheetController(),
+                        mExpandedBottomSheetHelper,
+                        mBrowserControlsManager,
+                        mBrowserControlsManager,
+                        this::isPageInsightsHubEnabled,
+                        mPageInsightsFirstLoadTimeMs);
 
         mContextualSearchObserver = new ContextualSearchObserver() {
             @Override
@@ -421,6 +425,14 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 intentDataProvider.getSideSheetPosition(),
                 intentDataProvider.getSideSheetSlideInBehavior(),
                 intentDataProvider.getActivitySideSheetRoundedCornersPosition());
+
+        if (MinimizedFeatureUtils.isMinimizedCustomTabAvailable(mActivity)) {
+            // The method above already checks for the minimum API level.
+            //
+            // noinspection NewApi
+            mMinimizationManager =
+                    new CustomTabMinimizationManager(mActivity, mActivityTabProvider);
+        }
     }
 
     @Override

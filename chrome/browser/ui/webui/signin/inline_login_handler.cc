@@ -139,8 +139,8 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
   std::string default_email;
   if (reason == signin_metrics::Reason::kSigninPrimaryAccount ||
       reason == signin_metrics::Reason::kForcedSigninPrimaryAccount) {
-    default_email =
-        profile->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
+    default_email = profile->GetPrefs()->GetString(
+        prefs::kGoogleServicesLastSyncingUsername);
   } else {
     if (!net::GetValueForKeyInQuery(current_url, "email", &default_email))
       default_email.clear();
@@ -211,8 +211,7 @@ void InlineLoginHandler::HandleCompleteLoginMessageWithCookies(
 
 void InlineLoginHandler::HandleSwitchToFullTabMessage(
     const base::Value::List& args) {
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  Browser* browser = chrome::FindBrowserWithTab(web_ui()->GetWebContents());
   if (browser) {
     // |web_ui| is already presented in a full tab. Ignore this call.
     return;

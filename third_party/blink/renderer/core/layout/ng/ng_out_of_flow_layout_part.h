@@ -46,21 +46,6 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   NGOutOfFlowLayoutPart(const NGBlockNode& container_node,
                         const NGConstraintSpace& container_space,
                         NGBoxFragmentBuilder* container_builder);
-
-  // The |container_builder|, |container_space|, and |container_style|
-  // parameters are all with respect to the containing block of the relevant
-  // out-of-flow positioned descendants. If the CSS "containing block" of such
-  // an out-of-flow positioned descendant isn't a true block (e.g. a relatively
-  // positioned inline instead), the containing block here is the containing
-  // block of said non-block.
-  NGOutOfFlowLayoutPart(
-      bool is_absolute_container,
-      bool is_fixed_container,
-      bool is_grid_container,
-      const NGConstraintSpace& container_space,
-      NGBoxFragmentBuilder* container_builder,
-      absl::optional<LogicalSize> initial_containing_block_fixed_size);
-
   void Run();
 
   struct ColumnBalancingInfo {
@@ -226,6 +211,15 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
     absl::optional<LayoutUnit> block_estimate;
     NGLogicalOutOfFlowDimensions node_dimensions;
 
+    // The offset from the OOF to the top of the fragmentation context root.
+    // This should only be used when laying out a fragmentainer descendant.
+    LogicalOffset original_offset;
+
+    // These fields are set only if this |OffsetInfo| is calculated from a
+    // position fallback style, either from a @try rule or auto-generated.
+    absl::optional<wtf_size_t> fallback_index;
+    Vector<NonOverflowingScrollRange> non_overflowing_ranges;
+
     bool inline_size_depends_on_min_max_sizes = false;
 
     // If true, a cached layout result was found. See the comment for
@@ -234,15 +228,13 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
     bool disable_first_tier_cache = false;
 
-    // The offset from the OOF to the top of the fragmentation context root.
-    // This should only be used when laying out a fragmentainer descendant.
-    LogicalOffset original_offset;
-
-    // These fields are set only if this |OffsetInfo| is calculated from a
-    // position fallback style, either from a @try rule or auto-generated.
     bool uses_fallback_style = false;
-    absl::optional<wtf_size_t> fallback_index;
-    Vector<NonOverflowingScrollRange> non_overflowing_ranges;
+
+    // True if this element is anchor-positioned, and any anchor reference in
+    // the axis is in the same scroll container as the default anchor, in which
+    // case we need scroll adjustment in the axis after layout.
+    bool needs_scroll_adjustment_in_x = false;
+    bool needs_scroll_adjustment_in_y = false;
 
     void Trace(Visitor* visitor) const;
   };

@@ -4,6 +4,7 @@
 <translation id="1046370274005147998">Chromium ውስጥ በጽምፅ ይፈልጉ።</translation>
 <translation id="1047130070405668746">Chromiumን ይምረጡ</translation>
 <translation id="1091252999271033193">ይህ ማለት Chromium የተንቀሳቃሽ ስልክ ጣቢያውን በእያንዳንዱ ጊዜ ይጠይቃል ማለት ነው።</translation>
+<translation id="1171824629317156389">በiOS ውስጥ የChromium ቅንብሮችን ይክፈቱ ከዚያ «ነባሪ አሳሽ መተግበሪያ» ላይ መታ ያድርጉ እና Chromiumን ይምረጡ</translation>
 <translation id="1185134272377778587">ስለChromium</translation>
 <translation id="1257458525759135959">ምስሎችን ለማስቀመጥ፣ Chromium ወደ የእርስዎ ፎቶዎች ማከል እንዲችል ለማድረግ ቅንብሮች ላይ መታ ያድርጉ</translation>
 <translation id="1289216811211435351">ወደ Chromium ይቀየር?</translation>
@@ -16,6 +17,7 @@
 <translation id="1591119736686995611">የChromium ትር ፍርግርግን ይከፍታል።</translation>
 <translation id="1617663976202781617">ከChromium ስምረት የመጣ ውሂብ</translation>
 <translation id="1647558790457890304">የChromium ቅንብሮች</translation>
+<translation id="164952285225495380">ይህ ጥቅል አስቀድሞ Chromium ላይ ክትትል ተደርጎበታል።</translation>
 <translation id="1722370509450468186">የይለፍ ቃልዎ በመለያዎ (<ph name="EMAIL" />) ላይ ይቀመጣል።</translation>
 <translation id="1736662517232558588">የChromium ውሂብ ጸድቷል</translation>
 <translation id="1791845338122684020">የእርስዎን Chromium የታሪክ ገፅ ይከፍታል።</translation>
@@ -93,7 +95,6 @@
 <translation id="4736424910885271643">የእርስዎ መለያ በ<ph name="HOSTED_DOMAIN" /> የሚተዳደር ነው፣ ስለሆነም የእርስዎ የChromium ውሂብ ከዚህ መሣሪያ ይጸዳል</translation>
 <translation id="4790638144988730920">በGoogle መለያዎ ውስጥ የChromium ውሂብን መጠቀምዎን ይቀጥሉ።</translation>
 <translation id="4828317641996116749">Chromium ሁሉንም የይለፍ ቃላት ማረጋገጥ አልቻለም። ቆይተው እንደገና ይሞክሩ።</translation>
-<translation id="4935539884203837577">Chromium ያስገቧቸውን የመከታተያ ቁጥሮች ማወቅ እና ከChromium ሌሎች የሸመታ ተሞክሮዎችን በማገዝ ወቅት ጥቅሎችዎን በአዲስ የትር ገጽ ላይ መከታተል ይችላል።</translation>
 <translation id="4985291216379576555">ከመስመር ውጭ፣ Chromium ዝማኔዎች ካሉ መፈተሽ አልቻለም</translation>
 <translation id="4996471330284142407">ከመቼውም ጊዜ በበለጠ ቀላል፣ ደህንነቱ በተጠበቀ እና ፈጣን በሆነ Chromium አማካኝነት ተጨማሪ ነገሮችን ያከናውኑ።</translation>
 <translation id="4999538639245140991">በ<ph name="SIGNOUT_MANAGED_DOMAIN" /> ከሚተዳደር መለያ ዘግተው እየወጡ ስለሆነ የእርስዎ Chromium ውሂብ ከዚህ መሣሪያ ላይ ይሰረዛል። የእርስዎ ውሂብ በGoogle መለያዎ ውስጥ ይቆያል።</translation>
@@ -139,6 +140,7 @@
 1. ቅንብሮችን ይክፈቱ
 2. ነባሪ የአሳሽ መተግበሪያን መታ ያድርጉ
 3. Chromiumን ይምረጡ።</translation>
+<translation id="6197255575340902638">«<ph name="MODULE_NAME" />» ከደበቁ Chromium ከእንግዲህ የወደፊት ጥቅሎችዎን በራስ-ሰር አይከታተልም እና የእርስዎን ሁሉንም የቀድሞ የመከታተያ ውሂብ ይሰርዛል።</translation>
 <translation id="6247557882553405851">Google የይለፍ ቃል አስተዳዳሪ</translation>
 <translation id="6268381023930128611">ከChromium ተዘግቶ ይውጣ?</translation>
 <translation id="6324041800010509197">በChromium ውስጥ የትር ፍርግርን ይጎብኙ</translation>

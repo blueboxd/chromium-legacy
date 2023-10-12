@@ -16,6 +16,8 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -189,7 +191,7 @@ void BrowserNonClientFrameViewChromeOS::Init() {
     frame_header_ = CreateFrameHeader();
   }
 
-  if (AppIsBorderlessPwa()) {
+  if (AppIsPwaWithBorderlessDisplayMode()) {
     UpdateBorderlessModeEnabled();
   }
 
@@ -438,10 +440,10 @@ void BrowserNonClientFrameViewChromeOS::UpdateBorderlessModeEnabled() {
       browser_view()->IsBorderlessModeEnabled());
 }
 
-bool BrowserNonClientFrameViewChromeOS::AppIsBorderlessPwa() const {
+bool BrowserNonClientFrameViewChromeOS::AppIsPwaWithBorderlessDisplayMode()
+    const {
   return browser_view()->GetIsWebAppType() &&
-         browser_view()->AppUsesBorderlessMode() &&
-         browser_view()->IsBorderlessModeEnabled();
+         browser_view()->AppUsesBorderlessMode();
 }
 
 void BrowserNonClientFrameViewChromeOS::Layout() {
@@ -462,7 +464,7 @@ void BrowserNonClientFrameViewChromeOS::Layout() {
     LayoutProfileIndicator();
   }
 
-  if (AppIsBorderlessPwa()) {
+  if (AppIsPwaWithBorderlessDisplayMode()) {
     UpdateBorderlessModeEnabled();
   }
 
@@ -646,11 +648,23 @@ void BrowserNonClientFrameViewChromeOS::OnTabletModeToggled(bool enabled) {
   ImmersiveModeController* immersive_mode_controller =
       browser_view()->immersive_mode_controller();
   const bool was_enabled = immersive_mode_controller->IsEnabled();
-  immersive_mode_controller->SetEnabled(ShouldEnableImmersiveModeController());
+
+  // If the current immersive mode state is not what it should be after the
+  // tablet mode has been toggled, toggle fullscreen mode to update the
+  // immersive mode. Note that it should not call
+  // ImmersiveModeController::SetEnabled since it won't update fullscreen mode.
+  if (ShouldEnableImmersiveModeController() != was_enabled) {
+    browser_view()
+        ->browser()
+        ->exclusive_access_manager()
+        ->fullscreen_controller()
+        ->ToggleBrowserFullscreenMode();
+  }
 
   // Do not relayout if immersive mode has not changed.
-  if (was_enabled == immersive_mode_controller->IsEnabled())
+  if (was_enabled == immersive_mode_controller->IsEnabled()) {
     return;
+  }
 
   InvalidateLayout();
   // Can be null in tests.
@@ -924,7 +938,9 @@ void BrowserNonClientFrameViewChromeOS::UpdateTopViewInset() {
   const bool immersive =
       browser_view()->immersive_mode_controller()->IsEnabled();
   const bool tab_strip_visible = browser_view()->GetTabStripVisible();
-  const int inset = (tab_strip_visible || immersive || AppIsBorderlessPwa())
+  const int inset = (tab_strip_visible || immersive ||
+                     (AppIsPwaWithBorderlessDisplayMode() &&
+                      browser_view()->IsBorderlessModeEnabled()))
                         ? 0
                         : GetTopInset(/*restored=*/false);
   frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewInset, inset);

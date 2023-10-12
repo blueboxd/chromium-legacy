@@ -299,8 +299,9 @@ absl::optional<LayoutUnit> ContentMinimumInlineSize(
   }
   if (const auto* input_element = DynamicTo<HTMLInputElement>(node)) {
     const AtomicString& type = input_element->type();
-    if (type == input_type_names::kFile)
+    if (type == input_type_names::kFile && apply_form_sizing) {
       return inline_size;
+    }
     if (type == input_type_names::kRange)
       return inline_size;
   }
@@ -1360,7 +1361,7 @@ void NGBlockNode::PlaceChildrenInFlowThread(
       LayoutBox* placeholder = child_box->SpannerPlaceholder();
       if (!child_fragment.BreakToken()) {
         // Last fragment for this spanner. Update its placeholder.
-        placeholder->SetLocation(child_box->Location());
+        placeholder->SetLocation(child_box->DeprecatedLocation());
         placeholder->SetSize(child_box->Size());
       }
 

@@ -29,6 +29,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/data_model_utils.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -48,7 +49,7 @@ namespace autofill {
 // Unicode characters used in card number obfuscation:
 //  - \u2022 - Bullet.
 //  - \u2006 - SIX-PER-EM SPACE (small space between bullets).
-//  - \u2060 - WORD-JOINER (makes obfuscated string undivisible).
+//  - \u2060 - WORD-JOINER (makes obfuscated string indivisible).
 constexpr char16_t kMidlineEllipsisDot[] = u"\u2022\u2060\u2006\u2060";
 constexpr char16_t kMidlineEllipsisPlainDot = u'\u2022';
 
@@ -357,18 +358,8 @@ const char* CreditCard::GetCardNetwork(const std::u16string& number) {
     if (!base::StringToInt(stripped_number.substr(0, 6), &first_six_digits))
       return kGenericCard;
 
-    // This is a flag controlled rollout to update the way we recognize Elo BIN.
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillUseEloRegexForBinMatching) &&
-        MatchesRegex<kEloRegexPattern>(
+    if (MatchesRegex<kEloRegexPattern>(
             base::NumberToString16(first_six_digits))) {
-      return kEloCard;
-    }
-
-    if (!base::FeatureList::IsEnabled(
-            features::kAutofillUseEloRegexForBinMatching) &&
-        (first_six_digits == 431274 || first_six_digits == 451416 ||
-         first_six_digits == 627780 || first_six_digits == 636297)) {
       return kEloCard;
     }
   }
@@ -402,12 +393,6 @@ const char* CreditCard::GetCardNetwork(const std::u16string& number) {
 
     if (first_four_digits >= 3528 && first_four_digits <= 3589)
       return kJCBCard;
-
-    if (!base::FeatureList::IsEnabled(
-            features::kAutofillUseEloRegexForBinMatching) &&
-        (first_four_digits == 5067 || first_four_digits == 5090)) {
-      return kEloCard;
-    }
 
     if (first_four_digits == 6011)
       return kDiscoverCard;
@@ -608,7 +593,7 @@ std::u16string CreditCard::GetRawInfo(ServerFieldType type) const {
 void CreditCard::SetRawInfoWithVerificationStatus(ServerFieldType type,
                                                   const std::u16string& value,
                                                   VerificationStatus status) {
-  DCHECK_EQ(FieldTypeGroup::kCreditCard, AutofillType(type).group());
+  DCHECK_EQ(FieldTypeGroup::kCreditCard, GroupTypeOfServerFieldType(type));
   switch (type) {
     case CREDIT_CARD_NAME_FULL:
       name_on_card_ = value;

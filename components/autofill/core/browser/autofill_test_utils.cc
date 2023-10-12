@@ -160,34 +160,38 @@ void CreateTestAddressFormData(FormData* form,
   form->submission_event =
       mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
 
-  form->fields.push_back(
-      CreateTestFormField("First Name", "firstname", "", "text"));
+  form->fields.push_back(CreateTestFormField("First Name", "firstname", "",
+                                             FormControlType::kInputText));
   types->push_back({NAME_FIRST});
-  form->fields.push_back(
-      CreateTestFormField("Middle Name", "middlename", "", "text"));
+  form->fields.push_back(CreateTestFormField("Middle Name", "middlename", "",
+                                             FormControlType::kInputText));
   types->push_back({NAME_MIDDLE});
-  form->fields.push_back(
-      CreateTestFormField("Last Name", "lastname", "", "text"));
+  form->fields.push_back(CreateTestFormField("Last Name", "lastname", "",
+                                             FormControlType::kInputText));
   types->push_back({NAME_LAST, NAME_LAST_SECOND});
-  form->fields.push_back(
-      CreateTestFormField("Address Line 1", "addr1", "", "text"));
+  form->fields.push_back(CreateTestFormField("Address Line 1", "addr1", "",
+                                             FormControlType::kInputText));
   types->push_back({ADDRESS_HOME_LINE1});
-  form->fields.push_back(
-      CreateTestFormField("Address Line 2", "addr2", "", "text"));
+  form->fields.push_back(CreateTestFormField("Address Line 2", "addr2", "",
+                                             FormControlType::kInputText));
   types->push_back({ADDRESS_HOME_SUBPREMISE, ADDRESS_HOME_LINE2});
-  form->fields.push_back(CreateTestFormField("City", "city", "", "text"));
+  form->fields.push_back(
+      CreateTestFormField("City", "city", "", FormControlType::kInputText));
   types->push_back({ADDRESS_HOME_CITY});
-  form->fields.push_back(CreateTestFormField("State", "state", "", "text"));
+  form->fields.push_back(
+      CreateTestFormField("State", "state", "", FormControlType::kInputText));
   types->push_back({ADDRESS_HOME_STATE});
-  form->fields.push_back(
-      CreateTestFormField("Postal Code", "zipcode", "", "text"));
+  form->fields.push_back(CreateTestFormField("Postal Code", "zipcode", "",
+                                             FormControlType::kInputText));
   types->push_back({ADDRESS_HOME_ZIP});
-  form->fields.push_back(CreateTestFormField("Country", "country", "", "text"));
+  form->fields.push_back(CreateTestFormField("Country", "country", "",
+                                             FormControlType::kInputText));
   types->push_back({ADDRESS_HOME_COUNTRY});
-  form->fields.push_back(
-      CreateTestFormField("Phone Number", "phonenumber", "", "tel"));
+  form->fields.push_back(CreateTestFormField("Phone Number", "phonenumber", "",
+                                             FormControlType::kInputTelephone));
   types->push_back({PHONE_HOME_WHOLE_NUMBER});
-  form->fields.push_back(CreateTestFormField("Email", "email", "", "email"));
+  form->fields.push_back(
+      CreateTestFormField("Email", "email", "", FormControlType::kInputEmail));
   types->push_back({EMAIL_ADDRESS});
 }
 
@@ -334,11 +338,28 @@ Iban GetIban2() {
 
 Iban GetServerIban() {
   Iban iban(Iban::InstrumentId("1234567"));
-  // Set the prefix, suffix and length of the server IBAN.
   iban.set_prefix(u"FR76");
   iban.set_suffix(u"0189");
   iban.set_length(27);
   iban.set_nickname(u"My doctor's IBAN");
+  return iban;
+}
+
+Iban GetServerIban2() {
+  Iban iban(Iban::InstrumentId("1234568"));
+  iban.set_prefix(u"BE71");
+  iban.set_suffix(u"8676");
+  iban.set_length(16);
+  iban.set_nickname(u"My sister's IBAN");
+  return iban;
+}
+
+Iban GetServerIban3() {
+  Iban iban(Iban::InstrumentId("1234569"));
+  iban.set_prefix(u"DE91");
+  iban.set_suffix(u"6789");
+  iban.set_length(22);
+  iban.set_nickname(u"My IBAN");
   return iban;
 }
 

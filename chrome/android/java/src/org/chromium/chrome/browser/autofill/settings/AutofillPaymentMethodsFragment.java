@@ -211,7 +211,13 @@ public class AutofillPaymentMethodsFragment extends ChromeBaseSettingsFragment
                             ChromeFeatureList.AUTOFILL_ENABLE_VIRTUAL_CARD_METADATA)) {
                 card_pref.setSummary(R.string.autofill_virtual_card_enrolled_text);
             } else {
-                card_pref.setSummary(card.getFormattedExpirationDate(getActivity()));
+                if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_CVC_STORAGE)
+                        && !card.getCvc().isEmpty()) {
+                    card_pref.setSummary(
+                            card.getFormattedExpirationDateWithCvcSavedMessage(getActivity()));
+                } else {
+                    card_pref.setSummary(card.getFormattedExpirationDate(getActivity()));
+                }
             }
 
             // Set card icon. It can be either a custom card art or a network icon.
@@ -397,9 +403,14 @@ public class AutofillPaymentMethodsFragment extends ChromeBaseSettingsFragment
      * @return true if the click was handled, false otherwise.
      */
     private boolean showLocalCardEditPageAfterAuthenticationIfRequired(Preference preference) {
-        // If mandatory reauth is not enabled, just show the local card edit page.
-        if (!ChromeFeatureList.isEnabled(
-                    ChromeFeatureList.AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH)
+        // If mandatory reauth is not enabled, just show the local card edit page. Note that
+        // mandatory reauth is always enabled on automotive devices.
+        boolean mandatoryReauthFeatureEnabled =
+                ChromeFeatureList.isEnabled(
+                                ChromeFeatureList.AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH)
+                        || BuildInfo.getInstance().isAutomotive;
+
+        if (!mandatoryReauthFeatureEnabled
                 || !PersonalDataManager.isPaymentMethodsMandatoryReauthEnabled()) {
             showLocalCardEditPage(preference);
             return true;

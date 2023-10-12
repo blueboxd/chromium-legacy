@@ -1520,16 +1520,6 @@ TEST_F(AuthenticatorImplTest, GetAssertionResponseWithAttestedCredentialData) {
       AuthenticatorStatus::NOT_ALLOWED_ERROR);
 }
 
-TEST_F(AuthenticatorImplTest, GPMPasskeys_IsConditionalMediationAvailable) {
-  // Conditional mediation should always be available if gpm passkeys are
-  // enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {device::kWebAuthnListSyncedPasskeys, device::kWebAuthnNewPasskeyUI},
-      /*disabled_features=*/{});
-  ASSERT_TRUE(AuthenticatorIsConditionalMediationAvailable());
-}
-
 #if BUILDFLAG(IS_WIN)
 TEST_F(AuthenticatorImplTest, IsUVPAA) {
   virtual_device_factory_->set_discover_win_webauthn_api_authenticator(true);
@@ -1785,6 +1775,10 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
     return supports_resident_keys;
   }
 
+  bool SupportsPasskeyMetadataSyncing() override {
+    return supports_passkey_metadata_syncing;
+  }
+
   bool IsFocused(WebContents* web_contents) override { return is_focused; }
 
 #if BUILDFLAG(IS_MAC)
@@ -1832,6 +1826,9 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
   // Indicates whether resident key operations should be permitted by the
   // delegate.
   bool supports_resident_keys = false;
+
+  // Indicates whether metadata syncing should be assumed to be supported.
+  bool supports_passkey_metadata_syncing = false;
 
   // The return value of the focus check issued at the end of a request.
   bool is_focused = true;
@@ -3322,6 +3319,16 @@ TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAOverride) {
 
     EXPECT_EQ(AuthenticatorIsUvpaa(), is_uvpaa);
   }
+}
+
+TEST_F(AuthenticatorContentBrowserClientTest,
+       GPMPasskeys_IsConditionalMediationAvailable) {
+  // Conditional mediation should always be available if gpm passkeys are
+  // enabled.
+  test_client_.GetTestWebAuthenticationDelegate()
+      ->supports_passkey_metadata_syncing = true;
+  NavigateAndCommit(GURL(kTestOrigin1));
+  ASSERT_TRUE(AuthenticatorIsConditionalMediationAvailable());
 }
 
 // AuthenticatorImplRemoteDesktopClientOverrideTest exercises the
@@ -8602,6 +8609,49 @@ TEST_F(ResidentKeyAuthenticatorImplTest, PRFExtension) {
   }
 }
 
+TEST_F(ResidentKeyAuthenticatorImplTest, PRFEvaluationDuringMakeCredential) {
+  // The WebAuthn "prf" extension supports evaluating the PRF when making a
+  // credential. The hmac-secret extension does not support this, but hybrid
+  // devices (and our virtual authenticator) can support it using the
+  // CTAP2-level "prf" extension.
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  device::VirtualCtap2Device::Config config;
+  config.prf_support = true;
+  config.internal_account_chooser = true;
+  config.always_uv = true;
+  config.pin_support = true;
+  config.resident_key_support = true;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->prf_enable = true;
+  options->authenticator_selection->resident_key =
+      device::ResidentKeyRequirement::kRequired;
+  options->user.id = {1, 2, 3, 4};
+  options->user.name = "name";
+  options->user.display_name = "displayName";
+  options->prf_input = blink::mojom::PRFValues::New();
+  const std::vector<uint8_t> salt1(32, 1);
+  const std::vector<uint8_t> salt2(32, 2);
+  options->prf_input->first = salt1;
+  options->prf_input->second = salt2;
+
+  MakeCredentialResult result = AuthenticatorMakeCredential(std::move(options));
+  EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+
+  EXPECT_TRUE(result.response->echo_prf);
+  EXPECT_TRUE(result.response->prf);
+  ASSERT_TRUE(result.response->prf_results);
+  EXPECT_EQ(result.response->prf_results->first.size(), 32u);
+  EXPECT_EQ(result.response->prf_results->second->size(), 32u);
+}
+
+TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredentialPRFExtension) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+}
+
 TEST_F(ResidentKeyAuthenticatorImplTest,
        PRFExtensionOnUnconfiguredAuthenticator) {
   // If a credential is on a UV-capable, but not UV-configured authenticator and
@@ -9999,6 +10049,34 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, IsUVPAA) {
 }
 
 TEST_F(AuthenticatorImplWithRequestProxyTest, IsConditionalMediationAvailable) {
+  // We can't autofill credentials over the request proxy. Hence, conditional
+  // mediation is unavailable, even if IsUVPAA returns true.
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  // Ensure there is no test override set and we're testing the real
+  // implementation.
+  ASSERT_EQ(test_client_.GetTestWebAuthenticationDelegate()->is_uvpaa_override,
+            absl::nullopt);
+
+  // Proxy says `IsUVPAA()` is true.
+  request_proxy().config().is_uvpaa = true;
+  EXPECT_TRUE(AuthenticatorIsUvpaa());
+  EXPECT_EQ(request_proxy().observations().num_isuvpaa, 1u);
+
+  // But `IsConditionalMediationAvailable()` still returns false, bypassing the
+  // proxy.
+  EXPECT_FALSE(AuthenticatorIsConditionalMediationAvailable());
+  EXPECT_EQ(request_proxy().observations().num_isuvpaa, 1u);
+}
+
+// Temporary regression test for crbug.com/1489468.
+// TODO(crbug.com/1489482): Remove after passkey metadata syncing is enabled by
+// default.
+TEST_F(AuthenticatorImplWithRequestProxyTest,
+       IsConditionalMediationAvailable_MetadataSyncing) {
+  test_client_.GetTestWebAuthenticationDelegate()
+      ->supports_passkey_metadata_syncing = true;
+
   // We can't autofill credentials over the request proxy. Hence, conditional
   // mediation is unavailable, even if IsUVPAA returns true.
   NavigateAndCommit(GURL(kTestOrigin1));

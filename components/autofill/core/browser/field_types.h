@@ -8,6 +8,7 @@
 #include <type_traits>
 
 #include "base/strings/string_piece_forward.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/html_field_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -279,7 +280,7 @@ enum ServerFieldType {
 
   // UPI/VPA is a payment method, which is stored and filled. See
   // https://en.wikipedia.org/wiki/Unified_Payments_Interface
-  UPI_VPA = 102,
+  // UPI_VPA value 102 is deprecated.
 
   // Just the street name of an address, no house number.
   ADDRESS_HOME_STREET_NAME = 103,
@@ -444,6 +445,8 @@ struct DenseSetTraits<ServerFieldType> {
 
 using ServerFieldTypeSet = DenseSet<ServerFieldType>;
 
+using HtmlFieldTypeSet = DenseSet<HtmlFieldType>;
+
 std::ostream& operator<<(std::ostream& o, ServerFieldTypeSet field_type_set);
 
 // Returns whether the field can be filled with data.
@@ -498,6 +501,8 @@ constexpr ServerFieldType ToSafeServerFieldType(
            !(67 <= t && t <= 72) &&
            // Fax numbers (values [20,24]) are deprecated.
            !(20 <= t && t <= 24) &&
+           // UPI VPA type (value 102) is deprecated.
+           !(t == 102) &&
            // Reserved for server-side only use.
            !(111 <= t && t <= 113) && t != 127 && !(130 <= t && t <= 132) &&
            t != 134 && !(137 <= t && t <= 139) && !(145 <= t && t <= 150) &&
@@ -507,12 +512,40 @@ constexpr ServerFieldType ToSafeServerFieldType(
                             : fallback_value;
 }
 
+constexpr HtmlFieldType ToSafeHtmlFieldType(
+    std::underlying_type_t<HtmlFieldType> raw_value,
+    HtmlFieldType fallback_value) {
+  using underlying_type_t = std::underlying_type_t<HtmlFieldType>;
+  auto IsValid = [](underlying_type_t t) {
+    return static_cast<underlying_type_t>(HtmlFieldType::kMinValue) <= t &&
+           t <= static_cast<underlying_type_t>(HtmlFieldType::kMaxValue) &&
+           // Full address is deprecated.
+           t != 17;
+  };
+  return IsValid(raw_value) ? static_cast<HtmlFieldType>(raw_value)
+                            : fallback_value;
+}
+
 constexpr ServerFieldTypeSet kAllServerFieldTypes = [] {
   ServerFieldTypeSet fields;
   for (std::underlying_type_t<ServerFieldType> i = 0; i < MAX_VALID_FIELD_TYPE;
        ++i) {
     if (ServerFieldType field_type = ToSafeServerFieldType(i, NO_SERVER_DATA);
         field_type != NO_SERVER_DATA) {
+      fields.insert(field_type);
+    }
+  }
+  return fields;
+}();
+
+constexpr HtmlFieldTypeSet kAllHtmlFieldTypes = [] {
+  HtmlFieldTypeSet fields;
+  using underlying_type_t = std::underlying_type_t<HtmlFieldType>;
+  for (underlying_type_t i = base::to_underlying(HtmlFieldType::kMinValue);
+       i < base::to_underlying(HtmlFieldType::kMaxValue); ++i) {
+    if (HtmlFieldType field_type =
+            ToSafeHtmlFieldType(i, HtmlFieldType::kUnrecognized);
+        field_type != HtmlFieldType::kUnrecognized) {
       fields.insert(field_type);
     }
   }

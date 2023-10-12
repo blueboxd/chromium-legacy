@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
+#include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
@@ -45,6 +46,7 @@
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unparsed_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unsupported_color.h"
+#include "third_party/blink/renderer/core/css/cssom_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/properties/shorthands.h"
@@ -696,7 +698,7 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
   const auto* box = DynamicTo<LayoutBox>(layout_object);
 
   // In this case, the used value is the computed value, so we resolve directly.
-  if (offset.IsFixed() && (!box || !box->UsesPositionFallbackStyle())) {
+  if (offset.IsFixed() && !style.MayHavePositionFallbackList()) {
     return ZoomAdjustedPixelValueForLength(offset, style);
   }
 
@@ -802,13 +804,8 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
       // container's padding edge. Thus it includes margins which we subtract
       // below.
       const PhysicalOffset client_offset =
-          RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()
-              ? box->PhysicalLocation() -
-                    PhysicalOffset(container->ClientLeft(),
-                                   container->ClientTop())
-              : PhysicalOffset(box->LocationOffset() -
-                               DeprecatedLayoutSize(container->ClientLeft(),
-                                                    container->ClientTop()));
+          box->PhysicalLocation() -
+          PhysicalOffset(container->ClientLeft(), container->ClientTop());
 
       LayoutUnit position;
 
@@ -1803,14 +1800,14 @@ CSSValue* ComputedStyleUtils::ValueForGridAutoTrackList(
   return list;
 }
 
-void PopulateGridTrackList(CSSValueList* list,
-                           OrderedNamedLinesCollector& collector,
-                           const Vector<LayoutUnit, 1>& tracks,
-                           const ComputedStyle& style,
-                           wtf_size_t start,
-                           wtf_size_t end,
-                           int offset,
-                           bool discard_line_names) {
+void PopulateGridTrackListUsedValues(CSSValueList* list,
+                                     OrderedNamedLinesCollector& collector,
+                                     const Vector<LayoutUnit, 1>& tracks,
+                                     const ComputedStyle& style,
+                                     wtf_size_t start,
+                                     wtf_size_t end,
+                                     int offset,
+                                     bool discard_line_names) {
   DCHECK_LE(start, end);
   if (collector.HasCollapsedAutoRepeatNamedLines()) {
     // If the collector has a collapsed auto-repeat track, we need to adjust
@@ -1965,10 +1962,11 @@ wtf_size_t PopulateIntegerRepeater(CSSValueList* list,
   return repeat_size * number_of_repetitions;
 }
 
-void PopulateGridTrackListForNonGrid(CSSValueList* list,
-                                     OrderedNamedLinesCollector& collector,
-                                     const blink::NGGridTrackList& track_list,
-                                     const ComputedStyle& style) {
+void PopulateGridTrackListComputedValues(
+    CSSValueList* list,
+    OrderedNamedLinesCollector& collector,
+    const blink::NGGridTrackList& track_list,
+    const ComputedStyle& style) {
   const bool is_subgrid = collector.IsSubgriddedAxis();
   wtf_size_t track_index = 0;
 
@@ -2023,7 +2021,8 @@ void PopulateGridTrackListForNonGrid(CSSValueList* list,
 CSSValue* ComputedStyleUtils::ValueForGridTrackList(
     GridTrackSizingDirection direction,
     const LayoutObject* layout_object,
-    const ComputedStyle& style) {
+    const ComputedStyle& style,
+    bool force_computed_value) {
   const bool is_for_columns = direction == kForColumns;
   const ComputedGridTrackList& computed_grid_track_list =
       is_for_columns ? style.GridTemplateColumns() : style.GridTemplateRows();
@@ -2067,7 +2066,17 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
       computed_grid_track_list.auto_repeat_insertion_point;
   const NGGridTrackList& ng_track_list = computed_grid_track_list.track_list;
 
-  if (grid) {
+  // "Note: In general, resolved values are the computed values, except for a
+  // small list of legacy 2.1 properties. However, compatibility with early
+  // implementations of this module requires us to define grid-template-rows and
+  // grid-template-columns as returning used values."
+  //
+  // https://www.w3.org/TR/css-grid-2/#resolved-track-list-standalone
+  //
+  // Default to the used value if it's a layout grid, unless
+  // `force_computed_value` is set (which is used for `grid-template`). Non
+  // layout-grids will always report the computed value.
+  if (grid && !force_computed_value) {
     // The number of auto repeat tracks. For 'repeat(auto-fill, [x][y])' this
     // will be 2, regardless of what auto-fill computes to. For subgrids, use
     // the number of grid line names specified on the track definition. For
@@ -2111,17 +2120,17 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
     // https://github.com/w3c/csswg-drafts/issues/9015.
     const bool discard_line_names =
         grid && is_subgrid_specified && !is_subgrid_valid;
-    PopulateGridTrackList(list, collector, track_sizes, style, start_index,
-                          end_index, offset, discard_line_names);
+    PopulateGridTrackListUsedValues(list, collector, track_sizes, style,
+                                    start_index, end_index, offset,
+                                    discard_line_names);
     return list;
   }
 
-  // Otherwise, the resolved value is the computed value, preserving repeat().
   OrderedNamedLinesCollector collector(
       computed_grid_track_list.ordered_named_grid_lines,
       computed_grid_track_list.auto_repeat_ordered_named_grid_lines,
       is_subgrid_specified, !!grid);
-  PopulateGridTrackListForNonGrid(list, collector, ng_track_list, style);
+  PopulateGridTrackListComputedValues(list, collector, ng_track_list, style);
   return list;
 }
 
@@ -3611,8 +3620,6 @@ CSSValueList* ComputedStyleUtils::ValuesForGridShorthand(
     const LayoutObject* layout_object,
     bool allow_visited_style) {
   // Trailing non-initial values should be dropped.
-  // TODO(kschmi): Also handle `<custom-ident>` behavior, where if only
-  // one is specified for columns, rows also apply that value.
   unsigned last_index = shorthand.length();
   // Work backwards to determine the final non-initial index. For grid
   // shorthands, we can drop all trailing `none` and `auto` values.
@@ -3621,8 +3628,7 @@ CSSValueList* ComputedStyleUtils::ValuesForGridShorthand(
         shorthand.properties()[last_index - 1]->CSSValueFromComputedStyle(
             style, layout_object, allow_visited_style);
     if ((!IsA<CSSIdentifierValue>(value) ||
-         (To<CSSIdentifierValue>(value)->GetValueID() != CSSValueID::kNone &&
-          To<CSSIdentifierValue>(value)->GetValueID() != CSSValueID::kAuto))) {
+         (To<CSSIdentifierValue>(value)->GetValueID() != CSSValueID::kNone))) {
       break;
     }
   }
@@ -3636,6 +3642,132 @@ CSSValueList* ComputedStyleUtils::ValuesForGridShorthand(
     list->Append(*value);
   }
   return list;
+}
+
+CSSValueList* ComputedStyleUtils::ValuesForGridAreaShorthand(
+    const StylePropertyShorthand& shorthand,
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) {
+  DCHECK_EQ(shorthand.length(), 4u);
+
+  const CSSValue* grid_row_start =
+      shorthand.properties()[0]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
+  const CSSValue* grid_column_start =
+      shorthand.properties()[1]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
+  const CSSValue* grid_row_end =
+      shorthand.properties()[2]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
+  const CSSValue* grid_column_end =
+      shorthand.properties()[3]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
+
+  // `grid-row-end` depends on `grid-row-start`, and `grid-column-end` depends
+  // on on `grid-column-start`, but what's not consistent is that
+  // `grid-column-start` has a dependency on `grid-row-start`. For more details,
+  // see https://www.w3.org/TR/css-grid-2/#placement-shorthands
+  const bool include_column_start =
+      CSSOMUtils::IncludeDependentGridLineEndValue(grid_row_start,
+                                                   grid_column_start);
+  const bool include_row_end = CSSOMUtils::IncludeDependentGridLineEndValue(
+      grid_row_start, grid_row_end);
+  const bool include_column_end = CSSOMUtils::IncludeDependentGridLineEndValue(
+      grid_column_start, grid_column_end);
+
+  CSSValueList* list = CSSValueList::CreateSlashSeparated();
+
+  // `grid-row-start` is always included.
+  list->Append(*grid_row_start);
+
+  // If `IncludeDependentGridLineEndValue` returns true for a property,
+  // all preceding values must be included.
+  if (include_column_start || include_row_end || include_column_end) {
+    list->Append(*grid_column_start);
+  }
+  if (include_row_end || include_column_end) {
+    list->Append(*grid_row_end);
+  }
+  if (include_column_end) {
+    list->Append(*grid_column_end);
+  }
+
+  return list;
+}
+
+CSSValueList* ComputedStyleUtils::ValuesForGridLineShorthand(
+    const StylePropertyShorthand& shorthand,
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) {
+  DCHECK_EQ(shorthand.length(), 2u);
+
+  const CSSValue* line_start =
+      shorthand.properties()[0]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
+  const CSSValue* line_end =
+      shorthand.properties()[1]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
+  CSSValueList* list = CSSValueList::CreateSlashSeparated();
+
+  // `grid-line-start` is always included.
+  list->Append(*line_start);
+  if (CSSOMUtils::IncludeDependentGridLineEndValue(line_start, line_end)) {
+    list->Append(*line_end);
+  }
+
+  return list;
+}
+
+CSSValueList* ComputedStyleUtils::ValuesForGridTemplateShorthand(
+    const StylePropertyShorthand& shorthand,
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) {
+  DCHECK_EQ(shorthand.length(), 3u);
+
+  // "Note: In general, resolved values are the computed values, except for a
+  // small list of legacy 2.1 properties. However, compatibility with early
+  // implementations of this module requires us to define grid-template-rows and
+  // grid-template-columns as returning used values."
+  //
+  // https://www.w3.org/TR/css-grid-2/#resolved-track-list-standalone
+  //
+  // For `grid-template`, this doesn't apply, so we shouldn't be returning used
+  // values. The following method mostly mirrors
+  // `StylePropertySerializer::GetShorthandValueForGridTemplate`, except it
+  // produces a `CSSValueList` instead of a String.
+  const CSSValue* template_rows_computed =
+      ValueForGridTrackList(kForRows, layout_object, style,
+                            /* force_computed_values */ true);
+  const CSSValue* template_columns_computed =
+      ValueForGridTrackList(kForColumns, layout_object, style,
+                            /* force_computed_values */ true);
+
+  const CSSValue* template_row_values =
+      shorthand.properties()[0]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
+  const CSSValue* template_column_values =
+      shorthand.properties()[1]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
+  const CSSValue* template_area_values =
+      shorthand.properties()[2]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
+
+  // Implicit tracks will generate an empty list from `ValueForGridTrackList`,
+  // as they don't create repeaters. In this case, they will already be
+  // equivalent to the expected computed value (since implicit tracks don't
+  // generate repeaters and are always fixed sizes). So in that case, we can
+  // simply use the values directly from the shorthand.
+  return CSSOMUtils::ComputedValueForGridTemplateShorthand(
+      CSSOMUtils::IsEmptyValueList(template_rows_computed)
+          ? template_row_values
+          : template_rows_computed,
+      CSSOMUtils::IsEmptyValueList(template_columns_computed)
+          ? template_column_values
+          : template_columns_computed,
+      template_area_values);
 }
 
 CSSValueList* ComputedStyleUtils::ValuesForSidesShorthand(
@@ -3737,7 +3869,8 @@ CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
   enum VariantShorthandCases {
     kAllNormal,
     kNoneLigatures,
-    kConcatenateNonNormal
+    kConcatenateNonNormal,
+    kEmptyString
   };
   StylePropertyShorthand shorthand = fontVariantShorthand();
   VariantShorthandCases shorthand_case = kAllNormal;
@@ -3754,7 +3887,8 @@ CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
       shorthand_case = kNoneLigatures;
     } else if (!(identifier_value &&
                  identifier_value->GetValueID() == CSSValueID::kNormal)) {
-      shorthand_case = kConcatenateNonNormal;
+      shorthand_case = shorthand_case == kNoneLigatures ? kEmptyString
+                                                        : kConcatenateNonNormal;
       break;
     }
   }
@@ -3782,6 +3916,8 @@ CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
       }
       return list;
     }
+    case kEmptyString:
+      return nullptr;
     default:
       NOTREACHED();
       return nullptr;
@@ -3876,43 +4012,6 @@ CSSValueList* ComputedStyleUtils::ValuesForContainerShorthand(
     list->Append(*type);
   }
 
-  return list;
-}
-
-// Returns up to two values for 'scroll-customization' property. The values
-// correspond to the customization values for 'x' and 'y' axes.
-CSSValue* ComputedStyleUtils::ScrollCustomizationFlagsToCSSValue(
-    scroll_customization::ScrollDirection scroll_customization) {
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (scroll_customization == scroll_customization::kScrollDirectionAuto) {
-    list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
-  } else if (scroll_customization ==
-             scroll_customization::kScrollDirectionNone) {
-    list->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
-  } else {
-    if ((scroll_customization & scroll_customization::kScrollDirectionPanX) ==
-        scroll_customization::kScrollDirectionPanX) {
-      list->Append(*CSSIdentifierValue::Create(CSSValueID::kPanX));
-    } else if (scroll_customization &
-               scroll_customization::kScrollDirectionPanLeft) {
-      list->Append(*CSSIdentifierValue::Create(CSSValueID::kPanLeft));
-    } else if (scroll_customization &
-               scroll_customization::kScrollDirectionPanRight) {
-      list->Append(*CSSIdentifierValue::Create(CSSValueID::kPanRight));
-    }
-    if ((scroll_customization & scroll_customization::kScrollDirectionPanY) ==
-        scroll_customization::kScrollDirectionPanY) {
-      list->Append(*CSSIdentifierValue::Create(CSSValueID::kPanY));
-    } else if (scroll_customization &
-               scroll_customization::kScrollDirectionPanUp) {
-      list->Append(*CSSIdentifierValue::Create(CSSValueID::kPanUp));
-    } else if (scroll_customization &
-               scroll_customization::kScrollDirectionPanDown) {
-      list->Append(*CSSIdentifierValue::Create(CSSValueID::kPanDown));
-    }
-  }
-
-  DCHECK(list->length());
   return list;
 }
 

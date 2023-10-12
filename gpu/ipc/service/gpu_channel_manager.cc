@@ -493,7 +493,9 @@ GpuChannel* GpuChannelManager::EstablishChannel(
     const base::UnguessableToken& channel_token,
     int client_id,
     uint64_t client_tracing_id,
-    bool is_gpu_host) {
+    bool is_gpu_host,
+    const gfx::GpuExtraInfo& gpu_extra_info,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Remove existing GPU channel with same client id before creating
@@ -511,7 +513,8 @@ GpuChannel* GpuChannelManager::EstablishChannel(
   std::unique_ptr<GpuChannel> gpu_channel = GpuChannel::Create(
       this, channel_token, scheduler_, sync_point_manager_, share_group_,
       task_runner_, io_task_runner_, client_id, client_tracing_id, is_gpu_host,
-      image_decode_accelerator_worker_);
+      image_decode_accelerator_worker_, gpu_extra_info,
+      gpu_memory_buffer_factory);
 
   if (!gpu_channel)
     return nullptr;
@@ -986,28 +989,15 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
     return nullptr;
   }
 
-  auto gr_context_type = gpu_preferences_.gr_context_type;
-#if BUILDFLAG(IS_APPLE)
-  const bool want_graphite = gr_context_type == GrContextType::kGraphiteDawn ||
-                             gr_context_type == GrContextType::kGraphiteMetal;
-  const bool force_graphite = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSkiaGraphiteBackend);
-  const bool is_angle_metal =
-      gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal;
-  // Fallback from Graphite to Ganesh/GL if ANGLE is not using Metal too.
-  if (want_graphite && !force_graphite && !is_angle_metal) {
-    gr_context_type = GrContextType::kGL;
-  }
-#endif
-
   // TODO(penghuang): https://crbug.com/899735 Handle device lost for Vulkan.
   auto shared_context_state = base::MakeRefCounted<SharedContextState>(
       std::move(share_group), std::move(surface), std::move(context),
       use_virtualized_gl_contexts,
       base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this),
                      context_lost_count_ + 1),
-      gr_context_type, vulkan_context_provider_, metal_context_provider_,
-      dawn_context_provider_, peak_memory_monitor_.GetWeakPtr());
+      gpu_preferences_.gr_context_type, vulkan_context_provider_,
+      metal_context_provider_, dawn_context_provider_,
+      peak_memory_monitor_.GetWeakPtr());
 
   // Initialize GL context, so Vulkan and GL interop can work properly.
   auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(

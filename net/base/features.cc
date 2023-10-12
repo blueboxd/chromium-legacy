@@ -75,6 +75,24 @@ BASE_FEATURE(kUseAlternativePortForGloballyReachableCheck,
              "UseAlternativePortForGloballyReachableCheck",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const base::FeatureParam<IPv6ReachabilityOverride>::Option
+    ipv6_reachability_override_options[] = {
+        {IPv6ReachabilityOverride::kReachable, "reachable"},
+        {IPv6ReachabilityOverride::kUniqueLocalAddressReachable,
+         "unique_local_address"},
+        {IPv6ReachabilityOverride::kPubliclyRoutable, "publicly_routable"},
+};
+
+const base::FeatureParam<IPv6ReachabilityOverride>
+    kIPv6ReachabilityOverrideParam{&kEnableIPv6ReachabilityOverride,
+                                   "IPv6ReachabilityOverride",
+                                   IPv6ReachabilityOverride::kReachable,
+                                   &ipv6_reachability_override_options};
+
+BASE_FEATURE(kEnableIPv6ReachabilityOverride,
+             "EnableIPv6ReachabilityOverride",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSHA1ServerSignature,
              "SHA1ServerSignature",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -169,7 +187,7 @@ BASE_FEATURE(kSameSiteDefaultChecksMethodRigorously,
 #if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
 BASE_FEATURE(kChromeRootStoreUsed,
              "ChromeRootStoreUsed",
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -278,6 +296,10 @@ BASE_FEATURE(kTpcdSupportSettings,
 
 BASE_FEATURE(kTpcdMetadataGrants,
              "TpcdMetadataGrants",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kTpcdReadHeuristicsGrants,
+             "TpcdReadHeuristicsGrants",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAlpsParsing, "AlpsParsing", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -451,10 +473,9 @@ BASE_FEATURE(kDigestAuthEnableSecureAlgorithms,
 // When enabled, partitioned storage will be allowed even if third-party cookies
 // are disabled by default. Partitioned storage will not be allowed if
 // third-party cookies are disabled due to a specific rule.
-// TODO(crbug.com/1468277): Default enable when UI work is complete.
 BASE_FEATURE(kThirdPartyPartitionedStorageAllowedByDefault,
              "ThirdPartyPartitionedStorageAllowedByDefault",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kPriorityHeader,
              "PriorityHeader",
@@ -467,5 +488,7 @@ BASE_FEATURE(kSpdyHeadersToHttpResponseUseBuilder,
 BASE_FEATURE(kSpdyHeadersToHttpResponseVerifyCorrectness,
              "SpdyHeadersToHttpResponseVerifyCorrectness",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kReceiveEcn, "ReceiveEcn", base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace net::features

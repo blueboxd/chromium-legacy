@@ -217,17 +217,29 @@ bool IsWebElementFocusableForAutofill(const blink::WebElement& element);
 // TODO(crbug.com/1335257): Can input fields or iframes actually overflow?
 bool IsWebElementVisible(const blink::WebElement& element);
 
+// Returns the maximum length value that Autofill may fill into the field. There
+// are two special cases:
+// - It is 0 for fields that do not support free text input (e.g., <select> and
+//   <input type=month>).
+// - It is the maximum 32 bit number for fields that support text values (e.g.,
+//   <input type=text> or <textarea>) but have no maxlength attribute set.
+//   The choice of 32 (as opposed to 64) is intentional: it allows us to still
+//   do arithmetic with FormFieldData::max_length without having to worry about
+//   integer overflows everywhere.
+uint64_t GetMaxLength(const blink::WebFormControlElement& element);
+
 // Returns the form's |name| attribute if non-empty; otherwise the form's |id|
 // attribute.
 std::u16string GetFormIdentifier(const blink::WebFormElement& form);
 
-// Returns the FormRendererId of a given WebFormElement. If
+// Returns the FormRendererId of a given WebFormElement or contenteditable. If
 // WebFormElement::IsNull(), returns a null form renderer id, which is the
 // renderer id of the unowned form.
-FormRendererId GetFormRendererId(const blink::WebFormElement& form);
+FormRendererId GetFormRendererId(const blink::WebElement& e);
 
-// Returns the FieldRendererId of a given WebFormControlElement.
-FieldRendererId GetFieldRendererId(const blink::WebFormControlElement& field);
+// Returns the FieldRendererId of a given WebFormControlElement or
+// contenteditable.
+FieldRendererId GetFieldRendererId(const blink::WebElement& e);
 
 // Returns text alignment for |element|.
 base::i18n::TextDirection GetTextDirectionForElement(
@@ -330,6 +342,30 @@ bool FindFormAndFieldForFormControlElement(
     FormData* form,
     FormFieldData* field);
 
+// Creates a FormData containing a single field out of a contenteditable
+// non-form element. The FormData is synthetic in the sense that it does not
+// correspond to any other DOM element. It is also conceptually distinct from
+// the unowned form (i.e., the collection of form control elements that aren't
+// owned by any form).
+//
+// `kAutofillUseDomNodeIdForRendererId` must be enabled.
+//
+// Returns `std::nullopt` if `contenteditable`:
+// - is a WebFormElement; otherwise, there could be two FormData objects with
+//   identical renderer ID referring to different conceptual forms: the one for
+//   the contenteditable and an actual <form>.
+// - is a WebFormControlElement; otherwise, a <textarea contenteditable> might
+//   be a member of two FormData objects: the one for the contenteditable and
+//   the <textarea>'s associated <form>'s FormData.
+// - has a contenteditable parent; this is to disambiguate focus elements on
+//   nested contenteditables because the focus event propagates up.
+//
+// The FormData's renderer ID has the same value as its (single) FormFieldData's
+// renderer ID. This is collision-free with the renderer IDs of any other form
+// in the document because DomNodeIds are unique among all DOM elements.
+std::optional<FormData> FindFormForContentEditable(
+    const blink::WebElement& content_editable);
+
 // Fills or previews the form represented by `form`.
 // `initiating_element` is the element that initiated the autofill process.
 // Returns the filled elements.
@@ -407,18 +443,15 @@ bool InferLabelForElementForTesting(const blink::WebFormControlElement& element,
 
 // Returns the form element by unique renderer id. Returns the null element if
 // there is no form with the |form_renderer_id|.
-blink::WebFormElement FindFormByUniqueRendererId(
-    const blink::WebDocument& doc,
-    FormRendererId form_renderer_id);
-
-std::string GetAutocompleteAttribute(const blink::WebElement& element);
+blink::WebFormElement FindFormByRendererId(const blink::WebDocument& doc,
+                                           FormRendererId form_renderer_id);
 
 // Returns the form control element by unique renderer id.
 // |form_to_be_searched| could be used as an optimization to only search for
 // elements in it, but doesn't guarantee that the returned element will belong
 // to it. Returns the null element if there is no element with the
 // |queried_form_control| renderer id.
-blink::WebFormControlElement FindFormControlElementByUniqueRendererId(
+blink::WebFormControlElement FindFormControlByRendererId(
     const blink::WebDocument& doc,
     FieldRendererId queried_form_control,
     absl::optional<FormRendererId> form_to_be_searched = absl::nullopt);
@@ -432,8 +465,7 @@ blink::WebFormControlElement FindFormControlElementByUniqueRendererId(
 // the i-th element of the result corresponds to the i-th element of
 // |queried_form_controls|. The call of this function might be time
 // expensive, because it retrieves all DOM elements.
-std::vector<blink::WebFormControlElement>
-FindFormControlElementsByUniqueRendererId(
+std::vector<blink::WebFormControlElement> FindFormControlsByRendererId(
     const blink::WebDocument& doc,
     const std::vector<FieldRendererId>& queried_form_controls);
 
@@ -443,11 +475,15 @@ FindFormControlElementsByUniqueRendererId(
 // |form_to_be_searched| could be used as an optimization to only search for
 // elements in it, but doesn't guarantee that the returned element will belong
 // to it.
-std::vector<blink::WebFormControlElement>
-FindFormControlElementsByUniqueRendererId(
+std::vector<blink::WebFormControlElement> FindFormControlsByRendererId(
     const blink::WebDocument& doc,
     FormRendererId form_renderer_id,
     const std::vector<FieldRendererId>& queried_form_controls);
+
+blink::WebElement FindContentEditableByRendererId(
+    FieldRendererId field_renderer_id);
+
+std::string GetAutocompleteAttribute(const blink::WebElement& element);
 
 // Returns the ARIA label text of the elements denoted by the aria-labelledby
 // attribute of |element| or the value of the aria-label attribute of

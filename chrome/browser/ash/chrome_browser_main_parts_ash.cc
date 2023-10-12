@@ -25,6 +25,7 @@
 #include "ash/system/pcie_peripheral/pcie_peripheral_notification_controller.h"
 #include "ash/system/usb_peripheral/usb_peripheral_notification_controller.h"
 #include "ash/webui/camera_app_ui/document_scanner_installer.h"
+#include "base/check_deref.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
@@ -51,6 +52,7 @@
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_controller.h"
 #include "chrome/browser/ash/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/ash/arc/memory_pressure/container_app_killer.h"
@@ -88,7 +90,6 @@
 #include "chrome/browser/ash/dbus/virtual_file_request_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/plugin_vm_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_applications_service_provider.h"
-#include "chrome/browser/ash/dbus/vm/vm_disk_management_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_launch_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_permission_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_sk_forwarding_service_provider.h"
@@ -167,7 +168,6 @@
 #include "chrome/browser/ash/wilco_dtc_supportd/wilco_dtc_supportd_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/video_conference/video_conference_manager_client.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/defaults.h"
@@ -449,13 +449,6 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<VmApplicationsServiceProvider>()));
 
-    vm_disk_management_service_ = CrosDBusService::Create(
-        system_bus, vm_tools::disk_management::kVmDiskManagementServiceName,
-        dbus::ObjectPath(
-            vm_tools::disk_management::kVmDiskManagementServicePath),
-        CrosDBusService::CreateServiceProviderList(
-            std::make_unique<VmDiskManagementServiceProvider>()));
-
     vm_launch_service_ = CrosDBusService::Create(
         system_bus, vm_tools::launch::kVmLaunchServiceName,
         dbus::ObjectPath(vm_tools::launch::kVmLaunchServicePath),
@@ -592,7 +585,6 @@ class DBusServices {
     component_updater_service_.reset();
     chrome_features_service_.reset();
     vm_applications_service_.reset();
-    vm_disk_management_service_.reset();
     vm_launch_service_.reset();
     vm_sk_forwarding_service_.reset();
     vm_permission_service_.reset();
@@ -625,7 +617,6 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> component_updater_service_;
   std::unique_ptr<CrosDBusService> chrome_features_service_;
   std::unique_ptr<CrosDBusService> vm_applications_service_;
-  std::unique_ptr<CrosDBusService> vm_disk_management_service_;
   std::unique_ptr<CrosDBusService> vm_launch_service_;
   std::unique_ptr<CrosDBusService> vm_sk_forwarding_service_;
   std::unique_ptr<CrosDBusService> vm_permission_service_;
@@ -981,6 +972,10 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   kiosk_app_manager_ = std::make_unique<KioskAppManager>();
   arc_kiosk_app_manager_ = std::make_unique<ArcKioskAppManager>();
   web_kiosk_app_manager_ = std::make_unique<WebKioskAppManager>();
+  kiosk_controller_ = std::make_unique<KioskController>(
+      CHECK_DEREF(web_kiosk_app_manager_.get()),
+      CHECK_DEREF(kiosk_app_manager_.get()),
+      CHECK_DEREF(arc_kiosk_app_manager_.get()));
 
   if (base::FeatureList::IsEnabled(features::kEnableHostnameSetting)) {
     DeviceNameStore::Initialize(g_browser_process->local_state(),
@@ -1143,8 +1138,8 @@ void GuestLanguageSetCallbackData::Callback(
   // The previous one must be "locale default layout".
   // First, enable all hardware input methods.
   input_methods = manager->GetInputMethodUtil()->GetHardwareInputMethodIds();
-  for (size_t i = 0; i < input_methods.size(); ++i) {
-    ime_state->EnableInputMethod(input_methods[i]);
+  for (const auto& input_method : input_methods) {
+    ime_state->EnableInputMethod(input_method);
   }
 
   // Second, enable locale based input methods.
@@ -1412,7 +1407,7 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
   // later initializer.
   PeripheralNotificationManager::Initialize(
       user_manager::UserManager::Get()->IsLoggedInAsGuest(),
-      /*initial_state=*/false);
+      /*is_pcie_tunneling_allowed=*/false);
   Shell::Get()
       ->pcie_peripheral_notification_controller()
       ->OnPeripheralNotificationManagerInitialized();
@@ -1478,6 +1473,8 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
 // crbug.com/702403 for details.
 void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   video_conference_manager_client_.reset();
+
+  arc_container_app_killer_.reset();
 
   // Do this early to keep logging from taking time during shutdown.
   if (memory_pressure_detail_ != nullptr) {
@@ -1615,6 +1612,9 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   // Let the AutomaticRebootManager unregister itself as an observer of several
   // subsystems.
   g_browser_process->platform_part()->ShutdownAutomaticRebootManager();
+
+  // Clean before the Kiosk web, Chrome app, and ARC app managers.
+  kiosk_controller_.reset();
 
   // Clean up dependency on CrosSettings and stop pending data fetches.
   kiosk_app_manager_.reset();

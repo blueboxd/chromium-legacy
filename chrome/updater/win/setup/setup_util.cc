@@ -23,6 +23,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/strcat.h"
+#include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/installer/util/install_service_work_item.h"
 #include "chrome/installer/util/registry_util.h"
@@ -59,6 +60,7 @@ void AddInstallComProgIdWorkItems(UpdaterScope scope,
 
     // Delete any old registrations first.
     for (const auto& key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY}) {
+      VLOG(1) << "Deleting reg_path: " << progid_reg_path;
       list->AddDeleteRegKeyWorkItem(root, progid_reg_path, key_flag);
     }
 
@@ -218,6 +220,44 @@ std::vector<CLSID> GetServers(bool is_internal, UpdaterScope scope) {
   return is_internal ? GetSideBySideServers(scope) : GetActiveServers(scope);
 }
 
+bool InstallComInterfaces(UpdaterScope scope, bool is_internal) {
+  VLOG(1) << __func__ << ": scope: " << scope
+          << ": is_internal: " << is_internal;
+  const absl::optional<base::FilePath> versioned_directory =
+      GetVersionedInstallDirectory(scope);
+  if (!versioned_directory) {
+    return false;
+  }
+  const base::FilePath updater_path =
+      versioned_directory->Append(GetExecutableRelativePath());
+  std::unique_ptr<WorkItemList> list(WorkItem::CreateWorkItemList());
+  for (const auto& iid : GetInterfaces(is_internal, scope)) {
+    AddInstallComInterfaceWorkItems(UpdaterScopeToHKeyRoot(scope), updater_path,
+                                    iid, list.get());
+  }
+  return list->Do();
+}
+
+bool AreComInterfacesPresent(UpdaterScope scope, bool is_internal) {
+  VLOG(1) << __func__ << ": scope: " << scope
+          << ": is_internal: " << is_internal;
+  for (const auto& iid : GetInterfaces(is_internal, scope)) {
+    const HKEY root = UpdaterScopeToHKeyRoot(scope);
+    const std::wstring iid_path = GetComIidRegistryPath(iid);
+    const std::wstring typelib_path = GetComTypeLibRegistryPath(iid);
+    for (const auto& path :
+         {iid_path, base::StrCat({iid_path, L"\\", L"ProxyStubClsid32"}),
+          base::StrCat({iid_path, L"\\", L"TypeLib"}), typelib_path}) {
+      if (!base::win::RegKey(root, path.c_str(), KEY_QUERY_VALUE).Valid()) {
+        VLOG(2) << __func__ << ": interface missing: " << iid_path;
+        return false;
+      }
+    }
+  }
+  VLOG(2) << __func__ << ": all interfaces present";
+  return true;
+}
+
 // Adds work items to `list` to install the interface `iid`.
 void AddInstallComInterfaceWorkItems(HKEY root,
                                      const base::FilePath& typelib_path,
@@ -229,6 +269,7 @@ void AddInstallComInterfaceWorkItems(HKEY root,
   // Delete any old registrations first.
   for (const auto& reg_path : {iid_reg_path, typelib_reg_path}) {
     for (const auto& key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY}) {
+      VLOG(1) << "Deleting reg_path: " << reg_path;
       list->AddDeleteRegKeyWorkItem(root, reg_path, key_flag);
     }
   }
@@ -273,6 +314,7 @@ void AddInstallServerWorkItems(HKEY root,
   // Delete any old registrations first.
   for (const auto& reg_path : {clsid_reg_path}) {
     for (const auto& key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY}) {
+      VLOG(1) << "Deleting reg_path: " << reg_path;
       list->AddDeleteRegKeyWorkItem(root, reg_path, key_flag);
     }
   }
@@ -353,9 +395,11 @@ void AddComServiceWorkItems(const base::FilePath& com_service_path,
   // and the current install is 64-bit. If any 32-bit keys remain, they will
   // shadow the 64-bit keys.
   for (const auto& clsid : clsids) {
+    const std::wstring clsid_reg_path = GetComServerClsidRegistryPath(clsid);
+    VLOG(1) << "Deleting reg_path: " << clsid_reg_path;
     for (const auto& key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY}) {
-      list->AddDeleteRegKeyWorkItem(
-          HKEY_LOCAL_MACHINE, GetComServerClsidRegistryPath(clsid), key_flag);
+      list->AddDeleteRegKeyWorkItem(HKEY_LOCAL_MACHINE, clsid_reg_path,
+                                    key_flag);
     }
   }
 

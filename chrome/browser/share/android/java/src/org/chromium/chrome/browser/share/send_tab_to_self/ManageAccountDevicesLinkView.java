@@ -33,7 +33,7 @@ import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
 /** View containing the sharing account's avatar, email and a link to manage its target devices. */
-public class ManageAccountDevicesLinkView extends LinearLayout {
+class ManageAccountDevicesLinkView extends LinearLayout {
     private static final int ACCOUNT_AVATAR_SIZE_DP = 24;
 
     private final boolean mShowLink;
@@ -47,27 +47,6 @@ public class ManageAccountDevicesLinkView extends LinearLayout {
                     attributes.getBoolean(R.styleable.ManageAccountDevicesLinkView_showLink, false);
         } finally {
             attributes.recycle();
-        }
-        inflateIfVisible();
-    }
-
-    @Override
-    public void setVisibility(int visibility) {
-        super.setVisibility(visibility);
-        inflateIfVisible();
-    }
-
-    // TODO(crbug.com/1219434): For now the account information is only filled once the view becomes
-    // visible, so it can still be declared in the XML if there is no account. After launch, fill
-    // the data immediately.
-    private void inflateIfVisible() {
-        if (getVisibility() != View.VISIBLE) {
-            return;
-        }
-
-        // The view was already inflated, nothing else to do.
-        if (getChildCount() > 0) {
-            return;
         }
 
         LayoutInflater.from(getContext())

@@ -27,7 +27,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/signin/system_identity.h"
-#import "ios/chrome/browser/sync/sync_observer_bridge.h"
+#import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
@@ -539,8 +539,6 @@ id<SystemIdentity> GetDisplayedIdentity(
 @implementation SigninPromoViewMediator {
   std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
       _accountManagerServiceObserver;
-  // View used to present sign-in UI.
-  UIViewController* _baseViewController;
   // Sync service.
   syncer::SyncService* _syncService;
   // Observer for changes to the sync state.
@@ -631,8 +629,7 @@ id<SystemIdentity> GetDisplayedIdentity(
                       prefService:(PrefService*)prefService
                       syncService:(syncer::SyncService*)syncService
                       accessPoint:(signin_metrics::AccessPoint)accessPoint
-                        presenter:(id<SigninPresenter>)presenter
-               baseViewController:(UIViewController*)baseViewController {
+                        presenter:(id<SigninPresenter>)presenter {
   self = [super init];
   if (self) {
     DCHECK(accountManagerService);
@@ -644,7 +641,6 @@ id<SystemIdentity> GetDisplayedIdentity(
     _accessPoint = accessPoint;
     _dataTypeToWaitForInitialSync = syncer::ModelType::UNSPECIFIED;
     _presenter = presenter;
-    _baseViewController = baseViewController;
     _accountManagerServiceObserver =
         std::make_unique<ChromeAccountManagerServiceObserverBridge>(
             self, _accountManagerService);
@@ -994,6 +990,12 @@ id<SystemIdentity> GetDisplayedIdentity(
 
 - (void)identityUpdated:(id<SystemIdentity>)identity {
   [self sendConsumerNotificationWithIdentityChanged:NO];
+}
+
+- (void)onChromeAccountManagerServiceShutdown:
+    (ChromeAccountManagerService*)accountManagerService {
+  // TODO(crbug.com/1489595): Remove `[self disconnect]`.
+  [self disconnect];
 }
 
 #pragma mark - SigninPromoViewDelegate

@@ -21,6 +21,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_types.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
@@ -34,10 +35,8 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
-#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
-#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
-#include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_controller.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
@@ -134,7 +133,6 @@
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -778,9 +776,7 @@ WizardController::CreateScreens() {
                           weak_factory_.GetWeakPtr())));
 
   append(std::make_unique<TpmErrorScreen>(
-      oobe_ui->GetView<TpmErrorScreenHandler>()->AsWeakPtr(),
-      base::BindRepeating(&WizardController::OnTpmErrorScreenExit,
-                          weak_factory_.GetWeakPtr())));
+      oobe_ui->GetView<TpmErrorScreenHandler>()->AsWeakPtr()));
 
   if (ash::features::IsCryptohomeRecoveryEnabled()) {
     auto gaia_password_change_screen =
@@ -910,14 +906,12 @@ WizardController::CreateScreens() {
                             weak_factory_.GetWeakPtr())));
   }
 
-  if (features::IsPasswordSelectionEnabledInOobe()) {
+  if (features::AreLocalPasswordsEnabledForConsumers()) {
     append(std::make_unique<PasswordSelectionScreen>(
         oobe_ui->GetView<PasswordSelectionScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnPasswordSelectionScreenExit,
                             weak_factory_.GetWeakPtr())));
-  }
 
-  if (features::AreLocalPasswordsEnabledForConsumers()) {
     append(std::make_unique<LocalPasswordSetupScreen>(
         oobe_ui->GetView<LocalPasswordSetupHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnLocalPasswordSetupScreenExit,
@@ -1320,28 +1314,15 @@ void WizardController::OnConsumerUpdateScreenExit(
   }
 }
 
-void WizardController::OnTpmErrorScreenExit(TpmErrorScreen::Result result) {
-  OnScreenExit(TpmErrorView::kScreenId,
-               TpmErrorScreen::GetResultString(result));
-
-  // On ChromeOS Flex devices TpmErrorScreen is shown when users try to enroll,
-  // but the TPM is owned by a previous OS. Users can either try restarting the
-  // device to reconfigure TPM in BIOS or continue using the device without
-  // enrollment. This is a non-blocking error.
-  SetCurrentScreen(GetScreen(UserCreationView::kScreenId));
-}
-
 void WizardController::OnLocalPasswordSetupScreenExit(
     LocalPasswordSetupScreen::Result result) {
   OnScreenExit(LocalPasswordSetupView::kScreenId,
                LocalPasswordSetupScreen::GetResultString(result));
   switch (result) {
-    case LocalPasswordSetupScreen::Result::kDone:
-      ShowFingerprintSetupScreen();
-      return;
     case LocalPasswordSetupScreen::Result::kBack:
       ShowPasswordSelectionScreen();
       return;
+    case LocalPasswordSetupScreen::Result::kDone:
     case LocalPasswordSetupScreen::Result::kNotApplicable:
       ShowFingerprintSetupScreen();
       return;
@@ -2035,12 +2016,8 @@ void WizardController::OnEnrollmentDone() {
   // We need a log to understand when the device finished enrollment.
   VLOG(1) << "Enrollment done";
 
-  if (KioskAppManager::Get()->IsAutoLaunchEnabled()) {
-    AutoLaunchKioskApp(KioskAppType::kChromeApp);
-  } else if (WebKioskAppManager::Get()->GetAutoLaunchAccountId().is_valid()) {
-    AutoLaunchKioskApp(KioskAppType::kWebApp);
-  } else if (ArcKioskAppManager::Get()->GetAutoLaunchAccountId().is_valid()) {
-    AutoLaunchKioskApp(KioskAppType::kArcApp);
+  if (auto app = KioskController::Get().GetAutoLaunchApp(); app.has_value()) {
+    AutoLaunchKioskApp(app.value());
   } else if (g_browser_process->platform_part()
                  ->browser_policy_connector_ash()
                  ->IsDeviceEnterpriseManaged()) {
@@ -2077,10 +2054,14 @@ void WizardController::OnKioskAutolaunchScreenExit(
                KioskAutolaunchScreen::GetResultString(result));
 
   switch (result) {
-    case KioskAutolaunchScreen::Result::COMPLETED:
-      DCHECK(KioskAppManager::Get()->IsAutoLaunchEnabled());
-      AutoLaunchKioskApp(KioskAppType::kChromeApp);
+    case KioskAutolaunchScreen::Result::COMPLETED: {
+      auto app = KioskController::Get().GetAutoLaunchApp();
+      // TODO(b/304452967): Monitor crashes and upgrade to regular CHECKs.
+      DUMP_WILL_BE_CHECK(app.has_value());
+      DUMP_WILL_BE_CHECK_EQ(app->id().type, KioskAppType::kChromeApp);
+      AutoLaunchKioskApp(app.value());
       break;
+    }
     case KioskAutolaunchScreen::Result::CANCELED:
       ShowLoginScreen();
       break;
@@ -2190,7 +2171,7 @@ void WizardController::OnCryptohomeRecoverySetupScreenExit(
     CryptohomeRecoverySetupScreen::Result result) {
   OnScreenExit(CryptohomeRecoverySetupScreenView::kScreenId,
                CryptohomeRecoverySetupScreen::GetResultString(result));
-  if (ash::features::IsPasswordSelectionEnabledInOobe()) {
+  if (ash::features::AreLocalPasswordsEnabledForConsumers()) {
     ShowPasswordSelectionScreen();
   } else {
     ShowFingerprintSetupScreen();
@@ -2214,7 +2195,7 @@ void WizardController::OnPasswordSelectionScreenExit(
       return;
     }
     case PasswordSelectionScreen::Result::LOCAL_PASSWORD:
-      // TODO(b/291808449): Go to the new local password screen.
+      ShowLocalPasswordSetupScreen();
       return;
     case PasswordSelectionScreen::Result::GAIA_PASSWORD:
       // TODO(b/291808449): Screen should set up GAIA password
@@ -2709,7 +2690,10 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
   } else if (screen_id == AutoEnrollmentCheckScreenView::kScreenId) {
     ShowAutoEnrollmentCheckScreen();
   } else if (screen_id == AppLaunchSplashScreenView::kScreenId) {
-    AutoLaunchKioskApp(KioskAppType::kChromeApp);
+    auto app = KioskController::Get().GetAutoLaunchApp();
+    CHECK(app.has_value());
+    CHECK_EQ(app->id().type, KioskAppType::kChromeApp);
+    AutoLaunchKioskApp(app.value());
   } else if (screen_id == HIDDetectionView::kScreenId) {
     ShowHIDDetectionScreen();
   } else if (screen_id == DeviceDisabledScreenView::kScreenId) {
@@ -2830,35 +2814,12 @@ void WizardController::OnAccessibilityStatusChanged(
   }
 }
 
-void WizardController::AutoLaunchKioskApp(KioskAppType app_type) {
-  KioskAppId kiosk_app_id;
-  switch (app_type) {
-    case KioskAppType::kChromeApp: {
-      KioskAppManagerBase::App app_data;
-      std::string app_id = KioskAppManager::Get()->GetAutoLaunchApp();
-      CHECK(KioskAppManager::Get()->GetApp(app_id, &app_data));
-      kiosk_app_id = KioskAppId::ForChromeApp(app_id);
-      break;
-    }
-    case KioskAppType::kWebApp: {
-      const AccountId account_id =
-          WebKioskAppManager::Get()->GetAutoLaunchAccountId();
-      kiosk_app_id = KioskAppId::ForWebApp(account_id);
-      break;
-    }
-    case KioskAppType::kArcApp:
-      const AccountId account_id =
-          ArcKioskAppManager::Get()->GetAutoLaunchAccountId();
-      kiosk_app_id = KioskAppId::ForArcApp(account_id);
-      break;
-  }
-
-  // Wait for the `CrosSettings` to become either trusted or permanently
-  // untrusted.
+void WizardController::AutoLaunchKioskApp(const KioskApp& app) {
+  // Wait until `CrosSettings` is either trusted or permanently untrusted.
   const CrosSettingsProvider::TrustedStatus status =
       CrosSettings::Get()->PrepareTrustedValues(
           base::BindOnce(&WizardController::AutoLaunchKioskApp,
-                         weak_factory_.GetWeakPtr(), app_type));
+                         weak_factory_.GetWeakPtr(), app));
   if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED) {
     return;
   }
@@ -2877,7 +2838,7 @@ void WizardController::AutoLaunchKioskApp(KioskAppType app_type) {
   }
 
   constexpr bool auto_launch = true;
-  GetLoginDisplayHost()->StartKiosk(kiosk_app_id, auto_launch);
+  GetLoginDisplayHost()->StartKiosk(app.id(), auto_launch);
 }
 
 // static

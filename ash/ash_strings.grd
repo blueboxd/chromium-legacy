@@ -776,6 +776,24 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE" translateable="false" desc="The label used as the header in the focus mode panel.">
         Focus
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIME_SUBLABEL" translateable="false" desc="The text used for the subtext of the quick settings pod for an expected session duration.">
+        <ph name="MINUTES_VALUE">$1<ex>30</ex></ph> min
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_SUBHEADER" translateable="false" desc="The text used for the subheader of the timer section of the focus mode detailed view.">
+        Timer
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_MINUTES_LABEL" translateable="false" desc="The text that is placed after the textbox used to set the number of minutes for a focus session.">
+        minutes
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_TEXTFIELD" translateable="false" desc="The accessible name for the textfield that the user can use to input a specific time value for a focus session.">
+        Input minutes for focus session
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_INCREMENT_BUTTON" translateable="false" desc="The accessible name for the button that the user can press to increase focus session duration.">
+        Increase focus session duration
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_DECREMENT_BUTTON" translateable="false" desc="The accessible name for the button that the user can press to decrease focus session duration.">
+        Decrease focus session duration
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB" translateable="false" desc="The label text shown on the left side of do not disturb button in Focus mode settings panel.">
         Do not disturb while in Focus
       </message>
@@ -2577,6 +2595,9 @@ Style notes:
       <message name="IDS_ASH_DESKS_DESK_NAME" desc="Alert when highlighting the desk name">
         Desk name
       </message>
+      <message name="IDS_ASH_DESKS_DESK_PREVIEW" desc="The desk preview accessible name">
+        Desk preview
+      </message>
       <message name="IDS_ASH_DESKS_DESK_ACCESSIBLE_NAME" desc="The full accessible desk name">
         Desk: <ph name="DESK_NAME">$1</ph>
       </message>
@@ -2727,6 +2748,12 @@ Some features are limited to increase battery life.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE" desc="The message used by accessibility to show battery is being charged.">
         Battery at <ph name="percentage">$1<ex>56</ex></ph>% and charging.
+      </message>
+            <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_BSM_ON_ACCESSIBLE" translateable="false" desc="The message used by accessibility to show battery is discharging with battery saver enabled.">
+        Battery at <ph name="percentage">$1<ex>56</ex></ph> percent. Battery Saver is on.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_BSM_ON_ACCESSIBLE" translateable="false" desc="The message used by accessibility to show battery is being charged with battery saver enabled.">
+        Battery at <ph name="percentage">$1<ex>56</ex></ph>% and charging. Battery Saver is on.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE" desc="The message used by accessibility to show battery is calculating its time in short message.">
         Calculating battery time.
@@ -3006,8 +3033,14 @@ Some features are limited to increase battery life.
       <message name="IDS_ASH_HOTSPOT_ON_MESSAGE_ONE_CONNECTED_DEVICE" desc="Message displayed in the notification when hotspot is turned on and one device is connected.">
         1 device connected
       </message>
-      <message name="IDS_ASH_HOTSPOT_ON_MESSAGE_NO_CONNECTED_DEVICES" desc="Message displayed in the notification when hotspot is turned on and no devices are connected.">
-        No devices connected
+      <message name="IDS_ASH_HOTSPOT_ON_MESSAGE_NO_CONNECTED_DEVICES_NOTIFICATION" desc="Message displayed in the notification when hotspot is turned on and no devices are connected.">
+        No devices connected. WiFi will be turned off to start using Hotspot.
+      </message>
+      <message name="IDS_ASH_HOTSPOT_ON_MESSAGE_MULTIPLE_CONNECTED_DEVICES_NOTIFICATION" desc="Message displayed in the notification when hotspot is turned on and multiple devices are connected.">
+        <ph name="DEVICECOUNT">$1</ph> devices connected. WiFi will be turned off to start using Hotspot.
+      </message>
+      <message name="IDS_ASH_HOTSPOT_ON_MESSAGE_ONE_CONNECTED_DEVICE_NOTIFICATION" desc="Message displayed in the notification when hotspot is turned on and one device is connected.">
+        1 device connected. WiFi will be turned off to start using Hotspot.
       </message>
       <message name="IDS_ASH_TURN_OFF_HOTSPOT_LABEL" desc="The label for button used to turn off hotspot.">
         Turn off
@@ -3020,9 +3053,6 @@ Some features are limited to increase battery life.
       </message>
       <message name="IDS_ASH_HOTSPOT_NOTIFICATION_WIFI_TURN_ON_BUTTON" desc="The label for button to turn WiFi on in the hotspot notification.">
         Turn on WiFi instead
-      </message>
-      <message name="IDS_ASH_HOTSPOT_WIFI_TURNED_OFF_MESSAGE" desc="Message displayed in the system notification shown when WiFi is turned off upon enabling hotspot.">
-        We've turned off the WiFi to start using Hotspot through Mobile data. This may incur data costs.
       </message>
       <message name="IDS_ASH_HOTSPOT_WIFI_TURNED_ON_MESSAGE" desc="Message displayed in the system notification shown when hotspot is disabled due to WiFi being turned on.">
         Hotspot has been turned off to use WiFi. To use Hotspot, turn WiFi off.
@@ -3719,9 +3749,6 @@ Some features are limited to increase battery life.
       <message name="IDS_SHORTCUT_TASK_MANAGER_OLD" desc="the old deprecated shortcut to open the task manager.">
         Shift+Esc
       </message>
-      <message name="IDS_SHORTCUT_TASK_MANAGER_NEW" desc="the new shortcut to open the task manager.">
-        search+esc
-      </message>
       <message name="IDS_SHORTCUT_IME_BUBBLE_OLD" desc="the old deprecated shortcut to show the input options menu bubble in the shelf.">
         Alt+Shift+K
       </message>
@@ -3730,10 +3757,6 @@ Some features are limited to increase battery life.
       </message>
       <message name="IDS_SHORTCUT_SHOW_SHORTCUT_VIEWER_NEW" desc="the new shortcut to open the shortcut viewer app.">
         ctrl+search+s
-      </message>
-      <message name="IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG"
-               desc="Notification message to tell users about the deprecation of Shift+ESC shortcut to show the task manager.">
-        Open Task Manager app with "<ph name="NEW_SHORTCUT">$1<ex>Search+Esc</ex></ph>".
       </message>
       <message name="IDS_DEPRECATED_SHOW_SHORTCUT_VIEWER_MSG"
                desc="Notification message to tell users about the deprecation of Ctrl+Alt+/ shortcut to show the shortcut viewer app.">
@@ -3943,8 +3966,8 @@ Some features are limited to increase battery life.
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_SHOW_SHORTCUT_VIEWER" desc="Label for accelerator action - Open Keyboard shortcuts app.">
         Open Key Shortcuts app
       </message>
-      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_SHOW_STYLUS_TOOLS" desc="Label for accelerator action - Show stylus tools.">
-        Show stylus tools
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_STYLUS_TOOLS" desc="Label for accelerator action - Show or hide the stylus tools.">
+        Toggle stylus tools
       </message>
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_SHOW_TASK_MANAGER" desc="Label for accelerator action - Open task manager.">
         Open task manager

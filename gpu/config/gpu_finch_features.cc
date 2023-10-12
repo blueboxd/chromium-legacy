@@ -287,6 +287,9 @@ BASE_FEATURE(kWebGPUBlobCache, "WebGPUBlobCache", WEBGPU_ENABLED);
 #undef WEBGPU_ENABLED
 
 BASE_FEATURE(kWebGPUUseDXC, "WebGPUUseDXC2", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kWebGPUUseTintIR,
+             "WebGPUUseTintIR",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
 
@@ -423,12 +426,6 @@ BASE_FEATURE(kUseGpuSchedulerDfs,
 BASE_FEATURE(kUseClientGmbInterface,
              "UseClientGmbInterface",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enable YUV<->RGB conversion for video clients through passthrough command
-// decoder.
-BASE_FEATURE(kPassthroughYuvRgbConversion,
-             "PassthroughYuvRgbConversion",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When the application is in background, whether to perform immediate GPU
 // cleanup when executing deferred requests.

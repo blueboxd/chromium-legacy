@@ -59,7 +59,6 @@ bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
       return false;
     case NOT_MY_BIRTHDAY:
     case CLIENT_DATA_OBSOLETE:
-    case CLEAR_PENDING:
     case DISABLED_BY_ADMIN:
     case ENCRYPTION_OBSOLETE:
       // If we send terminate sync early then |sync_cycle_ended| notification
@@ -219,8 +218,10 @@ base::Time SyncSchedulerImpl::ComputeLastPollOnStart(
     // To minimize that risk, we randomly delay polls on start-up to a max
     // of 1% of the poll interval. Assuming a poll rate of 4h, that's at
     // most 2.4 mins.
-    base::TimeDelta random_delay = base::RandDouble() * 0.01 * poll_interval;
-    return now - (poll_interval - random_delay);
+    return poll_interval.is_zero()
+               ? now
+               : (now - poll_interval +
+                  base::RandTimeDeltaUpTo(0.01 * poll_interval));
   }
   return last_poll;
 }

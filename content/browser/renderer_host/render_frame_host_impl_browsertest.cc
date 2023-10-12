@@ -108,7 +108,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/origin_trials/origin_trial_feature.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-test-utils.h"
@@ -1124,7 +1123,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
   url::Origin trial_origin = url::Origin::Create(GURL(kOriginTrialUrl));
   EXPECT_TRUE(delegate->IsFeaturePersistedForOrigin(
       /*origin=*/trial_origin, /*partition_origin=*/trial_origin,
-      blink::OriginTrialFeature::kOriginTrialsSampleAPIPersistentFeature,
+      blink::mojom::OriginTrialFeature::kOriginTrialsSampleAPIPersistentFeature,
       validTime));
 }
 
@@ -1179,7 +1178,7 @@ IN_PROC_BROWSER_TEST_F(
   url::Origin trial_origin = url::Origin::Create(GURL(kThirdPartyScriptUrl));
   EXPECT_TRUE(delegate->IsFeaturePersistedForOrigin(
       /*origin=*/trial_origin, /*partition_origin=*/main_origin,
-      blink::OriginTrialFeature::
+      blink::mojom::OriginTrialFeature::
           kOriginTrialsSampleAPIPersistentThirdPartyDeprecationFeature,
       validTime));
 }
@@ -7628,16 +7627,12 @@ void AssertBitmapOfColor(const SkBitmap& bitmap, SkColor color) {
 // visual glitches.
 //
 // TODO(https://crbug.com/1472026): Investigate and re-enable.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition \
-  DISABLED_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition
-#else
-#define MAYBE_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition \
-  NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition
-#endif
+//
+// TODO(https://crbug.com/1487799): Disabled globally as the killswitch has been
+// flipped. Re-enable once the proper fix for VT+BFCache has landed.
 IN_PROC_BROWSER_TEST_F(
     RenderFrameHostImplBrowserTestWithBFCacheAndViewTransition,
-    MAYBE_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition) {
+    DISABLED_NewContentTimeoutIsSetWhenLeavingBFCacheWithViewTransition) {
   // "red_jank_second_pageshow.html" janks the renderer on the second pageshow
   // event.
   const GURL url_red(embedded_test_server()->GetURL(

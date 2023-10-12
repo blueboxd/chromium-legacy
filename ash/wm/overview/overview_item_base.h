@@ -11,7 +11,6 @@
 #include "ash/ash_export.h"
 #include "ash/style/system_shadow.h"
 #include "ash/wm/overview/overview_types.h"
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/memory/raw_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/event.h"
@@ -66,6 +65,10 @@ class ASH_EXPORT OverviewItemBase {
 
   // Checks if this item is currently being dragged.
   bool IsDragItem() const;
+
+  // Refreshes visuals of the `shadow_` by setting the visibility and updating
+  // the bounds.
+  void RefreshShadowVisuals(bool shadow_visible);
 
   // Handles events forwarded from the contents view.
   void OnFocusedViewActivated();
@@ -200,10 +203,6 @@ class ASH_EXPORT OverviewItemBase {
   // Updates the rounded corners and shadow on this.
   virtual void UpdateRoundedCornersAndShadow() = 0;
 
-  // Sets the bounds of the item shadow. If `bounds_in_screen` is nullopt, the
-  // shadow will be hidden.
-  virtual void SetShadowBounds(absl::optional<gfx::RectF> bounds_in_screen) = 0;
-
   // Changes the opacity of all the window(s) the item owns.
   virtual void SetOpacity(float opacity) = 0;
   virtual float GetOpacity() const = 0;
@@ -299,6 +298,14 @@ class ASH_EXPORT OverviewItemBase {
 
   void set_target_bounds_for_testing(const gfx::RectF& target_bounds) {
     target_bounds_ = target_bounds;
+  }
+
+  gfx::Rect get_shadow_content_bounds_for_testing() const {
+    return shadow_.get()->GetContentBounds();
+  }
+
+  RoundedLabelWidget* get_cannot_snap_widget_for_testing() {
+    return cannot_snap_widget_.get();
   }
 
  protected:

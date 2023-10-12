@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Можна наладзіць толькі 5 спалучэнняў клавіш. Каб дадаць новае спалучэнне клавіш, трэба выдаліць адно з ужо дададзеных.</translation>
 <translation id="1164939766849482256">Застаўка "Ад відна да цямна"</translation>
 <translation id="1167755866710282443">Адкрыйце меню, каб наладзіць клавішы. Перацягніце меню для перамяшчэння.</translation>
+<translation id="1174073918202301297">Ярлык дададзены</translation>
 <translation id="1175697296044146566">Гэтай прыладай <ph name="DEVICE_TYPE" /> кіруе <ph name="MANAGER" /></translation>
 <translation id="1175951029573070619">Сярэдні (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Выдаліць</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">Змяняць відарыс шпалер штодня</translation>
 <translation id="1644574205037202324">Гісторыя</translation>
 <translation id="1651925268237749928">Вы выбралі абагулены альбом. Іншыя карыстальнікі могуць дадаваць або змяняць фота. У якасці шпалер могуць паказвацца фота, якіх зараз няма ў гэтым альбоме.</translation>
+<translation id="1661865805917886535">Некаторыя звесткі аб вашым уліковым запісе і сістэме могуць быць адпраўлены ў Google. Мы будзем выкарыстоўваць гэту інфармацыю, каб у адпаведнасці з Палітыкай прыватнасці (<ph name="PRIVACYPOLICYURL" />) і Умовамі выкарыстання (<ph name="TERMSOFSERVICEURL" />) вызначаць тэхнічныя праблемы і ўдасканальваць нашы сэрвісы. Каб адправіць запыт на змяненне змесціва, перайдзіце на старонку юрыдычнай даведкі (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Спынена: скончылася чарніла</translation>
 <translation id="1664796644829245314">Перадпрагляд: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Убудаваная сетка VPN</translation>
@@ -131,7 +133,6 @@
 <translation id="1871569928317311284">Выключыць цёмную тэму</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Выключыць цёмны рэжым</translation>
-<translation id="1881188606372070653">Каб адправіць запыт на змяненне змесціва з юрыдычных прычын, перайдзіце на <ph name="BEGIN_LINK1" />старонку юрыдычнай даведкі<ph name="END_LINK1" />. Некаторыя звесткі аб вашым уліковым запісе і сістэме могуць быць адпраўлены ў Google. Мы будзем выкарыстоўваць вашу інфармацыю, каб у адпаведнасці з <ph name="BEGIN_LINK2" />Палітыкай прыватнасці<ph name="END_LINK2" /> і <ph name="BEGIN_LINK3" />Умовамі выкарыстання<ph name="END_LINK3" /> вызначаць тэхнічныя праблемы і ўдасканальваць нашы сэрвісы.</translation>
 <translation id="1885577615937958993">пераматаць медыязмесціва ўперад</translation>
 <translation id="1887850431809612466">Версія апаратнага забеспячэння</translation>
 <translation id="1897672602657312171">Спалучэнне клавіш, у якім не выкарыстоўваецца клавіша пошуку, можа канфліктаваць са спалучэннямі клавіш іншых праграм. Націсніце гэта спалучэнне клавіш яшчэ раз, калі вы хочаце выкарыстоўваць яго і далей, або націсніце іншае спалучэнне клавіш, у якім выкарыстоўваецца клавіша пошуку.</translation>
@@ -212,6 +213,7 @@
 <translation id="2505327257735685095">Абнавіць відарыс, які выкарыстоўваецца як шпалеры</translation>
 <translation id="2512979179176933762">паказаць вокны</translation>
 <translation id="2513396635448525189">Відарыс уліковага запісу</translation>
+<translation id="2515109918609218604">Спалучэнне клавіш недаступнае. Скарыстайце іншае спалучэнне, без клавіш Fn і пошуку.</translation>
 <translation id="2517472476991765520">Пошук</translation>
 <translation id="2521835766824839541">папярэдні трэк</translation>
 <translation id="2526590354069164005">Працоўны стол</translation>
@@ -265,6 +267,7 @@
 <translation id="3122464029669770682">Працэсар</translation>
 <translation id="3124039320086536031">Прылада падключана.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Выдаліць старонку?}=1{Выдаліць старонку {PAGE_NUMBER}?}one{Выдаліць старонку {PAGE_NUMBER}?}few{Выдаліць старонку {PAGE_NUMBER}?}many{Выдаліць старонку {PAGE_NUMBER}?}other{Выдаліць старонку {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Эксклюзіўна для <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Мабільная перадача даных</translation>
 <translation id="3156846309055100599">Сканіруецца старонка <ph name="PAGE_NUMBER" />…</translation>
 <translation id="315738237743207937">Выяўлены партал узаемадзеяння</translation>
@@ -687,6 +690,7 @@
 <translation id="6318437367327684789">назаўжды</translation>
 <translation id="6319207335391420837">Абнаўленне ўбудаванага ПЗ прылады "<ph name="DEVICE_NAME" />"</translation>
 <translation id="6321407676395378991">Уключыць застаўку</translation>
+<translation id="6324916366299863871">Рэдагаваць ярлык</translation>
 <translation id="6325525973963619867">Збой</translation>
 <translation id="6331191339300272798">Аўтаматычнае ўключэнне цёмнай тэмы</translation>
 <translation id="6340526405444716530">Персаналізацыя</translation>
@@ -864,6 +868,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">падсвятленне клавіятуры</translation>
+<translation id="7730077286107534951">Некаторыя звесткі аб вашым уліковым запісе і сістэме могуць быць адпраўлены ў Google. Мы будзем выкарыстоўваць гэту інфармацыю, каб у адпаведнасці з <ph name="BEGIN_LINK2" />Палітыкай прыватнасці<ph name="END_LINK2" /> і <ph name="BEGIN_LINK3" />Умовамі выкарыстання<ph name="END_LINK3" /> вызначаць тэхнічныя праблемы і ўдасканальваць нашы сэрвісы. Каб адправіць запыт на змяненне змесціва, перайдзіце на старонку <ph name="BEGIN_LINK1" />юрыдычнай даведкі<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Колькасць цыклаў</translation>
 <translation id="7747039790905080783">Папярэдне абагулены ключ</translation>
 <translation id="7752963721013053477">"Ад відна да цямна" – эксклюзіўна</translation>
@@ -900,6 +905,7 @@
 <translation id="7978412674231730200">Закрыты ключ</translation>
 <translation id="7994702968232966508">Метад EAP</translation>
 <translation id="8004582292198964060">Браўзер</translation>
+<translation id="8017679124341497925">Ярлык зменены</translation>
 <translation id="802154636333426148">Збой спампоўкі</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Уключыць рэжым аўтакарэкцыі колераў</translation>

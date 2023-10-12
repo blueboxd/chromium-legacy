@@ -35,13 +35,31 @@ chromium-metrics-reviews@google.com.
 
 <variants name="MXVersion">
   <variant name=""
-      summary="The default MXPayload, only recorded when the app version
-               number matches."/>
+      summary="Warning: This is only recorded when the current app version
+               number matches the version number for all the data received in
+               a MetricKit payload. Since MetricKit payloads are received
+               once every 24 hours, this means that payloads received within
+               24 hours of updating the app will get dropped. As a result,
+               there will be a substantial decrease in histogram volume when
+               a new app version is released, biasing the collected data
+               towards users who are slow to update, and possibly creating
+               spurious regressions or progressions. This histogram will have
+               misleading trends around release dates. The version of this
+               metric prefixed by IOS.MetricKit.IncludingMismatch does not
+               drop data this way, so will not have these spurious changes."/>
   <variant name="IncludingMismatch."
-      summary="The processed MXPayload may not match the current app's
-               version. This is very common on app updates, which would
-               otherwise lead to losing multiple days of MetricKit reports.
-               Instead, record them here."/>
+      summary="Warning: This is recorded even when the current app version
+               number doesn't match the version number for some or all of the
+               data received in a MetricKit payload. This means that data
+               reported for a particular Chrome version may actually be
+               coming from an earlier version that the user was running
+               within the previous 24 hours. Splitting this histogram by
+               version number will yield misleading results, as some data
+               attributed to be from a particular version will have been
+               actually recorded for a different version number. The version
+               of this metric that does not contain IncludingMismatch in its
+               name drops data from older versions, so is safe to split by
+               version number."/>
 </variants>
 
 <histogram name="IOS.Allocator.ShimInstalled" enum="Boolean"
@@ -320,7 +338,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.IsEnabled.Startup" enum="Boolean"
-    expires_after="2024-01-28">
+    expires_after="2024-03-31">
   <owner>veronguyen@google.com</owner>
   <owner>tmartino@chromium.org</owner>
   <summary>
@@ -363,7 +381,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.PasswordUseCount" units="count"
-    expires_after="2024-01-28">
+    expires_after="2024-03-31">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -441,7 +459,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.StatusDidChangeTo.Startup"
-    enum="Boolean" expires_after="2024-01-28">
+    enum="Boolean" expires_after="2024-03-31">
   <owner>veronguyen@google.com</owner>
   <owner>tmartino@chromium.org</owner>
   <summary>
@@ -664,7 +682,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.DesktopPasswordPromo.Shown"
-    enum="DesktopIOSPasswordPromoImpression" expires_after="2024-01-31">
+    enum="DesktopIOSPasswordPromoImpression" expires_after="2024-03-31">
   <owner>nicolasmacbeth@google.com</owner>
   <owner>bling-get-set-up@google.com</owner>
   <summary>
@@ -675,7 +693,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.DesktopPasswordPromo.{Impression}.Action"
-    enum="DesktopIOSPasswordPromoAction" expires_after="2024-01-31">
+    enum="DesktopIOSPasswordPromoAction" expires_after="2024-03-31">
   <owner>nicolasmacbeth@google.com</owner>
   <owner>bling-get-set-up@google.com</owner>
   <summary>
@@ -1245,7 +1263,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MainFrameNavigationIsInLockdownMode" enum="Boolean"
-    expires_after="2024-01-28">
+    expires_after="2024-03-31">
   <owner>ajuma@chromium.org</owner>
   <owner>bling-fundamentals@google.com</owner>
   <summary>
@@ -1326,7 +1344,15 @@ chromium-metrics-reviews@google.com.
     browser process are reported.
 
     Recorded only if user opted in for sharing diagnostic data on iOS device.
-    Note: The date the data is reported is later than the day it account for.
+    The exact percentage of users who are opted into sharing data with Apple is
+    not known, but see go/chrome-uma-metrickit-sharing-rate for an estimate.
+
+    Note: Data is received from Apple once a day when Chrome is running,
+    covering the previous 24 hours as well as any older data that has not yet
+    been delivered to Chrome. This means that the date the data is reported may
+    be later than the user activity it corresponds to.
+
+    {MXVersion}
 
     This histogram is of special interest to the chrome-analysis-team@. Do not
     change its semantics or retire it without talking to them first.
@@ -1343,7 +1369,15 @@ chromium-metrics-reviews@google.com.
     aggregated). Logged when a MXMetricPayload is received (one per day).
 
     Recorded only if user opted in for sharing diagnostic data on iOS device.
-    Note: The date the data is reported is later than the day it account for.
+    The exact percentage of users who are opted into sharing data with Apple is
+    not known, but see go/chrome-uma-metrickit-sharing-rate for an estimate.
+
+    Note: Data is received from Apple once a day when Chrome is running,
+    covering the previous 24 hours as well as any older data that has not yet
+    been delivered to Chrome. This means that the date the data is reported may
+    be later than the user activity it corresponds to.
+
+    {MXVersion}
   </summary>
   <token key="MXVersion" variants="MXVersion"/>
 </histogram>
@@ -1358,7 +1392,15 @@ chromium-metrics-reviews@google.com.
     day).
 
     Recorded only if user opted in for sharing diagnostic data on iOS device.
-    Note: The date the data is reported is later than the day it account for.
+    The exact percentage of users who are opted into sharing data with Apple is
+    not known, but see go/chrome-uma-metrickit-sharing-rate for an estimate.
+
+    Note: Data is received from Apple once a day when Chrome is running,
+    covering the previous 24 hours as well as any older data that has not yet
+    been delivered to Chrome. This means that the date the data is reported may
+    be later than the user activity it corresponds to.
+
+    {MXVersion}
   </summary>
   <token key="MXVersion" variants="MXVersion"/>
 </histogram>
@@ -1382,7 +1424,15 @@ chromium-metrics-reviews@google.com.
     &quot;CleanExitBeacon&quot; is set when Chrome is put in the background.
 
     Recorded only if user opted in for sharing diagnostic data on iOS device.
-    Note: The date the data is reported is later than the day it account for.
+    The exact percentage of users who are opted into sharing data with Apple is
+    not known, but see go/chrome-uma-metrickit-sharing-rate for an estimate.
+
+    Note: Data is received from Apple once a day when Chrome is running,
+    covering the previous 24 hours as well as any older data that has not yet
+    been delivered to Chrome. This means that the date the data is reported may
+    be later than the user activity it corresponds to.
+
+    {MXVersion}
 
     This histogram is of special interest to the chrome-analysis-team@. Do not
     change its semantics or retire it without talking to them first.
@@ -1401,7 +1451,15 @@ chromium-metrics-reviews@google.com.
     background activity like background music or picture in picture).
 
     Recorded only if user opted in for sharing diagnostic data on iOS device.
-    Note: The date the data is reported is later than the day it account for.
+    The exact percentage of users who are opted into sharing data with Apple is
+    not known, but see go/chrome-uma-metrickit-sharing-rate for an estimate.
+
+    Note: Data is received from Apple once a day when Chrome is running,
+    covering the previous 24 hours as well as any older data that has not yet
+    been delivered to Chrome. This means that the date the data is reported may
+    be later than the user activity it corresponds to.
+
+    {MXVersion}
   </summary>
   <token key="MXVersion" variants="MXVersion"/>
 </histogram>
@@ -1415,13 +1473,23 @@ chromium-metrics-reviews@google.com.
     receive input. This measures startup until the same point as
     Startup.ColdStartFromProcessCreationTimeV2 but is computed by iOS in a way
     that accounts for app pre-warming. The exact adjustments made to account for
-    pre-warming are not documented by Apple. Logged when a MXMetricPayload is
-    received (one per day).
+    pre-warming are not documented by Apple. This metric only covers cold
+    starts, that is, when Chrome is not running and is then launched into the
+    foreground. It does not cover warms starts, that is, when Chrome is already
+    running in the background and is then brought into the foreground. Logged
+    when a MXMetricPayload is received (one per day).
 
     This is only recorded on iOS 16+, and recorded only if user opted in for
-    sharing diagnostic data on iOS device.
+    sharing diagnostic data on iOS device with Apple. The exact percentage of
+    users who are opted into sharing data with Apple is not known, but see
+    go/chrome-uma-metrickit-sharing-rate for an estimate.
 
-    Note: The date the data is reported is later than the day it accounts for.
+    Note: Data is received from Apple once a day when Chrome is running,
+    covering the previous 24 hours as well as any older data that has not yet
+    been delivered to Chrome. This means that the date the data is reported may
+    be later than the user activity it corresponds to.
+
+    {MXVersion}
   </summary>
   <token key="MXVersion" variants="MXVersion"/>
 </histogram>
@@ -1447,7 +1515,15 @@ chromium-metrics-reviews@google.com.
     foreground.
 
     Recorded only if user opted in for sharing diagnostic data on iOS device.
-    Note: The date the data is reported is later than the day it account for.
+    The exact percentage of users who are opted into sharing data with Apple is
+    not known, but see go/chrome-uma-metrickit-sharing-rate for an estimate.
+
+    Note: Data is received from Apple once a day when Chrome is running,
+    covering the previous 24 hours as well as any older data that has not yet
+    been delivered to Chrome. This means that the date the data is reported may
+    be later than the user activity it corresponds to.
+
+    {MXVersion}
 
     This histogram is of special interest to the chrome-analysis-team@. Do not
     change its semantics or retire it without talking to them first.
@@ -1469,7 +1545,15 @@ chromium-metrics-reviews@google.com.
     foreground
 
     Recorded only if user opted in for sharing diagnostic data on iOS device.
-    Note: The date the data is reported is later than the day it account for.
+    The exact percentage of users who are opted into sharing data with Apple is
+    not known, but see go/chrome-uma-metrickit-sharing-rate for an estimate.
+
+    Note: Data is received from Apple once a day when Chrome is running,
+    covering the previous 24 hours as well as any older data that has not yet
+    been delivered to Chrome. This means that the date the data is reported may
+    be later than the user activity it corresponds to.
+
+    {MXVersion}
   </summary>
   <token key="MXVersion" variants="MXVersion"/>
 </histogram>
@@ -1486,9 +1570,16 @@ chromium-metrics-reviews@google.com.
     (one per day).
 
     This is only recorded on iOS 16+, and recorded only if user opted in for
-    sharing diagnostic data on iOS device.
+    sharing diagnostic data on iOS device. The exact percentage of users who are
+    opted into sharing data with Apple is not known, but see
+    go/chrome-uma-metrickit-sharing-rate for an estimate.
 
-    Note: The date the data is reported is later than the day it accounts for.
+    Note: Data is received from Apple once a day when Chrome is running,
+    covering the previous 24 hours as well as any older data that has not yet
+    been delivered to Chrome. This means that the date the data is reported may
+    be later than the user activity it corresponds to.
+
+    {MXVersion}
   </summary>
   <token key="MXVersion" variants="MXVersion"/>
 </histogram>
@@ -1508,7 +1599,15 @@ chromium-metrics-reviews@google.com.
     whether this is going to be reported.
 
     Recorded only if user opted in for sharing diagnostic data on iOS device.
-    Note: The date the data is reported is later than the day it account for.
+    The exact percentage of users who are opted into sharing data with Apple is
+    not known, but see go/chrome-uma-metrickit-sharing-rate for an estimate.
+
+    Note: Data is received from Apple once a day when Chrome is running,
+    covering the previous 24 hours as well as any older data that has not yet
+    been delivered to Chrome. This means that the date the data is reported may
+    be later than the user activity it corresponds to.
+
+    {MXVersion}
   </summary>
   <token key="MXVersion" variants="MXVersion"/>
 </histogram>
@@ -1522,7 +1621,15 @@ chromium-metrics-reviews@google.com.
     received (one per day).
 
     Recorded only if user opted in for sharing diagnostic data on iOS device.
-    Note: The date the data is reported is later than the day it account for.
+    The exact percentage of users who are opted into sharing data with Apple is
+    not known, but see go/chrome-uma-metrickit-sharing-rate for an estimate.
+
+    Note: Data is received from Apple once a day when Chrome is running,
+    covering the previous 24 hours as well as any older data that has not yet
+    been delivered to Chrome. This means that the date the data is reported may
+    be later than the user activity it corresponds to.
+
+    {MXVersion}
   </summary>
   <token key="MXVersion" variants="MXVersion"/>
 </histogram>
@@ -1613,7 +1720,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Omnibox.DeviceSwitcherResult.{Context}"
-    enum="OmniboxDeviceSwitcherResult" expires_after="2024-01-31">
+    enum="OmniboxDeviceSwitcherResult" expires_after="2024-03-31">
   <owner>christianxu@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -1634,7 +1741,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Omnibox.SteadyStatePositionAtStartup"
-    enum="OmniboxPositionType" expires_after="2024-01-28">
+    enum="OmniboxPositionType" expires_after="2024-03-31">
   <owner>christianxu@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -1643,7 +1750,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Omnibox.SuggestionsListScrolled.{PageClass}"
-    enum="Boolean" expires_after="2024-01-31">
+    enum="Boolean" expires_after="2024-03-31">
   <owner>christianxu@chromium.org</owner>
   <owner>stkhapugin@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -1968,6 +2075,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.PasswordBottomSheet.UsernameTapped.MinimizedState"
+    enum="Boolean" expires_after="2024-04-26">
+  <owner>sugoi@chromium.org</owner>
+  <owner>veronguyen@google.com</owner>
+  <owner>bling-transactions@google.com</owner>
+  <summary>
+    Records whether the password cell in the password bottom sheet was minimized
+    when the user tapped on it.
+  </summary>
+</histogram>
+
 <histogram name="IOS.PasswordManager.BulkSavePasswordsInAccountCount"
     units="passwords" expires_after="2024-01-28">
   <owner>nicolasmacbeth@google.com</owner>
@@ -2006,6 +2124,26 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of passwords with a favicon loaded in the Password Manager
     recorded when the view will disappear.
+  </summary>
+</histogram>
+
+<histogram name="IOS.PasswordManager.WidgetPromo.Action"
+    enum="PromoWithInstructionsAction" expires_after="2024-03-12">
+  <owner>noemies@google.com</owner>
+  <owner>bling-transactions@google.com</owner>
+  <summary>
+    [iOS Only] Tracks the actions taken by the user on the Password Manager
+    widget promo.
+  </summary>
+</histogram>
+
+<histogram name="IOS.PaymentsBottomSheet.ExitReason"
+    enum="PaymentsSuggestionBottomSheetExitReason" expires_after="2024-10-05">
+  <owner>sugoi@chromium.org</owner>
+  <owner>veronguyen@google.com</owner>
+  <owner>tmartino@chromium.org</owner>
+  <summary>
+    Tracks the bottom sheet dismissal or use of a payments suggestion.
   </summary>
 </histogram>
 
@@ -2053,7 +2191,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PostRestoreSignin.Choice"
-    enum="IOSPostRestoreSigninChoice" expires_after="2024-01-28">
+    enum="IOSPostRestoreSigninChoice" expires_after="2024-03-31">
   <owner>scottyoder@google.com</owner>
   <owner>bling-get-set-up@google.com</owner>
   <summary>
@@ -2062,7 +2200,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PostRestoreSignin.Displayed" enum="Boolean"
-    expires_after="2024-01-28">
+    expires_after="2024-03-31">
   <owner>scottyoder@google.com</owner>
   <owner>bling-get-set-up@google.com</owner>
   <summary>
@@ -2071,7 +2209,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Process.ActivePrewarm" enum="Boolean"
-    expires_after="2024-01-28">
+    expires_after="2024-03-31">
   <owner>justincohen@google.com</owner>
   <owner>olivierrobin@google.com</owner>
   <summary>
@@ -2642,6 +2780,36 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.SaveToPhotos.UploadFailureLatency" units="ms"
+    expires_after="2024-03-29">
+  <owner>qpubert@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <summary>
+    Logged when the Photos service completes an image upload with failure. It
+    records the time elapsed between the moment the upload request is submitted
+    to the service and the moment the service calls the provided completion
+    callback. In particular, this includes the time necessary to create a
+    destination album if necessary, upload the media item and add it to the
+    destination album. See IOS.SaveToPhotos.UploadSuccessLatency for recording
+    of successful completion.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SaveToPhotos.UploadSuccessLatency" units="ms"
+    expires_after="2024-03-29">
+  <owner>qpubert@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <summary>
+    Logged when the Photos service completes an image upload with success. It
+    records the time elapsed between the moment the upload request is submitted
+    to the service and the moment the service calls the provided completion
+    callback. In particular, this includes the time necessary to create a
+    destination album if necessary, upload the media item and add it to the
+    destination album. See IOS.SaveToPhotos.UploadFailureLatency for recording
+    of unsuccessful completion.
+  </summary>
+</histogram>
+
 <histogram name="IOS.SearchExtension.Action" enum="IOSSearchExtensionAction"
     expires_after="2024-09-18">
   <owner>olivierrobin@chromium.org</owner>
@@ -2772,29 +2940,11 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="IOS.Snapshots.CacheSize" units="KB" expires_after="2024-01-28">
+<histogram name="IOS.Snapshots.CacheSize" units="KB" expires_after="2024-03-31">
   <owner>ajuma@chromium.org</owner>
   <owner>edchin@chromium.org</owner>
   <summary>
     The overall size of snapshots cache. Recorded when new snapshot is cached.
-  </summary>
-</histogram>
-
-<histogram name="IOS.Snapshots.ImageSize" units="KB" expires_after="2024-05-30">
-  <owner>ajuma@chromium.org</owner>
-  <owner>edchin@chromium.org</owner>
-  <summary>
-    The size of a single snapshot image. Recorded when new snapshot is taken and
-    RecordSnapshotSize flag is enabled.
-  </summary>
-</histogram>
-
-<histogram name="IOS.Snapshots.PDFSize" units="KB" expires_after="2023-11-10">
-  <owner>ajuma@chromium.org</owner>
-  <owner>edchin@chromium.org</owner>
-  <summary>
-    The size of a single snapshot PDF. Recorded when new snapshot is taken and
-    RecordSnapshotSize flag is enabled.
   </summary>
 </histogram>
 
@@ -2836,6 +2986,16 @@ chromium-metrics-reviews@google.com.
   <owner>ameurhosni@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>Recorded each time an intent is donated.</summary>
+</histogram>
+
+<histogram name="IOS.Spotlight.LaunchIntentType"
+    enum="IOSSpotlightDonatedIntentType" expires_after="2024-06-01">
+  <owner>stkhapugin@chromium.org</owner>
+  <owner>ameurhosni@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    Recorded each time the app is opened via a Spotlight intent.
+  </summary>
 </histogram>
 
 <histogram name="IOS.Spotlight.OpenTabsIndexingDuration" units="ms"
@@ -2970,7 +3130,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabGrid.TabSelected.TimeSinceLastActivation" units="ms"
-    expires_after="2024-01-28">
+    expires_after="2024-03-31">
   <owner>gambard@chromium.org</owner>
   <owner>chromeleon@google.com</owner>
   <summary>
@@ -3026,7 +3186,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabSwitcher.DragDropTabs"
-    enum="IOSTabSwitcherDragDropTabs" expires_after="2024-01-28">
+    enum="IOSTabSwitcherDragDropTabs" expires_after="2024-03-31">
   <owner>ewannpv@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -3244,7 +3404,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Variations.CreateTrials.SeedExpiry"
-    enum="VariationsSeedExpiry" expires_after="2024-01-28">
+    enum="VariationsSeedExpiry" expires_after="2024-03-31">
   <owner>ginnyhuang@chromium.org</owner>
   <owner>bling-get-set-up@google.com</owner>
   <summary>
@@ -3283,7 +3443,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Variations.FirstRun.SeedFetchTime" units="ms"
-    expires_after="2024-01-28">
+    expires_after="2024-03-31">
   <owner>ginnyhuang@chromium.org</owner>
   <owner>bling-get-set-up@google.com</owner>
   <summary>
@@ -3304,6 +3464,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     This event is recorded on every warm start app open. The value represents
     how long the app was away from the foreground.
+  </summary>
+</histogram>
+
+<histogram name="IOS.Web.ErrorPagePresentationFailed"
+    enum="IOSErrorPagePresentationFailed" expires_after="2024-03-01">
+  <owner>ajuma@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <summary>
+    Logged when the error page fails to load. Sometimes, for example, when the
+    web view no longer exists, this error may be expected. Other times, it will
+    have unknown causes. These unknown cases will cause a blank white page to
+    remain displayed in the web content area after the failed load instead of a
+    descriptive error message. Ref: crbug.com/1489167
   </summary>
 </histogram>
 
@@ -3378,7 +3551,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.WidgetKit.Action" enum="IOSWidgetKitAction"
-    expires_after="2024-01-30">
+    expires_after="2024-03-31">
   <owner>rkgibson@google.com</owner>
   <owner>muradyan@google.com</owner>
   <summary>
@@ -3388,7 +3561,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.WidgetKit.{Status}" enum="IOSWidgetKitExtensionKind"
-    expires_after="2024-01-30">
+    expires_after="2024-03-31">
   <owner>rkgibson@google.com</owner>
   <owner>muradyan@chromium.org</owner>
   <summary>
@@ -3473,7 +3646,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ManualFallback.PresentedOptions.AllPasswords"
-    units="Credentials" expires_after="2024-01-28">
+    units="Credentials" expires_after="2024-03-31">
   <owner>tmartino@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>

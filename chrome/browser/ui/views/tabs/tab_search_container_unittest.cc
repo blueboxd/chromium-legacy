@@ -35,17 +35,19 @@ class TabSearchContainerTest : public ChromeViewsTestBase {
     scoped_feature_list_.InitWithFeatures(
         {features::kTabOrganization, features::kChromeRefresh2023}, {});
 
-    auto controller = std::make_unique<FakeBaseTabStripControllerWithProfile>();
-    tab_strip_ = std::make_unique<TabStrip>(std::move(controller));
-    container_before_tab_strip_ =
-        std::make_unique<TabSearchContainer>(tab_strip_.get(), true);
-    container_after_tab_strip_ =
-        std::make_unique<TabSearchContainer>(tab_strip_.get(), false);
+    tab_strip_controller_ =
+        std::make_unique<FakeBaseTabStripControllerWithProfile>();
+    locked_expansion_view_ = std::make_unique<views::View>();
+    container_before_tab_strip_ = std::make_unique<TabSearchContainer>(
+        tab_strip_controller_.get(), true, locked_expansion_view_.get());
+    container_after_tab_strip_ = std::make_unique<TabSearchContainer>(
+        tab_strip_controller_.get(), false, locked_expansion_view_.get());
   }
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<TabStrip> tab_strip_;
+  std::unique_ptr<TabStripController> tab_strip_controller_;
+  std::unique_ptr<views::View> locked_expansion_view_;
   std::unique_ptr<TabSearchContainer> container_before_tab_strip_;
   std::unique_ptr<TabSearchContainer> container_after_tab_strip_;
 };
@@ -100,20 +102,4 @@ TEST_F(TabSearchContainerTest, AnimatesToExpanded) {
                    ->flat_edge_factor_for_testing());
   ASSERT_EQ(0, container_before_tab_strip_->tab_search_button()
                    ->flat_edge_factor_for_testing());
-}
-
-TEST_F(TabSearchContainerTest, TogglesActionUIState) {
-  ASSERT_FALSE(container_before_tab_strip_->expansion_animation_for_testing()
-                   ->IsShowing());
-  ASSERT_EQ(nullptr, container_before_tab_strip_->tab_organization_button()
-                         ->session_for_testing());
-
-  TabOrganizationService* service =
-      container_before_tab_strip_->tab_organization_service_for_testing();
-  service->OnTriggerOccured(nullptr);
-
-  ASSERT_TRUE(container_before_tab_strip_->expansion_animation_for_testing()
-                  ->IsShowing());
-  ASSERT_NE(nullptr, container_before_tab_strip_->tab_organization_button()
-                         ->session_for_testing());
 }

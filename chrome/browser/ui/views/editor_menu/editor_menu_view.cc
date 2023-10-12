@@ -23,11 +23,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
-#include "ui/color/color_provider.h"
-#include "ui/compositor/layer.h"
-#include "ui/compositor/layer_owner.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -42,6 +38,7 @@
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/layout/layout_manager.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 #include "ui/views/view_utils.h"
@@ -54,21 +51,18 @@ namespace {
 constexpr char kWidgetName[] = "EditorMenuViewWidget";
 constexpr char16_t kContainerTitle[] = u"Editor Menu";
 
-constexpr int kRadiusDip = 4;
-
-constexpr gfx::Insets kTitleContainerInsets = gfx::Insets::TLBR(10, 16, 10, 10);
+constexpr gfx::Insets kTitleContainerInsets = gfx::Insets::TLBR(12, 16, 12, 8);
 
 constexpr char16_t kSettingsTooltipString[] = u"Settings";
 constexpr int kSettingsIconSizeDip = 20;
-constexpr int kSettingsButtonBorderDip = 4;
 
-constexpr int kChipsContainerVerticalSpacingDip = 16;
-constexpr gfx::Insets kChipsMargin =
-    gfx::Insets::TLBR(0, 8, kChipsContainerVerticalSpacingDip, 0);
-constexpr gfx::Insets kChipsContainerInsets = gfx::Insets::VH(0, 16);
+// Spacing to apply between and around chips.
+constexpr int kChipsHorizontalPadding = 8;
+constexpr int kChipsVerticalPadding = 12;
+constexpr gfx::Insets kChipsContainerInsets = gfx::Insets::TLBR(0, 16, 16, 16);
 
 constexpr gfx::Insets kTextfieldContainerInsets =
-    gfx::Insets::TLBR(0, 16, 10, 16);
+    gfx::Insets::TLBR(0, 16, 12, 16);
 
 }  // namespace
 
@@ -90,6 +84,7 @@ views::UniqueWidgetPtr EditorMenuView::CreateWidget(
     const gfx::Rect& anchor_view_bounds,
     EditorMenuViewDelegate* delegate) {
   views::Widget::InitParams params;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.activatable = views::Widget::InitParams::Activatable::kYes;
   params.shadow_elevation = 2;
   params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
@@ -164,12 +159,10 @@ void EditorMenuView::UpdateBounds(const gfx::Rect& anchor_view_bounds) {
 }
 
 void EditorMenuView::InitLayout(const PresetTextQueries& preset_text_queries) {
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-  layer()->SetMasksToBounds(true);
-
   SetBackground(views::CreateThemedRoundedRectBackground(
-      cros_tokens::kCrosSysAppBase, kRadiusDip));
+      ui::kColorPrimaryBackground,
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(
+          views::ShapeContextTokens::kMenuRadius)));
 
   auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kVertical);
@@ -202,23 +195,16 @@ void EditorMenuView::AddTitleContainer() {
       title_container_->AddChildView(std::make_unique<views::View>());
   layout->SetFlexForView(spacer, 1);
 
-  auto* button_container =
-      title_container_->AddChildView(std::make_unique<views::FlexLayoutView>());
-  button_container->SetMainAxisAlignment(views::LayoutAlignment::kCenter);
-  button_container->SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
-
   settings_button_ =
-      button_container->AddChildView(std::make_unique<views::ImageButton>(
+      title_container_->AddChildView(std::make_unique<views::ImageButton>(
           base::BindRepeating(&EditorMenuView::OnSettingsButtonPressed,
                               weak_factory_.GetWeakPtr())));
   settings_button_->SetTooltipText(kSettingsTooltipString);
   settings_button_->SetImageModel(
       views::Button::STATE_NORMAL,
       ui::ImageModel::FromVectorIcon(vector_icons::kSettingsOutlineIcon,
-                                     cros_tokens::kCrosSysOnSurface,
+                                     ui::kColorSysOnSurface,
                                      kSettingsIconSizeDip));
-  settings_button_->SetBorder(
-      views::CreateEmptyBorder(kSettingsButtonBorderDip));
   views::InkDrop::Get(settings_button_)
       ->SetMode(views::InkDropHost::InkDropMode::ON);
   views::InkDrop::Get(settings_button_)->SetBaseColorId(ui::kColorIcon);
@@ -231,7 +217,11 @@ void EditorMenuView::AddChipsContainer(
     const PresetTextQueries& preset_text_queries) {
   chips_container_ = AddChildView(std::make_unique<views::FlexLayoutView>());
   chips_container_->SetOrientation(views::LayoutOrientation::kVertical);
+  chips_container_->SetCollapseMargins(true);
+  chips_container_->SetIgnoreDefaultMainAxisMargins(true);
   chips_container_->SetProperty(views::kMarginsKey, kChipsContainerInsets);
+  chips_container_->SetDefault(views::kMarginsKey,
+                               gfx::Insets::VH(kChipsVerticalPadding, 0));
 
   // Put all the chips in a single row while we are initially creating the
   // editor menu. This layout will be adjusted once the editor menu bounds are
@@ -276,11 +266,12 @@ void EditorMenuView::UpdateChipsContainer(int editor_menu_width) {
   views::View* row = nullptr;
   for (auto& chip : chips) {
     const int chip_width = chip->GetPreferredSize().width();
-    if (row != nullptr && running_width + chip_width + kChipsMargin.left() <=
-                              chip_container_width) {
+    if (row != nullptr &&
+        running_width + chip_width + kChipsHorizontalPadding <=
+            chip_container_width) {
       // Add the chip to the current row if it can fit (including space for
       // padding between chips).
-      running_width += chip_width + kChipsMargin.left();
+      running_width += chip_width + kChipsHorizontalPadding;
     } else {
       // Otherwise, create a new row for the chip.
       row = AddChipsRow();
@@ -295,7 +286,8 @@ views::View* EditorMenuView::AddChipsRow() {
       chips_container_->AddChildView(std::make_unique<views::FlexLayoutView>());
   row->SetCollapseMargins(true);
   row->SetIgnoreDefaultMainAxisMargins(true);
-  row->SetDefault(views::kMarginsKey, kChipsMargin);
+  row->SetDefault(views::kMarginsKey,
+                  gfx::Insets::VH(0, kChipsHorizontalPadding));
   return row;
 }
 

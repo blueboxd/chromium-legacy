@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.ui.device_lock;
 
+import android.content.res.ColorStateList;
+import android.view.View;
+
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -15,16 +18,15 @@ public class DeviceLockViewBinder {
         if (propertyKey == DeviceLockProperties.PREEXISTING_DEVICE_LOCK) {
             DeviceLockViewBinder.setTitle(model, view);
             DeviceLockViewBinder.setDescription(model, view);
+            DeviceLockViewBinder.setNoticeText(model, view);
             DeviceLockViewBinder.setContinueButton(model, view);
+            DeviceLockViewBinder.setDismissButtonText(model, view);
         } else if (propertyKey == DeviceLockProperties.DEVICE_SUPPORTS_PIN_CREATION_INTENT) {
-            DeviceLockViewBinder.setDescription(model, view);
             DeviceLockViewBinder.setContinueButton(model, view);
         } else if (propertyKey == DeviceLockProperties.IN_SIGN_IN_FLOW) {
-            if (model.get(DeviceLockProperties.IN_SIGN_IN_FLOW)) {
-                view.getDismissButton().setText(R.string.signin_fre_dismiss_button);
-            } else {
-                view.getDismissButton().setText(R.string.no_thanks);
-            }
+            DeviceLockViewBinder.setDismissButtonText(model, view);
+        } else if (propertyKey == DeviceLockProperties.UI_ENABLED) {
+            DeviceLockViewBinder.setUiStyle(model, view);
         } else if (propertyKey == DeviceLockProperties.ON_DISMISS_CLICKED) {
             view.getDismissButton().setOnClickListener(
                     model.get(DeviceLockProperties.ON_DISMISS_CLICKED));
@@ -44,11 +46,15 @@ public class DeviceLockViewBinder {
             view.getDescription().setText(R.string.device_lock_existing_lock_description);
             return;
         }
-        if (model.get(DeviceLockProperties.DEVICE_SUPPORTS_PIN_CREATION_INTENT)) {
-            view.getDescription().setText(R.string.device_lock_description);
+        view.getDescription().setText(R.string.device_lock_description);
+    }
+
+    private static void setNoticeText(PropertyModel model, DeviceLockView view) {
+        if (model.get(DeviceLockProperties.PREEXISTING_DEVICE_LOCK)) {
+            view.getNoticeText().setText(R.string.device_lock_notice);
             return;
         }
-        view.getDescription().setText(R.string.device_lock_through_settings_description);
+        view.getNoticeText().setText(R.string.device_lock_creation_notice);
     }
 
     private static void setContinueButton(PropertyModel model, DeviceLockView view) {
@@ -58,14 +64,49 @@ public class DeviceLockViewBinder {
                     model.get(DeviceLockProperties.ON_USER_UNDERSTANDS_CLICKED));
             return;
         }
+        view.getContinueButton().setText(R.string.device_lock_create_lock_button);
         if (model.get(DeviceLockProperties.DEVICE_SUPPORTS_PIN_CREATION_INTENT)) {
-            view.getContinueButton().setText(R.string.device_lock_create_lock_button);
             view.getContinueButton().setOnClickListener(
                     model.get(DeviceLockProperties.ON_CREATE_DEVICE_LOCK_CLICKED));
-            return;
+        } else {
+            view.getContinueButton().setOnClickListener(
+                    model.get(DeviceLockProperties.ON_GO_TO_OS_SETTINGS_CLICKED));
         }
-        view.getContinueButton().setText(R.string.device_lock_create_lock_button);
-        view.getContinueButton().setOnClickListener(
-                model.get(DeviceLockProperties.ON_GO_TO_OS_SETTINGS_CLICKED));
+    }
+
+    private static void setUiStyle(PropertyModel model, DeviceLockView view) {
+        if (model.get(DeviceLockProperties.UI_ENABLED)) {
+            view.getProgressBar().setVisibility(View.GONE);
+            view.getTitle().setTextAppearance(R.style.TextAppearance_Headline_Primary);
+            view.getDescription().setTextAppearance(R.style.TextAppearance_TextMedium_Primary);
+            view.getNoticeText().setTextAppearance(R.style.TextAppearance_TextMedium_Error);
+            view.getNoticeText().setDrawableTintColor(
+                    ColorStateList.valueOf(view.getContext().getResources().getColor(
+                            R.color.device_lock_illustration_red)));
+            view.getContinueButton().setEnabled(true);
+            view.getDismissButton().setEnabled(true);
+        } else {
+            view.getProgressBar().setVisibility(View.VISIBLE);
+            view.getTitle().setTextAppearance(R.style.TextAppearance_Headline_Disabled);
+            view.getDescription().setTextAppearance(R.style.TextAppearance_TextMedium_Disabled);
+            view.getNoticeText().setTextAppearance(R.style.TextAppearance_TextMedium_Disabled);
+            view.getNoticeText().setDrawableTintColor(
+                    ColorStateList.valueOf(view.getContext().getResources().getColor(
+                            R.color.default_text_color_disabled_list)));
+            view.getContinueButton().setEnabled(false);
+            view.getDismissButton().setEnabled(false);
+        }
+    }
+
+    private static void setDismissButtonText(PropertyModel model, DeviceLockView view) {
+        if (model.get(DeviceLockProperties.IN_SIGN_IN_FLOW)) {
+            if (model.get(DeviceLockProperties.PREEXISTING_DEVICE_LOCK)) {
+                view.getDismissButton().setText(R.string.signin_fre_dismiss_button);
+            } else {
+                view.getDismissButton().setText(R.string.dialog_not_now);
+            }
+        } else {
+            view.getDismissButton().setText(R.string.no_thanks);
+        }
     }
 }

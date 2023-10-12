@@ -10,12 +10,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::Eq;
 using ::testing::Return;
 using ::testing::ReturnRef;
 
 namespace {
 constexpr char kUIDismissalReasonGeneralMetric[] =
     "PasswordManager.UIDismissalReason";
+constexpr char kUsernameAddedMetric[] =
+    "PasswordBubble.AddUsernameBubble.UsernameAdded";
 constexpr char16_t kUsername[] = u"Admin";
 constexpr char16_t kPassword[] = u"AdminPass";
 }  // namespace
@@ -56,8 +59,8 @@ class AddUsernameBubbleControllerTest : public ::testing::Test {
   }
 
  private:
-  std::unique_ptr<PasswordsModelDelegateMock> mock_delegate_;
   std::unique_ptr<AddUsernameBubbleController> controller_;
+  std::unique_ptr<PasswordsModelDelegateMock> mock_delegate_;
   password_manager::PasswordForm pending_password_;
 };
 
@@ -70,14 +73,14 @@ TEST_F(AddUsernameBubbleControllerTest, Destroy) {
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonGeneralMetric,
       password_manager::metrics_util::NO_DIRECT_INTERACTION, 1);
+  histogram_tester.ExpectUniqueSample(kUsernameAddedMetric, false, 1);
 }
 
 TEST_F(AddUsernameBubbleControllerTest, SavePassword) {
   base::HistogramTester histogram_tester;
   CreateController();
 
-  EXPECT_CALL(*delegate(), SavePassword(pending_password().username_value,
-                                        pending_password().password_value));
+  EXPECT_CALL(*delegate(), OnAddUsernameSaveClicked(Eq(kUsername)));
   controller()->OnSaveClicked();
 
   EXPECT_CALL(*delegate(), OnBubbleHidden());
@@ -85,6 +88,7 @@ TEST_F(AddUsernameBubbleControllerTest, SavePassword) {
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonGeneralMetric,
       password_manager::metrics_util::CLICKED_ACCEPT, 1);
+  histogram_tester.ExpectUniqueSample(kUsernameAddedMetric, true, 1);
 }
 
 TEST_F(AddUsernameBubbleControllerTest, Title) {

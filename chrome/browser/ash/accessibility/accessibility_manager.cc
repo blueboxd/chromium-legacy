@@ -103,6 +103,7 @@
 #include "services/accessibility/buildflags.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
@@ -489,11 +490,21 @@ AccessibilityManager::AccessibilityManager() {
       extension_misc::kSelectToSpeakGuestManifestFilename,
       base::BindRepeating(&AccessibilityManager::PostUnloadSelectToSpeak,
                           weak_ptr_factory_.GetWeakPtr())));
+
+  const bool enable_v3_manifest =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableExperimentalAccessibilityManifestV3);
+  const base::FilePath::CharType* switchAccessManifestFilename =
+      enable_v3_manifest ? extension_misc::kSwitchAccessManifestV3Filename
+                         : extension_misc::kSwitchAccessManifestFilename;
+  const base::FilePath::CharType* switchAccessGuestManifestFilename =
+      enable_v3_manifest ? extension_misc::kSwitchAccessGuestManifestV3Filename
+                         : extension_misc::kSwitchAccessGuestManifestFilename;
+
   switch_access_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kSwitchAccessExtensionId,
       resources_path.Append(extension_misc::kSwitchAccessExtensionPath),
-      extension_misc::kSwitchAccessManifestFilename,
-      extension_misc::kSwitchAccessGuestManifestFilename,
+      switchAccessManifestFilename, switchAccessGuestManifestFilename,
       base::BindRepeating(&AccessibilityManager::PostUnloadSwitchAccess,
                           weak_ptr_factory_.GetWeakPtr())));
 
@@ -553,11 +564,7 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
         prefs->GetBoolean(prefs::kAccessibilityCursorHighlightEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilityFocusHighlightEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilityDictationEnabled) ||
-        prefs->GetBoolean(prefs::kDockedMagnifierEnabled)) {
-      return true;
-    }
-    if (::features::
-            AreExperimentalAccessibilityColorEnhancementSettingsEnabled() &&
+        prefs->GetBoolean(prefs::kDockedMagnifierEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilityColorCorrectionEnabled)) {
       return true;
     }
@@ -984,6 +991,10 @@ void AccessibilityManager::OnMonoAudioChanged() {
 
 void AccessibilityManager::SetDarkenScreen(bool darken) {
   AccessibilityController::Get()->SetDarkenScreen(darken);
+
+  if (screen_darken_observer_for_test_) {
+    screen_darken_observer_for_test_.Run();
+  }
 }
 
 void AccessibilityManager::SetCaretHighlightEnabled(bool enabled) {
@@ -1708,8 +1719,6 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
         "Accessibility.CrosCursorColor",
         prefs->GetBoolean(prefs::kAccessibilityCursorColorEnabled));
 
-    if (::features::
-            AreExperimentalAccessibilityColorEnhancementSettingsEnabled()) {
       bool color_correction_enabled = IsColorCorrectionEnabled();
       base::UmaHistogramBoolean("Accessibility.CrosColorCorrection",
                                 color_correction_enabled);
@@ -1722,7 +1731,6 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
             "Accessibility.CrosColorCorrection.FilterAmount",
             prefs->GetInteger(
                 prefs::kAccessibilityColorVisionCorrectionAmount));
-      }
     }
   }
   base::UmaHistogramBoolean("Accessibility.CrosCaretHighlight",
@@ -2200,6 +2208,11 @@ void AccessibilityManager::SetProfileForTest(Profile* profile) {
 void AccessibilityManager::SetBrailleControllerForTest(
     BrailleController* controller) {
   g_braille_controller_for_test = controller;
+}
+
+void AccessibilityManager::SetScreenDarkenObserverForTest(
+    base::RepeatingCallback<void()> observer) {
+  screen_darken_observer_for_test_ = observer;
 }
 
 void AccessibilityManager::SetFocusRingObserverForTest(

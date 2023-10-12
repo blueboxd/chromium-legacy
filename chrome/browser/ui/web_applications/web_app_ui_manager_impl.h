@@ -8,9 +8,11 @@
 #include <stddef.h>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -18,7 +20,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/web_app_uninstall_dialog_user_options.h"
@@ -51,6 +52,7 @@ enum class WebappUninstallSource;
 namespace web_app {
 
 class AppLock;
+class IsolatedWebAppInstallerCoordinator;
 
 // Implementation of WebAppUiManager that depends upon //c/b/ui.
 // Allows //c/b/web_applications code to call into //c/b/ui without directly
@@ -115,6 +117,8 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
       base::WeakPtr<Profile> profile) override;
 #endif
   content::WebContents* CreateNewTab() override;
+  bool IsWebContentsActiveTabInBrowser(
+       content::WebContents* web_contents) override;
   void TriggerInstallDialog(content::WebContents* web_contents) override;
 
   void PresentUserUninstallDialog(
@@ -135,6 +139,9 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
       gfx::NativeWindow parent_window,
       UninstallCompleteCallback callback,
       UninstallScheduledCallback scheduled_callback) override;
+
+  void LaunchIsolatedWebAppInstaller(
+      const base::FilePath& bundle_path) override;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
@@ -181,10 +188,17 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
       UninstallCompleteCallback uninstall_complete_callback,
       webapps::UninstallResultCode uninstall_code);
 
+  void OnIsolatedWebAppInstallerClosed(
+      IsolatedWebAppInstallerCoordinator* installer,
+      absl::optional<webapps::AppId> result);
+
   const raw_ptr<Profile> profile_;
   std::map<webapps::AppId, std::vector<base::OnceClosure>>
       windows_closed_requests_map_;
   std::map<webapps::AppId, size_t> num_windows_for_apps_map_;
+  std::set<std::unique_ptr<IsolatedWebAppInstallerCoordinator>,
+           base::UniquePtrComparator>
+      isolated_web_app_installers_;
   bool started_ = false;
 
   base::WeakPtrFactory<WebAppUiManagerImpl> weak_ptr_factory_{this};

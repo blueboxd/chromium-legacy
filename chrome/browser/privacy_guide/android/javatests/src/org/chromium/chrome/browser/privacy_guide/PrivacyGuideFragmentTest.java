@@ -34,6 +34,7 @@ import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
+import android.os.Build.VERSION_CODES;
 import android.view.View;
 
 import androidx.test.espresso.ViewInteraction;
@@ -52,6 +53,7 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.UserActionTester;
@@ -605,6 +607,8 @@ public class PrivacyGuideFragmentTest {
     @EnableFeatures(
             {ChromeFeatureList.PRIVACY_GUIDE_POST_MVP, ChromeFeatureList.PRIVACY_GUIDE_ANDROID_3,
                     ChromeFeatureList.PRIVACY_GUIDE_PRELOAD_ANDROID})
+    @DisableIf.Build(message = "Flaky on P. See http://crbug.com/1487153",
+            sdk_is_greater_than = VERSION_CODES.O, sdk_is_less_than = VERSION_CODES.Q)
     public void
     testBackwardNavAllActionsPreloadPG3() {
         setMSBBState(false);
@@ -714,22 +718,6 @@ public class PrivacyGuideFragmentTest {
     @Test
     @LargeTest
     @Feature({"PrivacyGuide"})
-    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_3)
-    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
-    public void testCompletionCard_PrivacySandboxLinkNavigation() {
-        launchPrivacyGuide();
-        goToCard(FragmentType.DONE);
-
-        onViewWaiting(withId(R.id.ps_button)).perform(scrollTo(), click());
-        onViewWaiting(withText(R.string.privacy_sandbox_trials_title))
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    @LargeTest
-    @Feature({"PrivacyGuide"})
-    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
-    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_3)
     public void testCompletionCard_AdPrivacyLinkNavigation() {
         launchPrivacyGuide();
         goToCard(FragmentType.DONE);

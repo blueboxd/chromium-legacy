@@ -1193,9 +1193,6 @@ TEST_F(ValidateBlinkInterestGroupTest, AggregationCoordinatorNotHTTPS) {
   blink_interest_group->aggregation_coordinator_origin =
       SecurityOrigin::CreateFromString("http://coordinator.test");
 
-  // We specifically don't check deserialization because that would cause a
-  // LOG(FATAL), because the fixed-size additional_bid_key array would not be
-  // of the expected size.
   ExpectInterestGroupIsNotValid(
       blink_interest_group,
       /*expected_error_field_name=*/
@@ -1203,8 +1200,7 @@ TEST_F(ValidateBlinkInterestGroupTest, AggregationCoordinatorNotHTTPS) {
       /*expected_error_field_value=*/
       String::FromUTF8("http://coordinator.test"),
       /*expected_error=*/
-      String::FromUTF8("aggregationCoordinatorOrigin origin must be HTTPS."),
-      /*check_deserialization=*/false);
+      String::FromUTF8("aggregationCoordinatorOrigin origin must be HTTPS."));
 }
 
 TEST_F(ValidateBlinkInterestGroupTest, AggregationCoordinatorInvalid) {
@@ -1213,17 +1209,33 @@ TEST_F(ValidateBlinkInterestGroupTest, AggregationCoordinatorInvalid) {
   blink_interest_group->aggregation_coordinator_origin =
       SecurityOrigin::CreateFromString("http://invalid^&");
 
-  // We specifically don't check deserialization because that would cause a
-  // LOG(FATAL), because the fixed-size additional_bid_key array would not be
-  // of the expected size.
   ExpectInterestGroupIsNotValid(
       blink_interest_group,
       /*expected_error_field_name=*/
       String::FromUTF8("aggregationCoordinatorOrigin"),
       /*expected_error_field_value=*/String::FromUTF8("null"),
       /*expected_error=*/
-      String::FromUTF8("aggregationCoordinatorOrigin origin must be HTTPS."),
-      /*check_deserialization=*/false);
+      String::FromUTF8("aggregationCoordinatorOrigin origin must be HTTPS."));
+}
+
+TEST_F(ValidateBlinkInterestGroupTest,
+       AdditionalBidKeyAndUpdateURLNotAllowedTogether) {
+  mojom::blink::InterestGroupPtr blink_interest_group =
+      CreateMinimalInterestGroup();
+  blink_interest_group->update_url =
+      KURL(String::FromUTF8("https://origin.test/update"));
+  blink_interest_group->additional_bid_key = {
+      0x7d, 0x4d, 0x0e, 0x7f, 0x61, 0x53, 0xa6, 0x9b, 0x62, 0x42, 0xb5,
+      0x22, 0xab, 0xbe, 0xe6, 0x85, 0xfd, 0xa4, 0x42, 0x0f, 0x88, 0x34,
+      0xb1, 0x08, 0xc3, 0xbd, 0xae, 0x36, 0x9e, 0xf5, 0x49, 0xfa};
+
+  ExpectInterestGroupIsNotValid(
+      blink_interest_group,
+      /*expected_error_field_name=*/String(),
+      /*expected_error_field_value=*/String(),
+      /*expected_error=*/
+      "Interest groups that provide a value of additionalBidKey for negative "
+      "targeting must not provide an updateURL.");
 }
 
 }  // namespace blink

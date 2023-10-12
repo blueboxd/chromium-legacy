@@ -99,7 +99,7 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip)
   std::unique_ptr<TabSearchContainer> tab_search_container;
   if (browser && browser->is_type_normal()) {
     tab_search_container = std::make_unique<TabSearchContainer>(
-        tab_strip_, render_tab_search_before_tab_strip_);
+        tab_strip_->controller(), render_tab_search_before_tab_strip_, this);
     tab_search_container->SetProperty(views::kCrossAxisAlignmentKey,
                                       views::LayoutAlignment::kCenter);
   }
@@ -145,7 +145,7 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip)
   if (ShouldShowNewTabButton(browser)) {
     if (features::IsChromeRefresh2023()) {
       new_tab_button_ = AddChildView(std::make_unique<TabStripControlButton>(
-          tab_strip_,
+          tab_strip_->controller(),
           base::BindRepeating(&TabStrip::NewTabButtonPressed,
                               base::Unretained(tab_strip_)),
           vector_icons::kAddChromeRefreshIcon));
@@ -210,50 +210,7 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip)
     }
   }
 
-  //  If the new tab button or tab search button are positioned over the
-  //  tabstrip, then buttons are rendered to a layer, and the margins are set to
-  //  take up the rest of the space under the buttons.
-  absl::optional<int> tab_strip_right_margin;
-  if (new_tab_button_) {
-    if (render_new_tab_button_over_tab_strip_) {
-      new_tab_button_->SetPaintToLayer();
-      new_tab_button_->layer()->SetFillsBoundsOpaquely(false);
-      // Inset between the tabstrip and new tab button should be reduced to
-      // account for extra spacing.
-      layout_manager_->SetChildViewIgnoredByLayout(new_tab_button_, true);
-
-      tab_strip_right_margin = new_tab_button_->GetPreferredSize().width() +
-                               GetLayoutConstant(TAB_STRIP_PADDING);
-    }
-  }
-
-  absl::optional<int> tab_strip_left_margin;
-  if (tab_search_container_ && render_tab_search_before_tab_strip_) {
-    // The `tab_search_container_` is being laid out manually.
-    CHECK(layout_manager_->IsChildViewIgnoredByLayout(tab_search_container_));
-
-    // Add a margin to the tab_strip_container_ to leave the correct amount of
-    // space for the `tab_search_container_`.
-    const gfx::Size tab_search_container_size =
-        tab_search_container_->GetPreferredSize();
-
-    // The TabSearchContainer should be 6 pixels from the left and the tabstrip
-    // should have 6 px of padding between it and the tab_search button (not
-    // including the corner radius).
-    tab_strip_left_margin = tab_search_container_size.width() +
-                            GetLayoutConstant(TAB_STRIP_PADDING) +
-                            GetLayoutConstant(TAB_STRIP_PADDING) -
-                            TabStyle::Get()->GetBottomCornerRadius();
-  }
-
-  UpdateButtonBorders();
-
-  if (tab_strip_left_margin.has_value() || tab_strip_right_margin.has_value()) {
-    tab_strip_container_->SetProperty(
-        views::kMarginsKey,
-        gfx::Insets::TLBR(0, tab_strip_left_margin.value_or(0), 0,
-                          tab_strip_right_margin.value_or(0)));
-  }
+  UpdateTabStripMargin();
 }
 
 TabStripRegionView::~TabStripRegionView() = default;
@@ -350,9 +307,15 @@ views::View::Views TabStripRegionView::GetChildrenInZOrder() {
 // FlexLayout doesn't currently support. Because of this the TSB bounds are
 // manually calculated.
 void TabStripRegionView::Layout() {
+  const bool tab_search_container_before_tab_strip =
+      tab_search_container_ && render_tab_search_before_tab_strip_;
+  if (tab_search_container_before_tab_strip) {
+    UpdateTabStripMargin();
+  }
+
   views::AccessiblePaneView::Layout();
 
-  if (tab_search_container_ && render_tab_search_before_tab_strip_) {
+  if (tab_search_container_before_tab_strip) {
     const gfx::Size tab_search_container_size =
         tab_search_container_->GetPreferredSize();
 
@@ -497,6 +460,53 @@ void TabStripRegionView::UpdateButtonBorders() {
       tab_search_container_->tab_organization_button()->SetBorder(
           views::CreateEmptyBorder(border_insets));
     }
+  }
+}
+
+void TabStripRegionView::UpdateTabStripMargin() {
+  //  If the new tab button or tab search button are positioned over the
+  //  tabstrip, then buttons are rendered to a layer, and the margins are set to
+  //  take up the rest of the space under the buttons.
+  absl::optional<int> tab_strip_right_margin;
+  if (new_tab_button_) {
+    if (render_new_tab_button_over_tab_strip_) {
+      new_tab_button_->SetPaintToLayer();
+      new_tab_button_->layer()->SetFillsBoundsOpaquely(false);
+      // Inset between the tabstrip and new tab button should be reduced to
+      // account for extra spacing.
+      layout_manager_->SetChildViewIgnoredByLayout(new_tab_button_, true);
+
+      tab_strip_right_margin = new_tab_button_->GetPreferredSize().width() +
+                               GetLayoutConstant(TAB_STRIP_PADDING);
+    }
+  }
+
+  absl::optional<int> tab_strip_left_margin;
+  if (tab_search_container_ && render_tab_search_before_tab_strip_) {
+    // The `tab_search_container_` is being laid out manually.
+    CHECK(layout_manager_->IsChildViewIgnoredByLayout(tab_search_container_));
+
+    // Add a margin to the tab_strip_container_ to leave the correct amount of
+    // space for the `tab_search_container_`.
+    const gfx::Size tab_search_container_size =
+        tab_search_container_->GetPreferredSize();
+
+    // The TabSearchContainer should be 6 pixels from the left and the tabstrip
+    // should have 6 px of padding between it and the tab_search button (not
+    // including the corner radius).
+    tab_strip_left_margin = tab_search_container_size.width() +
+                            GetLayoutConstant(TAB_STRIP_PADDING) +
+                            GetLayoutConstant(TAB_STRIP_PADDING) -
+                            TabStyle::Get()->GetBottomCornerRadius();
+  }
+
+  UpdateButtonBorders();
+
+  if (tab_strip_left_margin.has_value() || tab_strip_right_margin.has_value()) {
+    tab_strip_container_->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets::TLBR(0, tab_strip_left_margin.value_or(0), 0,
+                          tab_strip_right_margin.value_or(0)));
   }
 }
 

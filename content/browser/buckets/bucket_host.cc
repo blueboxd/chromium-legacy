@@ -14,7 +14,6 @@
 #include "content/browser/renderer_host/indexed_db_client_state_checker_factory.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 
 namespace content {
@@ -176,10 +175,9 @@ void BucketHost::GetIdbFactory(
 
   bucket_manager_host_->GetStoragePartition()
       ->GetIndexedDBControl()
-      .BindIndexedDBForBucket(
+      .BindIndexedDB(
           bucket_info_.ToBucketLocator(),
-          IndexedDBClientStateCheckerFactory::InitializePendingAssociatedRemote(
-              rfh_id),
+          IndexedDBClientStateCheckerFactory::InitializePendingRemote(rfh_id),
           std::move(receiver));
 }
 

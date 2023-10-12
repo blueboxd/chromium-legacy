@@ -218,12 +218,6 @@ struct CTPolicy {
   array<string> excluded_legacy_spkis;
 };
 
-// Some of the fields below point to sqlite databases. On Android, when the
-// network service is sandboxed, those paths are also tracked by a sqlite
-// SandboxedVFSDelegate so that the browser knows which paths are safe to open
-// databases in. Any new sqlite databases used here will need to similarly
-// update the list of paths the browser can open in a sandboxed network service
-// on Android.
 struct NetworkContextFilePaths {
   // Points to the shared dictionary directory containing the sqlite database
   // file named "db" for metadata and the disk cache directory named "cache".
@@ -444,7 +438,8 @@ struct NetworkContextParams {
   pending_remote<ProxyErrorClient>? proxy_error_client;
 
   // Broker used by the network service sandbox to create sockets in
-  // the browser. Set when the sandbox is enabled.
+  // the browser. Set when the sandbox is enabled on Windows.
+  [EnableIf=is_win]
   pending_remote<SocketBroker>? socket_broker;
 
   // A service to fetch blind-signed auth tokens for IP protection. If this
@@ -591,6 +586,14 @@ struct NetworkContextParams {
   // side opt-in to testing without cookies. See:
   // https://developer.chrome.com/en/docs/privacy-sandbox/chrome-testing/#mode-a
   string? cookie_deprecation_label;
+
+  // Whether the experimental AFP block list is enabled for this NetworkContext.
+  // Default is false and will only be true if a feature corresponding to the
+  // type of NetworkContext is enabled.
+  // TODO(crbug.com/1478868): This is an interim field only for AFP block list
+  // experiment. This field should not be used for other use cases. This will
+  // be removed when AFP block list logic is migrated to subresource filter.
+  bool afp_block_list_experiment_enabled = false;
 };
 
 struct NetworkConditions {

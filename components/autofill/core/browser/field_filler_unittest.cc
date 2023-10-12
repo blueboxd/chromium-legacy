@@ -311,27 +311,27 @@ TEST_F(AutofillFieldFillerTest, FieldSignatureAsStr) {
   AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
       prediction;
   ASSERT_EQ(std::u16string(), field.name);
-  ASSERT_EQ(FormControlType::kEmpty, field.form_control_type);
+  ASSERT_EQ(FormControlType::kInputText, field.form_control_type);
 
   // Signature is empty.
-  EXPECT_EQ("2085434232", field.FieldSignatureAsStr());
+  EXPECT_EQ("1318412689", field.FieldSignatureAsStr());
 
   // Field name is set.
   field.name = u"Name";
-  EXPECT_EQ("1606968241", field.FieldSignatureAsStr());
+  EXPECT_EQ("502192749", field.FieldSignatureAsStr());
 
   // Field form control type is set.
-  field.form_control_type = StringToFormControlType("text");
-  EXPECT_EQ("502192749", field.FieldSignatureAsStr());
+  field.form_control_type = FormControlType::kSelectOne;
+  EXPECT_EQ("448081278", field.FieldSignatureAsStr());
 
   // Heuristic type does not affect FieldSignature.
   field.set_heuristic_type(GetActiveHeuristicSource(), NAME_FIRST);
-  EXPECT_EQ("502192749", field.FieldSignatureAsStr());
+  EXPECT_EQ("448081278", field.FieldSignatureAsStr());
 
   // Server type does not affect FieldSignature.
   prediction.set_type(NAME_LAST);
   field.set_server_predictions({prediction});
-  EXPECT_EQ("502192749", field.FieldSignatureAsStr());
+  EXPECT_EQ("448081278", field.FieldSignatureAsStr());
 }
 
 TEST_F(AutofillFieldFillerTest, IsFieldFillable) {
@@ -710,7 +710,7 @@ class ExpirationYearTest
 TEST_P(ExpirationYearTest, FillExpirationYearInput) {
   auto test_case = GetParam();
   AutofillField field;
-  field.form_control_type = StringToFormControlType("text");
+  field.form_control_type = FormControlType::kInputText;
   field.SetHtmlType(test_case.field_type, HtmlFieldMode());
   field.max_length = test_case.field_max_length;
 
@@ -817,7 +817,7 @@ TEST_P(ExpirationDateTest, FillExpirationDateInput) {
   }
 
   AutofillField field;
-  field.form_control_type = StringToFormControlType("text");
+  field.form_control_type = FormControlType::kInputText;
   field.SetHtmlType(test_case.field_type, HtmlFieldMode());
   field.max_length = test_case.field_max_length;
 
@@ -1517,7 +1517,7 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlWithCreditCardType) {
 
 TEST_F(AutofillFieldFillerTest, FillMonthControl) {
   AutofillField field;
-  field.form_control_type = StringToFormControlType("month");
+  field.form_control_type = FormControlType::kInputMonth;
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_EXP_4_DIGIT_YEAR);
@@ -1540,7 +1540,7 @@ TEST_F(AutofillFieldFillerTest, FillMonthControl) {
 
 TEST_F(AutofillFieldFillerTest, FillStreetAddressTextArea) {
   AutofillField field;
-  field.form_control_type = StringToFormControlType("textarea");
+  field.form_control_type = FormControlType::kTextArea;
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   field.set_heuristic_type(GetActiveHeuristicSource(),
                            ADDRESS_HOME_STREET_ADDRESS);
@@ -1564,7 +1564,7 @@ TEST_F(AutofillFieldFillerTest, FillStreetAddressTextArea) {
 
 TEST_F(AutofillFieldFillerTest, FillStreetAddressTextField) {
   AutofillField field;
-  field.form_control_type = StringToFormControlType("text");
+  field.form_control_type = FormControlType::kInputText;
   field.set_server_predictions(
       {::autofill::test::CreateFieldPrediction(ADDRESS_HOME_STREET_ADDRESS)});
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
@@ -1909,7 +1909,7 @@ class AutofillFillAugmentedPhoneCountryCodeTest
 
 void DoTestFillAugmentedPhoneCountryCodeField(
     const FillAugmentedPhoneCountryCodeTestCase& test_case,
-    const char* field_type) {
+    FormControlType field_type) {
   AutofillField field(test::CreateTestSelectOrSelectListField(
       /*label=*/"", /*name=*/"", /*value=*/"", /*autocomplete=*/"",
       test_case.phone_country_code_selection_options,
@@ -1928,12 +1928,14 @@ void DoTestFillAugmentedPhoneCountryCodeField(
 
 TEST_P(AutofillFillAugmentedPhoneCountryCodeTest,
        FillAugmentedPhoneCountryCodeField) {
-  DoTestFillAugmentedPhoneCountryCodeField(GetParam(), "select-one");
+  DoTestFillAugmentedPhoneCountryCodeField(GetParam(),
+                                           FormControlType::kSelectOne);
 }
 
 TEST_P(AutofillFillAugmentedPhoneCountryCodeTest,
        FillAugmentedPhoneCountryCodeSelectListField) {
-  DoTestFillAugmentedPhoneCountryCodeField(GetParam(), "selectlist");
+  DoTestFillAugmentedPhoneCountryCodeField(GetParam(),
+                                           FormControlType::kSelectList);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -2041,7 +2043,8 @@ TEST_F(AutofillFieldFillerTest, FillStateAbbreviationInTextField) {
   test::ClearAlternativeStateNameMapForTesting();
   test::PopulateAlternativeStateNameMapForTesting();
 
-  AutofillField field(CreateTestFormField("State", "state", "", "text"));
+  AutofillField field(
+      CreateTestFormField("State", "state", "", FormControlType::kInputText));
   field.set_heuristic_type(GetActiveHeuristicSource(), ADDRESS_HOME_STATE);
   field.max_length = 4;
 
@@ -2127,7 +2130,8 @@ TEST_F(AutofillFieldFillerTest, FillUpperCaseAbbreviationInStateTextField) {
                                                     .abbreviations = {"by"},
                                                     .alternative_names = {}}});
 
-  AutofillField field{CreateTestFormField("State", "state", "", "text")};
+  AutofillField field{
+      CreateTestFormField("State", "state", "", FormControlType::kInputText)};
   field.set_heuristic_type(GetActiveHeuristicSource(), ADDRESS_HOME_STATE);
   field.max_length = 4;
 
@@ -2163,7 +2167,7 @@ TEST_F(AutofillFieldFillerTest,
 
 TEST_F(AutofillFieldFillerTest, PreviewVirtualMonth) {
   AutofillField field;
-  field.form_control_type = StringToFormControlType("text");
+  field.form_control_type = FormControlType::kInputText;
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_EXP_MONTH);
 
@@ -2187,7 +2191,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualMonth) {
 
 TEST_F(AutofillFieldFillerTest, PreviewVirtualYear) {
   AutofillField field;
-  field.form_control_type = StringToFormControlType("text");
+  field.form_control_type = FormControlType::kInputText;
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_EXP_4_DIGIT_YEAR);
@@ -2213,7 +2217,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualShortenedYear) {
   // Test reducing 4 digit year to 2 digits.
   AutofillField field;
   field.max_length = 2;
-  field.form_control_type = StringToFormControlType("text");
+  field.form_control_type = FormControlType::kInputText;
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_EXP_4_DIGIT_YEAR);
@@ -2229,7 +2233,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualShortenedYear) {
 
 TEST_F(AutofillFieldFillerTest, PreviewVirtualDate) {
   AutofillField field;
-  field.form_control_type = StringToFormControlType("text");
+  field.form_control_type = FormControlType::kInputText;
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
@@ -2265,7 +2269,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualDate) {
 TEST_F(AutofillFieldFillerTest, PreviewVirtualShortenedDate) {
   // Test reducing dates to various max length field values.
   AutofillField field;
-  field.form_control_type = StringToFormControlType("text");
+  field.form_control_type = FormControlType::kInputText;
   field.max_length = 4;
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   field.set_heuristic_type(GetActiveHeuristicSource(),
@@ -2316,7 +2320,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualShortenedDate) {
 
 TEST_F(AutofillFieldFillerTest, PreviewVirtualCVC) {
   AutofillField field;
-  field.form_control_type = StringToFormControlType("text");
+  field.form_control_type = FormControlType::kInputText;
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_VERIFICATION_CODE);
@@ -2332,7 +2336,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualCVC) {
 
 TEST_F(AutofillFieldFillerTest, PreviewVirtualCVCAmericanExpress) {
   AutofillField field;
-  field.form_control_type = StringToFormControlType("text");
+  field.form_control_type = FormControlType::kInputText;
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   field.set_heuristic_type(GetActiveHeuristicSource(),
                            CREDIT_CARD_VERIFICATION_CODE);
@@ -2349,7 +2353,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualCVCAmericanExpress) {
 TEST_F(AutofillFieldFillerTest, PreviewVirtualCardNumber) {
   AutofillField field;
   field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NUMBER);
-  field.form_control_type = StringToFormControlType("text");
+  field.form_control_type = FormControlType::kInputText;
 
   CreditCard card = test::GetVirtualCard();
   card.SetNumber(u"5454545454545454");
@@ -2376,7 +2380,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualCardNumber_OffsetExceedsLength) {
   AutofillField field;
   field.max_length = 17;
   field.set_credit_card_number_offset(18);
-  field.form_control_type = StringToFormControlType("text");
+  field.form_control_type = FormControlType::kInputText;
   field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NUMBER);
 
   CreditCard card = test::GetVirtualCard();
@@ -2401,7 +2405,7 @@ TEST_F(AutofillFieldFillerTest, PreviewVirtualCardholderName) {
   std::u16string name = u"Jone Doe";
 
   AutofillField field;
-  field.form_control_type = StringToFormControlType("text");
+  field.form_control_type = FormControlType::kInputText;
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   field.set_heuristic_type(GetActiveHeuristicSource(), CREDIT_CARD_NAME_FULL);
 

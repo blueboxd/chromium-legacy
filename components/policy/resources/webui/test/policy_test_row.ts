@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import '../strings.m.js';
 
-import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {assertNotReached} from 'chrome://resources/js/assert.js';
 import {CustomElement} from 'chrome://resources/js/custom_element.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
@@ -262,7 +262,7 @@ export class PolicyTestRowElement extends CustomElement {
     if (this.inputType_ === String) {
       initialValues.value = this.trimSurroundingQuotes_(initialValues.value);
     }
-    policyValueInput.value = String(initialValues.value);
+    policyValueInput.value = JSON.stringify(initialValues.value);
   }
 
   // Event listener function for setting the select element background back to

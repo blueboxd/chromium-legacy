@@ -24,7 +24,6 @@
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_update_apply_task.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_update_apply_waiter.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_update_discovery_task.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_manager_observer.h"
 #include "components/webapps/common/web_app_id.h"
 
@@ -98,6 +97,8 @@ class IsolatedWebAppUpdateManager : public WebAppInstallManagerObserver {
                                const webapps::AppId& app_id,
                                base::OnceClosure callback);
 
+  bool AreAutomaticUpdatesEnabled() const { return automatic_updates_enabled_; }
+
   void SetEnableAutomaticUpdatesForTesting(bool automatic_updates_enabled);
 
   // `WebAppInstallManagerObserver`:
@@ -110,7 +111,9 @@ class IsolatedWebAppUpdateManager : public WebAppInstallManagerObserver {
     return update_discovery_timer_;
   }
 
-  void DiscoverUpdatesNowForTesting();
+  // Used to queue update discovery tasks manually from the
+  // chrome://web-app-internals page. Returns the number of tasks queued.
+  size_t DiscoverUpdatesNow();
 
  private:
   // This queue manages update discovery and apply tasks. Tasks can be added to
@@ -192,7 +195,9 @@ class IsolatedWebAppUpdateManager : public WebAppInstallManagerObserver {
 
   bool IsAnyIwaInstalled();
 
-  void QueueUpdateDiscoveryTasks();
+  // Queues new update discovery tasks and returns the number of new tasks that
+  // have been queued.
+  size_t QueueUpdateDiscoveryTasks();
 
   base::flat_map<web_package::SignedWebBundleId, GURL>
   GetForceInstalledBundleIdToUpdateManifestUrlMap();

@@ -535,7 +535,6 @@ class BidirectionalStreamQuicImplTest
         /*cert_verify_flags=*/0, quic::test::DefaultQuicConfig(),
         std::make_unique<TestQuicCryptoClientConfigHandle>(&crypto_config_),
         dns_start, dns_end,
-        std::make_unique<quic::QuicClientPushPromiseIndex>(),
         base::DefaultTickClock::GetInstance(),
         base::SingleThreadTaskRunner::GetCurrentDefault().get(),
         /*socket_performance_watcher=*/nullptr, HostResolverEndpointResult(),
@@ -570,7 +569,7 @@ class BidirectionalStreamQuicImplTest
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerDataPacket(
       uint64_t packet_number,
       bool fin,
-      absl::string_view data) {
+      std::string_view data) {
     std::unique_ptr<quic::QuicReceivedPacket> packet(
         server_maker_.MakeDataPacket(packet_number, stream_id_, fin, data));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
@@ -580,7 +579,7 @@ class BidirectionalStreamQuicImplTest
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientDataPacket(
       bool fin,
-      absl::string_view data) {
+      std::string_view data) {
     return client_maker_.MakeDataPacket(++packet_number_, stream_id_, fin,
                                         data);
   }
@@ -695,7 +694,7 @@ class BidirectionalStreamQuicImplTest
       uint64_t largest_received,
       uint64_t smallest_received,
       bool fin,
-      absl::string_view data,
+      std::string_view data,
       QuicTestPacketMaker* maker) {
     std::unique_ptr<quic::QuicReceivedPacket> packet(
         maker->MakeAckAndDataPacket(packet_number, stream_id_, largest_received,

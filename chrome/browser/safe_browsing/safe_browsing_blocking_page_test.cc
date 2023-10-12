@@ -99,6 +99,7 @@
 #include "components/unified_consent/pref_names.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/disallow_activation_reason.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_types.h"
@@ -3894,7 +3895,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageHashRealTimeCheckTest,
       "SafeBrowsing.BrowserThrottle.TotalDelay2.HashPrefixDatabaseCheck",
       /*expected_count=*/0);
   histogram_tester.ExpectUniqueSample(
-      "SafeBrowsing.HPRT.Ineligible.IneligibleForSession", /*sample=*/false,
+      "SafeBrowsing.HPRT.Ineligible.IneligibleForSessionOrLocation",
+      /*sample=*/false,
       /*expected_bucket_count=*/1);
   histogram_tester.ExpectTotalCount(
       "interstitial.phishing.decision.from_hash_prefix_real_time_check_v5",
@@ -3912,7 +3914,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageHashRealTimeCheckTest,
       "SafeBrowsing.BrowserThrottle.TotalDelay2.HashPrefixDatabaseCheck",
       /*expected_count=*/0);
   histogram_tester.ExpectUniqueSample(
-      "SafeBrowsing.HPRT.Ineligible.IneligibleForSession", /*sample=*/false,
+      "SafeBrowsing.HPRT.Ineligible.IneligibleForSessionOrLocation",
+      /*sample=*/false,
       /*expected_bucket_count=*/1);
   histogram_tester.ExpectTotalCount(
       "interstitial.phishing.decision.from_hash_prefix_real_time_check_v5",
@@ -3930,7 +3933,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageHashRealTimeCheckFeatureOffTest,
       "SafeBrowsing.BrowserThrottle.TotalDelay2.HashPrefixDatabaseCheck",
       /*expected_count=*/1);
   histogram_tester.ExpectUniqueSample(
-      "SafeBrowsing.HPRT.Ineligible.IneligibleForSession", /*sample=*/true,
+      "SafeBrowsing.HPRT.Ineligible.IneligibleForSessionOrLocation",
+      /*sample=*/true,
       /*expected_bucket_count=*/1);
   histogram_tester.ExpectTotalCount(
       "interstitial.phishing.decision.from_hash_prefix_real_time_check_v5",
@@ -4017,6 +4021,7 @@ INSTANTIATE_TEST_SUITE_P(
 // Attempt to prerender an unsafe page. The prerender navigation should be
 // cancelled and should not affect the security state of the primary page.
 IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest, UnsafePrerender) {
+  base::HistogramTester histograms;
   const GURL initial_url = embedded_test_server()->GetURL("/title1.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
 
@@ -4024,12 +4029,16 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest, UnsafePrerender) {
   SetURLThreatType(prerender_url, GetThreatType());
 
   PrerenderAndExpectCancellation(prerender_url);
+  histograms.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+      /*PrerenderFinalStatus::kBlockedByClient=*/28, 1);
 }
 
 // Like SafeBrowsingPrerenderBrowserTest.UnsafePrerender, but for when a
 // prerendered page has a subresource that's unsafe.
 IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest,
                        UnsafeSubresourcePrerender) {
+  base::HistogramTester histograms;
   const GURL initial_url = embedded_test_server()->GetURL("/title1.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
 
@@ -4038,12 +4047,22 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest,
   SetURLThreatType(unsafe_resource_url, GetThreatType());
 
   PrerenderAndExpectCancellation(prerender_url);
+
+  histograms.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+      /*PrerenderFinalStatus::kInactivePageRestriction=*/41, 1);
+
+  histograms.ExpectUniqueSample(
+      "Prerender.CanceledForInactivePageRestriction.DisallowActivationReason."
+      "SpeculationRule",
+      content::DisallowActivationReasonId::kSafeBrowsingUnsafeSubresource, 1);
 }
 
 // Like SafeBrowsingPrerenderBrowserTest.UnsafePrerender, but for when a
 // prerendered page has a subframe that's unsafe.
 IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest,
                        UnsafeSubframePrerender) {
+  base::HistogramTester histograms;
   const GURL initial_url = embedded_test_server()->GetURL("/title1.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
 
@@ -4067,10 +4086,15 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest,
 
   EXPECT_FALSE(IsShowingInterstitial(GetWebContents()));
   ExpectNoSecurityIndicatorDowngrade(GetWebContents());
+
+  histograms.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+      /*PrerenderFinalStatus::kBlockedByClient=*/28, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest,
                        UnsafeSubresourceOfSubframePrerender) {
+  base::HistogramTester histograms;
   const GURL initial_url = embedded_test_server()->GetURL("/title1.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
 
@@ -4094,10 +4118,20 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest,
 
   EXPECT_FALSE(IsShowingInterstitial(GetWebContents()));
   ExpectNoSecurityIndicatorDowngrade(GetWebContents());
+
+  histograms.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+      /*PrerenderFinalStatus::kInactivePageRestriction=*/41, 1);
+
+  histograms.ExpectUniqueSample(
+      "Prerender.CanceledForInactivePageRestriction.DisallowActivationReason."
+      "SpeculationRule",
+      content::DisallowActivationReasonId::kSafeBrowsingUnsafeSubresource, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest,
                        UnsafeCrossOriginSubframePrerender) {
+  base::HistogramTester histograms;
   const GURL initial_url = embedded_test_server()->GetURL("/title1.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
 
@@ -4108,6 +4142,10 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingPrerenderBrowserTest,
   SetURLThreatType(unsafe_iframe_url, GetThreatType());
 
   PrerenderAndExpectCancellation(prerender_url);
+
+  histograms.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+      /*PrerenderFinalStatus::kBlockedByClient=*/28, 1);
 }
 
 class SafeBrowsingThreatDetailsPrerenderBrowserTest

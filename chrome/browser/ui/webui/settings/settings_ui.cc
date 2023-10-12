@@ -343,16 +343,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
           base::FeatureList::IsEnabled(features::kPrivacyGuide3));
 
   html_source->AddBoolean(
-      "enableExtendedSettingsDescriptions",
-      base::FeatureList::IsEnabled(features::kExtendedSettingsDescriptions));
-
-  html_source->AddBoolean("esbSettingsImprovementsEnabled",
-                          base::FeatureList::IsEnabled(
-                              safe_browsing::kEsbIphBubbleAndCollapseSettings));
+      "enableCbdTimeframeRequired",
+      base::FeatureList::IsEnabled(features::kCbdTimeframeRequired));
 
   html_source->AddBoolean(
-      "enableEsbCollapse",
-      safe_browsing::kEsbIphBubbleAndCollapseSettingsEnableCollapse.Get());
+      "enableExtendedSettingsDescriptions",
+      base::FeatureList::IsEnabled(features::kExtendedSettingsDescriptions));
 
   html_source->AddBoolean(
       "enableFriendlierSafeBrowsingSettings",

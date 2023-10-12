@@ -47,13 +47,13 @@
 #import "ios/chrome/browser/autofill/strike_database_factory.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/infobar_utils.h"
-#import "ios/chrome/browser/passwords/password_tab_helper.h"
+#import "ios/chrome/browser/passwords/model/password_tab_helper.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
+#import "ios/chrome/browser/translate/model/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/autofill/card_expiration_date_fix_flow_view_bridge.h"
 #import "ios/chrome/browser/ui/autofill/card_name_fix_flow_view_bridge.h"
 #import "ios/chrome/browser/ui/autofill/create_card_unmask_prompt_view_bridge.h"
@@ -397,7 +397,9 @@ void ChromeAutofillClientIOS::ShowEditAddressProfileDialog(
   NOTREACHED_NORETURN();
 }
 
-void ChromeAutofillClientIOS::ShowDeleteAddressProfileDialog() {
+void ChromeAutofillClientIOS::ShowDeleteAddressProfileDialog(
+    const AutofillProfile& profile,
+    AddressProfileDeleteDialogCallback delete_dialog_callback) {
   NOTREACHED_NORETURN();
 }
 

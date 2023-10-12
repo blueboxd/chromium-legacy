@@ -58,7 +58,12 @@ namespace ash::eche_app {
 
 AccessibilityProvider::AccessibilityProvider(
     std::unique_ptr<AccessibilityProviderProxy> proxy)
-    : proxy_(std::move(proxy)) {}
+    : proxy_(std::move(proxy)) {
+  // Register callback to know when accessibility should be enabled or disabled.
+  proxy_->SetAccessibilityEnabledStateChangedCallback(base::BindRepeating(
+      &AccessibilityProvider::OnAccessibilityEnabledStateChanged,
+      weak_ptr_factory_.GetWeakPtr()));
+}
 AccessibilityProvider::~AccessibilityProvider() = default;
 
 void AccessibilityProvider::TrackView(AshWebView* view) {
@@ -106,9 +111,7 @@ void AccessibilityProvider::HandleAccessibilityEventReceived(
       if (!converter.DeserializeProto(serialized_proto, &proto_event_data)) {
         return;
       }
-      // TODO(francisjp): hard coded to pixel 6A. Get correct bounds from proto
-      // message when available pending b/295229694.
-      UpdateDeviceBounds(1110, 2015);
+      UpdateDeviceBounds(proto_event_data.display_info());
       auto mojom_event_data =
           converter.ConvertEventDataProtoToMojom(proto_event_data);
       if (mojom_event_data) {
@@ -135,15 +138,9 @@ void AccessibilityProvider::SetAccessibilityObserver(
   observer_remote_.Bind(std::move(observer));
 }
 
-void AccessibilityProvider::OnStreamOrientationChanged(bool is_landscape) {
-  // If the orientation changed flip the device bounds.
-  if (is_landscape != is_landscape_) {
-    is_landscape_ = is_landscape;
-    auto new_width = device_bounds_.height();
-    auto new_height = device_bounds_.width();
-    device_bounds_.set_height(new_height);
-    device_bounds_.set_width(new_width);
-  }
+void AccessibilityProvider::IsAccessibilityEnabled(
+    IsAccessibilityEnabledCallback callback) {
+  std::move(callback).Run(proxy_->IsAccessibilityEnabled());
 }
 
 bool AccessibilityProvider::UseFullFocusMode() const {
@@ -155,23 +152,13 @@ AccessibilityProvider::GetFilterType() {
   return proxy_->GetFilterType();
 }
 
-void AccessibilityProvider::UpdateDeviceBounds(int width, int height) {
-  // This function assumes that the bounds provided are portrait.
-  if (is_landscape_) {
-    // Reverse the bounds for landscape mode.
-    device_bounds_.set_size({height, width});
-  } else {
-    device_bounds_.set_size({width, height});
-  }
-}
-
-void AccessibilityProvider::OnActionResult(const ui::AXActionData& action,
-                                           bool result) const {
-  // Tree source could be null if the app is switched before the response comes
-  // back.
-  if (tree_source_) {
-    tree_source_->NotifyActionResult(action, result);
-  }
+void AccessibilityProvider::UpdateDeviceBounds(
+    const proto::Rect& device_bounds) {
+  const int height = device_bounds.bottom() - device_bounds.top();
+  const int width = device_bounds.right() - device_bounds.left();
+  CHECK(height > 0);
+  CHECK(width > 0);
+  device_bounds_.set_size({width, height});
 }
 
 void AccessibilityProvider::OnGetTextLocationDataResult(
@@ -231,6 +218,7 @@ void AccessibilityProvider::OnAction(const ui::AXActionData& action) const {
     size_t nbytes = proto_action->ByteSizeLong();
     std::vector<uint8_t> serialized_proto(nbytes);
     proto_action->SerializeToArray(serialized_proto.data(), nbytes);
+
     if (action.action == ax::mojom::Action::kGetTextLocation) {
       mojom::AccessibilityObserver::RefreshWithExtraDataCallback cb =
           base::BindOnce(&AccessibilityProvider::OnGetTextLocationDataResult,
@@ -252,6 +240,19 @@ void AccessibilityProvider::Bind(
     mojo::PendingReceiver<mojom::AccessibilityProvider> receiver) {
   receiver_.reset();
   receiver_.Bind(std::move(receiver));
+}
+
+void AccessibilityProvider::OnActionResult(const ui::AXActionData& action,
+                                           bool result) const {
+  // Tree source could be null if the app is switched before the response comes
+  // back.
+  if (tree_source_) {
+    tree_source_->NotifyActionResult(action, result);
+  }
+}
+
+void AccessibilityProvider::OnAccessibilityEnabledStateChanged(bool enabled) {
+  observer_remote_->EnableAccessibilityTreeStreaming(enabled);
 }
 
 // Serialization Delegate implementation

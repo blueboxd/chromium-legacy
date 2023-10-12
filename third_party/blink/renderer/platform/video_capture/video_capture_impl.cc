@@ -22,6 +22,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
@@ -47,6 +48,10 @@
 #if BUILDFLAG(IS_MAC)
 #include "media/base/mac/video_frame_mac.h"
 #endif  // BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(IS_WIN)
+#include "gpu/command_buffer/common/shared_image_capabilities.h"
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace blink {
 
@@ -254,7 +259,8 @@ struct VideoCaptureImpl::BufferContext
   // The following is for |buffer_type == GPU_MEMORY_BUFFER_HANDLE|.
 
   // Uses to create SharedImage from |gpu_memory_buffer_|.
-  media::GpuVideoAcceleratorFactories* gpu_factories_ = nullptr;
+  raw_ptr<media::GpuVideoAcceleratorFactories, ExperimentalRenderer>
+      gpu_factories_ = nullptr;
   // The task runner that |gpu_factories_| runs on.
   const scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
@@ -290,8 +296,8 @@ VideoCaptureImpl::VideoFrameBufferPreparer::buffer_context() const {
 bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
   // Prior to initializing, |frame_| and |gpu_memory_buffer_| are null.
   DCHECK(!frame_ && !gpu_memory_buffer_);
-  const auto& iter = video_capture_impl_.client_buffers_.find(buffer_id_);
-  DCHECK(iter != video_capture_impl_.client_buffers_.end());
+  const auto& iter = video_capture_impl_->client_buffers_.find(buffer_id_);
+  DCHECK(iter != video_capture_impl_->client_buffers_.end());
   buffer_context_ = iter->second;
   switch (buffer_context_->buffer_type()) {
     case VideoFrameBufferHandleType::kUnsafeShmemRegion:
@@ -361,8 +367,8 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
       // On macOS, an IOSurfaces passed as a GpuMemoryBufferHandle can be
       // used by both hardware and software paths.
       // https://crbug.com/1125879
-      if (!video_capture_impl_.gpu_factories_ ||
-          !video_capture_impl_.media_task_runner_) {
+      if (!video_capture_impl_->gpu_factories_ ||
+          !video_capture_impl_->media_task_runner_) {
         frame_ = media::VideoFrame::WrapUnacceleratedIOSurface(
             buffer_context_->TakeGpuMemoryBufferHandle(),
             gfx::Rect(frame_info_->visible_rect), frame_info_->timestamp);
@@ -380,10 +386,10 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
       // On Windows it might happen that the Renderer process loses GPU
       // connection, while the capturer process will continue to produce
       // GPU backed frames.
-      if (!video_capture_impl_.gpu_factories_ ||
-          !video_capture_impl_.media_task_runner_ ||
-          video_capture_impl_.gmb_not_supported_) {
-        video_capture_impl_.RequirePremappedFrames();
+      if (!video_capture_impl_->gpu_factories_ ||
+          !video_capture_impl_->media_task_runner_ ||
+          video_capture_impl_->gmb_not_supported_) {
+        video_capture_impl_->RequirePremappedFrames();
         if (!frame_info_->is_premapped || !buffer_context_->data()) {
           // If the frame isn't premapped, can't do anything here.
           return false;
@@ -402,8 +408,8 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
         break;
       }
 #endif
-      CHECK(video_capture_impl_.gpu_factories_);
-      CHECK(video_capture_impl_.media_task_runner_);
+      CHECK(video_capture_impl_->gpu_factories_);
+      CHECK(video_capture_impl_->media_task_runner_);
       // Create GpuMemoryBuffer from handle.
       if (!buffer_context_->GetGpuMemoryBuffer()) {
         gfx::BufferFormat gfx_format;
@@ -419,14 +425,14 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
         // buffer pool from the video capture service process, so we don't need
         // to destroy the GpuMemoryBuffer here.
         auto gmb =
-            video_capture_impl_.gpu_memory_buffer_support_
+            video_capture_impl_->gpu_memory_buffer_support_
                 ->CreateGpuMemoryBufferImplFromHandle(
                     buffer_context_->TakeGpuMemoryBufferHandle(),
                     gfx::Size(frame_info_->coded_size), gfx_format,
                     gfx::BufferUsage::SCANOUT_VEA_CPU_READ, base::DoNothing(),
-                    video_capture_impl_.gpu_factories_
+                    video_capture_impl_->gpu_factories_
                         ->GpuMemoryBufferManager(),
-                    video_capture_impl_.pool_);
+                    video_capture_impl_->pool_);
 
         // Keep one GpuMemoryBuffer for current GpuMemoryHandle alive,
         // so that any associated structures are kept alive while this buffer id
@@ -457,14 +463,14 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
 
       // Clone the GpuMemoryBuffer and wrap it in a VideoFrame.
       gpu_memory_buffer_ =
-          video_capture_impl_.gpu_memory_buffer_support_
+          video_capture_impl_->gpu_memory_buffer_support_
               ->CreateGpuMemoryBufferImplFromHandle(
                   std::move(buffer_handle),
                   buffer_context_->GetGpuMemoryBuffer()->GetSize(),
                   buffer_context_->GetGpuMemoryBuffer()->GetFormat(),
                   gfx::BufferUsage::SCANOUT_VEA_CPU_READ, base::DoNothing(),
-                  video_capture_impl_.gpu_factories_->GpuMemoryBufferManager(),
-                  video_capture_impl_.pool_,
+                  video_capture_impl_->gpu_factories_->GpuMemoryBufferManager(),
+                  video_capture_impl_->pool_,
                   base::span<uint8_t>(premapped_data,
                                       buffer_context_->data_size()));
       if (!gpu_memory_buffer_) {
@@ -503,11 +509,12 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::BindVideoFrameOnMediaThread(
   // workarounds, DXGI D3D11 textures won't be supported.
   // Can't check this from the ::Initialize() since media context provider can
   // be accessed only on the Media thread.
-  const gpu::Capabilities* context_capabilites =
-      gpu_factories->ContextCapabilities();
-  if (!context_capabilites || !context_capabilites->shared_image_d3d) {
-    video_capture_impl_.RequirePremappedFrames();
-    video_capture_impl_.gmb_not_supported_ = true;
+  gpu::SharedImageInterface* shared_image_interface =
+      gpu_factories->SharedImageInterface();
+  if (!shared_image_interface ||
+      !shared_image_interface->GetCapabilities().shared_image_d3d) {
+    video_capture_impl_->RequirePremappedFrames();
+    video_capture_impl_->gmb_not_supported_ = true;
     return false;
   }
 #endif
@@ -678,7 +685,7 @@ void VideoCaptureImpl::VideoFrameBufferPreparer::Finalize() {
       base::BindOnce(&VideoCaptureImpl::DidFinishConsumingFrame,
                      base::BindPostTaskToCurrentDefault(base::BindOnce(
                          &VideoCaptureImpl::OnAllClientsFinishedConsumingFrame,
-                         video_capture_impl_.weak_factory_.GetWeakPtr(),
+                         video_capture_impl_->weak_factory_.GetWeakPtr(),
                          buffer_id_, buffer_context_))));
   if (frame_info_->color_space.IsValid()) {
     frame_->set_color_space(frame_info_->color_space);
@@ -967,21 +974,15 @@ void VideoCaptureImpl::OnNewBuffer(
 }
 
 void VideoCaptureImpl::OnBufferReady(
-    media::mojom::blink::ReadyBufferPtr buffer,
-    Vector<media::mojom::blink::ReadyBufferPtr> scaled_buffers) {
+    media::mojom::blink::ReadyBufferPtr buffer) {
   DVLOG(1) << __func__ << " buffer_id: " << buffer->buffer_id;
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
-  bool consume_buffer = state_ == VIDEO_CAPTURE_STATE_STARTED;
-  if (!consume_buffer) {
-    OnFrameDroppedEarly(
+  if (state_ != VIDEO_CAPTURE_STATE_STARTED) {
+    OnFrameDropped(
         media::VideoCaptureFrameDropReason::kVideoCaptureImplNotInStartedState);
     GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer->buffer_id,
                                          DefaultFeedback());
-    for (auto& scaled_buffer : scaled_buffers) {
-      GetVideoCaptureHost()->ReleaseBuffer(device_id_, scaled_buffer->buffer_id,
-                                           DefaultFeedback());
-    }
     return;
   }
 
@@ -1023,37 +1024,21 @@ void VideoCaptureImpl::OnBufferReady(
   // frames.
   auto frame_preparer =
       std::make_unique<VideoFrameBufferPreparer>(*this, std::move(buffer));
-  bool init_successful = frame_preparer->Initialize();
-  bool need_binding_on_media_thread = !frame_preparer->IsVideoFrameBound();
-  std::vector<std::unique_ptr<VideoFrameBufferPreparer>> scaled_frame_preparers;
-  scaled_frame_preparers.reserve(scaled_buffers.size());
-  for (media::mojom::blink::ReadyBufferPtr& scaled_buffer : scaled_buffers) {
-    auto scaled_frame_preparer = std::make_unique<VideoFrameBufferPreparer>(
-        *this, std::move(scaled_buffer));
-    init_successful &= scaled_frame_preparer->Initialize();
-    need_binding_on_media_thread |= !scaled_frame_preparer->IsVideoFrameBound();
-    scaled_frame_preparers.push_back(std::move(scaled_frame_preparer));
-  }
-  if (!init_successful) {
-    OnFrameDroppedEarly(media::VideoCaptureFrameDropReason::
-                            kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame);
+  if (!frame_preparer->Initialize()) {
+    OnFrameDropped(media::VideoCaptureFrameDropReason::
+                       kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame);
     GetVideoCaptureHost()->ReleaseBuffer(
         device_id_, frame_preparer->buffer_id(), DefaultFeedback());
-    for (auto& scaled_frame_preparer : scaled_frame_preparers) {
-      GetVideoCaptureHost()->ReleaseBuffer(
-          device_id_, scaled_frame_preparer->buffer_id(), DefaultFeedback());
-    }
     return;
   }
 
-  // If any of the video frames needs to be bound we do a round-trip time to the
-  // media thread, otherwise we'll go directly to OnVideoFrameReady().
-  if (need_binding_on_media_thread) {
+  // If the video frame needs to be bound we do a round-trip time to the media
+  // thread, otherwise we'll go directly to OnVideoFrameReady().
+  if (!frame_preparer->IsVideoFrameBound()) {
     media_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&VideoCaptureImpl::BindVideoFramesOnMediaThread,
+        base::BindOnce(&VideoCaptureImpl::BindVideoFrameOnMediaThread,
                        gpu_factories_, std::move(frame_preparer),
-                       std::move(scaled_frame_preparers),
                        base::BindPostTaskToCurrentDefault(base::BindOnce(
                            &VideoCaptureImpl::OnVideoFrameReady,
                            weak_factory_.GetWeakPtr(), reference_time)),
@@ -1063,82 +1048,49 @@ void VideoCaptureImpl::OnBufferReady(
                                           weak_factory_.GetWeakPtr()))));
     return;
   }
-  OnVideoFrameReady(reference_time, std::move(frame_preparer),
-                    std::move(scaled_frame_preparers));
+  OnVideoFrameReady(reference_time, std::move(frame_preparer));
 }
 
 // static
-void VideoCaptureImpl::BindVideoFramesOnMediaThread(
+void VideoCaptureImpl::BindVideoFrameOnMediaThread(
     media::GpuVideoAcceleratorFactories* gpu_factories,
     std::unique_ptr<VideoFrameBufferPreparer> frame_preparer,
-    std::vector<std::unique_ptr<VideoFrameBufferPreparer>>
-        scaled_frame_preparers,
-    base::OnceCallback<
-        void(std::unique_ptr<VideoFrameBufferPreparer>,
-             std::vector<std::unique_ptr<VideoFrameBufferPreparer>>)>
+    base::OnceCallback<void(std::unique_ptr<VideoFrameBufferPreparer>)>
         on_frame_ready_callback,
     base::OnceCallback<void()> on_gpu_context_lost) {
-  // Bind all frames that needs binding, i.e. the GPU frames. Software frames
-  // already bound are not touched, allowing mixing software and hardware
-  // frames.
-  bool bind_failed = false;
-  if (!frame_preparer->IsVideoFrameBound()) {
-    bind_failed |= !frame_preparer->BindVideoFrameOnMediaThread(gpu_factories);
-  }
-  for (auto& scaled_frame_preparer : scaled_frame_preparers) {
-    if (!scaled_frame_preparer->IsVideoFrameBound()) {
-      bind_failed |=
-          !scaled_frame_preparer->BindVideoFrameOnMediaThread(gpu_factories);
-    }
-  }
-  if (bind_failed) {
+  // This method should only be called when binding is needed, i.e. the frame is
+  // a GPU frame.
+  CHECK(!frame_preparer->IsVideoFrameBound());
+  if (!frame_preparer->BindVideoFrameOnMediaThread(gpu_factories)) {
+    // Bind failed.
     std::move(on_gpu_context_lost).Run();
-    // Proceed to invoke |on_frame_ready_callback| even though we failed. It
-    // takes care of dropping the frames.
+    // Proceed to invoke |on_frame_ready_callback| even though we failed - it
+    // takes care of dropping the frame.
   }
-  std::move(on_frame_ready_callback)
-      .Run(std::move(frame_preparer), std::move(scaled_frame_preparers));
+  std::move(on_frame_ready_callback).Run(std::move(frame_preparer));
 }
 
 void VideoCaptureImpl::OnVideoFrameReady(
     base::TimeTicks reference_time,
-    std::unique_ptr<VideoFrameBufferPreparer> frame_preparer,
-    std::vector<std::unique_ptr<VideoFrameBufferPreparer>>
-        scaled_frame_preparers) {
+    std::unique_ptr<VideoFrameBufferPreparer> frame_preparer) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
-  // If any of the frames are not bound and ready we drop all of them.
-  bool is_any_frame_not_bound = !frame_preparer->IsVideoFrameBound();
-  for (const auto& scaled_frame_preparer : scaled_frame_preparers) {
-    is_any_frame_not_bound |= !scaled_frame_preparer->IsVideoFrameBound();
-  }
-  if (is_any_frame_not_bound) {
-    OnFrameDroppedEarly(media::VideoCaptureFrameDropReason::
-                            kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame);
+  // If the frame is not bound and ready we drop it.
+  if (!frame_preparer->IsVideoFrameBound()) {
+    OnFrameDropped(media::VideoCaptureFrameDropReason::
+                       kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame);
     // Release all buffers.
     GetVideoCaptureHost()->ReleaseBuffer(
         device_id_, frame_preparer->buffer_id(), DefaultFeedback());
-    for (const auto& scaled_frame_preparer : scaled_frame_preparers) {
-      GetVideoCaptureHost()->ReleaseBuffer(
-          device_id_, scaled_frame_preparer->buffer_id(), DefaultFeedback());
-    }
     return;
   }
-
-  // The buffers will be used. Finaize them.
+  // The buffer will be used. Finaize it.
   frame_preparer->Finalize();
-  std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames;
-  scaled_video_frames.reserve(scaled_frame_preparers.size());
-  for (const auto& scaled_frame_preparer : scaled_frame_preparers) {
-    scaled_frame_preparer->Finalize();
-    scaled_video_frames.push_back(scaled_frame_preparer->frame());
-  }
 
   // TODO(qiangchen): Dive into the full code path to let frame metadata hold
   // reference time rather than using an extra parameter.
   for (const auto& client : clients_) {
-    client.second.deliver_frame_cb.Run(frame_preparer->frame(),
-                                       scaled_video_frames, reference_time);
+    client.second.deliver_frame_cb.Run(frame_preparer->frame(), reference_time);
   }
 }
 
@@ -1160,7 +1112,7 @@ void VideoCaptureImpl::OnBufferDestroyed(int32_t buffer_id) {
   }
 }
 
-void VideoCaptureImpl::OnFrameDroppedEarly(
+void VideoCaptureImpl::OnFrameDropped(
     media::VideoCaptureFrameDropReason reason) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   for (const auto& client : clients_) {

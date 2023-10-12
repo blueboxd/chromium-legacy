@@ -54,6 +54,7 @@ extern const char kChromeUIChromeURLsHost[];
 extern const char kChromeUIChromeURLsURL[];
 extern const char kChromeUIComponentsHost[];
 extern const char kChromeUIComponentsUrl[];
+extern const char kChromeUIComposeHost[];
 extern const char kChromeUIConflictsHost[];
 extern const char kChromeUIConstrainedHTMLTestURL[];
 extern const char kChromeUIContentSettingsURL[];
@@ -149,6 +150,9 @@ extern const char kChromeUIOmniboxHost[];
 extern const char kChromeUIOmniboxURL[];
 extern const char kChromeUIOmniboxPopupHost[];
 extern const char kChromeUIOmniboxPopupURL[];
+#if !BUILDFLAG(IS_ANDROID)
+extern const char kChromeUIOnDeviceInternalsHost[];
+#endif
 extern const char kChromeUISuggestInternalsHost[];
 extern const char kChromeUISuggestInternalsURL[];
 #if BUILDFLAG(IS_CHROMEOS)
@@ -383,6 +387,8 @@ extern const char kChromeUIVcTrayTesterURL[];
 extern const char kChromeUIVcTrayTesterHost[];
 extern const char kChromeUIVmHost[];
 extern const char kChromeUIVmUrl[];
+extern const char kChromeUIWebAppInstallDialogHost[];
+extern const char kChromeUIWebAppInstallDialogURL[];
 
 // Returns true if this web UI is part of the "system UI". Generally this is
 // UI that opens in a window (not a browser tab) and that on other operating

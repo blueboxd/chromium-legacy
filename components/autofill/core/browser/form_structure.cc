@@ -364,7 +364,7 @@ FormStructure::FormStructure(const FormData& form)
     if (!ShouldSkipField(field))
       ++active_field_count_;
 
-    if (field.form_control_type == StringToFormControlType("password")) {
+    if (field.form_control_type == FormControlType::kInputPassword) {
       has_password_field_ = true;
     } else {
       all_fields_are_passwords_ = false;
@@ -1040,7 +1040,6 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
         // to be preserved.
         if (!field->IsSelectOrSelectListElement()) {
           field->value = cached_field->value;
-          value_from_dynamic_change_form_ = true;
         }
         break;
       case RetrieveFromCacheReason::kFormImport:
@@ -1477,7 +1476,8 @@ void FormStructure::IdentifySectionsWithNewMethod() {
   for (const auto& field : fields_) {
     const ServerFieldType current_type = field->Type().GetStorableType();
     // Put credit card fields into one, separate credit card section.
-    if (AutofillType(current_type).group() == FieldTypeGroup::kCreditCard) {
+    if (GroupTypeOfServerFieldType(current_type) ==
+        FieldTypeGroup::kCreditCard) {
       if (!credit_card_section) {
         credit_card_section =
             Section::FromFieldIdentifier(*field, frame_token_ids);
@@ -1494,7 +1494,7 @@ void FormStructure::IdentifySectionsWithNewMethod() {
     // Forms often ask for multiple phone numbers -- e.g. both a daytime and
     // evening phone number.  Our phone number detection is also generally a
     // little off.  Hence, ignore this field type as a signal here.
-    if (AutofillType(current_type).group() == FieldTypeGroup::kPhone) {
+    if (GroupTypeOfServerFieldType(current_type) == FieldTypeGroup::kPhone) {
       already_saw_current_type = false;
     }
 
@@ -1643,8 +1643,10 @@ void FormStructure::IdentifySections(bool ignore_autocomplete) {
     for (const auto& field : fields_) {
       const ServerFieldType current_type = field->Type().GetStorableType();
       // Credit card fields are already in one, separate credit card section.
-      if (AutofillType(current_type).group() == FieldTypeGroup::kCreditCard)
+      if (GroupTypeOfServerFieldType(current_type) ==
+          FieldTypeGroup::kCreditCard) {
         continue;
+      }
 
       if (!current_section)
         current_section = Section::FromFieldIdentifier(*field, frame_token_ids);
@@ -1654,7 +1656,7 @@ void FormStructure::IdentifySections(bool ignore_autocomplete) {
       // Forms often ask for multiple phone numbers -- e.g. both a daytime and
       // evening phone number.  Our phone number detection is also generally a
       // little off.  Hence, ignore this field type as a signal here.
-      if (AutofillType(current_type).group() == FieldTypeGroup::kPhone) {
+      if (GroupTypeOfServerFieldType(current_type) == FieldTypeGroup::kPhone) {
         already_saw_current_type = false;
       }
 

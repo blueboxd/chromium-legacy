@@ -31,7 +31,6 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/pdf/pdf_frame_util.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -63,6 +62,7 @@
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/compose/buildflags.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/lens/buildflags.h"
@@ -133,6 +133,10 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
+
+#if BUILDFLAG(ENABLE_COMPOSE)
+#include "components/compose/core/browser/compose_features.h"
+#endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -1148,6 +1152,41 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(ENABLE_COMPOSE)
+class ContextMenuForComposeBrowserTest : public ContextMenuBrowserTest {
+ public:
+  ContextMenuForComposeBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{compose::features::kEnableCompose},
+        /*disabled_features=*/{});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ContextMenuForComposeBrowserTest,
+                       ContextMenuForCompose_Editable) {
+  content::ContextMenuParams params;
+  params.is_editable = true;
+
+  auto menu = CreateContextMenuFromParams(params);
+
+  EXPECT_TRUE(menu->IsItemPresent(IDC_CONTEXT_COMPOSE));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuForComposeBrowserTest,
+                       ContextMenuForCompose_NonEditable) {
+  content::ContextMenuParams params;
+  params.is_editable = false;
+
+  auto menu = CreateContextMenuFromParams(params);
+
+  // Compose context menu item should never be present on a non-editable field.
+  EXPECT_FALSE(menu->IsItemPresent(IDC_CONTEXT_COMPOSE));
+}
+#endif  // BUILDFLAG(ENABLE_COMPOSE)
+
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextMouse) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
       GURL("http://www.google.com/"), GURL("http://www.google.com/"), u"Google",
@@ -1268,7 +1307,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   EXPECT_EQ(title2, tab->GetLastCommittedURL());
   EXPECT_EQ(tab_strip_model->count(), 2);
   EXPECT_EQ(app_tab_strip_model->count(), 1);
-  EXPECT_TRUE(chrome::FindBrowserWithWebContents(tab)->is_type_normal());
+  EXPECT_TRUE(chrome::FindBrowserWithTab(tab)->is_type_normal());
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
@@ -1309,10 +1348,10 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
   EXPECT_EQ(title1, tab->GetLastCommittedURL());
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 2u);
-  EXPECT_TRUE(chrome::FindBrowserWithWebContents(tab)->is_type_normal());
+  EXPECT_TRUE(chrome::FindBrowserWithTab(tab)->is_type_normal());
 
   TabStripModel* tab_strip_model =
-      chrome::FindBrowserWithWebContents(tab)->tab_strip_model();
+      chrome::FindBrowserWithTab(tab)->tab_strip_model();
   EXPECT_EQ(app_tab_strip_model->count(), 1);
   EXPECT_EQ(tab_strip_model->count(), 1);
 }

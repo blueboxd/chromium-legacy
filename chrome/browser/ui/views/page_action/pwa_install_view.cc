@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/web_apps/pwa_confirmation_bubble_view.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
@@ -128,12 +129,15 @@ void PwaInstallView::UpdateImpl() {
   // that view is set to visible but not drawn in fullscreen mode.
   if (is_probably_promotable && ShouldShowIph(web_contents, manager) &&
       IsDrawn()) {
-    const bool iph_shown = browser_->window()->MaybeShowFeaturePromo(
-        feature_engagement::kIPHDesktopPwaInstallFeature,
-        base::BindOnce(&PwaInstallView::OnIphClosed,
-                       weak_ptr_factory_.GetWeakPtr()),
-        webapps::AppBannerManager::GetInstallableWebAppName(web_contents));
-    if (iph_shown) {
+    user_education::FeaturePromoParams params(
+        feature_engagement::kIPHDesktopPwaInstallFeature);
+    params.close_callback = base::BindOnce(&PwaInstallView::OnIphClosed,
+                                           weak_ptr_factory_.GetWeakPtr());
+    params.body_params =
+        webapps::AppBannerManager::GetInstallableWebAppName(web_contents);
+    const user_education::FeaturePromoResult iph_result =
+        browser_->window()->MaybeShowFeaturePromo(std::move(params));
+    if (iph_result) {
       // Reset the iph flag when it's shown again.
       install_icon_clicked_after_iph_shown_ = false;
       SetHighlighted(true);
@@ -171,12 +175,12 @@ void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {
   base::RecordAction(base::UserMetricsAction("PWAInstallIcon"));
 
   // Close PWA install IPH if it is showing.
-  chrome::PwaInProductHelpState iph_state =
-      chrome::PwaInProductHelpState::kNotShown;
+  web_app::PwaInProductHelpState iph_state =
+      web_app::PwaInProductHelpState::kNotShown;
   install_icon_clicked_after_iph_shown_ = browser_->window()->CloseFeaturePromo(
       feature_engagement::kIPHDesktopPwaInstallFeature);
   if (install_icon_clicked_after_iph_shown_) {
-    iph_state = chrome::PwaInProductHelpState::kShown;
+    iph_state = web_app::PwaInProductHelpState::kShown;
   }
 
 #if BUILDFLAG(IS_CHROMEOS)

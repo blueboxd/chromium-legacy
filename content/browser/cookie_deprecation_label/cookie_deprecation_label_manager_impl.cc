@@ -15,13 +15,6 @@
 
 namespace content {
 
-namespace {
-
-const base::FeatureParam<std::string> kCookieDeprecationLabel{
-    &features::kCookieDeprecationFacilitatedTesting, "label", ""};
-
-}  // namespace
-
 CookieDeprecationLabelManagerImpl::CookieDeprecationLabelManagerImpl(
     BrowserContext* browser_context)
     : browser_context_(*browser_context) {}
@@ -49,9 +42,10 @@ absl::optional<std::string> CookieDeprecationLabelManagerImpl::GetValue(
   return GetValueInternal();
 }
 
-std::string CookieDeprecationLabelManagerImpl::GetValueInternal() {
+absl::optional<std::string>
+CookieDeprecationLabelManagerImpl::GetValueInternal() {
   if (!label_value_.has_value()) {
-    label_value_ = kCookieDeprecationLabel.Get();
+    label_value_ = features::kCookieDeprecationLabel.Get();
   }
 
   return *label_value_;

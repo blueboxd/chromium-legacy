@@ -171,6 +171,10 @@ class PictureInPictureWindowManager {
       const gfx::Rect& browser_view_overridden_bounds,
       views::View* anchor_view,
       views::BubbleBorder::Arrow arrow);
+
+  AutoPipSettingHelper* get_setting_helper_for_testing() {
+    return auto_pip_setting_helper_.get();
+  }
 #endif
 
   // Get the origins for initiators of active Picture-in-Picture sessions.
@@ -227,6 +231,11 @@ class PictureInPictureWindowManager {
   // picture in picture closes between now and then, that's okay.  Intended as a
   // helper class for callbacks, to avoid re-entrant calls during pip set-up.
   static void ExitPictureInPictureSoon();
+
+#if !BUILDFLAG(IS_ANDROID)
+  // Create the settings helper if this is auto-pip and we don't have one.
+  void CreateAutoPipSettingHelperIfNeeded();
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   PictureInPictureWindowManager();
   ~PictureInPictureWindowManager();

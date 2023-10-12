@@ -46,7 +46,7 @@
 
 #include <limits>
 
-#include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc.h"
 #include "base/containers/adapters.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
@@ -142,7 +142,7 @@ inline PhysicalRect PhysicalVisualOverflowRectAllowingUnset(
 #if DCHECK_IS_ON()
   NGInkOverflow::ReadUnsetAsNoneScope read_unset_as_none;
 #endif
-  return layout_object.PhysicalVisualOverflowRect();
+  return layout_object.VisualOverflowRect();
 }
 
 PaintLayer* SlowContainingLayer(const PaintLayer* ancestor,
@@ -478,14 +478,11 @@ void PaintLayer::UpdateDescendantDependentFlags() {
       PhysicalRect old_visual_rect =
           PhysicalVisualOverflowRectAllowingUnset(GetLayoutObject());
       GetLayoutObject().RecalcVisualOverflow();
-      if (old_visual_rect != GetLayoutObject().PhysicalVisualOverflowRect()) {
+      if (old_visual_rect != GetLayoutObject().VisualOverflowRect()) {
         MarkAncestorChainForFlagsUpdate(kDoesNotNeedDescendantDependentUpdate);
       }
     }
     GetLayoutObject().InvalidateIntersectionObserverCachedRects();
-    GetLayoutObject().GetFrameView()->SetIntersectionObservationState(
-        LocalFrameView::kDesired);
-
     needs_visual_overflow_recalc_ = false;
   }
 
@@ -894,8 +891,6 @@ void PaintLayer::UpdateScrollableArea() {
   } else {
     scrollable_area_->Dispose();
     scrollable_area_.Clear();
-    GetLayoutObject().SetBackgroundPaintLocation(
-        kBackgroundPaintInBorderBoxSpace);
   }
 
   GetLayoutObject().SetNeedsPaintPropertyUpdate();
@@ -1848,8 +1843,7 @@ PaintLayer* PaintLayer::HitTestChildren(
 void PaintLayer::UpdateFilterReferenceBox() {
   if (!HasFilterThatMovesPixels())
     return;
-  PhysicalRect result = LocalBoundingBox();
-  ExpandRectForSelfPaintingDescendants(result);
+  PhysicalRect result = LocalBoundingBoxIncludingSelfPaintingDescendants();
   gfx::RectF reference_box(result);
   if (!ResourceInfo() ||
       ResourceInfo()->FilterReferenceBox() != reference_box) {
@@ -1902,7 +1896,7 @@ bool PaintLayer::HitTestClippedOutByClipPath(
 }
 
 PhysicalRect PaintLayer::LocalBoundingBox() const {
-  PhysicalRect rect = GetLayoutObject().PhysicalVisualOverflowRect();
+  PhysicalRect rect = GetLayoutObject().VisualOverflowRect();
   if (GetLayoutObject().IsEffectiveRootScroller() || IsRootLayer()) {
     rect.Unite(
         PhysicalRect(rect.offset, GetLayoutObject().View()->ViewRect().size));
@@ -1971,6 +1965,13 @@ bool PaintLayer::KnownToClipSubtreeToPaddingBox() const {
     return true;
   }
   return false;
+}
+
+PhysicalRect PaintLayer::LocalBoundingBoxIncludingSelfPaintingDescendants()
+    const {
+  PhysicalRect result = LocalBoundingBox();
+  ExpandRectForSelfPaintingDescendants(result);
+  return result;
 }
 
 bool PaintLayer::SupportsSubsequenceCaching() const {

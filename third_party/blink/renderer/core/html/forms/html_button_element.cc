@@ -138,16 +138,16 @@ void HTMLButtonElement::DefaultEventHandler(Event& event) {
 
   if (type_ == kSelectlist) {
     CHECK(RuntimeEnabledFeatures::HTMLSelectListElementEnabled());
-    for (auto& ancestor : FlatTreeTraversal::AncestorsOf(*this)) {
-      if (auto* selectlist = DynamicTo<HTMLSelectListElement>(ancestor)) {
-        selectlist->HandleButtonEvent(event);
-        break;
-      }
+    if (auto* selectlist = OwnerSelectList()) {
+      selectlist->HandleButtonEvent(event);
     }
   }
 
-  if (HandleKeyboardActivation(event))
+  // type=selectlist should not open the listbox when enter is pressed, which
+  // HandleKeyboardActivation would do via simulated click.
+  if (type_ != kSelectlist && HandleKeyboardActivation(event)) {
     return;
+  }
 
   HTMLFormControlElement::DefaultEventHandler(event);
 }
@@ -231,6 +231,22 @@ void HTMLButtonElement::DispatchBlurEvent(
   SetActive(false);
   HTMLFormControlElement::DispatchBlurEvent(new_focused_element, type,
                                             source_capabilities);
+}
+
+HTMLSelectListElement* HTMLButtonElement::OwnerSelectList() const {
+  if (type_ != kSelectlist) {
+    return nullptr;
+  }
+  for (auto& ancestor : FlatTreeTraversal::AncestorsOf(*this)) {
+    if (IsA<HTMLListboxElement>(ancestor)) {
+      // Buttons inside listboxes are excluded from triggering the listbox.
+      return nullptr;
+    }
+    if (auto* selectlist = DynamicTo<HTMLSelectListElement>(ancestor)) {
+      return selectlist;
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace blink

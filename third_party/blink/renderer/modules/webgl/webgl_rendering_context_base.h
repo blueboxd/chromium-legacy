@@ -29,7 +29,7 @@
 #include <memory>
 
 #include "base/check_op.h"
-#include "base/containers/lru_cache.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/numerics/checked_math.h"
 #include "base/task/single_thread_task_runner.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
@@ -57,6 +57,8 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/webgl_image_conversion.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -722,7 +724,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   friend class WebGLMultiDrawCommon;
   friend class WebGLMultiDrawInstancedBaseVertexBaseInstance;
   friend class WebGLShaderPixelLocalStorage;
-  friend class WebGLVideoTexture;
 
   WebGLRenderingContextBase(CanvasRenderingContextHost*,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
@@ -1062,7 +1063,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     }
 
    private:
-    Member<T>& extension_field_;
+    // `extension_field_` is not a `raw_ref` because `Member<T>` denotes
+    // a type managed by Oilpan, i.e. memory that is not managed by
+    // PartitionAlloc.
+    RAW_PTR_EXCLUSION Member<T>& extension_field_;
     // ExtensionTracker holds it's own reference to the extension to ensure
     // that it is not deleted before this object's destructor is called
     Member<T> extension_;
@@ -1997,7 +2001,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool checkProgramCompletionQueryAvailable(WebGLProgram* program,
                                             bool* completed);
   static constexpr unsigned int kMaxProgramCompletionQueries = 128u;
-  base::LRUCache<WebGLProgram*, GLuint> program_completion_queries_;
+
+  // Support for KHR_parallel_shader_compile.
+  //
+  // TODO(crbug.com/1474141): once a HeapLinkedHashMap is available,
+  // convert these two fields to use that instead.
+  HeapVector<Member<WebGLProgram>> program_completion_query_list_;
+  HeapHashMap<Member<WebGLProgram>, GLuint> program_completion_query_map_;
 
   int number_of_user_allocated_multisampled_renderbuffers_;
 

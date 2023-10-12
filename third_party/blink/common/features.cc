@@ -806,6 +806,8 @@ BASE_FEATURE(kFledgeBiddingAndAuctionServer,
              base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<std::string> kFledgeBiddingAndAuctionKeyURL{
     &kFledgeBiddingAndAuctionServer, "FledgeBiddingAndAuctionKeyURL", ""};
+const base::FeatureParam<std::string> kFledgeBiddingAndAuctionKeyConfig{
+    &kFledgeBiddingAndAuctionServer, "FledgeBiddingAndAuctionKeyConfig", ""};
 
 // See in the header.
 BASE_FEATURE(kFledgeConsiderKAnonymity,
@@ -977,6 +979,8 @@ const base::FeatureParam<int> kInterestGroupStorageMaxStoragePerOwner{
     &kInterestGroupStorage, "max_storage_per_owner", 10 * 1024 * 1024};
 const base::FeatureParam<int> kInterestGroupStorageMaxGroupsPerOwner{
     &kInterestGroupStorage, "max_groups_per_owner", 1000};
+const base::FeatureParam<int> kInterestGroupStorageMaxNegativeGroupsPerOwner{
+    &kInterestGroupStorage, "max_negative_groups_per_owner", 20000};
 const base::FeatureParam<int> kInterestGroupStorageMaxOpsBeforeMaintenance{
     &kInterestGroupStorage, "max_ops_before_maintenance", 1000};
 
@@ -1061,6 +1065,12 @@ const base::FeatureParam<int> kLCPPFontURLPredictorMaxUrlLength{
 
 const base::FeatureParam<int> kLCPPFontURLPredictorMaxUrlCountPerOrigin{
     &kLCPPFontURLPredictor, "lcpp_max_font_url_count_per_origin", 10};
+
+const base::FeatureParam<double> kLCPPFontURLPredictorFrequencyThreshold{
+    &kLCPPFontURLPredictor, "lcpp_font_url_frequency_threshold", 0.5};
+
+const base::FeatureParam<int> kLCPPFontURLPredictorMaxPreloadCount{
+    &kLCPPFontURLPredictor, "lcpp_max_font_url_to_preload", 5};
 
 // Enables reporting as LCP of the time the first frame of a video was painted.
 BASE_FEATURE(kLCPVideoFirstFrame,
@@ -1226,6 +1236,10 @@ BASE_FEATURE(kOriginAgentClusterDefaultEnabled,
 
 BASE_FEATURE(kOriginAgentClusterDefaultWarning,
              "OriginAgentClusterDefaultWarning",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kOriginTrialStateHostApplyFeatureDiff,
+             "OriginTrialStateHostApplyFeatureDiff",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable defer commits to avoid flash of unstyled content, for same origin
@@ -1448,9 +1462,9 @@ BASE_FEATURE(kProduceCompileHints2,
 const base::FeatureParam<int> kProduceCompileHintsOnIdleDelayParam{
     &kProduceCompileHints2, "delay-in-ms", 10000};
 const base::FeatureParam<double> kProduceCompileHintsNoiseLevel{
-    &kProduceCompileHints2, "noise probability", 0.5};
+    &kProduceCompileHints2, "noise-probability", 0.5};
 const base::FeatureParam<double> kProduceCompileHintsDataProductionLevel{
-    &kProduceCompileHints2, "data production probability", 0.005};
+    &kProduceCompileHints2, "data-production-probability", 0.005};
 BASE_FEATURE(kForceProduceCompileHints,
              "ForceProduceCompileHints",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1546,10 +1560,6 @@ BASE_FEATURE(kRunTextInputUpdatePostLifecycle,
              "RunTextInputUpdatePostLifecycle",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kOriginTrialStateHostApplyFeatureDiff,
-             "OriginTrialStateHostApplyFeatureDiff",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
 BASE_FEATURE(kSafelistFTPToRegisterProtocolHandler,
              "SafelistFTPToRegisterProtocolHandler",
@@ -1607,7 +1617,8 @@ BASE_FEATURE(kSendCnameAliasesToSubresourceFilterFromRenderer,
 
 BASE_FEATURE(kSerializeAccessibilityPostLifecycle,
              "SerializeAccessibilityPostLifecycle",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT
+);
 
 // Experiment of the delay from navigation to starting an update of a service
 // worker's script.
@@ -1675,13 +1686,13 @@ const base::FeatureParam<int> kSharedStorageSelectURLBitBudgetPerPageLoad = {
     &kSharedStorageSelectURLLimit, "SharedStorageSelectURLBitBudgetPerPageLoad",
     12};
 const base::FeatureParam<int>
-    kSharedStorageSelectURLBitBudgetPerOriginPerPageLoad = {
+    kSharedStorageSelectURLBitBudgetPerSitePerPageLoad = {
         &kSharedStorageSelectURLLimit,
-        "SharedStorageSelectURLBitBudgetPerOriginPerPageLoad", 6};
+        "SharedStorageSelectURLBitBudgetPerSitePerPageLoad", 6};
 
 BASE_FEATURE(kSharedStorageAPIM118,
              "SharedStorageAPIM118",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSimulateClickOnAXFocus,
              "SimulateClickOnAXFocus",
@@ -1827,6 +1838,10 @@ const base::FeatureParam<base::TimeDelta>
     kStorageAccessAPITopLevelUserInteractionBound{
         &kStorageAccessAPI,
         "storage_access_api_top_level_user_interaction_bound", base::Days(30)};
+const base::FeatureParam<base::TimeDelta>
+    kStorageAccessAPIRelatedWebsiteSetsLifetime{
+        &kStorageAccessAPI, "related_website_sets_permission_lifetime",
+        base::Days(30)};
 const base::FeatureParam<base::TimeDelta>
     kStorageAccessAPIImplicitPermissionLifetime{
         &kStorageAccessAPI, "storage_access_api_implicit_permission_lifetime",

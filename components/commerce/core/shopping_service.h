@@ -154,6 +154,23 @@ struct ProductInfoCacheEntry {
   std::unique_ptr<ProductInfo> product_info;
 };
 
+// A struct that keeps track of cached price insights info related data about a
+// url.
+struct PriceInsightsInfoCacheEntry {
+ public:
+  PriceInsightsInfoCacheEntry();
+  PriceInsightsInfoCacheEntry(const PriceInsightsInfoCacheEntry&) = delete;
+  PriceInsightsInfoCacheEntry& operator=(const PriceInsightsInfoCacheEntry&) =
+      delete;
+  ~PriceInsightsInfoCacheEntry();
+
+  // The number of pages that have the URL open.
+  size_t pages_with_url_open{0};
+
+  // The price insights info associated with the URL.
+  std::unique_ptr<PriceInsightsInfo> info;
+};
+
 // Types of shopping pages from backend.
 enum class ShoppingPageType {
   kUnknown = 0,
@@ -401,6 +418,12 @@ class ShoppingService : public KeyedService,
   // feature-related infrastructure.
   virtual bool IsDiscountEligibleToShowOnNavigation();
 
+  // Check if parcel tracking is eligible for use. This not only checks the
+  // feature flag, but also checks user's sign in state, country code, etc. The
+  // value returned here can change during runtime so it should not be used
+  // when deciding to build infrastructure.
+  virtual bool IsParcelTrackingEligible();
+
   // Starts tracking a list of parcels from a given page.
   void StartTrackingParcels(
       const std::vector<std::pair<ParcelIdentifier::Carrier, std::string>>&
@@ -412,8 +435,15 @@ class ShoppingService : public KeyedService,
   void GetAllParcelStatuses(GetParcelStatusCallback callback);
 
   // Called to stop tracking a given parcel.
+  // DEPRECATED: use StopTrackingParcels() below()
   void StopTrackingParcel(const std::string& tracking_id,
                           base::OnceCallback<void(bool)> callback);
+
+  // Called to stop tracking multiple parcels.
+  void StopTrackingParcels(
+      const std::vector<std::pair<ParcelIdentifier::Carrier, std::string>>&
+          parcel_identifiers,
+      base::OnceCallback<void(bool)> callback);
 
   // Called to stop tracking all parcels.
   void StopTrackingAllParcels(base::OnceCallback<void(bool)> callback);
@@ -571,6 +601,16 @@ class ShoppingService : public KeyedService,
       optimization_guide::OptimizationGuideDecision decision,
       const optimization_guide::OptimizationMetadata& metadata);
 
+  std::unique_ptr<PriceInsightsInfo> OptGuideResultToPriceInsightsInfo(
+      const optimization_guide::OptimizationMetadata& metadata);
+
+  // Handle main frame navigation for the price insights info API.
+  void HandleDidNavigatePrimaryMainFrameForPriceInsightsInfo(WebWrapper* web);
+
+  // Update the cache storing price insights info for a navigation away from the
+  // provided URL or closing of a tab.
+  void UpdatePriceInsightsInfoCacheForRemoval(const GURL& url);
+
   void HandleOptGuideShoppingPageTypesResponse(
       const GURL& url,
       IsShoppingPageCallback callback,
@@ -652,6 +692,11 @@ class ShoppingService : public KeyedService,
   // product info.
   std::unordered_map<std::string, std::unique_ptr<ProductInfoCacheEntry>>
       product_info_cache_;
+
+  // This is a cache that maps URL to a cache entry that may or may not contain
+  // price insights info.
+  std::unordered_map<std::string, std::unique_ptr<PriceInsightsInfoCacheEntry>>
+      price_insights_info_cache_;
 
   std::unique_ptr<BookmarkUpdateManager> bookmark_update_manager_;
 

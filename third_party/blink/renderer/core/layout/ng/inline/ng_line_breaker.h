@@ -173,7 +173,6 @@ class CORE_EXPORT NGLineBreaker {
   bool BreakTextAt(NGInlineItemResult*,
                    const NGInlineItem&,
                    ShapingLineBreaker& breaker,
-                   unsigned options,
                    NGLineInfo*);
   bool BreakTextAtPreviousBreakOpportunity(NGInlineItemResult* item_result);
   bool HandleTextForFastMinContent(NGInlineItemResult*,
@@ -189,7 +188,8 @@ class CORE_EXPORT NGLineBreaker {
   void UpdateShapeResult(const NGLineInfo&, NGInlineItemResult*);
   scoped_refptr<ShapeResult> ShapeText(const NGInlineItem&,
                                        unsigned start,
-                                       unsigned end);
+                                       unsigned end,
+                                       ShapeOptions = ShapeOptions());
 
   void HandleTrailingSpaces(const NGInlineItem&, NGLineInfo*);
   void HandleTrailingSpaces(const NGInlineItem&,

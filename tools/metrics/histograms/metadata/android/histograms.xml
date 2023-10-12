@@ -42,7 +42,7 @@ chromium-metrics-reviews@google.com.
 
 <variants name="AndroidFrameTimelineJankScenario">
   <variant name=".FeedScrolling" summary=""/>
-  <variant name=".NewTabePage" summary=""/>
+  <variant name=".NewTabPage" summary=""/>
   <variant name=".OmniboxFocus" summary=""/>
   <variant name=".OpenLinkInNewTab" summary=""/>
   <variant name=".StartSurfaceHomepage" summary=""/>
@@ -123,6 +123,7 @@ chromium-metrics-reviews@google.com.
   <variant name=".ArCoreUpgrade"/>
   <variant name=".AutoDarkWebContents"/>
   <variant name=".ChromeSurvey"/>
+  <variant name=".CvcSave"/>
   <variant name=".DesktopSiteGlobalDefaultOptOut"/>
   <variant name=".DesktopSiteGlobalOptIn"/>
   <variant name=".DownloadIncognitoWarning"/>
@@ -147,6 +148,7 @@ chromium-metrics-reviews@google.com.
   <variant name=".SyncError"/>
   <variant name=".TailoredSecurityDisabled"/>
   <variant name=".TailoredSecurityEnabled"/>
+  <variant name=".TrackingProtectionNotice"/>
   <variant name=".Translate"/>
   <variant name=".UpdatePassword"/>
   <variant name=".VrServicesUpgrade"/>
@@ -794,7 +796,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.CpuAbiBitnessSupport" enum="CpuAbiBitnessSupport"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>bartekn@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -1776,6 +1778,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.InputDevice.Keyboard.Active" enum="Boolean"
+    expires_after="2024-04-04">
+  <owner>aishwaryarj@google.com</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Emitted when a hardware keyboard is connected or disconnected.
+  </summary>
+</histogram>
+
+<histogram name="Android.InputDevice.Mouse.Active" enum="Boolean"
+    expires_after="2024-04-04">
+  <owner>aishwaryarj@google.com</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>Emitted when a mouse is connected or disconnected.</summary>
+</histogram>
+
 <histogram name="Android.Intent.BlockedExternalNavLastGestureTime" units="ms"
     expires_after="2024-03-17">
   <owner>mthiesse@chromium.org</owner>
@@ -2176,7 +2194,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.MultipleUserProfilesState"
-    enum="MultipleUserProfilesState" expires_after="2024-01-31">
+    enum="MultipleUserProfilesState" expires_after="2024-03-31">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <owner>bartekn@chromium.org</owner>
@@ -3678,7 +3696,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RestoreTabsOnFRE.ResultActionSecondShow"
-    enum="RestoreTabsOnFREResultAction" expires_after="2023-12-15">
+    enum="RestoreTabsOnFREResultAction" expires_after="2024-03-31">
   <owner>ckitagawa@chromium.org</owner>
   <owner>bjfong@google.com</owner>
   <owner>fredmello@chromium.org</owner>
@@ -3873,6 +3891,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.Survey.DownloadAttemptsBeforeAccepted" units="units"
     expires_after="2024-01-27">
+  <obsolete>
+    Removed from code in Sep 2023.
+  </obsolete>
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
@@ -3957,7 +3978,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Sync.ActualSyncedTabCountPercentage"
-    units="% of tab count" expires_after="2024-01-30">
+    units="% of tab count" expires_after="2024-03-31">
   <owner>bjfong@google.com</owner>
   <owner>ckitagawa@chromium.org</owner>
   <summary>
@@ -4067,7 +4088,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabMultiSelectV2.BookmarkTabsCount" units="count"
-    expires_after="2024-03-17">
+    expires_after="2024-06-30">
   <owner>ckitagawa@chromium.org</owner>
   <owner>bjfong@google.com</owner>
   <owner>fredmello@chromium.org</owner>
@@ -4079,7 +4100,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabMultiSelectV2.SharingState"
-    enum="TabSelectionEditorShareActionState" expires_after="2024-02-25">
+    enum="TabSelectionEditorShareActionState" expires_after="2024-06-30">
   <owner>ckitagawa@chromium.org</owner>
   <owner>bjfong@google.com</owner>
   <owner>fredmello@chromium.org</owner>
@@ -4090,7 +4111,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabMultiSelectV2.TimeSinceLastShown" units="ms"
-    expires_after="2023-10-14">
+    expires_after="2024-06-30">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -4147,7 +4168,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.PlaceholderStripLeftoverTabsCount"
-    units="tabs" expires_after="2023-12-31">
+    units="tabs" expires_after="2024-03-31">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4167,7 +4188,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.TabStrip.PlaceholderStripTabsCreatedDuringRestoreCount"
-    units="tabs" expires_after="2023-12-31">
+    units="tabs" expires_after="2024-03-31">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4205,7 +4226,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.PlaceholderStripVisibleDuration" units="ms"
-    expires_after="2023-12-31">
+    expires_after="2024-03-31">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4503,7 +4524,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.VersionCode" enum="VersionCode"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>bartekn@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -5639,7 +5660,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.SafeMode.SafeModeEnabled"
-    enum="BooleanEnabled" expires_after="2024-01-28">
+    enum="BooleanEnabled" expires_after="2024-03-31">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>

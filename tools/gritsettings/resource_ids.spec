@@ -97,6 +97,9 @@
     "includes": [2220],
     "structures": [2240],
   },
+  "chrome/browser/nearby_sharing/internal/nearby_share_internal_strings.grd": {
+    "messages": [2250],
+  },
   "chrome/browser/recent_tabs/internal/android/java/strings/android_restore_tabs_strings.grd": {
     "messages": [2260],
   },
@@ -231,6 +234,10 @@
     "META": {"sizes": {"includes": [5]}},
     "includes": [2880],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/web_app_install/resources.grd": {
+    "META": {"sizes": {"includes": [5]}},
+    "includes": [2890],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/commander/resources.grd": {
     "META": {"sizes": {"includes": [15]}},
     "includes": [2900],
@@ -243,9 +250,13 @@
     "META": {"sizes": {"includes": [50]}},
     "includes": [2960],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/connectors_internals/resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/compose/resources.grd": {
     "META": {"sizes": {"includes": [15]}},
     "includes": [2980],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/connectors_internals/resources.grd": {
+    "META": {"sizes": {"includes": [15]}},
+    "includes": [2990],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/discards/resources.grd": {
     "META": {"sizes": {"includes": [20],}},
@@ -419,7 +430,7 @@
     "includes": [3800],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/tab_search/resources.grd": {
-    "META": {"sizes": {"includes": [30]}},
+    "META": {"sizes": {"includes": [60]}},
     "includes": [3820],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/tab_strip/resources.grd": {
@@ -465,7 +476,7 @@
     "includes": [4040],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/borealis_installer/resources.grd": {
-    "META": {"sizes": {"includes": [10],}},
+    "META": {"sizes": {"includes": [20],}},
     "includes": [4050],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/chromebox_for_meetings/resources.grd": {
@@ -515,6 +526,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/components/version_ui/resources/resources.grd": {
     "META": {"sizes": {"includes": [5]}},
     "includes": [4280],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/about_sys/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [4290],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/app_home/resources.grd": {
     "META": {"sizes": {"includes": [20]}},
@@ -663,6 +678,10 @@
     "META": {"sizes": {"includes": [10]}},
     "includes": [4980],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/on_device_internals/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [4990],
+  },
   # END chrome/ WebUI resources section
 
   # START chrome/ miscellaneous section.
@@ -709,7 +728,7 @@
   "ash/webui/camera_app_ui/resources/strings/camera_strings.grd": {
     "messages": [5280],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/color_internals/resources/ash_color_internals_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/color_internals/resources/resources.grd": {
     "META": {"sizes": {"includes": [20],}},
     "includes": [5300],
   },
@@ -972,6 +991,9 @@
     "META": {"align": 100},
     "structures": [1100],
   },
+  "ios/chrome/browser/ui/whats_new/strings/ios_whats_new_strings.grd": {
+    "messages": [1115],
+  },
   "ios/chrome/share_extension/strings/ios_share_extension_strings.grd": {
     "messages": [1120],
   },
@@ -1061,7 +1083,7 @@
     "META": {"sizes": {"includes": [50],}},
     "includes": [6440],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/firmware_update_ui/resources/ash_firmware_update_app_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/firmware_update_ui/resources/resources.grd": {
     "META": {"sizes": {"includes": [200],}},
     "includes": [6460],
   },

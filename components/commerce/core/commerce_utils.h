@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_COMMERCE_CORE_COMMERCE_UTILS_H_
 #define COMPONENTS_COMMERCE_CORE_COMMERCE_UTILS_H_
 
+#include "base/feature_list.h"
+
 class GURL;
 
 namespace commerce {
-
 // Returns whether the `url` contains the discount utm tags.
 bool UrlContainsDiscountUtmTag(const GURL& url);
 

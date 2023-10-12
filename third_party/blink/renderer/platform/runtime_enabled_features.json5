@@ -321,6 +321,11 @@
       base_feature: "none",
     },
     {
+      // crbug.com/484651
+      name: "ArrowKeysInVerticalWritingModes",
+      status: "stable",
+    },
+    {
       name: "AttributionReporting",
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
       origin_trial_allows_third_party: true,
@@ -624,8 +629,16 @@
       base_feature: "none",
     },
     {
+      name: "ClipboardWellFormedHtmlSanitizationWrite",
+      status: "experimental",
+    },
+    {
       // https://drafts.fxtf.org/css-masking/#typedef-geometry-box
       name: "ClipPathGeometryBox",
+      status: "stable",
+    },
+    {
+      name: "ClipPathRejectEmptyPaths",
       status: "stable",
     },
     {
@@ -661,10 +674,6 @@
       public: true,
       status: {"Android": "stable"},
       base_feature: "none",
-    },
-    {
-      name: "CompositeScrollAfterPaint",
-      status: "stable",
     },
     {
       name: "CompositionForegroundMarkers",
@@ -949,6 +958,14 @@
       base_feature: "none",
     },
     {
+      // Un-prefixed and interoperable mask implementation, including
+      // sub-features such as mask-image, mask-mode, etc.
+      // Tracking bug: https://crbug.com/1418401
+      // Spec: https://drafts.fxtf.org/css-masking/#the-mask
+      name: "CSSMaskingInterop",
+      status: "experimental",
+    },
+    {
       name: "CSSMixBlendModePlusLighter",
       status: "stable",
       base_feature: "none",
@@ -963,6 +980,7 @@
     {
       // Support nested selectors that start with idents.
       name: "CSSNestingIdent",
+      status: "stable",
     },
     {
       // Support for typed om numeric factory methods for various units that
@@ -1487,10 +1505,10 @@
       status: "experimental",
     },
     {
-      // Kill-switch for fixes to a bug that detached input elements are retained.
-      // See crbug.com/1413100
-      name: "DontLeakDetachedInput",
-      status: "stable",
+      // If enabled, DOM Parts API tracks DOM mutations that cause part changes.
+      // If disabled, the parts list returned by getParts() can be stale.
+      name: "DOMPartsAPIActivePartTracking",
+      depends_on: ["DOMPartsAPI"],
     },
     {
       name: "EarlyHintsPreloadForNavigationOptIn",
@@ -1507,6 +1525,10 @@
     },
     {
       name: "ElementCapture",
+    },
+    {
+      name: "EmptyCaretInVertical",
+      status: "stable",
     },
     {
       name: "EnforceAnonymityExposure",
@@ -1560,12 +1582,14 @@
     {
       name: "EyeDropperAPI",
       status: {
-        // EyeDropper UI is available only on Windows, Mac, and Linux. This list
-        // should match the supported operating systems for the kEyeDropper
-        // base::Feature.
+        // EyeDropper UI is available on ChromeOS, Linux (x11), Mac, and Win.
+        // This list should match the supported operating systems for the
+        // kEyeDropper base::Feature.
+        "ChromeOS_Ash": "stable",
+        "ChromeOS_Lacros": "stable",
+        "Linux": "stable",
         "Mac": "stable",
         "Win": "stable",
-        "Linux": "stable",
       },
       base_feature: "none",
     },
@@ -1692,6 +1716,7 @@
     {
       // The Blink runtime-enabled feature name for the API's IDL.
       name: "FetchLaterAPI",
+      status: "experimental",
       public: true,
     },
     {
@@ -1726,11 +1751,6 @@
       base_feature: "none",
     },
     {
-      name: "FileSystemAccessAccessHandleLockingScheme",
-      status: "experimental",
-      base_feature: "none",
-    },
-    {
       // In-development features for the File System Access API.
       name: "FileSystemAccessAPIExperimental",
       status: "experimental",
@@ -1751,6 +1771,9 @@
       name: "FileSystemAccessLocal",
       status: {"Android": "test", "default": "stable"},
       base_feature: "none",
+    },
+    {
+      name: "FileSystemAccessLockingScheme",
     },
     {
       // OPFS File System Access API.
@@ -1774,10 +1797,6 @@
       status: "stable",
     },
     {
-      name: "FixOffsetInMultiColVerticalRl",
-      status: "stable",
-    },
-    {
       name: "Fledge",
       base_feature: "none",
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
@@ -1788,6 +1807,10 @@
       name: "FledgeBiddingAndAuctionServerAPI",
       origin_trial_feature_name: "FledgeBiddingAndAuctionServer",
       origin_trial_allows_third_party: true,
+    },
+    {
+      name: "FledgeClearOriginJoinedAdInterestGroups",
+      status: "test",
     },
     {
       name: "FledgeDirectFromSellerSignalsHeaderAdSlot",
@@ -1827,6 +1850,7 @@
     },
     {
       name: "FontPaletteAnimation",
+      status: "experimental",
     },
     {
       name: "FontSrcLocalMatching",
@@ -1894,6 +1918,7 @@
       // writing mode: textarea and input types email, number, password, search,
       // tel, text, url.
       name: "FormControlsVerticalWritingModeTextSupport",
+      depends_on: ["ArrowKeysInVerticalWritingModes"],
       status: "experimental",
     },
     {
@@ -1907,7 +1932,6 @@
     },
     {
       name: "FractionalScrollOffsets",
-      implied_by: ["PercentBasedScrolling"],
       base_feature: "none",
       public: true,
     },
@@ -1979,6 +2003,15 @@
       base_feature: "none",
     },
     {
+      // Updates the hanging behavior of preserved whitespace at the end of a
+      // line to not depend on text-align. This flag is to be used as a
+      // killswitch in case of any issues.
+      // https://github.com/w3c/csswg-drafts/issues/3440
+      // crbug.com/1363901
+      name: "HangingWhitespaceDoesNotDependOnAlignment",
+      status: "stable",
+    },
+    {
       name: "HasUAVisualTransition",
       status: "stable",
       base_feature: "none",
@@ -2044,6 +2077,10 @@
     {
       name: "HTMLSearchElement",
       status: "stable",
+    },
+    {
+      name: "HTMLSelectElementShowPicker",
+      status: "experimental",
     },
     {
       name: "HTMLSelectListElement",
@@ -2127,6 +2164,10 @@
       status: "experimental",
     },
     {
+      name: "InterruptComposedScrollbarDisappearance",
+      status: "stable",
+    },
+    {
       // If enabled, IntersectionObserverScrollMargin will be parsed.
       name: "IntersectionObserverScrollMargin",
       status: "experimental",
@@ -2155,7 +2196,7 @@
     },
     {
       name: "KeyboardFocusableScrollers",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "LangAttributeAwareFormControlUI",
@@ -2168,11 +2209,6 @@
     },
     {
       name: "LayoutIgnoreMarginsForSticky",
-      status: "stable",
-    },
-    {
-      name: "LayoutNewFixedPositionInvalidation",
-      status: "stable",
     },
     {
       name: "LayoutNewOverflowLogic",
@@ -2189,12 +2225,6 @@
     {
       // crbug.com/1353190
       name: "LayoutNGNoCopyBack",
-      depends_on: ["LayoutNGNoLocation"],
-      status: "stable",
-    },
-    {
-      // crbug.com/1353190
-      name: "LayoutNGNoLocation",
       status: "stable",
     },
     {
@@ -2206,10 +2236,6 @@
       name: "LayoutNGSubgrid",
       status: "stable",
       base_feature: "none",
-    },
-    {
-      name: "LayoutOverflowNoClone",
-      status: "stable",
     },
     {
       name: "LazyFrameLoading",
@@ -2381,6 +2407,7 @@
     {
       name: "MediaSessionEnterPictureInPicture",
       public: true,
+      status: "experimental",
     },
     {
       name: "MediaSessionSlides",
@@ -2503,12 +2530,6 @@
     },
     {
       name: "NonInheritedWebkitBoxDirection",
-      status: "stable",
-    },
-    {
-      // Kill switch for crbug.com/1427047 fix.
-      // TODO(xiaochengh): Remove in M117.
-      name: "NonReentrantFieldSetDisable",
       status: "stable",
     },
     {
@@ -2784,10 +2805,6 @@
       status: "stable",
     },
     {
-      name: "PaintNewReplacedInvalidation",
-      status: "stable",
-    },
-    {
       name: "PaintUnderInvalidationChecking",
       base_feature: "none",
       settable_from_internals: true,
@@ -2812,6 +2829,10 @@
       base_feature: "none",
     },
     {
+      name: "PastingBlocksSVGUseNonLocalHrefs",
+      status: "stable",
+    },
+    {
       name: "PaymentApp",
       depends_on: ["PaymentRequest"],
       public: true,
@@ -2825,6 +2846,7 @@
       origin_trial_feature_name: "PaymentHandlerMinimalHeaderUX",
       origin_trial_allows_third_party: true,
       origin_trial_os: ["win", "mac", "linux", "fuchsia", "chromeos"],
+      status: "stable",
     },
     {
       name: "PaymentInstruments",
@@ -2892,9 +2914,7 @@
     {
       // Tracking bug for the implementation: https://crbug.com/1462930
       name: "PermissionElement",
-      // We don't set the feature's status because the feature is implemented
-      // at both Chromium side and blink side. This runtime blink feature
-      // doesn't fully work by itself.
+      status: "experimental",
       base_feature: "none",
     },
     {
@@ -2947,6 +2967,10 @@
       origin_trial_os: ["android"],
       public: true,
       copied_from_base_feature_if: "overridden",
+    },
+    {
+      name: "PositionOutsideTabSpanCheckSiblingNode",
+      status: "stable",
     },
     {
       name: "PreciseMemoryInfo",
@@ -3059,10 +3083,6 @@
       name: "QuotaChange",
       status: "experimental",
       base_feature: "none",
-    },
-    {
-      name: "RareBorderPaddingInflow",
-      status: "stable",
     },
     {
       name: "ReadableStreamTeeCloneForBranch2",
@@ -3277,10 +3297,6 @@
       status: "experimental",
     },
     {
-      name: "ScrollCustomization",
-      base_feature: "none",
-    },
-    {
       name: "ScrollEndEvents",
       status: "stable",
     },
@@ -3332,6 +3348,11 @@
       name: "SecurePaymentConfirmationDebug",
       base_feature: "none",
       public: true,
+    },
+    {
+      name: "SecurePaymentConfirmationExtensions",
+      public: true,
+      status: "stable",
     },
     {
       name: "SecurePaymentConfirmationOptOut",
@@ -3633,6 +3654,12 @@
       origin_trial_feature_name: "StorageBuckets",
     },
     {
+      // Gates the `durability()` method on a storage bucket and the property in
+      // the options struct.
+      name: "StorageBucketsDurability",
+      status: "experimental",
+    },
+    {
       // Gates the `locks()` method on a storage bucket.
       name: "StorageBucketsLocks",
       status: "experimental",
@@ -3645,6 +3672,10 @@
     {
       name: "StylusHandwriting",
       base_feature: "none",
+    },
+    {
+      name: "SuggestionPickerDarkModeSupport",
+      status: "stable",
     },
     {
       name: "SvgCrossOriginAttribute",
@@ -3840,6 +3871,10 @@
       name: "UnownedAnimationsSkipCSSEvents",
       status: "stable",
     },
+    {
+      name: "UnrestrictedMeasureUserAgentSpecificMemory",
+      base_feature: "none",
+    },
     // This is a reverse OT used for a phased deprecation, on desktop
     // https://crbug.com/1071424
     {
@@ -3932,13 +3967,6 @@
       status: "experimental",
       public: true,
       base_feature: "none",
-    },
-    {
-      // View transitions.
-      // See https://www.w3.org/TR/css-view-transitions-1/
-      name: "ViewTransition",
-      status: "stable",
-      implied_by: ["ViewTransitionOnNavigation"],
     },
     {
       name: "ViewTransitionLayoutObjectVisualOverflow",
@@ -4254,6 +4282,11 @@
       public: true,
       status: "stable",
       base_feature: "none",
+    },
+    {
+      // https://wicg.github.io/web-preferences-api/
+      name: "WebPreferences",
+      status: "test",
     },
     {
       name: "WebSerialBluetooth",

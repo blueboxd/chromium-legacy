@@ -2209,13 +2209,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-with-region-role.html"));
 }
 
-// TODO(crbug.com/1475950): Test always fails on some Linux builds, not others.
-#if BUILDFLAG(IS_LINUX)
-#define MAYBE_AccessibilityImg DISABLED_AccessibilityImg
-#else
-#define MAYBE_AccessibilityImg AccessibilityImg
-#endif
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MAYBE_AccessibilityImg) {
+// TODO(crbug.com/1475950): Fix and reenable the test.
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DISABLED_AccessibilityImg) {
   RunHtmlTest(FILE_PATH_LITERAL("img.html"));
 }
 
@@ -2409,6 +2404,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityInputRadioUnhidden) {
+  RunHtmlTest(FILE_PATH_LITERAL("input-radio-unhidden.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityInputRadioWrappedLabel) {
   RunHtmlTest(FILE_PATH_LITERAL("input-radio-wrapped-label.html"));
 }
@@ -2551,8 +2551,15 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityId) {
   RunHtmlTest(FILE_PATH_LITERAL("id.html"));
 }
 
+// Flaky on Android - crbug.com/1488592
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_AccessibilityImgFormFormControls \
+  DISABLED_AccessibilityImgFormFormControls
+#else
+#define MAYBE_AccessibilityImgFormFormControls AccessibilityImgFormFormControls
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityImgFormFormControls) {
+                       MAYBE_AccessibilityImgFormFormControls) {
   RunFormControlsTest(FILE_PATH_LITERAL("img-form.html"));
 }
 
@@ -3048,8 +3055,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("select-follows-focus-multiselect.html"));
 }
 
-// Flaky on Android - crbug.com/1286650
-#if BUILDFLAG(IS_ANDROID)
+// Flaky on Android and Fuchsia - crbug.com/1286650, crbug.com/1491059
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_AccessibilitySelectList DISABLED_AccessibilitySelectList
 #else
 #define MAYBE_AccessibilitySelectList AccessibilitySelectList

@@ -39,6 +39,7 @@ source_set("editor_menu") {
   deps = [
     ":utils",
     ":views",
+    "//ash/webui/settings/public/constants:mojom",
     "//base",
     "//chromeos/components/editor_menu/public/cpp",
     "//chromeos/crosapi/mojom",
@@ -77,7 +78,6 @@ source_set("views") {
     "//components/vector_icons",
     "//ui/aura",
     "//ui/base",
-    "//ui/chromeos/styles:cros_tokens_color_mappings_generator",
     "//ui/gfx",
     "//ui/views",
   ]

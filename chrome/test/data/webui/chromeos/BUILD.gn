@@ -26,7 +26,7 @@ js_type_check("closure_compile_local") {
 }
 
 js_library("chai_assert") {
-  externs_list = [ "//third_party/chaijs/externs/chai-3.5.js" ]
+  externs_list = [ "//third_party/closure_compiler/externs/chai-3.5.js" ]
 }
 
 js_library("fake_network_config_mojom") {
@@ -54,7 +54,6 @@ group("closure_compile") {
     "account_manager:closure_compile",
     "arc_account_picker:closure_compile",
     "ash_common:closure_compile",
-    "firmware_update:closure_compile",
     "gaia_action_buttons:closure_compile",
     "os_feedback_ui:closure_compile",
     "shimless_rma:closure_compile",

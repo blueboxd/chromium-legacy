@@ -64,11 +64,9 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
   void OnStateChanged(media::mojom::VideoCaptureResultPtr result) override;
   void OnNewBuffer(int32_t buffer_id,
                    media::mojom::VideoBufferHandlePtr buffer_handle) override;
-  void OnBufferReady(
-      media::mojom::ReadyBufferPtr buffer,
-      std::vector<media::mojom::ReadyBufferPtr> scaled_buffers) override;
+  void OnBufferReady(media::mojom::ReadyBufferPtr buffer) override;
   void OnBufferDestroyed(int32_t buffer_id) override;
-  void OnFrameDroppedEarly(media::VideoCaptureFrameDropReason reason) override;
+  void OnFrameDropped(media::VideoCaptureFrameDropReason reason) override;
   void OnNewCropVersion(uint32_t crop_version) override;
 
   void SwitchVideoCaptureHost(

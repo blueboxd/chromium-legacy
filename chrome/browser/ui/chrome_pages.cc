@@ -54,6 +54,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_urls.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -232,11 +233,9 @@ void ShowSiteSettingsImpl(Browser* browser, Profile* profile, const GURL& url) {
                                 url.SchemeIs(chrome::kIsolatedAppScheme))) {
     std::string origin_string = site_origin.Serialize();
     url::RawCanonOutputT<char> percent_encoded_origin;
-    url::EncodeURIComponent(origin_string.c_str(), origin_string.length(),
-                            &percent_encoded_origin);
-    link_destination = chrome::kChromeUISiteDetailsPrefixURL +
-                       std::string(percent_encoded_origin.data(),
-                                   percent_encoded_origin.length());
+    url::EncodeURIComponent(origin_string, &percent_encoded_origin);
+    link_destination = base::StrCat(
+        {chrome::kChromeUISiteDetailsPrefixURL, percent_encoded_origin.view()});
   }
   NavigateParams params(profile, GURL(link_destination),
                         ui::PAGE_TRANSITION_TYPED);
@@ -510,9 +509,14 @@ void ShowSearchEngineSettings(Browser* browser) {
 }
 
 void ShowWebStore(Browser* browser, const base::StringPiece& utm_source_value) {
+  GURL webstore_url = extension_urls::GetWebstoreLaunchURL();
+  // TODO(crbug.com/1488136): Refactor this check into
+  // extension_urls::GetWebstoreLaunchURL() and fix tests relying on it.
+  if (base::FeatureList::IsEnabled(extensions_features::kNewWebstoreURL)) {
+    webstore_url = extension_urls::GetNewWebstoreLaunchURL();
+  }
   ShowSingletonTabIgnorePathOverwriteNTP(
-      browser, extension_urls::AppendUtmSource(
-                   extension_urls::GetWebstoreLaunchURL(), utm_source_value));
+      browser, extension_urls::AppendUtmSource(webstore_url, utm_source_value));
 }
 
 void ShowPrivacySandboxSettings(Browser* browser) {

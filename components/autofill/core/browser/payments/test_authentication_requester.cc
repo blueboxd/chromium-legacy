@@ -73,4 +73,13 @@ void TestAuthenticationRequester::OnOtpAuthenticationComplete(
   }
 }
 
+void TestAuthenticationRequester::OnRiskBasedAuthenticationResponseReceived(
+    const CreditCardRiskBasedAuthenticator::RiskBasedAuthenticationResponse&
+        response) {
+  did_succeed_ = response.did_succeed;
+  if (response.card.has_value()) {
+    number_ = response.card->number();
+  }
+}
+
 }  // namespace autofill

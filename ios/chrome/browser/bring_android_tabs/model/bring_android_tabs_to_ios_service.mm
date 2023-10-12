@@ -21,18 +21,17 @@
 #import "components/sync/service/sync_user_settings.h"
 #import "components/sync_device_info/device_info.h"
 #import "components/sync_sessions/session_sync_service.h"
-#import "ios/chrome/browser/bring_android_tabs/model/features.h"
 #import "ios/chrome/browser/bring_android_tabs/model/metrics.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
-#import "ios/chrome/browser/synced_sessions/distant_session.h"
-#import "ios/chrome/browser/synced_sessions/distant_tab.h"
-#import "ios/chrome/browser/synced_sessions/synced_sessions.h"
-#import "ios/chrome/browser/synced_sessions/synced_sessions_util.h"
-#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/synced_sessions/model/distant_session.h"
+#import "ios/chrome/browser/synced_sessions/model/distant_tab.h"
+#import "ios/chrome/browser/synced_sessions/model/synced_sessions.h"
+#import "ios/chrome/browser/synced_sessions/model/synced_sessions_util.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_params.h"
 #import "ui/base/device_form_factor.h"
 
 namespace {
@@ -121,13 +120,6 @@ void BringAndroidTabsToIOSService::LoadTabs() {
     return;
   }
 
-  // Checks feature flag and starts the experiment; early returns if the prompt
-  // should NOT be shown.
-  if (GetBringYourOwnTabsPromptType() ==
-      BringYourOwnTabsPromptType::kDisabled) {
-    return;
-  }
-
   // In case the user is previously eligible for the prompt but not
   // anymore, clear the tabs so that future calls to `GetNumberOfAndroidTabs()`
   // will return 0 and the caller won't show the prompt.
@@ -171,9 +163,8 @@ void BringAndroidTabsToIOSService::OpenTabsAtIndices(
       GetDefaultNumberOfTabsToLoadSimultaneously();
   for (int i = 0; i < tab_count; i++) {
     const bool instant_load = i < maximum_instant_load_tabs;
-    OpenDistantTabInBackground(GetTabAtIndex(indices[i]), in_incognito,
-                               instant_load, url_loader,
-                               UrlLoadStrategy::NORMAL);
+    OpenDistantTab(GetTabAtIndex(indices[i]), in_incognito, instant_load,
+                   url_loader, UrlLoadStrategy::NORMAL);
   }
 }
 

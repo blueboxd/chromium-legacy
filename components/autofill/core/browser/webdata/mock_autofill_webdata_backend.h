@@ -44,10 +44,17 @@ class MockAutofillWebDataBackend : public AutofillWebDataBackend {
               NotifyOfCreditCardChanged,
               (const CreditCardChange& change),
               (override));
-  MOCK_METHOD(void, NotifyOfMultipleAutofillChanges, (), (override));
+  MOCK_METHOD(void,
+              NotifyOfMultipleAutofillChanges,
+              (syncer::ModelType model_type),
+              (override));
   MOCK_METHOD(void, NotifyOfAddressConversionCompleted, (), (override));
   MOCK_METHOD(void,
               NotifyThatSyncHasStarted,
+              (syncer::ModelType model_type),
+              (override));
+  MOCK_METHOD(void,
+              NotifyOnSyncUpdatesReceived,
               (syncer::ModelType model_type),
               (override));
 };

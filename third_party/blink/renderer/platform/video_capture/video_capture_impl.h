@@ -10,6 +10,8 @@
 
 #include "base/feature_list.h"
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/unsafe_shared_memory_pool.h"
 #include "base/memory/weak_ptr.h"
@@ -124,11 +126,9 @@ class PLATFORM_EXPORT VideoCaptureImpl
   void OnNewBuffer(
       int32_t buffer_id,
       media::mojom::blink::VideoBufferHandlePtr buffer_handle) override;
-  void OnBufferReady(
-      media::mojom::blink::ReadyBufferPtr buffer,
-      Vector<media::mojom::blink::ReadyBufferPtr> scaled_buffers) override;
+  void OnBufferReady(media::mojom::blink::ReadyBufferPtr buffer) override;
   void OnBufferDestroyed(int32_t buffer_id) override;
-  void OnFrameDroppedEarly(media::VideoCaptureFrameDropReason reason) override;
+  void OnFrameDropped(media::VideoCaptureFrameDropReason reason) override;
   void OnNewCropVersion(uint32_t crop_version) override;
 
   void ProcessFeedback(const media::VideoCaptureFeedback& feedback);
@@ -173,7 +173,7 @@ class PLATFORM_EXPORT VideoCaptureImpl
 
    private:
     // Set by constructor.
-    VideoCaptureImpl& video_capture_impl_;
+    const raw_ref<VideoCaptureImpl, ExperimentalRenderer> video_capture_impl_;
     int32_t buffer_id_;
     media::mojom::blink::VideoFrameInfoPtr frame_info_;
     // Set by Initialize().
@@ -193,21 +193,15 @@ class PLATFORM_EXPORT VideoCaptureImpl
 
   using BufferFinishedCallback = base::OnceClosure;
 
-  static void BindVideoFramesOnMediaThread(
+  static void BindVideoFrameOnMediaThread(
       media::GpuVideoAcceleratorFactories* gpu_factories,
       std::unique_ptr<VideoFrameBufferPreparer> frame_preparer,
-      std::vector<std::unique_ptr<VideoFrameBufferPreparer>>
-          scaled_frame_preparers,
-      base::OnceCallback<
-          void(std::unique_ptr<VideoFrameBufferPreparer>,
-               std::vector<std::unique_ptr<VideoFrameBufferPreparer>>)>
+      base::OnceCallback<void(std::unique_ptr<VideoFrameBufferPreparer>)>
           on_frame_ready_callback,
       base::OnceCallback<void()> on_gpu_context_lost);
   void OnVideoFrameReady(
       base::TimeTicks reference_time,
-      std::unique_ptr<VideoFrameBufferPreparer> frame_preparer,
-      std::vector<std::unique_ptr<VideoFrameBufferPreparer>>
-          scaled_frame_preparers);
+      std::unique_ptr<VideoFrameBufferPreparer> frame_preparer);
 
   void OnAllClientsFinishedConsumingFrame(
       int buffer_id,
@@ -268,7 +262,8 @@ class PLATFORM_EXPORT VideoCaptureImpl
   mojo::PendingRemote<media::mojom::blink::VideoCaptureHost>
       pending_video_capture_host_;
   mojo::Remote<media::mojom::blink::VideoCaptureHost> video_capture_host_;
-  media::mojom::blink::VideoCaptureHost* video_capture_host_for_testing_;
+  raw_ptr<media::mojom::blink::VideoCaptureHost, ExperimentalRenderer>
+      video_capture_host_for_testing_;
 
   mojo::Receiver<media::mojom::blink::VideoCaptureObserver> observer_receiver_{
       this};
@@ -293,7 +288,8 @@ class PLATFORM_EXPORT VideoCaptureImpl
   int num_first_frame_logs_ = 0;
 
   // Methods of |gpu_factories_| need to run on |media_task_runner_|.
-  media::GpuVideoAcceleratorFactories* gpu_factories_ = nullptr;
+  raw_ptr<media::GpuVideoAcceleratorFactories, ExperimentalRenderer>
+      gpu_factories_ = nullptr;
   scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   bool gmb_not_supported_ = false;

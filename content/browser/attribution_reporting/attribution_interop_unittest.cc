@@ -9,9 +9,7 @@
 #include "base/base_paths.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "base/test/gmock_expected_support.h"
 #include "base/test/scoped_feature_list.h"
@@ -30,13 +28,11 @@ namespace content {
 
 namespace {
 
-constexpr char kDefaultConfigFileName[] = "default_config.json";
+using ::testing::AllOf;
+using ::testing::Field;
+using ::testing::UnorderedElementsAreArray;
 
-base::Value::Dict ReadJsonFromFile(const base::FilePath& path) {
-  std::string contents;
-  EXPECT_TRUE(base::ReadFileToString(path, &contents));
-  return base::test::ParseJsonDict(contents);
-}
+constexpr char kDefaultConfigFileName[] = "default_config.json";
 
 base::FilePath GetInputDir() {
   base::FilePath input_dir;
@@ -65,23 +61,30 @@ std::vector<base::FilePath> GetInputs() {
   return input_paths;
 }
 
-void ProcessReports(base::Value::Dict& dict, base::StringPiece key) {
-  base::Value::List* list = dict.FindList(key);
-  if (!list) {
-    return;
+void PreProcessOutput(AttributionInteropOutput& output) {
+  // Ensure that integral values for this field are replaced with the equivalent
+  // double, since they are equivalent at the JSON level.
+  for (auto& report : output.reports) {
+    base::Value::Dict* dict = report.payload.GetIfDict();
+    if (!dict) {
+      continue;
+    }
+
+    base::Value* rate = dict->Find("randomized_trigger_rate");
+    if (!rate || !rate->is_int()) {
+      continue;
+    }
+
+    // This coerces the integer to a double.
+    *rate = base::Value(rate->GetDouble());
   }
-  if (list->empty()) {
-    dict.Remove(key);
-    return;
-  }
-  base::ranges::sort(*list);
 }
 
 class AttributionInteropTest : public ::testing::TestWithParam<base::FilePath> {
  public:
   static void SetUpTestSuite() {
     ASSERT_OK_AND_ASSIGN(
-        g_config_, ParseAttributionConfig(ReadJsonFromFile(
+        g_config_, ParseAttributionConfig(base::test::ParseJsonDictFromFile(
                        GetInputDir().AppendASCII(kDefaultConfigFileName))));
   }
 
@@ -109,7 +112,7 @@ AttributionConfig AttributionInteropTest::g_config_;
 // JSON schema.
 TEST_P(AttributionInteropTest, HasExpectedOutput) {
   AttributionConfig config = GetConfig();
-  base::Value::Dict dict = ReadJsonFromFile(GetParam());
+  base::Value::Dict dict = base::test::ParseJsonDictFromFile(GetParam());
 
   if (const base::Value* api_config = dict.Find("api_config")) {
     ASSERT_TRUE(api_config->is_dict());
@@ -119,24 +122,26 @@ TEST_P(AttributionInteropTest, HasExpectedOutput) {
   absl::optional<base::Value> input = dict.Extract("input");
   ASSERT_TRUE(input && input->is_dict());
 
+  absl::optional<base::Value> output = dict.Extract("output");
+  ASSERT_TRUE(output && output->is_dict());
+
   ASSERT_OK_AND_ASSIGN(
-      auto actual_output,
+      auto expected_output,
+      AttributionInteropOutput::Parse(std::move(*output).TakeDict()));
+
+  ASSERT_OK_AND_ASSIGN(
+      AttributionInteropOutput actual_output,
       RunAttributionInteropSimulation(std::move(*input).TakeDict(), config));
 
-  absl::optional<base::Value> expected_output = dict.Extract("output");
-  ASSERT_TRUE(expected_output.has_value());
+  PreProcessOutput(expected_output);
+  PreProcessOutput(actual_output);
 
-  base::Value::Dict& expected_output_dict = expected_output->GetDict();
-
-  for (const char* key :
-       {kEventLevelResultsKey, kDebugEventLevelResultsKey,
-        kAggregatableResultsKey, kDebugAggregatableResultsKey,
-        kVerboseDebugReportsKey, kUnparsableRegistrationsKey}) {
-    ProcessReports(actual_output, key);
-    ProcessReports(expected_output_dict, key);
-  }
-
-  EXPECT_THAT(actual_output, base::test::IsJson(expected_output_dict));
+  EXPECT_THAT(actual_output,
+              AllOf(Field(&AttributionInteropOutput::reports,
+                          UnorderedElementsAreArray(expected_output.reports)),
+                    Field(&AttributionInteropOutput::unparsable_registrations,
+                          UnorderedElementsAreArray(
+                              expected_output.unparsable_registrations))));
 }
 
 INSTANTIATE_TEST_SUITE_P(

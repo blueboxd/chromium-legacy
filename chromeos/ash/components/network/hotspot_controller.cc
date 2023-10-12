@@ -50,9 +50,11 @@ void HotspotController::Init(
 }
 
 void HotspotController::EnableHotspot(HotspotControlCallback callback) {
-  if (current_disable_request_) {
-    NET_LOG(ERROR)
-        << "Failed to enable hotspot as a disable request is in progress";
+  if (current_disable_request_ &&
+      current_disable_request_->disable_reason !=
+          hotspot_config::mojom::DisableReason::kRestart) {
+    NET_LOG(ERROR) << "Failed to enable hotspot as a non-restart disable "
+                      "request is in progress";
     HotspotMetricsHelper::RecordSetTetheringEnabledResult(
         /*enabled=*/true,
         hotspot_config::mojom::HotspotControlResult::kInvalid);
@@ -240,7 +242,7 @@ void HotspotController::CompleteEnableRequest(
   }
 
   if (result == HotspotControlResult::kSuccess) {
-    NotifyHotspotTurnedOn(wifi_turned_off_);
+    NotifyHotspotTurnedOn();
   }
   std::move(current_enable_request_->callback).Run(result);
   current_enable_request_.reset();
@@ -353,9 +355,9 @@ void HotspotController::OnDisableHotspotCompleteForRestart(
   EnableHotspot(base::DoNothing());
 }
 
-void HotspotController::NotifyHotspotTurnedOn(bool wifi_turned_off) {
+void HotspotController::NotifyHotspotTurnedOn() {
   for (auto& observer : observer_list_) {
-    observer.OnHotspotTurnedOn(wifi_turned_off);
+    observer.OnHotspotTurnedOn();
   }
 }
 

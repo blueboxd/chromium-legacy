@@ -20,6 +20,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -69,9 +70,20 @@ void AutofillProviderAndroid::RenderFrameDeleted(
   // actually be shown by the AutofillExternalDelegate of an ancestor frame,
   // which is not notified about `rfh`'s destruction and therefore won't close
   // the popup.
-  if (manager_ &&
-      field_id_.frame_token == LocalFrameToken(rfh->GetFrameToken().value())) {
+  if (manager_ && last_queried_field_rfh_id_ == rfh->GetGlobalId()) {
     OnHidePopup(manager_.get());
+    last_queried_field_rfh_id_ = {};
+  }
+}
+
+void AutofillProviderAndroid::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (manager_ &&
+      last_queried_field_rfh_id_ ==
+          navigation_handle->GetPreviousRenderFrameHostId() &&
+      !navigation_handle->IsSameDocument()) {
+    OnHidePopup(manager_.get());
+    last_queried_field_rfh_id_ = {};
   }
 }
 
@@ -93,24 +105,26 @@ void AutofillProviderAndroid::OnAskForValuesToFill(
   // in response, see OnAutofillAvailable.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  static_cast<ContentAutofillDriver&>(manager->driver())
+      .render_frame_host()
+      ->ForEachRenderFrameHost([this, &field](content::RenderFrameHost* rfh) {
+        LocalFrameToken frame_token(rfh->GetFrameToken().value());
+        if (frame_token == field.host_frame) {
+          last_queried_field_rfh_id_ = rfh->GetGlobalId();
+        }
+      });
+
   // Focus or field value change will also trigger the query, so it should be
   // ignored if the form is same.
-  if (ShouldStartNewSession(manager, form))
+  if (!IsCurrentlyLinkedForm(form)) {
     StartNewSession(manager, form, field, bounding_box);
+  }
 
   if (field.datalist_values.empty()) {
     return;
   }
   bridge_->ShowDatalistPopup(field.datalist_values, field.datalist_labels,
                              field.text_direction == base::i18n::RIGHT_TO_LEFT);
-}
-
-bool AutofillProviderAndroid::ShouldStartNewSession(
-    AndroidAutofillManager* manager,
-    const FormData& form) {
-  // Only start a new session when form or manager is changed, the change of
-  // manager indicates query from other frame and a new session is needed.
-  return !IsCurrentlyLinkedForm(form) || !IsCurrentlyLinkedManager(manager);
 }
 
 void AutofillProviderAndroid::StartNewSession(AndroidAutofillManager* manager,
@@ -181,7 +195,7 @@ void AutofillProviderAndroid::OnTextFieldDidScroll(
     const gfx::RectF& bounding_box) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   FieldInfo field_info;
-  if (!IsCurrentlyLinkedManager(manager) || !IsCurrentlyLinkedForm(form) ||
+  if (!IsCurrentlyLinkedForm(form) ||
       !form_->GetSimilarFieldIndex(field, &field_info.index)) {
     return;
   }
@@ -199,7 +213,7 @@ void AutofillProviderAndroid::OnSelectControlDidChange(
     const FormData& form,
     const FormFieldData& field,
     const gfx::RectF& bounding_box) {
-  if (ShouldStartNewSession(manager, form)) {
+  if (!IsCurrentlyLinkedForm(form)) {
     StartNewSession(manager, form, field, bounding_box);
     // TODO(crbug.com/1478934): Return early at this point?
   }
@@ -265,7 +279,7 @@ void AutofillProviderAndroid::OnFocusOnFormField(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FieldInfo field_info;
-  if (!IsCurrentlyLinkedManager(manager) || !IsCurrentlyLinkedForm(form) ||
+  if (!IsCurrentlyLinkedForm(form) ||
       !form_->GetSimilarFieldIndex(field, &field_info.index)) {
     return;
   }
@@ -282,7 +296,7 @@ void AutofillProviderAndroid::MaybeFireFormFieldDidChange(
     const gfx::RectF& bounding_box) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   FieldInfo field_info;
-  if (!IsCurrentlyLinkedManager(manager) || !IsCurrentlyLinkedForm(form) ||
+  if (!IsCurrentlyLinkedForm(form) ||
       !form_->GetSimilarFieldIndex(field, &field_info.index)) {
     return;
   }
@@ -295,7 +309,7 @@ void AutofillProviderAndroid::MaybeFireFormFieldDidChange(
 void AutofillProviderAndroid::MaybeFireFormFieldVisibilitiesDidChange(
     AndroidAutofillManager* manager,
     const FormData& form) {
-  if (!IsCurrentlyLinkedManager(manager) || !IsCurrentlyLinkedForm(form) ||
+  if (!IsCurrentlyLinkedForm(form) ||
       !base::FeatureList::IsEnabled(
           features::kAndroidAutofillSupportVisibilityChanges)) {
     return;
@@ -413,11 +427,17 @@ gfx::RectF AutofillProviderAndroid::ToClientAreaBound(
 }
 
 void AutofillProviderAndroid::Reset() {
+  manager_ = nullptr;
   form_.reset();
   field_id_ = {};
   field_type_group_ = FieldTypeGroup::kNoGroup;
   triggered_origin_ = {};
   check_submission_ = false;
+
+  // This is a no-op if there is no datalist popup.
+  bridge_->HideDatalistPopup();
+  // TODO(crbug.com/1488233): Also send an unfocus event to make sure that the
+  // Autofill session is truly terminated.
 }
 
 }  // namespace autofill

@@ -12,13 +12,17 @@ source_set("parcel_tracking") {
   deps = [
     ":parcel_tracking_ui",
     "//base",
+    "//components/commerce/core:shopping_service",
     "//components/prefs",
+    "//ios/chrome/browser/commerce/model:shopping_service",
     "//ios/chrome/browser/parcel_tracking:metrics",
+    "//ios/chrome/browser/parcel_tracking:parcel_tracking_step",
     "//ios/chrome/browser/parcel_tracking:util",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
+    "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/common/ui/confirmation_alert",
     "//ios/web/public",
     "//ios/web/public/annotations:custom_text_check_result",
@@ -29,13 +33,22 @@ source_set("parcel_tracking_ui") {
   sources = [
     "parcel_tracking_opt_in_view_controller.h",
     "parcel_tracking_opt_in_view_controller.mm",
+    "parcel_tracking_opt_in_view_controller_delegate.h",
   ]
   deps = [
     "resources:parcel_tracking_icon_new",
     "//base",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/parcel_tracking:util",
+    "//ios/chrome/browser/shared/ui/symbols",
+    "//ios/chrome/browser/shared/ui/table_view/cells",
+    "//ios/chrome/common:string_util",
+    "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/confirmation_alert",
+    "//ios/chrome/common/ui/util",
+    "//net",
     "//ui/base",
+    "//url",
   ]
 }
 

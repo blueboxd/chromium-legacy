@@ -20,26 +20,6 @@ const base::FeatureParam<int> kMaxReportingOriginsPerSiteParam{
     AttributionConfig::RateLimitConfig::
         kDefaultMaxReportingOriginsPerSourceReportingSite};
 
-const base::FeatureParam<base::TimeDelta> kFirstNavigationReportWindowDeadline{
-    &attribution_reporting::features::kConversionMeasurement,
-    "first_report_window_deadline",
-    AttributionConfig::EventLevelLimit::kDefaultFirstReportWindowDeadline};
-
-const base::FeatureParam<base::TimeDelta> kSecondNavigationReportWindowDeadline{
-    &attribution_reporting::features::kConversionMeasurement,
-    "second_report_window_deadline",
-    AttributionConfig::EventLevelLimit::kDefaultSecondReportWindowDeadline};
-
-const base::FeatureParam<base::TimeDelta> kFirstEventReportWindowDeadline{
-    &attribution_reporting::features::kConversionMeasurement,
-    "first_event_report_window_deadline",
-    AttributionConfig::EventLevelLimit::kDefaultFirstReportWindowDeadline};
-
-const base::FeatureParam<base::TimeDelta> kSecondEventReportWindowDeadline{
-    &attribution_reporting::features::kConversionMeasurement,
-    "second_event_report_window_deadline",
-    AttributionConfig::EventLevelLimit::kDefaultSecondReportWindowDeadline};
-
 const base::FeatureParam<base::TimeDelta> kAggregateReportMinDelay{
     &attribution_reporting::features::kConversionMeasurement,
     "aggregate_report_min_delay",
@@ -59,13 +39,6 @@ const base::FeatureParam<double> kEventMaxInfoGain{
     &attribution_reporting::features::kConversionMeasurement,
     "event_max_info_gain",
     AttributionConfig::EventLevelLimit::kDefaultMaxEventInfoGain};
-
-bool AreReportWindowDeadlinesValid(
-    base::TimeDelta first_report_window_deadline,
-    base::TimeDelta second_report_window_deadline) {
-  return !first_report_window_deadline.is_negative() &&
-         first_report_window_deadline < second_report_window_deadline;
-}
 
 }  // namespace
 
@@ -154,26 +127,11 @@ bool AttributionConfig::EventLevelLimit::Validate() const {
     return false;
   }
 
-  if (!AreReportWindowDeadlinesValid(
-          first_navigation_report_window_deadline,
-          second_navigation_report_window_deadline)) {
-    return false;
-  }
-
-  if (!AreReportWindowDeadlinesValid(first_event_report_window_deadline,
-                                     second_event_report_window_deadline)) {
-    return false;
-  }
-
   return true;
 }
 
 bool AttributionConfig::AggregateLimit::Validate() const {
   if (max_reports_per_destination <= 0) {
-    return false;
-  }
-
-  if (aggregatable_budget_per_source <= 0) {
     return false;
   }
 
@@ -212,29 +170,8 @@ AttributionConfig& AttributionConfig::operator=(const AttributionConfig&) =
 AttributionConfig& AttributionConfig::operator=(AttributionConfig&&) = default;
 
 AttributionConfig::EventLevelLimit::EventLevelLimit()
-    : first_navigation_report_window_deadline(
-          kFirstNavigationReportWindowDeadline.Get()),
-      second_navigation_report_window_deadline(
-          kSecondNavigationReportWindowDeadline.Get()),
-      first_event_report_window_deadline(kFirstEventReportWindowDeadline.Get()),
-      second_event_report_window_deadline(
-          kSecondEventReportWindowDeadline.Get()),
-      max_navigation_info_gain(kNavigationMaxInfoGain.Get()),
-      max_event_info_gain(kEventMaxInfoGain.Get()) {
-  if (!AreReportWindowDeadlinesValid(
-          first_navigation_report_window_deadline,
-          second_navigation_report_window_deadline)) {
-    first_navigation_report_window_deadline = kDefaultFirstReportWindowDeadline;
-    second_navigation_report_window_deadline =
-        kDefaultSecondReportWindowDeadline;
-  }
-
-  if (!AreReportWindowDeadlinesValid(first_event_report_window_deadline,
-                                     second_event_report_window_deadline)) {
-    first_event_report_window_deadline = kDefaultFirstReportWindowDeadline;
-    second_event_report_window_deadline = kDefaultSecondReportWindowDeadline;
-  }
-}
+    : max_navigation_info_gain(kNavigationMaxInfoGain.Get()),
+      max_event_info_gain(kEventMaxInfoGain.Get()) {}
 
 AttributionConfig::EventLevelLimit::EventLevelLimit(const EventLevelLimit&) =
     default;

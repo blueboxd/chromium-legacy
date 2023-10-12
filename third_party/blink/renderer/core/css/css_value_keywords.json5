@@ -706,6 +706,7 @@
     // last baseline,
     // first baseline,
     // stretch
+    "anchor-center",
 
     // justify-content
     // start
@@ -885,6 +886,9 @@
 
     // CSS 3 SHAPES
     "margin-box",
+
+    // https://drafts.fxtf.org/css-masking/#valdef-mask-clip-no-clip
+    "no-clip",
 
     //
     // background-size
@@ -1261,6 +1265,7 @@
     // right
     // unsafe
     // safe
+    // anchor-center
     "legacy",
 
     // scroll-behavior

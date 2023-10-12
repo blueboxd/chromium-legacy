@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
 
 class Browser;
@@ -69,8 +68,11 @@ class SearchEngineChoiceService : public KeyedService {
   bool WasChoiceMadeInFRE() const;
 
   // Returns the list of search engines.
+  // The search engine details returned by this function will be the canonical
+  // ones and will not be affected by changes in search engine details from the
+  // settings page.
   // Virtual to be able to mock in tests.
-  virtual std::vector<std::unique_ptr<TemplateURLData>> GetSearchEngines();
+  virtual std::vector<std::unique_ptr<TemplateURL>> GetSearchEngines();
 
   // Disables the display of the Search Engine Choice dialog for testing. When
   // `dialog_disabled` is true, `CanShowDialog` will return false.

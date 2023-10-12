@@ -11,7 +11,8 @@ load("./clang_code_coverage_wrapper.star", "clang_code_coverage_wrapper")
 load("./platform.star", "platform")
 load("./rewrapper_cfg.star", "rewrapper_cfg")
 
-__filegroups = {}
+def __filegroups(ctx):
+    return {}
 
 def __parse_rewrapper_cmdline(ctx, cmd):
     if not "rewrapper" in cmd.args[0]:
@@ -100,7 +101,7 @@ def __rewrite_rewrapper(ctx, cmd):
         })
     ctx.actions.fix(
         args = args,
-        reproxy_config = json.encode(reproxy_config)
+        reproxy_config = json.encode(reproxy_config),
     )
 
 def __strip_rewrapper(ctx, cmd):
@@ -163,7 +164,7 @@ __handlers = {
 
 def __use_remoteexec(ctx):
     if "args.gn" in ctx.metadata:
-        gn_args = gn.parse_args(ctx.metadata["args.gn"])
+        gn_args = gn.args(ctx)
         if gn_args.get("use_remoteexec") == "true":
             return True
     return False
@@ -213,6 +214,15 @@ def __step_config(ctx, step_config):
         if rule["name"].startswith("clang/") or rule["name"].startswith("clang-cl/"):
             if not rule.get("action"):
                 fail("clang rule %s found without action" % rule["name"])
+
+            # TODO(b/294160948): reclient doesn't work well with cros wrapper symlink tricks.
+            cros_rule = {
+                "name": rule["name"] + "/cros",
+                "action": rule["action"],
+                "command_prefix": "../../build/cros_cache/",
+                "use_remote_exec_wrapper": True,
+            }
+            new_rules.append(cros_rule)
             new_rule = {
                 "name": rule["name"],
                 "action": rule["action"],
@@ -244,6 +254,7 @@ def __step_config(ctx, step_config):
             "platform": p,
             "labels": {
                 "type": "tool",
+                "siso_rule": rule["name"],
             },
             "canonicalize_working_dir": rule.get("canonicalize_dir", False),
             # TODO: b/297807325 - Siso wants to handle local execution. However,

@@ -87,7 +87,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.BandwidthOverallBytesPerSecond2" units="bytes/second"
-    expires_after="2023-12-10">
+    expires_after="2024-03-31">
   <owner>qinmin@chromium.org</owner>
   <summary>
     Overall bandwidth seen for a completed download. This includes all file
@@ -297,16 +297,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Download.DangerousFile.DownloadValidatedByType"
-    enum="SBClientDownloadExtensions" expires_after="2023-10-08">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    User chose to save a download which was marked DANGEROUS_FILE. Grouped by
-    the type of file.
-  </summary>
-</histogram>
-
 <histogram name="Download.Database.IsAvailable" enum="BooleanAvailable"
     expires_after="never">
 <!-- expires-never: Helpful to track download database issue. -->
@@ -477,6 +467,15 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Download.IOSDownloadBundledPassKitResult"
+    enum="DownloadPassKitResult" expires_after="2024-10-14">
+  <owner>sdefresne@chromium.org</owner>
+  <owner>ewannpv@chromium.org</owner>
+  <summary>
+    Recorded when a user attempts to download a bundled PassKit file on iOS.
+  </summary>
+</histogram>
+
 <histogram name="Download.IOSDownloadCalendarFileUI"
     enum="DownloadCalendarFileUI" expires_after="2023-10-25">
   <owner>sdefresne@chromium.org</owner>
@@ -490,7 +489,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.IOSDownloadedFileAction" enum="DownloadedFileAction"
-    expires_after="2024-01-28">
+    expires_after="2024-03-31">
   <owner>sdefresne@chromium.org</owner>
   <owner>ewannpv@chromium.org</owner>
   <owner>mrefaat@chromium.org</owner>
@@ -525,7 +524,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.IOSDownloadFileResult" enum="DownloadFileResult"
-    expires_after="2024-01-28">
+    expires_after="2024-03-31">
   <owner>sdefresne@chromium.org</owner>
   <owner>ewannpv@chromium.org</owner>
   <owner>mrefaat@chromium.org</owner>
@@ -544,7 +543,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.IOSDownloadFileUIGoogleDrive"
-    enum="DownloadFileUIGoogleDrive" expires_after="2024-01-28">
+    enum="DownloadFileUIGoogleDrive" expires_after="2024-03-31">
   <owner>sdefresne@chromium.org</owner>
   <owner>ewannpv@chromium.org</owner>
   <owner>mrefaat@chromium.org</owner>
@@ -579,10 +578,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.IOSDownloadPassKitResult"
-    enum="DownloadPassKitResult" expires_after="2024-02-14">
+    enum="DownloadPassKitResult" expires_after="2024-10-14">
   <owner>sdefresne@chromium.org</owner>
   <owner>ewannpv@chromium.org</owner>
-  <owner>mrefaat@chromium.org</owner>
   <summary>
     Recorded when a user attempts to download a PassKit file on iOS.
   </summary>
@@ -791,15 +789,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Download.ParallelDownload.CreationFailureReason"
-    enum="InterruptReason" expires_after="2021-04-25">
-  <owner>qinmin@chromium.org</owner>
-  <summary>
-    Records the received failure reason after sending a parallel download
-    request.
-  </summary>
-</histogram>
-
 <histogram base="true" name="Download.PathGenerationEvent"
     enum="DownloadPathGenerationEvent" expires_after="never">
 <!-- expires-never: Monitors download system health. -->
@@ -836,16 +825,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records various types of messages representing the state of the downloads as
     they are shown on the download progress infobar on android.
-  </summary>
-</histogram>
-
-<histogram name="Download.ResultsRenderedTime" units="ms" expires_after="M90">
-  <owner>calamity@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
-  <summary>
-    Records the time taken to load the downloads Web UI and render (at least) a
-    screen full of items. This is roughly equivalent to 'time to first
-    meaningful paint' for the downloads page.
   </summary>
 </histogram>
 
@@ -1116,17 +1095,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Download.Shelf.VisibleTime" units="ms"
-    expires_after="2023-11-20">
-  <owner>chlily@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    The time that the download shelf was visible until it was closed. This
-    histogram excludes times when DoUnhide() and DoHide() are called (i.e., when
-    the full screen state changes).
-  </summary>
-</histogram>
-
 <histogram name="Download.ShelfContextMenuAction"
     enum="DownloadShelfContextMenuAction" expires_after="2024-02-25">
   <owner>chlily@chromium.org</owner>
@@ -1255,13 +1223,6 @@ chromium-metrics-reviews@google.com.
     there is no warning shown event logged (the NOT_ADDED_MISSING_FIRST_WARNING
     bucket in DownloadAddWarningActionEventOutcome).
   </summary>
-</histogram>
-
-<histogram name="Download.WinFileMoveError" enum="WinIFileOperationError"
-    expires_after="2023-10-12">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>Records the OS error code when moving a file on windows.</summary>
 </histogram>
 
 </histograms>

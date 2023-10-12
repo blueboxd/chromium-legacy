@@ -389,6 +389,9 @@ Si cette règle est désactivée ou n'est pas configurée, les paramètres de re
 <translation id="1372618949173323717">Désactiver JavaScript</translation>
 <translation id="1376119291123231789">Activer le mode avancé de recharge de la batterie</translation>
 <translation id="1376765488559847650">Importation cloud</translation>
+<translation id="1379689277107868399">Si la règle est définie sur "DoNotPrompt" ou n'est pas configurée, <ph name="PRODUCT_NAME" /> n'invite pas automatiquement l'utilisateur à s'authentifier de nouveau auprès du navigateur.
+
+Si elle est définie sur "PromptInTab", lorsque l'authentification de l'utilisateur expire, un nouvel onglet avec la page de connexion Google s'ouvre immédiatement. Cela ne se produit que si la <ph name="CHROME_SYNC_NAME" /> est utilisée.</translation>
 <translation id="1384459581748403878">Référence : <ph name="REFERENCE_URL" /></translation>
 <translation id="1384594066274112751">Cette règle détermine que toute URL correspondant à un ou plusieurs des formats qu'elle spécifie (avec le format de filtre <ph name="URL_BLOCKLIST_POLICY_NAME" />) ne sera jamais supprimée par le navigateur.
       Cela s'applique à la suppression de la pression sur la mémoire et du mode Haute efficacité.
@@ -734,6 +737,7 @@ Si cette règle n'est pas configurée, les utilisateurs peuvent ajouter des exce
 <translation id="165769015320654523">Autoriser automatiquement ces sites à se connecter aux appareils HID correspondant aux ID produit et du fournisseur indiqués.</translation>
 <translation id="1659406551862245683">Le comportement par défaut du redimensionnement du clavier virtuel est modifié pour que la fenêtre d'affichage de mise en page soit redimensionnée</translation>
 <translation id="166427968280387991">Serveur proxy</translation>
+<translation id="1670638264428789878">Activer la fonctionnalité d'ensembles de sites Web associés</translation>
 <translation id="1673097259557436886">Toujours indiquer aux sites Web qu'aucun mode de paiement n'est enregistré</translation>
 <translation id="1674287836076801014">SAML</translation>
 <translation id="1675002386741412210">Compatible avec :</translation>
@@ -965,6 +969,11 @@ La disponibilité des extensions est toujours contrôlée par d'autres règles.<
 <translation id="1861206724856734193">Définit la liste des règles de prévention des fuites de données.</translation>
 <translation id="1862267110714201519">Désactiver la fonctionnalité Fenêtre fantôme.</translation>
 <translation id="1865417998205858223">Autorisations de clés</translation>
+<translation id="1865867000796030567">Si cette règle est activée, la valeur de la clé du fichier manifeste <ph name="REQUIRED_PLATFORM_VERSION" /> de l'application kiosque lancée automatiquement sans délai est utilisée comme préfixe de la version cible pour la mise à jour automatique.
+
+Si cette règle est désactivée ou pas configurée, la clé du fichier manifeste <ph name="REQUIRED_PLATFORM_VERSION" /> est ignorée et la mise à jour automatique s'effectue normalement.
+
+Avertissement : Ne déléguez pas le contrôle de la version <ph name="PRODUCT_OS_NAME" /> à une application kiosque, car l'appareil risquerait de ne pas recevoir les mises à jour logicielles ni les correctifs de sécurité essentiels. Si vous déléguez le contrôle de la version <ph name="PRODUCT_OS_NAME" />, vous exposez les utilisateurs à des risques.</translation>
 <translation id="186719019195685253">Indique l'action à effectuer lorsque le délai d'inactivité est atteint en cas de fonctionnement sur une source d'alimentation CA.</translation>
 <translation id="1869688072690234823">Cette règle permet de contrôler les facteurs WebAuthn qui peuvent être utilisés.
 
@@ -1213,6 +1222,11 @@ Cette règle n'a aucune incidence lorsque la règle <ph name="DEVICE_SCREENSAVER
       Si cette règle n'est pas configurée ou qu'aucun mode de déverrouillage rapide ne figure dans la liste, aucun de ces modes n'est disponible pour les appareils gérés.
 
       Cette règle étant obsolète, veuillez utiliser à la place la règle <ph name="QUICK_UNLOCK_MODE_ALLOW_LIST_POLICY_NAME" /></translation>
+<translation id="2035995535603698706">Si cette règle est activée, les images tierces d'une page sont autorisées à afficher une commande d'authentification.
+
+Si cette règle est désactivée ou n'est pas configurée, les images tierces ne sont pas autorisées à afficher une commande d'authentification.
+
+Cette règle est habituellement désactivée pour protéger les utilisateurs contre l'hameçonnage.</translation>
 <translation id="2036522553891755455">Si cette règle est activée, la fonction de détection de partages (fonctionnalité Partages de fichiers en réseau de <ph name="PRODUCT_NAME" />) utilise le protocole <ph name="NETBIOS_PROTOCOL" /> pour détecter les partages sur le réseau. Si elle est désactivée, ce protocole n'est pas utilisé pour la détection des partages.
 
       Si cette règle n'est pas configurée, le protocole est, par défaut, désactivé pour les utilisateurs gérés et activé pour les autres.</translation>
@@ -1380,6 +1394,19 @@ Si cette règle n'est pas configurée : pour les utilisateurs standards, c'est 
       Pour en savoir plus sur les sessions <ph name="WEBXR_AR_SESSION_ENUM_VALUE" />, veuillez consulter la spécification <ph name="WEBXR_AR_MODULE_API_NAME" />.</translation>
 <translation id="2175353308236295184">Objet de configuration JSON propre à l'appli avec un ensemble de paires clé-valeur tel que : "managedConfiguration": { "key1": value1, "key2": value2 }. Les clés sont définies dans le fichier manifeste de l'appli.</translation>
 <translation id="2176115444876446233">Empêcher les utilisateurs de collecter une trace des performances au niveau du système.</translation>
+<translation id="2177382213857119200">Permet de contrôler si la fonctionnalité de navigation sécurisée de <ph name="PRODUCT_NAME" /> est activée ou non, ainsi que le mode dans lequel elle est définie.
+
+      Si cette règle est définie sur "NoProtection" (valeur 0), la navigation sécurisée n'est jamais active.
+
+      Si cette règle est définie sur "StandardProtection" (valeur 1, qui correspond à la valeur par défaut), la navigation sécurisée est toujours active et en mode de protection standard.
+
+      Si cette règle est définie sur "EnhancedProtection" (valeur 2), la navigation sécurisée est toujours active et en mode de protection renforcée. Ce mode offre une meilleure sécurité, mais nécessite de partager plus d'informations de navigation avec Google.
+
+      Si vous définissez cette règle comme obligatoire, les utilisateurs ne peuvent pas modifier ni ignorer le paramètre de navigation sécurisée dans <ph name="PRODUCT_NAME" />.
+
+      Si cette règle n'est pas configurée, la navigation sécurisée est en mode de protection standard. Toutefois, les utilisateurs peuvent modifier ce paramètre.
+
+      Pour en savoir plus sur la navigation sécurisée, rendez-vous sur https://support.google.com/chrome?p=safe_browsing_preferences.</translation>
 <translation id="2177696016354404697">Toujours désactiver l'écran de confidentialité</translation>
 <translation id="2178899310296064282">Appliquer au moins le mode restreint modéré sur YouTube</translation>
 <translation id="2180958780733364832">Contrôler l'utilisation du mode sans interface graphique</translation>
@@ -1801,6 +1828,13 @@ Remarque : Si vous ne renseignez pas un champ, toutes les valeurs seront prises
 
       Les utilisateurs ne peuvent pas modifier les dossiers dans lesquels les favoris sont placés (bien qu'ils puissent les masquer dans la barre de favoris). Le nom du dossier par défaut est "Favoris gérés", mais vous pouvez le modifier en ajoutant à la règle un sous-dictionnaire contenant la clé unique "<ph name="TOPLEVEL_NAME" />" avec le nom de dossier souhaité comme valeur. Les favoris gérés ne sont pas synchronisés avec le compte utilisateur, et les extensions ne peuvent pas les modifier.</translation>
 <translation id="2552966063069741410">Fuseau horaire</translation>
+<translation id="2554010621206996293">Cette règle permet de contrôler l'activation de la fonctionnalité d'ensembles de sites Web associés.
+
+Elle remplace la règle <ph name="FIRST_PARTY_SETS_ENABLED_POLICY_NAME" />.
+
+Si cette règle est définie sur "True" ou n'est pas configurée, la fonctionnalité d'ensembles de sites Web associés est activée.
+
+Si cette règle est définie sur "False", la fonctionnalité d'ensembles de sites Web associés est désactivée.</translation>
 <translation id="2555244983262829274">Masquer le bouton Accueil dans la barre d'outils</translation>
 <translation id="2562213287271514629">Autoriser le plug-in obsolète <ph name="FLASH_PLUGIN_NAME" /> à être utilisé comme un plug-in <ph name="FLASH_PLUGIN_NAME" /> normal</translation>
 <translation id="2562339630163277285">Spécifie l'URL du moteur de recherche utilisé pour fournir des résultats instantanés. Cette URL doit contenir la chaîne <ph name="SEARCH_TERM_MARKER" />, qui sera remplacée lors de la requête par le texte déjà saisi par l'utilisateur.
@@ -1818,6 +1852,7 @@ Remarque : Si vous ne renseignez pas un champ, toutes les valeurs seront prises
 <translation id="2576324725151524912">Autoriser le mode développeur pour les applis isolées.</translation>
 <translation id="257717978573041245">Activer l'accélération matérielle</translation>
 <translation id="257788512393330403">La saisie du mot de passe est requise toutes les six heures</translation>
+<translation id="2580606791930800692">Lister les règles des contrôles de données.</translation>
 <translation id="2580757713966614760">Cette règle permet de désigner la règle d'accès qui s'applique à la configuration groupée des imprimantes, en déterminant les imprimantes soumises à la règle <ph name="DEVICE_PRINTERS_POLICY_NAME" /> qui sont accessibles aux utilisateurs.
 
       * <ph name="POLICY_ENUM_DEVICEPRINTERSACCESSMODE_BLOCKLISTRESTRICTIONS" /> (valeur 0), <ph name="DEVICE_PRINTERS_BLOCKLIST_POLICY_NAME" /> peut limiter l'accès aux imprimantes spécifiées
@@ -1994,6 +2029,7 @@ Si cette règle est désactivée ou qu'elle n'est pas configurée, les utilisate
 
       Lorsque cette règle est définie sur "False", ou si elle n'est pas configurée, les icônes sont visibles.</translation>
 <translation id="2744751866269053547">Inscrire des gestionnaires de protocoles</translation>
+<translation id="2744980433176488921">Les paramètres F11/F12 utilisent le raccourci qui contient la touche de modification Maj</translation>
 <translation id="2745150813292162313">Autoriser l'activation du partitionnement pour le stockage tiers</translation>
 <translation id="2746016768603629042">Cette règle est obsolète. Veuillez plutôt utiliser la règle "DefaultJavaScriptSetting".
 
@@ -2019,6 +2055,11 @@ Si cette règle est désactivée ou qu'elle n'est pas configurée, les utilisate
 
       Si cette règle est définie sur "False", la visionneuse de PDF ne peut pas annoter ces fichiers.</translation>
 <translation id="2769952903507981510">Configurer le nom de domaine requis pour les hôtes d'accès à distance</translation>
+<translation id="2770376586681635746">Détermine si les utilisateurs peuvent ajouter des comptes Kerberos.
+
+Si cette règle est activée ou n'est pas configurée, les utilisateurs peuvent ajouter des comptes Kerberos via les paramètres de comptes Kerberos sur la page "Paramètres Kerberos". Ils ont le plein contrôle des comptes qu'ils ont ajoutés et peuvent ainsi les modifier ou les supprimer.
+
+Si cette règle est désactivée, les utilisateurs ne peuvent pas ajouter de comptes Kerberos. Ces derniers ne peuvent être ajoutés qu'avec la règle "Configurer les comptes Kerberos". C'est un moyen efficace de verrouiller des comptes.</translation>
 <translation id="2772231477628401250">Utiliser HTTP pour télécharger les mises à jour</translation>
 <translation id="2772955711376920612">Si cette règle est activée, et que les règles <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_POLICY_NAME" /> et <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_POLICY_NAME" /> sont configurées, le mode d'alimentation alternée en heures pleines est activé (s'il est disponible sur l'appareil). Ce mode permet d'économiser l'énergie en faisant fonctionner autant que possible l'appareil sur batterie plutôt que sur secteur pendant les heures pleines. Vous pouvez définir l'heure de début et de fin de ce mode pour chaque jour de la semaine. Tant que le niveau de charge de la batterie reste au-dessus du seuil spécifié, l'appareil fonctionne sur batterie en heures pleines (même s'il est branché sur une prise électrique). Passée l'heure de fin définie, l'appareil repasse sur l'alimentation secteur (s'il est branché sur une prise), mais il ne recharge pas la batterie. L'appareil reprendra son fonctionnement habituel en utilisant l'alimentation secteur et en rechargeant la batterie à l'heure programmée pour le début de la charge.
 
@@ -2452,23 +2493,6 @@ Si elle est désactivée ou n'est pas définie, le menu d'accessibilité flottan
 <translation id="3150351525324499342">Ne pas afficher par défaut l'icône <ph name="PRODUCT_NAME" /> dans la barre d'outils, mais laisser les utilisateurs choisir</translation>
 <translation id="3152135410085709340">Autoriser l'accès aux fichiers locaux aux URL file:// sur ces sites dans le lecteur PDF</translation>
 <translation id="3152425128389603870">Rendre le mode bureau unifié disponible et l'activer par défaut</translation>
-<translation id="3157857846231611820">Liste des paramètres des services des connecteurs Chrome Enterprise à appliquer au connecteur Enterprise <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, qui se déclenche lorsqu'un fichier est joint à Chrome.
-
-      Les champs "<ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" />" permettent de déterminer si le connecteur doit envoyer un fichier en vue d'une analyse lorsqu'il est joint à une page spécifique, ainsi que les tags à inclure dans la demande d'analyse de ce fichier. Un tag correspondant à un format "enable" sera inclus dans la demande d'analyse si l'URL de la page suit un format associé à ce tag, à condition qu'aucun format "disable" associé à ce même tag ne corresponde à l'URL de la page. L'analyse a lieu si au moins un tag doit être inclus dans la demande.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" />" indique à quel fournisseur de services d'analyse correspondent les paramètres.
-
-      Si la valeur du champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" />" est 1, Chrome attend de recevoir une réponse du service d'analyse avant de laisser la page accéder au fichier. Pour toute autre valeur entière, Chrome laisse la page accéder immédiatement au fichier.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" />" permet de définir si Chrome doit bloquer ou autoriser les fichiers protégés par un mot de passe.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" />" permet de spécifier si Chrome doit bloquer ou autoriser les fichiers trop volumineux pour être analysés.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_REQUIRE_JUSTIFICATION_TAGS_FIELD" />" permet d'indiquer les tags pour lesquels le connecteur doit demander à l'utilisateur d'expliquer pourquoi une analyse entraînant l'affichage d'un avertissement est ignorée. Si ce champ n'est pas renseigné, nous partons du principe qu'aucune justification n'est requise.
-
-      Les champs "<ph name="ENTERPRISE_CONNECTOR_CUSTOM_MESSAGES_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_MESSAGE_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LEARN_MORE_URL_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LANGUAGE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_TAG_FIELD" />" permettent de configurer le message à montrer à l'utilisateur lorsqu'un avertissement s'affiche après une analyse dont le résultat révèle un problème. Le message saisi dans le champ ne doit pas comporter plus de 200 caractères. Le champ "learn_more_url" contient une URL fournie par l'administrateur sur laquelle l'utilisateur peut cliquer pour obtenir des informations indiquées par le client et savoir pourquoi l'action a été bloquée. Le champ "language" est facultatif. Il indique la langue dans laquelle est saisi le message. Si ce champ est vide ou contient la valeur "par défaut", un message est proposé par défaut. Le champ "tag" spécifie pour quel type d'analyses le message est affiché. Le champ "custom_messages" peut être vide ou contenir plusieurs entrées (les champs "message" et "tag" devant être renseignés pour chacune d'elles).
-
-      Cette règle nécessite un réglage supplémentaire pour être appliquée. Pour en savoir plus, consultez la page https://support.google.com/chrome/a?p=chrome_enterprise_connector_policies_setting.</translation>
 <translation id="3159375329008977062">L'utilisateur est autorisé à exporter/importer des conteneurs Crostini via l'UI</translation>
 <translation id="3163167792874598128">Si cette règle n'est pas configurée ou si elle est activée, la promo concernant la note sur l'App Store peut être présentée à l'utilisateur au maximum une fois par an.
 Si cette règle est désactivée, l'utilisateur ne verra pas la promo.</translation>
@@ -3350,6 +3374,7 @@ Cette règle est une mesure temporaire et sera supprimée dans une future versio
 <translation id="3870300103958000506">À moins que la règle <ph name="SAFE_BROWSING_ENABLED_POLICY_NAME" /> soit définie sur "False", si la règle <ph name="ADS_SETTINGS_FOR_INTRUSIVE_ADS_SITES_POLICY_NAME" /> est définie sur "1" ou qu'elle n'est pas configurée, les annonces sont autorisées sur tous les sites.
 
       Si cette règle est définie sur 2, les annonces sont bloquées sur les sites présentant des annonces intrusives.</translation>
+<translation id="3876564097829884243">Activer la fonctionnalité EphemeralNetworkPolicies.</translation>
 <translation id="3877517141460819966">Mode d'authentification à deux facteurs intégré</translation>
 <translation id="3877908683993837673">Cette règle détermine la pile logicielle utilisée pour communiquer avec le serveur DNS, c'est-à-dire soit le client DNS du système d'exploitation, soit le client DNS intégré de <ph name="PRODUCT_NAME" />. Cette règle n'a aucune incidence sur les serveurs DNS utilisés : si, par exemple, le système d'exploitation est configuré pour utiliser un serveur DNS d'entreprise, ce même serveur sera utilisé par le client DNS intégré. Elle ne contrôle pas non plus l'utilisation du protocole DNS-over-HTTPS. <ph name="PRODUCT_NAME" /> utilisera toujours le résolveur intégré pour les requêtes DNS-over-HTTPS. Pour plus d'informations sur le contrôle du protocole DNS-over-HTTPS, veuillez consulter la règle <ph name="DNS_OVER_HTTPS_MODE_POLICY_NAME" />.
 
@@ -3465,6 +3490,7 @@ Cette règle est une mesure temporaire et sera supprimée dans une future versio
 <translation id="3977304360459208438">Utiliser le paramètre par défaut pour les suites de chiffrement 3DES dans TLS</translation>
 <translation id="3979738908158213640">URL autorisées à procéder à l'attestation de l'identité de l'appareil lors de l'authentification SAML</translation>
 <translation id="3982322576186033243">Ne pas autoriser les hachages non sécurisés lors de handshakes TLS</translation>
+<translation id="3982465141749620677">Inviter à s'authentifier de nouveau dans un onglet</translation>
 <translation id="3983162212222338509">La résolution DNS du système peut être exécutée dans le processus réseau, en dehors de celui-ci, ou partiellement à l'intérieur et à l'extérieur du processus réseau, en fonction de la configuration du système et des flags de fonctionnalité.</translation>
 <translation id="3986700049001404598">Autoriser les utilisateurs à mettre fin aux processus dans le gestionnaire de tâches Chrome</translation>
 <translation id="398884292557092447">Si cette règle est définie sur "True" ou qu'elle n'est pas configurée, les utilisateurs peuvent contrôler les suggestions de saisie automatique pour les cartes de crédit dans l'interface utilisateur.
@@ -3547,6 +3573,7 @@ Jusqu'à Chrome 114, cette règle exigeait que la règle <ph name="SYNC_DISABLE
 
       Si <ph name="PRODUCT_NAME" /> ne se ferme pas correctement, par exemple si le navigateur ou l'OS plante, les données de navigation seront supprimées lors du prochain chargement du profil.</translation>
 <translation id="4056910949759281379">Désactiver le protocole SPDY</translation>
+<translation id="4057442294431066708">Cette règle contrôle l'option de raccourci sélectionnée pour remapper les événements avec F11/F12 dans la sous-page des touches de remappage. Ces paramètres ne s'appliquent qu'aux claviers ChromeOS et sont désactivés par défaut lorsque la règle n'est pas configurée.</translation>
 <translation id="4061107397839125009">Permet de dresser la liste des formats d'URL pour lesquels les sites ne sont pas autorisés à afficher des notifications.
 
       Si cette règle n'est pas configurée, la règle <ph name="DEFAULT_NOTIFICATIONS_SETTING_POLICY_NAME" /> s'applique pour tous les sites, à condition qu'elle soit définie. Sinon, le paramètre défini par l'utilisateur s'applique.
@@ -3646,6 +3673,7 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="4157594634940419685">Autoriser l'accès à des imprimantes CUPS en natif</translation>
 <translation id="4158531549614162499">Activer la synchronisation de Google Drive via des connexions au réseau mobile</translation>
 <translation id="4160962198980004898">Source de l'adresse MAC de l'appareil lorsqu'il est connecté à une station d'accueil</translation>
+<translation id="4161019158509414446">Contrôle les règles pour la fonctionnalité d'ensembles de sites Web associés.</translation>
 <translation id="4164511138197196839">Si cette règle est activée, les extensions dont la publication est annulée sur le Chrome Web Store sont désactivées dans <ph name="PRODUCT_NAME" />.
 Elle ne s'applique qu'aux extensions installées et mises à jour à partir du Chrome Web Store.
 
@@ -3654,6 +3682,7 @@ Les extensions installées d'office et auto-hébergées sont ignorées. Toutes l
 
 Si la règle est définie sur <ph name="ALLOW_UNPUBLISHED" /> (0) ou n'est pas configurée, les extensions dont la publication est annulée sur le Chrome Web Store sont autorisées.
 Si la règle est définie sur <ph name="DISABLE_UNPUBLISHED" /> (1), les extensions dont la publication est annulée sur le Chrome Web Store sont désactivées.</translation>
+<translation id="4164866067069311355">Contrôle le raccourci utilisé pour déclencher F11/F12</translation>
 <translation id="4165986682804962316">Paramètres des sites</translation>
 <translation id="4166174702671320480">Si cette règle est activée, les règles associées à un groupe atomique qui ne sont pas issues de la source ayant la plus haute priorité dans le groupe sont ignorées.
 
@@ -3707,6 +3736,25 @@ Remarque : Bloquer des URL internes chrome://* et chrome-untrusted://* peut ent
       Dans les sessions Kiosque, il n'y a pas de délai de grâce ni de notification concernant le redémarrage.
 </translation>
 <translation id="4187576366596772431">Bloquer l'API WebHID sur ces sites</translation>
+<translation id="4189100643304138928">Liste des paramètres des services des connecteurs Chrome Enterprise à appliquer au connecteur Enterprise <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, qui se déclenche lorsqu'un fichier est joint à Chrome.
+
+      Les champs "<ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" />" permettent de déterminer si le connecteur doit envoyer un fichier en vue d'une analyse lorsqu'il est joint à une page spécifique, ainsi que les tags à inclure dans la demande d'analyse de ce fichier. Un tag correspondant à un format "enable" sera inclus dans la demande d'analyse si l'URL de la page suit un format associé à ce tag, à condition qu'aucun format "disable" associé à ce même tag ne corresponde à l'URL de la page. L'analyse a lieu si au moins un tag doit être inclus dans la demande.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" />" indique à quel fournisseur de services d'analyse correspondent les paramètres.
+
+      Si la valeur du champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" />" est 1, Chrome attend de recevoir une réponse du service d'analyse avant d'autoriser la page à accéder au fichier. Pour toute autre valeur entière, Chrome autorise la page à accéder immédiatement au fichier.
+
+      Si la valeur du champ "<ph name="ENTERPRISE_CONNECTOR_DEFAULT_ACTION_FIELD" />" est "block", Chrome n'autorise pas la page à accéder au fichier si une erreur survient pendant la communication avec le service d'analyse. Pour toute autre valeur, Chrome autorise la page à accéder au fichier.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" />" permet de définir si Chrome doit bloquer ou autoriser les fichiers protégés par un mot de passe.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" />" permet de spécifier si Chrome doit bloquer ou autoriser les fichiers trop volumineux pour être analysés.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_REQUIRE_JUSTIFICATION_TAGS_FIELD" />" permet d'indiquer les tags pour lesquels le connecteur doit demander à l'utilisateur d'expliquer pourquoi une analyse entraînant l'affichage d'un avertissement est ignorée. Si ce champ n'est pas renseigné, nous partons du principe qu'aucune justification n'est requise.
+
+      Les champs "<ph name="ENTERPRISE_CONNECTOR_CUSTOM_MESSAGES_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_MESSAGE_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LEARN_MORE_URL_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LANGUAGE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_TAG_FIELD" />" permettent de configurer le message à montrer à l'utilisateur lorsqu'un avertissement s'affiche après une analyse dont le résultat révèle un problème. Le message saisi dans le champ ne doit pas comporter plus de 200 caractères. Le champ "learn_more_url" contient une URL fournie par l'administrateur sur laquelle l'utilisateur peut cliquer pour obtenir des informations indiquées par le client et savoir pourquoi l'action a été bloquée. Le champ "language" est facultatif. Il indique la langue dans laquelle est saisi le message. Si ce champ est vide ou contient la valeur "par défaut", un message est proposé par défaut. Le champ "tag" spécifie pour quel type d'analyses le message est affiché. Le champ "custom_messages" peut être vide ou contenir plusieurs entrées (les champs "message" et "tag" devant être renseignés pour chacune d'elles).
+
+      Cette règle nécessite un réglage supplémentaire pour être appliquée. Pour en savoir plus, consultez la page https://support.google.com/chrome/a?p=chrome_enterprise_connector_policies_setting.</translation>
 <translation id="4189872355465413041">Applis système</translation>
 <translation id="4190316993598857632">Activer la modification des favoris</translation>
 <translation id="4192388905594723944">URL permettant de valider le jeton d'authentification du client d'accès à distance</translation>
@@ -3737,6 +3785,9 @@ Remarque : Bloquer des URL internes chrome://* et chrome-untrusted://* peut ent
       Si cette règle n'est pas définie, la résolution DNS du système peut s'exécuter dans le service réseau, en dehors du service réseau, ou partiellement à l'intérieur et à l'extérieur du service réseau, en fonction de la configuration du système et des flags de fonctionnalité.</translation>
 <translation id="4239720644496144453">Le cache n'est pas utilisé pour les applications Android. Si plusieurs utilisateurs installent la même application Android, celle-ci sera à nouveau téléchargée pour chacun d'eux.</translation>
 <translation id="424318624725112807">Activer la mise en surbrillance du curseur de saisie sur l'écran de connexion</translation>
+<translation id="4245159233848584683">Si cette règle est activée ou n'est pas configurée lorsqu'un appareil est hors connexion, et que la connexion automatique sans délai à un compte local de l'appareil est autorisée, <ph name="PRODUCT_OS_NAME" /> affiche une invite de configuration du réseau.
+
+Si cette règle est désactivée, un message d'erreur s'affiche à la place.</translation>
 <translation id="4248277954659222481">Autoriser la lecture automatique des contenus multimédias pour les formats d'URL sur liste d'autorisation</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="4252522848899331223">Autoriser l'utilisateur à contourner l'avertissement de navigation sécurisée</translation>
@@ -3887,6 +3938,11 @@ Cette fonctionnalité a été supprimée dans M112.</translation>
 <translation id="4410236409016356088">Activer la limitation de la bande passante réseau</translation>
 <translation id="4411734231900934213">Différence autorisée, en secondes, entre l'horloge de l'appareil de l'enfant et celle de l'appareil des parents.</translation>
 <translation id="441217499641439905">Désactiver Google Drive en cas de connexion au réseau mobile dans l'application "Fichiers" de <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="4412885120239670573">Si cette règle est activée, la visionneuse de PDF interne est désactivée dans <ph name="PRODUCT_NAME" />, les fichiers PDF sont téléchargés, et les utilisateurs peuvent les ouvrir avec l'application par défaut.
+
+Si cette règle est désactivée, les fichiers PDF sont ouverts, sauf si les utilisateurs ont désactivé le plug-in PDF.
+
+Si cette règle est configurée, les utilisateurs ne peuvent pas la modifier dans <ph name="PRODUCT_NAME" />. Si cette règle n'est pas configurée, les utilisateurs peuvent choisir d'ouvrir le PDF en externe ou non.</translation>
 <translation id="4413453659814156568">Permet de lister les formats d'URL pour lesquels les sites sont autorisés à exécuter JavaScript avec le compilateur JIT (Just In Time) activé.
 
           Pour en savoir plus sur les formats d'URL de site valides, veuillez consulter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. La valeur <ph name="WILDCARD_VALUE" /> n'est pas acceptée pour cette règle.
@@ -3994,6 +4050,7 @@ Si cette règle n'est pas configurée, ou qu'elle est définie sur "Choix laiss�
 <translation id="4482784169143060077">Activer les mises à niveau automatiques vers HTTPS</translation>
 <translation id="4483120730995943109">Les fonctions JavaScript setTimeout() dont le délai d'expiration est défini sur 0 ms ne seront pas ramenées à 1 ms.</translation>
 <translation id="4483649828988077221">Désactiver les mises à jour automatiques</translation>
+<translation id="4483738129334574255">Désactiver le jeu easter egg du dinosaure sur les appareils <ph name="PRODUCT_OS_NAME" /> enregistrés, l'activer dans d'autres circonstances</translation>
 <translation id="4484515651939984695">Définir la durée d'affichage (en secondes) d'un appareil Cast sélectionné via un code d'accès ou un code QR dans la liste des appareils Cast du menu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4485425108474077672">Configurer l'URL de la page "Nouvel onglet"</translation>
 <translation id="4490420545181481759">Les certificats X.509 peuvent encoder des contraintes, telles que des contraintes de nom, dans les extensions du certificat. RFC 5280 spécifie que l'application de ces contraintes sur les certificats d'ancres de confiance est facultative. À partir de <ph name="PRODUCT_NAME" /> 112, de telles contraintes dans les certificats chargées à partir du magasin de certificats de la plate-forme seront désormais appliquées.
@@ -4303,6 +4360,7 @@ Pour les instances <ph name="MS_WIN_NAME" />, les applis et extensions non issue
 
 Pour les instances <ph name="MAC_OS_NAME" />, les applis et extensions non issues du Chrome Web Store ne peuvent être installées d'office que si l'instance est gérée via MDM, associée à un domaine via MCX ou bénéficie de la <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />.</translation>
 <translation id="4742973303930120836">Limiter le mode d'impression d'images de fond</translation>
+<translation id="4744467872051608680">À partir de M119, si cette règle est définie sur "False" ou n'est pas configurée, WebSQL est désactivé, mais peut être activé via le flag Chrome "web-sql-access". Si cette règle est définie sur "True", l'accès WebSQL est activé.</translation>
 <translation id="4745232963710538589">Activer l'extension des insights pour transmettre des statistiques d'utilisation</translation>
 <translation id="4749670563834935149">Activer <ph name="CHROME_ENTERPRISE_DEVICE_TRUST_CONNECTOR" /> pour une liste d'URL sur l'écran de connexion et de verrouillage.
 
@@ -4709,6 +4767,14 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les opti
       Lorsqu'aucune règle spécifique ne prévaut, consultez <ph name="COOKIES_BLOCKED_FOR_URLS_POLICY_NAME" /> et <ph name="COOKIES_ALLOWED_FOR_URLS_POLICY_NAME" />. Les formats d'URL entre ces trois règles ne doivent pas être en conflit.
 
       Pour en savoir plus sur les formats <ph name="URL_LABEL" /> valides, veuillez consulter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. La valeur "<ph name="WILDCARD_VALUE" />" n'est pas acceptée pour cette règle.</translation>
+<translation id="5174547204575752627">Cette règle contrôle la refactorisation récente des API VideoDecoder dans le plug-in PPAPI.
+
+La migration n'affecte que les détails de l'implémentation interne et ne devrait modifier aucun comportement. Toutefois, cette règle peut être utilisée si des applications PPAPI ne fonctionnent pas comme prévu.
+
+Si cette règle n'est pas configurée ou si elle est activée, le navigateur décide quelle implémentation est utilisée.
+Si cette règle est désactivée, le navigateur utilise l'ancienne implémentation jusqu'à ce que la règle expire.
+
+REMARQUE : Seuls les nouveaux processus du moteur de rendu refléteront les modifications apportées à cette règle lorsque le navigateur sera en cours d'exécution.</translation>
 <translation id="5177260184597743704">Règle de configuration du connecteur Chrome Enterprise OnSecurityEvent</translation>
 <translation id="5178479074002209469">Flag booléen spécifiant si les sessions utilisateur non gérées doivent ou non recevoir des notifications et forcer la déconnexion si une mise à jour est requise conformément à cette règle.</translation>
 <translation id="5179853299156742425">URL depuis laquelle le modèle de bureau peut être téléchargé.</translation>
@@ -4726,6 +4792,7 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les opti
 <translation id="519247340330463721">Configurez les règles associées à la navigation sécurisée.</translation>
 <translation id="5194683382395300627">Autoriser l'utilisation de l'<ph name="ASSISTANT_PRODUCT_NAME" /> sur le Web (par ex. : pour activer la modification automatique des mots de passe)</translation>
 <translation id="5196630732055960309">Autoriser l'API File Handling pour ces applis Web</translation>
+<translation id="5205352023880027050">Ne pas activer la fonctionnalité EphemeralNetworkPolicies.</translation>
 <translation id="5206454085187851382">Si <ph name="PRINTERS_ALLOWLIST" /> est sélectionné pour la règle <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />, la définition de <ph name="PRINTERS_BULK_ALLOWLIST_POLICY_NAME" /> indique les imprimantes accessibles aux utilisateurs. Seules les imprimantes dont les ID correspondent aux valeurs définies dans cette règle sont proposées aux utilisateurs. Ces ID doivent correspondre à ceux indiqués dans les champs <ph name="ID_FIELD" /> ou <ph name="GUID_FIELD" /> du fichier spécifié dans la règle <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.</translation>
 <translation id="5207543664699568887">Cette règle détermine si <ph name="PRODUCT_NAME" /> utilise les notifications système sur Linux.
 
@@ -4837,6 +4904,23 @@ Si cette règle n'est pas configurée, la valeur par défaut est de 0 degré, e
           Si cette règle n'est pas configurée, la mise en surbrillance du curseur est initialement désactivée, mais les utilisateurs peuvent l'activer à tout moment.</translation>
 <translation id="528302483493794684">Une configuration de VM. Indique le type de VM que l'utilisateur peut installer, qui sera associée de manière persistante à l'ID de cette configuration, ainsi que les commandes qui s'appliquent à ce type de VM.</translation>
 <translation id="5283457834853986457">Désactiver l'outil de recherche de plug-ins (obsolète)</translation>
+<translation id="5285812323239047712">Liste des paramètres des services des connecteurs <ph name="PRODUCT_NAME" /> Enterprise à appliquer au connecteur Enterprise <ph name="ON_PRINT_ENTERPRISE_CONNECTOR" />, qui se déclenche lorsqu'une page ou un fichier sont imprimés depuis <ph name="PRODUCT_NAME" />.
+
+      Les champs "<ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" />" permettent de déterminer si le connecteur doit envoyer des données en vue d'une analyse lorsque l'impression est déclenchée sur une page spécifique, ainsi que les tags à inclure dans la demande d'analyse. L'analyse a lieu si au moins un tag doit être inclus dans la demande.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" />" indique à quel fournisseur de services d'analyse correspondent les paramètres.
+
+      Si la valeur du champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" />" est 1, <ph name="PRODUCT_NAME" /> attend de recevoir une réponse du service d'analyse avant d'autoriser l'affichage de la boîte de dialogue d'aperçu de l'impression pour la page imprimée. Pour toute autre valeur entière, <ph name="PRODUCT_NAME" /> affiche immédiatement la boîte de dialogue d'aperçu de l'impression.
+
+      Si la valeur du champ "<ph name="ENTERPRISE_CONNECTOR_DEFAULT_ACTION_FIELD" />" est "block", <ph name="PRODUCT_NAME" /> bloque l'impression de la page si une erreur survient pendant la communication avec le service d'analyse. Pour toute autre valeur, <ph name="PRODUCT_NAME" /> autorise la page à s'imprimer.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" />" permet de spécifier si <ph name="PRODUCT_NAME" /> doit bloquer ou autoriser les pages ou fichiers trop volumineux pour être analysés.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_REQUIRE_JUSTIFICATION_TAGS_FIELD" />" permet d'indiquer les tags pour lesquels le connecteur doit demander à l'utilisateur d'expliquer pourquoi une analyse entraînant l'affichage d'un avertissement est ignorée. Si ce champ n'est pas renseigné, nous partons du principe qu'aucune justification n'est requise.
+
+      Les champs "<ph name="ENTERPRISE_CONNECTOR_CUSTOM_MESSAGES_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_MESSAGE_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LEARN_MORE_URL_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LANGUAGE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_TAG_FIELD" />" permettent de configurer le message à montrer à l'utilisateur lorsqu'un avertissement s'affiche après une analyse dont le résultat révèle un problème. L'administrateur est capable de configurer des messages comportant jusqu'à 200 caractères.
+
+      Cette règle nécessite un réglage supplémentaire pour être appliquée. Pour en savoir plus, consultez la page https://support.google.com/chrome/a?p=chrome_enterprise_connector_policies_setting.</translation>
 <translation id="5286579716704722323">Autoriser les utilisateurs à passer les pages d'avertissement SSL</translation>
 <translation id="5288713554963040955">Activer l'affichage de l'écran de configuration de la taille d'affichage lors de la connexion</translation>
 <translation id="5288772341821359899">Si cette règle est définie, la portée du port UDP utilisé par WebRTC est restreinte à l'intervalle de port spécifié (points de terminaison inclus).
@@ -4877,6 +4961,9 @@ Remarque : Cette règle ne s'applique pas aux mises à niveau HSTS.</translatio
 
       Pour en savoir plus sur les formats <ph name="URL_LABEL" /> valides, veuillez consulter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.  Cette règle ne tient compte que de l'origine. Ainsi, tout chemin d'accès dans le format d'URL est ignoré.</translation>
 <translation id="5318185076587284965">Autoriser l'hôte d'accès à distance à utiliser des serveurs de relais</translation>
+<translation id="5321624917465764266">Si cette règle est activée ou n'est pas configurée, les historiques de navigation et de téléchargements peuvent être supprimés dans Chrome, sans que les utilisateurs puissent modifier ce paramètre.
+
+Si cette règle est désactivée, ces deux historiques ne peuvent pas être supprimés. Même si cette règle est désactivée, cela ne garantit pas que ces historiques soient conservés. En effet, les utilisateurs peuvent modifier ou supprimer directement les fichiers de ces historiques. De même, le navigateur peut arriver à expiration ou archiver l'historique partiellement ou intégralement à tout moment.</translation>
 <translation id="5323200200131319468">Activer les commentaires audio sur l'écran de connexion</translation>
 <translation id="5323271643727095577">Ne pas afficher de boîte de dialogue d'annulation quand event.preventDefault() est appelé pour l'événement beforeunload. Afficher la boîte de dialogue d'annulation quand beforeunload event.returnValue est la chaîne vide de l'événement beforeunload.</translation>
 <translation id="5323355956693037267">Activer le clavier à l'écran sur l'écran de connexion</translation>
@@ -5120,6 +5207,9 @@ Cette API a été supprimée dans M112.</translation>
 <translation id="5535256585099022933">Définir l'intervalle du redémarrage</translation>
 <translation id="553806128266843748">Flag booléen spécifiant si la limitation est activée.</translation>
 <translation id="5540885720415375851">Autoriser la détection des appareils en local</translation>
+<translation id="5542235730745104308">Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> utilise les variantes de pages d'erreur intégrées (telles que "Page introuvable"). Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise jamais les variantes de pages d'erreur.
+
+Si cette règle est configurée, les utilisateurs ne peuvent pas la modifier. Si cette règle n'est pas configurée, elle est activée. Toutefois, les utilisateurs peuvent modifier ce paramètre.</translation>
 <translation id="5544059132156503357">Cette règle permet de désigner les types de chiffrement autorisés lors de la demande de tickets Kerberos envoyés par un serveur <ph name="MS_AD_NAME" />.
 
 Configurations possibles :
@@ -5243,6 +5333,31 @@ Lorsqu'elle est définie pour <ph name="PRODUCT_OS_NAME" /> Kiosk, cette règle
 <translation id="5622924058222112599">Activer le processus de déploiement CECPQ2 par défaut</translation>
 <translation id="5623304306796942802">Demander si plusieurs certificats correspondent</translation>
 <translation id="5625771176514429288">Les applis Chrome seront autorisées à s'exécuter sur ces plates-formes.</translation>
+<translation id="5627094573311711592">Configure une liste de règles de contrôle des données pour éviter les fuites de données. Ces fuites peuvent se produire lors de la copie et du collage de données, de l'ajout de fichiers à des pages Web, de l'impression, du téléchargement, etc.
+
+      Chaque règle se compose des éléments suivants :
+      - Propriétés de la source d'une action. Une règle ne se déclenche que si une action utilisateur correspond à tous les champs renseignés dans son champ <ph name="DATA_CONTROLS_SOURCES" />. Pour les sous-champs de liste, il suffit de faire correspondre une entrée. Par exemple, la règle se déclenche dès qu'un format d'URL correspond.
+      - Propriétés de la destination d'une action. Une règle ne se déclenche que si une action utilisateur correspond à tous les champs renseignés dans son champ <ph name="DATA_CONTROLS_DESTINATIONS" />. Pour les sous-champs de liste, il suffit de faire correspondre une entrée. Par exemple, la règle se déclenche dès qu'un format d'URL correspond.
+      - Une liste de restrictions à appliquer aux données des sources.
+
+      Les règles peuvent être ajoutées pour :
+      - Contrôler les données du presse-papiers partagées entre les sources et les destinations.
+      - Contrôler l'impression de n'importe quelle source.
+      - Contrôler les fichiers joints à n'importe quelle destination.
+      - Contrôler les fichiers téléchargés depuis n'importe quelle source.
+
+      Si la règle <ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" /> est définie sur "True", les règles déclenchées sont signalées à l'administrateur.
+      Le niveau de restriction peut être défini sur "ALLOW", "BLOCK", "WARN" ou "REPORT".
+      - Si le niveau de restriction est défini sur "ALLOW", l'action sera autorisée. Cela remplace également les restrictions appliquées par d'autres règles.
+      - Si le niveau de restriction est défini sur "BLOCK", l'action concernée ne sera pas autorisée.
+      - Si le niveau de restriction est défini sur "WARN", l'utilisateur sera averti et pourra choisir de continuer ou d'annuler l'action.
+      - Si le niveau de restriction est défini sur "REPORT", l'action utilisateur ne sera pas interrompue, mais un rapport sera envoyé si la règle <ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" /> est activée.
+
+      Remarques :
+      - Les formats d'URL doivent respecter les conditions énoncées sur https://support.google.com/chrome/a?p=url_blocklist_filter_format.
+      - Pour les règles de prévention des fuites de données propres à <ph name="PRODUCT_OS_NAME" />, consultez la règle <ph name="DATA_LEAK_PREVENTION_RULES_LIST" />.
+
+      Si la règle n'est pas configurée, aucune restriction ne sera appliquée.</translation>
 <translation id="5630352020869108293">Restaurer la dernière session</translation>
 <translation id="5633871703004128675">Activer la fonctionnalité d'accessibilité de mise en surbrillance du curseur de saisie</translation>
 <translation id="5634032995857968056">Activer le bac à sable du conteneur d'appli de moteur de rendu</translation>
@@ -5412,6 +5527,25 @@ Si cette règle est désactivée, la protection des extensions de la <ph name="S
 <translation id="5806128552675651249">Autoriser l'impression uniquement sans images de fond</translation>
 <translation id="5809210507920527553">Contrôle les paramètres du conteneur Linux (Crostini).</translation>
 <translation id="5809728392451418079">Définir le nom à afficher pour les comptes locaux des appareils</translation>
+<translation id="5810916450338110943">Liste des paramètres des services des connecteurs Chrome Enterprise à appliquer au connecteur Enterprise <ph name="ON_FILE_DOWNLOADED_ENTERPRISE_CONNECTOR" />, qui se déclenche lorsqu'un fichier est téléchargé dans Chrome.
+
+      Les champs "<ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" />" permettent de déterminer si le connecteur doit envoyer un fichier en vue d'une analyse lorsque celui-ci est téléchargé à partir d'une page spécifique, ainsi que les tags à inclure dans la demande d'analyse de ce fichier. Un tag correspondant à un format "enable" sera inclus dans la demande d'analyse si l'URL de la page suit un format associé à ce tag, à condition qu'aucun format "disable" associé à ce même tag ne corresponde à l'URL de la page. L'analyse a lieu si au moins un tag doit être inclus dans la demande.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" />" indique à quel fournisseur de services d'analyse correspondent les paramètres.
+
+      Si la valeur du champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" />" est 1, Chrome attend de recevoir une réponse du service d'analyse avant d'autoriser l'utilisateur à accéder au fichier téléchargé. Pour toute autre valeur entière, Chrome autorise l'utilisateur à accéder immédiatement au fichier.
+
+      Si la valeur du champ "<ph name="ENTERPRISE_CONNECTOR_DEFAULT_ACTION_FIELD" />" est "block", Chrome n'autorise pas l'utilisateur à accéder au fichier téléchargé si une erreur survient pendant la communication avec le service d'analyse. Pour toute autre valeur, Chrome autorise l'utilisateur à accéder au fichier téléchargé.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" />" permet de définir si Chrome doit bloquer ou autoriser les fichiers protégés par un mot de passe.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" />" permet de spécifier si Chrome doit bloquer ou autoriser les fichiers trop volumineux pour être analysés.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_REQUIRE_JUSTIFICATION_TAGS_FIELD" />" permet d'indiquer les tags pour lesquels le connecteur doit demander à l'utilisateur d'expliquer pourquoi une analyse entraînant l'affichage d'un avertissement est ignorée. Si ce champ n'est pas renseigné, nous partons du principe qu'aucune justification n'est requise.
+
+      Les champs "<ph name="ENTERPRISE_CONNECTOR_CUSTOM_MESSAGES_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_MESSAGE_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LEARN_MORE_URL_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LANGUAGE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_TAG_FIELD" />" permettent de configurer le message à montrer à l'utilisateur lorsqu'un avertissement s'affiche après une analyse dont le résultat révèle un problème. Le message saisi dans le champ ne doit pas comporter plus de 200 caractères. Le champ "learn_more_url" contient une URL fournie par l'administrateur sur laquelle l'utilisateur peut cliquer pour obtenir des informations indiquées par le client et savoir pourquoi l'action a été bloquée. Le champ "language" est facultatif. Il indique la langue dans laquelle est saisi le message. Si ce champ est vide ou contient la valeur "par défaut", un message est proposé par défaut. Le champ "tag" spécifie pour quel type d'analyses le message est affiché. Le champ "custom_messages" peut être vide ou contenir plusieurs entrées (les champs "message" et "tag" devant être renseignés pour chacune d'elles).
+
+      Cette règle nécessite un réglage supplémentaire pour être appliquée. Pour en savoir plus, consultez la page https://support.google.com/chrome/a?p=chrome_enterprise_connector_policies_setting.</translation>
 <translation id="5814301096961727113">Définir l'état par défaut des commentaires audio sur l'écran de connexion</translation>
 <translation id="5815129011704381141">Redémarrer automatiquement après une mise à jour</translation>
 <translation id="5815990343032461023">Ancien comportement : les applis Chrome Kiosk sont mises à jour par le système d'extension en utilisant l'URL de mise à jour issue du fichier manifeste d'extension, et en mettant en cache le gestionnaire au moyen de l'URL de mise à jour provenant de la règle</translation>
@@ -5643,6 +5777,7 @@ Elle est toujours appliquée pour <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="6042407236638640864">Autoriser les pages avec un en-tête <ph name="CACHE_CONTROL_NO_STORE_NAME" /> à accéder au cache amélioré</translation>
 <translation id="604243460476563291">Désactiver le transfert de fichiers dans les connexions d'assistance à distance avec les administrateurs de l'entreprise</translation>
 <translation id="6042629184389251062">La collecte de métriques incluant les URL n'est pas autorisée</translation>
+<translation id="6045733613334942660">Pilotes de scanner</translation>
 <translation id="6046615715547751255">Ne pas autoriser les contrôles de rapports précis</translation>
 <translation id="6048199181629830227">Activer l'alimentation alternée en heures pleines</translation>
 <translation id="6048690591359317353">Ne pas autoriser l'utilisateur à déconnecter ni modifier manuellement un VPN</translation>
@@ -5738,21 +5873,6 @@ Si cette règle n'est pas configurée ou si la liste ne contient aucune référe
 <translation id="6135398260575578389">La navigation sécurisée est active et en mode de protection renforcée. Ce mode offre une meilleure sécurité, mais nécessite de partager plus d'informations de navigation avec Google.</translation>
 <translation id="6135552820180449830">Crosh (disponible depuis la version 99)</translation>
 <translation id="6138636318340561140">Vérifier en temps réel l'état de la navigation sécurisée pour les URL</translation>
-<translation id="6140635914906859015">Liste des paramètres des services des connecteurs Chrome Enterprise à appliquer au connecteur Enterprise <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" />, qui se déclenche lorsque des données sont collées dans Chrome depuis le presse-papiers ou lorsque du contenu Web est ajouté par glisser-déposer.
-
-      Les champs "<ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" />" permettent de déterminer si le connecteur doit envoyer des données en vue d'une analyse lorsque celles-ci sont saisies dans une page spécifique, ainsi que les tags à inclure dans la demande d'analyse de ces données. Un tag correspondant à un format "enable" sera inclus dans la demande d'analyse si l'URL de la page suit un format associé à ce tag, à condition qu'aucun format "disable" associé à ce même tag ne corresponde à l'URL de la page. L'analyse a lieu si au moins un tag doit être inclus dans la demande.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" />" indique à quel fournisseur de services d'analyse correspondent les paramètres.
-
-      Si la valeur du champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" />" est 1, Chrome attend de recevoir une réponse du service d'analyse avant de laisser la page accéder aux données. Pour toute autre valeur entière, Chrome laisse la page accéder immédiatement aux données.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_MINIMUM_DATA_SIZE" />" indique la taille minimale (en octets) que les données saisies dans Chrome doivent atteindre ou dépasser pour être analysées. Si ce champ n'est pas renseigné, la valeur par défaut est de 100 octets.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_REQUIRE_JUSTIFICATION_TAGS_FIELD" />" permet d'indiquer les tags pour lesquels le connecteur doit demander à l'utilisateur d'expliquer pourquoi une analyse entraînant l'affichage d'un avertissement est ignorée. Si ce champ n'est pas renseigné, nous partons du principe qu'aucune justification n'est requise.
-
-      Les champs "<ph name="ENTERPRISE_CONNECTOR_CUSTOM_MESSAGES_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_MESSAGE_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LEARN_MORE_URL_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LANGUAGE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_TAG_FIELD" />" permettent de configurer le message à montrer à l'utilisateur lorsqu'un avertissement s'affiche après une analyse dont le résultat révèle un problème. Le message saisi dans le champ ne doit pas comporter plus de 200 caractères. Le champ "learn_more_url" contient une URL fournie par l'administrateur sur laquelle l'utilisateur peut cliquer pour obtenir des informations indiquées par le client et savoir pourquoi l'action a été bloquée. Le champ "language" est facultatif. Il indique la langue dans laquelle est saisi le message. Si ce champ est vide ou contient la valeur "par défaut", un message est proposé par défaut. Le champ "tag" spécifie pour quel type d'analyses le message est affiché. Le champ "custom_messages" peut être vide ou contenir plusieurs entrées (les champs "message" et "tag" devant être renseignés pour chacune d'elles).
-
-      Cette règle nécessite un réglage supplémentaire pour être appliquée. Pour en savoir plus, consultez la page https://support.google.com/chrome/a?p=chrome_enterprise_connector_policies_setting.</translation>
 <translation id="6141402445226505817">Toujours utiliser une détection de fuseau horaire standard</translation>
 <translation id="6141944295566709543">Autoriser les utilisateurs à lire des médias lorsque l'appareil est verrouillé</translation>
 <translation id="6142501278956229253">Résolution d'impression de PDF rastérisés</translation>
@@ -5881,6 +6001,9 @@ Le salage doit être une chaîne comprenant entre 8 et 32 caractères.
 <translation id="625580680776945310">Le mode Haute efficacité sera activé.</translation>
 <translation id="6258658183356534534">Contrôlez la fonctionnalité de mise à jour GREASE des indications du client user-agent.</translation>
 <translation id="6261643884958898336">Enregistrer les informations d'identification de l'ordinateur</translation>
+<translation id="6264247808139384018">Si cette règle est activée ou n'est pas configurée, les utilisateurs qui s'authentifient avec un mot de passe peuvent verrouiller l'écran.
+
+Si cette règle est désactivée, les utilisateurs ne peuvent pas verrouiller l'écran (ils peuvent uniquement se déconnecter de leur session utilisateur).</translation>
 <translation id="6265892395051519509">Autoriser l'accès aux capteurs sur ces sites</translation>
 <translation id="6266043141694454734">Détermine si le Chrome Root Store et l'outil de vérification des certificats intégré seront utilisés pour vérifier les certificats de serveur</translation>
 <translation id="6267130578410325007">Par défaut, cette règle autorise le clustering d'agents selon l'origine.
@@ -5938,6 +6061,7 @@ Pour en savoir plus, consultez https://developer.chrome.com/blog/immutable-docum
 <translation id="6299554629216555326">Paramètres de gestion des fenêtres</translation>
 <translation id="6302021021024941085">Désactiver les outils de dépannage de kiosque.</translation>
 <translation id="6303118494824248488">URL de l'image disque à télécharger.</translation>
+<translation id="6303278429164386663">Contrôle l'activation de la fonctionnalité EphemeralNetworkPolicies</translation>
 <translation id="6305373713165475629">Lorsque cette règle est définie, le mode d'impression couleur par défaut est ignoré. Si le mode est indisponible, cette règle est ignorée.</translation>
 <translation id="6308109234708949641">Cette règle active l'enregistreur d'écran pour les utilisateurs de Family Link et lui permet de créer et transcrire un enregistrement d'écran, puis de l'importer dans Drive.
       Cette règle n'affecte pas les autres types d'utilisateurs.
@@ -5990,6 +6114,7 @@ Pour en savoir plus, consultez https://developer.chrome.com/blog/immutable-docum
 
       Remarque : Cette règle ne doit pas être activée si la règle <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> l'est également, car elles partagent la même fonctionnalité côté client. Dans ce cas, le service de synchronisation hébergé par Google est totalement désactivé.</translation>
 <translation id="6320935916601887506">Le nouveau comportement offsetParent sera utilisé par défaut.</translation>
+<translation id="6324274808543634377">Les paramètres F11/F12 utilisent le raccourci qui contient la touche de modification Alt</translation>
 <translation id="6327643515544933974">Paramètres USB Web</translation>
 <translation id="6330882599388782338">Autoriser les sites à accéder aux capteurs</translation>
 <translation id="6331167725613770725">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
@@ -6056,6 +6181,7 @@ AVERTISSEMENT : Faites attention quand vous modifiez ce paramètre, car cela po
       Si cette règle est définie sur "False", les Signed HTTP Exchanges ne peuvent pas être chargés.</translation>
 <translation id="6368011194414932347">Configurer l'URL de la page d'accueil</translation>
 <translation id="6368403635025849609">Autoriser JavaScript sur ces sites</translation>
+<translation id="6371005337713685988">Paramètres de la fonctionnalité d'ensembles de sites Web associés</translation>
 <translation id="6371561334154580937">Afficher la boîte de dialogue de déconnexion sur la dernière fenêtre fermée.</translation>
 <translation id="6372105930898423193">Permet de réactiver le cache des applications même s'il est désactivé par défaut.</translation>
 <translation id="6373299801585455337">Activer les rapports sur le CPU de l'appareil</translation>
@@ -6112,6 +6238,9 @@ Pour en savoir plus sur les anciennes technologies, consultez https://chromestat
 <translation id="6412352702230183710">Autoriser uniquement les hôtes de messagerie natifs au niveau du système</translation>
 <translation id="6416506846917150119">Désactiver l'écriture prédictive lors de la saisie au clavier physique</translation>
 <translation id="6417265370957905582">Assistant Google</translation>
+<translation id="6421254653839955267">Si cette règle est activée, la recherche du CNAME est ignorée. Le nom du serveur est utilisé tel qu'il a été saisi lors de la génération du SPN Kerberos.
+
+Si cette règle est désactivée ou n'est pas configurée, la recherche du CNAME détermine le nom canonique du serveur lors de la génération du SPN Kerberos.</translation>
 <translation id="6424485010103067949"><ph name="OMA_URI" /> :</translation>
 <translation id="6424486395812679373">Procéder aux vérifications de la navigation sécurisée pour tous les fichiers téléchargés</translation>
 <translation id="6433697627431665375">Exclure des sauvegardes les données de <ph name="PRODUCT_NAME" /></translation>
@@ -6249,6 +6378,11 @@ REMARQUE : Cette règle avait une valeur par défaut ("True") incorrectement do
 
           La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure au délai d'inactivité.</translation>
 <translation id="6497085755801788141">Utiliser l'outil de vérification des certificats intégré</translation>
+<translation id="6504720469162323184">Cette règle permet de définir, en millisecondes, le délai de connexion automatique au compte local de l'appareil (spécifié dans la règle <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" />) en l'absence d'action de l'utilisateur sur l'écran de connexion.
+
+Si cette règle n'est pas configurée, le délai est de 0 milliseconde.
+
+Cette règle n'a aucune incidence si la règle <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" /> n'est pas configurée.</translation>
 <translation id="65055701428353978">Configurer cette règle permet de spécifier, pour chaque extension concernée, une liste d'URL de redirection OAuth pouvant être utilisées par les extensions avec l'API <ph name="IDENTITY_API_NAME" /> (<ph name="IDENTITY_API_URL" />), en plus de l'URL de redirection standard https://&lt;extension id&gt;.chromiumapp.org/.
 
 Si cette règle n'est pas configurée ou si la liste d'URL est vide, toutes les applis ou extensions ne peuvent utiliser l'URL de redirection standard que lors de l'utilisation de l'API <ph name="IDENTITY_API_NAME" />.</translation>
@@ -6324,6 +6458,7 @@ Si vous sélectionnez les options suivantes :
       Si cette règle n'est pas configurée, les utilisateurs peuvent sélectionner les paramètres de proxy.
 
       Remarque : Pour consulter des exemples détaillés, accédez au site The Chromium Projects (https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett).</translation>
+<translation id="6559643481486165125">Ne pas inviter à s'authentifier de nouveau</translation>
 <translation id="656130159911161669">Les mises à jour de ChromeOS ignorent la version définie dans le fichier manifeste de l'appli kiosque</translation>
 <translation id="6561396069801924653">Afficher les options d'accessibilité dans le menu de la barre système</translation>
 <translation id="6562889469672829421">Délai d'inactivité de l'utilisateur, en millisecondes, au terme duquel l'écran s'assombrit.</translation>
@@ -6348,6 +6483,7 @@ Si vous sélectionnez les options suivantes :
       Cette règle peut être ignorée par EnabledPlugins et DisabledPluginsExceptions.
 
       Si cette règle n'est pas configurée, l'utilisateur peut utiliser n'importe quel plug-in installé sur le système, à l'exception des plug-ins codés en dur incompatibles, et des plug-ins obsolètes ou dangereux.</translation>
+<translation id="6571055160227165318">Autoriser l'activation de WebSQL via un flag Chrome.</translation>
 <translation id="6574903167639386816">Effacer les données de profil sur le disque à la fin de la session utilisateur</translation>
 <translation id="6575403002861093126">Cette règle permet de spécifier la durée de mise en cache (en heures) des GPO (Group Policy Objects), c'est-à-dire la durée maximale pendant laquelle les GPO peuvent être réutilisés avant d'être de nouveau téléchargés. Au lieu de les télécharger de nouveau à chaque récupération de règle, le système peut réutiliser ceux mis en cache tant que leur version ne change pas.
 
@@ -6423,21 +6559,6 @@ Si cette règle est définie sur "True" (valeur par défaut), le nouveau comport
 
 Si cette règle est définie sur "False", l'ancien comportement est activé.</translation>
 <translation id="663685822663765995">Limiter l'impression en mode couleur</translation>
-<translation id="6637946190026453735">Liste des paramètres des services des connecteurs <ph name="PRODUCT_NAME" /> Enterprise à appliquer au connecteur Enterprise <ph name="ON_PRINT_ENTERPRISE_CONNECTOR" />, qui se déclenche lorsqu'une page ou un fichier sont imprimés depuis <ph name="PRODUCT_NAME" />.
-
-      Les champs "<ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" />" permettent de déterminer si le connecteur doit envoyer des données en vue d'une analyse lorsque l'impression est déclenchée sur une page spécifique, ainsi que les tags à inclure dans la demande d'analyse. L'analyse a lieu si au moins un tag doit être inclus dans la demande.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" />" indique à quel fournisseur de services d'analyse correspondent les paramètres.
-
-      Si la valeur du champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" />" est 1, <ph name="PRODUCT_NAME" /> attend de recevoir une réponse du service d'analyse avant d'autoriser l'affichage de la boîte de dialogue d'aperçu de l'impression pour la page imprimée. Pour toute autre valeur entière, <ph name="PRODUCT_NAME" /> affiche immédiatement la boîte de dialogue d'aperçu de l'impression.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" />" permet de spécifier si <ph name="PRODUCT_NAME" /> doit bloquer ou autoriser les pages ou fichiers trop volumineux pour être analysés.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_REQUIRE_JUSTIFICATION_TAGS_FIELD" />" permet d'indiquer les tags pour lesquels le connecteur doit demander à l'utilisateur d'expliquer pourquoi une analyse entraînant l'affichage d'un avertissement est ignorée. Si ce champ n'est pas renseigné, nous partons du principe qu'aucune justification n'est requise.
-
-      Les champs "<ph name="ENTERPRISE_CONNECTOR_CUSTOM_MESSAGES_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_MESSAGE_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LEARN_MORE_URL_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LANGUAGE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_TAG_FIELD" />" permettent de configurer le message à montrer à l'utilisateur lorsqu'un avertissement s'affiche après une analyse dont le résultat révèle un problème. L'administrateur est capable de configurer des messages comportant jusqu'à 200 caractères.
-
-      Cette règle nécessite un réglage supplémentaire pour être appliquée. Pour en savoir plus, consultez la page https://support.google.com/chrome/a?p=chrome_enterprise_connector_policies_setting.</translation>
 <translation id="6640355849038068978">Si ce paramètre est activé, les utilisateurs pourront lancer l'application Eche, par exemple en cliquant sur une notification Phone Hub.
 
       S'il est désactivé, ils ne pourront pas lancer cette application.
@@ -6476,6 +6597,11 @@ Si cette règle est définie sur "False", l'ancien comportement est activé.</tr
 
       Si vous désactivez cette règle, ou si vous ne la configurez pas, les commandes d'impression génèrent un aperçu avant impression.</translation>
 <translation id="6655274714135630366">Hachage SHA-256 de l'image disque, encodé en hexadécimal.</translation>
+<translation id="6655844456903132379">Si cette règle est activée, le système d'authentification HTTP respecte l'approbation par la règle KDC. Autrement dit, <ph name="PRODUCT_NAME" /> ne délègue les identifiants de l'utilisateur au service sollicité que si la règle KDC indique <ph name="OK_AS_DELEGATE" /> sur un ticket de service. Consultez le document RFC 5896 sur https://tools.ietf.org/html/rfc5896.html. Le service doit également être autorisé par la règle <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />.
+
+Si cette règle est désactivée ou n'est pas configurée, la règle KDC est ignorée sur les plates-formes compatibles, et seule la règle <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> est respectée.
+
+Sous <ph name="MS_WIN_NAME" />, la règle KDC est toujours respectée.</translation>
 <translation id="6658245400435704251">Indique le nombre maximal de secondes pendant lesquelles un appareil peut retarder de façon aléatoire le téléchargement d'une mise à jour à partir du moment où celle-ci est disponible sur le serveur. L'appareil peut attendre pendant une certaine partie de ce temps en termes de temps de l'horloge et pendant la partie restante en termes de nombre de recherches de mise à jour. Dans tous les cas, le facteur de dispersion est limité à une quantité de temps constante, de sorte qu'un appareil ne reste jamais bloqué dans l'attente d'une mise à jour.</translation>
 <translation id="6659537776197644458">Ne pas déclencher les flux d'authentification pour la synchronisation des mots de passe</translation>
 <translation id="6661178198729301029">Activer la création de rapports cloud pour un profil géré</translation>
@@ -6726,6 +6852,7 @@ REMARQUE : Seuls les nouveaux processus du moteur de rendu refléteront les mod
 Si la règle est définie sur "false" ou si elle n'est pas configurée, cette disposition de clavier n'est pas disponible. Un redémarrage est nécessaire pour que la règle soit prise en compte.</translation>
 <translation id="685769593149966548">Appliquer le mode restreint strict sur YouTube</translation>
 <translation id="686079137349561371">Microsoft Windows 7 ou version ultérieure</translation>
+<translation id="6866755486434471318">Autorise <ph name="PEPPER_NAME" /> à utiliser des images partagées pour le décodage vidéo.</translation>
 <translation id="6881447940489194100">Hachage SHA-256 des données, encodé en hexadécimal.</translation>
 <translation id="68818134518270542">Permet de spécifier les applications que les utilisateurs peuvent activer comme applications de prise de notes sur l'écran de verrouillage <ph name="PRODUCT_OS_NAME" />.
 
@@ -6905,6 +7032,23 @@ Si cette règle n'est pas configurée, l'affichage d'images est autorisé, mais 
 
       Si cette règle n'est pas configurée, le mode standard de recharge de la batterie est appliqué.</translation>
 <translation id="7030407698292813622">Autorise les requêtes DNS pour d'autres types d'enregistrements DNS</translation>
+<translation id="7030632236140191991">Liste des paramètres des services des connecteurs Chrome Enterprise à appliquer au connecteur Enterprise <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" />, qui se déclenche lorsque des données sont collées dans Chrome depuis le presse-papiers ou lorsque du contenu Web est ajouté par glisser-déposer.
+
+      Les champs "<ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" />" permettent de déterminer si le connecteur doit envoyer des données en vue d'une analyse lorsque celles-ci sont saisies dans une page spécifique, ainsi que les tags à inclure dans la demande d'analyse de ces données. Un tag correspondant à un format "enable" sera inclus dans la demande d'analyse si l'URL de la page suit un format associé à ce tag, à condition qu'aucun format "disable" associé à ce même tag ne corresponde à l'URL de la page. L'analyse a lieu si au moins un tag doit être inclus dans la demande.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" />" indique à quel fournisseur de services d'analyse correspondent les paramètres.
+
+      Si la valeur du champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" />" est 1, Chrome attend de recevoir une réponse du service d'analyse avant de laisser la page accéder aux données. Pour toute autre valeur entière, Chrome laisse la page accéder immédiatement aux données.
+
+      Si la valeur du champ "<ph name="ENTERPRISE_CONNECTOR_DEFAULT_ACTION_FIELD" />" est "block", Chrome n'autorise pas la page à accéder aux données si une erreur survient pendant la communication avec le service d'analyse. Pour toute autre valeur, Chrome autorise la page à accéder aux données.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_MINIMUM_DATA_SIZE" />" indique la taille minimale (en octets) que les données saisies dans Chrome doivent atteindre ou dépasser pour être analysées. Si ce champ n'est pas renseigné, la valeur par défaut est de 100 octets.
+
+      Le champ "<ph name="ENTERPRISE_CONNECTOR_REQUIRE_JUSTIFICATION_TAGS_FIELD" />" permet d'indiquer les tags pour lesquels le connecteur doit demander à l'utilisateur d'expliquer pourquoi une analyse entraînant l'affichage d'un avertissement est ignorée. Si ce champ n'est pas renseigné, nous partons du principe qu'aucune justification n'est requise.
+
+      Les champs "<ph name="ENTERPRISE_CONNECTOR_CUSTOM_MESSAGES_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_MESSAGE_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LEARN_MORE_URL_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LANGUAGE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_TAG_FIELD" />" permettent de configurer le message à montrer à l'utilisateur lorsqu'un avertissement s'affiche après une analyse dont le résultat révèle un problème. Le message saisi dans le champ ne doit pas comporter plus de 200 caractères. Le champ "learn_more_url" contient une URL fournie par l'administrateur sur laquelle l'utilisateur peut cliquer pour obtenir des informations indiquées par le client et savoir pourquoi l'action a été bloquée. Le champ "language" est facultatif. Il indique la langue dans laquelle est saisi le message. Si ce champ est vide ou contient la valeur "par défaut", un message est proposé par défaut. Le champ "tag" spécifie pour quel type d'analyses le message est affiché. Le champ "custom_messages" peut être vide ou contenir plusieurs entrées (les champs "message" et "tag" devant être renseignés pour chacune d'elles).
+
+      Cette règle nécessite un réglage supplémentaire pour être appliquée. Pour en savoir plus, consultez la page https://support.google.com/chrome/a?p=chrome_enterprise_connector_policies_setting.</translation>
 <translation id="7032813174556919004">Désactiver DNS-over-HTTPS</translation>
 <translation id="7033778618670823541">Permet d'établir la liste des origines (URL) ou des modèles de nom d'hôte (comme *.example.com) pour lesquels les restrictions de sécurité sur les origines non sécurisées ne s'appliquent pas. Par exemple, les organisations peuvent indiquer des origines pour les anciennes applications qui ne peuvent pas déployer TLS, ou configurer un serveur intermédiaire pour les développements Web internes. Les développeurs peuvent ainsi tester des fonctionnalités nécessitant des contextes sécurisés, sans avoir à déployer TLS sur ce serveur intermédiaire. Cette règle évite également qu'une origine soit accompagnée de la mention "Non sécurisé" dans la barre d'adresse.
 
@@ -7013,6 +7157,11 @@ Si cette règle n'est pas configurée, la loupe est initialement désactivée su
       Si cette règle est définie sur "False", cette fonctionnalité est désactivée.</translation>
 <translation id="7123271473727774529">Activer la fonctionnalité d'accessibilité pour la correction des couleurs</translation>
 <translation id="7126716959063786004">Mettre fin aux processus dans le gestionnaire des tâches</translation>
+<translation id="7126787606641224668">Détermine si la fonctionnalité "Mémoriser le mot de passe" est activée dans la boîte de dialogue d'authentification Kerberos. Les mots de passe sont stockés chiffrés sur le disque, et ne sont accessibles qu'au daemon du système Kerberos et pendant une session utilisateur.
+
+Si cette règle est activée ou n'est pas configurée, les utilisateurs peuvent décider de mémoriser les mots de passe Kerberos afin de ne pas avoir à les saisir de nouveau. Les tickets Kerberos sont récupérés automatiquement, sauf si une authentification supplémentaire est requise (authentification à deux facteurs).
+
+Si cette règle est désactivée, les mots de passe ne sont jamais mémorisés et tous ceux qui l'ont été précédemment sont supprimés. Les utilisateurs doivent saisir leur mot de passe à chaque authentification auprès du système Kerberos. De manière générale, la fréquence d'authentification est comprise entre huit heures et plusieurs mois selon les paramètres du serveur.</translation>
 <translation id="7126928806195745404">Paramètres JavaScript</translation>
 <translation id="7127980134843952133">Historique des téléchargements</translation>
 <translation id="7128513247945602297">Activer la mise à niveau automatique du contenu mixte sur les sites HTTPS</translation>
@@ -7076,9 +7225,16 @@ Le champ <ph name="ENTERPRISE_CONNECTOR_MINIMUM_DATA_SIZE" /> indique la quantit
 
       Si cette règle n'est pas définie, le navigateur peut envoyer des requêtes DNS-over-HTTPS à un résolveur associé au résolveur configuré du système.</translation>
 <translation id="7152640356717355643">Activer les rapports sur l'interface réseau de l'appareil</translation>
+<translation id="7153786895642570081">Cette règle contrôle l'activation de la fonctionnalité EphemeralNetworkPolicies.
+Lorsque cette règle est définie sur "True", les entrées RecommendedValuesAreEphemeral et UserCreatedNetworkConfigurationsAreEphemeral de DeviceOpenNetworkConfiguration seront respectées.
+Si cette règle n'est pas configurée ou si elle est définie sur "False", les règles réseau mentionnées ne seront respectées que si la fonctionnalité EphemeralNetworkPolicies est activée.
+Cette règle sera supprimée si la fonctionnalité EphemeralNetworkPolicies est activée par défaut.</translation>
 <translation id="7157329428182136164">Activer la prise en charge des API 3D graphics</translation>
 <translation id="7158358621906236999">Paramètre par défaut des capteurs</translation>
 <translation id="7161568070244869726">Forcez l'activation du cache d'appli</translation>
+<translation id="7165879643294314958">Si cette règle est activée ou n'est pas configurée, la connexion sans délai au compte local de l'appareil concerné s'effectue automatiquement. <ph name="PRODUCT_OS_NAME" /> permet d'utiliser le raccourci clavier Ctrl+Alt+S pour contourner la connexion automatique et afficher l'écran de connexion.
+
+Si cette règle est désactivée, les utilisateurs ne peuvent pas contourner la connexion automatique sans délai (si celle-ci est configurée).</translation>
 <translation id="7165882688932913315">Cette règle commande l'accès aux fonctionnalités contrôlables dans l'interface utilisateur de détection en local (<ph name="CHROME_DEVICES_LINK" />), qui affiche les appareils visibles à proximité de l'utilisateur ainsi que les appareils cloud enregistrés auprès de ceux-ci. Sur tous les systèmes d'exploitation à l'exception de <ph name="PRODUCT_OS_NAME" />, l'interface utilisateur de détection en local permet également aux utilisateurs d'ajouter à <ph name="CLOUD_PRINT_NAME" /> des imprimantes standards connectées à leurs ordinateurs.
 
       Si cette règle est activée, ou si elle n'est pas configurée, la détection des appareils en local est autorisée.
@@ -7194,6 +7350,11 @@ Ces règles sont ignorées, sauf si l'hôte Bureau à distance Chrome est instal
 <translation id="7269263983506766969">Utiliser la priorité par défaut pour le processus audio</translation>
 <translation id="7270001383428188269">Identifiant de ce certificat client.</translation>
 <translation id="7271085005502526897">Importer la page d'accueil du navigateur par défaut à la première exécution</translation>
+<translation id="7272892848025145170">Détermine si la fonctionnalité Kerberos est activée. Kerberos est un protocole d'authentification (auprès d'applis Web ou en vue de partager des fichiers, par exemple).
+
+Si cette règle est activée, la fonctionnalité Kerberos l'est aussi. Des comptes Kerberos peuvent être ajoutés à l'aide de la règle "Configurer les comptes Kerberos" ou via les paramètres de comptes Kerberos sur la page "Paramètres Kerberos".
+
+Si cette règle est désactivée ou n'est pas configurée, les paramètres de comptes Kerberos sont désactivés. Aucun compte Kerberos ne peut être ajouté, et l'authentification Kerberos ne peut pas être utilisée. Les comptes Kerberos déjà créés et les mots de passe enregistrés sont tous supprimés.</translation>
 <translation id="7273785848231509306">Ne jamais afficher le nom ni la photo des utilisateurs</translation>
 <translation id="7274077256421167535">Activer le partage d'alimentation USB</translation>
 <translation id="7275334191706090484">Favoris gérés</translation>
@@ -7211,22 +7372,8 @@ Ces règles sont ignorées, sauf si l'hôte Bureau à distance Chrome est instal
       Si cette règle n'est pas définie, par défaut, ce mode de partage ne sera pas autorisé pour les utilisateurs gérés par une entreprise et sera autorisé pour les utilisateurs non gérés.</translation>
 <translation id="7295019613773647480">Activer les utilisateurs supervisés</translation>
 <translation id="7297476773981993405">Autorisez l'exécution de l'algorithme GREASE user-agent mis à jour.</translation>
-<translation id="7297765841046240459">Si cette règle est activée, <ph name="PRODUCT_NAME" /> vérifie les certificats des serveurs à l'aide de l'outil de vérification intégré et utilise le Chrome Root Store comme source de confiance publique.
-
-Si cette règle est désactivée, <ph name="PRODUCT_NAME" /> utilise l'outil de vérification des certificats du système et les certificats racines du système.
-
-Si cette règle n'est pas configurée, le Chrome Root Store ou les certificats racines du système peuvent être utilisés indifféremment.
-
-Cette règle sera supprimée dans
-la version 120 de <ph name="PRODUCT_OS_NAME" />,
-la version 120 de <ph name="PRODUCT_NAME" />
-pour <ph name="LINUX_OS_NAME" /> et
-la version 121 de <ph name="PRODUCT_NAME" />
-pour <ph name="ANDROID_NAME" />,
-quand l'utilisation des racines fournies par la plate-forme ne sera plus prise en charge.
-
-Cette règle a été supprimée dans la version 113 de <ph name="PRODUCT_NAME" /> pour <ph name="MS_WIN_NAME" /> et <ph name="MAC_OS_NAME" />, quand la prise en charge de l'outil de vérification des certificats et des racines fournis par la plate-forme a cessé.</translation>
 <translation id="7298197471363105063">Ignorer les ensembles propriétaires.</translation>
+<translation id="7300320787419338290">Les paramètres F11/F12 utilisent le raccourci qui contient les touches de modification Ctrl et Maj</translation>
 <translation id="7302043767260300182">Délai de verrouillage de l'écran (secteur)</translation>
 <translation id="7303902834678570827">Les utilisateurs d'une session Invité gérée ne peuvent pas stocker les paramètres d'affichage au niveau de l'appareil</translation>
 <translation id="7306926210354955892">Cette règle permet de spécifier l'action à effectuer lorsque le répertoire de données ARC de l'utilisateur a été créé avec virtio-fs. À moins que les données virtio-fs ne soient migrées vers virtio-blk, les applications Android peuvent s'exécuter plus lentement sur ARCVM.
@@ -7414,23 +7561,6 @@ Si cette règle n'est pas configurée, cela revient à la définir sur "<ph name
 <translation id="7477149584454865826">Flag booléen spécifiant si IPP Everywhere doit être utilisé ou non pour configurer l'imprimante.</translation>
 <translation id="7477231245051133709">Activer la fonctionnalité d'accessibilité d'audio mono</translation>
 <translation id="7479408102162550711">Signaler les événements réseau</translation>
-<translation id="7480826412572122600">Liste des paramètres des services des connecteurs Chrome Enterprise à appliquer au connecteur Enterprise <ph name="ON_FILE_DOWNLOADED_ENTERPRISE_CONNECTOR" />, qui se déclenche lorsqu'un fichier est téléchargé dans Chrome.
-
-      Les champs "<ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" />" permettent de déterminer si le connecteur doit envoyer un fichier en vue d'une analyse lorsque celui-ci est téléchargé à partir d'une page spécifique, ainsi que les tags à inclure dans la demande d'analyse de ce fichier. Un tag correspondant à un format "enable" sera inclus dans la demande d'analyse si l'URL de la page suit un format associé à ce tag, à condition qu'aucun format "disable" associé à ce même tag ne corresponde à l'URL de la page. L'analyse a lieu si au moins un tag doit être inclus dans la demande.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" />" indique à quel fournisseur de services d'analyse correspondent les paramètres.
-
-      Si la valeur du champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" />" est 1, Chrome attend de recevoir une réponse du service d'analyse avant de laisser l'utilisateur accéder au fichier téléchargé. Pour toute autre valeur entière, Chrome laisse l'utilisateur accéder immédiatement au fichier.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" />" permet de définir si Chrome doit bloquer ou autoriser les fichiers protégés par un mot de passe.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" />" permet de spécifier si Chrome doit bloquer ou autoriser les fichiers trop volumineux pour être analysés.
-
-      Le champ "<ph name="ENTERPRISE_CONNECTOR_REQUIRE_JUSTIFICATION_TAGS_FIELD" />" permet d'indiquer les tags pour lesquels le connecteur doit demander à l'utilisateur d'expliquer pourquoi une analyse entraînant l'affichage d'un avertissement est ignorée. Si ce champ n'est pas renseigné, nous partons du principe qu'aucune justification n'est requise.
-
-      Les champs "<ph name="ENTERPRISE_CONNECTOR_CUSTOM_MESSAGES_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_MESSAGE_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LEARN_MORE_URL_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_LANGUAGE_FIELD" />" et "<ph name="ENTERPRISE_CONNECTOR_TAG_FIELD" />" permettent de configurer le message à montrer à l'utilisateur lorsqu'un avertissement s'affiche après une analyse dont le résultat révèle un problème. Le message saisi dans le champ ne doit pas comporter plus de 200 caractères. Le champ "learn_more_url" contient une URL fournie par l'administrateur sur laquelle l'utilisateur peut cliquer pour obtenir des informations indiquées par le client et savoir pourquoi l'action a été bloquée. Le champ "language" est facultatif. Il indique la langue dans laquelle est saisi le message. Si ce champ est vide ou contient la valeur "par défaut", un message est proposé par défaut. Le champ "tag" spécifie pour quel type d'analyses le message est affiché. Le champ "custom_messages" peut être vide ou contenir plusieurs entrées (les champs "message" et "tag" devant être renseignés pour chacune d'elles).
-
-      Cette règle nécessite un réglage supplémentaire pour être appliquée. Pour en savoir plus, consultez la page https://support.google.com/chrome/a?p=chrome_enterprise_connector_policies_setting.</translation>
 <translation id="7481702249684965639">La corbeille est activée pour l'utilisateur.</translation>
 <translation id="7482768039644066614">Activer l'extraction des métadonnées de chargement de la page et les modèles de machine learning pour améliorer l'expérience de navigation</translation>
 <translation id="748292668225669178">Configure l'installation de <ph name="MICROSOFT_ONE_DRIVE_NAME" />.</translation>
@@ -7475,6 +7605,7 @@ Si cette règle n'est pas configurée, cela revient à la définir sur "<ph name
       Si la règle n'est pas configurée, "<ph name="LACROS_AVAILABILITY_LACROS_DISALLOWED_VALUE" />" est défini par défaut pour les utilisateurs gérés par l'entreprise et "<ph name="LACROS_AVAILABILITY_USER_CHOICE_VALUE" />" pour les utilisateurs non gérés.
 
       À l'avenir, la valeur "<ph name="LACROS_AVAILABILITY_LACROS_ONLY_VALUE" />" permettra de faire de <ph name="LACROS_NAME" /> le seul navigateur disponible dans <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="751071954873065775">Sélectionner les contenus téléchargeables qui doivent être prétéléchargés</translation>
 <translation id="7512065400265675158">Il est prévu de réduire l'en-tête de requête HTTP <ph name="USER_AGENT_HEADER_NAME" />. Afin de faciliter les tests et la compatibilité, cette règle permet d'activer la fonctionnalité de réduction de tous les sites Web ou d'empêcher la phase d'évaluation ou les tests en conditions réelles d'activer la fonctionnalité.
 
       Pour en savoir plus sur <ph name="USER_AGENT_REDUCTION_FEATURE_NAME" /> et le calendrier associé, consultez la page :
@@ -7746,6 +7877,7 @@ Si cette règle n'est pas configurée, le moteur de rendu des PDF est sélection
 <translation id="7758378441185523981">Activer l'authentification ambiante en fonction du type de profil.</translation>
 <translation id="776110834126722255">Obsolète</translation>
 <translation id="7763614521440615342">Afficher des recommandations de contenus sur la page "Nouvel onglet"</translation>
+<translation id="776465643636059256">Désactiver la fonctionnalité d'ensembles de sites Web associés</translation>
 <translation id="7765879851993224640">Autorise la connexion avec Smart Lock.</translation>
 <translation id="7767066506143083523">Si cette règle est configurée, vous pouvez lister les formats d'URL qui peuvent utiliser la capture d'onglet.
 
@@ -7863,6 +7995,9 @@ Remarque : <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> 
           Si cette règle n'est pas configurée, le contraste élevé est initialement désactivé sur l'écran de connexion, mais les utilisateurs peuvent l'activer à tout moment.</translation>
 <translation id="7864539943188674973">Désactiver le Bluetooth</translation>
 <translation id="7869986671709030417">Mode d'impression d'images de fond par défaut</translation>
+<translation id="7872692545596413465">Si cette règle est activée et qu'un port non standard est indiqué (c'est-à-dire un port autre que 80 ou 443), ce port est inclus dans le SPN Kerberos généré.
+
+Si cette règle est désactivée ou n'est pas configurée, le SPN Kerberos généré ne comprend aucun port.</translation>
 <translation id="7877924399554599110">Permet de fusionner les règles cloud utilisateurs avec les règles au niveau des machines.</translation>
 <translation id="7881421274383404138">La définition de cette règle permet de configurer les imprimantes d'entreprise. Son format correspond au dictionnaire <ph name="PRINTERS_POLICY_NAME" />, avec un champ supplémentaire <ph name="ID_FIELD" /> ou <ph name="GUID_FIELD" /> obligatoire pour chaque imprimante à ajouter à la liste d'autorisation ou à la liste de refus. Le fichier est au format JSON et sa taille ne peut pas dépasser 5 Mo. Un fichier encodé de 5 Mo peut contenir environ 21 000 imprimantes. Le hachage cryptographique permet de valider l'intégrité du téléchargement. Le fichier est téléchargé, mis en cache, puis téléchargé à nouveau à chaque modification de l'URL ou du hachage. <ph name="PRODUCT_OS_NAME" /> télécharge le fichier des configurations d'imprimante et rend les imprimantes accessibles avec <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />, <ph name="PRINTERS_BULK_ALLOWLIST_POLICY_NAME" /> et <ph name="PRINTERS_BULK_BLOCKLIST_POLICY_NAME" />.
 
@@ -7915,6 +8050,11 @@ Cette règle n'a aucune incidence lorsque la règle <ph name="SCREENSAVER_LOCK_S
 
 Cette règle d'entreprise permet aux administrateurs de contrôler si leurs utilisateurs peuvent activer ou non la limitation supplémentaire. Si cette règle est désactivée, elle empêche d'activer la limitation. Si cette règle est activée ou n'est pas configurée, la limitation peut être activée par l'utilisateur ou via les variantes de Chrome.</translation>
 <translation id="793188693675675950">Désactiver l'importation de la page d'accueil à la première exécution</translation>
+<translation id="7932017046032784156">Si cette règle est activée, l'icône Cast s'affiche dans la barre d'outils ou dans le menu à développer, et les utilisateurs ne peuvent pas la supprimer.
+
+Si cette règle est désactivée ou n'est pas configurée, les utilisateurs peuvent épingler ou retirer l'icône depuis son menu contextuel.
+
+Si la règle <ph name="ENABLE_MEDIA_ROUTER_POLICY_NAME" /> est désactivée, elle n'a aucune incidence, et l'icône de la barre d'outils n'est pas affichée.</translation>
 <translation id="7933141401888114454">Autoriser la création de comptes utilisateurs supervisés</translation>
 <translation id="793473937901685727">Définir la disponibilité des certificats pour les applications ARC</translation>
 <translation id="7936302526928951356">La chaîne user-agent ne figera pas la version majeure.</translation>
@@ -8672,6 +8812,9 @@ Si vous définissez cette règle, vous devez désactiver la règle <ph name="PRI
 <translation id="8584279193368801689">Limite le mode d'impression par code. Si cette règle n'est pas définie, aucune limite ne s'applique. Si le mode est indisponible, cette règle est ignorée. Notez que la fonctionnalité d'impression par code n'est activée que pour les imprimantes utilisant l'un des protocoles IPPS, HTTPS, USB ou IPP sur USB.</translation>
 <translation id="8587229956764455752">Autoriser la création de comptes utilisateur</translation>
 <translation id="8589285015138337712">Interdire à l'utilisateur de personnaliser les raccourcis système</translation>
+<translation id="8589346048177748110">Si cette règle est définie sur "True", les utilisateurs peuvent jouer au jeu du dinosaure. Si cette règle est définie sur "False", les utilisateurs ne peuvent pas jouer à ce jeu lorsque l'appareil est hors connexion.
+
+Si cette règle n'est pas configurée, les utilisateurs ne peuvent pas jouer à ce jeu sur les appareils <ph name="PRODUCT_OS_NAME" /> enregistrés, mais ils le peuvent dans d'autres circonstances.</translation>
 <translation id="8591713876665299827">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
           Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'action à effectuer en cas d'inactivité est réalisée (lorsque l'appareil fonctionne sur secteur).
@@ -8838,6 +8981,7 @@ Si cette règle n'est pas configurée, aucun mot de passe enregistré n'est impo
       Si cette règle est configurée, les utilisateurs ne peuvent pas modifier la fonctionnalité. Si elle n'est pas configurée, les utilisateurs peuvent modifier le paramètre.</translation>
 <translation id="8707790573162457301">Lancer le nettoyage de disque automatique lors de la connexion</translation>
 <translation id="8713535263782304771">Désactiver la navigation sécurisée</translation>
+<translation id="8714556680280715750">URL permettant aux utilisateurs d'en savoir plus. Si cette règle n'est pas configurée, plus aucune URL "En savoir plus" ne figurera dans le programme d'installation. Si l'URL est spécifiée, elle doit utiliser le format HTTPS.</translation>
 <translation id="8715181294371649277">Autoriser la protection des téléchargements en temps réel avec la navigation sécurisée</translation>
 <translation id="8715885991031124968">Autoriser les boîtes de dialogue JavaScript déclenchées depuis un sous-frame d'une origine différente.</translation>
 <translation id="8720547069538712402">Autoriser l'utilisateur à activer ou désactiver le correcteur orthographique</translation>
@@ -8862,6 +9006,7 @@ Si cette règle n'est pas configurée, aucun mot de passe enregistré n'est impo
 <translation id="8744844164152340112">Contrôle le thème utilisé pour afficher l'UI pendant la configuration initiale et en cours de session (sombre/clair/auto).
       Le mode Auto alterne automatiquement entre le thème sombre et le thème clair au lever et au coucher du soleil.
       Cette règle devrait être recommandée, car elle permet aux utilisateurs de modifier le thème dans les paramètres système.</translation>
+<translation id="8744997936011793680">Inviter les utilisateurs à s'authentifier de nouveau auprès du profil</translation>
 <translation id="8749536858950505376">Définissez cette règle sur "True" pour maintenir le grand curseur activé. Définissez cette règle sur "False" pour le maintenir désactivé.
 
       Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier. Si elle n'est pas définie, le grand curseur est désactivé par défaut, mais les utilisateurs peuvent l'activer à tout moment.</translation>
@@ -8976,6 +9121,9 @@ Si cette règle est désactivée, la recherche d'une protection supérieure via 
 
 Si elle est désactivée, <ph name="SEARCH_SIDE_PANEL_FEATURE_NAME" /> n'est disponible sur aucune page Web.</translation>
 <translation id="8860894781631833477">Les utilisateurs peuvent configurer la version disponible de <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="8862086508140571198">Cette règle permet de définir une liste de contenus téléchargeables à télécharger dès que possible. Les contenus téléchargeables téléchargés sont ensuite disponibles pour tous les utilisateurs de l'appareil.
+
+Cette option est utile lorsque l'administrateur sait qu'une fonctionnalité nécessitant la présence du contenu téléchargeable sera probablement utilisée par les utilisateurs de l'appareil.</translation>
 <translation id="8864975621965365890">Supprime l'invite de fermeture qui s'affiche lors du rendu d'un site par <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8865404058177794289">Utiliser le paramètre par défaut concernant la vérification de l'utilisation des clés RSA</translation>
 <translation id="8866430022832109569">Rapports sur l'inventaire des applis</translation>
@@ -9158,6 +9306,7 @@ Si cette règle n'est pas définie sur un appareil géré, l'appareil n'est pas 
 
       La valeur doit être indiquée en secondes.</translation>
 <translation id="9015578113567730893">Fréquence de collecte par télémétrie audio en millisecondes.</translation>
+<translation id="9015759770696099204">Les paramètres F11/F12 sont désactivés</translation>
 <translation id="9015952763003753868">Rendre la mise en correspondance <ph name="ACAM_HEADER_NAME" /> conforme dans les spécifications de la requête préliminaire <ph name="CORS" /></translation>
 <translation id="9020630127193895800">Rétroéclairage du clavier indigo</translation>
 <translation id="9031831501689819108">Activer Legacy Browser Support</translation>
@@ -9239,7 +9388,6 @@ Remarque : Le cache est vidé en cas de redémarrage de l'appareil. Les donnée
 
       Si cette règle est désactivée, les appareils enregistrés n'enregistrent ni ne signalent l'état audio.
       Exception : Sur les versions M95 et antérieures, les informations concernant le volume du système sont contrôlées par la règle <ph name="REPORT_DEVICE_HARDWARE_STATUS" />.</translation>
-<translation id="9071527533179676468">Si cette règle est activée, les applis Web tierces peuvent utiliser l'API Desk pour contrôler les bureaux Chrome OS. Si elle n'est pas configurée ou est désactivée, l'API Desk ne sera pas disponible.</translation>
 <translation id="9072475476775217730">Si cette règle est désactivée, les pop-up ciblant <ph name="BLANK_PAGE_NAME" /> pourront accéder (via JavaScript) à la page qui a demandé l'ouverture du pop-up.
 
       Si cette règle est activée ou n'est pas configurée, la propriété <ph name="WINDOW_OPENER_PROPERTY" /> sera définie sur <ph name="NULL_VALUE" />, sauf si l'ancre indique <ph name="REL_OPENER_ATTRIBUTE" />.

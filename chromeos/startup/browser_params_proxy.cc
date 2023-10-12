@@ -21,8 +21,8 @@ void BrowserParamsProxy::WaitForLogin() {
   BrowserPostLoginParams::WaitForLogin();
 }
 
-bool BrowserParamsProxy::DisableCrosapiForTesting() const {
-  return BrowserInitParams::disable_crosapi_for_testing();
+bool BrowserParamsProxy::IsCrosapiDisabledForTesting() const {
+  return BrowserInitParams::is_crosapi_disabled_for_testing();
 }
 
 uint32_t BrowserParamsProxy::CrosapiVersion() const {

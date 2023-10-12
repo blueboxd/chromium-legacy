@@ -63,11 +63,8 @@ chromevox_es6_modules = [
   "background/chromevox_range.js",
   "background/chromevox_state.js",
   "background/chromevox.js",
-  "background/classic_background.js",
   "background/clipboard_handler.js",
   "background/color.js",
-  "background/command_handler.js",
-  "background/command_handler_interface.js",
   "background/composite_tts.js",
   "background/console_tts.js",
   "background/download_handler.js",
@@ -92,10 +89,13 @@ chromevox_es6_modules = [
   "background/event_source.js",
   "background/find_handler.js",
   "background/focus_bounds.js",
-  "background/gesture_command_handler.js",
-  "background/gesture_interface.js",
   "background/injected_script_loader.js",
-  "background/keyboard_handler.js",
+  "background/input/command_handler.js",
+  "background/input/command_handler_interface.js",
+  "background/input/gesture_command_handler.js",
+  "background/input/gesture_interface.js",
+  "background/input/keyboard_handler.js",
+  "background/input/smart_sticky_mode.js",
   "background/live_regions.js",
   "background/logging/event_stream_logger.js",
   "background/logging/log_manager.js",
@@ -119,7 +119,6 @@ chromevox_es6_modules = [
   "background/phonetic_data.js",
   "background/prefs.js",
   "background/primary_tts.js",
-  "background/smart_sticky_mode.js",
   "background/tts_background.js",
   "background/tts_interface.js",
   "background/user_action_monitor.js",
@@ -157,9 +156,6 @@ chromevox_es6_modules = [
   "learn_mode/learn_mode.js",
   "log_page/log.js",
   "log_page/log_loader.js",
-  "options/bluetooth_braille_display_manager.js",
-  "options/bluetooth_braille_display_ui.js",
-  "options/options.js",
   "panel/i_search_ui.js",
   "panel/menu_manager.js",
   "panel/panel.js",
@@ -195,7 +191,6 @@ group("build") {
   deps = [
     ":chromevox_background_script",
     ":chromevox_copied_files",
-    ":chromevox_options_script",
     ":chromevox_panel_script",
     ":chromevox_phonetic_dictionaries_js",
     "//chrome/browser/resources/chromeos/accessibility/braille_ime:braille_ime_manifest",
@@ -205,7 +200,6 @@ group("build") {
 }
 
 chromevox_background_script_loader_file = "background/loader.js"
-chromevox_options_script_loader_file = "options/options_loader.js"
 chromevox_panel_script_loader_file = "panel/panel_loader.js"
 
 # Instead of setting up one copy target for each subdirectory, use a script
@@ -234,10 +228,6 @@ run_jsbundler("chromevox_copied_files") {
     "learn_mode/learn_mode.html",
     "log_page/log.css",
     "log_page/log.html",
-    "options/checked.png",
-    "options/options.css",
-    "options/options.html",
-    "options/unchecked.png",
     "panel/panel.css",
     "panel/panel.html",
     "tutorial/practice_areas/jump_commands.html",
@@ -306,11 +296,6 @@ template("compress_js") {
 }
 
 # TODO once these loaders are all empty, we will need to re-work the entry points.
-
-compress_js("chromevox_options_script") {
-  sources = [ chromevox_options_script_loader_file ]
-  output_file = "$chromevox_out_dir/chromeVoxChromeOptionsScript.js"
-}
 
 compress_js("chromevox_background_script") {
   sources = [ chromevox_background_script_loader_file ]
@@ -424,7 +409,8 @@ if (is_chromeos_ash) {
       "background/editing/editing_test.js",
       "background/editing/intent_handler_test.js",
       "background/event/desktop_automation_handler_test.js",
-      "background/keyboard_handler_test.js",
+      "background/input/keyboard_handler_test.js",
+      "background/input/smart_sticky_mode_test.js",
       "background/live_regions_test.js",
       "background/logging/log_store_test.js",
       "background/output/output_test.js",
@@ -433,7 +419,6 @@ if (is_chromeos_ash) {
       "background/panel/panel_node_menu_background_test.js",
       "background/portals_test.js",
       "background/settings_test.js",
-      "background/smart_sticky_mode_test.js",
       "background/tts_background_test.js",
       "background/user_action_monitor_test.js",
       "common/braille/braille_command_data_test.js",
@@ -441,9 +426,6 @@ if (is_chromeos_ash) {
       "common/locale_output_helper_test.js",
       "common/settings_manager_test.js",
       "learn_mode/learn_mode_test.js",
-      "options/bluetooth_braille_display_manager_test.js",
-      "options/bluetooth_braille_display_ui_test.js",
-      "options/options_test.js",
       "panel/menu_manager_test.js",
       "panel/panel_test.js",
       "panel/panel_test_base.js",

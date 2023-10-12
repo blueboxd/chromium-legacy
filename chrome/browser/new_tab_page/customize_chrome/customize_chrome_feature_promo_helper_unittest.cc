@@ -11,6 +11,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "components/feature_engagement/test/scoped_iph_feature_list.h"
+#include "components/user_education/common/feature_promo_controller.h"
 #include "components/user_education/test/mock_feature_promo_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/ui_base_features.h"
@@ -104,22 +105,18 @@ TEST_F(CustomizeChromeFeaturePromoHelperTest,
 
 TEST_F(CustomizeChromeFeaturePromoHelperTest,
        MaybeShowCustomizeChromeFeaturePromoHelper) {
-  EXPECT_CALL(
-      *mock_promo_controller(),
-      MaybeShowPromo(
-          testing::Ref(feature_engagement::kIPHDesktopCustomizeChromeFeature),
-          testing::_, testing::_, testing::_))
+  EXPECT_CALL(*mock_promo_controller(),
+              MaybeShowPromo(user_education::test::MatchFeaturePromoParams(
+                  feature_engagement::kIPHDesktopCustomizeChromeFeature)))
       .Times(1)
-      .WillOnce(testing::Return(true));
+      .WillOnce(testing::Return(user_education::FeaturePromoResult::Success()));
   helper()->SetDefaultSearchProviderIsGoogleForTesting(true);
   helper()->MaybeShowCustomizeChromeFeaturePromo(tab());
 }
 
 TEST_F(CustomizeChromeFeaturePromoHelperTest,
        MaybeShowCustomizeChromeFeaturePromoHelperNonGoogle) {
-  EXPECT_CALL(*mock_promo_controller(),
-              MaybeShowPromo(testing::_, testing::_, testing::_, testing::_))
-      .Times(0);
+  EXPECT_CALL(*mock_promo_controller(), MaybeShowPromo(testing::_)).Times(0);
   helper()->SetDefaultSearchProviderIsGoogleForTesting(false);
   helper()->MaybeShowCustomizeChromeFeaturePromo(tab());
 }
@@ -132,7 +129,7 @@ TEST_F(CustomizeChromeFeaturePromoHelperTest,
           testing::Ref(feature_engagement::kIPHDesktopCustomizeChromeFeature),
           testing::_))
       .Times(1)
-      .WillOnce(testing::Return(true));
+      .WillOnce(testing::Return(user_education::FeaturePromoResult::Success()));
   helper()->CloseCustomizeChromeFeaturePromo(tab());
 }
 
@@ -141,12 +138,10 @@ TEST_F(CustomizeChromeFeaturePromoHelperTest,
   SetChromeRefresh2023();
   EXPECT_CALL(
       *mock_promo_controller(),
-      MaybeShowPromo(
-          testing::Ref(
-              feature_engagement::kIPHDesktopCustomizeChromeRefreshFeature),
-          testing::_, testing::_, testing::_))
+      MaybeShowPromo(user_education::test::MatchFeaturePromoParams(
+          feature_engagement::kIPHDesktopCustomizeChromeRefreshFeature)))
       .Times(1)
-      .WillOnce(testing::Return(true));
+      .WillOnce(testing::Return(user_education::FeaturePromoResult::Success()));
   helper()->SetDefaultSearchProviderIsGoogleForTesting(true);
   helper()->MaybeShowCustomizeChromeFeaturePromo(tab());
 }
@@ -154,9 +149,7 @@ TEST_F(CustomizeChromeFeaturePromoHelperTest,
 TEST_F(CustomizeChromeFeaturePromoHelperTest,
        MaybeShowCustomizeChromeRefreshFeaturePromoHelperNonGoogle) {
   SetChromeRefresh2023();
-  EXPECT_CALL(*mock_promo_controller(),
-              MaybeShowPromo(testing::_, testing::_, testing::_, testing::_))
-      .Times(0);
+  EXPECT_CALL(*mock_promo_controller(), MaybeShowPromo(testing::_)).Times(0);
   helper()->SetDefaultSearchProviderIsGoogleForTesting(false);
   helper()->MaybeShowCustomizeChromeFeaturePromo(tab());
 }
@@ -171,6 +164,6 @@ TEST_F(CustomizeChromeFeaturePromoHelperTest,
               feature_engagement::kIPHDesktopCustomizeChromeRefreshFeature),
           testing::_))
       .Times(1)
-      .WillOnce(testing::Return(true));
+      .WillOnce(testing::Return(user_education::FeaturePromoResult::Success()));
   helper()->CloseCustomizeChromeFeaturePromo(tab());
 }

@@ -306,6 +306,14 @@ void SyncServiceImpl::Initialize() {
   // crash during signout).
   if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY)) {
     StopAndClear();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // On ChromeOS Ash, sync-the-feature stays disabled even after the policy is
+    // removed, for historic reasons. It is unclear if this behavior is
+    // optional, because it is indistinguishable from the
+    // sync-reset-via-dashboard case. It can be resolved by invoking
+    // SetSyncFeatureRequested().
+    sync_prefs_.SetSyncFeatureDisabledViaDashboard();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   } else if (HasDisableReason(DISABLE_REASON_NOT_SIGNED_IN)) {
     // On ChromeOS-Ash, signout is not possible, so it's not necessary to handle
     // this case.
@@ -345,16 +353,6 @@ void SyncServiceImpl::Initialize() {
     if (!preferred_types.Has(type)) {
       controller->Stop(CLEAR_METADATA, base::DoNothing());
     }
-  }
-
-  // Auto-start means the first time the profile starts up, sync should start up
-  // immediately. Since IsSyncRequested() is false by default and nobody else
-  // will set it, we need to set it here.
-  // Local Sync bypasses the IsSyncRequested() check, so no need to set it in
-  // that case.
-  if (ShouldAutoStartSyncFeature() && !IsLocalSyncEnabled() &&
-      !sync_prefs_.IsSyncRequestedSetExplicitly()) {
-    SetSyncFeatureRequested();
   }
 
   if (IsEngineAllowedToRun()) {
@@ -736,7 +734,10 @@ base::android::ScopedJavaLocalRef<jobject> SyncServiceImpl::GetJavaObject() {
 
 void SyncServiceImpl::SetSyncFeatureRequested() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_prefs_.SetSyncRequested(true);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  user_settings_->ClearSyncFeatureDisabledViaDashboard();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // If the Sync engine was already initialized (probably running in transport
   // mode), just reconfigure.
@@ -811,21 +812,13 @@ SyncService::TransportState SyncServiceImpl::GetTransportState() const {
   // The DataTypeManager gets created once the engine is initialized.
   DCHECK(data_type_manager_);
 
-  // At this point we should usually be able to configure our data types (and
-  // once the data types can be configured, they must actually get configured).
-  // However, if the initial setup hasn't been completed, then we can't
-  // configure the data types. Also if a later (non-initial) setup happens to be
-  // in progress, we won't configure them right now.
+  // At this point we should usually be able to configure our data types (so the
+  // DataTypeManager should not be STOPPED anymore), unless setup is in
+  // progress. But it can also happen if this gets called from DataTypeManager
+  // itself.
   if (data_type_manager_->state() == DataTypeManager::STOPPED) {
-    DCHECK(!CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false));
     return TransportState::PENDING_DESIRED_CONFIGURATION;
   }
-
-  // Note that if a setup is started after the data types have been configured,
-  // then they'll stay configured even though CanConfigureDataTypes will be
-  // false.
-  DCHECK(CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false) ||
-         IsSetupInProgress());
 
   if (data_type_manager_->state() != DataTypeManager::CONFIGURED) {
     return TransportState::CONFIGURING;
@@ -1063,14 +1056,17 @@ void SyncServiceImpl::OnActionableProtocolError(
       sync_client_->GetTrustedVaultClient()->ClearLocalDataForAccount(
           GetAccountInfo());
 
-      // Note: StopAndClear sets IsSyncRequested to false, which ensures that
-      // Sync-the-feature remains off.
       // Note: This method might get called again in the following code when
       // clearing the primary account. But due to rarity of the event, this
       // should be okay.
       StopAndClear();
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      // On Ash, the primary account is always set and sync the feature
+      // turned on, so a dedicated bit is needed to ensure that
+      // Sync-the-feature remains off.
+      user_settings_->SetSyncFeatureDisabledViaDashboard();
+#else  // !BUILDFLAG(IS_CHROMEOS_ASH)
       // On every platform except ash, revoke the Sync consent/Clear primary
       // account after a dashboard clear.
       // TODO(crbug.com/1462552): Simplify once kSync becomes unreachable or is
@@ -1101,7 +1097,7 @@ void SyncServiceImpl::OnActionableProtocolError(
             signin_metrics::SignoutDelete::kIgnoreMetric);
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
       }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       break;
     case STOP_SYNC_FOR_DISABLED_ACCOUNT:
       // Sync disabled by domain admin. Stop syncing until next restart.
@@ -1315,16 +1311,6 @@ bool SyncServiceImpl::RequiresClientUpgrade() const {
   return last_actionable_error_.action == UPGRADE_CLIENT;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-bool SyncServiceImpl::IsSyncFeatureDisabledViaDashboard() const {
-  // This can return true only on ChromeOS Ash, upon DISABLE_SYNC_ON_CLIENT.
-  // TODO(crbug.com/1443446): A simpler and more robust implementation for this
-  // state would be to use a dedicated pref.
-  return user_settings_->IsInitialSyncFeatureSetupComplete() &&
-         !IsLocalSyncEnabled() && !IsSyncFeatureConsideredRequested();
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 bool SyncServiceImpl::CanConfigureDataTypes(
     bool bypass_setup_in_progress_check) const {
   return data_type_manager_ &&
@@ -1399,9 +1385,9 @@ bool SyncServiceImpl::IsSyncFeatureConsideredRequested() const {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // On Ash, `has_sync_consent` should always be true, and what actually matters
-  // is `is_sync_requested`, which is set to false if the server reports
-  // DISABLE_SYNC_ON_CLIENT (e.g. reset via dashboard).
-  return sync_prefs_.IsSyncRequested();
+  // is whether sync was disabled via dashboard, which is detected when the
+  // server responds with DISABLE_SYNC_ON_CLIENT.
+  return !user_settings_->IsSyncFeatureDisabledViaDashboard();
 #else
   // On all platforms except Chrome Ash, IdentityManager determines via
   // consent level whether or not sync is condered requested.
@@ -1793,6 +1779,14 @@ void SyncServiceImpl::OnSyncManagedPrefChange(bool is_sync_managed) {
 
   if (is_sync_managed) {
     StopAndClear();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // On ChromeOS Ash, sync-the-feature stays disabled even after the policy is
+    // removed, for historic reasons. It is unclear if this behavior is
+    // optional, because it is indistinguishable from the
+    // sync-reset-via-dashboard case. It can be resolved by invoking
+    // SetSyncFeatureRequested().
+    sync_prefs_.SetSyncFeatureDisabledViaDashboard();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   } else {
     // Sync is no longer disabled by policy. Try starting it up if appropriate.
     DCHECK(!engine_);
@@ -2118,8 +2112,6 @@ void SyncServiceImpl::StopAndClear() {
   sync_prefs_.ClearBookmarksAndReadingListAccountStorageOptIn();
 #endif  // BUILDFLAG(IS_IOS)
 
-  sync_prefs_.SetSyncRequested(false);
-
   // Also let observers know that Sync-the-feature is now fully disabled
   // (before it possibly starts up again in transport-only mode).
   DVLOG(2) << "Notify observers on StopAndClear";
@@ -2405,43 +2397,6 @@ void SyncServiceImpl::GetLocalDataDescriptions(
   // Only retain the types that are enabled.
   types.RetainAll(GetPreferredDataTypes());
 
-  // Check whether to return dummy data for testing.
-  if (base::FeatureList::IsEnabled(
-          syncer::kSyncEnableBatchUploadLocalDataWithDummyDataForTesting)) {
-    // Create dummy data.
-    std::map<syncer::ModelType, syncer::LocalDataDescription> result;
-    if (types.Has(syncer::PASSWORDS)) {
-      result.emplace(syncer::PASSWORDS,
-                     syncer::LocalDataDescription{
-                         syncer::PASSWORDS, /*item_count=*/5,
-                         std::vector<std::string>{"amazon.de", "airbnb.com",
-                                                  "facebook.com"},
-                         /*domain_count=*/4});
-    }
-    if (types.Has(syncer::BOOKMARKS)) {
-      result.emplace(syncer::BOOKMARKS,
-                     syncer::LocalDataDescription{
-                         syncer::BOOKMARKS, /*item_count=*/4,
-                         std::vector<std::string>{"amazon.de", "airbnb.com"},
-                         /*domain_count=*/2});
-    }
-    if (types.Has(syncer::READING_LIST)) {
-      result.emplace(syncer::READING_LIST,
-                     syncer::LocalDataDescription{
-                         syncer::READING_LIST, /*item_count=*/2,
-                         std::vector<std::string>{"medium.com", "nytimes.com"},
-                         /*domain_count=*/2});
-    }
-
-    // Run the callback asynchronously with configurable delay
-    // SyncResponseDelayForBatchUploadLocalDataWithDummyDataForTesting.
-    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::move(result)),
-        syncer::kSyncResponseDelayForBatchUploadLocalDataWithDummyDataForTesting
-            .Get());
-    return;
-  }
-
   sync_client_->GetLocalDataDescriptions(types, std::move(callback));
 }
 
@@ -2455,12 +2410,6 @@ void SyncServiceImpl::TriggerLocalDataMigration(ModelTypeSet types) {
 
   // Only retain the types that are enabled.
   types.RetainAll(GetPreferredDataTypes());
-
-  if (base::FeatureList::IsEnabled(
-          syncer::kSyncEnableBatchUploadLocalDataWithDummyDataForTesting)) {
-    // Return directly since there is nothing to do with the dummy data.
-    return;
-  }
 
   sync_client_->TriggerLocalDataMigration(types);
 }

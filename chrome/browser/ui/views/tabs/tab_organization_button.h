@@ -9,12 +9,12 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 
 class TabOrganizationSession;
-class TabStrip;
+class TabStripController;
 
 class TabOrganizationButton : public TabStripControlButton {
  public:
   METADATA_HEADER(TabOrganizationButton);
-  TabOrganizationButton(TabStrip* tab_strip,
+  TabOrganizationButton(TabStripController* tab_strip_controller,
                         PressedCallback pressed_callback,
                         Edge flat_edge);
   TabOrganizationButton(const TabOrganizationButton&) = delete;
@@ -31,16 +31,21 @@ class TabOrganizationButton : public TabStripControlButton {
   gfx::Size CalculatePreferredSize() const override;
 
   void ButtonPressed(const ui::Event& event);
+  void ClosePressed(const ui::Event& event);
 
  protected:
   // TabStripControlButton:
   int GetCornerRadius() const override;
+  int GetFlatCornerRadius() const override;
 
  private:
+  void SetCloseButton(PressedCallback callback);
+
   // Preferred width multiplier, between 0-1. Used to animate button size.
   float width_factor_ = 0;
   raw_ptr<TabOrganizationSession, DanglingUntriaged> session_ = nullptr;
   PressedCallback pressed_callback_;
+  raw_ptr<views::LabelButton> close_button_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_ORGANIZATION_BUTTON_H_

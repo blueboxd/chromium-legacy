@@ -32,6 +32,7 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.MaxAndroidSdkLevel;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
@@ -145,10 +146,14 @@ public class BluetoothChooserDialogTest {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> {
                     mWindowAndroid = sActivityTestRule.getActivity().getWindowAndroid();
-                    BluetoothChooserDialog dialog = new BluetoothChooserDialog(mWindowAndroid,
-                            "https://origin.example.com/", ConnectionSecurityLevel.SECURE,
-                            new ChromeBluetoothChooserAndroidDelegate(),
-                            /*nativeBluetoothChooserDialogPtr=*/42);
+                    BluetoothChooserDialog dialog =
+                            new BluetoothChooserDialog(
+                                    mWindowAndroid,
+                                    "https://origin.example.com/",
+                                    ConnectionSecurityLevel.SECURE,
+                                    new ChromeBluetoothChooserAndroidDelegate(
+                                            Profile.getLastUsedRegularProfile()),
+                                    /* nativeBluetoothChooserDialogPtr= */ 42);
                     dialog.show();
                     return dialog;
                 });
@@ -162,6 +167,11 @@ public class BluetoothChooserDialogTest {
         clickItemAtPosition(items, position - 1);
 
         CriteriaHelper.pollUiThread(() -> button.isEnabled());
+        // Make sure the button is properly rendered before clicking.
+        CriteriaHelper.pollUiThread(
+                () -> {
+                    Criteria.checkThat(button.getHeight(), Matchers.greaterThan(0));
+                });
 
         TouchCommon.singleClickView(button);
 
@@ -274,6 +284,7 @@ public class BluetoothChooserDialogTest {
     @SmallTest
     public void testSelectItem() {
         Dialog dialog = mChooserDialog.mItemChooserDialog.getDialogForTesting();
+        Assert.assertTrue(dialog.isShowing());
 
         TextViewWithClickableSpans statusView =
                 (TextViewWithClickableSpans) dialog.findViewById(R.id.status);

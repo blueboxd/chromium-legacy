@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_PICTURE_IN_PICTURE_AUTO_PICTURE_IN_PICTURE_TAB_HELPER_H_
 
 #include "base/time/time.h"
-#include "chrome/browser/ui/browser_tab_strip_tracker.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -15,6 +13,7 @@
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
+class AutoPictureInPictureTabStripObserverHelper;
 class HostContentSettingsMap;
 
 // The AutoPictureInPictureTabHelper is a TabHelper attached to each WebContents
@@ -28,7 +27,6 @@ class HostContentSettingsMap;
 class AutoPictureInPictureTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<AutoPictureInPictureTabHelper>,
-      public TabStripModelObserver,
       public media_session::mojom::AudioFocusObserver,
       public media_session::mojom::MediaSessionObserver {
  public:
@@ -46,11 +44,9 @@ class AutoPictureInPictureTabHelper
   void PrimaryPageChanged(content::Page& page) override;
   void MediaPictureInPictureChanged(bool is_in_picture_in_picture) override;
 
-  // TabStripModelObserver:
-  void OnTabStripModelChanged(
-      TabStripModel* tab_strip_model,
-      const TabStripModelChange& change,
-      const TabStripSelectionChange& selection) override;
+  // Called by `tab_strip_observer_helper_` when the tab changes between
+  // activated and unactivated.
+  void OnTabActivatedChanged(bool is_tab_activated);
 
   // media_session::mojom::AudioFocusObserver:
   void OnFocusGained(
@@ -74,7 +70,28 @@ class AutoPictureInPictureTabHelper
   void MediaSessionPositionChanged(
       const absl::optional<media_session::MediaPosition>& position) override {}
 
+  // Returns true if the tab is in PiP mode, and PiP was started by auto-pip.
   bool IsInAutoPictureInPicture() const;
+
+  void set_is_in_auto_picture_in_picture_for_testing(bool auto_pip) {
+    is_in_auto_picture_in_picture_ = auto_pip;
+  }
+
+  // Returns true if a PiP window would be considered auto-pip if it opened.
+  // This is useful during PiP window startup, when we might not be technically
+  // in PiP yet.  `IsInAutoPictureInPicture()` requires that we're in PiP mode
+  // to return true.
+  //
+  // This differs from `IsEligibleForAutoPictureInPicture()` in that this
+  // measures if a pip window would qualify for pip, which requires that we've
+  // actually detected that the site `IsEligible`, the page has been obscured,
+  // and we've sent a pip media session action.  In contrast, `IsEligible` only
+  // makes sure that, if the tab were to be obscured, we would send the pip
+  // action at that point.
+  //
+  // Note that this will be false once auto-pip opens.  Opening the window
+  // clears the preconditions until the next time they're met.
+  bool AreAutoPictureInPicturePreconditionsMet() const;
 
  private:
   explicit AutoPictureInPictureTabHelper(content::WebContents* web_contents);
@@ -86,11 +103,9 @@ class AutoPictureInPictureTabHelper
 
   void MaybeExitAutoPictureInPicture();
 
+  void MaybeStartOrStopObservingTabStrip();
+
   bool IsEligibleForAutoPictureInPicture() const;
-
-  void UpdateIsTabActivated();
-
-  TabStripModel* GetCurrentTabStripModel() const;
 
   // Returns true if the tab is currently playing unmuted playback.
   bool HasSufficientPlayback() const;
@@ -106,13 +121,10 @@ class AutoPictureInPictureTabHelper
   // WebContents (which we're tied to), so this is safe.
   const raw_ptr<HostContentSettingsMap> host_content_settings_map_;
 
-  // Tracks when browser tab strips change so we can tell when the observed
-  // WebContents changes between being the active tab and not being the active
-  // tab.
-  //
-  // TODO(https://crbug.com/1465988): Directly observe the TabStripModel that
-  // contains the observed WebContents.
-  BrowserTabStripTracker browser_tab_strip_tracker_{this, nullptr};
+  // Notifies us when our tab either becomes the active tab on its tabstrip or
+  // becomes an inactive tab on its tabstrip.
+  std::unique_ptr<AutoPictureInPictureTabStripObserverHelper>
+      tab_strip_observer_helper_;
 
   // True if the tab is the activated tab on its tab strip.
   bool is_tab_activated_ = false;

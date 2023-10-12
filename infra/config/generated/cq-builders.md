@@ -29,9 +29,9 @@ These builders must pass before a CL may land that affects files outside of
 
 * [android-binary-size](https://ci.chromium.org/p/chromium/builders/try/android-binary-size) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-binary-size""))
 
-* [android-nougat-x86-rel](https://ci.chromium.org/p/chromium/builders/try/android-nougat-x86-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-nougat-x86-rel""))
-
 * [android-x64-cast](https://ci.chromium.org/p/chromium/builders/try/android-x64-cast) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-x64-cast""))
+
+* [android-x86-rel](https://ci.chromium.org/p/chromium/builders/try/android-x86-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-x86-rel""))
 
 * [android_compile_dbg](https://ci.chromium.org/p/chromium/builders/try/android_compile_dbg) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android_compile_dbg""))
 
@@ -48,8 +48,6 @@ These builders must pass before a CL may land that affects files outside of
 * [fuchsia-x64-cast-receiver-rel](https://ci.chromium.org/p/chromium/builders/try/fuchsia-x64-cast-receiver-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-x64-cast-receiver-rel""))
 
 * [ios-simulator](https://ci.chromium.org/p/chromium/builders/try/ios-simulator) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""ios-simulator""))
-
-* [lacros-amd64-generic-rel](https://ci.chromium.org/p/chromium/builders/try/lacros-amd64-generic-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""lacros-amd64-generic-rel""))
 
 * [lacros-arm-generic-rel](https://ci.chromium.org/p/chromium/builders/try/lacros-arm-generic-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""lacros-arm-generic-rel""))
 
@@ -597,11 +595,11 @@ as required builders.
 * [android-arm64-siso-rel](https://ci.chromium.org/p/chromium/builders/try/android-arm64-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-arm64-siso-rel""))
   * Experiment percentage: 10.0
 
-* [android-nougat-x86-dual-coverage-exp-rel](https://ci.chromium.org/p/chromium/builders/try/android-nougat-x86-dual-coverage-exp-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-nougat-x86-dual-coverage-exp-rel""))
+* [android-x86-dual-coverage-exp-rel](https://ci.chromium.org/p/chromium/builders/try/android-x86-dual-coverage-exp-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-x86-dual-coverage-exp-rel""))
   * Experiment percentage: 3.0
 
 * [chromeos-amd64-generic-siso-rel](https://ci.chromium.org/p/chromium/builders/try/chromeos-amd64-generic-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""chromeos-amd64-generic-siso-rel""))
-  * Experiment percentage: 0.01
+  * Experiment percentage: 10.0
 
 * [chromeos-js-coverage-rel](https://ci.chromium.org/p/chromium/builders/try/chromeos-js-coverage-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""chromeos-js-coverage-rel""))
   * Experiment percentage: 20.0
@@ -628,11 +626,8 @@ as required builders.
 * [ios-simulator-siso](https://ci.chromium.org/p/chromium/builders/try/ios-simulator-siso) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""ios-simulator-siso""))
   * Experiment percentage: 10.0
 
-* [linux-chromeos-siso-rel](https://ci.chromium.org/p/chromium/builders/try/linux-chromeos-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-chromeos-siso-rel""))
-  * Experiment percentage: 10.0
-
-* [linux-lacros-siso-rel](https://ci.chromium.org/p/chromium/builders/try/linux-lacros-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-lacros-siso-rel""))
-  * Experiment percentage: 10.0
+* [lacros-amd64-generic-rel](https://ci.chromium.org/p/chromium/builders/try/lacros-amd64-generic-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""lacros-amd64-generic-rel""))
+  * Experiment percentage: 100.0
 
 * [linux-siso-rel](https://ci.chromium.org/p/chromium/builders/try/linux-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-siso-rel""))
   * Experiment percentage: 10.0

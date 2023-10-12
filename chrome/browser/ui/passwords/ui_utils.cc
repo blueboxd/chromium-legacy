@@ -151,6 +151,10 @@ std::u16string GetManagePasswordsDialogTitleText(
                       : IDS_MANAGE_PASSWORDS_NO_PASSWORDS_TITLE);
 }
 
+std::u16string GetConfirmationManagePasswordsDialogTitleText() {
+  return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE);
+}
+
 std::u16string GetDisplayUsername(const password_manager::PasswordForm& form) {
   return form.username_value.empty()
              ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN)
@@ -217,6 +221,8 @@ GURL GetGooglePasswordManagerURL(ManagePasswordsReferrer referrer) {
         return "password_generation_prompt_in_autofill_dropdown";
       case ManagePasswordsReferrer::kPasswordsGoogleWebsite:
         return "passwords_google";
+      case ManagePasswordsReferrer::kAddUsernameBubble:
+        return "add_username_bubble";
       case ManagePasswordsReferrer::kPasswordsAccessorySheet:
       case ManagePasswordsReferrer::kTouchToFill:
       case ManagePasswordsReferrer::kPasswordBreachDialog:
@@ -225,6 +231,7 @@ GURL GetGooglePasswordManagerURL(ManagePasswordsReferrer referrer) {
       case ManagePasswordsReferrer::kChromeMenuItem:
       case ManagePasswordsReferrer::kSharedPasswordsNotificationBubble:
       case ManagePasswordsReferrer::kSearchPasswordsWidget:
+      case ManagePasswordsReferrer::kOmniboxPedalSuggestion:
         NOTREACHED_NORETURN();
     }
 

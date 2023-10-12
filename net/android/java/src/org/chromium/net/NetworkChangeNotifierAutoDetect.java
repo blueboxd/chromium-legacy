@@ -231,10 +231,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             // If |networkInfo| is BLOCKED, but the app is in the foreground, then it's likely that
             // Android hasn't finished updating the network access permissions as BLOCKED is only
             // meant for apps in the background.  See https://crbug.com/677365 for more details.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                // https://crbug.com/677365 primarily affects only Lollipop and higher versions.
-                return null;
-            }
 
             if (networkInfo.getDetailedState() != NetworkInfo.DetailedState.BLOCKED) {
                 // Network state is not blocked which implies that network access is
@@ -302,7 +298,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         /**
          * Fetches NetworkInfo for |network|. Does not account for underlying VPNs; see
          * getNetworkInfo(Network) for a method that does.
-         * Only callable on Lollipop and newer releases.
          */
         NetworkInfo getRawNetworkInfo(Network network) {
             try {
@@ -319,7 +314,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
 
         /**
          * Fetches NetworkInfo for |network|.
-         * Only callable on Lollipop and newer releases.
          */
         NetworkInfo getNetworkInfo(Network network) {
             NetworkInfo networkInfo = getRawNetworkInfo(network);
@@ -334,7 +328,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
 
         /**
          * Returns connection type for |network|.
-         * Only callable on Lollipop and newer releases.
          */
         @ConnectionType
         int getConnectionType(Network network) {
@@ -349,7 +342,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          * Returns all connected networks. This may include networks that aren't useful
          * to Chrome (e.g. MMS, IMS, FOTA etc) or aren't accessible to Chrome (e.g. a VPN for
          * another user); use {@link getAllNetworks} for a filtered list.
-         * Only callable on Lollipop and newer releases.
          */
         @VisibleForTesting
         protected Network[] getAllNetworksUnfiltered() {
@@ -408,7 +400,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         /**
          * Registers networkCallback to receive notifications about networks
          * that satisfy networkRequest.
-         * Only callable on Lollipop and newer releases.
          */
         void registerNetworkCallback(
                 NetworkRequest networkRequest, NetworkCallback networkCallback, Handler handler) {
@@ -437,7 +428,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
 
         /**
          * Unregisters networkCallback from receiving notifications.
-         * Only callable on Lollipop and newer releases.
          */
         void unregisterNetworkCallback(NetworkCallback networkCallback) {
             mConnectivityManager.unregisterNetworkCallback(networkCallback);
@@ -445,7 +435,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
 
         /**
          * Returns the current default {@link Network}, or {@code null} if disconnected.
-         * Only callable on Lollipop and newer releases.
          */
         Network getDefaultNetwork() {
             Network defaultNetwork = null;
@@ -1010,17 +999,13 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             mWifiManagerDelegate = new WifiManagerDelegate(ContextUtils.getApplicationContext());
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mNetworkCallback = new MyNetworkCallback();
-            mNetworkRequest = new NetworkRequest.Builder()
-                                      .addCapability(NET_CAPABILITY_INTERNET)
-                                      // Need to hear about VPNs too.
-                                      .removeCapability(NET_CAPABILITY_NOT_VPN)
-                                      .build();
-        } else {
-            mNetworkCallback = null;
-            mNetworkRequest = null;
-        }
+        mNetworkCallback = new MyNetworkCallback();
+        mNetworkRequest = new NetworkRequest.Builder()
+                                  .addCapability(NET_CAPABILITY_INTERNET)
+                                  // Need to hear about VPNs too.
+                                  .removeCapability(NET_CAPABILITY_NOT_VPN)
+                                  .build();
+
         // Use AndroidRDefaultNetworkCallback to fix Android R issue crbug.com/1120144.
         // This NetworkCallback could be used on O+ (where onCapabilitiesChanged and
         // onLinkProperties callbacks are guaranteed to be called after onAvailable)
@@ -1195,7 +1180,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
 
     /**
      * Returns all connected networks that are useful and accessible to Chrome.
-     * Only callable on Lollipop and newer releases.
      * @param ignoreNetwork ignore this network as if it is not connected.
      */
     private static Network[] getAllNetworksFiltered(
@@ -1228,18 +1212,21 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     }
 
     /**
+     * Returns all connected networks that are useful and accessible to Chrome.
+     */
+    public Network[] getNetworksForTesting() {
+        return getAllNetworksFiltered(mConnectivityManagerDelegate, null);
+    }
+
+    /**
      * Returns an array of all of the device's currently connected
      * networks and ConnectionTypes, including only those that are useful and accessible to Chrome.
      * Array elements are a repeated sequence of:
      *   NetID of network
      *   ConnectionType of network
-     * Only available on Lollipop and newer releases and when auto-detection has
-     * been enabled.
+     * Only available when auto-detection has been enabled.
      */
     public long[] getNetworksAndTypes() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return new long[0];
-        }
         final Network networks[] = getAllNetworksFiltered(mConnectivityManagerDelegate, null);
         final long networksAndTypes[] = new long[networks.length * 2];
         int index = 0;
@@ -1251,16 +1238,21 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     }
 
     /**
+     * Returns the device's current default connected network used for
+     * communication.
+     * Returns null when not implemented.
+     */
+    public Network getDefaultNetwork() {
+        return mConnectivityManagerDelegate.getDefaultNetwork();
+    }
+
+    /**
      * Returns NetID of device's current default connected network used for
      * communication.
-     * Only implemented on Lollipop and newer releases, returns NetId.INVALID
-     * when not implemented.
+     * Returns NetId.INVALID when not implemented.
      */
     public long getDefaultNetId() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return NetId.INVALID;
-        }
-        Network network = mConnectivityManagerDelegate.getDefaultNetwork();
+        Network network = getDefaultNetwork();
         return network == null ? NetId.INVALID : networkToNetId(network);
     }
 
@@ -1364,7 +1356,9 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
 
     /**
      * Extracts NetID of Network on Lollipop and NetworkHandle (which is munged NetID) on
-     * Marshmallow and newer releases. Only available on Lollipop and newer releases.
+     * Marshmallow and newer releases.
+     * TODO(crbug.com/1489183): Rename networkToNetId to something meaningful and update
+     * javadoc comment.
      */
     public static long networkToNetId(Network network) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

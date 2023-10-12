@@ -593,6 +593,10 @@ NSString* const kPasswordFormSuggestionSuffix = @" ••••••••";
   const std::string frameId = SysNSStringToUTF8(frameID);
   web::WebFrame* frame =
       feature->GetWebFramesManager(_webState)->GetFrameWithId(frameId);
+  if (!frame) {
+    completion();
+    return;
+  }
 
   switch (suggestion.popupItemId) {
     case autofill::PopupItemId::kAllSavedPasswordsEntry: {
@@ -839,7 +843,7 @@ NSString* const kPasswordFormSuggestionSuffix = @" ••••••••";
     autofill::FormSignature formSignature =
         found ? CalculateFormSignature(form) : autofill::FormSignature(0);
     autofill::FieldSignature fieldSignature = autofill::FieldSignature(0);
-    int maxLength = 0;
+    uint64_t maxLength = 0;
 
     if (found) {
       for (const autofill::FormFieldData& field : form.fields) {

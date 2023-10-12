@@ -105,8 +105,7 @@ android_resources("java_resources") {
     "java/res/drawable-xxxhdpi/google_play.png",
     "java/res/drawable-xxxhdpi/star_gray.png",
     "java/res/drawable-xxxhdpi/star_green.png",
-    "java/res/drawable/pwa_restore_icon_dark.xml",
-    "java/res/drawable/pwa_restore_icon_light.xml",
+    "java/res/drawable/pwa_restore_icon.xml",
     "java/res/drawable/rating_bar.xml",
     "java/res/layout/add_to_homescreen_dialog.xml",
     "java/res/layout/image_zoom_view.xml",
@@ -118,6 +117,8 @@ android_resources("java_resources") {
     "java/res/mipmap-xhdpi/shortcut_icon_shadow.png",
     "java/res/mipmap-xxhdpi/shortcut_icon_shadow.png",
     "java/res/mipmap-xxxhdpi/shortcut_icon_shadow.png",
+    "java/res/values-night/colors.xml",
+    "java/res/values/colors.xml",
     "java/res/values/dimens.xml",
     "java/res/values/styles.xml",
   ]
@@ -126,6 +127,7 @@ android_resources("java_resources") {
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
     "//components/webapk/android/libs/common:splash_resources",
+    "//third_party/androidx:androidx_constraintlayout_constraintlayout_java",
   ]
 }
 
@@ -203,5 +205,25 @@ robolectric_library("junit") {
     "//ui/android:ui_java_test_support",
     "//ui/android:ui_junit_test_support",
     "//ui/android:ui_no_recycler_view_java",
+  ]
+}
+
+android_library("unit_device_javatests") {
+  testonly = true
+  resources_package = "org.chromium.components.webapps"
+
+  sources = [ "java/src/org/chromium/components/webapps/pwa_restore_ui/PwaRestoreBottomSheetViewRenderTest.java" ]
+  deps = [
+    ":java",
+    "//base:base_java_test_support",
+    "//chrome/android:chrome_java",
+    "//chrome/test/android:chrome_java_integration_test_support",
+    "//components/browser_ui/bottomsheet/android:java",
+    "//components/browser_ui/widget/android:unit_device_javatests",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/androidx:androidx_test_runner_java",
+    "//third_party/junit:junit",
+    "//ui/android:ui_java",
+    "//ui/android:ui_java_test_support",
   ]
 }

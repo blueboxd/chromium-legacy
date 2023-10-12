@@ -152,7 +152,7 @@ export class LockScreenSettings implements LockScreenSettingsInterface {
     await assertForDuration(property);
   }
 
-  public async goToPasswordSettings():
+  async goToPasswordSettings():
       Promise<{passwordSettings: PasswordSettingsApiRemote}> {
     const passwordSettings =
         await retryUntilSome(() => this.queryPasswordSettings());
@@ -284,7 +284,7 @@ export class LockScreenSettings implements LockScreenSettingsInterface {
     return new PinSettingsApi(element);
   }
 
-  public async goToPinSettings(): Promise<{pinSettings: PinSettingsApiRemote}> {
+  async goToPinSettings(): Promise<{pinSettings: PinSettingsApiRemote}> {
     return {pinSettings: (await this.pinSettingsApi()).newRemote()};
   }
 
@@ -362,9 +362,8 @@ export class GoogleDriveSettings implements GoogleDriveSettingsInterface {
     this.assertRemainingSpace(freeSpace);
   }
 
-  async assertBulkPinningPinnedSize(expectedPinnedSize: string): Promise<void> {
-    assertTrue(
-        this.googleDriveSubpage_?.contentCacheSize === expectedPinnedSize);
+  async assertContentCacheSize(contentCacheSize: string): Promise<void> {
+    assertTrue(this.googleDriveSubpage_?.contentCacheSize === contentCacheSize);
   }
 
   async clickClearOfflineFilesAndAssertNewSize(newSize: string): Promise<void> {

@@ -55,43 +55,76 @@ HanKerning::CharType GetType(base::span<SkRect> bounds,
 
 }  // namespace
 
+void HanKerning::ResetFeatures() {
+  DCHECK(features_);
+#if EXPENSIVE_DCHECKS_ARE_ON()
+  for (wtf_size_t i = num_features_before_; i < features_->size(); ++i) {
+    const hb_feature_t& feature = (*features_)[i];
+    DCHECK(feature.tag == HB_TAG('h', 'a', 'l', 't') ||
+           feature.tag == HB_TAG('v', 'h', 'a', 'l'));
+  }
+#endif
+  features_->Shrink(num_features_before_);
+}
+
 // Compute the character class.
 // See Text Spacing Character Classes:
 // https://drafts.csswg.org/css-text-4/#text-spacing-classes
 HanKerning::CharType HanKerning::GetCharType(UChar ch,
                                              const FontData& font_data) {
-  // TODO(crbug.com/1463890): This logic is only for prototyping.
-  switch (ch) {
-    case kIdeographicCommaCharacter:     // U+3001
-    case kIdeographicFullStopCharacter:  // U+3002
-    case kFullwidthComma:                // U+FF0C
-    case kFullwidthFullStop:             // U+FF0E
-      return font_data.type_for_dot;
-    case kFullwidthColon:      // U+FF1A
-      return font_data.type_for_colon;
-    case kFullwidthSemicolon:  // U+FF1B
-      return font_data.type_for_semicolon;
-    case kLeftSingleQuotationMarkCharacter:  // U+2018
-    case kLeftDoubleQuotationMarkCharacter:  // U+201C
-      return CharType::kOpen;
-    case kRightSingleQuotationMarkCharacter:  // U+2019
-    case kRightDoubleQuotationMarkCharacter:  // U+201D
-      return CharType::kClose;
-    case kIdeographicSpaceCharacter:  // U+3000
-    case kKatakanaMiddleDot:          // U+30FB
-      return CharType::kMiddle;
+  if (ch < kLeftSingleQuotationMarkCharacter) {
+    return CharType::kOther;
+  }
+  if (ch <= kRightDoubleQuotationMarkCharacter) {
+    switch (ch) {
+      case kLeftSingleQuotationMarkCharacter:  // U+2018
+      case kLeftDoubleQuotationMarkCharacter:  // U+201C
+        return CharType::kOpen;
+      case kRightSingleQuotationMarkCharacter:  // U+2019
+      case kRightDoubleQuotationMarkCharacter:  // U+201D
+        return CharType::kClose;
+    }
+    return CharType::kOther;
+  }
+  if (ch < kIdeographicSpaceCharacter) {
+    return CharType::kOther;
   }
   if (Character::IsBlockCjkSymbolsAndPunctuation(ch) ||
       Character::IsEastAsianWidthFullwidth(ch)) {
-    const auto gc = static_cast<UCharCategory>(u_charType(ch));
-    if (gc == UCharCategory::U_START_PUNCTUATION) {
-      return CharType::kOpen;
+    switch (ch) {
+      case kIdeographicSpaceCharacter:  // U+3000
+        return CharType::kMiddle;
+      case kIdeographicCommaCharacter:     // U+3001
+      case kIdeographicFullStopCharacter:  // U+3002
+      case kFullwidthComma:                // U+FF0C
+      case kFullwidthFullStop:             // U+FF0E
+        return font_data.type_for_dot;
+      case kFullwidthColon:  // U+FF1A
+        return font_data.type_for_colon;
+      case kFullwidthSemicolon:  // U+FF1B
+        return font_data.type_for_semicolon;
     }
-    if (gc == UCharCategory::U_END_PUNCTUATION) {
-      return CharType::kClose;
+    const auto gc = static_cast<UCharCategory>(u_charType(ch));
+    switch (gc) {
+      case UCharCategory::U_START_PUNCTUATION:
+        return CharType::kOpen;
+      case UCharCategory::U_END_PUNCTUATION:
+        return CharType::kClose;
+      default:
+        return CharType::kOther;
     }
   }
+  switch (ch) {
+    case kKatakanaMiddleDot:  // U+30FB
+      return CharType::kMiddle;
+  }
   return CharType::kOther;
+}
+
+bool HanKerning::IsOpen(UChar ch) {
+  // Any `FontData` will do, because it only changes between `kClose` and
+  // `kMiddle`. See `FontData::FontData`.
+  return GetCharType(ch, FontData()) == CharType::kOpen;
 }
 
 inline bool HanKerning::ShouldKern(CharType type, CharType last_type) {
@@ -112,10 +145,17 @@ void HanKerning::Compute(const String& text,
                          wtf_size_t start,
                          wtf_size_t end,
                          const SimpleFontData& font,
-                         const LayoutLocale& locale,
-                         bool is_horizontal,
-                         FontFeatures& features) {
-  const FontData& font_data = font.HanKerningData(locale, is_horizontal);
+                         const FontDescription& font_description,
+                         Options options,
+                         FontFeatures* features) {
+  DCHECK(!features_);
+  if (UNLIKELY(font_description.GetTextSpacingTrim() !=
+               TextSpacingTrim::kSpaceFirst)) {
+    return;
+  }
+  const LayoutLocale& locale = font_description.LocaleOrDefault();
+  const FontData& font_data =
+      font.HanKerningData(locale, options.is_horizontal);
   if (!font_data.has_alternate_spacing) {
     return;
   }
@@ -123,7 +163,10 @@ void HanKerning::Compute(const String& text,
   // Compute for the first character.
   Vector<wtf_size_t, 32> indices;
   CharType last_type;
-  if (start) {
+  if (options.apply_start) {
+    indices.push_back(start);
+    last_type = GetCharType(text[start], font_data);
+  } else if (start) {
     last_type = GetCharType(text[start - 1], font_data);
     const CharType type = GetCharType(text[start], font_data);
     if (ShouldKern(type, last_type)) {
@@ -174,11 +217,13 @@ void HanKerning::Compute(const String& text,
     return;
   }
   DCHECK(std::is_sorted(indices.begin(), indices.end(), std::less_equal<>()));
-  const hb_tag_t tag =
-      is_horizontal ? HB_TAG('h', 'a', 'l', 't') : HB_TAG('v', 'h', 'a', 'l');
-  features.Reserve(features.size() + indices.size());
+  const hb_tag_t tag = options.is_horizontal ? HB_TAG('h', 'a', 'l', 't')
+                                             : HB_TAG('v', 'h', 'a', 'l');
+  features_ = features;
+  num_features_before_ = features->size();
+  features->Reserve(features->size() + indices.size());
   for (const wtf_size_t i : indices) {
-    features.Append({tag, 1, i, i + 1});
+    features->Append({tag, 1, i, i + 1});
   }
 }
 

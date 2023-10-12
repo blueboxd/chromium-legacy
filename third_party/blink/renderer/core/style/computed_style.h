@@ -405,15 +405,11 @@ class ComputedStyle final : public ComputedStyleBase {
       const StyleContentAlignmentData& normal_value_behavior) const;
   ContentDistributionType ResolvedAlignContentDistribution(
       const StyleContentAlignmentData& normal_value_behavior) const;
-  StyleSelfAlignmentData ResolvedAlignItems(
-      ItemPosition normal_value_behaviour) const;
   StyleSelfAlignmentData ResolvedAlignSelf(
       ItemPosition normal_value_behaviour,
       const ComputedStyle* parent_style = nullptr) const;
   StyleContentAlignmentData ResolvedAlignContent(
       const StyleContentAlignmentData& normal_behaviour) const;
-  StyleSelfAlignmentData ResolvedJustifyItems(
-      ItemPosition normal_value_behaviour) const;
   StyleSelfAlignmentData ResolvedJustifySelf(
       ItemPosition normal_value_behaviour,
       const ComputedStyle* parent_style = nullptr) const;
@@ -647,6 +643,13 @@ class ComputedStyle final : public ComputedStyleBase {
     return OutlineStyleIsAuto()
                ? NGOutlineType::kIncludeBlockVisualOverflow
                : NGOutlineType::kDontIncludeBlockVisualOverflow;
+  }
+
+  // position-fallback
+
+  // https://drafts.csswg.org/css-anchor-position-1/#position-fallback-list
+  bool MayHavePositionFallbackList() const {
+    return HasOutOfFlowPosition() && PositionFallback();
   }
 
   // Scroll properties.
@@ -2496,7 +2499,7 @@ class ComputedStyle final : public ComputedStyleBase {
 
   // Form-sizing utility function
   bool ApplyControlFixedSize() const {
-    return FormSizing() == EFormSizing::kAuto;
+    return FormSizing() == EFormSizing::kFixed;
   }
 
  private:

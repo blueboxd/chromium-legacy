@@ -28,7 +28,6 @@ class DetachableConsoleLogger;
 class DOMWrapperWorld;
 class DetachableResourceFetcherProperties;
 class KURL;
-class SecurityOrigin;
 class SubresourceFilter;
 class WebSocketHandshakeThrottle;
 
@@ -84,9 +83,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual void CountDeprecation(mojom::WebFeature) const = 0;
   virtual net::SiteForCookies GetSiteForCookies() const = 0;
 
-  // Returns the origin of the top frame in the document.
-  virtual scoped_refptr<const SecurityOrigin> GetTopFrameOrigin() const = 0;
-
   virtual SubresourceFilter* GetSubresourceFilter() const = 0;
   virtual bool ShouldBlockWebSocketByMixedContentCheck(const KURL&) const = 0;
   virtual std::unique_ptr<WebSocketHandshakeThrottle>
@@ -139,7 +135,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       base::optional_ref<const ResourceRequest::RedirectInfo> redirect_info,
       const KURL& url,
       ReportingDisposition reporting_disposition,
-      base::optional_ref<const String> devtools_id) const = 0;
+      const String& devtools_id) const = 0;
   virtual bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
                                                          const KURL&) const = 0;
   virtual const KURL& Url() const = 0;

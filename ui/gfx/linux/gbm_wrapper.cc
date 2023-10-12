@@ -19,6 +19,10 @@
 #include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/gfx/linux/gbm_device.h"
 
+#if BUILDFLAG(IS_CHROMEOS)
+#include "ui/gfx/linux/gbm_util.h"  // nogncheck
+#endif
+
 #if !defined(MINIGBM)
 #include <dlfcn.h>
 #include <fcntl.h>
@@ -72,10 +76,9 @@ base::ScopedFD GetPlaneFdForBo(gbm_bo* bo, size_t plane) {
   // anyways
   if (ret) {
     ret = drmPrimeHandleToFD(dev_fd, plane_handle, DRM_CLOEXEC, &fd);
-    return base::ScopedFD();
   }
 
-  return base::ScopedFD(fd);
+  return ret ? base::ScopedFD() : base::ScopedFD(fd);
 #endif
 }
 
@@ -457,6 +460,10 @@ class Device final : public ui::GbmDevice {
 namespace ui {
 
 std::unique_ptr<GbmDevice> CreateGbmDevice(int fd) {
+#if BUILDFLAG(IS_CHROMEOS)
+  CHECK(ui::IntelMediaCompressionEnvVarIsSet());
+#endif
+
   gbm_device* device = gbm_create_device(fd);
   if (!device)
     return nullptr;

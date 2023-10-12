@@ -85,16 +85,6 @@ void FileSystemAccessObserverHost::DidResolveTransferTokenToObserve(
     return;
   }
 
-  if (resolved_token->url().mount_type() !=
-      storage::FileSystemType::kFileSystemTypeLocal) {
-    // TODO(https://crbug.com/1019297): Support non-local file systems.
-    std::move(callback).Run(
-        file_system_access_error::FromStatus(
-            blink::mojom::FileSystemAccessStatus::kNotSupportedError),
-        mojo::NullReceiver());
-    return;
-  }
-
   switch (resolved_token->type()) {
     case FileSystemAccessPermissionContext::HandleType::kDirectory:
       watcher_manager()->GetDirectoryObservation(
@@ -140,7 +130,7 @@ void FileSystemAccessObserverHost::DidResolveTransferTokenToUnobserve(
     return;
   }
 
-  // TODO(https://crbug.com/1019297): Better handle overlapping observations.
+  // TODO(https://crbug.com/1489057): Better handle overlapping observations.
   base::EraseIf(observations_, [&](const auto& observation) {
     return observation->handle_url() == resolved_token->url();
   });

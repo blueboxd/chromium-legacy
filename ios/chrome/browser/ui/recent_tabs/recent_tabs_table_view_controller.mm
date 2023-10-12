@@ -29,15 +29,15 @@
 #import "components/sync_sessions/open_tabs_ui_delegate.h"
 #import "components/sync_sessions/session_sync_service.h"
 #import "ios/chrome/app/tests_hook.h"
-#import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
-#import "ios/chrome/browser/drag_and_drop/table_view_url_drag_drop_handler.h"
+#import "ios/chrome/browser/drag_and_drop/model/drag_item_util.h"
+#import "ios/chrome/browser/drag_and_drop/model/table_view_url_drag_drop_handler.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_util.h"
-#import "ios/chrome/browser/settings/sync/utils/sync_presenter.h"
-#import "ios/chrome/browser/settings/sync/utils/sync_util.h"
+#import "ios/chrome/browser/settings/model/sync/utils/sync_presenter.h"
+#import "ios/chrome/browser/settings/model/sync/utils/sync_util.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
@@ -63,13 +63,13 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/chrome/browser/sync/enterprise_utils.h"
-#import "ios/chrome/browser/sync/session_sync_service_factory.h"
-#import "ios/chrome/browser/sync/sync_observer_bridge.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/synced_sessions/distant_session.h"
-#import "ios/chrome/browser/synced_sessions/distant_tab.h"
-#import "ios/chrome/browser/synced_sessions/synced_sessions.h"
+#import "ios/chrome/browser/sync/model/enterprise_utils.h"
+#import "ios/chrome/browser/sync/model/session_sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
+#import "ios/chrome/browser/synced_sessions/model/distant_session.h"
+#import "ios/chrome/browser/synced_sessions/model/distant_tab.h"
+#import "ios/chrome/browser/synced_sessions/model/synced_sessions.h"
 #import "ios/chrome/browser/tabs_search/model/tabs_search_service.h"
 #import "ios/chrome/browser/tabs_search/model/tabs_search_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
@@ -86,9 +86,9 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller_ui_delegate.h"
-#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_util.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
@@ -732,8 +732,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
                           syncService:self.syncService
                           accessPoint:signin_metrics::AccessPoint::
                                           ACCESS_POINT_RECENT_TABS
-                            presenter:self
-                   baseViewController:self];
+                            presenter:self];
     if (base::FeatureList::IsEnabled(
             syncer::kReplaceSyncPromosWithSignInPromos)) {
       ChromeAccountManagerService* accountManagerService =
@@ -1788,7 +1787,8 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 }
 
 - (void)showAccountSettings {
-  [self.handler showAccountsSettingsFromViewController:self];
+  [self.handler showAccountsSettingsFromViewController:self
+                                  skipIfUINotAvailable:NO];
 }
 
 - (void)showTrustedVaultReauthForFetchKeysWithTrigger:

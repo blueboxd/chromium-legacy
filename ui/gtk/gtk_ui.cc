@@ -10,12 +10,15 @@
 #include <cmath>
 #include <memory>
 #include <set>
+#include <unordered_set>
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/debug/leak_annotations.h"
 #include "base/environment.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/nix/mime_util_xdg.h"
 #include "base/nix/xdg_util.h"
@@ -30,6 +33,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/linux/fake_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
+#include "ui/base/ime/text_input_flags.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_key.h"
@@ -38,6 +42,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_keyboard_layout_manager.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -231,38 +236,43 @@ bool GtkUi::Initialize() {
       {ActionSource::kMiddleClick, Action::kNone},
       {ActionSource::kRightClick, Action::kMenu}};
 
+  auto connect = [&](auto* sender, const char* detailed_signal, auto receiver) {
+    // Unretained() is safe since GtkUi will own the ScopedGSignal.
+    signals_.emplace_back(sender, detailed_signal,
+                          base::BindRepeating(receiver, base::Unretained(this)),
+                          G_CONNECT_AFTER);
+  };
+
   GtkSettings* settings = gtk_settings_get_default();
-  g_signal_connect_after(settings, "notify::gtk-theme-name",
-                         G_CALLBACK(OnThemeChangedThunk), this);
-  g_signal_connect_after(settings, "notify::gtk-icon-theme-name",
-                         G_CALLBACK(OnThemeChangedThunk), this);
-  g_signal_connect_after(settings, "notify::gtk-application-prefer-dark-theme",
-                         G_CALLBACK(OnThemeChangedThunk), this);
-  g_signal_connect_after(settings, "notify::gtk-cursor-theme-name",
-                         G_CALLBACK(OnCursorThemeNameChangedThunk), this);
-  g_signal_connect_after(settings, "notify::gtk-cursor-theme-size",
-                         G_CALLBACK(OnCursorThemeSizeChangedThunk), this);
+  connect(settings, "notify::gtk-theme-name", &GtkUi::OnThemeChanged);
+  connect(settings, "notify::gtk-icon-theme-name", &GtkUi::OnThemeChanged);
+  connect(settings, "notify::gtk-application-prefer-dark-theme",
+          &GtkUi::OnThemeChanged);
+  connect(settings, "notify::gtk-cursor-theme-name",
+          &GtkUi::OnCursorThemeNameChanged);
+  connect(settings, "notify::gtk-cursor-theme-size",
+          &GtkUi::OnCursorThemeSizeChanged);
+  connect(settings, "notify::gtk-enable-animations",
+          &GtkUi::OnEnableAnimationsChanged);
 
   // Listen for DPI changes.
-  auto* dpi_callback = G_CALLBACK(OnDeviceScaleFactorMaybeChangedThunk);
   if (GtkCheckVersion(4)) {
-    g_signal_connect_after(settings, "notify::gtk-xft-dpi", dpi_callback, this);
+    connect(settings, "notify::gtk-xft-dpi", &GtkUi::OnGtkXftDpiChanged);
   } else {
     GdkScreen* screen = gdk_screen_get_default();
-    g_signal_connect_after(screen, "notify::resolution", dpi_callback, this);
+    connect(screen, "notify::resolution", &GtkUi::OnScreenResolutionChanged);
   }
 
   // Listen for scale factor changes.
   GdkDisplay* display = gdk_display_get_default();
   if (GtkCheckVersion(4)) {
     GListModel* monitors = gdk_display_get_monitors(display);
-    g_signal_connect_after(monitors, "items-changed",
-                           G_CALLBACK(OnMonitorsChangedThunk), this);
+    connect(monitors, "items-changed", &GtkUi::OnMonitorsChanged);
     const guint n_monitors = g_list_model_get_n_items(monitors);
     OnMonitorsChanged(monitors, 0, 0, n_monitors);
   } else {
-    g_signal_connect_after(display, "monitor-added",
-                           G_CALLBACK(OnMonitorAddedThunk), this);
+    connect(display, "monitor-added", &GtkUi::OnMonitorAdded);
+    connect(display, "monitor-removed", &GtkUi::OnMonitorRemoved);
     const int n_monitors = gdk_display_get_n_monitors(display);
     for (int i = 0; i < n_monitors; i++) {
       TrackMonitor(gdk_display_get_monitor(display, i));
@@ -611,6 +621,7 @@ int GtkUi::GetCursorThemeSize() {
 
 bool GtkUi::GetTextEditCommandsForEvent(
     const ui::Event& event,
+    int text_flags,
     std::vector<ui::TextEditCommandAuraLinux>* commands) {
   // GTK4 dropped custom key bindings.
   if (GtkCheckVersion(4)) {
@@ -623,6 +634,16 @@ bool GtkUi::GetTextEditCommandsForEvent(
   // early out here, for now, until a proper solution for ozone is implemented.
   if (!platform_->GetGdkKeymap()) {
     return false;
+  }
+
+  // Skip mapping arrow keys to edit commands for vertical text fields in a
+  // renderer.  Blink handles them.  See crbug.com/484651.
+  if (text_flags & ui::TEXT_INPUT_FLAG_VERTICAL) {
+    ui::KeyboardCode code = event.AsKeyEvent()->key_code();
+    if (code == ui::VKEY_LEFT || code == ui::VKEY_RIGHT ||
+        code == ui::VKEY_UP || code == ui::VKEY_DOWN) {
+      return false;
+    }
   }
 
   // Ensure that we have a keyboard handler.
@@ -675,7 +696,20 @@ void GtkUi::OnCursorThemeSizeChanged(GtkSettings* settings,
   }
 }
 
-void GtkUi::OnDeviceScaleFactorMaybeChanged(void*, GParamSpec*) {
+void GtkUi::OnEnableAnimationsChanged(GtkSettings* settings,
+                                      GtkParamSpec* param) {
+  gfx::Animation::UpdatePrefersReducedMotion();
+}
+
+void GtkUi::OnGtkXftDpiChanged(GtkSettings* settings, GParamSpec* param) {
+  UpdateDeviceScaleFactor();
+}
+
+void GtkUi::OnScreenResolutionChanged(GdkScreen* screen, GParamSpec* param) {
+  UpdateDeviceScaleFactor();
+}
+
+void GtkUi::OnMonitorChanged(GdkMonitor* monitor, GParamSpec* param) {
   UpdateDeviceScaleFactor();
 }
 
@@ -684,13 +718,27 @@ void GtkUi::OnMonitorAdded(GdkDisplay* display, GdkMonitor* monitor) {
   UpdateDeviceScaleFactor();
 }
 
-void GtkUi::OnMonitorsChanged(GListModel* monitors,
+void GtkUi::OnMonitorRemoved(GdkDisplay* display, GdkMonitor* monitor) {
+  monitor_signals_.erase(monitor);
+  UpdateDeviceScaleFactor();
+}
+
+void GtkUi::OnMonitorsChanged(GListModel* list,
                               guint position,
                               guint removed,
                               guint added) {
-  for (size_t i = position; i < position + added; i++) {
-    TrackMonitor(static_cast<GdkMonitor*>(g_list_model_get_item(monitors, i)));
+  const guint n_monitors = g_list_model_get_n_items(list);
+  std::unordered_set<GdkMonitor*> monitors;
+  for (size_t i = 0; i < n_monitors; ++i) {
+    auto* monitor = static_cast<GdkMonitor*>(g_list_model_get_item(list, i));
+    if (!base::Contains(monitor_signals_, monitor)) {
+      TrackMonitor(monitor);
+    }
+    monitors.insert(monitor);
   }
+  std::erase_if(monitor_signals_, [&](const auto& pair) {
+    return !base::Contains(monitors, pair.first);
+  });
   UpdateDeviceScaleFactor();
 }
 
@@ -911,9 +959,15 @@ void GtkUi::UpdateDefaultFont() {
 }
 
 void GtkUi::TrackMonitor(GdkMonitor* monitor) {
-  auto* callback = G_CALLBACK(OnDeviceScaleFactorMaybeChangedThunk);
-  g_signal_connect_after(monitor, "notify::geometry", callback, this);
-  g_signal_connect_after(monitor, "notify::scale-factor", callback, this);
+  auto connect = [&](const char* detailed_signal) {
+    // Unretained() is safe since GtkUi will own the ScopedGSignal.
+    return ScopedGSignal(
+        monitor, detailed_signal,
+        base::BindRepeating(&GtkUi::OnMonitorChanged, base::Unretained(this)),
+        G_CONNECT_AFTER);
+  };
+  monitor_signals_[monitor] = {connect("notify::geometry"),
+                               connect("notify::scale-factor")};
 }
 
 ui::DisplayConfig GtkUi::GetDisplayConfig() const {

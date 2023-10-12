@@ -69,6 +69,9 @@ const char kArcAvailability[] = "arc-availability";
 // Signals the availability of the ARC instance on this device.
 const char kArcAvailable[] = "arc-available";
 
+// Switch that blocks KeyMint. When KeyMint is blocked, Keymaster is enabled.
+const char kArcBlockKeyMint[] = "arc-block-keymint";
+
 // Flag that forces ARC data be cleaned on each start.
 const char kArcDataCleanupOnStart[] = "arc-data-cleanup-on-start";
 
@@ -944,8 +947,8 @@ const char kQsShowLocaleTile[] = "qs-show-locale-tile";
 // "/usr/share/chromeos-assets/regulatory_labels/".
 const char kRegulatoryLabelDir[] = "regulatory-label-dir";
 
-// Testing timeout for reboot command. Useful for tast tests.
-const char kRemoteRebootCommandTimeoutInSecondsForTesting[] =
+// Testing delay for reboot command. Useful for tast tests.
+const char kRemoteRebootCommandDelayInSecondsForTesting[] =
     "remote-reboot-command-timeout-in-seconds-for-testing";
 
 // Indicates that reven UI strings and features should be shown.
@@ -1093,6 +1096,11 @@ const char kCameraEffectsSupportedByHardware[] =
 // Prevent kiosk autolaunch for testing.
 const char kPreventKioskAutolaunchForTesting[] =
     "prevent-kiosk-autolaunch-for-testing";
+
+// Allows the Ash shelf to apply the default pin layout without waiting for Sync
+// to download data from the server (which many tests can't achieve).
+const char kAllowDefaultShelfPinLayoutIgnoringSync[] =
+    "ash-allow-default-shelf-pin-layout-ignoring-sync";
 
 bool IsAuthSessionCryptohomeEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1256,6 +1264,11 @@ bool IsCameraEffectsSupportedByHardware() {
 bool UseFakeCrasAudioClientForDBus() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kUseFakeCrasAudioClientForDBus);
+}
+
+bool ShouldAllowDefaultShelfPinLayoutIgnoringSync() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kAllowDefaultShelfPinLayoutIgnoringSync);
 }
 
 }  // namespace switches

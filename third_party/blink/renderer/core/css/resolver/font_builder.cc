@@ -203,6 +203,11 @@ void FontBuilder::SetKerning(FontDescription::Kerning kerning) {
   font_description_.SetKerning(kerning);
 }
 
+void FontBuilder::SetTextSpacingTrim(TextSpacingTrim text_spacing_trim) {
+  Set(PropertySetFlag::kTextSpacingTrim);
+  font_description_.SetTextSpacingTrim(text_spacing_trim);
+}
+
 void FontBuilder::SetFontOpticalSizing(OpticalSizing font_optical_sizing) {
   Set(PropertySetFlag::kFontOpticalSizing);
 
@@ -382,7 +387,7 @@ void FontBuilder::UpdateAdjustedSize(FontDescription& font_description,
     font_description.SetSizeAdjust(FontSizeAdjust(
         aspect_value.has_value() ? aspect_value.value()
                                  : FontSizeAdjust::kFontSizeAdjustNone,
-        size_adjust.GetMetric(), size_adjust.IsFromFont()));
+        size_adjust.GetMetric(), FontSizeAdjust::ValueType::kFromFont));
   }
 
   if (auto adjusted_size = FontSizeFunctions::MetricsMultiplierAdjustedFontSize(
@@ -527,6 +532,13 @@ bool FontBuilder::UpdateFontDescription(FontDescription& description,
     if (description.GetKerning() != font_description_.GetKerning()) {
       modified = true;
       description.SetKerning(font_description_.GetKerning());
+    }
+  }
+  if (IsSet(PropertySetFlag::kTextSpacingTrim)) {
+    if (description.GetTextSpacingTrim() !=
+        font_description_.GetTextSpacingTrim()) {
+      modified = true;
+      description.SetTextSpacingTrim(font_description_.GetTextSpacingTrim());
     }
   }
   if (IsSet(PropertySetFlag::kFontOpticalSizing)) {

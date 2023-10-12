@@ -12,10 +12,12 @@ import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.text.TextUtils;
 import android.util.FloatProperty;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.View.OnKeyListener;
 import android.widget.TextView;
 
@@ -35,7 +37,6 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
-import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -339,6 +340,7 @@ class LocationBarMediator
         if (mIsTablet) {
             mLocationBarDataProvider.getNewTabPageDelegate().setUrlFocusChangeAnimationPercent(
                     fraction);
+            mLocationBarLayout.setUrlFocusChangePercent(fraction);
         } else {
             // Determine when the focus state changes as a result of ntp scrolling.
             boolean isLocationBarFocusedFromNtpScroll =
@@ -650,6 +652,12 @@ class LocationBarMediator
         updateShouldAnimateIconChanges();
         if (!mIsTablet && !showExpandedState) {
             mLocationBarLayout.setUrlActionContainerVisibility(View.GONE);
+        }
+        if (mIsTablet) {
+            mLocationBarLayout.setUrlFocusChangePercent(showExpandedState ? 1.0f : 0.0f);
+            mLocationBarLayout.updateLayoutParams(
+                    MeasureSpec.makeMeasureSpec(
+                            mLocationBarLayout.getMeasuredWidth(), MeasureSpec.EXACTLY));
         }
         // Reset to the default value.
         mShouldClearOmniboxOnFocus = true;
@@ -1134,21 +1142,6 @@ class LocationBarMediator
         boolean isRtl = view.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
         if (mAutocompleteCoordinator.handleKeyEvent(keyCode, event)) {
             return true;
-        } else if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (BackPressManager.isEnabled()) {
-                return false;
-            }
-            if (KeyNavigationUtil.isActionDown(event) && event.getRepeatCount() == 0) {
-                // Tell the framework to start tracking this event.
-                mLocationBarLayout.getKeyDispatcherState().startTracking(event, this);
-                return true;
-            } else if (KeyNavigationUtil.isActionUp(event)) {
-                mLocationBarLayout.getKeyDispatcherState().handleUpEvent(event);
-                if (event.isTracking() && !event.isCanceled()) {
-                    backKeyPressed();
-                    return true;
-                }
-            }
         } else if (keyCode == KeyEvent.KEYCODE_ESCAPE) {
             if (KeyNavigationUtil.isActionDown(event) && event.getRepeatCount() == 0) {
                 revertChanges();
@@ -1387,9 +1380,6 @@ class LocationBarMediator
     // Traditional way to intercept keycode_back, which is deprecated from T.
     @Override
     public void backKeyPressed() {
-        if (!BackPressManager.isEnabled()) {
-            BackPressManager.record(BackPressHandler.Type.LOCATION_BAR);
-        }
         if (mBackKeyBehavior.handleBackKeyPressed()) {
             return;
         }
@@ -1490,5 +1480,31 @@ class LocationBarMediator
         mLensController.startLens(mWindowAndroid,
                 new LensIntentParams.Builder(lensEntryPoint, mLocationBarDataProvider.isIncognito())
                         .build());
+    }
+
+    /**
+     * Sets the color of the hint text in the search box based on the current page. If the current
+     * page is Start Surface or NTP, we set the hint text color to be colorOnSurface or
+     * colorOnPrimaryContainer based on whether useColorfulOmniboxType is true or not. If the
+     * current page is not Start Surface or NTP, we set the hint text color back to the previous
+     * value set before entering Start Surface or NTP.
+     * @param useColorfulOmniboxType True if the surface polish flag and omnibox
+     *         color variant are both enabled and we need to use the colorful type for the url bar
+     *         hint color.
+     * @param usePreviousHintTextColor True if we leave the Start Surface or NTP and return to the
+     *         value set originally.
+     */
+    public void setUrlBarHintTextColorForSurfacePolish(
+            boolean useColorfulOmniboxType, boolean usePreviousHintTextColor) {
+        mUrlCoordinator.setUrlBarHintTextColorForSurfacePolish(
+                useColorfulOmniboxType, usePreviousHintTextColor, mBrandedColorScheme);
+    }
+
+    /**
+     * Sets the typeface and style of the search text in the search box.
+     * @param typeface The typeface for the search text in the search box.
+     */
+    public void setUrlBarTypeface(Typeface typeface) {
+        mUrlCoordinator.setUrlBarTypeface(typeface);
     }
 }

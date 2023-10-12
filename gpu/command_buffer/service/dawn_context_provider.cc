@@ -26,6 +26,7 @@
 #include "third_party/skia/include/gpu/graphite/Context.h"
 #include "third_party/skia/include/gpu/graphite/dawn/DawnBackendContext.h"
 #include "third_party/skia/include/gpu/graphite/dawn/DawnUtils.h"
+#include "ui/gl/gl_implementation.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "third_party/dawn/include/dawn/native/D3D11Backend.h"
@@ -41,18 +42,17 @@ void LogInfo(WGPULoggingType type, char const* message, void* userdata) {
 }
 
 void LogError(WGPUErrorType type, char const* message, void* userdata) {
-  LOG(ERROR) << message;
-  static crash_reporter::CrashKeyString<1024> error_key(
-      "dawn-validation-error");
-  error_key.Set(message);
-  base::debug::DumpWithoutCrashing();
+  if (type != WGPUErrorType_NoError) {
+    static_cast<DawnContextProvider*>(userdata)->OnError(type, message);
+  }
 }
 
 void LogDeviceLost(WGPUDeviceLostReason reason,
                    char const* message,
                    void* userdata) {
   if (reason != WGPUDeviceLostReason_Destroyed) {
-    LOG(FATAL) << message;
+    static_cast<DawnContextProvider*>(userdata)->OnError(
+        WGPUErrorType_DeviceLost, message);
   }
 }
 
@@ -147,6 +147,10 @@ wgpu::BackendType DawnContextProvider::GetDefaultBackendType() {
              switch_value == switches::kSkiaGraphiteBackendDawnVulkan) {
     return wgpu::BackendType::Vulkan;
   }
+
+  if (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader) {
+    return wgpu::BackendType::Vulkan;
+  }
 #if BUILDFLAG(IS_WIN)
   return base::FeatureList::IsEnabled(features::kSkiaGraphiteDawnUseD3D12)
              ? wgpu::BackendType::D3D12
@@ -165,13 +169,21 @@ wgpu::BackendType DawnContextProvider::GetDefaultBackendType() {
 bool DawnContextProvider::DefaultForceFallbackAdapter() {
   return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
              switches::kSkiaGraphiteBackend) ==
-         switches::kSkiaGraphiteBackendDawnSwiftshader;
+             switches::kSkiaGraphiteBackendDawnSwiftshader ||
+         gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader;
 }
 
 DawnContextProvider::DawnContextProvider(
     webgpu::DawnCachingInterfaceFactory* caching_interface_factory)
     : caching_interface_factory_(caching_interface_factory) {}
-DawnContextProvider::~DawnContextProvider() = default;
+
+DawnContextProvider::~DawnContextProvider() {
+  if (device_) {
+    device_.SetUncapturedErrorCallback(nullptr, nullptr);
+    device_.SetDeviceLostCallback(nullptr, nullptr);
+    device_.SetLoggingCallback(nullptr, nullptr);
+  }
+}
 
 bool DawnContextProvider::Initialize(wgpu::BackendType backend_type,
                                      bool force_fallback_adapter,
@@ -219,13 +231,8 @@ bool DawnContextProvider::Initialize(wgpu::BackendType backend_type,
   wgpu::DawnTogglesDescriptor toggles_desc;
   toggles_desc.enabledToggles = enabled_toggles.data();
   toggles_desc.disabledToggles = disabled_toggles.data();
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   toggles_desc.enabledToggleCount = enabled_toggles.size();
   toggles_desc.disabledToggleCount = disabled_toggles.size();
-#else
-  toggles_desc.enabledTogglesCount = enabled_toggles.size();
-  toggles_desc.disabledTogglesCount = disabled_toggles.size();
-#endif
 
   wgpu::DeviceDescriptor descriptor;
   descriptor.nextInChain = &toggles_desc;
@@ -262,34 +269,31 @@ bool DawnContextProvider::Initialize(wgpu::BackendType backend_type,
     return false;
   }
 
+  const wgpu::FeatureName kOptionalFeatures[] = {
+      wgpu::FeatureName::DualSourceBlending,
+      wgpu::FeatureName::MultiPlanarFormatExtendedUsages,
+      wgpu::FeatureName::MultiPlanarFormatP010,
+      wgpu::FeatureName::Norm16TextureFormats,
+      wgpu::FeatureName::TransientAttachments,
+  };
+
   wgpu::Adapter adapter(adapters[0].Get());
-  if (adapter.HasFeature(wgpu::FeatureName::TransientAttachments)) {
-    features.push_back(wgpu::FeatureName::TransientAttachments);
+  for (auto feature : kOptionalFeatures) {
+    if (!adapter.HasFeature(feature)) {
+      continue;
+    }
+    features.push_back(feature);
+
     // Enabling MSAARenderToSingleSampled causes performance regression without
     // TransientAttachments support.
-    if (adapter.HasFeature(wgpu::FeatureName::MSAARenderToSingleSampled)) {
+    if (feature == wgpu::FeatureName::TransientAttachments &&
+        adapter.HasFeature(wgpu::FeatureName::MSAARenderToSingleSampled)) {
       features.push_back(wgpu::FeatureName::MSAARenderToSingleSampled);
     }
   }
 
-  if (adapter.HasFeature(wgpu::FeatureName::Norm16TextureFormats)) {
-    features.push_back(wgpu::FeatureName::Norm16TextureFormats);
-  }
-
-  if (adapter.HasFeature(wgpu::FeatureName::MultiPlanarFormatP010)) {
-    features.push_back(wgpu::FeatureName::MultiPlanarFormatP010);
-  }
-
-  if (adapter.HasFeature(wgpu::FeatureName::MultiPlanarFormatExtendedUsages)) {
-    features.push_back(wgpu::FeatureName::MultiPlanarFormatExtendedUsages);
-  }
-
   descriptor.requiredFeatures = features.data();
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   descriptor.requiredFeatureCount = std::size(features);
-#else
-  descriptor.requiredFeaturesCount = std::size(features);
-#endif
 
   wgpu::Device device = adapter.CreateDevice(&descriptor);
   if (!device) {
@@ -297,8 +301,8 @@ bool DawnContextProvider::Initialize(wgpu::BackendType backend_type,
     return false;
   }
 
-  device.SetUncapturedErrorCallback(&LogError, nullptr);
-  device.SetDeviceLostCallback(&LogDeviceLost, nullptr);
+  device.SetUncapturedErrorCallback(&LogError, static_cast<void*>(this));
+  device.SetDeviceLostCallback(&LogDeviceLost, static_cast<void*>(this));
   device.SetLoggingCallback(&LogInfo, nullptr);
   device_ = std::move(device);
 
@@ -348,5 +352,33 @@ Microsoft::WRL::ComPtr<ID3D11Device> DawnContextProvider::GetD3D11Device()
   return nullptr;
 }
 #endif
+
+absl::optional<error::ContextLostReason> DawnContextProvider::GetResetStatus()
+    const {
+  base::AutoLock auto_lock(context_lost_lock_);
+  return context_lost_reason_;
+}
+
+void DawnContextProvider::OnError(WGPUErrorType error_type,
+                                  const char* message) {
+  LOG(ERROR) << message;
+
+  static crash_reporter::CrashKeyString<1024> error_key("dawn-error");
+  error_key.Set(message);
+  base::debug::DumpWithoutCrashing();
+
+  base::AutoLock auto_lock(context_lost_lock_);
+  if (context_lost_reason_.has_value()) {
+    return;
+  }
+
+  if (error_type == WGPUErrorType_OutOfMemory) {
+    context_lost_reason_ = error::kOutOfMemory;
+  } else if (error_type == WGPUErrorType_Validation) {
+    context_lost_reason_ = error::kGuilty;
+  } else {
+    context_lost_reason_ = error::kUnknown;
+  }
+}
 
 }  // namespace gpu

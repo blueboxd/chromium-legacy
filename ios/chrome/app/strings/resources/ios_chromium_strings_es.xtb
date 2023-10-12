@@ -4,6 +4,7 @@
 <translation id="1046370274005147998">Busca por voz en Chromium.</translation>
 <translation id="1047130070405668746">Selecciona Chromium</translation>
 <translation id="1091252999271033193">Esto significa que Chromium siempre solicitará la vista del sitio web como móvil.</translation>
+<translation id="1171824629317156389">En iOS, ve a Ajustes, selecciona Chromium, toca "App del navegador por omisión" y elige Chromium.</translation>
 <translation id="1185134272377778587">Información de Chromium</translation>
 <translation id="1257458525759135959">Para guardar imágenes, toca Ajustes y permite que Chromium añada fotos.</translation>
 <translation id="1289216811211435351">Cambiar a Chromium</translation>
@@ -16,6 +17,7 @@
 <translation id="1591119736686995611">Abre la cuadrícula de pestañas de Chromium.</translation>
 <translation id="1617663976202781617">Datos de la sincronización de Chromium</translation>
 <translation id="1647558790457890304">Configuración de Chromium</translation>
+<translation id="164952285225495380">Ya se está haciendo un seguimiento de este paquete en Chromium.</translation>
 <translation id="1722370509450468186">Tu contraseña se guardará en tu cuenta (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Datos de Chromium borrados</translation>
 <translation id="1791845338122684020">Abre la página del historial de Chromium.</translation>
@@ -94,7 +96,6 @@ Para cambiar este ajuste, <ph name="BEGIN_LINK" />borra los datos de Chromium de
 <translation id="4736424910885271643"><ph name="HOSTED_DOMAIN" /> gestiona tu cuenta, así que se borrarán tus datos de Chromium en este dispositivo</translation>
 <translation id="4790638144988730920">Sigue usando los datos de Chromium en tu cuenta de Google.</translation>
 <translation id="4828317641996116749">Chromium no ha podido comprobar todas las contraseñas. Vuelve a intentarlo más tarde.</translation>
-<translation id="4935539884203837577">Chromium puede detectar los números de seguimiento que introduzcas y hacer un seguimiento de tus paquetes en la página Nueva pestaña, además de ayudarte con otras experiencias de compra de Chromium.</translation>
 <translation id="4985291216379576555">Sin conexión, Chromium no puede comprobar si hay actualizaciones</translation>
 <translation id="4996471330284142407">Haz más cosas con Chromium: funciona más rápido que nunca y es sencillo y seguro.</translation>
 <translation id="4999538639245140991">Al cerrar sesión en una cuenta gestionada por <ph name="SIGNOUT_MANAGED_DOMAIN" />, se eliminan tus datos de Chromium en este dispositivo, pero permanecen en tu cuenta de Google.</translation>
@@ -140,6 +141,7 @@ Notas importantes:
 1. Abre Configuración
 2. Toca Aplicación de navegador predeterminada
 3. Selecciona Chromium.</translation>
+<translation id="6197255575340902638">Si ocultas <ph name="MODULE_NAME" />, Chromium dejará de hacer un seguimiento automático de tus próximos paquetes y eliminará todos los datos de seguimiento de envíos anteriores.</translation>
 <translation id="6247557882553405851">Gestor de contraseñas de Google</translation>
 <translation id="6268381023930128611">¿Cerrar sesión en Chromium?</translation>
 <translation id="6324041800010509197">Acceder a la cuadrícula de pestañas en Chromium</translation>

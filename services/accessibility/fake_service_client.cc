@@ -106,12 +106,25 @@ void FakeServiceClient::GetVoices(GetVoicesCallback callback) {
   std::move(callback).Run(std::move(voices));
 }
 
+void FakeServiceClient::DarkenScreen(bool darken) {
+  if (darken_screen_callback_) {
+    darken_screen_callback_.Run(darken);
+  }
+}
+
 void FakeServiceClient::SetFocusRings(
     std::vector<mojom::FocusRingInfoPtr> focus_rings,
     mojom::AssistiveTechnologyType at_type) {
   focus_rings_for_type_[at_type] = std::move(focus_rings);
   if (focus_rings_callback_) {
     focus_rings_callback_.Run();
+  }
+}
+
+void FakeServiceClient::SetHighlights(const std::vector<gfx::Rect>& rects,
+                                      SkColor color) {
+  if (highlights_callback_) {
+    highlights_callback_.Run(rects, color);
   }
 }
 #endif  // BUILDFLAG(SUPPORTS_OS_ACCESSIBILITY_SERVICE)
@@ -143,10 +156,22 @@ void FakeServiceClient::SendTtsUtteranceEvent(mojom::TtsEventPtr tts_event) {
   tts_utterance_client_->OnEvent(std::move(tts_event));
 }
 
+void FakeServiceClient::SetDarkenScreenCallback(
+    base::RepeatingCallback<void(bool darken)> callback) {
+  darken_screen_callback_ = std::move(callback);
+}
+
 void FakeServiceClient::SetFocusRingsCallback(
     base::RepeatingCallback<void()> callback) {
   focus_rings_callback_ = std::move(callback);
 }
+
+void FakeServiceClient::SetHighlightsCallback(
+    base::RepeatingCallback<void(const std::vector<gfx::Rect>& rects,
+                                 SkColor color)> callback) {
+  highlights_callback_ = callback;
+}
+
 bool FakeServiceClient::UserInterfaceIsBound() const {
   return ux_receivers_.size();
 }

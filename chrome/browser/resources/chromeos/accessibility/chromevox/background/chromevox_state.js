@@ -27,11 +27,6 @@ export class ChromeVoxState {
     return false;
   }
 
-  /** @return {CursorRange} */
-  get pageSel() {
-    return null;
-  }
-
   /** @return {boolean} */
   get talkBackEnabled() {
     return false;
@@ -41,22 +36,6 @@ export class ChromeVoxState {
    * @param {boolean} newValue
    */
   set isReadingContinuously(newValue) {}
-
-  /**
-   * @param {CursorRange} newPageSel
-   */
-  set pageSel(newPageSel) {}
-
-  /**
-   * Navigate to the given range - it both sets the range and outputs it.
-   * @param {!CursorRange} range The new range.
-   * @param {boolean=} opt_focus Focus the range; defaults to true.
-   * @param {TtsSpeechProperties=} opt_speechProps Speech properties.
-   * @param {boolean=} opt_skipSettingSelection If true, does not set
-   *     the selection, otherwise it does by default.
-   */
-  navigateToRange(range, opt_focus, opt_speechProps, opt_skipSettingSelection) {
-  }
 
   /**
    * Restores the last valid ChromeVox range.

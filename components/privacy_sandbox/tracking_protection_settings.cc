@@ -20,9 +20,6 @@ TrackingProtectionSettings::TrackingProtectionSettings(
     TrackingProtectionOnboarding* onboarding_service)
     : pref_service_(pref_service), onboarding_service_(onboarding_service) {
   CHECK(pref_service_);
-  if (onboarding_service_) {
-    onboarding_observation_.Observe(onboarding_service_);
-  }
 
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
@@ -52,8 +49,19 @@ TrackingProtectionSettings::TrackingProtectionSettings(
           &TrackingProtectionSettings::OnEnterpriseControlForPrefsChanged,
           base::Unretained(this)));
 
-  // It's possible enterprise status changed while profile was shut down, so
-  // check on startup.
+  if (onboarding_service_) {
+    onboarding_observation_.Observe(onboarding_service_);
+
+    // It's possible the user was offboarded while profile was shut down.
+    // TODO(fmacintosh): Remove this if the behavior ends up being that
+    // we offboard only after seeing notice.
+    if (onboarding_service_->IsOffboarded() &&
+        IsTrackingProtection3pcdEnabled()) {
+      OnTrackingProtectionOffboarded();
+    }
+  }
+
+  // It's possible enterprise status changed while profile was shut down.
   OnEnterpriseControlForPrefsChanged();
 }
 
@@ -90,6 +98,10 @@ void TrackingProtectionSettings::OnTrackingProtectionOnboarded() {
   pref_service_->SetBoolean(prefs::kTrackingProtection3pcdEnabled, true);
 }
 
+void TrackingProtectionSettings::OnTrackingProtectionOffboarded() {
+  pref_service_->SetBoolean(prefs::kTrackingProtection3pcdEnabled, false);
+}
+
 void TrackingProtectionSettings::OnDoNotTrackEnabledPrefChanged() {
   for (auto& observer : observers_) {
     observer.OnDoNotTrackEnabledChanged();
@@ -103,8 +115,9 @@ void TrackingProtectionSettings::OnBlockAllThirdPartyCookiesPrefChanged() {
 }
 
 void TrackingProtectionSettings::OnTrackingProtection3pcdPrefChanged() {
-  // 3PC blocking may change as a result of entering/leaving the experiment.
   for (auto& observer : observers_) {
+    observer.OnTrackingProtection3pcdChanged();
+    // 3PC blocking may change as a result of entering/leaving the experiment.
     observer.OnBlockAllThirdPartyCookiesChanged();
   }
 }

@@ -54,15 +54,6 @@ GURL GetShownURL(const FacetURI& facet_uri, const GURL& url) {
 
 }  // namespace
 
-std::pair<std::string, GURL> GetShownOriginAndLinkUrl(
-    const PasswordForm& password_form) {
-  FacetURI facet_uri =
-      FacetURI::FromPotentiallyInvalidSpec(password_form.signon_realm);
-  return {GetShownOrigin(facet_uri, password_form.app_display_name,
-                         password_form.url),
-          GetShownURL(facet_uri, password_form.url)};
-}
-
 std::string GetShownOrigin(const CredentialFacet& facet) {
   auto facet_uri = password_manager::FacetURI::FromPotentiallyInvalidSpec(
       facet.signon_realm);
@@ -164,11 +155,6 @@ std::u16string ToUsernameString(const std::u16string& username) {
 
 std::u16string ToUsernameString(const std::string& username) {
   return ToUsernameString(base::UTF8ToUTF16(username));
-}
-
-GURL RPIDToURL(const std::string& relying_party_id) {
-  return GURL(base::StrCat(
-      {url::kHttpsScheme, url::kStandardSchemeSeparator, relying_party_id}));
 }
 
 }  // namespace password_manager

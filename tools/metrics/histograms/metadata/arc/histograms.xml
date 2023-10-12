@@ -110,13 +110,23 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <variants name="ArcPerformanceAppCategories">
+  <variant name=".AmongUs" summary="Casual game 2: Among Us"/>
+  <variant name=".CandyCrush" summary="Casual game 2: Candy Crush"/>
+  <variant name=".FIFAMobile" summary="Online game: FIFA Mobile"/>
   <variant name=".GachaClub" summary="Casual game 2: Gacha Club"/>
   <variant name=".GarenaFreeFire" summary="Shooter game: Garena Free Fire"/>
+  <variant name=".GenshinImpact" summary="Online game: Genshin Impact"/>
+  <variant name=".Homescapes" summary="Casual game 2: Homescapes"/>
+  <variant name=".MinecraftConsumerEdition"
+      summary="Online game 2: Minecraft: Consumer Edition"/>
   <variant name=".MinecraftEducationEdition"
       summary="Online game 2: Minecraft: Education Edition"/>
   <variant name=".Netflix" summary="Video playback app: Netflix"/>
   <variant name=".PUBGMobile" summary="Heavy Game: PUBG Mobile"/>
+  <variant name=".RaidLegends" summary="Online game: Raid: Shadow Legends"/>
   <variant name=".Roblox" summary="Online game: Roblox"/>
+  <variant name=".TocaLife" summary="Online game: Toca Life"/>
+  <variant name=".Underlords" summary="Online game: Underlords"/>
 </variants>
 
 <variants name="ArcSyncAppTypes">
@@ -625,7 +635,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.AppSync.InitialSession.InstalledAppSize" units="MB"
-    expires_after="2024-01-30">
+    expires_after="2024-03-31">
   <owner>batoon@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -649,7 +659,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.AppSync.InitialSession.NumApps{ArcSyncAppTypes}"
-    units="apps" expires_after="2024-01-30">
+    units="apps" expires_after="2024-03-31">
   <owner>batoon@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -897,7 +907,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Arc.CloudDpc{TimedCloudDpcOp}.TimeDelta{SuccessFailure}{ArcUserTypes}"
-    units="ms" expires_after="2024-01-30">
+    units="ms" expires_after="2024-03-31">
   <owner>batoon@google.com</owner>
   <owner>mhasank@google.com</owner>
   <owner>arc-commercial@google.com</owner>
@@ -2534,7 +2544,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.VmDataMigration.GetAndroidDataInfoDuration" units="ms"
-    expires_after="2024-01-01">
+    expires_after="2024-03-31">
   <owner>momohatt@google.com</owner>
   <owner>youkichihosoi@google.com</owner>
   <owner>arc-storage@google.com</owner>
@@ -2825,6 +2835,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Arc.WM.WindowClosedDelayTime.ArcApp" units="ms"
+    expires_after="2024-10-05">
+  <owner>lingyufeng@google.com</owner>
+  <owner>arc-framework@google.com</owner>
+  <summary>
+    Records the time elapsed from a window closing operation until the window is
+    destroyed. The data is collected once when a closing operation happens.
+  </summary>
+</histogram>
+
 <histogram name="Arc.WM.WindowMaximizedDelayTime.{ChromeOSAppType}" units="ms"
     expires_after="2024-09-30">
   <owner>lingyufeng@google.com</owner>
@@ -2834,6 +2854,7 @@ chromium-metrics-reviews@google.com.
     state is changed to be maximized. The data is collected once when a
     maximizing operation happens.
   </summary>
+  <token key="ChromeOSAppType" variants="ChromeOSAppType"/>
 </histogram>
 
 <histogram name="Arc.WM.WindowMinimizedDelayTime.{ChromeOSAppType}" units="ms"
@@ -2845,6 +2866,7 @@ chromium-metrics-reviews@google.com.
     state is changed to be minimized. The data is collected once when a
     minimizing operation happens.
   </summary>
+  <token key="ChromeOSAppType" variants="ChromeOSAppType"/>
 </histogram>
 
 </histograms>

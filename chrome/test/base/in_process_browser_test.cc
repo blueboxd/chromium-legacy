@@ -33,7 +33,6 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/application_lifetime_desktop.h"
@@ -79,7 +78,7 @@
 #include "components/feature_engagement/public/feature_list.h"
 #include "components/google/core/common/google_util.h"
 #include "components/os_crypt/sync/os_crypt_mocker.h"
-#include "components/signin/public/base/signin_switches.h"
+#include "components/search_engines/search_engine_choice_utils.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/common/content_paths.h"
@@ -582,7 +581,8 @@ void InProcessBrowserTest::SetUp() {
   // profile on browser start, which is unexpected by mosts tests. Tests which
   // expect this can allow the prompt as desired.
 #if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
-  if (base::FeatureList::IsEnabled(switches::kSearchEngineChoice)) {
+  if (search_engines::IsChoiceScreenFlagEnabled(
+          search_engines::ChoicePromo::kDialog)) {
     SearchEngineChoiceService::SetDialogDisabledForTests(
         /*dialog_disabled=*/true);
   }

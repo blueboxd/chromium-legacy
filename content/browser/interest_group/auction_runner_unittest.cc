@@ -1502,6 +1502,8 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     interest_group_manager_.reset();
     auction_nonce_manager_.reset();
 
+    ad_auction_page_data_ = nullptr;
+
     RenderViewHostTestHarness::TearDown();
   }
 
@@ -2756,7 +2758,8 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
       const url::Origin& bidder1_seller,
       const url::Origin& bidder2_seller,
       bool bid_from_component_auction_wins,
-      bool report_post_auction_signals = false) {
+      bool report_post_auction_signals = false,
+      bool add_component2_with_no_buyers = false) {
     interest_group_buyers_.emplace();
     std::vector<url::Origin> component1_buyers;
     std::vector<url::Origin> component2_buyers;
@@ -2787,7 +2790,10 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
             /*bid_from_component_auction_wins=*/false,
             /*report_post_auction_signals=*/report_post_auction_signals));
 
-    if (!component2_buyers.empty()) {
+    if (!component2_buyers.empty() || add_component2_with_no_buyers) {
+      if (add_component2_with_no_buyers) {
+        DCHECK(component2_buyers.empty());
+      }
       component_auctions_.emplace_back(CreateAuctionConfig(
           kComponentSeller2Url, std::move(component2_buyers)));
       auction_worklet::AddJavascriptResponse(
@@ -7374,6 +7380,178 @@ TEST_F(AuctionRunnerTest, PromiseSignalsComponentAuction) {
   EXPECT_THAT(result_.errors, testing::ElementsAre());
 }
 
+// Test what happens when a network error on seller JS happens in a component
+// auction (kComponentSeller2 below) that had no bids but potential additional
+// bids, with promise coming in after the error.
+//
+// See https://crbug.com/1488417
+TEST_F(AuctionRunnerTest, PromiseAndNetworkErrors) {
+  base::test::ScopedFeatureList additional_bids_on;
+  additional_bids_on.InitAndEnableFeature(
+      blink::features::kFledgeNegativeTargeting);
+
+  SetUpComponentAuctionAndResponses(/*bidder1_seller=*/kComponentSeller1,
+                                    /*bidder2_seller=*/kComponentSeller1,
+                                    /*bid_from_component_auction_wins=*/true,
+                                    /*report_post_auction_signals=*/false,
+                                    /*add_component2_with_no_buyers=*/true);
+  component_auctions_[1].expects_additional_bids = true;
+  component_auctions_[1].non_shared_params.auction_nonce =
+      static_cast<base::Uuid>(auction_nonce_manager_->CreateAuctionNonce());
+  url_loader_factory_.EraseResponse(kComponentSeller2Url);
+
+  std::vector<StorageInterestGroup> bidders;
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder1, kBidder1Name, kBidder1Url, kBidder1TrustedSignalsUrl,
+      {"k1", "k2"}, GURL("https://ad1.com"),
+      std::vector<GURL>{GURL("https://ad1.com-component1.com"),
+                        GURL("https://ad1.com-component2.com")}));
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder2, kBidder2Name, kBidder2Url, kBidder2TrustedSignalsUrl,
+      {"l1", "l2"}, GURL("https://ad2.com"),
+      std::vector<GURL>{GURL("https://ad2.com-component1.com"),
+                        GURL("https://ad2.com-component2.com")}));
+  StartAuction(kSellerUrl, std::move(bidders));
+
+  // Can't complete yet.
+  task_environment()->RunUntilIdle();
+  EXPECT_FALSE(auction_run_loop_->AnyQuitCalled());
+
+  url_loader_factory_.AddResponse(kComponentSeller2Url.spec(), "",
+                                  net::HTTP_NOT_FOUND);
+  task_environment()->RunUntilIdle();
+
+  abortable_ad_auction_->ResolvedAdditionalBids(
+      blink::mojom::AuctionAdConfigAuctionId::NewComponentAuction(1));
+  auction_run_loop_->Run();
+
+  EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
+  EXPECT_THAT(result_.errors,
+              testing::ElementsAre(
+                  "Failed to load https://component.seller2.test/bar.js HTTP "
+                  "status = 404 Not Found."));
+}
+
+// Test what happens when a component auction has a network error on bidder
+// JS (kBidder2Url), then seller JS (kComponentSeller2Url), then a promise
+// coming in.
+//
+// See https://crbug.com/1488417
+TEST_F(AuctionRunnerTest, PromiseAndNetworkErrors2) {
+  SetUpComponentAuctionAndResponses(/*bidder1_seller=*/kComponentSeller1,
+                                    /*bidder2_seller=*/kComponentSeller2,
+                                    /*bid_from_component_auction_wins=*/true);
+  url_loader_factory_.EraseResponse(kComponentSeller2Url);
+  url_loader_factory_.EraseResponse(kBidder2Url);
+
+  std::vector<StorageInterestGroup> bidders;
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder1, kBidder1Name, kBidder1Url, kBidder1TrustedSignalsUrl,
+      {"k1", "k2"}, GURL("https://ad1.com"),
+      std::vector<GURL>{GURL("https://ad1.com-component1.com"),
+                        GURL("https://ad1.com-component2.com")}));
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder2, kBidder2Name, kBidder2Url, kBidder2TrustedSignalsUrl,
+      {"l1", "l2"}, GURL("https://ad2.com"),
+      std::vector<GURL>{GURL("https://ad2.com-component1.com"),
+                        GURL("https://ad2.com-component2.com")}));
+  component_auctions_[1].non_shared_params.buyer_timeouts =
+      blink::AuctionConfig::MaybePromiseBuyerTimeouts::FromPromise();
+  StartAuction(kSellerUrl, std::move(bidders));
+
+  // Can't complete yet.
+  task_environment()->RunUntilIdle();
+  EXPECT_FALSE(auction_run_loop_->AnyQuitCalled());
+
+  url_loader_factory_.AddResponse(kBidder2Url.spec(), "", net::HTTP_NOT_FOUND);
+  task_environment()->RunUntilIdle();
+
+  url_loader_factory_.AddResponse(kComponentSeller2Url.spec(), "",
+                                  net::HTTP_NOT_FOUND);
+  task_environment()->RunUntilIdle();
+
+  abortable_ad_auction_->ResolvedBuyerTimeoutsPromise(
+      blink::mojom::AuctionAdConfigAuctionId::NewComponentAuction(1),
+      blink::mojom::AuctionAdConfigBuyerTimeoutField::kPerBuyerTimeouts,
+      MakeBuyerCumulativeTimeouts(/*use_promise=*/false).value());
+  auction_run_loop_->Run();
+
+  EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
+  EXPECT_THAT(result_.errors,
+              testing::UnorderedElementsAre(
+                  "Failed to load https://anotheradthing.com/bids.js HTTP "
+                  "status = 404 Not Found.",
+                  "Failed to load https://component.seller2.test/bar.js HTTP "
+                  "status = 404 Not Found."));
+}
+
+// Test what happens when a component auction has a network error on bidder
+// JS, then seller JS, then a promise for header-based direct from seller
+// sigmals coming in --- in particular we should not be spending time
+// parsing those signals since the component auction already failed
+// (so there should be no error to the fact that the value for the slot is
+//  actually missing).
+//
+// See https://crbug.com/1488417
+TEST_F(AuctionRunnerTest, PromiseAndNetworkErrors3) {
+  base::test::ScopedFeatureList direct_from_seller_signals_header_ad_slot_on;
+  direct_from_seller_signals_header_ad_slot_on.InitAndEnableFeature(
+      blink::features::kFledgeDirectFromSellerSignalsHeaderAdSlot);
+  const char kSignals[] =
+      R"([{
+        "adSlot": "adSlot1",
+        "sellerSignals": 3
+      }])";
+  ad_auction_page_data_ = PageUserData<AdAuctionPageData>::GetOrCreateForPage(
+      web_contents()->GetPrimaryPage());
+  ad_auction_page_data_->AddAuctionSignalsWitnessForOrigin(kComponentSeller2,
+                                                           kSignals);
+
+  SetUpComponentAuctionAndResponses(/*bidder1_seller=*/kComponentSeller1,
+                                    /*bidder2_seller=*/kComponentSeller2,
+                                    /*bid_from_component_auction_wins=*/true,
+                                    /*report_post_auction_signals=*/false);
+  url_loader_factory_.EraseResponse(kComponentSeller2Url);
+  url_loader_factory_.EraseResponse(kBidder2Url);
+  component_auctions_[1].expects_direct_from_seller_signals_header_ad_slot =
+      true;
+
+  std::vector<StorageInterestGroup> bidders;
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder1, kBidder1Name, kBidder1Url, kBidder1TrustedSignalsUrl,
+      {"k1", "k2"}, GURL("https://ad1.com"),
+      std::vector<GURL>{GURL("https://ad1.com-component1.com"),
+                        GURL("https://ad1.com-component2.com")}));
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder2, kBidder2Name, kBidder2Url, kBidder2TrustedSignalsUrl,
+      {"l1", "l2"}, GURL("https://ad2.com"),
+      std::vector<GURL>{GURL("https://ad2.com-component1.com"),
+                        GURL("https://ad2.com-component2.com")}));
+  StartAuction(kSellerUrl, std::move(bidders));
+
+  // Can't complete yet.
+  task_environment()->RunUntilIdle();
+  EXPECT_FALSE(auction_run_loop_->AnyQuitCalled());
+
+  url_loader_factory_.AddResponse(kBidder2Url.spec(), "", net::HTTP_NOT_FOUND);
+  task_environment()->RunUntilIdle();
+
+  url_loader_factory_.AddResponse(kComponentSeller2Url.spec(), "",
+                                  net::HTTP_NOT_FOUND);
+  task_environment()->RunUntilIdle();
+
+  abortable_ad_auction_->ResolvedDirectFromSellerSignalsHeaderAdSlotPromise(
+      blink::mojom::AuctionAdConfigAuctionId::NewComponentAuction(1), "slot1");
+  auction_run_loop_->Run();
+  EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
+  EXPECT_THAT(result_.errors,
+              testing::UnorderedElementsAre(
+                  "Failed to load https://anotheradthing.com/bids.js HTTP "
+                  "status = 404 Not Found.",
+                  "Failed to load https://component.seller2.test/bar.js HTTP "
+                  "status = 404 Not Found."));
+}
+
 // Coverage of what happens when promises come in for a component auction that
 // got dropped at the database load stage, due to not having anything to bid,
 // including that it still gets error-checked.
@@ -8029,9 +8207,6 @@ TEST_F(AuctionRunnerTest, AdditionalBidAliasesInterestGroup) {
         run_loop2.Quit();
       }));
   run_loop2.Run();
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 // An auction where the winning additional bid claims to be from an IG the user
@@ -8271,9 +8446,6 @@ TEST_F(AuctionRunnerTest, AdditionalBidDistinctFromInterestGroup) {
         run_loop2.Quit();
       }));
   run_loop2.Run();
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 class AuctionRunnerDfssAdSlotTest : public AuctionRunnerTest {
@@ -8420,9 +8592,6 @@ TEST_F(AuctionRunnerDfssAdSlotTest,
   EXPECT_EQ(InterestGroupKey(kBidder2, kBidder2Name), result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 // An auction that passes nullopt directFromSellerSignalsHeaderAdSlot via a
@@ -8476,9 +8645,6 @@ TEST_F(AuctionRunnerDfssAdSlotTest,
   EXPECT_EQ(InterestGroupKey(kBidder2, kBidder2Name), result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 // An auction that passes directFromSellerSignalsHeaderAdSlot via a promise.
@@ -8544,9 +8710,6 @@ TEST_F(AuctionRunnerDfssAdSlotTest,
   EXPECT_EQ(InterestGroupKey(kBidder2, kBidder2Name), result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 // An auction that passes directFromSellerSignalsHeaderAdSlot via a promise --
@@ -8609,9 +8772,6 @@ TEST_F(AuctionRunnerDfssAdSlotTest,
               "\"sellerSignals\": 3\n}"),
           testing::Eq("When looking for directFromSellerSignalsHeaderAdSlot "
                       "adSlot1, failed to find a matching response.")));
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 // An auction that passes directFromSellerSignalsHeaderAdSlot via a promise, but
@@ -9094,9 +9254,6 @@ TEST_F(AuctionRunnerTest, PromiseServerResponseResolveTwice) {
   task_environment()->RunUntilIdle();
   EXPECT_EQ("ResolvedAuctionAdResponsePromise updating non-promise",
             TakeBadMessage());
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 // Trying to update perBuyerCurrencies twice.
@@ -9289,9 +9446,6 @@ TEST_F(AuctionRunnerDfssAdSlotTest,
   task_environment()->RunUntilIdle();
   EXPECT_EQ("ResolvedDirectFromSellerSignalsHeaderAdSlot updating non-promise",
             TakeBadMessage());
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 class AuctionRunnerDfssAdSlotDisabledTest : public AuctionRunnerTest {
@@ -20075,9 +20229,6 @@ TEST_P(AuctionRunnerKAnonTest, AdditionalBidBuyerReporting) {
               testing::UnorderedElementsAre(
                   "https://reporting.example.com/40",
                   "https://contextual.test/?additionalPseudoIG"));
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -20271,9 +20422,6 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
     hist.ExpectUniqueSample("Ads.InterestGroup.ServerAuction.Result",
                             test_case.result, 1);
   }
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 }  // namespace

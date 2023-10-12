@@ -78,9 +78,6 @@ extern const char kBatterySaverDialogShown[];
 // The user has opened the high efficiency page action chip
 extern const char kHighEfficiencyDialogShown[];
 
-// The user clicked on the performance menu item
-extern const char kPerformanceMenuItemActivated[];
-
 // Extensions menu is opened when any extension has access to the current site.
 extern const char kExtensionsMenuOpenedWhileExtensionHasAccess[];
 
@@ -133,6 +130,9 @@ extern const char kPriceNotificationsUsed[];
 
 // The user has been shown a default browser promo.
 extern const char kDefaultBrowserPromoShown[];
+
+// The user tapped Remind Me Later on a default browser promo.
+extern const char kDefaultBrowserPromoRemindMeLater[];
 
 // The Password Manager widget promo was triggered.
 extern const char kPasswordManagerWidgetPromoTriggered[];

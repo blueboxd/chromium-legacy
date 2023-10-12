@@ -9,8 +9,9 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/signin/system_identity.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/account_picker/account_picker_confirmation/account_picker_confirmation_screen_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/account_picker/account_picker_confirmation/account_picker_confirmation_screen_mediator.h"
 #import "ios/chrome/browser/ui/account_picker/account_picker_confirmation/account_picker_confirmation_screen_view_controller.h"
@@ -49,6 +50,8 @@
   _mediator = [[AccountPickerConfirmationScreenMediator alloc]
       initWithAccountManagerService:ChromeAccountManagerServiceFactory::
                                         GetForBrowserState(browserState)
+                    identityManager:IdentityManagerFactory::GetForBrowserState(
+                                        browserState)
                       configuration:_configuration];
   _mediator.delegate = self;
   _confirmationViewController =

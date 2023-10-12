@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/overlays/overlay_presentation_context_view_controller.h"
 
 #import "base/test/ios/wait_util.h"
+#import "build/branding_buildflags.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/test_modality/test_presented_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/test_modality/test_resizing_presented_overlay_request_config.h"
@@ -126,11 +127,14 @@ TEST_F(OverlayPresentationContextViewControllerTest,
   EXPECT_TRUE(CGRectEqualToRect([view convertRect:view.bounds toView:nil],
                                 root_window_frame));
 
-  // Stop the coordinator and wait for its dismissal to finish.
+  // Stop the coordinator, wait for its dismissal to finish, and make sure the
+  // layout is updated.
   [coordinator stopAnimated:NO];
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return !overlay_view_controller.presentingViewController;
   }));
+  [container_view layoutIfNeeded];
+  [view layoutIfNeeded];
 
   // Verify that the views are resized to CGRectZero when nothing is presented
   // upon it.
@@ -188,11 +192,14 @@ TEST_F(OverlayPresentationContextViewControllerTest, ResizingPresentedOverlay) {
                                                              toView:nil],
                                 kWindowFrame));
 
-  // Stop the coordinator and wait for its dismissal to finish.
+  // Stop the coordinator, wait for its dismissal to finish, and make sure the
+  // layout is updated.
   [coordinator stopAnimated:NO];
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return !overlay_view_controller.presentingViewController;
   }));
+  [container_view layoutIfNeeded];
+  [view layoutIfNeeded];
 
   // Verify that the views are resized to CGRectZero when nothing is presented
   // upon it.

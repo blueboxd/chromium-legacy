@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ref.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/ml/webnn/features.h"
 #include "mojo/public/cpp/base/big_buffer.h"
@@ -73,10 +74,10 @@ class FakeWebNNGraph : public blink_mojom::WebNNGraph {
   void Compute(HashMap<String, mojo_base::BigBuffer> inputs,
                blink_mojom::WebNNGraph::ComputeCallback callback) override {
     // Set the input array buffers for validation in the test.
-    helper_.SetInputArrayBuffers(std::move(inputs));
+    helper_->SetInputArrayBuffers(std::move(inputs));
 
     // Return the compute result with shared memory.
-    auto& compute_result = helper_.GetComputeResult();
+    auto& compute_result = helper_->GetComputeResult();
     HashMap<String, mojo_base::BigBuffer> mojo_outputs;
     for (const auto& [name, output_data] : compute_result.output) {
       mojo_outputs.insert(
@@ -85,7 +86,7 @@ class FakeWebNNGraph : public blink_mojom::WebNNGraph {
     std::move(callback).Run(compute_result.result, std::move(mojo_outputs));
   }
 
-  MLGraphTestMojo& helper_;
+  const raw_ref<MLGraphTestMojo, DanglingUntriaged> helper_;
 };
 
 class FakeWebNNContext : public blink_mojom::WebNNContext {
@@ -99,18 +100,18 @@ class FakeWebNNContext : public blink_mojom::WebNNContext {
   // Override methods from webnn::mojom::WebNNContext.
   void CreateGraph(blink_mojom::GraphInfoPtr graph_info,
                    CreateGraphCallback callback) override {
-    helper_.SetGraphInfo(std::move(graph_info));
+    helper_->SetGraphInfo(std::move(graph_info));
 
     mojo::PendingRemote<blink_mojom::WebNNGraph> blink_remote;
     // The receiver bind to FakeWebNNGraph.
     mojo::MakeSelfOwnedReceiver<blink_mojom::WebNNGraph>(
-        std::make_unique<FakeWebNNGraph>(helper_),
+        std::make_unique<FakeWebNNGraph>(*helper_),
         blink_remote.InitWithNewPipeAndPassReceiver());
 
     std::move(callback).Run(blink_mojom::CreateGraphResult::NewGraphRemote(
         std::move(blink_remote)));
   }
-  MLGraphTestMojo& helper_;
+  const raw_ref<MLGraphTestMojo, DanglingUntriaged> helper_;
 };
 
 class FakeWebNNContextProvider : public blink_mojom::WebNNContextProvider {
@@ -140,14 +141,14 @@ class FakeWebNNContextProvider : public blink_mojom::WebNNContextProvider {
     mojo::PendingRemote<blink_mojom::WebNNContext> blink_remote;
     // The receiver bind to FakeWebNNContext.
     mojo::MakeSelfOwnedReceiver<blink_mojom::WebNNContext>(
-        std::make_unique<FakeWebNNContext>(helper_),
+        std::make_unique<FakeWebNNContext>(*helper_),
         blink_remote.InitWithNewPipeAndPassReceiver());
 
     std::move(callback).Run(blink_mojom::CreateContextResult::NewContextRemote(
         std::move(blink_remote)));
   }
 
-  MLGraphTestMojo& helper_;
+  const raw_ref<MLGraphTestMojo, ExperimentalRenderer> helper_;
   mojo::Receiver<blink_mojom::WebNNContextProvider> receiver_;
 };
 
@@ -159,7 +160,7 @@ class ScopedWebNNServiceBinder {
             std::make_unique<FakeWebNNContextProvider>(helper)),
         interface_broker_(
             scope.GetExecutionContext()->GetBrowserInterfaceBroker()) {
-    interface_broker_.SetBinderForTesting(
+    interface_broker_->SetBinderForTesting(
         blink_mojom::WebNNContextProvider::Name_,
         WTF::BindRepeating(
             &FakeWebNNContextProvider::BindRequest,
@@ -167,7 +168,7 @@ class ScopedWebNNServiceBinder {
   }
 
   ~ScopedWebNNServiceBinder() {
-    interface_broker_.SetBinderForTesting(
+    interface_broker_->SetBinderForTesting(
         blink_mojom::WebNNContextProvider::Name_, base::NullCallback());
   }
 
@@ -177,7 +178,8 @@ class ScopedWebNNServiceBinder {
 
  private:
   std::unique_ptr<FakeWebNNContextProvider> fake_webnn_context_provider_;
-  const BrowserInterfaceBrokerProxy& interface_broker_;
+  const raw_ref<const BrowserInterfaceBrokerProxy, ExperimentalRenderer>
+      interface_broker_;
 };
 
 MLGraphMojo* ToMLGraphMojo(V8TestingScope* scope, ScriptValue value) {
@@ -283,12 +285,10 @@ struct ClampTester {
     // Verify the graph information of mojo are as expected.
     ASSERT_EQ(graph_info->operations.size(), 1u);
     auto& operation = graph_info->operations[0];
-    EXPECT_EQ(operation->is_generic_operator(), true);
-    auto& generic_operator = operation->get_generic_operator();
-    EXPECT_EQ(generic_operator->kind, blink_mojom::Operator::Kind::kClamp);
-    auto& clamp_attributes = generic_operator->attributes->get_clamp();
-    EXPECT_EQ(clamp_attributes->min_value, expected_attributes.min_value);
-    EXPECT_EQ(clamp_attributes->max_value, expected_attributes.max_value);
+    EXPECT_EQ(operation->is_clamp(), true);
+    auto& clamp = operation->get_clamp();
+    EXPECT_EQ(clamp->min_value, expected_attributes.min_value);
+    EXPECT_EQ(clamp->max_value, expected_attributes.max_value);
     EXPECT_EQ(graph_info->output_operands.size(), 1u);
     auto output_operand_id = graph_info->output_operands[0];
     auto output_operand_iter =
@@ -461,34 +461,25 @@ struct Conv2dTester {
     // Verify the graph information of mojo are as expected.
     ASSERT_EQ(graph_info->operations.size(), 1u);
     auto& operation = graph_info->operations[0];
-    EXPECT_EQ(operation->is_generic_operator(), true);
-    auto& generic_operator = operation->get_generic_operator();
-    EXPECT_EQ(generic_operator->kind, blink_mojom::Operator::Kind::kConv2d);
-    auto& conv2d_attributes = generic_operator->attributes->get_conv2d();
+    EXPECT_EQ(operation->is_conv2d(), true);
+    auto& conv2d = operation->get_conv2d();
     // Validate explicit padding.
     auto& expected_padding = expected_attributes.padding;
-    EXPECT_EQ(conv2d_attributes->padding->beginning->height,
-              expected_padding[0]);
-    EXPECT_EQ(conv2d_attributes->padding->ending->height, expected_padding[1]);
-    EXPECT_EQ(conv2d_attributes->padding->beginning->width,
-              expected_padding[2]);
-    EXPECT_EQ(conv2d_attributes->padding->ending->width, expected_padding[3]);
+    EXPECT_EQ(conv2d->padding->beginning->height, expected_padding[0]);
+    EXPECT_EQ(conv2d->padding->ending->height, expected_padding[1]);
+    EXPECT_EQ(conv2d->padding->beginning->width, expected_padding[2]);
+    EXPECT_EQ(conv2d->padding->ending->width, expected_padding[3]);
     // Validate strides
-    EXPECT_EQ(conv2d_attributes->strides->height,
-              expected_attributes.strides[0]);
-    EXPECT_EQ(conv2d_attributes->strides->width,
-              expected_attributes.strides[1]);
+    EXPECT_EQ(conv2d->strides->height, expected_attributes.strides[0]);
+    EXPECT_EQ(conv2d->strides->width, expected_attributes.strides[1]);
     // Validate dilations.
-    EXPECT_EQ(conv2d_attributes->dilations->height,
-              expected_attributes.dilations[0]);
-    EXPECT_EQ(conv2d_attributes->dilations->width,
-              expected_attributes.dilations[1]);
-    EXPECT_EQ(conv2d_attributes->groups, expected_attributes.groups);
-    EXPECT_EQ(conv2d_attributes->input_layout,
-              expected_attributes.input_layout);
+    EXPECT_EQ(conv2d->dilations->height, expected_attributes.dilations[0]);
+    EXPECT_EQ(conv2d->dilations->width, expected_attributes.dilations[1]);
+    EXPECT_EQ(conv2d->groups, expected_attributes.groups);
+    EXPECT_EQ(conv2d->input_layout, expected_attributes.input_layout);
     if (options.bias) {
-      auto bias_operand_iter = graph_info->id_to_operand_map.find(
-          conv2d_attributes->bias_operand_id.value());
+      auto bias_operand_iter =
+          graph_info->id_to_operand_map.find(conv2d->bias_operand_id.value());
       ASSERT_TRUE(bias_operand_iter != graph_info->id_to_operand_map.end());
       EXPECT_EQ(bias_operand_iter->value->data_type,
                 expected_attributes.bias->type);
@@ -498,20 +489,17 @@ struct Conv2dTester {
     if (options.activation) {
       switch (options.activation->kind) {
         case MLOperator::OperatorKind::kClamp: {
-          EXPECT_EQ(conv2d_attributes->activation->kind,
-                    blink_mojom::Operator::Kind::kClamp);
-          auto& clamp_attributes =
-              conv2d_attributes->activation->attributes->get_clamp();
-          CHECK(clamp_attributes);
+          EXPECT_EQ(conv2d->activation->is_clamp(), true);
+          auto& clamp = conv2d->activation->get_clamp();
+          CHECK(clamp);
           auto& clamp_options = options.activation->clamp_options;
           CHECK(clamp_options);
-          EXPECT_EQ(clamp_attributes->min_value, clamp_options->min_value);
-          EXPECT_EQ(clamp_attributes->max_value, clamp_options->max_value);
+          EXPECT_EQ(clamp->min_value, clamp_options->min_value);
+          EXPECT_EQ(clamp->max_value, clamp_options->max_value);
           break;
         }
         case MLOperator::OperatorKind::kRelu:
-          EXPECT_EQ(conv2d_attributes->activation->kind,
-                    blink_mojom::Operator::Kind::kRelu);
+          EXPECT_EQ(conv2d->activation->is_relu(), true);
           break;
         default:
           NOTREACHED_NORETURN();
@@ -1263,13 +1251,10 @@ struct ReluTester {
     // Verify the `mojo::Operator`.
     ASSERT_EQ(graph_info->operations.size(), 1u);
     auto& operation = graph_info->operations[0];
-    EXPECT_EQ(operation->is_generic_operator(), true);
-    auto& generic_operator = operation->get_generic_operator();
-    EXPECT_EQ(generic_operator->kind, blink_mojom::Operator::Kind::kRelu);
-    ASSERT_EQ(generic_operator->input_operands.size(), 1u);
-    EXPECT_EQ(generic_operator->input_operands[0], input_operand_id);
-    ASSERT_EQ(generic_operator->output_operands.size(), 1u);
-    EXPECT_EQ(generic_operator->output_operands[0], output_operand_id);
+    EXPECT_EQ(operation->is_relu(), true);
+    auto& relu = operation->get_relu();
+    EXPECT_EQ(relu->input_operand_id, input_operand_id);
+    EXPECT_EQ(relu->output_operand_id, output_operand_id);
   }
 };
 
@@ -1421,9 +1406,7 @@ struct SoftmaxTester {
     // Verify the graph information of mojo are as expected.
     ASSERT_EQ(graph_info->operations.size(), 1u);
     auto& operation = graph_info->operations[0];
-    EXPECT_EQ(operation->is_generic_operator(), true);
-    auto& generic_operator = operation->get_generic_operator();
-    EXPECT_EQ(generic_operator->kind, blink_mojom::Operator::Kind::kSoftmax);
+    EXPECT_EQ(operation->is_softmax(), true);
     EXPECT_EQ(graph_info->output_operands.size(), 1u);
     auto output_operand_id = graph_info->output_operands[0];
     auto output_operand_iter =
@@ -1459,6 +1442,95 @@ TEST_P(MLGraphTestMojo, SoftmaxTest) {
                             .dimensions = {1, 5}},
                   .expected = {.type = blink_mojom::Operand::DataType::kFloat16,
                                .dimensions = {1, 5}}}
+        .Test(*this, scope, builder);
+  }
+}
+
+struct TransposeTester {
+  OperandInfoBlink input;
+  absl::optional<Vector<uint32_t>> permutation;
+  OperandInfoMojo expected_operand;
+  Vector<uint32_t> expected_permutation;
+
+  void Test(MLGraphTestMojo& helper,
+            V8TestingScope& scope,
+            MLGraphBuilder* builder) {
+    // Build the graph.
+    auto* input_operand = BuildInput(builder, "input", input.dimensions,
+                                     input.type, scope.GetExceptionState());
+    MLTransposeOptions* options = MLTransposeOptions::Create();
+    if (permutation.has_value()) {
+      options->setPermutation(permutation.value());
+    }
+    auto* output_operand =
+        builder->transpose(input_operand, options, scope.GetExceptionState());
+    auto [graph, build_exception] =
+        helper.BuildGraph(scope, builder, {{"output", output_operand}});
+    ASSERT_NE(graph, nullptr);
+
+    auto graph_info = helper.GetGraphInfo();
+    // Verify the graph information of mojo are as expected.
+    ASSERT_EQ(graph_info->operations.size(), 1u);
+    auto& operation = graph_info->operations[0];
+    ASSERT_TRUE(operation->is_transpose());
+    auto& transpose = operation->get_transpose();
+
+    // Validate the permutation of transpose operation.
+    EXPECT_EQ(transpose->permutation, expected_permutation);
+
+    // Validate the input operand.
+    EXPECT_EQ(graph_info->input_operands.size(), 1u);
+    auto input_operand_id = graph_info->input_operands[0];
+    EXPECT_EQ(transpose->input_operand_id, input_operand_id);
+    auto input_operand_iter =
+        graph_info->id_to_operand_map.find(input_operand_id);
+    ASSERT_TRUE(input_operand_iter != graph_info->id_to_operand_map.end());
+    EXPECT_EQ(input_operand_iter->value->data_type, expected_operand.type);
+    EXPECT_EQ(input_operand_iter->value->dimensions, input.dimensions);
+
+    // Validate the output operand.
+    EXPECT_EQ(graph_info->output_operands.size(), 1u);
+    auto output_operand_id = graph_info->output_operands[0];
+    EXPECT_EQ(transpose->output_operand_id, output_operand_id);
+    auto output_operand_iter =
+        graph_info->id_to_operand_map.find(output_operand_id);
+    ASSERT_TRUE(output_operand_iter != graph_info->id_to_operand_map.end());
+    EXPECT_EQ(output_operand_iter->value->data_type, expected_operand.type);
+    EXPECT_EQ(output_operand_iter->value->dimensions,
+              expected_operand.dimensions);
+  }
+};
+
+TEST_P(MLGraphTestMojo, TransposeTest) {
+  V8TestingScope scope;
+  // Bind fake WebNN Context in the service for testing.
+  ScopedWebNNServiceBinder scoped_setup_binder(*this, scope);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      webnn::features::kEnableMachineLearningNeuralNetworkService);
+  auto* options = MLContextOptions::Create();
+  // Create WebNN Context with GPU device preference.
+  options->setDevicePreference(V8MLDevicePreference::Enum::kGpu);
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext(), options);
+  {
+    // Test transpose operator with default options.
+    TransposeTester{
+        .input = {.type = V8MLOperandType::Enum::kFloat32,
+                  .dimensions = {1, 2, 3, 4}},
+        .expected_operand = {.type = blink_mojom::Operand::DataType::kFloat32,
+                             .dimensions = {4, 3, 2, 1}},
+        .expected_permutation = {3, 2, 1, 0}}
+        .Test(*this, scope, builder);
+  }
+  {
+    // Test transpose operator with a given permutation.
+    TransposeTester{
+        .input = {.type = V8MLOperandType::Enum::kFloat16,
+                  .dimensions = {1, 2, 3, 4}},
+        .permutation = Vector<uint32_t>{3, 0, 2, 1},
+        .expected_operand = {.type = blink_mojom::Operand::DataType::kFloat16,
+                             .dimensions = {4, 1, 3, 2}},
+        .expected_permutation = {3, 0, 2, 1}}
         .Test(*this, scope, builder);
   }
 }

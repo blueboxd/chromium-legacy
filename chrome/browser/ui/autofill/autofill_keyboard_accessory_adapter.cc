@@ -137,6 +137,12 @@ void AutofillKeyboardAccessoryAdapter::AcceptSuggestion(
   }
 }
 
+void AutofillKeyboardAccessoryAdapter::PerformButtonActionForSuggestion(
+    int index) {
+  // Actions currently only exist on Desktop.
+  NOTREACHED();
+}
+
 int AutofillKeyboardAccessoryAdapter::GetLineCount() const {
   return controller_ ? controller_->GetLineCount() : 0;
 }
@@ -276,6 +282,12 @@ std::vector<Suggestion> AutofillKeyboardAccessoryAdapter::GetSuggestions()
                 suggestions.begin() + front_element_.value() + 1);
   }
   return suggestions;
+}
+
+std::optional<AutofillClient::PopupScreenLocation>
+AutofillKeyboardAccessoryAdapter::GetPopupScreenLocation() const {
+  NOTIMPLEMENTED() << "No popup screen location for keyboard accessories.";
+  return std::nullopt;
 }
 
 void AutofillKeyboardAccessoryAdapter::OnDeletionConfirmed(int index) {

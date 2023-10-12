@@ -138,6 +138,11 @@ guestMessagePipe.registerHandler(Message.GET_UID, async () => {
   return /** @type {!UidInfo} */ (await uidGenerator.getUid());
 });
 
+guestMessagePipe.registerHandler(Message.IS_ACCESSIBILITY_ENABLED, async () => {
+  const result = await accessibility.isAccessibilityEnabled();
+  return result.enabled;
+});
+
 // Add Screen Backlight state listener and send state via pipes.
 systemInfoObserverRouter.onScreenBacklightStateChanged.addListener((state) => {
   console.log('echeapi browser_proxy.js onScreenBacklightStateChanged');
@@ -164,6 +169,14 @@ systemInfoObserverRouter.onAndroidDeviceNetworkInfoChanged.addListener(
         /** @type {boolean} */ androidDeviceOnCellular,
       });
     });
+
+accessibilityObserverRouter.enableAccessibilityTreeStreaming.addListener(
+    (enabled) => {
+      console.log('echeapi browser_proxy.js enableAccessibilityTreeStreaming');
+      guestMessagePipe.sendMessage(
+          Message.ACCESSIBILITY_SET_TREE_STREAMING_ENABLED, enabled);
+    });
+
 accessibilityObserverRouter.performAction.addListener((action) => {
   return new Promise(async (resolve) => {
     const result = await guestMessagePipe.sendMessage(
@@ -258,7 +271,6 @@ guestMessagePipe.registerHandler(
           `echeapi browser_proxy.js ` +
           `onStreamOrientationChanged ${message.isLandscape}`);
       streamOrientationObserver.onStreamOrientationChanged(message.isLandscape);
-      accessibility.onStreamOrientationChanged(message.isLandscape);
     });
 
 // Register CONNECTION_STATUS_CHANGED.

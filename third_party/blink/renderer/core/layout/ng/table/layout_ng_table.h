@@ -107,14 +107,12 @@ class CORE_EXPORT LayoutNGTable : public LayoutBlock {
 
   bool IsFirstCell(const LayoutNGTableCell&) const;
   LayoutNGTableSection* FirstSection() const;
-  LayoutNGTableSection* LastSection() const;
   LayoutNGTableSection* FirstNonEmptySection() const;
   LayoutNGTableSection* LastNonEmptySection() const;
   LayoutNGTableSection* NextSection(const LayoutNGTableSection*,
                                     SkipEmptySectionsValue) const;
   LayoutNGTableSection* PreviousSection(const LayoutNGTableSection*,
                                         SkipEmptySectionsValue) const;
-  LayoutNGTableSection* FirstBody() const;
 
   wtf_size_t ColumnCount() const;
 
@@ -178,10 +176,6 @@ class CORE_EXPORT LayoutNGTable : public LayoutBlock {
   PhysicalRect OverflowClipRect(const PhysicalOffset&,
                                 OverlayScrollbarClipBehavior) const override;
 
-#if DCHECK_IS_ON()
-  void AddVisualEffectOverflow() final;
-#endif
-
   bool VisualRectRespectsVisibility() const override {
     NOT_DESTROYED();
     return false;
@@ -199,16 +193,15 @@ class CORE_EXPORT LayoutNGTable : public LayoutBlock {
 
   // LayoutBlock methods end.
 
-  bool ShouldCollapseBorders() const {
+  bool HasCollapsedBorders() const {
     NOT_DESTROYED();
     return StyleRef().BorderCollapse() == EBorderCollapse::kCollapse;
   }
 
-  // TODO(1229581): Do we need both this and ShouldCollapseBorders()?
-  bool HasCollapsedBorders() const;
-
   unsigned AbsoluteColumnToEffectiveColumn(
       unsigned absolute_column_index) const;
+
+  unsigned EffectiveColumnCount() const;
 
  protected:
   bool IsOfType(LayoutObjectType type) const override {

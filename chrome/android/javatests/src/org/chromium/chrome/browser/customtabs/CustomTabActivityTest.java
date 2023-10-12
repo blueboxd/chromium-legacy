@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs;
 
 import static androidx.browser.customtabs.CustomTabsIntent.EXTRA_INITIAL_ACTIVITY_HEIGHT_PX;
+import static androidx.browser.customtabs.CustomTabsIntent.SHARE_STATE_ON;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -94,6 +95,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
@@ -140,7 +142,7 @@ import org.chromium.chrome.browser.history.TestBrowsingHistoryObserver;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.page_load_metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -154,6 +156,7 @@ import org.chromium.chrome.browser.toolbar.menu_button.MenuButton;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
+import org.chromium.chrome.test.AutomotiveContextWrapperTestRule;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -230,6 +233,10 @@ public class CustomTabActivityTest {
             new ChromeTabbedActivityTestRule();
 
     @Rule
+    public AutomotiveContextWrapperTestRule mAutomotiveRule =
+            new AutomotiveContextWrapperTestRule();
+
+    @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     private static int sIdToIncrement = 1;
@@ -262,7 +269,7 @@ public class CustomTabActivityTest {
     @Before
     public void setUp() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
-
+        mAutomotiveRule.setIsAutomotive(false);
         Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
         mTestServer = EmbeddedTestServer.createAndStartServer(appContext);
         mTestPage = mTestServer.getURL(TEST_PAGE);
@@ -273,14 +280,14 @@ public class CustomTabActivityTest {
     @After
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
-        SharedPreferencesManager pref = SharedPreferencesManager.getInstance();
+        SharedPreferencesManager pref = ChromeSharedPreferences.getInstance();
         pref.removeKey(ChromePreferenceKeys.CUSTOM_TABS_LAST_TASK_ID);
         pref.removeKey(ChromePreferenceKeys.CUSTOM_TABS_LAST_URL);
         pref.removeKey(ChromePreferenceKeys.CUSTOM_TABS_LAST_CLIENT_PACKAGE);
 
-        SharedPreferencesManager.getInstance().removeKey(
+        ChromeSharedPreferences.getInstance().removeKey(
                 ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION);
-        SharedPreferencesManager.getInstance().removeKey(
+        ChromeSharedPreferences.getInstance().removeKey(
                 ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TIMESTAMP);
 
         // finish() is called on a non-UI thread by the testing harness. Must hide the menu
@@ -698,7 +705,7 @@ public class CustomTabActivityTest {
         Activity emptyActivity = startBlankUiTestActivity();
 
         // Write shared pref as it there's a previous CCT launch with sessions.
-        SharedPreferencesManager pref = SharedPreferencesManager.getInstance();
+        SharedPreferencesManager pref = ChromeSharedPreferences.getInstance();
         pref.writeString(ChromePreferenceKeys.CUSTOM_TABS_LAST_URL, mTestPage);
         pref.writeString(ChromePreferenceKeys.CUSTOM_TABS_LAST_CLIENT_PACKAGE, TEST_PACKAGE);
         pref.writeInt(ChromePreferenceKeys.CUSTOM_TABS_LAST_TASK_ID, emptyActivity.getTaskId());
@@ -747,7 +754,7 @@ public class CustomTabActivityTest {
         ApplicationTestUtils.waitForActivityState(activity, Stage.DESTROYED);
 
         // Write shared prefs as it the last CCT session has saw tab interactions.
-        SharedPreferencesManager pref = SharedPreferencesManager.getInstance();
+        SharedPreferencesManager pref = ChromeSharedPreferences.getInstance();
         pref.writeBoolean(ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION, true);
 
         // Start another CCT with same intent right away.
@@ -1453,10 +1460,10 @@ public class CustomTabActivityTest {
         CriteriaHelper.pollUiThread(() -> getActivity().isDestroyed());
 
         Assert.assertTrue("CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION not recorded.",
-                SharedPreferencesManager.getInstance().contains(
+                ChromeSharedPreferences.getInstance().contains(
                         ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TAB_INTERACTION));
         Assert.assertTrue("CUSTOM_TABS_LAST_CLOSE_TIMESTAMP not recorded.",
-                SharedPreferencesManager.getInstance().contains(
+                ChromeSharedPreferences.getInstance().contains(
                         ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TIMESTAMP));
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramTotalCountForTesting(
@@ -2333,8 +2340,9 @@ public class CustomTabActivityTest {
 
     private void assertLastLaunchedClientAppRecorded(String histogramSuffix, String clientPackage,
             String url, int taskId, boolean umaRecorded) {
-        SharedPreferencesManager pref = SharedPreferencesManager.getInstance();
-        String histogramName = "CustomTabs.RetainableSessionsV2.TimeBetweenLaunch" + histogramSuffix;
+        SharedPreferencesManager pref = ChromeSharedPreferences.getInstance();
+        String histogramName =
+                "CustomTabs.RetainableSessionsV2.TimeBetweenLaunch" + histogramSuffix;
 
         Assert.assertEquals("Client package name in shared pref is different.", clientPackage,
                 pref.readString(ChromePreferenceKeys.CUSTOM_TABS_LAST_CLIENT_PACKAGE, ""));
@@ -2508,6 +2516,25 @@ public class CustomTabActivityTest {
                     ChromeTabUtils.getUrlStringOnUiThread(getActivity().getActivityTab()),
                     is(mTestPage2));
         });
+    }
+
+    @Test
+    @SmallTest
+    public void disableShareEntriesForAutomotive() {
+        mAutomotiveRule.setIsAutomotive(true);
+        Intent intent = createMinimalCustomTabIntent();
+        CustomTabsIntentTestUtils.setShareState(intent, SHARE_STATE_ON);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ViewGroup toolbarButtons =
+                mCustomTabActivityTestRule.getActivity().findViewById(R.id.action_buttons);
+        Assert.assertEquals(
+                "No action buttons should be added.", 0, toolbarButtons.getChildCount());
+
+        openAppMenuAndAssertMenuShown();
+        Assert.assertNull(
+                "Share option should be hidden.",
+                mCustomTabActivityTestRule.getActivity().findViewById(R.id.share_row_menu_id));
     }
 
     private void rotateCustomTabActivity(CustomTabActivity activity, int orientation) {

@@ -18,7 +18,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator.h"
@@ -158,8 +158,7 @@
   self.addAccountSigninCoordinator = [SigninCoordinator
       addAccountCoordinatorWithBaseViewController:self.viewController
                                           browser:self.browser
-                                      accessPoint:signin_metrics::AccessPoint::
-                                                      ACCESS_POINT_START_PAGE];
+                                      accessPoint:_accessPoint];
   __weak __typeof(self) weakSelf = self;
   self.addAccountSigninCoordinator.signinCompletion =
       ^(SigninCoordinatorResult signinResult,
@@ -190,8 +189,7 @@
   AuthenticationFlow* authenticationFlow =
       [[AuthenticationFlow alloc] initWithBrowser:self.browser
                                          identity:self.mediator.selectedIdentity
-                                      accessPoint:signin_metrics::AccessPoint::
-                                                      ACCESS_POINT_START_PAGE
+                                      accessPoint:_accessPoint
                                  postSignInAction:PostSignInAction::kNone
                          presentingViewController:self.viewController];
   authenticationFlow.dispatcher = HandlerForProtocol(

@@ -28,6 +28,8 @@ class PLATFORM_EXPORT OpenTypeBaselineMetrics {
   absl::optional<float> OpenTypeIdeographicBaseline();
 
  private:
+  // TODO(crbug.com/1489080): When this member was briefly given
+  // MiraclePtr protection, it was found to be dangling.
   hb_font_t* font_;
   hb_direction_t hb_dir_;
 };

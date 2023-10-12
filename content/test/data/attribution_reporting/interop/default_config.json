@@ -76,17 +76,13 @@
 
   // Positive double that controls the max channel capacity in bits for event
   // sources.
-  "max_event_info_gain": "1.58494",
+  "max_event_info_gain": "6.5",
 
   // Positive integer that controls how many aggregatable reports can be in the
   // storage per destination. Formatted as a base-10 string.
   "max_aggregatable_reports_per_destination": "1024",
 
-  // Positive integer that controls the maximum sum of the contributions across
-  // all buckets per source. Formatted as a base-10 string.
-  "aggregatable_budget_per_source": "65536",
-
-   // Non-negative integer that controls the minimum delay in minutes to deliver
+  // Non-negative integer that controls the minimum delay in minutes to deliver
   // an aggregatable report. Formatted as a base-10 string.
   "aggregatable_report_min_delay": "10",
 

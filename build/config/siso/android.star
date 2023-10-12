@@ -11,10 +11,13 @@ load("./config.star", "config")
 
 def __enabled(ctx):
     if "args.gn" in ctx.metadata:
-        gn_args = gn.parse_args(ctx.metadata["args.gn"])
+        gn_args = gn.args(ctx)
         if gn_args.get("target_os") == '"android"':
             return True
     return False
+
+def __filegroups(ctx):
+    return {}
 
 def __step_config(ctx, step_config):
     __input_deps(ctx, step_config["input_deps"])
@@ -410,7 +413,7 @@ android = module(
     "android",
     enabled = __enabled,
     step_config = __step_config,
-    filegroups = {},
+    filegroups = __filegroups,
     handlers = __handlers,
     input_deps = __input_deps,
 )

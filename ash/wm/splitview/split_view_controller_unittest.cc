@@ -66,7 +66,6 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
-#include "chromeos/ui/wm/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -82,6 +81,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -1552,18 +1552,7 @@ TEST_F(SplitViewControllerTest, OverviewNotStealFocusOnSwapWindows) {
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
 }
 
-class SplitViewControllerFloatTest : public SplitViewControllerTest {
- public:
-  SplitViewControllerFloatTest() = default;
-  SplitViewControllerFloatTest(const SplitViewControllerFloatTest&) = delete;
-  SplitViewControllerFloatTest& operator=(const SplitViewControllerFloatTest&) =
-      delete;
-  ~SplitViewControllerFloatTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      chromeos::wm::features::kWindowLayoutMenu};
-};
+using SplitViewControllerFloatTest = SplitViewControllerTest;
 
 // Tests that the floated window is not auto-snapped if it's on top of two
 // snapped windows. It should only get snapped if it's activated from overview.

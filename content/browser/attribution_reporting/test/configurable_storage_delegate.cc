@@ -17,7 +17,6 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
-#include "components/attribution_reporting/event_report_windows.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
@@ -28,43 +27,37 @@
 namespace content {
 
 ConfigurableStorageDelegate::ConfigurableStorageDelegate()
-    : AttributionStorageDelegate(
-          AttributionConfigWith([](AttributionConfig& c) {
-            c.max_sources_per_origin = std::numeric_limits<int>::max(),
-            c.max_destinations_per_source_site_reporting_site =
-                std::numeric_limits<int>::max();
-            c.rate_limit =
-                RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-                  r.time_window = base::TimeDelta::Max();
-                  r.max_source_registration_reporting_origins =
-                      std::numeric_limits<int64_t>::max();
-                  r.max_attribution_reporting_origins =
-                      std::numeric_limits<int64_t>::max();
-                  r.max_attributions = std::numeric_limits<int64_t>::max();
-                  r.max_reporting_origins_per_source_reporting_site =
-                      std::numeric_limits<int>::max();
-                }),
-            c.event_level_limit =
-                EventLevelLimitWith([](AttributionConfig::EventLevelLimit& e) {
-                  e.navigation_source_trigger_data_cardinality =
-                      std::numeric_limits<uint64_t>::max();
-                  e.event_source_trigger_data_cardinality =
-                      std::numeric_limits<uint64_t>::max();
-                  e.randomized_response_epsilon =
-                      std::numeric_limits<double>::infinity();
-                  e.max_reports_per_destination =
-                      std::numeric_limits<int>::max();
-                });
-            c.aggregate_limit =
-                AggregateLimitWith([](AttributionConfig::AggregateLimit& a) {
-                  a.max_reports_per_destination =
-                      std::numeric_limits<int>::max();
-                  a.aggregatable_budget_per_source =
-                      std::numeric_limits<int64_t>::max();
-                  a.min_delay = base::TimeDelta();
-                  a.delay_span = base::TimeDelta();
-                });
-          })) {}
+    : AttributionStorageDelegate([]() {
+        AttributionConfig c;
+        c.max_sources_per_origin = std::numeric_limits<int>::max(),
+        c.max_destinations_per_source_site_reporting_site =
+            std::numeric_limits<int>::max();
+
+        c.rate_limit.time_window = base::TimeDelta::Max();
+        c.rate_limit.max_source_registration_reporting_origins =
+            std::numeric_limits<int64_t>::max();
+        c.rate_limit.max_attribution_reporting_origins =
+            std::numeric_limits<int64_t>::max();
+        c.rate_limit.max_attributions = std::numeric_limits<int64_t>::max();
+        c.rate_limit.max_reporting_origins_per_source_reporting_site =
+            std::numeric_limits<int>::max();
+
+        c.event_level_limit.navigation_source_trigger_data_cardinality =
+            std::numeric_limits<uint64_t>::max();
+        c.event_level_limit.event_source_trigger_data_cardinality =
+            std::numeric_limits<uint64_t>::max();
+        c.event_level_limit.randomized_response_epsilon =
+            std::numeric_limits<double>::infinity();
+        c.event_level_limit.max_reports_per_destination =
+            std::numeric_limits<int>::max();
+
+        c.aggregate_limit.max_reports_per_destination =
+            std::numeric_limits<int>::max();
+        c.aggregate_limit.min_delay = base::TimeDelta();
+        c.aggregate_limit.delay_span = base::TimeDelta();
+
+        return c;
+      }()) {}
 
 ConfigurableStorageDelegate::~ConfigurableStorageDelegate() = default;
 
@@ -73,7 +66,7 @@ void ConfigurableStorageDelegate::DetachFromSequence() {
 }
 
 base::Time ConfigurableStorageDelegate::GetEventLevelReportTime(
-    const attribution_reporting::EventReportWindows& event_report_windows,
+    const attribution_reporting::EventReportWindows&,
     base::Time source_time,
     base::Time trigger_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -148,13 +141,6 @@ ConfigurableStorageDelegate::GetRandomizedResponse(
                                 randomized_response_);
 }
 
-absl::optional<base::Time> ConfigurableStorageDelegate::GetReportWindowTime(
-    absl::optional<base::TimeDelta> declared_window,
-    base::Time source_time) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return GetReportWindowTimeForTesting(declared_window, source_time);
-}
-
 std::vector<AttributionStorageDelegate::NullAggregatableReport>
 ConfigurableStorageDelegate::GetNullAggregatableReports(
     const AttributionTrigger& trigger,
@@ -162,15 +148,6 @@ ConfigurableStorageDelegate::GetNullAggregatableReports(
     absl::optional<base::Time> attributed_source_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return null_aggregatable_reports_;
-}
-
-attribution_reporting::EventReportWindows
-ConfigurableStorageDelegate::GetDefaultEventReportWindows(
-    attribution_reporting::mojom::SourceType source_type,
-    base::TimeDelta last_report_window) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return *attribution_reporting::EventReportWindows::CreateWindows(
-      base::Seconds(0), {last_report_window});
 }
 
 void ConfigurableStorageDelegate::set_max_sources_per_origin(int max) {
@@ -190,8 +167,7 @@ void ConfigurableStorageDelegate::set_max_reports_per_destination(
       config_.aggregate_limit.max_reports_per_destination = max;
       break;
     case AttributionReport::Type::kNullAggregatable:
-      NOTREACHED();
-      break;
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -199,12 +175,6 @@ void ConfigurableStorageDelegate::
     set_max_destinations_per_source_site_reporting_site(int max) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   config_.max_destinations_per_source_site_reporting_site = max;
-}
-
-void ConfigurableStorageDelegate::set_aggregatable_budget_per_source(
-    int64_t max) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  config_.aggregate_limit.aggregatable_budget_per_source = max;
 }
 
 void ConfigurableStorageDelegate::set_rate_limits(

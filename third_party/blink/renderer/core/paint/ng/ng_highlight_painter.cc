@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/paint/document_marker_painter.h"
+#include "third_party/blink/renderer/core/paint/line_relative_rect.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_highlight_overlay.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_text_decoration_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_text_painter.h"
@@ -39,8 +40,7 @@ using HighlightEdge = NGHighlightOverlay::HighlightEdge;
 using HighlightDecoration = NGHighlightOverlay::HighlightDecoration;
 using HighlightPart = NGHighlightOverlay::HighlightPart;
 
-// ClampOffset modifies |offset| fixed in a range of |text_fragment| start/end
-// offsets.
+// Modifies |offset| fixed in a range of |fragment_range| start/end offsets.
 // |offset| points not each character but each span between character.
 // With that concept, we can clear catch what is inside start / end.
 // Suppose we have "foo_bar"('_' is a space).
@@ -49,22 +49,125 @@ using HighlightPart = NGHighlightOverlay::HighlightPart;
 // 0 1 2 3 4 5 6 7
 // If "bar" is a TextFragment. That start(), end() {4, 7} correspond this
 // offset. If a marker has StartOffset / EndOffset as {2, 6},
-// ClampOffset returns{ 4,6 }, which represents "ba" on "foo_bar".
-unsigned ClampOffset(unsigned offset, const NGFragmentItem& text_fragment) {
-  return std::min(std::max(offset, text_fragment.StartOffset()),
-                  text_fragment.EndOffset());
+// this function returns{ 4,6 }, which represents "ba" on "foo_bar".
+unsigned ClampToFragmentRange(const NGTextOffsetRange& fragment_range,
+                              unsigned offset) {
+  return std::min(std::max(offset, fragment_range.start), fragment_range.end);
 }
 
-PhysicalRect MarkerRectForForeground(const NGFragmentItem& text_fragment,
-                                     StringView text,
-                                     unsigned start_offset,
-                                     unsigned end_offset) {
+base::span<const NGOffsetMappingUnit> GetMappingUnits(
+    const NGFragmentItem& text_fragment) {
+  const NGOffsetMapping* const offset_mapping =
+      NGOffsetMapping::GetFor(text_fragment.GetLayoutObject());
+  DCHECK(offset_mapping);
+  return offset_mapping->GetMappingUnitsForTextContentOffsetRange(
+      text_fragment.StartOffset(), text_fragment.EndOffset());
+}
+
+// Helper for mapping from DOM offset (range) to text content offset.
+//
+// Exploits the fact that DocumentMarkers are sorted in DOM offset order, to
+// maintain a cached starting point within the unit mapping range and thus
+// amortize the cost of unit lookup.
+class MarkerRangeMappingContext {
+  STACK_ALLOCATED();
+
+ private:
+  // The internal class that implements the mapping.
+  class DOMToTextContentOffsetMapper {
+    STACK_ALLOCATED();
+
+   public:
+    explicit DOMToTextContentOffsetMapper(const NGFragmentItem& text_fragment)
+        : units_(GetMappingUnits(text_fragment)), units_begin_(units_.begin()) {
+      DCHECK(units_.size());
+    }
+
+    unsigned GetTextContentOffset(unsigned dom_offset) const {
+      auto unit = FindUnit(units_begin_, dom_offset);
+      // Update the cached search starting point.
+      units_begin_ = unit;
+      // Since the unit range only covers the fragment, map anything that falls
+      // outside of that range to the start/end.
+      if (dom_offset < unit->DOMStart()) {
+        return unit->TextContentStart();
+      }
+      if (dom_offset > unit->DOMEnd()) {
+        return unit->TextContentEnd();
+      }
+      return unit->ConvertDOMOffsetToTextContent(dom_offset);
+    }
+
+    unsigned GetTextContentOffsetNoCache(unsigned dom_offset) const {
+      auto unit = FindUnit(units_begin_, dom_offset);
+      // Since the unit range only covers the fragment, map anything that falls
+      // outside of that range to the start/end.
+      if (dom_offset < unit->DOMStart()) {
+        return unit->TextContentStart();
+      }
+      if (dom_offset > unit->DOMEnd()) {
+        return unit->TextContentEnd();
+      }
+      return unit->ConvertDOMOffsetToTextContent(dom_offset);
+    }
+
+   private:
+    // Find the mapping unit for `dom_offset`, starting from `begin`.
+    base::span<const NGOffsetMappingUnit>::iterator FindUnit(
+        base::span<const NGOffsetMappingUnit>::iterator begin,
+        unsigned dom_offset) const {
+      if (dom_offset <= begin->DOMEnd()) {
+        return begin;
+      }
+      return std::prev(std::upper_bound(
+          begin, units_.end(), dom_offset,
+          [](unsigned offset, const NGOffsetMappingUnit& unit) {
+            return offset < unit.DOMStart();
+          }));
+    }
+
+    base::span<const NGOffsetMappingUnit> units_;
+    mutable base::span<const NGOffsetMappingUnit>::iterator units_begin_;
+  };
+
+ public:
+  explicit MarkerRangeMappingContext(const NGFragmentItem& text_fragment)
+      : mapper_(DOMToTextContentOffsetMapper(text_fragment)),
+        fragment_range_(text_fragment.TextOffset()),
+        text_length_(To<Text>(*text_fragment.GetNode()).length()) {}
+
+  std::pair<unsigned, unsigned> MapToTextContent(
+      const DocumentMarker& marker) const {
+    // TODO(yoichio): Sanitize DocumentMarker around text length.
+    const unsigned start_dom_offset =
+        std::min(marker.StartOffset(), text_length_);
+    const unsigned end_dom_offset = std::min(marker.EndOffset(), text_length_);
+    const unsigned text_content_start =
+        mapper_.GetTextContentOffset(start_dom_offset);
+    const unsigned text_content_end =
+        mapper_.GetTextContentOffsetNoCache(end_dom_offset);
+    return std::make_pair(
+        ClampToFragmentRange(fragment_range_, text_content_start),
+        ClampToFragmentRange(fragment_range_, text_content_end));
+  }
+
+ private:
+  const DOMToTextContentOffsetMapper mapper_;
+  const NGTextOffsetRange fragment_range_;
+  const unsigned text_length_;
+};
+
+LineRelativeRect LineRelativeLocalRect(const NGFragmentItem& text_fragment,
+                                       StringView text,
+                                       unsigned start_offset,
+                                       unsigned end_offset) {
   LayoutUnit start_position, end_position;
   std::tie(start_position, end_position) =
       text_fragment.LineLeftAndRightForOffsets(text, start_offset, end_offset);
 
   const LayoutUnit height = text_fragment.InkOverflow().Height();
-  return {start_position, LayoutUnit(), end_position - start_position, height};
+  return {{start_position, LayoutUnit()},
+          {end_position - start_position, height}};
 }
 
 void PaintRect(GraphicsContext& context,
@@ -260,18 +363,6 @@ bool HasNonTrivialSpellingGrammarStyles(const NGFragmentItem& fragment_item,
   return false;
 }
 
-HighlightLayerType LayerFor(DocumentMarker::MarkerType type) {
-  switch (type) {
-    case DocumentMarker::kSpelling:
-      return HighlightLayerType::kSpelling;
-    case DocumentMarker::kGrammar:
-      return HighlightLayerType::kGrammar;
-    default:
-      NOTREACHED();
-      return {};
-  }
-}
-
 }  // namespace
 
 NGHighlightPainter::SelectionPaintState::SelectionPaintState(
@@ -316,23 +407,20 @@ void NGHighlightPainter::SelectionPaintState::ComputeSelectionRectIfNeeded() {
     PhysicalRect physical =
         containing_block_.CurrentLocalSelectionRectForText(selection_status_);
     physical.offset += box_offset_;
-    PhysicalRect rotated = writing_mode_rotation_
-                               ? PhysicalRect::EnclosingRect(
-                                     writing_mode_rotation_->Inverse().MapRect(
-                                         gfx::RectF(physical)))
-                               : physical;
+    LineRelativeRect rotated =
+        LineRelativeRect::Create(physical, writing_mode_rotation_);
     selection_rect_.emplace(SelectionRect{physical, rotated});
   }
 }
 
 const PhysicalRect&
-NGHighlightPainter::SelectionPaintState::RectInPhysicalSpace() {
+NGHighlightPainter::SelectionPaintState::PhysicalSelectionRect() {
   ComputeSelectionRectIfNeeded();
   return selection_rect_->physical;
 }
 
-const PhysicalRect&
-NGHighlightPainter::SelectionPaintState::RectInWritingModeSpace() {
+const LineRelativeRect&
+NGHighlightPainter::SelectionPaintState::LineRelativeSelectionRect() {
   ComputeSelectionRectIfNeeded();
   return selection_rect_->rotated;
 }
@@ -352,7 +440,7 @@ void NGHighlightPainter::SelectionPaintState::PaintSelectionBackground(
       PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kSelection));
 
   if (!rotation) {
-    PaintRect(context, RectInPhysicalSpace(), color, auto_dark_mode);
+    PaintRect(context, PhysicalSelectionRect(), color, auto_dark_mode);
     return;
   }
 
@@ -362,7 +450,7 @@ void NGHighlightPainter::SelectionPaintState::PaintSelectionBackground(
   // fix this, we undo the transformation temporarily, then use the original
   // physical coordinates (before MapSelectionRectIntoRotatedSpace).
   context.ConcatCTM(rotation->Inverse());
-  PaintRect(context, RectInPhysicalSpace(), color, auto_dark_mode);
+  PaintRect(context, PhysicalSelectionRect(), color, auto_dark_mode);
   context.ConcatCTM(*rotation);
 }
 
@@ -376,7 +464,7 @@ void NGHighlightPainter::SelectionPaintState::PaintSelectedText(
     const AutoDarkMode& auto_dark_mode) {
   text_painter.PaintSelectedText(fragment_paint_info, selection_status_.start,
                                  selection_status_.end, length, text_style,
-                                 selection_style_, RectInWritingModeSpace(),
+                                 selection_style_, LineRelativeSelectionRect(),
                                  node_id, auto_dark_mode);
 }
 
@@ -513,18 +601,12 @@ void NGHighlightPainter::Paint(Phase phase) {
     return;
 
   DCHECK(fragment_item_.GetNode());
-  const auto& text_node = To<Text>(*fragment_item_.GetNode());
   const StringView text = cursor_.CurrentText();
 
+  const MarkerRangeMappingContext mapping_context(fragment_item_);
   for (const DocumentMarker* marker : markers_) {
-    const unsigned marker_start_offset =
-        GetTextContentOffset(text_node, marker->StartOffset());
-    const unsigned marker_end_offset =
-        GetTextContentOffset(text_node, marker->EndOffset());
-    const unsigned paint_start_offset =
-        ClampOffset(marker_start_offset, fragment_item_);
-    const unsigned paint_end_offset =
-        ClampOffset(marker_end_offset, fragment_item_);
+    const auto [paint_start_offset, paint_end_offset] =
+        mapping_context.MapToTextContent(*marker);
     if (paint_start_offset == paint_end_offset)
       continue;
 
@@ -603,8 +685,8 @@ void NGHighlightPainter::Paint(Phase phase) {
           DocumentMarkerPainter::PaintStyleableMarkerUnderline(
               paint_info_.context, box_origin_, styleable_marker,
               originating_style_, node_->GetDocument(),
-              gfx::RectF(MarkerRectForForeground(
-                  fragment_item_, text, paint_start_offset, paint_end_offset)),
+              LineRelativeLocalRect(fragment_item_, text, paint_start_offset,
+                                    paint_end_offset),
               LayoutUnit(font_data->GetFontMetrics().Height()),
               fragment_item_.GetNode()->GetDocument().InDarkMode());
         }
@@ -722,15 +804,10 @@ void NGHighlightPainter::FastPaintSpellingGrammarDecorations(
     const Text& text_node,
     const StringView& text,
     const DocumentMarkerVector& markers) {
+  const MarkerRangeMappingContext mapping_context(fragment_item_);
   for (const DocumentMarker* marker : markers) {
-    const unsigned marker_start_offset =
-        GetTextContentOffset(text_node, marker->StartOffset());
-    const unsigned marker_end_offset =
-        GetTextContentOffset(text_node, marker->EndOffset());
-    const unsigned paint_start_offset =
-        ClampOffset(marker_start_offset, fragment_item_);
-    const unsigned paint_end_offset =
-        ClampOffset(marker_end_offset, fragment_item_);
+    const auto [paint_start_offset, paint_end_offset] =
+        mapping_context.MapToTextContent(*marker);
     if (paint_start_offset == paint_end_offset)
       continue;
     PaintOneSpellingGrammarDecoration(marker->GetType(), text,
@@ -752,8 +829,8 @@ void NGHighlightPainter::PaintOneSpellingGrammarDecoration(
       !RuntimeEnabledFeatures::CSSPaintingForSpellingGrammarErrorsEnabled()) {
     return DocumentMarkerPainter::PaintDocumentMarker(
         paint_info_, box_origin_, originating_style_, type,
-        MarkerRectForForeground(fragment_item_, text, paint_start_offset,
-                                paint_end_offset),
+        LineRelativeLocalRect(fragment_item_, text, paint_start_offset,
+                              paint_end_offset),
         HighlightStyleUtils::HighlightTextDecorationColor(
             layout_object_->GetDocument(), originating_style_, node_,
             originating_text_style_.current_color, PseudoFor(type)));
@@ -805,8 +882,7 @@ void NGHighlightPainter::PaintOneSpellingGrammarDecoration(
   // the decoration have the same range, so we can use the same rect for both
   // clipping the canvas and painting the decoration.
   const HighlightRange range{paint_start_offset, paint_end_offset};
-  const HighlightPart part{HighlightLayer{LayerFor(marker_type)}, range};
-  const PhysicalRect rect = RectInWritingModeSpace(range);
+  const LineRelativeRect rect = LineRelativeWorldRect(range);
 
   absl::optional<TextDecorationInfo> decoration_info{};
   decoration_painter_.UpdateDecorationInfo(decoration_info, style, rect,
@@ -856,12 +932,11 @@ void NGHighlightPainter::PaintHighlightOverlays(
     absl::optional<AffineTransform> rotation) {
   DCHECK_EQ(paint_case_, kOverlay);
 
-  // |node| might not be a Text node (e.g. <br>), or it might be nullptr (e.g.
+  // |node_| might not be a Text node (e.g. <br>), or it might be nullptr (e.g.
   // ::first-letter). In both cases, we should still try to paint kOriginating
   // and kSelection if necessary, but we can’t paint marker-based highlights,
   // because GetTextContentOffset requires a Text node. Markers are defined and
   // stored in terms of Text nodes anyway, so this should never be a problem.
-  const auto* text_node = DynamicTo<Text>(node_);
   const Document& document = layout_object_->GetDocument();
 
   // For each overlay, paint its backgrounds and shadows over every highlighted
@@ -874,6 +949,7 @@ void NGHighlightPainter::PaintHighlightOverlays(
     const DocumentMarkerVector* markers =
         SelectMarkers(layer.id, custom_, grammar_, spelling_, target_);
 
+    const MarkerRangeMappingContext mapping_context(fragment_item_);
     for (const auto& marker : *markers) {
       if (layer.id.type == HighlightLayerType::kCustom) {
         // Filter custom highlight markers to one highlight at a time.
@@ -882,13 +958,9 @@ void NGHighlightPainter::PaintHighlightOverlays(
           continue;
       }
 
-      const unsigned content_start =
-          GetTextContentOffset(*text_node, marker->StartOffset());
-      const unsigned content_end =
-          GetTextContentOffset(*text_node, marker->EndOffset());
-      const unsigned clamped_start = ClampOffset(content_start, fragment_item_);
-      const unsigned clamped_end = ClampOffset(content_end, fragment_item_);
-      const unsigned length = clamped_end - clamped_start;
+      const auto [paint_start_offset, paint_end_offset] =
+          mapping_context.MapToTextContent(*marker);
+      const unsigned length = paint_end_offset - paint_start_offset;
       if (length == 0)
         continue;
 
@@ -899,16 +971,17 @@ void NGHighlightPainter::PaintHighlightOverlays(
 
       // TODO(crbug.com/1434114) paint rects pixel-snapped in physical space,
       // not writing-mode space (SelectionPaintState::PaintSelectionBackground)
-      PaintRect(paint_info_.context, PhysicalOffset(box_origin_),
-                fragment_item_.LocalRect(text, clamped_start, clamped_end),
-                background_color,
-                PaintAutoDarkMode(originating_style_,
-                                  DarkModeFilter::ElementRole::kSelection));
+      PaintRect(
+          paint_info_.context, PhysicalOffset(box_origin_),
+          fragment_item_.LocalRect(text, paint_start_offset, paint_end_offset),
+          background_color,
+          PaintAutoDarkMode(originating_style_,
+                            DarkModeFilter::ElementRole::kSelection));
 
       if (layer.text_style.shadow) {
         text_painter_.Paint(
-            fragment_paint_info_.Slice(clamped_start, clamped_end), length,
-            layer.text_style, node_id, foreground_auto_dark_mode_,
+            fragment_paint_info_.Slice(paint_start_offset, paint_end_offset),
+            length, layer.text_style, node_id, foreground_auto_dark_mode_,
             TextPainterBase::kShadowsOnly);
       }
     }
@@ -1021,14 +1094,15 @@ Color NGHighlightPainter::ColorFor(DocumentMarker::MarkerType type) {
   }
 }
 
-PhysicalRect NGHighlightPainter::RectInWritingModeSpace(
+LineRelativeRect NGHighlightPainter::LineRelativeWorldRect(
     const NGHighlightOverlay::HighlightRange& range) {
   const StringView text = cursor_.CurrentText();
-  return MarkerRectForForeground(fragment_item_, text, range.from, range.to) +
-         box_origin_;
+  return LineRelativeLocalRect(fragment_item_, text, range.from, range.to) +
+         LineRelativeOffset::CreateFromBoxOrigin(box_origin_);
 }
 
-void NGHighlightPainter::ClipToPartDecorations(const PhysicalRect& part_rect) {
+void NGHighlightPainter::ClipToPartDecorations(
+    const LineRelativeRect& part_rect) {
   gfx::RectF clip_rect{part_rect};
 
   // Whether it’s best to clip to selection rect on both axes or only inline
@@ -1087,11 +1161,11 @@ void NGHighlightPainter::PaintDecorationsExceptLineThrough(
 
     // Paint the decoration over the range of the originating fragment or active
     // highlight, but clip it to the range of the part.
-    const PhysicalRect decoration_rect =
-        RectInWritingModeSpace(decoration.range);
-    const PhysicalRect part_rect = part.range != decoration.range
-                                       ? RectInWritingModeSpace(part.range)
-                                       : decoration_rect;
+    const LineRelativeRect decoration_rect =
+        LineRelativeWorldRect(decoration.range);
+    const LineRelativeRect part_rect = part.range != decoration.range
+                                           ? LineRelativeWorldRect(part.range)
+                                           : decoration_rect;
 
     absl::optional<TextDecorationInfo> decoration_info{};
     decoration_painter_.UpdateDecorationInfo(
@@ -1152,11 +1226,11 @@ void NGHighlightPainter::PaintDecorationsOnlyLineThrough(
 
     // Paint the decoration over the range of the originating fragment or active
     // highlight, but clip it to the range of the part.
-    const PhysicalRect decoration_rect =
-        RectInWritingModeSpace(decoration.range);
-    const PhysicalRect part_rect = part.range != decoration.range
-                                       ? RectInWritingModeSpace(part.range)
-                                       : decoration_rect;
+    const LineRelativeRect decoration_rect =
+        LineRelativeWorldRect(decoration.range);
+    const LineRelativeRect part_rect = part.range != decoration.range
+                                           ? LineRelativeWorldRect(part.range)
+                                           : decoration_rect;
 
     absl::optional<TextDecorationInfo> decoration_info{};
     decoration_painter_.UpdateDecorationInfo(
@@ -1194,7 +1268,7 @@ void NGHighlightPainter::PaintSpellingGrammarDecorations(
     return;
 
   const StringView text = cursor_.CurrentText();
-  absl::optional<PhysicalRect> marker_rect{};
+  absl::optional<LineRelativeRect> marker_rect;
 
   for (const HighlightDecoration& decoration : part.decorations) {
     switch (decoration.layer.type) {
@@ -1212,8 +1286,8 @@ void NGHighlightPainter::PaintSpellingGrammarDecorations(
         }
 
         if (!marker_rect) {
-          marker_rect = MarkerRectForForeground(fragment_item_, text,
-                                                part.range.from, part.range.to);
+          marker_rect = LineRelativeLocalRect(fragment_item_, text,
+                                              part.range.from, part.range.to);
         }
 
         DocumentMarkerPainter::PaintDocumentMarker(
@@ -1262,9 +1336,9 @@ void NGHighlightPainter::PaintDecoratedText(
         document, originating_style_, node_, pseudo, text_style, paint_info_,
         pseudo_argument);
   }
-  PhysicalRect decoration_rect =
-      fragment_item_.LocalRect(text, paint_start_offset, paint_end_offset);
-  decoration_rect.Move(PhysicalOffset(box_origin_));
+  LineRelativeRect decoration_rect = LineRelativeLocalRect(
+      fragment_item_, text, paint_start_offset, paint_end_offset);
+  decoration_rect.Move(LineRelativeOffset::CreateFromBoxOrigin(box_origin_));
   NGTextDecorationPainter decoration_painter(
       text_painter_, fragment_item_, paint_info_,
       pseudo_style ? *pseudo_style : originating_style_, text_style,

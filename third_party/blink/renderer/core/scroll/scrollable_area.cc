@@ -221,7 +221,9 @@ ScrollOffset ScrollableArea::ResolveScrollDelta(
     step.Scale(page_scale_factor);
 
     gfx::Vector2dF pixel_delta =
-        cc::ScrollUtils::ResolveScrollPercentageToPixels(delta, step, viewport);
+        cc::ScrollUtils::ResolveScrollPercentageToPixels(
+            delta, step, viewport, /* clamp_delta_to_one= */
+            !RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled());
 
     // Rescale back to rootframe coordinates.
     pixel_delta.Scale(1 / page_scale_factor);
@@ -987,6 +989,13 @@ void ScrollableArea::SetScrollbarsHiddenIfOverlayInternal(bool hidden) {
 }
 
 void ScrollableArea::FadeOverlayScrollbarsTimerFired(TimerBase*) {
+  // Scrollbars can become composited in the time it takes the timer set in
+  // ShowNonMacOverlayScrollbars to be fired.
+  if (RuntimeEnabledFeatures::
+          InterruptComposedScrollbarDisappearanceEnabled() &&
+      UsesCompositedScrolling()) {
+    return;
+  }
   SetScrollbarsHiddenIfOverlay(true);
 }
 
@@ -1263,8 +1272,7 @@ void ScrollableArea::Trace(Visitor* visitor) const {
   visitor->Trace(fade_overlay_scrollbars_timer_);
 }
 
-void ScrollableArea::InjectGestureScrollEvent(
-    WebGestureDevice device,
+void ScrollableArea::InjectScrollbarGestureScroll(
     ScrollOffset delta,
     ui::ScrollGranularity granularity,
     WebInputEvent::Type gesture_type) const {
@@ -1289,9 +1297,9 @@ void ScrollableArea::InjectGestureScrollEvent(
     delta.Scale(scale);
   }
 
-  GetChromeClient()->InjectGestureScrollEvent(
-      *GetLayoutBox()->GetFrame(), device, delta, granularity,
-      GetScrollElementId(), gesture_type);
+  GetChromeClient()->InjectScrollbarGestureScroll(
+      *GetLayoutBox()->GetFrame(), delta, granularity, GetScrollElementId(),
+      gesture_type);
 }
 
 ScrollableArea* ScrollableArea::GetForScrolling(const LayoutBox* layout_box) {

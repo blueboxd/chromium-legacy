@@ -22,6 +22,10 @@ void UserInterfaceImpl::Bind(
   ui_receivers_.Add(this, std::move(ui_receiver));
 }
 
+void UserInterfaceImpl::DarkenScreen(bool darken) {
+  AccessibilityManager::Get()->SetDarkenScreen(darken);
+}
+
 void UserInterfaceImpl::SetFocusRings(
     std::vector<ax::mojom::FocusRingInfoPtr> focus_rings,
     ax::mojom::AssistiveTechnologyType at_type) {
@@ -79,6 +83,11 @@ void UserInterfaceImpl::SetFocusRings(
 
     accessibility_manager->SetFocusRing(id, std::move(focus_ring));
   }
+}
+
+void UserInterfaceImpl::SetHighlights(const std::vector<gfx::Rect>& rects,
+                                      SkColor color) {
+  AccessibilityManager::Get()->SetHighlights(rects, color);
 }
 
 }  // namespace ash

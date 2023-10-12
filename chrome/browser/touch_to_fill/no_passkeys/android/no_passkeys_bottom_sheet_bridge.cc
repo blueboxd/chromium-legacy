@@ -14,14 +14,16 @@ using JniDelegate = NoPasskeysBottomSheetBridge::JniDelegate;
 
 class JniDelegateImpl : public JniDelegate {
  public:
-  JniDelegateImpl() = default;
+  explicit JniDelegateImpl(NoPasskeysBottomSheetBridge* bridge)
+      : bridge_(bridge) {}
   JniDelegateImpl(const JniDelegateImpl&) = delete;
   JniDelegateImpl& operator=(const JniDelegateImpl&) = delete;
   ~JniDelegateImpl() override = default;
 
   void Create(ui::WindowAndroid* window_android) override {
     java_object_.Reset(Java_NoPasskeysBottomSheetBridge_Constructor(
-        base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
+        base::android::AttachCurrentThread(),
+        reinterpret_cast<intptr_t>(bridge_.get()),
         window_android->GetJavaObject()));
   }
 
@@ -37,8 +39,10 @@ class JniDelegateImpl : public JniDelegate {
   }
 
  private:
-  // The corresponding Java TouchToFillCreditCardViewBridge.
+  // The corresponding Java NoPasskeysBottomSheetBridge.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
+  // The owning native NoPasskeysBottomSheetBridge.
+  raw_ptr<NoPasskeysBottomSheetBridge> bridge_;
 };
 
 }  // namespace
@@ -47,10 +51,15 @@ NoPasskeysBottomSheetBridge::JniDelegate::JniDelegate() = default;
 NoPasskeysBottomSheetBridge::JniDelegate::~JniDelegate() = default;
 
 NoPasskeysBottomSheetBridge::NoPasskeysBottomSheetBridge()
-    : jni_delegate_(std::make_unique<JniDelegateImpl>()) {}
+    : jni_delegate_(std::make_unique<JniDelegateImpl>(this)) {}
 
 NoPasskeysBottomSheetBridge::NoPasskeysBottomSheetBridge(
     base::PassKey<class NoPasskeysBottomSheetBridgeTest>,
+    std::unique_ptr<JniDelegate> jni_delegate)
+    : jni_delegate_(std::move(jni_delegate)) {}
+
+NoPasskeysBottomSheetBridge::NoPasskeysBottomSheetBridge(
+    base::PassKey<class TouchToFillControllerWebAuthnTest>,
     std::unique_ptr<JniDelegate> jni_delegate)
     : jni_delegate_(std::move(jni_delegate)) {}
 
@@ -59,13 +68,16 @@ NoPasskeysBottomSheetBridge::~NoPasskeysBottomSheetBridge() = default;
 void NoPasskeysBottomSheetBridge::Show(
     ui::WindowAndroid* window_android,
     const std::string& origin,
-    base::OnceClosure on_dismissed_callback) {
+    base::OnceClosure on_dismissed_callback,
+    base::OnceClosure on_click_use_another_device_callback) {
   CHECK(window_android) << "The bridge needs a window to attach to!";
   CHECK(on_dismissed_callback) << "The bridge needs a clean up callback!";
   CHECK(!on_dismissed_callback_)
       << "Show was already called. Use each bridge only once.";
 
   on_dismissed_callback_ = std::move(on_dismissed_callback);
+  on_click_use_another_device_callback_ =
+      std::move(on_click_use_another_device_callback);
   jni_delegate_->Create(window_android);
   jni_delegate_->Show(origin);
 }
@@ -79,4 +91,9 @@ void NoPasskeysBottomSheetBridge::Dismiss() {
 void NoPasskeysBottomSheetBridge::OnDismissed(JNIEnv* env) {
   CHECK(on_dismissed_callback_);
   std::move(on_dismissed_callback_).Run();
+}
+
+void NoPasskeysBottomSheetBridge::OnClickUseAnotherDevice(JNIEnv* env) {
+  CHECK(on_click_use_another_device_callback_);
+  std::move(on_click_use_another_device_callback_).Run();
 }

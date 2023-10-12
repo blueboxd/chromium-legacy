@@ -61,9 +61,16 @@ BASE_FEATURE(kBackgroundMediaRendererHasModerateBinding,
 
 // When enabled, the browser will schedule before unload tasks that continue
 // navigation network responses in a kHigh priority queue.
+// TODO(b/281094330): Run experiment on ChromeOS. Experiment was not run on
+// ChromeOS due to try bot issue.
 BASE_FEATURE(kBeforeUnloadBrowserResponseQueue,
              "BeforeUnloadBrowserResponseQueue",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_CHROMEOS)
+             base::FEATURE_DISABLED_BY_DEFAULT
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
 
 // When this feature is enabled, requests to localhost initiated from non-secure
 // contexts in the `unknown` IP address space are blocked.
@@ -174,6 +181,11 @@ BASE_FEATURE(kExperimentalContentSecurityPolicyFeatures,
              "ExperimentalContentSecurityPolicyFeatures",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables CORS checks on the ID assertion endpoint of the FedCM API.
+BASE_FEATURE(kFedCmIdAssertionCORS,
+             "FedCmIdAssertionCORS",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables metrics collection for signin status mismatches. Also enables
 // parsing the signin status HTTP headers.
 // kFedCmIdpSigninStatusEnabled takes precedence over this feature flag.
@@ -260,10 +272,11 @@ BASE_FEATURE(kLazyFrameLoading,
              "LazyFrameLoading",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables a fix for a macOS IME Live Conversion issue. crbug.com/1328530.
+// Enables a fix for a macOS IME Live Conversion issue. crbug.com/1328530 and
+// crbug.com/1342551
 BASE_FEATURE(kMacImeLiveConversionFix,
              "MacImeLiveConversionFix",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Feature that controls whether WebContentsOcclusionChecker should handle
 // occlusion notifications.
@@ -393,6 +406,21 @@ BASE_FEATURE(kReloadHiddenTabsWithCrashedSubframes,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
+
+// When enabled, allow reusing an initial RenderFrameHost with an unused process
+// for a subsequent WebUI navigation.  WebUI navigations typically trigger a
+// BrowsingInstance swap, but the swap is not necessary in that case: see
+// https://crbug.com/1485586.  This is intended to be used as a kill switch.
+BASE_FEATURE(kReuseInitialRenderFrameHostForWebUI,
+             "ReuseInitialRenderFrameHostForWebUI",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Run StableVideoDecoderFactoryProcessService and StableVideoDecoderService on
+// the IO thread in the video decoder process. If it is disabled, they run on
+// the main thread in the process.
+BASE_FEATURE(kRunStableVideoDecoderFactoryProcessServiceOnIOThread,
+             "RunStableVideoDecoderFactoryProcessServiceOnIOThread",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables auto preloading for fetch requests before invoking the fetch handler
 // in ServiceWorker. The fetch request inside the fetch handler is resolved with

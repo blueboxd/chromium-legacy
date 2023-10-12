@@ -32,11 +32,11 @@ import {AppManagementEntryPoint, AppManagementEntryPointsHistogramName} from 'ch
 import {getAppIcon, getSelectedApp} from 'chrome://resources/cr_components/app_management/util.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {androidAppsVisible, isArcVmEnabled, isPlayStoreAvailable, isPluginVmAvailable, isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
+import {androidAppsVisible, isArcVmEnabled, isPlayStoreAvailable, isPluginVmAvailable, isRevampWayfindingEnabled, shouldShowStartup} from '../common/load_time_booleans.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {App as AppWithNotifications, AppNotificationsHandlerInterface, AppNotificationsObserverReceiver, Readiness} from '../mojom-webui/app_notification_handler.mojom-webui.js';
 import {Section} from '../mojom-webui/routes.mojom-webui.js';
@@ -68,7 +68,7 @@ export function isAppInstalled(app: AppWithNotifications): boolean {
 const OsSettingsAppsPageElementBase = DeepLinkingMixin(RouteOriginMixin(
     PrefsMixin(AppManagementStoreMixin(I18nMixin(PolymerElement)))));
 
-class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
+export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
   static get is() {
     return 'os-settings-apps-page' as const;
   }
@@ -144,10 +144,10 @@ class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
       /**
        * Show On startup settings and sub-page.
        */
-      showStartup_: {
+      shouldShowStartup_: {
         type: Boolean,
         value: () => {
-          return loadTimeData.getBoolean('showStartup');
+          return shouldShowStartup();
         },
         readOnly: true,
       },
@@ -217,7 +217,7 @@ class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
   private showAndroidApps_: boolean;
   private showAppNotificationsRow_: boolean;
   private showManageIsolatedWebAppsRow_: boolean;
-  private showStartup_: boolean;
+  private readonly shouldShowStartup_: boolean;
 
   constructor() {
     super();
@@ -351,11 +351,6 @@ class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
         this.i18n(
             'appNotificationsCountDescription',
             this.appsWithNotifications_.length);
-  }
-
-  private getStartupSublabel_(): string|null {
-    return this.isRevampWayfindingEnabled_ ? this.i18n('onStartupDescription') :
-                                             null;
   }
 }
 

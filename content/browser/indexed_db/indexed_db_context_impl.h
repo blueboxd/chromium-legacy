@@ -27,7 +27,6 @@
 #include "components/services/storage/public/mojom/quota_client.mojom.h"
 #include "components/services/storage/public/mojom/storage_policy_update.mojom.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
-#include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -83,13 +82,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // mojom::IndexedDBControl implementation:
   void BindIndexedDB(
-      const blink::StorageKey& storage_key,
-      mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
-          client_state_checker_remote,
-      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
-  void BindIndexedDBForBucket(
       const storage::BucketLocator& bucket_locator,
-      mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
+      mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
           client_state_checker_remote,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void GetUsage(GetUsageCallback usage_callback) override;
@@ -161,11 +155,11 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   int64_t GetBucketDiskUsage(const storage::BucketLocator& bucket_locator);
 
-  const scoped_refptr<base::SequencedTaskRunner>& IDBTaskRunner() {
+  const scoped_refptr<base::SequencedTaskRunner>& IDBTaskRunner() const {
     return idb_task_runner_;
   }
 
-  const scoped_refptr<base::TaskRunner>& IOTaskRunner() {
+  const scoped_refptr<base::TaskRunner>& IOTaskRunner() const {
     return io_task_runner_;
   }
 
@@ -193,7 +187,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   std::vector<base::FilePath> GetStoragePaths(
       const storage::BucketLocator& bucket_locator) const;
 
-  const base::FilePath GetDataPath(
+  base::FilePath GetDataPath(
       const storage::BucketLocator& bucket_locator) const;
   const base::FilePath GetFirstPartyDataPathForTesting() const;
 
@@ -224,6 +218,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
  private:
   friend class base::RefCountedThreadSafe<IndexedDBContextImpl>;
+  friend class IndexedDBTest;
+  friend class IndexedDBFactoryTest;
 
   class IndexedDBGetUsageAndQuotaCallback;
 
@@ -239,7 +235,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // mojom::IndexedDBControl internal implementation:
   void BindIndexedDBImpl(
-      mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
+      mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
           client_state_checker_remote,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
       storage::QuotaErrorOr<storage::BucketInfo> bucket_info);
@@ -292,11 +288,11 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // default buckets in first party contexts. Non-default buckets and default
   // buckets in third party contexts, when partitioning is enabled, are returned
   // by `FindIndexedDBFiles`.
-  const std::map<blink::StorageKey, base::FilePath> FindLegacyIndexedDBFiles();
+  std::map<blink::StorageKey, base::FilePath> FindLegacyIndexedDBFiles() const;
 
   // Reads IDB files from disk, looking in the directories where
   // third-party-context IDB files are stored.
-  const std::map<storage::BucketId, base::FilePath> FindIndexedDBFiles();
+  std::map<storage::BucketId, base::FilePath> FindIndexedDBFiles() const;
 
   void OnBucketInfoReady(
       GetAllBucketsDetailsCallback callback,
@@ -304,7 +300,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   const scoped_refptr<base::SequencedTaskRunner> idb_task_runner_;
   const scoped_refptr<base::TaskRunner> io_task_runner_;
-  IndexedDBDispatcherHost dispatcher_host_;
 
   // Bound and accessed on the `idb_task_runner_`.
   mojo::Remote<storage::mojom::BlobStorageContext> blob_storage_context_;

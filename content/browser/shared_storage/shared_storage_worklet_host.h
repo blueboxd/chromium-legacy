@@ -16,9 +16,11 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/schemeful_site.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/shared_storage/shared_storage_utils.h"
+#include "third_party/blink/public/mojom/origin_trial_feature/origin_trial_feature.mojom-shared.h"
 #include "third_party/blink/public/mojom/shared_storage/shared_storage.mojom.h"
 #include "third_party/blink/public/mojom/shared_storage/shared_storage_worklet_service.mojom.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-forward.h"
@@ -71,6 +73,8 @@ class CONTENT_EXPORT SharedStorageWorkletHost
           frame_url_loader_factory,
       const url::Origin& frame_origin,
       const GURL& script_source_url,
+      const std::vector<blink::mojom::OriginTrialFeature>&
+          origin_trial_features,
       blink::mojom::SharedStorageDocumentService::AddModuleOnWorkletCallback
           callback);
   void RunOperationOnWorklet(const std::string& name,
@@ -216,6 +220,10 @@ class CONTENT_EXPORT SharedStorageWorkletHost
   // The URL of the module script. Set when `AddModuleOnWorklet` is invoked.
   GURL script_source_url_;
 
+  // The origin trial features inherited from the creator document. Set when
+  // `AddModuleOnWorklet` is invoked.
+  std::vector<blink::mojom::OriginTrialFeature> origin_trial_features_;
+
   // Responsible for initializing the `SharedStorageWorkletService`.
   std::unique_ptr<SharedStorageWorkletDriver> driver_;
 
@@ -249,8 +257,9 @@ class CONTENT_EXPORT SharedStorageWorkletHost
   // `IsSharedStorageAllowed()`, and to get the global URLLoaderFactory.
   raw_ptr<BrowserContext> browser_context_;
 
-  // The shared storage owner document's origin.
+  // The shared storage owner document's origin and site.
   url::Origin shared_storage_origin_;
+  net::SchemefulSite shared_storage_site_;
 
   // To avoid race conditions associated with top frame navigations and to be
   // able to call `IsSharedStorageAllowed()` during keep-alive, we need to save

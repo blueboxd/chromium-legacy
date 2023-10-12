@@ -7,6 +7,7 @@ import '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import '//resources/cr_elements/cr_icons.css.js';
 import '//resources/cr_elements/icons.html.js';
 import '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import '//resources/cr_elements/md_select.css.js';
 import './icons.html.js';
 
 import {AnchorAlignment, CrActionMenuElement, ShowAtPositionConfig} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
@@ -33,6 +34,12 @@ export interface ReadAnythingToolbar {
   };
 }
 
+interface VoiceDropdown {
+  voice: SpeechSynthesisVoice;
+  selected: boolean;
+  previewPlaying: boolean;
+}
+
 interface MenuStateItem<T> {
   title: string;
   icon: string;
@@ -43,6 +50,7 @@ interface MenuStateItem<T> {
 interface MenuButton {
   id: string;
   icon: string;
+  ariaLabel: string;
   // This is a function instead of just the menu itself because the menu isn't
   // ready by the time we create the MenuButton entries.
   menuToOpen: () => CrActionMenuElement;
@@ -63,7 +71,8 @@ enum ReadAnythingSettingsChange {
 }
 
 const SETTINGS_CHANGE_UMA = 'Accessibility.ReadAnything.SettingsChange';
-
+const moreOptionsClass = '.more-options-icon';
+const activeClass = ' active';
 
 const ReadAnythingToolbarBase = WebUiListenerMixin(PolymerElement);
 export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
@@ -94,42 +103,29 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     const moreOptionsButton = toolbar.querySelector('#more') as HTMLElement;
     assert(moreOptionsButton);
     ReadAnythingToolbar.hideElement(moreOptionsButton, false);
-    const moreOptionsMenu = toolbar.querySelector('#moreOptionsMenu');
-    assert(moreOptionsMenu);
-    Array.from(moreOptionsMenu.children).forEach(child => {
-      ReadAnythingToolbar.hideElement(child as HTMLElement, false);
-    });
 
-    // Show all the buttons before deciding which ones to hide
-    const buttons = toolbar.querySelectorAll('.toolbar-button');
+    // Show all the buttons that would go in the overflow menu to see if they
+    // fit
+    const buttons = Array.from(toolbar.querySelectorAll('.toolbar-button'));
     assert(buttons);
-    buttons.forEach(btn => {
+    const moreOptionsButtons = toolbar.querySelectorAll(moreOptionsClass);
+    assert(moreOptionsButtons);
+    const buttonsOnToolbarToMaybeHide =
+        buttons.slice(buttons.length - moreOptionsButtons.length);
+    buttonsOnToolbarToMaybeHide.forEach(btn => {
       ReadAnythingToolbar.showElement(btn as HTMLElement);
     });
 
     // When scroll width and client width are the different, then the content
-    // has overflowed
+    // has overflowed.
     if (toolbar.scrollWidth !== toolbar.clientWidth) {
-      // If x buttons are pushed off screen, put the more options button before
-      // the last x + 1 buttons since adding it will push another button off
-      // screen
-      for (let i = buttons.length - 1; i >= 0; i--) {
-        // Hide the overflowed button in case it's still partially on screen
-        const button = buttons[i] as HTMLElement;
-        ReadAnythingToolbar.hideElement(button, true);
-        // Show the button that was pushed off screen in the more options menu
-        const styleButtonInMoreOptions =
-            moreOptionsMenu.querySelector('#' + button.id) as HTMLElement;
-        if (!styleButtonInMoreOptions) {
-          break;
-        }
-        ReadAnythingToolbar.showElement(styleButtonInMoreOptions);
-        if (button.getBoundingClientRect().right < toolbar.clientWidth) {
-          ReadAnythingToolbar.showElement(moreOptionsButton);
-          toolbar.insertBefore(moreOptionsButton, button);
-          break;
-        }
-      }
+      ReadAnythingToolbar.showElement(moreOptionsButton);
+      // Hide all the buttons on the toolbar that are in the more options menu
+      buttonsOnToolbarToMaybeHide.forEach(btn => {
+        ReadAnythingToolbar.hideElement(btn as HTMLElement, true);
+      });
+      toolbar.insertBefore(moreOptionsButton, buttonsOnToolbarToMaybeHide[0]);
+      (moreOptionsButtons.item(0) as HTMLElement).style.marginLeft = '16px';
     }
   }
 
@@ -200,68 +196,62 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
   private colorOptions_: Array<MenuStateItem<string>> = [
     {
       title: loadTimeData.getString('defaultColorTitle'),
-      icon: 'read-anything:default-theme',
+      icon: 'read-anything-20:default-theme',
       data: '',
       callback: () => chrome.readingMode.onDefaultTheme(),
     },
     {
       title: loadTimeData.getString('lightColorTitle'),
-      icon: 'read-anything:light-theme',
+      icon: 'read-anything-20:light-theme',
       data: '-light',
       callback: () => chrome.readingMode.onLightTheme(),
     },
     {
       title: loadTimeData.getString('darkColorTitle'),
-      icon: 'read-anything:dark-theme',
+      icon: 'read-anything-20:dark-theme',
       data: '-dark',
       callback: () => chrome.readingMode.onDarkTheme(),
     },
     {
       title: loadTimeData.getString('yellowColorTitle'),
-      icon: 'read-anything:yellow-theme',
+      icon: 'read-anything-20:yellow-theme',
       data: '-yellow',
       callback: () => chrome.readingMode.onYellowTheme(),
     },
     {
       title: loadTimeData.getString('blueColorTitle'),
-      icon: 'read-anything:blue-theme',
+      icon: 'read-anything-20:blue-theme',
       data: '-blue',
       callback: () => chrome.readingMode.onBlueTheme(),
     },
   ];
 
-  private voiceSelectionOptions_: Array<MenuStateItem<SpeechSynthesisVoice>> =
-      [];
+  private voiceSelectionOptions_: Array<MenuStateItem<VoiceDropdown>> = [];
 
   private rateOptions_: number[] = [0.5, 0.8, 1, 1.2, 1.5, 2, 3, 4];
 
-  private textStyleOptions_: MenuButton[] = [
-    {
-      id: 'font-size',
-      icon: 'read-anything:font-size',
-      menuToOpen: () => this.$.fontSizeMenu,
-    },
-    {
-      id: 'font',
-      icon: 'read-anything:font',
-      menuToOpen: () => this.$.fontMenu,
-    },
+  private moreOptionsButtons_: MenuButton[] = [
     {
       id: 'color',
       icon: 'read-anything:color',
+      ariaLabel: loadTimeData.getString('themeTitle'),
       menuToOpen: () => this.$.colorMenu,
     },
     {
       id: 'line-spacing',
       icon: 'read-anything:line-spacing',
+      ariaLabel: loadTimeData.getString('lineSpacingTitle'),
       menuToOpen: () => this.$.lineSpacingMenu,
     },
     {
       id: 'letter-spacing',
       icon: 'read-anything:letter-spacing',
+      ariaLabel: loadTimeData.getString('letterSpacingTitle'),
       menuToOpen: () => this.$.letterSpacingMenu,
     },
   ];
+
+  private textStyleOptions_: MenuButton[] = [];
 
   private showAtPositionConfig_: ShowAtPositionConfig = {
     top: 20,
@@ -271,6 +261,7 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
 
   private isReadAloudEnabled_: boolean;
   private isHighlightOn_: boolean = true;
+  private activeButton_: HTMLElement|null;
 
   // If Read Aloud is in the paused state.
   private isPaused_: boolean = true;
@@ -278,14 +269,32 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
   override connectedCallback() {
     super.connectedCallback();
     this.isReadAloudEnabled_ = chrome.readingMode.isReadAloudEnabled;
+    if (this.isReadAloudEnabled_) {
+      this.textStyleOptions_.push(
+          {
+            id: 'font-size',
+            icon: 'read-anything:font-size',
+            ariaLabel: loadTimeData.getString('fontSizeTitle'),
+            menuToOpen: () => this.$.fontSizeMenu,
+          },
+          {
+            id: 'font',
+            icon: 'read-anything:font',
+            ariaLabel: loadTimeData.getString('fontNameTitle'),
+            menuToOpen: () => this.$.fontMenu,
+          },
+      );
+
+      const shadowRoot = this.shadowRoot;
+      assert(shadowRoot);
+      const toolbar = shadowRoot.getElementById('toolbar-container');
+      assert(toolbar);
+      new ResizeObserver(this.onToolbarResize_).observe(toolbar);
+    }
+    this.textStyleOptions_ =
+        this.textStyleOptions_.concat(this.moreOptionsButtons_);
 
     this.updateFonts();
-
-    const shadowRoot = this.shadowRoot;
-    assert(shadowRoot);
-    const toolbar = shadowRoot.getElementById('toolbar-container');
-    assert(toolbar);
-    new ResizeObserver(this.onToolbarResize_).observe(toolbar);
   }
 
   private onToolbarResize_(entries: ResizeObserverEntry[]) {
@@ -294,17 +303,35 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     ReadAnythingToolbar.maybeUpdateMoreOptions(toolbar);
   }
 
-  restoreSettingsFromPrefs(colorSuffix?: string) {
-    const fontNodes = Array.from(this.$.fontMenu.children);
-    fontNodes.forEach((element) => {
-      if (element instanceof HTMLButtonElement) {
-        if (!element.innerText) {
-          return;
-        }
-        // Update the font of each button to be the same as the font text.
-        element.style.fontFamily = element.innerText;
+  private restoreFontMenu_() {
+    const currentFontIndex =
+        this.fontOptions_.indexOf(chrome.readingMode.fontName);
+    let fontOptions: Element[];
+    if (this.isReadAloudEnabled_) {
+      fontOptions = Array.from(this.$.fontMenu.children);
+      this.setCheckMarkForMenu_(this.$.fontMenu, currentFontIndex);
+    } else {
+      const shadowRoot = this.shadowRoot;
+      assert(shadowRoot);
+      const select =
+          shadowRoot.getElementById('font-select') as HTMLSelectElement;
+      assert(select);
+      fontOptions = Array.from(select.options);
+      select.selectedIndex = currentFontIndex;
+    }
+
+    fontOptions.forEach(element => {
+      assert(element instanceof HTMLElement);
+      if (!element.innerText) {
+        return;
       }
+      // Update the font of each button to be the same as the font text.
+      element.style.fontFamily = element.innerText;
     });
+  }
+
+  restoreSettingsFromPrefs(colorSuffix?: string) {
+    this.restoreFontMenu_();
 
     if (this.isReadAloudEnabled_) {
       const speechRate = parseFloat(chrome.readingMode.speechRate.toFixed(1));
@@ -316,9 +343,6 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
           chrome.readingMode.highlightGranularity ===
           chrome.readingMode.highlightOn);
     }
-    this.setCheckMarkForMenu_(
-        this.$.fontMenu,
-        this.fontOptions_.indexOf(chrome.readingMode.fontName));
     this.setCheckMarkForMenu_(
         this.$.colorMenu,
         this.getIndexOfSetting_(this.colorOptions_, colorSuffix));
@@ -355,15 +379,45 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     const button = shadowRoot.getElementById('play-pause');
     assert(button);
     button.setAttribute('iron-icon', 'read-anything-20:pause');
+    button.setAttribute('aria-label', loadTimeData.getString('pauseLabel'));
     this.isPaused_ = false;
 
     this.updateStyles({
       '--audio-controls-background': 'var(--color-sys-tonal-container)',
+      '--audio-controls-right-padding': '4px',
+      '--audio-controls-right-margin': '6px',
     });
 
     const toolbar = shadowRoot.getElementById('toolbar-container');
     assert(toolbar);
     ReadAnythingToolbar.maybeUpdateMoreOptions(toolbar);
+  }
+
+  showVoicePreviewPlaying(voice: SpeechSynthesisVoice|null) {
+    if (!voice) {
+      return;
+    }
+    this.voiceSelectionOptions_ = this.voiceSelectionOptions_.map(
+        ({data, ...rest}) => ({
+          ...rest,
+          data: {
+            voice: data.voice,
+            selected: data.selected,
+            previewPlaying: this.voicesAreEqual_(data.voice, voice),
+          },
+        }));
+  }
+
+  showVoicePreviewDone() {
+    this.voiceSelectionOptions_ =
+        this.voiceSelectionOptions_.map(({data, ...rest}) => ({
+                                          ...rest,
+                                          data: {
+                                            voice: data.voice,
+                                            selected: data.selected,
+                                            previewPlaying: false,
+                                          },
+                                        }));
   }
 
   updateUiForPausing() {
@@ -372,10 +426,13 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     const button = shadowRoot.getElementById('play-pause');
     assert(button);
     button.setAttribute('iron-icon', 'read-anything-20:play');
+    button.setAttribute('aria-label', loadTimeData.getString('playLabel'));
     this.isPaused_ = true;
 
     this.updateStyles({
       '--audio-controls-background': 'transparent',
+      '--audio-controls-right-padding': '0px',
+      '--audio-controls-right-margin': '2px',
     });
 
     const toolbar = shadowRoot.getElementById('toolbar-container');
@@ -411,19 +468,37 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     this.openMenu_(this.$.rateMenu, event.target as HTMLElement);
   }
 
+  private voicesAreEqual_(
+      voice1?: SpeechSynthesisVoice, voice2?: SpeechSynthesisVoice): boolean {
+    if (!voice1 || !voice2) {
+      return false;
+    }
+    return voice1.default === voice2.default && voice1.lang === voice2.lang &&
+        voice1.localService === voice2.localService &&
+        voice1.name === voice2.name && voice1.voiceURI === voice2.voiceURI;
+  }
+
   // TODO(crbug.com/1474951): Add unit tests
   private onVoiceSelectionMenuClick_(event: MouseEvent) {
     if (this.contentPage) {
       const voices = this.contentPage.getVoices();
+      const selectedVoice = this.contentPage.getSpeechSynthesisVoice();
+
       this.voiceSelectionOptions_ = Object.entries(voices).reduce(
-          (aggregateVoiceList: Array<MenuStateItem<SpeechSynthesisVoice>>,
+          (aggregateVoiceList: Array<MenuStateItem<VoiceDropdown>>,
            [_, voiceListForLang]) =>
               ([
                 ...aggregateVoiceList,
                 ...(voiceListForLang).map(speechSynthesisVoice => ({
                                             title: speechSynthesisVoice.name,
                                             icon: '',
-                                            data: speechSynthesisVoice,
+                                            data: {
+                                              voice: speechSynthesisVoice,
+                                              selected: this.voicesAreEqual_(
+                                                  selectedVoice,
+                                                  speechSynthesisVoice),
+                                              previewPlaying: false,
+                                            },
                                             callback: () => {},
                                           })),
               ]),
@@ -438,6 +513,12 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
   }
 
   private openMenu_(menuToOpen: CrActionMenuElement, target: HTMLElement) {
+    // The button should stay active while the menu is open and deactivate when
+    // the menu closes.
+    menuToOpen.addEventListener('close', () => {
+      target.className = target.className.replace(activeClass, '');
+    });
+    target.className += activeClass;
     this.closeMenus_();
 
     const shadowRoot = this.shadowRoot;
@@ -502,23 +583,32 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
   }
 
   private onVoiceSelectClick_(
-      event: DomRepeatEvent<MenuStateItem<SpeechSynthesisVoice>>) {
+      event: DomRepeatEvent<MenuStateItem<VoiceDropdown>>) {
     // TODO(crbug.com/1474951): Save voice to prefs.
     if (this.contentPage) {
-      this.contentPage.setSpeechSynthesisVoice(event.model.item.data);
+      const selectedVoice = event.model.item.data.voice;
+      this.contentPage.setSpeechSynthesisVoice(selectedVoice);
+      this.voiceSelectionOptions_ = this.voiceSelectionOptions_.map(
+          ({data, ...rest}) => ({
+            ...rest,
+            data: {
+              voice: data.voice,
+              selected: this.voicesAreEqual_(selectedVoice, data.voice),
+              previewPlaying: false,
+            },
+          }));
     }
   }
 
   private onVoicePreviewClick_(
-      event: DomRepeatEvent<MenuStateItem<SpeechSynthesisVoice>>) {
+      event: DomRepeatEvent<MenuStateItem<VoiceDropdown>>) {
     // Because the preview button is layered onto the voice-selection button,
     // the onVoiceSelectClick_() listener is also subscribed to this event. This
     // line is to make sure that the voice-selection callback is not triggered.
     event.stopImmediatePropagation();
 
     if (this.contentPage) {
-      this.contentPage.previewSpeechSynthesisVoice(
-          event.model.item.data as SpeechSynthesisVoice);
+      this.contentPage.previewSpeechSynthesisVoice(event.model.item.data.voice);
     }
   }
 
@@ -548,6 +638,14 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     this.setCheckMarkForMenu_(this.$.fontMenu, event.model.index);
 
     this.closeMenus_();
+  }
+
+  private onFontSelectValueChange_(event: Event) {
+    const fontName = (event.target as HTMLSelectElement).value;
+    chrome.readingMode.onFontChange(fontName);
+    if (this.contentPage) {
+      this.contentPage.updateFont(fontName);
+    }
   }
 
   private onRateClick_(event: DomRepeatEvent<number>) {
@@ -610,7 +708,7 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     }
   }
 
-  private onPlayPauseClick_() {
+  onPlayPauseClick() {
     if (this.isPaused_) {
       this.updateUiForPlaying();
       if (this.contentPage) {
@@ -621,6 +719,104 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
       if (this.contentPage) {
         this.contentPage.stopSpeech();
       }
+    }
+  }
+
+  private onToolbarKeyDown_(e: KeyboardEvent) {
+    const shadowRoot = this.shadowRoot;
+    assert(shadowRoot);
+    const toolbar = shadowRoot.getElementById('toolbar-container');
+    assert(toolbar);
+    const buttons = Array.from(toolbar.querySelectorAll('.toolbar-button')) as
+        HTMLElement[];
+    assert(buttons);
+
+    // Only allow focus on the currently visible and actionable elements.
+    const focusableElements = buttons.filter(el => {
+      return (el.clientHeight > 0) && (el.clientWidth > 0) &&
+          (el.getBoundingClientRect().right < toolbar.clientWidth) &&
+          (el.className !== 'separator');
+    });
+
+    // Allow focusing the font selection if it's visible.
+    if (!this.isReadAloudEnabled_) {
+      const select = shadowRoot.getElementById('font-select') as HTMLElement;
+      assert(select);
+      focusableElements.unshift(select);
+    }
+
+    // Allow focusing the more options menu if it's visible.
+    const moreOptionsButton = toolbar.querySelector('#more') as HTMLElement;
+    assert(moreOptionsButton);
+    if (moreOptionsButton.style.display &&
+        (moreOptionsButton.style.display !== 'none')) {
+      focusableElements.push(moreOptionsButton);
+      Array.from(toolbar.querySelectorAll(moreOptionsClass))
+          .forEach(element => {
+            focusableElements.push(element as HTMLElement);
+          });
+    }
+
+    this.onKeyDown_(e, focusableElements);
+  }
+
+  private onFontSizeMenuKeyDown_(e: KeyboardEvent) {
+    this.onKeyDown_(
+        e, Array.from(this.$.fontSizeMenu.children) as HTMLElement[]);
+  }
+
+  private onKeyDown_(e: KeyboardEvent, focusableElements: HTMLElement[]) {
+    if (!['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+      return;
+    }
+
+    e.preventDefault();
+    const currentIndex = focusableElements.indexOf(e.target as HTMLElement);
+    const direction = e.key === 'ArrowRight' ? 1 : -1;
+    // Move to the next focusable item in the toolbar, wrapping around
+    // if we've reached the end or beginning.
+    let newIndex = (currentIndex + direction + focusableElements.length) %
+        focusableElements.length;
+    // Skip focusing the button itself and go directly to the children. We still
+    // need this button in the list of focusable elements because it can become
+    // focused by tabbing while the menu is open and we want the arrow key
+    // behavior to continue smoothly.
+    if (focusableElements[newIndex].id === 'more') {
+      newIndex += direction;
+    }
+
+    // Open the overflow menu if the next button is in that menu. Close it
+    // otherwise.
+    const elementToFocus = focusableElements[newIndex];
+    assert(elementToFocus);
+    if (elementToFocus.className !== moreOptionsClass.slice(1)) {
+      this.$.moreOptionsMenu.close();
+    } else if (!this.$.moreOptionsMenu.open) {
+      const moreOptionsButton =
+          focusableElements.find(element => element.id === 'more');
+      assert(moreOptionsButton);
+      this.openMenu_(this.$.moreOptionsMenu, moreOptionsButton);
+    }
+
+    // When the user tabs away from the toolbar and then tabs back, we want to
+    // focus the last focused item in the toolbar
+    focusableElements.forEach(el => {
+      el.tabIndex = -1;
+    });
+    elementToFocus.tabIndex = 0;
+
+    // Wait for the next animation frame for the overflow menu to show or hide.
+    requestAnimationFrame(() => {
+      elementToFocus.focus();
+    });
+  }
+
+  private onFontSelectKeyDown_(e: KeyboardEvent) {
+    // The default behavior goes to the next select option. However, we want
+    // to instead go to the next toolbar button (handled in onToolbarKeyDown_).
+    // ArrowDown and ArrowUp will still move to the next/previous option.
+    if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+      e.preventDefault();
     }
   }
 }

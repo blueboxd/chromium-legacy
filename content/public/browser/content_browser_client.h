@@ -224,7 +224,7 @@ class FontAccessDelegate;
 class HidDelegate;
 class IdentityRequestDialogController;
 class LoginDelegate;
-class MDocProvider;
+class DigitalCredentialProvider;
 class MediaObserver;
 class NavigationHandle;
 class NavigationThrottle;
@@ -2196,7 +2196,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldSandboxNetworkService();
 
   // Returns true if system DNS resolution should be run outside of the network
-  // service.
+  // service. This is useful if the network service is sandboxed but system DNS
+  // resolution cannot run sandboxed.
   virtual bool ShouldRunOutOfProcessSystemDnsResolution();
 
   // Browser-side API to log blink UseCounters for events that don't occur in
@@ -2487,8 +2488,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::unique_ptr<IdentityRequestDialogController>
   CreateIdentityRequestDialogController(WebContents* web_contents);
 
-  // Creates an mdoc provider to fetch mdocs from native apps.
-  virtual std::unique_ptr<MDocProvider> CreateMDocProvider();
+  // Creates a digital credential provider to fetch from native apps.
+  virtual std::unique_ptr<DigitalCredentialProvider>
+  CreateDigitalCredentialProvider();
 
   // Returns true if JS dialogs from an iframe with different origin from the
   // main frame should be disallowed.

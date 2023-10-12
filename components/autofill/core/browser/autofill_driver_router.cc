@@ -10,6 +10,8 @@
 #include "base/functional/invoke.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/form_forest.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 
@@ -81,7 +83,7 @@ void AutofillDriverRouter::TriggerFormExtractionExcept(
       if (driver == exception) {
         continue;
       }
-      driver->TriggerFormExtraction();
+      driver->TriggerFormExtractionInDriverFrame();
     } while ((driver = driver->GetParent()) != nullptr);
   });
 }
@@ -268,6 +270,11 @@ void AutofillDriverRouter::AskForValuesToFill(
 
 void AutofillDriverRouter::HidePopup(AutofillDriver* source,
                                      void (*callback)(AutofillDriver* target)) {
+  // We don't know which AutofillManager is currently displaying the popup.
+  // Since the the general approach of popup hiding in Autofill seems to be
+  // "better safe than sorry", broadcasting this event is fine.
+  // TODO(crbug.com/1490905): This event should go away when the popup-hiding
+  // mechanism has been cleaned up.
   ForEachFrame(form_forest_, callback);
 }
 
@@ -286,8 +293,12 @@ void AutofillDriverRouter::FocusNoLongerOnForm(
 
   TriggerFormExtractionExcept(source);
 
-  // TODO(crbug/1228706): Retrofit event with the FormGlobalId and unicast
-  // event.
+  // The last-focused form is not known at this time. Even if
+  // FocusNoLongerOnForm() had a FormGlobalId parameter, we couldn't call
+  // `form_forest_.GetBrowserForm()` because this is admissible only after a
+  // `form_forest_.UpdateTreeOfRendererForm()` for the same form.
+  //
+  // Therefore, we simply broadcast the event.
   ForEachFrame(form_forest_, [&](AutofillDriver* some_driver) {
     callback(some_driver, had_interacted_form);
   });
@@ -346,8 +357,12 @@ void AutofillDriverRouter::DidEndTextFieldEditing(
     void (*callback)(AutofillDriver* target)) {
   TriggerFormExtractionExcept(source);
 
-  // TODO(crbug/1228706): Retrofit event with the FormGlobalId and FieldGlobalId
-  // and unicast event.
+  // The last-focused form is not known at this time. Even if
+  // DidEndTextFieldEditing() had a FormGlobalId parameter, we couldn't call
+  // `form_forest_.GetBrowserForm()` because this is admissible only after a
+  // `form_forest_.UpdateTreeOfRendererForm()` for the same form.
+  //
+  // Therefore, we simply broadcast the event.
   ForEachFrame(form_forest_, callback);
 }
 
@@ -386,20 +401,6 @@ void AutofillDriverRouter::JavaScriptChangedAutofilledValue(
   callback(target, browser_form, field, old_value);
 }
 
-void AutofillDriverRouter::OnContextMenuShownInField(
-    AutofillDriver* source,
-    const FormGlobalId& form_global_id,
-    const FieldGlobalId& field_global_id,
-    void (*callback)(AutofillDriver* target,
-                     const FormGlobalId& form_global_id,
-                     const FieldGlobalId& field_global_id)) {
-  TriggerFormExtractionExcept(source);
-
-  ForEachFrame(form_forest_, [&](AutofillDriver* some_driver) {
-    callback(some_driver, form_global_id, field_global_id);
-  });
-}
-
 // Routing of events triggered by the browser.
 //
 // Below, `DriverOfFrame() == nullptr` does not necessarily indicate a bug and
@@ -418,9 +419,16 @@ std::vector<FieldGlobalId> AutofillDriverRouter::ApplyAutofillAction(
                      mojom::AutofillActionType action_type,
                      mojom::AutofillActionPersistence action_persistence,
                      const FormData& form)) {
+  // Since Undo only affects fields that were already filled, and only sets
+  // values to fields to something that already existed in it prior to the
+  // filling, it is okay to bypass the filling security checks and hence passing
+  // `TrustAllOrigins()`.
   internal::FormForest::RendererForms renderer_forms =
       form_forest_.GetRendererFormsOfBrowserForm(
-          data, {&triggered_origin, &field_type_map});
+          data, action_type == mojom::AutofillActionType::kUndo
+                    ? internal::FormForest::SecurityOptions::TrustAllOrigins()
+                    : internal::FormForest::SecurityOptions(&triggered_origin,
+                                                            &field_type_map));
   for (const FormData& renderer_form : renderer_forms.renderer_forms) {
     if (auto* target = DriverOfFrame(renderer_form.host_frame)) {
       callback(target, action_type, action_persistence, renderer_form);
@@ -570,6 +578,26 @@ void AutofillDriverRouter::RendererShouldSetSuggestionAvailability(
   if (auto* target = DriverOfFrame(field.frame_token)) {
     callback(target, field.renderer_id, state);
   }
+}
+
+void AutofillDriverRouter::OnContextMenuShownInField(
+    AutofillDriver* source,
+    const FormGlobalId& form_global_id,
+    const FieldGlobalId& field_global_id,
+    void (*callback)(AutofillDriver* target,
+                     const FormGlobalId& form_global_id,
+                     const FieldGlobalId& field_global_id)) {
+  TriggerFormExtractionExcept(source);
+
+  // Even though we have the `form_global_id` of a renderer form, we cannot call
+  // `form_forest_.GetBrowserForm()` because this is admissible only after a
+  // `form_forest_.UpdateTreeOfRendererForm()` for the same form, but there's no
+  // guarantee this ever happened (e.g., because of race conditions or because
+  // the form is too large; see
+  // https://crrev.com/c/3865860/comment/eddfd61f_dadb4918/ for details).
+  ForEachFrame(form_forest_, [&](AutofillDriver* some_driver) {
+    callback(some_driver, form_global_id, field_global_id);
+  });
 }
 
 std::vector<FormData> AutofillDriverRouter::GetRendererForms(

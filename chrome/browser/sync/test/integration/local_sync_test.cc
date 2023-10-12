@@ -116,7 +116,6 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
       syncer::DEVICE_INFO,
       syncer::PRIORITY_PREFERENCES,
       syncer::WEB_APPS,
-      syncer::PROXY_TABS,
       syncer::NIGORI};
 
   if (base::FeatureList::IsEnabled(features::kTabGroupsSave)) {
@@ -125,6 +124,10 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
 
   if (base::FeatureList::IsEnabled(power_bookmarks::kPowerBookmarkBackend)) {
     expected_active_data_types.Put(syncer::POWER_BOOKMARK);
+  }
+
+  if (base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials)) {
+    expected_active_data_types.Put(syncer::WEBAUTHN_CREDENTIAL);
   }
 
   // The dictionary is currently only synced on Windows, Linux, and Lacros.

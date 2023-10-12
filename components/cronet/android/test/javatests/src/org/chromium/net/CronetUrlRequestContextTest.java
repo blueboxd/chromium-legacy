@@ -36,6 +36,7 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.net.CronetTestRule.CronetImplementation;
+import org.chromium.net.CronetTestRule.DisableAutomaticNetLog;
 import org.chromium.net.CronetTestRule.IgnoreFor;
 import org.chromium.net.CronetTestRule.RequiresMinAndroidApi;
 import org.chromium.net.CronetTestRule.RequiresMinApi;
@@ -680,6 +681,7 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No netlogs for pure java impl")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     public void
     testNetLog() throws Exception {
         File directory = new File(PathUtils.getDataDirectory());
@@ -708,10 +710,11 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No netlogs for pure java impl")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     public void
     testBoundedFileNetLog() throws Exception {
         File directory = new File(PathUtils.getDataDirectory());
-        File netLogDir = new File(directory, "NetLog");
+        File netLogDir = new File(directory, "NetLog" + System.currentTimeMillis());
         assertThat(netLogDir.exists()).isFalse();
         assertThat(netLogDir.mkdir()).isTrue();
         File logFile = new File(netLogDir, "netlog.json");
@@ -739,6 +742,7 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No netlogs for pure java impl")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     // Tests that if stopNetLog is not explicitly called, CronetEngine.shutdown()
     // will take care of it. crbug.com/623701.
     public void
@@ -767,12 +771,13 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No netlogs for pure java impl")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     // Tests that if stopNetLog is not explicitly called, CronetEngine.shutdown()
     // will take care of it. crbug.com/623701.
     public void
     testNoStopBoundedFileNetLog() throws Exception {
         File directory = new File(PathUtils.getDataDirectory());
-        File netLogDir = new File(directory, "NetLog");
+        File netLogDir = new File(directory, "NetLog" + System.currentTimeMillis());
         assertThat(netLogDir.exists()).isFalse();
         assertThat(netLogDir.mkdir()).isTrue();
         File logFile = new File(netLogDir, "netlog.json");
@@ -1084,6 +1089,7 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No NetLog support for fallback imnplementation")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     // Tests that NetLog contains events emitted by all live CronetEngines.
     public void
     testNetLogContainEventsFromAllLiveEngines() throws Exception {
@@ -1131,14 +1137,15 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No NetLog support for fallback imnplementation")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     // Tests that NetLog contains events emitted by all live CronetEngines.
     public void
     testBoundedFileNetLogContainEventsFromAllLiveEngines() throws Exception {
         File directory = new File(PathUtils.getDataDirectory());
-        File netLogDir1 = new File(directory, "NetLog1");
+        File netLogDir1 = new File(directory, "NetLog1" + System.currentTimeMillis());
         assertThat(netLogDir1.exists()).isFalse();
         assertThat(netLogDir1.mkdir()).isTrue();
-        File netLogDir2 = new File(directory, "NetLog2");
+        File netLogDir2 = new File(directory, "NetLog2" + System.currentTimeMillis());
         assertThat(netLogDir2.exists()).isFalse();
         assertThat(netLogDir2.mkdir()).isTrue();
         File logFile1 = new File(netLogDir1, "netlog.json");
@@ -1313,6 +1320,7 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No NetLog support for fallback imnplementation")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     public void
     testNetLogAfterShutdown() throws Exception {
         ExperimentalCronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
@@ -1338,6 +1346,7 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No NetLog support for fallback imnplementation")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     public void
     testBoundedFileNetLogAfterShutdown() throws Exception {
         ExperimentalCronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
@@ -1349,7 +1358,7 @@ public class CronetUrlRequestContextTest {
         cronetEngine.shutdown();
 
         File directory = new File(PathUtils.getDataDirectory());
-        File netLogDir = new File(directory, "NetLog");
+        File netLogDir = new File(directory, "NetLog" + System.currentTimeMillis());
         assertThat(netLogDir.exists()).isFalse();
         assertThat(netLogDir.mkdir()).isTrue();
         File logFile = new File(netLogDir, "netlog.json");
@@ -1365,6 +1374,7 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No NetLog support for fallback imnplementation")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     public void
     testNetLogStartMultipleTimes() throws Exception {
         ExperimentalCronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
@@ -1393,11 +1403,12 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No NetLog support for fallback imnplementation")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     public void
     testBoundedFileNetLogStartMultipleTimes() throws Exception {
         ExperimentalCronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
         File directory = new File(PathUtils.getDataDirectory());
-        File netLogDir = new File(directory, "NetLog");
+        File netLogDir = new File(directory, "NetLog" + System.currentTimeMillis());
         assertThat(netLogDir.exists()).isFalse();
         assertThat(netLogDir.mkdir()).isTrue();
         File logFile = new File(netLogDir, "netlog.json");
@@ -1425,6 +1436,7 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No NetLog support for fallback imnplementation")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     public void
     testNetLogStopMultipleTimes() throws Exception {
         ExperimentalCronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
@@ -1454,11 +1466,12 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No NetLog support for fallback imnplementation")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     public void
     testBoundedFileNetLogStopMultipleTimes() throws Exception {
         ExperimentalCronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
         File directory = new File(PathUtils.getDataDirectory());
-        File netLogDir = new File(directory, "NetLog");
+        File netLogDir = new File(directory, "NetLog" + System.currentTimeMillis());
         assertThat(netLogDir.exists()).isFalse();
         assertThat(netLogDir.mkdir()).isTrue();
         File logFile = new File(netLogDir, "netlog.json");
@@ -1487,6 +1500,7 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No NetLog support for fallback imnplementation")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     public void
     testNetLogWithBytes() throws Exception {
         File directory = new File(PathUtils.getDataDirectory());
@@ -1512,10 +1526,11 @@ public class CronetUrlRequestContextTest {
     @SmallTest
     @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
             reason = "No NetLog support for fallback imnplementation")
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     public void
     testBoundedFileNetLogWithBytes() throws Exception {
         File directory = new File(PathUtils.getDataDirectory());
-        File netLogDir = new File(directory, "NetLog");
+        File netLogDir = new File(directory, "NetLog" + System.currentTimeMillis());
         assertThat(netLogDir.exists()).isFalse();
         assertThat(netLogDir.mkdir()).isTrue();
         File logFile = new File(netLogDir, "netlog.json");

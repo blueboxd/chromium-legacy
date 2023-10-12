@@ -36,8 +36,8 @@
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
-#import "ios/chrome/browser/default_browser/utils.h"
-#import "ios/chrome/browser/default_browser/utils_test_support.h"
+#import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/default_browser/model/utils_test_support.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
@@ -55,10 +55,10 @@
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
-#import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
+#import "ios/chrome/browser/unified_consent/model/unified_consent_service_factory.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/test/app/browsing_data_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -274,6 +274,17 @@ NSString* SerializedValue(const base::Value* value) {
 
 + (NSUInteger)browserCount {
   return chrome_test_util::RegularBrowserCount();
+}
+
++ (NSInteger)realizedWebStatesCount {
+  int count = 0;
+  int tab_count = chrome_test_util::GetMainTabCount();
+  for (int i = 0; i < tab_count; i++) {
+    if (chrome_test_util::GetWebStateAtIndexInCurrentMode(i)->IsRealized()) {
+      count++;
+    }
+  }
+  return count;
 }
 
 + (NSUInteger)evictedMainTabCount {

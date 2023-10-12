@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Bạn chỉ được tuỳ chỉnh 5 phím tắt. Xoá một phím tắt để thêm phím tắt mới.</translation>
 <translation id="1164939766849482256">Trình bảo vệ màn hình Sáng đến tối</translation>
 <translation id="1167755866710282443">Mở trình đơn để tuỳ chỉnh các phím. Kéo trình đơn để di chuyển.</translation>
+<translation id="1174073918202301297">Đã thêm phím tắt</translation>
 <translation id="1175697296044146566"><ph name="DEVICE_TYPE" /> này do <ph name="MANAGER" /> quản lý.</translation>
 <translation id="1175951029573070619">Trung bình (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Xóa</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">Thay đổi hình nền hàng ngày</translation>
 <translation id="1644574205037202324">Nhật ký</translation>
 <translation id="1651925268237749928">Bạn đã chọn một album chia sẻ. Người khác có thể thêm hoặc thay đổi ảnh. Hình nền của bạn có thể sử dụng ảnh hiện không có trong album này.</translation>
+<translation id="1661865805917886535">Một số thông tin về tài khoản và hệ thống có thể được gửi đến Google. Chúng tôi dùng thông tin này theo Chính sách quyền riêng tư (<ph name="PRIVACYPOLICYURL" />) và Điều khoản dịch vụ (<ph name="TERMSOFSERVICEURL" />) để xử lý các vấn đề kỹ thuật và cải thiện dịch vụ. Nếu bạn muốn yêu cầu thay đổi nội dung, hãy chuyển đến trang Trợ giúp pháp lý (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Đã dừng – Hết mực</translation>
 <translation id="1664796644829245314">Xem trước <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN tích hợp sẵn</translation>
@@ -117,6 +119,7 @@
 <translation id="1768959921651994223">Loại xác thực</translation>
 <translation id="1776228893584526149">Tông màu nền</translation>
 <translation id="1782199038061388045">dịch</translation>
+<translation id="1788485524395674731">Quản trị viên của bạn quản lý ứng dụng này</translation>
 <translation id="1792647875738159689">Đang hủy quá trình quét</translation>
 <translation id="1801418420130173017">Tắt giao diện tối</translation>
 <translation id="1807246157184219062">Sáng</translation>
@@ -131,7 +134,6 @@
 <translation id="1871569928317311284">Tắt giao diện tối</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Tắt chế độ tối</translation>
-<translation id="1881188606372070653">Nếu bạn muốn yêu cầu thay đổi nội dung vì lý do pháp lý, hãy truy cập <ph name="BEGIN_LINK1" />trang Trợ giúp pháp lý<ph name="END_LINK1" />. Một số thông tin về tài khoản và hệ thống có thể được gửi đến Google. Chúng tôi sẽ dùng thông tin mà bạn cung cấp để giúp khắc phục các vấn đề kỹ thuật, đồng thời cải thiện các dịch vụ theo <ph name="BEGIN_LINK2" />Chính sách quyền riêng tư<ph name="END_LINK2" /> và <ph name="BEGIN_LINK3" />Điều khoản dịch vụ<ph name="END_LINK3" /> của chúng tôi.</translation>
 <translation id="1885577615937958993">tua nhanh nội dung nghe nhìn</translation>
 <translation id="1887850431809612466">Hiệu chỉnh phần cứng</translation>
 <translation id="1897672602657312171">Phím tắt không có phím tìm kiếm có thể xung đột với phím tắt của một số ứng dụng. Nhấn phím tắt này một lần nữa để tiếp tục sử dụng hoặc nhấn một phím tắt mới có phím tìm kiếm.</translation>
@@ -265,6 +267,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Thiết bị đã được kết nối.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Xóa trang?}=1{Xóa trang {PAGE_NUMBER}?}other{Xóa trang {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Dành riêng cho <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Dữ liệu di động</translation>
 <translation id="3156846309055100599">Đang quét trang <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">Đã phát hiện thấy trang xác thực</translation>
@@ -622,6 +625,7 @@
 <translation id="584953448295717128">APN đã được phát hiện tự động.</translation>
 <translation id="5849570051105887917">Mã của nhà cung cấp Home</translation>
 <translation id="5859603669299126575">Album trong Phòng tranh</translation>
+<translation id="5859969039821714932">Không có phím tắt này. Nhấn vào một phím tắt mới không có <ph name="KEY" />.</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5860491529813859533">Bật</translation>
 <translation id="5876385649737594562">Bật để chọn trong số các lựa chọn</translation>
@@ -687,6 +691,7 @@
 <translation id="6318437367327684789">vĩnh viễn</translation>
 <translation id="6319207335391420837">Cập nhật chương trình cơ sở cho <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Bật trình bảo vệ màn hình</translation>
+<translation id="6324916366299863871">Chỉnh sửa phím tắt</translation>
 <translation id="6325525973963619867">Lỗi</translation>
 <translation id="6331191339300272798">Giao diện tối tự động</translation>
 <translation id="6340526405444716530">Cá nhân hóa</translation>
@@ -826,6 +831,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Bàn di chuột tích hợp sẵn</translation>
 <translation id="7397270852490618635">Tắt giao diện sáng</translation>
+<translation id="7401543881546089382">Xóa phím tắt</translation>
 <translation id="741244894080940828">chuyển đổi</translation>
 <translation id="7415801143053185905">Yêu cầu HTTP có độ trễ rất cao</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Quản trị viên của bạn đã đặt <ph name="APP_NAME_1" /> ở chế độ tự khởi động mỗi khi bạn đăng nhập.}=2{Quản trị viên của bạn đã đặt <ph name="APP_NAME_1" /> và <ph name="APP_NAME_2" /> ở chế độ tự khởi động mỗi khi bạn đăng nhập.}=3{Quản trị viên của bạn đã đặt <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> và <ph name="APP_NAME_3" /> ở chế độ tự khởi động mỗi khi bạn đăng nhập.}other{Quản trị viên của bạn đã đặt <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> và # ứng dụng khác ở chế độ tự khởi động mỗi khi bạn đăng nhập.}}</translation>
@@ -864,6 +870,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">đèn bàn phím</translation>
+<translation id="7730077286107534951">Một số thông tin về tài khoản và hệ thống có thể được gửi đến Google. Chúng tôi sử dụng thông tin này để giúp khắc phục các vấn đề kỹ thuật, đồng thời cải thiện các dịch vụ theo <ph name="BEGIN_LINK2" />Chính sách quyền riêng tư<ph name="END_LINK2" /> và <ph name="BEGIN_LINK3" />Điều khoản dịch vụ<ph name="END_LINK3" /> của chúng tôi. Để yêu cầu thay đổi nội dung, hãy truy cập trang <ph name="BEGIN_LINK1" />Trợ giúp pháp lý<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Số chu kỳ</translation>
 <translation id="7747039790905080783">Khóa được chia sẻ trước</translation>
 <translation id="7752963721013053477">Sáng đến tối – dành riêng</translation>
@@ -900,6 +907,7 @@
 <translation id="7978412674231730200">Khoá cá nhân</translation>
 <translation id="7994702968232966508">Phương pháp EAP</translation>
 <translation id="8004582292198964060">Trình duyệt</translation>
+<translation id="8017679124341497925">Đã chỉnh sửa phím tắt</translation>
 <translation id="802154636333426148">Tải xuống không thành công</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Bật chế độ màu tự động</translation>

@@ -91,7 +91,7 @@ class AutofillAgentTests : public web::WebTest {
 
     prefs_ = autofill::test::PrefServiceForTesting();
     autofill::prefs::SetAutofillProfileEnabled(prefs_.get(), true);
-    autofill::prefs::SetAutofillCreditCardEnabled(prefs_.get(), true);
+    autofill::prefs::SetAutofillPaymentMethodsEnabled(prefs_.get(), true);
     UniqueIDDataTabHelper::CreateForWebState(&fake_web_state_);
     autofill_agent_ =
         [[AutofillAgent alloc] initWithPrefService:prefs_.get()
@@ -138,7 +138,7 @@ TEST_F(AutofillAgentTests,
   form.unique_renderer_id = FormRendererId(1);
 
   autofill::FormFieldData field;
-  field.form_control_type = autofill::StringToFormControlType("text");
+  field.form_control_type = autofill::FormControlType::kInputText;
   field.label = u"Card number";
   field.name = u"number";
   field.name_attribute = field.name;

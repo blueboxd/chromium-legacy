@@ -89,6 +89,7 @@ BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleFetchClustersUntilExhausted);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleIncludeSyncedVisits);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleEnableContentClustering);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleDiscounts);
+BASE_DECLARE_FEATURE(kNtpTabResumptionModule);
 
 // Parameter for controlling the luminosity difference for NTP elements on light
 // backgrounds.
@@ -177,7 +178,6 @@ extern const char kNtpHistoryClustersModuleCategoriesBoostlistParam[];
 // History Clusters Service to return.
 extern const char kNtpHistoryClustersModuleMaxClustersParam[];
 extern const char kNtpRealboxWidthBehaviorParam[];
-extern const char kCustomizeChromeWallpaperSearchResolutionParam[];
 
 // Returns the timeout after which the load of a module should be aborted.
 base::TimeDelta GetModulesLoadTimeout();

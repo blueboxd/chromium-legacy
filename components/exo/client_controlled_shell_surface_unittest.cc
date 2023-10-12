@@ -27,6 +27,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/paint/display_item_list.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_pin_type.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/caption_button_model.h"
@@ -53,6 +54,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/layer_animation_stopped_waiter.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -593,6 +595,46 @@ TEST_P(ClientControlledShellSurfaceTest, Frame) {
   EXPECT_EQ(normal_window_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(client_bounds,
             frame_view->GetClientBoundsForWindowBounds(normal_window_bounds));
+}
+
+TEST_P(ClientControlledShellSurfaceTest,
+       ShadowRoundedCornersWithPipTransition) {
+  constexpr gfx::Point kOrigin(20, 20);
+  constexpr int kPipCornerRadius = 8;
+
+  base::test::ScopedFeatureList scoped_feature_list(
+      chromeos::features::kRoundedWindows);
+
+  std::unique_ptr<ClientControlledShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({256, 256})
+          .SetOrigin(kOrigin)
+          .SetWindowState(chromeos::WindowStateType::kNormal)
+          .SetFrame(SurfaceFrameType::NORMAL)
+          .BuildClientControlledShellSurface();
+
+  Surface* root_surface = shell_surface->root_surface();
+
+  root_surface->Commit();
+  views::Widget* widget = shell_surface->GetWidget();
+  ASSERT_TRUE(widget);
+
+  aura::Window* window = widget->GetNativeWindow();
+  ui::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
+  ASSERT_TRUE(shadow);
+  EXPECT_EQ(shadow->rounded_corner_radius_for_testing(), 0);
+
+  shell_surface->SetPip();
+  root_surface->Commit();
+
+  shadow = wm::ShadowController::GetShadowForWindow(window);
+  ASSERT_TRUE(shadow);
+  EXPECT_EQ(shadow->rounded_corner_radius_for_testing(), kPipCornerRadius);
+
+  shell_surface->UnsetPip();
+  root_surface->Commit();
+
+  ASSERT_TRUE(shadow);
+  EXPECT_EQ(shadow->rounded_corner_radius_for_testing(), 0);
 }
 
 namespace {
@@ -1984,8 +2026,12 @@ TEST_P(ClientControlledShellSurfaceTest, PipWindowDragDoesNotAnimate) {
     EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
     EXPECT_EQ(gfx::Rect(18, 18, 256, 256), window->layer()->GetTargetBounds());
     EXPECT_EQ(gfx::Rect(18, 18, 256, 256), window->layer()->bounds());
+
+    // End drag and wait for the animation to end.
     resizer->CompleteDrag();
+    ui::LayerAnimationStoppedWaiter().Wait(window->layer());
   }
+
   {
     // Resize the window with a drag.
     std::unique_ptr<ash::WindowResizer> resizer(ash::CreateWindowResizer(
@@ -2388,9 +2434,6 @@ TEST_P(ClientControlledShellSurfaceTest, SnappedClientBounds) {
 // The shell surface with resize lock on should be unresizable.
 TEST_P(ClientControlledShellSurfaceTest,
        ShellSurfaceWithResizeLockOnIsUnresizable) {
-  base::test::ScopedFeatureList scoped_feature_list(
-      chromeos::wm::features::kWindowLayoutMenu);
-
   auto shell_surface = exo::test::ShellSurfaceBuilder({256, 256})
                            .BuildClientControlledShellSurface();
   auto* surface = shell_surface->root_surface();
@@ -2489,9 +2532,6 @@ TEST_P(ClientControlledShellSurfaceTest,
 }
 
 TEST_P(ClientControlledShellSurfaceTest, SupportsFloatedState) {
-  base::test::ScopedFeatureList scoped_feature_list(
-      chromeos::wm::features::kWindowLayoutMenu);
-
   // Test disabling support.
   {
     auto shell_surface = exo::test::ShellSurfaceBuilder()
@@ -2506,6 +2546,56 @@ TEST_P(ClientControlledShellSurfaceTest, SupportsFloatedState) {
         exo::test::ShellSurfaceBuilder().BuildClientControlledShellSurface();
     auto* const window = shell_surface->GetWidget()->GetNativeWindow();
     EXPECT_TRUE(chromeos::wm::CanFloatWindow(window));
+  }
+}
+
+// Test if the surface bounds is correctly set when the scale factor is not
+// explicitly set.
+TEST_P(ClientControlledShellSurfaceTest,
+       SetBoundsWithoutExplicitScaleFactorSet) {
+  UpdateDisplay("800x600*2");
+  aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
+
+  const auto primary_display_id =
+      display::Screen::GetScreen()->GetPrimaryDisplay().id();
+
+  const gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+
+  const gfx::Rect bounds_dp(64, 64, 128, 128);
+  const gfx::Rect bounds_px_for_2x = gfx::ScaleToRoundedRect(bounds_dp, 2);
+  {
+    // Set display id, bounds origin, bounds size at the same time via
+    // SetBounds method.
+    auto shell_surface = test::ShellSurfaceBuilder()
+                             .SetNoCommit()
+                             .BuildClientControlledShellSurface();
+    auto* const surface = shell_surface->root_surface();
+
+    shell_surface->SetBounds(primary_display_id, bounds_px_for_2x);
+    surface->Attach(buffer.get());
+    surface->Commit();
+
+    const auto* window = shell_surface->GetWidget()->GetNativeWindow();
+    EXPECT_EQ(bounds_dp, window->GetBoundsInRootWindow());
+  }
+  {
+    // Set display id and bounds origin at the same time via SetBoundsOrigin
+    // method, and set bounds size separately.
+    auto shell_surface = test::ShellSurfaceBuilder()
+                             .SetNoCommit()
+                             .BuildClientControlledShellSurface();
+    auto* const surface = shell_surface->root_surface();
+
+    shell_surface->SetBoundsOrigin(primary_display_id,
+                                   bounds_px_for_2x.origin());
+    shell_surface->SetBoundsSize(bounds_px_for_2x.size());
+    surface->Attach(buffer.get());
+    surface->Commit();
+
+    const auto* window = shell_surface->GetWidget()->GetNativeWindow();
+    EXPECT_EQ(bounds_dp, window->GetBoundsInRootWindow());
   }
 }
 

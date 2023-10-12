@@ -6,12 +6,12 @@
 
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/magic_stack_module_container_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/ui_util.h"
@@ -226,7 +226,9 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     }
     [stackView addArrangedSubview:contentView];
 
-    self.accessibilityElements = @[ _title, contentView ];
+    self.accessibilityElements = [self shouldShowSubtitle]
+                                     ? @[ _title, _subtitle, contentView ]
+                                     : @[ _title, contentView ];
 
     _contentViewWidthAnchor = [contentView.widthAnchor
         constraintEqualToConstant:[self contentViewWidth]];
@@ -290,6 +292,7 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     case ContentSuggestionsModuleType::kSafetyCheckMultiRowOverflow:
       return l10n_util::GetNSString(IDS_IOS_SAFETY_CHECK_TITLE);
     case ContentSuggestionsModuleType::kParcelTracking:
+    case ContentSuggestionsModuleType::kParcelTrackingSeeMore:
       return l10n_util::GetNSString(
           IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_TITLE);
     default:
@@ -413,6 +416,7 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     case ContentSuggestionsModuleType::kSetUpListAutofill:
     case ContentSuggestionsModuleType::kCompactedSetUpList:
     case ContentSuggestionsModuleType::kParcelTracking:
+    case ContentSuggestionsModuleType::kParcelTrackingSeeMore:
       return YES;
     default:
       return NO;
@@ -437,6 +441,7 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
   switch (_type) {
     case ContentSuggestionsModuleType::kCompactedSetUpList:
     case ContentSuggestionsModuleType::kSafetyCheckMultiRowOverflow:
+    case ContentSuggestionsModuleType::kParcelTrackingSeeMore:
       return YES;
     default:
       return NO;
@@ -476,10 +481,8 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
       return l10n_util::GetNSString(
           IDS_IOS_SET_UP_LIST_HIDE_MODULE_CONTEXT_MENU_TITLE);
     case ContentSuggestionsModuleType::kParcelTracking:
-      return l10n_util::GetNSStringF(
-          IDS_IOS_PARCEL_TRACKING_CONTEXT_MENU_TITLE,
-          base::SysNSStringToUTF16(l10n_util::GetNSString(
-              IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_TITLE)));
+    case ContentSuggestionsModuleType::kParcelTrackingSeeMore:
+      return l10n_util::GetNSString(IDS_IOS_PARCEL_TRACKING_CONTEXT_MENU_TITLE);
     default:
       NOTREACHED_NORETURN();
   }
@@ -503,6 +506,7 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
       return l10n_util::GetNSString(
           IDS_IOS_SET_UP_LIST_HIDE_MODULE_CONTEXT_MENU_DESCRIPTION);
     case ContentSuggestionsModuleType::kParcelTracking:
+    case ContentSuggestionsModuleType::kParcelTrackingSeeMore:
       return l10n_util::GetNSStringF(
           IDS_IOS_PARCEL_TRACKING_CONTEXT_MENU_DESCRIPTION,
           base::SysNSStringToUTF16(l10n_util::GetNSString(

@@ -4,6 +4,7 @@
 <translation id="1046370274005147998">Pretražujte glasom u Chromium-u.</translation>
 <translation id="1047130070405668746">Izaberite Chromium</translation>
 <translation id="1091252999271033193">To znači da će Chromium svaki put zahtevati mobilni sajt.</translation>
+<translation id="1171824629317156389">Otvorite podešavanja Chromium-a u iOS-u, pa dodirnite Default Browser App (Podrazumevana aplikacija za pregledač) i izaberite Chromium.</translation>
 <translation id="1185134272377778587">O Chromium-u</translation>
 <translation id="1257458525759135959">Da biste sačuvali slike, dodirnite Podešavanja da biste omogućili Chromium-u da dodaje slike</translation>
 <translation id="1289216811211435351">Pređite na Chromium</translation>
@@ -16,6 +17,7 @@
 <translation id="1591119736686995611">Otvara mrežu Chromium kartica.</translation>
 <translation id="1617663976202781617">Podaci iz Chromium sinhronizacije</translation>
 <translation id="1647558790457890304">Podešavanja Chromium-a</translation>
+<translation id="164952285225495380">Ovaj paket se već prati u Chromium-u.</translation>
 <translation id="1722370509450468186">Lozinka se čuva na vašem nalogu (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Chromium podaci su obrisani</translation>
 <translation id="1791845338122684020">Otvara stranicu istorije Chromium-a.</translation>
@@ -94,7 +96,6 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />obrišite Chromium 
 <translation id="4736424910885271643">Nalogom upravlja <ph name="HOSTED_DOMAIN" />, pa će se Chromium podaci obrisati sa ovog uređaja</translation>
 <translation id="4790638144988730920">Nastavite da koristite Chromium podatke na Google nalogu.</translation>
 <translation id="4828317641996116749">Chromium nije uspeo da proveri sve lozinke. Probajte ponovo kasnije.</translation>
-<translation id="4935539884203837577">Chromium može da otkrije brojeve za praćenje koje unosite i da prati pakete na stranici nove kartice, a da istovremeno pomaže druge doživljaje kupovine iz Chromium-a.</translation>
 <translation id="4985291216379576555">Oflajn ste. Chromium ne može da traži ažuriranja.</translation>
 <translation id="4996471330284142407">Uradite više pomoću još jednostavnijeg, bezbednijeg i bržeg Chromium-a.</translation>
 <translation id="4999538639245140991">Odjavljujete se sa naloga kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, što će izbrisati Chromium podatke sa ovog uređaja. Podaci će ostati na Google nalogu.</translation>
@@ -140,6 +141,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />obrišite Chromium 
 1. Otvorite podešavanja
 2. Dodirnite Podrazumevana aplikacija za pregledanje
 3. Izaberite Chromium.</translation>
+<translation id="6197255575340902638">Ako sakrijete „<ph name="MODULE_NAME" />“, Chromium više neće automatski pratiti buduće pakete i izbrisaće sve ranije podatke o praćenju paketa.</translation>
 <translation id="6247557882553405851">Google menadžeru lozinki</translation>
 <translation id="6268381023930128611">Želite li da se odjavite iz Chromium-a?</translation>
 <translation id="6324041800010509197">Posetite mrežu kartica u Chromium-u</translation>

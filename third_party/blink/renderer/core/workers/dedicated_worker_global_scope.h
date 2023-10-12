@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/types/pass_key.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom-blink.h"
@@ -71,10 +72,12 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   // Do not call this. Use Create() instead. This is public only for
   // MakeGarbageCollected.
   DedicatedWorkerGlobalScope(
+      base::PassKey<DedicatedWorkerGlobalScope>,
       std::unique_ptr<GlobalScopeCreationParams>,
       DedicatedWorkerThread*,
       base::TimeTicks time_origin,
-      std::unique_ptr<Vector<OriginTrialFeature>> inherited_trial_features,
+      std::unique_ptr<Vector<mojom::blink::OriginTrialFeature>>
+          inherited_trial_features,
       const BeginFrameProviderParams& begin_frame_provider_params,
       bool parent_cross_origin_isolated_capability,
       bool direct_socket_isolated_capability,
@@ -191,7 +194,8 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       ParsedCreationParams parsed_creation_params,
       DedicatedWorkerThread* thread,
       base::TimeTicks time_origin,
-      std::unique_ptr<Vector<OriginTrialFeature>> inherited_trial_features,
+      std::unique_ptr<Vector<mojom::blink::OriginTrialFeature>>
+          inherited_trial_features,
       const BeginFrameProviderParams& begin_frame_provider_params,
       bool parent_cross_origin_isolated_capability,
       bool is_isolated_context,

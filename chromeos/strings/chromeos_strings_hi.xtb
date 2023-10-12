@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">सिर्फ़ पांच शॉर्टकट को पसंद के मुताबिक बनाया जा सकता है. नया शॉर्टकट जोड़ने के लिए, कोई शॉर्टकट मिटाएं.</translation>
 <translation id="1164939766849482256">डॉन टू डार्क स्क्रीन सेवर</translation>
 <translation id="1167755866710282443">बटन को पसंद के मुताबिक बनाने के लिए मेन्यू खोलें. मेन्यू की जगह बदलने के लिए, उसे खींचें और छोड़ें.</translation>
+<translation id="1174073918202301297">शॉर्टकट जोड़ा गया</translation>
 <translation id="1175697296044146566">इस <ph name="DEVICE_TYPE" /> को <ph name="MANAGER" /> मैनेज करता है.</translation>
 <translation id="1175951029573070619">सिग्नल ठीक-ठाक है (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">हटाएं</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">वॉलपेपर रोज़ बदलें</translation>
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1651925268237749928">आपने शेयर किया गया एल्बम चुना है. इसमें अन्य लोग फ़ोटो जोड़ सकते हैं या बदल सकते हैं. आपके वॉलपेपर में ऐसी फ़ोटो इस्तेमाल की जा सकती हैं जो फ़िलहाल इस एल्बम में नहीं हैं.</translation>
+<translation id="1661865805917886535">खाते और सिस्टम की कुछ जानकारी Google को भेजी जा सकती है. इस जानकारी का इस्तेमाल हम तकनीकी समस्याओं को हल करने और हमारी सेवाओं को बेहतर बनाने के लिए करते हैं. ऐसा Google की निजता नीति (<ph name="PRIVACYPOLICYURL" />) और सेवा की शर्तों (<ph name="TERMSOFSERVICEURL" />) के मुताबिक किया जाता है. कॉन्टेंट में बदलावों का अनुरोध करने के लिए, कानूनी सहायता (<ph name="LEGALHELPPAGEURL" />) पेज पर जाएं.</translation>
 <translation id="1662989795263954667">बंद हो गया - स्याही खत्म हो गई</translation>
 <translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> की झलक देखें</translation>
 <translation id="1668469839109562275">पहले से मौजूद वीपीएन</translation>
@@ -131,7 +133,6 @@
 <translation id="1871569928317311284">गहरे रंग वाली थीम बंद करें</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">गहरे रंग वाला मोड बंद करें</translation>
-<translation id="1881188606372070653">कानूनी वजहों से कॉन्टेंट में बदलाव के अनुरोध के लिए, <ph name="BEGIN_LINK1" />कानूनी सहायता पेज<ph name="END_LINK1" /> पर जाएं. खाते और सिस्टम से जुड़ी कुछ जानकारी, Google को भेजी जा सकती है. हम आपसे मिली जानकारी का इस्तेमाल, तकनीकी समस्याएं हल करने और अपनी सेवाओं को बेहतर बनाने के लिए करेंगे. जानकारी का इस्तेमाल, हमारी <ph name="BEGIN_LINK2" />निजता नीति<ph name="END_LINK2" /> और <ph name="BEGIN_LINK3" />सेवा की शर्तों<ph name="END_LINK3" /> के मुताबिक किया जाता है.</translation>
 <translation id="1885577615937958993">मीडिया को तेज़ी से आगे बढ़ाएं</translation>
 <translation id="1887850431809612466">हार्डवेयर पुनरीक्षण</translation>
 <translation id="1897672602657312171">खोज बटन के बिना किसी शॉर्टकट का इस्तेमाल करने पर, कुछ ऐप्लिकेशन के शॉर्टकट में गड़बड़ी हो सकती है. इस शॉर्टकट का इस्तेमाल जारी रखने के लिए इसे फिर से दबाएं या खोज बटन का इस्तेमाल करके कोई नया शॉर्टकट दबाएं.</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">डिवाइस कनेक्ट है.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{पेज को हटाना चाहते हैं?}=1{पेज {PAGE_NUMBER} को हटाना चाहते हैं?}one{पेज {PAGE_NUMBER} को हटाना चाहते हैं?}other{पेज {PAGE_NUMBER} को हटाना चाहते हैं?}}</translation>
+<translation id="3146655726035122603">सिर्फ़ <ph name="PRODUCT_NAME" /> पर उपलब्ध</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
 <translation id="3156846309055100599">पेज <ph name="PAGE_NUMBER" /> को स्कैन किया जा रहा है...</translation>
 <translation id="315738237743207937">कैप्टिव पोर्टल की पहचान की गई</translation>
@@ -646,7 +648,7 @@
 <translation id="6037291330010597344">स्कैनर का डॉक्यूमेंट फ़ीडर खाली है. डॉक्यूमेंट जोड़ें और फिर से कोशिश करें.</translation>
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="6040852767465482106">अनाम पहचान</translation>
-<translation id="604124094241169006">स्वचालित</translation>
+<translation id="604124094241169006">ऑटोमेटिक</translation>
 <translation id="6048107060512778456">प्रिंट नहीं हो पाया - काग़ज़ फ़ंसा है</translation>
 <translation id="6050189528197190982">ग्रेस्‍केल</translation>
 <translation id="6058625436358447366">पूरा करने के लिए, पुराना और नया पासवर्ड डालें</translation>
@@ -687,6 +689,7 @@
 <translation id="6318437367327684789">हमेशा के लिए</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> के लिए फ़र्मवेयर अपडेट करें</translation>
 <translation id="6321407676395378991">स्क्रीन सेवर चालू करें</translation>
+<translation id="6324916366299863871">शॉर्टकट में बदलाव करें</translation>
 <translation id="6325525973963619867">विफल</translation>
 <translation id="6331191339300272798">अपने-आप गहरे रंग वाली थीम</translation>
 <translation id="6340526405444716530">मनमुताबिक बनाना</translation>
@@ -826,6 +829,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">पहले से मौजूद टचपैड</translation>
 <translation id="7397270852490618635">हल्के रंग वाली थीम बंद करें</translation>
+<translation id="7401543881546089382">शॉर्टकट मिटाएं</translation>
 <translation id="741244894080940828">एक यूनिट से दूसरी यूनिट में बदलना</translation>
 <translation id="7415801143053185905">एचटीटीपी अनुरोधों में इंतज़ार का समय बहुत ज़्यादा है</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{आपके एडमिन ने आपके हर बार लॉग इन करने पर <ph name="APP_NAME_1" /> को अपने-आप चालू होने के लिए सेट किया है.}=2{आपके एडमिन ने आपके हर बार लॉग इन करने पर <ph name="APP_NAME_1" /> और <ph name="APP_NAME_2" /> को अपने-आप चालू होने के लिए सेट किया है.}=3{आपके एडमिन ने आपके हर बार लॉग इन करने पर <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" />, और <ph name="APP_NAME_3" /> को अपने-आप चालू होने के लिए सेट किया है.}one{आपके एडमिन ने आपके हर बार लॉग इन करने पर <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" />, और # अन्य ऐप्लिकेशन को अपने-आप चालू होने के लिए सेट किया है.}other{आपके एडमिन ने आपके हर बार लॉग इन करने पर <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" />, और # अन्य ऐप्लिकेशन को अपने-आप चालू होने के लिए सेट किया है.}}</translation>
@@ -864,6 +868,7 @@
 <translation id="7705524343798198388">वीपीएन</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">कीबोर्ड की रोशनी</translation>
+<translation id="7730077286107534951">खाते और सिस्टम की कुछ जानकारी Google को भेजी जा सकती है. हम इस जानकारी का इस्तेमाल, तकनीकी समस्याएं हल करने और अपनी सेवाओं को बेहतर बनाने के लिए करते हैं. ऐसा Google की <ph name="BEGIN_LINK2" />निजता नीति<ph name="END_LINK2" /> और <ph name="BEGIN_LINK3" />सेवा की शर्तों<ph name="END_LINK3" /> के मुताबिक किया जाता है. कॉन्टेंट में बदलावों का अनुरोध करने के लिए, <ph name="BEGIN_LINK1" />कानूनी सहायता<ph name="END_LINK1" /> पेज पर जाएं.</translation>
 <translation id="773153675489693198">साइकल काउंट</translation>
 <translation id="7747039790905080783">पहले से शेयर की गई कुंजी</translation>
 <translation id="7752963721013053477">डॉन टू डार्क मोड - खास</translation>
@@ -900,6 +905,7 @@
 <translation id="7978412674231730200">निजी कुंजी</translation>
 <translation id="7994702968232966508">EAP विधि</translation>
 <translation id="8004582292198964060">ब्राउज़र</translation>
+<translation id="8017679124341497925">शॉर्टकट में बदलाव किया गया</translation>
 <translation id="802154636333426148">डाउनलोड विफल रहा</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">अपने-आप रंग तय करने वाला मोड चालू करें</translation>

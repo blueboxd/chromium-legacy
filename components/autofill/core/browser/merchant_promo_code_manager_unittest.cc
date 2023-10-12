@@ -63,8 +63,9 @@ class MerchantPromoCodeManagerTest : public testing::Test {
     merchant_promo_code_manager_ = std::make_unique<MerchantPromoCodeManager>();
     merchant_promo_code_manager_->Init(personal_data_manager_.get(),
                                        /*is_off_the_record=*/false);
-    test_field_ = CreateTestFormField(/*label=*/"", "Some Field Name",
-                                      "SomePrefix", "Some Type");
+    test_field_ =
+        CreateTestFormField(/*label=*/"", "Some Field Name", "SomePrefix",
+                            FormControlType::kInputText);
   }
 
   // Sets up the TestPersonalDataManager with a promo code offer for the given
@@ -74,7 +75,7 @@ class MerchantPromoCodeManagerTest : public testing::Test {
   std::string SetUpPromoCodeOffer(std::string origin,
                                   const GURL& offer_details_url) {
     personal_data_manager_.get()->SetAutofillWalletImportEnabled(true);
-    personal_data_manager_.get()->SetAutofillCreditCardEnabled(true);
+    personal_data_manager_.get()->SetAutofillPaymentMethodsEnabled(true);
     AutofillOfferData testPromoCodeOfferData =
         test::GetPromoCodeOfferData(GURL(origin));
     testPromoCodeOfferData.SetOfferDetailsUrl(offer_details_url);
@@ -149,8 +150,9 @@ TEST_F(MerchantPromoCodeManagerTest, ShowsPromoCodeSuggestions) {
 
   // Trigger offers suggestions popup again to be able to test that we log
   // metrics more than once if it is a different field.
-  FormFieldData other_field = CreateTestFormField(
-      /*label=*/"", "Some Other Name", "SomePrefix", "Some Type");
+  FormFieldData other_field =
+      CreateTestFormField(/*label=*/"", "Some Other Name", "SomePrefix",
+                          FormControlType::kInputTelephone);
   EXPECT_TRUE(merchant_promo_code_manager_->OnGetSingleFieldSuggestions(
       trigger_source, other_field, autofill_client_,
       suggestions_handler->GetWeakPtr(),
@@ -301,7 +303,7 @@ TEST_F(MerchantPromoCodeManagerTest, NoPromoCodeOffers) {
   auto suggestions_handler = std::make_unique<MockSuggestionsHandler>();
   std::string last_committed_origin_url = "https://www.example.com";
   personal_data_manager_.get()->SetAutofillWalletImportEnabled(true);
-  personal_data_manager_.get()->SetAutofillCreditCardEnabled(true);
+  personal_data_manager_.get()->SetAutofillPaymentMethodsEnabled(true);
   FormData form_data;
   form_data.main_frame_origin =
       url::Origin::Create(GURL(last_committed_origin_url));
@@ -402,7 +404,7 @@ TEST_F(MerchantPromoCodeManagerTest, AutofillCreditCardDisabled) {
   AddPromoCodeFocusedFieldToSuggestionsContext(&context);
   SetUpPromoCodeOffer(last_committed_origin_url,
                       GURL("https://offer-details-url.com/"));
-  personal_data_manager_->SetAutofillCreditCardEnabled(false);
+  personal_data_manager_->SetAutofillPaymentMethodsEnabled(false);
 
   // Autofill credit card is disabled, so check that we do not return
   // suggestions to the handler.

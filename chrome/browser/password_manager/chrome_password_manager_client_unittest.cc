@@ -100,6 +100,7 @@ using autofill::CalculateFormSignature;
 using autofill::ContentAutofillClient;
 using autofill::ContentAutofillDriver;
 using autofill::FieldRendererId;
+using autofill::FormControlType;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::mojom::FocusedFieldType;
@@ -140,7 +141,7 @@ FormData MakePasswordFormData() {
   field.name = u"password-element";
   field.id_attribute = field.name;
   field.name_attribute = field.name;
-  field.form_control_type = autofill::StringToFormControlType("password");
+  field.form_control_type = autofill::FormControlType::kInputPassword;
   field.unique_renderer_id = FieldRendererId(123);
   form_data.fields.push_back(field);
 
@@ -601,9 +602,10 @@ TEST_F(ChromePasswordManagerClientTest, ReceivesAutofillPredictions) {
   ASSERT_TRUE(autofill_driver);
 
   FormData form = CreateFormForRenderHost(
-      *main_rfh(),
-      {CreateTestFormField("Username", "username", "", "text"),
-       CreateTestFormField("Password", "password", "", "password")});
+      *main_rfh(), {CreateTestFormField("Username", "username", "",
+                                        FormControlType::kInputText),
+                    CreateTestFormField("Password", "password", "",
+                                        FormControlType::kInputPassword)});
   form.name = u"login";
 
   {
@@ -648,11 +650,13 @@ TEST_F(ChromePasswordManagerClientTest,
   ASSERT_TRUE(child_driver);
 
   FormData main_form = CreateFormForRenderHost(
-      *main_rfh(),
-      {CreateTestFormField("Username", "username", "", "text"),
-       CreateTestFormField("Password", "password", "", "password")});
+      *main_rfh(), {CreateTestFormField("Username", "username", "",
+                                        FormControlType::kInputText),
+                    CreateTestFormField("Password", "password", "",
+                                        FormControlType::kInputPassword)});
   FormData child_form = CreateFormForRenderHost(
-      *child_rfh, {CreateTestFormField("OTP", "OTP", "", "text")});
+      *child_rfh,
+      {CreateTestFormField("OTP", "OTP", "", FormControlType::kInputText)});
 
   // Ensure that the child frame is picked up as a child frame of `main_form`.
   {
@@ -1455,11 +1459,6 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
 
 TEST_F(ChromePasswordManagerClientAndroidTest,
        RefreshPasswordManagerSettingsIfNeededUPMFeatureEnabled) {
-  const std::map<std::string, std::string> params = {
-      {"stage", base::NumberToString(static_cast<int>(
-                    password_manager::features::UpmExperimentVariation::
-                        kEnableForSyncingUsers))}};
-
   EXPECT_CALL(settings_service(), RequestSettingsFromBackend);
   GetClient()->RefreshPasswordManagerSettingsIfNeeded();
 }

@@ -58,7 +58,7 @@ SharedStorageURNMappingResult CreateSharedStorageURNMappingResult(
     StoragePartition* storage_partition,
     BrowserContext* browser_context,
     PageImpl* page,
-    const url::Origin& shared_storage_origin,
+    const net::SchemefulSite& shared_storage_site,
     std::vector<blink::mojom::SharedStorageUrlWithMetadataPtr>
         urls_with_metadata,
     uint32_t index,
@@ -73,10 +73,9 @@ SharedStorageURNMappingResult CreateSharedStorageURNMappingResult(
 
   // If we are running out of budget, consider this mapping to be failed. Use
   // the default URL, and there's no need to further charge the budget.
-  if (budget_to_charge > 0.0 &&
-      (budget_to_charge > budget_remaining ||
-       !page->CheckAndMaybeDebitSelectURLBudgets(shared_storage_origin,
-                                                 budget_to_charge))) {
+  if (budget_to_charge > 0.0 && (budget_to_charge > budget_remaining ||
+                                 !page->CheckAndMaybeDebitSelectURLBudgets(
+                                     shared_storage_site, budget_to_charge))) {
     failed_due_to_no_budget = true;
     index = 0;
     budget_to_charge = 0.0;
@@ -92,7 +91,7 @@ SharedStorageURNMappingResult CreateSharedStorageURNMappingResult(
   }
   return SharedStorageURNMappingResult(
       mapped_url,
-      SharedStorageBudgetMetadata{.origin = shared_storage_origin,
+      SharedStorageBudgetMetadata{.site = shared_storage_site,
                                   .budget_to_charge = budget_to_charge},
       std::move(fenced_frame_reporter));
 }
@@ -160,6 +159,7 @@ SharedStorageWorkletHost::SharedStorageWorkletHost(
           document_service.render_frame_host().GetBrowserContext()),
       shared_storage_origin_(
           document_service.render_frame_host().GetLastCommittedOrigin()),
+      shared_storage_site_(net::SchemefulSite(shared_storage_origin_)),
       main_frame_origin_(document_service.main_frame_origin()),
       creation_time_(base::TimeTicks::Now()) {
   GetContentClient()->browser()->OnSharedStorageWorkletHostCreated(
@@ -199,7 +199,7 @@ SharedStorageWorkletHost::~SharedStorageWorkletHost() {
             .OnSharedStorageURNMappingResultDetermined(
                 urn_uuid, CreateSharedStorageURNMappingResult(
                               storage_partition_, browser_context_, page_.get(),
-                              shared_storage_origin_, std::move(it->second),
+                              shared_storage_site_, std::move(it->second),
                               /*index=*/0, /*budget_remaining=*/0.0,
                               failed_due_to_no_budget));
 
@@ -214,6 +214,7 @@ void SharedStorageWorkletHost::AddModuleOnWorklet(
         frame_url_loader_factory,
     const url::Origin& frame_origin,
     const GURL& script_source_url,
+    const std::vector<blink::mojom::OriginTrialFeature>& origin_trial_features,
     blink::mojom::SharedStorageDocumentService::AddModuleOnWorkletCallback
         callback) {
   // This function is invoked from `document_service_`. Thus both `page_` and
@@ -233,6 +234,7 @@ void SharedStorageWorkletHost::AddModuleOnWorklet(
 
   add_module_state_ = AddModuleState::kInitiated;
   script_source_url_ = script_source_url;
+  origin_trial_features_ = origin_trial_features;
 
   devtools_handle_ = std::make_unique<ScopedDevToolsHandle>(*this);
 
@@ -723,7 +725,7 @@ void SharedStorageWorkletHost::SharedStorageRemainingBudget(
       std::move(callback));
 
   shared_storage_manager_->GetRemainingBudget(
-      shared_storage_origin_, std::move(operation_completed_callback));
+      shared_storage_site_, std::move(operation_completed_callback));
 }
 
 void SharedStorageWorkletHost::ConsoleLog(const std::string& message) {
@@ -812,7 +814,7 @@ void SharedStorageWorkletHost::
   }
 
   shared_storage_manager_->GetRemainingBudget(
-      shared_storage_origin_,
+      shared_storage_site_,
       base::BindOnce(&SharedStorageWorkletHost::
                          OnRunURLSelectionOperationOnWorkletFinished,
                      weak_ptr_factory_.GetWeakPtr(), urn_uuid, start_time,
@@ -838,7 +840,7 @@ void SharedStorageWorkletHost::OnRunURLSelectionOperationOnWorkletFinished(
     SharedStorageURNMappingResult mapping_result =
         CreateSharedStorageURNMappingResult(
             storage_partition_, browser_context_, page_.get(),
-            shared_storage_origin_, std::move(urls_with_metadata), index,
+            shared_storage_site_, std::move(urls_with_metadata), index,
             budget_result.bits, failed_due_to_no_budget);
 
     if (document_service_) {
@@ -959,7 +961,8 @@ SharedStorageWorkletHost::GetAndConnectToSharedStorageWorkletService() {
 
     auto global_scope_creation_params =
         blink::mojom::WorkletGlobalScopeCreationParams::New(
-            script_source_url_, devtools_handle_->devtools_token(),
+            script_source_url_, shared_storage_origin_, origin_trial_features_,
+            devtools_handle_->devtools_token(),
             devtools_handle_->BindNewPipeAndPassRemote());
 
     driver_->StartWorkletService(

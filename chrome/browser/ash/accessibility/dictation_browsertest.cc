@@ -22,9 +22,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ash/accessibility/accessibility_feature_browsertest.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/accessibility_test_utils.h"
 #include "chrome/browser/ash/accessibility/autoclick_test_utils.h"
+#include "chrome/browser/ash/accessibility/automation_test_utils.h"
 #include "chrome/browser/ash/accessibility/dictation_bubble_test_helper.h"
 #include "chrome/browser/ash/accessibility/dictation_test_utils.h"
 #include "chrome/browser/ash/accessibility/select_to_speak_test_utils.h"
@@ -45,9 +47,7 @@
 #include "components/soda/soda_installer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/browser_test.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/api/audio/audio_api.h"
 #include "extensions/browser/api/audio/audio_service.h"
@@ -187,7 +187,7 @@ class HistogramWaiter {
 
 }  // namespace
 
-class DictationTestBase : public InProcessBrowserTest,
+class DictationTestBase : public AccessibilityFeatureBrowserTest,
                           public ::testing::WithParamInterface<TestConfig> {
  public:
   DictationTestBase() = default;
@@ -212,7 +212,10 @@ class DictationTestBase : public InProcessBrowserTest,
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
-    utils_->EnableDictation(browser());
+    utils_->EnableDictation(
+        /*profile=*/GetProfile(),
+        /*navigate_to_url=*/base::BindOnce(&DictationTestBase::NavigateToUrl,
+                                           base::Unretained(this)));
   }
 
   // Routers to DictationTestUtils methods.
@@ -232,32 +235,20 @@ class DictationTestBase : public InProcessBrowserTest,
 
   void SendFinalResultAndWaitForEditableValue(const std::string& result,
                                               const std::string& value) {
-    utils_->SendFinalResultAndWaitForEditableValue(
-        browser()->tab_strip_model()->GetActiveWebContents(), result, value);
+    utils_->SendFinalResultAndWaitForEditableValue(result, value);
   }
 
-  void SendFinalResultAndWaitForSelectionChanged(const std::string& result) {
-    utils_->SendFinalResultAndWaitForSelectionChanged(
-        browser()->tab_strip_model()->GetActiveWebContents(), result);
-  }
-
-  // TODO(b:259353252): Update this method to use testSupport JS, similar to
-  // what's done in DictationFormattedContentEditableTest::WaitForSelection.
-  void SendFinalResultAndWaitForCaretBoundsChanged(const std::string& result) {
-    utils_->SendFinalResultAndWaitForCaretBoundsChanged(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        browser()->window()->GetNativeWindow()->GetHost()->GetInputMethod(),
-        result);
+  void SendFinalResultAndWaitForSelection(const std::string& result,
+                                          int start,
+                                          int end) {
+    utils_->SendFinalResultAndWaitForSelection(result, start, end);
   }
 
   void SendFinalResultAndWaitForClipboardChanged(const std::string& result) {
     utils_->SendFinalResultAndWaitForClipboardChanged(result);
   }
 
-  std::string GetEditableValue() {
-    return utils_->GetEditableValue(
-        browser()->tab_strip_model()->GetWebContentsAt(0));
-  }
+  std::string GetEditableValue() { return utils_->GetEditableValue(); }
 
   void WaitForEditableValue(const std::string& value) {
     utils_->WaitForEditableValue(value);
@@ -278,10 +269,6 @@ class DictationTestBase : public InProcessBrowserTest,
     utils_->WaitForCommitText(value);
   }
 
-  void WaitForSelection(int start, int end) {
-    utils_->WaitForSelection(start, end);
-  }
-
   const base::flat_map<std::string, Dictation::LocaleData>
   GetAllSupportedLocales() {
     return Dictation::GetAllSupportedLocales();
@@ -298,6 +285,16 @@ class DictationTestBase : public InProcessBrowserTest,
     ui::Clipboard::GetForCurrentThread()->ReadText(
         ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &text);
     return base::UTF16ToUTF8(text);
+  }
+
+  void PressTab() {
+    ui::test::EmulateFullKeyPressReleaseSequence(
+        /*generator=*/generator(),
+        /*key=*/ui::KeyboardCode::VKEY_TAB,
+        /*control=*/false,
+        /*shift=*/false,
+        /*alt=*/false,
+        /*command=*/false);
   }
 
   bool RunOnMultilineContent() {
@@ -360,8 +357,9 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
                                  EditableType::kContentEditable)));
 
+// TODO(https://crbug.com/1490612): Tests are very flaky.
 INSTANTIATE_TEST_SUITE_P(
-    OnDeviceTextArea,
+    DISABLED_OnDeviceTextArea,
     DictationTest,
     ::testing::Values(TestConfig(speech::SpeechRecognitionType::kOnDevice,
                                  EditableType::kTextArea)));
@@ -466,8 +464,7 @@ IN_PROC_BROWSER_TEST_P(DictationTest, RecognitionEndsWhenInputFieldLosesFocus) {
   ToggleDictationWithKeystroke();
   WaitForRecognitionStarted();
   SendFinalResultAndWaitForEditableValue("Vega is a star", "Vega is a star");
-  ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-      nullptr, ui::KeyboardCode::VKEY_TAB, false, false, false, false)));
+  PressTab();
   WaitForRecognitionStopped();
   EXPECT_EQ("Vega is a star", GetEditableValue());
 }
@@ -491,7 +488,7 @@ IN_PROC_BROWSER_TEST_P(DictationTest, ChromeVoxSilencedWhenToggledOn) {
   test::SpeechMonitor sm;
   EXPECT_FALSE(GetManager()->IsSpokenFeedbackEnabled());
   extensions::ExtensionHostTestHelper host_helper(
-      browser()->profile(), extension_misc::kChromeVoxExtensionId);
+      GetProfile(), extension_misc::kChromeVoxExtensionId);
   EnableChromeVox();
   host_helper.WaitForHostCompletedFirstLoad();
   EXPECT_TRUE(GetManager()->IsSpokenFeedbackEnabled());
@@ -511,7 +508,8 @@ IN_PROC_BROWSER_TEST_P(DictationTest, WorksWithSelectToSpeak) {
   // Set up Select to Speak.
   test::SpeechMonitor sm;
   EXPECT_FALSE(GetManager()->IsSelectToSpeakEnabled());
-  sts_test_utils::TurnOnSelectToSpeakForTest(browser());
+  sts_test_utils::TurnOnSelectToSpeakForTest(
+      AccessibilityManager::Get()->profile());
 
   ToggleDictationWithKeystroke();
   WaitForRecognitionStarted();
@@ -727,15 +725,15 @@ IN_PROC_BROWSER_TEST_P(DictationTest,
   speech::SodaInstaller::GetInstance()->NotifySodaProgressForTesting(
       30, speech::LanguageCode::kEnUs);
   ExecuteAccessibilityCommonScript(
-      "testSupport.installFakeSpeechRecognitionPrivateStart();");
+      "dictationTestSupport.installFakeSpeechRecognitionPrivateStart();");
   ToggleDictationWithKeystroke();
   // Sanity check that speech recognition is off and that no calls to
   // chrome.speechRecognitionPrivate.start() were made.
   WaitForRecognitionStopped();
   ExecuteAccessibilityCommonScript(
-      "testSupport.ensureNoSpeechRecognitionPrivateStartCalls();");
+      "dictationTestSupport.ensureNoSpeechRecognitionPrivateStartCalls();");
   ExecuteAccessibilityCommonScript(
-      "testSupport.restoreSpeechRecognitionPrivateStart();");
+      "dictationTestSupport.restoreSpeechRecognitionPrivateStart();");
 
   // Dictation should work again once the SODA download is finished.
   speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting(
@@ -760,10 +758,10 @@ class DictationWithAutoclickTest : public DictationTestBase {
     // Autoclick doesn't steal focus away from the textarea (either by clicking
     // or via the presence of the Autoclick UI, which steals focus when
     // initially shown).
-    autoclick_test_utils_ =
-        std::make_unique<AutoclickTestUtils>(browser()->profile());
+    autoclick_test_utils_ = std::make_unique<AutoclickTestUtils>(GetProfile());
     autoclick_test_utils_->SetAutoclickDelayMs(90 * 1000);
-    autoclick_test_utils_->LoadAutoclick();
+    // Don't install automation test utils JS, Dictation already does this.
+    autoclick_test_utils_->LoadAutoclick(/*install_automation_utils=*/false);
     EXPECT_TRUE(GetManager()->IsAutoclickEnabled());
     // Don't use ExtensionHostTestHelper for Dictation because we already used
     // it for Autoclick.
@@ -794,20 +792,13 @@ IN_PROC_BROWSER_TEST_P(DictationWithAutoclickTest, UseBothFeatures) {
   ToggleDictationWithKeystroke();
   WaitForRecognitionStopped();
 
-  content::AccessibilityNotificationWaiter selection_waiter(
-      browser()->tab_strip_model()->GetActiveWebContents(), ui::kAXModeComplete,
-      ui::AXEventGenerator::Event::TEXT_SELECTION_CHANGED);
-  content::BoundingBoxUpdateWaiter bounding_box_waiter(
-      browser()->tab_strip_model()->GetActiveWebContents());
   autoclick_test_utils()->SetAutoclickEventTypeWithHover(
       generator(), AutoclickEventType::kDoubleClick);
   autoclick_test_utils()->SetAutoclickDelayMs(5);
   // Hovering over the editable should result in the text being selected.
-  autoclick_test_utils()->HoverOverHtmlElement(
-      browser()->tab_strip_model()->GetActiveWebContents(), generator(),
-      "input");
-  bounding_box_waiter.Wait();
-  ASSERT_TRUE(selection_waiter.WaitForNotification());
+  autoclick_test_utils()->HoverOverHtmlElement(generator(), "Hello world",
+                                               "staticText");
+  utils()->automation_test_utils()->WaitForTextSelectionChangedEvent();
 }
 
 IN_PROC_BROWSER_TEST_P(DictationWithAutoclickTest, UseAutoclickToToggle) {
@@ -840,7 +831,7 @@ class DictationWithSwitchAccessTest : public DictationTestBase {
  protected:
   void SetUpOnMainThread() override {
     switch_access_test_utils_ =
-        std::make_unique<SwitchAccessTestUtils>(browser()->profile());
+        std::make_unique<SwitchAccessTestUtils>(GetProfile());
     switch_access_test_utils_->EnableSwitchAccess({'1', 'A'} /* select */,
                                                   {'2', 'B'} /* next */,
                                                   {'3', 'C'} /* previous */);
@@ -877,7 +868,7 @@ class DictationJaTest : public DictationTestBase {
   void SetUpOnMainThread() override {
     locale_util::SwitchLanguage("ja", /*enable_locale_keyboard_layouts=*/true,
                                 /*login_layouts_only*/ false, base::DoNothing(),
-                                browser()->profile());
+                                GetProfile());
     g_browser_process->SetApplicationLocale("ja");
     GetActiveUserPrefs()->SetString(prefs::kAccessibilityDictationLocale, "ja");
 
@@ -984,7 +975,7 @@ IN_PROC_BROWSER_TEST_P(DictationJaTest, SmartSelectBetweenAndDictate) {
   SendFinalResultAndWaitForEditableValue("私はテニスが好きです。",
                                          "私はテニスが好きです。");
   // Select the entire text using the SMART_SELECT_BETWEEN command.
-  SendFinalResultAndWaitForSelectionChanged("私はから好きですまで選択");
+  SendFinalResultAndWaitForSelection("私はから好きですまで選択", 0, 10);
   // Dictate "congratulations", which should replace the selected text.
   SendFinalResultAndWaitForEditableValue("おめでとう", "おめでとう。");
   ToggleDictationWithKeystroke();
@@ -999,7 +990,7 @@ IN_PROC_BROWSER_TEST_P(DictationJaTest, SmartSelectBetweenAndDelete) {
                                          "私はテニスが好きです。");
   // Select between "I" and "tennis" using the SMART_SELECT_BETWEEN command
   // (roughly the first half of the text).
-  SendFinalResultAndWaitForSelectionChanged("私はからテニスまで選択");
+  SendFinalResultAndWaitForSelection("私はからテニスまで選択", 0, 5);
   // Perform the delete command.
   SendFinalResultAndWaitForEditableValue("削除", "が好きです。");
   ToggleDictationWithKeystroke();
@@ -1084,11 +1075,11 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, DeleteCharacter) {
 
 IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, MoveByCharacter) {
   SendFinalResultAndWaitForEditableValue("Lyra", "Lyra");
-  SendFinalResultAndWaitForCaretBoundsChanged("Move to the Previous character");
+  SendFinalResultAndWaitForSelection("Move to the Previous character", 3, 3);
   // White space is added to the text on the left of the text caret, but not
   // to the right of the text caret.
   SendFinalResultAndWaitForEditableValue("inserted", "Lyr inserted a");
-  SendFinalResultAndWaitForCaretBoundsChanged("move TO the next character ");
+  SendFinalResultAndWaitForSelection("move TO the next character ", 14, 14);
   SendFinalResultAndWaitForEditableValue("is a constellation",
                                          "Lyr inserted a is a constellation");
 }
@@ -1100,9 +1091,9 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, NewLineAndMoveByLine) {
   SendFinalResultAndWaitForEditableValue("Line 1", "Line 1");
   SendFinalResultAndWaitForEditableValue("new line", "Line 1\n");
   SendFinalResultAndWaitForEditableValue("line 2", "Line 1\nline 2");
-  SendFinalResultAndWaitForCaretBoundsChanged("Move to the previous line ");
+  SendFinalResultAndWaitForSelection("Move to the previous line ", 6, 6);
   SendFinalResultAndWaitForEditableValue("up", "Line 1 up\nline 2");
-  SendFinalResultAndWaitForCaretBoundsChanged("Move to the next line");
+  SendFinalResultAndWaitForSelection("Move to the next line", 16, 16);
   SendFinalResultAndWaitForEditableValue("down", "Line 1 up\nline 2 down");
 }
 
@@ -1117,27 +1108,27 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, UndoAndRedo) {
 }
 
 IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, SelectAllAndUnselect) {
-  SendFinalResultAndWaitForEditableValue("Vega is the brightest star in Lyra",
-                                         "Vega is the brightest star in Lyra");
-  SendFinalResultAndWaitForSelectionChanged("Select all");
+  std::string first_text = "Vega is the brightest star in Lyra";
+  SendFinalResultAndWaitForEditableValue(first_text, first_text);
+  SendFinalResultAndWaitForSelection("Select all", 0, first_text.size());
   SendFinalResultAndWaitForEditableValue("delete", "");
-  SendFinalResultAndWaitForEditableValue(
-      "Vega is the fifth brightest star in the sky",
-      "Vega is the fifth brightest star in the sky");
-  SendFinalResultAndWaitForSelectionChanged("Select all");
-  SendFinalResultAndWaitForSelectionChanged("Unselect");
+  std::string second_text = "Vega is the fifth brightest star in the sky";
+  SendFinalResultAndWaitForEditableValue(second_text, second_text);
+  SendFinalResultAndWaitForSelection("Select all", 0, second_text.size());
+  SendFinalResultAndWaitForSelection("Unselect", second_text.size(),
+                                     second_text.size());
   SendFinalResultAndWaitForEditableValue(
       "!", "Vega is the fifth brightest star in the sky!");
 }
 
 IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, CutCopyPaste) {
   SendFinalResultAndWaitForEditableValue("Star", "Star");
-  SendFinalResultAndWaitForSelectionChanged("Select all");
+  SendFinalResultAndWaitForSelection("Select all", 0, 4);
   SendFinalResultAndWaitForClipboardChanged("Copy");
   EXPECT_EQ("Star", GetClipboardText());
-  SendFinalResultAndWaitForSelectionChanged("unselect");
+  SendFinalResultAndWaitForSelection("unselect", 4, 4);
   SendFinalResultAndWaitForEditableValue("paste", "StarStar");
-  SendFinalResultAndWaitForSelectionChanged("select ALL ");
+  SendFinalResultAndWaitForSelection("select ALL ", 0, 8);
   SendFinalResultAndWaitForClipboardChanged("cut");
   EXPECT_EQ("StarStar", GetClipboardText());
   WaitForEditableValue("");
@@ -1194,8 +1185,8 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, DeletePrevWordPunctuation) {
 IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, DeletePrevWordMiddleOfWord) {
   SendFinalResultAndWaitForEditableValue("This is a test.", "This is a test.");
   // Move the text caret into the middle of the word "test".
-  SendFinalResultAndWaitForCaretBoundsChanged("Move to the Previous character");
-  SendFinalResultAndWaitForCaretBoundsChanged("Move to the Previous character");
+  SendFinalResultAndWaitForSelection("Move to the Previous character", 14, 14);
+  SendFinalResultAndWaitForSelection("Move to the Previous character", 13, 13);
   SendFinalResultAndWaitForEditableValue("delete the previous word",
                                          "This is a t.");
 }
@@ -1239,17 +1230,17 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest,
   SendFinalResultAndWaitForEditableValue("Hello, world. Goodnight, world.",
                                          "Hello, world. Goodnight, world.");
   // Move the text caret into the middle of the second sentence.
-  SendFinalResultAndWaitForCaretBoundsChanged("Move to the Previous character");
-  SendFinalResultAndWaitForCaretBoundsChanged("Move to the Previous character");
+  SendFinalResultAndWaitForSelection("Move to the Previous character", 30, 30);
+  SendFinalResultAndWaitForSelection("Move to the Previous character", 29, 29);
   SendFinalResultAndWaitForEditableValue("delete the previous sentence",
                                          "Hello, world.d.");
 }
 
 IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, MoveByWord) {
   SendFinalResultAndWaitForEditableValue("This is a quiz", "This is a quiz");
-  SendFinalResultAndWaitForCaretBoundsChanged("move to the previous word");
+  SendFinalResultAndWaitForSelection("move to the previous word", 10, 10);
   SendFinalResultAndWaitForEditableValue("pop ", "This is a pop quiz");
-  SendFinalResultAndWaitForCaretBoundsChanged("move to the next word");
+  SendFinalResultAndWaitForSelection("move to the next word", 18, 18);
   SendFinalResultAndWaitForEditableValue("folks!", "This is a pop quiz folks!");
 }
 
@@ -1279,9 +1270,9 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest,
                        SmartDeletePhraseDeletesLeftOfCaret) {
   SendFinalResultAndWaitForEditableValue("The cow jumped over the moon.",
                                          "The cow jumped over the moon.");
-  SendFinalResultAndWaitForCaretBoundsChanged("move to the previous word");
-  SendFinalResultAndWaitForCaretBoundsChanged("move to the previous word");
-  SendFinalResultAndWaitForCaretBoundsChanged("move to the previous word");
+  SendFinalResultAndWaitForSelection("move to the previous word", 28, 28);
+  SendFinalResultAndWaitForSelection("move to the previous word", 24, 24);
+  SendFinalResultAndWaitForSelection("move to the previous word", 20, 20);
   SendFinalResultAndWaitForEditableValue("delete the",
                                          "cow jumped over the moon.");
 }
@@ -1314,18 +1305,17 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, SmartInsertBefore) {
 
 IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, SmartSelectBetween) {
   SendFinalResultAndWaitForEditableValue("This is a test.", "This is a test.");
-  SendFinalResultAndWait("select from this to test");
-  WaitForSelection(0, 14);
+  SendFinalResultAndWaitForSelection("select from this to test", 0, 14);
   SendFinalResultAndWaitForEditableValue("Hello world", "Hello world.");
 }
 
 IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, MoveBySentence) {
   SendFinalResultAndWaitForEditableValue("Hello world! Goodnight world?",
                                          "Hello world! Goodnight world?");
-  SendFinalResultAndWaitForCaretBoundsChanged("move to the previous sentence");
+  SendFinalResultAndWaitForSelection("move to the previous sentence", 12, 12);
   SendFinalResultAndWaitForEditableValue(
       "Good evening.", "Hello world! Good evening. Goodnight world?");
-  SendFinalResultAndWaitForCaretBoundsChanged("move to the next sentence");
+  SendFinalResultAndWaitForSelection("move to the next sentence", 43, 43);
   SendFinalResultAndWaitForEditableValue(
       "Time for a midnight snack",
       "Hello world! Good evening. Goodnight world? Time for a midnight snack");
@@ -1564,7 +1554,7 @@ IN_PROC_BROWSER_TEST_P(DictationUITest, ChromeVoxAnnouncesHints) {
   test::SpeechMonitor sm;
   EXPECT_FALSE(GetManager()->IsSpokenFeedbackEnabled());
   extensions::ExtensionHostTestHelper host_helper(
-      browser()->profile(), extension_misc::kChromeVoxExtensionId);
+      GetProfile(), extension_misc::kChromeVoxExtensionId);
   EnableChromeVox();
   host_helper.WaitForHostCompletedFirstLoad();
   EXPECT_TRUE(GetManager()->IsSpokenFeedbackEnabled());
@@ -1628,7 +1618,7 @@ IN_PROC_BROWSER_TEST_P(DictationUITest, HintsShownAfterTextSelected) {
   // Perform a select all command.
   SendFinalResultAndWaitForEditableValue("Vega is the brightest star in Lyra",
                                          "Vega is the brightest star in Lyra");
-  SendFinalResultAndWaitForSelectionChanged("Select all");
+  SendFinalResultAndWaitForSelection("Select all", 0, 34);
   WaitForProperties(/*visible=*/true,
                     /*icon=*/DictationBubbleIconType::kMacroSuccess,
                     /*text=*/u"Select all",
@@ -1717,9 +1707,9 @@ IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, DeletePrevCharacter) {
 
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, NavByCharacter) {
   SendFinalResultAndWaitForEditableValue("Testing", "Testing");
-  SendFinalResultAndWaitForCaretBoundsChanged("left three characters");
+  SendFinalResultAndWaitForSelection("left three characters", 4, 4);
   SendFinalResultAndWaitForEditableValue("!", "Test!ing");
-  SendFinalResultAndWaitForCaretBoundsChanged("right two characters");
+  SendFinalResultAndWaitForSelection("right two characters", 7, 7);
   SendFinalResultAndWaitForEditableValue("@", "Test!in@g");
 }
 
@@ -1729,22 +1719,22 @@ IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, NavByLine) {
 
   std::string text = "Line1\nLine2\nLine3\nLine4";
   SendFinalResultAndWaitForEditableValue(text, text);
-  SendFinalResultAndWaitForCaretBoundsChanged("Up two lines");
+  SendFinalResultAndWaitForSelection("Up two lines", 11, 11);
   std::string expected = "Line1\nLine2 insertion\nLine3\nLine4";
   SendFinalResultAndWaitForEditableValue("insertion", expected);
-  SendFinalResultAndWaitForCaretBoundsChanged("down two lines");
+  SendFinalResultAndWaitForSelection("down two lines", 33, 33);
   expected = "Line1\nLine2 insertion\nLine3\nLine4 second insertion";
   SendFinalResultAndWaitForEditableValue("second insertion", expected);
 }
 
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, CutCopyPasteSelectAll) {
   SendFinalResultAndWaitForEditableValue("Star", "Star");
-  SendFinalResultAndWaitForSelectionChanged("Select everything");
+  SendFinalResultAndWaitForSelection("Select everything", 0, 4);
   SendFinalResultAndWaitForClipboardChanged("Copy selected text");
   EXPECT_EQ("Star", GetClipboardText());
-  SendFinalResultAndWaitForSelectionChanged("unselect selection");
+  SendFinalResultAndWaitForSelection("unselect selection", 4, 4);
   SendFinalResultAndWaitForEditableValue("paste copied text", "StarStar");
-  SendFinalResultAndWaitForSelectionChanged("highlight everything");
+  SendFinalResultAndWaitForSelection("highlight everything", 0, 8);
   SendFinalResultAndWaitForClipboardChanged("cut highlighted text");
   EXPECT_EQ("StarStar", GetClipboardText());
   WaitForEditableValue("");
@@ -1773,9 +1763,9 @@ IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, DeletePrevSent) {
 
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, MoveByWord) {
   SendFinalResultAndWaitForEditableValue("This is a quiz", "This is a quiz");
-  SendFinalResultAndWaitForCaretBoundsChanged("back one word");
+  SendFinalResultAndWaitForSelection("back one word", 10, 10);
   SendFinalResultAndWaitForEditableValue("pop", "This is a pop quiz");
-  SendFinalResultAndWaitForCaretBoundsChanged("right one word");
+  SendFinalResultAndWaitForSelection("right one word", 18, 18);
   SendFinalResultAndWaitForEditableValue("folks!", "This is a pop quiz folks!");
 }
 
@@ -1802,18 +1792,18 @@ IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, SmartInsertBefore) {
 
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, SmartSelectBetween) {
   SendFinalResultAndWaitForEditableValue("This is a test.", "This is a test.");
-  SendFinalResultAndWait("highlight everything between is and test");
-  WaitForSelection(5, 14);
+  SendFinalResultAndWaitForSelection("highlight everything between is and test",
+                                     5, 14);
   SendFinalResultAndWaitForEditableValue("was a quiz", "This was a quiz.");
 }
 
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, MoveBySentence) {
   SendFinalResultAndWaitForEditableValue("Hello world! Goodnight world?",
                                          "Hello world! Goodnight world?");
-  SendFinalResultAndWaitForCaretBoundsChanged("one sentence back");
+  SendFinalResultAndWaitForSelection("one sentence back", 12, 12);
   SendFinalResultAndWaitForEditableValue(
       "Good evening.", "Hello world! Good evening. Goodnight world?");
-  SendFinalResultAndWaitForCaretBoundsChanged("forward one sentence");
+  SendFinalResultAndWaitForSelection("forward one sentence", 43, 43);
   SendFinalResultAndWaitForEditableValue(
       "Time for a midnight snack",
       "Hello world! Good evening. Goodnight world? Time for a midnight snack");
@@ -1826,7 +1816,7 @@ IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, DeleteAllText) {
 
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, NavStartText) {
   SendFinalResultAndWaitForEditableValue("Is good", "Is good");
-  SendFinalResultAndWaitForCaretBoundsChanged("to start");
+  SendFinalResultAndWaitForSelection("to start", 0, 0);
   SendFinalResultAndWaitForEditableValue("The weather outside",
                                          "The weather outside Is good");
 }
@@ -1834,8 +1824,8 @@ IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, NavStartText) {
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, NavEndText) {
   SendFinalResultAndWaitForEditableValue("The weather outside is",
                                          "The weather outside is");
-  SendFinalResultAndWaitForCaretBoundsChanged("to start");
-  SendFinalResultAndWaitForCaretBoundsChanged("to end");
+  SendFinalResultAndWaitForSelection("to start", 0, 0);
+  SendFinalResultAndWaitForSelection("to end", 22, 22);
   std::string expected = "The weather outside is good";
   SendFinalResultAndWaitForEditableValue("good", expected);
 }
@@ -1843,7 +1833,7 @@ IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, NavEndText) {
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, SelectPrevWord) {
   SendFinalResultAndWaitForEditableValue("The weather today is bad",
                                          "The weather today is bad");
-  SendFinalResultAndWaitForSelectionChanged("highlight back one word");
+  SendFinalResultAndWaitForSelection("highlight back one word", 21, 24);
   std::string expected = "The weather today is nice";
   SendFinalResultAndWaitForEditableValue("nice", expected);
 }
@@ -1851,23 +1841,23 @@ IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, SelectPrevWord) {
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, SelectNextWord) {
   SendFinalResultAndWaitForEditableValue("The weather today is bad",
                                          "The weather today is bad");
-  SendFinalResultAndWaitForCaretBoundsChanged("move to the previous word");
-  SendFinalResultAndWaitForSelectionChanged("highlight right one word");
+  SendFinalResultAndWaitForSelection("move to the previous word", 21, 21);
+  SendFinalResultAndWaitForSelection("highlight right one word", 21, 24);
   std::string expected = "The weather today is nice";
   SendFinalResultAndWaitForEditableValue("nice", expected);
 }
 
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, SelectNextChar) {
   SendFinalResultAndWaitForEditableValue("Text", "Text");
-  SendFinalResultAndWaitForCaretBoundsChanged("move to the previous word");
-  SendFinalResultAndWaitForCaretBoundsChanged("select next letter");
+  SendFinalResultAndWaitForSelection("move to the previous word", 0, 0);
+  SendFinalResultAndWaitForSelection("select next letter", 0, 1);
   std::string expected = "ext";
   SendFinalResultAndWaitForEditableValue("delete", expected);
 }
 
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, SelectPrevChar) {
   SendFinalResultAndWaitForEditableValue("Text", "Text");
-  SendFinalResultAndWaitForCaretBoundsChanged("select previous letter");
+  SendFinalResultAndWaitForSelection("select previous letter", 3, 4);
   std::string expected = "Tex";
   SendFinalResultAndWaitForEditableValue("delete", expected);
 }
@@ -2049,8 +2039,8 @@ IN_PROC_BROWSER_TEST_P(DictationContextCheckingTest, NoSelection) {
 IN_PROC_BROWSER_TEST_P(DictationContextCheckingTest, UnselectSuccessful) {
   std::string text = "Hello world";
   SendFinalResultAndWaitForEditableValue(text, text);
-  SendFinalResultAndWaitForSelectionChanged("Select all");
-  SendFinalResultAndWaitForSelectionChanged("Unselect");
+  SendFinalResultAndWaitForSelection("Select all", 0, 11);
+  SendFinalResultAndWaitForSelection("Unselect", 11, 11);
   WaitForProperties(/*visible=*/true,
                     /*icon=*/DictationBubbleIconType::kMacroSuccess,
                     /*text=*/absl::optional<std::u16string>(),
@@ -2060,7 +2050,7 @@ IN_PROC_BROWSER_TEST_P(DictationContextCheckingTest, UnselectSuccessful) {
 IN_PROC_BROWSER_TEST_P(DictationContextCheckingTest, CutSuccessful) {
   std::string text = "Hello world";
   SendFinalResultAndWaitForEditableValue(text, text);
-  SendFinalResultAndWaitForSelectionChanged("Select all");
+  SendFinalResultAndWaitForSelection("Select all", 0, 11);
   SendFinalResultAndWaitForClipboardChanged("Cut");
   WaitForProperties(/*visible=*/true,
                     /*icon=*/DictationBubbleIconType::kMacroSuccess,
@@ -2071,7 +2061,7 @@ IN_PROC_BROWSER_TEST_P(DictationContextCheckingTest, CutSuccessful) {
 IN_PROC_BROWSER_TEST_P(DictationContextCheckingTest, CopySuccessful) {
   std::string text = "Hello world";
   SendFinalResultAndWaitForEditableValue(text, text);
-  SendFinalResultAndWaitForSelectionChanged("Select all");
+  SendFinalResultAndWaitForSelection("Select all", 0, 11);
   SendFinalResultAndWaitForClipboardChanged("Copy");
   WaitForProperties(/*visible=*/true,
                     /*icon=*/DictationBubbleIconType::kMacroSuccess,
@@ -2180,7 +2170,7 @@ class DictationFormattedContentEditableTest : public DictationPumpkinTest {
 
     // Place the selection at the end of the content editable (the pre-populated
     // editable value has a length of 14).
-    std::string script = "testSupport.setSelection(14, 14);";
+    std::string script = "dictationTestSupport.setSelection(14, 14);";
     ExecuteAccessibilityCommonScript(script);
   }
 };
@@ -2227,22 +2217,18 @@ IN_PROC_BROWSER_TEST_P(DictationFormattedContentEditableTest, InsertBefore) {
 IN_PROC_BROWSER_TEST_P(DictationFormattedContentEditableTest, MoveBySentence) {
   SendFinalResultAndWaitForEditableValue(", good luck.",
                                          "This is a test, good luck.");
-  SendFinalResultAndWait("move to the previous sentence");
-  // Wait for the selection to move to the beginning of the editable.
-  WaitForSelection(0, 0);
+  SendFinalResultAndWaitForSelection("move to the previous sentence", 0, 0);
   SendFinalResultAndWaitForEditableValue(
       "Good morning. ", "Good morning. This is a test, good luck.");
-  SendFinalResultAndWait("forward one sentence");
-  // Wait for the selection to move to the end of the editable.
-  WaitForSelection(40, 40);
+  SendFinalResultAndWaitForSelection("forward one sentence", 40, 40);
   SendFinalResultAndWaitForEditableValue(
       " Have fun.", "Good morning. This is a test, good luck. Have fun.");
 }
 
 IN_PROC_BROWSER_TEST_P(DictationFormattedContentEditableTest,
                        SmartSelectBetween) {
-  SendFinalResultAndWait("highlight everything between is and a");
-  WaitForSelection(5, 9);
+  SendFinalResultAndWaitForSelection("highlight everything between is and a", 5,
+                                     9);
   SendFinalResultAndWaitForEditableValue("was one", "This was one test");
 }
 
@@ -2308,15 +2294,11 @@ class DictationKeyboardImprovementsTest : public DictationTestBase {
   }
 
   void TabAwayFromEditableAndReduceNoFocusedImeTimeout() {
-    // Tab away from the editable.
-    ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-        /*window=*/nullptr, /*key=*/ui::KeyboardCode::VKEY_TAB,
-        /*control=*/false,
-        /*shift=*/false, /*alt=*/false, /*command=*/false)));
+    PressTab();
     // Reduce the no focused IME timeout so that the nudge will be shown
     // promptly.
     ExecuteAccessibilityCommonScript(
-        "testSupport.setNoFocusedImeTimeout(500);");
+        "dictationTestSupport.setNoFocusedImeTimeout(500);");
   }
 
   void WaitForToastShown(AccessibilityToastType type) {
@@ -2327,7 +2309,7 @@ class DictationKeyboardImprovementsTest : public DictationTestBase {
     AudioCallbackManager audio_callback_manager = AudioCallbackManager();
     extensions::AudioService* service =
         extensions::AudioAPI::GetFactoryInstance()
-            ->Get(browser()->profile())
+            ->Get(GetProfile())
             ->GetService();
     service->SetMute(/*is_input=*/true, /*is_muted=*/mute,
                      base::BindOnce(&AudioCallbackManager::OnSetMute,
@@ -2388,7 +2370,7 @@ IN_PROC_BROWSER_TEST_P(DictationKeyboardImprovementsTest,
   test::SpeechMonitor sm;
   EXPECT_FALSE(GetManager()->IsSpokenFeedbackEnabled());
   extensions::ExtensionHostTestHelper host_helper(
-      browser()->profile(), extension_misc::kChromeVoxExtensionId);
+      GetProfile(), extension_misc::kChromeVoxExtensionId);
   EnableChromeVox();
   host_helper.WaitForHostCompletedFirstLoad();
   EXPECT_TRUE(GetManager()->IsSpokenFeedbackEnabled());

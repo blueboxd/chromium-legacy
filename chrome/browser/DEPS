@@ -91,10 +91,11 @@ include_rules = [
   "+components/client_hints/browser",
   "+components/client_hints/common",
   "+components/cloud_devices/common",
+  "+components/color",
   "+components/commerce",
   "+components/component_updater",
   "+components/component_updater/installer_policies",
-  "+components/compose/core/browser",
+  "+components/compose",
   "+components/consent_auditor",
   "+components/constrained_window",
   "+components/content_capture/browser",
@@ -197,6 +198,7 @@ include_rules = [
   "+components/media_router/browser",
   "+components/history_clusters",
   "+components/history_clusters/history_clusters_internals",
+  "+components/manta",
   "+components/media_effects",
   "+components/memory_pressure",
   "+components/messages/android",
@@ -290,6 +292,7 @@ include_rules = [
   "+components/safe_browsing/core/browser",
   "+components/safe_browsing/core/common",
   "+components/tpcd/metadata",
+  "+components/tpcd/support",
   "+components/safe_search_api",
   "+components/saved_tab_groups",
   "+components/schema_org",
@@ -443,6 +446,7 @@ include_rules = [
   "+services/network/test",
   "+services/network/url_request_context_owner.h",
   "+services/network/url_request_context_builder_mojo.h",
+  "+services/on_device_model/public",
   "+services/preferences/public/cpp",
   "+services/preferences/public/mojom",
   "+services/proxy_resolver",  # Android runs the packaged proxy resolver
@@ -488,7 +492,6 @@ include_rules = [
   # cc/base here, if this is needed these files need to move to base/
   "+cc/base/features.h",
   "+cc/base/switches.h",
-  "+cc/slim/features.h",
 
   # Unsafe to use from //chrome, see http://goo.gl/QQG5wo
   "-content/public/test/test_browser_context.h",
@@ -510,7 +513,6 @@ include_rules = [
   "+chrome/browser/ui/views/frame/browser_view.h",
   "+chrome/browser/ui/views/frame/picture_in_picture_browser_frame_view.h",
   "+chrome/browser/ui/views/notifications/request_pin_view_chromeos.h",
-  "+chrome/browser/ui/views/try_chrome_dialog_win/try_chrome_dialog.h",
 
   # Ensure that only the public interface of performance_manager gets used.
   "-chrome/browser/performance_manager",
@@ -605,6 +607,7 @@ specific_include_rules = {
     "+components/services/storage/shared_storage/shared_storage_manager.h",
   ],
   "render_view_context_menu_browsertest.cc" : [
+    "+components/compose/buildflags.h",
     "+third_party/libwebp/src/src/webp/decode.h",
   ],
   "webauth_interactive_uitest.cc": [

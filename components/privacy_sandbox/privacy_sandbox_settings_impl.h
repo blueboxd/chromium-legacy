@@ -152,7 +152,8 @@ class PrivacySandboxSettingsImpl : public PrivacySandboxSettings,
     kAttestationsDownloadedNotYetLoaded = 8,
     kAttestationsFileCorrupt = 9,
     kJoiningTopFrameBlocked = 10,
-    kMaxValue = kJoiningTopFrameBlocked,
+    kBlockedBy3pcdExperiment = 11,
+    kMaxValue = kBlockedBy3pcdExperiment,
   };
 
   static bool IsAllowed(Status status);

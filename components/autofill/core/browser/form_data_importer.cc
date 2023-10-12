@@ -31,6 +31,7 @@
 #include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/data_model/phone_number.h"
 #include "components/autofill/core/browser/field_type_utils.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/form_types.h"
@@ -38,6 +39,7 @@
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/metrics/profile_import_metrics.h"
+#include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -71,7 +73,7 @@ bool IsValidFieldTypeAndValue(const ServerFieldTypeSet types_seen,
   // - phone number components because a form might request several phone
   // numbers.
   // TODO(crbug.com/1156315) Clean up when launched.
-  auto field_type_group = AutofillType(field_type).group();
+  FieldTypeGroup field_type_group = GroupTypeOfServerFieldType(field_type);
   if (types_seen.count(field_type) && field_type != EMAIL_ADDRESS &&
       (!base::FeatureList::IsEnabled(
            features::kAutofillEnableImportWhenMultiplePhoneNumbers) ||
@@ -176,6 +178,11 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
 FormDataImporter::~FormDataImporter() {
   if (personal_data_manager_)
     personal_data_manager_->RemoveObserver(this);
+}
+
+void FormDataImporter::set_credit_card_save_manager_for_testing(
+    std::unique_ptr<CreditCardSaveManager> credit_card_save_manager) {
+  credit_card_save_manager_ = std::move(credit_card_save_manager);
 }
 
 FormDataImporter::AddressProfileImportCandidate::
@@ -770,33 +777,49 @@ bool FormDataImporter::ProcessExtractedCreditCard(
 
   // Local card migration will not be offered. We check to see if it is valid to
   // offer upload save or local card save, which will happen below if we do not
-  // early return false in this if-statement.
-  if (!ShouldOfferUploadCardOrLocalCardSave(extracted_credit_card,
-                                            is_credit_card_upstream_enabled)) {
+  // early return false in this if-statement. It will also check to see if it is
+  // valid to offer CVC local or upload save.
+  if (!ShouldOfferCreditCardSave(extracted_credit_card,
+                                 is_credit_card_upstream_enabled)) {
     return false;
   }
 
   // We have a card to save; decide what type of save flow to display.
   if (is_credit_card_upstream_enabled) {
-    // Attempt to offer upload save. Because we pass
-    // `credit_card_upstream_enabled` to ExtractFormImportCandidates, this block
-    // can be reached on observing either a new card or one already stored
-    // locally which doesn't match an existing server card. If Google Payments
-    // declines allowing upload, `credit_card_save_manager_` is tasked with
-    // deciding if we should fall back to local save or not.
-    DCHECK(credit_card_import_type_ == CreditCardImportType::kLocalCard ||
-           credit_card_import_type_ == CreditCardImportType::kNewCard);
-    credit_card_save_manager_->AttemptToOfferCardUploadSave(
-        submitted_form, from_dynamic_change_form_, has_non_focusable_field_,
-        *extracted_credit_card,
-        /*uploading_local_card=*/credit_card_import_type_ ==
-            CreditCardImportType::kLocalCard);
+    // If the card extracted from the form is the server card, and
+    // `ShouldOfferCreditCardSave` call above allowed a CVC upload save, attempt
+    // to offer CVC upload save. CVC upload save should only be offered if the
+    // upstream is enabled, as this implies Chrome Sync is enabled, which is a
+    // requirement for any flow that involves server cards. Otherwise the users
+    // will be saving a CVC to a card that is not currently autofillable or
+    // present in the settings page.
+    if (credit_card_import_type_ == CreditCardImportType::kServerCard) {
+      credit_card_save_manager_->AttemptToOfferCvcUploadSave(
+          *extracted_credit_card);
+    } else {
+      // Attempt to offer upload save. This block can be reached on observing
+      // either a new card or one already stored locally which doesn't match an
+      // existing server card. If Google Payments declines allowing upload,
+      // `credit_card_save_manager_` is tasked with deciding if we should fall
+      // back to local save or not.
+      credit_card_save_manager_->AttemptToOfferCardUploadSave(
+          submitted_form, *extracted_credit_card,
+          /*uploading_local_card=*/credit_card_import_type_ ==
+              CreditCardImportType::kLocalCard);
+    }
     return true;
-  };
+  }
+
+  // We should offer CVC local save for local cards.
+  if (credit_card_import_type_ == CreditCardImportType::kLocalCard) {
+    credit_card_save_manager_->AttemptToOfferCvcLocalSave(
+        *extracted_credit_card);
+    return true;
+  }
+
   // If upload save is not allowed, new cards should be saved locally.
   DCHECK(credit_card_import_type_ == CreditCardImportType::kNewCard);
   if (credit_card_save_manager_->AttemptToOfferCardLocalSave(
-          from_dynamic_change_form_, has_non_focusable_field_,
           *extracted_credit_card)) {
     return true;
   }
@@ -902,21 +925,19 @@ absl::optional<CreditCard> FormDataImporter::TryMatchingExistingServerCard(
       return *server_card;
     }
 
-    bool has_same_expiration_date =
-        server_card->HasSameExpirationDateAs(candidate);
-    if (!base::FeatureList::IsEnabled(
-            features::kAutofillOfferToSaveCardWithSameLastFour) ||
-        has_same_expiration_date) {
+    // Only return the masked server card if both the last four digits and
+    // expiration date match.
+    if (server_card->HasSameExpirationDateAs(candidate)) {
       AutofillMetrics::LogSubmittedServerCardExpirationStatusMetric(
-          has_same_expiration_date
-              ? AutofillMetrics::MASKED_SERVER_CARD_EXPIRATION_DATE_MATCHED
-              : AutofillMetrics::
-                    MASKED_SERVER_CARD_EXPIRATION_DATE_DID_NOT_MATCH);
+          AutofillMetrics::MASKED_SERVER_CARD_EXPIRATION_DATE_MATCHED);
 
       // Return that we found a masked server card with matching last four
-      // digits.
+      // digits and copy over the user entered CVC so that future processing
+      // logic check if CVC upload save should be offered.
       credit_card_import_type_ = CreditCardImportType::kServerCard;
-      return *server_card;
+      CreditCard server_card_with_cvc = *server_card;
+      server_card_with_cvc.set_cvc(candidate.cvc());
+      return server_card_with_cvc;
     } else {
       // Keep track of the fact that we found a server card with matching
       // last four digits as `candidate`, but with a different expiration
@@ -957,9 +978,6 @@ absl::optional<Iban> FormDataImporter::ExtractIban(const FormStructure& form) {
 
 FormDataImporter::ExtractCreditCardFromFormResult
 FormDataImporter::ExtractCreditCardFromForm(const FormStructure& form) {
-  has_non_focusable_field_ = false;
-  from_dynamic_change_form_ = false;
-
   ExtractCreditCardFromFormResult result;
 
   ServerFieldTypeSet types_seen;
@@ -977,18 +995,13 @@ FormDataImporter::ExtractCreditCardFromForm(const FormStructure& form) {
     if (field_type.group() != FieldTypeGroup::kCreditCard)
       continue;
 
-    if (form.value_from_dynamic_change_form())
-      from_dynamic_change_form_ = true;
-    if (!field->is_focusable)
-      has_non_focusable_field_ = true;
-
     ServerFieldType server_field_type = field_type.GetStorableType();
     result.has_duplicate_credit_card_field_type |=
         types_seen.contains(server_field_type);
     types_seen.insert(server_field_type);
 
     // If |field| is an HTML5 month input, handle it as a special case.
-    if (field->form_control_type == StringToFormControlType("month")) {
+    if (field->form_control_type == FormControlType::kInputMonth) {
       DCHECK_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, server_field_type);
       result.card.SetInfoForMonthInputType(value);
       continue;
@@ -1034,14 +1047,24 @@ Iban FormDataImporter::ExtractIbanFromForm(const FormStructure& form) {
   return candidate_iban;
 }
 
-bool FormDataImporter::ShouldOfferUploadCardOrLocalCardSave(
+// TODO(crbug.com/1450749): Move ShouldOfferCreditCardSave to
+// credit_card_save_manger and combine all card and CVC save logic to
+// ProceedWithSavingIfApplicable function.
+bool FormDataImporter::ShouldOfferCreditCardSave(
     const absl::optional<CreditCard>& extracted_credit_card,
-    bool is_credit_card_upload_enabled) {
+    bool is_credit_card_upstream_enabled) {
   // If we have an invalid card in the form, a duplicate field type, or we have
-  // entered a virtual card, `extracted_credit_card` will be set
-  // to nullptr and thus we do not want to offer upload save or local card save.
+  // entered a virtual card, `extracted_credit_card` is nullptr and thus we do
+  // not want to offer upload save or local card save.
   if (!extracted_credit_card) {
     return false;
+  }
+
+  // Check if CVC local or upload save should be offered.
+  if (credit_card_save_manager_->ShouldOfferCvcSave(
+          *extracted_credit_card, credit_card_import_type_,
+          is_credit_card_upstream_enabled)) {
+    return true;
   }
 
   // We do not want to offer upload save or local card save for server cards.
@@ -1049,10 +1072,10 @@ bool FormDataImporter::ShouldOfferUploadCardOrLocalCardSave(
     return false;
   }
 
-  // If we have a local card but credit card upload is not enabled, we do not
-  // want to offer upload save as it is disabled and we do not want to offer
-  // local card save as it is already saved as a local card.
-  if (!is_credit_card_upload_enabled &&
+  // Credit card upload save is not offered for local cards if upstream is
+  // disabled. Local save is not offered for local cards if the card is already
+  // saved as a local card.
+  if (!is_credit_card_upstream_enabled &&
       credit_card_import_type_ == CreditCardImportType::kLocalCard) {
     return false;
   }

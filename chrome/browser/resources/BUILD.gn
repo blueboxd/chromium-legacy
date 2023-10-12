@@ -6,7 +6,7 @@ import("//build/config/chromebox_for_meetings/buildflags.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/common/features.gni")
-import("//chrome/test/base/js2gtest.gni")
+import("//components/compose/features.gni")
 import("//components/signin/features.gni")
 import("//pdf/features.gni")
 import("//printing/buildflags/buildflags.gni")
@@ -24,6 +24,7 @@ group("resources") {
       ":app_icon_resources",
       ":component_extension_resources",
       ":dev_ui_paks",
+      "about_sys:resources",
       "access_code_cast:resources",
       "app_service_internals:resources",
       "bookmarks:resources",
@@ -147,6 +148,10 @@ group("resources") {
   if (enable_webui_certificate_viewer) {
     public_deps += [ "certificate_viewer:resources" ]
   }
+
+  if (enable_compose) {
+    public_deps += [ "compose:resources" ]
+  }
 }
 
 if (is_chromeos_ash && enable_js_type_check) {
@@ -256,14 +261,15 @@ group("dev_ui_resources") {
       "//chrome/browser/resources/feed_internals:resources",
       "//chrome/browser/resources/webapks:resources",
     ]
+  } else {
+    public_deps += [
+      "media_router/internals:resources",
+      "on_device_internals:resources",
+    ]
   }
 
   if (is_android || is_linux || is_chromeos || is_win) {
     public_deps += [ "//chrome/browser/resources/sandbox_internals:resources" ]
-  }
-
-  if (!is_android) {
-    public_deps += [ "media_router/internals:resources" ]
   }
 }
 
@@ -310,14 +316,15 @@ repack("dev_ui_paks") {
       "$root_gen_dir/chrome/feed_internals_resources.pak",
       "$root_gen_dir/chrome/webapks_resources.pak",
     ]
+  } else {
+    sources += [
+      "$root_gen_dir/chrome/media_router_internals_resources.pak",
+      "$root_gen_dir/chrome/on_device_internals_resources.pak",
+    ]
   }
 
   if (is_android || is_linux || is_chromeos || is_win) {
     sources += [ "$root_gen_dir/chrome/sandbox_internals_resources.pak" ]
-  }
-
-  if (!is_android) {
-    sources += [ "$root_gen_dir/chrome/media_router_internals_resources.pak" ]
   }
 
   deps = [ ":dev_ui_resources" ]

@@ -8,6 +8,7 @@
 
 #include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -188,7 +189,7 @@ class MediaStreamVideoTrackTest
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
   Persistent<MediaStreamSource> source_;
   // |mock_source_| is owned by |source_|.
-  MockMediaStreamVideoSource* mock_source_;
+  raw_ptr<MockMediaStreamVideoSource, DanglingUntriaged> mock_source_;
   bool source_started_;
 };
 
@@ -227,14 +228,13 @@ class CheckThreadHelper {
 
  private:
   base::OnceClosure callback_;
-  bool* correct_;
+  raw_ptr<bool, ExperimentalRenderer> correct_;
   THREAD_CHECKER(thread_checker_);
 };
 
 void CheckThreadVideoFrameReceiver(
     CheckThreadHelper* helper,
     scoped_refptr<media::VideoFrame> frame,
-    std::vector<scoped_refptr<media::VideoFrame>> scaled_frames,
     base::TimeTicks estimated_capture_time) {
   // Do nothing.
 }
@@ -573,11 +573,6 @@ TEST_F(MediaStreamVideoTrackTest,
       "Media.VideoCapture.Track.FrameDrop.DeviceCapture",
       media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat,
       MediaStreamVideoTrack::kMaxConsecutiveFrameDropForSameReasonCount);
-
-  histogram_tester.ExpectBucketCount(
-      "Media.VideoCapture.Track.MaxFrameDropExceeded.DeviceCapture",
-      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat,
-      1);
 }
 
 TEST_F(MediaStreamVideoTrackTest,

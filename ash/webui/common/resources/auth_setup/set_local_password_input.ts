@@ -7,7 +7,7 @@ import '//resources/cr_elements/chromeos/cros_color_overrides.css.js';
 
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assertInstanceof, assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {assertInstanceof, assertNotReached} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PasswordComplexity, PasswordFactorEditor} from 'chrome://resources/mojo/chromeos/ash/services/auth_factor_config/public/mojom/auth_factor_config.mojom-webui.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -97,12 +97,12 @@ export class SetLocalPasswordInputElement extends
     };
   }
 
-  public value: string|null;
+  value: string|null;
 
   private firstInputValidity_: null|FirstInputValidity;
   private confirmInputValidity_: null|ConfirmInputValidity;
 
-  public locale: string;
+  locale: string;
 
   constructor() {
     super();
@@ -125,7 +125,7 @@ export class SetLocalPasswordInputElement extends
   }
 
   // See comment at the |locale| attribute for why this is here.
-  public i18nUpdateLocale(): void {
+  i18nUpdateLocale(): void {
     this.locale = loadTimeData.getString('app_locale');
   }
 
@@ -178,7 +178,7 @@ export class SetLocalPasswordInputElement extends
     this.confirmInputValidity_ = ConfirmInputValidity.OK;
   }
 
-  public async validate(): Promise<void> {
+  async validate(): Promise<void> {
     await this.validateFirstInput();
     if (this.showFirstInputError()) {
       this.$.firstInput.focus();
@@ -192,7 +192,7 @@ export class SetLocalPasswordInputElement extends
     }
   }
 
-  public reset(): void {
+  reset(): void {
     this.$.firstInput.value = '';
     this.$.confirmInput.value = '';
     this.firstInputValidity_ = null;

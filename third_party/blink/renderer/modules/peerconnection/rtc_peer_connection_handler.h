@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
@@ -218,6 +219,9 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
            const MediaStreamDescriptorVector& descriptors);
   virtual webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   RemoveTrack(blink::RTCRtpSenderPlatform* web_sender);
+
+  Vector<std::unique_ptr<blink::RTCRtpSenderPlatform>> GetPlatformSenders()
+      const;
 
   virtual rtc::scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const String& label,
@@ -439,7 +443,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   // references on the signaling thread during GC.
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
 
-  blink::WebLocalFrame* frame_ = nullptr;
+  raw_ptr<blink::WebLocalFrame, ExperimentalRenderer> frame_ = nullptr;
 
   // Map and owners of track adapters. Every track that is in use by the peer
   // connection has an associated blink and webrtc layer representation of it.

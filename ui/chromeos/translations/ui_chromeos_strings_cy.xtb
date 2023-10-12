@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3619593063686672873">Dim fideos diweddar</translation>
 <translation id="3634507049637220048">Rhwydwaith <ph name="NETWORK_INDEX" /> o <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Rheolwyd gan eich Gweinyddwr, Manylion</translation>
+<translation id="36451918667380448">Mae darparwr rhwydwaith ffôn symudol wedi'i gloi. Cysylltwch â'ch porwr am gefnogaeth.</translation>
 <translation id="3645233063072417428">Cafodd <ph name="NUMBER_OF_ITEMS" /> eitem eu symud.</translation>
 <translation id="3658269352872031728">Mae <ph name="SELECTED_FILE_COUNT" /> ffeil wedi'u dewis</translation>
 <translation id="3685122418104378273">Mae cysoni Google Drive wedi'i analluogi yn ddiofyn, wrth ddefnyddio data symudol.</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">Mae'r ffeil hon yn gyfrinachol ac yn amodol ar gyfyngiadau gan bolisi gweinyddwr.</translation>
 <translation id="8712637175834984815">Iawn</translation>
 <translation id="8713112442029511308">Malteg</translation>
+<translation id="8714138378966541668">Wedi'i gloi gan y darparwr</translation>
 <translation id="8714406895390098252">Beic</translation>
 <translation id="8719721339511222681">Wedi dewis <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">Croataidd</translation>

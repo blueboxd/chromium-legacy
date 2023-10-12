@@ -11,11 +11,6 @@ namespace extensions_features {
 // API Features
 ///////////////////////////////////////////////////////////////////////////////
 
-// Controls the availability of the AccessibilityServicePrivate API.
-BASE_FEATURE(kApiAccessibilityServicePrivate,
-             "ApiAccessibilityServicePrivate",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls the availability of the ReadingList API.
 BASE_FEATURE(kApiReadingList,
              "ApiReadingList",
@@ -207,6 +202,13 @@ BASE_FEATURE(kExtensionsZipFileInstalledInProfileDir,
 // starts a worker if it is not already running.
 BASE_FEATURE(kExtensionsServiceWorkerOptimizedEventDispatch,
              "ExtensionsServiceWorkerOptimizedEventDispatch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, the button for visiting the chrome webstore in both the
+// extensions menu in the app menu and the chrome://extensions sidebar will send
+// the user to the new chrome webstore URL.
+BASE_FEATURE(kNewWebstoreURL,
+             "NewWebstoreURL",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace extensions_features

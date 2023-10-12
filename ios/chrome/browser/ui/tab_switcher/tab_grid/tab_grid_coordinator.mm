@@ -19,13 +19,12 @@
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/bring_android_tabs/model/bring_android_tabs_to_ios_service.h"
 #import "ios/chrome/browser/bring_android_tabs/model/bring_android_tabs_to_ios_service_factory.h"
-#import "ios/chrome/browser/bring_android_tabs/model/features.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
-#import "ios/chrome/browser/find_in_page/find_tab_helper.h"
-#import "ios/chrome/browser/find_in_page/util.h"
+#import "ios/chrome/browser/find_in_page/model/find_tab_helper.h"
+#import "ios/chrome/browser/find_in_page/model/util.h"
 #import "ios/chrome/browser/main/browser_util.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#import "ios/chrome/browser/reading_list/reading_list_browser_agent.h"
+#import "ios/chrome/browser/reading_list/model/reading_list_browser_agent.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
@@ -53,10 +52,10 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/sync/session_sync_service_factory.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/synced_sessions/distant_session.h"
-#import "ios/chrome/browser/synced_sessions/synced_sessions_util.h"
+#import "ios/chrome/browser/sync/model/session_sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
+#import "ios/chrome/browser/synced_sessions/model/distant_session.h"
+#import "ios/chrome/browser/synced_sessions/model/synced_sessions_util.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_coordinator.h"
@@ -100,8 +99,8 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/legacy_tab_grid_transition_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/tab_grid_transition_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
-#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_params.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -588,22 +587,10 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
     _bringAndroidTabsPromptCoordinator.commandHandler = self;
   }
   [_bringAndroidTabsPromptCoordinator start];
-  switch (GetBringYourOwnTabsPromptType()) {
-    case BringYourOwnTabsPromptType::kHalfSheet:
-      [self.baseViewController
-          presentViewController:_bringAndroidTabsPromptCoordinator
-                                    .viewController
-                       animated:YES
-                     completion:nil];
-      break;
-    case BringYourOwnTabsPromptType::kBottomMessage:
-      self.baseViewController.regularTabsBottomMessage =
-          _bringAndroidTabsPromptCoordinator.viewController;
-      break;
-    case BringYourOwnTabsPromptType::kDisabled:
-      NOTREACHED();
-      break;
-  }
+  [self.baseViewController
+      presentViewController:_bringAndroidTabsPromptCoordinator.viewController
+                   animated:YES
+                 completion:nil];
 }
 
 // Performs the new Browser to Tab Grid transition.
@@ -945,7 +932,6 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   [self.incognitoSnackbarCoordinator stop];
   self.incognitoSnackbarCoordinator = nil;
 
-  self.baseViewController.regularTabsBottomMessage = nil;
   [_bringAndroidTabsPromptCoordinator stop];
   _bringAndroidTabsPromptCoordinator = nil;
   [_tabListFromAndroidCoordinator stop];
@@ -1380,20 +1366,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 // Helper method to handle BringAndroidTabsCommands.
 - (void)onUserInteractionWithBringAndroidTabsPrompt:(BOOL)reviewTabs {
   DCHECK(_bringAndroidTabsPromptCoordinator);
-  switch (GetBringYourOwnTabsPromptType()) {
-    case BringYourOwnTabsPromptType::kHalfSheet:
-      [self.baseViewController dismissViewControllerAnimated:YES
-                                                  completion:nil];
-      break;
-    case BringYourOwnTabsPromptType::kBottomMessage:
-      DCHECK_EQ(self.baseViewController.regularTabsBottomMessage,
-                _bringAndroidTabsPromptCoordinator.viewController);
-      self.baseViewController.regularTabsBottomMessage = nil;
-      break;
-    case BringYourOwnTabsPromptType::kDisabled:
-      NOTREACHED();
-      break;
-  }
+  [self.baseViewController dismissViewControllerAnimated:YES completion:nil];
   if (reviewTabs) {
     _tabListFromAndroidCoordinator = [[TabListFromAndroidCoordinator alloc]
         initWithBaseViewController:self.baseViewController

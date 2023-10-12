@@ -20,19 +20,12 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
-import org.chromium.components.sync.protocol.DeviceInfoSpecifics;
-import org.chromium.components.sync.protocol.EntitySpecifics;
-import org.chromium.components.sync.protocol.FeatureSpecificFields;
-import org.chromium.components.sync.protocol.SyncEnums.DeviceType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -47,7 +40,10 @@ public class SendTabToSelfCoordinatorTest {
 
     @Before
     public void setUp() {
-        addTargetDeviceToSyncServer();
+        // Setting a recent timestamp here is necessary, otherwise the device will be considered
+        // expired and won't be displayed.
+        long now = System.currentTimeMillis();
+        mSyncTestRule.getFakeServerHelper().injectDeviceInfoEntity("CacheGuid", "Device", now, now);
     }
 
     @Test
@@ -70,21 +66,8 @@ public class SendTabToSelfCoordinatorTest {
 
     @Test
     @LargeTest
-    @DisableFeatures(ChromeFeatureList.SEND_TAB_TO_SELF_SIGNIN_PROMO)
-    public void testShowFeatureUnavailablePromptIfSignedOutAndFeatureDisabled() {
-        // Set up a user satisfying all the preconditions for a sign-in promo, except having the
-        // feature enabled.
-        mSyncTestRule.addTestAccount();
-        buildAndShowCoordinator();
-
-        waitForViewShown(R.id.send_tab_to_self_feature_unavailable_prompt);
-    }
-
-    @Test
-    @LargeTest
-    @EnableFeatures(ChromeFeatureList.SEND_TAB_TO_SELF_SIGNIN_PROMO)
     @DisabledTest(message = "https://crbug.com/1302062")
-    public void testShowSigninPromoIfSignedOutAndFeatureEnabled() {
+    public void testShowSigninPromoIfSignedOut() {
         // An account must be added to the device so the promo is offered.
         mSyncTestRule.addTestAccount();
         buildAndShowCoordinator();
@@ -99,29 +82,6 @@ public class SendTabToSelfCoordinatorTest {
         });
 
         waitForViewShown(R.id.device_picker_list);
-    }
-
-    private void addTargetDeviceToSyncServer() {
-        FeatureSpecificFields features =
-                FeatureSpecificFields.newBuilder().setSendTabToSelfReceivingEnabled(true).build();
-        // Setting a recent timestamp here is necessary, otherwise the device will be considered
-        // expired and won't be displayed.
-        DeviceInfoSpecifics deviceInfo =
-                DeviceInfoSpecifics.newBuilder()
-                        .setCacheGuid("CacheGuid")
-                        .setClientName("Device")
-                        .setDeviceType(DeviceType.TYPE_PHONE)
-                        .setSyncUserAgent("UserAgent")
-                        .setChromeVersion("1.0")
-                        .setSigninScopedDeviceId("Id")
-                        .setLastUpdatedTimestamp(System.currentTimeMillis())
-                        .setFeatureFields(features)
-                        .build();
-        EntitySpecifics specifics = EntitySpecifics.newBuilder().setDeviceInfo(deviceInfo).build();
-        // TODO(crbug.com/1219434): Don't duplicate DeviceInfo's SpecificsToTag() logic for the
-        // clientTag value, instead expose the function to Java and call it here.
-        mSyncTestRule.getFakeServerHelper().injectUniqueClientEntity(
-                "nonUniqueName", /*clientTag=*/"DeviceInfo_CacheGuid", specifics);
     }
 
     private void buildAndShowCoordinator() {

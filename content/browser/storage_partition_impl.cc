@@ -165,6 +165,8 @@
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "content/browser/media/cdm_storage_common.h"
+#include "content/browser/media/cdm_storage_manager.h"
 #include "content/browser/media/media_license_manager.h"
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
@@ -1452,12 +1454,12 @@ void StoragePartitionImpl::Initialize(
       std::make_unique<BluetoothAllowedDevicesMap>();
 
   // Must be initialized before the `url_loader_factory_getter_`.
-  // Cookie deprecation traffic labels should not be sent in incognito mode,
-  // unless the "enable_incognito" feature parameter is true.
+  // Cookie deprecation traffic labels should not be sent for off-the-record
+  // profiles, unless the "enable_otr_profiles" feature parameter is true.
   if (base::FeatureList::IsEnabled(
           features::kCookieDeprecationFacilitatedTesting) &&
       (!is_in_memory() ||
-       features::kCookieDeprecationFacilitatedTestingEnableIncognito.Get())) {
+       features::kCookieDeprecationFacilitatedTestingEnableOTRProfiles.Get())) {
     cookie_deprecation_label_manager_ =
         std::make_unique<CookieDeprecationLabelManagerImpl>(browser_context_);
   }
@@ -1563,9 +1565,23 @@ void StoragePartitionImpl::Initialize(
   }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  if (base::FeatureList::IsEnabled(features::kCdmStorageDatabase)) {
+    cdm_storage_manager_ = std::make_unique<CdmStorageManager>(
+        partition_path_.Append(kCdmStorageDatabaseFileName));
+  }
+
   media_license_manager_ = std::make_unique<MediaLicenseManager>(
       is_in_memory(), browser_context_->GetSpecialStoragePolicy(),
       quota_manager_proxy);
+
+  // When 'kCdmStorageDatabaseMigration' is enabled, in the
+  // 'MediaLicenseStorageHost', when operations occur, we make sure to
+  // update and reflect that in the CdmStorageDatabase as well.
+  if (base::FeatureList::IsEnabled(features::kCdmStorageDatabase) &&
+      base::FeatureList::IsEnabled(features::kCdmStorageDatabaseMigration)) {
+    CHECK(cdm_storage_manager_);
+    media_license_manager_->set_cdm_storage_manager(cdm_storage_manager_.get());
+  }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI)) {
@@ -1883,6 +1899,10 @@ void StoragePartitionImpl::SetFontAccessManagerForTesting(
 MediaLicenseManager* StoragePartitionImpl::GetMediaLicenseManager() {
   DCHECK(initialized_);
   return media_license_manager_.get();
+}
+
+CdmStorageManager* StoragePartitionImpl::GetCdmStorageManager() {
+    return cdm_storage_manager_.get();
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 

@@ -318,10 +318,6 @@ class HashRealTimeServiceTest : public PlatformTest {
         /*name=*/"SafeBrowsing.HPRT.CacheHitAllPrefixes",
         /*sample=*/expect_cache_hit_all_prefixes,
         /*expected_bucket_count=*/1);
-    histogram_tester_->ExpectUniqueSample(
-        /*name=*/"SafeBrowsing.HPRT.CacheHitAllPrefixesIfNoQueryParams",
-        /*sample=*/expect_cache_hit_all_prefixes,
-        /*expected_bucket_count=*/1);
     if (expect_cache_hit_all_prefixes) {
       histogram_tester_->ExpectTotalCount(
           /*name=*/"SafeBrowsing.HPRT.BackoffState", /*expected_count=*/0);
@@ -345,6 +341,7 @@ class HashRealTimeServiceTest : public PlatformTest {
   void CheckRequestMetrics(
       int expected_prefix_count,
       int expected_network_result,
+      const absl::optional<std::string>& expected_network_result_suffix,
       HashRealTimeService::OperationResult expected_operation_result,
       absl::optional<bool> expected_found_unmatched_full_hashes) {
     histogram_tester_->ExpectUniqueSample(
@@ -357,6 +354,13 @@ class HashRealTimeServiceTest : public PlatformTest {
         /*name=*/"SafeBrowsing.HPRT.Network.Result",
         /*sample=*/expected_network_result,
         /*expected_bucket_count=*/1);
+    if (expected_network_result_suffix.has_value()) {
+      histogram_tester_->ExpectUniqueSample(
+          /*name=*/"SafeBrowsing.HPRT.Network." +
+              expected_network_result_suffix.value(),
+          /*sample=*/expected_network_result,
+          /*expected_bucket_count=*/1);
+    }
     histogram_tester_->ExpectUniqueSample(
         /*name=*/"SafeBrowsing.HPRT.OperationResult",
         /*sample=*/expected_operation_result,
@@ -501,6 +505,7 @@ class HashRealTimeServiceTest : public PlatformTest {
     CheckRequestMetrics(
         /*expected_prefix_count=*/expected_prefix_count,
         /*expected_network_result=*/200,
+        /*expected_network_result_suffix=*/"InnerResponseResult",
         /*expected_operation_result=*/
         HashRealTimeService::OperationResult::kSuccess,
         /*expected_found_unmatched_full_hashes=*/
@@ -525,6 +530,7 @@ class HashRealTimeServiceTest : public PlatformTest {
       absl::optional<int> inner_response_code,
       int expected_prefix_count,
       int expected_network_result,
+      const std::string& expected_network_result_suffix,
       HashRealTimeService::OperationResult expected_operation_result) {
     EXPECT_CALL(
         *webui_delegate_,
@@ -565,9 +571,10 @@ class HashRealTimeServiceTest : public PlatformTest {
     CheckRequestMetrics(
         /*expected_prefix_count=*/expected_prefix_count,
         /*expected_network_result=*/expected_network_result,
+        /*expected_network_result_suffix=*/expected_network_result_suffix,
         /*expected_operation_result=*/
-        expected_operation_result, /*expected_found_unmatched_full_hashes=*/
-        absl::nullopt);
+        expected_operation_result,
+        /*expected_found_unmatched_full_hashes=*/absl::nullopt);
     CheckNoPostSuccessfulRequestMetrics();
     ResetMetrics();
 
@@ -1134,6 +1141,7 @@ TEST_F(HashRealTimeServiceTest, TestLookupFailure_NetError) {
       /*inner_response_code=*/absl::nullopt,
       /*expected_prefix_count=*/1,
       /*expected_network_result=*/net::ERR_FAILED,
+      /*expected_network_result_suffix=*/"NetErrorResult",
       /*expected_operation_result=*/
       HashRealTimeService::OperationResult::kNetworkError);
 }
@@ -1147,6 +1155,7 @@ TEST_F(HashRealTimeServiceTest, TestLookupFailure_RetriableNetError) {
       /*inner_response_code=*/absl::nullopt,
       /*expected_prefix_count=*/1,
       /*expected_network_result=*/net::ERR_INTERNET_DISCONNECTED,
+      /*expected_network_result_suffix=*/"NetErrorResult",
       /*expected_operation_result=*/
       HashRealTimeService::OperationResult::kRetriableError);
 }
@@ -1160,6 +1169,7 @@ TEST_F(HashRealTimeServiceTest, TestLookupFailure_NetErrorHttpCodeFailure) {
       /*inner_response_code=*/absl::nullopt,
       /*expected_prefix_count=*/1,
       /*expected_network_result=*/0,
+      /*expected_network_result_suffix=*/"NetErrorResult",
       /*expected_operation_result=*/
       HashRealTimeService::OperationResult::kHttpError);
 }
@@ -1173,6 +1183,7 @@ TEST_F(HashRealTimeServiceTest, TestLookupFailure_OuterResponseCodeError) {
       /*inner_response_code=*/absl::nullopt,
       /*expected_prefix_count=*/1,
       /*expected_network_result=*/net::HTTP_NOT_FOUND,
+      /*expected_network_result_suffix=*/"OuterResponseResult",
       /*expected_operation_result=*/
       HashRealTimeService::OperationResult::kHttpError);
 }
@@ -1185,6 +1196,7 @@ TEST_F(HashRealTimeServiceTest, TestLookupFailure_InnerResponseCodeError) {
       /*inner_response_code=*/net::HTTP_UNAUTHORIZED,
       /*expected_prefix_count=*/1,
       /*expected_network_result=*/net::HTTP_UNAUTHORIZED,
+      /*expected_network_result_suffix=*/"InnerResponseResult",
       /*expected_operation_result=*/
       HashRealTimeService::OperationResult::kHttpError);
 }
@@ -1196,6 +1208,7 @@ TEST_F(HashRealTimeServiceTest, TestLookupFailure_ParseResponse) {
       /*net_error=*/absl::nullopt, /*outer_response_error_code=*/absl::nullopt,
       /*inner_response_code=*/absl::nullopt, /*expected_prefix_count=*/1,
       /*expected_network_result=*/net::HTTP_OK,
+      /*expected_network_result_suffix=*/"InnerResponseResult",
       /*expected_operation_result=*/
       HashRealTimeService::OperationResult::kParseError);
 }
@@ -1210,6 +1223,7 @@ TEST_F(HashRealTimeServiceTest, TestLookupFailure_IncorrectFullHashLength) {
       /*net_error=*/absl::nullopt, /*outer_response_error_code=*/absl::nullopt,
       /*inner_response_code=*/absl::nullopt, /*expected_prefix_count=*/1,
       /*expected_network_result=*/net::HTTP_OK,
+      /*expected_network_result_suffix=*/"InnerResponseResult",
       /*expected_operation_result=*/
       HashRealTimeService::OperationResult::kIncorrectFullHashLengthError);
 }
@@ -1226,6 +1240,7 @@ TEST_F(HashRealTimeServiceTest, TestLookupFailure_MissingCacheDuration) {
       /*inner_response_code=*/absl::nullopt,
       /*expected_prefix_count=*/1,
       /*expected_network_result=*/net::HTTP_OK,
+      /*expected_network_result_suffix=*/"InnerResponseResult",
       /*expected_operation_result=*/
       HashRealTimeService::OperationResult::kNoCacheDurationError);
 }
@@ -1659,36 +1674,6 @@ TEST_F(HashRealTimeServiceTest, TestBackoffModeRespected_NotCached) {
   RunBackoffRequestTest(url);
 }
 
-TEST_F(HashRealTimeServiceTest, TestLogSearchCacheWithNoQueryParamsMetric) {
-  auto check_metrics = [this](bool expect_cache_hit_if_no_query_params_log,
-                              bool expect_cache_hit_log) {
-    histogram_tester_->ExpectUniqueSample(
-        /*name=*/"SafeBrowsing.HPRT.CacheHitAllPrefixesIfNoQueryParams",
-        /*sample=*/expect_cache_hit_if_no_query_params_log,
-        /*expected_bucket_count=*/1);
-    histogram_tester_->ExpectTotalCount("SafeBrowsing.HPRT.CacheHit",
-                                        expect_cache_hit_log ? 1 : 0);
-    histogram_tester_->ExpectTotalCount("SafeBrowsing.HPRT.GetCache.Time",
-                                        expect_cache_hit_log ? 1 : 0);
-    ResetMetrics();
-  };
-  GURL url = GURL("https://example.test");
-  RunSimpleRequest(
-      /*url=*/url, /*response_full_hashes=*/{});
-  check_metrics(/*expect_cache_hit_if_no_query_params_log=*/false,
-                /*expect_cache_hit_log=*/true);
-
-  GURL url2 = GURL("https://example.test?run=true");
-  service_->LogSearchCacheWithNoQueryParamsMetric(url2);
-  check_metrics(/*expect_cache_hit_if_no_query_params_log=*/true,
-                /*expect_cache_hit_log=*/false);
-
-  GURL url3 = GURL("https://foo.example.test?run=true");
-  service_->LogSearchCacheWithNoQueryParamsMetric(url3);
-  check_metrics(/*expect_cache_hit_if_no_query_params_log=*/false,
-                /*expect_cache_hit_log=*/false);
-}
-
 TEST_F(HashRealTimeServiceTest, IsHashDetailMoreSevere) {
   auto create_hash_detail =
       [](V5::ThreatType threat_type,
@@ -1891,6 +1876,7 @@ class HashRealTimeServiceDirectFetchTest : public HashRealTimeServiceTest {
     CheckRequestMetrics(
         /*expected_prefix_count=*/expected_prefix_count,
         /*expected_network_result=*/net_error,
+        /*expected_network_result_suffix=*/absl::nullopt,
         /*expected_operation_result=*/
         expected_operation_result,
         /*expected_found_unmatched_full_hashes=*/absl::nullopt);

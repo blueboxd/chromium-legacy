@@ -8,6 +8,7 @@
       "is_debug": false,
       "is_lsan": true,
       "symbol_level": 1,
+      "use_dummy_lastchange": true,
       "use_remoteexec": true
     }
   },
@@ -39,6 +40,7 @@
       "is_component_build": false,
       "is_debug": false,
       "is_ubsan": true,
+      "is_ubsan_no_recover": true,
       "use_remoteexec": true
     }
   },

@@ -180,7 +180,7 @@ TEST_F(PolicyLoaderMacTest, Invalid) {
                       /*is_machine=*/true);
 
   // Make the provider read the updated |prefs_|.
-  provider_->RefreshPolicies();
+  provider_->RefreshPolicies(PolicyFetchReason::kTest);
   task_environment_.RunUntilIdle();
   const PolicyBundle kEmptyBundle;
   EXPECT_TRUE(provider_->policies().Equals(kEmptyBundle));
@@ -189,14 +189,13 @@ TEST_F(PolicyLoaderMacTest, Invalid) {
 TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
   ScopedCFTypeRef<CFStringRef> name(
       base::SysUTF8ToCFStringRef(test_keys::kKeyString));
-  ScopedCFTypeRef<CFPropertyListRef> test_value(
-      base::SysUTF8ToCFStringRef("string value"));
-  ASSERT_TRUE(test_value.get());
-  prefs_->AddTestItem(name, test_value.get(), /*is_forced=*/false,
+  CFPropertyListRef test_value = CFSTR("string value");
+  ASSERT_TRUE(test_value);
+  prefs_->AddTestItem(name, test_value, /*is_forced=*/false,
                       /*is_machine=*/true);
 
   // Make the provider read the updated |prefs_|.
-  provider_->RefreshPolicies();
+  provider_->RefreshPolicies(PolicyFetchReason::kTest);
   task_environment_.RunUntilIdle();
   PolicyBundle expected_bundle;
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
@@ -208,14 +207,13 @@ TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
 TEST_F(PolicyLoaderMacTest, TestUserScopeValue) {
   ScopedCFTypeRef<CFStringRef> name(
       base::SysUTF8ToCFStringRef(test_keys::kKeyString));
-  ScopedCFTypeRef<CFPropertyListRef> test_value(
-      base::SysUTF8ToCFStringRef("string value"));
-  ASSERT_TRUE(test_value.get());
-  prefs_->AddTestItem(name, test_value.get(), /*is_forced=*/true,
+  CFPropertyListRef test_value = CFSTR("string value");
+  ASSERT_TRUE(test_value);
+  prefs_->AddTestItem(name, test_value, /*is_forced=*/true,
                       /*is_machine=*/false);
 
   // Make the provider read the updated |prefs_|.
-  provider_->RefreshPolicies();
+  provider_->RefreshPolicies(PolicyFetchReason::kTest);
   task_environment_.RunUntilIdle();
   PolicyBundle expected_bundle;
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
@@ -249,7 +247,7 @@ TEST_F(PolicyLoaderMacTest, LoadPrecedencePolicies) {
       POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM, base::Value(true), nullptr);
 
   // Make the provider read the updated |prefs_|.
-  provider_->RefreshPolicies();
+  provider_->RefreshPolicies(PolicyFetchReason::kTest);
   task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->policies().Equals(expected));

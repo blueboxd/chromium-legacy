@@ -23,6 +23,7 @@ import androidx.browser.customtabs.TrustedWebUtils;
 
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplicationImpl;
 import org.chromium.chrome.browser.DeferredStartupHandler;
@@ -461,6 +462,8 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
         BrowserServicesIntentDataProvider intentDataProvider = getIntentDataProvider();
         if (intentDataProvider != null && intentDataProvider.shouldAnimateOnFinish()) {
             mShouldOverridePackage = true;
+            // |mShouldOverridePackage| is used in #getPackageName for |overridePendingTransition|
+            // to pick up the client package name regardless of custom tabs connection.
             overridePendingTransition(intentDataProvider.getAnimationEnterRes(),
                     intentDataProvider.getAnimationExitRes());
             mShouldOverridePackage = false;
@@ -570,9 +573,18 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
         if (!mToolbarCoordinator.toolbarIsInitialized()) {
             return super.onKeyDown(keyCode, event);
         }
-        return KeyboardShortcuts.onKeyDown(event, true, false, getTabModelSelector(),
-                       /* menuOrKeyboardActionController= */ this, getToolbarManager())
-                || super.onKeyDown(keyCode, event);
+        boolean keyboardShortcutHandled =
+                KeyboardShortcuts.onKeyDown(
+                        event,
+                        true,
+                        false,
+                        getTabModelSelector(),
+                        /* menuOrKeyboardActionController= */ this,
+                        getToolbarManager());
+        if (keyboardShortcutHandled) {
+            RecordUserAction.record("MobileKeyboardShortcutUsed");
+        }
+        return keyboardShortcutHandled || super.onKeyDown(keyCode, event);
     }
 
     @Override

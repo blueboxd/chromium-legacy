@@ -58,6 +58,11 @@ base::TaskPriority GetTaskPriority() {
              : base::TaskPriority::BEST_EFFORT;
 }
 
+void RecordSitesToClearCount(int count) {
+  base::UmaHistogramCounts1000(
+      "FirstPartySets.Initialization.SitesToClear.Count", count);
+}
+
 }  // namespace
 
 // static
@@ -409,6 +414,8 @@ void FirstPartySetsHandlerImplInstance::OnGetSitesToClear(
     std::pair<std::vector<net::SchemefulSite>, net::FirstPartySetsCacheFilter>
         sites_to_clear) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  RecordSitesToClearCount(sites_to_clear.first.size());
 
   BrowserContext* browser_context = browser_context_getter.Run();
   if (!browser_context) {

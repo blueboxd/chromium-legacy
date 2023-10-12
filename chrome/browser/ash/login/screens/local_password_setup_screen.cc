@@ -11,6 +11,7 @@
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/wizard_context.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/ash/login/local_password_setup_handler.h"
 #include "chromeos/ash/services/auth_factor_config/auth_factor_config.h"
@@ -50,10 +51,13 @@ LocalPasswordSetupScreen::LocalPasswordSetupScreen(
 LocalPasswordSetupScreen::~LocalPasswordSetupScreen() = default;
 
 void LocalPasswordSetupScreen::ShowImpl() {
+  CHECK(!context()->skip_post_login_screens_for_tests);
+
   if (!view_) {
     return;
   }
-  view_->Show();
+  bool can_go_back = !context()->knowledge_factor_setup.local_password_forced;
+  view_->Show(can_go_back);
 }
 
 void LocalPasswordSetupScreen::HideImpl() {}
@@ -65,7 +69,8 @@ void LocalPasswordSetupScreen::OnUserAction(const base::Value::List& args) {
     const std::string& password = args[1].GetString();
     auth::mojom::PasswordFactorEditor& password_factor_editor =
         auth::GetPasswordFactorEditor(
-            quick_unlock::QuickUnlockFactory::GetDelegate());
+            quick_unlock::QuickUnlockFactory::GetDelegate(),
+            g_browser_process->local_state());
 
     password_factor_editor.SetLocalPassword(
         GetToken(), password,

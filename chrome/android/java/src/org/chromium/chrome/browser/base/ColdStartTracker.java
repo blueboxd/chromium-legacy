@@ -72,6 +72,19 @@ public class ColdStartTracker implements ActivityStateListener {
         sColdStartTracker = new ColdStartTracker();
     }
 
+    /**
+     * Robolectric JUnit tests create a new application between each test without resetting static
+     * state. This method allows to reset the state and then {@link #initialize()} again.
+     */
+    public static void resetInstanceForTesting() {
+        sColdStartTracker = null;
+    }
+
+    public static void setStartedAsColdForTesting() {
+        if (sColdStartTracker == null) initialize();
+        sColdStartTracker.mStartedAsCold = true;
+    }
+
     @Override
     public void onActivityStateChange(Activity activity, @ActivityState int newState) {
         if (newState == ActivityState.CREATED) {
@@ -124,6 +137,7 @@ public class ColdStartTracker implements ActivityStateListener {
      * Application).
      */
     public static boolean wasColdOnFirstActivityCreationOrNow() {
+        if (BuildConfig.IS_FOR_TEST && sColdStartTracker == null) return false;
         return sColdStartTracker.firstActivityWasColdOrDidNotGetCreatedYet();
     }
 

@@ -526,8 +526,7 @@ export class FileManagerUI {
     this.searchContainer = new SearchContainer(
         volumeManager, queryRequiredElement('#search-wrapper', this.element),
         queryRequiredElement('#search-options-container', this.element),
-        queryRequiredElement('#path-display-container', this.element),
-        /*a11y=*/ this);
+        queryRequiredElement('#path-display-container', this.element));
 
     if (util.isDriveFsBulkPinningEnabled()) {
       /**
@@ -619,7 +618,7 @@ export class FileManagerUI {
    * @suppress {checkTypes} closure can't cast Element to XfTree.
    */
   initDirectoryTree(directoryTree) {
-    if (util.isFilesAppExperimental()) {
+    if (util.isNewDirectoryTreeEnabled()) {
       this.directoryTreeContainer =
           /** @type {!DirectoryTreeContainer} */ (directoryTree);
       this.directoryTree =
@@ -702,7 +701,7 @@ export class FileManagerUI {
         ListContainer.ListType.UNINITIALIZED) {
       this.listContainer.currentView.relayout();
     }
-    if (!util.isFilesAppExperimental() && this.directoryTree) {
+    if (!util.isNewDirectoryTreeEnabled() && this.directoryTree) {
       this.directoryTree.relayout();
     }
   }

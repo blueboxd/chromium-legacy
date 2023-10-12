@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/download/download_bubble_info.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -243,7 +244,13 @@ gfx::RenderText& DownloadToolbarButtonView::GetBadgeText(
   return *render_text;
 }
 
+bool DownloadToolbarButtonView::ShouldShowScanningAnimation() const {
+  return state_ == IconState::kDeepScanning || !progress_info_.progress_certain;
+}
+
 void DownloadToolbarButtonView::PaintButtonContents(gfx::Canvas* canvas) {
+  redraw_progress_soon_ = false;
+
   // Do not show the progress ring when there is no in progress download.
   if (progress_info_.download_count == 0) {
     if (scanning_animation_.is_animating()) {
@@ -268,7 +275,7 @@ void DownloadToolbarButtonView::PaintButtonContents(gfx::Canvas* canvas) {
   int diameter = 2 * ring_radius;
   gfx::RectF ring_bounds(x, y, /*width=*/diameter, /*height=*/diameter);
 
-  if (state_ == IconState::kDeepScanning || !progress_info_.progress_certain) {
+  if (ShouldShowScanningAnimation()) {
     if (!scanning_animation_.is_animating()) {
       scanning_animation_.Reset();
       scanning_animation_.Show();
@@ -323,11 +330,21 @@ void DownloadToolbarButtonView::UpdateDownloadIcon(
   if (updates.new_active) {
     active_ = *updates.new_active;
   }
-  UpdateIcon();
-}
 
-void DownloadToolbarButtonView::UpdateIconProgress(const ProgressInfo& info) {
-  progress_info_ = info;
+  if (updates.new_progress) {
+    const ProgressInfo& new_progress = *updates.new_progress;
+    if (progress_info_ != new_progress) {
+      redraw_progress_soon_ = true;
+    }
+    progress_info_ = new_progress;
+  }
+  // We need to redraw the ring constantly while the scanning animation is
+  // running.
+  if (ShouldShowScanningAnimation()) {
+    redraw_progress_soon_ = true;
+  }
+
+  UpdateIcon();
 }
 
 bool DownloadToolbarButtonView::IsFullscreenWithParentViewHidden() const {
@@ -401,7 +418,7 @@ bool DownloadToolbarButtonView::OpenMostSpecificDialog(
   DownloadBubbleRowView* row = ShowPrimaryDialogRow(content_id);
 
   // Open the more specific security subpage if it has one.
-  if (row && row->ui_info().HasSubpage()) {
+  if (row && row->info().has_subpage()) {
     // TODO(b:279794441): Add warning action event for this warning being shown
     // from a notification.
     OpenSecurityDialog(content_id);
@@ -423,7 +440,9 @@ void DownloadToolbarButtonView::UpdateIcon() {
     return;
 
   // Schedule paint to update the progress ring.
-  SchedulePaint();
+  if (redraw_progress_soon_) {
+    SchedulePaint();
+  }
 
   const gfx::VectorIcon* new_icon;
   SkColor icon_color = GetIconColor();
@@ -601,7 +620,9 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate() {
       &DownloadToolbarButtonView::OnBubbleClosing, weak_factory_.GetWeakPtr()));
   auto bubble_contents = std::make_unique<DownloadBubbleContentsView>(
       browser_->AsWeakPtr(), bubble_controller_->GetWeakPtr(), GetWeakPtr(),
-      is_primary_partial_view_, std::move(primary_view_models),
+      is_primary_partial_view_,
+      std::make_unique<DownloadBubbleContentsViewInfo>(
+          std::move(primary_view_models)),
       bubble_delegate.get());
   bubble_contents_ = bubble_contents.get();
   bubble_delegate->SetContentsView(std::move(bubble_contents));
@@ -770,6 +791,14 @@ SkColor DownloadToolbarButtonView::GetProgressColor(bool is_disabled,
   return GetColorProvider()->GetColor(
       is_active ? kColorDownloadToolbarButtonActive
                 : kColorDownloadToolbarButtonInactive);
+}
+
+void DownloadToolbarButtonView::OnAnyRowRemoved() {
+  if (bubble_contents_->info().row_list_view_info().rows().empty()) {
+    CloseDialog(views::Widget::ClosedReason::kUnspecified);
+  } else {
+    ResizeDialog();
+  }
 }
 
 void DownloadToolbarButtonView::DisableAutoCloseTimerForTesting() {

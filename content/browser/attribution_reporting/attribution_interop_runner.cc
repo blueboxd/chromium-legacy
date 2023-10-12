@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/check.h"
-#include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/overloaded.h"
@@ -33,9 +32,11 @@
 #include "base/types/expected.h"
 #include "base/types/expected_macros.h"
 #include "base/values.h"
+#include "components/aggregation_service/features.h"
 #include "components/attribution_reporting/parsing_utils.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/trigger_registration.h"
+#include "content/browser/aggregation_service/aggregatable_report.h"
 #include "content/browser/aggregation_service/aggregation_service_features.h"
 #include "content/browser/aggregation_service/aggregation_service_impl.h"
 #include "content/browser/aggregation_service/aggregation_service_test_utils.h"
@@ -48,13 +49,12 @@
 #include "content/browser/attribution_reporting/attribution_os_level_manager.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_report_sender.h"
+#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate_impl.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
-#include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/create_report_result.h"
 #include "content/browser/attribution_reporting/send_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
-#include "content/browser/attribution_reporting/stored_source.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/storage_partition.h"
@@ -63,17 +63,25 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
 namespace {
 
-struct AttributionReportJsonConverter {
-  explicit AttributionReportJsonConverter(base::Time time_origin)
-      : time_origin(time_origin) {}
+using ::attribution_reporting::mojom::RegistrationType;
 
-  base::Value::Dict ToJson(const AttributionReport& report,
-                           bool is_debug_report) const {
+base::TimeDelta TimeOffset(base::Time time_origin) {
+  return time_origin - base::Time::UnixEpoch();
+}
+
+class AttributionReportConverter {
+ public:
+  explicit AttributionReportConverter(base::Time time_origin)
+      : time_origin_(time_origin) {}
+
+  AttributionInteropOutput::Report ToOutput(const AttributionReport& report,
+                                            bool is_debug_report) const {
     base::Value::Dict report_body = report.ReportBody();
 
     absl::visit(
@@ -84,26 +92,22 @@ struct AttributionReportJsonConverter {
               // and therefore are sources of nondeterminism in the output.
 
               // Output attribution_destination from the shared_info field.
-              absl::optional<base::Value> shared_info =
-                  report_body.Extract("shared_info");
-              DCHECK(shared_info);
-              std::string* shared_info_str = shared_info->GetIfString();
-              DCHECK(shared_info_str);
-
-              absl::optional<base::Value> shared_info_value =
-                  base::JSONReader::Read(*shared_info_str,
-                                         base::JSON_PARSE_RFC);
-              DCHECK(shared_info_value && shared_info_value->is_dict());
-
-              static constexpr char kKeyAttributionDestination[] =
-                  "attribution_destination";
-              std::string* attribution_destination =
-                  shared_info_value->GetDict().FindString(
-                      kKeyAttributionDestination);
-              DCHECK(attribution_destination);
-              DCHECK(!report_body.contains(kKeyAttributionDestination));
-              report_body.Set(kKeyAttributionDestination,
-                              std::move(*attribution_destination));
+              if (absl::optional<base::Value> shared_info =
+                      report_body.Extract("shared_info");
+                  shared_info.has_value() && shared_info->is_string()) {
+                if (absl::optional<base::Value> shared_info_value =
+                        base::JSONReader::Read(shared_info->GetString(),
+                                               base::JSON_PARSE_RFC)) {
+                  static constexpr char kKeyAttributionDestination[] =
+                      "attribution_destination";
+                  if (absl::optional<base::Value> attribution_destination =
+                          shared_info_value->GetDict().Extract(
+                              kKeyAttributionDestination)) {
+                    report_body.Set(kKeyAttributionDestination,
+                                    std::move(*attribution_destination));
+                  }
+                }
+              }
 
               report_body.Remove("aggregation_service_payloads");
 
@@ -112,91 +116,83 @@ struct AttributionReportJsonConverter {
 
               base::Value::List list;
               for (const auto& contribution : aggregatable_data.contributions) {
-                base::Value::Dict dict;
-                dict.Set("key", attribution_reporting::HexEncodeAggregationKey(
-                                    contribution.key()));
-                dict.Set("value",
-                         base::checked_cast<int>(contribution.value()));
-
-                list.Append(std::move(dict));
+                list.Append(
+                    base::Value::Dict()
+                        .Set("key",
+                             attribution_reporting::HexEncodeAggregationKey(
+                                 contribution.key()))
+                        .Set("value",
+                             base::checked_cast<int>(contribution.value())));
               }
               report_body.Set("histograms", std::move(list));
             },
             [&](const AttributionReport::EventLevelData&) {
-              // Report IDs are a source of nondeterminism, so remove them.
+              // Report IDs are a source of nondeterminism, so remove
+              // them.
               report_body.Remove("report_id");
 
-              bool ok = AdjustScheduledReportTime(report_body,
-                                                  report.initial_report_time());
-              DCHECK(ok);
+              AdjustScheduledReportTime(report_body,
+                                        report.initial_report_time());
             },
             [](const AttributionReport::NullAggregatableData&) {
-              NOTREACHED();
+              NOTREACHED_NORETURN();
             },
         },
         report.data());
 
-    base::Value::Dict value;
-    value.Set("payload", std::move(report_body));
-    value.Set("report_url", report.ReportURL(is_debug_report).spec());
-
-    value.Set("report_time",
-              FormatTime(is_debug_report ? report.attribution_info().time
-                                         : report.report_time()));
-
-    return value;
+    return MakeReport(base::Value(std::move(report_body)),
+                      report.ReportURL(is_debug_report));
   }
 
-  base::Value::Dict ToJson(const AttributionDebugReport& report,
-                           base::Time time) const {
+  AttributionInteropOutput::Report ToOutput(
+      const AttributionDebugReport& report) const {
     base::Value::List report_body = report.ReportBody().Clone();
     for (auto& value : report_body) {
-      base::Value::Dict* dict = value.GetIfDict();
-      DCHECK(dict);
+      if (base::Value::Dict* dict = value.GetIfDict()) {
+        if (base::Value::Dict* body = dict->FindDict("body")) {
+          // Report IDs are a source of nondeterminism, so remove them.
+          body->Remove("report_id");
 
-      base::Value::Dict* body = dict->FindDict("body");
-      DCHECK(body);
-
-      // Report IDs are a source of nondeterminism, so remove them.
-      body->Remove("report_id");
-
-      AdjustScheduledReportTime(*body,
-                                report.GetOriginalReportTimeForTesting());
+          AdjustScheduledReportTime(*body,
+                                    report.GetOriginalReportTimeForTesting());
+        }
+      }
     }
 
-    base::Value::Dict value;
-    value.Set("payload", std::move(report_body));
-    value.Set("report_url", report.ReportUrl().spec());
-    value.Set("report_time", FormatTime(time));
-    return value;
+    return MakeReport(base::Value(std::move(report_body)), report.ReportUrl());
   }
 
-  std::string FormatTime(base::Time time) const {
-    base::TimeDelta time_delta = time - time_origin;
-    return base::NumberToString(time_delta.InMilliseconds());
-  }
-
-  bool AdjustScheduledReportTime(base::Value::Dict& report_body,
+ private:
+  void AdjustScheduledReportTime(base::Value::Dict& report_body,
                                  base::Time original_report_time) const {
     // This field contains a string encoding seconds from the UNIX epoch. It
     // needs to be adjusted relative to the simulator's origin time in order
     // for test output to be consistent.
     std::string* str = report_body.FindString("scheduled_report_time");
-    if (!str) {
-      return false;
+    if (str) {
+      *str = base::NumberToString(
+          (original_report_time - time_origin_).InSeconds());
     }
-
-    *str =
-        base::NumberToString((original_report_time - time_origin).InSeconds());
-    return true;
   }
 
-  const base::Time time_origin;
+  AttributionInteropOutput::Report MakeReport(base::Value payload,
+                                              const GURL& report_url) const {
+    return AttributionInteropOutput::Report(
+        base::Time::Now() - TimeOffset(time_origin_), report_url,
+        std::move(payload));
+  }
+
+  const base::Time time_origin_;
 };
 
 class FakeReportSender : public AttributionReportSender {
  public:
-  FakeReportSender() = default;
+  FakeReportSender(std::vector<AttributionInteropOutput::Report>* reports,
+                   base::Time time_origin)
+      : reports_(
+            raw_ref<std::vector<AttributionInteropOutput::Report>>::from_ptr(
+                reports)),
+        converter_(time_origin) {}
 
   ~FakeReportSender() override = default;
 
@@ -211,6 +207,8 @@ class FakeReportSender : public AttributionReportSender {
   void SendReport(AttributionReport report,
                   bool is_debug_report,
                   ReportSentCallback sent_callback) override {
+    reports_->emplace_back(converter_.ToOutput(report, is_debug_report));
+
     std::move(sent_callback)
         .Run(std::move(report), SendResult(SendResult::Status::kSent,
                                            /*http_response_code=*/200));
@@ -218,8 +216,12 @@ class FakeReportSender : public AttributionReportSender {
 
   void SendReport(AttributionDebugReport report,
                   DebugReportSentCallback done) override {
+    reports_->emplace_back(converter_.ToOutput(report));
     std::move(done).Run(std::move(report), /*status=*/200);
   }
+
+  raw_ref<std::vector<AttributionInteropOutput::Report>> reports_;
+  const AttributionReportConverter converter_;
 };
 
 class FakeCookieChecker : public AttributionCookieChecker {
@@ -252,11 +254,11 @@ class AttributionEventHandler : public AttributionObserver {
  public:
   AttributionEventHandler(std::unique_ptr<AttributionManagerImpl> manager,
                           FakeCookieChecker* fake_cookie_checker,
-                          AttributionReportJsonConverter json_converter)
+                          base::Time time_origin)
       : manager_(std::move(manager)),
         fake_cookie_checker_(
             raw_ref<FakeCookieChecker>::from_ptr(fake_cookie_checker)),
-        json_converter_(json_converter) {
+        time_offset_(TimeOffset(time_origin)) {
     DCHECK(manager_);
 
     manager_->AddObserver(this);
@@ -306,75 +308,15 @@ class AttributionEventHandler : public AttributionObserver {
         GlobalRenderFrameHostId());
   }
 
-  base::Value::Dict TakeOutput() {
-    base::Value::Dict output;
-
-    if (!event_level_reports_.empty()) {
-      output.Set(kEventLevelResultsKey,
-                 std::exchange(event_level_reports_, {}));
-    }
-
-    if (!debug_event_level_reports_.empty()) {
-      output.Set(kDebugEventLevelResultsKey,
-                 std::exchange(debug_event_level_reports_, {}));
-    }
-
-    if (!aggregatable_reports_.empty()) {
-      output.Set(kAggregatableResultsKey,
-                 std::exchange(aggregatable_reports_, {}));
-    }
-
-    if (!debug_aggregatable_reports_.empty()) {
-      output.Set(kDebugAggregatableResultsKey,
-                 std::exchange(debug_aggregatable_reports_, {}));
-    }
-
-    if (!verbose_debug_reports_.empty()) {
-      output.Set(kVerboseDebugReportsKey,
-                 std::exchange(verbose_debug_reports_, {}));
-    }
-
-    if (!unparsable_.empty()) {
-      output.Set(kUnparsableRegistrationsKey, std::exchange(unparsable_, {}));
-    }
-
-    return output;
+  std::vector<AttributionInteropOutput::UnparsableRegistration>
+  TakeUnparsable() && {
+    return std::move(unparsable_);
   }
 
   base::Time max_report_time() const { return max_report_time_; }
 
  private:
   // AttributionObserver:
-
-  void OnReportSent(const AttributionReport& report,
-                    bool is_debug_report,
-                    const SendResult& info) override {
-    DCHECK_EQ(info.status, SendResult::Status::kSent);
-
-    base::Value::List* reports;
-    switch (report.GetReportType()) {
-      case AttributionReport::Type::kEventLevel:
-        reports = is_debug_report ? &debug_event_level_reports_
-                                  : &event_level_reports_;
-        break;
-      case AttributionReport::Type::kAggregatableAttribution:
-        reports = is_debug_report ? &debug_aggregatable_reports_
-                                  : &aggregatable_reports_;
-        break;
-      case AttributionReport::Type::kNullAggregatable:
-        // TODO(linnan): Consider supporting null reports in interop tests.
-        return;
-    }
-
-    reports->Append(json_converter_.ToJson(report, is_debug_report));
-  }
-
-  void OnDebugReportSent(const AttributionDebugReport& report,
-                         int status,
-                         base::Time time) override {
-    DCHECK_EQ(status, 200);
-    verbose_debug_reports_.Append(json_converter_.ToJson(report, time));
-  }
 
   void OnTriggerHandled(const AttributionTrigger&,
                         absl::optional<uint64_t> cleared_debug_key,
@@ -389,32 +331,28 @@ class AttributionEventHandler : public AttributionObserver {
   }
 
   void AddUnparsableRegistration(const AttributionSimulationEvent& event) {
-    base::Value::Dict dict;
-    dict.Set("time", json_converter_.FormatTime(event.time));
-    dict.Set("type", event.source_type.has_value() ? "source" : "trigger");
-    unparsable_.Append(std::move(dict));
+    auto& registration = unparsable_.emplace_back();
+    registration.time = event.time - time_offset_;
+    registration.type = event.source_type.has_value()
+                            ? RegistrationType::kSource
+                            : RegistrationType::kTrigger;
   }
 
   const std::unique_ptr<AttributionManagerImpl> manager_;
   const raw_ref<FakeCookieChecker> fake_cookie_checker_;
 
-  const AttributionReportJsonConverter json_converter_;
+  const base::TimeDelta time_offset_;
 
   base::Time max_report_time_;
 
-  base::Value::List event_level_reports_;
-  base::Value::List debug_event_level_reports_;
-  base::Value::List aggregatable_reports_;
-  base::Value::List debug_aggregatable_reports_;
-  base::Value::List verbose_debug_reports_;
-  base::Value::List unparsable_;
+  std::vector<AttributionInteropOutput::UnparsableRegistration> unparsable_;
 };
 
 }  // namespace
 
-base::expected<base::Value::Dict, std::string> RunAttributionInteropSimulation(
-    base::Value::Dict input,
-    const AttributionConfig& config) {
+base::expected<AttributionInteropOutput, std::string>
+RunAttributionInteropSimulation(base::Value::Dict input,
+                                const AttributionConfig& config) {
   // Prerequisites for using an environment with mock time.
   content::BrowserTaskEnvironment task_environment(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
@@ -425,7 +363,7 @@ base::expected<base::Value::Dict, std::string> RunAttributionInteropSimulation(
                    ParseAttributionInteropInput(std::move(input), time_origin));
 
   if (events.empty()) {
-    return base::Value::Dict();
+    return AttributionInteropOutput();
   }
 
   DCHECK(base::ranges::is_sorted(events));
@@ -444,6 +382,8 @@ base::expected<base::Value::Dict, std::string> RunAttributionInteropSimulation(
   auto fake_cookie_checker = std::make_unique<FakeCookieChecker>();
   auto* raw_fake_cookie_checker = fake_cookie_checker.get();
 
+  AttributionInteropOutput output;
+
   auto manager = AttributionManagerImpl::CreateForTesting(
       // Avoid creating an on-disk sqlite DB.
       /*user_data_directory=*/base::FilePath(),
@@ -451,7 +391,8 @@ base::expected<base::Value::Dict, std::string> RunAttributionInteropSimulation(
       /*special_storage_policy=*/nullptr,
       AttributionStorageDelegateImpl::CreateForTesting(
           AttributionNoiseMode::kNone, AttributionDelayMode::kDefault, config),
-      std::move(fake_cookie_checker), std::make_unique<FakeReportSender>(),
+      std::move(fake_cookie_checker),
+      std::make_unique<FakeReportSender>(&output.reports, time_origin),
       std::make_unique<NoOpAttributionOsLevelManager>(), storage_partition,
       base::ThreadPool::CreateUpdateableSequencedTaskRunner(
           {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
@@ -459,12 +400,14 @@ base::expected<base::Value::Dict, std::string> RunAttributionInteropSimulation(
            base::ThreadPolicy::MUST_USE_FOREGROUND}));
 
   AttributionEventHandler handler(std::move(manager), raw_fake_cookie_checker,
-                                  AttributionReportJsonConverter(time_origin));
+                                  time_origin);
 
   static_cast<AggregationServiceImpl*>(
       storage_partition->GetAggregationService())
       ->SetPublicKeysForTesting(
-          GURL(kPrivacySandboxAggregationServiceTrustedServerUrlAwsParam.Get()),
+          GetAggregationServiceProcessingUrl(url::Origin::Create(
+              GURL(::aggregation_service::kAggregationServiceCoordinatorAwsCloud
+                       .Get()))),
           PublicKeyset({aggregation_service::GenerateKey().public_key},
                        /*fetch_time=*/base::Time::Now(),
                        /*expiry_time=*/base::Time::Max()));
@@ -486,7 +429,8 @@ base::expected<base::Value::Dict, std::string> RunAttributionInteropSimulation(
     task_environment.FastForwardBy(max_report_time - now);
   }
 
-  return handler.TakeOutput();
+  output.unparsable_registrations = std::move(handler).TakeUnparsable();
+  return output;
 }
 
 }  // namespace content

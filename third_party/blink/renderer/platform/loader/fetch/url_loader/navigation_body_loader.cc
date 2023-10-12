@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/navigation_body_loader.h"
 
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
@@ -23,7 +24,6 @@
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-blink.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
-#include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
@@ -319,7 +319,7 @@ class NavigationBodyLoader::MainThreadBodyReader : public BodyReader {
   }
 
  private:
-  NavigationBodyLoader* loader_;
+  raw_ptr<NavigationBodyLoader, DanglingUntriaged> loader_;
 };
 
 NavigationBodyLoader::NavigationBodyLoader(

@@ -225,6 +225,14 @@ class RequestHandler:
                 ),
             ),
             _Route(
+                "/chrome_stub/resources/js/assert.js",
+                functools.partial(
+                    self._handle_static_file,
+                    root=self._gen_dir,
+                    path="ui/webui/resources/tsc/js/assert.js",
+                ),
+            ),
+            _Route(
                 "/chrome_stub/resources/js/assert_ts.js",
                 functools.partial(
                     self._handle_static_file,
@@ -341,9 +349,17 @@ class DevServerHandler(http.server.SimpleHTTPRequestHandler):
         routes = self._handler.routes
         for route in routes:
             if _route_match(route):
-                return self._send_200(path, route.handler(path))
+                try:
+                    content = route.handler(path)
+                except Exception as e:
+                    logging.debug("Error while handling %r: %r", path, e)
+                    self.send_response(404)
+                    self.end_headers()
+                    return
+                return self._send_200(path, content)
 
         self.send_response(404)
+        self.end_headers()
 
 
 _DEV_OUTPUT_TEMP_DIR = "/tmp/cca-dev-out"

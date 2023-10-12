@@ -1078,8 +1078,8 @@ void ChromeShelfController::OnPromiseAppUpdate(
   if (update.StatusChanged()) {
     item.app_status =
         ShelfControllerHelper::ConvertPromiseStatusToAppStatus(update.Status());
-    item.title = base::UTF8ToUTF16(
-        ShelfControllerHelper::GetLabelForPromiseStatus(update.Status()));
+    item.title =
+        ShelfControllerHelper::GetLabelForPromiseStatus(update.Status());
   }
   model_->Set(index, item);
 }
@@ -1346,12 +1346,16 @@ void ChromeShelfController::UpdatePinnedAppsFromSync() {
 
     // Checks whether the sync item matches with a current promise app that can
     // be shown in the shelf.
-    bool is_ready_promise_app =
+    bool is_valid_promise_app =
         IsPromiseAppReadyToShowInShelf(profile(), promise_package_id);
 
-    // Do not show apps in the shelf if they are explicitly forbidden (and
-    // provided that they are not promise apps).
-    if (IsAppHiddenFromShelf(profile(), app_id) && !is_ready_promise_app) {
+    // Checks whether the sync item matches an installed app that can be shown
+    // in the shelf.
+    bool is_valid_app =
+        shelf_controller_helper_->IsValidIDForCurrentUser(app_id) &&
+        !IsAppHiddenFromShelf(profile(), app_id);
+
+    if (!is_valid_app && !is_valid_promise_app) {
       continue;
     }
 
@@ -1362,12 +1366,15 @@ void ChromeShelfController::UpdatePinnedAppsFromSync() {
     int app_index = index;
     for (; app_index < model_->item_count(); ++app_index) {
       const ash::ShelfItem& item = model_->items()[app_index];
-      if (item.id == pref_shelf_id || item.id.app_id == promise_package_id) {
+      if (is_valid_app && item.id == pref_shelf_id) {
+        break;
+      }
+      if (is_valid_promise_app && item.id.app_id == promise_package_id) {
         break;
       }
     }
 
-    std::string item_id = is_ready_promise_app ? promise_package_id : app_id;
+    std::string item_id = is_valid_promise_app ? promise_package_id : app_id;
 
     const bool item_pinned = EnsureAppPinnedInModelAtIndex(
         item_id,
@@ -1474,7 +1481,7 @@ ash::ShelfItemStatus ChromeShelfController::GetAppState(
     const std::string& app_id) {
   for (auto [web_contents, to_app_id] : web_contents_to_app_id_) {
     if (app_id == to_app_id) {
-      Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+      Browser* browser = chrome::FindBrowserWithTab(web_contents);
       // Usually there should never be an item in our |web_contents_to_app_id_|
       // list which got deleted already. However - in some situations e.g.
       // Browser::SwapTabContent there is temporarily no associated browser.
@@ -1516,6 +1523,12 @@ ash::ShelfID ChromeShelfController::InsertAppItem(
         latest_active_profile_, item_delegate->shelf_id().app_id);
     item.is_promise_app = ShelfControllerHelper::IsPromiseApp(
         latest_active_profile_, item_delegate->shelf_id().app_id);
+
+    // TODO(b/302408509): Temporary fix for ShelfViews crash that happens only
+    // when a ShelfItem created by sync has kPending/ kInstalling app states.
+    if (item.is_promise_app) {
+      item.app_status = ash::AppStatus::kReady;
+    }
   }
   model_->AddAt(index, item, std::move(item_delegate));
 

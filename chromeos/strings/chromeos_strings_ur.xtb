@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">آپ صرف 5 شارٹ کٹس کو حسب ضرورت بنا سکتے ہیں۔ ایک نیا شارکٹ شامل کرنے کے لیے موجودہ کسی شارکٹ کو حذف کریں۔</translation>
 <translation id="1164939766849482256">ڈاؤن ٹو ڈارک اسکرین سیور</translation>
 <translation id="1167755866710282443">کلیدوں کو حسب ضرورت بنانے کے لیے مینیو کھولیں۔ منتقل کرنے کے لیے مینیو کو گھسیٹیں۔</translation>
+<translation id="1174073918202301297">شارٹ کٹ شامل ہو گیا</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> اس <ph name="DEVICE_TYPE" /> کا نظم کرتا ہے۔</translation>
 <translation id="1175951029573070619">اوسط (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">ہٹائیں</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">وال پیپر کی تصویر کو روزانہ تبدیل کریں</translation>
 <translation id="1644574205037202324">سرگزشت</translation>
 <translation id="1651925268237749928">آپ نے ایک اشتراک کردہ البم منتخب کیا ہے۔ دوسرے لوگ تصاویر شامل یا تبدیل کر سکتے ہیں۔ آپ کا وال پیپر ایسی تصاویر استعمال کر سکتا ہے جو فی الحال اس البم میں موجود نہیں ہیں۔</translation>
+<translation id="1661865805917886535">‏اکاؤنٹ اور سسٹم کی کچھ معلومات Google کو بھیجی جا سکتی ہے۔ ہم اس معلومات کو تکنیکی مسائل کو حل کرنے اور اپنی سروسز کو بہتر بنانے کے لیے استعمال کرتے ہیں، جو ہماری رازداری کی پالیسی (<ph name="PRIVACYPOLICYURL" />) اور سروس کی شرائط (<ph name="TERMSOFSERVICEURL" />) کے ساتھ مشروط ہے۔ مواد کی تبدیلیوں کی درخواست دینے کی خاطر قانونی امداد (<ph name="LEGALHELPPAGEURL" />) پر جائیں۔</translation>
 <translation id="1662989795263954667">رک گیا - سیاہی ختم ہو گئی</translation>
 <translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> کا پیش منظر دیکھیں</translation>
 <translation id="1668469839109562275">‏پہلے سے موجود VPN</translation>
@@ -117,6 +119,7 @@
 <translation id="1768959921651994223">تصدیق کی قسم</translation>
 <translation id="1776228893584526149">وال پیپر ٹون</translation>
 <translation id="1782199038061388045">ترجمہ</translation>
+<translation id="1788485524395674731">یہ ایپ آپ کے منتظم کے زیر انتظام ہے</translation>
 <translation id="1792647875738159689">اسکین کا عمل منسوخ کیا جا رہا ہے</translation>
 <translation id="1801418420130173017">گہری تھیم غیر فعال کریں</translation>
 <translation id="1807246157184219062">روشنی</translation>
@@ -131,7 +134,6 @@
 <translation id="1871569928317311284">گہری تھیم آف کریں</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">تاریک وضع آف کریں</translation>
-<translation id="1881188606372070653">‏قانونی وجوہات کی بنا پر مواد میں تبدیلی کی درخواست کرنے کے لیے <ph name="BEGIN_LINK1" />قانونی مدد کے صفحہ<ph name="END_LINK1" /> پر جائیں۔ اکاؤنٹ اور سسٹم کی کچھ معلومات Google کو بھیجی جا سکتی ہے۔ ہم اپنی <ph name="BEGIN_LINK2" />رازداری کی پالیسی<ph name="END_LINK2" /> اور <ph name="BEGIN_LINK3" />سروس کی شرائط<ph name="END_LINK3" /> کے ساتھ مشروط، تکنیکی مسائل حل کرنے اور اپنی سروسز کو بہتر بنانے کیلئے آپ کی فراہم کردہ معلومات کا استعمال کریں گے۔</translation>
 <translation id="1885577615937958993">فاسٹ فارورڈ میڈیا</translation>
 <translation id="1887850431809612466">ہارڈ ویئر سے متعلق نظر ثانی</translation>
 <translation id="1897672602657312171">تلاش کی کلید کے بغیر شارٹ کٹ کچھ ایپ کے شارٹ کٹ سے متصادم ہو سکتا ہے۔ اس شارٹ کٹ کا استعمال جاری رکھنے کے لیے اسے دوبارہ دبائیں، یا تلاش کی کلید کا استعمال کرتے ہوئے نیا شارٹ کٹ دبائیں۔</translation>
@@ -212,6 +214,7 @@
 <translation id="2505327257735685095">وال پیپر کی موجودہ تصویر کو ریفریش کریں</translation>
 <translation id="2512979179176933762">ونڈوز دکھائیں</translation>
 <translation id="2513396635448525189">لاگ ان کی تصویر</translation>
+<translation id="2515109918609218604">شارٹ کٹ دستیاب نہیں ہے۔ فنکشن اور تلاش کی کلیدیں استعمال کیے بغیر نیا شارٹ کٹ دبائیں۔</translation>
 <translation id="2517472476991765520">اسکین کریں</translation>
 <translation id="2521835766824839541">پچھلا ٹریک</translation>
 <translation id="2526590354069164005">ڈیسک ٹاپ</translation>
@@ -265,6 +268,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">آلہ منسلک ہے۔</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{صفحہ ہٹائیں؟}=1{{PAGE_NUMBER} صفحہ ہٹائیں؟}other{{PAGE_NUMBER} صفحہ ہٹائیں؟}}</translation>
+<translation id="3146655726035122603"><ph name="PRODUCT_NAME" /> کیلئے مخصوص</translation>
 <translation id="315116470104423982">موبائل ڈیٹا</translation>
 <translation id="3156846309055100599">صفحہ <ph name="PAGE_NUMBER" /> کو اسکین کیا جا رہا ہے...</translation>
 <translation id="315738237743207937">کیپٹو پورٹل کا پتا چلا</translation>
@@ -622,6 +626,7 @@
 <translation id="584953448295717128">‏APN کا پتا خودکار طور پر چل جاتا ہے۔</translation>
 <translation id="5849570051105887917">گھر فراہم کرنے والے کا کوڈ</translation>
 <translation id="5859603669299126575">آرٹ گیلری البم</translation>
+<translation id="5859969039821714932">شارٹ کٹ دستیاب نہیں ہے۔ <ph name="KEY" /> کے بغیر ایک نیا شارٹ کٹ دبائیں۔</translation>
 <translation id="5860033963881614850">آف</translation>
 <translation id="5860491529813859533">آن کریں</translation>
 <translation id="5876385649737594562">اختیارات کو منتخب کرنے کے لیے آن کریں</translation>
@@ -687,6 +692,7 @@
 <translation id="6318437367327684789">ہمیشہ کے لیے</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> پر فرم ویئر اپ ڈیٹ کریں</translation>
 <translation id="6321407676395378991">اسکرین سیور آن کریں</translation>
+<translation id="6324916366299863871">شارٹ کٹ میں ترمیم کریں</translation>
 <translation id="6325525973963619867">ناکام</translation>
 <translation id="6331191339300272798">خودکار گہری تھیم</translation>
 <translation id="6340526405444716530">ذاتی نوعیت سازی</translation>
@@ -826,6 +832,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">پہلے سے شامل ٹچ پیڈ</translation>
 <translation id="7397270852490618635">ہلکی تھیم آف کریں</translation>
+<translation id="7401543881546089382">شارٹ کٹ حذف کریں</translation>
 <translation id="741244894080940828">تبدیلی</translation>
 <translation id="7415801143053185905">‏بہت زیادہ HTTPS تاخیر</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{آپ کے منتظم نے <ph name="APP_NAME_1" /> کو اس طور پر سیٹ کیا ہے کہ آپ جب بھی لاگ ان کریں یہ خودکار طور پر شروع ہو جائے۔}=2{آپ کے منتظم نے <ph name="APP_NAME_1" /> اور <ph name="APP_NAME_2" /> کو اس طور پر سیٹ کیا ہے کہ آپ جب بھی لاگ ان کریں یہ خودکار طور پر شروع ہو جائے۔}=3{آپ کے منتظم نے <ph name="APP_NAME_1" />، <ph name="APP_NAME_2" /> اور <ph name="APP_NAME_3" /> کو اس طور پر سیٹ کیا ہے کہ آپ جب بھی لاگ ان کریں یہ خودکار طور پر شروع ہو جائے۔}other{آپ کے منتظم نے <ph name="APP_NAME_1" />، <ph name="APP_NAME_2" /> اور # دیگر ایپس کو اس طور پر سیٹ کیا ہے کہ آپ جب بھی لاگ ان کریں یہ خودکار طور پر شروع ہو جائے۔}}</translation>
@@ -864,6 +871,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">کی بورڈ کی لائٹ</translation>
+<translation id="7730077286107534951">‏اکاؤنٹ اور سسٹم کی کچھ معلومات Google کو بھیجی جا سکتی ہے۔ ہم اس معلومات کو اپنی <ph name="BEGIN_LINK2" />رازداری کی پالیسی<ph name="END_LINK2" /> اور <ph name="BEGIN_LINK3" />سروس کی شرائط<ph name="END_LINK3" /> کے ساتھ مشروط، تکنیکی مسائل حل کرنے اور اپنی سروسز کو بہتر بنانے میں مدد کے لیے استعمال کرتے ہیں۔ مواد میں تبدیلی کی درخواست کرنے کے لیے، <ph name="BEGIN_LINK1" />قانونی مدد<ph name="END_LINK1" /> پر جائیں۔</translation>
 <translation id="773153675489693198">دورانیے کی تعداد</translation>
 <translation id="7747039790905080783">پہلے سے اشتراک کردہ کلید</translation>
 <translation id="7752963721013053477">ڈان ٹو ڈارک - خصوصی</translation>
@@ -900,6 +908,7 @@
 <translation id="7978412674231730200">نجی کلید</translation>
 <translation id="7994702968232966508">‏EAP طریقہ</translation>
 <translation id="8004582292198964060">براؤزر</translation>
+<translation id="8017679124341497925">شارٹ کٹ میں ترمیم کی گئی</translation>
 <translation id="802154636333426148">ڈاؤن لوڈ ناکام ہوگیا</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">خودکار رنگ موڈ کو فعال کریں</translation>

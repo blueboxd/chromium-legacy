@@ -29,6 +29,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
@@ -61,8 +62,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge {
 
   // virtual for unit testing
   virtual void WillOverwriteCanvas();
-  virtual void DrawFullImage(const cc::PaintImage&);
-  virtual void DidRestoreCanvasMatrixClipStack(cc::PaintCanvas*) {}
+
+  void DrawFullImage(const cc::PaintImage&);
 
   // This may recreate CanvasResourceProvider
   cc::PaintCanvas* GetPaintCanvas();
@@ -113,12 +114,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge {
   CanvasResourceProvider* GetOrCreateResourceProvider();
   void FlushRecording(FlushReason);
 
-  cc::PaintRecord* getLastRecord() {
-    return last_record_tainted_by_write_pixels_
-               ? nullptr
-               : base::OptionalToPtr(last_recording_);
-  }
-
   static bool IsHibernationEnabled();
 
   CanvasHibernationHandler& GetHibernationHandlerForTesting() {
@@ -146,9 +141,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge {
   bool lose_context_in_background_ = false;
   bool lose_context_in_background_scheduled_ = false;
 
-  // WritePixels content is not saved in recording. If a call was made to
-  // WritePixels, the recording is now missing that information.
-  bool last_record_tainted_by_write_pixels_ = false;
 
   enum SnapshotState {
     kInitialSnapshotState,
@@ -156,9 +148,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge {
   };
   mutable SnapshotState snapshot_state_;
 
-  CanvasResourceHost* resource_host_;
-
-  absl::optional<cc::PaintRecord> last_recording_;
+  raw_ptr<CanvasResourceHost, ExperimentalRenderer> resource_host_;
+  viz::TransferableResource previous_frame_resource_;
 
   base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_{this};
 };

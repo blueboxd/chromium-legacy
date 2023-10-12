@@ -79,6 +79,7 @@ static_library("browser") {
     "autofill_browser_util.h",
     "autofill_client.cc",
     "autofill_client.h",
+    "autofill_compose_delegate.h",
     "autofill_credit_card_policy_handler.cc",
     "autofill_credit_card_policy_handler.h",
     "autofill_data_util.cc",
@@ -299,6 +300,8 @@ static_library("browser") {
     "metrics/form_events/form_event_logger_base.cc",
     "metrics/form_events/form_event_logger_base.h",
     "metrics/form_events/form_events.h",
+    "metrics/granular_filling_metrics.cc",
+    "metrics/granular_filling_metrics.h",
     "metrics/log_event.cc",
     "metrics/log_event.h",
     "metrics/payments/better_auth_metrics.cc",
@@ -360,6 +363,8 @@ static_library("browser") {
     "payments/credit_card_cvc_authenticator.h",
     "payments/credit_card_otp_authenticator.cc",
     "payments/credit_card_otp_authenticator.h",
+    "payments/credit_card_risk_based_authenticator.cc",
+    "payments/credit_card_risk_based_authenticator.h",
     "payments/credit_card_save_manager.cc",
     "payments/credit_card_save_manager.h",
     "payments/full_card_request.cc",
@@ -487,8 +492,6 @@ static_library("browser") {
     "ui/region_combobox_model.h",
     "ui/suggestion.cc",
     "ui/suggestion.h",
-    "ui/suggestion_selection.cc",
-    "ui/suggestion_selection.h",
     "ui/touch_to_fill_delegate.h",
     "validation.cc",
     "validation.h",
@@ -603,7 +606,10 @@ static_library("browser") {
 
   defines = [ "CHROME_VERSION_MAJOR=" + chrome_version_major ]
 
-  configs += [ "//build/config:precompiled_headers" ]
+  configs += [
+    "//build/config:precompiled_headers",
+    "//build/config/compiler:wexit_time_destructors",
+  ]
 
   public_deps = [
     ":legal_message_line",
@@ -643,6 +649,7 @@ static_library("browser") {
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
     "//components/commerce/core:commerce_types",
+    "//components/commerce/core:feature_list",
     "//components/commerce/core:utils",
     "//components/device_reauth",
     "//components/feature_engagement",
@@ -734,9 +741,10 @@ static_library("legal_message_line") {
   deps = [
     "//base",
     "//base:i18n",
-    "//ui/gfx/range:range",
-    "//url:url",
+    "//ui/gfx/range",
+    "//url",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("test_support") {
@@ -773,6 +781,8 @@ static_library("test_support") {
     "metrics/ukm_metrics_test_utils.h",
     "mock_autocomplete_history_manager.cc",
     "mock_autocomplete_history_manager.h",
+    "mock_autofill_compose_delegate.cc",
+    "mock_autofill_compose_delegate.h",
     "mock_autofill_manager_observer.cc",
     "mock_autofill_manager_observer.h",
     "mock_autofill_optimization_guide.cc",
@@ -787,6 +797,8 @@ static_library("test_support") {
     "payments/test/mock_mandatory_reauth_manager.h",
     "payments/test/test_credit_card_otp_authenticator.cc",
     "payments/test/test_credit_card_otp_authenticator.h",
+    "payments/test/test_credit_card_risk_based_authenticator.cc",
+    "payments/test/test_credit_card_risk_based_authenticator.h",
     "payments/test_authentication_requester.cc",
     "payments/test_authentication_requester.h",
     "payments/test_credit_card_save_manager.cc",
@@ -858,6 +870,7 @@ static_library("test_support") {
     "//components/device_reauth:test_support",
     "//components/feature_engagement",
     "//components/leveldb_proto",
+    "//components/optimization_guide:machine_learning_tflite_buildflags",
     "//components/os_crypt/sync",
     "//components/os_crypt/sync:test_support",
     "//components/plus_addresses",
@@ -1056,6 +1069,7 @@ source_set("unit_tests") {
     "payments/credit_card_access_manager_unittest.cc",
     "payments/credit_card_cvc_authenticator_unittest.cc",
     "payments/credit_card_otp_authenticator_unittest.cc",
+    "payments/credit_card_risk_based_authenticator_unittest.cc",
     "payments/credit_card_save_manager_unittest.cc",
     "payments/full_card_request_unittest.cc",
     "payments/iban_save_manager_unittest.cc",
@@ -1087,7 +1101,6 @@ source_set("unit_tests") {
     "ui/payments/bubble_show_options_unittest.cc",
     "ui/payments/card_unmask_prompt_controller_impl_unittest.cc",
     "ui/region_combobox_model_unittest.cc",
-    "ui/suggestion_selection_unittest.cc",
     "validation_unittest.cc",
     "webdata/autocomplete_sync_bridge_unittest.cc",
     "webdata/autofill_profile_sync_bridge_unittest.cc",

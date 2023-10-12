@@ -26,12 +26,18 @@ class LorgnetteScannerManager : public KeyedService {
  public:
   using GetScannerNamesCallback =
       base::OnceCallback<void(std::vector<std::string> scanner_names)>;
+  using GetScannerInfoListCallback = base::OnceCallback<void(
+      const absl::optional<lorgnette::ListScannersResponse>& response)>;
   using GetScannerCapabilitiesCallback = base::OnceCallback<void(
       const absl::optional<lorgnette::ScannerCapabilities>& capabilities)>;
   using OpenScannerCallback = base::OnceCallback<void(
       const absl::optional<lorgnette::OpenScannerResponse>& response)>;
   using CloseScannerCallback = base::OnceCallback<void(
       const absl::optional<lorgnette::CloseScannerResponse>& response)>;
+  using StartPreparedScanCallback = base::OnceCallback<void(
+      const absl::optional<lorgnette::StartPreparedScanResponse>& response)>;
+  using ReadScanDataCallback = base::OnceCallback<void(
+      const absl::optional<lorgnette::ReadScanDataResponse>& response)>;
   using ProgressCallback =
       base::RepeatingCallback<void(uint32_t progress_percent,
                                    uint32_t page_number)>;
@@ -49,6 +55,10 @@ class LorgnetteScannerManager : public KeyedService {
   // Returns the names of all available, deduplicated scanners.
   virtual void GetScannerNames(GetScannerNamesCallback callback) = 0;
 
+  // Returns ScannerInfo objects for all of the available lorgnette scanners and
+  // zeroconf scanners.
+  virtual void GetScannerInfoList(GetScannerInfoListCallback callback) = 0;
+
   // Returns the capabilities of the scanner specified by |scanner_name|. If
   // |scanner_name| does not correspond to a known scanner, absl::nullopt is
   // returned in the callback.
@@ -65,6 +75,18 @@ class LorgnetteScannerManager : public KeyedService {
   // absl::nullopt is returned in the callback.
   virtual void CloseScanner(const lorgnette::CloseScannerRequest& request,
                             CloseScannerCallback callback) = 0;
+
+  // Starts a scan using information in |request| and returns the result using
+  // the provided |callback|.  If an error occurs, absl::nullopt is returned in
+  // the callback.
+  virtual void StartPreparedScan(
+      const lorgnette::StartPreparedScanRequest& request,
+      StartPreparedScanCallback callback) = 0;
+
+  // Reads the scan data described by |request|.  If an error occurs,
+  // absl::nullopt is returned in the callback.
+  virtual void ReadScanData(const lorgnette::ReadScanDataRequest& request,
+                            ReadScanDataCallback callback) = 0;
 
   // Returns whether or not an ADF scanner that flips alternate pages was
   // selected based on |scanner_name| and |source_name|.

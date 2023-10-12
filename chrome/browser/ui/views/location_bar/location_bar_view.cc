@@ -21,7 +21,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/apps/intent_helper/intent_picker_features.h"
+#include "chrome/browser/apps/link_capturing/link_capturing_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -991,55 +991,8 @@ SkColor LocationBarView::GetIconLabelBubbleBackgroundColor() const {
   return GetColorProvider()->GetColor(kColorLocationBarBackground);
 }
 
-bool LocationBarView::ShouldHideContentSettingImage(ImageType type) {
-  // Content setting icons are hidden at the same time as page action icons.
-  if (ShouldHidePageActionIcons()) {
-    return true;
-  }
-
-  auto* web_contents = GetWebContents();
-  if (web_contents) {
-    auto* hcsm = HostContentSettingsMapFactory::GetForProfile(profile_);
-    switch (type) {
-      case ImageType::COOKIES:
-      case ImageType::IMAGES:
-      case ImageType::JAVASCRIPT:
-      case ImageType::POPUPS:
-        break;
-      case ImageType::GEOLOCATION: {
-        ContentSetting value =
-            hcsm->GetContentSetting(web_contents->GetLastCommittedURL(), GURL(),
-                                    ContentSettingsType::GEOLOCATION);
-        return value == CONTENT_SETTING_ASK;
-      }
-      case ImageType::MIXEDSCRIPT:
-      case ImageType::PROTOCOL_HANDLERS:
-        break;
-      case ImageType::MEDIASTREAM: {
-        ContentSetting mic_value =
-            hcsm->GetContentSetting(web_contents->GetLastCommittedURL(), GURL(),
-                                    ContentSettingsType::MEDIASTREAM_MIC);
-
-        ContentSetting camera_value =
-            hcsm->GetContentSetting(web_contents->GetLastCommittedURL(), GURL(),
-                                    ContentSettingsType::MEDIASTREAM_CAMERA);
-        return mic_value == CONTENT_SETTING_ASK &&
-               camera_value == CONTENT_SETTING_ASK;
-      }
-      case ImageType::ADS:
-      case ImageType::AUTOMATIC_DOWNLOADS:
-      case ImageType::MIDI_SYSEX:
-      case ImageType::SOUND:
-      case ImageType::FRAMEBUST:
-      case ImageType::SENSORS:
-      case ImageType::NOTIFICATIONS_QUIET_PROMPT:
-      case ImageType::CLIPBOARD_READ_WRITE:
-      case ImageType::STORAGE_ACCESS:
-      case ImageType::NUM_IMAGE_TYPES:
-        break;
-    }
-  }
-  return false;
+bool LocationBarView::ShouldHideContentSettingImage() {
+  return ShouldHidePageActionIcons();
 }
 
 content::WebContents* LocationBarView::GetContentSettingWebContents() {
@@ -1651,6 +1604,8 @@ ui::ImageModel LocationBarView::GetLocationIcon(
                    View::GetColorProvider()->GetColor(kColorOmniboxResultsIcon),
                    View::GetColorProvider()->GetColor(
                        kColorOmniboxResultsStarterPackIcon),
+                   View::GetColorProvider()->GetColor(
+                       kColorOmniboxAnswerIconGM3Foreground),
                    std::move(on_icon_fetched), dark_mode)
              : ui::ImageModel();
 }

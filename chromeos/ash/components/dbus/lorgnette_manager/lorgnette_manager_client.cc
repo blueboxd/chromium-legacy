@@ -131,6 +131,25 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void StartPreparedScan(
+      const lorgnette::StartPreparedScanRequest& request,
+      chromeos::DBusMethodCallback<lorgnette::StartPreparedScanResponse>
+          callback) override {
+    dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
+                                 lorgnette::kStartPreparedScanMethod);
+    dbus::MessageWriter writer(&method_call);
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode StartPreparedScanRequest protobuf";
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt));
+      return;
+    }
+    lorgnette_daemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&LorgnetteManagerClientImpl::OnStartPreparedScanResponse,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void StartScan(
       const std::string& device_name,
       const lorgnette::ScanSettings& settings,
@@ -162,6 +181,25 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&LorgnetteManagerClientImpl::OnStartScanResponse,
                        weak_ptr_factory_.GetWeakPtr(), std::move(state)));
+  }
+
+  void ReadScanData(
+      const lorgnette::ReadScanDataRequest& request,
+      chromeos::DBusMethodCallback<lorgnette::ReadScanDataResponse> callback)
+      override {
+    dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
+                                 lorgnette::kReadScanDataMethod);
+    dbus::MessageWriter writer(&method_call);
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode ReadScanDataRequest protobuf";
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt));
+      return;
+    }
+    lorgnette_daemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&LorgnetteManagerClientImpl::OnReadScanDataResponse,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void CancelScan(chromeos::VoidDBusMethodCallback cancel_callback) override {
@@ -510,6 +548,28 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     std::move(callback).Run(response_proto);
   }
 
+  // Handles the response received after calling StartPreparedScan.
+  void OnStartPreparedScanResponse(
+      chromeos::DBusMethodCallback<lorgnette::StartPreparedScanResponse>
+          callback,
+      dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to obtain StartPreparedScanResponse";
+      std::move(callback).Run(absl::nullopt);
+      return;
+    }
+
+    lorgnette::StartPreparedScanResponse response_proto;
+    dbus::MessageReader reader(response);
+    if (!reader.PopArrayOfBytesAsProto(&response_proto)) {
+      LOG(ERROR) << "Failed to decode StartPreparedScanResponse proto";
+      std::move(callback).Run(absl::nullopt);
+      return;
+    }
+
+    std::move(callback).Run(response_proto);
+  }
+
   // Called when scan data read is completed.
   void OnScanDataCompleted(const std::string& uuid,
                            uint32_t page_number,
@@ -569,6 +629,27 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
 
     scan_job_state_[response_proto.scan_uuid()] = std::move(state);
     GetNextImage(response_proto.scan_uuid());
+  }
+
+  // Handles the response received after calling ReadScanData().
+  void OnReadScanDataResponse(
+      chromeos::DBusMethodCallback<lorgnette::ReadScanDataResponse> callback,
+      dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to obtain ReadScanDataResponse";
+      std::move(callback).Run(absl::nullopt);
+      return;
+    }
+
+    lorgnette::ReadScanDataResponse response_proto;
+    dbus::MessageReader reader(response);
+    if (!reader.PopArrayOfBytesAsProto(&response_proto)) {
+      LOG(ERROR) << "Failed to decode ReadScanDataResponse proto";
+      std::move(callback).Run(absl::nullopt);
+      return;
+    }
+
+    std::move(callback).Run(response_proto);
   }
 
   void OnCancelScanResponse(const std::string& scan_uuid,
@@ -809,6 +890,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
         *session.response.add_scanners() = std::move(signal.scanner());
         break;
       case lorgnette::ScannerListChangedSignal::SCANNER_REMOVED:
+        // TODO(b/303855027): Once this is implemented in the backend, this
+        // needs to be updated to actually remove devices.
         break;
       case lorgnette::ScannerListChangedSignal::ENUM_COMPLETE: {
         lorgnette::StopScannerDiscoveryRequest request;

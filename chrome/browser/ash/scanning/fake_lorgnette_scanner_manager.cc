@@ -74,6 +74,12 @@ void FakeLorgnetteScannerManager::GetScannerNames(
       FROM_HERE, base::BindOnce(std::move(callback), scanner_names_));
 }
 
+void FakeLorgnetteScannerManager::GetScannerInfoList(
+    GetScannerInfoListCallback callback) {
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), list_scanners_response_));
+}
+
 void FakeLorgnetteScannerManager::GetScannerCapabilities(
     const std::string& scanner_name,
     GetScannerCapabilitiesCallback callback) {
@@ -93,6 +99,21 @@ void FakeLorgnetteScannerManager::CloseScanner(
     CloseScannerCallback callback) {
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), close_scanner_response_));
+}
+
+void FakeLorgnetteScannerManager::StartPreparedScan(
+    const lorgnette::StartPreparedScanRequest& request,
+    StartPreparedScanCallback callback) {
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), start_prepared_scan_response_));
+}
+
+void FakeLorgnetteScannerManager::ReadScanData(
+    const lorgnette::ReadScanDataRequest& request,
+    ReadScanDataCallback callback) {
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), read_scan_data_response_));
 }
 
 bool FakeLorgnetteScannerManager::IsRotateAlternate(
@@ -153,6 +174,11 @@ void FakeLorgnetteScannerManager::SetGetScannerNamesResponse(
   scanner_names_ = scanner_names;
 }
 
+void FakeLorgnetteScannerManager::SetGetScannerInfoListResponse(
+    const absl::optional<lorgnette::ListScannersResponse>& response) {
+  list_scanners_response_ = response;
+}
+
 void FakeLorgnetteScannerManager::SetGetScannerCapabilitiesResponse(
     const absl::optional<lorgnette::ScannerCapabilities>&
         scanner_capabilities) {
@@ -167,6 +193,16 @@ void FakeLorgnetteScannerManager::SetOpenScannerResponse(
 void FakeLorgnetteScannerManager::SetCloseScannerResponse(
     const absl::optional<lorgnette::CloseScannerResponse>& response) {
   close_scanner_response_ = response;
+}
+
+void FakeLorgnetteScannerManager::SetStartPreparedScanResponse(
+    const absl::optional<lorgnette::StartPreparedScanResponse>& response) {
+  start_prepared_scan_response_ = response;
+}
+
+void FakeLorgnetteScannerManager::SetReadScanDataResponse(
+    const absl::optional<lorgnette::ReadScanDataResponse>& response) {
+  read_scan_data_response_ = response;
 }
 
 void FakeLorgnetteScannerManager::SetScanResponse(

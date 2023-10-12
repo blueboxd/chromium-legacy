@@ -17,19 +17,19 @@
 
 namespace {
 
-static_assert(48 == syncer::GetNumModelTypes(),
+static_assert(47 == syncer::GetNumModelTypes(),
               "If the new type has a corresponding pref, add it here");
 const char* backed_up_preferences_[] = {
     syncer::prefs::internal::kSyncKeepEverythingSynced,
     syncer::prefs::internal::kSyncAutofill,
     syncer::prefs::internal::kSyncBookmarks,
+    syncer::prefs::internal::kSyncHistory,
     syncer::prefs::internal::kSyncPasswords,
     syncer::prefs::internal::kSyncPayments,
     syncer::prefs::internal::kSyncPreferences,
     syncer::prefs::internal::kSyncReadingList,
     syncer::prefs::internal::kSyncSavedTabGroups,
     syncer::prefs::internal::kSyncTabs,
-    syncer::prefs::internal::kSyncTypedUrls,
 };
 
 }  // namespace

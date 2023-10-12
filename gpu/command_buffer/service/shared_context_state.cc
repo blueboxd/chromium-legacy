@@ -28,6 +28,7 @@
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
+#include "third_party/skia/include/gpu/ganesh/gl/GrGLDirectContext.h"
 #include "third_party/skia/include/gpu/graphite/Context.h"
 #include "third_party/skia/include/gpu/mock/GrMockTypes.h"
 #include "ui/gl/gl_bindings.h"
@@ -369,7 +370,7 @@ bool SharedContextState::InitializeGanesh(
       DCHECK(owned_gr_context_);
     } else {
       owned_gr_context_ =
-          GrDirectContext::MakeGL(std::move(gr_gl_interface), options);
+          GrDirectContexts::MakeGL(std::move(gr_gl_interface), options);
     }
 
     gr_context_ = owned_gr_context_.get();
@@ -734,7 +735,14 @@ void SharedContextState::PurgeMemory(
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       // With critical pressure, purge as much as possible.
       sk_surface_cache_.Clear();
-      gr_context_->freeGpuResources();
+      {
+        absl::optional<raster::GrShaderCache::ScopedCacheUse> cache_use;
+        // ScopedCacheUse is to avoid the empty/invalid client id DCHECKS caused
+        // while accessing GrShaderCache. Note that since the actual client_id
+        // here does not matter, we are using gpu::kDisplayCompositorClientId.
+        UseShaderCache(cache_use, kDisplayCompositorClientId);
+        gr_context_->freeGpuResources();
+      }
       UpdateSkiaOwnedMemorySize();
       scratch_deserialization_buffer_.resize(0u);
       scratch_deserialization_buffer_.shrink_to_fit();
@@ -891,7 +899,6 @@ absl::optional<error::ContextLostReason> SharedContextState::GetResetStatus(
     bool needs_gl) {
   DCHECK(!context_lost());
 
-  // TODO(crbug.com/1434131): Check context loss for Graphite Dawn/Metal.
   if (gr_context_) {
     // Maybe Skia detected VK_ERROR_DEVICE_LOST.
     if (gr_context_->abandoned()) {
@@ -904,6 +911,13 @@ absl::optional<error::ContextLostReason> SharedContextState::GetResetStatus(
       return error::kOutOfMemory;
     }
   }
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+  if (gr_context_type_ == GrContextType::kGraphiteDawn &&
+      dawn_context_provider_) {
+    return dawn_context_provider_->GetResetStatus();
+  }
+#endif
 
   // Not using GL.
   if (!GrContextIsGL() && !needs_gl)

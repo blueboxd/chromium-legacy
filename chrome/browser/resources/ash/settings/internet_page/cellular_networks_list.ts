@@ -31,7 +31,7 @@ import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {ESimProfileProperties, ESimProfileRemote, EuiccRemote, ProfileInstallResult, ProfileState} from 'chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom-webui.js';
 import {CrosNetworkConfigInterface, GlobalPolicy, InhibitReason} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {DeviceStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
@@ -57,7 +57,8 @@ const CellularNetworksListElementBase =
     Constructor<PolymerElement&I18nMixinInterface&WebUiListenerMixinInterface&
                 ESimManagerListenerBehaviorInterface>;
 
-class CellularNetworksListElement extends CellularNetworksListElementBase {
+export class CellularNetworksListElement extends
+    CellularNetworksListElementBase {
   static get is() {
     return 'cellular-networks-list' as const;
   }
@@ -430,7 +431,7 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
         MultiDeviceFeatureState.ENABLED_BY_USER;
   }
 
-  private onEsimLearnMoreClicked_(event: CustomEvent<{event: Event}>): void {
+  private onAddEsimLinkClicked_(event: CustomEvent<{event: Event}>): void {
     event.detail.event.preventDefault();
     event.stopPropagation();
 
@@ -580,34 +581,37 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
   }
 
   /**
-   * Return true if the "No available eSIM profiles" subtext message or
-   * download eSIM profile link should be shown in eSIM section. This message
-   * should not be shown when adding new eSIM profiles.
+   * Return true if there are currently no eSIM networks configured. This
+   * message should not be shown when adding new eSIM profiles.
    */
-  private shouldShowNoEsimMessageOrDownloadLink_(
+  private shouldShowEsimNoNetworksMessage_(
       inhibitReason: InhibitReason,
       eSimNetworks: NetworkList.NetworkListItemType[],
       eSimPendingProfiles: NetworkList.CustomItemState[]): boolean {
-    if (inhibitReason === InhibitReason.kInstallingProfile ||
-        inhibitReason === InhibitReason.kRefreshingProfileList) {
+    if (inhibitReason === InhibitReason.kRefreshingProfileList) {
       return false;
     }
 
     return !this.shouldShowNetworkSublist_(eSimNetworks, eSimPendingProfiles);
   }
 
-  /**
-   * Return true if the "No available eSIM profiles" subtext message should be
-   * shown in eSIM section. This message should not be shown when the download
-   * eSIM profile link is shown.
-   */
-  private shouldShowNoEsimSubtextMessage_(): boolean {
-    if (this.globalPolicy &&
-        this.globalPolicy.allowOnlyPolicyCellularNetworks) {
+  private shouldShowAddEsimNetworksMessage_(inhibitReason: InhibitReason):
+      boolean {
+    if (inhibitReason === InhibitReason.kInstallingProfile ||
+        (this.globalPolicy &&
+         this.globalPolicy.allowOnlyPolicyCellularNetworks)) {
       return true;
     }
 
     return false;
+  }
+
+  private getEsimNoNetworksMessage_(inhibitReason: InhibitReason): string {
+    if (inhibitReason === InhibitReason.kInstallingProfile) {
+      return this.i18n('cellularNetworkInstallingProfile');
+    }
+
+    return this.i18n('eSimNetworkNotSetup');
   }
 }
 

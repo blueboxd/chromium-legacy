@@ -164,7 +164,7 @@ class FloatingWebUIHelpBubbleFactoryBrowser
                                ->handler()
                                ->GetWebContents();
     // Note: this checks all tabs for their WebContents.
-    if (chrome::FindBrowserWithWebContents(contents)) {
+    if (chrome::FindBrowserWithTab(contents)) {
       return false;
     }
 
@@ -258,7 +258,7 @@ void MaybeRegisterChromeFeaturePromos(
   registry.RegisterFeature(std::move(
       FeaturePromoSpecification::CreateForToastPromo(
           feature_engagement::kIPHAutofillVirtualCardCVCSuggestionFeature,
-          kAutofillCreditCardSuggestionEntryElementId,
+          kAutofillStandaloneCvcSuggestionElementId,
           IDS_AUTOFILL_VIRTUAL_CARD_STANDALONE_CVC_SUGGESTION_IPH_BUBBLE_LABEL,
           IDS_AUTOFILL_VIRTUAL_CARD_STANDALONE_CVC_SUGGESTION_IPH_BUBBLE_LABEL_SCREENREADER,
           FeaturePromoSpecification::AcceleratorInfo())
@@ -401,6 +401,13 @@ void MaybeRegisterChromeFeaturePromos(
       &feature_engagement::kIPHGMCCastStartStopFeature,
       kToolbarMediaButtonElementId,
       IDS_GLOBAL_MEDIA_CONTROLS_CONTROL_CAST_SESSIONS_PROMO));
+
+  // kIPHGMCLocalMediaCastingFeature:
+  registry.RegisterFeature(FeaturePromoSpecification::CreateForToastPromo(
+      feature_engagement::kIPHGMCLocalMediaCastingFeature,
+      kToolbarMediaButtonElementId, IDS_GMC_LOCAL_MEDIA_CAST_SESSIONS_PROMO,
+      IDS_GMC_LOCAL_MEDIA_CAST_START_PROMO,
+      FeaturePromoSpecification::AcceleratorInfo()));
 
   // kIPHPasswordsAccountStorageFeature:
   registry.RegisterFeature(std::move(

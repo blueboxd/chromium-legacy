@@ -22,11 +22,14 @@ typedef (USVString or FencedFrameConfig) UrnOrConfig;
   [CallWith=ScriptState, Measure, RaisesException]
   Promise<void> leaveAdInterestGroup(optional AuctionAdInterestGroupKey group);
 
+  [RuntimeEnabled=FledgeClearOriginJoinedAdInterestGroups, CallWith=ScriptState, RaisesException]
+  Promise<void> clearOriginJoinedAdInterestGroups(USVString owner, optional sequence<USVString> groupsToKeep);
+
   [CallWith=ScriptState, Measure, RaisesException]
   void updateAdInterestGroups();
 
   [RuntimeEnabled=FledgeNegativeTargeting, CallWith=ScriptState, Measure, RaisesException]
-  Promise<USVString> createAuctionNonce();
+  Promise<DOMString> createAuctionNonce();
 
   [RuntimeEnabled=Fledge, CallWith=ScriptState, Measure, RaisesException]
   Promise<UrnOrConfig?> runAdAuction(AuctionAdConfig config);

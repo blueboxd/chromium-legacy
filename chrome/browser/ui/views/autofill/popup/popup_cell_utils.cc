@@ -193,6 +193,14 @@ std::unique_ptr<views::ImageView> GetIconImageViewByName(
 #endif
   }
 
+  if (icon_str == "penSparkIcon") {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    return ImageViewFromVectorIcon(vector_icons::kPenSparkIcon, kIconSize);
+#else
+    return nullptr;
+#endif
+  }
+
   if (icon_str == "googlePasswordManager") {
     return ImageViewFromVectorIcon(GooglePasswordManagerVectorIcon(),
                                    kGooglePasswordManagerIconSize);
@@ -506,7 +514,8 @@ std::unique_ptr<views::Label> CreateDescriptionLabel(
 std::vector<std::unique_ptr<views::View>> CreateAndTrackSubtextViews(
     PopupCellView& content_view,
     base::WeakPtr<AutofillPopupController> controller,
-    int line_number) {
+    int line_number,
+    int text_style) {
   std::vector<std::unique_ptr<views::View>> result;
   const int kHorizontalSpacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_RELATED_LABEL_HORIZONTAL_LIST);
@@ -534,8 +543,7 @@ std::vector<std::unique_ptr<views::View>> CreateAndTrackSubtextViews(
       auto* label =
           label_row_container_view->AddChildView(std::make_unique<views::Label>(
               label_text.value,
-              ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL,
-              views::style::STYLE_SECONDARY));
+              ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL, text_style));
       content_view.TrackLabel(label);
       FormatLabel(*label, label_text, controller);
     }

@@ -134,7 +134,7 @@ crbug.com/678482 [ Mac10.15 Release ] http/tests/devtools/debugger/fetch-breakpo
 crbug.com/678482 [ Mac11 Release ] http/tests/devtools/debugger/fetch-breakpoints.js [ Slow ]
 crbug.com/678482 [ Mac12 ] http/tests/devtools/debugger/fetch-breakpoints.js [ Slow ]
 crbug.com/678482 [ Release Win ] http/tests/devtools/debugger/fetch-breakpoints.js [ Slow ]
-crbug.com/1451884 http/tests/inspector-protocol/fedcm/fedcm-confirm-idp-signin.js [ Slow ]
+crbug.com/1451884 http/tests/inspector-protocol/fedcm/fedcm-confirm-idp-login.js [ Slow ]
 crbug.com/1236466 inspector-protocol/runtime/runtime-execution-contexts-events.js [ Slow ]
 crbug.com/1229701 [ Debug Mac13-arm64 ] http/tests/inspector-protocol/network/disable-cache-media-resource.js [ Slow ]
 crbug.com/1229701 [ Linux ] http/tests/inspector-protocol/network/disable-cache-media-resource.js [ Slow ]
@@ -1518,6 +1518,7 @@ crbug.com/1453303 [ Win ] http/tests/inspector-protocol/network/blocked-setcooki
 crbug.com/1459575 webexposed/global-interface-listing-dedicated-worker.html [ Slow ]
 
 crbug.com/1456739 [ Linux Release ] virtual/private-aggregation-developer-mode/wpt_internal/private-aggregation/protected-audience-sends-report.https.html [ Slow ]
+crbug.com/1456739 [ Linux Release ] virtual/private-aggregation-developer-mode/wpt_internal/private-aggregation/shared-storage-context-id-sends-report.https.html [ Slow ]
 
 # Slow because of multiple subtests and many cycles spent doing garbage collection.
 crbug.com/1473373 wpt_internal/dom/abort/abort-signal-memory-tests.https.any.html [ Slow ]
@@ -1526,3 +1527,6 @@ crbug.com/1473373 wpt_internal/scheduler/task-signal-any-memory-abort-1.any.html
 crbug.com/1473373 wpt_internal/scheduler/task-signal-any-memory-abort-1.any.worker.html [ Slow ]
 crbug.com/1473373 wpt_internal/scheduler/task-signal-any-memory-abort-2.any.html [ Slow ]
 crbug.com/1473373 wpt_internal/scheduler/task-signal-any-memory-abort-2.any.worker.html [ Slow ]
+
+crbug.com/1488860 virtual/threaded/external/wpt/scroll-animations/css/view-timeline-range-animation.html [ Slow ]
+crbug.com/1488860 virtual/threaded-prefer-compositing/external/wpt/scroll-animations/css/view-timeline-range-animation.html [ Slow ]

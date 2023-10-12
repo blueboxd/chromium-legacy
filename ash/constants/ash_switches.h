@@ -32,6 +32,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAppAutoLaunched[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAppOemManifestFile[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcAvailability[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcAvailable[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcBlockKeyMint[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDataCleanupOnStart[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableAppSync[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableDownloadProvider[];
@@ -310,7 +311,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kQsAddFakeCastDevices[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kQsShowLocaleTile[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRegulatoryLabelDir[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kRemoteRebootCommandTimeoutInSecondsForTesting[];
+extern const char kRemoteRebootCommandDelayInSecondsForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRevenBranding[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRlzPingDelay[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRmaNotAllowed[];
@@ -472,6 +473,9 @@ bool IsCameraEffectsSupportedByHardware();
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool UseFakeCrasAudioClientForDBus();
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool ShouldAllowDefaultShelfPinLayoutIgnoringSync();
 
 }  // namespace ash::switches
 

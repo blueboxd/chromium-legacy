@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/app_launcher/model/app_launcher_browser_agent.h"
 #import "ios/chrome/browser/crash_report/model/breadcrumbs/breadcrumb_manager_browser_agent.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_browser_agent.h"
+#import "ios/chrome/browser/favicon/favicon_browser_agent.h"
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/infobar_overlay_browser_agent_util.h"
 #import "ios/chrome/browser/lens/lens_browser_agent.h"
@@ -16,14 +17,14 @@
 #import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
-#import "ios/chrome/browser/reading_list/reading_list_browser_agent.h"
+#import "ios/chrome/browser/reading_list/model/reading_list_browser_agent.h"
 #import "ios/chrome/browser/send_tab_to_self/model/send_tab_to_self_browser_agent.h"
 #import "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
-#import "ios/chrome/browser/sync/sync_error_browser_agent.h"
+#import "ios/chrome/browser/snapshots/model/snapshot_browser_agent.h"
+#import "ios/chrome/browser/sync/model/sync_error_browser_agent.h"
 #import "ios/chrome/browser/tab_insertion/model/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/tabs/closing_web_state_observer_browser_agent.h"
 #import "ios/chrome/browser/tabs/features.h"
@@ -31,10 +32,10 @@
 #import "ios/chrome/browser/tabs/tab_parenting_browser_agent.h"
 #import "ios/chrome/browser/tabs/tab_pickup/tab_pickup_browser_agent.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
-#import "ios/chrome/browser/upgrade/upgrade_center.h"
-#import "ios/chrome/browser/upgrade/upgrade_center_browser_agent.h"
-#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
-#import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
+#import "ios/chrome/browser/upgrade/model/upgrade_center.h"
+#import "ios/chrome/browser/upgrade/model/upgrade_center_browser_agent.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/view_source/model/view_source_browser_agent.h"
 #import "ios/chrome/browser/web/page_placeholder_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
@@ -135,6 +136,7 @@ void AttachBrowserAgents(Browser* browser) {
   ReadingListBrowserAgent::CreateForBrowser(browser);
 
   PagePlaceholderBrowserAgent::CreateForBrowser(browser);
+  FaviconBrowserAgent::CreateForBrowser(browser);
 
   // This needs to be called last in case any downstream browser agents need to
   // access upstream agents created earlier in this function.

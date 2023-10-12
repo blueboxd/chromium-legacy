@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Csak öt billentyűparancsot szabhat személyre. Új billentyűparancs hozzáadásához töröljön egy meglévőt</translation>
 <translation id="1164939766849482256">Hajnaltól sötétig képernyőkímélő</translation>
 <translation id="1167755866710282443">A kulcsok személyre szabásához nyissa meg a menüt. Az áthelyezéshez húzza a megfelelő helyre a menüt.</translation>
+<translation id="1174073918202301297">Parancsikon hozzáadva</translation>
 <translation id="1175697296044146566">Ezt a(z) <ph name="DEVICE_TYPE" /> eszközt a(z) <ph name="MANAGER" /> kezeli.</translation>
 <translation id="1175951029573070619">Átlagos (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Eltávolítás</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">Háttérkép módosítása naponta</translation>
 <translation id="1644574205037202324">Előzmények</translation>
 <translation id="1651925268237749928">Egy megosztott albumot választott ki. Mások is módosíthatják a benne lévő fotókat, illetve hozzáadhatnak újakat. Háttérképként olyan fotók is megjelenhetnek, amelyek jelenleg nem találhatók meg ebben az albumban.</translation>
+<translation id="1661865805917886535">A Google megkaphat bizonyos adatokat a fiókról és a rendszerről. Ezeket az adatokat a technikai problémák kezelésére és szolgáltatásaink fejlesztésére használjuk az adatvédelmi irányelveinknek (<ph name="PRIVACYPOLICYURL" />) és az Általános Szerződési Feltételeknek (<ph name="TERMSOFSERVICEURL" />) megfelelően. Tartalommódosítás kéréséhez lépjen a Jogi súgóba (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Leállt – Kifogyott a tinta</translation>
 <translation id="1664796644829245314">Előnézet: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Beépített VPN</translation>
@@ -117,6 +119,7 @@
 <translation id="1768959921651994223">Hitelesítés típusa</translation>
 <translation id="1776228893584526149">Háttérkép tónusa</translation>
 <translation id="1782199038061388045">Fordítás</translation>
+<translation id="1788485524395674731">Ezt az alkalmazást a rendszergazdája kezeli</translation>
 <translation id="1792647875738159689">Beolvasás megszakítása…</translation>
 <translation id="1801418420130173017">Sötét téma kikapcsolása</translation>
 <translation id="1807246157184219062">Világos</translation>
@@ -131,7 +134,6 @@
 <translation id="1871569928317311284">Sötét téma kikapcsolása</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Sötét mód kikapcsolása</translation>
-<translation id="1881188606372070653">Ha jogi okokból szeretne tartalmi módosítást kérvényezni, lépjen a <ph name="BEGIN_LINK1" />Jogi súgóoldalra<ph name="END_LINK1" />. A Google megkaphat bizonyos adatokat a fiókról és a rendszerről. Az Ön által megadott adatokat a technikai problémák kezelésére és szolgáltatásaink fejlesztésére használjuk fel az <ph name="BEGIN_LINK2" />Adatvédelmi irányelveinknek<ph name="END_LINK2" /> és az <ph name="BEGIN_LINK3" />Általános Szerződési Feltételeknek<ph name="END_LINK3" /> megfelelően.</translation>
 <translation id="1885577615937958993">médiatartalom előretekerése</translation>
 <translation id="1887850431809612466">Hardver ellenőrzése</translation>
 <translation id="1897672602657312171">A keresőgomb nélküli billentyűparancs ütközhet egyes alkalmazások billentyűparancsaival. Ha továbbra is használni szeretné, nyomja le újra ezt a billentyűparancsot, vagy nyomjon le egy új billentyűparancsot a keresőgombbal.</translation>
@@ -212,6 +214,7 @@
 <translation id="2505327257735685095">A jelenlegi háttérkép frissítése</translation>
 <translation id="2512979179176933762">ablakok megjelenítése</translation>
 <translation id="2513396635448525189">Bejelentkezési kép</translation>
+<translation id="2515109918609218604">A parancsikon nem áll rendelkezésre. Nyomja le az új billentyűparancsot a funkció- és keresőbillentyűk használata nélkül.</translation>
 <translation id="2517472476991765520">Szkennelés</translation>
 <translation id="2521835766824839541">előző szám</translation>
 <translation id="2526590354069164005">Asztal</translation>
@@ -265,6 +268,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Az eszköz csatlakoztatva van.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Eltávolítja az oldalt?}=1{Eltávolítja a(z) {PAGE_NUMBER}. oldalt?}other{Eltávolítja a(z) {PAGE_NUMBER}. oldalt?}}</translation>
+<translation id="3146655726035122603">Kizárólag a következőnél: <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Mobiladatok</translation>
 <translation id="3156846309055100599"><ph name="PAGE_NUMBER" />. oldal beolvasása…</translation>
 <translation id="315738237743207937">Hitelesítési portál észlelve</translation>
@@ -622,6 +626,7 @@
 <translation id="584953448295717128">A rendszer automatikusan észlelt APN-t.</translation>
 <translation id="5849570051105887917">Otthoni szolgáltató kódja</translation>
 <translation id="5859603669299126575">Művészeti album</translation>
+<translation id="5859969039821714932">A billentyűparancs nem áll rendelkezésre. Nyomjon le új billentyűparancsot a(z) <ph name="KEY" /> billentyű nélkül.</translation>
 <translation id="5860033963881614850">Kikapcsolva</translation>
 <translation id="5860491529813859533">Bekapcsolás</translation>
 <translation id="5876385649737594562">Kapcsolja be a beállítások kiválasztásához</translation>
@@ -687,6 +692,7 @@
 <translation id="6318437367327684789">a végtelenségig</translation>
 <translation id="6319207335391420837">Firmware telepítése a következőre: <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Képernyővédő bekapcsolása</translation>
+<translation id="6324916366299863871">Billentyűparancs szerkesztése</translation>
 <translation id="6325525973963619867">Nem sikerült</translation>
 <translation id="6331191339300272798">Automatikus sötét téma</translation>
 <translation id="6340526405444716530">Személyre szabás</translation>
@@ -826,6 +832,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Beépített érintőpad</translation>
 <translation id="7397270852490618635">Világos téma kikapcsolása</translation>
+<translation id="7401543881546089382">Billentyűkód törlése</translation>
 <translation id="741244894080940828">Átváltás</translation>
 <translation id="7415801143053185905">Nagyon hosszú HTTP várakozási idő</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{A rendszergazda úgy állította be a(z) <ph name="APP_NAME_1" /> alkalmazást, hogy automatikusan elinduljon minden alkalommal, amikor Ön bejelentkezik.}=2{A rendszergazda úgy állította be a(z) <ph name="APP_NAME_1" /> és a(z) <ph name="APP_NAME_2" /> alkalmazást, hogy automatikusan elinduljanak minden alkalommal, amikor Ön bejelentkezik.}=3{A rendszergazda úgy állította be a(z) <ph name="APP_NAME_1" />, a(z) <ph name="APP_NAME_2" /> és a(z) <ph name="APP_NAME_3" /> alkalmazást, hogy automatikusan elinduljanak minden alkalommal, amikor Ön bejelentkezik.}other{A rendszergazda úgy állította be a(z) <ph name="APP_NAME_1" />, a(z) <ph name="APP_NAME_2" /> és további # alkalmazást, hogy automatikusan elinduljanak minden alkalommal, amikor Ön bejelentkezik.}}</translation>
@@ -864,6 +871,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">billentyűzet világítás</translation>
+<translation id="7730077286107534951">A Google megkaphat bizonyos adatokat a fiókról és a rendszerről. Ezeket az információkat a technikai problémák kiküszöbölésére és szolgáltatásaink fejlesztésére használjuk az <ph name="BEGIN_LINK2" />Adatvédelmi irányelveknek<ph name="END_LINK2" /> és az <ph name="BEGIN_LINK3" />Általános Szerződési Feltételeknek<ph name="END_LINK3" /> megfelelően. Tartalommódosítás kéréséhez lépjen a <ph name="BEGIN_LINK1" />jogi súgóoldalra<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Ciklusok száma</translation>
 <translation id="7747039790905080783">Előre megosztott kulcs</translation>
 <translation id="7752963721013053477">Hajnaltól sötétedésig – exkluzív</translation>
@@ -900,6 +908,7 @@
 <translation id="7978412674231730200">Privát kulcs</translation>
 <translation id="7994702968232966508">EAP módszer</translation>
 <translation id="8004582292198964060">Böngésző</translation>
+<translation id="8017679124341497925">Billentyűparancs szerkesztve</translation>
 <translation id="802154636333426148">Nem sikerült a letöltés</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Automatikus szín mód engedélyezése</translation>

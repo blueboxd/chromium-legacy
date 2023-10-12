@@ -23,11 +23,11 @@ source_set("bottom_sheet") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/autofill/bottom_sheet",
-    "//ios/chrome/browser/default_browser:utils",
+    "//ios/chrome/browser/default_browser/model:utils",
     "//ios/chrome/browser/favicon",
-    "//ios/chrome/browser/passwords",
-    "//ios/chrome/browser/passwords:password_controller_delegate",
-    "//ios/chrome/browser/passwords:store_factory",
+    "//ios/chrome/browser/passwords/model",
+    "//ios/chrome/browser/passwords/model:password_controller_delegate",
+    "//ios/chrome/browser/passwords/model:store_factory",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/browser_state",
@@ -53,7 +53,6 @@ source_set("bottom_sheet_ui") {
     "password_suggestion_bottom_sheet_view_controller.mm",
   ]
   deps = [
-    ":constants",
     "//base",
     "//components/autofill/ios/browser",
     "//components/password_manager/core/browser",
@@ -83,29 +82,23 @@ source_set("common") {
   ]
 }
 
-source_set("constants") {
-  sources = [
-    "password_suggestion_bottom_sheet_constants.h",
-    "password_suggestion_bottom_sheet_constants.mm",
-  ]
-}
-
 source_set("eg2_tests") {
   configs += [ "//build/config/ios:xctest_config" ]
   testonly = true
   sources = [ "password_suggestion_bottom_sheet_egtest.mm" ]
   deps = [
-    ":constants",
     ":eg_test_support+eg2",
     "//components/password_manager/core/common:features",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/passwords:eg_test_support+eg2",
+    "//ios/chrome/browser/metrics:eg_test_support+eg2",
+    "//ios/chrome/browser/passwords/model:eg_test_support+eg2",
     "//ios/chrome/browser/signin:fake_system_identity",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/settings/password:eg_test_support",
     "//ios/chrome/browser/ui/settings/password:eg_test_support+eg2",
     "//ios/chrome/browser/ui/settings/password:features",
     "//ios/chrome/browser/ui/settings/password:password_constants",
+    "//ios/chrome/common/ui/confirmation_alert:constants",
     "//ios/chrome/test:eg_test_support+eg2",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
@@ -162,8 +155,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/history",
-    "//ios/chrome/browser/passwords",
-    "//ios/chrome/browser/passwords:store_factory",
+    "//ios/chrome/browser/passwords/model",
+    "//ios/chrome/browser/passwords/model:store_factory",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/model/web_state_list",

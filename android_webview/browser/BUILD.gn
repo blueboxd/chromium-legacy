@@ -55,6 +55,8 @@ source_set("browser") {
     "aw_contents_statics.cc",
     "aw_cookie_access_policy.cc",
     "aw_cookie_access_policy.h",
+    "aw_crash_keys.cc",
+    "aw_crash_keys.h",
     "aw_dark_mode.cc",
     "aw_dark_mode.h",
     "aw_devtools_manager_delegate.cc",
@@ -308,7 +310,7 @@ source_set("browser") {
     "//ui/gl",
     "//ui/resources",
     "//ui/touch_selection",
-    "//url:gurl_android",
+    "//url",
   ]
 
   if (enable_printing) {

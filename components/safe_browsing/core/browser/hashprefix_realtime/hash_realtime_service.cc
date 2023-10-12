@@ -93,26 +93,38 @@ class ObliviousHttpClient : public network::mojom::ObliviousHttpClient {
       return;
     }
     called_ = true;
+
+    absl::optional<std::string> response_body;
+    int net_error;
+    int response_code;
+    scoped_refptr<net::HttpResponseHeaders> response_headers;
+    std::string histogram_suffix;
     if (status->is_net_error()) {
-      std::move(callback_).Run(absl::nullopt, status->get_net_error(),
-                               /*response_code=*/0, /*headers=*/nullptr);
+      net_error = status->get_net_error();
+      response_code = 0;
+      histogram_suffix = "NetErrorResult";
     } else if (status->is_outer_response_error_code()) {
-      std::move(callback_).Run(
-          absl::nullopt, net::ERR_HTTP_RESPONSE_CODE_FAILURE,
-          status->get_outer_response_error_code(), /*headers=*/nullptr);
+      net_error = net::ERR_HTTP_RESPONSE_CODE_FAILURE;
+      response_code = status->get_outer_response_error_code();
+      histogram_suffix = "OuterResponseResult";
     } else {
       DCHECK(status->is_inner_response());
+      response_headers = std::move(status->get_inner_response()->headers);
+      histogram_suffix = "InnerResponseResult";
       if (status->get_inner_response()->response_code != net::HTTP_OK) {
-        std::move(callback_).Run(
-            absl::nullopt, net::ERR_HTTP_RESPONSE_CODE_FAILURE,
-            status->get_inner_response()->response_code,
-            std::move(status->get_inner_response()->headers));
+        net_error = net::ERR_HTTP_RESPONSE_CODE_FAILURE;
+        response_code = status->get_inner_response()->response_code;
       } else {
-        std::move(callback_).Run(
-            status->get_inner_response()->response_body, net::OK, net::HTTP_OK,
-            std::move(status->get_inner_response()->headers));
+        response_body = status->get_inner_response()->response_body;
+        net_error = net::OK;
+        response_code = net::HTTP_OK;
       }
     }
+    RecordHttpResponseOrErrorCode(
+        ("SafeBrowsing.HPRT.Network." + histogram_suffix).c_str(), net_error,
+        response_code);
+    std::move(callback_).Run(response_body, net_error, response_code,
+                             response_headers);
   }
 
  private:
@@ -237,16 +249,13 @@ std::set<std::string> HashRealTimeService::GetHashPrefixesSet(
 
 void HashRealTimeService::SearchCache(
     std::set<std::string> hash_prefixes,
-    bool skip_logging,
     std::vector<std::string>* out_missing_hash_prefixes,
     std::vector<V5::FullHash>* out_cached_full_hashes) const {
-  if (!skip_logging) {
-    SCOPED_UMA_HISTOGRAM_TIMER("SafeBrowsing.HPRT.GetCache.Time");
-  }
+  SCOPED_UMA_HISTOGRAM_TIMER("SafeBrowsing.HPRT.GetCache.Time");
   auto cached_results =
       cache_manager_
           ? cache_manager_->GetCachedHashPrefixRealTimeLookupResults(
-                hash_prefixes, skip_logging)
+                hash_prefixes)
           : std::unordered_map<std::string, std::vector<V5::FullHash>>();
   for (const auto& hash_prefix : hash_prefixes) {
     auto cached_result_it = cached_results.find(hash_prefix);
@@ -261,22 +270,6 @@ void HashRealTimeService::SearchCache(
       out_missing_hash_prefixes->push_back(hash_prefix);
     }
   }
-}
-
-void HashRealTimeService::LogSearchCacheWithNoQueryParamsMetric(
-    const GURL& url) const {
-  GURL::Replacements replacements;
-  replacements.ClearQuery();
-  GURL url_without_query_params = url.ReplaceComponents(replacements);
-  std::vector<std::string> hash_prefixes_that_would_be_requested;
-  std::vector<V5::FullHash>
-      full_hashes_that_would_be_cached;  // this out parameter is not used
-  SearchCache(GetHashPrefixesSet(url_without_query_params),
-              /*skip_logging=*/true, &hash_prefixes_that_would_be_requested,
-              &full_hashes_that_would_be_cached);
-  base::UmaHistogramBoolean(
-      "SafeBrowsing.HPRT.CacheHitAllPrefixesIfNoQueryParams",
-      hash_prefixes_that_would_be_requested.empty());
 }
 
 void HashRealTimeService::StartLookup(
@@ -295,11 +288,10 @@ void HashRealTimeService::StartLookup(
   // Search local cache.
   std::vector<std::string> hash_prefixes_to_request;
   std::vector<V5::FullHash> cached_full_hashes;
-  SearchCache(GetHashPrefixesSet(url), /*skip_logging=*/false,
-              &hash_prefixes_to_request, &cached_full_hashes);
+  SearchCache(GetHashPrefixesSet(url), &hash_prefixes_to_request,
+              &cached_full_hashes);
   base::UmaHistogramBoolean("SafeBrowsing.HPRT.CacheHitAllPrefixes",
                             hash_prefixes_to_request.empty());
-  LogSearchCacheWithNoQueryParamsMetric(url);
   // If all the prefixes are in the cache, no need to send a request. Return
   // early with the cached results.
   if (hash_prefixes_to_request.empty()) {

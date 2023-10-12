@@ -13,7 +13,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -49,7 +48,7 @@ class WebAppUninstallDialogDelegateView
       Profile* profile,
       webapps::AppId app_id,
       webapps::WebappUninstallSource uninstall_source,
-      std::map<SquareSizePx, SkBitmap> icon_bitmaps,
+      std::map<web_app::SquareSizePx, SkBitmap> icon_bitmaps,
       web_app::UninstallDialogCallback uninstall_choice_callback);
   WebAppUninstallDialogDelegateView(const WebAppUninstallDialogDelegateView&) =
       delete;

@@ -12,11 +12,11 @@
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/device_reauth/device_authenticator.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -112,7 +112,13 @@ std::u16string CredentialManagerDialogControllerImpl::GetAutoSigninText()
 bool CredentialManagerDialogControllerImpl::ShouldShowFooter() const {
   const syncer::SyncService* sync_service =
       SyncServiceFactory::GetForProfile(profile_);
-  return password_bubble_experiment::HasChosenToSyncPasswords(sync_service);
+  // TODO(crbug.com/1464264): Migrate away from `ConsentLevel::kSync` on desktop
+  // platforms and remove #ifdef below.
+#if BUILDFLAG(IS_ANDROID)
+#error If this code is built on Android, please update TODO above.
+#endif  // BUILDFLAG(IS_ANDROID)
+  return password_manager::sync_util::IsSyncFeatureEnabledIncludingPasswords(
+      sync_service);
 }
 
 void CredentialManagerDialogControllerImpl::OnChooseCredentials(

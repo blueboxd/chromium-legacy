@@ -69,7 +69,6 @@ Du bør tenke på følgende:
 <translation id="3345341804167540816">Bruk Chrome overalt</translation>
 <translation id="3472587960215700950">Chrome bruker Google Maps for å gi deg veibeskrivelser og lokal informasjon om registrerte adresser.</translation>
 <translation id="3503014945441706099">Få Safe Browsing med økt beskyttelse for denne Chrome-profilen også</translation>
-<translation id="3506309791702511623">Chrome kan registrere sporingsnumrene du skriver inn, og spore pakkene dine på Ny fane-siden, samtidig som andre handleopplevelser fra Google blir bedre.</translation>
 <translation id="3522659714780527202">For å se fanene dine overalt hvor du bruker Chrome, slå på synkronisering</translation>
 <translation id="3533694711092285624">Ingen lagrede passord. Chrome kan sjekke passordene dine når du lagrer dem.</translation>
 <translation id="3594076341410558780">Skjul «Få mest mulig ut av Chrome»</translation>
@@ -118,6 +117,7 @@ Du bør tenke på følgende:
 <translation id="5389212809648216794">Google Chrome kan ikke bruke kameraet fordi det brukes av en annen app</translation>
 <translation id="5395376160638294582">Sørg for at du alltid kan bruke Chrome-dataene i Google-kontoen din</translation>
 <translation id="5439191312780166229">Advarer deg om farlige nettsteder, også nettsteder som Google ikke kjenner til fra før, ved å analysere mer data fra nettsteder enn ved standardbeskyttelse. Du kan velge å hoppe over Chrome-advarsler.</translation>
+<translation id="5442013002200339429">Hvis du skjuler «<ph name="MODULE_NAME" />», slutter Chrome å spore fremtidige pakker automatisk, og alle tidligere pakkesporingsdata slettes.</translation>
 <translation id="5460571915754665838">4. Velg Chrome</translation>
 <translation id="546541279759910616">{COUNT,plural, =1{Chrome hjelper deg med å spore denne pakken på Ny fane-siden.}other{Chrome hjelper deg med å spore disse pakkene på Ny fane-siden.}}</translation>
 <translation id="5492504007368565877">Google Passordlagring kan ikke sjekke passordene dine.</translation>
@@ -154,6 +154,7 @@ Du bør tenke på følgende:
 
 Bare personer som har passordfrasen din, kan lese de krypterte dataene. Passordfrasen blir verken sendt til eller lagret av Google. Hvis du glemmer passordfrasen eller vil endre denne innstillingen, kan du <ph name="BEGIN_LINK" />slette Chrome-dataene i kontoen din<ph name="END_LINK" />.</translation>
 <translation id="6822673484890854830">Chrome kunne ikke sjekke alle passordene. Prøv på nytt senere.</translation>
+<translation id="6851982868877411675">Åpne Chrome-innstillingene i iOS, trykk på «Standard nettleserapp», og velg Chrome.</translation>
 <translation id="6916015246697034114">Søk med stemmen i Chrome</translation>
 <translation id="6964931465519938134">Nå kan du bruke Chrome hver gang du trykker på linker i meldinger, dokumenter og andre apper.</translation>
 <translation id="6975725306479268850">Velg Chrome for autofyll</translation>
@@ -188,6 +189,7 @@ Bare personer som har passordfrasen din, kan lese de krypterte dataene. Passordf
 <translation id="7933491483529363150">Åpne den nyligste fanen min i Chrome.</translation>
 <translation id="8022947259858476807">Bruk Chrome som standard til å åpne linker, søke i moduler og fylle ut passord i andre apper automatisk</translation>
 <translation id="804638182476029347">Tillat at Chrome-varsler mottar varsler om prisavslag</translation>
+<translation id="8069507567842347179">Denne pakken blir allerede sporet i Chrome.</translation>
 <translation id="81358522153858150">Chrome støtter nå brukerinnstillinger for den administrerte kontoen din</translation>
 <translation id="8160472928944011082">Kan ikke oppdatere Chrome</translation>
 <translation id="8174679664544842874">Åpner en ny fane i Chrome.</translation>

@@ -57,23 +57,38 @@ void SnapGroup::OnWindowDestroying(aura::Window* window) {
   SnapGroupController::Get()->RemoveSnapGroup(this);
 }
 
+void SnapGroup::OnPreWindowStateTypeChange(WindowState* window_state,
+                                           chromeos::WindowStateType old_type) {
+  if (chromeos::IsSnappedWindowStateType(old_type) &&
+      window_state->IsMinimized()) {
+    // The windows can be minimized without breaking the group.
+    return;
+  }
+  // Destroys `this`. Note if a window is still snapped but to the opposite
+  // side, it will break the group and SnapGroupController will start overview.
+  // If the window was still snapped in the same position and simply changed
+  // snap ratios, it would not send a state change and reach here.
+  SnapGroupController::Get()->RemoveSnapGroup(this);
+}
+
 void SnapGroup::StartObservingWindows() {
   CHECK(window1_);
   CHECK(window2_);
-  window1_->AddObserver(this);
-  window2_->AddObserver(this);
+  for (aura::Window* window : {window1_, window2_}) {
+    window->AddObserver(this);
+    WindowState::Get(window)->AddObserver(this);
+  }
 }
 
 void SnapGroup::StopObservingWindows() {
-  if (window1_) {
-    window1_->RemoveObserver(this);
-    window1_ = nullptr;
+  for (aura::Window* window : {window1_, window2_}) {
+    if (window) {
+      window->RemoveObserver(this);
+      WindowState::Get(window)->RemoveObserver(this);
+    }
   }
-
-  if (window2_) {
-    window2_->RemoveObserver(this);
-    window2_ = nullptr;
-  }
+  window1_ = nullptr;
+  window2_ = nullptr;
 }
 
 void SnapGroup::RestoreWindowsBoundsOnSnapGroupRemoved() {

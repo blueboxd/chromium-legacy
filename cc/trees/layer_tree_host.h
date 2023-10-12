@@ -385,6 +385,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // the input handling thread.
   const base::WeakPtr<CompositorDelegateForInput>& GetDelegateForInput() const;
 
+  // Detaches the InputDelegateForCompositor (InputHandler) and
+  // RenderFrameMetadataObserver bound on the compositor thread synchronously.p
+  void DetachInputDelegateAndRenderFrameObserver();
+
   // Debugging and benchmarks ---------------------------------
   void SetDebugState(const LayerTreeDebugState& debug_state);
   const LayerTreeDebugState& GetDebugState() const;
@@ -893,6 +897,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // during a commit phase so these tests can do this.
   [[nodiscard]] base::AutoReset<bool> SimulateSyncingDeltasForTesting() {
     return base::AutoReset<bool>(&syncing_deltas_for_test_, true);
+  }
+
+  bool WaitedForCommitForTesting() const {
+    return waited_for_protected_sequence_;
   }
 
  protected:

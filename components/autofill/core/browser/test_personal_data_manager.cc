@@ -210,14 +210,23 @@ void TestPersonalDataManager::LoadCreditCardCloudTokenData() {
 }
 
 void TestPersonalDataManager::LoadIbans() {
-  pending_ibans_query_ = 128;
+  pending_local_ibans_query_ = 128;
+  pending_server_ibans_query_ = 129;
   {
     std::vector<std::unique_ptr<Iban>> ibans;
     local_ibans_.swap(ibans);
     std::unique_ptr<WDTypedResult> result =
         std::make_unique<WDResult<std::vector<std::unique_ptr<Iban>>>>(
             AUTOFILL_IBANS_RESULT, std::move(ibans));
-    OnWebDataServiceRequestDone(pending_ibans_query_, std::move(result));
+    OnWebDataServiceRequestDone(pending_local_ibans_query_, std::move(result));
+  }
+  {
+    std::vector<std::unique_ptr<Iban>> server_ibans;
+    server_ibans_.swap(server_ibans);
+    std::unique_ptr<WDTypedResult> result =
+        std::make_unique<WDResult<std::vector<std::unique_ptr<Iban>>>>(
+            AUTOFILL_IBANS_RESULT, std::move(server_ibans));
+    OnWebDataServiceRequestDone(pending_server_ibans_query_, std::move(result));
   }
 }
 
@@ -229,12 +238,13 @@ bool TestPersonalDataManager::IsAutofillProfileEnabled() const {
   return PersonalDataManager::IsAutofillProfileEnabled();
 }
 
-bool TestPersonalDataManager::IsAutofillCreditCardEnabled() const {
-  // Return the value of autofill_credit_card_enabled_ if it has been set,
+bool TestPersonalDataManager::IsAutofillPaymentMethodsEnabled() const {
+  // Return the value of autofill_payment_methods_enabled_ if it has been set,
   // otherwise fall back to the normal behavior of checking the pref_service.
-  if (autofill_credit_card_enabled_.has_value())
-    return autofill_credit_card_enabled_.value();
-  return PersonalDataManager::IsAutofillCreditCardEnabled();
+  if (autofill_payment_methods_enabled_.has_value()) {
+    return autofill_payment_methods_enabled_.value();
+  }
+  return PersonalDataManager::IsAutofillPaymentMethodsEnabled();
 }
 
 bool TestPersonalDataManager::IsAutofillWalletImportEnabled() const {
@@ -246,7 +256,7 @@ bool TestPersonalDataManager::IsAutofillWalletImportEnabled() const {
 }
 
 bool TestPersonalDataManager::ShouldSuggestServerCards() const {
-  return IsAutofillCreditCardEnabled() && IsAutofillWalletImportEnabled();
+  return IsAutofillPaymentMethodsEnabled() && IsAutofillWalletImportEnabled();
 }
 
 std::string TestPersonalDataManager::CountryCodeForCurrentTimezone() const {

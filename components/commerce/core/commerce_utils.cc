@@ -4,6 +4,7 @@
 
 #include "components/commerce/core/commerce_utils.h"
 
+#include "base/feature_list.h"
 #include "components/commerce/core/commerce_constants.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"

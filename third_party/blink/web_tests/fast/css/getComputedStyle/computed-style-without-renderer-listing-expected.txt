@@ -23,15 +23,11 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 -webkit-mask-box-image-slice: 0 fill
 -webkit-mask-box-image-source: none
 -webkit-mask-box-image-width: auto
--webkit-mask-clip: border-box
 -webkit-mask-composite: source-over
--webkit-mask-image: none
--webkit-mask-origin: border-box
 -webkit-mask-position: 0% 0%
 -webkit-mask-position-x: 0%
 -webkit-mask-position-y: 0%
 -webkit-mask-repeat: repeat
--webkit-mask-size: auto
 -webkit-print-color-adjust: economy
 -webkit-rtl-ordering: logical
 -webkit-text-combine: none
@@ -191,7 +187,7 @@ font-variant-ligatures: normal
 font-variant-numeric: normal
 font-variant-position: normal
 font-weight: 400
-form-sizing: auto
+form-sizing: fixed
 grid-auto-columns: auto
 grid-auto-flow: row
 grid-auto-rows: auto
@@ -237,6 +233,10 @@ margin-top: 0px
 marker-end: none
 marker-mid: none
 marker-start: none
+mask-clip: border-box
+mask-image: none
+mask-origin: border-box
+mask-size: auto
 mask-type: luminance
 math-depth: 0
 math-shift: normal

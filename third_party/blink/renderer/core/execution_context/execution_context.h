@@ -34,7 +34,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
@@ -345,7 +344,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   virtual bool RequireTrustedTypes() const;
 
   // FeatureContext override
-  bool FeatureEnabled(OriginTrialFeature) const override;
+  bool FeatureEnabled(mojom::blink::OriginTrialFeature) const override;
 
   // Tests whether the policy-controlled feature is enabled in this frame.
   // Optionally sends a report to any registered reporting observers or
@@ -379,6 +378,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   virtual void ReportPermissionsPolicyViolation(
       mojom::blink::PermissionsPolicyFeature,
       mojom::blink::PolicyDisposition,
+      const absl::optional<String>& reporting_endpoint,
       const String& message = g_empty_string) const {}
   virtual void ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature,
@@ -392,6 +392,10 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   // Implementation of WindowOrWorkerGlobalScope.crossOriginIsolated.
   // https://html.spec.whatwg.org/C/webappapis.html#concept-settings-object-cross-origin-isolated-capability
   virtual bool CrossOriginIsolatedCapability() const = 0;
+
+  // Allows --disable-web-security (via `Agent::IsWebSecurityDisabled()`) to
+  // override `CrossOriginIsolatedCapability()` .
+  bool CrossOriginIsolatedCapabilityOrDisabledWebSecurity() const;
 
   // Returns true if scripts within this ExecutionContext are allowed to use
   // Trusted Context APIs (i.e. annotated with [IsolatedContext] IDL attribute).

@@ -24,8 +24,11 @@ import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner.HelperTestRunner;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.build.NativeLibraries;
 
 import java.lang.reflect.Method;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * The default Rule used by BaseRobolectricTestRunner. Include this directly when using
@@ -33,6 +36,9 @@ import java.lang.reflect.Method;
  * Use @Rule(order=-2) to ensure it runs before other rules.
  */
 public class BaseRobolectricTestRule implements TestRule {
+    private static final Locale ORIG_LOCALE = Locale.getDefault();
+    private static final TimeZone ORIG_TIMEZONE = TimeZone.getDefault();
+
     // Removes the API Level suffix. E.g. "testSomething[28]" -> "testSomething".
     private static String stripBrackets(String methodName) {
         int idx = methodName.indexOf('[');
@@ -65,8 +71,13 @@ public class BaseRobolectricTestRule implements TestRule {
 
     static void setUp(Method method) {
         UmaRecorderHolder.setUpNativeUmaRecorder(false);
-        LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_BROWSER);
         ContextUtils.initApplicationContextForTests(ApplicationProvider.getApplicationContext());
+        LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_BROWSER);
+        // Whether or not native is loaded is a global one-way switch, so do it automatically so
+        // that it is always in the same state.
+        if (NativeLibraries.LIBRARIES.length > 0) {
+            LibraryLoader.getInstance().ensureMainDexInitialized();
+        }
         ApplicationStatus.initialize(ApplicationProvider.getApplicationContext());
         UmaRecorderHolder.resetForTesting();
         CommandLineFlags.setUpClass(method.getDeclaringClass());
@@ -90,6 +101,8 @@ public class BaseRobolectricTestRule implements TestRule {
             ContextUtils.clearApplicationContextForTests();
             PathUtils.resetForTesting();
             ThreadUtils.clearUiThreadForTesting();
+            Locale.setDefault(ORIG_LOCALE);
+            TimeZone.setDefault(ORIG_TIMEZONE);
             // Run assertions only when the test has not already failed so as to not mask
             // failures. https://crbug.com/1466313
             if (testFailed) {

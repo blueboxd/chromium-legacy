@@ -12,12 +12,12 @@
 #import "base/feature_list.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/shared/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/lens/lens_availability.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_delegate.h"
@@ -58,7 +58,11 @@ const CGFloat kEndButtonOmniboxTrailingSpace = 7.0;
 const CGFloat kHintLabelFakeboxLeadingSpace = 18.0;
 const CGFloat kHintLabelOmniboxLeadingSpace = 13.0;
 const CGFloat kLargeFakeboxHintLabelFakeboxLeadingSpace = 26.0;
-const CGFloat kLargeFakeboxHintLabelOmniboxLeadingSpace = 21.0;
+const CGFloat kLargeFakeboxHintLabelOmniboxLeadingSpace = 20.0;
+
+// The amount to inset the Fakebox from the rest of the modules on Home, when
+// Large Fakebox is enabled.
+const CGFloat kLargeFakeboxHorizontalMargin = 8.0;
 
 // The constants for the constraints affecting the separation between the Lens
 // and Voice Search buttons.
@@ -74,6 +78,14 @@ CGFloat HintLabelFakeboxLeadingSpace() {
 CGFloat HintLabelOmniboxLeadingSpace() {
   return IsIOSLargeFakeboxEnabled() ? kLargeFakeboxHintLabelOmniboxLeadingSpace
                                     : kHintLabelOmniboxLeadingSpace;
+}
+
+// The amount to inset the Fakebox from the rest of the modules on Home.
+CGFloat FakeboxHorizontalMargin(id<UITraitEnvironment> environment) {
+  if (IsSplitToolbarMode(environment) && IsIOSLargeFakeboxEnabled()) {
+    return kLargeFakeboxHorizontalMargin;
+  }
+  return 0.0;
 }
 
 // Returns the top color of the Fakebox's gradient background.
@@ -104,8 +116,8 @@ UIColor* FakeboxBottomColor() {
 
 // Returns the background color for the NTP Header view. This is the color
 // that shows when the fakebox is scrolled up.
-UIColor* HeaderBackgroundColor() {
-  if (IsIOSLargeFakeboxEnabled()) {
+UIColor* HeaderBackgroundColor(id<UITraitEnvironment> environment) {
+  if (IsIOSLargeFakeboxEnabled() && IsSplitToolbarMode(environment)) {
     return [UIColor colorNamed:kBackgroundColor];
   } else if (IsMagicStackEnabled()) {
     return [UIColor colorNamed:@"ntp_background_color"];
@@ -220,9 +232,7 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
   [NSLayoutConstraint activateConstraints:@[
     [toolbarView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
     [toolbarView.heightAnchor
-        constraintEqualToConstant:ToolbarExpandedHeight(
-                                      [UIApplication sharedApplication]
-                                          .preferredContentSizeCategory)],
+        constraintEqualToConstant:content_suggestions::FakeToolbarHeight()],
     [toolbarView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
     self.invisibleOmniboxConstraint,
   ]];
@@ -322,7 +332,8 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
         constraintEqualToAnchor:self.fakeLocationBar.heightAnchor
                        constant:-ntp_header::kHintLabelHeightMargin],
     [self.searchHintLabel.centerYAnchor
-        constraintEqualToAnchor:self.fakeLocationBar.centerYAnchor],
+        constraintEqualToAnchor:self.fakeLocationBar.centerYAnchor
+                       constant:-1.0],
   ]];
   // Set a button the same size as the fake omnibox as the accessibility
   // element. If the hint is the only accessible element, when the fake omnibox
@@ -357,9 +368,11 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
   self.fakeLocationBarTopConstraint = [self.fakeLocationBar.topAnchor
       constraintEqualToAnchor:searchField.topAnchor];
   self.fakeLocationBarLeadingConstraint = [self.fakeLocationBar.leadingAnchor
-      constraintEqualToAnchor:searchField.leadingAnchor];
+      constraintEqualToAnchor:searchField.leadingAnchor
+                     constant:FakeboxHorizontalMargin(self)];
   self.fakeLocationBarTrailingConstraint = [self.fakeLocationBar.trailingAnchor
-      constraintEqualToAnchor:searchField.trailingAnchor];
+      constraintEqualToAnchor:searchField.trailingAnchor
+                     constant:FakeboxHorizontalMargin(self)];
   self.fakeLocationBarHeightConstraint = [self.fakeLocationBar.heightAnchor
       constraintEqualToConstant:content_suggestions::FakeOmniboxHeight()];
   [NSLayoutConstraint activateConstraints:@[
@@ -459,7 +472,7 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
   // that content does not appear beneath it. Since the NTP background might be
   // a gradient, the opacity must be 0 by default.
   self.backgroundColor =
-      [HeaderBackgroundColor() colorWithAlphaComponent:percent];
+      [HeaderBackgroundColor(self) colorWithAlphaComponent:percent];
 
   if (IsIOSLargeFakeboxEnabled()) {
     [self setFakeboxBackgroundWithProgress:percent];
@@ -475,10 +488,7 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
   self.hintLabelTrailingConstraint.constant = -hintLabelScalingExtraOffset;
 
   CGFloat fakeOmniboxHeight = content_suggestions::FakeOmniboxHeight();
-  // Use UIApplication preferredContentSizeCategory as this VC has a weird trait
-  // collection from times to times.
-  CGFloat locationBarHeight = LocationBarHeight(
-      [UIApplication sharedApplication].preferredContentSizeCategory);
+  CGFloat locationBarHeight = content_suggestions::PinnedFakeOmniboxHeight();
 
   if (!IsSplitToolbarMode(self)) {
     // When Voiceover is running, if the header's alpha is set to 0, voiceover
@@ -536,10 +546,13 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
 
   // Calculate the amount to shrink the width and height of background so that
   // it's where the focused adapative toolbar focuses.
+  CGFloat horizontalMargin = FakeboxHorizontalMargin(self);
   self.fakeLocationBarLeadingConstraint.constant = Interpolate(
-      0, safeAreaInsets.left + kExpandedLocationBarHorizontalMargin, percent);
+      horizontalMargin,
+      safeAreaInsets.left + kExpandedLocationBarHorizontalMargin, percent);
   self.fakeLocationBarTrailingConstraint.constant = -Interpolate(
-      0, safeAreaInsets.right + kExpandedLocationBarHorizontalMargin, percent);
+      horizontalMargin,
+      safeAreaInsets.right + kExpandedLocationBarHorizontalMargin, percent);
 
   self.fakeLocationBarTopConstraint.constant =
       ntp_header::kFakeLocationBarTopConstraint * percent;
@@ -652,9 +665,7 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
 // The positive offset value to begin the fake omnibox expansion animation.
 - (CGFloat)offsetToBeginFakeOmniboxExpansion {
   CGFloat offset =
-      self.frame.size.height -
-      ToolbarExpandedHeight(
-          [UIApplication sharedApplication].preferredContentSizeCategory);
+      self.frame.size.height - content_suggestions::FakeToolbarHeight();
 
   // For non-split toolbar, the fake omnibox goes beneath the toolbar.
   if (!IsSplitToolbarMode(self)) {

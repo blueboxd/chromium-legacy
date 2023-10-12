@@ -84,11 +84,13 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
  public:
   void FetchWellKnown(const GURL& provider,
                       FetchWellKnownCallback callback) override {
+    IdpNetworkRequestManager::WellKnown well_known;
     std::set<GURL> well_known_configs;
     well_known_configs.insert(GURL(kProviderUrlFull));
+    well_known.provider_urls = std::move(well_known_configs);
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), kFetchStatusSuccess,
-                                  well_known_configs));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), kFetchStatusSuccess, well_known));
   }
 
   void FetchConfig(const GURL& provider,
@@ -274,7 +276,8 @@ class FederatedAuthRequestImplMultipleFramesTest
     idp_ptrs.push_back(std::move(idp_ptr));
     auto get_params = blink::mojom::IdentityProviderGetParameters::New(
         std::move(idp_ptrs),
-        /*rp_context=*/blink::mojom::RpContext::kSignIn);
+        /*rp_context=*/blink::mojom::RpContext::kSignIn,
+        /*rp_mode=*/blink::mojom::RpMode::kWidget);
     std::vector<blink::mojom::IdentityProviderGetParametersPtr> idp_get_params;
     idp_get_params.push_back(std::move(get_params));
 

@@ -8,18 +8,33 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Flag;
+import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Flags of this type may be used before native is loaded and return the value read
- * from native and cached to SharedPreferences in a previous run.
+ * CachedFlags are Flags that may be used before native is loaded and the FeatureList is
+ * initialized.
  *
- * @see {@link #isEnabled()}
+ * They return a flag value read from native in a previous run, using SharedPreferences as
+ * persistence.
+ *
+ * @see {@link #isEnabled()} for more details about the logic.
+ *
+ * To cache a flag from ChromeFeatureList:
+ * - Create a static CachedFlag object in {@link ChromeFeatureList} "sMyFlag"
+ * - Add it to the list {@link ChromeFeatureList#sFlagsCachedFullBrowser}
+ * - Call {@code ChromeFeatureList.sMyFlag.isEnabled()} to query whether the cached flag is enabled.
+ *   Consider this the source of truth for whether the flag is turned on in the current session.
+ *
+ * Metrics caveat: For cached flags that are queried before native is initialized, when a new
+ * experiment configuration is received the metrics reporting system will record metrics as if the
+ * experiment is enabled despite the experimental behavior not yet taking effect. This will be
+ * remedied on the next process restart.
  */
 public class CachedFlag extends Flag {
     private final boolean mDefaultValue;
@@ -74,7 +89,7 @@ public class CachedFlag extends Flag {
             flag = CachedFlagsSafeMode.getInstance().isEnabled(
                     mFeatureName, preferenceName, mDefaultValue);
             if (flag == null) {
-                SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+                SharedPreferencesManager prefs = ChromeSharedPreferences.getInstance();
                 if (prefs.contains(preferenceName)) {
                     flag = prefs.readBoolean(preferenceName, false);
                 } else {
@@ -123,12 +138,12 @@ public class CachedFlag extends Flag {
     void cacheFeature() {
         boolean isEnabledInNative = ChromeFeatureList.isEnabled(mFeatureName);
 
-        SharedPreferencesManager.getInstance().writeBoolean(
+        ChromeSharedPreferences.getInstance().writeBoolean(
                 getNewSharedPreferenceKey(), isEnabledInNative);
 
         // TODO(crbug.com/1446352): After Oct/2023, stop writing the legacy SharedPreferences key.
         if (mLegacySharedPreferenceKey != null) {
-            SharedPreferencesManager.getInstance().writeBoolean(
+            ChromeSharedPreferences.getInstance().writeBoolean(
                     mLegacySharedPreferenceKey, isEnabledInNative);
         }
     }
@@ -147,7 +162,14 @@ public class CachedFlag extends Flag {
         }
     }
 
-    static void setFeaturesForTesting(Map<String, Boolean> features) {
+    /**
+     * Sets the feature flags to use in JUnit and instrumentation tests.
+     *
+     * @deprecated Do not call this from tests; use @EnableFeatures/@DisableFeatures annotations
+     * instead.
+     */
+    @Deprecated
+    public static void setFeaturesForTesting(Map<String, Boolean> features) {
         for (Map.Entry<String, Boolean> entry : features.entrySet()) {
             CachedFlag possibleCachedFlag = ChromeFeatureList.sAllCachedFlags.get(entry.getKey());
             if (possibleCachedFlag != null) {
@@ -157,7 +179,7 @@ public class CachedFlag extends Flag {
     }
 
     public static void resetDiskForTesting() {
-        SharedPreferencesManager.getInstance().removeKeysWithPrefix(
+        ChromeSharedPreferences.getInstance().removeKeysWithPrefix(
                 ChromePreferenceKeys.FLAGS_CACHED);
 
         // TODO(crbug.com/1446352): After Oct/2023, remove this since all legacy SharedPreferences
@@ -165,7 +187,7 @@ public class CachedFlag extends Flag {
         for (Map.Entry<String, CachedFlag> e : ChromeFeatureList.sAllCachedFlags.entrySet()) {
             String legacyPreferenceKey = e.getValue().mLegacySharedPreferenceKey;
             if (legacyPreferenceKey != null) {
-                SharedPreferencesManager.getInstance().removeKey(legacyPreferenceKey);
+                ChromeSharedPreferences.getInstance().removeKey(legacyPreferenceKey);
             }
         }
     }

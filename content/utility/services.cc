@@ -94,15 +94,10 @@ extern sandbox::TargetServices* g_utility_target_services;
 
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)) && \
     (BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC))
+#include "content/common/features.h"
 #include "media/mojo/services/stable_video_decoder_factory_process_service.h"  // nogncheck
 #endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)) &&
         // (BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC))
-
-#if BUILDFLAG(IS_ANDROID)
-#include "services/network/empty_network_service.h"
-#include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/network_switches.h"
-#endif
 
 #if BUILDFLAG(ENABLE_ACCESSIBILITY_SERVICE)
 #if BUILDFLAG(SUPPORTS_OS_ACCESSIBILITY_SERVICE)
@@ -400,12 +395,15 @@ void RegisterIOThreadServices(mojo::ServiceFactory& services) {
   // The network service runs on the IO thread because it needs a message
   // loop of type IO that can get notified when pipes have data.
   services.Add(RunNetworkService);
-#if BUILDFLAG(IS_ANDROID)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          network::switches::kRegisterEmptyNetworkService)) {
-    network::RegisterEmptyNetworkService(services);
+
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)) && \
+    (BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC))
+  if (base::FeatureList::IsEnabled(
+          features::kRunStableVideoDecoderFactoryProcessServiceOnIOThread)) {
+    services.Add(RunStableVideoDecoderFactoryProcessService);
   }
-#endif
+#endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)) &&
+        // (BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC))
 
   // Add new IO-thread services above this line.
   GetContentClient()->utility()->RegisterIOThreadServices(services);
@@ -449,7 +447,10 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
 
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)) && \
     (BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC))
-  services.Add(RunStableVideoDecoderFactoryProcessService);
+  if (!base::FeatureList::IsEnabled(
+          features::kRunStableVideoDecoderFactoryProcessServiceOnIOThread)) {
+    services.Add(RunStableVideoDecoderFactoryProcessService);
+  }
 #endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)) &&
         // (BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC))
 

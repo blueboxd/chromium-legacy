@@ -36,6 +36,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "bookmarkbar_touch_overflow.icon",
     "bookmarks_chrome_refresh.icon",
     "bookmarks_lists_menu.icon",
+    "bookmarks_manager.icon",
+    "bookmarks_side_panel.icon",
     "browser_logo.icon",
     "browser_tools.icon",
     "browser_tools_chrome_refresh.icon",
@@ -292,9 +294,6 @@ aggregate_vector_icons("chrome_vector_icons") {
     sources += [
       "back_arrow_windows.icon",
       "back_arrow_windows_touch.icon",
-      "inactive_toast_arrow.icon",
-      "inactive_toast_close.icon",
-      "inactive_toast_logo.icon",
       "navigate_stop_windows.icon",
       "navigate_stop_windows_touch.icon",
       "open_in_phone.icon",

@@ -22,10 +22,6 @@ namespace commerce {
 
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kShoppingCollectionIPHViewId);
 
-namespace {
-const int kTitleBottomMargin = 8;
-}  // namespace
-
 ShoppingCollectionIphView::ShoppingCollectionIphView() {
   SetProperty(views::kElementIdentifierKey, kShoppingCollectionIPHViewId);
   std::unique_ptr<views::FlexLayout> layout =
@@ -41,27 +37,18 @@ ShoppingCollectionIphView::ShoppingCollectionIphView() {
       l10n_util::GetStringUTF16(IDS_SHOPPING_COLLECTION_IPH_TITLE);
   auto* title = AddChildView(std::make_unique<views::Label>(
       title_text, views::style::CONTEXT_DIALOG_BODY_TEXT,
-      views::style::STYLE_EMPHASIZED));
+      views::style::STYLE_BODY_4_MEDIUM));
   title->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 
-  title->SetProperty(views::kMarginsKey,
-                     gfx::Insets::TLBR(0, 0, kTitleBottomMargin, 0));
-
-  const bool power_bookmarks_side_panel_enabled =
-      base::FeatureList::IsEnabled(features::kPowerBookmarksSidePanel);
-  const auto label_context = power_bookmarks_side_panel_enabled
-                                 ? views::style::CONTEXT_LABEL
-                                 : views::style::CONTEXT_DIALOG_BODY_TEXT;
+  const auto label_context = views::style::CONTEXT_LABEL;
   std::u16string body_text =
       l10n_util::GetStringUTF16(IDS_SHOPPING_COLLECTION_IPH_BODY);
   views::Label* body_label = AddChildView(std::make_unique<views::Label>(
-      body_text, label_context, views::style::STYLE_SECONDARY));
+      body_text, label_context, views::style::STYLE_BODY_5));
+  body_label->SetEnabledColorId(ui::kColorSysOnSurfaceSubtle);
   body_label->SetMultiLine(true);
   body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-  if (power_bookmarks_side_panel_enabled) {
-    body_label->SetFontList(body_label->font_list().DeriveWithSizeDelta(-1));
-  }
+  body_label->SetFontList(body_label->font_list().DeriveWithSizeDelta(-1));
 }
 
 ShoppingCollectionIphView::~ShoppingCollectionIphView() = default;

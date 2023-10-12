@@ -1242,14 +1242,28 @@ class ToplevelWindowEventHandlerDragTest : public AshTestBase {
   }
 
  protected:
-  // Send gesture event with |type| to the toplevel window event handler.
+  // Send gesture event with `type` to the toplevel window event handler.
+  // This is for gestures that require the `delta` arguments for
+  // `GestureEventDetails` construction.
   void SendGestureEvent(const gfx::Point& position,
                         int scroll_x,
                         int scroll_y,
                         ui::EventType type) {
-    ui::GestureEvent event = ui::GestureEvent(
-        position.x(), position.y(), ui::EF_NONE, base::TimeTicks::Now(),
-        ui::GestureEventDetails(type, scroll_x, scroll_y));
+    SendGestureEventImpl(position,
+                         ui::GestureEventDetails(type, scroll_x, scroll_y));
+  }
+
+  // Send gesture event with `type` to the toplevel window event handler.
+  // This is for gestures that do not require the `delta` arguments for
+  // `GestureEventDetails` construction.
+  void SendGestureEvent(const gfx::Point& position, ui::EventType type) {
+    SendGestureEventImpl(position, ui::GestureEventDetails(type));
+  }
+
+  void SendGestureEventImpl(const gfx::Point& position,
+                            ui::GestureEventDetails gesture_details) {
+    ui::GestureEvent event(position.x(), position.y(), ui::EF_NONE,
+                           base::TimeTicks::Now(), gesture_details);
     ui::Event::DispatcherApi(&event).set_target(dragged_window_.get());
     ui::Event::DispatcherApi(&event).set_phase(ui::EP_PRETARGET);
     Shell::Get()->toplevel_window_event_handler()->OnGestureEvent(&event);
@@ -1291,6 +1305,20 @@ TEST_F(ToplevelWindowEventHandlerDragTest, WindowDestroyedDuringDragging) {
 
   dragged_window_.reset();
   EXPECT_FALSE(event_handler->is_drag_in_progress());
+}
+
+// Test that `gesture_target_` is set immediately with
+// `ET_GESTURE_BEGIN`. The client may call `AttemptToStartDrag()` after
+// `ET_GESTURE_BEGIN` but before `ET_GESTURE_SCROLL_BEGIN` or
+// `ET_GESTURE_PINCH_BEGIN`.
+TEST_F(ToplevelWindowEventHandlerDragTest,
+       GestureTargetIsSetAsSoonAsGestureStarts) {
+  SendGestureEvent(gfx::Point(0, 0), ui::ET_GESTURE_BEGIN);
+  ToplevelWindowEventHandler* event_handler =
+      Shell::Get()->toplevel_window_event_handler();
+
+  EXPECT_TRUE(event_handler->gesture_target());
+  dragged_window_.reset();
 }
 
 class ToplevelWindowEventHandlerPipPinchToResizeTest : public AshTestBase {
@@ -1414,7 +1442,7 @@ TEST_F(ToplevelWindowEventHandlerPipPinchToResizeTest,
     base::RunLoop().RunUntilIdle();
 
     // Verify that PiP window did not exceed the maximum size.
-    EXPECT_EQ(gfx::Rect(8, 166, 600, 400), window->bounds());
+    EXPECT_EQ(gfx::Rect(8, 165, 600, 400), window->bounds());
 
     const WMEvent exit_pip(WM_EVENT_NORMAL);
     WindowState::Get(window.get())->OnWMEvent(&exit_pip);
@@ -1440,6 +1468,84 @@ TEST_F(ToplevelWindowEventHandlerPipPinchToResizeTest,
     const WMEvent exit_pip(WM_EVENT_NORMAL);
     WindowState::Get(window.get())->OnWMEvent(&exit_pip);
   }
+}
+
+TEST_F(ToplevelWindowEventHandlerPipPinchToResizeTest,
+       PinchingBeyondSizeLimitOnPipCausesResistanceEffect) {
+  UpdateDisplay("1500x1000");
+
+  ui::test::EventGenerator* gen = GetEventGenerator();
+
+  // Create a PiP window with maximum_size and minimum_size.
+  std::unique_ptr<aura::Window> window(CreatePipWindow());
+  ASSERT_TRUE(WindowState::Get(window.get())->IsPip());
+
+  // Start pinch gesture that goes beyond the maximum size.
+  gen->PressTouchId(0, gfx::Point(100, 100));
+  gen->PressTouchId(1, gfx::Point(250, 100));
+  gen->MoveTouchId(gfx::Point(200, 200), 0);
+  gen->MoveTouchId(gfx::Point(600, 500), 1);
+
+  // Verify that the window has scaled up with transform.
+  EXPECT_GE(window->transform().To2dScale().x(), 1.10);
+  EXPECT_LE(window->transform().To2dScale().x(), 1.15);
+  EXPECT_GE(window->transform().To2dScale().y(), 1.10);
+  EXPECT_LE(window->transform().To2dScale().y(), 1.15);
+
+  // Release the pinch gesture.
+  gen->ReleaseTouchId(0);
+  gen->ReleaseTouchId(1);
+
+  // Verify that scaling for the window is back to 1.
+  EXPECT_EQ(window->transform().rc(0, 0), 1);
+
+  // Start pinch gesture that becomes smaller than the minimum size.
+  gen->PressTouchId(0, gfx::Point(700, 700));
+  gen->PressTouchId(1, gfx::Point(1100, 700));
+  gen->MoveTouchId(gfx::Point(800, 700), 0);
+  gen->MoveTouchId(gfx::Point(820, 700), 1);
+
+  // Verify that the window has scaled down with transform.
+  EXPECT_LE(window->transform().To2dScale().x(), 0.90);
+  EXPECT_GE(window->transform().To2dScale().x(), 0.85);
+  EXPECT_LE(window->transform().To2dScale().y(), 0.90);
+  EXPECT_GE(window->transform().To2dScale().y(), 0.85);
+
+  // Release the pinch gesture.
+  gen->ReleaseTouchId(0);
+  gen->ReleaseTouchId(1);
+
+  // Verify that scaling for the window is back to 1.
+  EXPECT_EQ(window->transform().rc(0, 0), 1);
+
+  const WMEvent exit_pip(WM_EVENT_NORMAL);
+  WindowState::Get(window.get())->OnWMEvent(&exit_pip);
+}
+
+TEST_F(ToplevelWindowEventHandlerPipPinchToResizeTest,
+       PlacingThirdFingerWithDifferentTargetDuringPipPinchToResizeEndsDrag) {
+  std::unique_ptr<aura::Window> window(CreatePipWindow());
+  auto* toplevel_window_event_handler =
+      Shell::Get()->toplevel_window_event_handler();
+  ui::test::EventGenerator* gen = GetEventGenerator();
+
+  // Start a two-finger pinch with the PiP window as the target.
+  gen->PressTouchId(0, gfx::Point(100, 100));
+  gen->PressTouchId(1, gfx::Point(250, 100));
+  gen->MoveTouchId(gfx::Point(10, 0), 0);
+  gen->MoveTouchId(gfx::Point(10, 0), 1);
+
+  // Place another finger on the screen, one that has a target
+  // other than the PiP window.
+  gen->PressTouchId(2, gfx::Point(600, 600));
+  gen->MoveTouchId(gfx::Point(10, 10), 2);
+  gen->ReleaseTouchId(2);
+
+  // Expect that the drag has ended.
+  EXPECT_FALSE(toplevel_window_event_handler->gesture_target());
+
+  const WMEvent exit_pip(WM_EVENT_NORMAL);
+  WindowState::Get(window.get())->OnWMEvent(&exit_pip);
 }
 // Showing the resize shadows when the mouse is over the window edges is
 // tested in resize_shadow_and_cursor_test.cc

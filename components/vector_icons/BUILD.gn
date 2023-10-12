@@ -240,7 +240,6 @@ aggregate_vector_icons("components_vector_icons") {
 
   if (is_chrome_branded) {
     sources += [
-      "google_chrome/assistant.icon",
       "google_chrome/google_calendar.icon",
       "google_chrome/google_chrome_webstore.icon",
       "google_chrome/google_docs.icon",
@@ -262,6 +261,7 @@ aggregate_vector_icons("components_vector_icons") {
       "google_chrome/google_super_g.icon",
       "google_chrome/page_insights.icon",
       "google_chrome/page_insights_color.icon",
+      "google_chrome/pen_spark.icon",
     ]
   }
 }

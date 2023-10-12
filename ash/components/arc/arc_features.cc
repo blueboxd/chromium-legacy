@@ -263,6 +263,12 @@ BASE_FEATURE(kSwitchToKeyMintOnT,
              "ArcSwitchToKeyMintOnT",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// On boards that blocks KeyMint at launch, enable this feature to force enable
+// KeyMint.
+BASE_FEATURE(kSwitchToKeyMintOnTOverride,
+             "ArcSwitchToKeyMintOnTOverride",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, ARC will pass install priority to Play in sync install
 // requests.
 BASE_FEATURE(kSyncInstallPriority,
@@ -279,6 +285,11 @@ BASE_FEATURE(kTouchscreenEmulation,
 // specific apps.
 BASE_FEATURE(kTrackpadScrollTouchscreenEmulation,
              "ArcTrackpadScrollTouchscreenEmulation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether ARC should be enabled on unaffiliated devices on client side
+BASE_FEATURE(kUnaffiliatedDeviceArcRestriction,
+             "UnaffiliatedDeviceArcRestriction",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls ARC USB Storage UI feature.

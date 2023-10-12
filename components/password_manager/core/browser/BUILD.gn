@@ -27,6 +27,7 @@ source_set("sql_builder") {
     "//base",
     "//sql",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("browser") {
@@ -37,8 +38,6 @@ static_library("browser") {
     "browser_save_password_progress_logger.h",
     "bulk_leak_check_service.cc",
     "bulk_leak_check_service.h",
-    "bulk_leak_check_service_interface.cc",
-    "bulk_leak_check_service_interface.h",
     "credential_cache.cc",
     "credential_cache.h",
     "credential_manager_impl.cc",
@@ -98,10 +97,8 @@ static_library("browser") {
     "old_google_credentials_cleaner.h",
     "origin_credential_store.cc",
     "origin_credential_store.h",
-    "passkey_credential.cc",
-    "passkey_credential.h",
-    "password_access_authenticator.cc",
-    "password_access_authenticator.h",
+    "password_access_auth_timeout_handler.cc",
+    "password_access_auth_timeout_handler.h",
     "password_account_storage_settings_watcher.cc",
     "password_account_storage_settings_watcher.h",
     "password_autofill_manager.cc",
@@ -169,24 +166,15 @@ static_library("browser") {
     "password_store.cc",
     "password_store.h",
     "password_store_backend.h",
-    "password_store_backend_error.cc",
-    "password_store_backend_error.h",
     "password_store_backend_metrics_recorder.cc",
     "password_store_backend_metrics_recorder.h",
     "password_store_built_in_backend.cc",
     "password_store_built_in_backend.h",
-    "password_store_change.cc",
-    "password_store_change.h",
-    "password_store_consumer.cc",
-    "password_store_consumer.h",
     "password_store_factory_util.cc",
     "password_store_factory_util.h",
-    "password_store_interface.h",
     "password_store_signin_notifier.h",
     "password_store_sync.cc",
     "password_store_sync.h",
-    "password_store_util.cc",
-    "password_store_util.h",
     "password_sync_util.cc",
     "password_sync_util.h",
     "password_ui_utils.cc",
@@ -214,8 +202,6 @@ static_library("browser") {
     "ui/bulk_leak_check_service_adapter.cc",
     "ui/bulk_leak_check_service_adapter.h",
     "ui/credential_provider_interface.h",
-    "ui/credential_ui_entry.cc",
-    "ui/credential_ui_entry.h",
     "ui/credential_utils.h",
     "ui/insecure_credentials_manager.cc",
     "ui/insecure_credentials_manager.h",
@@ -235,13 +221,18 @@ static_library("browser") {
   ]
 
   all_dependent_configs = [ ":password_reuse_detection_config" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   public_deps = [
+    ":credential_ui_entry",
+    ":passkey_credential",
     ":password_form",
+    ":password_store_interface",
     ":sql_builder",
     "//base",
     "//components/password_manager/core/browser/affiliation",
     "//components/password_manager/core/browser/features:utils",
+    "//components/password_manager/core/browser/leak_detection:leak_detection_interface_headers",
     "//components/password_manager/core/browser/well_known_change_password",
     "//components/safe_browsing:buildflags",
     "//components/sync",
@@ -269,7 +260,6 @@ static_library("browser") {
     "//components/password_manager/core/browser/generation",
     "//components/password_manager/core/browser/import:csv",
     "//components/password_manager/core/browser/leak_detection:leak_detection",
-    "//components/password_manager/core/browser/leak_detection:leak_detection_interface_headers",
     "//components/password_manager/core/common",
     "//components/password_manager/core/common:features",
     "//components/pref_registry",
@@ -392,6 +382,64 @@ source_set("password_form") {
     "//components/signin/public/base",
     "//url",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+source_set("password_store_interface") {
+  sources = [
+    "interactions_stats.cc",
+    "interactions_stats.h",
+    "password_store_backend_error.cc",
+    "password_store_backend_error.h",
+    "password_store_change.cc",
+    "password_store_change.h",
+    "password_store_consumer.cc",
+    "password_store_consumer.h",
+    "password_store_interface.h",
+    "password_store_util.cc",
+    "password_store_util.h",
+  ]
+  deps = [
+    ":password_form",
+    "//base",
+    "//components/keyed_service/core",
+    "//url",
+  ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+source_set("passkey_credential") {
+  sources = [
+    "passkey_credential.cc",
+    "passkey_credential.h",
+  ]
+  deps = [
+    "//base",
+    "//components/strings:components_strings",
+    "//components/sync/protocol",
+    "//third_party/abseil-cpp:absl",
+    "//ui/base",
+  ]
+  if (!is_ios) {
+    deps += [ "//components/webauthn/core/browser" ]
+  }
+}
+
+source_set("credential_ui_entry") {
+  sources = [
+    "ui/credential_ui_entry.cc",
+    "ui/credential_ui_entry.h",
+  ]
+  deps = [
+    ":passkey_credential",
+    ":password_form",
+    "//components/password_manager/core/browser/affiliation",
+    "//components/password_manager/core/browser/form_parsing",
+    "//components/password_manager/core/browser/import:csv",
+    "//components/password_manager/core/browser/well_known_change_password",
+    "//components/url_formatter",
+    "//third_party/abseil-cpp:absl",
+  ]
 }
 
 if (is_android) {
@@ -428,6 +476,7 @@ static_library("password_hash_data") {
     "//crypto",
     "//google_apis",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("hash_password_manager") {
@@ -442,6 +491,7 @@ static_library("hash_password_manager") {
     "//components/password_manager/core/common",
     "//components/prefs",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("test_support") {
@@ -552,10 +602,9 @@ source_set("unit_tests") {
     "old_google_credentials_cleaner_unittest.cc",
     "origin_credential_store_unittest.cc",
     "passkey_credential_unittest.cc",
-    "password_access_authenticator_unittest.cc",
+    "password_access_auth_timeout_handler_unittest.cc",
     "password_account_storage_settings_watcher_unittest.cc",
     "password_autofill_manager_unittest.cc",
-    "password_bubble_experiment_unittest.cc",
     "password_change_success_tracker_impl_unittest.cc",
     "password_counter_unittest.cc",
     "password_feature_manager_impl_unittest.cc",
@@ -710,7 +759,10 @@ source_set("unit_tests") {
   }
 
   if (is_android) {
-    deps += [ "//components/password_manager/core/browser:unified_password_manager_proto" ]
+    deps += [
+      "//components/password_manager/core/browser:unified_password_manager_proto",
+      "//components/webauthn/android",
+    ]
   }
 }
 

@@ -4,7 +4,7 @@
 <translation id="1014750484722996375">Bureaux</translation>
 <translation id="1018219910092211213">Impossible de résoudre le DNS</translation>
 <translation id="1018656279737460067">Annulé</translation>
-<translation id="1020274983236703756">Composants <ph name="PRODUCT_NAME" /> exclusifs désormais disponibles</translation>
+<translation id="1020274983236703756">De nouveaux composants <ph name="PRODUCT_NAME" /> exclusifs sont disponibles</translation>
 <translation id="1022628058306505708">Flux terrestre</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> threads, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Nouvelle fonctionnalité disponible. Cliquez sur la flèche vers le haut pour en savoir plus.</translation>
@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Vous ne pouvez personnaliser que cinq raccourcis. Supprimez-en un pour en ajouter un autre.</translation>
 <translation id="1164939766849482256">Économiseur d'écran De l'aube au crépuscule</translation>
 <translation id="1167755866710282443">Ouvrez le menu pour personnaliser les touches. Faites-le glisser pour le déplacer.</translation>
+<translation id="1174073918202301297">Raccourci ajouté</translation>
 <translation id="1175697296044146566">Votre <ph name="DEVICE_TYPE" /> est géré par <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Moyenne (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Supprimer</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">Modifier le fond d'écran tous les jours</translation>
 <translation id="1644574205037202324">Historique</translation>
 <translation id="1651925268237749928">Vous avez sélectionné un album partagé. D'autres personnes peuvent ajouter ou modifier des photos. Votre fond d'écran pourrait utiliser des photos qui ne sont pas dans cet album actuellement.</translation>
+<translation id="1661865805917886535">Certaines informations concernant votre compte et votre système pourront être envoyées à Google. Nous utilisons ces informations pour résoudre des problèmes techniques et améliorer nos services, conformément à nos règles de confidentialité (<ph name="PRIVACYPOLICYURL" />) et à nos conditions d'utilisation (<ph name="TERMSOFSERVICEURL" />). Pour demander des modifications de contenu, accédez à l'aide juridique (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Tâche suspendue - À court d'encre</translation>
 <translation id="1664796644829245314">Prévisualiser : <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN intégré</translation>
@@ -131,7 +133,6 @@
 <translation id="1871569928317311284">Annuler le thème sombre</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Annuler le mode sombre</translation>
-<translation id="1881188606372070653">Accédez à la <ph name="BEGIN_LINK1" />page d'aide des demandes légales<ph name="END_LINK1" /> pour demander des modifications de contenu pour des raisons juridiques. Certaines informations concernant votre compte et votre système pourront être envoyées à Google. Nous utiliserons les données fournies pour résoudre des problèmes techniques et pour améliorer nos services, conformément à nos <ph name="BEGIN_LINK2" />Règles de confidentialité<ph name="END_LINK2" /> et à nos <ph name="BEGIN_LINK3" />Conditions d'utilisation<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">faire une avance rapide sur le contenu multimédia</translation>
 <translation id="1887850431809612466">Version du matériel</translation>
 <translation id="1897672602657312171">Un raccourci sans touche de recherche peut entrer en conflit avec le raccourci de certaines applis. Appuyez de nouveau sur ce raccourci pour continuer à l'utiliser ou appuyez sur un nouveau raccourci avec la touche de recherche.</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">UC</translation>
 <translation id="3124039320086536031">L'appareil est connecté.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Supprimer la page ?}=1{Supprimer la page {PAGE_NUMBER} ?}one{Supprimer la page {PAGE_NUMBER} ?}other{Supprimer les pages {PAGE_NUMBER} ?}}</translation>
+<translation id="3146655726035122603">Exclusivité <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Données mobiles</translation>
 <translation id="3156846309055100599">Numérisation de la page <ph name="PAGE_NUMBER" />…</translation>
 <translation id="315738237743207937">Portail captif détecté</translation>
@@ -390,7 +392,7 @@
 <translation id="4095829376260267438">WPA2WPA3</translation>
 <translation id="4110686435123617899">Sélectionner l'album "<ph name="TITLE" />" (<ph name="DESC" />)</translation>
 <translation id="4111761024568264522">Pavé tactile USB</translation>
-<translation id="4113067922640381334">Vous avez désormais accès à de nouveaux <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />fonds d'écran<ph name="END_LINK_WALLPAPER_SUBPAGE" /></translation>
+<translation id="4113067922640381334">Vous pouvez profiter de nouveaux <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />fonds d'écran<ph name="END_LINK_WALLPAPER_SUBPAGE" /></translation>
 <translation id="4117637339509843559">Mode sombre</translation>
 <translation id="4130035430755296270">Continuez à pointer pour plus d'options de mise en page</translation>
 <translation id="4131410914670010031">Noir et blanc</translation>
@@ -687,6 +689,7 @@
 <translation id="6318437367327684789">indéfiniment</translation>
 <translation id="6319207335391420837">Mettre à jour le micrologiciel sur <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Activer l'économiseur d'écran</translation>
+<translation id="6324916366299863871">Modifier le raccourci</translation>
 <translation id="6325525973963619867">Échec</translation>
 <translation id="6331191339300272798">Thème sombre automatique</translation>
 <translation id="6340526405444716530">Personnalisation</translation>
@@ -826,6 +829,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Pavé tactile intégré</translation>
 <translation id="7397270852490618635">Annuler le thème clair</translation>
+<translation id="7401543881546089382">Supprimer le raccourci</translation>
 <translation id="741244894080940828">conversion</translation>
 <translation id="7415801143053185905">Latence HTTP très élevée</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Votre administrateur a configuré <ph name="APP_NAME_1" /> pour qu'elle démarre automatiquement chaque fois que vous vous connectez.}=2{Votre administrateur a configuré <ph name="APP_NAME_1" /> et <ph name="APP_NAME_2" /> pour qu'elles démarrent automatiquement chaque fois que vous vous connectez.}=3{Votre administrateur a configuré <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> et <ph name="APP_NAME_3" /> pour qu'elles démarrent automatiquement chaque fois que vous vous connectez.}one{Votre administrateur a configuré <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> et # autre appli pour qu'elles démarrent automatiquement chaque fois que vous vous connectez.}other{Votre administrateur a configuré <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> et # autres applis pour qu'elles démarrent automatiquement chaque fois que vous vous connectez.}}</translation>
@@ -864,6 +868,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">lumière du clavier</translation>
+<translation id="7730077286107534951">Certaines informations concernant votre compte et votre système pourront être envoyées à Google. Nous utilisons ces informations pour résoudre des problèmes techniques et améliorer nos services, conformément à nos <ph name="BEGIN_LINK2" />Règles de confidentialité<ph name="END_LINK2" /> et à nos <ph name="BEGIN_LINK3" />Conditions d'utilisation<ph name="END_LINK3" />. Pour demander des modifications de contenu, accédez à l'<ph name="BEGIN_LINK1" />aide juridique<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Nombre de cycles</translation>
 <translation id="7747039790905080783">Clé pré-partagée</translation>
 <translation id="7752963721013053477">De l'aube au crépuscule (exclusivité)</translation>
@@ -900,6 +905,7 @@
 <translation id="7978412674231730200">Clé privée</translation>
 <translation id="7994702968232966508">Méthode EAP</translation>
 <translation id="8004582292198964060">Navigateur</translation>
+<translation id="8017679124341497925">Raccourci modifié</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>
 <translation id="8031884997696620457">HSPA+</translation>
 <translation id="80398733265834479">Activer le mode couleur auto</translation>

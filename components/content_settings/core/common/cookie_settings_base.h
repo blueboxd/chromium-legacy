@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/containers/fixed_flat_set.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_setting_override.h"
@@ -118,6 +119,16 @@ class CookieSettingsBase {
     bool is_explicit_setting_ = false;
   };
 
+  // Set of types relevant for CookieSettings.
+  using CookieSettingsTypeSet = base::fixed_flat_set<ContentSettingsType, 6>;
+
+  // ContentSettings listed in this set will be automatically synced to the
+  // CookieSettings instance in the network service.
+  // If some types should only be synced when a certain flag is enabled, please
+  // add your flag to IsContentSettingsTypeEnabled() in
+  // profile_network_context_service.cc.
+  static const CookieSettingsTypeSet& GetContentSettingsTypes();
+
   // Returns true if the cookie associated with |domain| should be deleted
   // on exit.
   // This uses domain matching as described in section 5.1.3 of RFC 6265 to
@@ -215,11 +226,9 @@ class CookieSettingsBase {
   // access.
   static bool IsValidSettingForLegacyAccess(ContentSetting setting);
 
-  bool ShouldConsider3pcdSupportSettings(
-      net::CookieSettingOverrides overrides) const;
+  bool ShouldConsider3pcdSupportSettings() const;
 
-  bool ShouldConsider3pcdMetadataGrantsSettings(
-      net::CookieSettingOverrides overrides) const;
+  bool ShouldConsider3pcdMetadataGrantsSettings() const;
 
   // Returns a set of overrides that includes Storage Access API and Top-Level
   // Storage Access API overrides iff the config booleans indicate that Storage
@@ -267,7 +276,8 @@ class CookieSettingsBase {
   // Returns a content setting for the requested parameters and populates |info|
   // if not null. Implementations might only implement a subset of all
   // ContentSettingsTypes. Currently only COOKIES, TPCD_SUPPORT, STORAGE_ACCESS,
-  // TPCD_METADATA_GRANTS, and TOP_LEVEL_STORAGE_ACCESS are required.
+  // TPCD_METADATA_GRANTS, TPCD_HEURISTICS_GRANTS, and TOP_LEVEL_STORAGE_ACCESS
+  // are required.
   virtual ContentSetting GetContentSetting(
       const GURL& primary_url,
       const GURL& secondary_url,
@@ -284,6 +294,10 @@ class CookieSettingsBase {
 
   // Returns whether the global 3p cookie blocking setting is enabled.
   virtual bool ShouldBlockThirdPartyCookies() const = 0;
+
+  // Returns whether Third Party Cookie Deprecation mitigations should take
+  // effect.
+  virtual bool MitigationsEnabledFor3pcd() const = 0;
 
   // Returns whether |scheme| is always allowed to access 3p cookies.
   virtual bool IsThirdPartyCookiesAllowedScheme(

@@ -160,7 +160,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
   DCHECK_LT(metric, AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
 
   FieldTypeGroupForMetrics group = GROUP_AMBIGUOUS;
-  switch (AutofillType(field_type).group()) {
+  switch (GroupTypeOfServerFieldType(field_type)) {
     case FieldTypeGroup::kNoGroup:
       group = GROUP_AMBIGUOUS;
       break;
@@ -178,7 +178,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
       break;
 
     case FieldTypeGroup::kAddress:
-      switch (AutofillType(field_type).GetStorableType()) {
+      switch (field_type) {
         case ADDRESS_HOME_LINE1:
           group = GROUP_ADDRESS_LINE_1;
           break;
@@ -313,7 +313,6 @@ int GetFieldTypeGroupPredictionQualityMetric(
         case SINGLE_USERNAME:
         case NOT_USERNAME:
         case ONE_TIME_CODE:
-        case UPI_VPA:
         case NAME_LAST_FIRST:
         case NAME_LAST_CONJUNCTION:
         case NAME_LAST_SECOND:
@@ -831,18 +830,6 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(
     base::UmaHistogramEnumeration("Autofill.CreditCardInfoBar" + destination +
                                       ".RequestingExpirationDate",
                                   metric, NUM_INFO_BAR_METRICS);
-  }
-
-  if (options.from_dynamic_change_form) {
-    base::UmaHistogramEnumeration(
-        "Autofill.CreditCardInfoBar" + destination + ".FromDynamicChangeForm",
-        metric, NUM_INFO_BAR_METRICS);
-  }
-
-  if (options.has_non_focusable_field) {
-    base::UmaHistogramEnumeration(
-        "Autofill.CreditCardInfoBar" + destination + ".FromNonFocusableForm",
-        metric, NUM_INFO_BAR_METRICS);
   }
 
   if (options.has_multiple_legal_lines) {

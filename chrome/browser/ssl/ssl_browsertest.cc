@@ -353,8 +353,8 @@ class ChromeContentBrowserClientForMixedContentTest
 
 std::string EncodeQuery(const std::string& query) {
   url::RawCanonOutputT<char> buffer;
-  url::EncodeURIComponent(query.data(), query.size(), &buffer);
-  return std::string(buffer.data(), buffer.length());
+  url::EncodeURIComponent(query, &buffer);
+  return std::string(buffer.view());
 }
 
 // Returns the Sha256 hash of the SPKI of |cert|.
@@ -5863,10 +5863,9 @@ class SSLUITestNoCert : public SSLUITest,
   SSLUITestNoCert() = default;
   ~SSLUITestNoCert() override = default;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kDisableTestCerts);
+  void SetUp() override {
     net::TestRootCerts::GetInstance()->Clear();
-    SSLUITest::SetUpCommandLine(command_line);
+    SSLUITest::SetUp();
   }
 
   // CertificateManagerModel::Observer implementation:

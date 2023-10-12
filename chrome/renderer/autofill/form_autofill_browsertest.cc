@@ -63,7 +63,7 @@ namespace autofill::form_util {
 namespace {
 
 struct AutofillFieldCase {
-  const char* const form_control_type;
+  FormControlType form_control_type;
   const char* const id_attribute;
   const char* const initial_value;
   const char* const autocomplete_attribute;  // The autocomplete attribute of
@@ -320,8 +320,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
       expected.label = labels[i];
       expected.name = names[i];
       expected.value = values[i];
-      expected.form_control_type = StringToFormControlType("text");
-      expected.max_length = WebInputElement::DefaultMaxLength();
+      expected.form_control_type = FormControlType::kInputText;
+      expected.max_length = FormFieldData::kDefaultMaxLength;
       fields.push_back(expected);
     }
     ExpectLabelsAndTypes(html, fields);
@@ -449,17 +449,17 @@ class FormAutofillTest : public ChromeRenderViewTest {
     for (size_t i = 0; i < number_of_field_cases; ++i) {
       SCOPED_TRACE(base::StringPrintf("Verify initial value for field %s",
                                       field_cases[i].id_attribute));
-      expected.form_control_type =
-          StringToFormControlType(field_cases[i].form_control_type);
+      expected.form_control_type = field_cases[i].form_control_type;
       expected.max_length =
-          expected.form_control_type == StringToFormControlType("text")
-              ? WebInputElement::DefaultMaxLength()
+          (expected.form_control_type == FormControlType::kInputText ||
+           expected.form_control_type == FormControlType::kTextArea)
+              ? FormFieldData::kDefaultMaxLength
               : 0;
       expected.id_attribute = ASCIIToUTF16(field_cases[i].id_attribute);
       expected.name = expected.id_attribute;
       expected.value = ASCIIToUTF16(field_cases[i].initial_value);
-      if (expected.form_control_type == StringToFormControlType("text") ||
-          expected.form_control_type == StringToFormControlType("month")) {
+      if (expected.form_control_type == FormControlType::kInputText ||
+          expected.form_control_type == FormControlType::kInputMonth) {
         expected.label = ASCIIToUTF16(field_cases[i].initial_value);
       } else {
         expected.label.clear();
@@ -531,66 +531,57 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   void TestFillForm(const char* html, bool unowned, const char* url_override) {
     static const AutofillFieldCase field_cases[] = {
-      // fields: form_control_type, name, initial_value, autocomplete_attribute,
-      //         should_be_autofilled, autofill_value, expected_value
-
-      // Regular empty fields (firstname & lastname) should be autofilled.
-      {"text",
-        "firstname",
-        "",
-        "",
-        true,
-        "filled firstname",
-        "filled firstname"},
-      {"text", "lastname", "", "", true, "filled lastname", "filled lastname"},
-      // hidden fields should not be extracted to form_data.
-      // Non empty fields should not be autofilled.
-      {"text", "notempty", "Hi", "", false, "filled notempty", "Hi"},
-      {"text",
-        "noautocomplete",
-        "",
-        "off",
-        true,
-        "filled noautocomplete",
-        "filled noautocomplete"},
-      // Disabled fields should not be autofilled.
-      {"text", "notenabled", "", "", false, "filled notenabled", ""},
-      // Readonly fields should not be autofilled.
-      {"text", "readonly", "", "", false, "filled readonly", ""},
-      // Fields with "visibility: hidden" should not be autofilled.
-      {"text", "invisible", "", "", false, "filled invisible", ""},
-      // Fields with "display:none" should not be autofilled.
-      {"text", "displaynone", "", "", false, "filled displaynone", ""},
-      // Regular <input type="month"> should be autofilled.
-      {"month", "month", "", "", true, "2017-11", "2017-11"},
-      // Non-empty <input type="month"> should not be autofilled.
-      {"month", "month-nonempty", "2011-12", "", false, "2017-11", "2011-12"},
-      // Regular select fields should be autofilled.
-      {"select-one", "select", "", "", true, "TX", "TX"},
-      // Select fields should be autofilled even if they already have a
-      // non-empty value.
-      {"select-one", "select-nonempty", "CA", "", true, "TX", "TX"},
-      // Select fields should not be autofilled if no new value is passed from
-      // autofill profile. The existing value should not be overriden.
-      {"select-one", "select-unchanged", "CA", "", false, "CA", "CA"},
-      // Select fields that are not focusable should always be filled.
-      {"select-one", "select-displaynone", "CA", "", true, "CA", "CA"},
-      // Regular textarea elements should be autofilled.
-      {"textarea",
-        "textarea",
-        "",
-        "",
-        true,
-        "some multi-\nline value",
-        "some multi-\nline value"},
-      // Non-empty textarea elements should not be autofilled.
-      {"textarea",
-        "textarea-nonempty",
-        "Go\naway!",
-        "",
-        false,
-        "some multi-\nline value",
-        "Go\naway!"},
+        // Fields: form_control_type, name, initial_value,
+        // autocomplete_attribute, should_be_autofilled, autofill_value,
+        // expected_value.
+        // Regular empty fields (firstname & lastname) should be autofilled.
+        {FormControlType::kInputText, "firstname", "", "", true,
+         "filled firstname", "filled firstname"},
+        {FormControlType::kInputText, "lastname", "", "", true,
+         "filled lastname", "filled lastname"},
+        // hidden fields should not be extracted to form_data.
+        // Non empty fields should not be autofilled.
+        {FormControlType::kInputText, "notempty", "Hi", "", false,
+         "filled notempty", "Hi"},
+        {FormControlType::kInputText, "noautocomplete", "", "off", true,
+         "filled noautocomplete", "filled noautocomplete"},
+        // Disabled fields should not be autofilled.
+        {FormControlType::kInputText, "notenabled", "", "", false,
+         "filled notenabled", ""},
+        // Readonly fields should not be autofilled.
+        {FormControlType::kInputText, "readonly", "", "", false,
+         "filled readonly", ""},
+        // Fields with "visibility: hidden" should not be autofilled.
+        {FormControlType::kInputText, "invisible", "", "", false,
+         "filled invisible", ""},
+        // Fields with "display:none" should not be autofilled.
+        {FormControlType::kInputText, "displaynone", "", "", false,
+         "filled displaynone", ""},
+        // Regular <input type="month"> should be autofilled.
+        {FormControlType::kInputMonth, "month", "", "", true, "2017-11",
+         "2017-11"},
+        // Non-empty <input type="month"> should not be autofilled.
+        {FormControlType::kInputMonth, "month-nonempty", "2011-12", "", false,
+         "2017-11", "2011-12"},
+        // Regular select fields should be autofilled.
+        {FormControlType::kSelectOne, "select", "", "", true, "TX", "TX"},
+        // Select fields should be autofilled even if they already have a
+        // non-empty value.
+        {FormControlType::kSelectOne, "select-nonempty", "CA", "", true, "TX",
+         "TX"},
+        // Select fields should not be autofilled if no new value is passed from
+        // autofill profile. The existing value should not be overriden.
+        {FormControlType::kSelectOne, "select-unchanged", "CA", "", false, "CA",
+         "CA"},
+        // Select fields that are not focusable should always be filled.
+        {FormControlType::kSelectOne, "select-displaynone", "CA", "", true,
+         "CA", "CA"},
+        // Regular textarea elements should be autofilled.
+        {FormControlType::kTextArea, "textarea", "", "", true,
+         "some multi-\nline value", "some multi-\nline value"},
+        // Non-empty textarea elements should not be autofilled.
+        {FormControlType::kTextArea, "textarea-nonempty", "Go\naway!", "",
+         false, "some multi-\nline value", "Go\naway!"},
     };
     TestFormFillFunctions(
         html, unowned, url_override, field_cases, std::size(field_cases),
@@ -604,69 +595,54 @@ class FormAutofillTest : public ChromeRenderViewTest {
   void TestPreviewForm(const char* html, bool unowned,
                        const char* url_override) {
     static const AutofillFieldCase field_cases[] = {
-      // Normal empty fields should be previewed.
-      {"text",
-        "firstname",
-        "",
-        "",
-        true,
-        "suggested firstname",
-        "suggested firstname"},
-      {"text",
-        "lastname",
-        "",
-        "",
-        true,
-        "suggested lastname",
-        "suggested lastname"},
-      // Hidden fields should not be extracted to form_data.
-      // Non empty fields should not be previewed.
-      {"text", "notempty", "Hi", "", false, "suggested notempty", ""},
-      {"text",
-        "noautocomplete",
-        "",
-        "off",
-        true,
-        "filled noautocomplete",
-        "filled noautocomplete"},
-      // Disabled fields should not be previewed.
-      {"text", "notenabled", "", "", false, "suggested notenabled", ""},
-      // Readonly fields should not be previewed.
-      {"text", "readonly", "", "", false, "suggested readonly", ""},
-      // Fields with "visibility: hidden" should not be previewed.
-      {"text", "invisible", "", "", false, "suggested invisible", ""},
-      // Fields with "display:none" should not previewed.
-      {"text", "displaynone", "", "", false, "suggested displaynone", ""},
-      // Regular <input type="month"> should be previewed.
-      {"month", "month", "", "", true, "2017-11", "2017-11"},
-      // Non-empty <input type="month"> should not be previewed.
-      {"month", "month-nonempty", "2011-12", "", false, "2017-11", ""},
-      // Regular select fields should be previewed.
-      {"select-one", "select", "", "", true, "TX", "TX"},
-      // Select fields should be previewed even if they already have a
-      // non-empty value.
-      {"select-one", "select-nonempty", "CA", "", true, "TX", "TX"},
-      // Select fields should not be previewed if no suggestion is passed from
-      // autofill profile.
-      {"select-one", "select-unchanged", "CA", "", false, "", ""},
-      // Select fields that are not focusable should always be filled.
-      {"select-one", "select-displaynone", "CA", "", true, "CA", "CA"},
-      // Normal textarea elements should be previewed.
-      {"textarea",
-        "textarea",
-        "",
-        "",
-        true,
-        "suggested multi-\nline value",
-        "suggested multi-\nline value"},
-      // Nonempty textarea elements should not be previewed.
-      {"textarea",
-        "textarea-nonempty",
-        "Go\naway!",
-        "",
-        false,
-        "suggested multi-\nline value",
-        ""},
+        // Normal empty fields should be previewed.
+        {FormControlType::kInputText, "firstname", "", "", true,
+         "suggested firstname", "suggested firstname"},
+        {FormControlType::kInputText, "lastname", "", "", true,
+         "suggested lastname", "suggested lastname"},
+        // Hidden fields should not be extracted to form_data.
+        // Non empty fields should not be previewed.
+        {FormControlType::kInputText, "notempty", "Hi", "", false,
+         "suggested notempty", ""},
+        {FormControlType::kInputText, "noautocomplete", "", "off", true,
+         "filled noautocomplete", "filled noautocomplete"},
+        // Disabled fields should not be previewed.
+        {FormControlType::kInputText, "notenabled", "", "", false,
+         "suggested notenabled", ""},
+        // Readonly fields should not be previewed.
+        {FormControlType::kInputText, "readonly", "", "", false,
+         "suggested readonly", ""},
+        // Fields with "visibility: hidden" should not be previewed.
+        {FormControlType::kInputText, "invisible", "", "", false,
+         "suggested invisible", ""},
+        // Fields with "display:none" should not previewed.
+        {FormControlType::kInputText, "displaynone", "", "", false,
+         "suggested displaynone", ""},
+        // Regular <input type="month"> should be previewed.
+        {FormControlType::kInputMonth, "month", "", "", true, "2017-11",
+         "2017-11"},
+        // Non-empty <input type="month"> should not be previewed.
+        {FormControlType::kInputMonth, "month-nonempty", "2011-12", "", false,
+         "2017-11", ""},
+        // Regular select fields should be previewed.
+        {FormControlType::kSelectOne, "select", "", "", true, "TX", "TX"},
+        // Select fields should be previewed even if they already have a
+        // non-empty value.
+        {FormControlType::kSelectOne, "select-nonempty", "CA", "", true, "TX",
+         "TX"},
+        // Select fields should not be previewed if no suggestion is passed from
+        // autofill profile.
+        {FormControlType::kSelectOne, "select-unchanged", "CA", "", false, "",
+         ""},
+        // Select fields that are not focusable should always be filled.
+        {FormControlType::kSelectOne, "select-displaynone", "CA", "", true,
+         "CA", "CA"},
+        // Normal textarea elements should be previewed.
+        {FormControlType::kTextArea, "textarea", "", "", true,
+         "suggested multi-\nline value", "suggested multi-\nline value"},
+        // Nonempty textarea elements should not be previewed.
+        {FormControlType::kTextArea, "textarea-nonempty", "Go\naway!", "",
+         false, "suggested multi-\nline value", ""},
     };
     TestFormFillFunctions(
         html, unowned, url_override, field_cases, std::size(field_cases),
@@ -707,8 +683,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     ASSERT_EQ(4U, fields.size());
 
     FormFieldData expected;
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
 
     expected.id_attribute = u"firstname";
     expected.name = expected.id_attribute;
@@ -773,16 +749,16 @@ class FormAutofillTest : public ChromeRenderViewTest {
     expected.name = expected.id_attribute;
     expected.value = u"John";
     expected.label = u"John";
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
     expected.id_attribute = u"lastname";
     expected.name = expected.id_attribute;
     expected.value = u"Smith";
     expected.label = u"Smith";
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
     expected.id_attribute = u"email";
@@ -790,8 +766,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     expected.value = u"john@example.com";
     expected.label = u"john@example.com";
     expected.autocomplete_attribute = "off";
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
     expected.autocomplete_attribute.clear();
 
@@ -799,8 +775,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     expected.name = expected.id_attribute;
     expected.value = u"123 Fantasy Ln.\nApt. 42";
     expected.label.clear();
-    expected.form_control_type = StringToFormControlType("textarea");
-    expected.max_length = 0;
+    expected.form_control_type = FormControlType::kTextArea;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[3]);
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, field);
   }
@@ -832,7 +808,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     ASSERT_EQ(3U, fields.size());
 
     FormFieldData expected;
-    expected.form_control_type = StringToFormControlType("text");
+    expected.form_control_type = FormControlType::kInputText;
 
     expected.id_attribute = u"firstname";
     expected.name = expected.id_attribute;
@@ -875,7 +851,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     const std::vector<FormFieldData>& fields2 = form2.fields;
     ASSERT_EQ(3U, fields2.size());
 
-    expected.form_control_type = StringToFormControlType("text");
+    expected.form_control_type = FormControlType::kInputText;
 
     expected.id_attribute = u"firstname";
     expected.name = expected.id_attribute;
@@ -926,8 +902,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     ASSERT_EQ(3U, fields.size());
 
     FormFieldData expected;
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
 
     expected.id_attribute = u"firstname";
     expected.name = expected.id_attribute;
@@ -1004,8 +980,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     ASSERT_EQ(3U, fields.size());
 
     FormFieldData expected;
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
 
     expected.id_attribute = u"firstname";
     expected.name = expected.id_attribute;
@@ -1039,8 +1015,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     const std::vector<FormFieldData>& fields2 = form2.fields;
     ASSERT_EQ(3U, fields2.size());
 
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
 
     expected.id_attribute = u"firstname";
     expected.name = expected.id_attribute;
@@ -1087,8 +1063,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     ASSERT_EQ(unowned_offset + 3, fields.size());
 
     FormFieldData expected;
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
 
     expected.id_attribute = u"apple";
     expected.name = expected.id_attribute;
@@ -1183,8 +1159,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     ASSERT_EQ(3U, fields.size());
 
     FormFieldData expected;
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
 
     expected.id_attribute = u"firstname";
     expected.name = expected.id_attribute;
@@ -1393,8 +1369,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     ASSERT_EQ(6U, fields2.size());
 
     FormFieldData expected;
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
 
     expected.id_attribute = u"firstname";
     expected.name = expected.id_attribute;
@@ -1462,7 +1438,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     expected.is_autofilled = true;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[4]);
 
-    expected.form_control_type = StringToFormControlType("select-one");
+    expected.form_control_type = FormControlType::kSelectOne;
     expected.id_attribute = u"state";
     expected.name_attribute = u"state";
     expected.name = expected.name_attribute;
@@ -1551,8 +1527,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     ASSERT_EQ(3U, fields2.size());
 
     FormFieldData expected;
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
 
     expected.id_attribute = u"firstname";
     expected.name = expected.id_attribute;
@@ -1667,8 +1643,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     ASSERT_EQ(3U, fields2.size());
 
     FormFieldData expected;
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
 
     expected.id_attribute = u"cc";
     expected.name = expected.id_attribute;
@@ -1786,8 +1762,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     ASSERT_EQ(3U, fields2.size());
 
     FormFieldData expected;
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
 
     expected.id_attribute = u"cc";
     expected.name = expected.id_attribute;
@@ -1877,8 +1853,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     ASSERT_EQ(9U, fields.size());
 
     FormFieldData expected;
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
 
     expected.id_attribute = u"firstname";
     expected.name = expected.id_attribute;
@@ -1904,7 +1880,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     expected.label.clear();
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[3]);
 
-    expected.form_control_type = StringToFormControlType("month");
+    expected.form_control_type = FormControlType::kInputMonth;
     expected.max_length = 0;
     expected.id_attribute = u"month";
     expected.name = expected.id_attribute;
@@ -1918,8 +1894,9 @@ class FormAutofillTest : public ChromeRenderViewTest {
     expected.label = u"2012-11";
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[5]);
 
-    expected.form_control_type = StringToFormControlType("textarea");
+    expected.form_control_type = FormControlType::kTextArea;
     expected.id_attribute = u"textarea";
+    expected.max_length = FormFieldData::kDefaultMaxLength;
     expected.name = expected.id_attribute;
     expected.value.clear();
     expected.label.clear();
@@ -2012,8 +1989,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     ASSERT_EQ(6U, fields.size());
 
     FormFieldData expected;
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
 
     // shipping section
     expected.is_autofilled = false;
@@ -2098,22 +2075,22 @@ class FormAutofillTest : public ChromeRenderViewTest {
     expected.id_attribute = u"firstname";
     expected.name = expected.id_attribute;
     expected.value.clear();
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
     expected.id_attribute = u"lastname";
     expected.name = expected.id_attribute;
     expected.value.clear();
-    expected.form_control_type = StringToFormControlType("text");
-    expected.max_length = WebInputElement::DefaultMaxLength();
+    expected.form_control_type = FormControlType::kInputText;
+    expected.max_length = FormFieldData::kDefaultMaxLength;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
     expected.id_attribute = u"state";
     expected.name_attribute = u"state";
     expected.name = expected.name_attribute;
     expected.value = u"?";
-    expected.form_control_type = StringToFormControlType("select-one");
+    expected.form_control_type = FormControlType::kSelectOne;
     expected.max_length = 0;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
 
@@ -2359,8 +2336,9 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormField) {
                                    EXTRACT_NONE, &result1);
 
   FormFieldData expected;
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
+
   expected.id_attribute = u"element";
   expected.name = expected.id_attribute;
 
@@ -2398,9 +2376,9 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompleteOff) {
   expected.id_attribute = u"element";
   expected.name = expected.id_attribute;
   expected.value = u"value";
-  expected.form_control_type = StringToFormControlType("text");
+  expected.form_control_type = FormControlType::kInputText;
   expected.autocomplete_attribute = "off";
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 }
 
@@ -2421,7 +2399,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldMaxLength) {
   expected.id_attribute = u"element";
   expected.name = expected.id_attribute;
   expected.value = u"value";
-  expected.form_control_type = StringToFormControlType("text");
+  expected.form_control_type = FormControlType::kInputText;
   expected.max_length = 5;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 }
@@ -2443,8 +2421,8 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutofilled) {
   expected.id_attribute = u"element";
   expected.name = expected.id_attribute;
   expected.value = u"value";
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   expected.is_autofilled = true;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 }
@@ -2468,7 +2446,8 @@ TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
   expected.id_attribute = u"checkbox";
   expected.name = expected.id_attribute;
   expected.value = u"mail";
-  expected.form_control_type = StringToFormControlType("checkbox");
+  expected.form_control_type = FormControlType::kInputCheckbox;
+  expected.max_length = 0;
   expected.is_autofilled = true;
   expected.check_status = FormFieldData::CheckStatus::kChecked;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
@@ -2480,7 +2459,8 @@ TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
   expected.id_attribute = u"radio";
   expected.name = expected.id_attribute;
   expected.value = u"male";
-  expected.form_control_type = StringToFormControlType("radio");
+  expected.form_control_type = FormControlType::kInputRadio;
+  expected.max_length = 0;
   expected.is_autofilled = true;
   expected.check_status = FormFieldData::CheckStatus::kCheckableButUnchecked;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
@@ -2505,7 +2485,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldSelect) {
   expected.id_attribute = u"element";
   expected.name = expected.id_attribute;
   expected.max_length = 0;
-  expected.form_control_type = StringToFormControlType("select-one");
+  expected.form_control_type = FormControlType::kSelectOne;
 
   expected.value = u"CA";
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result1);
@@ -2552,7 +2532,7 @@ TEST_F(FormAutofillTest,
   expected.id_attribute = u"element";
   expected.name = expected.id_attribute;
   expected.max_length = 0;
-  expected.form_control_type = StringToFormControlType("select-one");
+  expected.form_control_type = FormControlType::kSelectOne;
   // We check that the extra attributes have been copied to |result1|.
   expected.is_autofilled = true;
   expected.autocomplete_attribute = "off";
@@ -2645,8 +2625,8 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldTextArea) {
   FormFieldData expected;
   expected.id_attribute = u"element";
   expected.name = expected.id_attribute;
-  expected.max_length = 0;
-  expected.form_control_type = StringToFormControlType("textarea");
+  expected.max_length = FormFieldData::kDefaultMaxLength;
+  expected.form_control_type = FormControlType::kTextArea;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result_sans_value);
 
   FormFieldData result_with_value;
@@ -2674,7 +2654,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldMonthInput) {
   expected.id_attribute = u"element";
   expected.name = expected.id_attribute;
   expected.max_length = 0;
-  expected.form_control_type = StringToFormControlType("month");
+  expected.form_control_type = FormControlType::kInputMonth;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result_sans_value);
 
   FormFieldData result_with_value;
@@ -2699,10 +2679,10 @@ TEST_F(FormAutofillTest, WebFormControlElementToPasswordFormField) {
                                    EXTRACT_VALUE, &result);
 
   FormFieldData expected;
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   expected.id_attribute = u"password";
   expected.name = expected.id_attribute;
-  expected.form_control_type = StringToFormControlType("password");
+  expected.form_control_type = FormControlType::kInputPassword;
   expected.value = u"secret";
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 }
@@ -2736,35 +2716,35 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompletetype) {
 
   struct TestCase {
     const std::string element_id;
-    const std::string form_control_type;
+    FormControlType form_control_type;
     const std::string autocomplete_attribute;
   };
   TestCase test_cases[] = {
-    // An absent attribute is equivalent to an empty one.
-    { "absent", "text", "" },
-    // Make sure there are no issues parsing an empty attribute.
-    { "empty", "text", "" },
-    // Make sure there are no issues parsing an attribute value that isn't a
-    // type hint.
-    { "off", "text", "off" },
-    // Common case: exactly one type specified.
-    { "regular", "text", "email" },
-    // Verify that we correctly extract multiple tokens as well.
-    { "multi-valued", "text", "billing email" },
-    // Verify that <input type="month"> fields are supported.
-    { "month", "month", "cc-exp" },
-    // We previously extracted this data from the experimental
-    // 'x-autocompletetype' attribute.  Now that the field type hints are part
-    // of the spec under the autocomplete attribute, we no longer support the
-    // experimental version.
-    { "experimental", "text", "" },
-    // <select> elements should behave no differently from text fields here.
-    { "select", "select-one", "state" },
-    // <textarea> elements should also behave no differently from text fields.
-    { "textarea", "textarea", "street-address" },
-    // Very long attribute values should be replaced by a default string, to
-    // prevent malicious websites from DOSing the browser process.
-    { "malicious", "text", "x-max-data-length-exceeded" },
+      // An absent attribute is equivalent to an empty one.
+      {"absent", FormControlType::kInputText, ""},
+      // Make sure there are no issues parsing an empty attribute.
+      {"empty", FormControlType::kInputText, ""},
+      // Make sure there are no issues parsing an attribute value that isn't a
+      // type hint.
+      {"off", FormControlType::kInputText, "off"},
+      // Common case: exactly one type specified.
+      {"regular", FormControlType::kInputText, "email"},
+      // Verify that we correctly extract multiple tokens as well.
+      {"multi-valued", FormControlType::kInputText, "billing email"},
+      // Verify that <input type="month"> fields are supported.
+      {"month", FormControlType::kInputMonth, "cc-exp"},
+      // We previously extracted this data from the experimental
+      // 'x-autocompletetype' attribute.  Now that the field type hints are part
+      // of the spec under the autocomplete attribute, we no longer support the
+      // experimental version.
+      {"experimental", FormControlType::kInputText, ""},
+      // <select> elements should behave no differently from text fields here.
+      {"select", FormControlType::kSelectOne, "state"},
+      // <textarea> elements should also behave no differently from text fields.
+      {"textarea", FormControlType::kTextArea, "street-address"},
+      // Very long attribute values should be replaced by a default string, to
+      // prevent malicious websites from DOSing the browser process.
+      {"malicious", FormControlType::kInputText, "x-max-data-length-exceeded"},
   };
 
   WebDocument document = frame->GetDocument();
@@ -2778,11 +2758,12 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompletetype) {
     FormFieldData expected;
     expected.id_attribute = ASCIIToUTF16(test_case.element_id);
     expected.name = expected.id_attribute;
-    expected.form_control_type =
-        autofill::StringToFormControlType(test_case.form_control_type);
-    expected.max_length = test_case.form_control_type == "text"
-                              ? WebInputElement::DefaultMaxLength()
-                              : 0;
+    expected.form_control_type = test_case.form_control_type;
+    expected.max_length =
+        (test_case.form_control_type == FormControlType::kInputText ||
+         test_case.form_control_type == FormControlType::kTextArea)
+            ? FormFieldData::kDefaultMaxLength
+            : 0;
     expected.autocomplete_attribute = test_case.autocomplete_attribute;
     expected.parsed_autocomplete =
         ParseAutocompleteAttribute(test_case.autocomplete_attribute);
@@ -2986,31 +2967,31 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   expected.name = expected.id_attribute;
   expected.value = u"John";
   expected.label = u"First name:";
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
   expected.id_attribute = u"lastname";
   expected.name = expected.id_attribute;
   expected.value = u"Smith";
   expected.label = u"Last name:";
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
   expected.id_attribute = u"street-address";
   expected.name = expected.id_attribute;
   expected.value = u"123 Fantasy Ln.\nApt. 42";
   expected.label = u"Address:";
-  expected.form_control_type = StringToFormControlType("textarea");
-  expected.max_length = 0;
+  expected.form_control_type = FormControlType::kTextArea;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
 
   expected.id_attribute = u"state";
   expected.name = expected.id_attribute;
   expected.value = u"CA";
   expected.label = u"State:";
-  expected.form_control_type = StringToFormControlType("select-one");
+  expected.form_control_type = FormControlType::kSelectOne;
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[3]);
 
@@ -3018,15 +2999,15 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   expected.name = expected.id_attribute;
   expected.value = u"secret";
   expected.label = u"Password:";
-  expected.form_control_type = StringToFormControlType("password");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputPassword;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[4]);
 
   expected.id_attribute = u"month";
   expected.name = expected.id_attribute;
   expected.value = u"2011-12";
   expected.label = u"Card expiration:";
-  expected.form_control_type = StringToFormControlType("month");
+  expected.form_control_type = FormControlType::kInputMonth;
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[5]);
 
@@ -3283,8 +3264,8 @@ TEST_F(FormAutofillTest, ExtractMultipleForms) {
   ASSERT_EQ(3U, fields.size());
 
   FormFieldData expected;
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
 
   expected.id_attribute = u"firstname";
   expected.name = expected.id_attribute;
@@ -3368,8 +3349,8 @@ TEST_F(FormAutofillTest, OnlyExtractNewForms) {
   ASSERT_EQ(4U, fields.size());
 
   FormFieldData expected;
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
 
   expected.id_attribute = u"firstname";
   expected.name = expected.id_attribute;
@@ -4027,8 +4008,8 @@ TEST_F(FormAutofillTest, LabelsInferredFromTableWithSpecialElements) {
   expected.label = u"* First Name";
   expected.name = expected.id_attribute;
   expected.value = u"John";
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   fields.push_back(expected);
 
   expected.id_attribute = u"middlename";
@@ -4036,8 +4017,8 @@ TEST_F(FormAutofillTest, LabelsInferredFromTableWithSpecialElements) {
   expected.label = u"* Middle Name";
   expected.name = expected.id_attribute;
   expected.value = u"Joe";
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   fields.push_back(expected);
 
   expected.id_attribute = u"lastname";
@@ -4045,8 +4026,8 @@ TEST_F(FormAutofillTest, LabelsInferredFromTableWithSpecialElements) {
   expected.label = u"* Last Name";
   expected.name = expected.id_attribute;
   expected.value = u"Smith";
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   fields.push_back(expected);
 
   expected.id_attribute = u"country";
@@ -4054,7 +4035,7 @@ TEST_F(FormAutofillTest, LabelsInferredFromTableWithSpecialElements) {
   expected.label = u"* Country";
   expected.name = expected.id_attribute;
   expected.value = u"US";
-  expected.form_control_type = StringToFormControlType("select-one");
+  expected.form_control_type = FormControlType::kSelectOne;
   expected.max_length = 0;
   fields.push_back(expected);
 
@@ -4063,8 +4044,8 @@ TEST_F(FormAutofillTest, LabelsInferredFromTableWithSpecialElements) {
   expected.label = u"* Email";
   expected.name = expected.id_attribute;
   expected.value = u"john@example.com";
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   fields.push_back(expected);
 
   ExpectLabelsAndTypes(
@@ -4819,8 +4800,8 @@ TEST_F(FormAutofillTest, ThreePartPhone) {
   ASSERT_EQ(4U, fields.size());
 
   FormFieldData expected;
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
 
   expected.label = u"Phone:";
   expected.name_attribute = u"dayphone1";
@@ -4875,7 +4856,7 @@ TEST_F(FormAutofillTest, MaxLengthFields) {
   ASSERT_EQ(6U, fields.size());
 
   FormFieldData expected;
-  expected.form_control_type = StringToFormControlType("text");
+  expected.form_control_type = FormControlType::kInputText;
 
   expected.name_attribute = u"dayphone1";
   expected.label = u"Phone:";
@@ -4905,14 +4886,14 @@ TEST_F(FormAutofillTest, MaxLengthFields) {
   expected.name_attribute = u"default1";
   expected.label.clear();
   expected.name = expected.name_attribute;
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[4]);
 
   // When invalid |size|, default is returned.
   expected.name_attribute = u"invalid1";
   expected.label.clear();
   expected.name = expected.name_attribute;
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[5]);
 }
 
@@ -5424,23 +5405,23 @@ TEST_F(FormAutofillTest, SelectOneAsText) {
   expected.name = expected.id_attribute;
   expected.value = u"John";
   expected.label = u"John";
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
   expected.id_attribute = u"lastname";
   expected.name = expected.id_attribute;
   expected.value = u"Smith";
   expected.label = u"Smith";
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
   expected.id_attribute = u"country";
   expected.name = expected.id_attribute;
   expected.value = u"Albania";
   expected.label.clear();
-  expected.form_control_type = StringToFormControlType("select-one");
+  expected.form_control_type = FormControlType::kSelectOne;
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
 
@@ -5457,23 +5438,23 @@ TEST_F(FormAutofillTest, SelectOneAsText) {
   expected.name = expected.id_attribute;
   expected.value = u"John";
   expected.label = u"John";
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
   expected.id_attribute = u"lastname";
   expected.name = expected.id_attribute;
   expected.value = u"Smith";
   expected.label = u"Smith";
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
   expected.id_attribute = u"country";
   expected.name = expected.id_attribute;
   expected.value = u"AL";
   expected.label.clear();
-  expected.form_control_type = StringToFormControlType("select-one");
+  expected.form_control_type = FormControlType::kSelectOne;
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
 }
@@ -5515,8 +5496,8 @@ TEST_F(FormAutofillTest, UnownedFormElementsToFormDataWithoutForm) {
   ASSERT_EQ(3U, fields.size());
 
   FormFieldData expected;
-  expected.form_control_type = StringToFormControlType("text");
-  expected.max_length = WebInputElement::DefaultMaxLength();
+  expected.form_control_type = FormControlType::kInputText;
+  expected.max_length = FormFieldData::kDefaultMaxLength;
 
   expected.id_attribute = u"firstname";
   expected.name = expected.id_attribute;

@@ -14,7 +14,7 @@ import '../settings_shared.css.js';
 import './search_engine.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {isAssistantAllowed, isRevampWayfindingEnabled, shouldShowQuickAnswersSettings} from '../common/load_time_booleans.js';
@@ -68,19 +68,28 @@ export class SearchAndAssistantSettingsCardElement extends
         type: Object,
         value: () => new Set<Setting>([Setting.kPreferredSearchEngine]),
       },
+
+      isRevampWayfindingEnabled_: {
+        type: Boolean,
+        value() {
+          return isRevampWayfindingEnabled();
+        },
+        readOnly: true,
+      },
     };
   }
 
   prefs: PrefsState;
   private isAssistantAllowed_: boolean;
+  private isRevampWayfindingEnabled_: boolean;
   private shouldShowQuickAnswersSettings_: boolean;
 
   constructor() {
     super();
 
     /** RouteOriginMixin overrde */
-    this.route = isRevampWayfindingEnabled() ? routes.SYSTEM_PREFERENCES :
-                                               routes.OS_SEARCH;
+    this.route = this.isRevampWayfindingEnabled_ ? routes.SYSTEM_PREFERENCES :
+                                                   routes.OS_SEARCH;
   }
 
   override ready(): void {

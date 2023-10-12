@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Þú getur aðeins sérsniðið 5 flýtilykla. Eyddu flýtilykli til að bæta nýjum við.</translation>
 <translation id="1164939766849482256">Skjávari, frá dögun til rökkurs</translation>
 <translation id="1167755866710282443">Opnaðu valmyndina til að sérsníða lykla. Dragðu valmyndina til að færa hana.</translation>
+<translation id="1174073918202301297">Flýtileið bætt við</translation>
 <translation id="1175697296044146566"><ph name="DEVICE_TYPE" /> er í umsjón <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Í meðallagi (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Fjarlægja</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">Skipta daglega um veggfóðursmynd</translation>
 <translation id="1644574205037202324">Ferill</translation>
 <translation id="1651925268237749928">Þú valdir sameiginlegt albúm. Aðrir notendur geta bætt við eða breytt myndum. Veggfóðrið þitt kann að nota myndir sem eru ekki í þessu albúmi.</translation>
+<translation id="1661865805917886535">Sumar reiknings- og kerfisupplýsingar gætu verið sendar til Google. Við notum þessar upplýsingar til að bregðast við tæknilegum vandamálum og bæta þjónustur okkar, í samræmi við persónuverndarstefnu okkar (<ph name="PRIVACYPOLICYURL" />) og þjónustuskilmála (<ph name="TERMSOFSERVICEURL" />). Til að óska eftir efnislegum breytingum skaltu fara í lagalega aðstoð (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Stöðvað – blekið er búið</translation>
 <translation id="1664796644829245314">Forskoða <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Innbyggt VPN</translation>
@@ -131,7 +133,6 @@
 <translation id="1871569928317311284">Slökkva á dökku þema</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Slökkva á dökku þema</translation>
-<translation id="1881188606372070653">Farðu á <ph name="BEGIN_LINK1" />síðuna lagaleg hjálp<ph name="END_LINK1" /> til að fara fram á breytingar á efni af lagalegum ástæðum. Sumar reiknings- og kerfisupplýsingar gætu verið sendar til Google. Við notum upplýsingarnar sem þú veitir okkur til að fást við tæknilega erfiðleika og bæta þjónustu okkar, í samræmi við <ph name="BEGIN_LINK2" />persónuverndarstefnu<ph name="END_LINK2" /> og <ph name="BEGIN_LINK3" />þjónustuskilmála<ph name="END_LINK3" /> okkar.</translation>
 <translation id="1885577615937958993">spóla áfram í efni</translation>
 <translation id="1887850431809612466">Útgáfa vélbúnaðar</translation>
 <translation id="1897672602657312171">Flýtileið án flýtilykils gæti stangast á við flýtileið einhvers forrits. Ýttu aftur á þessa flýtileið til að halda áfram að nota hana eða ýttu á nýja flýtileið með leitarlyklinum.</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">Örgjörvi</translation>
 <translation id="3124039320086536031">Tæki er tengt.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Fjarlægja síðu?}=1{Fjarlægja síðu {PAGE_NUMBER}?}one{Fjarlægja síðu {PAGE_NUMBER}?}other{Fjarlægja síðu {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Aðeins í <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Farsímagögn</translation>
 <translation id="3156846309055100599">Skannar síðu <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">Innskráningarsíða greind</translation>
@@ -687,6 +689,7 @@
 <translation id="6318437367327684789">endalaust</translation>
 <translation id="6319207335391420837">Uppfæra fastbúnað í <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Kveikja á skjávara</translation>
+<translation id="6324916366299863871">Breyta flýtileið</translation>
 <translation id="6325525973963619867">Mistókst</translation>
 <translation id="6331191339300272798">Sjálfvirkt dökkt þema</translation>
 <translation id="6340526405444716530">Sérstillingar</translation>
@@ -826,6 +829,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Innbyggður snertiflötur</translation>
 <translation id="7397270852490618635">Slökkva á ljósu þema</translation>
+<translation id="7401543881546089382">Eyða flýtileið</translation>
 <translation id="741244894080940828">umreikningur</translation>
 <translation id="7415801143053185905">Mjög langur HTTP-biðtími</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Kerfisstjórinn hefur stillt <ph name="APP_NAME_1" /> á að ræsa sig sjálfkrafa í hvert skipti sem þú skráir þig inn.}=2{Kerfisstjórinn hefur stillt <ph name="APP_NAME_1" /> og <ph name="APP_NAME_2" /> á að ræsa sig sjálfkrafa í hvert skipti sem þú skráir þig inn.}=3{Kerfisstjórinn hefur stillt <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> og <ph name="APP_NAME_3" /> á að ræsa sig sjálfkrafa í hvert skipti sem þú skráir þig inn.}one{Kerfisstjórinn hefur stillt <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> og # forrit í viðbót á að ræsa sig sjálfkrafa í hvert skipti sem þú skráir þig inn.}other{Kerfisstjórinn hefur stillt <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> og # forrit í viðbót á að ræsa sig sjálfkrafa í hvert skipti sem þú skráir þig inn.}}</translation>
@@ -864,6 +868,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">ljós lyklaborðs</translation>
+<translation id="7730077286107534951">Sumar reiknings- og kerfisupplýsingar gætu verið sendar til Google. Við notum þessar upplýsingar til að leysa tæknileg vandamál og bæta þjónustur okkar í samræmi við <ph name="BEGIN_LINK2" />persónuverndarstefnu<ph name="END_LINK2" /> okkar og <ph name="BEGIN_LINK3" />þjónustuskilmála<ph name="END_LINK3" />. Farðu í <ph name="BEGIN_LINK1" />lagalega aðstoð<ph name="END_LINK1" /> til að óska eftir efnislegum breytingum.</translation>
 <translation id="773153675489693198">Fjöldi endurhleðslna</translation>
 <translation id="7747039790905080783">Samnotalykill</translation>
 <translation id="7752963721013053477">Frá dögun til rökkurs - sérstakt</translation>
@@ -900,6 +905,7 @@
 <translation id="7978412674231730200">Einkalykill</translation>
 <translation id="7994702968232966508">EAP-aðferð</translation>
 <translation id="8004582292198964060">Vafri</translation>
+<translation id="8017679124341497925">Flýtileið breytt</translation>
 <translation id="802154636333426148">Niðurhal mistókst</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Kveikja á sjálfvirkri litastillingu</translation>

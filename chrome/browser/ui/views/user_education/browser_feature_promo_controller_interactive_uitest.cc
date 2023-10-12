@@ -109,26 +109,27 @@ class BrowserFeaturePromoControllerUiTest : public InteractiveBrowserTest {
     registry()->RegisterFeature(std::move(notice));
   }
 
-  // Verifies that `CanShowPromo()` returns `can_show`.
-  auto QueryIPH(const base::Feature& iph_feature, bool can_show) {
+  // Verifies that `CanShowPromo()` returns `expected_result`.
+  auto QueryIPH(const base::Feature& iph_feature,
+                user_education::FeaturePromoResult expected_result) {
+    std::ostringstream oss;
+    oss << "QueryIPH(" << iph_feature.name << ", " << expected_result << ")";
     return CheckResult(
         [this, &iph_feature]() {
           return promo_controller_->CanShowPromo(iph_feature);
         },
-        can_show,
-        base::StringPrintf("QueryIPH(%s, %s)", iph_feature.name,
-                           (can_show ? "true" : "false")));
+        expected_result, oss.str());
   }
 
   // Tries to show tab groups IPH by meeting the trigger conditions. If
   // |should_show| is true it checks that it was shown. If false, it
   // checks that it was not shown.
   auto AttemptIPH(const base::Feature& iph_feature,
-                  bool should_show,
+                  user_education::FeaturePromoResult expected_result,
                   base::OnceClosure on_close = base::DoNothing()) {
-    return Check([this, &iph_feature, should_show,
+    return Check([this, &iph_feature, expected_result,
                   callback = std::move(on_close)]() mutable {
-      if (should_show) {
+      if (expected_result) {
         EXPECT_CALL(*mock_tracker_, ShouldTriggerHelpUI(Ref(iph_feature)))
             .WillOnce(Return(true));
       } else {
@@ -136,18 +137,20 @@ class BrowserFeaturePromoControllerUiTest : public InteractiveBrowserTest {
             .Times(0);
       }
 
-      if (should_show !=
-          promo_controller_->MaybeShowPromo(iph_feature, std::move(callback))) {
+      user_education::FeaturePromoParams params(iph_feature);
+      params.close_callback = std::move(callback);
+      if (expected_result !=
+          promo_controller_->MaybeShowPromo(std::move(params))) {
         LOG(ERROR) << "MaybeShowPromo() didn't return expected result.";
         return false;
       }
-      if (should_show != promo_controller_->IsPromoActive(iph_feature)) {
+      if (expected_result != promo_controller_->IsPromoActive(iph_feature)) {
         LOG(ERROR) << "IsPromoActive() didn't return expected result.";
         return false;
       }
 
       // If shown, Tracker::Dismissed should be called eventually.
-      if (should_show) {
+      if (expected_result) {
         EXPECT_CALL(*mock_tracker_, Dismissed(Ref(iph_feature)));
       }
       return true;
@@ -338,7 +341,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFeaturePromoControllerUiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserFeaturePromoControllerUiTest, LogsAbortMetrics) {
-  RunTestSequence(AttemptIPH(kToastTestFeature, true),
+  RunTestSequence(AttemptIPH(kToastTestFeature,
+                             user_education::FeaturePromoResult::Success()),
                   AbortIPH(kToastTestFeature),
                   CheckMetrics(kToastTestFeature,
                                /*snooze_count*/ 0,
@@ -350,7 +354,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFeaturePromoControllerUiTest, LogsAbortMetrics) {
 
 IN_PROC_BROWSER_TEST_F(BrowserFeaturePromoControllerUiTest,
                        LogsEngagedMetrics) {
-  RunTestSequence(AttemptIPH(kToastTestFeature, true),
+  RunTestSequence(AttemptIPH(kToastTestFeature,
+                             user_education::FeaturePromoResult::Success()),
                   UseFeature(kToastTestFeature),
                   CheckMetrics(kToastTestFeature,
                                /*snooze_count*/ 0,
@@ -362,7 +367,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFeaturePromoControllerUiTest,
 
 IN_PROC_BROWSER_TEST_F(BrowserFeaturePromoControllerUiTest,
                        LogsCustomActionMetrics) {
-  RunTestSequence(AttemptIPH(kCustomActionTestFeature, true),
+  RunTestSequence(AttemptIPH(kCustomActionTestFeature,
+                             user_education::FeaturePromoResult::Success()),
                   TriggerNonDefaultButton(),
                   CheckMetrics(kCustomActionTestFeature,
                                /*snooze_count*/ 0,
@@ -374,11 +380,15 @@ IN_PROC_BROWSER_TEST_F(BrowserFeaturePromoControllerUiTest,
 
 IN_PROC_BROWSER_TEST_F(BrowserFeaturePromoControllerUiTest,
                        CanShowPromoReturnsExpectedValue) {
-  RunTestSequence(QueryIPH(kCustomActionTestFeature, true),
-                  AttemptIPH(kCustomActionTestFeature, true),
-                  QueryIPH(kCustomActionTestFeature, false),
-                  TriggerNonDefaultButton(),
-                  QueryIPH(kCustomActionTestFeature, true));
+  RunTestSequence(QueryIPH(kToastTestFeature,
+                           user_education::FeaturePromoResult::Success()),
+                  AttemptIPH(kToastTestFeature,
+                             user_education::FeaturePromoResult::Success()),
+                  QueryIPH(kToastTestFeature,
+                           user_education::FeaturePromoResult::kBlockedByPromo),
+                  CancelIPH(),
+                  QueryIPH(kToastTestFeature,
+                           user_education::FeaturePromoResult::Success()));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserFeaturePromoControllerUiTest,
@@ -387,7 +397,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFeaturePromoControllerUiTest,
   CloseReason close_reason = CloseReason::kAbortPromo;
 
   RunTestSequence(
-      AttemptIPH(kCustomActionTestFeature, true,
+      AttemptIPH(kCustomActionTestFeature,
+                 user_education::FeaturePromoResult::Success(),
                  base::BindLambdaForTesting([this, &called, &close_reason]() {
                    called = true;
                    EXPECT_TRUE(promo_controller()->HasPromoBeenDismissed(
@@ -404,7 +415,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFeaturePromoControllerUiTest,
   CloseReason close_reason = CloseReason::kAbortPromo;
 
   RunTestSequence(
-      AttemptIPH(kCustomActionTestFeature, true,
+      AttemptIPH(kCustomActionTestFeature,
+                 user_education::FeaturePromoResult::Success(),
                  base::BindLambdaForTesting([this, &called, &close_reason]() {
                    called = true;
                    EXPECT_TRUE(promo_controller()->HasPromoBeenDismissed(
@@ -424,7 +436,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFeaturePromoControllerUiTest,
       AttemptIPH(
           // Normal promos will defer writing close data until the promo is
           // fully ended.
-          kLegalNoticeTestFeature, true,
+          kLegalNoticeTestFeature,
+          user_education::FeaturePromoResult::Success(),
           base::BindLambdaForTesting([this, &called, &close_reason]() {
             called = true;
             EXPECT_TRUE(promo_controller()->HasPromoBeenDismissed(

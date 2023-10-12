@@ -237,6 +237,8 @@ static_library("devtools") {
       "serialize_host_descriptions.h",
       "url_constants.cc",
       "url_constants.h",
+      "visual_logging.cc",
+      "visual_logging.h",
     ]
     if (enable_service_discovery) {
       sources += [
@@ -328,11 +330,17 @@ static_library("test_support") {
       "//chrome/browser/ui",
       "//content/public/browser",
       "//content/test:test_support",
+      "//net",
+      "//net/traffic_annotation:test_support",
     ]
 
     sources += [
+      "device/adb/mock_adb_server.cc",
+      "device/adb/mock_adb_server.h",
       "devtools_window_testing.cc",
       "devtools_window_testing.h",
     ]
+
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
 }

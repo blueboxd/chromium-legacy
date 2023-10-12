@@ -11,6 +11,8 @@
 #include "chrome/browser/download/download_item_warning_data.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/download/download_bubble_info.h"
 #include "chrome/browser/ui/views/download/bubble/download_bubble_partial_view.h"
 #include "chrome/browser/ui/views/download/bubble/download_bubble_primary_view.h"
 #include "chrome/browser/ui/views/download/bubble/download_bubble_row_list_view.h"
@@ -23,6 +25,7 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/view.h"
+#include "ui/views/view_class_properties.h"
 
 using offline_items_collection::ContentId;
 
@@ -31,10 +34,11 @@ DownloadBubbleContentsView::DownloadBubbleContentsView(
     base::WeakPtr<DownloadBubbleUIController> bubble_controller,
     base::WeakPtr<DownloadBubbleNavigationHandler> navigation_handler,
     bool primary_view_is_partial_view,
-    std::vector<DownloadUIModel::DownloadUIModelPtr> primary_view_models,
+    std::unique_ptr<DownloadBubbleContentsViewInfo> info,
     views::BubbleDialogDelegate* bubble_delegate)
-    : bubble_controller_(bubble_controller) {
-  CHECK(!primary_view_models.empty());
+    : info_(std::move(info)), bubble_controller_(bubble_controller) {
+  SetProperty(views::kElementIdentifierKey, kToolbarDownloadBubbleElementId);
+  CHECK(!info_->row_list_view_info().rows().empty());
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical);
 
@@ -42,13 +46,13 @@ DownloadBubbleContentsView::DownloadBubbleContentsView(
   if (primary_view_is_partial_view) {
     primary_view = std::make_unique<DownloadBubblePartialView>(
         browser, bubble_controller, navigation_handler,
-        std::move(primary_view_models),
+        info_->row_list_view_info(),
         base::BindOnce(&DownloadBubbleNavigationHandler::OnDialogInteracted,
                        navigation_handler));
   } else {
     primary_view = std::make_unique<DownloadDialogView>(
         browser, bubble_controller, navigation_handler,
-        std::move(primary_view_models));
+        info_->row_list_view_info());
   }
 
   primary_view_ = AddChildView(std::move(primary_view));
@@ -62,6 +66,11 @@ DownloadBubbleContentsView::DownloadBubbleContentsView(
 
 DownloadBubbleContentsView::~DownloadBubbleContentsView() {
   security_view_->Reset();
+  // In order to ensure that `info_` is valid for the entire lifetime of the
+  // child views, we delete the child views here rather than in `~View()`.
+  primary_view_ = nullptr;
+  security_view_ = nullptr;
+  RemoveAllChildViews();
 }
 
 DownloadBubbleRowView* DownloadBubbleContentsView::GetPrimaryViewRowForTesting(

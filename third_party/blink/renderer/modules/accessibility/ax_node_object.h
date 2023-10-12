@@ -56,6 +56,11 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   void Trace(Visitor*) const override;
 
+  // Call to force-load inline text boxes for the current subtree.
+  void LoadInlineTextBoxes() override;
+  // Should inline text boxes be considered when adding chldren to this node.
+  bool ShouldLoadInlineTextBoxes() const override;
+
  protected:
 #if DCHECK_IS_ON()
   bool initialized_ = false;
@@ -112,7 +117,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool IsSpinButton() const override;
   bool IsNativeSlider() const override;
   bool IsNativeSpinButton() const override;
-  bool IsChildTreeOwner() const override;
+  bool IsEmbeddingElement() const override;
 
   // Check object state.
   bool IsClickable() const final;
@@ -145,6 +150,9 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   AXObject* GetChildFigcaption() const override;
   bool IsDescendantOfLandmarkDisallowedElement() const override;
+
+  // Is a redundant label of a radio button or checkbox.
+  static bool IsRedundantLabel(HTMLLabelElement* label);
 
   // Used to compute kRadioGroupIds, which is only used on Mac.
   // TODO(accessibility) Consider computing on browser side and removing here.
@@ -285,9 +293,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   void ComputeAriaOwnsChildren(
       HeapVector<Member<AXObject>>& owned_children) const;
 
-  // Inline text boxes.
-  void LoadInlineTextBoxes() override;
-  void ForceAddInlineTextBoxChildren() override;
+  // Helper method for LoadInlineTextBoxes().
+  void LoadInlineTextBoxesHelper() override;
 
   //
   // Layout object specific methods.
@@ -355,7 +362,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   ax::mojom::blink::Dropeffect ParseDropeffect(String& dropeffect) const;
 
   static bool IsNameFromLabelElement(HTMLElement* control);
-  static bool IsRedundantLabel(HTMLLabelElement* label);
 
 #if BUILDFLAG(IS_ANDROID)
   bool always_load_inline_text_boxes_ = false;

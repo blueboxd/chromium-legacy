@@ -23,6 +23,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
 #include "components/cbor/diagnostic_writer.h"
 #include "components/cbor/writer.h"
 #include "content/browser/interest_group/interest_group_storage.h"
@@ -204,13 +205,39 @@ void InterestGroupManagerImpl::CheckPermissionsAndLeaveInterestGroup(
           std::move(callback)));
 }
 
+void InterestGroupManagerImpl::
+    CheckPermissionsAndClearOriginJoinedInterestGroups(
+        const url::Origin& owner,
+        const std::vector<std::string>& interest_groups_to_keep,
+        const url::Origin& main_frame_origin,
+        const url::Origin& frame_origin,
+        const net::NetworkIsolationKey& network_isolation_key,
+        bool report_result_only,
+        network::mojom::URLLoaderFactory& url_loader_factory,
+        blink::mojom::AdAuctionService::LeaveInterestGroupCallback callback) {
+  permissions_checker_.CheckPermissions(
+      InterestGroupPermissionsChecker::Operation::kLeave, frame_origin, owner,
+      network_isolation_key, url_loader_factory,
+      base::BindOnce(&InterestGroupManagerImpl::
+                         OnClearOriginJoinedInterestGroupsPermissionsChecked,
+                     base::Unretained(this), owner,
+                     std::set<std::string>(interest_groups_to_keep.begin(),
+                                           interest_groups_to_keep.end()),
+                     main_frame_origin, report_result_only,
+                     std::move(callback)));
+}
+
 void InterestGroupManagerImpl::JoinInterestGroup(blink::InterestGroup group,
                                                  const GURL& joining_url) {
-  NotifyInterestGroupAccessed(InterestGroupObserver::kJoin, group.owner,
-                              group.name);
+  // Create notify callback first, since `group` is moved in the WithArgs()
+  // call.
+  base::OnceClosure notify_callback = CreateNotifyInterestGroupAccessedCallback(
+      InterestGroupObserver::kJoin, group.owner, group.name);
+
   blink::InterestGroupKey group_key(group.owner, group.name);
   impl_.AsyncCall(&InterestGroupStorage::JoinInterestGroup)
-      .WithArgs(std::move(group), std::move(joining_url));
+      .WithArgs(std::move(group), std::move(joining_url))
+      .Then(std::move(notify_callback));
   // This needs to happen second so that the DB row is created.
   QueueKAnonymityUpdateForInterestGroup(group_key);
 }
@@ -218,10 +245,33 @@ void InterestGroupManagerImpl::JoinInterestGroup(blink::InterestGroup group,
 void InterestGroupManagerImpl::LeaveInterestGroup(
     const blink::InterestGroupKey& group_key,
     const ::url::Origin& main_frame) {
-  NotifyInterestGroupAccessed(InterestGroupObserver::kLeave, group_key.owner,
-                              group_key.name);
   impl_.AsyncCall(&InterestGroupStorage::LeaveInterestGroup)
-      .WithArgs(group_key, main_frame);
+      .WithArgs(group_key, main_frame)
+      .Then(CreateNotifyInterestGroupAccessedCallback(
+          InterestGroupObserver::kLeave, group_key.owner, group_key.name));
+}
+
+void InterestGroupManagerImpl::ClearOriginJoinedInterestGroups(
+    const url::Origin& owner,
+    std::set<std::string> interest_groups_to_keep,
+    url::Origin main_frame_origin) {
+  // TODO(https://crbug.com/1486606): Add NotifyInterestGroupAccessed() calls
+  // for this after retrieving list of IGs that were left from the databases.
+  // See bug for more details.
+  impl_.AsyncCall(&InterestGroupStorage::ClearOriginJoinedInterestGroups)
+      .WithArgs(owner, std::move(interest_groups_to_keep),
+                std::move(main_frame_origin))
+      .Then(base::BindOnce(
+          &InterestGroupManagerImpl::OnClearOriginJoinedInterestGroupsComplete,
+          weak_factory_.GetWeakPtr(), owner));
+}
+
+void InterestGroupManagerImpl::OnClearOriginJoinedInterestGroupsComplete(
+    const url::Origin& owner,
+    std::vector<std::string> left_interest_group_names) {
+  for (const auto& name : left_interest_group_names) {
+    NotifyInterestGroupAccessed(InterestGroupObserver::kClear, owner, name);
+  }
 }
 
 void InterestGroupManagerImpl::UpdateInterestGroupsOfOwner(
@@ -450,10 +500,11 @@ void InterestGroupManagerImpl::OnAdAuctionDataLoadComplete(
 
 void InterestGroupManagerImpl::GetBiddingAndAuctionServerKey(
     network::mojom::URLLoaderFactory* loader,
-    blink::mojom::AdAuctionCoordinator coordinator,
-    base::OnceCallback<void(absl::optional<BiddingAndAuctionServerKey>)>
-        callback) {
-  ba_key_fetcher_.GetOrFetchKey(loader, coordinator, std::move(callback));
+    absl::optional<url::Origin> coordinator,
+    base::OnceCallback<void(
+        base::expected<BiddingAndAuctionServerKey, std::string>)> callback) {
+  ba_key_fetcher_.GetOrFetchKey(loader, std::move(coordinator),
+                                std::move(callback));
 }
 
 void InterestGroupManagerImpl::OnJoinInterestGroupPermissionsChecked(
@@ -511,6 +562,30 @@ void InterestGroupManagerImpl::OnLeaveInterestGroupPermissionsChecked(
     LeaveInterestGroup(group_key, main_frame);
 }
 
+void InterestGroupManagerImpl::
+    OnClearOriginJoinedInterestGroupsPermissionsChecked(
+        url::Origin owner,
+        std::set<std::string> interest_groups_to_keep,
+        url::Origin main_frame_origin,
+        bool report_result_only,
+        blink::mojom::AdAuctionService::LeaveInterestGroupCallback callback,
+        bool can_leave) {
+  // Invoke callback before calling ClearOriginJoinedInterestGroups(), which
+  // posts a task to another thread. Any FLEDGE call made from the renderer will
+  // need to pass through the UI thread and then bounce over the database
+  // thread, so it will see the new InterestGroup, so it's not necessary to
+  // actually wait for the database to be updated before invoking the callback.
+  // Waiting before invoking the callback may potentially leak whether the user
+  // was previously in the InterestGroup through timing differences.
+  std::move(callback).Run(/*failed_well_known_check=*/!can_leave);
+
+  if (!report_result_only && can_leave) {
+    ClearOriginJoinedInterestGroups(std::move(owner),
+                                    std::move(interest_groups_to_keep),
+                                    std::move(main_frame_origin));
+  }
+}
+
 void InterestGroupManagerImpl::GetInterestGroupsForUpdate(
     const url::Origin& owner,
     int groups_limit,
@@ -538,7 +613,19 @@ void InterestGroupManagerImpl::UpdateInterestGroup(
                               group_key.name);
   impl_.AsyncCall(&InterestGroupStorage::UpdateInterestGroup)
       .WithArgs(group_key, std::move(update))
-      .Then(std::move(callback));
+      .Then(base::BindOnce(&InterestGroupManagerImpl::OnUpdateComplete,
+                           weak_factory_.GetWeakPtr(), group_key.owner,
+                           group_key.name, std::move(callback)));
+}
+
+void InterestGroupManagerImpl::OnUpdateComplete(
+    const url::Origin& owner_origin,
+    const std::string& name,
+    base::OnceCallback<void(bool)> callback,
+    bool success) {
+  NotifyInterestGroupAccessed(InterestGroupObserver::kUpdate, owner_origin,
+                              name);
+  std::move(callback).Run(success);
 }
 
 void InterestGroupManagerImpl::ReportUpdateFailed(
@@ -628,6 +715,15 @@ void InterestGroupManagerImpl::OnOneReportSent(
 void InterestGroupManagerImpl::TimeoutReports() {
   // TODO(qingxinwu): maybe add UMA metrics to learn how often this happens.
   report_requests_.clear();
+}
+
+base::OnceClosure
+InterestGroupManagerImpl::CreateNotifyInterestGroupAccessedCallback(
+    InterestGroupObserver::AccessType type,
+    const url::Origin& owner_origin,
+    const std::string& name) {
+  return base::BindOnce(&InterestGroupManagerImpl::NotifyInterestGroupAccessed,
+                        weak_factory_.GetWeakPtr(), type, owner_origin, name);
 }
 
 }  // namespace content

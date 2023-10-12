@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
@@ -159,7 +160,7 @@ class PasswordGenerationAgent::DeferringPasswordGenerationDriver
     DeferMsg(&mojom::PasswordGenerationDriver::GenerationElementLostFocus);
   }
 
-  PasswordGenerationAgent* agent_ = nullptr;
+  raw_ptr<PasswordGenerationAgent, ExperimentalRenderer> agent_ = nullptr;
   base::WeakPtrFactory<DeferringPasswordGenerationDriver> weak_ptr_factory_{
       this};
 };
@@ -407,8 +408,8 @@ void PasswordGenerationAgent::FoundFormEligibleForGeneration(
     if (doc.IsNull())
       return;
     WebFormControlElement new_password_input =
-        form_util::FindFormControlElementByUniqueRendererId(
-            doc, form.new_password_renderer_id);
+        form_util::FindFormControlByRendererId(doc,
+                                               form.new_password_renderer_id);
     if (!new_password_input.IsNull()) {
       // Mark the input element with renderer id
       // |form.new_password_renderer_id|.
@@ -736,8 +737,8 @@ void PasswordGenerationAgent::MaybeCreateCurrentGenerationItem(
   std::vector<blink::WebInputElement> passwords = {generation_element};
 
   WebFormControlElement confirmation_password =
-      form_util::FindFormControlElementByUniqueRendererId(
-          generation_element.GetDocument(), confirmation_password_renderer_id);
+      form_util::FindFormControlByRendererId(generation_element.GetDocument(),
+                                             confirmation_password_renderer_id);
 
   if (!confirmation_password.IsNull()) {
     WebInputElement input = confirmation_password.DynamicTo<WebInputElement>();

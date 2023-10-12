@@ -132,6 +132,19 @@ public class AutofillPaymentMethodsFragmentTest {
             /* virtualCardEnrollmentState= */ VirtualCardEnrollmentState.ENROLLED,
             /* productDescription= */ "", /* cardNameForAutofillDisplay= */ "",
             /* obfuscatedLastFourDigits= */ "", /* cvc= */ "");
+    private static final CreditCard SAMPLE_CARD_WITH_CVC = new CreditCard(/* guid= */ "",
+            /* origin= */ "",
+            /* isLocal= */ false, /* isCached= */ false, /* isVirtual= */ false,
+            /* name= */ "John Doe",
+            /* number= */ "4444333322221111",
+            /* obfuscatedNumber= */ "", /* month= */ "5", AutofillTestHelper.nextYear(),
+            /* basicCardIssuerNetwork =*/"visa",
+            /* issuerIconDrawableId= */ 0, /* billingAddressId= */ "",
+            /* serverId= */ "", /* instrumentId= */ 0, /* cardLabel= */ "", /* nickname= */ "",
+            /* cardArtUrl= */ null,
+            /* virtualCardEnrollmentState= */ VirtualCardEnrollmentState.UNENROLLED_AND_ELIGIBLE,
+            /* productDescription= */ "", /* cardNameForAutofillDisplay= */ "",
+            /* obfuscatedLastFourDigits= */ "", /* cvc= */ "123");
 
     private AutofillTestHelper mAutofillTestHelper;
 
@@ -271,6 +284,55 @@ public class AutofillPaymentMethodsFragmentTest {
         Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String summary = cardPreference.getSummary().toString();
         assertThat(summary).contains(String.format("05/%s", AutofillTestHelper.twoDigitNextYear()));
+    }
+
+    @Test
+    @MediumTest
+    @DisableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_CVC_STORAGE})
+    public void testCreditCardSummary_whenCvcExists_doesNotDisplayCvcSavedMessageWhenCvcFlagOff()
+            throws Exception {
+        mAutofillTestHelper.addServerCreditCard(SAMPLE_CARD_WITH_CVC);
+
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
+
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
+        String summary = cardPreference.getSummary().toString();
+        assertThat(summary).contains(String.format("05/%s", AutofillTestHelper.twoDigitNextYear()));
+        assertThat(summary).doesNotContain(
+                activity.getString(R.string.autofill_settings_page_cvc_saved_label));
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_CVC_STORAGE})
+    public void testCreditCardSummary_whenCvcExists_displayCvcSavedMessage() throws Exception {
+        mAutofillTestHelper.addServerCreditCard(SAMPLE_CARD_WITH_CVC);
+
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
+
+        Preference cardPreference = getPreferenceScreen(activity).getPreference(4);
+        String summary = cardPreference.getSummary().toString();
+        assertThat(summary).contains(
+                String.format(activity.getString(
+                        R.string.autofill_settings_page_summary_separated_by_pipe),
+                        String.format("05/%s", AutofillTestHelper.twoDigitNextYear()),
+                        activity.getString(R.string.autofill_settings_page_cvc_saved_label)));
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_CVC_STORAGE})
+    public void testCreditCardSummary_whenCvcDoesNotExist_doesNotDisplayCvcSavedMessage()
+            throws Exception {
+        mAutofillTestHelper.addServerCreditCard(SAMPLE_CARD_VISA);
+
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
+
+        Preference cardPreference = getPreferenceScreen(activity).getPreference(4);
+        String summary = cardPreference.getSummary().toString();
+        assertThat(summary).contains(String.format("05/%s", AutofillTestHelper.twoDigitNextYear()));
+        assertThat(summary).doesNotContain(
+                activity.getString(R.string.autofill_settings_page_cvc_saved_label));
     }
 
     @Test
@@ -558,6 +620,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
     @Test
     @MediumTest
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     @DisableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH})
     public void testLocalCardEditWithReauth_noReauthWhenFeatureDisabled() throws Exception {
         mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
@@ -584,6 +647,50 @@ public class AutofillPaymentMethodsFragmentTest {
         verify(mReauthenticatorMock, never()).reauthenticate(notNull());
         // Verify that the local card edit dialog was shown.
         Assert.assertTrue(rule.getLastestShownFragment() instanceof AutofillLocalCardEditor);
+    }
+
+    @Test
+    @MediumTest
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_AUTO)
+    @DisableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH})
+    public void testLocalCardEditWithReauth_reauthOnClickedOnAutoWhenFeatureDisabled()
+            throws Exception {
+        mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
+        // Simulate Reauth pref is enabled.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    getPrefService()
+                            .setBoolean(Pref.AUTOFILL_PAYMENT_METHODS_MANDATORY_REAUTH, true);
+                });
+        // Simulate the user can authenticate with biometric or screen lock.
+        when(mReauthenticatorMock.canUseAuthenticationWithBiometricOrScreenLock()).thenReturn(true);
+        var editCardReauthHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords(
+                                AutofillPaymentMethodsFragment.MANDATORY_REAUTH_EDIT_CARD_HISTOGRAM,
+                                MandatoryReauthAuthenticationFlowEvent.FLOW_STARTED,
+                                MandatoryReauthAuthenticationFlowEvent.FLOW_SUCCEEDED)
+                        .build();
+
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
+
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
+        String title = cardPreference.getTitle().toString();
+        assertThat(title).contains("Visa");
+        assertThat(title).contains("1111");
+
+        // Simulate the biometric authentication will success.
+        setUpBiometricAuthenticationResult(/* success= */ true);
+        // Simulate click on the local card widget. Now Chrome is waiting for OS authentication.
+        TestThreadUtils.runOnUiThreadBlocking(cardPreference::performClick);
+        // Now mReauthenticatorMock simulate success auth, which will open local card dialog
+        // afterwards. Wait for the new dialog to be rendered.
+        rule.waitForFragmentToBeShown();
+
+        verify(mReauthenticatorMock).reauthenticate(notNull());
+        // Verify that the local card edit dialog was shown.
+        Assert.assertTrue(rule.getLastestShownFragment() instanceof AutofillLocalCardEditor);
+        editCardReauthHistogram.assertExpected();
     }
 
     @Test

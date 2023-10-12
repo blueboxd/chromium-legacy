@@ -9,6 +9,7 @@
 #import "base/test/ios/wait_util.h"
 #import "components/autofill/core/browser/autofill_test_utils.h"
 #import "components/url_formatter/elide_url.h"
+#import "ios/chrome/browser/metrics/metrics_app_interface.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_constants.h"
@@ -63,10 +64,19 @@ BOOL WaitForKeyboardToAppear() {
 
   [AutofillAppInterface clearCreditCardStore];
   _lastDigits = [AutofillAppInterface saveLocalCreditCard];
+
+  GREYAssertNil([MetricsAppInterface setupHistogramTester],
+                @"Cannot setup histogram tester.");
+
+  [MetricsAppInterface overrideMetricsAndCrashReportingForTesting];
 }
 
 - (void)tearDown {
   [AutofillAppInterface clearCreditCardStore];
+
+  [MetricsAppInterface stopOverridingMetricsAndCrashReportingForTesting];
+  GREYAssertNil([MetricsAppInterface releaseHistogramTester],
+                @"Failed to release histogram tester.");
   [super tearDown];
 }
 
@@ -82,10 +92,10 @@ id<GREYMatcher> ContinueButton() {
       l10n_util::GetNSString(IDS_IOS_PAYMENT_BOTTOM_SHEET_CONTINUE));
 }
 
-// Matcher for the bottom sheet's "No Thanks" button.
-id<GREYMatcher> NoThanksButton() {
-  return grey_accessibilityLabel(
-      l10n_util::GetNSString(IDS_IOS_PAYMENT_BOTTOM_SHEET_NO_THANKS));
+// Matcher for the bottom sheet's "Use Keyboard" button.
+id<GREYMatcher> UseKeyboardButton() {
+  return chrome_test_util::ButtonWithAccessibilityLabelId(
+      IDS_IOS_PAYMENT_BOTTOM_SHEET_USE_KEYBOARD);
 }
 
 // Matcher for the toolbar's edit button.
@@ -196,6 +206,13 @@ id<GREYMatcher> ExpirationDateLabel() {
 
   [[EarlGrey selectElementWithMatcher:continueButton] performAction:grey_tap()];
 
+  // No histogram logged because there is only 1 credential shown to the user.
+  GREYAssertNil(
+      [MetricsAppInterface
+          expectTotalCount:0
+              forHistogram:@"Autofill.TouchToFill.CreditCard.SelectedIndex"],
+      @"Unexpected histogram error for touch to fill credit card selected");
+
   // Verify that the page is filled properly.
   [self verifyCreditCardInfosHaveBeenFilled:autofill::test::GetCreditCard()];
 }
@@ -244,6 +261,15 @@ id<GREYMatcher> ExpirationDateLabel() {
   // Verify the CVC requester is visible.
   [[EarlGrey selectElementWithMatcher:grey_text(@"Confirm Card")]
       assertWithMatcher:grey_notNil()];
+
+  GREYAssertNil(
+      [MetricsAppInterface
+          expectUniqueSampleWithCount:1
+                            forBucket:0
+                         forHistogram:
+                             @"Autofill.TouchToFill.CreditCard.SelectedIndex"],
+      @"Unexpected histogram error for touch to fill credit card selected "
+      @"index");
 
   // TODO(crbug.com/845472): Figure out a way to enter CVC and get the unlocked
   // card result.
@@ -320,18 +346,18 @@ id<GREYMatcher> ExpirationDateLabel() {
   [[EarlGrey selectElementWithMatcher:continueButton] performAction:grey_tap()];
 }
 
-// Verify that the Payments Bottom Sheet "No Thanks" button opens the keyboard.
-// Also checks that the bottom sheet's subtitle and the credit card's expiration
-// appear as expected before dismissing the bottom sheet.
-- (void)testOpenPaymentsBottomSheetTapNoThanksShowKeyboard {
+// Verify that the Payments Bottom Sheet "Use Keyboard" button opens the
+// keyboard. Also checks that the bottom sheet's subtitle and the credit card's
+// expiration appear as expected before dismissing the bottom sheet.
+- (void)testOpenPaymentsBottomSheetTapUseKeyboardShowKeyboard {
   [self loadPaymentsPage];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormCardName)];
 
-  id<GREYMatcher> noThanksButton = NoThanksButton();
+  id<GREYMatcher> useKeyboardButton = UseKeyboardButton();
 
-  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:noThanksButton];
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:useKeyboardButton];
 
   // Verify that the subtitle string appears.
   [ChromeEarlGrey
@@ -343,7 +369,8 @@ id<GREYMatcher> ExpirationDateLabel() {
   [ChromeEarlGrey waitForUIElementToAppearWithMatcher:ExpirationDateLabel()];
 
   // Dismiss the bottom sheet.
-  [[EarlGrey selectElementWithMatcher:noThanksButton] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:useKeyboardButton]
+      performAction:grey_tap()];
 
   WaitForKeyboardToAppear();
 }

@@ -38,8 +38,8 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/system_identity.h"
-#import "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/send_tab_to_self_sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_positioner.h"
@@ -359,6 +359,8 @@ void OpenManageDevicesTab(CommandDispatcher* dispatcher) {
 
 - (void)onSigninComplete:(BOOL)succeeded {
   if (!succeeded) {
+    [HandlerForProtocol(self.browser->GetCommandDispatcher(),
+                        BrowserCoordinatorCommands) hideSendTabToSelfUI];
     return;
   }
   __weak __typeof(self) weakSelf = self;

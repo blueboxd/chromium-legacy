@@ -517,8 +517,13 @@ public class FeedSurfaceCoordinator
         }
 
         // Mediator should be created before any Stream changes.
+        boolean useUiConfig =
+            ntpHeader != null
+                && ChromeFeatureList.sSurfacePolish.isEnabled()
+                && DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity);
         mMediator = new FeedSurfaceMediator(this, mActivity, snapScrollHelper, mSectionHeaderModel,
-                getTabIdFromLaunchOrigin(launchOrigin), actionDelegate, optionsCoordinator);
+            getTabIdFromLaunchOrigin(launchOrigin), actionDelegate, optionsCoordinator,
+            useUiConfig ? mUiConfig : null);
 
         FeedSurfaceTracker.getInstance().trackSurface(this);
 
@@ -781,9 +786,9 @@ public class FeedSurfaceCoordinator
     }
 
     /*
-     * Returns true if the primary signed-in account is subject to parental controls.
+     * Returns true if the supervised user feed should be displayed.
      */
-    public boolean isPrimaryAccountSupervised() {
+    public boolean shouldDisplaySupervisedFeed() {
         if (mProfile == null) {
             return false;
         }
@@ -796,11 +801,13 @@ public class FeedSurfaceCoordinator
             return false;
         }
 
+        // Check if the primary account is supervised.
         final @Nullable AccountInfo primaryAccountInfo =
                 identityManager.findExtendedAccountInfoByEmailAddress(primaryAccount.getEmail());
         return primaryAccountInfo != null
                 && primaryAccountInfo.getAccountCapabilities().isSubjectToParentalControls()
-                == Tribool.TRUE;
+                        == Tribool.TRUE
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.KID_FRIENDLY_CONTENT_FEED);
     }
 
     /**

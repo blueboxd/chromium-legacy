@@ -206,7 +206,7 @@ void NGTextPainter::PaintSelectedText(
     unsigned length,
     const TextPaintStyle& text_style,
     const TextPaintStyle& selection_style,
-    const PhysicalRect& selection_rect,
+    const LineRelativeRect& selection_rect,
     DOMNodeId node_id,
     const AutoDarkMode& auto_dark_mode) {
   if (!fragment_paint_info.shape_result)
@@ -288,7 +288,7 @@ void NGTextPainter::PaintDecorationsExceptLineThrough(
                                          decoration_info, lines_to_paint,
                                          paint_info, text_style);
   } else {
-    NGTextPainterBase::PaintUnderOrOverLineDecorations(
+    TextPainterBase::PaintUnderOrOverLineDecorations(
         fragment_paint_info, decoration_offset, decoration_info, lines_to_paint,
         paint_info, text_style, nullptr);
   }
@@ -371,9 +371,7 @@ void NGTextPainter::PaintInternal(
     PaintInternalFragment<Step>(fragment_paint_info, node_id, auto_dark_mode);
   } else {
     if (fragment_paint_info.to > 0) {
-      PaintInternalFragment<Step>(
-          fragment_paint_info.WithStartOffset(ellipsis_offset_), node_id,
-          auto_dark_mode);
+      PaintInternalFragment<Step>(fragment_paint_info, node_id, auto_dark_mode);
     }
     if (fragment_paint_info.from < truncation_point) {
       PaintInternalFragment<Step>(
@@ -511,7 +509,7 @@ void NGTextPainter::PaintSvgDecorationsExceptLineThrough(
       if (SetupPaintForSvgText(state, graphics_context_, style_to_paint,
                                SvgPaintMode::kTextDecoration, *resource_mode,
                                flags)) {
-        NGTextPainterBase::PaintUnderOrOverLineDecorations(
+        TextPainterBase::PaintUnderOrOverLineDecorations(
             fragment_paint_info, decoration_offset, decoration_info,
             lines_to_paint, paint_info, text_style, &flags);
       }

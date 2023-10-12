@@ -73,9 +73,11 @@ TEST(SourceRegistrationTest, Parse) {
               Field(&SourceRegistration::source_event_id, 0),
               Field(&SourceRegistration::destination_set, destination),
               Field(&SourceRegistration::expiry, base::Days(30)),
-              Field(&SourceRegistration::event_report_windows, absl::nullopt),
+              Field(&SourceRegistration::event_report_windows,
+                    EventReportWindows::FromDefaults(base::Days(30),
+                                                     SourceType::kNavigation)),
               Field(&SourceRegistration::aggregatable_report_window,
-                    absl::nullopt),
+                    base::Days(30)),
               Field(&SourceRegistration::max_event_level_reports, 3),
               Field(&SourceRegistration::priority, 0),
               Field(&SourceRegistration::filter_data, FilterData()),
@@ -180,9 +182,10 @@ TEST(SourceRegistrationTest, Parse) {
           "event_report_window_valid",
           R"json({"event_report_window":"86401",
           "destination":"https://d.example"})json",
-          ValueIs(Field(
-              &SourceRegistration::event_report_windows,
-              *EventReportWindows::CreateSingularWindow(base::Seconds(86401)))),
+          ValueIs(Field(&SourceRegistration::event_report_windows,
+                        *EventReportWindows::FromDefaults(base::Seconds(86401),
+                                                          SourceType::kEvent))),
+          SourceType::kEvent,
       },
       {
           "event_report_windows_valid",
@@ -193,8 +196,8 @@ TEST(SourceRegistrationTest, Parse) {
             "destination":"https://d.example"
           })json",
           ValueIs(Field(&SourceRegistration::event_report_windows,
-                        *EventReportWindows::CreateWindows(
-                            base::Seconds(0), {base::Seconds(86401)}))),
+                        *EventReportWindows::Create(base::Seconds(0),
+                                                    {base::Seconds(86401)}))),
 
       },
       {
@@ -238,6 +241,18 @@ TEST(SourceRegistrationTest, Parse) {
           "destination":"https://d.example"})json",
           ErrorIs(
               SourceRegistrationError::kAggregatableReportWindowValueInvalid),
+      },
+      {
+          "aggregatable_report_window_clamped_min",
+          R"json({"aggregatable_report_window":3599,"destination":"https://d.example"})json",
+          ValueIs(Field(&SourceRegistration::aggregatable_report_window,
+                        base::Seconds(3600))),
+      },
+      {
+          "aggregatable_report_window_clamped_max",
+          R"json({"aggregatable_report_window":259200,"expiry":172800,"destination":"https://d.example"})json",
+          ValueIs(Field(&SourceRegistration::aggregatable_report_window,
+                        base::Seconds(172800))),
       },
       {
           "max_event_level_reports_omitted_event",
@@ -356,8 +371,13 @@ TEST(SourceRegistrationTest, ToJson) {
       {
           SourceRegistration(destination),
           R"json({
+            "aggregatable_report_window": 2592000,
             "debug_reporting": false,
             "destination":"https://d.example",
+            "event_report_windows": {
+              "start_time": 0,
+              "end_times": [2592000]
+            },
             "expiry": 2592000,
             "max_event_level_reports": 0,
             "priority": "0",
@@ -372,8 +392,6 @@ TEST(SourceRegistrationTest, ToJson) {
                 r.aggregation_keys = *AggregationKeys::FromKeys({{"a", 2}});
                 r.debug_key = 3;
                 r.debug_reporting = true;
-                r.event_report_windows =
-                    *EventReportWindows::CreateSingularWindow(base::Seconds(4));
                 r.expiry = base::Seconds(5);
                 r.filter_data = *FilterData::Create({{"b", {}}});
                 r.priority = -6;
@@ -386,7 +404,10 @@ TEST(SourceRegistrationTest, ToJson) {
             "debug_key": "3",
             "debug_reporting": true,
             "destination":"https://d.example",
-            "event_report_window": 4,
+            "event_report_windows": {
+              "start_time": 0,
+              "end_times": [2592000]
+            },
             "expiry": 5,
             "filter_data": {"b": []},
             "priority": "-6",
@@ -410,26 +431,54 @@ TEST(SourceRegistrationTest, IsValid) {
 
   EXPECT_FALSE(SourceRegistrationWith(destination, [](SourceRegistration& r) {
                  r.expiry = base::Days(1) - base::Microseconds(1);
+                 r.aggregatable_report_window = r.expiry;
+                 r.event_report_windows = *EventReportWindows::FromDefaults(
+                     r.expiry, SourceType::kEvent);
                }).IsValid());
 
   EXPECT_FALSE(SourceRegistrationWith(destination, [](SourceRegistration& r) {
                  r.expiry = base::Days(30) + base::Microseconds(1);
+                 r.aggregatable_report_window = r.expiry;
+                 r.event_report_windows = *EventReportWindows::FromDefaults(
+                     base::Days(30), SourceType::kEvent);
                }).IsValid());
 
   EXPECT_TRUE(SourceRegistrationWith(destination, [](SourceRegistration& r) {
                 r.expiry = base::Days(1);
+                r.aggregatable_report_window = r.expiry;
+                r.event_report_windows = *EventReportWindows::FromDefaults(
+                    r.expiry, SourceType::kEvent);
               }).IsValid());
 
   EXPECT_TRUE(SourceRegistrationWith(destination, [](SourceRegistration& r) {
                 r.expiry = base::Days(30);
+                r.aggregatable_report_window = r.expiry;
+                r.event_report_windows = *EventReportWindows::FromDefaults(
+                    r.expiry, SourceType::kEvent);
               }).IsValid());
 
   EXPECT_FALSE(SourceRegistrationWith(destination, [](SourceRegistration& r) {
-                 r.aggregatable_report_window = base::Microseconds(-1);
+                 r.aggregatable_report_window =
+                     base::Hours(1) - base::Microseconds(1);
+               }).IsValid());
+
+  EXPECT_FALSE(SourceRegistrationWith(destination, [](SourceRegistration& r) {
+                 r.expiry = base::Days(1);
+                 r.aggregatable_report_window =
+                     r.expiry + base::Microseconds(1);
+                 r.event_report_windows = *EventReportWindows::FromDefaults(
+                     r.expiry, SourceType::kEvent);
+               }).IsValid());
+
+  EXPECT_FALSE(SourceRegistrationWith(destination, [](SourceRegistration& r) {
+                 r.expiry = base::Days(1);
+                 r.aggregatable_report_window = r.expiry;
+                 r.event_report_windows = *EventReportWindows::FromDefaults(
+                     r.expiry + base::Microseconds(1), SourceType::kEvent);
                }).IsValid());
 
   EXPECT_TRUE(SourceRegistrationWith(destination, [](SourceRegistration& r) {
-                r.aggregatable_report_window = base::Microseconds(0);
+                r.aggregatable_report_window = base::Hours(1);
               }).IsValid());
 
   EXPECT_FALSE(SourceRegistrationWith(destination, [](SourceRegistration& r) {

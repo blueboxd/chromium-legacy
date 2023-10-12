@@ -69,7 +69,6 @@ De reținut:
 <translation id="3345341804167540816">Folosește Chrome oriunde</translation>
 <translation id="3472587960215700950">Chrome folosește Google Maps pentru a-ți oferi indicații de orientare și informații locale despre adresele detectate.</translation>
 <translation id="3503014945441706099">Obține și Navigare sigură îmbunătățită pentru acest profil Chrome</translation>
-<translation id="3506309791702511623">Chrome poate să detecteze numerele de urmărire pe care le introduci și să urmărească pachetele în pagina Filă nouă, ajutând alte experiențe de cumpărături de la Google.</translation>
 <translation id="3522659714780527202">Activează sincronizarea ca să vezi toate filele tale deschise în Chrome</translation>
 <translation id="3533694711092285624">Nu există parole salvate. Chrome îți poate verifica parolele dacă le salvezi.</translation>
 <translation id="3594076341410558780">Ascunde opțiunea Profită la maximum de Chrome</translation>
@@ -118,6 +117,7 @@ De reținut:
 <translation id="5389212809648216794">Google Chrome nu poate folosi camera foto, deoarece este folosită de o altă aplicație</translation>
 <translation id="5395376160638294582">Asigură-te că poți folosi oricând datele Chrome din Contul Google</translation>
 <translation id="5439191312780166229">Te avertizează cu privire la site-uri periculoase, chiar și cele pe care Google nu le cunoștea înainte, analizând mai multe date din site-uri decât Protecția standard. Poți să omiți avertismentele din Chrome.</translation>
+<translation id="5442013002200339429">Dacă ascunzi <ph name="MODULE_NAME" />, Chrome nu va mai urmări automat coletele viitoare și va șterge toate datele anterioare despre urmărirea coletelor.</translation>
 <translation id="5460571915754665838">4. Selectează Chrome.</translation>
 <translation id="546541279759910616">{COUNT,plural, =1{Chrome te va ajuta să urmărești acest pachet în pagina Filă nouă.}few{Chrome va urmări aceste pachete în pagina Filă nouă.}other{Chrome va urmări aceste pachete în pagina Filă nouă.}}</translation>
 <translation id="5492504007368565877">Managerul de parole Google nu îți poate verifica parolele.</translation>
@@ -154,6 +154,7 @@ De reținut:
 
 Numai un utilizator care deține expresia ta de acces îți poate citi datele criptate. Expresia de acces nu este trimisă la sau stocată de Google. Dacă uiți expresia de acces sau dorești să modifici această setare, <ph name="BEGIN_LINK" />șterge datele Chrome din cont<ph name="END_LINK" />.</translation>
 <translation id="6822673484890854830">Chrome nu a putut verifica toate parolele. Încearcă din nou mai târziu.</translation>
+<translation id="6851982868877411675">Deschide Setările Chrome în iOS, apoi atinge Aplicația browser prestabilită și selectează Chrome.</translation>
 <translation id="6916015246697034114">Căutarea vocală în Chrome</translation>
 <translation id="6964931465519938134">Acum poți folosi Chrome oricând atingi linkuri în mesaje, documente și alte aplicații.</translation>
 <translation id="6975725306479268850">Alege Chrome pentru completarea automată</translation>
@@ -188,6 +189,7 @@ Numai un utilizator care deține expresia ta de acces îți poate citi datele cr
 <translation id="7933491483529363150">Deschide cea mai recentă filă în Chrome.</translation>
 <translation id="8022947259858476807">Folosește Chrome în mod prestabilit ca să deschizi linkuri, să cauți din widgeturi și să completezi automat parolele în alte aplicații</translation>
 <translation id="804638182476029347">Permite notificările Chrome ca să primești alerte privind scăderea prețurilor</translation>
+<translation id="8069507567842347179">Coletul este deja urmărit în Chrome.</translation>
 <translation id="81358522153858150">Chrome acceptă acum politicile privind utilizatorii pentru contul tău gestionat</translation>
 <translation id="8160472928944011082">Chrome nu se poate actualiza</translation>
 <translation id="8174679664544842874">Deschide o Filă nouă în Chrome.</translation>

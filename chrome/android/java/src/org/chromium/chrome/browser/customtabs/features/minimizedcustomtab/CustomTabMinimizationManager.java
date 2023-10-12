@@ -20,22 +20,22 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.PictureInPictureModeChangedInfo;
 import androidx.core.util.Consumer;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.ui.modelutil.PropertyModel;
 
-/**
- * Class that manages minimizing a Custom Tab into picture-in-picture.
- */
+/** Class that manages minimizing a Custom Tab into picture-in-picture. */
 @RequiresApi(VERSION_CODES.O)
-public class CustomTabMinimizationManager implements Consumer<PictureInPictureModeChangedInfo> {
+public class CustomTabMinimizationManager
+        implements CustomTabMinimizeDelegate, Consumer<PictureInPictureModeChangedInfo> {
     @VisibleForTesting
     static final Rational ASPECT_RATIO = new Rational(16, 9);
     private final AppCompatActivity mActivity;
     private final ActivityTabProvider mTabProvider;
-    private MinimizedCardCoordinator mMinimizedCardCoordinator;
 
     /**
      * @param activity The {@link AppCompatActivity} to minimize.
@@ -49,9 +49,8 @@ public class CustomTabMinimizationManager implements Consumer<PictureInPictureMo
         mTabProvider = tabProvider;
     }
 
-    /**
-     * Minimize the Custom Tab into picture-in-picture.
-     */
+    /** Minimize the Custom Tab into picture-in-picture. */
+    @Override
     public void minimize() {
         if (!mTabProvider.hasValue()) return;
         var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
@@ -78,7 +77,13 @@ public class CustomTabMinimizationManager implements Consumer<PictureInPictureMo
                                       .with(TITLE, tab.getTitle())
                                       .with(URL, tab.getUrl().getHost())
                                       .build();
-        mMinimizedCardCoordinator = new MinimizedCardCoordinator(mActivity, model);
+        var fragment = MinimizedCardDialogFragment.newInstance(model);
+        FragmentTransaction transaction = mActivity.getSupportFragmentManager().beginTransaction();
+        transaction.setTransition(FragmentTransaction.TRANSIT_NONE);
+        transaction
+                .add(android.R.id.content, fragment, MinimizedCardDialogFragment.TAG)
+                .commitNow();
+
         tab.stopLoading();
         tab.hide(TabHidingType.ACTIVITY_HIDDEN);
         var webContents = tab.getWebContents();
@@ -89,12 +94,17 @@ public class CustomTabMinimizationManager implements Consumer<PictureInPictureMo
     }
 
     private void updateTabForMaximization(Tab tab) {
+        if (tab == null) return;
         tab.show(FROM_USER, ON_ACTIVITY_SHOWN_THEN_SHOW);
         var webContents = tab.getWebContents();
         if (webContents != null) {
             webContents.setAudioMuted(false);
         }
-        mMinimizedCardCoordinator.destroy();
-        mMinimizedCardCoordinator = null;
+        var fragment =
+                (DialogFragment)
+                        mActivity
+                                .getSupportFragmentManager()
+                                .findFragmentByTag(MinimizedCardDialogFragment.TAG);
+        fragment.dismissNow();
     }
 }

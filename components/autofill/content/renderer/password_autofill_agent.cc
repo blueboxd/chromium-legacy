@@ -15,6 +15,7 @@
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/i18n/case_conversion.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -82,9 +83,9 @@ using password_manager::util::IsRendererRecognizedCredentialForm;
 
 namespace autofill {
 
-using form_util::FindFormByUniqueRendererId;
-using form_util::FindFormControlElementByUniqueRendererId;
-using form_util::FindFormControlElementsByUniqueRendererId;
+using form_util::FindFormByRendererId;
+using form_util::FindFormControlByRendererId;
+using form_util::FindFormControlsByRendererId;
 using form_util::GetFieldRendererId;
 using form_util::GetFormRendererId;
 using form_util::IsElementEditable;
@@ -307,8 +308,8 @@ void AnnotateFieldsWithSignatures(
   for (blink::WebFormControlElement& control_element : fields) {
     FieldSignature field_signature = CalculateFieldSignatureByNameAndType(
         control_element.NameForAutofill().Utf16(),
-        FormControlTypeToString(form_util::ToAutofillFormControlType(
-            control_element.FormControlTypeForAutofill())));
+        form_util::ToAutofillFormControlType(
+            control_element.FormControlTypeForAutofill()));
     SetAttributeAsync(control_element, kDebugAttributeForFieldSignature,
                       base::NumberToString(field_signature.value()));
     SetAttributeAsync(control_element, kDebugAttributeForFormSignature,
@@ -408,7 +409,7 @@ void AnnotateFieldWithParsingResult(
     const std::string& password_managers_annotation) {
   if (renderer_id.is_null())
     return;
-  auto element = FindFormControlElementByUniqueRendererId(doc, renderer_id);
+  auto element = FindFormControlByRendererId(doc, renderer_id);
   if (element.IsNull())
     return;
   // Calling SetAttribute synchronously here is safe because
@@ -521,7 +522,7 @@ mojom::SubmissionReadinessState CalculateSubmissionReadiness(
     // block a form submission. Note: Don't use |check_status !=
     // kNotCheckable|, a radio button is considered a "checkable" element too,
     // but it should block a submission.
-    return field.form_control_type == StringToFormControlType("checkbox");
+    return field.form_control_type == FormControlType::kInputCheckbox;
   };
 
   for (size_t i = username_index + 1; i < password_index; ++i) {
@@ -659,7 +660,7 @@ class PasswordAutofillAgent::DeferringPasswordManagerDriver
              form_renderer_id, result);
   }
 
-  PasswordAutofillAgent* agent_ = nullptr;
+  raw_ptr<PasswordAutofillAgent, ExperimentalRenderer> agent_ = nullptr;
   base::WeakPtrFactory<DeferringPasswordManagerDriver> weak_ptr_factory_{this};
 };
 
@@ -1228,11 +1229,10 @@ void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
       WebFormElement form;
       WebFormControlElement field;
       if (last_updated_form_renderer_id_ &&
-          !(form =
-                FindFormByUniqueRendererId(doc, last_updated_form_renderer_id_))
+          !(form = FindFormByRendererId(doc, last_updated_form_renderer_id_))
                .IsNull()) {
         fields = form.GetFormControlElements().ReleaseVector();
-      } else if (!(field = FindFormControlElementByUniqueRendererId(
+      } else if (!(field = FindFormControlByRendererId(
                        doc, last_updated_field_renderer_id_,
                        /*form_to_be_searched =*/FormRendererId()))
                       .IsNull()) {
@@ -1565,10 +1565,9 @@ void PasswordAutofillAgent::InformNoSavedCredentials(
 
   // Clear the actual field values.
   WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
-  std::vector<WebFormControlElement> elements =
-      FindFormControlElementsByUniqueRendererId(
-          doc, std::vector<FieldRendererId>(all_autofilled_elements_.begin(),
-                                            all_autofilled_elements_.end()));
+  std::vector<WebFormControlElement> elements = FindFormControlsByRendererId(
+      doc, std::vector<FieldRendererId>(all_autofilled_elements_.begin(),
+                                        all_autofilled_elements_.end()));
   for (WebFormControlElement& element : elements) {
     if (element.IsNull())
       continue;
@@ -1610,9 +1609,9 @@ void PasswordAutofillAgent::KeyboardReplacingSurfaceClosed(
 
 void PasswordAutofillAgent::TriggerFormSubmission() {
   // Find the last interacted element to simulate an enter keystroke at.
-  WebFormControlElement form_control = FindFormControlElementByUniqueRendererId(
-      render_frame()->GetWebFrame()->GetDocument(),
-      field_renderer_id_to_submit_);
+  WebFormControlElement form_control =
+      FindFormControlByRendererId(render_frame()->GetWebFrame()->GetDocument(),
+                                  field_renderer_id_to_submit_);
   if (form_control.IsNull()) {
     // The target field doesn't exist anymore. Don't try to submit it.
     return;
@@ -2036,10 +2035,9 @@ PasswordAutofillAgent::FindUsernamePasswordElements(
   WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
   bool wrapped_in_form_tag = !form_data.form_renderer_id.is_null();
   std::vector<WebFormControlElement> elements =
-      wrapped_in_form_tag
-          ? FindFormControlElementsByUniqueRendererId(
-                doc, form_data.form_renderer_id, element_ids)
-          : FindFormControlElementsByUniqueRendererId(doc, element_ids);
+      wrapped_in_form_tag ? FindFormControlsByRendererId(
+                                doc, form_data.form_renderer_id, element_ids)
+                          : FindFormControlsByRendererId(doc, element_ids);
 
   // Set password element.
   WebInputElement password_field;

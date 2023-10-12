@@ -23,7 +23,10 @@ _MODIFIER_KEYWORDS = (r'(?:(?:' + '|'.join([
 
 
 class ParseError(Exception):
-  pass
+  suffix = ''
+
+  def __str__(self):
+    return super().__str__() + self.suffix
 
 
 @dataclasses.dataclass(order=True)
@@ -343,7 +346,7 @@ def _parse_jni_namespace(contents):
   if not m:
     return ''
   if len(m) > 1:
-    raise ParseError('Found multiple @JNINamespace attributes.')
+    raise ParseError('Found multiple @JNINamespace annotations.')
   return m[0]
 
 
@@ -400,7 +403,7 @@ def parse_java_file(filename, *, package_prefix=None):
   try:
     return _do_parse(filename, package_prefix=package_prefix)
   except ParseError as e:
-    e.msg = (e.msg or '') + f' (when parsing {filename})'
+    e.suffix = f' (when parsing {filename})'
     raise
 
 

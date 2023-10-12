@@ -6,10 +6,12 @@
 #import "base/functional/bind.h"
 #import "base/ios/ios_util.h"
 #import "base/strings/sys_string_conversions.h"
+#import "build/branding_buildflags.h"
 #import "components/feed/core/v2/public/ios/pref_names.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/search_engines/search_engines_app_interface.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -20,7 +22,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cells_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/new_tab_page_app_interface.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
@@ -250,7 +251,15 @@ id<GREYMatcher> notPracticallyVisible() {
 }
 
 // Tests that the collections shortcut are displayed and working.
-- (void)testCollectionShortcutsWithWhatsNew {
+// TODO(crbug.com/1487974): Test fails on official builds.
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#define MAYBE_testCollectionShortcutsWithWhatsNew \
+  DISABLED_testCollectionShortcutsWithWhatsNew
+#else
+#define MAYBE_testCollectionShortcutsWithWhatsNew \
+  testCollectionShortcutsWithWhatsNew
+#endif
+- (void)MAYBE_testCollectionShortcutsWithWhatsNew {
   AppLaunchConfiguration config = self.appConfigurationForTestCase;
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   [ChromeEarlGrey setUserDefaultObject:@NO forKey:kWhatsNewM116UsageEntryKey];

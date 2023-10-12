@@ -445,6 +445,7 @@ void EditContext::CancelComposition() {
                           composition_range_end_, selection_start_,
                           selection_end_);
 
+  DispatchTextFormatEvent(WebVector<ui::ImeTextSpan>());
   DispatchCompositionEndEvent(g_empty_string);
   ClearCompositionState();
 }
@@ -566,8 +567,10 @@ bool EditContext::CommitText(const WebString& text,
                           actual_replacement_range.EndOffset(),
                           selection_start_, selection_end_);
   // Fire composition end event.
-  if (!text.IsEmpty() && has_composition_)
+  if (!text.IsEmpty() && has_composition_) {
+    DispatchTextFormatEvent(WebVector<ui::ImeTextSpan>());
     DispatchCompositionEndEvent(text);
+  }
 
   ClearCompositionState();
   return true;
@@ -579,11 +582,12 @@ bool EditContext::FinishComposingText(
 
   String text;
   if (has_composition_) {
-    text = text_.Substring(composition_range_start_, composition_range_end_);
-    // Fire composition end event.
+    text = text_.Substring(composition_range_start_,
+                           composition_range_end_ - composition_range_start_);
+    DispatchTextFormatEvent(WebVector<ui::ImeTextSpan>());
     DispatchCompositionEndEvent(text);
   } else {
-    text = text_.Substring(selection_start_, selection_end_);
+    text = text_.Substring(selection_start_, selection_end_ - selection_start_);
   }
 
   if (selection_behavior == kDoNotKeepSelection) {
@@ -591,8 +595,6 @@ bool EditContext::FinishComposingText(
     selection_end_ = selection_end_ + text.length();
   }
 
-  // TODO(snianu): also need to fire formatupdate here to remove formats from
-  // the previous compositions?
   ClearCompositionState();
   return true;
 }
@@ -641,8 +643,6 @@ void EditContext::DetachElement(Element* element_to_detach) {
 WebTextInputInfo EditContext::TextInputInfo() {
   WebTextInputInfo info;
   // Fetch all the text input info from edit context.
-  // TODO(crbug.com/1197325): Change this to refer to the "view" part of the
-  // EditContext once the EditContext spec adds this feature.
   info.node_id = GetInputMethodController().NodeIdOfFocusedElement();
   info.action = GetInputMethodController().InputActionOfFocusedElement();
   info.input_mode = GetInputMethodController().InputModeOfFocusedElement();
@@ -650,26 +650,14 @@ WebTextInputInfo EditContext::TextInputInfo() {
   info.virtual_keyboard_policy =
       GetInputMethodController().VirtualKeyboardPolicyOfFocusedElement();
   info.value = text();
-  info.flags = TextInputFlags();
+  info.flags = GetInputMethodController().TextInputFlags();
   info.selection_start = selection_start_;
   info.selection_end = selection_end_;
-  info.composition_start = composition_range_start_;
-  info.composition_end = composition_range_end_;
+  if (has_composition_) {
+    info.composition_start = composition_range_start_;
+    info.composition_end = composition_range_end_;
+  }
   return info;
-}
-
-int EditContext::TextInputFlags() const {
-  int flags = 0;
-  // Disable spellcheck & autocorrect for EditContext.
-  flags |= kWebTextInputFlagAutocorrectOff;
-  flags |= kWebTextInputFlagSpellcheckOff;
-
-  // TODO:(snianu) Enable this once the password type
-  // is supported by inputMode attribute.
-  // if (input_mode_ == WebTextInputMode::kPassword)
-  //   flags |= kWebTextInputFlagHasBeenPasswordField;
-
-  return flags;
 }
 
 WebRange EditContext::CompositionRange() const {

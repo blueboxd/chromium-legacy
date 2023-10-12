@@ -133,7 +133,7 @@ GpuChannel* GpuChannelTestCommon::CreateChannel(int32_t client_id,
   uint64_t kClientTracingId = 1;
   GpuChannel* channel = channel_manager()->EstablishChannel(
       base::UnguessableToken::Create(), client_id, kClientTracingId,
-      is_gpu_host);
+      is_gpu_host, gfx::GpuExtraInfo(), /*gpu_memory_buffer_factory=*/nullptr);
   base::ProcessId kProcessId = 1;
   channel->set_client_pid(kProcessId);
   return channel;
@@ -145,7 +145,8 @@ void GpuChannelTestCommon::CreateCommandBuffer(
     int32_t routing_id,
     base::UnsafeSharedMemoryRegion shared_state,
     ContextResult* out_result,
-    Capabilities* out_capabilities) {
+    Capabilities* out_capabilities,
+    GLCapabilities* out_gl_capabilities) {
   base::RunLoop loop;
   auto quit = loop.QuitClosure();
   mojo::PendingAssociatedRemote<mojom::CommandBuffer> remote;
@@ -155,12 +156,14 @@ void GpuChannelTestCommon::CreateCommandBuffer(
   channel.CreateCommandBuffer(
       std::move(init_params), routing_id, std::move(shared_state),
       remote.InitWithNewEndpointAndPassReceiver(), std::move(client),
-      base::BindLambdaForTesting(
-          [&](ContextResult result, const Capabilities& capabilities) {
-            *out_result = result;
-            *out_capabilities = capabilities;
-            quit.Run();
-          }));
+      base::BindLambdaForTesting([&](ContextResult result,
+                                     const Capabilities& capabilities,
+                                     const GLCapabilities& gl_capabilities) {
+        *out_result = result;
+        *out_capabilities = capabilities;
+        *out_gl_capabilities = gl_capabilities;
+        quit.Run();
+      }));
   loop.Run();
 }
 

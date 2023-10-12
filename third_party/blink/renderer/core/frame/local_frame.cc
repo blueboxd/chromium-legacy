@@ -1666,10 +1666,9 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
       text_zoom_factor_(ParentTextZoomFactor(this)),
       inspector_task_runner_(InspectorTaskRunner::Create(
           GetTaskRunner(TaskType::kInternalInspector))),
-      interface_registry_(interface_registry
-                              ? interface_registry
-                              : InterfaceRegistry::GetEmptyInterfaceRegistry()),
-      lifecycle_state_(mojom::FrameLifecycleState::kRunning) {
+      interface_registry_(
+          interface_registry ? interface_registry
+                             : InterfaceRegistry::GetEmptyInterfaceRegistry()) {
   auto frame_tracking_result =
       GetLocalFramesMap().insert(FrameToken::Hasher()(GetFrameToken()), this);
   CHECK(frame_tracking_result.stored_value) << "Inserting a duplicate item.";
@@ -2402,10 +2401,6 @@ void LocalFrame::PauseSubresourceLoading(
 
 void LocalFrame::ResumeSubresourceLoading() {
   pause_handle_receivers_.Clear();
-}
-
-void LocalFrame::AnimateSnapFling(base::TimeTicks monotonic_time) {
-  GetEventHandler().AnimateSnapFling(monotonic_time);
 }
 
 SmoothScrollSequencer* LocalFrame::CreateNewSmoothScrollSequence() {
@@ -3638,6 +3633,15 @@ void LocalFrame::SetResourceCacheRemote(
     mojo::PendingRemote<mojom::blink::ResourceCache> remote) {
   CHECK(GetDocument());
   GetDocument()->Fetcher()->SetResourceCache(std::move(remote));
+}
+
+bool LocalFrame::IsSameOrigin() {
+  const SecurityOrigin* security_origin =
+      GetSecurityContext()->GetSecurityOrigin();
+  const SecurityOrigin* top_security_origin =
+      Tree().Top().GetSecurityContext()->GetSecurityOrigin();
+
+  return security_origin->IsSameOriginWith(top_security_origin);
 }
 
 }  // namespace blink

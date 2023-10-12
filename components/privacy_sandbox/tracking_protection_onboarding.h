@@ -25,7 +25,8 @@ class TrackingProtectionOnboarding : public KeyedService {
     kIneligible = 0,
     kEligible = 1,
     kOnboarded = 2,
-    kMaxValue = kOnboarded,
+    kOffboarded = 3,
+    kMaxValue = kOffboarded,
   };
 
   enum class NoticeAction {
@@ -47,7 +48,12 @@ class TrackingProtectionOnboarding : public KeyedService {
     // Fired when a profile is onboarded (shown the TrackingProtection
     // onboarding notice)
     virtual void OnTrackingProtectionOnboarded() {}
-    // Fired when the ShouldSHowNotice is updated (to True or False).
+
+    // Fired when a profile is offboarded (shown the TrackingProtection
+    // offboarding notice)
+    virtual void OnTrackingProtectionOffboarded() {}
+
+    // Fired when the ShouldShowNotice is updated (to True or False).
     virtual void OnShouldShowNoticeUpdated() {}
   };
 
@@ -68,6 +74,9 @@ class TrackingProtectionOnboarding : public KeyedService {
   // Indicates the onboarding status for the user. Return value is the enum
   // defined above.
   OnboardingStatus GetOnboardingStatus() const;
+
+  // Returns whether the profile has been offboarded.
+  bool IsOffboarded() const;
 
   // To be Called by UI code when the user has been shown the notice.
   void NoticeShown();

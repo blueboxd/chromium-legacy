@@ -936,6 +936,10 @@ html element param
     property type
     property value
     property valueType
+html element permission
+    property ondismissed
+    property onresolved
+    property type
 html element picture
 html element plaintext
 html element pre
@@ -990,6 +994,7 @@ html element select
     property selectedIndex
     property selectedOptions
     property setCustomValidity
+    property showPicker
     property size
     property type
     property validationMessage
@@ -1089,6 +1094,7 @@ html element td
     property width
 html element template
     property content
+    property parseparts
     property shadowRootMode
 html element textarea
     property autocomplete

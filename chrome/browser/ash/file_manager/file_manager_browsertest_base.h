@@ -32,6 +32,7 @@ class FakeFileSystemInstance;
 }  // namespace arc
 
 namespace content {
+class TestNavigationObserver;
 class WebContents;
 }  // namespace content
 
@@ -179,6 +180,9 @@ class FileManagerBrowserTestBase
     // Whether test should use report-only mode for the file transfer connector.
     bool file_transfer_connector_report_only = false;
 
+    // Whether tests should enable V2 of search.
+    bool enable_search_v2 = false;
+
     // Whether tests should enable image content search.
     bool enable_image_content_search = false;
 
@@ -194,11 +198,11 @@ class FileManagerBrowserTestBase
     // Whether to enable Drive shortcuts showing a badge or not.
     bool enable_drive_shortcuts = false;
 
-    // Whether to enable jellybean styles.
-    bool enable_jellybean = false;
-
     // Whether to enable jellybean UI elements.
     bool enable_cros_components = false;
+
+    // Whether to enable new directory tree implementation.
+    bool enable_new_directory_tree = false;
 
     // Feature IDs associated for mapping test cases and features.
     std::vector<std::string> feature_ids;
@@ -346,6 +350,7 @@ class FileManagerBrowserTestBase
   std::unique_ptr<SmbfsTestVolume> smbfs_volume_;
   std::unique_ptr<HiddenTestVolume> hidden_volume_;
   std::unique_ptr<FileSystemProviderTestVolume> file_system_provider_volume_;
+  std::unique_ptr<content::TestNavigationObserver> test_navigation_observer_;
 
   // Map from source path (e.g. sftp://1:2) to volume.
   base::flat_map<std::string, std::unique_ptr<GuestOsTestVolume>>

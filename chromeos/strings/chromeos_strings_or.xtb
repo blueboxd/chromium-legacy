@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">ଆପଣ କେବଳ 5ଟି ସର୍ଟକଟକୁ କଷ୍ଟମାଇଜ କରିପାରିବେ। ଏକ ନୂଆ ସର୍ଟକଟକୁ ଯୋଗ କରିବା ପାଇଁ କୌଣସି ସର୍ଟକଟକୁ ଡିଲିଟ କରନ୍ତୁ।</translation>
 <translation id="1164939766849482256">ଡନ ଟୁ ଡାର୍କ ସ୍କ୍ରିନ ସେଭର</translation>
 <translation id="1167755866710282443">କୀ'ଗୁଡ଼ିକୁ କଷ୍ଟମାଇଜ କରିବା ପାଇଁ ମେନୁ ଖୋଲନ୍ତୁ। ମୁଭ କରିବା ପାଇଁ ମେନୁକୁ ଡ୍ରାଗ କରନ୍ତୁ।</translation>
+<translation id="1174073918202301297">ସର୍ଟକଟ୍ ଯୋଗ କରାଗଲା</translation>
 <translation id="1175697296044146566">ଏହି <ph name="DEVICE_TYPE" />, <ph name="MANAGER" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି।</translation>
 <translation id="1175951029573070619">ସାଧାରଣ (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">କାଢ଼ି ଦିଅନ୍ତୁ</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">ୱାଲପେପର୍ ଛବିକୁ ଦୈନିକ ପରିବର୍ତ୍ତନ କରନ୍ତୁ</translation>
 <translation id="1644574205037202324">ଇତିହାସ</translation>
 <translation id="1651925268237749928">ଆପଣ ଏକ ସେୟାର କରାଯାଇଥିବା ଆଲବମ ଚୟନ କରିଛନ୍ତି। ଅନ୍ୟ ଲୋକମାନେ ଫଟୋଗୁଡ଼ିକ ଯୋଗ କରିପାରିବେ କିମ୍ବା ସେଗୁଡ଼ିକୁ ପରିବର୍ତ୍ତନ କରିପାରିବେ। ବର୍ତ୍ତମାନ ଏହି ଆଲବମରେ ନଥିବା ଫଟୋଗୁଡ଼ିକୁ ଆପଣଙ୍କ ୱାଲପେପର ବ୍ୟବହାର କରିପାରେ।</translation>
+<translation id="1661865805917886535">କିଛି ଆକାଉଣ୍ଟ ଏବଂ ସିଷ୍ଟମ ସୂଚନା Googleକୁ ପଠାଯାଇପାରେ। ଆମର ଗୋପନୀୟତା ନୀତି (<ph name="PRIVACYPOLICYURL" />) ଏବଂ ସେବାର ସର୍ତ୍ତାବଳୀ (<ph name="TERMSOFSERVICEURL" />) ଅନୁସାରେ, ଟେକନିକାଲ ସମସ୍ୟାର ସମାଧାନ କରିବା ଏବଂ ଆମର ସେବାଗୁଡ଼ିକୁ ଉନ୍ନତ କରିବାରେ ସାହାଯ୍ୟ କରିବା ପାଇଁ ଆମେ ଏହି ସୂଚନାକୁ ବ୍ୟବହାର କରୁ। ବିଷୟବସ୍ତୁ ପରିବର୍ତ୍ତନର ଅନୁରୋଧ କରିବାକୁ ଆଇନଗତ ସହାୟତା (<ph name="LEGALHELPPAGEURL" />)କୁ ଯାଆନ୍ତୁ।</translation>
 <translation id="1662989795263954667">ବନ୍ଦ ହୋଇଯାଇଛି - ସ୍ୟାହି ସରିଯାଇଛି</translation>
 <translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" />ର ପ୍ରିଭ୍ୟୁ କରନ୍ତୁ</translation>
 <translation id="1668469839109562275">ବିଲ୍ଟ-ଇନ VPN</translation>
@@ -131,7 +133,6 @@
 <translation id="1871569928317311284">ଗାଢ଼ା ଥିମ୍ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">ଡାର୍କ ମୋଡ୍ ବନ୍ଦ କରନ୍ତୁ</translation>
-<translation id="1881188606372070653">ଆଇନଗତ କାରଣଗୁଡ଼ିକ ପାଇଁ ବିଷୟବସ୍ତୁ ପରିବର୍ତ୍ତନର ଅନୁରୋଧ କରିବାକୁ <ph name="BEGIN_LINK1" />ଆଇନଗତ ସହାୟତା ପୃଷ୍ଠା<ph name="END_LINK1" />କୁ ଯାଆନ୍ତୁ। କିଛି ଆକାଉଣ୍ଟ ଏବଂ ସିଷ୍ଟମ ସୂଚନା Googleକୁ ପଠାଯାଇପାରେ। ଆମର <ph name="BEGIN_LINK2" />ଗୋପନୀୟତା ନୀତି<ph name="END_LINK2" /> ଏବଂ <ph name="BEGIN_LINK3" />ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK3" /> ଅନୁସାରେ, ଟେକନିକାଲ ସମସ୍ୟାର ସମାଧାନ କରିବା ଏବଂ ଆମର ସେବାଗୁଡ଼ିକୁ ଉନ୍ନତ କରିବା ପାଇଁ ଆପଣ ଆମକୁ ଦେଇଥିବା ସୂଚନାକୁ ଆମେ ବ୍ୟବହାର କରିବୁ।</translation>
 <translation id="1885577615937958993">ମିଡିଆକୁ ଫାଷ୍ଟ ଫରୱାର୍ଡ କରନ୍ତୁ</translation>
 <translation id="1887850431809612466">ହାର୍ଡୱେୟାର୍ ପୁନରାବୃତ୍ତି</translation>
 <translation id="1897672602657312171">ସର୍ଚ୍ଚ କୀ ବିନା ସର୍ଟକଟ କିଛି ଆପର ସର୍ଟକଟ ସହ ବିବାଦ ସୃଷ୍ଟି କରିପାରେ। ଏହି ସର୍ଟକଟକୁ ବ୍ୟବହାର କରିବା ଜାରି ରଖିବା ପାଇଁ ପୁଣି ଏହାକୁ ଦବାନ୍ତୁ କିମ୍ବା ସର୍ଚ୍ଚ କୀ ବ୍ୟବହାର କରି ଏକ ନୂଆ ସର୍ଟକଟ ଦବାନ୍ତୁ।</translation>
@@ -212,6 +213,7 @@
 <translation id="2505327257735685095">ବର୍ତ୍ତମାନର ୱାଲପେପର୍ ଛବିକୁ ରିଫ୍ରେସ୍ କରନ୍ତୁ</translation>
 <translation id="2512979179176933762">ୱିଣ୍ଡୋଗୁଡ଼ିକ ଦେଖାନ୍ତୁ</translation>
 <translation id="2513396635448525189">ଲଗଇନ୍ ଛବି</translation>
+<translation id="2515109918609218604">ସର୍ଟକଟ ଉପଲବ୍ଧ ନାହିଁ। ଫଙ୍କସନ ଏବଂ ସର୍ଚ୍ଚ କୀଗୁଡ଼ିକୁ ବ୍ୟବହାର ନକରି ଏକ ନୂଆ ସର୍ଟକଟ ଦବାନ୍ତୁ।</translation>
 <translation id="2517472476991765520">ସ୍କାନ୍ କରନ୍ତୁ</translation>
 <translation id="2521835766824839541">ପୂର୍ବବର୍ତ୍ତୀ ଟ୍ରାକ୍</translation>
 <translation id="2526590354069164005">ଡେସ୍କଟପ୍</translation>
@@ -265,6 +267,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">ଡିଭାଇସଟି ସଂଯୁକ୍ତ ହୋଇଛି।</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{ପୃଷ୍ଠାକୁ କାଢ଼ିବେ?}=1{{PAGE_NUMBER} ନମ୍ବର ପୃଷ୍ଠାକୁ କାଢ଼ିବେ?}other{{PAGE_NUMBER} ନମ୍ବର ପୃଷ୍ଠାକୁ କାଢ଼ିବେ?}}</translation>
+<translation id="3146655726035122603"><ph name="PRODUCT_NAME" /> ପାଇଁ ଏକ୍ସକ୍ଲୁସିଭ</translation>
 <translation id="315116470104423982">ମୋବାଇଲ୍ ଡାଟା</translation>
 <translation id="3156846309055100599">ପୃଷ୍ଠା <ph name="PAGE_NUMBER" />କୁ ସ୍କାନ୍ କରାଯାଉଛି...</translation>
 <translation id="315738237743207937">କ୍ୟାପ୍ଟିଭ୍ ପୋର୍ଟାଲକୁ ଚିହ୍ନଟ କରାଯାଇଛି</translation>
@@ -687,9 +690,10 @@
 <translation id="6318437367327684789">ସବୁଦିନ ପାଇଁ</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" />ରେ ଫାର୍ମୱେର ଅପଡେଟ କରନ୍ତୁ</translation>
 <translation id="6321407676395378991">ସ୍କ୍ରିନ୍ ସେଭର୍ ଚାଲୁ କରନ୍ତୁ</translation>
+<translation id="6324916366299863871">ସର୍ଟକଟ୍‌କୁ ଏଡିଟ୍ କରନ୍ତୁ</translation>
 <translation id="6325525973963619867">ବିଫଳ ହୋଇଛି</translation>
 <translation id="6331191339300272798">ସ୍ୱଚାଳିତ ଗାଢ଼ା ଥିମ୍</translation>
-<translation id="6340526405444716530">ବ୍ୟକ୍ତିଗତକରଣ</translation>
+<translation id="6340526405444716530">ପର୍ସନାଲାଇଜେସନ</translation>
 <translation id="6348738456043757611">ଉପଯୋଗକର୍ତ୍ତାନାମ ଏବଂ ପାସୱାର୍ଡ</translation>
 <translation id="6359706544163531585">ହାଲୁକା ଥିମକୁ ଅକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="636850387210749493">ଏଣ୍ଟର୍‌ପ୍ରାଇଜ୍ ନାମାଙ୍କନ</translation>
@@ -864,6 +868,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">କୀବୋର୍ଡ ଲାଇଟ</translation>
+<translation id="7730077286107534951">କିଛି ଆକାଉଣ୍ଟ ଏବଂ ସିଷ୍ଟମ ସୂଚନା Googleକୁ ପଠାଯାଇପାରେ। ଆମର <ph name="BEGIN_LINK2" />ଗୋପନୀୟତା ନୀତି<ph name="END_LINK2" /> ଏବଂ <ph name="BEGIN_LINK3" />ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK3" /> ଅନୁସାରେ, ଟେକ୍ନିକାଲ ସମସ୍ୟାର ସମାଧାନ କରିବା ଏବଂ ଆମ ସେବାଗୁଡ଼ିକୁ ଉନ୍ନତ କରିବାରେ ସାହାଯ୍ୟ କରିବା ପାଇଁ ଆମେ ଏହି ସୂଚନାକୁ ବ୍ୟବହାର କରୁ। ବିଷୟବସ୍ତୁ ପରିବର୍ତ୍ତନର ଅନୁରୋଧ କରିବା ପାଇଁ <ph name="BEGIN_LINK1" />ଆଇନଗତ ସହାୟତା<ph name="END_LINK1" />କୁ ଯାଆନ୍ତୁ।</translation>
 <translation id="773153675489693198">ସାଇକଲ୍ ଗଣନା</translation>
 <translation id="7747039790905080783">ପୂର୍ବରୁ ସେୟାର୍ କରାଯାଇଥିବା କୀ</translation>
 <translation id="7752963721013053477">ଡନ ଟୁ ଡାର୍କ - ଏକ୍ସକ୍ଲୁସିଭ</translation>
@@ -900,6 +905,7 @@
 <translation id="7978412674231730200">ବ୍ୟକ୍ତିଗତ କୀ</translation>
 <translation id="7994702968232966508">EAP ପଦ୍ଧତି</translation>
 <translation id="8004582292198964060">ବ୍ରାଉଜର</translation>
+<translation id="8017679124341497925">ସର୍ଟକଟ୍ ଏଡିଟ୍ କରାଯାଇଛି</translation>
 <translation id="802154636333426148">ଡାଉନ୍‌ଲୋଡ୍ ବିଫଳ ହୋଇଛି</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">ଅଟୋ କଲର ମୋଡକୁ ସକ୍ଷମ କରନ୍ତୁ</translation>

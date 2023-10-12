@@ -334,6 +334,7 @@ interface Internals {
     unsigned long canvasFontCacheMaxFonts();
     void forceLoseCanvasContext(HTMLCanvasElement canvas, DOMString contextType);
     void forceLoseCanvasContext(OffscreenCanvas offscreencanvas, DOMString context_type);
+    void disableCanvasAcceleration(HTMLCanvasElement canvas);
 
     DictionaryTest dictionaryTest();
     RecordTest recordTest();
@@ -341,7 +342,6 @@ interface Internals {
     UnionTypesTest unionTypesTest();
     InternalsUkmRecorder initializeUKMRecorder();
     CallbackFunctionTest callbackFunctionTest();
-    [RaisesException] void setScrollChain(ScrollState scrollState, sequence<Element> elements);
 
     DOMString selectedHTMLForClipboard();
     DOMString selectedTextForClipboard();

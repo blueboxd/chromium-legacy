@@ -38,7 +38,6 @@ class TestSheetModel : public AuthenticatorRequestSheetModel {
  private:
   // AuthenticatorRequestSheetModel:
   bool IsActivityIndicatorVisible() const override { return true; }
-  bool IsBackButtonVisible() const override { return true; }
   bool IsCancelButtonVisible() const override { return true; }
   std::u16string GetCancelButtonLabel() const override {
     return u"Test Cancel";
@@ -88,9 +87,11 @@ class TestSheetView : public AuthenticatorRequestSheetView {
   }
 
   // AuthenticatorRequestSheetView:
-  std::unique_ptr<views::View> BuildStepSpecificContent() override {
-    return std::make_unique<views::Label>(
-        test_sheet_model()->GetStepSpecificLabelText());
+  std::pair<std::unique_ptr<views::View>, AutoFocus> BuildStepSpecificContent()
+      override {
+    return std::make_pair(std::make_unique<views::Label>(
+                              test_sheet_model()->GetStepSpecificLabelText()),
+                          AutoFocus::kNo);
   }
 };
 

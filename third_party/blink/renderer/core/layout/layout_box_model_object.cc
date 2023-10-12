@@ -315,8 +315,9 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
 void LayoutBoxModelObject::CreateLayerAfterStyleChange() {
   NOT_DESTROYED();
   DCHECK(!HasLayer() && !Layer());
-  GetMutableForPainting().FirstFragment().SetLayer(
-      MakeGarbageCollected<PaintLayer>(this));
+  FragmentData& first_fragment = GetMutableForPainting().FirstFragment();
+  first_fragment.EnsureId();
+  first_fragment.SetLayer(MakeGarbageCollected<PaintLayer>(this));
   SetHasLayer(true);
   Layer()->InsertOnlyThisLayerAfterStyleChange();
   // Creating a layer may affect existence of the LocalBorderBoxProperties, so
@@ -332,7 +333,6 @@ void LayoutBoxModelObject::DestroyLayer() {
   // Removing a layer may affect existence of the LocalBorderBoxProperties, so
   // we need to ensure that we update paint properties.
   SetNeedsPaintPropertyUpdate();
-  SetBackgroundPaintLocation(kBackgroundPaintInBorderBoxSpace);
 }
 
 bool LayoutBoxModelObject::HasSelfPaintingLayer() const {
@@ -441,15 +441,21 @@ void LayoutBoxModelObject::UpdateFromStyle() {
       !BackgroundTransfersToView() &&
       StyleRef().HasFixedAttachmentBackgroundImage();
   SetIsBackgroundAttachmentFixedObject(is_background_attachment_fixed_object);
+  constexpr wtf_size_t kMaxCompositedBackgroundAttachmentFixed = 20;
   SetCanCompositeBackgroundAttachmentFixed(
       is_background_attachment_fixed_object &&
+      // Too many composited background-attachment:fixed hurt performance, so
+      // we want to avoid that with this heuristic (which doesn't need to be
+      // accurate so we simply check the number of all
+      // background-attachment:fixed objects).
+      GetFrameView()->BackgroundAttachmentFixedObjects().size() <=
+          kMaxCompositedBackgroundAttachmentFixed &&
       ComputeCanCompositeBackgroundAttachmentFixed());
 }
 
-PhysicalRect LayoutBoxModelObject::PhysicalVisualOverflowRectIncludingFilters()
-    const {
+PhysicalRect LayoutBoxModelObject::VisualOverflowRectIncludingFilters() const {
   NOT_DESTROYED();
-  return ApplyFiltersToRect(PhysicalVisualOverflowRect());
+  return ApplyFiltersToRect(VisualOverflowRect());
 }
 
 PhysicalRect LayoutBoxModelObject::ApplyFiltersToRect(
@@ -572,12 +578,9 @@ bool LayoutBoxModelObject::UpdateStickyPositionConstraints() {
   {
     if (IsLayoutInline()) {
       sticky_box_rect = To<LayoutInline>(this)->PhysicalLinesBoundingBox();
-    } else if (RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()) {
+    } else {
       const LayoutBox& box = To<LayoutBox>(*this);
       sticky_box_rect = PhysicalRect(box.PhysicalLocation(), box.Size());
-    } else {
-      sticky_box_rect = sticky_container->FlipForWritingMode(
-          To<LayoutBox>(this)->FrameRect());
     }
 
     PhysicalRect scroll_container_relative_sticky_box_rect =
@@ -709,9 +712,9 @@ PhysicalOffset LayoutBoxModelObject::AdjustedPositionRelativeTo(
         reference_point +=
             To<LayoutBox>(offset_parent_object)->PhysicalLocation();
       }
-    } else if (UNLIKELY(
-                   IsBox() &&
-                   To<LayoutBox>(this)->HasAnchorPositionScrollTranslation())) {
+    } else if (UNLIKELY(IsBox() &&
+                        To<LayoutBox>(this)
+                            ->NeedsAnchorPositionScrollAdjustment())) {
       reference_point +=
           To<LayoutBox>(this)->AnchorPositionScrollTranslationOffset();
     }
@@ -758,7 +761,7 @@ LayoutUnit LayoutBoxModelObject::ContainingBlockLogicalWidthForContent() const {
   return ContainingBlock()->AvailableLogicalWidth();
 }
 
-LayoutRect LayoutBoxModelObject::LocalCaretRectForEmptyElement(
+DeprecatedLayoutRect LayoutBoxModelObject::LocalCaretRectForEmptyElement(
     LayoutUnit width,
     LayoutUnit text_indent_offset) const {
   NOT_DESTROYED();
@@ -799,6 +802,14 @@ LayoutRect LayoutBoxModelObject::LocalCaretRectForEmptyElement(
 
   LayoutUnit x = BorderLeft() + PaddingLeft();
   LayoutUnit max_x = width - BorderRight() - PaddingRight();
+  NGBoxStrut border_padding;
+  if (RuntimeEnabledFeatures::EmptyCaretInVerticalEnabled()) {
+    border_padding = (BorderOutsets() + PaddingOutsets())
+                         .ConvertToLogical({current_style.GetWritingMode(),
+                                            TextDirection::kLtr});
+    x = border_padding.inline_start;
+    max_x = width - border_padding.inline_end;
+  }
   LayoutUnit caret_width = GetFrameView()->CaretWidth();
 
   switch (alignment) {
@@ -829,10 +840,15 @@ LayoutRect LayoutBoxModelObject::LocalCaretRectForEmptyElement(
   if (font_data)
     height = LayoutUnit(font_data->GetFontMetrics().Height());
   LayoutUnit vertical_space = FirstLineHeight() - height;
+  if (RuntimeEnabledFeatures::EmptyCaretInVerticalEnabled()) {
+    LayoutUnit block_start = border_padding.block_start + (vertical_space / 2);
+    // Returns a logical box.
+    return DeprecatedLayoutRect(x, block_start, caret_width, height);
+  }
   LayoutUnit y = PaddingTop() + BorderTop() + (vertical_space / 2);
   return current_style.IsHorizontalWritingMode()
-             ? LayoutRect(x, y, caret_width, height)
-             : LayoutRect(y, x, height, caret_width);
+             ? DeprecatedLayoutRect(x, y, caret_width, height)
+             : DeprecatedLayoutRect(y, x, height, caret_width);
 }
 
 void LayoutBoxModelObject::MoveChildTo(

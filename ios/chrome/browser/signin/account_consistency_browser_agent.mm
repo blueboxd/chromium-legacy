@@ -65,7 +65,8 @@ void AccountConsistencyBrowserAgent::OnManageAccounts() {
       ios::AccountReconcilorFactory::GetForBrowserState(
           browser_->GetBrowserState())
           ->GetState());
-  [handler_ showAccountsSettingsFromViewController:base_view_controller_];
+  [handler_ showAccountsSettingsFromViewController:base_view_controller_
+                              skipIfUINotAvailable:YES];
 }
 
 void AccountConsistencyBrowserAgent::OnShowConsistencyPromo(
@@ -94,6 +95,7 @@ void AccountConsistencyBrowserAgent::OnAddAccount() {
       initWithOperation:AuthenticationOperation::kAddAccount
             accessPoint:signin_metrics::AccessPoint::
                             ACCESS_POINT_ACCOUNT_CONSISTENCY_SERVICE];
+  command.skipIfUINotAvaible = YES;
   [handler_ showSignin:command baseViewController:base_view_controller_];
 }
 

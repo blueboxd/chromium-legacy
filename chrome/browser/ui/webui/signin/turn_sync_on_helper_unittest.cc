@@ -678,6 +678,10 @@ class TurnSyncOnHelperTest : public testing::Test {
         BucketsAre(Bucket(signin_metrics::ProfileSignout::kTest,
                           expected.sync_turn_off ? 1 : 0)));
 
+    histogram_tester_->ExpectUniqueTimeSample(
+        "Signin.SyncOptIn.PreSyncConfirmationLatency", base::Milliseconds(0),
+        expected.sync_opt_in_started ? 1 : 0);
+
     // Reset the tester so that these histograms don't need to be taken into
     // account for future verifications.
     ResetHistogramTester();
@@ -1170,8 +1174,9 @@ TEST_F(TurnSyncOnHelperTest, SyncDisabledAbortWithoutShowingUI_RemoveAccount) {
   // Check expectations.
   CheckSyncAborted(/*kept_account=*/false);
   CheckDelegateCalls();
-  CheckSigninMetrics(
-      {.sign_in_access_point = kAccessPoint, .sign_in_recorded = true});
+  CheckSigninMetrics({.sign_in_access_point = kAccessPoint,
+                      .sign_in_recorded = true,
+                      .sync_opt_in_started = true});
 }
 
 // Tests that the sync aborted before displaying the sync disabled message and
@@ -1192,8 +1197,9 @@ TEST_F(TurnSyncOnHelperTest, SyncDisabledAbortWithoutShowingUI_KeepAccount) {
   // Check expectations.
   CheckSyncAborted(/*kept_account=*/true);
   CheckDelegateCalls();
-  CheckSigninMetrics(
-      {.sign_in_access_point = kAccessPoint, .sign_in_recorded = true});
+  CheckSigninMetrics({.sign_in_access_point = kAccessPoint,
+                      .sign_in_recorded = true,
+                      .sync_opt_in_started = true});
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -1223,8 +1229,9 @@ TEST_F(TurnSyncOnHelperTest, SyncDisabledAbortWithoutShowingUI_PrimaryProfile) {
   // Check expectations.
   CheckSyncAborted(/*kept_account=*/true);
   CheckDelegateCalls();
-  CheckSigninMetrics(
-      {.sign_in_access_point = kAccessPoint, .sign_in_recorded = true});
+  CheckSigninMetrics({.sign_in_access_point = kAccessPoint,
+                      .sign_in_recorded = true,
+                      .sync_opt_in_started = true});
 }
 #endif
 
@@ -1234,9 +1241,9 @@ TEST_F(TurnSyncOnHelperTest, CrossAccountAbort) {
   expected_merge_data_previous_email_ = kPreviousEmail;
   expected_merge_data_new_email_ = kEmail;
   // Configure the test.
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername,
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastSyncingUsername,
                                    kPreviousEmail);
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastGaiaId,
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastSyncingGaiaId,
                                    kPreviousGaiaId);
   // Signin flow.
   CreateTurnOnSyncHelper(TurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
@@ -1256,9 +1263,9 @@ TEST_F(TurnSyncOnHelperTest, CrossAccountAbortAlreadyManaged) {
   expected_merge_data_previous_email_ = kPreviousEmail;
   expected_merge_data_new_email_ = kEmail;
   // Configure the test.
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername,
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastSyncingUsername,
                                    kPreviousEmail);
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastGaiaId,
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastSyncingGaiaId,
                                    kPreviousGaiaId);
   user_policy_signin_service()->set_dm_token("foo");
   user_policy_signin_service()->set_client_id("bar");
@@ -1284,9 +1291,9 @@ TEST_F(TurnSyncOnHelperTest, CrossAccountContinue) {
   SetExpectationsForSyncStartupCompleted(profile());
   // Configure the test.
   merge_data_choice_ = signin::SIGNIN_CHOICE_CONTINUE;
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername,
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastSyncingUsername,
                                    kPreviousEmail);
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastGaiaId,
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastSyncingGaiaId,
                                    kPreviousGaiaId);
   // Signin flow.
   CreateTurnOnSyncHelper(TurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
@@ -1309,9 +1316,9 @@ TEST_F(TurnSyncOnHelperTest, CrossAccountContinueAlreadyManaged) {
   SetExpectationsForSyncStartupCompleted(profile());
   // Configure the test.
   merge_data_choice_ = signin::SIGNIN_CHOICE_CONTINUE;
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername,
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastSyncingUsername,
                                    kPreviousEmail);
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastGaiaId,
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastSyncingGaiaId,
                                    kPreviousGaiaId);
   user_policy_signin_service()->set_dm_token("foo");
   user_policy_signin_service()->set_client_id("bar");
@@ -1345,9 +1352,9 @@ TEST_F(TurnSyncOnHelperTest, CrossAccountNewProfile) {
   SetExpectationsForSyncStartupCompletedForNextProfileCreated();
   // Configure the test.
   merge_data_choice_ = signin::SIGNIN_CHOICE_NEW_PROFILE;
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername,
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastSyncingUsername,
                                    kPreviousEmail);
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastGaiaId,
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesLastSyncingGaiaId,
                                    kPreviousGaiaId);
   // Signin flow.
   ProfileWaiter profile_waiter;

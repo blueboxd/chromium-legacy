@@ -29,6 +29,7 @@
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/dialog_model.h"
 #include "ui/base/models/dialog_model_menu_model_adapter.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
@@ -110,6 +111,11 @@ SidePanelToolbarContainer::PinnedSidePanelToolbarButton::CreateMenuModel() {
   return std::make_unique<ui::DialogModelMenuModelAdapter>(
       dialog_model.Build());
 }
+
+BEGIN_METADATA(SidePanelToolbarContainer,
+               PinnedSidePanelToolbarButton,
+               ToolbarButton)
+END_METADATA
 
 ///////////////////////////////////////////////////////////////////////////////
 // SidePanelToolbarContainer:
@@ -252,7 +258,8 @@ void SidePanelToolbarContainer::RemovePinnedEntryButtonFor(
   const auto iter = base::ranges::find(
       pinned_entry_buttons_, id, [](auto* button) { return button->id(); });
   DCHECK(iter != pinned_entry_buttons_.end());
-  RemoveChildView(*iter);
+  // This returns a unique_ptr which is immediately destroyed.
+  RemoveChildViewT(*iter);
   pinned_entry_buttons_.erase(iter);
   pinned_button_visibility_change_subscription_ =
       base::CallbackListSubscription();

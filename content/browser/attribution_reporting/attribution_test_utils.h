@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/functional/function_ref.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
 #include "components/attribution_reporting/aggregatable_values.h"
@@ -22,13 +21,10 @@
 #include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/test_utils.h"
-#include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
-#include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
-#include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/create_report_result.h"
 #include "content/browser/attribution_reporting/send_result.h"
@@ -40,7 +36,6 @@
 
 namespace attribution_reporting {
 class AggregationKeys;
-class DestinationSet;
 class EventReportWindows;
 }  // namespace attribution_reporting
 
@@ -55,26 +50,11 @@ class TriggerVerification;
 namespace content {
 
 class AttributionManager;
+class AttributionTrigger;
 
 enum class RateLimitResult : int;
 
 base::Uuid DefaultExternalReportID();
-
-absl::optional<base::Time> GetReportWindowTimeForTesting(
-    absl::optional<base::TimeDelta> declared_window,
-    base::Time source_time);
-
-AttributionConfig::RateLimitConfig RateLimitWith(
-    base::FunctionRef<void(AttributionConfig::RateLimitConfig&)> f);
-
-AttributionConfig::EventLevelLimit EventLevelLimitWith(
-    base::FunctionRef<void(content::AttributionConfig::EventLevelLimit&)> f);
-
-AttributionConfig::AggregateLimit AggregateLimitWith(
-    base::FunctionRef<void(content::AttributionConfig::AggregateLimit&)> f);
-
-AttributionConfig AttributionConfigWith(
-    base::FunctionRef<void(AttributionConfig&)> f);
 
 // Helper class to construct a StorableSource for tests using default data.
 // StorableSource members are not mutable after construction requiring a
@@ -357,12 +337,6 @@ bool operator==(const AttributionReport& a, const AttributionReport& b);
 
 bool operator==(const SendResult& a, const SendResult& b);
 
-std::ostream& operator<<(std::ostream& out,
-                         AttributionTrigger::EventLevelResult status);
-
-std::ostream& operator<<(std::ostream& out,
-                         AttributionTrigger::AggregatableResult status);
-
 std::ostream& operator<<(std::ostream& out, RateLimitResult result);
 
 std::ostream& operator<<(std::ostream& out,
@@ -605,129 +579,6 @@ MATCHER_P(DroppedEventLevelReportIs, matcher, "") {
   return ExplainMatchResult(matcher, arg.dropped_event_level_report(),
                             result_listener);
 }
-
-struct SourceRegistrationMatcherConfig {
-  ::testing::Matcher<uint64_t> source_event_id = ::testing::_;
-  ::testing::Matcher<const attribution_reporting::DestinationSet&>
-      destination_set = ::testing::_;
-  ::testing::Matcher<uint64_t> priority = ::testing::_;
-  ::testing::Matcher<absl::optional<uint64_t>> debug_key = ::testing::_;
-  ::testing::Matcher<const attribution_reporting::AggregationKeys&>
-      aggregation_keys = ::testing::_;
-  ::testing::Matcher<bool> debug_reporting = ::testing::_;
-
-  SourceRegistrationMatcherConfig() = delete;
-  explicit SourceRegistrationMatcherConfig(
-      ::testing::Matcher<uint64_t> source_event_id = ::testing::_,
-      ::testing::Matcher<const attribution_reporting::DestinationSet&>
-          destination_set = ::testing::_,
-      ::testing::Matcher<uint64_t> priority = ::testing::_,
-      ::testing::Matcher<absl::optional<uint64_t>> debug_key = ::testing::_,
-      ::testing::Matcher<const attribution_reporting::AggregationKeys&>
-          aggregation_keys = ::testing::_,
-      ::testing::Matcher<bool> debug_reporting = ::testing::_);
-  ~SourceRegistrationMatcherConfig();
-};
-
-::testing::Matcher<const attribution_reporting::SourceRegistration&>
-SourceRegistrationMatches(const SourceRegistrationMatcherConfig&);
-
-struct EventTriggerDataMatcherConfig {
-  ::testing::Matcher<uint64_t> data;
-  ::testing::Matcher<int64_t> priority;
-  ::testing::Matcher<absl::optional<uint64_t>> dedup_key;
-  ::testing::Matcher<const attribution_reporting::FilterPair&> filters;
-
-  EventTriggerDataMatcherConfig() = delete;
-  explicit EventTriggerDataMatcherConfig(
-      ::testing::Matcher<uint64_t> data = ::testing::_,
-      ::testing::Matcher<int64_t> priority = ::testing::_,
-      ::testing::Matcher<absl::optional<uint64_t>> dedup_key = ::testing::_,
-      ::testing::Matcher<const attribution_reporting::FilterPair&> filters =
-          ::testing::_);
-  ~EventTriggerDataMatcherConfig();
-};
-
-::testing::Matcher<const attribution_reporting::EventTriggerData&>
-EventTriggerDataMatches(const EventTriggerDataMatcherConfig&);
-
-struct TriggerRegistrationMatcherConfig {
-  ::testing::Matcher<const attribution_reporting::FilterPair&> filters =
-      ::testing::_;
-  ::testing::Matcher<absl::optional<uint64_t>> debug_key = ::testing::_;
-  ::testing::Matcher<
-      const std::vector<attribution_reporting::EventTriggerData>&>
-      event_triggers = ::testing::_;
-  ::testing::Matcher<
-      const std::vector<attribution_reporting::AggregatableDedupKey>&>
-      aggregatable_dedup_keys = ::testing::_;
-  ::testing::Matcher<bool> debug_reporting = ::testing::_;
-  ::testing::Matcher<
-      const std::vector<attribution_reporting::AggregatableTriggerData>&>
-      aggregatable_trigger_data = ::testing::_;
-  ::testing::Matcher<const attribution_reporting::AggregatableValues&>
-      aggregatable_values = ::testing::_;
-  ::testing::Matcher<
-      const absl::optional<attribution_reporting::SuitableOrigin>&>
-      aggregation_coordinator_origin = ::testing::_;
-  ::testing::Matcher<attribution_reporting::mojom::SourceRegistrationTimeConfig>
-      source_registration_time_config = ::testing::_;
-
-  TriggerRegistrationMatcherConfig() = delete;
-  explicit TriggerRegistrationMatcherConfig(
-      ::testing::Matcher<const attribution_reporting::FilterPair&> filters =
-          ::testing::_,
-      ::testing::Matcher<absl::optional<uint64_t>> debug_key = ::testing::_,
-      ::testing::Matcher<
-          const std::vector<attribution_reporting::EventTriggerData>&>
-          event_triggers = ::testing::_,
-      ::testing::Matcher<
-          const std::vector<attribution_reporting::AggregatableDedupKey>&>
-          aggregatable_dedup_keys = ::testing::_,
-      ::testing::Matcher<bool> debug_reporting = ::testing::_,
-      ::testing::Matcher<
-          const std::vector<attribution_reporting::AggregatableTriggerData>&>
-          aggregatable_trigger_data = ::testing::_,
-      ::testing::Matcher<const attribution_reporting::AggregatableValues&>
-          aggregatable_values = ::testing::_,
-      ::testing::Matcher<
-          const absl::optional<attribution_reporting::SuitableOrigin>&>
-          aggregation_coordinator_origin = ::testing::_,
-      ::testing::Matcher<
-          attribution_reporting::mojom::SourceRegistrationTimeConfig>
-          source_registration_time_config = ::testing::_);
-  ~TriggerRegistrationMatcherConfig();
-};
-
-::testing::Matcher<const attribution_reporting::TriggerRegistration&>
-TriggerRegistrationMatches(const TriggerRegistrationMatcherConfig&);
-
-struct AttributionTriggerMatcherConfig {
-  ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
-      reporting_origin = ::testing::_;
-  ::testing::Matcher<const attribution_reporting::TriggerRegistration&>
-      registration = ::testing::_;
-  ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
-      destination_origin = ::testing::_;
-  ::testing::Matcher<const std::vector<network::TriggerVerification>&>
-      verifications = ::testing::_;
-
-  ::testing::Matcher<bool> is_within_fenced_frame = ::testing::_;
-
-  AttributionTriggerMatcherConfig() = delete;
-  explicit AttributionTriggerMatcherConfig(
-      ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
-          reporting_origin = ::testing::_,
-      ::testing::Matcher<const attribution_reporting::TriggerRegistration&>
-          registration = ::testing::_,
-      ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
-          destination_origin = ::testing::_,
-      ::testing::Matcher<bool> is_within_fenced_frame = ::testing::_);
-  ~AttributionTriggerMatcherConfig();
-};
-
-::testing::Matcher<AttributionTrigger> AttributionTriggerMatches(
-    const AttributionTriggerMatcherConfig&);
 
 class TestAggregatableSourceProvider {
  public:

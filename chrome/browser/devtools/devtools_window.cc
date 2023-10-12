@@ -38,7 +38,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
-#include "chrome/browser/ui/webui/devtools_ui.h"
+#include "chrome/browser/ui/webui/devtools/devtools_ui.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -1253,6 +1253,11 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
     url += "&hasOtherClients=true";
   if (browser_connection)
     url += "&browserConnection=true";
+
+#if BUILDFLAG(GOOGLE_CHROME_FOR_TESTING_BRANDING)
+  url += "&isChromeForTesting=true";
+#endif
+
   return DevToolsUIBindings::SanitizeFrontendURL(GURL(url));
 }
 

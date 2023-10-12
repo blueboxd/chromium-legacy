@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
-#include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
@@ -370,6 +369,21 @@ inline CSSIdentifierValue::CSSIdentifierValue(EFillBox e)
     case EFillBox::kText:
       value_id_ = CSSValueID::kText;
       break;
+    case EFillBox::kMarginBox:
+      value_id_ = CSSValueID::kMarginBox;
+      break;
+    case EFillBox::kFillBox:
+      value_id_ = CSSValueID::kFillBox;
+      break;
+    case EFillBox::kStrokeBox:
+      value_id_ = CSSValueID::kStrokeBox;
+      break;
+    case EFillBox::kViewBox:
+      value_id_ = CSSValueID::kViewBox;
+      break;
+    case EFillBox::kNoClip:
+      value_id_ = CSSValueID::kNoClip;
+      break;
   }
 }
 
@@ -387,6 +401,16 @@ inline EFillBox CSSIdentifierValue::ConvertTo() const {
       return EFillBox::kContent;
     case CSSValueID::kText:
       return EFillBox::kText;
+    case CSSValueID::kMarginBox:
+      return EFillBox::kMarginBox;
+    case CSSValueID::kFillBox:
+      return EFillBox::kFillBox;
+    case CSSValueID::kStrokeBox:
+      return EFillBox::kStrokeBox;
+    case CSSValueID::kViewBox:
+      return EFillBox::kViewBox;
+    case CSSValueID::kNoClip:
+      return EFillBox::kNoClip;
     default:
       break;
   }
@@ -1157,34 +1181,6 @@ inline TouchAction CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline scroll_customization::ScrollDirection CSSIdentifierValue::ConvertTo()
-    const {
-  switch (value_id_) {
-    case CSSValueID::kNone:
-      return scroll_customization::kScrollDirectionNone;
-    case CSSValueID::kAuto:
-      return scroll_customization::kScrollDirectionAuto;
-    case CSSValueID::kPanLeft:
-      return scroll_customization::kScrollDirectionPanLeft;
-    case CSSValueID::kPanRight:
-      return scroll_customization::kScrollDirectionPanRight;
-    case CSSValueID::kPanX:
-      return scroll_customization::kScrollDirectionPanX;
-    case CSSValueID::kPanUp:
-      return scroll_customization::kScrollDirectionPanUp;
-    case CSSValueID::kPanDown:
-      return scroll_customization::kScrollDirectionPanDown;
-    case CSSValueID::kPanY:
-      return scroll_customization::kScrollDirectionPanY;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return scroll_customization::kScrollDirectionNone;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(CSSBoxType css_box)
     : CSSValue(kIdentifierClass) {
   switch (css_box) {
@@ -1246,6 +1242,9 @@ inline CSSIdentifierValue::CSSIdentifierValue(ItemPosition item_position)
     case ItemPosition::kLastBaseline:
       value_id_ = CSSValueID::kLastBaseline;
       break;
+    case ItemPosition::kAnchorCenter:
+      value_id_ = CSSValueID::kAnchorCenter;
+      break;
     case ItemPosition::kCenter:
       value_id_ = CSSValueID::kCenter;
       break;
@@ -1293,6 +1292,8 @@ inline ItemPosition CSSIdentifierValue::ConvertTo() const {
       return ItemPosition::kBaseline;
     case CSSValueID::kLastBaseline:
       return ItemPosition::kLastBaseline;
+    case CSSValueID::kAnchorCenter:
+      return ItemPosition::kAnchorCenter;
     case CSSValueID::kCenter:
       return ItemPosition::kCenter;
     case CSSValueID::kStart:

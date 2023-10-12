@@ -431,6 +431,10 @@ base::expected<void, GLError> CopySharedImageHelper::ConvertRGBAToYUVAMailboxes(
 }
 
 base::expected<void, GLError> CopySharedImageHelper::ConvertYUVAMailboxesToRGB(
+    GLint src_x,
+    GLint src_y,
+    GLsizei width,
+    GLsizei height,
     GLenum planes_yuv_color_space,
     GLenum plane_config,
     GLenum subsampling,
@@ -503,10 +507,20 @@ base::expected<void, GLError> CopySharedImageHelper::ConvertYUVAMailboxesToRGB(
     }
 
     sk_sp<SkImage> result_image;
-    SkISize dest_size =
-        SkISize::Make(dest_surface->width(), dest_surface->height());
-    SkYUVAInfo yuva_info(dest_size, src_plane_config, src_subsampling,
-                         src_yuv_color_space);
+
+    gfx::Size dest_size =
+        gfx::Size(dest_surface->width(), dest_surface->height());
+
+    gfx::Rect dest_rect(0, 0, width, height);
+    if (!gfx::Rect(dest_size).Contains(dest_rect)) {
+      return base::unexpected(GLError(GL_INVALID_VALUE,
+                                      "ConvertYUVAMailboxesToRGB",
+                                      "destination texture bad dimensions."));
+    }
+
+    auto src_size = yuva_images[0]->size();
+    SkYUVAInfo yuva_info(gfx::SizeToSkISize(src_size), src_plane_config,
+                         src_subsampling, src_yuv_color_space);
     if (auto* gr_context = shared_context_state_->gr_context()) {
       std::array<GrBackendTexture, SkYUVAInfo::kMaxPlanes> yuva_textures;
       for (int i = 0; i < num_src_planes; ++i) {
@@ -538,8 +552,10 @@ base::expected<void, GLError> CopySharedImageHelper::ConvertYUVAMailboxesToRGB(
     } else {
       SkPaint paint;
       paint.setBlendMode(SkBlendMode::kSrc);
-      dest_surface->getCanvas()->drawImage(result_image, 0, 0,
-                                           SkSamplingOptions(), &paint);
+      SkRect src_rect = SkRect::MakeXYWH(src_x, src_y, width, height);
+      dest_surface->getCanvas()->drawImageRect(
+          result_image, src_rect, gfx::RectToSkRect(dest_rect),
+          SkSamplingOptions(), &paint, SkCanvas::kStrict_SrcRectConstraint);
       drew_image = true;
     }
   }
@@ -956,6 +972,13 @@ base::expected<void, GLError> CopySharedImageHelper::ReadPixels(
                                     "Couldn't create SkImage for reading."));
   }
 
+  gfx::Size src_size = source_shared_image->size();
+  gfx::Rect src_rect(src_x, src_y, dst_info.width(), dst_info.height());
+  if (!gfx::Rect(src_size).Contains(src_rect)) {
+    return base::unexpected(GLError(GL_INVALID_VALUE, "glReadbackImagePixels",
+                                    "source shared image bad dimensions."));
+  }
+
   bool success = false;
   if (gr_context) {
     success = sk_image->readPixels(gr_context, dst_info, pixel_address,
@@ -963,11 +986,10 @@ base::expected<void, GLError> CopySharedImageHelper::ReadPixels(
   } else {
     CHECK(shared_context_state_->graphite_context());
     ReadPixelsContext context;
-    const SkIRect src_rect =
-        SkIRect::MakeXYWH(src_x, src_y, dst_info.width(), dst_info.height());
     shared_context_state_->graphite_context()->asyncRescaleAndReadPixels(
-        sk_image.get(), dst_info, src_rect, SkImage::RescaleGamma::kSrc,
-        SkImage::RescaleMode::kRepeatedLinear, &OnReadPixelsDone, &context);
+        sk_image.get(), dst_info, RectToSkIRect(src_rect),
+        SkImage::RescaleGamma::kSrc, SkImage::RescaleMode::kRepeatedLinear,
+        &OnReadPixelsDone, &context);
     InsertRecordingAndSubmit(shared_context_state_, /*sync_cpu=*/true);
     CHECK(context.finished);
     if (context.async_result) {

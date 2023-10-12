@@ -83,6 +83,7 @@ import {QuickViewController} from './quick_view_controller.js';
 import {QuickViewModel} from './quick_view_model.js';
 import {QuickViewUma} from './quick_view_uma.js';
 import {ScanController} from './scan_controller.js';
+import {SearchController} from './search_controller.js';
 import {SelectionMenuController} from './selection_menu_controller.js';
 import {SortMenuController} from './sort_menu_controller.js';
 import {SpinnerController} from './spinner_controller.js';
@@ -240,6 +241,12 @@ export class FileManager extends EventTarget {
      * @private {DirectoryTreeNamingController}
      */
     this.directoryTreeNamingController_ = null;
+
+    /**
+     * Controller for search UI.
+     * @private {?SearchController}
+     */
+    this.searchController_ = null;
 
     /**
      * Controller for directory scan.
@@ -1182,6 +1189,13 @@ export class FileManager extends EventTarget {
         this.metadataUpdateController_, assert(this.crostini_),
         this.progressCenter);
 
+    // Create search controller.
+    this.searchController_ = new SearchController(
+        this.ui_.searchContainer,
+        this.directoryModel_,
+        assert(this.ui_),
+    );
+
     // Create directory tree naming controller.
     this.directoryTreeNamingController_ = new DirectoryTreeNamingController(
         this.directoryModel_, assert(this.ui_.directoryTree),
@@ -1243,7 +1257,7 @@ export class FileManager extends EventTarget {
     const directoryTree = /** @type {DirectoryTree} */
         (this.dialogDom_.querySelector('#directory-tree'));
 
-    if (util.isFilesAppExperimental()) {
+    if (util.isNewDirectoryTreeEnabled()) {
       const treeContainer = directoryTree.parentElement;
       directoryTree.remove();
       const directoryTreeContainer = new DirectoryTreeContainer(
@@ -1558,7 +1572,7 @@ export class FileManager extends EventTarget {
 
     // If there is no target select MyFiles by default.
     if (!nextCurrentDirEntry) {
-      if (util.isFilesAppExperimental()) {
+      if (util.isNewDirectoryTreeEnabled()) {
         const myFiles = getMyFiles(this.store_.getState());
         nextCurrentDirEntry = myFiles.myFilesEntry;
       } else if (this.ui_.directoryTree.dataModel.myFilesModel_) {
@@ -1598,8 +1612,8 @@ export class FileManager extends EventTarget {
           this.directoryModel_.selectEntry(opt_selectionEntry);
         }
         if (this.launchParams_.searchQuery) {
-          this.store_.dispatch(
-              updateSearch({query: this.launchParams_.searchQuery}));
+          this.searchController_.setSearchQuery(
+              this.launchParams_.searchQuery, getDefaultSearchOptions());
         }
       } else {
         console.warn('No entry for finishSetupCurrentDirectory_');
@@ -1745,7 +1759,7 @@ export class FileManager extends EventTarget {
 
     this.updateOfficePrefs_(prefs);
 
-    if (redraw && !util.isFilesAppExperimental()) {
+    if (redraw && !util.isNewDirectoryTreeEnabled()) {
       this.ui_.directoryTree.redraw(false);
     }
   }
@@ -1815,14 +1829,14 @@ export class FileManager extends EventTarget {
             new TrashRootEntry());
       }
       this.store_.dispatch(addUiEntry({entry: this.fakeTrashItem_.entry}));
-      if (!util.isFilesAppExperimental()) {
+      if (!util.isNewDirectoryTreeEnabled()) {
         this.ui_.directoryTree.dataModel.fakeTrashItem = this.fakeTrashItem_;
       }
       return;
     }
 
     this.store_.dispatch(removeUiEntry({key: trashRootKey}));
-    if (!util.isFilesAppExperimental()) {
+    if (!util.isNewDirectoryTreeEnabled()) {
       this.ui_.directoryTree.dataModel.fakeTrashItem = null;
     }
     this.navigateAwayFromDisabledRoot_(this.fakeTrashItem_);
@@ -1845,12 +1859,12 @@ export class FileManager extends EventTarget {
         this.fakeDriveItem_.disabled = this.volumeManager_.isDisabled(
             VolumeManagerCommon.VolumeType.DRIVE);
       }
-      if (!util.isFilesAppExperimental()) {
+      if (!util.isNewDirectoryTreeEnabled()) {
         this.ui_.directoryTree.dataModel.fakeDriveItem = this.fakeDriveItem_;
       }
       return;
     }
-    if (!util.isFilesAppExperimental()) {
+    if (!util.isNewDirectoryTreeEnabled()) {
       this.ui_.directoryTree.dataModel.fakeDriveItem = null;
     }
     this.navigateAwayFromDisabledRoot_(this.fakeDriveItem_);

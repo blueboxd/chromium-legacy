@@ -22,6 +22,10 @@ class MockCampaignsManagerClient : public CampaignsManagerClient {
   // CampaignsManagerClient:
   MOCK_METHOD1(LoadCampaignsComponent,
                void(CampaignComponentLoadedCallback callback));
+  MOCK_CONST_METHOD0(IsDeviceInDemoMode, bool());
+  MOCK_CONST_METHOD0(IsCloudGamingDevice, bool());
+  MOCK_CONST_METHOD0(IsFeatureAwareDevice, bool());
+  MOCK_CONST_METHOD0(GetApplicationLocale, std::string&());
 };
 
 }  // namespace growth

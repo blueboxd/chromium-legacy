@@ -206,10 +206,15 @@ void WebTestBrowserMainRunner::Initialize() {
   command_line.AppendSwitch(cc::switches::kEnableGpuBenchmarking);
   command_line.AppendSwitch(switches::kEnableLogging);
   command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
-  // only default to a software GL if the flag isn't already specified.
-  if (!command_line.HasSwitch(switches::kUseGpuInTests) &&
-      !command_line.HasSwitch(switches::kUseGL)) {
-    gl::SetSoftwareGLCommandLineSwitches(&command_line);
+
+  // On IOS, we always use hardware GL for the web test as content_browsertests.
+  // See also https://crrev.com/c/4885954.
+  if constexpr (!BUILDFLAG(IS_IOS)) {
+    // only default to a software GL if the flag isn't already specified.
+    if (!command_line.HasSwitch(switches::kUseGpuInTests) &&
+        !command_line.HasSwitch(switches::kUseGL)) {
+      gl::SetSoftwareGLCommandLineSwitches(&command_line);
+    }
   }
   command_line.AppendSwitchASCII(switches::kTouchEventFeatureDetection,
                                  switches::kTouchEventFeatureDetectionEnabled);
@@ -297,7 +302,7 @@ void WebTestBrowserMainRunner::Initialize() {
   // Disable the backgrounding of renderers to make running tests faster.
   command_line.AppendSwitch(switches::kDisableRendererBackgrounding);
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS)
   content::WebTestBrowserPlatformInitialize();
 #endif

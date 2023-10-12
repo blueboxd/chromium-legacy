@@ -19,7 +19,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -126,6 +125,7 @@
 #endif
 
 #if BUILDFLAG(IS_LINUX)
+#include "ui/base/ime/text_input_flags.h"
 #include "ui/linux/linux_ui.h"
 #endif
 
@@ -311,7 +311,8 @@ bool BrowserCommandController::IsReservedCommandOrKey(
   // it is not reserved.
   auto* linux_ui = ui::LinuxUi::instance();
   if (linux_ui && event.os_event &&
-      linux_ui->GetTextEditCommandsForEvent(*event.os_event, nullptr)) {
+      linux_ui->GetTextEditCommandsForEvent(
+          *event.os_event, ui::TEXT_INPUT_FLAG_NONE, nullptr)) {
     return false;
   }
 #endif
@@ -1031,7 +1032,6 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       ExecLensRegionSearch(browser_);
       break;
 #endif  // BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
-
     case IDC_READING_LIST_MENU_ADD_TAB:
       chrome::MoveCurrentTabToReadLater(browser_);
       break;
@@ -1040,6 +1040,13 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       SidePanelUI::GetSidePanelUIForBrowser(browser_)->Show(
           SidePanelEntryId::kReadingList, SidePanelOpenTrigger::kAppMenu);
       break;
+
+    case IDC_SHOW_READING_MODE_SIDE_PANEL: {
+      // Yes. This is a separate feature from the reading list.
+      SidePanelUI::GetSidePanelUIForBrowser(browser_)->Show(
+          SidePanelEntryId::kReadAnything, SidePanelOpenTrigger::kAppMenu);
+      break;
+    }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     // Profile submenu commands
@@ -1256,6 +1263,7 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   command_updater_.UpdateCommandEnabled(IDC_FIND_AND_EDIT_MENU, true);
   command_updater_.UpdateCommandEnabled(IDC_SAVE_AND_SHARE_MENU, true);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_READING_MODE_SIDE_PANEL, true);
   command_updater_.UpdateCommandEnabled(IDC_SEND_TAB_TO_SELF, false);
   command_updater_.UpdateCommandEnabled(IDC_QRCODE_GENERATOR, false);
   command_updater_.UpdateCommandEnabled(IDC_PASSWORDS_AND_AUTOFILL_MENU,
@@ -1391,10 +1399,7 @@ void BrowserCommandController::InitCommandState() {
   }
 #endif
 
-  if ((browser_->is_type_normal() && features::IsChromeRefresh2023()) ||
-      base::FeatureList::IsEnabled(features::kPowerBookmarksSidePanel)) {
-    command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_SIDE_PANEL, true);
-  }
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_SIDE_PANEL, true);
 
   if (features::IsChromeRefresh2023()) {
     if (browser_->is_type_normal()) {
@@ -1907,6 +1912,7 @@ void BrowserCommandController::UpdateCommandsForTabStripStateChanged() {
                                         CanCloseOtherTabs(browser_));
   command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_TO_NEW_WINDOW,
                                         CanMoveActiveTabToNewWindow(browser_));
+  UpdateCommandsForBookmarkEditing();
 }
 
 BrowserWindow* BrowserCommandController::window() {

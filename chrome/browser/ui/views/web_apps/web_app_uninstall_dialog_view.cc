@@ -9,10 +9,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_info_image_source.h"
+#include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -56,7 +56,7 @@ WebAppUninstallDialogDelegateView::WebAppUninstallDialogDelegateView(
     Profile* profile,
     webapps::AppId app_id,
     webapps::WebappUninstallSource uninstall_source,
-    std::map<SquareSizePx, SkBitmap> icon_bitmaps,
+    std::map<web_app::SquareSizePx, SkBitmap> icon_bitmaps,
     web_app::UninstallDialogCallback uninstall_choice_callback)
     : app_id_(std::move(app_id)),
       profile_(profile),
@@ -204,14 +204,14 @@ void WebAppUninstallDialogDelegateView::ProcessAutoConfirmValue() {
 BEGIN_METADATA(WebAppUninstallDialogDelegateView, views::DialogDelegateView)
 END_METADATA
 
-namespace chrome {
+namespace web_app {
 
 void ShowWebAppUninstallDialog(
     Profile* profile,
     const webapps::AppId& app_id,
     webapps::WebappUninstallSource uninstall_source,
     gfx::NativeWindow parent,
-    std::map<SquareSizePx, SkBitmap> icon_bitmaps,
+    std::map<web_app::SquareSizePx, SkBitmap> icon_bitmaps,
     web_app::UninstallDialogCallback uninstall_dialog_result_callback) {
   auto* view = new WebAppUninstallDialogDelegateView(
       profile, app_id, uninstall_source, std::move(icon_bitmaps),
@@ -220,4 +220,4 @@ void ShowWebAppUninstallDialog(
   view->ProcessAutoConfirmValue();
 }
 
-}  // namespace chrome
+}  // namespace web_app

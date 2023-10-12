@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">Kapućino</translation>
 <translation id="3619593063686672873">Nema nedavnih videozapisa</translation>
 <translation id="3634507049637220048">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, upravlja vaš administrator, detalji</translation>
+<translation id="36451918667380448">Kartica operatera mobilne mreže je zaključana. Kontaktirajte operatera za podršku.</translation>
 <translation id="3645233063072417428">Broj premještenih stavki: <ph name="NUMBER_OF_ITEMS" />.</translation>
 <translation id="3658269352872031728">Broj odabranih fajlova: <ph name="SELECTED_FILE_COUNT" /></translation>
 <translation id="3685122418104378273">Sinhroniziranje Google Diska je onemogućeno prema zadanim postavkama kada se koristi prijenos podataka na mobilnoj mreži.</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">Fajl je povjerljiv i podložan ograničenjima po pravilima administratora.</translation>
 <translation id="8712637175834984815">Razumijem</translation>
 <translation id="8713112442029511308">malteški</translation>
+<translation id="8714138378966541668">Zaključao je pružalac usluga</translation>
 <translation id="8714406895390098252">Biciklo</translation>
 <translation id="8719721339511222681">Odabran je unos <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">hrvatska</translation>

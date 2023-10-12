@@ -56,9 +56,16 @@ void WebXrInternalsHandlerImpl::GetDeviceInfo(GetDeviceInfoCallback callback) {
 
   // GPU
   const gpu::GPUInfo gpu_info = GetGPUInfo();
-  info->gpu_gl_vendor = gpu_info.active_gpu().gl_vendor;
-  info->gpu_gl_renderer = gpu_info.active_gpu().gl_renderer;
+  info->gpu_gl_vendor = gpu_info.gl_vendor;
+  info->gpu_gl_renderer = gpu_info.gl_renderer;
 
+  std::move(callback).Run(std::move(info));
+}
+
+void WebXrInternalsHandlerImpl::GetActiveRuntimes(
+    GetActiveRuntimesCallback callback) {
+  std::vector<webxr::mojom::RuntimeInfoPtr> info =
+      runtime_manager_->GetActiveRuntimes();
   std::move(callback).Run(std::move(info));
 }
 

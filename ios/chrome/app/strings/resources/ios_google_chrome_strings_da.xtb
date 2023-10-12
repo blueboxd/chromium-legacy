@@ -69,7 +69,6 @@ Vær opmærksom på følgende:
 <translation id="3345341804167540816">Brug Chrome overalt</translation>
 <translation id="3472587960215700950">Chrome bruger Google Maps til at give dig rutevejledninger og lokale oplysninger om registrerede adresser.</translation>
 <translation id="3503014945441706099">Få også Udvidet beskyttet browsing til denne Chrome-profil</translation>
-<translation id="3506309791702511623">Chrome kan registrere de sporingsnumre, du indtaster, og spore dine pakker på siden Ny fane og samtidig hjælpe dig i forbindelse med andre Google-shoppingoplevelser.</translation>
 <translation id="3522659714780527202">Aktivér synkronisering for at se dine faner på alle de enheder, hvor du bruger Chrome</translation>
 <translation id="3533694711092285624">Der er ingen gemte adgangskoder. Chrome kan tjekke dine adgangskoder, når du gemmer dem.</translation>
 <translation id="3594076341410558780">Skjul "Få mest muligt ud af Chrome"</translation>
@@ -118,6 +117,7 @@ Vær opmærksom på følgende:
 <translation id="5389212809648216794">Google Chrome kan ikke bruge dit kamera, da det bruges af en anden app</translation>
 <translation id="5395376160638294582">Sørg for, at du altid kan bruge Chrome-dataene på din Google-konto</translation>
 <translation id="5439191312780166229">Advarer dig om skadelige websites – også websites, som Google ikke tidligere har kendt til – ved at analysere flere data fra websites end Standardbeskyttelse. Du kan vælge at springe Chrome-advarsler over.</translation>
+<translation id="5442013002200339429">Hvis du skjuler "<ph name="MODULE_NAME" />", sporer Chrome ikke længere automatisk dine fremtidige pakker, og alle dine tidligere pakkesporingsdata slettes.</translation>
 <translation id="5460571915754665838">4. Vælg Chrome</translation>
 <translation id="546541279759910616">{COUNT,plural, =1{Chrome hjælper med at spore denne pakke på siden Ny fane.}one{Chrome hjælper med at spore denne pakke på siden Ny fane.}other{Chrome hjælper med at spore disse pakker på siden Ny fane.}}</translation>
 <translation id="5492504007368565877">Google Adgangskodeadministrator kan ikke tjekke dine adgangskoder.</translation>
@@ -154,6 +154,7 @@ Vær opmærksom på følgende:
 
 Kun personer med din adgangssætning kan læse dine krypterede data. Adgangssætningen bliver ikke sendt til eller gemt af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />rydde Chrome-dataene på din konto<ph name="END_LINK" />.</translation>
 <translation id="6822673484890854830">Chrome kunne ikke tjekke alle adgangskoder. Prøv igen senere.</translation>
+<translation id="6851982868877411675">Åbn Chrome-indstillingerne i iOS, tryk på "Standardbrowserapp", og vælg Chrome.</translation>
 <translation id="6916015246697034114">Søg med stemmen i Chrome</translation>
 <translation id="6964931465519938134">Du kan nu bruge Chrome, hver gang du trykker på links i meddelelser, dokumenter og andre apps.</translation>
 <translation id="6975725306479268850">Vælg Chrome for Autofyld</translation>
@@ -188,6 +189,7 @@ Kun personer med din adgangssætning kan læse dine krypterede data. Adgangssæt
 <translation id="7933491483529363150">Åbn min seneste fane i Chrome.</translation>
 <translation id="8022947259858476807">Brug som standard Chrome til at åbne links, søge efter widgets og udfylde adgangskoder automatisk i andre apps</translation>
 <translation id="804638182476029347">Tillad Chrome-notifikationer for at få underretninger om prisfald</translation>
+<translation id="8069507567842347179">Denne pakke er allerede blevet sporet i Chrome.</translation>
 <translation id="81358522153858150">Chrome understøtter nu brugerpolitikker for din administrerede konto</translation>
 <translation id="8160472928944011082">Chrome kan ikke opdateres</translation>
 <translation id="8174679664544842874">Åbner en ny fane i Chrome.</translation>

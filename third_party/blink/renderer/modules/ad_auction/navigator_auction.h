@@ -72,12 +72,27 @@ class MODULES_EXPORT NavigatorAuction final
                                             Navigator&,
                                             const AuctionAdInterestGroupKey*,
                                             ExceptionState&);
+
   // Implicit leaveAdInterestGroup - only supported when called from within
   // a fenced frame showing FLEDGE ads.
   ScriptPromise leaveAdInterestGroupForDocument(ScriptState*, ExceptionState&);
   static ScriptPromise leaveAdInterestGroup(ScriptState*,
                                             Navigator&,
                                             ExceptionState&);
+
+  ScriptPromise clearOriginJoinedAdInterestGroups(ScriptState*,
+                                                  const String,
+                                                  const Vector<String>,
+                                                  ExceptionState&);
+  static ScriptPromise clearOriginJoinedAdInterestGroups(ScriptState*,
+                                                         Navigator&,
+                                                         const String,
+                                                         ExceptionState&);
+  static ScriptPromise clearOriginJoinedAdInterestGroups(ScriptState*,
+                                                         Navigator&,
+                                                         const String,
+                                                         const Vector<String>,
+                                                         ExceptionState&);
 
   void updateAdInterestGroups();
   static void updateAdInterestGroups(ScriptState*, Navigator&, ExceptionState&);
@@ -198,6 +213,12 @@ class MODULES_EXPORT NavigatorAuction final
     mojom::blink::AdAuctionService::LeaveInterestGroupCallback callback;
   };
 
+  struct PendingClear {
+    scoped_refptr<const SecurityOrigin> owner;
+    Vector<String> interest_groups_to_keep;
+    mojom::blink::AdAuctionService::LeaveInterestGroupCallback callback;
+  };
+
   // Tells the browser process to start `pending_join`. Its callback will be
   // invoked on completion.
   void StartJoin(PendingJoin&& pending_join);
@@ -211,10 +232,20 @@ class MODULES_EXPORT NavigatorAuction final
   // invoked on completion.
   void StartLeave(PendingLeave&& pending_leave);
 
-  // Completion callback for leaveInterestGroup() Mojo calls.
+  // Completion callback for clearOriginJoinedAdInterestGroups() Mojo calls.
   void LeaveComplete(bool is_cross_origin,
                      ScriptPromiseResolver* resolver,
                      bool failed_well_known_check);
+
+  // Tells the browser process to start `pending_clear`. Its callback will be
+  // invoked on completion.
+  void StartClear(PendingClear&& pending_clear);
+
+  // Completion callback for leaveInterestGroup() Mojo calls.
+  void ClearComplete(bool is_cross_origin,
+                     ScriptPromiseResolver* resolver,
+                     bool failed_well_known_check);
+
   // Completion callback for createAuctionNonce() Mojo call.
   void CreateAuctionNonceComplete(ScriptPromiseResolver* resolver,
                                   const base::Uuid& nonce);
@@ -233,12 +264,14 @@ class MODULES_EXPORT NavigatorAuction final
   void GetInterestGroupAdAuctionDataComplete(
       ScriptPromiseResolver* resolver,
       mojo_base::BigBuffer request,
-      const absl::optional<base::Uuid>& request_id);
+      const absl::optional<base::Uuid>& request_id,
+      const WTF::String& error_message);
 
   // Manage queues of cross-site join and leave operations that have yet to be
   // sent to the browser process.
   JoinLeaveQueue<PendingJoin> queued_cross_site_joins_;
   JoinLeaveQueue<PendingLeave> queued_cross_site_leaves_;
+  JoinLeaveQueue<PendingClear> queued_cross_site_clears_;
 
   HeapMojoRemote<mojom::blink::AdAuctionService> ad_auction_service_;
 };

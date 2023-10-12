@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">ਤੁਸੀਂ ਸਿਰਫ਼ 5 ਸ਼ਾਰਟਕੱਟਾਂ ਨੂੰ ਵਿਉਂਤਬੱਧ ਕਰ ਸਕਦੇ ਹੋ। ਨਵਾਂ ਸ਼ਾਰਟਕੱਟ ਸ਼ਾਮਲ ਕਰਨ ਲਈ ਕਿਸੇ ਇੱਕ ਨੂੰ ਮਿਟਾਓ।</translation>
 <translation id="1164939766849482256">ਸਵੇਰ ਤੋਂ ਰਾਤ ਤੱਕ ਦਾ ਸਕ੍ਰੀਨ ਸੇਵਰ</translation>
 <translation id="1167755866710282443">ਕੁੰਜੀਆਂ ਨੂੰ ਵਿਉਂਤਬੱਧ ਕਰਨ ਲਈ ਮੀਨੂ ਖੋਲ੍ਹੋ। ਲਿਜਾਉਣ ਲਈ ਮੀਨੂ ਨੂੰ ਘਸੀਟੋ।</translation>
+<translation id="1174073918202301297">ਸ਼ਾਰਟਕੱਟ ਸ਼ਾਮਲ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> ਵੱਲੋਂ ਇਸ <ph name="DEVICE_TYPE" /> ਦਾ ਪ੍ਰਬੰਧਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ।</translation>
 <translation id="1175951029573070619">ਔਸਤ (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">ਹਟਾਓ</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">ਵਾਲਪੇਪਰ ਚਿੱਤਰ ਨੂੰ ਰੋਜ਼ਾਨਾ ਬਦਲੋ</translation>
 <translation id="1644574205037202324">ਇਤਿਹਾਸ</translation>
 <translation id="1651925268237749928">ਤੁਸੀਂ ਸਾਂਝੀ ਐਲਬਮ ਨੂੰ ਚੁਣਿਆ ਹੈ। ਹੋਰ ਲੋਕ ਫ਼ੋਟੋਆਂ ਸ਼ਾਮਲ ਕਰ ਜਾਂ ਬਦਲ ਸਕਦੇ ਹਨ। ਤੁਹਾਡਾ ਵਾਲਪੇਪਰ ਅਜਿਹੀਆਂ ਫ਼ੋਟੋਆਂ ਨੂੰ ਵਰਤ ਸਕਦਾ ਹੈ ਜੋ ਫ਼ਿਲਹਾਲ ਇਸ ਐਲਬਮ ਵਿੱਚ ਮੌਜੂਦ ਨਹੀਂ ਹਨ।</translation>
+<translation id="1661865805917886535">ਖਾਤੇ ਅਤੇ ਸਿਸਟਮ ਦੀ ਕੁਝ ਜਾਣਕਾਰੀ Google ਨੂੰ ਭੇਜੀ ਜਾ ਸਕਦੀ ਹੈ। ਅਸੀਂ ਇਸ ਜਾਣਕਾਰੀ ਦੀ ਵਰਤੋਂ ਸਾਡੀ ਪਰਦੇਦਾਰੀ ਨੀਤੀ (<ph name="PRIVACYPOLICYURL" />) ਅਤੇ ਸੇਵਾ ਦੇ ਨਿਯਮਾਂ (<ph name="TERMSOFSERVICEURL" />) ਦੇ ਅਧੀਨ, ਤਕਨੀਕੀ ਸਮੱਸਿਆਵਾਂ ਨੂੰ ਹੱਲ ਕਰਨ ਅਤੇ ਸਾਡੀਆਂ ਸੇਵਾਵਾਂ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਲਈ ਕਰਦੇ ਹਾਂ। ਸਮੱਗਰੀ ਵਿੱਚ ਤਬਦੀਲੀਆਂ ਦੀ ਬੇਨਤੀ ਕਰਨ ਵਾਸਤੇ, ਕਨੂੰਨੀ ਮਦਦ (<ph name="LEGALHELPPAGEURL" />) 'ਤੇ ਜਾਓ।</translation>
 <translation id="1662989795263954667">ਬੰਦ ਹੋ ਗਿਆ - ਸਿਆਹੀ ਖਤਮ ਹੋ ਗਈ ਹੈ</translation>
 <translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> ਦੀ ਪੂਰਵ-ਝਲਕ ਦੇਖੋ</translation>
 <translation id="1668469839109562275">ਅੰਦਰ-ਮੌਜੂਦ VPN</translation>
@@ -131,7 +133,6 @@
 <translation id="1871569928317311284">ਗੂੜ੍ਹਾ ਥੀਮ ਬੰਦ ਕਰੋ</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">ਗੂੜ੍ਹਾ ਮੋਡ ਬੰਦ ਕਰੋ</translation>
-<translation id="1881188606372070653">ਕਨੂੰਨੀ ਕਾਰਨਾਂ ਕਰਕੇ ਸਮੱਗਰੀ ਵਿੱਚ ਤਬਦੀਲੀਆਂ ਕਰਨ ਦੀ ਬੇਨਤੀ ਕਰਨ ਲਈ <ph name="BEGIN_LINK1" />ਕਨੂੰਨੀ ਮਦਦ ਪੰਨੇ<ph name="END_LINK1" /> 'ਤੇ ਜਾਓ। ਖਾਤੇ ਅਤੇ ਸਿਸਟਮ ਦੀ ਕੁਝ ਜਾਣਕਾਰੀ Google ਨੂੰ ਭੇਜੀ ਜਾ ਸਕਦੀ ਹੈ। ਅਸੀਂ ਤੁਹਾਡੇ ਵੱਲੋਂ ਸਾਨੂੰ ਦਿੱਤੀ ਜਾਣਕਾਰੀ ਨੂੰ ਸਾਡੀ <ph name="BEGIN_LINK2" />ਪਰਦੇਦਾਰੀ ਨੀਤੀ<ph name="END_LINK2" /> ਅਤੇ <ph name="BEGIN_LINK3" />ਸੇਵਾ ਦੇ ਨਿਯਮਾਂ<ph name="END_LINK3" /> ਦੇ ਅਧੀਨ, ਤਕਨੀਕੀ ਸਮੱਸਿਆਵਾਂ ਨੂੰ ਹੱਲ ਕਰਨ ਅਤੇ ਸਾਡੀਆਂ ਸੇਵਾਵਾਂ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਲਈ ਵਰਤਾਂਗੇ।</translation>
 <translation id="1885577615937958993">ਮੀਡੀਆ ਨੂੰ ਤੇਜ਼ੀ ਨਾਲ ਅੱਗੇ ਕਰੋ</translation>
 <translation id="1887850431809612466">ਹਾਰਡਵੇਅਰ ਸੰਸ਼ੋਧਨ</translation>
 <translation id="1897672602657312171">ਖੋਜ ਕੁੰਜੀ ਤੋਂ ਬਿਨਾਂ ਸ਼ਾਰਟਕੱਟ ਦੀ ਵਰਤੋਂ ਕਰਨ 'ਤੇ ਕੁਝ ਐਪਾਂ ਦੇ ਸ਼ਾਰਟਕੱਟ ਵਿੱਚ ਗੜਬੜ ਹੋ ਸਕਦੀ ਹੈ। ਇਸਦੀ ਵਰਤੋਂ ਜਾਰੀ ਰੱਖਣ ਲਈ ਇਸ ਸ਼ਾਰਟਕੱਟ ਨੂੰ ਦੁਬਾਰਾ ਦਬਾਓ ਜਾਂ ਖੋਜ ਕੁੰਜੀ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਕੋਈ ਨਵਾਂ ਸ਼ਾਰਟਕੱਟ ਦਬਾਓ।</translation>
@@ -212,6 +213,7 @@
 <translation id="2505327257735685095">ਮੌਜੂਦਾ ਵਾਲਪੇਪਰ ਚਿੱਤਰ ਨੂੰ ਰਿਫ੍ਰੈਸ਼ ਕਰੋ</translation>
 <translation id="2512979179176933762">ਵਿੰਡੋਆਂ ਨੂੰ ਦਿਖਾਓ</translation>
 <translation id="2513396635448525189">ਲੌਗ-ਇਨ ਚਿੱਤਰ</translation>
+<translation id="2515109918609218604">ਸ਼ਾਰਟਕੱਟ ਉਪਲਬਧ ਨਹੀਂ। ਫੰਕਸ਼ਨ ਅਤੇ ਖੋਜ ਕੁੰਜੀਆਂ ਨੂੰ ਵਰਤੇ ਬਿਨਾਂ ਨਵਾਂ ਸ਼ਾਰਟਕੱਟ ਦਬਾਓ।</translation>
 <translation id="2517472476991765520">ਸਕੈਨ ਕਰੋ</translation>
 <translation id="2521835766824839541">ਪਿਛਲਾ ਟਰੈਕ</translation>
 <translation id="2526590354069164005">ਡੈਸਕਟਾਪ</translation>
@@ -265,6 +267,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">ਡੀਵਾਈਸ ਕਨੈਕਟ ਹੈ।</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{ਕੀ ਪੰਨਾ ਹਟਾਉਣਾ ਹੈ?}=1{ਕੀ ਪੰਨਾ {PAGE_NUMBER} ਹਟਾਉਣਾ ਹੈ?}other{ਕੀ ਪੰਨਾ {PAGE_NUMBER} ਹਟਾਉਣਾ ਹੈ?}}</translation>
+<translation id="3146655726035122603"><ph name="PRODUCT_NAME" /> ਲਈ ਵਿਸ਼ੇਸ਼</translation>
 <translation id="315116470104423982">ਮੋਬਾਈਲ ਡਾਟਾ</translation>
 <translation id="3156846309055100599">ਪੰਨਾ <ph name="PAGE_NUMBER" /> ਸਕੈਨ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...</translation>
 <translation id="315738237743207937">ਕੈਪਟਿਵ ਪੋਰਟਲ ਦਾ ਪਤਾ ਲੱਗਾ</translation>
@@ -687,6 +690,7 @@
 <translation id="6318437367327684789">ਹਮੇਸ਼ਾਂ</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> 'ਤੇ ਫ਼ਰਮਵੇਅਰ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ</translation>
 <translation id="6321407676395378991">ਸਕ੍ਰੀਨ ਸੇਵਰ ਚਾਲੂ ਕਰੋ</translation>
+<translation id="6324916366299863871">ਸ਼ਾਰਟਕੱਟ ਦਾ ਸੰਪਾਦਨ ਕਰੋ</translation>
 <translation id="6325525973963619867">ਅਸਫਲ ਰਿਹਾ</translation>
 <translation id="6331191339300272798">ਸਵੈਚਲਿਤ ਗੂੜ੍ਹਾ ਥੀਮ</translation>
 <translation id="6340526405444716530">ਵਿਅਕਤੀਗਤਕਰਨ</translation>
@@ -826,6 +830,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">ਬਿਲਟ-ਇਨ ਟੱਚਪੈਡ</translation>
 <translation id="7397270852490618635">ਹਲਕਾ ਥੀਮ ਬੰਦ ਕਰੋ</translation>
+<translation id="7401543881546089382">ਸ਼ਾਰਟਕੱਟ ਮਿਟਾਓ</translation>
 <translation id="741244894080940828">ਰੂਪਾਂਤਰਨ</translation>
 <translation id="7415801143053185905">ਬਹੁਤ ਜ਼ਿਆਦਾ HTTP ਵਿਲੰਬਤਾ</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਨੇ ਹਰੇਕ ਵਾਰ ਤੁਹਾਡੇ ਵੱਲੋਂ ਲੌਗ-ਇਨ ਕਰਨ 'ਤੇ <ph name="APP_NAME_1" /> ਨੂੰ ਆਪਣੇ ਆਪ ਸ਼ੁਰੂ ਹੋਣ 'ਤੇ ਸੈੱਟ ਕੀਤਾ ਹੈ।}=2{ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਨੇ ਹਰੇਕ ਵਾਰ ਤੁਹਾਡੇ ਵੱਲੋਂ ਲੌਗ-ਇਨ ਕਰਨ 'ਤੇ <ph name="APP_NAME_1" /> ਅਤੇ <ph name="APP_NAME_2" /> ਨੂੰ ਆਪਣੇ ਆਪ ਸ਼ੁਰੂ ਹੋਣ 'ਤੇ ਸੈੱਟ ਕੀਤਾ ਹੈ।}=3{ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਨੇ ਹਰੇਕ ਵਾਰ ਤੁਹਾਡੇ ਵੱਲੋਂ ਲੌਗ-ਇਨ ਕਰਨ 'ਤੇ <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> ਅਤੇ <ph name="APP_NAME_3" /> ਨੂੰ ਆਪਣੇ ਆਪ ਸ਼ੁਰੂ ਹੋਣ 'ਤੇ ਸੈੱਟ ਕੀਤਾ ਹੈ।}one{ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਨੇ ਹਰੇਕ ਵਾਰ ਤੁਹਾਡੇ ਵੱਲੋਂ ਲੌਗ-ਇਨ ਕਰਨ 'ਤੇ <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> ਅਤੇ # ਹੋਰ ਐਪ ਨੂੰ ਆਪਣੇ ਆਪ ਸ਼ੁਰੂ ਹੋਣ 'ਤੇ ਸੈੱਟ ਕੀਤਾ ਹੈ।}other{ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਨੇ ਹਰੇਕ ਵਾਰ ਤੁਹਾਡੇ ਵੱਲੋਂ ਲੌਗ-ਇਨ ਕਰਨ 'ਤੇ <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> ਅਤੇ # ਹੋਰ ਐਪਾਂ ਨੂੰ ਆਪਣੇ ਆਪ ਸ਼ੁਰੂ ਹੋਣ 'ਤੇ ਸੈੱਟ ਕੀਤਾ ਹੈ।}}</translation>
@@ -864,6 +869,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">ਕੀ-ਬੋਰਡ ਲਾਈਟ</translation>
+<translation id="7730077286107534951">ਖਾਤੇ ਅਤੇ ਸਿਸਟਮ ਦੀ ਕੁਝ ਜਾਣਕਾਰੀ Google ਨੂੰ ਭੇਜੀ ਜਾ ਸਕਦੀ ਹੈ। ਅਸੀਂ ਇਸ ਜਾਣਕਾਰੀ ਦੀ ਵਰਤੋਂ ਸਾਡੀ <ph name="BEGIN_LINK3" />ਪਰਦੇਦਾਰੀ ਨੀਤੀ<ph name="END_LINK3" /> ਅਤੇ <ph name="BEGIN_LINK2" />ਸੇਵਾ ਦੇ ਨਿਯਮਾਂ<ph name="END_LINK2" /> ਦੇ ਅਧੀਨ, ਤਕਨੀਕੀ ਸਮੱਸਿਆਵਾਂ ਨੂੰ ਹੱਲ ਕਰਨ ਅਤੇ ਸਾਡੀਆਂ ਸੇਵਾਵਾਂ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਲਈ ਕਰਦੇ ਹਾਂ। ਸਮੱਗਰੀ ਵਿੱਚ ਤਬਦੀਲੀਆਂ ਦੀ ਬੇਨਤੀ ਕਰਨ ਲਈ, <ph name="BEGIN_LINK1" />ਕਨੂੰਨੀ ਮਦਦ<ph name="END_LINK1" /> 'ਤੇ ਜਾਓ।</translation>
 <translation id="773153675489693198">ਸਾਈਕਲ ਗਿਣਤੀ</translation>
 <translation id="7747039790905080783">ਪਹਿਲਾਂ ਤੋਂ ਸਾਂਝੀ ਕੀਤੀ ਗਈ ਕੁੰਜੀ</translation>
 <translation id="7752963721013053477">ਸਵੇਰ ਤੋਂ ਰਾਤ ਤੱਕ - ਵਿਸ਼ੇਸ਼</translation>
@@ -900,6 +906,7 @@
 <translation id="7978412674231730200">ਨਿੱਜੀ ਕੁੰਜੀ</translation>
 <translation id="7994702968232966508">EAP ਵਿਧੀ</translation>
 <translation id="8004582292198964060">ਬ੍ਰਾਊਜ਼ਰ</translation>
+<translation id="8017679124341497925">ਸ਼ਾਰਟਕੱਟ ਦਾ ਸੰਪਾਦਨ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="802154636333426148">ਡਾਊਨਲੋਡ ਅਸਫਲ ਰਿਹਾ</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">ਸਵੈ-ਵਿਵਸਥਿਤ ਰੰਗ ਵਾਲੇ ਮੋਡ ਨੂੰ ਚਾਲੂ ਕਰੋ</translation>

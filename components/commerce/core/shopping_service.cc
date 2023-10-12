@@ -91,6 +91,9 @@ ProductInfo::~ProductInfo() = default;
 ProductInfoCacheEntry::ProductInfoCacheEntry() = default;
 ProductInfoCacheEntry::~ProductInfoCacheEntry() = default;
 
+PriceInsightsInfoCacheEntry::PriceInsightsInfoCacheEntry() = default;
+PriceInsightsInfoCacheEntry::~PriceInsightsInfoCacheEntry() = default;
+
 MerchantInfo::MerchantInfo() = default;
 MerchantInfo::MerchantInfo(const MerchantInfo&) = default;
 MerchantInfo& MerchantInfo::operator=(const MerchantInfo&) = default;
@@ -203,8 +206,7 @@ ShoppingService::ShoppingService(
 
     if (parcel_tracking_proto_db) {
       parcels_manager_ = std::make_unique<ParcelsManager>(
-          identity_manager, url_loader_factory, parcel_tracking_proto_db,
-          account_checker_.get());
+          identity_manager, url_loader_factory, parcel_tracking_proto_db);
     }
   }
 
@@ -249,6 +251,7 @@ void ShoppingService::WebWrapperCreated(WebWrapper* web) {}
 
 void ShoppingService::DidNavigatePrimaryMainFrame(WebWrapper* web) {
   HandleDidNavigatePrimaryMainFrameForProductInfo(web);
+  HandleDidNavigatePrimaryMainFrameForPriceInsightsInfo(web);
 }
 
 void ShoppingService::HandleDidNavigatePrimaryMainFrameForProductInfo(
@@ -289,6 +292,7 @@ void ShoppingService::HandleDidNavigatePrimaryMainFrameForProductInfo(
 
 void ShoppingService::DidNavigateAway(WebWrapper* web, const GURL& from_url) {
   UpdateProductInfoCacheForRemoval(from_url);
+  UpdatePriceInsightsInfoCacheForRemoval(from_url);
 }
 
 void ShoppingService::DidStopLoading(WebWrapper* web) {
@@ -469,6 +473,7 @@ bool ShoppingService::CheckIsPDPFromMetaOnly(
 
 void ShoppingService::WebWrapperDestroyed(WebWrapper* web) {
   UpdateProductInfoCacheForRemoval(web->GetLastCommittedURL());
+  UpdatePriceInsightsInfoCacheForRemoval(web->GetLastCommittedURL());
 }
 
 void ShoppingService::UpdateProductInfoCacheForInsertion(const GURL& url) {
@@ -793,6 +798,15 @@ bool ShoppingService::IsDiscountEligibleToShowOnNavigation() {
          account_checker_->IsAnonymizedUrlDataCollectionEnabled();
 }
 
+bool ShoppingService::IsParcelTrackingEligible() {
+  if (!IsRegionLockedFeatureEnabled(kParcelTracking,
+                                    kParcelTrackingRegionLaunched,
+                                    country_on_startup_, locale_on_startup_)) {
+    return false;
+  }
+  return account_checker_ && account_checker_->IsSignedIn();
+}
+
 bool ShoppingService::IsShoppingPageTypesApiEnabled() {
   return IsRegionLockedFeatureEnabled(kShoppingPageTypes,
                                       kShoppingPageTypesRegionLaunched,
@@ -1101,10 +1115,41 @@ void ShoppingService::HandleOptGuidePriceInsightsInfoResponse(
     PriceInsightsInfoCallback callback,
     optimization_guide::OptimizationGuideDecision decision,
     const optimization_guide::OptimizationMetadata& metadata) {
-  if (decision != optimization_guide::OptimizationGuideDecision::kTrue ||
-      !metadata.any_metadata().has_value()) {
+  if (decision == optimization_guide::OptimizationGuideDecision::kTrue) {
+    std::unique_ptr<PriceInsightsInfo> info =
+        OptGuideResultToPriceInsightsInfo(metadata);
+    if (info) {
+      absl::optional<PriceInsightsInfo> optional_info;
+      optional_info.emplace(*info);
+
+      auto it = price_insights_info_cache_.find(url.spec());
+      if (kPriceInsightsUseCache.Get() &&
+          it != price_insights_info_cache_.end()) {
+        it->second->info = std::move(info);
+      }
+
+      std::move(callback).Run(url, std::move(optional_info));
+      return;
+    }
+  }
+
+  // Check cache if we don't get info back from OptGuide.
+  auto it = price_insights_info_cache_.find(url.spec());
+  if (kPriceInsightsUseCache.Get() && it != price_insights_info_cache_.end() &&
+      it->second->info) {
+    absl::optional<PriceInsightsInfo> optional_info;
+    optional_info.emplace(*(it->second->info));
+    std::move(callback).Run(url, std::move(optional_info));
+  } else {
     std::move(callback).Run(url, absl::nullopt);
-    return;
+  }
+}
+
+std::unique_ptr<PriceInsightsInfo>
+ShoppingService::OptGuideResultToPriceInsightsInfo(
+    const optimization_guide::OptimizationMetadata& metadata) {
+  if (!metadata.any_metadata().has_value()) {
+    return nullptr;
   }
 
   absl::optional<commerce::PriceInsightsData> parsed_any =
@@ -1115,12 +1160,11 @@ void ShoppingService::HandleOptGuidePriceInsightsInfoResponse(
   if (!parsed_any.has_value() || !insights_data.IsInitialized() ||
       !insights_data.has_product_cluster_id() ||
       insights_data.product_cluster_id() == 0) {
-    std::move(callback).Run(url, absl::nullopt);
-    return;
+    return nullptr;
   }
 
-  absl::optional<PriceInsightsInfo> info;
-  info.emplace();
+  std::unique_ptr<PriceInsightsInfo> info =
+      std::make_unique<PriceInsightsInfo>();
 
   info->product_cluster_id = insights_data.product_cluster_id();
 
@@ -1169,7 +1213,55 @@ void ShoppingService::HandleOptGuidePriceInsightsInfoResponse(
     info->has_multiple_catalogs = insights_data.has_multiple_catalogs();
   }
 
-  std::move(callback).Run(url, std::move(info));
+  return info;
+}
+
+void ShoppingService::HandleDidNavigatePrimaryMainFrameForPriceInsightsInfo(
+    WebWrapper* web) {
+  if (!opt_guide_ || !IsPriceInsightsInfoApiEnabled() ||
+      !kPriceInsightsUseCache.Get()) {
+    return;
+  }
+
+  auto url = web->GetLastCommittedURL().spec();
+  if (price_insights_info_cache_.find(url) ==
+      price_insights_info_cache_.end()) {
+    price_insights_info_cache_.emplace(
+        url, std::make_unique<PriceInsightsInfoCacheEntry>());
+  }
+  price_insights_info_cache_[url]->pages_with_url_open++;
+
+  opt_guide_->CanApplyOptimization(
+      web->GetLastCommittedURL(),
+      optimization_guide::proto::OptimizationType::PRICE_INSIGHTS,
+      base::BindOnce(
+          [](base::WeakPtr<ShoppingService> service, const GURL& url,
+             base::WeakPtr<WebWrapper> web_wrapper,
+             optimization_guide::OptimizationGuideDecision decision,
+             const optimization_guide::OptimizationMetadata& metadata) {
+            if (service.WasInvalidated() || web_wrapper.WasInvalidated()) {
+              return;
+            }
+
+            service->HandleOptGuidePriceInsightsInfoResponse(
+                url,
+                base::BindOnce([](const GURL&,
+                                  const absl::optional<PriceInsightsInfo>&) {}),
+                decision, metadata);
+          },
+          weak_ptr_factory_.GetWeakPtr(), web->GetLastCommittedURL(),
+          web->GetWeakPtr()));
+}
+
+void ShoppingService::UpdatePriceInsightsInfoCacheForRemoval(const GURL& url) {
+  auto it = price_insights_info_cache_.find(url.spec());
+  if (it != price_insights_info_cache_.end()) {
+    if (it->second->pages_with_url_open <= 1) {
+      price_insights_info_cache_.erase(it);
+    } else {
+      it->second->pages_with_url_open--;
+    }
+  }
 }
 
 void ShoppingService::HandleOptGuideShoppingPageTypesResponse(
@@ -1332,6 +1424,8 @@ void ShoppingService::OnGetAllDiscountsFromOptGuide(
   for (auto res : results) {
     if (res.second.size() > 0) {
       map.insert(res);
+      base::UmaHistogramEnumeration(kDiscountsFetchResultHistogramName,
+                                    DiscountsFetchResult::kInfoFromOptGuide);
     } else {
       urls_to_check_in_db.push_back(res.first.spec());
     }
@@ -1527,6 +1621,18 @@ void ShoppingService::StopTrackingParcel(
     base::OnceCallback<void(bool)> callback) {
   if (parcels_manager_) {
     parcels_manager_->StopTrackingParcel(tracking_id, std::move(callback));
+  } else {
+    std::move(callback).Run(false);
+  }
+}
+
+void ShoppingService::StopTrackingParcels(
+    const std::vector<std::pair<ParcelIdentifier::Carrier, std::string>>&
+        parcel_identifiers,
+    base::OnceCallback<void(bool)> callback) {
+  if (parcels_manager_) {
+    parcels_manager_->StopTrackingParcels(parcel_identifiers,
+                                          std::move(callback));
   } else {
     std::move(callback).Run(false);
   }

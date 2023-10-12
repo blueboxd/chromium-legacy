@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">您只能自定义 5 个快捷键。如要添加一个新的快捷键，请先删除一个现有快捷键。</translation>
 <translation id="1164939766849482256">“黎明到黄昏”屏保</translation>
 <translation id="1167755866710282443">打开菜单即可自定义键。拖动菜单即可移动它。</translation>
+<translation id="1174073918202301297">快捷方式已添加</translation>
 <translation id="1175697296044146566">此 <ph name="DEVICE_TYPE" /> 由 <ph name="MANAGER" /> 管理。</translation>
 <translation id="1175951029573070619">一般 (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">移除</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">每天更改一次壁纸图片</translation>
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="1651925268237749928">您已选择一个共享影集。他人可以添加或更改照片。您的壁纸可能会使用尚不在此影集内的照片。</translation>
+<translation id="1661865805917886535">系统可能会将一些账号信息和系统信息发送给 Google。我们会借助这些信息来解决技术问题和提升服务质量，并且会在此过程中严格遵守 Google 的隐私权政策 (<ph name="PRIVACYPOLICYURL" />) 和服务条款 (<ph name="TERMSOFSERVICEURL" />)。如需提出内容更改请求，请前往“法律帮助”页面 (<ph name="LEGALHELPPAGEURL" />)。</translation>
 <translation id="1662989795263954667">已停止 - 墨水已用完</translation>
 <translation id="1664796644829245314">预览“<ph name="PREVIEW_OBJECT" />”</translation>
 <translation id="1668469839109562275">内置 VPN</translation>
@@ -117,6 +119,7 @@
 <translation id="1768959921651994223">身份验证类型</translation>
 <translation id="1776228893584526149">壁纸色调</translation>
 <translation id="1782199038061388045">翻译</translation>
+<translation id="1788485524395674731">此应用由您的管理员管理</translation>
 <translation id="1792647875738159689">正在取消扫描</translation>
 <translation id="1801418420130173017">停用深色主题</translation>
 <translation id="1807246157184219062">浅色调</translation>
@@ -131,7 +134,6 @@
 <translation id="1871569928317311284">关闭深色主题</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">关闭深色模式</translation>
-<translation id="1881188606372070653">若要依法提出内容更改请求，请前往<ph name="BEGIN_LINK1" />法律帮助页面<ph name="END_LINK1" />。系统可能会将一些账号信息和系统信息发送给 Google。我们会借助您向我们提供的信息来解决技术问题和提升服务质量，并且会在使用这些信息的过程中严格遵守 Google 的<ph name="BEGIN_LINK2" />隐私权政策<ph name="END_LINK2" />和<ph name="BEGIN_LINK3" />服务条款<ph name="END_LINK3" />。</translation>
 <translation id="1885577615937958993">让媒体快进</translation>
 <translation id="1887850431809612466">硬件版本</translation>
 <translation id="1897672602657312171">不含搜索键的快捷键可能会与某个应用的快捷方式冲突。再次按此快捷键可继续使用它，也可按含有搜索键的新快捷键。</translation>
@@ -212,6 +214,7 @@
 <translation id="2505327257735685095">刷新当前壁纸图片</translation>
 <translation id="2512979179176933762">显示窗口</translation>
 <translation id="2513396635448525189">登录图片</translation>
+<translation id="2515109918609218604">此快捷键不可用。请在不使用功能键和搜索键的情况下按一个新快捷键。</translation>
 <translation id="2517472476991765520">扫描</translation>
 <translation id="2521835766824839541">上一首</translation>
 <translation id="2526590354069164005">桌面</translation>
@@ -265,6 +268,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">设备已连接。</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{移除页面？}=1{移除第 {PAGE_NUMBER} 页？}other{移除第 {PAGE_NUMBER} 页？}}</translation>
+<translation id="3146655726035122603"><ph name="PRODUCT_NAME" /> 专有</translation>
 <translation id="315116470104423982">移动数据</translation>
 <translation id="3156846309055100599">正在扫描第 <ph name="PAGE_NUMBER" /> 页…</translation>
 <translation id="315738237743207937">检测到强制门户</translation>
@@ -622,6 +626,7 @@
 <translation id="584953448295717128">已自动检测到 APN。</translation>
 <translation id="5849570051105887917">家用移动网络提供商代码</translation>
 <translation id="5859603669299126575">画廊中的影集</translation>
+<translation id="5859969039821714932">此快捷键不可用。请按下不含 <ph name="KEY" /> 键的新快捷键。</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="5860491529813859533">启用</translation>
 <translation id="5876385649737594562">开启后才能选择所需选项</translation>
@@ -687,6 +692,7 @@
 <translation id="6318437367327684789">不限时</translation>
 <translation id="6319207335391420837">更新“<ph name="DEVICE_NAME" />”上的固件</translation>
 <translation id="6321407676395378991">开启屏保功能</translation>
+<translation id="6324916366299863871">修改快捷方式</translation>
 <translation id="6325525973963619867">失败</translation>
 <translation id="6331191339300272798">自动深色主题</translation>
 <translation id="6340526405444716530">个性化</translation>
@@ -826,6 +832,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">内置触控板</translation>
 <translation id="7397270852490618635">关闭浅色主题</translation>
+<translation id="7401543881546089382">删除快捷方式</translation>
 <translation id="741244894080940828">换算</translation>
 <translation id="7415801143053185905">HTTPS 延迟时间非常长</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{您的管理员已将“<ph name="APP_NAME_1" />”设为在您每次登录时都自动启动。}=2{您的管理员已将“<ph name="APP_NAME_1" />”和“<ph name="APP_NAME_2" />”设为在您每次登录时都自动启动。}=3{您的管理员已将“<ph name="APP_NAME_1" />”“<ph name="APP_NAME_2" />”和“<ph name="APP_NAME_3" />”设为在您每次登录时都自动启动。}other{您的管理员已将“<ph name="APP_NAME_1" />”“<ph name="APP_NAME_2" />”和另外 # 个应用设为在您每次登录时都自动启动。}}</translation>
@@ -864,6 +871,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">键盘背光</translation>
+<translation id="7730077286107534951">系统可能会将一些账号信息和系统信息发送给 Google。我们会借助这些信息来解决技术问题和提升服务质量，并且会在此过程中严格遵守我们的<ph name="BEGIN_LINK2" />隐私权政策<ph name="END_LINK2" />和<ph name="BEGIN_LINK3" />服务条款<ph name="END_LINK3" />。如需请求更改内容，请前往<ph name="BEGIN_LINK1" />法律帮助<ph name="END_LINK1" />页面。</translation>
 <translation id="773153675489693198">循环计数</translation>
 <translation id="7747039790905080783">预共享的密钥</translation>
 <translation id="7752963721013053477">黎明到黄昏 - 专有</translation>
@@ -900,6 +908,7 @@
 <translation id="7978412674231730200">私有密钥</translation>
 <translation id="7994702968232966508">EAP 方法</translation>
 <translation id="8004582292198964060">浏览器</translation>
+<translation id="8017679124341497925">已修改快捷方式</translation>
 <translation id="802154636333426148">下载失败</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">启用自动颜色模式</translation>

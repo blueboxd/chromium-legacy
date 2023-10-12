@@ -6,6 +6,7 @@
 #define COMPONENTS_FEATURE_ENGAGEMENT_PUBLIC_FEATURE_CONSTANTS_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 
@@ -27,6 +28,7 @@ BASE_DECLARE_FEATURE(kIPHDummyFeature);
 BASE_DECLARE_FEATURE(kIPHBatterySaverModeFeature);
 BASE_DECLARE_FEATURE(kIPHCompanionSidePanelFeature);
 BASE_DECLARE_FEATURE(kIPHCompanionSidePanelRegionSearchFeature);
+BASE_DECLARE_FEATURE(kIPHComposeNewBadgeFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopSharedHighlightingFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopTabGroupsNewGroupFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopCustomizeChromeFeature);
@@ -36,6 +38,7 @@ BASE_DECLARE_FEATURE(kIPHExtensionsMenuFeature);
 BASE_DECLARE_FEATURE(kIPHExtensionsRequestAccessButtonFeature);
 BASE_DECLARE_FEATURE(kIPHFocusHelpBubbleScreenReaderPromoFeature);
 BASE_DECLARE_FEATURE(kIPHGMCCastStartStopFeature);
+BASE_DECLARE_FEATURE(kIPHGMCLocalMediaCastingFeature);
 BASE_DECLARE_FEATURE(kIPHHighEfficiencyModeFeature);
 BASE_DECLARE_FEATURE(kIPHLiveCaptionFeature);
 BASE_DECLARE_FEATURE(kIPHTabAudioMutingFeature);
@@ -44,7 +47,6 @@ BASE_DECLARE_FEATURE(kIPHPasswordsManagementBubbleAfterSaveFeature);
 BASE_DECLARE_FEATURE(kIPHPasswordsManagementBubbleDuringSigninFeature);
 BASE_DECLARE_FEATURE(kIPHPasswordsWebAppProfileSwitchFeature);
 BASE_DECLARE_FEATURE(kIPHPasswordManagerShortcutFeature);
-BASE_DECLARE_FEATURE(kIPHPerformanceNewBadgeFeature);
 BASE_DECLARE_FEATURE(kIPHPowerBookmarksSidePanelFeature);
 BASE_DECLARE_FEATURE(kIPHPriceInsightsPageActionIconLabelFeature);
 BASE_DECLARE_FEATURE(kIPHPriceTrackingChipFeature);
@@ -202,6 +204,7 @@ BASE_DECLARE_FEATURE(kIPHiOSPromoWhatsNewFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoPostRestoreFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoCredentialProviderExtensionFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoDefaultBrowserFeature);
+BASE_DECLARE_FEATURE(kIPHiOSPromoDefaultBrowserReminderFeature);
 BASE_DECLARE_FEATURE(kIPHiOSNewTabToolbarItemFeature);
 BASE_DECLARE_FEATURE(kIPHiOSTabGridToolbarItemFeature);
 BASE_DECLARE_FEATURE(kIPHiOSHistoryOnOverflowMenuFeature);
@@ -210,6 +213,17 @@ BASE_DECLARE_FEATURE(kIPHiOSDefaultBrowserVideoPromoTriggerFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoPostRestoreDefaultBrowserFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoPasswordManagerWidgetFeature);
 BASE_DECLARE_FEATURE(kIPHiOSChoiceScreenFeature);
+
+// A feature flag to enable and parametrize the sliding window of time for a
+// user's eligibility to be shown a default browser promo. This is not an FET
+// feature, but there is a related FET feature that needs to adjust its config
+// rules based on this feature, so it needs to be declared here.
+BASE_DECLARE_FEATURE(kDefaultBrowserEligibilitySlidingWindow);
+
+// The param for the default browser eligibility sliding window, measured in
+// days.
+extern const base::FeatureParam<int>
+    kDefaultBrowserEligibilitySlidingWindowParam;
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \

@@ -50,7 +50,7 @@ class CORE_EXPORT ChildNodePart : public Part, public PartRoot {
   void Trace(Visitor* visitor) const override;
   bool IsValid() const override;
   Node* NodeToSortBy() const override;
-  Part* ClonePart(NodeCloningData&) const override;
+  Part* ClonePart(NodeCloningData&, Node&) const override;
   PartRoot* GetAsPartRoot() const override {
     return const_cast<ChildNodePart*>(this);
   }
@@ -84,6 +84,38 @@ class CORE_EXPORT ChildNodePart : public Part, public PartRoot {
   Member<Node> previous_sibling_;
   Member<Node> next_sibling_;
 };
+
+// A ChildNodePart is valid if:
+//  1. The base |Part| is valid (it has a |root|).
+//  2. previous_sibling_ and next_sibling_ are non-null.
+//  3. previous_sibling_ and next_sibling_ have the same (non-null) parent.
+//  4. previous_sibling_ comes strictly before next_sibling_ in the tree.
+inline bool ChildNodePart::IsValid() const {
+  if (!Part::IsValid()) {
+    return false;
+  }
+  if (!previous_sibling_ || !next_sibling_) {
+    return false;
+  }
+  ContainerNode* parent = parentNode();
+  if (!parent) {
+    return false;
+  }
+  if (next_sibling_->parentNode() != parent) {
+    return false;
+  }
+  if (previous_sibling_ == next_sibling_) {
+    return false;
+  }
+  Node* left = previous_sibling_;
+  do {
+    left = left->nextSibling();
+    if (left == next_sibling_) {
+      return true;
+    }
+  } while (left);
+  return false;
+}
 
 }  // namespace blink
 

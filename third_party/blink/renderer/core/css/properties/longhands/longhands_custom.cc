@@ -866,7 +866,7 @@ const CSSValue* BackgroundSize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
-  return css_parsing_utils::ParseBackgroundOrMaskSize(
+  return css_parsing_utils::ParseBackgroundSize(
       range, context, local_context, WebFeature::kNegativeBackgroundSize);
 }
 
@@ -5173,20 +5173,22 @@ const CSSValue* MarginBottom::ParseSingleValue(
 bool MarginBottom::IsLayoutDependent(const ComputedStyle* style,
                                      LayoutObject* layout_object) const {
   return layout_object && layout_object->IsBox() &&
-         (!style || !style->MarginBottom().IsFixed());
+         (!style || !style->MarginBottom().IsFixed() ||
+          style->MayHavePositionFallbackList());
 }
 
 const CSSValue* MarginBottom::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  const Length& margin_bottom = style.MarginBottom();
-  if (margin_bottom.IsFixed() || !layout_object || !layout_object->IsBox()) {
-    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_bottom,
-                                                               style);
+  if (const LayoutBox* box = DynamicTo<LayoutBox>(layout_object)) {
+    if (!style.MarginBottom().IsFixed() ||
+        style.MayHavePositionFallbackList()) {
+      return ZoomAdjustedPixelValue(box->MarginBottom(), style);
+    }
   }
-  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginBottom(),
-                                style);
+  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      style.MarginBottom(), style);
 }
 
 bool MarginInlineEnd::IsLayoutDependent(const ComputedStyle* style,
@@ -5226,20 +5228,21 @@ const CSSValue* MarginLeft::ParseSingleValue(
 bool MarginLeft::IsLayoutDependent(const ComputedStyle* style,
                                    LayoutObject* layout_object) const {
   return layout_object && layout_object->IsBox() &&
-         (!style || !style->MarginLeft().IsFixed());
+         (!style || !style->MarginLeft().IsFixed() ||
+          style->MayHavePositionFallbackList());
 }
 
 const CSSValue* MarginLeft::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  const Length& margin_left = style.MarginLeft();
-  if (margin_left.IsFixed() || !layout_object || !layout_object->IsBox()) {
-    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_left,
-                                                               style);
+  if (const LayoutBox* box = DynamicTo<LayoutBox>(layout_object)) {
+    if (!style.MarginLeft().IsFixed() || style.MayHavePositionFallbackList()) {
+      return ZoomAdjustedPixelValue(box->MarginLeft(), style);
+    }
   }
-  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginLeft(),
-                                style);
+  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.MarginLeft(),
+                                                             style);
 }
 
 const CSSValue* MarginRight::ParseSingleValue(
@@ -5253,20 +5256,21 @@ const CSSValue* MarginRight::ParseSingleValue(
 bool MarginRight::IsLayoutDependent(const ComputedStyle* style,
                                     LayoutObject* layout_object) const {
   return layout_object && layout_object->IsBox() &&
-         (!style || !style->MarginRight().IsFixed());
+         (!style || !style->MarginRight().IsFixed() ||
+          style->MayHavePositionFallbackList());
 }
 
 const CSSValue* MarginRight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  const Length& margin_right = style.MarginRight();
-  if (margin_right.IsFixed() || !layout_object || !layout_object->IsBox()) {
-    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_right,
-                                                               style);
+  if (const LayoutBox* box = DynamicTo<LayoutBox>(layout_object)) {
+    if (!style.MarginRight().IsFixed() || style.MayHavePositionFallbackList()) {
+      return ZoomAdjustedPixelValue(box->MarginRight(), style);
+    }
   }
-  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginRight(),
-                                style);
+  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      style.MarginRight(), style);
 }
 
 const CSSValue* MarginTop::ParseSingleValue(
@@ -5280,20 +5284,21 @@ const CSSValue* MarginTop::ParseSingleValue(
 bool MarginTop::IsLayoutDependent(const ComputedStyle* style,
                                   LayoutObject* layout_object) const {
   return layout_object && layout_object->IsBox() &&
-         (!style || !style->MarginTop().IsFixed());
+         (!style || !style->MarginTop().IsFixed() ||
+          style->MayHavePositionFallbackList());
 }
 
 const CSSValue* MarginTop::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  const Length& margin_top = style.MarginTop();
-  if (margin_top.IsFixed() || !layout_object || !layout_object->IsBox()) {
-    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_top,
-                                                               style);
+  if (const LayoutBox* box = DynamicTo<LayoutBox>(layout_object)) {
+    if (!style.MarginTop().IsFixed() || style.MayHavePositionFallbackList()) {
+      return ZoomAdjustedPixelValue(box->MarginTop(), style);
+    }
   }
-  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginTop(),
-                                style);
+  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.MarginTop(),
+                                                             style);
 }
 
 const CSSValue* MarkerEnd::ParseSingleValue(
@@ -6941,65 +6946,6 @@ const CSSValue* ScrollBehavior::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetScrollBehavior());
 }
 
-namespace {
-
-static bool ConsumePan(CSSParserTokenRange& range,
-                       CSSValue** pan_x,
-                       CSSValue** pan_y) {
-  CSSValueID id = range.Peek().Id();
-  if ((id == CSSValueID::kPanX || id == CSSValueID::kPanRight ||
-       id == CSSValueID::kPanLeft) &&
-      !*pan_x) {
-    *pan_x = css_parsing_utils::ConsumeIdent(range);
-  } else if ((id == CSSValueID::kPanY || id == CSSValueID::kPanDown ||
-              id == CSSValueID::kPanUp) &&
-             !*pan_y) {
-    *pan_y = css_parsing_utils::ConsumeIdent(range);
-  } else {
-    return false;
-  }
-  return true;
-}
-
-}  // namespace
-
-const CSSValue* ScrollCustomization::ParseSingleValue(
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  CSSValueID id = range.Peek().Id();
-  if (id == CSSValueID::kAuto || id == CSSValueID::kNone) {
-    list->Append(*css_parsing_utils::ConsumeIdent(range));
-    return list;
-  }
-
-  CSSValue* pan_x = nullptr;
-  CSSValue* pan_y = nullptr;
-  if (!ConsumePan(range, &pan_x, &pan_y)) {
-    return nullptr;
-  }
-  if (!range.AtEnd() && !ConsumePan(range, &pan_x, &pan_y)) {
-    return nullptr;
-  }
-
-  if (pan_x) {
-    list->Append(*pan_x);
-  }
-  if (pan_y) {
-    list->Append(*pan_y);
-  }
-  return list;
-}
-
-const CSSValue* ScrollCustomization::CSSValueFromComputedStyleInternal(
-    const ComputedStyle& style,
-    const LayoutObject*,
-    bool allow_visited_style) const {
-  return ComputedStyleUtils::ScrollCustomizationFlagsToCSSValue(
-      style.ScrollCustomization());
-}
-
 const CSSValue* ScrollMarginBlockEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -8167,7 +8113,8 @@ const CSSValue* TextSpacingTrim::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return CSSIdentifierValue::Create(style.TextSpacingTrim());
+  return CSSIdentifierValue::Create(
+      style.GetFontDescription().GetTextSpacingTrim());
 }
 
 const CSSValue* TextTransform::CSSValueFromComputedStyleInternal(
@@ -9266,6 +9213,34 @@ const CSSValue* WebkitMaskBoxImageWidth::CSSValueFromComputedStyleInternal(
       style.MaskBoxImage().BorderSlices(), style);
 }
 
+const CSSValue* MaskClip::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext&,
+    const CSSParserLocalContext& local_context) const {
+  CHECK(RuntimeEnabledFeatures::CSSMaskingInteropEnabled());
+  if (local_context.UseAliasParsing()) {
+    return css_parsing_utils::ConsumeCommaSeparatedList(
+        css_parsing_utils::ConsumePrefixedBackgroundBox, range,
+        css_parsing_utils::AllowTextValue::kAllow);
+  }
+  return css_parsing_utils::ConsumeCommaSeparatedList(
+      css_parsing_utils::ConsumeGeometryBoxOrNoClip, range);
+}
+
+const CSSValue* MaskClip::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  CHECK(RuntimeEnabledFeatures::CSSMaskingInteropEnabled());
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  const FillLayer* curr_layer = &style.MaskLayers();
+  for (; curr_layer; curr_layer = curr_layer->Next()) {
+    EFillBox box = curr_layer->Clip();
+    list->Append(*CSSIdentifierValue::Create(box));
+  }
+  return list;
+}
+
 const CSSValue* WebkitMaskClip::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
@@ -9325,13 +9300,58 @@ const CSSValue* WebkitMaskImage::CSSValueFromComputedStyleInternal(
       style, allow_visited_style, fill_layer);
 }
 
-const CSSValue* WebkitMaskOrigin::ParseSingleValue(
+const CSSValue* MaskImage::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  CHECK(RuntimeEnabledFeatures::CSSMaskingInteropEnabled());
+  return css_parsing_utils::ConsumeCommaSeparatedList(
+      css_parsing_utils::ConsumeImageOrNone, range, context);
+}
+
+const CSSValue* MaskImage::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  CHECK(RuntimeEnabledFeatures::CSSMaskingInteropEnabled());
+  const FillLayer& fill_layer = style.MaskLayers();
+  return ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(
+      style, allow_visited_style, fill_layer);
+}
+
+const CSSValue* MaskOrigin::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeCommaSeparatedList(
       css_parsing_utils::ConsumePrefixedBackgroundBox, range,
       css_parsing_utils::AllowTextValue::kForbid);
+}
+
+const CSSValue* MaskOrigin::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  const FillLayer* curr_layer = &style.MaskLayers();
+  for (; curr_layer; curr_layer = curr_layer->Next()) {
+    EFillBox box = curr_layer->Origin();
+    list->Append(*CSSIdentifierValue::Create(box));
+  }
+  return list;
+}
+
+const CSSValue* WebkitMaskOrigin::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext&,
+    const CSSParserLocalContext& local_context) const {
+  if (local_context.UseAliasParsing()) {
+    return css_parsing_utils::ConsumeCommaSeparatedList(
+        css_parsing_utils::ConsumePrefixedBackgroundBox, range,
+        css_parsing_utils::AllowTextValue::kForbid);
+  }
+  return css_parsing_utils::ConsumeCommaSeparatedList(
+      css_parsing_utils::ConsumeGeometryBox, range);
 }
 
 const CSSValue* WebkitMaskOrigin::CSSValueFromComputedStyleInternal(
@@ -9389,14 +9409,32 @@ const CSSValue* WebkitMaskSize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
-  return css_parsing_utils::ParseBackgroundOrMaskSize(
-      range, context, local_context, WebFeature::kNegativeMaskSize);
+  CHECK(!RuntimeEnabledFeatures::CSSMaskingInteropEnabled());
+  return css_parsing_utils::ParseMaskSize(range, context, local_context,
+                                          WebFeature::kNegativeMaskSize);
 }
 
 const CSSValue* WebkitMaskSize::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
+  const FillLayer& fill_layer = style.MaskLayers();
+  return ComputedStyleUtils::BackgroundImageOrWebkitMaskSize(style, fill_layer);
+}
+
+const CSSValue* MaskSize::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ParseMaskSize(range, context, local_context,
+                                          WebFeature::kNegativeMaskSize);
+}
+
+const CSSValue* MaskSize::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  CHECK(RuntimeEnabledFeatures::CSSMaskingInteropEnabled());
   const FillLayer& fill_layer = style.MaskLayers();
   return ComputedStyleUtils::BackgroundImageOrWebkitMaskSize(style, fill_layer);
 }

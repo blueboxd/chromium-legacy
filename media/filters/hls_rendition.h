@@ -22,8 +22,10 @@ class ManifestDemuxerEngineHost;
 
 // Interface for `HlsRendition` to make data requests to avoid having to own or
 // create data sources.
-class MEDIA_EXPORT HlsRenditionHost : public HlsDataSourceStreamManager {
+class MEDIA_EXPORT HlsRenditionHost {
  public:
+  virtual ~HlsRenditionHost() = 0;
+
   // Lets a rendition read URL data from `uri`. Usually this will be a chunked
   // read, but can be configured with `read_chunked`, since live video needs to
   // download full manifests. Additionally, some manifests can specify a custom
@@ -31,7 +33,11 @@ class MEDIA_EXPORT HlsRenditionHost : public HlsDataSourceStreamManager {
   virtual void ReadFromUrl(GURL uri,
                            bool read_chunked,
                            absl::optional<hls::types::ByteRange> range,
-                           HlsDataSourceStreamManager::ReadCb cb) = 0;
+                           HlsDataSourceProvider::ReadCb cb) = 0;
+
+  // Continue reading from a partially read stream.
+  virtual void ReadStream(std::unique_ptr<HlsDataSourceStream> stream,
+                          HlsDataSourceProvider::ReadCb cb) = 0;
 
   virtual hls::ParseStatus::Or<scoped_refptr<hls::MediaPlaylist>>
   ParseMediaPlaylistFromStringSource(base::StringPiece source,
@@ -41,7 +47,7 @@ class MEDIA_EXPORT HlsRenditionHost : public HlsDataSourceStreamManager {
 
 class MEDIA_EXPORT HlsRendition {
  public:
-  virtual ~HlsRendition() {}
+  virtual ~HlsRendition() = default;
 
   // Checks the current playback time and starts any required network requests
   // for more data, or clears out old data.
@@ -51,10 +57,11 @@ class MEDIA_EXPORT HlsRendition {
 
   // Does any necessary seeking work, and returns true iff more data is needed
   // as the seek was outside of a loaded range.
-  virtual bool Seek(base::TimeDelta seek_time) = 0;
+  virtual ManifestDemuxer::SeekResponse Seek(base::TimeDelta seek_time) = 0;
 
-  // Cancels any outstanding pending network requests.
-  virtual void CancelPendingNetworkRequests() = 0;
+  // Lets the rendition know that any network requests which respond with an
+  // aborted status are not to be treated as errors until the seek is finished.
+  virtual void StartWaitingForSeek() = 0;
 
   // Live renditions should return a nullopt for duration.
   virtual absl::optional<base::TimeDelta> GetDuration() = 0;

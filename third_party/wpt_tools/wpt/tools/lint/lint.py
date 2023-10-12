@@ -433,6 +433,16 @@ def check_parsed(repo_root: Text, path: Text, f: IO[bytes]) -> List[rules.Error]
         if timeout_value != "long":
             errors.append(rules.InvalidTimeout.error(path, (timeout_value,)))
 
+    if source_file.content_is_ref_node or source_file.content_is_testharness:
+        for element in source_file.variant_nodes:
+            if "content" not in element.attrib:
+                errors.append(rules.VariantMissing.error(path))
+            else:
+                variant = element.attrib["content"]
+                if is_variant_malformed(variant):
+                    value = f"{path} `<meta name=variant>` 'content' attribute"
+                    errors.append(rules.MalformedVariant.error(path, (value,)))
+
     required_elements: List[Text] = []
 
     testharnessreport_nodes: List[ElementTree.Element] = []
@@ -449,17 +459,6 @@ def check_parsed(repo_root: Text, path: Text, f: IO[bytes]) -> List[rules.Error]
         else:
             if len(testharnessreport_nodes) > 1:
                 errors.append(rules.MultipleTestharnessReport.error(path))
-
-        for element in source_file.variant_nodes:
-            if "content" not in element.attrib:
-                errors.append(rules.VariantMissing.error(path))
-            else:
-                variant = element.attrib["content"]
-                if (variant == "" or
-                    variant[0] not in ("?", "#") or
-                    len(variant) == 1 or
-                    (variant[0] == "?" and variant[1] == "#")):
-                    errors.append(rules.MalformedVariant.error(path, (path,)))
 
         required_elements.extend(key for key, value in {"testharness": True,
                                                         "testharnessreport": len(testharnessreport_nodes) > 0,
@@ -541,6 +540,12 @@ def check_parsed(repo_root: Text, path: Text, f: IO[bytes]) -> List[rules.Error]
 
     return errors
 
+
+def is_variant_malformed(variant: str) -> bool:
+    return (variant == "" or variant[0] not in ("?", "#") or
+            len(variant) == 1 or (variant[0] == "?" and variant[1] == "#"))
+
+
 class ASTCheck(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def rule(self) -> Type[rules.Rule]:
@@ -619,7 +624,11 @@ def check_script_metadata(repo_root: Text, path: Text, f: IO[bytes]) -> List[rul
                 if value != b"long":
                     errors.append(rules.UnknownTimeoutMetadata.error(path,
                                                                      line_no=idx + 1))
-            elif key not in (b"title", b"script", b"variant", b"quic"):
+            elif key == b"variant":
+                if is_variant_malformed(value.decode()):
+                    value = f"{path} `META: variant=...` value"
+                    errors.append(rules.MalformedVariant.error(path, (value,), idx + 1))
+            elif key not in (b"title", b"script", b"quic"):
                 errors.append(rules.UnknownMetadata.error(path,
                                                           line_no=idx + 1))
         else:

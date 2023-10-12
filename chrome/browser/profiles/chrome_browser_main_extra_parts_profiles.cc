@@ -30,7 +30,6 @@
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
-#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browsing_data/access_context_audit_service_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_history_observer_service.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_lifetime_manager_factory.h"
@@ -56,6 +55,7 @@
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/enterprise/identifiers/profile_id_service_factory.h"
+#include "chrome/browser/enterprise/remote_commands/user_remote_commands_service_factory.h"
 #include "chrome/browser/enterprise/reporting/cloud_profile_reporting_service_factory.h"
 #include "chrome/browser/enterprise/reporting/legacy_tech/legacy_tech_service.h"
 #include "chrome/browser/enterprise/signin/enterprise_signin_service_factory.h"
@@ -177,6 +177,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/tpcd/experiment/eligibility_service_factory.h"
 #include "chrome/browser/tpcd/metadata/updater_service_factory.h"
+#include "chrome/browser/tpcd/support/tpcd_support_service_factory.h"
 #include "chrome/browser/translate/translate_model_service_factory.h"
 #include "chrome/browser/translate/translate_ranker_factory.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service_factory.h"
@@ -296,7 +297,6 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
-#include "chrome/browser/apps/intent_helper/supported_links_infobar_prefs_service_factory.h"
 #include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_download_observer_factory.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
@@ -384,6 +384,7 @@
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
 #include "chrome/browser/autocomplete/autocomplete_scoring_model_service_factory.h"
 #include "chrome/browser/autocomplete/on_device_tail_model_service_factory.h"
+#include "chrome/browser/autofill/autofill_ml_prediction_model_service_factory.h"
 #include "chrome/browser/permissions/prediction_model_handler_provider_factory.h"
 #endif
 
@@ -457,6 +458,7 @@
 #include "chrome/browser/ui/tabs/organization/tab_organization_service_factory.h"
 #include "chrome/browser/usb/usb_connection_tracker_factory.h"
 #include "chrome/browser/user_notes/user_note_service_factory.h"
+#include "components/manta/features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -552,9 +554,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   apps::StandaloneBrowserExtensionAppsFactoryForExtension::GetInstance();
   apps::SubscriberCrosapiFactory::GetInstance();
 #endif
-#if BUILDFLAG(IS_CHROMEOS)
-  apps::SupportedLinksInfoBarPrefsServiceFactory::GetInstance();
-#endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   apps::WebAppsCrosapiFactory::GetInstance();
 #endif
@@ -579,6 +578,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   autofill::AutocompleteHistoryManagerFactory::GetInstance();
   autofill::AutofillImageFetcherFactory::GetInstance();
   autofill::AutofillLogRouterFactory::GetInstance();
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  autofill::AutofillMlPredictionModelServiceFactory::GetInstance();
+#endif
   autofill::AutofillOfferManagerFactory::GetInstance();
   autofill::AutofillOptimizationGuideFactory::GetInstance();
   autofill::IbanManagerFactory::GetInstance();
@@ -702,6 +704,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   DriveServiceFactory::GetInstance();
 #endif
   enterprise::ProfileIdServiceFactory::GetInstance();
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  enterprise_commands::UserRemoteCommandsServiceFactory::GetInstance();
+#endif
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_ASH)
   enterprise_connectors::DeviceTrustConnectorServiceFactory::GetInstance();
@@ -797,7 +802,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   ManagedConfigurationAPIFactory::GetInstance();
 #endif
 #if !BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kMantaService)) {
+  if (manta::features::IsMantaServiceEnabled()) {
     manta::MantaServiceFactory::GetInstance();
   }
 #endif
@@ -1129,6 +1134,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   TopSitesFactory::GetInstance();
   tpcd::experiment::EligibilityServiceFactory::GetInstance();
   tpcd::metadata::UpdaterServiceFactory::GetInstance();
+  tpcd::support::TpcdSupportServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   TrackingProtectionNoticeFactory::GetInstance();
 #endif

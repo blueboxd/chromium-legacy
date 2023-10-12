@@ -11,6 +11,7 @@
 
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/single_sample_metrics.h"
 #include "base/observer_list.h"
@@ -439,7 +440,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     scoped_refptr<base::SingleThreadTaskRunner> previous_task_runner;
     scoped_refptr<base::SingleThreadTaskRunner> current_task_runner;
     const char* trace_event_scope_name;
-    void* trace_event_scope_id;
+    raw_ptr<void, ExperimentalRenderer> trace_event_scope_id;
   };
 
   void BeginAgentGroupSchedulerScope(
@@ -531,7 +532,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     ~RendererPauseHandleImpl() override;
 
    private:
-    MainThreadSchedulerImpl* scheduler_;  // NOT OWNED
+    raw_ptr<MainThreadSchedulerImpl, ExperimentalRenderer>
+        scheduler_;  // NOT OWNED
   };
 
   // IdleHelper::Delegate implementation:
@@ -784,10 +786,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         renderer_backgrounded;
     TraceableState<bool, TracingCategory::kDefault>
         blocking_input_expected_soon;
-    TraceableState<bool, TracingCategory::kDebug>
-        have_reported_blocking_intervention_in_current_policy;
-    TraceableState<bool, TracingCategory::kDebug>
-        have_reported_blocking_intervention_since_navigation;
     TraceableState<bool, TracingCategory::kDebug>
         has_visible_render_widget_with_touch_handler;
     TraceableState<bool, TracingCategory::kDebug> in_idle_period_for_testing;

@@ -151,14 +151,6 @@ class MockAutofillClient : public autofill::AutofillClient {
               (PaymentsRpcResult),
               (override));
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  MOCK_METHOD(std::vector<std::string>,
-              GetAllowedMerchantsForVirtualCards,
-              (),
-              (override));
-  MOCK_METHOD(std::vector<std::string>,
-              GetAllowedBinRangesForVirtualCards,
-              (),
-              (override));
   MOCK_METHOD(void,
               ShowLocalCardMigrationDialog,
               (base::OnceClosure),
@@ -238,7 +230,11 @@ class MockAutofillClient : public autofill::AutofillClient {
               (const autofill::AutofillProfile&,
                AutofillClient::AddressProfileSavePromptCallback),
               (override));
-  MOCK_METHOD(void, ShowDeleteAddressProfileDialog, (), (override));
+  MOCK_METHOD(void,
+              ShowDeleteAddressProfileDialog,
+              (const autofill::AutofillProfile&,
+               AutofillClient::AddressProfileDeleteDialogCallback),
+              (override));
   MOCK_METHOD(bool, HasCreditCardScanFeature, (), (override));
   MOCK_METHOD(void, ScanCreditCard, (CreditCardScanCallback), (override));
   MOCK_METHOD(bool, IsTouchToFillCreditCardSupported, (), (override));

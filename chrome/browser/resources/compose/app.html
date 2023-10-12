@@ -1,0 +1,164 @@
+<style include="cr-hidden-style md-select">
+  :host {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 0;
+  }
+
+  a {
+    color: var(--color-compose-dialog-link);
+  }
+
+  #heading {
+    display: flex;
+    height: 24px;
+    align-items: center;
+    padding: 0 20px;
+  }
+
+  h1 {
+    color: var(--color-compose-dialog-title);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    margin: 0;
+    margin-inline-end: auto;
+  }
+
+  cr-icon-button {
+    margin: 0;
+    margin-inline-end: -6px;
+  }
+
+  #body {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 20px;
+  }
+
+  #resultContainer {
+    border-radius: 8px;
+    padding: 16px;
+    background: var(--color-compose-dialog-result-background);
+    color: var(--color-compose-dialog-result-foreground);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 20px;
+  }
+
+  #resultOptions {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    margin-block-start: 16px;
+  }
+
+  #resultOptions .md-select {
+    width: 82px;
+  }
+
+  .icon-buttons-row {
+    display: grid;
+    grid-auto-columns: var(--cr-icon-size);
+    grid-auto-rows: var(--cr-icon-size);
+    grid-auto-flow: column;
+    gap: 12px;
+    align-items: center;
+    justify-items: center;
+    margin-inline-start: auto;
+  }
+
+  .icon-buttons-row cr-icon-button {
+    --cr-icon-button-fill-color: var(--color-compose-dialog-result-icon);
+    --cr-icon-button-icon-size: var(--cr-icon-size);
+    margin: 0;
+  }
+
+  .footer {
+    align-items: center;
+    display: flex;
+    padding: 0 20px;
+    justify-content: flex-end;
+  }
+
+  .footer-text {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-inline-end: auto;
+    color: var(--color-compose-dialog-foreground-subtle);
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  .footer-text .icon-buttons-row {
+    --cr-icon-size: 16px;
+    margin-inline-end: 8px;
+  }
+
+  .footer cr-button {
+    margin-inline-start: 8px;
+  }
+</style>
+
+<div id="heading">
+  <h1>Autofill</h1>
+  <cr-icon-button iron-icon="cr:close"></cr-icon-button>
+</div>
+
+<div id="body">
+  <compose-textarea id="textarea"
+      on-value-changed="onTextareaValueChanged_"
+      readonly="[[submitted_]]"
+      allow-exiting-readonly-mode="[[submitted_]]">
+  </compose-textarea>
+
+  <div id="resultContainer" hidden="[[!result_]]">
+    [[result_]]
+
+    <div id="resultOptions">
+      <select class="md-select"><option>Menu 1</option></select>
+      <select class="md-select"><option>Menu 2</option></select>
+
+      <div class="icon-buttons-row">
+        <cr-icon-button id="undo" iron-icon="cr:arrow-back"
+            disabled="[[!undoEnabled_]]"
+            on-click="onUndoClick_">
+        </cr-icon-button>
+        <cr-icon-button id="refresh" iron-icon="cr:sync"
+            on-click="onRefreshClick_">
+        </cr-icon-button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="submitFooter" class="footer" hidden$="[[submitted_]]">
+  <div class="footer-text">
+    <div>
+      <strong>Do:</strong> look at this text.
+    </div>
+  </div>
+  <cr-button id="submitButton" class="action-button" on-click="onSubmit_"
+      disabled="[[!isSubmitEnabled_]]">
+    Submit
+  </cr-button>
+</div>
+
+<div id="resultFooter" class="footer" hidden="[[!result_]]">
+  <div class="footer-text">
+    <div>
+      Here is some text
+      <a href="#">Learn more</a>
+    </div>
+
+    <div class="icon-buttons-row">
+      <cr-icon-button iron-icon="cr:thumbs-up"></cr-icon-button>
+      <cr-icon-button iron-icon="cr:thumbs-down"></cr-icon-button>
+    </div>
+  </div>
+  <cr-button id="insertButton" class="action-button">Insert</cr-button>
+</div>

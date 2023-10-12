@@ -131,7 +131,6 @@
 [ android qualcomm ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 [ android qualcomm ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 [ desktop no-passthrough ] WebglExtension_EXT_color_buffer_half_float [ Skip ]
-crbug.com/776222 [ android ] WebglExtension_WEBGL_video_texture [ Skip ]
 crbug.com/1058744 [ no-passthrough ] WebglExtension_OES_draw_buffers_indexed [ Skip ]
 
 # Extensions unavailable on Android.
@@ -533,15 +532,12 @@ crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional
 crbug.com/1316389 [ amd-0x679e angle-metal passthrough monterey ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
 crbug.com/1316389 [ amd-0x67ef angle-metal passthrough ventura ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
 crbug.com/1316389 [ amd-0x679e angle-metal passthrough monterey ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
-crbug.com/1435021 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/texture-active-bind.html [ RetryOnFailure ]
 crbug.com/1435021 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/texture-active-bind-2.html [ RetryOnFailure ]
 crbug.com/1435021 [ mac amd-0x67ef angle-metal ] conformance/canvas/draw-webgl-to-canvas-test.html [ RetryOnFailure ]
 crbug.com/1421437 [ mac amd-0x67ef angle-metal ] conformance2/extensions/webgl-shader-pixel-local-storage.html [ Failure ]
 crbug.com/1421437 [ mac amd-0x679e angle-metal ] conformance2/extensions/webgl-shader-pixel-local-storage.html [ Failure ]
 crbug.com/1487266 [ mac passthrough angle-metal amd release ] deqp/functional/gles3/texturefiltering/2d_array_combinations_05.html [ Failure ]
 
-crbug.com/641209 [ mac amd-0x679e angle-metal ] deqp/functional/gles3/fbomultisample* [ Failure ]
-crbug.com/1474883 [ mac amd angle-metal ] deqp/functional/gles3/texturespecification/teximage3d_depth.html [ Failure ]
 
 ## Metal Intel ##
 
@@ -610,6 +606,7 @@ crbug.com/795052 [ mac nvidia-0xfe9 ] conformance2/uniforms/draw-with-uniform-bl
 crbug.com/1457723 [ bigsur nvidia-0xfe9 angle-opengl ] conformance2/textures/canvas_sub_rectangle/tex-3d-* [ Failure ]
 crbug.com/1475765 [ bigsur nvidia-0xfe9 angle-opengl ] conformance/textures/canvas_sub_rectangle/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 crbug.com/1475765 [ bigsur nvidia-0xfe9 angle-opengl ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html [ Failure ]
+crbug.com/1488444 [ mac-x86_64 nvidia-0xfe9 angle-opengl passthrough ] conformance2/rendering/vertex-id-large-count.html [ Failure ]
 
 ## Mac AMD ##
 
@@ -849,18 +846,20 @@ crbug.com/angleproject/5038 [ chromeos chromeos-board-amd64-generic mesa_ge_21.0
 crbug.com/angleproject/7904 [ chromeos chromeos-board-amd64-generic passthrough ] WebglExtension_WEBGL_clip_cull_distance [ Failure ]
 
 # New extension tests failing on ChromeOS VM
-crbug.com/1473838 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/extensions/ext-render-snorm.html [ Failure ]
-crbug.com/1473838 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/extensions/oes-shader-multisample-interpolation.html [ Failure ]
 crbug.com/1473838 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/extensions/webgl-stencil-texturing.html [ Failure ]
 crbug.com/angleproject/8315 [ chromeos chromeos-board-amd64-generic passthrough ] WebglExtension_EXT_render_snorm [ Failure ]
+
+## Jacuzzi ##
+crbug.com/1410164 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_TestCoverage [ Failure ]
+crbug.com/1488973 [ chromeos cros-chrome chromeos-board-jacuzzi ] conformance/glsl/bugs/constant-precision-qualifier.html [ Failure ]
+crbug.com/1488978 [ chromeos cros-chrome chromeos-board-jacuzzi ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
+crbug.com/1488979 [ chromeos cros-chrome chromeos-board-jacuzzi ] conformance/misc/shader-precision-format.html [ Failure ]
 
 #####################
 # Lacros failures #
 #####################
 
 crbug.com/angleproject/7904 [ chromeos lacros-chrome chromeos-board-octopus passthrough ] WebglExtension_WEBGL_clip_cull_distance [ Failure ]
-crbug.com/1471990 [ chromeos lacros-chrome chromeos-board-octopus passthrough ] conformance2/rendering/blitframebuffer-filter-outofbounds.html [ Failure ]
-crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-octopus passthrough ] conformance2/extensions/webgl-stencil-texturing.html [ Failure ]
 
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/glsl/bugs/constant-precision-qualifier.html [ Failure ]
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
@@ -876,6 +875,7 @@ crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] 
 
 crbug.com/1464417 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/extensions/webgl-shader-pixel-local-storage.html [ Failure ]
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance2/extensions/oes-sample-variables.html [ Failure ]
+crbug.com/1488581 [ chromeos lacros-chrome chromeos-board-octopus passthrough ] conformance/rendering/out-of-bounds-array-buffers.html [ RetryOnFailure ]
 
 ##############################
 # Lacros-like Linux Failures #

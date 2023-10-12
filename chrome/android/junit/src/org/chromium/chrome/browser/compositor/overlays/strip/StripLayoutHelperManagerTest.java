@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.TintedCompositorButton;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager.TabModelStartupInfo;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayerJni;
@@ -57,6 +58,7 @@ import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.base.LocalizationUtils;
+import org.chromium.ui.dragdrop.DragAndDropDelegate;
 
 /** Tests for {@link StripLayoutHelperManager}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -85,8 +87,8 @@ public class StripLayoutHelperManagerTest {
     private MultiInstanceManager mMultiInstanceManager;
     @Mock
     private View mToolbarContainerView;
-    @Mock
-    private TabModelSelector mTabModelSelector;
+    @Mock private DragAndDropDelegate mDragDropDelegate;
+    @Mock private TabModelSelector mTabModelSelector;
     @Mock
     private TabCreatorManager mTabCreatorManager;
     @Mock
@@ -101,6 +103,8 @@ public class StripLayoutHelperManagerTest {
     private StripLayoutTab mHoveredStripTab;
     @Mock
     private ViewStub mTabHoverCardViewStub;
+    @Mock
+    private ObservableSupplierImpl<TabContentManager> mTabContentManagerSupplier;
 
     private StripLayoutHelperManager mStripLayoutHelperManager;
     private Context mContext;
@@ -130,10 +134,20 @@ public class StripLayoutHelperManagerTest {
         when(mTabModelSelector.getTabModelFilterProvider()).thenReturn(mTabModelFilterProvider);
 
         mTabModelStartupInfoSupplier = new ObservableSupplierImpl<>();
-        mStripLayoutHelperManager = new StripLayoutHelperManager(mContext, mManagerHost,
-                mUpdateHost, mRenderHost, mLayerTitleCacheSupplier, mTabModelStartupInfoSupplier,
-                mLifecycleDispatcher, mMultiInstanceManager, mToolbarContainerView,
-                mTabHoverCardViewStub);
+        mStripLayoutHelperManager =
+                new StripLayoutHelperManager(
+                        mContext,
+                        mManagerHost,
+                        mUpdateHost,
+                        mRenderHost,
+                        mLayerTitleCacheSupplier,
+                        mTabModelStartupInfoSupplier,
+                        mLifecycleDispatcher,
+                        mMultiInstanceManager,
+                        mDragDropDelegate,
+                        mToolbarContainerView,
+                        mTabHoverCardViewStub,
+                        mTabContentManagerSupplier);
         mStripLayoutHelperManager.setTabModelSelector(mTabModelSelector, mTabCreatorManager);
     }
 

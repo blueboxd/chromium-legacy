@@ -1491,7 +1491,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.NetworkService.SharedMemoryFootprint" units="MiB"
-    expires_after="2024-01-28">
+    expires_after="2024-03-31">
   <owner>mmenke@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <owner>erikchen@chromium.org</owner>
@@ -1588,29 +1588,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of OOM kills since last emit. The emit interval is at least 24
     hours, see metrics::DailyEvent for more details.
-  </summary>
-</histogram>
-
-<histogram base="true" name="Memory.OpenFDs" units="files" expires_after="M85">
-<!-- Name completed by histogram_suffixes name="MemoryFDsBroswerGpuAndRendererProcess" and name="MemoryFDsAllProcesses" -->
-
-  <owner>dcastagna@chromium.org</owner>
-  <owner>ssid@chromium.org</owner>
-  <summary>
-    The total number of open file descriptors opened per process. Recorded once
-    per UMA ping.
-  </summary>
-</histogram>
-
-<histogram base="true" name="Memory.OpenFDsSoftLimit" units="files"
-    expires_after="M85">
-<!-- Name completed by histogram_suffixes name="MemoryFDsBroswerGpuAndRendererProcess" -->
-
-  <owner>dcastagna@chromium.org</owner>
-  <owner>ssid@chromium.org</owner>
-  <summary>
-    The limit of open file descriptors that can be opened per process. Recorded
-    once per UMA ping.
   </summary>
 </histogram>
 
@@ -2493,7 +2470,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.VmmSwap.TotalBytesWrittenInAWeek" units="MiB"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>kawasin@google.com</owner>
   <owner>sstan@google.com</owner>
   <summary>
@@ -2504,7 +2481,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.VmmSwap.{VmName}.ActiveAfterEnableDuration"
-    units="Hours" expires_after="2024-01-31">
+    units="Hours" expires_after="2024-03-31">
   <owner>kawasin@google.com</owner>
   <owner>sstan@google.com</owner>
   <summary>
@@ -2518,7 +2495,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.VmmSwap.{VmName}.AvgPagesInFile" units="Pages"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>kawasin@google.com</owner>
   <owner>sstan@google.com</owner>
   <summary>
@@ -2526,6 +2503,20 @@ chromium-metrics-reviews@google.com.
     the duration of the vmm-swap period. Even if the actual page size is not
     4KiB, it is recalculated to be the number of 4KiB pages. This is sent when
     vmm-swap is disabled.
+  </summary>
+  <token key="VmName" variants="VmmSwapVmName"/>
+</histogram>
+
+<histogram name="Memory.VmmSwap.{VmName}.DisableReason"
+    enum="VmmSwapDisableReason" expires_after="2024-01-31">
+  <owner>kawasin@google.com</owner>
+  <owner>sstan@google.com</owner>
+  <summary>
+    Tracks events that would cause vmm-swap to be disabled. This is sent
+    regardless of whether or not vmm-swap was actually active - i.e. alongside
+    both &quot;.ActiveAfterEnableDuration&quot; and
+    &quot;.InactiveNoEnableDuration&quot;. Each event type is broken down into
+    two enum values - one for the inactive and one for the active case.
   </summary>
   <token key="VmName" variants="VmmSwapVmName"/>
 </histogram>
@@ -2543,7 +2534,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.VmmSwap.{VmName}.InactiveNoEnableDuration"
-    units="Hours" expires_after="2024-01-31">
+    units="Hours" expires_after="2024-03-31">
   <owner>kawasin@google.com</owner>
   <owner>sstan@google.com</owner>
   <summary>
@@ -2556,7 +2547,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.VmmSwap.{VmName}.MinPagesInFile" units="Pages"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>kawasin@google.com</owner>
   <owner>sstan@google.com</owner>
   <summary>
@@ -2569,7 +2560,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.VmmSwap.{VmName}.PageAverageDurationInFile"
-    units="Seconds" expires_after="2024-01-31">
+    units="Seconds" expires_after="2024-03-31">
   <owner>kawasin@google.com</owner>
   <owner>sstan@google.com</owner>
   <summary>
@@ -2582,8 +2573,21 @@ chromium-metrics-reviews@google.com.
   <token key="VmName" variants="VmmSwapVmName"/>
 </histogram>
 
+<histogram name="Memory.VmmSwap.{VmName}.PolicyResult"
+    enum="VmmSwapPolicyResult" expires_after="2024-01-31">
+  <owner>kawasin@google.com</owner>
+  <owner>sstan@google.com</owner>
+  <summary>
+    Tracks the policy decision made when deciding how to handle a swap enable
+    dbus request. Indicates if a request was accepted or why it was rejected.
+    Each decision result is further broken down into whether it occured while
+    handling an initial enable request or a maintenance request.
+  </summary>
+  <token key="VmName" variants="VmmSwapVmName"/>
+</histogram>
+
 <histogram name="Memory.VmmSwap.{VmName}.State" enum="VmmSwapState"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>kawasin@google.com</owner>
   <owner>sstan@google.com</owner>
   <summary>

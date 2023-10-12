@@ -76,6 +76,7 @@ import org.chromium.chrome.browser.auxiliary_search.AuxiliarySearchControllerFac
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.back_press.MinimizeAppAndCloseTabBackPressHandler;
 import org.chromium.chrome.browser.back_press.MinimizeAppAndCloseTabBackPressHandler.MinimizeAppAndCloseTabType;
+import org.chromium.chrome.browser.base.ColdStartTracker;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -92,6 +93,7 @@ import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadNotificationService;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.dragdrop.ChromeDragAndDropBrowserDelegate;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feature_guide.notifications.FeatureNotificationUtils;
 import org.chromium.chrome.browser.feed.FeedSurfaceTracker;
@@ -116,6 +118,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.AndroidSessionDurationsServiceState;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.MainIntentBehaviorMetrics;
+import org.chromium.chrome.browser.metrics.SimpleStartupForegroundSessionDetector;
 import org.chromium.chrome.browser.modaldialog.ChromeTabModalPresenter;
 import org.chromium.chrome.browser.modaldialog.TabModalLifetimeHandler;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity;
@@ -133,7 +136,7 @@ import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelper;
 import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelperSupplier;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
@@ -225,6 +228,8 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.dragdrop.DragAndDropDelegate;
+import org.chromium.ui.dragdrop.DragAndDropDelegateImpl;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.widget.Toast;
 import org.chromium.url.GURL;
@@ -272,6 +277,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     public static final Set<String> TABBED_MODE_COMPONENT_NAMES = Set.of(
             ChromeTabbedActivity.class.getName(), MultiInstanceChromeTabbedActivity.class.getName(),
             ChromeTabbedActivity2.class.getName(), MAIN_LAUNCHER_ACTIVITY_NAME);
+
     private static final String TAG_MULTI_INSTANCE = "MultiInstance";
 
     /**
@@ -399,6 +405,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     // Time at which an intent was received and handled.
     private long mIntentHandlingTimeMs;
+
+    // Delegate to handle drag and drop features for tablets.
+    private DragAndDropDelegate mDragDropDelegate;
 
     private final IncognitoTabHost mIncognitoTabHost = new IncognitoTabHost() {
         @Override
@@ -689,13 +698,28 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             ViewGroup tabSwitcherViewHolder = findViewById(R.id.tab_switcher_view_holder);
             ViewStub tabHoverCardViewStub = (ViewStub) findViewById(R.id.tab_hover_card_holder_stub);
             View toolbarContainerView = findViewById(R.id.toolbar_container);
-            mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder, mContentContainer,
-                mStartSurfaceSupplier, mTabSwitcherSupplier, getBrowserControlsManager(),
-                getTabContentManagerSupplier(), mRootUiCoordinator::getTopUiThemeColorProvider,
-                mTabModelStartupInfoSupplier, tabSwitcherViewHolder,
-                mRootUiCoordinator.getScrimCoordinator(), getLifecycleDispatcher(),
-                () -> createAndSetStartSurfaceForTablet(), mMultiInstanceManager,
-                toolbarContainerView, tabHoverCardViewStub);
+            mDragDropDelegate = new DragAndDropDelegateImpl();
+            mDragDropDelegate.setDragAndDropBrowserDelegate(
+                    new ChromeDragAndDropBrowserDelegate(this));
+
+            mLayoutManager =
+                    new LayoutManagerChromeTablet(
+                            compositorViewHolder,
+                            mContentContainer,
+                            mStartSurfaceSupplier,
+                            mTabSwitcherSupplier,
+                            getBrowserControlsManager(),
+                            getTabContentManagerSupplier(),
+                            mRootUiCoordinator::getTopUiThemeColorProvider,
+                            mTabModelStartupInfoSupplier,
+                            tabSwitcherViewHolder,
+                            mRootUiCoordinator.getScrimCoordinator(),
+                            getLifecycleDispatcher(),
+                            () -> createAndSetStartSurfaceForTablet(),
+                            mMultiInstanceManager,
+                            mDragDropDelegate,
+                            toolbarContainerView,
+                            tabHoverCardViewStub);
             mLayoutStateProviderSupplier.set(mLayoutManager);
             // clang-format on
         }
@@ -706,7 +730,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // If the refactor is enabled, we create grid tab switcher directly instead of via start
         // surface.
         if (isStartSurfaceRefactorEnabled()) {
-            if (!ChromeFeatureList.sDeferTabSwitcherLayoutCreation.isEnabled()) {
+            // Until Start Surface Refactor is launched, Tablets create the GridTabSwitcher through
+            // this method.
+            if (!ChromeFeatureList.sDeferTabSwitcherLayoutCreation.isEnabled() || isTablet()) {
                 createGridTabSwitcher(compositorViewHolder, tabSwitcherContainer);
             }
             if (ReturnToChromeUtil.isStartSurfaceEnabled(this)) {
@@ -1173,6 +1199,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
     }
 
+    private void disablePaintPreviewOnRestore() {
+        StartupPaintPreviewHelper.setShouldShowOnRestore(false);
+    }
+
     private void setTrackColdStartupMetrics(boolean shouldTrackColdStartupMetrics) {
         assert getActivityTabStartupMetricsTracker() != null;
 
@@ -1181,11 +1211,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         } else {
             getActivityTabStartupMetricsTracker().cancelTrackingStartupMetrics();
         }
-
-        // Paint Preview should follow the same logic as startup UMA histograms as the feature
-        // should only run on cold startup of Chrome when the user is unable to interact before
-        // entering a tab.
-        StartupPaintPreviewHelper.setShouldShowOnRestore(shouldTrackColdStartupMetrics);
     }
 
     private void setInitialOverviewState(boolean shouldShowOverviewPageOnStart) {
@@ -1205,6 +1230,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             // Cancel recording cold startup metrics if an overview is shown as they expect a tab to
             // be the first thing shown after startup.
             setTrackColdStartupMetrics(false);
+            disablePaintPreviewOnRestore();
             showOverview(StartSurfaceState.SHOWING_START);
             mAppLaunchDrawBlocker.onOverviewPageAvailable(
                     mOverviewShownOnStart && !isInstantStartEnabled());
@@ -1217,6 +1243,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             // Cancel recording cold startup metrics if an overview is shown as they expect a tab to
             // be the first thing shown after startup.
             setTrackColdStartupMetrics(false);
+            disablePaintPreviewOnRestore();
             showOverview(StartSurfaceState.SHOWING_START);
         }
 
@@ -1718,6 +1745,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 || TextUtils.equals(externalAppId, getPackageName());
     }
 
+    private boolean useNewColdStartHeuristic() {
+        return ChromeFeatureList.sPaintPreviewNewColdStartHeuristic.isEnabled();
+    }
+
     @Override
     public void performPreInflationStartup() {
         super.performPreInflationStartup();
@@ -1730,23 +1761,33 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             mJankTracker = new PlaceholderJankTracker();
         }
 
-        // Decide whether to record startup UMA histograms. This is done  early in the main
+        // Decide whether to record startup UMA histograms. This is done early in the main
         // Activity.onCreate() to avoid recording navigation delays when they require user input to
-        // proceed. For example, FRE (First Run Experience) happens before the activity is created,
-        // and triggers initialization of the native library.
-        //
-        // An uninitialized native library is an indication of an application start that is followed
-        // by navigation immediately without user input.
+        // proceed. Having an uninitialized native library has been taken as a sign of starting
+        // Chrome with an immediate navigation without user input.
+        // TODO(crbug.com/1471136): Native library initialization was moved to another thread, and
+        //  it now proceeds faster, making the metrics think that the start is not cold enough.
+        //  To cover more startup cases change the heuristic detecting cold startup that happens
+        //  without user interaction.
         if (!LibraryLoader.getInstance().isInitialized()) {
+            if (!useNewColdStartHeuristic()) {
+                StartupPaintPreviewHelper.setShouldShowOnRestore(true);
+            }
             setTrackColdStartupMetrics(true);
         }
 
+        // Enable Paint Preview only on a cold start. This way the Paint preview is most useful by
+        // being much faster than the real load of the page. Also cold start detection excludes user
+        // interactions changing the course of restoring the page.
+        if (useNewColdStartHeuristic()
+                && ColdStartTracker.wasColdOnFirstActivityCreationOrNow()
+                && !SimpleStartupForegroundSessionDetector.isSessionDiscarded()) {
+            StartupPaintPreviewHelper.setShouldShowOnRestore(true);
+        }
+
         supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
-
         IncognitoTabHostRegistry.getInstance().register(mIncognitoTabHost);
-
         mStartupPaintPreviewHelperSupplier.attach(getWindowAndroid().getUnownedUserDataHost());
-
         if (DseNewTabUrlManager.isNewTabSearchEngineUrlAndroidEnabled()) {
             mDseNewTabUrlManager = new DseNewTabUrlManager(mTabModelProfileSupplier);
         }
@@ -2355,10 +2396,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             return false;
         }
 
-        // This only intercepts back press 1. on T+ 2. back press refactor is disabled
-        // 3. predictive back gesture is opted in.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && getToolbarManager() != null
-                && getToolbarManager().unfocusUrlBarOnBackPress()) {
+        if (getToolbarManager() != null && getToolbarManager().unfocusUrlBarOnBackPress()) {
             BackPressManager.record(BackPressHandler.Type.LOCATION_BAR);
             return true;
         }
@@ -2869,6 +2907,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             mAuxiliarySearchController.destroy();
         }
 
+        if (mDragDropDelegate != null) {
+            mDragDropDelegate.destroy();
+        }
+
         super.onDestroyInternal();
     }
 
@@ -2909,9 +2951,18 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
         boolean isCurrentTabVisible =
                 !isInOverviewMode() && (!isTablet() || getCurrentTabModel().getCount() != 0);
-        return KeyboardShortcuts.onKeyDown(event, isCurrentTabVisible, true, getTabModelSelector(),
-                       /* menuOrKeyboardActionController= */ this, getToolbarManager())
-                || super.onKeyDown(keyCode, event);
+        boolean keyboardShortcutHandled =
+                KeyboardShortcuts.onKeyDown(
+                        event,
+                        isCurrentTabVisible,
+                        true,
+                        getTabModelSelector(),
+                        /* menuOrKeyboardActionController= */ this,
+                        getToolbarManager());
+        if (keyboardShortcutHandled) {
+            RecordUserAction.record("MobileKeyboardShortcutUsed");
+        }
+        return keyboardShortcutHandled || super.onKeyDown(keyCode, event);
     }
 
     private void showFullHistorySheet() {
@@ -3117,7 +3168,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         // Save whether the current tab is a search result page into preferences.
         Tab currentStandardTab = TabModelUtils.getCurrentTab(mTabModelSelector.getModel(false));
-        SharedPreferencesManager.getInstance().writeBoolean(
+        ChromeSharedPreferences.getInstance().writeBoolean(
                 ChromePreferenceKeys.IS_LAST_VISITED_TAB_SRP,
                 currentStandardTab != null
                         && UrlUtilitiesJni.get().isGoogleSearchUrl(

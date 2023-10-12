@@ -32,7 +32,7 @@
 #import "components/sync/service/sync_service_utils.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/net/crurl.h"
-#import "ios/chrome/browser/passwords/password_checkup_metrics.h"
+#import "ios/chrome/browser/passwords/model/password_checkup_metrics.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
@@ -98,6 +98,11 @@ namespace {
 // desired vertical spacing (20pt) between the manager account header's text and
 // the first item of the next section.
 constexpr CGFloat kManageAccountHeaderSectionFooterHeight = 2;
+
+// The maximum width the view can have for the widget promo cell to be
+// configured with its narrow layout. When the view's width is above that, the
+// cell's layout should be switched to the wide one.
+constexpr CGFloat kWidgetPromoLayoutThreshold = 500;
 
 typedef NS_ENUM(NSInteger, ItemType) {
   // Section: SectionIdentifierManageAccountHeader
@@ -399,8 +404,6 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   if (!_didReceivePasswords) {
     [self showLoadingSpinnerBackground];
   }
-
-  base::RecordAction(base::UserMetricsAction("MobilePasswordManagerOpen"));
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -463,11 +466,22 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   [self updatePasswordCheckStatusLabelWithState:self.passwordCheckState];
   [self reconfigurePasswordCheckSectionCellsWithState:self.passwordCheckState];
   [self setAddPasswordButtonEnabled:!editing];
-  [self updateUIForEditState];
+
+  //  We want to update the toolbar only if the current view is the Password
+  //  Manager.
+  if ([self.navigationController.topViewController
+          isKindOfClass:[PasswordManagerViewController class]]) {
+    [self updateUIForEditState];
+  }
 }
 
 - (BOOL)hasPasswords {
   return !_affiliatedGroups.empty();
+}
+
+- (void)viewWillLayoutSubviews {
+  [super viewWillLayoutSubviews];
+  [self updateWidgetPromoCellLayoutIfNeeded];
 }
 
 #pragma mark - SettingsRootTableViewController
@@ -701,6 +715,8 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
       l10n_util::GetNSString(IDS_IOS_PASSWORD_MANAGER_WIDGET_PROMO_TEXT);
   _widgetPromoItem.moreInfoButtonTitle = l10n_util::GetNSString(
       IDS_IOS_PASSWORD_MANAGER_WIDGET_PROMO_BUTTON_TITLE);
+  _widgetPromoItem.shouldHaveWideLayout =
+      [self shouldWidgetPromoCellHaveWideLayout];
   _widgetPromoItem.accessibilityIdentifier = kWidgetPromoId;
   return _widgetPromoItem;
 }
@@ -823,12 +839,18 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 }
 
 - (void)didTapWidgetPromoCloseButton {
+  UmaHistogramEnumeration(kPasswordManagerWidgetPromoActionHistogram,
+                          PasswordManagerWidgetPromoAction::kClose);
+
   [self clearSectionWithIdentifier:SectionIdentifierWidgetPromo
                   withRowAnimation:UITableViewRowAnimationFade];
   [self.delegate notifyFETOfPasswordManagerWidgetPromoDismissal];
 }
 
 - (void)didTapWidgetPromoMoreInfoButton {
+  UmaHistogramEnumeration(kPasswordManagerWidgetPromoActionHistogram,
+                          PasswordManagerWidgetPromoAction::kOpenInstructions);
+
   [self.presentationDelegate showPasswordManagerWidgetPromoInstructions];
 }
 
@@ -935,8 +957,14 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
     }
     // If section doesn't exist but it should - add it.
     else if (needsSection && !hasSection) {
-      // This is very rare condition, in this case just reload all data.
-      [self updateUIForEditState];
+      // This is very rare condition, in this case just reload all data and
+      // update the toolbar UI.
+      //  We want to update the toolbar only if the current view is the Password
+      //  Manager.
+      if ([self.navigationController.topViewController
+              isKindOfClass:[PasswordManagerViewController class]]) {
+        [self updateUIForEditState];
+      }
       [self reloadData];
       return;
     }
@@ -1975,6 +2003,32 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
                                              .affiliatedGroup];
 }
 
+// Returns whether or not the widget promo cell should be configured with its
+// wide layout. Should return `YES` when the view's width is greater than the
+// established threshold.
+- (BOOL)shouldWidgetPromoCellHaveWideLayout {
+  return self.view.frame.size.width > kWidgetPromoLayoutThreshold;
+}
+
+// Updates the layout of the widget promo cell when needed. Disables the
+// animation while updating to prevent having a weird animation from
+// `beginUpdates` and `endUpdates`. `beginUpdates` and `endUpdates` are needed
+// to ensure that the cell will be correctly resized when switching from one
+// layout to the other.
+- (void)updateWidgetPromoCellLayoutIfNeeded {
+  BOOL shouldHaveWideLayout = [self shouldWidgetPromoCellHaveWideLayout];
+
+  if (_shouldShowPasswordManagerWidgetPromo &&
+      shouldHaveWideLayout != self.widgetPromoItem.shouldHaveWideLayout) {
+    [UIView setAnimationsEnabled:NO];
+    [self.tableView beginUpdates];
+    self.widgetPromoItem.shouldHaveWideLayout = shouldHaveWideLayout;
+    [self reconfigureCellsForItems:@[ self.widgetPromoItem ]];
+    [self.tableView endUpdates];
+    [UIView setAnimationsEnabled:YES];
+  }
+}
+
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
@@ -2149,6 +2203,8 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
           forControlEvents:UIControlEventTouchUpInside];
       widgetPromoCell.closeButton.accessibilityIdentifier =
           kWidgetPromoCloseButtonId;
+      widgetPromoCell.promoImageView.accessibilityIdentifier =
+          kWidgetPromoImageID;
       break;
     }
     case ItemTypePasswordCheckStatus: {

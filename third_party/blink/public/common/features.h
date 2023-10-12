@@ -239,7 +239,7 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsSaveData);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsViewportWidth);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsViewportWidth_DEPRECATED);
 
-// Allows reading/writing unsanitized content from/to the clipboard. Currently,
+// Allows reading unsanitized content from the clipboard. Currently,
 // it is only applicable to HTML format. See crbug.com/1268679.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClipboardUnsanitizedContent);
 
@@ -415,8 +415,14 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFixGestureScrollQueuingBug);
 // FLEDGE ad serving runtime flag/JS API.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledge);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeBiddingAndAuctionServer);
+// Public key URL to use for the default bidding and auction Coordinator.
+// Overrides the JSON config for the default coordinator if both are specified.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kFledgeBiddingAndAuctionKeyURL;
+// JSON config specifying supported coordinator origins and their public key
+// URLs.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
+    kFledgeBiddingAndAuctionKeyConfig;
 // Configures FLEDGE to consider k-anononymity. If both
 // kFledgeConsiderKAnonymity and kFledgeEnforceKAnonymity are on it will be
 // enforced; if only kFledgeConsiderKAnonymity is on it will be simulated.
@@ -505,6 +511,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kInterestGroupStorageMaxGroupsPerOwner;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kInterestGroupStorageMaxNegativeGroupsPerOwner;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kInterestGroupStorageMaxOpsBeforeMaintenance;
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kIsolateSandboxedIframes);
@@ -590,6 +598,14 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // The maximum URL count allowed for LCPP font URL predictor.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kLCPPFontURLPredictorMaxUrlCountPerOrigin;
+
+// Fonts are preloaded if frequencies are above this threshold.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<double>
+    kLCPPFontURLPredictorFrequencyThreshold;
+
+// The maximum number of Fonts to be sent for preload.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kLCPPFontURLPredictorMaxPreloadCount;
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPVideoFirstFrame);
 
@@ -699,6 +715,13 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kOriginAgentClusterDefaultEnabled);
 // (This is a transitory behaviour on the road to perma-enabling
 // kOriginAgentClusterDefaultEnabled above.)
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kOriginAgentClusterDefaultWarning);
+
+// Kill-switch for any calls to the mojo interface OriginTrialStateHost
+// in the RuntimeFeatureStateOverrideContext class. If
+// `kOriginTrialStateHostApplyFeatureDiff` is disabled,
+// origin/deprecation trial token information is not sent to the browser
+// process.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kOriginTrialStateHostApplyFeatureDiff);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPath2DPaintCache);
 
@@ -940,13 +963,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // than the beginning.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kRunTextInputUpdatePostLifecycle);
 
-// Kill-switch for any calls to the mojo interface OriginTrialStateHost
-// in the RuntimeFeatureStateOverrideContext class. If
-// `kOriginTrialStateHostApplyFeatureDiff` is disabled,
-// origin/deprecation trial token information is not sent to the browser
-// process.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kOriginTrialStateHostApplyFeatureDiff);
-
 // When enabled, it adds FTP / FTPS / SFTP to the safe list for
 // registerProtocolHandler. This feature is enabled by default and meant to
 // be used as a killswitch.
@@ -1073,11 +1089,11 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageSelectURLLimit);
 // `sharedStorage.selectURL()`, if `kSharedStorageSelectURLLimit` is enabled.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kSharedStorageSelectURLBitBudgetPerPageLoad;
-// Maximum number of bits of entropy per origin per pageload that are allowed to
+// Maximum number of bits of entropy per site per pageload that are allowed to
 // leak via `sharedStorage.selectURL()`, if `kSharedStorageSelectURLLimit` is
 // enabled.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
-    kSharedStorageSelectURLBitBudgetPerOriginPerPageLoad;
+    kSharedStorageSelectURLBitBudgetPerSitePerPageLoad;
 
 // Additional Shared Storage API features shipped in M118.
 // TODO(crbug.com/1218540): Merge this flag with `kSharedStorageAPI` once
@@ -1188,6 +1204,10 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
 // empty duration (e.g. "0s"), then no top-level user interaction is required.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kStorageAccessAPITopLevelUserInteractionBound;
+// How long a Related Website Sets Storage Access API permission
+// grant/denial should last (not taking renewals into account).
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kStorageAccessAPIRelatedWebsiteSetsLifetime;
 // How long an implicit Storage Access API permission grant/denial should last
 // (not taking renewals into account).
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>

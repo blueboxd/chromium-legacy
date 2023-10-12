@@ -12,6 +12,7 @@
 #include "ash/accelerators/accelerator_alias_converter.h"
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/accelerators/accelerator_controller_impl.h"
+#include "ash/accelerators/accelerator_encoding.h"
 #include "ash/accelerators/ash_accelerator_configuration.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
@@ -188,6 +189,10 @@ static const auto kReservedAccelerators =
                          ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
                          ui::Accelerator::KeyState::PRESSED),
          IDS_AMBIENT_ACCELERATOR_DESCRIPTION_ACTIVATE_INDEXED_DESK},
+        {ui::Accelerator(ui::VKEY_ESCAPE,
+                         ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+                         ui::Accelerator::KeyState::PRESSED),
+         IDS_ASH_ACCELERATOR_DESCRIPTION_UNPIN},
     });
 
 // Raw accelerator data may result in the same shortcut being displayed multiple
@@ -446,9 +451,9 @@ absl::optional<AcceleratorConfigResult> ValidateAccelerator(
   if (base::Contains(kReservedKeys, accelerator.key_code())) {
     VLOG(1) << "Failed to validate accelerator: "
             << accelerator.GetShortcutText() << " with error: "
-            << static_cast<int>(AcceleratorConfigResult::kKeyNotAllowed)
+            << static_cast<int>(AcceleratorConfigResult::kReservedKeyNotAllowed)
             << "- Reserved key in accelerator.";
-    return AcceleratorConfigResult::kKeyNotAllowed;
+    return AcceleratorConfigResult::kReservedKeyNotAllowed;
   }
 
   // Case: Top-row action keys cannot be part of the accelerator.
@@ -588,7 +593,7 @@ void RecordEncodedAcceleratorHistogram(const std::string& histogram_name,
       base::StrCat(
           {histogram_name, GetAcceleratorActionName(
                                static_cast<AcceleratorAction>(action_id))}),
-      GetEncodedShortcut(accelerator));
+      GetEncodedShortcut(accelerator.modifiers(), accelerator.key_code()));
 }
 
 }  // namespace
@@ -685,6 +690,17 @@ void AcceleratorConfigurationProvider::IsMutable(
   }
 
   std::move(callback).Run(is_mutable);
+}
+
+void AcceleratorConfigurationProvider::IsCustomizationAllowedByPolicy(
+    IsCustomizationAllowedByPolicyCallback callback) {
+  // If not enterprise managed, return true.
+  if (!Shell::Get()->accelerator_prefs()->IsUserEnterpriseManaged()) {
+    std::move(callback).Run(/*is_customization_allowed_by_policy=*/true);
+    return;
+  }
+  std::move(callback).Run(
+      Shell::Get()->accelerator_prefs()->IsCustomizationAllowedByPolicy());
 }
 
 void AcceleratorConfigurationProvider::HasLauncherButton(

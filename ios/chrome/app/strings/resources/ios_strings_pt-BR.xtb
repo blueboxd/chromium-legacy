@@ -6,6 +6,7 @@
 <translation id="1016495303386450659">Item atualizado</translation>
 <translation id="1025514696883950875">{COUNT,plural, =1{Salvar senha na conta}one{Salvar senha na conta}other{Salvar senhas na conta}}</translation>
 <translation id="1035980983510608210">Ao fechar todas as guias, as fixadas também vão ser fechadas.</translation>
+<translation id="1036017604683756002">UPS</translation>
 <translation id="1036348656032585052">Desativar</translation>
 <translation id="1044891598689252897">Os sites funcionarão normalmente</translation>
 <translation id="1049743911850919806">Modo anônimo</translation>
@@ -57,6 +58,7 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 <translation id="1264156759663453185">O texto selecionado é muito grande para a tradução parcial.</translation>
 <translation id="1265739287306757398">Saiba como</translation>
 <translation id="1272079795634619415">Parar</translation>
+<translation id="1273416271143914096">{count,plural, =1{{count} senha}one{{count} senha}other{{count} senhas}}</translation>
 <translation id="1275718070701477396">Linha selecionada</translation>
 <translation id="1279024913354609713">Não permitir</translation>
 <translation id="1281818060020671000">Gerenciar dados</translation>
@@ -67,6 +69,7 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 <translation id="1295289763199166823">Personalizar menu</translation>
 <translation id="1305822519689023679">Para garantir que você sempre possa usar as senhas na sua Conta do Google, confirme sua identidade.</translation>
 <translation id="1312721752506309252">A Proteção reforçada está ativa</translation>
+<translation id="1320164290882380380">{COUNT,plural, =1{Rastrear pacote}one{Rastrear todos os pacotes}other{Rastrear todos os pacotes}}</translation>
 <translation id="1321993286294231467">Erro ao salvar a imagem.</translation>
 <translation id="1322735045095424339">Sua organização requer o uso do modo de navegação anônima</translation>
 <translation id="1323735185997015385">Excluir</translation>
@@ -91,6 +94,7 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1408847409015257906">Toque em "Privacidade e segurança".</translation>
 <translation id="1430915738399379752">Imprimir</translation>
+<translation id="143681031165817424">Endereço salvo apenas neste dispositivo</translation>
 <translation id="1443958768615272145">Continue navegando</translation>
 <translation id="1449835205994625556">Ocultar senha</translation>
 <translation id="1450170672351507823">A proteção padrão está ativada. Para ter ainda mais segurança, use a Proteção reforçada.</translation>
@@ -141,6 +145,7 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 <translation id="1687475363370981210">Marcar todas as entradas como lidas</translation>
 <translation id="1689333818294560261">Apelido</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selecionados</translation>
+<translation id="1713777106376424209">Enviado por</translation>
 <translation id="1715515772563243997">Se você confia no site <ph name="SITE" />, pode usar uma senha salva para fazer login.</translation>
 <translation id="1740468249224277719">Toque duas vezes para instalar.</translation>
 <translation id="1750238553597293878">Continue usando as senhas na sua Conta do Google</translation>
@@ -154,6 +159,8 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 <translation id="1813414402673211292">Remover dados de navegação</translation>
 <translation id="1815941218935345331">Senha</translation>
 <translation id="1820259098641718022">Adicionada à lista de leitura</translation>
+<translation id="1822994441903263130">FEDEX</translation>
+<translation id="1827529786398596735">Toque na tela inicial e mantenha-a pressionada.</translation>
 <translation id="1829392566394960110">{COUNT,plural, =0{Nenhuma senha comprometida}=1{{COUNT} senha comprometida}one{{COUNT} senha comprometida}other{{COUNT} senhas comprometidas}}</translation>
 <translation id="1830634592642484976">Este endereço está salvo no Chrome. Para usá-lo nos produtos do Google, salve-o na sua conta, <ph name="USER_EMAIL" />.</translation>
 <translation id="1832848789136765277">Para garantir o acesso aos seus dados sincronizados, confirme sua identidade</translation>
@@ -162,6 +169,7 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 <translation id="1847795903283049083">Também é possível consultar e gerenciar esses itens nos seus favoritos, na Lista de leitura ou no Gerenciador de senhas.</translation>
 <translation id="1870148520156231997">Mostrar senha</translation>
 <translation id="1872096359983322073">Lanterna</translation>
+<translation id="1876851015978093044">Mostra este item</translation>
 <translation id="1882901927376062252">{count,plural, =1{Favorito salvo na sua Conta do Google {email}}one{{count} favorito salvo na sua Conta do Google {email}}other{{count} favoritos salvos na sua Conta do Google {email}}}</translation>
 <translation id="1883255238294161206">Recolher lista</translation>
 <translation id="1890237935065108104">Esta configuração não está disponível.</translation>
@@ -175,6 +183,7 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 <translation id="1943478190258551035">Menu → Configurações</translation>
 <translation id="194449685234099560">Todas suas guias abertas aparecem aqui.</translation>
 <translation id="1952172573699511566">Os sites exibirão textos no idioma de sua preferência, quando for possível.</translation>
+<translation id="1956138802718275401">Acessar as senhas na tela inicial</translation>
 <translation id="1959441496380398824">Toque em uma data e a mantenha pressionada.</translation>
 <translation id="1959679933317802873">Aguardando conteúdo</translation>
 <translation id="1965935827552890526">Termine o que você estava fazendo na outra janela aberta no Chrome.</translation>
@@ -186,6 +195,7 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 <translation id="1987779152850321833">Para aproveitar o Chrome ao máximo, siga as sugestões abaixo.</translation>
 <translation id="1989112275319619282">Procurar</translation>
 <translation id="1990820278544963435">Buscar</translation>
+<translation id="1991153180045413119">Senha compartilhada</translation>
 <translation id="1992055602764528852">Faça login para conferir suas guias em outros dispositivos.</translation>
 <translation id="199425419756152024">Ver senha</translation>
 <translation id="2008357574463816229">Se você esquecer a senha longa ou quiser mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome na sua conta<ph name="END_LINK" />.</translation>
@@ -218,6 +228,7 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 <translation id="2195124168004379331">Parece que está tudo certo com seu navegador</translation>
 <translation id="2213327331203157297">Desative o modo de bloqueio total no Chrome para desativá-lo no seu iPhone.</translation>
 <translation id="2218443599109088993">Diminuir zoom</translation>
+<translation id="2220529011494928058">Informar um problema</translation>
 <translation id="2230173723195178503">Página da Web carregada</translation>
 <translation id="2239626343334228536">Limpando dados de navegação…</translation>
 <translation id="2242467532204595597">Use o Chrome sempre que tocar em links em mensagens, documentos e outros apps.</translation>
@@ -229,15 +240,19 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2269277877025820298">Ver mais</translation>
 <translation id="2273327106802955778">Menu "Mais"</translation>
+<translation id="2274800392139890332">Cancelar rastreamento deste pacote</translation>
 <translation id="2275480389219976105">Endereço encontrado</translation>
 <translation id="2286505070150039482">Texto em destaque</translation>
 <translation id="2287614783861766820">{count,plural, =1{O endereço vai ser excluído deste dispositivo.}one{O endereço vai ser excluído deste dispositivo.}other{Os endereços vão ser excluídos deste dispositivo.}}</translation>
 <translation id="2297822946037605517">Compartilhar esta página</translation>
 <translation id="2297989278479054870">Depois que você sair, os favoritos, as senhas e outros itens da sua Conta do Google serão removidos deste dispositivo.</translation>
 <translation id="2299218006564889602">Suas senhas são criptografadas no dispositivo antes de serem salvas no Gerenciador de senhas do Google.</translation>
+<translation id="2299515531293777561"><ph name="CARRIER_NAME" /> • #<ph name="PARCEL_IDENTIFIER" /></translation>
 <translation id="2302742851632557585">Mudar a senha no site</translation>
+<translation id="2310154074101836012">Editar carrossel</translation>
 <translation id="2316709634732130529">Usar senha sugerida</translation>
 <translation id="2320166752086256636">Ocultar teclado</translation>
+<translation id="2348630484974447747">Pacote</translation>
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
 <translation id="235789365079050412">Política de Privacidade do Google</translation>
 <translation id="2359043044084662842">Traduzir</translation>
@@ -250,6 +265,8 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 Eles também não podem usar cookies para ver sua atividade de navegação em diferentes sites, por exemplo, para personalizar anúncios.</translation>
 <translation id="2381405137052800939">Conceitos básicos</translation>
 <translation id="2386793615875593361">Uma selecionada</translation>
+<translation id="2390457533592708044">Ocultar "<ph name="MODULE_NAME" />"</translation>
+<translation id="2403129868389095715">Não foi possível entregar seu pacote</translation>
 <translation id="2411749908844615428">{count,plural, =1{{count} endereço salvo disponível acima do teclado.}one{{count} endereço salvo disponível acima do teclado.}other{{count} endereços salvos disponíveis acima do teclado.}}</translation>
 <translation id="2421004566762153674">Bloqueando cookies de terceiros</translation>
 <translation id="2421044535038393232">Continuar editando</translation>
@@ -266,6 +283,7 @@ Eles também não podem usar cookies para ver sua atividade de navegação em di
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="2484459871750294497">Como posso ativar esse recurso?</translation>
 <translation id="2496626742194544812">Ir para a primeira guia</translation>
+<translation id="2499505845365628575">Você pode conferir todo seu histórico de navegação do <ph name="HISTORY_BUTTON_ACCESSIBILITY_LABEL" />.</translation>
 <translation id="2500374554657206846">Opções para salvar senha</translation>
 <translation id="2511117522375201202">Você tem <ph name="NUMBER_OF_PASSWORDS" /> senhas comprometidas que podem colocar sua segurança em risco.</translation>
 <translation id="2523363575747517183">Este site está tentando repetidamente abrir outro aplicativo.</translation>
@@ -283,6 +301,7 @@ Eles também não podem usar cookies para ver sua atividade de navegação em di
 <translation id="2587010742985678408">{count,plural, =0{Nenhuma senha comprometida}=1{{count} senha comprometida}one{{count} senha comprometida}other{{count} senhas comprometidas}}</translation>
 <translation id="2595587704210555261">{COUNT,plural, =1{As guias abertas que não forem usadas por um dia ou mais serão movidas para as guias inativas. Assim, você pode se concentrar nas que mais usa. É possível mudar isso a qualquer momento nas configurações.}one{As guias abertas que não forem usadas por {COUNT} dia ou mais serão movidas para as guias inativas. Assim, você pode se concentrar nas que mais usa. É possível mudar isso a qualquer momento nas configurações.}other{As guias abertas que não forem usadas por {COUNT} dias ou mais serão movidas para as guias inativas. Assim, você pode se concentrar nas que mais usa. É possível mudar isso a qualquer momento nas configurações.}}</translation>
 <translation id="2600682495497606169">Apagar cookies do site</translation>
+<translation id="260378315836159338">Na parte de cima da tela, toque em +.</translation>
 <translation id="2604176749896001318">Atualizar seu navegador</translation>
 <translation id="2609008503159898744">Fechar todas as guias?</translation>
 <translation id="2617210333344098964">Transferir o endereço para a conta</translation>
@@ -294,6 +313,7 @@ Eles também não podem usar cookies para ver sua atividade de navegação em di
 <translation id="2648803196158606475">Excluir lidas</translation>
 <translation id="2664621323652615289">Parar</translation>
 <translation id="2666092431469916601">Parte superior</translation>
+<translation id="2669454659051515572">Qualquer pessoa que use este dispositivo pode ver os arquivos transferidos por download</translation>
 <translation id="2671426118752779020">Você pode usar as senhas armazenadas no Gerenciador de senhas do Google em outros apps do iPhone.</translation>
 <translation id="2690858294534178585">A câmera está sendo usada</translation>
 <translation id="26915454213703967">Pesquisar na imagem com o Google</translation>
@@ -315,6 +335,7 @@ Seu mecanismo de pesquisa é o <ph name="DSE_NAME" />. Confira as instruções p
 <translation id="2718352093833049315">Apenas com Wi-Fi</translation>
 <translation id="2738375676495545665">Ocultar as Novidades</translation>
 <translation id="2747003861858887689">Campo anterior</translation>
+<translation id="2749026027885331579">Os membros da sua família agora podem usar seu nome de usuário e sua senha quando usarem o Gerenciador de senhas do Google para fazer login em <ph name="WEBSITE" />. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2749231692441336879">Seguindo <ph name="CHANNEL_NAME" /></translation>
 <translation id="2754492786623500387">Contas neste dispositivo</translation>
 <translation id="2762000892062317888">agora mesmo</translation>
@@ -347,6 +368,7 @@ Seu mecanismo de pesquisa é o <ph name="DSE_NAME" />. Confira as instruções p
 <translation id="288113003463357084">Mover barra de endereço para baixo</translation>
 <translation id="2883151425485251736">Ver e editar temas que você ocultou da sua conta</translation>
 <translation id="288655811176831528">Fechar guia</translation>
+<translation id="288902476966286676">Devolver ao remetente</translation>
 <translation id="2890171748217283516">Os sites que você segue são armazenados na sua Conta do Google. Eles podem ser gerenciados nas configurações do Discover.</translation>
 <translation id="2898963176829412617">Nova pasta...</translation>
 <translation id="2902684821701498619">Adicionar à Lista de leitura</translation>
@@ -363,7 +385,6 @@ Seu mecanismo de pesquisa é o <ph name="DSE_NAME" />. Confira as instruções p
 <translation id="2952278131021475699">Pesquisa com a câmera do Lens</translation>
 <translation id="2952581218264071393">1. Abrir configurações do Chrome</translation>
 <translation id="2956733177489514605">Faça login com sua Conta do Google para sincronizar suas senhas e muito mais.</translation>
-<translation id="2958271635022991876">Você pode abrir uma nova guia aqui.</translation>
 <translation id="2958718410589002129">Senhas</translation>
 <translation id="2961210776189273067">Título</translation>
 <translation id="2964349545761222050">Bloquear cookies de terceiros</translation>
@@ -376,6 +397,7 @@ Seu mecanismo de pesquisa é o <ph name="DSE_NAME" />. Confira as instruções p
 Só uma pessoa com sua senha longa poderá ler os dados criptografados. Essa senha não é enviada ao Google nem armazenada por ele. Se você esquecer a senha longa ou quiser mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome na sua conta<ph name="END_LINK" />.</translation>
 <translation id="2989805286512600854">Abrir em uma nova guia</translation>
 <translation id="3010025794097054078">Proteja-se contra vazamentos de dados, sites não seguros e muito mais.</translation>
+<translation id="3010171936431626919">Me ajude a fazer isso</translation>
 <translation id="3020183492814296499">Atalhos</translation>
 <translation id="3037605927509011580">Ah, não!</translation>
 <translation id="3039722182465315531">Não fazer login</translation>
@@ -434,6 +456,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3340938510625667914">Ações do Chrome</translation>
 <translation id="3344485292736684439">{count,plural, =1{Favorito salvo em "{title}" na conta {email}}one{Favorito salvo em "{title}" na conta {email}}other{Favoritos salvos em "{title}" na conta {email}}}</translation>
+<translation id="3348387552617855658">Este card ajuda você a monitorar seus pacotes e fornece atualizações importantes sobre a entrega.</translation>
 <translation id="3349676726073650389">Os sites e as pesquisas que você segue são armazenados na sua Conta do Google. Você pode gerenciar esse conteúdo nas configurações a qualquer momento.</translation>
 <translation id="3365529507898144230">Salvar nas Fotos</translation>
 <translation id="3371831930909698441">Tradução disponível. Opções disponíveis perto da parte inferior da tela.</translation>
@@ -514,6 +537,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="380329542618494757">Nome</translation>
 <translation id="3803696231112616155">Oferecer a opção de traduzir esse site</translation>
 <translation id="3810973564298564668">Gerenciar</translation>
+<translation id="3818045793209708987">Você parou de rastrear este pacote</translation>
 <translation id="3818293389945649617">Localizar próximo</translation>
 <translation id="3819183753496523827">Você está off-line. Verifique sua conexão de Internet e tente novamente.</translation>
 <translation id="3832419617903252251">Senha salva apenas neste dispositivo</translation>
@@ -535,6 +559,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="3909222758573607742">Salvar senhas e outros itens na conta</translation>
 <translation id="3913386780052199712">Conta conectada ao Chrome</translation>
 <translation id="3915450441834151894">Informações do site</translation>
+<translation id="3918585468378680136">Status do pacote pendente</translation>
 <translation id="3922310737605261887">Pesquisar texto copiado</translation>
 <translation id="3928666092801078803">Integrar meus dados</translation>
 <translation id="3929457972718048006">Endereços</translation>
@@ -543,7 +568,6 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="3959736869653157332">Menu → Nova guia anônima</translation>
 <translation id="3967822245660637423">Download concluído</translation>
 <translation id="3968505803272650567">Gerenciar interesses</translation>
-<translation id="3971789053442864420">{count,plural, =1{{count} senha}one{{count} senha}other{{count} senhas}}</translation>
 <translation id="3989635538409502728">Sair</translation>
 <translation id="3995521777587992544">Barra de progresso do carregamento de página, <ph name="EMAIL" /> carregada.</translation>
 <translation id="4002019827078931033">Mover barra de endereço para cima</translation>
@@ -552,6 +576,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="4018310736049373830">Gerenciar atividade</translation>
 <translation id="4038354071007134711">Nenhum app deste dispositivo pode abrir o arquivo.</translation>
 <translation id="4042870976416480368">Buscar na página</translation>
+<translation id="4043294777772912240"><ph name="USERNAME" /> agora pode usar seu nome de usuário e sua senha ao usar o Gerenciador de senhas do Google para fazer login em <ph name="WEBSITE" />. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="40433179647657191">Crie e compartilhe um link direto para parte de uma página destacada.</translation>
 <translation id="4045648459118332842">Acesse suas senhas salvas em qualquer app com um toque</translation>
 <translation id="4049507953662678203">Verifique se você tem uma conexão de rede e tente novamente.</translation>
@@ -571,6 +596,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="4152011295694446843">Você verá seus favoritos aqui</translation>
 <translation id="4168651806173792090"><ph name="NETWORK_NAME" /> com final <ph name="LAST_FOUR_DIGITS" /></translation>
 <translation id="4172051516777682613">Sempre mostrar</translation>
+<translation id="417442848889487144">Marcador criado. Data pendente</translation>
 <translation id="418156467088430727">Ver versão off-line em uma nova guia</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4187450337729239226">Colar e pesquisar</translation>
@@ -594,6 +620,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="4286718549648564014">Endereço movido para sua conta <ph name="USER_EMAIL" /></translation>
 <translation id="4293080268407233932">Pesquisar</translation>
 <translation id="4302248187517737842">Sem nome de usuário ••••••••</translation>
+<translation id="4302415908542657649">Compartilhando senha</translation>
 <translation id="4304713468139749426">Gerenciador de senhas</translation>
 <translation id="430793432425771671">Sincronizar tudo</translation>
 <translation id="4309403553630140242">Toque duas vezes para ver mais informações</translation>
@@ -629,6 +656,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="4508750114462689118">Fechar promoção de login</translation>
 <translation id="4514889972748124117">Sugerir senha forte…</translation>
 <translation id="4520798012560649652">Saiba mais sobre o modo de navegação anônima</translation>
+<translation id="452503091941773389">{count,plural, =1{{count} favorito}one{{count} favorito}other{{count} favoritos}}</translation>
 <translation id="452750746583162491">Revisar dados sincronizados</translation>
 <translation id="4527660062930312477">Sua conta é gerenciada</translation>
 <translation id="4536418791685807335">Tente fazer login novamente.</translation>
@@ -648,6 +676,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="4619615317237390068">Guias de outros dispositivos</translation>
 <translation id="4620246317052452550">Páginas lidas</translation>
 <translation id="4620888520263267479">Mostrar prévias de links</translation>
+<translation id="4622477750832577849">Ativar rastreamento</translation>
 <translation id="4630540211544979320">Traduzir páginas</translation>
 <translation id="4631335160486397366"><ph name="COUNT" /> senhas reutilizadas</translation>
 <translation id="4634124774493850572">Usar senha</translation>
@@ -680,6 +709,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="4803185665210547709">Gerenciado pela sua organização.
 <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Número de cartão inválido</translation>
+<translation id="4808646838864186379">Sua entrega foi cancelada</translation>
 <translation id="4808744395915275922">Atualizações</translation>
 <translation id="4818522717893377262">Adicionar idioma…</translation>
 <translation id="481968316161811770">Dados do site e arquivos "cookies"</translation>
@@ -708,6 +738,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="4901778704868714008">Salvar…</translation>
 <translation id="4904877109095351937">Marcar como lidas</translation>
 <translation id="4908869848243824489">Discover do Google</translation>
+<translation id="4913626501929406101">Você pode compartilhar uma cópia da sua senha de forma segura com alguém do grupo familiar. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4916679969857390442">Lupa</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="4922154083994158612">Mais segurança?</translation>
@@ -761,6 +792,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="519530786644929958">O download falhou e não pode ser repetido.</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5211488077761630279">Permitir que o site <ph name="SITE_NAME" /> use <ph name="PERMISSION" />?</translation>
+<translation id="5215990399368742238">Rastrear automaticamente todos os pacotes detectados</translation>
 <translation id="5219295696240154694">Ajude a melhorar a segurança para todos na Web</translation>
 <translation id="5220945116117011963">Criar eventos da agenda usando datas</translation>
 <translation id="5221339005270097309">Verificando senhas…</translation>
@@ -771,6 +803,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="5235389474593199952">Ocultar histórico</translation>
 <translation id="5238301240406177137">Salvar na conta</translation>
 <translation id="5245322853195994030">Cancelar sincronização</translation>
+<translation id="5256908199795498284">O Chrome vai detectar números de rastreamento de pacotes nos sites que você visitar e mostrará atualizações de pacotes na página "Nova guia". Seus dados serão compartilhados com o Google para fornecer este recurso e melhorar o Shopping para todos.</translation>
 <translation id="5271265092610673171">{count,plural, =1{Um campo obrigatório está em branco. Preencha antes de salvar.}one{Um campo obrigatório está em branco. Preencha antes de salvar.}other{Alguns campos obrigatórios estão em branco. Preencha antes de salvar.}}</translation>
 <translation id="5271549068863921519">Salvar senha</translation>
 <translation id="5283494734135414249">Toque no atalho que aparece abaixo da barra de endereço.</translation>
@@ -779,11 +812,13 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5318298563956633672">Você já está acompanhando este produto.</translation>
 <translation id="5339316356165661760">Ativar a sincronização</translation>
+<translation id="5345598430982201510">Nunca detectar pacotes automaticamente</translation>
 <translation id="5345660046352249607">{COUNT,plural, =1{Rastrear pacote?}one{Rastrear {COUNT} pacote?}other{Rastrear {COUNT} pacotes?}}</translation>
 <translation id="536067926684072644">Mostrar favoritos</translation>
 <translation id="5360976571138293719">Para mais configurações relacionadas à privacidade, segurança e coleta de dados, acesse <ph name="BEGIN_LINK" />Serviços do Google<ph name="END_LINK" />.</translation>
 <translation id="5386314158584363703">Os sites que você segue vão aparecer aqui</translation>
 <translation id="5388358297987318779">Abrir imagem</translation>
+<translation id="5396950905475481456">Convidar membros da família</translation>
 <translation id="5407969256130905701">Descartar alterações</translation>
 <translation id="5414763847370083940">Você vai receber um alerta se houver uma redução no preço em algum site.</translation>
 <translation id="5416022985862681400">Últimos sete dias</translation>
@@ -794,10 +829,13 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="54401264925851789">Informações de segurança</translation>
 <translation id="5443952882982198570">Cartões de crédito</translation>
 <translation id="5444892875087332195">Favoritos</translation>
+<translation id="5454211924362324495"><ph name="BEGIN_LINK" />Mude sua senha em <ph name="WEBSITE" /><ph name="END_LINK" /> para impedir que ela seja usada por outras pessoas</translation>
 <translation id="5457226814769348910">Abrir versão off-line</translation>
+<translation id="5475069061743940393">Rastreamento de pacotes</translation>
 <translation id="5478327362747197944">Crie eventos do Google Agenda clicando em uma data em uma página da Web.</translation>
 <translation id="5489208564673669003">Para gerenciar os cookies de todos os sites, acesse <ph name="BEGIN_LINK" />Configurações de cookies<ph name="END_LINK" />.</translation>
 <translation id="5490005495580364134">Bloquear todos os cookies (não recomendado)</translation>
+<translation id="5497202150450073388">Tentativa de envio. Vamos tentar de novo</translation>
 <translation id="5511959326926949696">Proteção extrema e opcional para o navegador. Use esse modo somente se acreditar que você pode ser alvo de um ataque cibernético altamente sofisticado.</translation>
 <translation id="5513681519188741830"><ph name="TIME" />h atrás</translation>
 <translation id="5520466080178053306">Toque em "Gerenciador de senhas" e depois em "Adicionar"</translation>
@@ -843,6 +881,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5738887413654608789">Isso permite que você descubra páginas da Web relevantes com base nos seus arredores.</translation>
 <translation id="5745916533876677730">Ir para a guia anterior</translation>
 <translation id="574762237186762643">Eventos</translation>
+<translation id="5748177854685749242">Chegando às <ph name="DATE" /></translation>
 <translation id="5755162682436943950">Conta desconectada. Abre a caixa de diálogo para fazer login e ativar a sincronização.</translation>
 <translation id="5758631781033351321">Você encontrará sua lista de leituras aqui</translation>
 <translation id="5765456154762864099">Menu → Configurações → Navegador padrão</translation>
@@ -898,6 +937,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6027619584715411062">Faça login para ter acesso a favoritos, senhas e muito mais em todos os seus dispositivos.</translation>
 <translation id="6027945736510816438">Você quis dizer <ph name="WEBSITE" />?</translation>
 <translation id="6032845897905314562">novo recurso</translation>
+<translation id="6033598293589037429">Pronto para retirada</translation>
 <translation id="6036215966221662377">Remover dados de navegação</translation>
 <translation id="6036514205982097558">Todas as guias em um só navegador</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -943,8 +983,8 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6236952928980352967">Restaurar aviso</translation>
 <translation id="6247557882553405851">Gerenciador de senhas do Google</translation>
 <translation id="6254066287920239840">Abrir links no app em vez de abrir no navegador.</translation>
-<translation id="625491139841322297">{count,plural, =1{Conferir a guia}one{Conferir a guia}other{Conferir todas as guias}}</translation>
 <translation id="6255097610484507482">Editar cartão de crédito</translation>
+<translation id="6266039999629596120">Requer atenção</translation>
 <translation id="6277426346321820595">Sem proteção</translation>
 <translation id="6284652193729350524">Oferecer a opção de traduzir o <ph name="LANGUAGE" /></translation>
 <translation id="6289501276895392862">Você parou de seguir <ph name="CHANNEL_NAME" /></translation>
@@ -1008,6 +1048,7 @@ Seus dados são criptografados com a senha longa. Digite-a para usar e salvar os
 
 Tente usar uma senha exclusiva para cada site.</translation>
 <translation id="6497850081273517953">O Chrome está desatualizado. Atualize para a versão mais recente para manter a segurança.</translation>
+<translation id="6502142762807385617">{COUNT,plural, =1{Cancelar rastreamento deste pacote}one{Cancelar rastreamento de todos os pacotes}other{Cancelar rastreamento de todos os pacotes}}</translation>
 <translation id="650279896687777322">Saiba mais…</translation>
 <translation id="6507973708545996744">Faça login para ter sua Lista de leitura em todos os seus dispositivos.</translation>
 <translation id="6510072653668207258">Lembrar mais tarde</translation>
@@ -1060,6 +1101,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="672735642903863329">Acesse seus favoritos, senhas e mais em todos seus dispositivos.</translation>
 <translation id="6730682669179532099">Não é possível exportar as senhas</translation>
 <translation id="6732087373923685049">câmera</translation>
+<translation id="6738233953537186295">Compartilhar uma cópia da sua senha</translation>
 <translation id="6746338529702829275">Analisar os dados da sua conta</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="6753469262000681876">Modo de bloqueio total</translation>
@@ -1072,6 +1114,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="6785453220513215166">Enviando relatórios de erros...</translation>
 <translation id="6790502149545262384">Em breve, stories de <ph name="CHANNEL_NAME" /> vão ser mostrados quando você abrir uma nova guia.</translation>
 <translation id="6797885426782475225">Pesquisa por voz</translation>
+<translation id="6800349425672670802">É possível acessar todas as guias abertas no Seletor de guias.</translation>
 <translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="681368974849482173">Item criado</translation>
 <translation id="6822587385560699678">Quando essa configuração está ativada, as senhas são salvas em <ph name="ACCOUNT" />. Quando está desativada, elas são salvas apenas neste dispositivo.</translation>
@@ -1087,6 +1130,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="6869389390665537774">Você pode ver as páginas visitadas ou apagá-las do histórico</translation>
 <translation id="687135068089457384">Mostrar configurações</translation>
 <translation id="6873263987691478642">Visualização dividida</translation>
+<translation id="687586529977635009">O Chrome vai detectar números de rastreamento nos sites que você visitar e mostrará atualizações de pacotes na página "Nova guia". Seus dados serão compartilhados com o Google para fornecer este recurso e melhorar o Shopping para todos. Isso pode ser modificado nas <ph name="BEGIN_LINK" />Configurações de rastreamento de pacote<ph name="END_LINK" />.</translation>
 <translation id="6882836635272038266">Proteção padrão contra sites, downloads e extensões perigosos.</translation>
 <translation id="6888009575607455378">Tem certeza de que quer descartar suas alterações?</translation>
 <translation id="6896758677409633944">Copiar</translation>
@@ -1119,6 +1163,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7062545763355031412">Aceitar e alternar entre contas</translation>
 <translation id="7063811929043357292">Sua conta é gerenciada pelo seu familiar responsável.
 <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
+<translation id="7064619810277839954">Oferece sugestões de guias com base na sua atividade de navegação nos outros dispositivos que usam sua Conta do Google. Seus dispositivos precisam estar conectados e sincronizados na mesma Conta do Google.</translation>
 <translation id="7069695992271320873">Remover deste dispositivo</translation>
 <translation id="7080806333218412752">Envia URLs para a verificação pelo Navegação segura. Também envia uma pequena amostra de páginas, downloads, atividades de extensões e informações do sistema para ajudar a descobrir novas ameaças. Vincula temporariamente esses dados à sua Conta do Google quando ela está conectada para proteger você nos apps do Google.</translation>
 <translation id="7082853213442715471">Quando ativado, bloqueia algumas tecnologias da Web, o que pode causar lentidão no carregamento de sites ou impedir o funcionamento normal.</translation>
@@ -1133,6 +1178,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7154343200458623869">Conclua sua tarefa.</translation>
 <translation id="7161230316646448869">Sincronize seus favoritos, histórico e muito mais em todos os dispositivos</translation>
 <translation id="7162168282402939716">Desbloquear guias anônimas com o <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /></translation>
+<translation id="7168959436351276050">Ocultar este cartão vai remover todos os dados de rastreamento de pacotes</translation>
 <translation id="7172852049901402487">Mantenha suas senhas protegidas contra problemas de segurança</translation>
 <translation id="7173114856073700355">Configurações</translation>
 <translation id="7189598951263744875">Compartilhar...</translation>
@@ -1160,8 +1206,10 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7351537303876921605">Toque em "Criar link" no menu de contexto</translation>
 <translation id="7352651011704765696">Algo deu errado</translation>
 <translation id="7353432112255316844">Confirmar sua identidade</translation>
+<translation id="7367530036083223701">Acesse suas senhas com segurança na tela inicial com o widget do Gerenciador de senhas.</translation>
 <translation id="7380220816562673297">Por enquanto, só é possível compartilhar senhas com membros da família. <ph name="BEGIN_LINK" />Crie um grupo familiar<ph name="END_LINK" /> com até seis membros e aproveite ao máximo seus produtos e assinaturas do Google.</translation>
 <translation id="7383797227493018512">Lista de leitura</translation>
+<translation id="7396331865858820922">A senha não foi compartilhada</translation>
 <translation id="7398893703713203428">Criar link</translation>
 <translation id="7399802613464275309">Confirmação de segurança</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1175,17 +1223,21 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7454057999980797137">Estado/Prov.</translation>
 <translation id="745899714366929493">O dia todo</translation>
 <translation id="7459628154744868585">A proteção reforçada está ativa</translation>
+<translation id="7466693328838535498">Na caixa "Widgets da Pesquisa", digite "Chrome".</translation>
 <translation id="746684838091935575">3. Selecione o Chrome</translation>
 <translation id="7472734401283673885">Nome da empresa</translation>
 <translation id="7473891865547856676">Agora não</translation>
+<translation id="7488874549363591659">Entregue</translation>
 <translation id="7491131399623468277">Acessar os Ajustes…</translation>
 <translation id="7492574581995589075">Sua organização desativou a capacidade de usar e salvar dados do Chrome na Conta do Google. Novos favoritos, senhas e outros itens serão salvos apenas neste dispositivo.</translation>
+<translation id="749854780843431406">É possível abrir uma nova guia com o botão <ph name="NEW_TAB_BUTTON_ACCESSIBILITY_LABEL" />.</translation>
 <translation id="750149195207506638">Os favoritos estão ocultos</translation>
 <translation id="750228856503700085">Atualizações indisponíveis</translation>
 <translation id="750493650310597496">0 selecionados</translation>
 <translation id="7508728395076009983">Para bloquear suas guias anônimas, configure o Touch ID, o Face ID ou uma senha.</translation>
 <translation id="7514365320538308">Fazer o download</translation>
 <translation id="7524055474074101597">Acesse suas senhas e muito mais em apps.</translation>
+<translation id="7527917367892640435">Pacote já rastreado</translation>
 <translation id="7531345132340165516">Site atual</translation>
 <translation id="7537586195939242955">Impossível instalar senha no livro de senhas no momento.</translation>
 <translation id="754655535278952384">Verificada <ph name="TIME" /></translation>
@@ -1239,6 +1291,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="778855399387580014">Inicie uma pesquisa em uma nova guia do Chrome.</translation>
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="7807060072011926525">Fornecido pelo Google</translation>
+<translation id="7812377703891978671">Você pode acessar todo seu histórico de navegação selecionando <ph name="HISTORY_BUTTON_ACCESSIBILITY_LABEL" />.</translation>
 <translation id="78146569776629510">Downloads</translation>
 <translation id="7839985698273989086">Página offline</translation>
 <translation id="7840771868269352570">Os itens selec. serão removidos.</translation>
@@ -1254,6 +1307,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7883882164760409935">Você tem senhas reutilizadas.</translation>
 <translation id="7884694604461143138">Histórico de pesquisa (<ph name="COUNT" /> encontrados)</translation>
 <translation id="7887198238286927132">Para proteger sua privacidade, o Chrome não preencherá esse campo automaticamente.</translation>
+<translation id="7889910613639381518">Acesso fácil e seguro com o widget do Gerenciador de senhas do Google.</translation>
 <translation id="7911190106180361398">Sua organização não permite que você sincronize tudo.</translation>
 <translation id="7920949005883349320">Privacidade e segurança</translation>
 <translation id="792357691529995513">Nenhum problema foi encontrado</translation>
@@ -1339,7 +1393,6 @@ Eles também podem usar cookies para ver sua atividade de navegação em diferen
 <translation id="8328777765163860529">Fechar todos</translation>
 <translation id="8343993175958086504">Faça backup e use seus dados em qualquer dispositivo.</translation>
 <translation id="834783239627985533">Sites mais visitados</translation>
-<translation id="8356276002902955750">{count,plural, =1{{count} favorito}one{{count} favorito}other{{count} favoritos}}</translation>
 <translation id="8364841868226993049">Salvando imagem no Google Fotos de <ph name="USER_EMAIL" />…</translation>
 <translation id="8378714024927312812">Gerenciado pela sua organização</translation>
 <translation id="8386068868580335421">Redefinir</translation>
@@ -1362,6 +1415,7 @@ Eles também podem usar cookies para ver sua atividade de navegação em diferen
 <translation id="8459333855531264009">Não seguro</translation>
 <translation id="8487667956631253959">Ativada</translation>
 <translation id="8487700953926739672">Disponível off-line</translation>
+<translation id="8487894141648868716">USPS</translation>
 <translation id="8488923644885757471">Nova janela</translation>
 <translation id="8490978609246021741">Salvar alterações</translation>
 <translation id="8491300088149538575">Login feito como <ph name="EMAIL" />.
@@ -1383,12 +1437,13 @@ Seus dados foram criptografados com a senha longa em <ph name="TIME" />. Digite-
 <translation id="8556590991644167667">{count,plural, =1{Você dispensou {count} aviso}one{Você dispensou {count} aviso}other{Você dispensou {count} avisos}}</translation>
 <translation id="8558480467877843976">Agora você pode usar o Chrome sempre que navegar ou tocar em links em mensagens, documentos e outros apps.</translation>
 <translation id="8560253818350321773">Mostrar primeiro os itens usados com frequência.</translation>
-<translation id="8580411965900177618">Não</translation>
 <translation id="8588404856427128947">Desativada</translation>
 <translation id="8591976964826315682">Bloquear cookies de terceiros na navegação anônima</translation>
+<translation id="8593565399399144771">Você pode abrir uma nova guia aqui.</translation>
 <translation id="8605219856220328675">Fechar guia.</translation>
 <translation id="8613883225817609844">Ocultar guias recentes</translation>
 <translation id="8620640915598389714">Editar</translation>
+<translation id="8624447588354561276">Número do pacote</translation>
 <translation id="8626393685701737946">Você pode mudar a visualização padrão do site para computador em Configurações &gt; Configurações de conteúdo</translation>
 <translation id="8636825310635137004">Para ver suas guias abertas em outros dispositivos, ative a sincronização.</translation>
 <translation id="8637431369725868556">Proteja-se contra sites perigosos.</translation>
@@ -1448,6 +1503,7 @@ Seus dados foram criptografados com a senha longa em <ph name="TIME" />. Digite-
 <translation id="8898822736010347272">Envia ao Google URLs de algumas páginas que você visita, informações do sistema limitadas e parte do conteúdo das páginas para ajudar a descobrir novas ameaças e proteger todos os usuários na Web.</translation>
 <translation id="890565330728586731">Voltar</translation>
 <translation id="8909135823018751308">Compartilhar...</translation>
+<translation id="8909459547399237818">Selecione o Gerenciador de senhas e toque em "Adicionar widget".</translation>
 <translation id="8911759861431145525">Toque em "Adicionar" e depois insira suas informações</translation>
 <translation id="891282356902782456">A senha é salva apenas neste dispositivo. Para usar em outros dispositivos, salve-a na sua Conta do Google <ph name="EMAIL" />.</translation>
 <translation id="891658175948553296">Destacar texto em um site</translation>
@@ -1524,4 +1580,5 @@ Seus dados foram criptografados com a senha longa em <ph name="TIME" />. Digite-
 <translation id="988141524645182168">Outros dispositivos</translation>
 <translation id="989988560359834682">Editar endereço</translation>
 <translation id="994757059139821576">Artigos sugeridos</translation>
+<translation id="999768147936949692">Por enquanto, só é possível compartilhar senhas com membros da família. <ph name="BEGIN_LINK" />Convide membros da família<ph name="END_LINK" /> para participar do grupo e aproveite ao máximo seus produtos e assinaturas do Google.</translation>
 </translationbundle>

@@ -6,20 +6,27 @@
 
 #include <cstdint>
 
+#include "ash/accelerators/accelerator_encoding.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/input_device_settings_controller.h"
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
 #include "ash/public/mojom/input_device_settings.mojom-shared.h"
+#include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
+#include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "ash/system/input_device_settings/input_device_settings_utils.h"
+#include "ash/system/input_device_settings/settings_updated_metrics_info.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/fixed_flat_set.h"
+#include "base/json/values_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
+#include "components/prefs/pref_service.h"
 #include "ui/events/ash/keyboard_capability.h"
 #include "ui/events/ash/mojom/six_pack_shortcut_modifier.mojom-shared.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
@@ -161,6 +168,7 @@ ui::mojom::SixPackShortcutModifier GetSixPackKeyModifier(
     const mojom::Keyboard& keyboard,
     ui::KeyboardCode key_code) {
   CHECK(ui::KeyboardCapability::IsSixPackKey(key_code));
+  CHECK(keyboard.settings->six_pack_key_remappings);
   switch (key_code) {
     case ui::VKEY_DELETE:
       return keyboard.settings->six_pack_key_remappings->del;
@@ -249,6 +257,134 @@ void RecordButtonRemappingNameIfChanged(
       base::UmaHistogramSparse(base::StrCat({metric_name_prefix, "Vkey"}),
                                original_remapping->button->get_vkey());
     }
+  }
+}
+
+template <typename T>
+base::StringPiece GetDeviceTypeMetricsName() {
+  if constexpr (std::is_same_v<T, mojom::Keyboard>) {
+    return "Keyboard";
+  } else if constexpr (std::is_same_v<T, mojom::Mouse>) {
+    return "Mouse";
+  } else if constexpr (std::is_same_v<T, mojom::Touchpad>) {
+    return "Touchpad";
+  } else if constexpr (std::is_same_v<T, mojom::PointingStick>) {
+    return "PointingStick";
+  }
+}
+
+template <typename T>
+base::StringPiece GetSettingsUpdatedPrefName() {
+  if constexpr (std::is_same_v<T, mojom::Keyboard>) {
+    return prefs::kKeyboardUpdateSettingsMetricInfo;
+  } else if constexpr (std::is_same_v<T, mojom::Mouse>) {
+    return prefs::kMouseUpdateSettingsMetricInfo;
+  } else if constexpr (std::is_same_v<T, mojom::Touchpad>) {
+    return prefs::kTouchpadUpdateSettingsMetricInfo;
+  } else if constexpr (std::is_same_v<T, mojom::PointingStick>) {
+    return prefs::kPointingStickUpdateSettingsMetricInfo;
+  }
+}
+
+base::StringPiece GetSettingsUpdatedTimePeriodMetricName(
+    SettingsUpdatedMetricsInfo::TimePeriod time_period) {
+  constexpr auto kTimePeriodToMetricName =
+      base::MakeFixedFlatMap<SettingsUpdatedMetricsInfo::TimePeriod,
+                             base::StringPiece>({
+          {SettingsUpdatedMetricsInfo::TimePeriod::kOneHour, "OneHour"},
+          {SettingsUpdatedMetricsInfo::TimePeriod::kThreeHours, "ThreeHours"},
+          {SettingsUpdatedMetricsInfo::TimePeriod::kOneDay, "OneDay"},
+          {SettingsUpdatedMetricsInfo::TimePeriod::kThreeDays, "ThreeDays"},
+          {SettingsUpdatedMetricsInfo::TimePeriod::kOneWeek, "OneWeek"},
+      });
+  return kTimePeriodToMetricName.at(time_period);
+}
+
+base::StringPiece GetSettingsUpdatedCategoryName(
+    SettingsUpdatedMetricsInfo::Category category) {
+  constexpr auto kCategoryToMetricName =
+      base::MakeFixedFlatMap<SettingsUpdatedMetricsInfo::Category,
+                             base::StringPiece>({
+          {SettingsUpdatedMetricsInfo::Category::kFirstEver, "FirstEver"},
+          {SettingsUpdatedMetricsInfo::Category::kDefault, "FromDefaults"},
+          {SettingsUpdatedMetricsInfo::Category::kSynced, "Synced"},
+      });
+  return kCategoryToMetricName.at(category);
+}
+
+template <typename T>
+void RecordSettingsUpdatedMetric(
+    const T& device,
+    const SettingsUpdatedMetricsInfo& metrics_info,
+    SettingsUpdatedMetricsInfo::TimePeriod time_period_to_record) {
+  const std::string metric_name = base::StrCat(
+      {"ChromeOS.Settings.Device.", GetDeviceTypeMetricsName<T>(),
+       ".SettingsUpdated.",
+       GetSettingsUpdatedCategoryName(metrics_info.category()), ".",
+       GetSettingsUpdatedTimePeriodMetricName(time_period_to_record)});
+  base::UmaHistogramCounts100(metric_name,
+                              metrics_info.GetCount(time_period_to_record));
+}
+
+template <typename T>
+void HandleSettingsUpdatedMetric(const T& device) {
+  PrefService* pref_service =
+      Shell::Get()->session_controller()->GetActivePrefService();
+  CHECK(pref_service);
+
+  const auto& settings_update_info_dict =
+      pref_service->GetDict(GetSettingsUpdatedPrefName<T>());
+  const auto* device_settings_update_info_dict =
+      settings_update_info_dict.FindDict(device.device_key);
+  if (!device_settings_update_info_dict) {
+    return;
+  }
+
+  absl::optional<SettingsUpdatedMetricsInfo> metrics_info_optional =
+      SettingsUpdatedMetricsInfo::FromDict(*device_settings_update_info_dict);
+  if (!metrics_info_optional) {
+    return;
+  }
+
+  SettingsUpdatedMetricsInfo& metrics_info = *metrics_info_optional;
+  auto time_period = metrics_info.RecordSettingsUpdate(base::Time::Now());
+  if (time_period) {
+    RecordSettingsUpdatedMetric(device, metrics_info, *time_period);
+  }
+
+  auto updated_settings_update_info_dict = settings_update_info_dict.Clone();
+  updated_settings_update_info_dict.Set(device.device_key,
+                                        metrics_info.ToDict());
+  pref_service->SetDict(std::string(GetSettingsUpdatedPrefName<T>()),
+                        std::move(updated_settings_update_info_dict));
+}
+
+void RecordCurrentButtonRemappingAction(
+    const mojom::ButtonRemappingPtr& button_remapping,
+    const char* peripheral_kind) {
+  if (!button_remapping->remapping_action) {
+    // TOOD(dpad): Add metric for recording default button remapping.
+    return;
+  }
+
+  const std::string metric_name_prefix = base::StrCat(
+      {"ChromeOS.Settings.Device.", peripheral_kind, ".ButtonRemapping."});
+  switch (button_remapping->remapping_action->which()) {
+    case mojom::RemappingAction::Tag::kAcceleratorAction:
+      // TODO(cambickel): Add metric recording for AcceleratorAction.
+      break;
+    case mojom::RemappingAction::Tag::kStaticShortcutAction:
+      base::UmaHistogramEnumeration(
+          base::StrCat({metric_name_prefix, "StaticShortcutAction.Initial"}),
+          button_remapping->remapping_action->get_static_shortcut_action());
+      break;
+    case mojom::RemappingAction::Tag::kKeyEvent:
+      base::UmaHistogramSparse(
+          base::StrCat({metric_name_prefix, "KeyEvent.Initial"}),
+          GetEncodedShortcut(
+              button_remapping->remapping_action->get_key_event()->modifiers,
+              button_remapping->remapping_action->get_key_event()->vkey));
+      break;
   }
 }
 
@@ -356,6 +492,7 @@ void InputDeviceSettingsMetricsManager::RecordKeyboardChangedMetrics(
   }
 
   if (features::IsAltClickAndSixPackCustomizationEnabled()) {
+    CHECK(keyboard.settings->six_pack_key_remappings);
     if (keyboard.settings->six_pack_key_remappings->del !=
         old_settings.six_pack_key_remappings->del) {
       RecordSixPackKeyInfo(keyboard, ui::VKEY_DELETE,
@@ -395,6 +532,7 @@ void InputDeviceSettingsMetricsManager::RecordKeyboardChangedMetrics(
                                     keyboard.settings->f12.value());
     }
   }
+  HandleSettingsUpdatedMetric(keyboard);
 }
 
 void InputDeviceSettingsMetricsManager::RecordKeyboardNumberOfKeysReset(
@@ -408,6 +546,7 @@ void InputDeviceSettingsMetricsManager::RecordKeyboardNumberOfKeysReset(
         {GetKeyboardMetricsPrefix(keyboard), "Modifiers.NumberOfKeysReset"});
     base::UmaHistogramCounts100(keyboard_metrics, num_keys_reset);
   }
+  HandleSettingsUpdatedMetric(keyboard);
 }
 
 void InputDeviceSettingsMetricsManager::RecordMouseInitialMetrics(
@@ -445,6 +584,11 @@ void InputDeviceSettingsMetricsManager::RecordMouseInitialMetrics(
   base::UmaHistogramBoolean(
       "ChromeOS.Settings.Device.Mouse.SwapPrimaryButtons.Initial",
       mouse.settings->swap_right);
+
+  for (const auto& button_remapping : mouse.settings->button_remappings) {
+    RecordCurrentButtonRemappingAction(button_remapping,
+                                       /*peripheral_kind=*/"Mouse");
+  }
 }
 
 void InputDeviceSettingsMetricsManager::RecordMouseChangedMetrics(
@@ -511,6 +655,7 @@ void InputDeviceSettingsMetricsManager::RecordMouseChangedMetrics(
       }
     }
   }
+  HandleSettingsUpdatedMetric(mouse);
 }
 
 void InputDeviceSettingsMetricsManager::RecordPointingStickInitialMetrics(
@@ -570,6 +715,7 @@ void InputDeviceSettingsMetricsManager::RecordPointingStickChangedMetrics(
         "ChromeOS.Settings.Device.PointingStick.SwapPrimaryButtons.Changed",
         pointing_stick.settings->swap_right);
   }
+  HandleSettingsUpdatedMetric(pointing_stick);
 }
 
 void InputDeviceSettingsMetricsManager::RecordTouchpadInitialMetrics(
@@ -691,6 +837,7 @@ void InputDeviceSettingsMetricsManager::RecordTouchpadChangedMetrics(
         touchpad_metrics_prefix + "SimulateRightClick.Changed",
         touchpad.settings->simulate_right_click);
   }
+  HandleSettingsUpdatedMetric(touchpad);
 }
 
 void InputDeviceSettingsMetricsManager::RecordGraphicsTabletInitialMetrics(
@@ -706,7 +853,16 @@ void InputDeviceSettingsMetricsManager::RecordGraphicsTabletInitialMetrics(
   }
   recorded_graphics_tablets_[account_id].insert(graphics_tablet.device_key);
 
-  // TODO(cambickel): Add graphics tablet initial metrics logging.
+  for (const auto& button_remapping :
+       graphics_tablet.settings->pen_button_remappings) {
+    RecordCurrentButtonRemappingAction(button_remapping,
+                                       /*peripheral_kind=*/"GraphicsTabletPen");
+  }
+  for (const auto& button_remapping :
+       graphics_tablet.settings->tablet_button_remappings) {
+    RecordCurrentButtonRemappingAction(button_remapping,
+                                       /*peripheral_kind=*/"GraphicsTablet");
+  }
 }
 
 void InputDeviceSettingsMetricsManager::RecordGraphicsTabletChangedMetrics(
@@ -784,6 +940,7 @@ void InputDeviceSettingsMetricsManager::RecordKeyboardMouseComboDeviceMetric(
           "046d:4024",  // Logitech K400
           "046d:404d",  // Logitech K400+
           "046d:c548",  // Logitech BOLT Receiver
+          "17ef:60e1",  // Lenovo TrackPoint Keyboard II
           "17ef:60ee",  // Lenovo TrackPoint Keyboard II
           "17ef:609f",  // Lenovo 100 USB-A Wireless Combo Keyboard and Mouse
       });

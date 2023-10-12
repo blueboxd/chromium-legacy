@@ -13,15 +13,18 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.components.browser_ui.widget.DualControlLayout;
+import org.chromium.components.browser_ui.widget.MaterialProgressBar;
+import org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables;
 
 /**
  * View that displays the device lock page to users and prompts them to create one if none are
  * present on the device.
  */
 public class DeviceLockView extends LinearLayout {
+    private MaterialProgressBar mProgressBar;
     private TextView mTitle;
     private TextView mDescription;
-    private TextView mNotice;
+    private TextViewWithCompoundDrawables mNoticeText;
     private DualControlLayout mButtonBar;
     private Button mContinueButton;
     private Button mDismissButton;
@@ -41,8 +44,10 @@ public class DeviceLockView extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mTitle = findViewById(R.id.device_lock_title);
+        mProgressBar = findViewById(R.id.device_lock_linear_progress_indicator);
+        mProgressBar.setIndeterminate(true);
         mDescription = findViewById(R.id.device_lock_description);
-        mNotice = findViewById(R.id.device_lock_notice);
+        mNoticeText = findViewById(R.id.device_lock_notice);
 
         mDismissButton = DualControlLayout.createButtonForLayout(getContext(), false, "", null);
         mDismissButton.setLayoutParams(new ViewGroup.LayoutParams(
@@ -58,6 +63,10 @@ public class DeviceLockView extends LinearLayout {
         mButtonBar.setAlignment(DualControlLayout.DualControlLayoutAlignment.APART);
     }
 
+    MaterialProgressBar getProgressBar() {
+        return mProgressBar;
+    }
+
     TextView getTitle() {
         return mTitle;
     }
@@ -66,8 +75,8 @@ public class DeviceLockView extends LinearLayout {
         return mDescription;
     }
 
-    TextView getNotice() {
-        return mNotice;
+    TextViewWithCompoundDrawables getNoticeText() {
+        return mNoticeText;
     }
 
     TextView getContinueButton() {

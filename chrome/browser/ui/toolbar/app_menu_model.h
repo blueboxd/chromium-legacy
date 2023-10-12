@@ -101,6 +101,7 @@ enum AppMenuAction {
   MENU_ACTION_SHOW_ADDRESSES = 79,
   MENU_ACTION_SWITCH_TO_ANOTHER_PROFILE = 80,
   MENU_ACTION_SHOW_SEARCH_COMPANION = 81,
+  MENU_ACTION_SHOW_BOOKMARK_SIDE_PANEL = 82,
 
   LIMIT_MENU_ACTION
 };
@@ -120,6 +121,7 @@ class ToolsMenuModel : public ui::SimpleMenuModel {
  public:
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kPerformanceMenuItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kChromeLabsMenuItem);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kReadingModeMenuItem);
 
   ToolsMenuModel(ui::SimpleMenuModel::Delegate* delegate, Browser* browser);
 

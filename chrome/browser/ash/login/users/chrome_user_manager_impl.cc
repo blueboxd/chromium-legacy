@@ -40,7 +40,6 @@
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
@@ -66,7 +65,6 @@
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/policy/networking/user_network_configuration_updater_ash.h"
@@ -702,12 +700,10 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
   bool changed = UpdateAndCleanUpDeviceLocalAccounts(
       policy::GetDeviceLocalAccounts(cros_settings_));
 
-  // If ephemeral users are enabled and we are on the login screen, take this
-  // opportunity to clean up by removing all regular users except the owner.
+  // Remove ephemeral regular users (except the owner) when on the login screen.
   if (!IsUserLoggedIn()) {
     ScopedListPrefUpdate prefs_users_update(GetLocalState(),
                                             user_manager::kRegularUsersPref);
-    prefs_users_update->clear();
     // Take snapshot because DeleteUser called in the loop will update it.
     std::vector<user_manager::User*> users = users_;
     for (user_manager::User* user : users) {
@@ -720,9 +716,9 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
         user_manager::UserManager::Get()->NotifyUserRemoved(
             account_id,
             user_manager::UserRemovalReason::DEVICE_EPHEMERAL_USERS_ENABLED);
+
+        prefs_users_update->EraseValue(base::Value(account_id.GetUserEmail()));
         changed = true;
-      } else if (user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
-        prefs_users_update->Append(account_id.GetUserEmail());
       }
     }
   }

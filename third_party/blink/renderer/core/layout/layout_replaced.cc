@@ -124,22 +124,10 @@ void LayoutReplaced::UpdateLayout() {
   NOT_DESTROYED();
   DCHECK(NeedsLayout());
 
-  PhysicalRect old_content_rect = ReplacedContentRect();
-
   ClearLayoutOverflow();
   ClearSelfNeedsLayoutOverflowRecalc();
   ClearChildNeedsLayoutOverflowRecalc();
-
   ClearNeedsLayout();
-
-  if (RuntimeEnabledFeatures::PaintNewReplacedInvalidationEnabled()) {
-    return;
-  }
-
-  if (ReplacedContentRectFrom(PhysicalContentBoxRectFromNG()) !=
-      old_content_rect) {
-    SetShouldDoFullPaintInvalidation();
-  }
 }
 
 void LayoutReplaced::IntrinsicSizeChanged() {
@@ -164,6 +152,20 @@ static inline bool LayoutObjectHasIntrinsicAspectRatio(
   return layout_object->IsImage() || layout_object->IsCanvas() ||
          IsA<LayoutVideo>(layout_object) ||
          IsA<LayoutViewTransitionContent>(layout_object);
+}
+
+void LayoutReplaced::AddVisualEffectOverflow() {
+  NOT_DESTROYED();
+  if (!StyleRef().HasVisualOverflowingEffect()) {
+    return;
+  }
+
+  // Add in the final overflow with shadows, outsets and outline combined.
+  PhysicalRect visual_effect_overflow = PhysicalBorderBoxRect();
+  NGPhysicalBoxStrut outsets = ComputeVisualEffectOverflowOutsets();
+  visual_effect_overflow.Expand(outsets);
+  AddSelfVisualOverflow(visual_effect_overflow);
+  UpdateHasSubpixelVisualEffectOutsets(outsets);
 }
 
 void LayoutReplaced::RecalcVisualOverflow() {

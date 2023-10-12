@@ -4,6 +4,7 @@
 
 #include "ash/system/input_device_settings/input_device_settings_utils.h"
 
+#include "ash/public/mojom/input_device_settings.mojom-shared.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "base/containers/fixed_flat_set.h"
@@ -17,6 +18,7 @@
 #include "base/values.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
+#include "ui/events/ash/mojom/extended_fkeys_modifier.mojom-shared.h"
 #include "ui/events/ash/mojom/modifier_key.mojom.h"
 #include "ui/events/ozone/evdev/keyboard_mouse_combo_device_metrics.h"
 
@@ -99,6 +101,31 @@ bool ShouldPersistSetting(const mojom::InputDeviceSettingsPolicyPtr& policy,
   }
 }
 
+bool ShouldPersistFkeySetting(
+    const mojom::InputDeviceSettingsFkeyPolicyPtr& policy,
+    base::StringPiece setting_key,
+    absl::optional<ui::mojom::ExtendedFkeysModifier> new_value,
+    ui::mojom::ExtendedFkeysModifier default_value,
+    const base::Value::Dict* existing_settings_dict) {
+  if (!new_value.has_value()) {
+    return false;
+  }
+
+  if (!policy) {
+    return ShouldPersistSetting(setting_key, new_value.value(), default_value,
+                                /*force_persistence=*/{},
+                                existing_settings_dict);
+  }
+
+  switch (policy->policy_status) {
+    case mojom::PolicyStatus::kRecommended:
+      return ExistingSettingsHasValue(setting_key, existing_settings_dict) ||
+             new_value.value() != policy->value;
+    case mojom::PolicyStatus::kManaged:
+      return false;
+  }
+}
+
 template EXPORT_TEMPLATE_DEFINE(ASH_EXPORT) bool ShouldPersistSetting(
     base::StringPiece setting_key,
     bool new_value,
@@ -137,16 +164,29 @@ const base::Value::List* GetLoginScreenButtonRemappingList(
   return &list_value->GetList();
 }
 
+bool IsMouseCustomizable(const ui::InputDevice& device) {
+  // TODO(wangdanny): Update uncustomizable mice set with devices' vid and pid.
+  static constexpr auto kUncustomizableMice =
+      base::MakeFixedFlatSet<VendorProductId>({
+          {0xffff, 0xffff},  // Fake data for testing.
+      });
+  return !kUncustomizableMice.contains({device.vendor_id, device.product_id});
+}
+
 bool IsKeyboardPretendingToBeMouse(const ui::InputDevice& device) {
   static base::NoDestructor<base::flat_set<VendorProductId>> logged_devices;
   static constexpr auto kKeyboardsPretendingToBeMice =
       base::MakeFixedFlatSet<VendorProductId>({
           {0x03f0, 0x1f41},  // HP OMEN Sequencer
+          {0x045e, 0x082c},  // Microsoft Ergonomic Keyboard
+          {0x046d, 0x4088},  // Logitech ERGO K860 (Bluetooth)
           {0x046d, 0x408a},  // Logitech MX Keys (Universal Receiver)
+          {0x046d, 0xb350},  // Logitech Craft Keyboard
           {0x046d, 0xb359},  // Logitech ERGO K860
           {0x046d, 0xb35b},  // Logitech MX Keys (Bluetooth)
           {0x046d, 0xb35f},  // Logitech G915 TKL (Bluetooth)
           {0x046d, 0xb361},  // Logitech MX Keys for Mac (Bluetooth)
+          {0x046d, 0xb364},  // Logitech ERGO 860B
           {0x046d, 0xc336},  // Logitech G213
           {0x046d, 0xc33f},  // Logitech G815 RGB
           {0x046d, 0xc343},  // Logitech G915 TKL (USB)
@@ -154,18 +194,29 @@ bool IsKeyboardPretendingToBeMouse(const ui::InputDevice& device) {
           {0x05ac, 0x0256},  // EGA MGK2 (USB)
           {0x0951, 0x16e5},  // HyperX Alloy Origins
           {0x0951, 0x16e6},  // HyperX Alloy Origins Core
-          {0x1b1c, 0x1b2d},  // Corsair Gaming K95 RGB Platinum
+          {0x1038, 0x1612},  // SteelSeries Apex 7
+          {0x1065, 0x0002},  // SteelSeries Apex 3 TKL
           {0x1532, 0x022a},  // Razer Cynosa Chroma
           {0x1532, 0x025d},  // Razer Ornata V2
           {0x1532, 0x025e},  // Razer Cynosa V2
           {0x1532, 0x026b},  // Razer Huntsman V2 Tenkeyless
+          {0x1535, 0x0046},  // Razer Huntsman Elite
+          {0x1b1c, 0x1b2d},  // Corsair Gaming K95 RGB Platinum
           {0x28da, 0x1101},  // G.Skill KM780
           {0x29ea, 0x0102},  // Kinesis Freestyle Edge RGB
           {0x2f68, 0x0082},  // Durgod Taurus K320
           {0x320f, 0x5044},  // Glorious GMMK Pro
+          {0x3297, 0x1969},  // ZSA Moonlander Mark I
+          {0x3297, 0x4974},  // ErgoDox EZ
+          {0x3297, 0x4976},  // ErgoDox EZ Glow
           {0x3434, 0x0121},  // Keychron Q3
           {0x3434, 0x0151},  // Keychron Q5
           {0x3434, 0x0163},  // Keychron Q6
+          {0x3434, 0x01a1},  // Keychron Q10
+          {0x3434, 0x0311},  // Keychron V1
+          {0x3496, 0x0006},  // Keyboardio Model 100
+          {0x4c44, 0x0040},  // LazyDesigners Dimple
+          {0xfeed, 0x1307},  // ErgoDox EZ
       });
 
   if (kKeyboardsPretendingToBeMice.contains(
@@ -327,6 +378,11 @@ mojom::ButtonRemappingPtr ConvertDictToButtonRemapping(
 
   return mojom::ButtonRemapping::New(*name, std::move(button),
                                      std::move(remapping_action));
+}
+
+bool IsChromeOSKeyboard(const mojom::Keyboard& keyboard) {
+  return keyboard.meta_key == mojom::MetaKey::kLauncher ||
+         keyboard.meta_key == mojom::MetaKey::kSearch;
 }
 
 }  // namespace ash

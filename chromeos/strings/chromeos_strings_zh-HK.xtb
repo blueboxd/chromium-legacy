@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">你只可自訂 5 個快速鍵。如要新增快速鍵，請刪除現有快速鍵。</translation>
 <translation id="1164939766849482256">黎明到黑夜螢幕保護程式</translation>
 <translation id="1167755866710282443">開啟選單以自訂按鍵。拖曳選單以移動。</translation>
+<translation id="1174073918202301297">已新增捷徑</translation>
 <translation id="1175697296044146566">此 <ph name="DEVICE_TYPE" /> 由 <ph name="MANAGER" /> 管理。</translation>
 <translation id="1175951029573070619">一般 (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">移除</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">每日變更桌布圖片</translation>
 <translation id="1644574205037202324">記錄</translation>
 <translation id="1651925268237749928">您已選取共享相簿。其他人可以加入或變更相片。桌布可能會使用目前不在此相簿中的相片。</translation>
+<translation id="1661865805917886535">部分帳戶及系統資料可能會傳送予 Google。我們會根據《私隱權政策》(<ph name="PRIVACYPOLICYURL" />) 和《服務條款》 (<ph name="TERMSOFSERVICEURL" />) 使用這些資料，解決技術問題及改善服務品質。如要提出內容變更要求，請前往法律說明中心 (<ph name="LEGALHELPPAGEURL" />)。</translation>
 <translation id="1662989795263954667">已停止 - 墨水已用完</translation>
 <translation id="1664796644829245314">預覽「<ph name="PREVIEW_OBJECT" />」</translation>
 <translation id="1668469839109562275">內置 VPN</translation>
@@ -117,6 +119,7 @@
 <translation id="1768959921651994223">驗證類型</translation>
 <translation id="1776228893584526149">桌布色調</translation>
 <translation id="1782199038061388045">翻譯</translation>
+<translation id="1788485524395674731">這個應用程式是由系統管理員管理</translation>
 <translation id="1792647875738159689">取消掃瞄中</translation>
 <translation id="1801418420130173017">停用深色主題背景</translation>
 <translation id="1807246157184219062">淺色</translation>
@@ -131,7 +134,6 @@
 <translation id="1871569928317311284">關閉深色主題背景</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">關閉暗光模式</translation>
-<translation id="1881188606372070653">如因法律理由而需要變更內容，請於<ph name="BEGIN_LINK1" />「法律說明」頁面<ph name="END_LINK1" />提出要求。部分帳戶及系統資料可能會傳送予 Google。我們會根據《<ph name="BEGIN_LINK2" />私隱權政策<ph name="END_LINK2" />》及《<ph name="BEGIN_LINK3" />服務條款<ph name="END_LINK3" />》，利用您提供的資料以解決技術問題和改善服務。</translation>
 <translation id="1885577615937958993">向前快播媒體</translation>
 <translation id="1887850431809612466">硬件版本</translation>
 <translation id="1897672602657312171">使用快速鍵時如未按下搜尋鍵，可能會與部分應用程式的快速鍵發生衝突。再按下此快速鍵即可繼續使用，或按下搜尋鍵重新輸入快速鍵。</translation>
@@ -193,6 +195,7 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">開啟藍牙即可探索附近的裝置</translation>
 <translation id="2346474577291266260">非常好 (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="2358070305000735383">「<ph name="DESCRIPTION" />」的編輯對話方塊已開啟。</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2364498172489649528">已通過</translation>
 <translation id="2367335866686097760">對應緊個制</translation>
@@ -212,6 +215,7 @@
 <translation id="2505327257735685095">重新整理目前嘅桌布圖片</translation>
 <translation id="2512979179176933762">顯示視窗</translation>
 <translation id="2513396635448525189">登入圖片</translation>
+<translation id="2515109918609218604">無法使用這組快速鍵。請使用其他快速鍵，而且當中不得有功能鍵和搜尋鍵。</translation>
 <translation id="2517472476991765520">掃瞄</translation>
 <translation id="2521835766824839541">上一首歌</translation>
 <translation id="2526590354069164005">桌面電腦</translation>
@@ -265,6 +269,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">連接咗裝置。</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{要移除頁面嗎？}=1{要移除第 {PAGE_NUMBER} 頁嗎？}other{要移除第 {PAGE_NUMBER} 頁嗎？}}</translation>
+<translation id="3146655726035122603"><ph name="PRODUCT_NAME" /> 專屬影片</translation>
 <translation id="315116470104423982">流動數據</translation>
 <translation id="3156846309055100599">正在掃瞄第 <ph name="PAGE_NUMBER" /> 頁…</translation>
 <translation id="315738237743207937">已偵測到強制網絡入口</translation>
@@ -622,6 +627,7 @@
 <translation id="584953448295717128">系統會自動偵測 APN。</translation>
 <translation id="5849570051105887917">家庭網絡供應商代碼</translation>
 <translation id="5859603669299126575">藝術圖庫中的相簿</translation>
+<translation id="5859969039821714932">無法使用這組快速鍵，請按不含 <ph name="KEY" /> 鍵的新快速鍵。</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5860491529813859533">開啟</translation>
 <translation id="5876385649737594562">開啟即可選取選項</translation>
@@ -687,6 +693,7 @@
 <translation id="6318437367327684789">不限時間</translation>
 <translation id="6319207335391420837">更新「<ph name="DEVICE_NAME" />」的韌體</translation>
 <translation id="6321407676395378991">開啟螢幕保護程式</translation>
+<translation id="6324916366299863871">編輯捷徑</translation>
 <translation id="6325525973963619867">失敗</translation>
 <translation id="6331191339300272798">自動深色主題背景</translation>
 <translation id="6340526405444716530">個人化</translation>
@@ -826,6 +833,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">內置觸控板</translation>
 <translation id="7397270852490618635">關閉淺色主題背景</translation>
+<translation id="7401543881546089382">刪除捷徑</translation>
 <translation id="741244894080940828">轉換</translation>
 <translation id="7415801143053185905">HTTP 延遲時間非常長</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{管理員已設定在你每次登入時自動啟動「<ph name="APP_NAME_1" />」。}=2{管理員已設定在你每次登入時自動啟動「<ph name="APP_NAME_1" />」和「<ph name="APP_NAME_2" />」。}=3{管理員已設定在你每次登入時自動啟動<ph name="APP_NAME_1" />、<ph name="APP_NAME_2" />和<ph name="APP_NAME_3" />。}other{管理員已設定在你每次登入時自動啟動「<ph name="APP_NAME_1" />」、「<ph name="APP_NAME_2" />」和另外 # 個應用程式。}}</translation>
@@ -864,6 +872,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">鍵盤燈</translation>
+<translation id="7730077286107534951">部分帳戶和系統資料可能會傳送給 Google。我們會按照《<ph name="BEGIN_LINK2" />私隱權政策<ph name="END_LINK2" />》和《<ph name="BEGIN_LINK3" />服務條款<ph name="END_LINK3" />》使用這些資料，協助處理技術問題並改善服務。如要提出內容變更要求，請前往<ph name="BEGIN_LINK1" />法律說明中心<ph name="END_LINK1" />。</translation>
 <translation id="773153675489693198">週期數</translation>
 <translation id="7747039790905080783">預先共用密鑰</translation>
 <translation id="7752963721013053477">黎明到黑夜 - 獨家</translation>
@@ -900,6 +909,7 @@
 <translation id="7978412674231730200">私密金鑰</translation>
 <translation id="7994702968232966508">EAP 方法</translation>
 <translation id="8004582292198964060">瀏覽器</translation>
+<translation id="8017679124341497925">已編輯捷徑</translation>
 <translation id="802154636333426148">下載失敗</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">啟用自動調色模式</translation>
@@ -1013,6 +1023,7 @@
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">裝置類型係平板電腦。</translation>
 <translation id="8881098542468797602">已通過測試</translation>
+<translation id="8892443466059986410">取消編輯快速鍵</translation>
 <translation id="8898840733695078011">訊號強度</translation>
 <translation id="8909114361904403025">向上鍵</translation>
 <translation id="8910721771319628100">預設網絡超過延遲門檻</translation>

@@ -169,6 +169,8 @@ source_set("chromeos") {
     "reporting/metric_reporting_prefs.h",
     "reporting/network/network_bandwidth_sampler.cc",
     "reporting/network/network_bandwidth_sampler.h",
+    "reporting/usage_telemetry_periodic_collector_base.cc",
+    "reporting/usage_telemetry_periodic_collector_base.h",
     "reporting/user_reporting_settings.cc",
     "reporting/user_reporting_settings.h",
     "reporting/websites/website_events_observer.cc",
@@ -176,6 +178,8 @@ source_set("chromeos") {
     "reporting/websites/website_metrics_retriever_interface.h",
     "reporting/websites/website_usage_observer.cc",
     "reporting/websites/website_usage_observer.h",
+    "reporting/websites/website_usage_telemetry_sampler.cc",
+    "reporting/websites/website_usage_telemetry_sampler.h",
     "smart_reader/smart_reader_client_impl.cc",
     "smart_reader/smart_reader_client_impl.h",
     "tablet_mode/chrome_content_browser_client_tablet_mode_part.cc",
@@ -214,7 +218,6 @@ source_set("chromeos") {
     "//chrome/browser/apps/app_service",
   ]
   public_deps = [
-    ":dlp_policy_event_proto",
     "//base",
     "//build:chromeos_buildflags",
     "//chrome/browser/extensions",
@@ -228,6 +231,7 @@ source_set("chromeos") {
     "//chromeos/dbus/power",
     "//components/account_id",
     "//components/arc/common",
+    "//components/enterprise/data_controls:dlp_policy_event_proto",
     "//components/file_access",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
@@ -357,6 +361,8 @@ source_set("chromeos") {
       "extensions/login_screen/login/shared_session_handler.h",
       "reporting/websites/website_metrics_retriever_ash.cc",
       "reporting/websites/website_metrics_retriever_ash.h",
+      "reporting/websites/website_usage_telemetry_periodic_collector_ash.cc",
+      "reporting/websites/website_usage_telemetry_periodic_collector_ash.h",
     ]
     allow_circular_includes_from += [ "//chrome/browser/ash/crosapi" ]
     public_deps += [
@@ -375,6 +381,7 @@ source_set("chromeos") {
       "//chrome/browser/ui/ash/system_web_apps:system_web_apps",
       "//chromeos/ash/components/chaps_util",
       "//chromeos/ash/components/login/auth/public:authpublic",
+      "//chromeos/ash/components/login/session",
       "//chromeos/ash/components/settings",
       "//components/session_manager:base",
       "//components/session_manager/core",
@@ -468,7 +475,7 @@ static_library("test_support") {
   }
 
   deps = [
-    ":dlp_policy_event_proto",
+    "//components/enterprise/data_controls:dlp_policy_event_proto",
     "//components/reporting/client:test_support",
   ]
 
@@ -508,9 +515,11 @@ source_set("unit_tests") {
     "policy/dlp/dlp_scoped_file_access_delegate_unittest.cc",
     "reporting/metric_reporting_prefs_unittest.cc",
     "reporting/network/network_bandwidth_sampler_unittest.cc",
+    "reporting/usage_telemetry_periodic_collector_base_unittest.cc",
     "reporting/user_reporting_settings_unittest.cc",
     "reporting/websites/website_events_observer_unittest.cc",
     "reporting/websites/website_usage_observer_unittest.cc",
+    "reporting/websites/website_usage_telemetry_sampler_unittest.cc",
     "video_conference/video_conference_ukm_helper_unittest.cc",
 
     # TODO(zturner): Enable this on Windows. See
@@ -521,7 +530,6 @@ source_set("unit_tests") {
   ]
   deps = [
     ":chromeos",
-    ":dlp_policy_event_proto",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -551,6 +559,7 @@ source_set("unit_tests") {
     "//components/arc/common:arc_intent_helper_constants",
     "//components/arc/common:arc_test_support",
     "//components/enterprise/data_controls",
+    "//components/enterprise/data_controls:dlp_policy_event_proto",
     "//components/file_access",
     "//components/keyed_service/core",
     "//components/policy/core/common:common_constants",
@@ -603,6 +612,7 @@ source_set("unit_tests") {
       "extensions/login_screen/login_screen_storage/login_screen_storage_api_ash_unittest.cc",
       "extensions/login_screen/login_state/session_state_changed_event_dispatcher_ash_unittest.cc",
       "reporting/websites/website_metrics_retriever_ash_unittest.cc",
+      "reporting/websites/website_usage_telemetry_periodic_collector_ash_unittest.cc",
       "tablet_mode/chrome_content_browser_client_tablet_mode_part_unittest.cc",
     ]
     deps += [
@@ -661,8 +671,4 @@ source_set("unit_tests") {
       "//components/reporting/util:rate_limiter_interface",
     ]
   }
-}
-
-proto_library("dlp_policy_event_proto") {
-  sources = [ "policy/dlp/dlp_policy_event.proto" ]
 }

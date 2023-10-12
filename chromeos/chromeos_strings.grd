@@ -3961,7 +3961,7 @@
           Google Assistance captures recent history and information such as your identity and location to help us better understand your issue.&#10;&#10;The information is stored for up to 90 days and access is restricted to the team working on this issue.
         </message>
         <message name="IDS_FEEDBACK_TOOL_PRIVACY_NOTE" desc="Text for the privacy note included in the feedback app">
-          Go to the <ph name="BEGIN_LINK1">&lt;a id="legalHelpPageUrl"&gt;</ph>Legal Help page<ph name="END_LINK1">&lt;/a&gt;</ph> to request content changes for legal reasons. Some account and system information may be sent to Google. We will use the information you give us to help address technical issues and to improve our services, subject to our <ph name="BEGIN_LINK2">&lt;a id="privacyPolicyUrl"&gt;</ph>Privacy Policy<ph name="END_LINK2">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK3">&lt;a id="termsOfServiceUrl"&gt;</ph>Terms of Service<ph name="END_LINK3">&lt;/a&gt;</ph>.
+          Some account and system information may be sent to Google. We use this information to help address technical issues and improve our services, subject to our <ph name="BEGIN_LINK2">&lt;a id="privacyPolicyUrl"&gt;</ph>Privacy Policy<ph name="END_LINK2">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK3">&lt;a id="termsOfServiceUrl"&gt;</ph>Terms of Service<ph name="END_LINK3">&lt;/a&gt;</ph>. To request content changes, go to <ph name="BEGIN_LINK1">&lt;a id="legalHelpPageUrl"&gt;</ph>Legal Help<ph name="END_LINK1">&lt;/a&gt;</ph>.
         </message>
         <message name="IDS_FEEDBACK_TOOL_PRIVACY_NOTE_LOGGED_OUT" desc="Text for the privacy note included in the feedback app when users are logged out">
           Some account and system information may be sent to Google. We use this information to help address technical issues and improve our services, subject to our Privacy Policy (<ph name="privacyPolicyUrl">$1<ex>https://policies.google.com/privacy</ex></ph>) and Terms of Service (<ph name="termsOfServiceUrl">$2<ex>https://policies.google.com/terms</ex></ph>). To request content changes, go to Legal Help (<ph name="legalHelpPageUrl">$3<ex>https://support.google.com/legal/answer/3110420</ex></ph>).
@@ -4070,6 +4070,11 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_EDIT" desc="Used to edit action in various modals" translateable="false">
           Edit
         </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_CUSTOMIZATION_DISABLED_BY_POLICY_MESSAGE"
+            desc="The message shown to indicate that a user policy is in place
+            to prevent the user from customizing the system shortcut">
+          This app is managed by your administrator
+        </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_EDIT_VIEW_STATUS_MESSAGE" desc="Instructions to user when they're inputting a new shortcut">
           Press 1-4 modifiers and 1 other key on your keyboard. To exit editing mode, press alt + esc.
         </message>
@@ -4117,9 +4122,13 @@
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SEACH_WITH_FUNCTION_KEY_NOT_ALLOWED_STATUS_MESSAGE"
             desc="The status message that displays when user press a key combination
-            that includes the search key with a function key."
-            translateable="false">
-          Shortcut with function keys and search are not allowed. Press a new shortcut.
+            that includes the search key with a function key.">
+          Shortcut not available. Press a new shortcut without using function and search keys.
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_RESERVED_KEY_NOT_ALLOWED_STATUS_MESSAGE"
+            desc="The status message that displays when user press a key combination
+            that includes a reserved key.">
+          Shortcut not available. Press a new shortcut without <ph name="key">$1<ex>CapsLock</ex></ph>.
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_NON_SEARCH_SHORTCUT_WARNING"
             desc="The status (warning) message that displays when user attempts to input a shortcut that does not include the search/meta key.">
@@ -4139,6 +4148,24 @@
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ACCELERATOR_ROW_A11Y" desc="Accessibility text for the selected accelerator row.">
           <ph name="DESCRIPTION">$1<ex>Open notifications</ex></ph>, <ph name="ACCELERATOR_INFO">$2<ex>ctrl T</ex></ph>.
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_EDIT_BUTTON_A11Y" desc="Accessibility text for the edit button.">
+          Edit shortcut
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_CANCEL_BUTTON_A11Y" desc="Accessibility text for the cancel button.">
+          Cancel shortcut editing
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_DELETE_BUTTON_A11Y" desc="Accessibility text for the delete button.">
+          Delete shortcut
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_EDIT_DIALOG_A11Y" desc="The text read by the screen reader when edit dialog is open.">
+          Edit dialog for <ph name="DESCRIPTION">$1<ex>Open notifications</ex></ph> is open.
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_SHORTCUT_ADDED_A11Y" desc="The text read by the screen reader when shortcut is added successfully.">
+          Shortcut added
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_SHORTCUT_EDITED_A11Y" desc="The text read by the screen reader when shortcut is edited successfully.">
+          Shortcut edited
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SEARCH_RESULT_ROW_A11Y_RESULT_SELECTED" desc="ChromeVox alert to indicate the position number of a selected result in a list of search results and the selected result text itself, and that the user can press enter to navigate to section described by the search result.">
           Search result <ph name="LIST_POSITION">$1<ex>1</ex></ph> of <ph name="LIST_SIZE">$2<ex>2</ex></ph>: <ph name="SEARCH_RESULT_TEXT">$3<ex>Open new tab, ctrl T</ex></ph>. Press Enter to navigate to shortcut.
@@ -4306,20 +4333,16 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_TRACK_PREVIOUS" desc="The text read aloud by the screen reader describing the keyboard icon 'previous track'.">
           previous track
         </message>
-        <!-- TODO(b/286268215): Translate this string -->
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_HOME" desc="The text read aloud by the screen reader describing the keyboard icon 'browser home'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_HOME" desc="The text read aloud by the screen reader describing the keyboard icon 'browser home'.">
           browser home
         </message>
-        <!-- TODO(b/286268215): Translate this string -->
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_MAIL" desc="The text read aloud by the screen reader describing the keyboard icon 'launch mail'." translateable="false">
-          launch mail
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_MAIL" desc="The text read aloud by the screen reader describing the keyboard icon 'email'.">
+          email
         </message>
-        <!-- TODO(b/286268215): Translate this string -->
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_STAND_BY" desc="The text read aloud by the screen reader describing the keyboard icon 'lock'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_STAND_BY" desc="The text read aloud by the screen reader describing the keyboard icon 'lock'.">
           lock
         </message>
-        <!-- TODO(b/286268215): Translate this string -->
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_CONTEXT_MENU" desc="The text read aloud by the screen reader describing the keyboard icon 'context menu." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_CONTEXT_MENU" desc="The text read aloud by the screen reader describing the keyboard icon 'menu'.">
           menu
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MICROPHONE_MUTE_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle microphone mute'.">
@@ -4328,16 +4351,13 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MODE_CHANGE" desc="The text read aloud by the screen reader describing the keyboard icon 'mode change'.">
           mode change
         </message>
-        <!-- TODO(b/286268215): Translate this string -->
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_OPEN_LAUNCHER" desc="The text read aloud by the screen reader describing the keyboard icon 'meta launcher'." translateable="false">
-          meta launcher
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_OPEN_LAUNCHER" desc="The text read aloud by the screen reader describing the keyboard icon 'launcher'.">
+          launcher
         </message>
-        <!-- TODO(b/286268215): Translate this string -->
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_OPEN_SEARCH" desc="The text read aloud by the screen reader describing the keyboard icon 'meta search'." translateable="false">
-          meta search
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_OPEN_SEARCH" desc="The text read aloud by the screen reader describing the keyboard icon 'search'.">
+          search
         </message>
-        <!-- TODO(b/286268215): Translate this string -->
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_POWER" desc="The text read aloud by the screen reader describing the keyboard icon 'power'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_POWER" desc="The text read aloud by the screen reader describing the keyboard icon 'power'.">
           power
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_PRINT_SCREEN" desc="The text read aloud by the screen reader describing the keyboard icon 'take screenshot'.">

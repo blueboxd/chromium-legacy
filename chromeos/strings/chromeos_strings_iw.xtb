@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">אפשר להתאים אישית רק 5 קיצורי דרך. עליך למחוק קיצור דרך כדי להוסיף קיצור דרך חדש.</translation>
 <translation id="1164939766849482256">שומר המסך: מעלות השחר עד לרדת החושך</translation>
 <translation id="1167755866710282443">פתיחת התפריט להתאמה אישית של המפתחות. יש לגרור את התפריט כדי להזיז אותו.</translation>
+<translation id="1174073918202301297">קיצור הדרך נוסף</translation>
 <translation id="1175697296044146566"><ph name="DEVICE_TYPE" /> זה מנוהל על-ידי <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">ממוצע (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">הסרה</translation>
@@ -91,6 +92,7 @@
 <translation id="1643449475550628585">החלפה של תמונת הטפט מדי יום</translation>
 <translation id="1644574205037202324">היסטוריה</translation>
 <translation id="1651925268237749928">בחרת אלבום משותף. אנשים אחרים יכולים להוסיף או לשנות תמונות. יכול להיות שתמונות שלא נמצאות כרגע באלבום יוגדרו כטפט שלך.</translation>
+<translation id="1661865805917886535">‏פרטים מסוימים על החשבון והמערכת עשויים להישלח ל-Google. אנחנו משתמשים בפרטים האלה כדי לפתור בעיות טכניות ולשפר את השירותים שלנו, בכפוף למדיניות הפרטיות (<ph name="PRIVACYPOLICYURL" />) ולתנאים ולהגבלות (<ph name="TERMSOFSERVICEURL" />) שלנו. כדי לבקש שינויים בתוכן, צריך לעבור למרכז העזרה בנושאים משפטיים (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">הפסיקה – הדיו נגמר</translation>
 <translation id="1664796644829245314">תצוגה מקדימה של <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">‏רשתות VPN מובנות</translation>
@@ -131,7 +133,6 @@
 <translation id="1871569928317311284">השבתת העיצוב הכהה</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">השבתת המצב הכהה</translation>
-<translation id="1881188606372070653">‏אפשר לעבור אל <ph name="BEGIN_LINK1" />דף העזרה המשפטית<ph name="END_LINK1" /> כדי לבקש שינויים בתוכן מסיבות משפטיות. פרטים מסוימים על החשבון והמערכת עשויים להישלח ל-Google. אנחנו נשתמש במידע שיתקבל ממך כדי לטפל בבעיות טכניות ולשפר את השירותים שלנו, בכפוף ל<ph name="BEGIN_LINK2" />מדיניות הפרטיות<ph name="END_LINK2" /> ו<ph name="BEGIN_LINK3" />לתנאים ולהגבלות<ph name="END_LINK3" /> שלנו.</translation>
 <translation id="1885577615937958993">הרצת המדיה קדימה</translation>
 <translation id="1887850431809612466">שכתוב חומרה</translation>
 <translation id="1897672602657312171">מקשי קיצור בלי מקש החיפוש עלולים להתנגש עם מקשי הקיצור באפליקציה כלשהי. כדי להשתמש במקשי הקיצור האלה בכל זאת, צריך להקיש עליהם שוב. אחרת, צריך להקיש על מקשי קיצור חדשים שכוללים את מקש החיפוש.</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">המכשיר מחובר.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{להסיר את הדף?}=1{להסיר את דף {PAGE_NUMBER}?}one{להסיר את דף {PAGE_NUMBER}?}two{להסיר את דף {PAGE_NUMBER}?}other{להסיר את דף {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">רק ב-<ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">נתוני נייד</translation>
 <translation id="3156846309055100599">מתבצעת סריקה של עמוד <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">זוהה פורטל שבוי</translation>
@@ -687,6 +689,7 @@
 <translation id="6318437367327684789">ללא הפסקה</translation>
 <translation id="6319207335391420837">יש לעדכן את הקושחה של <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">הפעלת שומר מסך</translation>
+<translation id="6324916366299863871">עריכת קיצור דרך</translation>
 <translation id="6325525973963619867">נכשל</translation>
 <translation id="6331191339300272798">עיצוב כהה אוטומטי</translation>
 <translation id="6340526405444716530">התאמה אישית</translation>
@@ -826,6 +829,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">לוח מגע מובנה</translation>
 <translation id="7397270852490618635">השבתת העיצוב הבהיר</translation>
+<translation id="7401543881546089382">מחק קיצור דרך</translation>
 <translation id="741244894080940828">המרה</translation>
 <translation id="7415801143053185905">‏משך זמן ההמתנה ל-HTTP ארוך מאוד</translation>
 <translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{האדמין הגדיר הפעלה אוטומטית של <ph name="APP_NAME_1" /> בכל התחברות שלך.}=2{האדמין הגדיר הפעלה אוטומטית של <ph name="APP_NAME_1" /> ושל <ph name="APP_NAME_2" /> בכל התחברות שלך.}=3{האדמין הגדיר הפעלה אוטומטית של <ph name="APP_NAME_1" />,‏ <ph name="APP_NAME_2" /> וגם <ph name="APP_NAME_3" /> בכל התחברות שלך.}one{האדמין הגדיר הפעלה אוטומטית של <ph name="APP_NAME_1" />,‏ <ph name="APP_NAME_2" /> ועוד # אפליקציות בכל התחברות שלך.}other{האדמין הגדיר הפעלה אוטומטית של <ph name="APP_NAME_1" />,‏ <ph name="APP_NAME_2" /> ועוד # אפליקציות בכל התחברות שלך.}}</translation>
@@ -864,6 +868,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">תאורה במקלדת</translation>
+<translation id="7730077286107534951">‏פרטים מסוימים על החשבון והמערכת עשויים להישלח ל-Google. אנחנו משתמשים בפרטים האלה כדי לפתור בעיות טכניות ולשפר את השירותים שלנו, בכפוף ל<ph name="BEGIN_LINK2" />מדיניות הפרטיות<ph name="END_LINK2" /> ו<ph name="BEGIN_LINK3" />לתנאים ולהגבלות<ph name="END_LINK3" /> שלנו. כדי לבקש שינויים בתוכן, צריך לעבור אל <ph name="BEGIN_LINK1" />העזרה המשפטית<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">מספר המחזורים</translation>
 <translation id="7747039790905080783">מפתח משותף מראש</translation>
 <translation id="7752963721013053477">מעלות השחר עד לרדת החושך – בלעדי</translation>
@@ -900,6 +905,7 @@
 <translation id="7978412674231730200">מפתח פרטי</translation>
 <translation id="7994702968232966508">‏שיטת EAP</translation>
 <translation id="8004582292198964060">דפדפן</translation>
+<translation id="8017679124341497925">קיצור הדרך עבר עריכה</translation>
 <translation id="802154636333426148">ההורדה נכשלה</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">הפעלה של מצב צבע אוטומטי</translation>

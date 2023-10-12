@@ -5156,6 +5156,48 @@ error::Error GLES2DecoderPassthroughImpl::DoUnlockDiscardableTextureCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoTexImage2DSharedImageCHROMIUM(
+    GLuint texture_client_id,
+    const volatile GLbyte* mailbox) {
+  if (!texture_client_id) {
+    InsertError(GL_INVALID_OPERATION, "invalid client ID");
+    return error::kNoError;
+  }
+
+  const Mailbox& mb = Mailbox::FromVolatile(
+      *reinterpret_cast<const volatile Mailbox*>(mailbox));
+  auto shared_image = group_->shared_image_representation_factory()
+                          ->ProduceGLTexturePassthrough(mb);
+  if (shared_image == nullptr) {
+    InsertError(GL_INVALID_OPERATION, "invalid mailbox name.");
+    DoGenTextures(1, &texture_client_id);
+    return error::kNoError;
+  }
+
+  auto texture = shared_image->GetTexturePassthrough();
+  if (texture->target() != GL_TEXTURE_2D) {
+    InsertError(GL_INVALID_OPERATION, "invalid texture target.");
+    return error::kNoError;
+  }
+
+  // Map `client_id` to the SharedImage's texture.
+  resources_->texture_id_map.RemoveClientID(texture_client_id);
+  resources_->texture_id_map.SetIDMapping(texture_client_id,
+                                          texture->service_id());
+  resources_->texture_object_map.RemoveClientID(texture_client_id);
+  resources_->texture_object_map.SetIDMapping(texture_client_id, texture);
+  resources_->texture_shared_image_map[texture_client_id] =
+      PassthroughResources::SharedImageData(this, std::move(shared_image));
+
+  // If the client has bound `client_texture_id`, the binding was done when
+  // `client_texture_id` did not necessarily map to `texture->service_id()`.
+  // Update any such binding so that `texture->service_id()` (which
+  // `texture_client_id` now maps to) is bound.
+  UpdateTextureBinding(texture->target(), texture_client_id, texture.get());
+
+  return error::kNoError;
+}
+
 error::Error
 GLES2DecoderPassthroughImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
     GLuint texture_client_id,
@@ -5261,6 +5303,10 @@ error::Error GLES2DecoderPassthroughImpl::DoConvertRGBAToYUVAMailboxesINTERNAL(
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoConvertYUVAMailboxesToRGBINTERNAL(
+    GLint src_x,
+    GLint src_y,
+    GLsizei width,
+    GLsizei height,
     GLenum yuv_color_space,
     GLenum plane_config,
     GLenum subsampling,
@@ -5276,7 +5322,8 @@ error::Error GLES2DecoderPassthroughImpl::DoConvertYUVAMailboxesToRGBINTERNAL(
                             lazy_context_->shared_context_state()->surface());
   CopySharedImageHelper helper(group_->shared_image_representation_factory(),
                                lazy_context_->shared_context_state());
-  auto result = helper.ConvertYUVAMailboxesToRGB(yuv_color_space, plane_config,
+  auto result = helper.ConvertYUVAMailboxesToRGB(src_x, src_y, width, height,
+                                                 yuv_color_space, plane_config,
                                                  subsampling, mailboxes_in);
   if (!result.has_value()) {
     InsertError(result.error().gl_error, result.error().msg);

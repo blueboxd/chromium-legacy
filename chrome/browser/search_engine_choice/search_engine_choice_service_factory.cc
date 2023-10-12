@@ -13,7 +13,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/search_engines/search_engine_choice_utils.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/signin/public/base/signin_switches.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/profiles/profiles_state.h"
@@ -66,7 +65,8 @@ SearchEngineChoiceServiceFactory::ScopedChromeBuildOverrideForTesting(
 bool SearchEngineChoiceServiceFactory::IsProfileEligibleForChoiceScreen(
     const policy::PolicyService& policy_service,
     Profile& profile) const {
-  if (!base::FeatureList::IsEnabled(switches::kSearchEngineChoice)) {
+  if (!search_engines::IsChoiceScreenFlagEnabled(
+          search_engines::ChoicePromo::kAny)) {
     return false;
   }
 
@@ -80,10 +80,14 @@ bool SearchEngineChoiceServiceFactory::IsProfileEligibleForChoiceScreen(
   is_regular_profile &= !profile.IsGuestSession();
 #endif
 
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(&profile);
   return search_engines::ShouldShowChoiceScreen(
       policy_service,
-      /*profile_properties=*/{.is_regular_profile = is_regular_profile,
-                              .pref_service = profile.GetPrefs()});
+      /*profile_properties=*/
+      {.is_regular_profile = is_regular_profile,
+       .pref_service = profile.GetPrefs()},
+      template_url_service);
 }
 
 std::unique_ptr<KeyedService>

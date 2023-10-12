@@ -77,6 +77,7 @@
 #include "chromeos/ash/components/scalable_iph/scalable_iph_constants.h"
 #include "components/commerce/content/browser/commerce_internals_ui.h"
 #include "components/commerce/core/commerce_constants.h"
+#include "components/compose/buildflags.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
@@ -94,11 +95,11 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/web_ui_constants.h"
+#include "components/search_engines/search_engine_choice_utils.h"
 #include "components/security_interstitials/content/connection_help_ui.h"
 #include "components/security_interstitials/content/known_interception_disclosure_ui.h"
 #include "components/security_interstitials/content/urls.h"
 #include "components/signin/public/base/signin_buildflags.h"
-#include "components/signin/public/base/signin_switches.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "content/public/browser/web_contents.h"
@@ -146,7 +147,7 @@
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/commander/commander_ui.h"
 #include "chrome/browser/ui/webui/commerce/shopping_insights_side_panel_ui.h"
-#include "chrome/browser/ui/webui/devtools_ui.h"
+#include "chrome/browser/ui/webui/devtools/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
 #include "chrome/browser/ui/webui/feedback/feedback_ui.h"
 #include "chrome/browser/ui/webui/history/history_ui.h"
@@ -159,6 +160,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/omnibox_popup/omnibox_popup_ui.h"
+#include "chrome/browser/ui/webui/on_device_internals/on_device_internals_ui.h"
 #include "chrome/browser/ui/webui/page_not_available_for_guest/page_not_available_for_guest_ui.h"
 #include "chrome/browser/ui/webui/password_manager/password_manager_ui.h"
 #include "chrome/browser/ui/webui/privacy_sandbox/privacy_sandbox_dialog_ui.h"
@@ -302,6 +304,11 @@
 
 #if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
 #include "chrome/browser/ui/webui/search_engine_choice/search_engine_choice_ui.h"
+#endif
+
+#if BUILDFLAG(ENABLE_COMPOSE)
+#include "chrome/browser/ui/webui/compose/compose_ui.h"
+#include "components/compose/core/browser/compose_features.h"
 #endif
 
 using content::WebUI;
@@ -449,6 +456,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<BrowsingTopicsInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIComponentsHost)
     return &NewWebUI<ComponentsUI>;
+#if !BUILDFLAG(IS_ANDROID)
+  if (url.host_piece() == chrome::kChromeUIOnDeviceInternalsHost) {
+    return &NewWebUI<OnDeviceInternalsUI>;
+  }
+#endif
   if (url.host_piece() == commerce::kChromeUICommerceInternalsHost) {
     return &NewWebUI<commerce::CommerceInternalsUI>;
   }
@@ -711,7 +723,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 
 #if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
   if (url.host_piece() == chrome::kChromeUISearchEngineChoiceHost &&
-      base::FeatureList::IsEnabled(switches::kSearchEngineChoice)) {
+      search_engines::IsChoiceScreenFlagEnabled(
+          search_engines::ChoicePromo::kAny)) {
     return &NewWebUI<SearchEngineChoiceUI>;
   }
 #endif
@@ -770,6 +783,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIWebuiGalleryHost) {
     return &NewWebUI<WebuiGalleryUI>;
   }
+#if BUILDFLAG(ENABLE_COMPOSE)
+  if (url.host_piece() == chrome::kChromeUIComposeHost &&
+      base::FeatureList::IsEnabled(compose::features::kEnableCompose)) {
+    return &NewWebUI<ComposeUI>;
+  }
+#endif
   if (url.host_piece() == chrome::kChromeUIWhatsNewHost &&
       base::FeatureList::IsEnabled(features::kChromeWhatsNewUI)) {
     return &NewWebUI<WhatsNewUI>;

@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">Капучино</translation>
 <translation id="3619593063686672873">Немає нещодавніх відео</translation>
 <translation id="3634507049637220048">Мережа <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />. Мережею керує адміністратор. Докладніше</translation>
+<translation id="36451918667380448">Послуги цього оператора мобільної мережі заблоковано. Зверніться до нього по допомогу.</translation>
 <translation id="3645233063072417428">Переміщено елементів: <ph name="NUMBER_OF_ITEMS" />.</translation>
 <translation id="3658269352872031728">Вибрано файлів: <ph name="SELECTED_FILE_COUNT" /></translation>
 <translation id="3685122418104378273">Коли використовується мобільний Інтернет, синхронізацію Google Диска вимкнено за умовчанням.</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">Цей файл конфіденційний і регулюється правилами адміністратора.</translation>
 <translation id="8712637175834984815">OK</translation>
 <translation id="8713112442029511308">Мальтійська</translation>
+<translation id="8714138378966541668">Заблоковано постачальником</translation>
 <translation id="8714406895390098252">Велосипед</translation>
 <translation id="8719721339511222681">Вибрано: <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">Хорватська</translation>

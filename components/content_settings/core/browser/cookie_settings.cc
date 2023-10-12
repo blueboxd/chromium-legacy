@@ -7,11 +7,13 @@
 #include "base/check.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
+#include "base/synchronization/lock.h"
 #include "build/blink_buildflags.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_constraints.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
@@ -21,7 +23,7 @@
 #include "components/permissions/features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/privacy_sandbox/tracking_protection_prefs.h"
+#include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/cookies/cookie_setting_override.h"
 #include "net/cookies/cookie_util.h"
@@ -38,24 +40,27 @@ namespace content_settings {
 CookieSettings::CookieSettings(
     HostContentSettingsMap* host_content_settings_map,
     PrefService* prefs,
+    privacy_sandbox::TrackingProtectionSettings* tracking_protection_settings,
     bool is_incognito,
     const char* extension_scheme)
-    : host_content_settings_map_(host_content_settings_map),
+    : tracking_protection_settings_(tracking_protection_settings),
+      host_content_settings_map_(host_content_settings_map),
       is_incognito_(is_incognito),
       extension_scheme_(extension_scheme),
       block_third_party_cookies_(
           net::cookie_util::IsForceThirdPartyCookieBlockingEnabled()) {
   content_settings_observation_.Observe(host_content_settings_map_.get());
+  if (tracking_protection_settings_) {
+    tracking_protection_settings_observation_.Observe(
+        tracking_protection_settings_.get());
+  }
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
       prefs::kCookieControlsMode,
       base::BindRepeating(&CookieSettings::OnCookiePreferencesChanged,
                           base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kTrackingProtection3pcdEnabled,
-      base::BindRepeating(&CookieSettings::OnCookiePreferencesChanged,
-                          base::Unretained(this)));
   OnCookiePreferencesChanged();
+  OnBlockAllThirdPartyCookiesChanged();
 }
 
 ContentSetting CookieSettings::GetDefaultCookieSetting(
@@ -88,6 +93,19 @@ void CookieSettings::SetCookieSetting(const GURL& primary_url,
   DCHECK(IsValidSetting(setting));
   host_content_settings_map_->SetContentSettingDefaultScope(
       primary_url, GURL(), ContentSettingsType::COOKIES, setting);
+}
+
+void CookieSettings::SetTemporaryCookieGrantForHeuristic(
+    const GURL& first_party_url,
+    const GURL& third_party_url,
+    const base::TimeDelta& ttl) {
+  ContentSettingConstraints constraints;
+  constraints.set_lifetime(ttl);
+
+  host_content_settings_map_->SetContentSettingDefaultScope(
+      first_party_url, third_party_url,
+      ContentSettingsType::TPCD_HEURISTICS_GRANTS, CONTENT_SETTING_ALLOW,
+      constraints);
 }
 
 void CookieSettings::SetCookieSettingForUserBypass(
@@ -210,6 +228,8 @@ bool CookieSettings::ShouldIgnoreSameSiteRestrictions(
 
 void CookieSettings::ShutdownOnUIThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  tracking_protection_settings_ = nullptr;
+  tracking_protection_settings_observation_.Reset();
   pref_change_registrar_.RemoveAll();
 }
 
@@ -295,13 +315,9 @@ bool CookieSettings::ShouldBlockThirdPartyCookiesInternal() {
     return true;
   }
 
-  // Cookies should always be blocked in 3PCD experiment or if debug flag is on.
-  // Note: TrackingProtectionSettings will set kTrackingProtection3pcd to false
-  // if kCookieControlsMode is enterprise controlled.
-  if (base::FeatureList::IsEnabled(
-          content_settings::features::kTrackingProtection3pcd) ||
-      pref_change_registrar_.prefs()->GetBoolean(
-          prefs::kTrackingProtection3pcdEnabled)) {
+  // Cookies should always be blocked in 3PCD experiment.
+  if (tracking_protection_settings_ &&
+      tracking_protection_settings_->IsTrackingProtection3pcdEnabled()) {
     return true;
   }
 
@@ -319,6 +335,28 @@ bool CookieSettings::ShouldBlockThirdPartyCookiesInternal() {
   return false;
 }
 
+bool CookieSettings::MitigationsEnabledFor3pcdInternal() {
+  // Mitigations shouldn't be enabled in incognito;
+  if (is_incognito_) {
+    return false;
+  }
+
+  // Mitigations won't be enabled when Third Party Cookies Blocking is enabled
+  // by `features::kForceThirdPartyCookieBlocking` which is intended to be used
+  // via command-lines by developers for testing.
+  if (net::cookie_util::IsForceThirdPartyCookieBlockingEnabled()) {
+    return false;
+  }
+
+  if (tracking_protection_settings_ &&
+      tracking_protection_settings_->IsTrackingProtection3pcdEnabled()) {
+    // Mitigations should be on iff the user has not chosen to block all 3PC.
+    return !tracking_protection_settings_->AreAllThirdPartyCookiesBlocked();
+  }
+
+  return false;
+}
+
 void CookieSettings::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -328,6 +366,33 @@ void CookieSettings::OnContentSettingChanged(
       observer.OnCookieSettingChanged();
     }
   }
+}
+
+void CookieSettings::OnBlockAllThirdPartyCookiesChanged() {
+  bool new_mitigations_enabled_for_3pcd = MitigationsEnabledFor3pcdInternal();
+  {
+    base::AutoLock auto_lock(lock_);
+    if (mitigations_enabled_for_3pcd_ == new_mitigations_enabled_for_3pcd) {
+      return;
+    }
+    mitigations_enabled_for_3pcd_ = new_mitigations_enabled_for_3pcd;
+  }
+
+  for (Observer& obs : observers_) {
+    obs.OnMitigationsEnabledFor3pcdChanged(new_mitigations_enabled_for_3pcd);
+  }
+}
+
+void CookieSettings::OnTrackingProtection3pcdChanged() {
+  // If the user opted to block all 3PC while in the experiment, preserve that
+  // preference if they are offboarded.
+  if (!tracking_protection_settings_->IsTrackingProtection3pcdEnabled() &&
+      tracking_protection_settings_->AreAllThirdPartyCookiesBlocked()) {
+    pref_change_registrar_.prefs()->SetInteger(
+        prefs::kCookieControlsMode,
+        static_cast<int>(CookieControlsMode::kBlockThirdParty));
+  }
+  OnCookiePreferencesChanged();
 }
 
 void CookieSettings::OnCookiePreferencesChanged() {
@@ -350,6 +415,11 @@ void CookieSettings::OnCookiePreferencesChanged() {
 bool CookieSettings::ShouldBlockThirdPartyCookies() const {
   base::AutoLock auto_lock(lock_);
   return block_third_party_cookies_;
+}
+
+bool CookieSettings::MitigationsEnabledFor3pcd() const {
+  base::AutoLock auto_lock(lock_);
+  return mitigations_enabled_for_3pcd_;
 }
 
 }  // namespace content_settings

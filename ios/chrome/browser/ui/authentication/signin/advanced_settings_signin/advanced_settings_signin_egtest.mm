@@ -6,10 +6,12 @@
 #import "base/ios/ios_util.h"
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
+#import "build/branding_buildflags.h"
 #import "components/bookmarks/common/bookmark_features.h"
 #import "components/bookmarks/common/storage_type.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
@@ -18,7 +20,6 @@
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -112,6 +113,10 @@ void WaitForSettingDoneButton() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsSignInRowMatcher()];
   [[EarlGrey selectElementWithMatcher:SettingsLink()] performAction:grey_tap()];
+
+  // This wait is required because, on devices, EG-test may tap on the button
+  // while it is sliding up, which cause the tap to misses the button.
+  [ChromeEarlGreyUI waitForAppToIdle];
   [[EarlGrey selectElementWithMatcher:AdvancedSyncSettingsDoneButtonMatcher()]
       performAction:grey_tap()];
   [SigninEarlGreyUI tapSigninConfirmationDialog];
@@ -165,6 +170,10 @@ void WaitForSettingDoneButton() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsSignInRowMatcher()];
   [[EarlGrey selectElementWithMatcher:SettingsLink()] performAction:grey_tap()];
+
+  // This wait is required because, on devices, EG-test may tap on the button
+  // while it is sliding up, which cause the tap to misses the button.
+  [ChromeEarlGreyUI waitForAppToIdle];
   [[EarlGrey selectElementWithMatcher:AdvancedSyncSettingsDoneButtonMatcher()]
       performAction:grey_tap()];
   [SigninEarlGreyUI tapSigninConfirmationDialog];
@@ -214,6 +223,10 @@ void WaitForSettingDoneButton() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsSignInRowMatcher()];
   [[EarlGrey selectElementWithMatcher:SettingsLink()] performAction:grey_tap()];
+
+  // This wait is required because, on devices, EG-test may tap on the button
+  // while it is sliding up, which cause the tap to misses the button.
+  [ChromeEarlGreyUI waitForAppToIdle];
   [[EarlGrey selectElementWithMatcher:AdvancedSyncSettingsDoneButtonMatcher()]
       performAction:grey_tap()];
   [SigninEarlGreyUI tapSigninConfirmationDialog];
@@ -281,6 +294,9 @@ void WaitForSettingDoneButton() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsSignInRowMatcher()];
   [[EarlGrey selectElementWithMatcher:SettingsLink()] performAction:grey_tap()];
+  // This wait is required because, on devices, EG-test may tap on the button
+  // while it is sliding up, which cause the tap to misses the button.
+  [ChromeEarlGreyUI waitForAppToIdle];
   [[EarlGrey selectElementWithMatcher:AdvancedSyncSettingsDoneButtonMatcher()]
       performAction:grey_tap()];
   [SigninEarlGreyUI tapSigninConfirmationDialog];

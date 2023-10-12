@@ -6,8 +6,10 @@
 
 #include "base/check_is_test.h"
 #include "base/containers/contains.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/startup/first_run_service.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -43,6 +45,30 @@ bool IsSelectedChoiceProfile(Profile& profile, PrefService* local_state) {
   return profile.GetBaseName() ==
          local_state->GetFilePath(prefs::kSearchEnginesChoiceProfile);
 }
+
+void RecordChoiceScreenNavigationCondition(
+    search_engines::SearchEngineChoiceScreenConditions condition) {
+  base::UmaHistogramEnumeration(
+      search_engines::kSearchEngineChoiceScreenNavigationConditionsHistogram,
+      condition);
+}
+
+bool IsBrowserTypeSupported(const Browser& browser) {
+  switch (browser.type()) {
+    case Browser::TYPE_NORMAL:
+    case Browser::TYPE_POPUP:
+      return true;
+    case Browser::TYPE_APP_POPUP:
+    case Browser::TYPE_PICTURE_IN_PICTURE:
+    case Browser::TYPE_APP:
+    case Browser::TYPE_DEVTOOLS:
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    case Browser::TYPE_CUSTOM_TAB:
+#endif
+      return false;
+  }
+}
+
 }  // namespace
 
 SearchEngineChoiceService::BrowserObserver::BrowserObserver(
@@ -153,16 +179,16 @@ bool SearchEngineChoiceService::IsShowingDialog(Browser* browser) {
   return base::Contains(browsers_with_open_dialogs_, browser);
 }
 
-std::vector<std::unique_ptr<TemplateURLData>>
+std::vector<std::unique_ptr<TemplateURL>>
 SearchEngineChoiceService::GetSearchEngines() {
-  auto* pref_service = profile_->GetPrefs();
-  return TemplateURLPrepopulateData::GetPrepopulatedEnginesForChoiceScreen(
-      pref_service);
+  return template_url_service_->GetTemplateURLsForChoiceScreen();
 }
 
 bool SearchEngineChoiceService::CanShowDialog(Browser& browser) {
   if (!IsSelectedChoiceProfile(profile_.get(),
                                g_browser_process->local_state())) {
+    RecordChoiceScreenNavigationCondition(
+        search_engines::SearchEngineChoiceScreenConditions::kProfileOutOfScope);
     return false;
   }
 
@@ -170,6 +196,15 @@ bool SearchEngineChoiceService::CanShowDialog(Browser& browser) {
     // Showing a Chrome-specific search engine dialog on top of a window
     // dedicated to a specific web app is a horrible UX, we suppress it for this
     // window. When the user proceeds to a non-web app window they will get it.
+    return false;
+  }
+
+  // Only show the dialog over normal and popup browsers. This is to avoid
+  // showing it in picture-in-picture for example.
+  if (!IsBrowserTypeSupported(browser)) {
+    RecordChoiceScreenNavigationCondition(
+        search_engines::SearchEngineChoiceScreenConditions::
+            kUnsupportedBrowserType);
     return false;
   }
 
@@ -181,16 +216,33 @@ bool SearchEngineChoiceService::CanShowDialog(Browser& browser) {
 
   // Don't show the dialog if the default search engine is set by an extension.
   if (template_url_service_->IsExtensionControlledDefaultSearch()) {
+    RecordChoiceScreenNavigationCondition(
+        search_engines::SearchEngineChoiceScreenConditions::
+            kExtensionContolled);
     return false;
   }
 
-  // Dialog should not be shown if it is currently displayed or if the user
-  // already made a choice.
-  return !HasUserMadeChoice() && !IsShowingDialog(&browser) &&
-         !g_dialog_disabled_for_testing;
+  if (HasUserMadeChoice()) {
+    RecordChoiceScreenNavigationCondition(
+        search_engines::SearchEngineChoiceScreenConditions::kAlreadyCompleted);
+    return false;
+  }
+
+  // Dialog should not be shown if it is currently displayed
+  if (g_dialog_disabled_for_testing || IsShowingDialog(&browser)) {
+    return false;
+  }
+
+  RecordChoiceScreenNavigationCondition(
+      search_engines::SearchEngineChoiceScreenConditions::kEligible);
+  return true;
 }
 
 bool SearchEngineChoiceService::HasUserMadeChoice() const {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceSearchEngineChoiceScreen)) {
+    return false;
+  }
   PrefService* pref_service = profile_->GetPrefs();
   return pref_service->GetInt64(
       prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp);

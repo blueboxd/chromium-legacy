@@ -5,8 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_TASK_QUEUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_TASK_QUEUE_H_
 
+#include <limits>
 #include <memory>
 
+#include "base/bits.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/common/lazy_now.h"
@@ -181,11 +184,16 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     // to represent |prioritisation_type| in QueueTraitKeyType.
     // We need to update it whenever there is a change in
     // PrioritisationType::kCount.
-    // TODO(sreejakshetty) make the number of bits calculation automated.
-    static constexpr int kPrioritisationTypeWidthBits = 4;
-    static_assert(static_cast<int>(PrioritisationType::kCount) <=
-                      (1 << kPrioritisationTypeWidthBits),
-                  "Wrong Instanstiation for kPrioritisationTypeWidthBits");
+    static constexpr unsigned PrioritisationTypeCount =
+        static_cast<unsigned>(QueueTraits::PrioritisationType::kCount);
+
+    static constexpr unsigned kPrioritisationTypeWidthBits =
+        std::numeric_limits<unsigned>::digits -
+        base::bits::CountTrailingZeroBits(PrioritisationTypeCount - 1);
+
+    static_assert(PrioritisationTypeCount <=
+                      (1u << kPrioritisationTypeWidthBits),
+                  "Wrong instantiation for kPrioritisationTypeWidthBits");
 
     QueueTraits(const QueueTraits&) = default;
     QueueTraits& operator=(const QueueTraits&) = default;
@@ -380,7 +388,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     QueueType queue_type;
     TaskQueue::Spec spec;
     WeakPersistent<AgentGroupSchedulerImpl> agent_group_scheduler;
-    FrameSchedulerImpl* frame_scheduler = nullptr;
+    raw_ptr<FrameSchedulerImpl, ExperimentalRenderer> frame_scheduler = nullptr;
     QueueTraits queue_traits;
     absl::optional<WebSchedulingQueueType> web_scheduling_queue_type;
     absl::optional<WebSchedulingPriority> web_scheduling_priority;
@@ -575,17 +583,19 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   absl::optional<WebSchedulingPriority> web_scheduling_priority_;
 
   // Needed to notify renderer scheduler about completed tasks.
-  MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
+  raw_ptr<MainThreadSchedulerImpl, ExperimentalRenderer>
+      main_thread_scheduler_;  // NOT OWNED
 
   WeakPersistent<AgentGroupSchedulerImpl> agent_group_scheduler_;
 
   // Set in the constructor. Cleared in `DetachTaskQueue()` and
   // `ShutdownTaskQueue()`. Can never be set to a different value afterwards
   // (except in tests).
-  FrameSchedulerImpl* frame_scheduler_;  // NOT OWNED
+  raw_ptr<FrameSchedulerImpl, DanglingUntriaged> frame_scheduler_;  // NOT OWNED
 
   // The WakeUpBudgetPool for this TaskQueue, if any.
-  WakeUpBudgetPool* wake_up_budget_pool_{nullptr};  // NOT OWNED
+  raw_ptr<WakeUpBudgetPool, ExperimentalRenderer> wake_up_budget_pool_{
+      nullptr};  // NOT OWNED
 
   std::unique_ptr<TaskQueue::OnTaskPostedCallbackHandle>
       on_ipc_task_posted_callback_handle_;

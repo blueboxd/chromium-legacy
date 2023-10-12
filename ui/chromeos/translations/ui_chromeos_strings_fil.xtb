@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3619593063686672873">Walang kamakailang video</translation>
 <translation id="3634507049637220048">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Pinapamahalaan ng iyong Administrator, Mga Detalye</translation>
+<translation id="36451918667380448">Naka-lock ang mobile network provider. Makipag-ugnayan sa iyong provider para sa suporta.</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> (na) item ang inilipat.</translation>
 <translation id="3658269352872031728"><ph name="SELECTED_FILE_COUNT" /> (na) file ang napili</translation>
 <translation id="3685122418104378273">Naka-disable ang Google Drive bilang default, kapag gumagamit ng mobile data.</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">Ang file na ito ay kumpidensyal at napapailalim sa mga paghihigpit ng patakaran ng administrator.</translation>
 <translation id="8712637175834984815">Nakuha ko</translation>
 <translation id="8713112442029511308">Maltese</translation>
+<translation id="8714138378966541668">Ni-lock ng provider</translation>
 <translation id="8714406895390098252">Bisikleta</translation>
 <translation id="8719721339511222681">Pinili ang <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">Croatian</translation>

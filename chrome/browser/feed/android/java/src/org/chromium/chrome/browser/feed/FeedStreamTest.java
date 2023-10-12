@@ -53,7 +53,6 @@ import org.robolectric.shadows.ShadowLog;
 import org.chromium.base.Callback;
 import org.chromium.base.FeatureList;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.feed.v2.FeedUserActionType;
@@ -91,7 +90,7 @@ import java.util.Map;
 
 /** Unit tests for {@link FeedStream}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowPostTask.class})
+@Config(manifest = Config.NONE)
 // TODO(crbug.com/1210371): Rewrite using paused loop. See crbug for details.
 @LooperMode(LooperMode.Mode.LEGACY)
 public class FeedStreamTest {
@@ -1052,10 +1051,9 @@ public class FeedStreamTest {
         assertEquals(2, mContentManager.getItemCount());
         assertEquals("a", mContentManager.getContent(1).getKey());
         FeedListContentManager.FeedContent content = mContentManager.getContent(1);
-        assertThat(mContentManager.getContent(1),
-                instanceOf(FeedListContentManager.NativeViewContent.class));
+        assertThat(content, instanceOf(FeedListContentManager.NativeViewContent.class));
         FeedListContentManager.NativeViewContent nativeViewContent =
-                (FeedListContentManager.NativeViewContent) mContentManager.getContent(1);
+                (FeedListContentManager.NativeViewContent) content;
 
         FrameLayout layout = new FrameLayout(mActivity);
 
@@ -1077,10 +1075,9 @@ public class FeedStreamTest {
         assertEquals(2, mContentManager.getItemCount());
         assertEquals("a", mContentManager.getContent(1).getKey());
         FeedListContentManager.FeedContent content = mContentManager.getContent(1);
-        assertThat(mContentManager.getContent(1),
-                instanceOf(FeedListContentManager.NativeViewContent.class));
+        assertThat(content, instanceOf(FeedListContentManager.NativeViewContent.class));
         FeedListContentManager.NativeViewContent nativeViewContent =
-                (FeedListContentManager.NativeViewContent) mContentManager.getContent(1);
+                (FeedListContentManager.NativeViewContent) content;
 
         FrameLayout layout = new FrameLayout(mActivity);
 

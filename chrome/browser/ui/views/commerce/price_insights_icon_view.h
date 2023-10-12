@@ -57,13 +57,14 @@ class PriceInsightsIconView : public PageActionIconView {
   bool ShouldShow() const;
 
   // Show page action label if it meets the feature engagement requirements.
-  // Return true if the label is really shown.
-  bool MaybeShowPageActionLabel();
+  void MaybeShowPageActionLabel();
 
-  // Return the page action label. If no label should be shown, return
-  // PriceInsightsIconLabelType::kNone.
-  PriceInsightsIconView::PriceInsightsIconLabelType
-  GetPriceInsightsIconLabelType();
+  // Gets the label type from the commerce tab helper. This is a proxy method
+  // for ShoppingListUiTabHelper::GetPriceInsightsIconLabelTypeForPage.
+  PriceInsightsIconView::PriceInsightsIconLabelType GetLabelTypeForPage();
+
+  // Update the label for the page action based on the last known label type.
+  void UpdatePriceInsightsIconLabel();
 
   // Hides the page action label.
   void HidePageActionLabel();
@@ -80,7 +81,8 @@ class PriceInsightsIconView : public PageActionIconView {
   bool should_extend_label_shown_duration_ = false;
 
   // Last shown label type.
-  PriceInsightsIconView::PriceInsightsIconLabelType last_shown_label_type_;
+  PriceInsightsIconView::PriceInsightsIconLabelType last_shown_label_type_ =
+      PriceInsightsIconView::PriceInsightsIconLabelType::kNone;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_COMMERCE_PRICE_INSIGHTS_ICON_VIEW_H_

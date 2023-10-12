@@ -101,7 +101,6 @@
 #include "net/base/features.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/pressure_manager.mojom.h"
-#include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "services/metrics/ukm_recorder_factory_impl.h"
@@ -166,6 +165,7 @@
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_manager_host.mojom.h"
+#include "third_party/blink/public/mojom/sensor/web_sensor_provider.mojom.h"
 #include "third_party/blink/public/mojom/sms/webotp_service.mojom.h"
 #include "third_party/blink/public/mojom/speculation_rules/speculation_rules.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom.h"
@@ -288,10 +288,18 @@ void BindTextDetection(
 }
 
 #if !BUILDFLAG(IS_CHROMEOS)
-void BindWebNNContextProvider(
+void BindWebNNContextProviderForRenderFrame(
     RenderFrameHost* host,
     mojo::PendingReceiver<webnn::mojom::WebNNContextProvider> receiver) {
   auto* process_host = static_cast<RenderProcessHostImpl*>(host->GetProcess());
+  process_host->GetGpuClient()->BindWebNNContextProvider(std::move(receiver));
+}
+
+void BindWebNNContextProviderForDedicatedWorker(
+    DedicatedWorkerHost* host,
+    mojo::PendingReceiver<webnn::mojom::WebNNContextProvider> receiver) {
+  auto* process_host =
+      static_cast<RenderProcessHostImpl*>(host->GetProcessHost());
   process_host->GetGpuClient()->BindWebNNContextProvider(std::move(receiver));
 }
 #endif
@@ -896,7 +904,7 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<device::mojom::GamepadMonitor>(
       base::BindRepeating(&device::GamepadMonitor::Create));
 
-  map->Add<device::mojom::SensorProvider>(base::BindRepeating(
+  map->Add<blink::mojom::WebSensorProvider>(base::BindRepeating(
       &RenderFrameHostImpl::GetSensorProvider, base::Unretained(host)));
 
   map->Add<device::mojom::VibrationManager>(
@@ -917,8 +925,8 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
 #if !BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(
           webnn::features::kEnableMachineLearningNeuralNetworkService)) {
-    map->Add<webnn::mojom::WebNNContextProvider>(
-        base::BindRepeating(&BindWebNNContextProvider, base::Unretained(host)));
+    map->Add<webnn::mojom::WebNNContextProvider>(base::BindRepeating(
+        &BindWebNNContextProviderForRenderFrame, base::Unretained(host)));
   }
 #endif
 
@@ -1299,6 +1307,16 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
                           host->GetProcessHost()->GetID()),
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
+
+#if !BUILDFLAG(IS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(
+          webnn::features::kEnableMachineLearningNeuralNetworkService)) {
+    // base::Unretained(host->GetProcessHost()) is safe because the map is owned
+    // by |DedicatedWorkerHost::broker_|.
+    map->Add<webnn::mojom::WebNNContextProvider>(base::BindRepeating(
+        &BindWebNNContextProviderForDedicatedWorker, base::Unretained(host)));
+  }
+#endif
 
 #if !BUILDFLAG(IS_ANDROID)
   map->Add<blink::mojom::DirectSocketsService>(

@@ -4,6 +4,7 @@
 <translation id="1046370274005147998">Chromium-এ ভয়েসের মাধ্যমে সার্চ করুন।</translation>
 <translation id="1047130070405668746">Chromium বেছে নিন</translation>
 <translation id="1091252999271033193">এর মানে Chromium প্রতিবার মোবাইল সাইটের অনুরোধ করবে।</translation>
+<translation id="1171824629317156389">iOS অপারেটিং সিস্টেমে Chromium সেটিংস খুলুন, তারপর "ডিফল্ট ব্রাউজার অ্যাপ" বিকল্পে ট্যাপ করে Chromium বেছে নিন।</translation>
 <translation id="1185134272377778587">Chromium সম্পর্কে</translation>
 <translation id="1257458525759135959">ছবি সেভ করতে, সেটিংসে ট্যাপ করুন যাতে Chromium আপনার ফটো যোগ করতে পারে</translation>
 <translation id="1289216811211435351">Chromium-এ পাল্টান</translation>
@@ -16,6 +17,7 @@
 <translation id="1591119736686995611">Chromium ট্যাব গ্রিড খোলে।</translation>
 <translation id="1617663976202781617">Chromium সিঙ্ক থেকে ডেটা</translation>
 <translation id="1647558790457890304">Chromium সেটিংস</translation>
+<translation id="164952285225495380">এই প্যাকেজটি আগেই Chromium-এ ট্র্যাক করা হয়েছে।</translation>
 <translation id="1722370509450468186">পাসওয়ার্ড আপনার অ্যাকাউন্টে (<ph name="EMAIL" />) সেভ করা হবে।</translation>
 <translation id="1736662517232558588">Chromium ডেটা সাফ করা হয়েছে</translation>
 <translation id="1791845338122684020">আপনার Chromium-এর ইতিহাস পৃষ্ঠা খোলে।</translation>
@@ -94,7 +96,6 @@
 <translation id="4736424910885271643">আপনার অ্যাকাউন্ট <ph name="HOSTED_DOMAIN" /> ম্যানেজ করে তাই এই ডিভাইস থেকে Chromium ডেটা মুছে ফেলা হবে</translation>
 <translation id="4790638144988730920">আপনার Google অ্যাকাউন্টে Chromium ডেটা ব্যবহার করা চালিয়ে যান।</translation>
 <translation id="4828317641996116749">Chromium সব পাসওয়ার্ড চেক করতে পারেনি। পরে আবার চেষ্টা করুন।</translation>
-<translation id="4935539884203837577">Chromium আপনার দেওয়া ট্র্যাকিং নম্বর শনাক্ত করতে পারে এবং 'নতুন ট্যাব' পেজে আপনার প্যাকেজ ট্র্যাক করতে পারে। একই সাথে Chromium থেকে অন্যান্যদের কেনাকাটার অভিজ্ঞতা উন্নত করতে সাহায্য করে।</translation>
 <translation id="4985291216379576555">আপনি অফলাইন থাকায়, Chromium-এ আপনার আপডেট দেখা যাচ্ছে না</translation>
 <translation id="4996471330284142407">সহজ, সুরক্ষিত ও এখনও পর্যন্ত উপলভ্য সবচেয়ে দ্রুত ভার্সনের Chromium-এর সাহায্যে আরও কাজ করুন।</translation>
 <translation id="4999538639245140991"><ph name="SIGNOUT_MANAGED_DOMAIN" /> দ্বারা ম্যানেজ করা একটি অ্যাকাউন্ট থেকে আপনি সাইন-আউট করছেন বলে, এই ডিভাইস থেকে আপনার Chromium ডেটা মুছে যাবে। আপনার Google অ্যাকাউন্টে এই ডেটা থেকে যাবে।</translation>
@@ -140,6 +141,7 @@
 ১. সেটিংস খুলুন
 ২. 'ডিফল্ট ব্রাউজার অ্যাপ' বিকল্পে ট্যাপ করুন
 ৩. Chromium বেছে নিন।</translation>
+<translation id="6197255575340902638">"<ph name="MODULE_NAME" />" মডিউলটি লুকানো হলে Chromium আর আপনার প্যাকেজ অটোমেটিক ট্র্যাক করবে না এবং পুরনো প্যাকেজ ট্র্যাকিংয়ের সমস্ত ডেটা মুছে দেবে।</translation>
 <translation id="6247557882553405851">Google পাসওয়ার্ড ম্যানেজার</translation>
 <translation id="6268381023930128611">Chromium থেকে সাইন-আউট করবেন?</translation>
 <translation id="6324041800010509197">Chromium-এর ট্যাব গ্রিডে যান</translation>

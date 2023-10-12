@@ -13,6 +13,7 @@
 #include "content/public/common/input/native_web_keyboard_event.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -115,9 +116,7 @@ int ButtonPlaceholder::GetHeightForWidth(int width) const {
 }
 }  // namespace
 
-PopupCellWithButtonView::PopupCellWithButtonView(
-    bool should_ignore_mouse_observed_outside_item_bounds_check)
-    : PopupCellView(should_ignore_mouse_observed_outside_item_bounds_check) {}
+PopupCellWithButtonView::PopupCellWithButtonView() = default;
 
 PopupCellWithButtonView::~PopupCellWithButtonView() = default;
 
@@ -132,16 +131,24 @@ void PopupCellWithButtonView::SetCellButton(
     return;
   }
 
-  button_accessible_name_ = cell_button->GetAccessibleName();
   button_placeholder_ = AddChildView(std::make_unique<ButtonPlaceholder>(this));
   button_placeholder_->SetLayoutManager(std::make_unique<views::BoxLayout>());
   button_placeholder_->SetPreferredSize(cell_button->GetPreferredSize());
   button_ = button_placeholder_->AddChildView(std::move(cell_button));
-  button_->SetVisible(selected_);
+  button_->SetVisible(ShouldCellButtonBeVisible());
+  button_->GetViewAccessibility().OverrideIsIgnored(true);
   button_->SetButtonController(std::make_unique<CellButtonController>(
       button_, this,
       std::make_unique<views::Button::DefaultButtonControllerDelegate>(
           button_.get())));
+}
+
+void PopupCellWithButtonView::SetCellButtonBehavior(
+    CellButtonBehavior cell_button_behavior) {
+  cell_button_behavior_ = cell_button_behavior;
+  if (button_) {
+    button_->SetVisible(ShouldCellButtonBeVisible());
+  }
 }
 
 void PopupCellWithButtonView::HandleKeyPressEventFocusOnButton() {
@@ -150,7 +157,6 @@ void PopupCellWithButtonView::HandleKeyPressEventFocusOnButton() {
   }
 
   button_focused_ = true;
-  button_->SetAccessibleName(button_accessible_name_);
   button_->GetViewAccessibility().SetPopupFocusOverride();
   button_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   views::InkDrop::Get(button_->ink_drop_view())->GetInkDrop()->SetHovered(true);
@@ -163,14 +169,6 @@ void PopupCellWithButtonView::HandleKeyPressEventFocusOnContent() {
     return;
   }
 
-  // TODO(crbug.com/1417187): Find out the root cause for the necessity of this
-  // workaround. Without explicitly removing the accessible name for the button,
-  // the screen reader is announcing both the content and the delete button (on
-  // MAC). For example, if the content is "jondoe@gmail.com", the screen reader
-  // announces "delete jon". This does not happen if the button has no
-  // accessible name.
-  button_accessible_name_ = button_->GetAccessibleName();
-  button_->SetAccessibleName(u"");
   UpdateSelectedAndRunCallback(true);
   GetViewAccessibility().SetPopupFocusOverride();
   NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
@@ -219,18 +217,10 @@ bool PopupCellWithButtonView::HandleKeyPressEvent(
 }
 
 void PopupCellWithButtonView::SetSelected(bool selected) {
-  // TODO(crbug.com/1417187): Find out the root cause for the necessity of this
-  // workaround. Without explicitly removing the accessible name for the button
-  // the screen reader is announcing both the content and the delete button (on
-  // MAC). For example, if the content is "jondoe@gmail.com", the screen reader
-  // announces "delete jon". This does not happen if the button has no
-  // accessible name.
-  if (button_) {
-    button_->SetVisible(selected);
-    button_->SetAccessibleName(u"");
-  }
-
   autofill::PopupCellView::SetSelected(selected);
+  if (button_) {
+    button_->SetVisible(ShouldCellButtonBeVisible());
+  }
 
   // There are cases where SetSelect is called with the same value as before
   // but we still want to refresh the style. For example in the case where there
@@ -274,5 +264,17 @@ void PopupCellWithButtonView::UpdateSelectedAndRunCallback(bool selected) {
     callback.Run();
   }
 }
+
+bool PopupCellWithButtonView::ShouldCellButtonBeVisible() const {
+  switch (cell_button_behavior_) {
+    case CellButtonBehavior::kShowOnHoverOrSelect:
+      return selected_;
+    case CellButtonBehavior::kShowAlways:
+      return true;
+  }
+}
+
+BEGIN_METADATA(PopupCellWithButtonView, autofill::PopupCellView)
+END_METADATA
 
 }  // namespace autofill

@@ -18,6 +18,9 @@ BASE_FEATURE(kKidFriendlyContentFeed,
              "KidFriendlyContentFeed",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+constexpr base::FeatureParam<std::string> kKidFriendlyContentFeedEndpoint{
+    &kKidFriendlyContentFeed, "supervised_feed_endpoint", ""};
+
 // Enables local parent approvals for the blocked website on the Family Link
 // user's device.
 // The feature includes one experiment parameter: "preferred_button", which
@@ -32,12 +35,6 @@ BASE_FEATURE(kLocalWebApprovals,
              "LocalWebApprovals",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
-
-const char kLocalWebApprovalsPreferredButtonLocal[] = "local";
-const char kLocalWebApprovalsPreferredButtonRemote[] = "remote";
-constexpr base::FeatureParam<std::string> kLocalWebApprovalsPreferredButton{
-    &kLocalWebApprovals, "preferred_button",
-    kLocalWebApprovalsPreferredButtonLocal};
 
 // Proto fetcher experiments.
 BASE_FEATURE(kEnableProtoApiForClassifyUrl,
@@ -72,13 +69,6 @@ bool IsLocalWebApprovalsEnabled() {
 #else
   return base::FeatureList::IsEnabled(kLocalWebApprovals);
 #endif
-}
-
-bool IsLocalWebApprovalThePreferredButton() {
-  std::string preferred_button = kLocalWebApprovalsPreferredButton.Get();
-  DCHECK((preferred_button == kLocalWebApprovalsPreferredButtonLocal) ||
-         (preferred_button == kLocalWebApprovalsPreferredButtonRemote));
-  return (preferred_button == kLocalWebApprovalsPreferredButtonLocal);
 }
 
 bool IsProtoApiForClassifyUrlEnabled() {

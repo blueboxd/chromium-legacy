@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.page_insights;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
@@ -18,6 +19,8 @@ import android.view.ViewGroup;
 
 import androidx.test.filters.MediumTest;
 
+import com.google.protobuf.ByteString;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -28,23 +31,33 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.mockito.stubbing.Answer;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FeatureList;
-import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge;
+import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeJni;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights;
+import org.chromium.chrome.browser.page_insights.proto.PageInsights.AutoPeekConditions;
+import org.chromium.chrome.browser.page_insights.proto.PageInsights.Page;
+import org.chromium.chrome.browser.page_insights.proto.PageInsights.PageInsightsMetadata;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.pageinsights.PageInsightsSurfaceRenderer;
 import org.chromium.chrome.browser.xsurface.pageinsights.PageInsightsSurfaceScope;
@@ -59,9 +72,16 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
 import org.chromium.components.browser_ui.bottomsheet.ExpandedSheetHelper;
 import org.chromium.components.browser_ui.bottomsheet.ManagedBottomSheetController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.components.optimization_guide.OptimizationGuideDecision;
+import org.chromium.components.optimization_guide.proto.CommonTypesProto;
+import org.chromium.components.optimization_guide.proto.CommonTypesProto.Any;
+import org.chromium.components.optimization_guide.proto.HintsProto;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.test.util.BlankUiTestActivity;
+import org.chromium.url.GURL;
+import org.chromium.url.JUnitTestGURLs;
 
 import java.util.function.BooleanSupplier;
 
@@ -80,17 +100,22 @@ public class PageInsightsCoordinatorTest {
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
+    @Rule
+    public JniMocker jniMocker = new JniMocker();
+
     @Mock
-    private ObservableSupplier<Tab> mTabProvider;
+    private OptimizationGuideBridge.Natives mOptimizationGuideBridgeJniMock;
+    @Mock
+    private ObservableSupplierImpl<Tab> mTabProvider;
     @Captor
     private ArgumentCaptor<Callback<Tab>> mTabCallbackCaptor;
     @Captor
-    private ArgumentCaptor<TabObserver> mTabObserverCaptor;
-    @Captor
     private ArgumentCaptor<BottomSheetObserver> mBottomUiObserverCaptor;
+
     @Captor
     private ArgumentCaptor<BrowserControlsStateProvider.Observer>
             mBrowserControlsStateObserverCaptor;
+
     @Mock
     private Tab mTab;
     @Mock
@@ -105,6 +130,14 @@ public class PageInsightsCoordinatorTest {
     private BooleanSupplier mIsPageInsightsHubEnabled;
     @Mock
     private ProcessScope mProcessScope;
+    @Mock
+    private Supplier<Profile> mProfileSupplier;
+    @Mock
+    private Profile mProfile;
+    @Mock
+    private IdentityServicesProvider mIdentityServicesProvider;
+    @Mock
+    private IdentityManager mIdentityManager;
     @Mock
     private PageInsightsSurfaceScope mSurfaceScope;
     @Mock
@@ -130,6 +163,10 @@ public class PageInsightsCoordinatorTest {
 
     @Before
     public void setupTest() throws Exception {
+        MockitoAnnotations.initMocks(this);
+        jniMocker.mock(OptimizationGuideBridgeJni.TEST_HOOKS, mOptimizationGuideBridgeJniMock);
+        doReturn(1L).when(mOptimizationGuideBridgeJniMock).init();
+        Profile.setLastUsedProfileForTesting(mProfile);
         TestThreadUtils.runOnUiThreadBlocking(() -> rootView().removeAllViews());
         XSurfaceProcessScopeProvider.setProcessScopeForTesting(mProcessScope);
         doReturn(mSurfaceScope).when(mProcessScope).obtainPageInsightsSurfaceScope(any());
@@ -138,6 +175,9 @@ public class PageInsightsCoordinatorTest {
                 .when(mSurfaceRenderer)
                 .render(any(), any());
         doReturn(false).when(mIsPageInsightsHubEnabled).getAsBoolean();
+        doReturn(mProfile).when(mProfileSupplier).get();
+        IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
+        doReturn(mIdentityManager).when(mIdentityServicesProvider).getIdentityManager(mProfile);
         mFeatureListValues = new FeatureList.TestValues();
         FeatureList.setTestValues(mFeatureListValues);
         mFeatureListValues.addFieldTrialParamOverride(ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB,
@@ -180,10 +220,24 @@ public class PageInsightsCoordinatorTest {
                     KeyboardVisibilityDelegate.getInstance(), () -> rootView());
         });
         doReturn(true).when(mIsPageInsightsHubEnabled).getAsBoolean();
-        mPageInsightsCoordinator = new PageInsightsCoordinator(activity, mTabProvider,
-                mShareDelegateSupplier, mPageInsightsController, mBottomUiController,
-                mExpandedSheetHelper, mBrowserControlsStateProvider, mBrowserControlsSizer,
-                mIsPageInsightsHubEnabled, 0);
+        mPageInsightsCoordinator =
+                new PageInsightsCoordinator(
+                        activity,
+                        mTabProvider,
+                        mShareDelegateSupplier,
+                        mProfileSupplier,
+                        mPageInsightsController,
+                        mBottomUiController,
+                        mExpandedSheetHelper,
+                        mBrowserControlsStateProvider,
+                        mBrowserControlsSizer,
+                        mIsPageInsightsHubEnabled,
+                        0);
+        doReturn(mTab).when(mTabProvider).get();
+        doReturn(JUnitTestGURLs.EXAMPLE_URL).when(mTab).getUrl();
+        verify(mTabProvider).addObserver(mTabCallbackCaptor.capture());
+        mTabCallbackCaptor.getValue().onResult(mTab);
+        mockOptimizationGuideResponse(pageInsights());
         mTestSupport = new BottomSheetTestSupport(mPageInsightsController);
         waitForAnimationToFinish();
     }
@@ -231,9 +285,7 @@ public class PageInsightsCoordinatorTest {
     }
 
     private void setConfidenceTooLowForAutoTrigger() {
-        PageInsightsDataLoader testingPageInsightsDataLoader = new PageInsightsDataLoader();
-        testingPageInsightsDataLoader.setConfidenceForTesting(0.4f);
-        mPageInsightsCoordinator.setPageInsightsDataLoaderForTesting(testingPageInsightsDataLoader);
+        mockOptimizationGuideResponse(pageInsights(0.4f));
     }
 
     private void setAutoTriggerReady() {
@@ -413,5 +465,62 @@ public class PageInsightsCoordinatorTest {
         hideTopBar(); // Signal for auto triggering the PIH
 
         assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
+    }
+
+    private void mockOptimizationGuideResponse(PageInsightsMetadata metadata) {
+        doAnswer(
+                        new Answer<Void>() {
+                            @Override
+                            public Void answer(InvocationOnMock invocation) {
+                                OptimizationGuideBridge.OnDemandOptimizationGuideCallback callback =
+                                        (OptimizationGuideBridge.OnDemandOptimizationGuideCallback)
+                                                invocation.getArguments()[4];
+                                callback.onOnDemandOptimizationGuideDecision(
+                                        JUnitTestGURLs.EXAMPLE_URL,
+                                        org.chromium.components.optimization_guide.proto.HintsProto
+                                                .OptimizationType.PAGE_INSIGHTS,
+                                        OptimizationGuideDecision.TRUE,
+                                        Any.newBuilder()
+                                                .setValue(
+                                                        ByteString.copyFrom(metadata.toByteArray()))
+                                                .build());
+                                return null;
+                            }
+                        })
+                .when(mOptimizationGuideBridgeJniMock)
+                .canApplyOptimizationOnDemand(
+                        eq(1L),
+                        eq(new GURL[] {JUnitTestGURLs.EXAMPLE_URL}),
+                        eq(new int[] {HintsProto.OptimizationType.PAGE_INSIGHTS.getNumber()}),
+                        eq(CommonTypesProto.RequestContext.CONTEXT_PAGE_INSIGHTS_HUB.getNumber()),
+                        any(OptimizationGuideBridge.OnDemandOptimizationGuideCallback.class));
+    }
+
+    private static PageInsightsMetadata pageInsights() {
+        return pageInsights(0.51f);
+    }
+
+    private static PageInsightsMetadata pageInsights(float confidence) {
+        Page childPage =
+                Page.newBuilder()
+                        .setId(Page.PageID.PEOPLE_ALSO_VIEW)
+                        .setTitle("People also view")
+                        .build();
+        Page feedPage =
+                Page.newBuilder()
+                        .setId(Page.PageID.SINGLE_FEED_ROOT)
+                        .setTitle("Related Insights")
+                        .build();
+        AutoPeekConditions mAutoPeekConditions =
+                AutoPeekConditions.newBuilder()
+                        .setConfidence(confidence)
+                        .setPageScrollFraction(0.4f)
+                        .setMinimumSecondsOnPage(30)
+                        .build();
+        return PageInsightsMetadata.newBuilder()
+                .setFeedPage(feedPage)
+                .addPages(childPage)
+                .setAutoPeekConditions(mAutoPeekConditions)
+                .build();
     }
 }

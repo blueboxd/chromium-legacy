@@ -4,10 +4,14 @@
 
 #include "chrome/browser/extensions/extension_tab_util.h"
 
+#include "base/json/json_reader.h"
 #include "base/test/gmock_expected_support.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -103,7 +107,7 @@ class ChromeExtensionNavigationTest : public ExtensionServiceTestBase {
 
 void ChromeExtensionNavigationTest::SetUp() {
   ExtensionServiceTestBase::SetUp();
-  InitializeEmptyExtensionService();
+  InitializeExtensionServiceWithUpdater();
 }
 
 TEST_F(ChromeExtensionNavigationTest, PrepareURLForNavigation) {
@@ -165,6 +169,52 @@ TEST_F(ChromeExtensionNavigationTest, PrepareURLForNavigation) {
         kFileURLWithAccess, extension.get(), browser_context());
     EXPECT_THAT(url, base::test::ValueIs(GURL(kFileURLWithAccess)));
   }
+  // Regression test for crbug.com/1487908. Ensure that file URLs are returned
+  // when the call originates from non-extension contexts (e.g. WebUI contexts).
+  {
+    const std::string kFileURL("file:///etc/passwd");
+    auto url = ExtensionTabUtil::PrepareURLForNavigation(
+        kFileURL, /*extension=*/nullptr, browser_context());
+    EXPECT_THAT(url, base::test::ValueIs(GURL(kFileURL)));
+  }
+}
+
+TEST_F(ChromeExtensionNavigationTest,
+       PrepareURLForNavigationWithEnterprisePolicy) {
+  // Set the extension to allow file URL navigation via enterprise policy.
+  std::string extension_id = "abcdefghijklmnopabcdefghijklmnop";
+  std::string json = base::StringPrintf(
+      R"({
+        "%s": {
+          "file_url_navigation_allowed": true
+        }
+      })",
+      extension_id.c_str());
+
+  absl::optional<base::Value> settings = base::JSONReader::Read(json);
+  testing_pref_service()->SetManagedPref(
+      pref_names::kExtensionManagement,
+      base::Value::ToUniquePtrValue(std::move(settings.value())));
+
+  auto extension = ExtensionBuilder("test").SetID(extension_id).Build();
+
+  // File URLs are returned when the extension has access to file.
+  const std::string kFileURLWithEnterprisePolicy("file:///etc/passwd");
+  auto url = ExtensionTabUtil::PrepareURLForNavigation(
+      kFileURLWithEnterprisePolicy, extension.get(), browser_context());
+  EXPECT_THAT(url, base::test::ValueIs(GURL(kFileURLWithEnterprisePolicy)));
+}
+
+TEST_F(ChromeExtensionNavigationTest, PrepareURLForNavigationWithPDFViewer) {
+  // Set ID for PDF viewer extension.
+  auto extension =
+      ExtensionBuilder("test").SetID(extension_misc::kPdfExtensionId).Build();
+
+  // File URLs are returned when the extension has access to file.
+  const std::string kFileURLWithPDFViewer("file:///etc/passwd");
+  auto url = ExtensionTabUtil::PrepareURLForNavigation(
+      kFileURLWithPDFViewer, extension.get(), browser_context());
+  EXPECT_THAT(url, base::test::ValueIs(GURL(kFileURLWithPDFViewer)));
 }
 
 TEST_F(ChromeExtensionNavigationTest, PrepareURLForNavigationOnDevtools) {

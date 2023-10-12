@@ -43,7 +43,6 @@ constexpr base::TimeDelta kLowerBoundRefreshInterval =
 // This alias mimics the definition of VideoCaptureDeliverFrameCB.
 using VideoCaptureDeliverFrameInternalCallback = WTF::CrossThreadFunction<void(
     scoped_refptr<media::VideoFrame> video_frame,
-    std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
     base::TimeTicks estimated_capture_time)>;
 
 // This alias mimics the definition of VideoCaptureNotifyFrameDroppedCB.
@@ -76,8 +75,8 @@ base::TimeDelta ComputeRefreshIntervalFromBounds(
   return refresh_interval;
 }
 
-void LogVideoFrameDrop(media::VideoCaptureFrameDropReason reason,
-                       mojom::blink::MediaStreamType stream_type) {
+void LogVideoFrameDropUMA(media::VideoCaptureFrameDropReason reason,
+                          mojom::blink::MediaStreamType stream_type) {
   const int kEnumCount =
       static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1;
   UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.Track.FrameDrop", reason,
@@ -112,55 +111,6 @@ void LogVideoFrameDrop(media::VideoCaptureFrameDropReason reason,
       UMA_HISTOGRAM_ENUMERATION(
           "Media.VideoCapture.Track.FrameDrop.DisplayCaptureSet", reason,
           kEnumCount);
-      break;
-    case mojom::blink::MediaStreamType::NO_SERVICE:
-    case mojom::blink::MediaStreamType::DEVICE_AUDIO_CAPTURE:
-    case mojom::blink::MediaStreamType::GUM_TAB_AUDIO_CAPTURE:
-    case mojom::blink::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE:
-    case mojom::blink::MediaStreamType::DISPLAY_AUDIO_CAPTURE:
-    case mojom::blink::MediaStreamType::NUM_MEDIA_TYPES:
-      break;
-  }
-}
-
-void LogMaxConsecutiveVideoFrameDropCountExceeded(
-    media::VideoCaptureFrameDropReason reason,
-    mojom::blink::MediaStreamType stream_type) {
-  const int kEnumCount =
-      static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1;
-  UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.Track.MaxFrameDropExceeded",
-                            reason, kEnumCount);
-  switch (stream_type) {
-    case mojom::blink::MediaStreamType::DEVICE_VIDEO_CAPTURE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Media.VideoCapture.Track.MaxFrameDropExceeded.DeviceCapture", reason,
-          kEnumCount);
-      break;
-    case mojom::blink::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Media.VideoCapture.Track.MaxFrameDropExceeded.GumTabCapture", reason,
-          kEnumCount);
-      break;
-    case mojom::blink::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Media.VideoCapture.Track.MaxFrameDropExceeded.GumDesktopCapture",
-          reason, kEnumCount);
-      break;
-    case mojom::blink::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Media.VideoCapture.Track.MaxFrameDropExceeded.DisplayCapture",
-          reason, kEnumCount);
-      break;
-    case mojom::blink::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Media.VideoCapture.Track.MaxFrameDropExceeded."
-          "DisplayCaptureCurrentTab",
-          reason, kEnumCount);
-      break;
-    case mojom::blink::MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Media.VideoCapture.Track.MaxFrameDropExceeded.DisplayCaptureSet",
-          reason, kEnumCount);
       break;
     case mojom::blink::MediaStreamType::NO_SERVICE:
     case mojom::blink::MediaStreamType::DEVICE_AUDIO_CAPTURE:
@@ -229,7 +179,6 @@ class MediaStreamVideoTrack::FrameDeliverer
   // as parameters. Must be called on the video task runner.
   void DeliverFrameOnVideoTaskRunner(
       scoped_refptr<media::VideoFrame> frame,
-      std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
       base::TimeTicks estimated_capture_time);
 
   // A frame was dropped instead of delivered. This is the main handler of frame
@@ -623,7 +572,6 @@ void MediaStreamVideoTrack::FrameDeliverer::
 
 void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnVideoTaskRunner(
     scoped_refptr<media::VideoFrame> frame,
-    std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
     base::TimeTicks estimated_capture_time) {
   DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
 
@@ -650,11 +598,9 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnVideoTaskRunner(
     // When disabled, a black video frame is passed along instead. The original
     // frames are dropped.
     video_frame = GetBlackFrame(*frame);
-    scaled_video_frames.clear();
   }
   for (const auto& entry : callbacks_) {
-    entry.deliver_frame.Run(video_frame, scaled_video_frames,
-                            estimated_capture_time);
+    entry.deliver_frame.Run(video_frame, estimated_capture_time);
   }
   // The delay on refresh timer is reset each time a frame is received so that
   // it will not fire for at least an additional period. This means refresh
@@ -700,14 +646,13 @@ void MediaStreamVideoTrack::FrameDeliverer::LogFrameDroppedOnVideoTaskRunner(
     if (++frame_drop_log_state_.drop_count >
         kMaxConsecutiveFrameDropForSameReasonCount) {
       frame_drop_log_state_.max_log_count_exceeded = true;
-      LogMaxConsecutiveVideoFrameDropCountExceeded(reason, stream_type_);
       return;
     }
   } else {
     frame_drop_log_state_ = FrameDropLogState(reason);
   }
 
-  LogVideoFrameDrop(reason, stream_type_);
+  LogVideoFrameDropUMA(reason, stream_type_);
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::MaybeEmitFrameDropLogMessage(

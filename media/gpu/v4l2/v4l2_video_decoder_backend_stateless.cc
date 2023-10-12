@@ -439,10 +439,6 @@ bool V4L2StatelessVideoDecoderBackend::PumpDecodeTask() {
         PumpOutputSurfaces();
         return true;
 
-      case AcceleratedVideoDecoder::kColorSpaceChange:
-        NOTIMPLEMENTED_LOG_ONCE();
-        return false;
-
       case AcceleratedVideoDecoder::kRanOutOfStreamData:
         // Current decode request is finished processing.
         if (current_decode_request_) {
@@ -612,6 +608,7 @@ bool V4L2StatelessVideoDecoderBackend::ApplyResolution(
   format.fmt.pix_mp.width = pic_size.width();
   format.fmt.pix_mp.height = pic_size.height();
   if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
+    RecordVidiocIoctlErrorUMA(VidiocIoctlRequests::kVidiocSFmt);
     VPLOGF(1) << "Failed setting OUTPUT format";
     return false;
   }

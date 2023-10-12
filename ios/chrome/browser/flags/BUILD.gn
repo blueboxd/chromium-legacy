@@ -56,30 +56,28 @@ source_set("flags") {
     "//components/variations/service",
     "//ios/chrome/app:background_mode_buildflags",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/bring_android_tabs/model:features",
     "//ios/chrome/browser/browsing_data/model:feature_flags",
     "//ios/chrome/browser/crash_report/model",
-    "//ios/chrome/browser/credential_provider_promo:features",
-    "//ios/chrome/browser/default_browser:utils",
-    "//ios/chrome/browser/drag_and_drop",
-    "//ios/chrome/browser/find_in_page:util",
+    "//ios/chrome/browser/credential_provider_promo/model:features",
+    "//ios/chrome/browser/default_browser/model:utils",
+    "//ios/chrome/browser/drag_and_drop/model",
+    "//ios/chrome/browser/find_in_page/model:util",
     "//ios/chrome/browser/follow:feature_flags",
     "//ios/chrome/browser/iph_for_new_chrome_user",
     "//ios/chrome/browser/ntp:features",
+    "//ios/chrome/browser/ntp/home:features",
     "//ios/chrome/browser/parcel_tracking:util",
     "//ios/chrome/browser/policy",
     "//ios/chrome/browser/policy:constants",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/promos_manager:features",
-    "//ios/chrome/browser/screen_time:buildflags",
+    "//ios/chrome/browser/screen_time/model:buildflags",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/public/features:system_flags",
     "//ios/chrome/browser/tabs/inactive_tabs:features",
     "//ios/chrome/browser/tabs/tab_pickup:features",
     "//ios/chrome/browser/text_selection/model:model_utils",
     "//ios/chrome/browser/ui/app_store_rating:features",
-    "//ios/chrome/browser/ui/autofill:features",
-    "//ios/chrome/browser/ui/content_suggestions:feature_flags",
     "//ios/chrome/browser/ui/default_promo/post_restore:features",
     "//ios/chrome/browser/ui/download:features",
     "//ios/chrome/browser/ui/first_run:field_trial",
@@ -100,7 +98,7 @@ source_set("flags") {
   ]
 
   if (ios_enable_screen_time) {
-    deps += [ "//ios/chrome/browser/screen_time:feature_flags" ]
+    deps += [ "//ios/chrome/browser/screen_time/model:feature_flags" ]
   }
 }
 
@@ -125,7 +123,7 @@ source_set("client_side") {
     "//ios/chrome/browser/shared/model/paths",
     "//ios/chrome/browser/ui/first_run:field_trial",
     "//ios/chrome/browser/ui/ntp:field_trial",
-    "//ios/chrome/browser/variations:store",
+    "//ios/chrome/browser/variations/model:store",
   ]
 }
 

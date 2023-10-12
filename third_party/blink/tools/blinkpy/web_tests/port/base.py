@@ -42,7 +42,7 @@ import tempfile
 from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime
-from typing import Optional, Set
+from typing import Optional, Set, Tuple
 
 import six
 from six.moves import zip_longest
@@ -73,6 +73,9 @@ from blinkpy.web_tests.servers import pywebsocket
 from blinkpy.web_tests.servers import wptserve
 
 _log = logging.getLogger(__name__)
+
+FuzzyRange = Tuple[int, int]
+FuzzyParameters = Tuple[Optional[FuzzyRange], Optional[FuzzyRange]]
 
 # Path relative to the build directory.
 CONTENT_SHELL_FONTS_DIR = "test_fonts"
@@ -982,6 +985,14 @@ class Port(object):
             reftest_list.append((expectation, ref_absolute_path))
         return reftest_list
 
+    def max_allowed_failures(self, num_tests):
+        return (self._options.exit_after_n_failures
+                or max(5000, num_tests // 2))
+
+    def max_allowed_crash_or_timeouts(self, num_tests):
+        return (self._options.exit_after_n_crashes_or_timeouts
+                or max(100, num_tests // 33))
+
     def tests(self, paths=None):
         """Returns all tests or tests matching supplied paths.
 
@@ -1208,7 +1219,7 @@ class Port(object):
             "http://{}:{}".format(hosts_and_ports[0], hosts_and_ports[1]),
             urljoin(path_in_wpt, pac))
 
-    def get_wpt_fuzzy_metadata(self, test_name):
+    def get_wpt_fuzzy_metadata(self, test_name: str) -> FuzzyParameters:
         """Returns the WPT-style fuzzy metadata for the given test.
 
         The metadata is a pair of lists, (maxDifference, totalPixels), where

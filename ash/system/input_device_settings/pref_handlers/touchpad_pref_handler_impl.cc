@@ -13,6 +13,7 @@
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "ash/system/input_device_settings/input_device_settings_utils.h"
 #include "ash/system/input_device_settings/input_device_tracker.h"
+#include "ash/system/input_device_settings/settings_updated_metrics_info.h"
 #include "base/check.h"
 #include "base/values.h"
 #include "components/account_id/account_id.h"
@@ -41,6 +42,10 @@ struct ForceTouchpadSettingPersistence {
 
 ui::mojom::SimulateRightClickModifier GetSimulateRightClickModifierFromPrefs(
     PrefService* prefs) {
+  if (!prefs) {
+    return kDefaultSimulateRightClick;
+  }
+
   const auto* alt_right_click_preference =
       prefs->GetUserPrefValue(prefs::kAltEventRemappedToRightClick);
   const auto* search_right_click_preference =
@@ -61,24 +66,6 @@ ui::mojom::SimulateRightClickModifier GetSimulateRightClickModifierFromPrefs(
   return search_count >= alt_count
              ? ui::mojom::SimulateRightClickModifier::kSearch
              : ui::mojom::SimulateRightClickModifier::kAlt;
-}
-
-mojom::TouchpadSettingsPtr GetDefaultTouchpadSettings() {
-  mojom::TouchpadSettingsPtr settings = mojom::TouchpadSettings::New();
-  settings->sensitivity = kDefaultSensitivity;
-  settings->reverse_scrolling = kDefaultReverseScrolling;
-  settings->acceleration_enabled = kDefaultAccelerationEnabled;
-  settings->tap_to_click_enabled = kDefaultTapToClickEnabled;
-  settings->three_finger_click_enabled = kDefaultThreeFingerClickEnabled;
-  settings->tap_dragging_enabled = kDefaultTapDraggingEnabled;
-  settings->scroll_sensitivity = kDefaultSensitivity;
-  settings->scroll_acceleration = kDefaultScrollAcceleration;
-  settings->haptic_sensitivity = kDefaultHapticSensitivity;
-  settings->haptic_enabled = kDefaultHapticFeedbackEnabled;
-  if (features::IsAltClickAndSixPackCustomizationEnabled()) {
-    settings->simulate_right_click = kDefaultSimulateRightClick;
-  }
-  return settings;
 }
 
 // GetTouchpadSettingsFromPrefs returns a touchpad settings based on user prefs
@@ -177,6 +164,7 @@ mojom::TouchpadSettingsPtr GetTouchpadSettingsFromPrefs(
 }
 
 mojom::TouchpadSettingsPtr RetrieveTouchpadSettings(
+    PrefService* pref_service,
     const mojom::Touchpad& touchpad,
     const base::Value::Dict& settings_dict) {
   mojom::TouchpadSettingsPtr settings = mojom::TouchpadSettings::New();
@@ -217,7 +205,27 @@ mojom::TouchpadSettingsPtr RetrieveTouchpadSettings(
     settings->haptic_enabled = kDefaultHapticFeedbackEnabled;
   }
 
+  if (features::IsAltClickAndSixPackCustomizationEnabled()) {
+    settings->simulate_right_click =
+        static_cast<ui::mojom::SimulateRightClickModifier>(
+            settings_dict.FindInt(prefs::kTouchpadSettingSimulateRightClick)
+                .value_or(static_cast<int>(
+                    GetSimulateRightClickModifierFromPrefs(pref_service))));
+  }
+
   return settings;
+}
+
+mojom::TouchpadSettingsPtr GetDefaultTouchpadSettings(
+    PrefService* pref_service,
+    const mojom::Touchpad& touchpad) {
+  if (pref_service) {
+    return RetrieveTouchpadSettings(
+        pref_service, touchpad,
+        pref_service->GetDict(prefs::kTouchpadDefaultSettings));
+  }
+
+  return RetrieveTouchpadSettings(pref_service, touchpad, /*settings_dict=*/{});
 }
 
 base::Value::Dict ConvertSettingsToDict(
@@ -376,14 +384,44 @@ void UpdateTouchpadSettingsImpl(
 mojom::TouchpadSettingsPtr GetTouchpadSettingsFromOldLocalStatePrefs(
     PrefService* local_state,
     const AccountId& account_id,
-    const mojom::Touchpad& Touchpad) {
-  mojom::TouchpadSettingsPtr settings = GetDefaultTouchpadSettings();
+    const mojom::Touchpad& touchpad) {
+  mojom::TouchpadSettingsPtr settings =
+      GetDefaultTouchpadSettings(/*pref_service=*/nullptr, touchpad);
   settings->tap_to_click_enabled =
       user_manager::KnownUser(local_state)
           .FindBoolPath(account_id, prefs::kOwnerTapToClickEnabled)
           .value_or(kDefaultTapToClickEnabled);
 
   return settings;
+}
+
+bool HasDefaultSettings(PrefService* pref_service) {
+  const auto* pref =
+      pref_service->FindPreference(prefs::kTouchpadDefaultSettings);
+  return pref && pref->HasUserSetting();
+}
+
+void InitializeSettingsUpdateMetricInfo(
+    PrefService* pref_service,
+    const mojom::Touchpad& touchpad,
+    SettingsUpdatedMetricsInfo::Category category) {
+  CHECK(pref_service);
+
+  const auto& settings_metric_info =
+      pref_service->GetDict(prefs::kTouchpadUpdateSettingsMetricInfo);
+  const auto* device_metric_info =
+      settings_metric_info.Find(touchpad.device_key);
+  if (device_metric_info) {
+    return;
+  }
+
+  auto updated_metric_info = settings_metric_info.Clone();
+
+  const SettingsUpdatedMetricsInfo metrics_info(category, base::Time::Now());
+  updated_metric_info.Set(touchpad.device_key, metrics_info.ToDict());
+
+  pref_service->SetDict(prefs::kTouchpadUpdateSettingsMetricInfo,
+                        std::move(updated_metric_info));
 }
 
 }  // namespace
@@ -395,7 +433,7 @@ void TouchpadPrefHandlerImpl::InitializeTouchpadSettings(
     PrefService* pref_service,
     mojom::Touchpad* touchpad) {
   if (!pref_service) {
-    touchpad->settings = GetDefaultTouchpadSettings();
+    touchpad->settings = GetDefaultTouchpadSettings(pref_service, *touchpad);
     return;
   }
 
@@ -412,29 +450,25 @@ void TouchpadPrefHandlerImpl::InitializeTouchpadSettings(
   }
 
   ForceTouchpadSettingPersistence force_persistence;
+  SettingsUpdatedMetricsInfo::Category category;
   if (settings_dict) {
-    touchpad->settings = RetrieveTouchpadSettings(*touchpad, *settings_dict);
-    if (features::IsAltClickAndSixPackCustomizationEnabled()) {
-      touchpad->settings->simulate_right_click =
-          static_cast<ui::mojom::SimulateRightClickModifier>(
-              settings_dict->FindInt(prefs::kTouchpadSettingSimulateRightClick)
-                  .value_or(static_cast<int>(
-                      GetSimulateRightClickModifierFromPrefs(pref_service))));
-    }
+    category = SettingsUpdatedMetricsInfo::Category::kSynced;
+    touchpad->settings =
+        RetrieveTouchpadSettings(pref_service, *touchpad, *settings_dict);
   } else if (Shell::Get()->input_device_tracker()->WasDevicePreviouslyConnected(
                  InputDeviceTracker::InputDeviceCategory::kTouchpad,
                  touchpad->device_key)) {
+    category = SettingsUpdatedMetricsInfo::Category::kDefault;
     touchpad->settings =
         GetTouchpadSettingsFromPrefs(pref_service, force_persistence);
   } else {
-    touchpad->settings = GetDefaultTouchpadSettings();
-    // Override simulate right click default value.
-    if (features::IsAltClickAndSixPackCustomizationEnabled()) {
-      touchpad->settings->simulate_right_click =
-          GetSimulateRightClickModifierFromPrefs(pref_service);
-    }
+    category = HasDefaultSettings(pref_service)
+                   ? SettingsUpdatedMetricsInfo::Category::kDefault
+                   : SettingsUpdatedMetricsInfo::Category::kFirstEver;
+    touchpad->settings = GetDefaultTouchpadSettings(pref_service, *touchpad);
   }
   DCHECK(touchpad->settings);
+  InitializeSettingsUpdateMetricInfo(pref_service, *touchpad, category);
 
   UpdateTouchpadSettingsImpl(pref_service, *touchpad, force_persistence);
 }
@@ -461,7 +495,8 @@ void TouchpadPrefHandlerImpl::InitializeLoginScreenTouchpadSettings(
       touchpad->is_external ? prefs::kTouchpadLoginScreenExternalSettingsPref
                             : prefs::kTouchpadLoginScreenInternalSettingsPref);
   if (settings_dict) {
-    touchpad->settings = RetrieveTouchpadSettings(*touchpad, *settings_dict);
+    touchpad->settings = RetrieveTouchpadSettings(/*pref_service=*/nullptr,
+                                                  *touchpad, *settings_dict);
   } else {
     touchpad->settings = GetTouchpadSettingsFromOldLocalStatePrefs(
         local_state, account_id, *touchpad);
@@ -491,7 +526,19 @@ void TouchpadPrefHandlerImpl::UpdateLoginScreenTouchpadSettings(
 
 void TouchpadPrefHandlerImpl::InitializeWithDefaultTouchpadSettings(
     mojom::Touchpad* touchpad) {
-  touchpad->settings = GetDefaultTouchpadSettings();
+  touchpad->settings =
+      GetDefaultTouchpadSettings(/*pref_service=*/nullptr, *touchpad);
+}
+
+void TouchpadPrefHandlerImpl::UpdateDefaultTouchpadSettings(
+    PrefService* pref_service,
+    const mojom::Touchpad& touchpad) {
+  // All settings should be persisted fully when storing defaults.
+  auto settings_dict =
+      ConvertSettingsToDict(touchpad, /*force_persistence=*/{true},
+                            /*existing_settings_dict=*/nullptr);
+  pref_service->SetDict(prefs::kTouchpadDefaultSettings,
+                        std::move(settings_dict));
 }
 
 }  // namespace ash

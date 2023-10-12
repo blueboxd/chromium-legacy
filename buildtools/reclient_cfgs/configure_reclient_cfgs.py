@@ -54,8 +54,8 @@ def NaclRevision():
       return None
     return subprocess.check_output(
         ['git', 'log', '-1', '--format=%H'],
-        cwd= nacl_dir, shell=os.name == 'nt',
-    ).decode('utf-8').strip()
+        cwd= nacl_dir, shell=os.name == 'nt', text=True,
+    ).strip()
 
 class CipdError(Exception):
   """Raised by configure_reclient_cfgs on fatal cipd error."""
@@ -83,12 +83,16 @@ $ParanoidMode CheckIntegrity
       raise CipdError(e.output) from e
 
 def IsCipdLoggedIn():
-    ret = subprocess.call(
+    ps = subprocess.run(
        ['cipd', 'auth-info'],
-       shell=True,
-       stderr=subprocess.PIPE,
-       stdout=subprocess.DEVNULL)
-    return ret == 0
+        shell=True, capture_output=True, text=True)
+    logging.info(
+        "log for http://b/304677840: stdout from cipd auth-info: %s",
+        ps.stdout)
+    logging.info(
+        "log for http://b/304677840: stderr from cipd auth-info: %s",
+        ps.stderr)
+    return ps.returncode == 0
 
 def RbeProjectFromInstance(instance):
     m = re.fullmatch(r'projects/([-\w]+)/instances/[-\w]+', instance)

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {StorageAccessSiteException, AppProtocolEntry, ChooserType, ContentSetting, ContentSettingsTypes, HandlerEntry, OriginFileSystemGrants, ProtocolEntry, RawChooserException, RawSiteException, RecentSitePermissions, SiteGroup, SiteSettingSource, SiteSettingsPrefsBrowserProxy, ZoomLevelEntry} from 'chrome://settings/lazy_load.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
@@ -81,6 +81,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy
     this.categoryList_ = [
       ContentSettingsTypes.ADS,
       ContentSettingsTypes.AR,
+      ContentSettingsTypes.AUTO_PICTURE_IN_PICTURE,
       ContentSettingsTypes.AUTOMATIC_DOWNLOADS,
       ContentSettingsTypes.BACKGROUND_SYNC,
       ContentSettingsTypes.BLUETOOTH_DEVICES,

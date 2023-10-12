@@ -10,7 +10,6 @@
 #import "components/password_manager/ios/shared_password_controller.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_url_item.h"
-#import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_constants.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_delegate.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_handler.h"
 #import "ios/chrome/browser/ui/settings/password/branded_navigation_item_title_view.h"
@@ -77,7 +76,9 @@
   self.primaryActionString =
       l10n_util::GetNSString(IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_PASSWORD);
   self.secondaryActionString =
-      l10n_util::GetNSString(IDS_IOS_PASSWORD_BOTTOM_SHEET_NO_THANKS);
+      l10n_util::GetNSString(IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_KEYBOARD);
+  self.secondaryActionImage =
+      DefaultSymbolWithPointSize(kKeyboardSymbol, kSymbolActionPointSize);
 
   [super viewDidLoad];
 }
@@ -140,6 +141,10 @@
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  base::UmaHistogramBoolean(
+      "IOS.PasswordBottomSheet.UsernameTapped.MinimizedState",
+      _tableViewIsMinimized);
+
   if (_suggestions.count <= 1) {
     return;
   }
@@ -242,7 +247,7 @@
 }
 
 - (void)confirmationAlertSecondaryAction {
-  // "No thanks" button, which dismisses the bottom sheet.
+  // "Use Keyboard" button, which dismisses the bottom sheet.
   [self dismiss];
 }
 
@@ -270,7 +275,6 @@
   UITableView* tableView = [super createTableView];
 
   tableView.dataSource = self;
-  tableView.accessibilityIdentifier = kPasswordSuggestionBottomSheetTableViewId;
   [tableView registerClass:TableViewURLCell.class
       forCellReuseIdentifier:@"cell"];
 
@@ -313,7 +317,13 @@
 
 // Notifies the delegate that a password suggestion was selected by the user.
 - (void)didSelectSuggestion {
-  [self.delegate didSelectSuggestion:[self selectedRow]];
+  NSInteger index = [self selectedRow];
+  [self.delegate didSelectSuggestion:index];
+
+  if (_suggestions.count > 1) {
+    base::UmaHistogramCounts100("PasswordManager.TouchToFill.CredentialIndex",
+                                (int)index);
+  }
 }
 
 // Returns whether the provided index path points to the last row of the table

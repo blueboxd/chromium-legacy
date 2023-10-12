@@ -14,6 +14,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,6 +40,7 @@
 #include "content/public/browser/network_service_util.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -52,6 +54,7 @@
 #include "content/public/test/test_select_url_fenced_frame_config_observer.h"
 #include "content/public/test/test_shared_storage_header_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/fenced_frame_test_utils.h"
@@ -122,7 +125,7 @@ const int kStalenessThresholdDays = 1;
 
 const int kSelectURLOverallBitBudget = 12;
 
-const int kSelectURLOriginBitBudget = 6;
+const int kSelectURLSiteBitBudget = 6;
 
 const char kGenerateURLsListScript[] = R"(
   function generateUrls(size) {
@@ -860,7 +863,7 @@ class SharedStorageBrowserTestBase : public ContentBrowserTest {
     base::test::TestFuture<SharedStorageWorkletHost::BudgetResult> future;
     static_cast<StoragePartitionImpl*>(GetStoragePartition())
         ->GetSharedStorageManager()
-        ->GetRemainingBudget(origin, future.GetCallback());
+        ->GetRemainingBudget(net::SchemefulSite(origin), future.GetCallback());
     return future.Take().bits;
   }
 
@@ -2687,7 +2690,8 @@ IN_PROC_BROWSER_TEST_P(
   SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(observed_urn_uuid.value());
   EXPECT_TRUE(metadata);
-  EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
+  EXPECT_EQ(metadata->site,
+            net::SchemefulSite(https_server()->GetOrigin("a.test")));
   EXPECT_DOUBLE_EQ(metadata->budget_to_charge, 0.0);
 
   EXPECT_THAT(GetSharedStorageReportingMap(observed_urn_uuid.value()),
@@ -2796,7 +2800,8 @@ IN_PROC_BROWSER_TEST_P(
   SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(observed_urn_uuid.value());
   EXPECT_TRUE(metadata);
-  EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
+  EXPECT_EQ(metadata->site,
+            net::SchemefulSite(https_server()->GetOrigin("a.test")));
   EXPECT_DOUBLE_EQ(metadata->budget_to_charge, 0.0);
 
   EXPECT_THAT(GetSharedStorageReportingMap(observed_urn_uuid.value()),
@@ -2909,7 +2914,8 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
   SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(observed_urn_uuid.value());
   EXPECT_TRUE(metadata);
-  EXPECT_EQ(metadata->origin, https_server()->GetOrigin("b.test"));
+  EXPECT_EQ(metadata->site,
+            net::SchemefulSite(https_server()->GetOrigin("b.test")));
   EXPECT_DOUBLE_EQ(metadata->budget_to_charge, std::log2(3));
 
   SharedStorageReportingMap reporting_map =
@@ -4015,7 +4021,8 @@ IN_PROC_BROWSER_TEST_P(SharedStorageBrowserTest,
   SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(observed_urn_uuid.value());
   EXPECT_TRUE(metadata);
-  EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
+  EXPECT_EQ(metadata->site,
+            net::SchemefulSite(https_server()->GetOrigin("a.test")));
   EXPECT_DOUBLE_EQ(metadata->budget_to_charge, 0.0);
 
   EXPECT_THAT(GetSharedStorageReportingMap(observed_urn_uuid.value()),
@@ -4926,7 +4933,8 @@ IN_PROC_BROWSER_TEST_F(SharedStorageFencedFrameInteractionBrowserTest,
   SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(observed_urn_uuid.value());
   EXPECT_TRUE(metadata);
-  EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
+  EXPECT_EQ(metadata->site,
+            net::SchemefulSite(https_server()->GetOrigin("a.test")));
   EXPECT_DOUBLE_EQ(metadata->budget_to_charge, std::log2(3));
 
   EXPECT_THAT(GetSharedStorageReportingMap(observed_urn_uuid.value()),
@@ -5098,7 +5106,8 @@ IN_PROC_BROWSER_TEST_F(SharedStorageFencedFrameInteractionBrowserTest,
   SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(observed_urn_uuid.value());
   EXPECT_TRUE(metadata);
-  EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
+  EXPECT_EQ(metadata->site,
+            net::SchemefulSite(https_server()->GetOrigin("a.test")));
   EXPECT_DOUBLE_EQ(metadata->budget_to_charge, std::log2(3));
 
   EXPECT_THAT(GetSharedStorageReportingMap(observed_urn_uuid.value()),
@@ -5292,7 +5301,8 @@ IN_PROC_BROWSER_TEST_F(SharedStorageFencedFrameInteractionBrowserTest,
   SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(observed_urn_uuid.value());
   EXPECT_TRUE(metadata);
-  EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
+  EXPECT_EQ(metadata->site,
+            net::SchemefulSite(https_server()->GetOrigin("a.test")));
   EXPECT_DOUBLE_EQ(metadata->budget_to_charge, 0.0);
 
   EXPECT_THAT(GetSharedStorageReportingMap(observed_urn_uuid.value()),
@@ -5397,7 +5407,8 @@ IN_PROC_BROWSER_TEST_F(SharedStorageFencedFrameInteractionBrowserTest,
   SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(observed_urn_uuid.value());
   EXPECT_TRUE(metadata);
-  EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
+  EXPECT_EQ(metadata->site,
+            net::SchemefulSite(https_server()->GetOrigin("a.test")));
   EXPECT_DOUBLE_EQ(metadata->budget_to_charge, std::log2(3));
 
   EXPECT_TRUE(GetSharedStorageReportingMap(observed_urn_uuid.value()).empty());
@@ -5506,7 +5517,8 @@ IN_PROC_BROWSER_TEST_F(SharedStorageFencedFrameInteractionBrowserTest,
   SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(observed_urn_uuid.value());
   EXPECT_TRUE(metadata);
-  EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
+  EXPECT_EQ(metadata->site,
+            net::SchemefulSite(https_server()->GetOrigin("a.test")));
   EXPECT_DOUBLE_EQ(metadata->budget_to_charge, std::log2(3));
 
   EXPECT_THAT(GetSharedStorageReportingMap(observed_urn_uuid.value()),
@@ -7211,8 +7223,8 @@ class SharedStorageSelectURLLimitBrowserTest
           {{blink::features::kSharedStorageSelectURLLimit,
             {{"SharedStorageSelectURLBitBudgetPerPageLoad",
               base::NumberToString(kSelectURLOverallBitBudget)},
-             {"SharedStorageSelectURLBitBudgetPerOriginPerPageLoad",
-              base::NumberToString(kSelectURLOriginBitBudget)}}}},
+             {"SharedStorageSelectURLBitBudgetPerSitePerPageLoad",
+              base::NumberToString(kSelectURLSiteBitBudget)}}}},
           /*disabled_features=*/{});
     } else {
       select_url_limit_feature_list_.InitAndDisableFeature(
@@ -7320,7 +7332,8 @@ class SharedStorageSelectURLLimitBrowserTest
     if (!metadata) {
       return absl::nullopt;
     }
-    EXPECT_EQ(metadata->origin, https_server()->GetOrigin(host_str));
+    EXPECT_EQ(metadata->site,
+              net::SchemefulSite(https_server()->GetOrigin(host_str)));
 
     return std::make_pair(config->mapped_url_->GetValueIgnoringVisibility(),
                           metadata->budget_to_charge);
@@ -7379,7 +7392,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          });
 
 IN_PROC_BROWSER_TEST_P(SharedStorageSelectURLLimitBrowserTest,
-                       SelectURL_MainFrame_SameEntropy_OriginLimitReached) {
+                       SelectURL_MainFrame_SameEntropy_SiteLimitReached) {
   GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -7390,12 +7403,12 @@ IN_PROC_BROWSER_TEST_P(SharedStorageSelectURLLimitBrowserTest,
     )"));
 
   // This test relies on the assumption that `kSelectURLOverallBitBudget` is set
-  // to be greater than or equal to `kSelectURLOriginBitBudget`.
-  EXPECT_GE(kSelectURLOverallBitBudget, kSelectURLOriginBitBudget);
+  // to be greater than or equal to `kSelectURLSiteBitBudget`.
+  EXPECT_GE(kSelectURLOverallBitBudget, kSelectURLSiteBitBudget);
 
   // Here each call to `selectURL()` will have 8 input URLs, and hence
   // 3 = log2(8) bits of entropy.
-  int call_limit = kSelectURLOriginBitBudget / 3;
+  int call_limit = kSelectURLSiteBitBudget / 3;
 
   for (int i = 0; i < call_limit; i++) {
     RunSuccessfulSelectURLInMainFrame("a.test", /*num_urls=*/8,
@@ -7404,7 +7417,7 @@ IN_PROC_BROWSER_TEST_P(SharedStorageSelectURLLimitBrowserTest,
 
   if (LimitSelectURLCalls()) {
     // The limit for `selectURL()` has now been reached for "a.test". Make one
-    // more call, which will return the default URL due to insufficient origin
+    // more call, which will return the default URL due to insufficient site
     // pageload budget.
     absl::optional<std::pair<GURL, double>> result_pair =
         RunSelectURLExtractingMappedURLAndBudgetToCharge(shell(), "a.test",
@@ -7430,9 +7443,8 @@ IN_PROC_BROWSER_TEST_P(SharedStorageSelectURLLimitBrowserTest,
                                      call_limit + 1);
 }
 
-IN_PROC_BROWSER_TEST_P(
-    SharedStorageSelectURLLimitBrowserTest,
-    SelectURL_MainFrame_DifferentEntropy_OriginLimitReached) {
+IN_PROC_BROWSER_TEST_P(SharedStorageSelectURLLimitBrowserTest,
+                       SelectURL_MainFrame_DifferentEntropy_SiteLimitReached) {
   GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -7443,15 +7455,15 @@ IN_PROC_BROWSER_TEST_P(
     )"));
 
   // This test relies on the assumptions that `kSelectURLOverallBitBudget` is
-  // set to be greater than or equal to `kSelectURLOriginBitBudget` and that the
+  // set to be greater than or equal to `kSelectURLSiteBitBudget` and that the
   // latter is at least 3.
-  EXPECT_GE(kSelectURLOverallBitBudget, kSelectURLOriginBitBudget);
-  EXPECT_GE(kSelectURLOriginBitBudget, 3);
+  EXPECT_GE(kSelectURLOverallBitBudget, kSelectURLSiteBitBudget);
+  EXPECT_GE(kSelectURLSiteBitBudget, 3);
 
   // Here the first call to `selectURL()` will have 8 input URLs, and hence
   // 3 = log2(8) bits of entropy, and the subsequent calls will each have 4
   // input URLs, and hence 2 = log2(4) bits of entropy.
-  int input4_call_limit = (kSelectURLOriginBitBudget - 3) / 2;
+  int input4_call_limit = (kSelectURLSiteBitBudget - 3) / 2;
 
   RunSuccessfulSelectURLInMainFrame("a.test", /*num_urls=*/8,
                                     &console_observer);
@@ -7463,7 +7475,7 @@ IN_PROC_BROWSER_TEST_P(
 
   if (LimitSelectURLCalls()) {
     // The limit for `selectURL()` has now been reached for "a.test". Make one
-    // more call, which will return the default URL due to insufficient origin
+    // more call, which will return the default URL due to insufficient site
     // pageload budget.
     absl::optional<std::pair<GURL, double>> result_pair =
         RunSelectURLExtractingMappedURLAndBudgetToCharge(shell(), "a.test",
@@ -7491,19 +7503,19 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     SharedStorageSelectURLLimitBrowserTest,
-    SelectURL_IframesSharingCommonOrigin_SameEntropy_OriginLimitReached) {
+    SelectURL_IframesSharingCommonSite_SameEntropy_SiteLimitReached) {
   GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   WebContentsConsoleObserver console_observer(shell()->web_contents());
 
   // This test relies on the assumption that `kSelectURLOverallBitBudget` is set
-  // to be greater than or equal to `kSelectURLOriginBitBudget`.
-  EXPECT_GE(kSelectURLOverallBitBudget, kSelectURLOriginBitBudget);
+  // to be greater than or equal to `kSelectURLSiteBitBudget`.
+  EXPECT_GE(kSelectURLOverallBitBudget, kSelectURLSiteBitBudget);
 
   // Here each call to `selectURL()` will have 8 input URLs, and hence
   // 3 = log2(8) bits of entropy.
-  int call_limit = kSelectURLOriginBitBudget / 3;
+  int call_limit = kSelectURLSiteBitBudget / 3;
 
   GURL iframe_url = https_server()->GetURL("b.test", kSimplePagePath);
 
@@ -7526,7 +7538,7 @@ IN_PROC_BROWSER_TEST_P(
     )"));
 
     // The limit for `selectURL()` has now been reached for "b.test". Make one
-    // more call, which will return the default URL due to insufficient origin
+    // more call, which will return the default URL due to insufficient site
     // pageload budget.
     absl::optional<std::pair<GURL, double>> result_pair =
         RunSelectURLExtractingMappedURLAndBudgetToCharge(iframe_node, "b.test",
@@ -7553,7 +7565,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     SharedStorageSelectURLLimitBrowserTest,
-    SelectURL_IframesSharingCommonOrigin_DifferentEntropy_OriginLimitReached) {
+    SelectURL_IframesSharingCommonSite_DifferentEntropy_SiteLimitReached) {
   GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -7569,15 +7581,15 @@ IN_PROC_BROWSER_TEST_P(
                                  &console_observer);
 
   // This test relies on the assumptions that `kSelectURLOverallBitBudget` is
-  // set to be greater than or equal to `kSelectURLOriginBitBudget` and that the
+  // set to be greater than or equal to `kSelectURLSiteBitBudget` and that the
   // latter is at least 3.
-  EXPECT_GE(kSelectURLOverallBitBudget, kSelectURLOriginBitBudget);
-  EXPECT_GE(kSelectURLOriginBitBudget, 3);
+  EXPECT_GE(kSelectURLOverallBitBudget, kSelectURLSiteBitBudget);
+  EXPECT_GE(kSelectURLSiteBitBudget, 3);
 
   // Here the first call to `selectURL()` will have 8 input URLs, and hence
   // 3 = log2(8) bits of entropy, and the subsequent calls will each have 4
   // input URLs, and hence 2 = log2(4) bits of entropy.
-  int input4_call_limit = (kSelectURLOriginBitBudget - 3) / 2;
+  int input4_call_limit = (kSelectURLSiteBitBudget - 3) / 2;
 
   for (int i = 0; i < input4_call_limit; i++) {
     // Create a new iframe.
@@ -7598,7 +7610,7 @@ IN_PROC_BROWSER_TEST_P(
     )"));
 
     // The limit for `selectURL()` has now been reached for "b.test". Make one
-    // more call, which will return the default URL due to insufficient origin
+    // more call, which will return the default URL due to insufficient site
     // pageload budget.
     absl::optional<std::pair<GURL, double>> result_pair =
         RunSelectURLExtractingMappedURLAndBudgetToCharge(last_iframe_node,
@@ -7626,24 +7638,24 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     SharedStorageSelectURLLimitBrowserTest,
-    SelectURL_IframesDifferentOrigin_SameEntropy_OverallLimitNotReached) {
+    SelectURL_IframesDifferentSite_SameEntropy_OverallLimitNotReached) {
   GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   WebContentsConsoleObserver console_observer(shell()->web_contents());
 
   // This test relies on the assumption that `kSelectURLOverallBitBudget` is set
-  // to be strictly greater than `kSelectURLOriginBitBudget`, enough for at
-  // least one 8-URL call to `selectURL()` beyond the per-origin limit.
-  EXPECT_GE(kSelectURLOverallBitBudget, kSelectURLOriginBitBudget + 3);
+  // to be strictly greater than `kSelectURLSiteBitBudget`, enough for at
+  // least one 8-URL call to `selectURL()` beyond the per-site limit.
+  EXPECT_GE(kSelectURLOverallBitBudget, kSelectURLSiteBitBudget + 3);
 
   // Here each call to `selectURL()` will have 8 input URLs, and hence
   // 3 = log2(8) bits of entropy.
-  int per_origin_call_limit = kSelectURLOriginBitBudget / 3;
+  int per_site_call_limit = kSelectURLSiteBitBudget / 3;
 
   GURL iframe_url1 = https_server()->GetURL("b.test", kSimplePagePath);
 
-  for (int i = 0; i < per_origin_call_limit; i++) {
+  for (int i = 0; i < per_site_call_limit; i++) {
     // Create a new iframe.
     FrameTreeNode* iframe_node =
         CreateIFrame(PrimaryFrameTreeNodeRoot(), iframe_url1);
@@ -7662,7 +7674,7 @@ IN_PROC_BROWSER_TEST_P(
     )"));
 
     // The limit for `selectURL()` has now been reached for "b.test". Make one
-    // more call, which will return the default URL due to insufficient origin
+    // more call, which will return the default URL due to insufficient site
     // pageload budget.
     absl::optional<std::pair<GURL, double>> result_pair =
         RunSelectURLExtractingMappedURLAndBudgetToCharge(
@@ -7683,7 +7695,7 @@ IN_PROC_BROWSER_TEST_P(
                                    /*num_urls=*/4, &console_observer);
   }
 
-  // Create a new iframe with a different origin.
+  // Create a new iframe with a different site.
   GURL iframe_url2 = https_server()->GetURL("c.test", kSimplePagePath);
   FrameTreeNode* last_iframe_node =
       CreateIFrame(PrimaryFrameTreeNodeRoot(), iframe_url2);
@@ -7696,34 +7708,34 @@ IN_PROC_BROWSER_TEST_P(
 
   WaitForHistograms({kTimingSelectUrlExecutedInWorkletHistogram});
   histogram_tester_.ExpectTotalCount(kTimingSelectUrlExecutedInWorkletHistogram,
-                                     per_origin_call_limit + 2);
+                                     per_site_call_limit + 2);
 }
 
 IN_PROC_BROWSER_TEST_P(
     SharedStorageSelectURLLimitBrowserTest,
-    SelectURL_IframesDifferentOrigin_DifferentEntropy_OverallLimitReached) {
+    SelectURL_IframesDifferentSite_DifferentEntropy_OverallLimitReached) {
   GURL main_url = https_server()->GetURL("a.test", kSimplePagePath);
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   WebContentsConsoleObserver console_observer(shell()->web_contents());
 
   // This test relies on the assumptions that `kSelectURLOverallBitBudget` is
-  // set to be strictly greater than `kSelectURLOriginBitBudget` and that the
+  // set to be strictly greater than `kSelectURLSiteBitBudget` and that the
   // latter is at least 3.
-  EXPECT_GT(kSelectURLOverallBitBudget, kSelectURLOriginBitBudget);
-  EXPECT_GE(kSelectURLOriginBitBudget, 3);
+  EXPECT_GT(kSelectURLOverallBitBudget, kSelectURLSiteBitBudget);
+  EXPECT_GE(kSelectURLSiteBitBudget, 3);
 
-  int num_origin_limit = kSelectURLOverallBitBudget / kSelectURLOriginBitBudget;
+  int num_site_limit = kSelectURLOverallBitBudget / kSelectURLSiteBitBudget;
 
-  // We will run out of chars if we have too many origins.
-  EXPECT_LT(num_origin_limit, 25);
+  // We will run out of chars if we have too many sites.
+  EXPECT_LT(num_site_limit, 25);
 
-  // For each origin, the first call to `selectURL()` will have 8 input URLs,
+  // For each site, the first call to `selectURL()` will have 8 input URLs,
   // and hence 3 = log2(8) bits of entropy, whereas the subsequent calls for
-  // that origin will have 2 input URLs, and hence 1 = log2(2) bit of entropy.
-  int per_origin_input2_call_limit = kSelectURLOriginBitBudget - 3;
+  // that site will have 2 input URLs, and hence 1 = log2(2) bit of entropy.
+  int per_site_input2_call_limit = kSelectURLSiteBitBudget - 3;
 
-  for (int i = 0; i < num_origin_limit; i++) {
+  for (int i = 0; i < num_site_limit; i++) {
     std::string iframe_host = base::StrCat({std::string(1, 'b' + i), ".test"});
     GURL iframe_url = https_server()->GetURL(iframe_host, kSimplePagePath);
 
@@ -7734,7 +7746,7 @@ IN_PROC_BROWSER_TEST_P(
     RunSuccessfulSelectURLInIframe(first_loop_iframe_node,
                                    /*num_urls=*/8, &console_observer);
 
-    for (int j = 0; j < per_origin_input2_call_limit; j++) {
+    for (int j = 0; j < per_site_input2_call_limit; j++) {
       // Create a new iframe.
       FrameTreeNode* loop_iframe_node =
           CreateIFrame(PrimaryFrameTreeNodeRoot(), iframe_url);
@@ -7754,7 +7766,7 @@ IN_PROC_BROWSER_TEST_P(
 
       // The limit for `selectURL()` has now been reached for `iframe_host`.
       // Make one more call, which will return the default URL due to
-      // insufficient origin pageload budget.
+      // insufficient site pageload budget.
       absl::optional<std::pair<GURL, double>> result_pair =
           RunSelectURLExtractingMappedURLAndBudgetToCharge(
               last_loop_iframe_node, iframe_host,
@@ -7777,11 +7789,11 @@ IN_PROC_BROWSER_TEST_P(
   }
 
   std::string iframe_host =
-      base::StrCat({std::string(1, 'b' + num_origin_limit), ".test"});
+      base::StrCat({std::string(1, 'b' + num_site_limit), ".test"});
   GURL iframe_url = https_server()->GetURL(iframe_host, kSimplePagePath);
 
   int overall_budget_remaining =
-      kSelectURLOverallBitBudget % kSelectURLOriginBitBudget;
+      kSelectURLOverallBitBudget % kSelectURLSiteBitBudget;
 
   for (int j = 0; j < overall_budget_remaining; j++) {
     // Create a new iframe.
@@ -7827,7 +7839,7 @@ IN_PROC_BROWSER_TEST_P(
   WaitForHistograms({kTimingSelectUrlExecutedInWorkletHistogram});
   histogram_tester_.ExpectTotalCount(
       kTimingSelectUrlExecutedInWorkletHistogram,
-      num_origin_limit * (2 + per_origin_input2_call_limit) +
+      num_site_limit * (2 + per_site_input2_call_limit) +
           overall_budget_remaining + 1);
 }
 
@@ -11192,6 +11204,74 @@ IN_PROC_BROWSER_TEST_F(SharedStorageHeaderObserverBrowserTest,
   ASSERT_TRUE(observer_);
   EXPECT_TRUE(observer_->header_results().empty());
   EXPECT_TRUE(observer_->operations().empty());
+}
+
+class SharedStorageOriginTrialBrowserTest : public ContentBrowserTest {
+ public:
+  SharedStorageOriginTrialBrowserTest() {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::kPrivacySandboxAdsAPIs,
+                              blink::features::kSharedStorageAPI},
+        /*disabled_features=*/{features::kPrivacySandboxAdsAPIsM1Override});
+  }
+
+  void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+
+    // We use a URLLoaderInterceptor, rather than the EmbeddedTestServer, since
+    // the origin trial token in the response is associated with a fixed
+    // origin, whereas EmbeddedTestServer serves content on a random port.
+    url_loader_interceptor_ =
+        std::make_unique<URLLoaderInterceptor>(base::BindLambdaForTesting(
+            [](URLLoaderInterceptor::RequestParams* params) -> bool {
+              base::ScopedAllowBlockingForTesting allow_blocking;
+
+              base::FilePath test_data_dir;
+              CHECK(base::PathService::Get(DIR_TEST_DATA, &test_data_dir));
+
+              std::string relative_path =
+                  params->url_request.url.path().substr(1);
+
+              base::FilePath file_path =
+                  test_data_dir.AppendASCII(relative_path);
+
+              URLLoaderInterceptor::WriteResponse(file_path,
+                                                  params->client.get());
+
+              return true;
+            }));
+  }
+
+  void TearDownOnMainThread() override {
+    // Resetting `URLLoaderInterceptor` needs a single-threaded context. Thus,
+    // reset it here instead of during destruction of `this`.
+    url_loader_interceptor_.reset();
+  }
+
+ private:
+  std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor_;
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(SharedStorageOriginTrialBrowserTest,
+                       OriginTrialEnabled_SharedStorageClassExposedInWorklet) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GURL("https://example.test/attribution_reporting/"
+                                  "page_with_ads_apis_ot.html")));
+
+  EXPECT_TRUE(ExecJs(shell(), R"(
+      // Try accessing the `SharedStorage` interface which is gated by
+      // [RuntimeEnabled=SharedStorageAPI] which has an associated Origin Trial
+      // feature. If the OT features are correctly propagated to the worklet
+      // environment, the module script should execute successfully.
+      let module_content = `
+        SharedStorage;
+      `;
+
+      let blob = new Blob([module_content], {type: 'text/javascript'});
+      sharedStorage.worklet.addModule(URL.createObjectURL(blob));
+    )"));
 }
 
 }  // namespace content

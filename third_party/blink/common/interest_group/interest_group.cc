@@ -257,7 +257,13 @@ bool InterestGroup::IsValid() const {
   }
 
   // InterestGroups used for negative targeting may not also have ads.
-  if (additional_bid_key && ads) {
+  // They are also not updatable.
+  if (additional_bid_key && (ads || update_url)) {
+    return false;
+  }
+
+  if (aggregation_coordinator_origin &&
+      aggregation_coordinator_origin->scheme() != url::kHttpsScheme) {
     return false;
   }
 

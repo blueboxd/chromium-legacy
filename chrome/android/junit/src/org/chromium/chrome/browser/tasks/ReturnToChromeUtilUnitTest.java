@@ -48,6 +48,7 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.HistogramWatcher;
@@ -60,7 +61,7 @@ import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -80,10 +81,8 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.components.segmentation_platform.SegmentSelectionResult;
-import org.chromium.components.segmentation_platform.proto.SegmentationProto.SegmentId;
-import org.chromium.components.url_formatter.UrlFormatter;
-import org.chromium.components.url_formatter.UrlFormatterJni;
+import org.chromium.components.segmentation_platform.ClassificationResult;
+import org.chromium.components.segmentation_platform.prediction_status.PredictionStatus;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
@@ -129,8 +128,6 @@ public class ReturnToChromeUtilUnitTest {
     @Rule
     public JniMocker mJniMocker = new JniMocker();
     @Mock
-    private UrlFormatter.Natives mUrlFormatterJniMock;
-    @Mock
     private Context mContext;
     @Mock
     private TabModelSelector mTabModelSelector;
@@ -158,10 +155,6 @@ public class ReturnToChromeUtilUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
-        doReturn(JUnitTestGURLs.NTP_URL)
-                .when(mUrlFormatterJniMock)
-                .fixupUrl(UrlConstants.NTP_NON_NATIVE_URL);
         doReturn(JUnitTestGURLs.NTP_NATIVE_URL).when(mNtpTab).getUrl();
 
         ChromeFeatureList.sStartSurfaceAndroid.setForTesting(true);
@@ -282,8 +275,6 @@ public class ReturnToChromeUtilUnitTest {
     @SmallTest
     @EnableFeatures({ChromeFeatureList.START_SURFACE_RETURN_TIME})
     public void testShouldShowTabSwitcherWithSegmentationReturnTime() {
-        final SegmentId showStartId =
-                SegmentId.OPTIMIZATION_TARGET_SEGMENTATION_CHROME_START_ANDROID_V2;
         Assert.assertTrue(ChromeFeatureList.sStartSurfaceReturnTime.isEnabled());
 
         // Verifies that when the preference key isn't stored, return
@@ -299,16 +290,16 @@ public class ReturnToChromeUtilUnitTest {
         // Return time from segmentation model is enabled for 1 min:
         long returnTimeSeconds = 60; // One minute
         long returnTimeMs = returnTimeSeconds * DateUtils.SECOND_IN_MILLIS; // One minute
-        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
-        SegmentSelectionResult result =
-                new SegmentSelectionResult(true, showStartId, (float) returnTimeSeconds);
+        SharedPreferencesManager sharedPreferencesManager = ChromeSharedPreferences.getInstance();
+        ClassificationResult result =
+                new ClassificationResult(PredictionStatus.SUCCEEDED, new String[] {String.valueOf(returnTimeSeconds)});
         ReturnToChromeUtil.cacheReturnTimeFromSegmentationImpl(result);
         Assert.assertEquals(returnTimeMs,
                 ReturnToChromeUtil.getReturnTimeFromSegmentation(
                         START_SURFACE_RETURN_TIME_SECONDS));
 
         // Returns false if it isn't immediate return but without last backgrounded time available:
-        result = new SegmentSelectionResult(true, showStartId, (float) 1);
+        result = new ClassificationResult(PredictionStatus.SUCCEEDED, new String[] {"1"});
         ReturnToChromeUtil.cacheReturnTimeFromSegmentationImpl(result);
         Assert.assertEquals(1 * DateUtils.SECOND_IN_MILLIS,
                 ReturnToChromeUtil.getReturnTimeFromSegmentation(
@@ -316,7 +307,7 @@ public class ReturnToChromeUtilUnitTest {
         Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
 
         // Verifies returning false if segmentation result is negative (not show).
-        result = new SegmentSelectionResult(true, SegmentId.OPTIMIZATION_TARGET_UNKNOWN, null);
+        result = new ClassificationResult(PredictionStatus.NOT_READY, null);
         ReturnToChromeUtil.cacheReturnTimeFromSegmentationImpl(result);
         Assert.assertEquals(-1,
                 ReturnToChromeUtil.getReturnTimeFromSegmentation(
@@ -324,7 +315,7 @@ public class ReturnToChromeUtilUnitTest {
         Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(1, false));
 
         // Tests regular cases with last backgrounded time set:
-        result = new SegmentSelectionResult(true, showStartId, (float) returnTimeSeconds);
+        result = new ClassificationResult(PredictionStatus.SUCCEEDED, new String[] {String.valueOf(returnTimeSeconds)});
         ReturnToChromeUtil.cacheReturnTimeFromSegmentationImpl(result);
         Assert.assertEquals(returnTimeMs,
                 ReturnToChromeUtil.getReturnTimeFromSegmentation(
@@ -441,7 +432,7 @@ public class ReturnToChromeUtilUnitTest {
                 mContext, intent, mTabModelSelector, mInactivityTracker, false /* isTablet */));
 
         // Sets background time to make the return time arrive:
-        SharedPreferencesManager.getInstance().addToStringSet(
+        ChromeSharedPreferences.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
@@ -450,7 +441,7 @@ public class ReturnToChromeUtilUnitTest {
         Assert.assertTrue(ReturnToChromeUtil.shouldShowOverviewPageOnStart(
                 mContext, intent, mTabModelSelector, mInactivityTracker, false /* isTablet */));
 
-        SharedPreferencesManager.getInstance().removeKey(
+        ChromeSharedPreferences.getInstance().removeKey(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF);
     }
 
@@ -468,7 +459,7 @@ public class ReturnToChromeUtilUnitTest {
         Intent intent = createMainIntentFromLauncher();
 
         // Sets background time to make the return time arrive:
-        SharedPreferencesManager.getInstance().addToStringSet(
+        ChromeSharedPreferences.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
@@ -485,7 +476,7 @@ public class ReturnToChromeUtilUnitTest {
                 mContext, intent, mTabModelSelector, mInactivityTracker, false /* isTablet */));
 
         ShadowHomepageManager.sHomepageGurl = UrlConstants.ntpGurl();
-        SharedPreferencesManager.getInstance().removeKey(
+        ChromeSharedPreferences.getInstance().removeKey(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF);
     }
 
@@ -499,7 +490,7 @@ public class ReturnToChromeUtilUnitTest {
         Intent intent = createMainIntentFromLauncher();
 
         // Sets background time to make the return time arrive:
-        SharedPreferencesManager.getInstance().addToStringSet(
+        ChromeSharedPreferences.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
@@ -527,11 +518,11 @@ public class ReturnToChromeUtilUnitTest {
     @SmallTest
     @DisableFeatures({ChromeFeatureList.NEW_TAB_SEARCH_ENGINE_URL_ANDROID})
     public void testStartSurfaceIsEnabledWithNewTabSearchEngineUrlDisabled() {
-        SharedPreferencesManager.getInstance().writeBoolean(
+        ChromeSharedPreferences.getInstance().writeBoolean(
                 ChromePreferenceKeys.IS_DSE_GOOGLE, false);
 
         Assert.assertTrue(ReturnToChromeUtil.isStartSurfaceEnabled(mContext));
-        SharedPreferencesManager.getInstance().removeKey(ChromePreferenceKeys.IS_DSE_GOOGLE);
+        ChromeSharedPreferences.getInstance().removeKey(ChromePreferenceKeys.IS_DSE_GOOGLE);
     }
 
     @Test
@@ -540,11 +531,11 @@ public class ReturnToChromeUtilUnitTest {
     public void testStartSurfaceMayBeDisabledWithNewTabSearchEngineUrlEnabled() {
         Assert.assertTrue(ReturnToChromeUtil.isStartSurfaceEnabled(mContext));
 
-        SharedPreferencesManager.getInstance().writeBoolean(
+        ChromeSharedPreferences.getInstance().writeBoolean(
                 ChromePreferenceKeys.IS_DSE_GOOGLE, false);
         Assert.assertFalse(ReturnToChromeUtil.isStartSurfaceEnabled(mContext));
 
-        SharedPreferencesManager.getInstance().removeKey(ChromePreferenceKeys.IS_DSE_GOOGLE);
+        ChromeSharedPreferences.getInstance().removeKey(ChromePreferenceKeys.IS_DSE_GOOGLE);
     }
 
     @Test
@@ -559,7 +550,7 @@ public class ReturnToChromeUtilUnitTest {
         Intent intent = createMainIntentFromLauncher();
 
         // Sets background time to make the return time arrive:
-        SharedPreferencesManager.getInstance().addToStringSet(
+        ChromeSharedPreferences.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
@@ -597,7 +588,7 @@ public class ReturnToChromeUtilUnitTest {
         Intent intent = createMainIntentFromLauncher();
 
         // Sets background time to make the return time arrive:
-        SharedPreferencesManager.getInstance().addToStringSet(
+        ChromeSharedPreferences.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));

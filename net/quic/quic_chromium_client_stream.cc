@@ -523,7 +523,6 @@ void QuicChromiumClientStream::OnInitialHeadersComplete(
   }
 
   ConsumeHeaderList();
-  session_->OnInitialHeadersComplete(id(), header_block);
 
   // Buffer the headers and deliver them when the handle arrives.
   initial_headers_arrived_ = true;
@@ -605,7 +604,7 @@ size_t QuicChromiumClientStream::WriteHeaders(
   return len;
 }
 
-bool QuicChromiumClientStream::WriteStreamData(absl::string_view data,
+bool QuicChromiumClientStream::WriteStreamData(std::string_view data,
                                                bool fin) {
   // Writes the data, or buffers it.
   WriteOrBufferBody(data, fin);
@@ -619,7 +618,7 @@ bool QuicChromiumClientStream::WritevStreamData(
   // Writes the data, or buffers it.
   for (size_t i = 0; i < buffers.size(); ++i) {
     bool is_fin = fin && (i == buffers.size() - 1);
-    absl::string_view string_data(buffers[i]->data(), lengths[i]);
+    std::string_view string_data(buffers[i]->data(), lengths[i]);
     WriteOrBufferBody(string_data, is_fin);
   }
   return !HasBufferedData();  // Was all data written?

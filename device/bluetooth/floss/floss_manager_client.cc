@@ -50,7 +50,11 @@ const DBusTypeInfo& GetDBusTypeInfo<AdapterWithEnabled>(
 
 // static
 const char FlossManagerClient::kExportedCallbacksPath[] =
-    "/org/chromium/bluetooth/managerclient";
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    "/org/chromium/bluetooth/manager/callback/lacros";
+#else
+    "/org/chromium/bluetooth/manager/callback";
+#endif
 
 // static
 const char FlossManagerClient::kObjectManagerPath[] = "/";
@@ -157,6 +161,17 @@ void FlossManagerClient::SetAdapterEnabled(int adapter,
       base::BindOnce(&FlossManagerClient::OnSetAdapterEnabled,
                      weak_ptr_factory_.GetWeakPtr()),
       command, adapter);
+}
+
+uint32_t FlossManagerClient::GetFlossApiVersion() const {
+  return version_;
+}
+
+void FlossManagerClient::DoGetFlossApiVersion() {
+  CallManagerMethod<uint32_t>(
+      base::BindOnce(&FlossManagerClient::HandleGetFlossApiVersion,
+                     weak_ptr_factory_.GetWeakPtr()),
+      manager::kGetFlossApiVersion);
 }
 
 void FlossManagerClient::OnSetAdapterEnabled(DBusResult<Void> response) {
@@ -466,6 +481,18 @@ void FlossManagerClient::CompleteSetFlossEnabled(DBusResult<bool> ret) {
   } else {
     DVLOG(1) << "Completed SetFlossEnabled with value " << *ret;
   }
+}
+
+void FlossManagerClient::HandleGetFlossApiVersion(
+    DBusResult<uint32_t> response) {
+  if (!response.has_value()) {
+    LOG(WARNING) << "Floss API version is not available. Default version is 0."
+                    " Error="
+                 << response.error();
+    return;
+  }
+
+  version_ = response.value();
 }
 
 dbus::PropertySet* FlossManagerClient::CreateProperties(

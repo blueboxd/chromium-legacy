@@ -194,13 +194,6 @@ BASE_FEATURE(kAutofillMoveLegalTermsAndIconForNewCardEnrollment,
              "AutofillMoveLegalTermsAndIconForNewCardEnrollment",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// When enabled, Autofill will offer saving a card to the users when the Chrome
-// detects a card number with the last 4 digits that matches an existing server
-// card but has a different expiration date.
-BASE_FEATURE(kAutofillOfferToSaveCardWithSameLastFour,
-             "AutofillOfferToSaveCardWithSameLastFour",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, Autofill will attempt to find standalone CVC fields for VCN
 // card on file when parsing forms.
 BASE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields,
@@ -241,24 +234,6 @@ BASE_FEATURE(kAutofillUpstreamAllowAdditionalEmailDomains,
 BASE_FEATURE(kAutofillUpstreamAllowAllEmailDomains,
              "AutofillUpstreamAllowAllEmailDomains",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, sets the OAuth2 token in GetUploadDetails requests to Google
-// Payments, in order to provide a better experience for users with server-side
-// features disabled but not client-side features.
-BASE_FEATURE(kAutofillUpstreamAuthenticatePreflightCall,
-             "AutofillUpstreamAuthenticatePreflightCall",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, the secure data type for cards sent during credit card upload
-// save is updated to match newer server requirements.
-BASE_FEATURE(kAutofillUpstreamUseAlternateSecureDataType,
-             "AutofillUpstreamUseAlternateSecureDataType",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, we use the Elo regex to match the BIN ranges.
-BASE_FEATURE(kAutofillUseEloRegexForBinMatching,
-             "AutofillUseEloRegexForBinMatching_LAUNCHED",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_IOS)
 // When enabled, use two '•' when displaying the last four digits of a credit

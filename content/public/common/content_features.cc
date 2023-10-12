@@ -153,9 +153,24 @@ BASE_FEATURE(kCacheControlNoStoreEnterBackForwardCache,
              "CacheControlNoStoreEnterBackForwardCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// This serves as an overall kill switch to kill CdmStorageDatabase. If
+// disabled, which it is by default, no operations will be routed through the
+// CdmStorage* path, even in the migration code that lives in MediaLicense* code
+// path.
 BASE_FEATURE(kCdmStorageDatabase,
              "CdmStorageDatabase",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// This guards between using the MediaLicense* code path and the CdmStorage*
+// code path for storing Cdm data. This will be enabled by default as we do not
+// want the CdmStorageDatabase to be used solely, and instead when we conduct
+// our experiments, we will enable kCdmStorageDatabase to flow the migration.
+// Later when the migration is finished, we will remove this flag so that
+// kCdmStorageDatabase serves as the only flag. Refer to
+// go/cdm-storage-migration-details for more details.
+BASE_FEATURE(kCdmStorageDatabaseMigration,
+             "CdmStorageDatabaseMigration",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Clear the window.name property for the top-level cross-site navigations that
 // swap BrowsingContextGroups(BrowsingInstances).
@@ -174,13 +189,26 @@ BASE_FEATURE(kCookieDeprecationFacilitatedTesting,
              "CookieDeprecationFacilitatedTesting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Set whether to enable cookie deprecation API in incognito mode.
-//
-// TODO(linnan): Consider renaming to "enable_otr_profiles" to include
-// guest profiles as well.
+// Set whether to enable cookie deprecation API for off-the-record profiles.
 const base::FeatureParam<bool>
-    kCookieDeprecationFacilitatedTestingEnableIncognito{
-        &kCookieDeprecationFacilitatedTesting, "enable_incognito", false};
+    kCookieDeprecationFacilitatedTestingEnableOTRProfiles{
+        &kCookieDeprecationFacilitatedTesting, "enable_otr_profiles", false};
+
+// The experiment label for the cookie deprecation (Mode A/B) study.
+const base::FeatureParam<std::string> kCookieDeprecationLabel{
+    &kCookieDeprecationFacilitatedTesting, kCookieDeprecationLabelName, ""};
+// Set whether Ads APIs should be disabled for third-party cookie deprecation.
+const base::FeatureParam<bool> kCookieDeprecationTestingDisableAdsAPIs{
+    &features::kCookieDeprecationFacilitatedTesting,
+    /*name=*/kCookieDeprecationTestingDisableAdsAPIsName,
+    /*default_value=*/false};
+
+const char kCookieDeprecationLabelName[] = "label";
+
+const char kCookieDeprecationTestingDisableAdsAPIsName[] = "disable_ads_apis";
+
+// Adiitional FeatureParams for CookieDeprecationFacilitatedTesting are defined
+// in chrome/browser/tpcd/experiment/tpcd_experiment_features.cc.
 
 // Enables Blink cooperative scheduling.
 BASE_FEATURE(kCooperativeScheduling,
@@ -220,7 +248,7 @@ const base::FeatureParam<bool> kDIPSPersistedDatabaseEnabled{
     &kDIPS, "persist_database", true};
 
 // Set whether DIPS performs deletion.
-const base::FeatureParam<bool> kDIPSDeletionEnabled{&kDIPS, "delete", false};
+const base::FeatureParam<bool> kDIPSDeletionEnabled{&kDIPS, "delete", true};
 
 // Set the time period that Chrome will wait for before clearing storage for a
 // site after it performs some action (e.g. bouncing the user or using storage)
@@ -259,7 +287,7 @@ constexpr base::FeatureParam<content::DIPSTriggeringAction>::Option
 // Note: Maintain a matching nomenclature of the options with the feature flag
 // entries at about_flags.cc.
 const base::FeatureParam<content::DIPSTriggeringAction> kDIPSTriggeringAction{
-    &kDIPS, "triggering_action", content::DIPSTriggeringAction::kNone,
+    &kDIPS, "triggering_action", content::DIPSTriggeringAction::kStatefulBounce,
     &kDIPSTriggeringActionOptions};
 
 // Denotes the length of a time interval within which any client-side redirect
@@ -273,6 +301,11 @@ const base::FeatureParam<base::TimeDelta> kDIPSClientBounceDetectionTimeout{
 BASE_FEATURE(kDocumentPolicy,
              "DocumentPolicy",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable drawing under System Bars within DisplayCutout.
+BASE_FEATURE(kDrawCutoutEdgeToEdge,
+             "DrawCutoutEdgeToEdge",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable early swapping of RenderFrameHosts during some back/forward
 // navigations. This is an experimental feature intended to support new kinds of
@@ -314,10 +347,6 @@ BASE_FEATURE(kEnableServiceWorkersForChromeScheme,
 // We enable it here by default to support use in origin trials.
 BASE_FEATURE(kFedCm, "FedCm", base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Field trial boolean parameter which indicates whether FedCM IDP sign-out
-// is enabled.
-const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
-
 // Enables usage of the FedCM AccountAutoSelectedFlag feature. ChromeStatus
 // entry: https://chromestatus.com/feature/5384360374566912
 BASE_FEATURE(kFedCmAccountAutoSelectedFlag,
@@ -339,6 +368,11 @@ BASE_FEATURE(kFedCmHostedDomain,
 // Enables usage of the FedCM IdP Registration API.
 BASE_FEATURE(kFedCmIdPRegistration,
              "FedCmIdPregistration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables usage of the FedCM logoutRPs method.
+BASE_FEATURE(kFedCmLogoutRps,
+             "FedCmLogoutRps",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with metrics endpoint at the same time.
@@ -542,7 +576,12 @@ BASE_FEATURE(kMojoVideoCapture,
 // queue.
 BASE_FEATURE(kNavigationNetworkResponseQueue,
              "NavigationNetworkResponseQueue",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_CHROMEOS)
+             base::FEATURE_DISABLED_BY_DEFAULT
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
 
 // When enabled, RenderFrameHostManager::CommitPending will also update the
 // visibility of all child views, not just that of the main frame.

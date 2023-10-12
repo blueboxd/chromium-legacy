@@ -9,11 +9,13 @@
 NSString* const kGoogleIconSymbol = @"google_icon";
 NSString* const kGoogleShieldSymbol = @"google_shield";
 NSString* const kChromeSymbol = @"chrome_symbol";
+NSString* const kMulticolorChromeballSymbol = @"multicolor_chromeball";
 NSString* const kGoogleMapsSymbol = @"google_maps";
 NSString* const kGooglePhotosSymbol = @"google_photos";
-NSString* const kFedexCarrier = @"parcel_tracking_carrier_fedex";
-NSString* const kUPSCarrier = @"parcel_tracking_carrier_ups";
-NSString* const kUSPSCarrier = @"parcel_tracking_carrier_usps";
+// TODO(crbug.com/1489185): Move PNG images out of this file.
+NSString* const kFedexCarrierImage = @"parcel_tracking_carrier_fedex";
+NSString* const kUPSCarrierImage = @"parcel_tracking_carrier_ups";
+NSString* const kUSPSCarrierImage = @"parcel_tracking_carrier_usps";
 #endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 NSString* const kPrivacySymbol = @"checkerboard_shield";
 NSString* const kSyncDisabledSymbol = @"arrow_triangle_slash_circlepath";
@@ -151,6 +153,8 @@ NSString* const kOpenInDownloadsiOS14Symbol = @"arrow.down.to.line.alt";
 NSString* const kExternalLinkSymbol = @"arrow.up.forward.square";
 NSString* const kChevronDownSymbol = @"chevron.down";
 NSString* const kChevronForwardSymbol = @"chevron.forward";
+NSString* const kChevronUpDown = @"chevron.up.chevron.down";
+NSString* const kChevronDownCircleFill = @"chevron.down.circle.fill";
 NSString* const kGlobeAmericasSymbol = @"globe.americas.fill";
 NSString* const kGlobeSymbol = @"globe";
 NSString* const kPersonCropCircleSymbol = @"person.crop.circle";
@@ -162,7 +166,7 @@ NSString* const kTabsSymbol = @"square.on.square";
 NSString* const kHighlighterSymbol = @"highlighter";
 NSString* const kSealFillSymbol = @"seal.fill";
 NSString* const kSquareOnSquareDashedSymbol = @"square.on.square.dashed";
-NSString* const kDocPlaintext = @"doc.plaintext";
+NSString* const kDocPlaintextSymbol = @"doc.plaintext";
 NSString* const kFlagSymbol = @"flag";
 NSString* const kKeyboardSymbol = @"keyboard";
 NSString* const kSpeedometerSymbol = @"speedometer";
@@ -172,12 +176,16 @@ NSString* const kMovePlatterToBottomPhoneSymbol =
     @"platter.filled.bottom.and.arrow.down.iphone";
 NSString* const kMapSymbol = @"map";
 NSString* const kShippingBoxSymbol = @"shippingbox";
-NSString* const kSliderHorizontal = @"slider.horizontal.3";
-NSString* const kMacbookAndIPhone = @"macbook.and.iphone";
-NSString* const kCheckmarkShield = @"checkmark.shield";
-NSString* const kListBulletClipboard = @"list.bullet.clipboard";
-NSString* const kListBulletRectangle = @"list.bullet.rectangle.portrait";
-NSString* const kBoxTruckFill = @"box.truck.fill";
+NSString* const kSliderHorizontalSymbol = @"slider.horizontal.3";
+NSString* const kMacbookAndIPhoneSymbol = @"macbook.and.iphone";
+NSString* const kCheckmarkShieldSymbol = @"checkmark.shield";
+NSString* const kListBulletClipboardSymbol = @"list.bullet.clipboard";
+NSString* const kListBulletRectangleSymbol = @"list.bullet.rectangle.portrait";
+NSString* const kBoxTruckFillSymbol = @"box.truck.fill";
+NSString* const kExclamationMarkBubbleSymbol = @"exclamationmark.bubble";
+NSString* const kShippingBoxFillSymbol = @"shippingbox.fill";
+NSString* const kButtonProgrammableSymbol = @"button.programmable";
+NSString* const kCircleCircleFillSymbol = @"circle.circle.fill";
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/allocator/partition_alloc_features.h"
-#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
@@ -52,6 +52,7 @@
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/file_select_listener.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -80,6 +81,7 @@
 #include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/mock_client_hints_controller_delegate.h"
 #include "content/public/test/mock_web_contents_observer.h"
+#include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/resource_load_observer.h"
@@ -115,7 +117,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
-#include "base/allocator/partition_allocator/starscan/pcscan.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/starscan/pcscan.h"
 #endif
 
 namespace content {
@@ -159,7 +161,7 @@ class WebContentsImplBrowserTest : public ContentBrowserTest {
   bool IsInFullscreen() {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    return web_contents->current_fullscreen_frame_;
+    return !!web_contents->current_fullscreen_frame_id_;
   }
 
  protected:
@@ -488,18 +490,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_EQ(new_size, shell()->web_contents()->GetContainerBounds().size());
 }
 
-// TODO(crbug.com/1486164): Times out on Mac.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_SetTitleOnUnload DISABLED_SetTitleOnUnload
-#else
-#define MAYBE_SetTitleOnUnload SetTitleOnUnload
-#endif
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, MAYBE_SetTitleOnUnload) {
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SetTitleOnUnload) {
   GURL url(
       "data:text/html,"
       "<title>A</title>"
       "<body onunload=\"document.title = 'B'\"></body>");
-  EXPECT_TRUE(NavigateToURL(shell(), url));
+  ASSERT_TRUE(NavigateToURL(shell(), url));
   ASSERT_EQ(1, shell()->web_contents()->GetController().GetEntryCount());
   NavigationEntryImpl* entry1 = NavigationEntryImpl::FromNavigationEntry(
       shell()->web_contents()->GetController().GetLastCommittedEntry());
@@ -509,12 +505,22 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, MAYBE_SetTitleOnUnload) {
   // Force a process switch by going to a privileged page.
   GURL web_ui_page(std::string(kChromeUIScheme) + "://" +
                    std::string(kChromeUIGpuHost));
-  EXPECT_TRUE(NavigateToURL(shell(), web_ui_page));
+
+  RenderFrameHostImplWrapper rfh(
+      shell()->web_contents()->GetPrimaryMainFrame());
+  rfh->DisableUnloadTimerForTesting();
+  ASSERT_TRUE(NavigateToURL(shell(), web_ui_page));
+
+  // Wait for the page with unload to be deleted.
+  ASSERT_TRUE(rfh.WaitUntilRenderFrameDeleted());
+
+  // Verify that the site instance changed.
   NavigationEntryImpl* entry2 = NavigationEntryImpl::FromNavigationEntry(
       shell()->web_contents()->GetController().GetLastCommittedEntry());
   SiteInstance* site_instance2 = entry2->site_instance();
   EXPECT_NE(site_instance1, site_instance2);
 
+  // Verify that the title changed.
   EXPECT_EQ(2, shell()->web_contents()->GetController().GetEntryCount());
   EXPECT_EQ(u"B", entry1->GetTitle());
 }
@@ -2138,7 +2144,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       NavigatingToWebUIDoesNotUsePreWarmedProcess) {
+                       NavigatingToWebUIUsesPreWarmedProcess) {
   GURL web_ui_url(std::string(kChromeUIScheme) + "://" +
                   std::string(kChromeUIGpuHost));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2167,8 +2173,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   web_contents->GetController().LoadURLWithParams(params);
   same_tab_observer.Wait();
 
-  // Check that pre-warmed process isn't used.
-  EXPECT_NE(renderer_id,
+  // Check that pre-warmed process was used.  This is possible because the
+  // initial RenderFrameHost is allowed to be reused for WebUI, even if it has a
+  // live RenderFrame, as long as its SiteInstance is unassigned and its process
+  // is unused.
+  EXPECT_EQ(renderer_id,
             web_contents->GetPrimaryMainFrame()->GetProcess()->GetID());
   EXPECT_EQ(1, web_contents->GetController().GetEntryCount());
   NavigationEntry* entry =
@@ -3827,7 +3836,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyFullscreenAcquired) {
 
   fullscreen_frames.insert(main_frame);
   EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
-  EXPECT_EQ(main_frame, web_contents->current_fullscreen_frame_);
+  EXPECT_EQ(main_frame->GetGlobalId(),
+            web_contents->current_fullscreen_frame_id_);
 
   // Make the child frame fullscreen.
   {
@@ -3839,7 +3849,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyFullscreenAcquired) {
 
   fullscreen_frames.insert(child_frame);
   EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
-  EXPECT_EQ(child_frame, web_contents->current_fullscreen_frame_);
+  EXPECT_EQ(child_frame->GetGlobalId(),
+            web_contents->current_fullscreen_frame_id_);
 
   // Exit fullscreen on the child frame.
   // This will not work with --site-per-process until crbug.com/617369
@@ -3853,7 +3864,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyFullscreenAcquired) {
 
     fullscreen_frames.erase(child_frame);
     EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
-    EXPECT_EQ(main_frame, web_contents->current_fullscreen_frame_);
+    EXPECT_EQ(main_frame->GetGlobalId(),
+              web_contents->current_fullscreen_frame_id_);
   }
 }
 
@@ -3951,7 +3963,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   nodes.insert(main_frame);
   EXPECT_EQ(nodes, web_contents->fullscreen_frames_);
-  EXPECT_EQ(main_frame, web_contents->current_fullscreen_frame_);
+  EXPECT_EQ(main_frame->GetGlobalId(),
+            web_contents->current_fullscreen_frame_id_);
 
   // Make the child frame fullscreen.
   {
@@ -3963,7 +3976,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   nodes.insert(child_frame);
   EXPECT_EQ(nodes, web_contents->fullscreen_frames_);
-  EXPECT_EQ(child_frame, web_contents->current_fullscreen_frame_);
+  EXPECT_EQ(child_frame->GetGlobalId(),
+            web_contents->current_fullscreen_frame_id_);
 
   // Perform a cross origin navigation on the main frame.
   EXPECT_TRUE(
@@ -4000,7 +4014,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   fullscreen_frames.insert(main_frame);
   EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
-  EXPECT_EQ(main_frame, web_contents->current_fullscreen_frame_);
+  EXPECT_EQ(main_frame->GetGlobalId(),
+            web_contents->current_fullscreen_frame_id_);
 
   // Make the child frame fullscreen.
   {
@@ -4012,7 +4027,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   fullscreen_frames.insert(child_frame);
   EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
-  EXPECT_EQ(child_frame, web_contents->current_fullscreen_frame_);
+  EXPECT_EQ(child_frame->GetGlobalId(),
+            web_contents->current_fullscreen_frame_id_);
 
   // Exit fullscreen on the child frame.
   {
@@ -4023,7 +4039,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   fullscreen_frames.erase(child_frame);
   EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
-  EXPECT_EQ(main_frame, web_contents->current_fullscreen_frame_);
+  EXPECT_EQ(main_frame->GetGlobalId(),
+            web_contents->current_fullscreen_frame_id_);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, PropagateFullscreenOptions) {
@@ -5578,6 +5595,63 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       ->InitializeMainRenderFrameForImmediateUse();
   frame_created_obs.WaitForRenderFrameCreated();
   EXPECT_FALSE(shell()->web_contents()->IsCrashed());
+}
+
+// Check that there's no crash if a new window is set to defer navigations (for
+// example, this is done on Android Webview and for <webview> guests), then the
+// renderer process crashes while there's a deferred new window navigation in
+// place, and then navigations are resumed. Prior to fixing
+// https://crbug.com/1487110, the deferred navigation was allowed to proceed,
+// performing an early RenderFrameHost swap and hitting a bug while clearing
+// the deferred navigation state. Now, the deferred navigation should be
+// canceled when the renderer process dies.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DeferredWindowOpenNavigationIsResumedWithEarlySwap) {
+  // Force WebContents in a new Shell to defer new navigations until the
+  // delegate is set.
+  shell()->set_delay_popup_contents_delegate_for_testing(true);
+
+  // Load an initial page.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Open a popup to a same-site URL via window.open.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("window.open($1);", url)));
+  Shell* new_shell = new_shell_observer.GetShell();
+  WebContents* new_contents = new_shell->web_contents();
+
+  // The navigation in the new popup should be deferred.
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
+  EXPECT_TRUE(new_contents->GetController().IsInitialBlankNavigation());
+  EXPECT_TRUE(new_contents->GetLastCommittedURL().is_empty());
+
+  // Set the new shell's delegate now.  This doesn't resume the navigation just
+  // yet.
+  EXPECT_FALSE(new_contents->GetDelegate());
+  new_contents->SetDelegate(new_shell);
+
+  // Crash the renderer process.  This should clear the deferred navigation
+  // state.  If this wasn't done due to a bug, it would also force the resumed
+  // navigation to use the early RenderFrameHost swap.
+  {
+    RenderProcessHost* popup_process =
+        new_contents->GetPrimaryMainFrame()->GetProcess();
+    RenderProcessHostWatcher crash_observer(
+        popup_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    EXPECT_TRUE(popup_process->Shutdown(0));
+    crash_observer.Wait();
+  }
+
+  // Resume the navigation and verify that it gets canceled.  Ensure this
+  // doesn't crash.
+  NavigationHandleObserver handle_observer(new_contents, url);
+  new_contents->ResumeLoadingCreatedWebContents();
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
+  EXPECT_FALSE(handle_observer.has_committed());
+  EXPECT_TRUE(new_contents->GetController().IsInitialBlankNavigation());
+  EXPECT_TRUE(new_contents->GetLastCommittedURL().is_empty());
 }
 
 namespace {

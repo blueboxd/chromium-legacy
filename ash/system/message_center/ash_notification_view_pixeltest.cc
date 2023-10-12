@@ -176,6 +176,27 @@ TEST_P(AshNotificationViewPixelTest, CollapsedNoMessage) {
       "collapsed_no_message", /*revision_number=*/1, notification_view));
 }
 
+// Tests that a progress notification does not have its title vertically
+// centered in the collapsed state.
+TEST_P(AshNotificationViewPixelTest, ProgressCollapsed) {
+  // Create a progress notification and open the notification center bubble to
+  // view it. Also add a second notification so that the progress notification
+  // is automatically in its collapsed state when the bubble is toggled.
+  const std::string id = test_api()->AddProgressNotification();
+  test_api()->AddNotification();
+  test_api()->ToggleBubble();
+
+  // Verify that the notification is collapsed.
+  auto* notification_view = static_cast<AshNotificationView*>(
+      test_api()->GetNotificationViewForId(id));
+  ASSERT_FALSE(notification_view->IsExpanded());
+
+  // Verify with a pixel test that the notification's title is not vertically
+  // centered.
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "progress_collapsed", /*revision_number=*/0, notification_view));
+}
+
 class AshNotificationViewTitlePixelTest
     : public AshNotificationViewPixelTestBase,
       public testing::WithParamInterface<
@@ -302,8 +323,9 @@ INSTANTIATE_TEST_SUITE_P(
                                         DisplayType::kUltraWidth,
                                         DisplayType::kUltraHeight})));
 
+// TODO(https://crbug.com/1490722): This test is failing on Chrome OS.
 // Verifies the notification popup of a full screenshot.
-TEST_P(ScreenCaptureNotificationPixelTest, VerifyPopup) {
+TEST_P(ScreenCaptureNotificationPixelTest, DISABLED_VerifyPopup) {
   // Take a full screenshot then wait for the file path to the saved image.
   ash::CaptureModeController* controller = StartCaptureSession(
       CaptureModeSource::kFullscreen, CaptureModeType::kImage);
@@ -319,7 +341,7 @@ TEST_P(ScreenCaptureNotificationPixelTest, VerifyPopup) {
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       base::StrCat({"screen_capture_popup_notification_",
                     GetDisplayTypeName(GetDisplayType())}),
-      /*revision_number=*/10,
+      /*revision_number=*/9,
       test_api()->GetPopupViewForId(kScreenCaptureNotificationId)));
 }
 

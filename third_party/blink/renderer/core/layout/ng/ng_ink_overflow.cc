@@ -548,6 +548,17 @@ LogicalRect NGInkOverflow::ComputeDecorationOverflow(
         style, scaled_font, container_offset, ink_overflow, inline_context);
   }
 
+  // Text decorations due to selection
+  if (UNLIKELY(cursor.Current().GetLayoutObject()->IsSelected())) {
+    const ComputedStyle* selection_style = style.HighlightData().Selection();
+    if (selection_style && selection_style->HasAppliedTextDecorations()) {
+      LogicalRect selection_bound = ComputeAppliedDecorationOverflow(
+          *selection_style, scaled_font, container_offset, ink_overflow,
+          inline_context);
+      accumulated_bound.Unite(selection_bound);
+    }
+  }
+
   bool do_highlights =
       RuntimeEnabledFeatures::HighlightOverlayPaintingEnabled();
   bool do_spelling_grammar =
@@ -624,7 +635,8 @@ LogicalRect NGInkOverflow::ComputeAppliedDecorationOverflow(
   // so use it as a proxy for determining minimum thickness.
   const MinimumThickness1 kMinimumThicknessIsOne(!decoration_override);
   TextDecorationInfo decoration_info(
-      offset_in_container, ink_overflow.size.inline_size, style, inline_context,
+      LineRelativeOffset::CreateFromBoxOrigin(offset_in_container),
+      ink_overflow.size.inline_size, style, inline_context,
       /* selection_text_decoration */ absl::nullopt, decoration_override,
       &scaled_font, kMinimumThicknessIsOne);
   NGTextDecorationOffset decoration_offset(style);

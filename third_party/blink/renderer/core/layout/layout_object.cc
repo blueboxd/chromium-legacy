@@ -32,7 +32,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -465,6 +465,10 @@ LayoutObject::LayoutObject(Node* node)
       previous_(nullptr),
       next_(nullptr),
       fragment_(MakeGarbageCollected<FragmentData>()) {
+#if DCHECK_IS_ON()
+  fragment_->SetIsFirst();
+#endif
+
   InstanceCounters::IncrementCounter(InstanceCounters::kLayoutObjectCounter);
   if (node_)
     GetFrameView()->IncrementLayoutObjectCount();
@@ -1597,6 +1601,7 @@ void LayoutObject::InvalidateIntersectionObserverCachedRects() {
       data->InvalidateCachedRects();
     }
   }
+  GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
 }
 
 static inline bool ShouldInvalidateBeyond(LayoutObject* o) {
@@ -1694,15 +1699,34 @@ const LayoutBlock* LayoutObject::InclusiveContainingBlock() const {
   return layout_block ? layout_block : ContainingBlock();
 }
 
-const LayoutBox* LayoutObject::ContainingScrollContainer() const {
+const PaintLayer* LayoutObject::ContainingScrollContainerLayer(
+    bool ignore_layout_view_for_fixed_pos) const {
   NOT_DESTROYED();
-  if (auto* layer = EnclosingLayer()) {
-    if (auto* box = layer->GetLayoutBox()) {
-      if (box != this && box->IsScrollContainer())
-        return box;
+  const PaintLayer* layer = EnclosingLayer();
+  if (!layer) {
+    return nullptr;
+  }
+  if (auto* box = layer->GetLayoutBox()) {
+    if (box != this && box->IsScrollContainer()) {
+      return layer;
     }
-    if (auto* scroll_container_layer = layer->ContainingScrollContainerLayer())
-      return scroll_container_layer->GetLayoutBox();
+  }
+  bool is_fixed_to_view = false;
+  if (auto* scroll_container_layer =
+          layer->ContainingScrollContainerLayer(&is_fixed_to_view)) {
+    if (!is_fixed_to_view || !ignore_layout_view_for_fixed_pos) {
+      return scroll_container_layer;
+    }
+  }
+  return nullptr;
+}
+
+const LayoutBox* LayoutObject::ContainingScrollContainer(
+    bool ignore_layout_view_for_fixed_pos) const {
+  NOT_DESTROYED();
+  if (const PaintLayer* scroll_container_layer =
+          ContainingScrollContainerLayer(ignore_layout_view_for_fixed_pos)) {
+    return scroll_container_layer->GetLayoutBox();
   }
   return nullptr;
 }
@@ -3629,14 +3653,14 @@ PhysicalOffset LayoutObject::OffsetFromAncestor(
   return offset;
 }
 
-LayoutRect LayoutObject::LocalCaretRect(
+PhysicalRect LayoutObject::LocalCaretRect(
     int,
     LayoutUnit* extra_width_to_end_of_line) const {
   NOT_DESTROYED();
   if (extra_width_to_end_of_line)
     *extra_width_to_end_of_line = LayoutUnit();
 
-  return LayoutRect();
+  return PhysicalRect();
 }
 
 bool LayoutObject::IsRooted() const {
@@ -4537,6 +4561,17 @@ void LayoutObject::SetShouldInvalidateSelection() {
   NOT_DESTROYED();
   bitfields_.SetShouldInvalidateSelection(true);
   SetShouldCheckForPaintInvalidation();
+  // Invalidate overflow for ::selection styles that contain overflowing
+  // effects. Do this only for text objects, at least until
+  // crbug.com/1128199 is resolved (see InvalidateVisualOverflow())
+  if (IsText()) {
+    if (auto* computed_style = GetSelectionStyle()) {
+      if (computed_style->HasAppliedTextDecorations() ||
+          computed_style->HasVisualOverflowingEffect()) {
+        InvalidateVisualOverflow();
+      }
+    }
+  }
 }
 
 void LayoutObject::SetShouldDoFullPaintInvalidation(

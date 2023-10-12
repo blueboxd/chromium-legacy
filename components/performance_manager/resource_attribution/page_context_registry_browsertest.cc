@@ -14,6 +14,7 @@
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/resource_attribution/resource_contexts.h"
 #include "components/performance_manager/test_support/resource_attribution/registry_browsertest_harness.h"
+#include "components/performance_manager/test_support/run_in_graph.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -203,22 +204,22 @@ IN_PROC_BROWSER_TEST_F(PageContextRegistryTest, InvalidPageContexts) {
       PerformanceManager::GetProcessNodeForRenderProcessHost(
           web_contents()->GetPrimaryMainFrame()->GetProcess());
 
-  ResourceContext invalid_resource_context;
+  absl::optional<ResourceContext> invalid_resource_context;
   RunInGraphWithRegistry<PageContextRegistry>(
       [&](const PageContextRegistry* registry) {
         ASSERT_TRUE(process_node);
         invalid_resource_context = process_node->GetResourceContext();
-
-        EXPECT_EQ(nullptr,
-                  registry->GetPageNodeForContext(invalid_resource_context));
+        EXPECT_EQ(nullptr, registry->GetPageNodeForContext(
+                               invalid_resource_context.value()));
       });
 
+  ASSERT_TRUE(invalid_resource_context.has_value());
   EXPECT_EQ(nullptr, PageContextRegistry::WebContentsFromContext(
-                         invalid_resource_context));
+                         invalid_resource_context.value()));
   EXPECT_EQ(nullptr, PageContextRegistry::CurrentMainRenderFrameHostFromContext(
-                         invalid_resource_context));
+                         invalid_resource_context.value()));
   EXPECT_THAT(PageContextRegistry::AllMainRenderFrameHostsFromContext(
-                  invalid_resource_context),
+                  invalid_resource_context.value()),
               IsEmpty());
 }
 

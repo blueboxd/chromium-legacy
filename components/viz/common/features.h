@@ -63,6 +63,8 @@ VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kCVDisplayLinkBeginFrameSource);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kDrawPredictedInkPoint);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kAllowBypassRenderPassQuads);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kAllowUndamagedNonrootRenderPassToSkip);
+VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kAllowForceMergeRenderPassWithRequireOverlayQuads);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kAggressiveFrameCulling);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kEagerSurfaceGarbageCollection);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kOverrideThrottledFrameRateParams);
@@ -71,7 +73,6 @@ VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kBufferQueueImageSetPurgeable);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kEvictSubtree);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kOnBeginFrameAcks);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kOnBeginFrameThrottleVideo);
-VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kAutoNeedsBeginFrame);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedBitmapToSharedImage);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kEnableADPFScrollBoost);
 VIZ_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
@@ -118,7 +119,6 @@ VIZ_COMMON_EXPORT bool ShouldOverrideThrottledFrameRateParams();
 VIZ_COMMON_EXPORT bool ShouldOnBeginFrameThrottleVideo();
 VIZ_COMMON_EXPORT bool ShouldRendererAllocateImages();
 VIZ_COMMON_EXPORT bool IsOnBeginFrameAcksEnabled();
-VIZ_COMMON_EXPORT bool IsAutoNeedsBeginFrameEnabled();
 VIZ_COMMON_EXPORT bool ShouldDrawImmediatelyWhenInteractive();
 
 }  // namespace features

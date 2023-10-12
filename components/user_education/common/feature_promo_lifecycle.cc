@@ -6,6 +6,7 @@
 
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
@@ -16,21 +17,21 @@ namespace user_education {
 
 namespace {
 
-bool CanShowSnoozePromo(
+FeaturePromoResult CanShowSnoozePromo(
     const FeaturePromoStorageService::PromoData& promo_data) {
   // This IPH has been dismissed by user permanently.
   if (promo_data.is_dismissed) {
-    return false;
+    return FeaturePromoResult::kPermanentlyDismissed;
   }
 
   // This IPH is shown for the first time.
   if (promo_data.show_count == 0) {
-    return true;
+    return FeaturePromoResult::Success();
   }
 
   // Corruption: Snooze time is in the future.
   if (promo_data.last_snooze_time > base::Time::Now()) {
-    return false;
+    return FeaturePromoResult::kSnoozed;
   }
 
   // Use the snooze duration if this promo was snoozed the last time it was
@@ -43,7 +44,9 @@ bool CanShowSnoozePromo(
 
   // The IPH was snoozed, so it shouldn't be shown again until the snooze
   // duration ends.
-  return base::Time::Now() >= (promo_data.last_show_time + snooze_time);
+  return base::Time::Now() >= (promo_data.last_show_time + snooze_time)
+             ? FeaturePromoResult::Success()
+             : FeaturePromoResult::kSnoozed;
 }
 
 class ScopedPromoData {
@@ -87,12 +90,12 @@ FeaturePromoLifecycle::~FeaturePromoLifecycle() {
   MaybeEndPromo();
 }
 
-bool FeaturePromoLifecycle::CanShow() const {
+FeaturePromoResult FeaturePromoLifecycle::CanShow() const {
   DCHECK(promo_subtype_ != PromoSubtype::kPerApp || !app_id_.empty());
 
   const auto data = storage_service_->ReadPromoData(*iph_feature_);
   if (!data.has_value()) {
-    return true;
+    return FeaturePromoResult::Success();
   }
 
   switch (promo_subtype_) {
@@ -100,20 +103,23 @@ bool FeaturePromoLifecycle::CanShow() const {
       switch (promo_type_) {
         case PromoType::kLegacy:
         case PromoType::kToast:
+          return FeaturePromoResult::Success();
         case PromoType::kCustomAction:
-          return true;
         case PromoType::kSnooze:
         case PromoType::kTutorial:
           return CanShowSnoozePromo(*data);
         case PromoType::kUnspecified:
           NOTREACHED();
-          return false;
+          return FeaturePromoResult::kPermanentlyDismissed;
       }
       break;
     case PromoSubtype::kPerApp:
-      return !base::Contains(data->shown_for_apps, app_id_);
+      return base::Contains(data->shown_for_apps, app_id_)
+                 ? FeaturePromoResult::kPermanentlyDismissed
+                 : FeaturePromoResult::Success();
     case PromoSubtype::kLegalNotice:
-      return !data->is_dismissed;
+      return data->is_dismissed ? FeaturePromoResult::kPermanentlyDismissed
+                                : FeaturePromoResult::Success();
   }
 }
 
@@ -130,6 +136,7 @@ void FeaturePromoLifecycle::OnPromoShown(
   ScopedPromoData data(storage_service_, iph_feature_);
   ++data->show_count;
   data->last_show_time = base::Time::Now();
+  RecordShown();
 }
 
 void FeaturePromoLifecycle::OnPromoShownForDemo(
@@ -223,6 +230,55 @@ void FeaturePromoLifecycle::MaybeWriteClosePromoData(CloseReason close_reason) {
       // No additional action required.
       break;
   }
+}
+
+void FeaturePromoLifecycle::RecordShown() {
+  // Record Promo shown
+  std::string action_name = "UserEducation.MessageShown";
+  base::RecordComputedAction(action_name);
+
+  // Record Promo feature ID
+  action_name.append(".");
+  action_name.append(iph_feature_->name);
+  base::RecordComputedAction(action_name);
+
+  // Record Promo type
+  UMA_HISTOGRAM_ENUMERATION("UserEducation.MessageShown.Type", promo_type_);
+  UMA_HISTOGRAM_ENUMERATION("UserEducation.MessageShown.SubType",
+                            promo_subtype_);
+  std::string type_action_name = "UserEducation.MessageShown.";
+  switch (promo_subtype_) {
+    case PromoSubtype::kNormal:
+      break;
+    case PromoSubtype::kPerApp:
+      // Ends with a period.
+      type_action_name.append("PerApp.");
+      break;
+    case PromoSubtype::kLegalNotice:
+      // Ends with a period.
+      type_action_name.append("LegalNotice.");
+      break;
+  }
+  switch (promo_type_) {
+    case PromoType::kLegacy:
+      type_action_name.append("Legacy");
+      break;
+    case PromoType::kToast:
+      type_action_name.append("Toast");
+      break;
+    case PromoType::kCustomAction:
+      type_action_name.append("CustomAction");
+      break;
+    case PromoType::kSnooze:
+      type_action_name.append("Snooze");
+      break;
+    case PromoType::kTutorial:
+      type_action_name.append("Tutorial");
+      break;
+    case PromoType::kUnspecified:
+      NOTREACHED();
+  }
+  base::RecordComputedAction(type_action_name);
 }
 
 void FeaturePromoLifecycle::MaybeRecordCloseReason(CloseReason close_reason) {

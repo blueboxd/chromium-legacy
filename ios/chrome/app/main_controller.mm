@@ -67,7 +67,7 @@
 #import "ios/chrome/browser/crash_report/model/crash_loop_detection_util.h"
 #import "ios/chrome/browser/crash_report/model/crash_report_helper.h"
 #import "ios/chrome/browser/credential_provider/model/credential_provider_buildflags.h"
-#import "ios/chrome/browser/default_browser/utils.h"
+#import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/external_files/external_file_remover_factory.h"
 #import "ios/chrome/browser/external_files/external_file_remover_impl.h"
@@ -75,20 +75,20 @@
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/mailto_handler/mailto_handler_service.h"
 #import "ios/chrome/browser/mailto_handler/mailto_handler_service_factory.h"
-#import "ios/chrome/browser/memory/memory_debugger_manager.h"
+#import "ios/chrome/browser/memory/model/memory_debugger_manager.h"
 #import "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/metrics/incognito_usage_app_state_agent.h"
 #import "ios/chrome/browser/metrics/window_configuration_recorder.h"
 #import "ios/chrome/browser/omaha/omaha_service.h"
-#import "ios/chrome/browser/passwords/password_manager_util_ios.h"
+#import "ios/chrome/browser/passwords/model/password_manager_util_ios.h"
 #import "ios/chrome/browser/promos_manager/promos_manager_factory.h"
-#import "ios/chrome/browser/screenshot/screenshot_metrics_recorder.h"
+#import "ios/chrome/browser/screenshot/model/screenshot_metrics_recorder.h"
 #import "ios/chrome/browser/search_engines/extension_search_engine_data_updater.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
-#import "ios/chrome/browser/share_extension/share_extension_service.h"
-#import "ios/chrome/browser/share_extension/share_extension_service_factory.h"
+#import "ios/chrome/browser/share_extension/model/share_extension_service.h"
+#import "ios/chrome/browser/share_extension/model/share_extension_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_delegate.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -108,14 +108,14 @@
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
-#import "ios/chrome/browser/snapshots/snapshot_storage.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/snapshots/model/snapshot_browser_agent.h"
+#import "ios/chrome/browser/snapshots/model/snapshot_storage.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_params.h"
 #import "ios/chrome/browser/web/certificate_policy_app_agent.h"
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_cache.h"
@@ -1401,15 +1401,16 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   syncer::SyncService* syncService =
       SyncServiceFactory::GetForBrowserState(browserState);
   // Only use the fallback to the Google server when fetching favicons for
-  // normal encryption synced users because they are the only users who
-  // consented to share data to Google. The other types of synced users did not.
-  BOOL isPasswordSyncEnabled =
-      password_manager_util::IsPasswordSyncNormalEncryptionEnabled(syncService);
-  if (isPasswordSyncEnabled) {
+  // normal encryption users saving to the account, because they are the only
+  // users who consented to share data to Google.
+  BOOL fallbackToGoogleServer =
+      password_manager_util::IsSavingPasswordsToAccountWithNormalEncryption(
+          syncService);
+  if (fallbackToGoogleServer) {
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::BindOnce(&UpdateFaviconsStorageForBrowserState,
-                                  browserState->AsWeakPtr(),
-                                  /*sync_enabled=*/isPasswordSyncEnabled));
+        FROM_HERE,
+        base::BindOnce(&UpdateFaviconsStorageForBrowserState,
+                       browserState->AsWeakPtr(), fallbackToGoogleServer));
   }
 }
 #endif

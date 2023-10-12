@@ -264,11 +264,6 @@ void PictureInPictureBrowserFrameView::ChildDialogObserverHelper::
       new_bounds.size() != latest_child_dialog_forced_bounds_.size()) {
     latest_user_desired_bounds_.set_size(new_bounds.size());
 
-    // Update the bounds for this window as well.  It might be possible to
-    // remove `latest_user_desired_bounds_`, but likely it's not worth it.
-    PictureInPictureWindowManager::GetInstance()->UpdateCachedBounds(
-        new_bounds);
-
     // At this point, we'll no longer resize when the child dialog closes, so
     // reset the state to normal.
     resizing_state_ = ResizingState::kNormal;
@@ -957,8 +952,7 @@ SkColor PictureInPictureBrowserFrameView::GetIconLabelBubbleBackgroundColor()
 ///////////////////////////////////////////////////////////////////////////////
 // ContentSettingImageView::Delegate implementations:
 
-bool PictureInPictureBrowserFrameView::ShouldHideContentSettingImage(
-    ImageType type) {
+bool PictureInPictureBrowserFrameView::ShouldHideContentSettingImage() {
   return false;
 }
 
@@ -972,7 +966,7 @@ PictureInPictureBrowserFrameView::GetContentSettingWebContents() {
 ContentSettingBubbleModelDelegate*
 PictureInPictureBrowserFrameView::GetContentSettingBubbleModelDelegate() {
   // Use the opener browser delegate to open any new tab.
-  Browser* browser = chrome::FindBrowserWithWebContents(GetWebContents());
+  Browser* browser = chrome::FindBrowserWithTab(GetWebContents());
   return browser->content_setting_bubble_model_delegate();
 }
 
@@ -984,9 +978,7 @@ void PictureInPictureBrowserFrameView::OnWidgetActivationChanged(
     bool active) {
   // The window may become inactive when a popup modal shows, so we need to
   // check if the mouse is still inside the window.
-  if (!active && mouse_inside_window_)
-    active = true;
-  UpdateTopBarView(active);
+  UpdateTopBarView(active || mouse_inside_window_ || IsOverlayViewVisible());
 }
 
 void PictureInPictureBrowserFrameView::OnWidgetDestroying(
@@ -996,6 +988,12 @@ void PictureInPictureBrowserFrameView::OnWidgetDestroying(
 #if RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
   child_dialog_observer_helper_.reset();
 #endif  // RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
+}
+
+void PictureInPictureBrowserFrameView::OnWidgetBoundsChanged(
+    views::Widget* widget,
+    const gfx::Rect& new_bounds) {
+  PictureInPictureWindowManager::GetInstance()->UpdateCachedBounds(new_bounds);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1281,7 +1279,17 @@ views::Label* PictureInPictureBrowserFrameView::GetWindowTitleForTesting() {
 void PictureInPictureBrowserFrameView::OnMouseEnteredOrExitedWindow(
     bool entered) {
   mouse_inside_window_ = entered;
-  UpdateTopBarView(mouse_inside_window_);
+  // If the overlay view is visible, then we should keep the top bar icons
+  // visible too.  If the overlay is dismissed, we'll leave it in the same state
+  // until a mouse-out event, which is reasonable.  If the UI is dismissed via
+  // the mouse, then it's inside the window anyway.  If it's dismissed via the
+  // keyboard, keeping it that way until the next mouse in/out actually looks
+  // better than having the top bar hide immediately.
+  UpdateTopBarView(mouse_inside_window_ || IsOverlayViewVisible());
+}
+
+bool PictureInPictureBrowserFrameView::IsOverlayViewVisible() const {
+  return auto_pip_setting_overlay_ && auto_pip_setting_overlay_->GetVisible();
 }
 
 BEGIN_METADATA(PictureInPictureBrowserFrameView, BrowserNonClientFrameView)

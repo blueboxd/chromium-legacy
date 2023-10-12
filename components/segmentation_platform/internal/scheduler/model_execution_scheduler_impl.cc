@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/time/clock.h"
-#include "base/time/time.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
 #include "components/segmentation_platform/internal/database/signal_storage_config.h"
 #include "components/segmentation_platform/internal/execution/execution_request.h"
@@ -34,7 +33,7 @@ ModelExecutionSchedulerImpl::ModelExecutionSchedulerImpl(
       signal_storage_config_(signal_storage_config),
       model_manager_(model_manager),
       model_executor_(model_executor),
-      all_segment_ids_(segment_ids),
+      legacy_output_segment_ids_(segment_ids),
       clock_(clock),
       platform_options_(platform_options) {}
 
@@ -60,7 +59,7 @@ void ModelExecutionSchedulerImpl::OnNewModelInfoReady(
 void ModelExecutionSchedulerImpl::RequestModelExecutionForEligibleSegments(
     bool expired_only) {
   segment_database_->GetSegmentInfoForSegments(
-      all_segment_ids_,
+      legacy_output_segment_ids_,
       base::BindOnce(&ModelExecutionSchedulerImpl::FilterEligibleSegments,
                      weak_ptr_factory_.GetWeakPtr(), expired_only));
 }
@@ -74,12 +73,12 @@ void ModelExecutionSchedulerImpl::RequestModelExecution(
       base::BindOnce(&ModelExecutionSchedulerImpl::OnModelExecutionCompleted,
                      weak_ptr_factory_.GetWeakPtr(), segment_info)));
   auto request = std::make_unique<ExecutionRequest>();
+  request->segment_id = segment_info.segment_id();
+  request->model_source = proto::ModelSource::SERVER_MODEL_SOURCE;
   request->model_provider = model_manager_->GetModelProvider(
       segment_info.segment_id(), proto::ModelSource::SERVER_MODEL_SOURCE);
   DCHECK(request->model_provider);
-  request->segment_info = &segment_info;
   request->callback = outstanding_requests_[segment_id].callback();
-  request->record_metrics_for_default = false;
   model_executor_->ExecuteModel(std::move(request));
 }
 

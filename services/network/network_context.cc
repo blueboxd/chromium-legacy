@@ -673,32 +673,9 @@ NetworkContext::~NetworkContext() {
 
   // May be nullptr in tests.
   if (network_service_) {
-#if BUILDFLAG(IS_ANDROID)
-    if (params_ && params_->file_paths) {
-      base::FilePath path_to_invalidate;
-      if (GetFullDataFilePath(params_->file_paths,
-                              &network::mojom::NetworkContextFilePaths::
-                                  trust_token_database_name,
-                              path_to_invalidate)) {
-        network_service_->InvalidateNetworkContextPath(path_to_invalidate);
-      }
-      if (GetFullDataFilePath(params_->file_paths,
-                              &network::mojom::NetworkContextFilePaths::
-                                  reporting_and_nel_store_database_name,
-                              path_to_invalidate)) {
-        network_service_->InvalidateNetworkContextPath(path_to_invalidate);
-      }
-      if (GetFullDataFilePath(
-              params_->file_paths,
-              &network::mojom::NetworkContextFilePaths::cookie_database_name,
-              path_to_invalidate)) {
-        network_service_->InvalidateNetworkContextPath(path_to_invalidate);
-      }
-    }
-
-#endif
     network_service_->DeregisterNetworkContext(this);
   }
+
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->Shutdown();
   // Because of the order of declaration in the class,
@@ -2750,11 +2727,16 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   builder.set_host_mapping_rules(
       command_line->GetSwitchValueASCII(switches::kHostResolverRules));
 
+#if BUILDFLAG(IS_WIN)
   if (params_->socket_broker) {
     builder.set_client_socket_factory(
         std::make_unique<BrokeredClientSocketFactory>(
             std::move(params_->socket_broker)));
   }
+#endif
+
+  require_network_anonymization_key_ =
+      params_->require_network_anonymization_key;
 
   // If `require_network_anonymization_key_` is true, but the features that can
   // trigger another URLRequest are not set to respect NetworkAnonymizationKeys,
@@ -2782,9 +2764,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   }
   auto result =
       URLRequestContextOwner(std::move(pref_service), builder.Build());
-
-  require_network_anonymization_key_ =
-      params_->require_network_anonymization_key;
 
   // Subscribe the CertVerifier to configuration changes that are exposed via
   // the mojom::SSLConfig, but which are not part of the
@@ -2866,6 +2845,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       proxy_delegate_->SetIpProtectionConfigCache(
           std::make_unique<IpProtectionConfigCacheImpl>(
               std::move(params_->ip_protection_config_getter)));
+      proxy_delegate_->GetIpProtectionConfigCache()->SetUp();
     }
   }
 
@@ -3073,6 +3053,10 @@ bool NetworkContext::IsAllowedToUseAllHttpAuthSchemes(
     const url::SchemeHostPort& scheme_host_port) {
   DCHECK(url_matcher_);
   return !url_matcher_->MatchURL(scheme_host_port.GetURL()).empty();
+}
+
+bool NetworkContext::AfpBlockListExperimentEnabled() const {
+  return params_ && params_->afp_block_list_experiment_enabled;
 }
 
 void NetworkContext::CreateTrustedUrlLoaderFactoryForNetworkService(

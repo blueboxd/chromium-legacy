@@ -60,8 +60,8 @@ struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING) SourceRegistration {
   // These `base::TimeDelta`s must be non-negative if set. This is verified by
   // the `Parse()` and `IsValid()` methods.
   base::TimeDelta expiry = kMaxSourceExpiry;
-  absl::optional<EventReportWindows> event_report_windows;
-  absl::optional<base::TimeDelta> aggregatable_report_window;
+  EventReportWindows event_report_windows;
+  base::TimeDelta aggregatable_report_window = expiry;
   // Must be non-negative and <= `kMaxSettableEventLevelAttributions`.
   // This is verified by the `Parse()` and `IsValid()` methods.
   int max_event_level_reports = 0;

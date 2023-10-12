@@ -35,10 +35,13 @@ static_library("common") {
     ":constants",
     ":features",
   ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 source_set("constants") {
   sources = [ "password_manager_constants.h" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 source_set("features") {
@@ -47,14 +50,12 @@ source_set("features") {
     "password_manager_features.h",
   ]
 
-  if (is_android) {
-    sources += [ "password_manager_feature_variations_android.h" ]
-  }
-
   deps = [
     "//base",
     "//build:blink_buildflags",
   ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 source_set("unit_tests") {
@@ -77,17 +78,5 @@ source_set("unit_tests") {
       "//sql",
       "//url",
     ]
-  }
-}
-
-if (is_android) {
-  java_cpp_enum("java_enums_srcjar") {
-    visibility = [ ":*" ]
-    sources = [ "password_manager_feature_variations_android.h" ]
-  }
-
-  android_library("password_manager_common_java_enums") {
-    deps = [ "//third_party/androidx:androidx_annotation_annotation_java" ]
-    srcjar_deps = [ ":java_enums_srcjar" ]
   }
 }

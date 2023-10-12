@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/autofill/delete_address_profile_dialog_view.h"
+#include "chrome/browser/ui/autofill/delete_address_profile_dialog_view.h"
 
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
@@ -12,8 +12,9 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 
-namespace autofill::dialogs {
+namespace autofill {
 
 // static
 void ShowDeleteAddressProfileDialogView(
@@ -27,13 +28,15 @@ void ShowDeleteAddressProfileDialogView(
           .AddOkButton(
               base::BindOnce(&DeleteAddressProfileDialogController::OnAccepted,
                              controller),
-              ui::DialogModelButton::Params().SetLabel(
-                  controller->GetAcceptButtonText()))
+              ui::DialogModelButton::Params()
+                  .SetId(views::DialogClientView::kOkButtonElementId)
+                  .SetLabel(controller->GetAcceptButtonText()))
           .AddCancelButton(
               base::BindOnce(&DeleteAddressProfileDialogController::OnCanceled,
                              controller),
-              ui::DialogModelButton::Params().SetLabel(
-                  controller->GetDeclineButtonText()))
+              ui::DialogModelButton::Params()
+                  .SetId(views::DialogClientView::kCancelButtonElementId)
+                  .SetLabel(controller->GetDeclineButtonText()))
           .AddParagraph(
               ui::DialogModelLabel(controller->GetDeleteConfirmationText())
                   .set_is_secondary())
@@ -43,7 +46,8 @@ void ShowDeleteAddressProfileDialogView(
               &DeleteAddressProfileDialogController::OnDialogDestroying,
               controller))
           .Build();
+
   constrained_window::ShowWebModal(std::move(dialog_model), web_contents);
 }
 
-}  // namespace autofill::dialogs
+}  // namespace autofill

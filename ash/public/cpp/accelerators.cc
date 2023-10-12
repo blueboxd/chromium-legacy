@@ -198,7 +198,7 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
      AcceleratorAction::kToggleMessageCenterBubble},
     {true, ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
-     AcceleratorAction::kShowStylusTools},
+     AcceleratorAction::kToggleStylusTools},
     {true, ui::VKEY_X, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
      AcceleratorAction::kStopScreenRecording},
     {true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
@@ -242,6 +242,8 @@ const AcceleratorData kAcceleratorData[] = {
      AcceleratorAction::kToggleSnapGroupWindowsGroupAndUngroup},
     {true, ui::VKEY_D, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
      AcceleratorAction::kToggleSnapGroupWindowsMinimizeAndRestore},
+    {true, ui::VKEY_Z, ui::EF_COMMAND_DOWN,
+     AcceleratorAction::kToggleMultitaskMenu},
 
     // Moving active window between displays shortcut.
     {true, ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
@@ -382,14 +384,6 @@ const AcceleratorData kEnableWithSameAppWindowCycleAcceleratorData[] = {
 
 const size_t kEnableWithSameAppWindowCycleAcceleratorDataLength =
     std::size(kEnableWithSameAppWindowCycleAcceleratorData);
-
-const AcceleratorData kEnableWithFloatWindowAcceleratorData[] = {
-    {true, ui::VKEY_Z, ui::EF_COMMAND_DOWN,
-     AcceleratorAction::kToggleMultitaskMenu},
-};
-
-const size_t kEnableWithFloatWindowAcceleratorDataLength =
-    std::size(kEnableWithFloatWindowAcceleratorData);
 
 const AcceleratorData kToggleGameDashboardAcceleratorData[] = {
     {true, ui::VKEY_G, ui::EF_COMMAND_DOWN,

@@ -4,6 +4,7 @@
 <translation id="1046370274005147998">Sesha Nge-Voice Ku-Chromium.</translation>
 <translation id="1047130070405668746">Khetha i-Chromium</translation>
 <translation id="1091252999271033193">Lokhu kusho ukuthi i-Chromium izocela isayithi yeselula ngaso sonke isikhathi.</translation>
+<translation id="1171824629317156389">Vula Amasethingi We-Chromium ku-iOS, bese uthepha okuthi "I-app Yebhrawuza Eqokiwe" bese ukhetha i-Chromium.</translation>
 <translation id="1185134272377778587">Mayelana ne-Chromium</translation>
 <translation id="1257458525759135959">Ukuze ulondoloze izithombe, thepha Amasethingi ukuze uvumele i-Chromium ingeze ezithombeni zakho</translation>
 <translation id="1289216811211435351">Shintshela ku-Chromium</translation>
@@ -16,6 +17,7 @@
 <translation id="1591119736686995611">Vula Ithebhu Ye-Grid Ye-Chromium.</translation>
 <translation id="1617663976202781617">Idatha kusukela ekuvunyelanisweni kwe-Chromium</translation>
 <translation id="1647558790457890304">Amasethingi E-Chromium</translation>
+<translation id="164952285225495380">Le phakheji isivele ilandelelwe ku-Chromium.</translation>
 <translation id="1722370509450468186">Iphasiwedi yakho izolondolozwa ku-Account yakho (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Idatha ye-Chromium esuliwe</translation>
 <translation id="1791845338122684020">Ivula Ikhasi lakho Lomlando we-Chromium.</translation>
@@ -94,7 +96,6 @@ Ukuze ushintshe la masethingi, <ph name="BEGIN_LINK" />sula idatha ye-Chromium k
 <translation id="4736424910885271643">I-akhawunti yakho iphethwe yi-<ph name="HOSTED_DOMAIN" />, ngakho idatha yakho ye-Chromium izosulwa kusuka kule divayisi</translation>
 <translation id="4790638144988730920">Qhubeka usebenzisa idatha ye-Chromium ku-Google Account yakho.</translation>
 <translation id="4828317641996116749">I-Chromium ayikwazanga ukuhlola wonke amaphasiwedi. Zama futhi emuva kwesikhathi.</translation>
-<translation id="4935539884203837577">I-Chromuim ingathola izinombolo zokulandelela ozifakile bese ilandelela amaphakheji akho Ekhasini leThebhu Elisha kuyilapho isiza ngokunye ukujabulela ukuthenga ku-Chromium.</translation>
 <translation id="4985291216379576555">Ayixhunyiwe kwi-inthanethi, i-Chromium ayikwazi ukuhlola izibuyekezo</translation>
 <translation id="4996471330284142407">Yenza okuningi nge-Chromium elula, evikelekile, nesheshayo kunangaphambilini.</translation>
 <translation id="4999538639245140991">Ngoba uphuma ku-akhawunti ephethwe ngu-<ph name="SIGNOUT_MANAGED_DOMAIN" />, idatha yakho ye-Chromium izosuswa kusuka kule divayisi. Idatha yakho izohlala ku-akhawunti yakho ye-Google.</translation>
@@ -140,6 +141,7 @@ Izinto okumelwe uzicabangele:
 1. Vula Amasethingi
 2. Thepha Uhlelo Lokusebenza Lwesiphequluli Esizenzakalelayo
 3. Khetha i-Chromium.</translation>
+<translation id="6197255575340902638">Uma ufihla "i-<ph name="MODULE_NAME" />", i-Chromium ngeke isalandelela ngokuzenzakalelayo amaphakheji akho esikhathi esizayo futhi izosusa yonke idatha yakho yokulandela yephakheji edlule.</translation>
 <translation id="6247557882553405851">Umphathi Wephasiwedi ye-Google</translation>
 <translation id="6268381023930128611">Phuma ku-Chromium?</translation>
 <translation id="6324041800010509197">Vakashela Ithebhu Ye-Grid Ku-Chromium</translation>

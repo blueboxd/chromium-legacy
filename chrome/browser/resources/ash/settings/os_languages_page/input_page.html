@@ -309,14 +309,15 @@
 
 <template is="dom-if" if="[[allowSuggestionSection_]]">
   <div id="suggestionsSection" class="hr bottom-margin">
-    <h2>$i18n{smartInputsTitle}</h2>
+    <h2>$i18n{suggestionsTitle}</h2>
     <div class="subsection">
       <template is="dom-if" if="[[allowOrca_]]">
         <!-- TODO(b/294956432): Replace with the correct label and sub-label -->
         <settings-toggle-button id="orcaToggle"
             pref="{{prefs.assistive_input.orca_enabled}}"
             label="Copy Suggestions"
-            aria-label="Copy Suggestions">
+            aria-label="Copy Suggestions"
+            deep-link-focus-id$="[[Setting.kShowOrca]]">
         </settings-toggle-button>
       </template>
 

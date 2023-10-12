@@ -38,7 +38,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
@@ -626,6 +626,10 @@ std::unique_ptr<WebApp> CreateRandomWebApp(CreateRandomWebAppParams params) {
     app->AddSource(WebAppManagement::kOneDriveIntegration);
     management_types.push_back(WebAppManagement::kOneDriveIntegration);
   }
+  if (random.next_bool()) {
+    app->AddSource(WebAppManagement::kApsDefault);
+    management_types.push_back(WebAppManagement::kApsDefault);
+  }
 
   // Must always be at least one source.
   if (!app->HasAnySources()) {
@@ -945,6 +949,8 @@ std::unique_ptr<WebApp> CreateRandomWebApp(CreateRandomWebAppParams params) {
     app->SetGeneratedIconFix(generated_icon_fix);
   }
 
+  app->SetSupportedLinksOfferIgnoreCount(random.next_uint());
+  app->SetSupportedLinksOfferDismissCount(random.next_uint());
   return app;
 }
 
@@ -968,14 +974,14 @@ void TestDeclineDialogCallback(
 
 webapps::AppId InstallPwaForCurrentUrl(Browser* browser) {
   // Depending on the installability criteria, different dialogs can be used.
-  chrome::SetAutoAcceptWebAppDialogForTesting(true, true);
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
+  SetAutoAcceptWebAppDialogForTesting(true, true);
+  SetAutoAcceptPWAInstallConfirmationForTesting(true);
   WebAppTestInstallWithOsHooksObserver observer(browser->profile());
   observer.BeginListening();
   CHECK(chrome::ExecuteCommand(browser, IDC_INSTALL_PWA));
   webapps::AppId app_id = observer.Wait();
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
-  chrome::SetAutoAcceptWebAppDialogForTesting(false, false);
+  SetAutoAcceptPWAInstallConfirmationForTesting(false);
+  SetAutoAcceptWebAppDialogForTesting(false, false);
   return app_id;
 }
 

@@ -46,11 +46,28 @@
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
+float const kErrorRange = 0.01;
 
 void CanvasPath::closePath() {
   if (UNLIKELY(IsEmpty())) {
     return;
   }
+  // If the current path is a zero lengthed path (ex: moveTo p1 and lineTo p1),
+  // then closePath is no op.
+  if (UNLIKELY(path_.BoundingRect().height() == 0 &&
+               path_.BoundingRect().width() == 0 &&
+               (IsLine() && line_builder_.BoundingRect().height() == 0 &&
+                line_builder_.BoundingRect().width() == 0))) {
+    if (!path_.HasCurrentPoint()) {
+      Clear();
+      return;
+    }
+    auto p = path_.CurrentPoint();
+    Clear();
+    moveTo(p.x(), p.y());
+    return;
+  }
+
   UpdatePathFromLineIfNecessaryForMutation();
   if (UNLIKELY(identifiability_study_helper_.ShouldUpdateBuilder())) {
     identifiability_study_helper_.UpdateBuilder(CanvasOps::kClosePath);
@@ -487,6 +504,17 @@ void CanvasPath::ellipse(double double_x,
   CanonicalizeAngle(&start_angle, &end_angle);
   float adjusted_end_angle =
       AdjustEndAngle(start_angle, end_angle, anticlockwise);
+
+  // If the ellipse has a radius of zero and it's closed, this path should be
+  // ignored from drawing.
+  if (!path_.HasCurrentPoint() ||
+      (path_.HasCurrentPoint() && path_.CurrentPoint().x() == x &&
+       path_.CurrentPoint().y() == y)) {
+    if (!radius_x && !radius_y &&
+        abs(adjusted_end_angle - start_angle - kTwoPiFloat) <= kErrorRange) {
+      return;
+    }
+  }
   if (UNLIKELY(!radius_x || !radius_y || start_angle == adjusted_end_angle)) {
     // The ellipse is empty but we still need to draw the connecting line to
     // start point.

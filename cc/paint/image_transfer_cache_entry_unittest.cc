@@ -32,6 +32,7 @@
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
 #include "third_party/skia/include/gpu/ganesh/gl/GrGLBackendSurface.h"
+#include "third_party/skia/include/gpu/ganesh/gl/GrGLDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/size.h"
@@ -103,7 +104,7 @@ class ImageTransferCacheEntryTest
     ASSERT_TRUE(gl_context_->MakeCurrent(surface_.get()));
     sk_sp<GrGLInterface> gl_interface(gl::init::CreateGrGLInterface(
         *gl_context_->GetVersionInfo(), false /* use_version_es2 */));
-    gr_context_ = GrDirectContext::MakeGL(std::move(gl_interface));
+    gr_context_ = GrDirectContexts::MakeGL(std::move(gl_interface));
     ASSERT_TRUE(gr_context_);
   }
 
@@ -520,13 +521,10 @@ TEST(ImageTransferCacheEntryTestHDR, Gainmap) {
   // Read the resulting image back into a bitmap.
   SkBitmap result;
   {
-    TargetColorParams target_color_params;
-    target_color_params.hdr_max_luminance_relative = 2.f;
-
     ClientImageTransferCacheEntry client_entry(
         ClientImageTransferCacheEntry::Image(&sdr_bitmap.pixmap()),
         ClientImageTransferCacheEntry::Image(&gainmap_bitmap.pixmap()),
-        gainmap_info, false, target_color_params);
+        gainmap_info, false);
 
     std::vector<uint8_t> storage(client_entry.SerializedSize());
     client_entry.Serialize(base::make_span(storage.data(), storage.size()));
@@ -536,7 +534,8 @@ TEST(ImageTransferCacheEntryTestHDR, Gainmap) {
                               /*graphite_recorder=*/nullptr,
                               base::make_span(storage.data(), storage.size()));
     ASSERT_TRUE(service_entry.image());
-    auto image = service_entry.image();
+    ASSERT_TRUE(service_entry.NeedsToneMapApplied());
+    auto image = service_entry.GetImageWithToneMapApplied(2.f, false);
 
     SkImageInfo info =
         SkImageInfo::Make(kSdrWidth, kSdrHeight, kRGBA_F32_SkColorType,

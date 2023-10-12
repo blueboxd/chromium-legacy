@@ -483,7 +483,7 @@ TEST_P(CompositingTest, BackgroundColorInScrollingContentsLayer) {
   // The root layer and root scrolling contents layer get background_color by
   // blending the CSS background-color of the <html> element with
   // LocalFrameView::BaseBackgroundColor(), which is white by default.
-  auto* layer = CcLayersByName(RootCcLayer(), "LayoutNGView #document")[0];
+  auto* layer = CcLayersByName(RootCcLayer(), "LayoutView #document")[0];
   SkColor4f expected_color = SkColor4f::FromColor(SkColorSetRGB(10, 20, 30));
   EXPECT_EQ(layer->background_color(), SkColors::kTransparent);
   auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
@@ -545,7 +545,7 @@ TEST_P(CompositingTest, BackgroundColorInGraphicsLayer) {
   // background is painted into the root graphics layer, the root scrolling
   // contents layer should not checkerboard, so its background color should be
   // transparent.
-  auto* layer = CcLayersByName(RootCcLayer(), "LayoutNGView #document")[0];
+  auto* layer = CcLayersByName(RootCcLayer(), "LayoutView #document")[0];
   EXPECT_EQ(layer->background_color(), SkColors::kWhite);
   auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
   layer = ScrollingContentsCcLayerByScrollElementId(
@@ -2968,18 +2968,6 @@ TEST_P(CompositingSimTest, DecompositeScrollerInHiddenIframe) {
   middle_frame.View()->BeginLifecycleUpdates();
   bottom_frame.View()->BeginLifecycleUpdates();
   Compositor().BeginFrame();
-  LayoutBox* scroller =
-      To<LayoutBox>(bottom_frame.GetDocument()
-                        ->getElementById(AtomicString("scroller"))
-                        ->GetLayoutObject());
-  if (RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()) {
-    // In CompositeScrollAfterPaint, NeedsComositedScrolling returns true
-    // only if the scroller is forced to be composited.
-    EXPECT_FALSE(scroller->GetScrollableArea()->NeedsCompositedScrolling());
-  } else {
-    ASSERT_TRUE(scroller->GetScrollableArea()->NeedsCompositedScrolling());
-  }
-
   EXPECT_TRUE(CcLayerByDOMElementId("scroller"));
 
   // Hide the iframes. Scroller should be decomposited.

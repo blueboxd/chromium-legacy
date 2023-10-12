@@ -10,10 +10,10 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_part_root.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_cloning_data.h"
 #include "third_party/blink/renderer/core/dom/node_move_scope.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/part.h"
-#include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
@@ -26,12 +26,17 @@ void PartRoot::AddPart(Part& new_part) {
   if (cached_parts_list_dirty_) {
     return;
   }
-  if (NodeMoveScope::AllMovedPartsWereClean()) {
+  bool no_tracking =
+      !RuntimeEnabledFeatures::DOMPartsAPIActivePartTrackingEnabled();
+  if (no_tracking || NodeMoveScope::AllMovedPartsWereClean()) {
     DCHECK(!base::Contains(cached_ordered_parts_, &new_part));
-    if (NodeMoveScope::IsPrepend()) {
-      cached_ordered_parts_.push_front(&new_part);
-    } else {
+    if (no_tracking || !NodeMoveScope::IsPrepend()) {
       cached_ordered_parts_.push_back(&new_part);
+    } else {
+      // TODO(crbug.com/1453291) If we go back to tracking parts, this case
+      // should do: cached_ordered_parts_.push_front(&new_part).
+      cached_ordered_parts_.clear();
+      cached_parts_list_dirty_ = true;
     }
   } else {
     cached_ordered_parts_.clear();
@@ -49,17 +54,59 @@ void PartRoot::AddPart(Part& new_part) {
 // The tricky bit there is that we need to know that we're
 // doing that, and we only know it's true when we get to the last removal
 // and we've removed the entire end of the list of parts.
+// TODO(crbug.com/1453291) The comment for this function should get updated
+// if we get rid of part tracking.
 void PartRoot::RemovePart(Part& part) {
   if (cached_parts_list_dirty_) {
     return;
   }
-  DCHECK(!cached_ordered_parts_.empty());
-  if (NodeMoveScope::InScope() && cached_ordered_parts_.front() == &part) {
-    cached_ordered_parts_.pop_front();
-  } else {
-    cached_ordered_parts_.clear();
-    cached_parts_list_dirty_ = true;
+  // TODO(crbug.com/1453291) If we go back to tracking parts, we can pop_front
+  // this part if it's in the front.
+  cached_parts_list_dirty_ = true;
+}
+
+// static
+void PartRoot::CloneParts(const Node& source_node,
+                          Node& destination_node,
+                          NodeCloningData& data) {
+  if (!data.Has(CloneOption::kPreserveDOMParts)) {
+    return;
   }
+  DCHECK(RuntimeEnabledFeatures::DOMPartsAPIEnabled());
+  if (auto* parts = source_node.GetDOMParts()) {
+    for (Part* part : *parts) {
+      if (!part->IsValid()) {
+        // Only valid parts get cloned. This avoids issues with nesting
+        // of invalid parts affecting the part root stack.
+        continue;
+      }
+      if (part->NodeToSortBy() == source_node) {
+        // This can be a NodePart or the previousSibling of a ChildNodePart.
+        // If this is a ChildNodePart, this will push the new part onto the
+        // part root stack.
+        part->ClonePart(data, destination_node);
+        continue;
+      }
+      // This should *only* be the nextSibling of a ChildNodePart.
+      DCHECK(part->GetAsPartRoot()) << "Should be a ChildNodePart";
+      DCHECK_EQ(static_cast<ChildNodePart*>(part)->nextSibling(), source_node)
+          << "This should be the next sibling node";
+      if (data.PartRootStackInvalid()) {
+        // If there have been mis-nested parts, abort.
+        continue;
+      }
+      // The top of the part root stack should be the appropriate part.
+      ChildNodePart& child_node_part =
+          static_cast<ChildNodePart&>(data.CurrentPartRoot());
+      child_node_part.setNextSibling(destination_node);
+      data.PopPartRoot(child_node_part);
+    }
+  }
+}
+
+void PartRoot::SwapPartsList(PartRoot& other) {
+  cached_ordered_parts_.swap(other.cached_ordered_parts_);
+  std::swap(cached_parts_list_dirty_, other.cached_parts_list_dirty_);
 }
 
 // |getParts| must always return the contained parts list subject to these
@@ -75,9 +122,9 @@ void PartRoot::RemovePart(Part& part) {
 // PartRoot (from FirstIncludedChildNode to LastIncludedChildNode), and collect
 // any Parts we find. If we find a ChildNodePart (or other PartRoot), we ignore
 // Parts until we exit the Partroot.
-HeapDeque<Member<Part>>& PartRoot::RebuildPartsList() {
+HeapVector<Member<Part>>& PartRoot::RebuildPartsList() {
   DCHECK(cached_parts_list_dirty_);
-  auto& ordered_parts = *MakeGarbageCollected<HeapDeque<Member<Part>>>();
+  auto& ordered_parts = *MakeGarbageCollected<HeapVector<Member<Part>>>();
   // Then traverse the tree under the root container and add parts in the order
   // they're found in the tree, and for the same Node, in the order they were
   // constructed.
@@ -139,20 +186,38 @@ HeapDeque<Member<Part>>& PartRoot::RebuildPartsList() {
   return ordered_parts;
 }
 
-HeapVector<Member<Part>>& PartRoot::getParts() {
+const HeapVector<Member<Part>>& PartRoot::getParts() {
   if (cached_parts_list_dirty_) {
     cached_ordered_parts_ = RebuildPartsList();
     cached_parts_list_dirty_ = false;
+  } else {
+    // Remove invalid cached parts.
+    bool remove_invalid = false;
+    for (auto part : cached_ordered_parts_) {
+      if (!part->IsValid()) {
+        remove_invalid = true;
+        break;
+      }
+    }
+    if (remove_invalid) {
+      HeapVector<Member<Part>> new_list;
+      for (auto part : cached_ordered_parts_) {
+        if (part->IsValid()) {
+          new_list.push_back(part);
+        }
+      }
+      cached_ordered_parts_.swap(new_list);
+    }
   }
-  // TODO(crbug.com/1453291) It would help to be able to directly return
-  // HeapDeque for sequences-valued IDL return values. Add an overload of
-  // bindings::ToV8HelperSequence(). In profiles, this call takes significant
-  // time.
-  auto& returned_vector = *MakeGarbageCollected<HeapVector<Member<Part>>>();
-  for (auto part : cached_ordered_parts_) {
-    returned_vector.push_back(part);
+  return cached_ordered_parts_;
+}
+
+Node* PartRoot::getPartNode(unsigned index) {
+  auto& parts = getParts();
+  if (index >= parts.size()) {
+    return nullptr;
   }
-  return returned_vector;
+  return parts[index]->NodeToSortBy();
 }
 
 // static

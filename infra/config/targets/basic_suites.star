@@ -138,40 +138,6 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
-    name = "android_finch_smoke_tests",
-    tests = {
-        "chrome_finch_smoke_tests": targets.legacy_test_config(
-            mixins = [
-                "skia_gold_test",
-            ],
-            args = [
-                "--finch-seed-path",
-                "../../variations_seed",
-            ],
-        ),
-        "monochrome_finch_smoke_tests": targets.legacy_test_config(
-            mixins = [
-                "skia_gold_test",
-            ],
-            args = [
-                "--finch-seed-path",
-                "../../variations_seed",
-            ],
-        ),
-        "variations_smoke_tests": targets.legacy_test_config(
-            test = "variations_desktop_smoke_tests",
-            mixins = [
-                "skia_gold_test",
-                "has_native_resultdb_integration",
-            ],
-            args = [
-                "--target-platform=android",
-            ],
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
     name = "android_isolated_scripts",
     tests = {
         "content_shell_crash_test": targets.legacy_test_config(
@@ -4633,24 +4599,6 @@ targets.legacy_basic_suite(
     name = "ios_eg2_cq_tests",
     tests = {
         "ios_chrome_integration_eg2tests_module": targets.legacy_test_config(
-            swarming = targets.swarming(
-                shards = 8,
-            ),
-        ),
-        "ios_web_shell_eg2tests_module": None,
-    },
-)
-
-# Test suites in ios_eg2_cq_tests_parallel should be the same test suites as
-# ios_eg2_cq_tests. The swarming shards between the versions can differ.
-# Effectiveness of ios_parallel_simulators is determined by
-# the number of test classes in the suite and the number of swarming shards.
-# For ios_parallel_simulators to be most effective there should be twice as
-# many test classes in the suite as there are swarming shards.
-targets.legacy_basic_suite(
-    name = "ios_eg2_cq_tests_parallel",
-    tests = {
-        "ios_chrome_integration_eg2tests_module": targets.legacy_test_config(
             mixins = [
                 "ios_parallel_simulators",
             ],
@@ -4662,43 +4610,8 @@ targets.legacy_basic_suite(
     },
 )
 
-# Test suites in ios_eg2_tests_parallel should be the same test suites as
-# ios_eg2_tests. The swarming shards between the versions can differ.
-# Effectiveness of ios_parallel_simulators is determined by
-# the number of test classes in the suite and the number of swarming shards.
-# For ios_parallel_simulators to be most effective there should be twice as
-# many test classes in the suite as there are swarming shards.
 targets.legacy_basic_suite(
     name = "ios_eg2_tests",
-    tests = {
-        "ios_chrome_bookmarks_eg2tests_module": None,
-        "ios_chrome_settings_eg2tests_module": targets.legacy_test_config(
-            swarming = targets.swarming(
-                shards = 6,
-            ),
-        ),
-        "ios_chrome_signin_eg2tests_module": targets.legacy_test_config(
-            swarming = targets.swarming(
-                shards = 6,
-            ),
-        ),
-        "ios_chrome_smoke_eg2tests_module": None,
-        "ios_chrome_ui_eg2tests_module": targets.legacy_test_config(
-            swarming = targets.swarming(
-                shards = 12,
-            ),
-        ),
-        "ios_chrome_web_eg2tests_module": targets.legacy_test_config(
-            swarming = targets.swarming(
-                shards = 2,
-            ),
-        ),
-        "ios_showcase_eg2tests_module": None,
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "ios_eg2_tests_parallel",
     tests = {
         "ios_chrome_bookmarks_eg2tests_module": None,
         "ios_chrome_settings_eg2tests_module": targets.legacy_test_config(
@@ -4815,9 +4728,7 @@ targets.legacy_basic_suite(
 targets.legacy_basic_suite(
     name = "lacros_device_or_vm_gtests",
     tests = {
-        "aura_unittests": None,
         "cc_unittests": None,
-        "interactive_ui_tests": None,
         "ozone_unittests": None,
         "vaapi_unittest": targets.legacy_test_config(
             args = [
@@ -5041,14 +4952,32 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
+    name = "linux_force_accessibility_gtests",
+    tests = {
+        "browser_tests": targets.legacy_test_config(
+            args = [
+                "--force-renderer-accessibility",
+                "--test-launcher-filter-file=../../testing/buildbot/filters/accessibility-linux.browser_tests.filter",
+            ],
+            swarming = targets.swarming(
+                shards = 8,
+            ),
+        ),
+        "content_browsertests": targets.legacy_test_config(
+            args = [
+                "--force-renderer-accessibility",
+                "--test-launcher-filter-file=../../testing/buildbot/filters/accessibility-linux.content_browsertests.filter",
+            ],
+            swarming = targets.swarming(
+                shards = 8,
+            ),
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
     name = "linux_lacros_chrome_browsertests_non_version_skew",
     tests = {
-        "lacros_chrome_browsertests": targets.legacy_test_config(
-            test = "lacros_chrome_browsertests",
-            args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter",
-            ],
-        ),
         "lacros_chrome_browsertests_run_in_series": targets.legacy_test_config(
             test = "lacros_chrome_browsertests_run_in_series",
             args = [
@@ -5064,11 +4993,6 @@ targets.legacy_basic_suite(
 targets.legacy_basic_suite(
     name = "linux_lacros_chrome_browsertests_version_skew",
     tests = {
-        "lacros_chrome_browsertests": targets.legacy_test_config(
-            args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-            ],
-        ),
         "lacros_chrome_browsertests_run_in_series": targets.legacy_test_config(
             args = [
                 "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
@@ -5082,51 +5006,6 @@ targets.legacy_basic_suite(
 
 targets.legacy_basic_suite(
     name = "linux_lacros_chrome_interactive_ui_tests_version_skew",
-    tests = {
-        "interactive_ui_tests": targets.legacy_test_config(
-            test = "interactive_ui_tests",
-            args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-            ],
-            swarming = targets.swarming(
-                shards = 3,
-            ),
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "linux_lacros_chrome_interactive_ui_tests_version_skew_beta",
-    tests = {
-        "interactive_ui_tests": targets.legacy_test_config(
-            test = "interactive_ui_tests",
-            args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-            ],
-            swarming = targets.swarming(
-                shards = 3,
-            ),
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "linux_lacros_chrome_interactive_ui_tests_version_skew_dev",
-    tests = {
-        "interactive_ui_tests": targets.legacy_test_config(
-            test = "interactive_ui_tests",
-            args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-            ],
-            swarming = targets.swarming(
-                shards = 3,
-            ),
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "linux_lacros_chrome_interactive_ui_tests_version_skew_stable",
     tests = {
         "interactive_ui_tests": targets.legacy_test_config(
             test = "interactive_ui_tests",
@@ -5326,10 +5205,9 @@ targets.legacy_basic_suite(
     name = "model_validation_tests",
     tests = {
         "model_validation_tests": targets.legacy_test_config(
-            resultdb = targets.resultdb(
-                enable = True,
-                result_format = "single",
-            ),
+            mixins = [
+                "has_native_resultdb_integration",
+            ],
         ),
     },
 )
@@ -5400,6 +5278,12 @@ targets.legacy_basic_suite(
             swarming = targets.swarming(
                 shards = 10,
             ),
+        ),
+        "extensions_browsertests_network_sandbox": targets.legacy_test_config(
+            test = "extensions_browsertests",
+            args = [
+                "--enable-features=NetworkServiceSandbox",
+            ],
         ),
         "interactive_ui_tests_network_sandbox": targets.legacy_test_config(
             test = "interactive_ui_tests",
@@ -6695,7 +6579,7 @@ targets.legacy_basic_suite(
                 "--no-wpt-internal",
             ],
             swarming = targets.swarming(
-                shards = 15,
+                shards = 4,
                 expiration_sec = 18000,
                 hard_timeout_sec = 14400,
             ),

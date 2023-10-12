@@ -84,10 +84,13 @@ class CC_PAINT_EXPORT ClientImageTransferCacheEntry final
       absl::optional<TargetColorParams> target_color_params);
   ClientImageTransferCacheEntry(
       const Image& image,
-      const Image& gainmap_image,
-      const SkGainmapInfo& gainmap_info,
       bool needs_mips,
+      const absl::optional<gfx::HDRMetadata>& hdr_metadata,
       absl::optional<TargetColorParams> target_color_params);
+  ClientImageTransferCacheEntry(const Image& image,
+                                const Image& gainmap_image,
+                                const SkGainmapInfo& gainmap_info,
+                                bool needs_mips);
   ~ClientImageTransferCacheEntry() final;
 
   uint32_t Id() const final;
@@ -117,6 +120,9 @@ class CC_PAINT_EXPORT ClientImageTransferCacheEntry final
   // be specified.
   absl::optional<Image> gainmap_image_;
   absl::optional<SkGainmapInfo> gainmap_info_;
+
+  // The HDR metadata for non-gainmap HDR metadata.
+  absl::optional<gfx::HDRMetadata> hdr_metadata_;
 };
 
 class CC_PAINT_EXPORT ServiceImageTransferCacheEntry final
@@ -158,6 +164,14 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry final
 
   const sk_sp<SkImage>& image() const { return image_; }
 
+  // Return true if GetImageWithToneMapApplied() should be used instead of
+  // image().
+  bool NeedsToneMapApplied() const { return has_gainmap_ || use_tone_curve_; }
+
+  // Return this image, tone mapped to match the specified HDR headroom.
+  sk_sp<SkImage> GetImageWithToneMapApplied(float hdr_headroom,
+                                            bool needs_mips) const;
+
   // Ensures the cached image has mips.
   void EnsureMips();
 
@@ -178,6 +192,16 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry final
   raw_ptr<GrDirectContext, DanglingUntriaged> gr_context_ = nullptr;
   raw_ptr<skgpu::graphite::Recorder> graphite_recorder_ = nullptr;
   sk_sp<SkImage> image_;
+
+  // HDR tonemapping may be done with a gainmap (for local tone mapping).
+  bool has_gainmap_ = false;
+  sk_sp<SkImage> gainmap_image_;
+  SkGainmapInfo gainmap_info_;
+
+  // HDR tonemapping may be done with a tone curve (for global tone mapping).
+  bool use_tone_curve_ = false;
+  absl::optional<gfx::HDRMetadata> tone_curve_hdr_metadata_;
+  float tone_curve_sdr_max_luminance_nits_;
 
   // The value of `size_` is computed during deserialization and never updated
   // (even if the size of the image changes due to mipmaps being requested).

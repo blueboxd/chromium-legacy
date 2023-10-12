@@ -28,16 +28,6 @@ class DownloadDisplay {
     kActive,
   };
 
-  // Describes updates to be made to the icon.
-  struct IconUpdateInfo {
-    // Nullopt indicates no change.
-    absl::optional<IconState> new_state = absl::nullopt;
-    absl::optional<IconActive> new_active = absl::nullopt;
-
-    // Whether an animated icon will be shown.
-    bool show_animation = false;
-  };
-
   // Determines how the progress ring should be displayed in the icon.
   struct ProgressInfo {
     // Number of currently active downloads.
@@ -46,12 +36,26 @@ class DownloadDisplay {
     int progress_percentage = 0;
     // Whether we know the final size of all downloads.
     bool progress_certain = true;
+
+    bool operator==(const ProgressInfo& other) const;
+    bool operator!=(const ProgressInfo& other) const;
+  };
+
+  // Describes updates to be made to the icon.
+  struct IconUpdateInfo {
+    // Nullopt indicates no change.
+    absl::optional<IconState> new_state = absl::nullopt;
+    absl::optional<IconActive> new_active = absl::nullopt;
+    absl::optional<ProgressInfo> new_progress = absl::nullopt;
+
+    // Whether an animated icon will be shown.
+    bool show_animation = false;
   };
 
   // Shows the download display.
   virtual void Show() = 0;
 
-  // Hides the download display.
+  // Hides the download display immediately.
   virtual void Hide() = 0;
 
   // Returns whether or not the download display is visible.
@@ -64,11 +68,9 @@ class DownloadDisplay {
   virtual void Disable() = 0;
 
   // Updates the download icon according to `new_state` and `new_active` and
-  // potentially shows an animation.
+  // potentially shows an animation. Updates the progress ring of the download
+  // icon according to `new_progress` if provided.
   virtual void UpdateDownloadIcon(const IconUpdateInfo& updates) = 0;
-
-  // Updates the progress ring of the download icon according to `info`.
-  virtual void UpdateIconProgress(const ProgressInfo& info) = 0;
 
   // Shows detailed information on the download display. It can be a popup or
   // dialog or partial view, essentially anything other than the main view.

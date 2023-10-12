@@ -176,14 +176,18 @@ class PrivacySandboxSettingsTest : public testing::Test {
     host_content_settings_map_ = new HostContentSettingsMap(
         &prefs_, false /* is_off_the_record */, false /* store_last_modified */,
         false /* restore_session */, false /* should_record_metrics */);
-    cookie_settings_ = new content_settings::CookieSettings(
-        host_content_settings_map_.get(), &prefs_, false, "chrome-extension");
     tracking_protection_settings_ =
-        std::make_unique<privacy_sandbox::TrackingProtectionSettings>(&prefs_,
-                                                                      nullptr);
+        std::make_unique<privacy_sandbox::TrackingProtectionSettings>(
+            &prefs_,
+            /*onboarding_service=*/nullptr);
+    cookie_settings_ = new content_settings::CookieSettings(
+        host_content_settings_map_.get(), &prefs_,
+        tracking_protection_settings_.get(), false, "chrome-extension");
   }
   ~PrivacySandboxSettingsTest() override {
+    cookie_settings()->ShutdownOnUIThread();
     host_content_settings_map()->ShutdownOnUIThread();
+    tracking_protection_settings_->Shutdown();
   }
 
   void SetUp() override {
@@ -2567,5 +2571,80 @@ TEST_F(PrivacySandboxAttestationsTest, SetOverrideFromFlags) {
         << test.name;
   }
 }
+
+struct PrivacySandbox3pcdTestCase {
+  std::string disable_ads_apis_param = "false";
+  bool m1_topics_enabled_pref_consent = true;
+  bool output_keys = true;
+  int expected_status;
+};
+
+const PrivacySandbox3pcdTestCase kTestCases[] = {
+    {
+        .disable_ads_apis_param = "true",
+        .m1_topics_enabled_pref_consent = false,
+        .output_keys = false,
+        .expected_status =
+            /*static_cast<int>(Status::kBlockedBy3pcdExperiment)*/ 11,
+    },
+    {
+        .disable_ads_apis_param = "true",
+        .output_keys = false,
+        .expected_status =
+            /*static_cast<int>(Status::kBlockedBy3pcdExperiment)*/ 11,
+    },
+    {
+        .m1_topics_enabled_pref_consent = false,
+        .output_keys = false,
+        .expected_status = /*static_cast<int>(Status::kApisDisabled)*/ 3,
+    },
+    {
+        .expected_status = /*static_cast<int>(Status::kAllowed)*/ 0,
+    }};
+
+class PrivacySandbox3pcdExperimentTest
+    : public PrivacySandboxSettingsM1Test,
+      public testing::WithParamInterface<PrivacySandbox3pcdTestCase> {
+ public:
+  PrivacySandbox3pcdExperimentTest() = default;
+
+  void InitializeFeaturesBeforeStart() override {
+    feature_list_.InitAndEnableFeature(
+        privacy_sandbox::kPrivacySandboxSettings4);
+    cookie_deprecation_feature_list_.Reset();
+  }
+
+ protected:
+  base::test::ScopedFeatureList cookie_deprecation_feature_list_;
+};
+
+TEST_P(PrivacySandbox3pcdExperimentTest, ExperimentDisablesAdsAPIs) {
+  const PrivacySandbox3pcdTestCase& test_case = GetParam();
+  cookie_deprecation_feature_list_.InitAndEnableFeatureWithParameters(
+      features::kCookieDeprecationFacilitatedTesting,
+      {{features::kCookieDeprecationTestingDisableAdsAPIsName,
+        test_case.disable_ads_apis_param}});
+  RunTestCase(
+      TestState{{kM1TopicsEnabledUserPrefValue,
+                 test_case.m1_topics_enabled_pref_consent},
+                {kHasAppropriateTopicsConsent,
+                 test_case.m1_topics_enabled_pref_consent}},
+      TestInput{
+          {kTopFrameOrigin, url::Origin::Create(GURL("https://top-frame.com"))},
+          {kTopicsURL, GURL("https://embedded.com")},
+      },
+      TestOutput{
+          {MultipleOutputKeys{kIsTopicsAllowed, kIsTopicsAllowedForContext},
+           test_case.output_keys},
+          {MultipleOutputKeys{
+               kIsTopicsAllowedMetric,
+               kIsTopicsAllowedForContextMetric,
+           },
+           test_case.expected_status}});
+}
+
+INSTANTIATE_TEST_SUITE_P(PrivacySandbox3pcdExperimentTests,
+                         PrivacySandbox3pcdExperimentTest,
+                         testing::ValuesIn(kTestCases));
 
 }  // namespace privacy_sandbox

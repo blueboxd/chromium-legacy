@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 
 #import "components/commerce/core/commerce_feature_list.h"
+#import "components/commerce/core/country_code_checker.h"
 #import "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #import "components/commerce/core/proto/parcel_tracking_db_content.pb.h"
 #import "components/commerce/core/shopping_service.h"
@@ -22,7 +23,7 @@
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_otr_helper.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace commerce {

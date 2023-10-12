@@ -127,7 +127,7 @@ class PictureInPictureBrowserFrameView
   SkColor GetIconLabelBubbleBackgroundColor() const override;
 
   // ContentSettingImageView::Delegate:
-  bool ShouldHideContentSettingImage(ImageType type) override;
+  bool ShouldHideContentSettingImage() override;
   content::WebContents* GetContentSettingWebContents() override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
@@ -135,6 +135,8 @@ class PictureInPictureBrowserFrameView
   // views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
   void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override;
 
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
@@ -185,6 +187,9 @@ class PictureInPictureBrowserFrameView
 
   // Called when mouse entered or exited the pip window.
   void OnMouseEnteredOrExitedWindow(bool entered);
+
+  // Returns true if there's an overlay view that's currently shown.
+  bool IsOverlayViewVisible() const;
 
 #if BUILDFLAG(IS_LINUX)
   // Sets the window frame provider so that it will be used for drawing.

@@ -70,14 +70,15 @@
 #import "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/variations_app_state_agent.h"
 #import "ios/chrome/browser/first_run/first_run.h"
-#import "ios/chrome/browser/memory/memory_debugger_manager.h"
+#import "ios/chrome/browser/memory/model/memory_debugger_manager.h"
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
 #import "ios/chrome/browser/ntp/set_up_list_prefs.h"
-#import "ios/chrome/browser/ntp_tiles/tab_resumption/tab_resumption_prefs.h"
+#import "ios/chrome/browser/ntp_tiles/model/tab_resumption/tab_resumption_prefs.h"
+#import "ios/chrome/browser/parcel_tracking/parcel_tracking_prefs.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#import "ios/chrome/browser/prerender/prerender_pref.h"
+#import "ios/chrome/browser/prerender/model/prerender_pref.h"
 #import "ios/chrome/browser/push_notification/push_notification_service.h"
-#import "ios/chrome/browser/safety_check/ios_chrome_safety_check_manager_constants.h"
+#import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_constants.h"
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_info_cache.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -91,7 +92,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_prefs.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
-#import "ios/chrome/browser/voice/voice_search_prefs_registration.h"
+#import "ios/chrome/browser/voice/model/voice_search_prefs_registration.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/web/common/features.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -158,6 +159,18 @@ const char kObsoleteIosSettingsSigninPromoDisplayedCount[] =
 inline constexpr char kPrivacySandboxManuallyControlled[] =
     "privacy_sandbox.manually_controlled";
 
+// Deprecated 10/2023.
+// Boolean whether has requested sync to be enabled. This is set early in the
+// sync setup flow, after the user has pressed "turn on sync" but before they
+// have accepted the confirmation dialog.
+inline constexpr char kSyncRequested[] = "sync.requested";
+
+// Deprecated 10/2023.
+// A boolean used to track whether the user has tapped on any of the keyboard
+// accessories when the autofill branding is visible.
+const char kAutofillBrandingKeyboardAccessoriesTapped[] =
+    "ios.autofill.branding.keyboard_accessory_tapped";
+
 }  // namespace
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -175,6 +188,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   set_up_list_prefs::RegisterPrefs(registry);
   tab_resumption_prefs::RegisterPrefs(registry);
   safety_check_prefs::RegisterPrefs(registry);
+  RegisterParcelTrackingPrefs(registry);
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   component_updater::RegisterComponentUpdateServicePrefs(registry);
@@ -257,8 +271,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
       prefs::kAutofillBrandingIconAnimationRemainingCount, 2);
   // Register other autofill branding prefs.
   registry->RegisterIntegerPref(prefs::kAutofillBrandingIconDisplayCount, 0);
-  registry->RegisterBooleanPref(
-      prefs::kAutofillBrandingKeyboardAccessoriesTapped, false);
+  registry->RegisterBooleanPref(kAutofillBrandingKeyboardAccessoriesTapped,
+                                false);
 
   registry->RegisterDictionaryPref(kLocalConsentsDictionary);
 
@@ -528,9 +542,11 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                std::string());
 
   // Preferences related to parcel tracking.
-  registry->RegisterBooleanPref(prefs::kIosParcelTrackingOptInPromptDisplayed,
+  registry->RegisterBooleanPref(
+      prefs::kIosParcelTrackingOptInPromptDisplayLimitMet, false);
+  registry->RegisterIntegerPref(prefs::kIosParcelTrackingOptInStatus, 2);
+  registry->RegisterBooleanPref(prefs::kIosParcelTrackingOptInPromptSwipedDown,
                                 false);
-  registry->RegisterIntegerPref(prefs::kIosParcelTrackingOptInStatus, 0);
 
   registry->RegisterBooleanPref(kObsoleteIosSettingsPromoAlreadySeen, false);
   registry->RegisterIntegerPref(kObsoleteIosSettingsSigninPromoDisplayedCount,
@@ -544,6 +560,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 false);
   // Preference related to feed.
   registry->RegisterTimePref(kActivityBucketLastReportedDateKey, base::Time());
+  registry->RegisterBooleanPref(kSyncRequested, false);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -617,6 +634,9 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
                      base::Time::FromNSDate(value));
     }
   }
+
+  // Added 10/2023.
+  prefs->ClearPref(kAutofillBrandingKeyboardAccessoriesTapped);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -645,15 +665,17 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   prefs->ClearPref(kDataSaverEnabled);
 
   // Added 10/2022.
-  if (prefs->HasPrefPath(prefs::kGoogleServicesLastAccountIdDeprecated)) {
+  if (prefs->HasPrefPath(
+          prefs::kGoogleServicesLastSyncingAccountIdDeprecated)) {
     std::string account_id =
-        prefs->GetString(prefs::kGoogleServicesLastAccountIdDeprecated);
-    prefs->ClearPref(prefs::kGoogleServicesLastAccountIdDeprecated);
+        prefs->GetString(prefs::kGoogleServicesLastSyncingAccountIdDeprecated);
+    prefs->ClearPref(prefs::kGoogleServicesLastSyncingAccountIdDeprecated);
     DCHECK(!base::Contains(account_id, '@'))
-        << "kGoogleServicesLastAccountId is not expected to be an email: "
+        << "kGoogleServicesLastSyncingAccountId is not expected to be an "
+           "email: "
         << account_id;
     if (!account_id.empty()) {
-      prefs->SetString(prefs::kGoogleServicesLastGaiaId, account_id);
+      prefs->SetString(prefs::kGoogleServicesLastSyncingGaiaId, account_id);
     }
   }
 
@@ -694,11 +716,18 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
                      base::Time::FromNSDate(value));
     }
   }
+
+  // Added 10/2023.
+  prefs->ClearPref(kSyncRequested);
 }
 
 void MigrateObsoleteUserDefault(void) {
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+
   // Added 08/2023.
-  [[NSUserDefaults standardUserDefaults]
-      setBool:NO
-       forKey:@"userHasInteractedWithPinnedTabsOverflow"];
+  [defaults removeObjectForKey:@"userHasInteractedWithPinnedTabsOverflow"];
+
+  // Added 10/2023
+  [defaults removeObjectForKey:@"PathToBrowserStateToKeep"];
+  [defaults removeObjectForKey:@"HasBrowserStateBeenRemoved"];
 }

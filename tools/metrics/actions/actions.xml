@@ -12380,6 +12380,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOS.DefaultBrowserVideoPromo.Fullscreen.RemindMeLater">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    The user asked to be reminded later on the full screen default browser video
+    promo. iOS only.
+  </description>
+</action>
+
 <action name="IOS.DefaultBrowserVideoPromo.Halfscreen.Dismiss">
   <owner>cheickcisse@google.com</owner>
   <owner>sebsg@chromium.org</owner>
@@ -17540,6 +17550,36 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="LinkCapturingAcceptedFromInfoBar">
+  <owner>dmurph@google.com</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>
+    Recorded when the user accepts the info bar in an app browser to turn on
+    link capturing for that app. This only shows if the app doesn't have link
+    capturing enabled, and the user launched the app via the intent picker.
+  </description>
+</action>
+
+<action name="LinkCapturingCancelledFromInfoBar">
+  <owner>dmurph@google.com</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>
+    Recorded when the user cancels the info bar in an app browser offering to
+    turn on link capturing for that app. This only shows if the app doesn't have
+    link capturing enabled, and the user launched the app via the intent picker.
+  </description>
+</action>
+
+<action name="LinkCapturingIgnoredFromInfoBar">
+  <owner>dmurph@google.com</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>
+    Recorded when the user ignores the info bar in an app browser offering to
+    turn on link capturing for that app. This only shows if the app doesn't have
+    link capturing enabled, and the user launched the app via the intent picker.
+  </description>
+</action>
+
 <action name="LinkNavigationOpenedInForegroundTab">
   <owner>meiliang@chromium.org</owner>
   <owner>sbirch@chromium.org</owner>
@@ -19492,7 +19532,7 @@ should be able to be added at any place in this file.
   <owner>gambard@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
   <description>
-    s Reported when Content Settings UI was dismissed. iOS only.
+    Is reported when the Content Settings UI was dismissed. iOS only.
   </description>
 </action>
 
@@ -20093,6 +20133,18 @@ should be able to be added at any place in this file.
   <description>
     Reported when user opens the Password Manager page from keyboard accessory.
     iOS only.
+  </description>
+</action>
+
+<action name="MobileKeyboardShortcutUsed">
+  <owner>aishwaryarj@google.com</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <description>
+    The user has used a keyboard shortcut to perform an app action. The list of
+    shortcuts for which this is emitted may not be comprehensive, and the goal
+    of this metric is to estimate high-level usage of keyboard shortcuts for
+    general-purpose actions, for example, opening a new tab, or saving an
+    offline page. Android only.
   </description>
 </action>
 
@@ -21435,9 +21487,28 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobilePageLoadedWithAccessory" not_user_triggered="true">
+  <owner>clank-large-form-factors@google.com</owner>
+  <description>
+    Reported when a web page is loaded with a connected hardware accessory
+    including one or more of keyboard, mouse, touchpad, trackball, and stylus
+    devices. Android only.
+  </description>
+</action>
+
 <action name="MobilePageLoadedWithKeyboard" not_user_triggered="true">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>clank-large-form-factors@google.com</owner>
+  <description>
+    Reported when a web page is loaded with a connected hardware keyboard.
+    Android only.
+  </description>
+</action>
+
+<action name="MobilePageLoadedWithMouse" not_user_triggered="true">
+  <owner>clank-large-form-factors@google.com</owner>
+  <description>
+    Reported when a web page is loaded with a connected mouse. Android only.
+  </description>
 </action>
 
 <action name="MobilePasswordBreachOpenPasswordManager">
@@ -24201,6 +24272,15 @@ should be able to be added at any place in this file.
   <owner>chrome-shopping@google.com</owner>
   <description>
     An attempt to permanently remove the cart module is undone.
+  </description>
+</action>
+
+<action name="NewTabPage.HistoryClusters.DiscountClicked">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <description>
+    User clicks on a tile with discount in the history cluster module.
   </description>
 </action>
 
@@ -38044,6 +38124,93 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="UserEducation.MessageShown">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>An IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.CustomAction">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Custom Action IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.IPH">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>The IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.Legacy">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Legacy IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.LegalNotice.CustomAction">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>
+    A Legal Notice Custom Action IPH was shown to the user.
+  </description>
+</action>
+
+<action name="UserEducation.MessageShown.LegalNotice.Legacy">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Legal Notice Legacy IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.LegalNotice.Snooze">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Legal Notice Snooze IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.LegalNotice.Toast">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Legal Notice Toast IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.LegalNotice.Tutorial">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Legal Notice Tutorial IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.PerApp.CustomAction">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Per App Custom Action IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.PerApp.Legacy">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Per App Legacy IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.PerApp.Snooze">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Per App Snooze IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.PerApp.Toast">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Per App Toast IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.PerApp.Tutorial">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Per App Tutorial IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.Snooze">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Snooze IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.Toast">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Toast IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.Tutorial">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>A Tutorial IPH was shown to the user.</description>
+</action>
+
 <action name="UserManager_Cleared_Legacy_User_Prefs">
   <owner>mahmadi@chromium.org</owner>
   <description>
@@ -39250,6 +39417,7 @@ should be able to be added at any place in this file.
   <suffix name="CompanionSidePanel" label="For companion side panel feature."/>
   <suffix name="CompanionSidePanelRegionSearch"
       label="For companion side panel region search feature."/>
+  <suffix name="ComposeNewBadgeFeature" label="For Compose new badge feature"/>
   <suffix name="ContextualPageActions_PriceTracking"
       label="For Contextual page actions price tracking feature."/>
   <suffix name="ContextualPageActions_PriceTrackingActionChip"
@@ -39349,6 +39517,8 @@ should be able to be added at any place in this file.
   <suffix name="GMCCastStartStop" label="For GMCCastStartStop feature."/>
   <suffix name="GMCCastStartStopFeature"
       label="For Global Media Controls Cast start and stop feature."/>
+  <suffix name="GMCLocalMediaCastingFeature"
+      label="For GMC local media cast start feature."/>
   <suffix name="GoogleOneOfferNotification"
       label="For google one offer notification feature."/>
   <suffix name="HighEfficiencyInfoMode"
@@ -39383,6 +39553,8 @@ should be able to be added at any place in this file.
       label="For iOSPromoCredentialProviderExtension feature"/>
   <suffix name="iOSPromoDefaultBrowser"
       label="For iOSPromoDefaultBrowser feature"/>
+  <suffix name="iOSPromoDefaultBrowserReminder"
+      label="For iOSPromoDefaultBrowserReminder feature"/>
   <suffix name="iOSPromoPasswordManagerWidget"
       label="For iOSPromoPasswordManagerWidget feature"/>
   <suffix name="iOSPromoPostRestore" label="For iOSPromoPostRestore feature"/>
@@ -39618,6 +39790,7 @@ should be able to be added at any place in this file.
       name="UserEducation.MessageAction.OverrideForUIRegionConflict.IPH"/>
   <affected-action name="UserEducation.MessageAction.Snooze.IPH"/>
   <affected-action name="UserEducation.MessageAction.Timeout.IPH"/>
+  <affected-action name="UserEducation.MessageShown.IPH"/>
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">

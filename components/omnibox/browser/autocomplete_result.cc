@@ -305,17 +305,16 @@ void AutocompleteResult::SortAndCull(
   std::sort(matches_.begin(), matches_.end(), comparing_object);
 
   // Find the best match and rotate it to the front to become the default match.
+  // TODO(manukh) Ranking and preserving the default suggestion should be done
+  //   by the grouping framework.
   {
-    ACMatches::iterator top_match = matches_.end();
-
-    // TODO(manukh) Ranking and preserving the default suggestion should be done
-    //  by the grouping framework.
-    // If we are trying to keep a default match from a previous pass stable,
-    // search the current results for it, and if found, make it the top match.
-    if (default_match_to_preserve.has_value()) {
+    auto top_match = FindTopMatch(input, &matches_);
+    if (default_match_to_preserve &&
+        (top_match == matches_.end() ||
+         top_match->type != AutocompleteMatchType::URL_WHAT_YOU_TYPED)) {
       const auto default_match_fields =
           GetMatchComparisonFields(default_match_to_preserve.value());
-      top_match =
+      const auto preserved_default_match =
           base::ranges::find_if(matches_, [&](const AutocompleteMatch& match) {
             // Find a match that is a duplicate AND has the same fill_into_edit.
             // Don't preserve suggestions that are not default-able; e.g.,
@@ -325,12 +324,8 @@ void AutocompleteResult::SortAndCull(
                        match.fill_into_edit &&
                    match.allowed_to_be_default_match;
           });
-    }
-
-    // Otherwise, if there's no default match from a previous pass to preserve,
-    // find the top match based on our normal undemoted scoring method.
-    if (top_match == matches_.end()) {
-      top_match = FindTopMatch(input, &matches_);
+      if (preserved_default_match != matches_.end())
+        top_match = preserved_default_match;
     }
 
     RotateMatchToFront(top_match, &matches_);
@@ -381,13 +376,8 @@ void AutocompleteResult::SortAndCull(
     PSections sections;
     if constexpr (is_android) {
       if (omnibox::IsNTPPage(page_classification)) {
-        size_t num_related_queries =
-            OmniboxFieldTrial::kInspireMeAdditionalRelatedQueries.Get();
-        size_t num_trending_queries =
-            OmniboxFieldTrial::kInspireMeAdditionalTrendingQueries.Get();
-
-        sections.push_back(std::make_unique<AndroidNTPZpsSection>(
-            num_related_queries, num_trending_queries, suggestion_groups_map_));
+        sections.push_back(
+            std::make_unique<AndroidNTPZpsSection>(suggestion_groups_map_));
       } else if (omnibox::IsSearchResultsPage(page_classification)) {
         sections.push_back(
             std::make_unique<AndroidSRPZpsSection>(suggestion_groups_map_));
@@ -1253,6 +1243,17 @@ omnibox::GroupConfig_SideType AutocompleteResult::GetSideTypeForSuggestionGroup(
   }
 
   return it->second.side_type();
+}
+
+omnibox::GroupConfig_RenderType
+AutocompleteResult::GetRenderTypeForSuggestionGroup(
+    omnibox::GroupId suggestion_group_id) const {
+  auto it = suggestion_groups_map().find(suggestion_group_id);
+  if (it == suggestion_groups_map().end()) {
+    return omnibox::GroupConfig_RenderType_DEFAULT_VERTICAL;
+  }
+
+  return it->second.render_type();
 }
 
 void AutocompleteResult::MergeSuggestionGroupsMap(

@@ -111,7 +111,6 @@
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
-#include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_installer.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_installer_factory.h"
@@ -146,7 +145,6 @@
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -154,6 +152,7 @@
 #include "chrome/browser/ui/views/bruschetta/bruschetta_installer_view.h"
 #include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
 #include "chrome/browser/ui/views/plugin_vm/plugin_vm_installer_view.h"
+#include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_dialog.h"
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_ui.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -162,9 +161,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
-#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/ash/components/metrics/login_event_recorder.h"
-#include "chromeos/ash/components/osauth/public/auth_session_storage.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/services/assistant/assistant_manager_service_impl.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
@@ -183,6 +180,7 @@
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/remote_commands/remote_commands_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -1502,8 +1500,10 @@ ExtensionFunction::ResponseAction
 AutotestPrivateRefreshEnterprisePoliciesFunction::Run() {
   DVLOG(1) << "AutotestPrivateRefreshEnterprisePoliciesFunction";
 
-  g_browser_process->policy_service()->RefreshPolicies(base::BindOnce(
-      &AutotestPrivateRefreshEnterprisePoliciesFunction::RefreshDone, this));
+  g_browser_process->policy_service()->RefreshPolicies(
+      base::BindOnce(
+          &AutotestPrivateRefreshEnterprisePoliciesFunction::RefreshDone, this),
+      policy::PolicyFetchReason::kTest);
   return RespondLater();
 }
 
@@ -2223,82 +2223,6 @@ ExtensionFunction::ResponseAction AutotestPrivateGetArcPackageFunction::Run() {
     package_value.Set("vpnProvider", package_info->vpn_provider);
   }
   return RespondNow(WithArguments(std::move(package_value)));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AutotestPrivateGetCryptohomeRecoveryDataFunction
-///////////////////////////////////////////////////////////////////////////////
-
-AutotestPrivateGetCryptohomeRecoveryDataFunction::
-    ~AutotestPrivateGetCryptohomeRecoveryDataFunction() = default;
-
-ExtensionFunction::ResponseAction
-AutotestPrivateGetCryptohomeRecoveryDataFunction::Run() {
-  // The API is available only on test images.
-  base::SysInfo::CrashIfChromeOSNonTestImage();
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kForceCryptohomeRecoveryForTesting)) {
-    return RespondNow(
-        Error("force-cryptohome-recovery-for-testing switch is not set"));
-  }
-
-  auto* host = ash::LoginDisplayHost::default_host();
-  if (!host) {
-    return RespondNow(Error("LoginDisplayHost is not available"));
-  }
-  auto* context = host->GetWizardContext();
-  if (!context) {
-    return RespondNow(Error("WizardContext is not available"));
-  }
-  if (ash::features::ShouldUseAuthSessionStorage()) {
-    if (!context->extra_factors_token.has_value()) {
-      return RespondNow(Error("UserContext is not available"));
-    }
-    auto* storage = ash::AuthSessionStorage::Get();
-    auto& token = context->extra_factors_token.value();
-    storage->BorrowAsync(
-        FROM_HERE, token,
-        base::BindOnce(
-            &AutotestPrivateGetCryptohomeRecoveryDataFunction::RunWithContext,
-            this, token));
-    return RespondLater();
-  } else {
-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &AutotestPrivateGetCryptohomeRecoveryDataFunction::RunWithContext,
-            this, std::string(),
-            std::make_unique<ash::UserContext>(
-                *context->extra_factors_auth_session)));
-    return RespondLater();
-  }
-}
-
-void AutotestPrivateGetCryptohomeRecoveryDataFunction::RunWithContext(
-    const std::string& auth_token,
-    std::unique_ptr<ash::UserContext> context) {
-  if (!context) {
-    Respond(Error("UserContext is not available"));
-    return;
-  }
-
-  const std::string reauth_proof_token = context->GetReauthProofToken();
-  const std::string refresh_token = context->GetRefreshToken();
-  if (ash::features::ShouldUseAuthSessionStorage()) {
-    ash::AuthSessionStorage::Get()->Return(auth_token, std::move(context));
-  }
-
-  if (reauth_proof_token.empty() || refresh_token.empty()) {
-    Respond(Error("Tokens are empty"));
-    return;
-  }
-
-  api::autotest_private::CryptohomeRecoveryDataDict result;
-  result.reauth_proof_token = reauth_proof_token;
-  result.refresh_token = refresh_token;
-
-  Respond(WithArguments(result.ToValue()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3209,51 +3133,6 @@ ExtensionFunction::ResponseAction AutotestPrivateRemovePrinterFunction::Run() {
       ash::CupsPrintersManagerFactory::GetForBrowserContext(browser_context());
   printers_manager->RemoveSavedPrinter(params->printer_id);
   return RespondNow(NoArguments());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AutotestPrivateBootstrapMachineLearningServiceFunction
-///////////////////////////////////////////////////////////////////////////////
-
-AutotestPrivateBootstrapMachineLearningServiceFunction::
-    AutotestPrivateBootstrapMachineLearningServiceFunction() = default;
-AutotestPrivateBootstrapMachineLearningServiceFunction::
-    ~AutotestPrivateBootstrapMachineLearningServiceFunction() = default;
-
-ExtensionFunction::ResponseAction
-AutotestPrivateBootstrapMachineLearningServiceFunction::Run() {
-  DVLOG(1) << "AutotestPrivateBootstrapMachineLearningServiceFunction";
-
-  // Load a model. This will first bootstrap the Mojo connection to ML Service.
-  chromeos::machine_learning::ServiceConnection::GetInstance()
-      ->GetMachineLearningService()
-      .LoadBuiltinModel(
-          chromeos::machine_learning::mojom::BuiltinModelSpec::New(
-              chromeos::machine_learning::mojom::BuiltinModelId::TEST_MODEL),
-          model_.BindNewPipeAndPassReceiver(),
-          base::BindOnce(
-              &AutotestPrivateBootstrapMachineLearningServiceFunction::
-                  ModelLoaded,
-              this));
-  model_.set_disconnect_handler(base::BindOnce(
-      &AutotestPrivateBootstrapMachineLearningServiceFunction::OnMojoDisconnect,
-      this));
-  return RespondLater();
-}
-
-void AutotestPrivateBootstrapMachineLearningServiceFunction::ModelLoaded(
-    chromeos::machine_learning::mojom::LoadModelResult result) {
-  if (result == chromeos::machine_learning::mojom::LoadModelResult::OK) {
-    Respond(NoArguments());
-  } else {
-    Respond(Error(base::StrCat(
-        {"Model load error ", (std::ostringstream() << result).str()})));
-  }
-}
-
-void AutotestPrivateBootstrapMachineLearningServiceFunction::
-    OnMojoDisconnect() {
-  Respond(Error("ML Service connection error"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5025,7 +4904,7 @@ void AutotestPrivateInstallPWAForCurrentURLFunction::PWALoaded() {
       base::BindOnce(
           &AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstalled, this));
 
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
+  web_app::SetAutoAcceptPWAInstallConfirmationForTesting(true);
   if (!chrome::ExecuteCommand(browser, IDC_INSTALL_PWA)) {
     return Respond(Error("Failed to execute INSTALL_PWA command"));
   }
@@ -5033,13 +4912,13 @@ void AutotestPrivateInstallPWAForCurrentURLFunction::PWALoaded() {
 
 void AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstalled(
     const webapps::AppId& app_id) {
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+  web_app::SetAutoAcceptPWAInstallConfirmationForTesting(false);
   Respond(WithArguments(app_id));
   timeout_timer_.AbandonAndStop();
 }
 
 void AutotestPrivateInstallPWAForCurrentURLFunction::PWATimeout() {
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+  web_app::SetAutoAcceptPWAInstallConfirmationForTesting(false);
   Respond(Error("Install PWA timed out"));
 }
 

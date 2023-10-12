@@ -12,6 +12,8 @@ import static org.junit.Assert.assertThrows;
 import static org.chromium.net.CronetTestRule.getTestStorage;
 import static org.chromium.net.truth.UrlResponseInfoSubject.assertThat;
 
+import android.os.Build;
+
 import androidx.annotation.OptIn;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
@@ -31,6 +33,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.net.CronetTestRule.CronetImplementation;
+import org.chromium.net.CronetTestRule.DisableAutomaticNetLog;
 import org.chromium.net.CronetTestRule.IgnoreFor;
 import org.chromium.net.impl.CronetUrlRequestContext;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -61,10 +64,13 @@ public class ExperimentalOptionsTest {
     @Before
     public void setUp() throws Exception {
         mHangingUrlLatch = new CountDownLatch(1);
-        mTestRule.getTestFramework().applyEngineBuilderPatch(
-                (builder)
-                        -> CronetTestUtil.setMockCertVerifierForTesting(
-                                builder, QuicTestServer.createMockCertVerifier()));
+        // TODO(crbug/1490552): Fallback to MockCertVerifier when custom CAs are not supported.
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+            mTestRule.getTestFramework().applyEngineBuilderPatch(
+                    (builder)
+                            -> CronetTestUtil.setMockCertVerifierForTesting(
+                                    builder, QuicTestServer.createMockCertVerifier()));
+        }
         assertThat(Http2TestServer.startHttp2TestServer(
                            mTestRule.getTestFramework().getContext(), mHangingUrlLatch))
                 .isTrue();
@@ -78,6 +84,7 @@ public class ExperimentalOptionsTest {
 
     @Test
     @MediumTest
+    @DisableAutomaticNetLog(reason = "Test is targeting NetLog")
     // Tests that NetLog writes effective experimental options to NetLog.
     public void testNetLog() throws Exception {
         File directory = new File(PathUtils.getDataDirectory());

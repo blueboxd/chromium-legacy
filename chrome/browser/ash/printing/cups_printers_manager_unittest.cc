@@ -33,6 +33,7 @@
 #include "chrome/browser/ash/printing/synced_printers_manager.h"
 #include "chrome/browser/ash/printing/usb_printer_detector.h"
 #include "chrome/browser/ash/printing/usb_printer_notification_controller.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
@@ -243,6 +244,10 @@ class FakePrinterDetector : public PrinterDetector {
                        });
 
     detections_.resize(new_end - detections_.begin());
+    on_printers_found_callback_.Run(detections_);
+  }
+
+  void RunPrintersFoundCallback() {
     on_printers_found_callback_.Run(detections_);
   }
 
@@ -1192,7 +1197,7 @@ TEST_F(CupsPrintersManagerTest, ActiveNetworkStrengthChanged) {
 
 // Tests that local printers observers are triggered when added.
 TEST_F(CupsPrintersManagerTest, AddLocalPrintersObserver) {
-  feature_list_.InitAndEnableFeature(features::kLocalPrinterObserving);
+  feature_list_.InitAndEnableFeature(::features::kLocalPrinterObserving);
 
   // Add the same observer twice to verify it's only added once and triggered
   // once.
@@ -1207,6 +1212,34 @@ TEST_F(CupsPrintersManagerTest, AddLocalPrintersObserver) {
   manager_->AddLocalPrintersObserver(&observer2);
   EXPECT_EQ(1u, observer2.num_observer_calls());
   EXPECT_EQ(1u, observer1.num_observer_calls());
+}
+
+// Tests that when a new local printer is detected the observer is triggered.
+TEST_F(CupsPrintersManagerTest, LocalPrintersDetected) {
+  feature_list_.InitAndEnableFeature(::features::kLocalPrinterObserving);
+
+  // The observer should fire when first registered.
+  FakeLocalPrintersObserver observer1;
+  manager_->AddLocalPrintersObserver(&observer1);
+  EXPECT_EQ(1u, observer1.num_observer_calls());
+
+  // The observer should fire for a new zeroconf printer detection.
+  const auto detected_printer = MakeDiscoveredPrinter("DiscoveredPrinter");
+  zeroconf_detector_->AddDetections({detected_printer});
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(2u, observer1.num_observer_calls());
+
+  // The observer shouldn't fire when the same printer is sent for detection so
+  // the call count should remain the same.
+  zeroconf_detector_->RunPrintersFoundCallback();
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(2u, observer1.num_observer_calls());
+
+  // The observer should fire again for a new USB printer detection.
+  const auto usb_detected_printer = MakeUsbDiscoveredPrinter("UsbPrinter");
+  usb_detector_->AddDetections({usb_detected_printer});
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(3u, observer1.num_observer_calls());
 }
 
 }  // namespace

@@ -70,19 +70,17 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
 
   // 2. Calculate the size required.
 
-  NSSize badge_size = [badge_attr_string size];
-  badge_size.width = trunc(badge_size.width);
-  badge_size.height = trunc(badge_size.height);
-
-  badge_size.width += 2 * views::BadgePainter::kBadgeInternalPadding +
-                      2 * views::BadgePainter::kBadgeHorizontalMargin;
-  badge_size.height += views::BadgePainter::kBadgeInternalPaddingTopMac;
+  NSSize text_size = [badge_attr_string size];
+  NSSize canvas_size = NSMakeSize(
+      trunc(text_size.width) + 2 * views::BadgePainter::kBadgeInternalPadding +
+          2 * views::BadgePainter::kBadgeHorizontalMargin,
+      fmax(trunc(text_size.height), views::BadgePainter::kBadgeMinHeightCocoa));
 
   // 3. Craft the image.
 
   if (@available(macOS 10.8, *)) {
     return [NSImage
-         imageWithSize:badge_size
+         imageWithSize:canvas_size
                flipped:NO
         drawingHandler:^(NSRect dest_rect) {
           NSRect badge_frame = NSInsetRect(
@@ -101,10 +99,12 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
           [badge_color set];
           [rounded_badge_rect fill];
 
+          // Place the text rect at the center of the badge frame.
           NSPoint badge_text_location = NSMakePoint(
-              NSMinX(badge_frame) + views::BadgePainter::kBadgeInternalPadding,
+              NSMinX(badge_frame) +
+                  (badge_frame.size.width - text_size.width) / 2.0,
               NSMinY(badge_frame) +
-                  views::BadgePainter::kBadgeInternalPaddingTopMac);
+                  (badge_frame.size.height - text_size.height) / 2.0);
           [badge_attr_string drawAtPoint:badge_text_location];
 
           return YES;
@@ -174,21 +174,27 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
 
 // --- Private API begin ---
 
-// Historically, all menu handling in macOS was handled by HI Toolbox, and the
-// bridge from Cocoa to Carbon to use Carbon's menus was the class
-// NSCarbonMenuImpl. However, starting in macOS 13, it looks like this is
-// changing, as now a NSCocoaMenuImpl class exists, which is optionally created
-// in -[NSMenu _createMenuImpl] and may possibly in the future be returned from
-// -[NSMenu _menuImpl]. Therefore, abstract away into a protocol the (one)
-// common method that this code uses that is present on both Impl classes.
-@protocol CrNSMenuImpl <NSObject>
+// In macOS 13 and earlier, the internals of menus are handled by HI Toolbox,
+// and the bridge to that code is NSCarbonMenuImpl. While in reality this is a
+// class, abstract its method that is used by this code into a protocol.
+@protocol CrNSCarbonMenuImpl <NSObject>
 @optional
+// Highlights the menu item at the provided index.
 - (void)highlightItemAtIndex:(NSInteger)index;
+
 @end
 
 @interface NSMenu (Impl)
-- (id<CrNSMenuImpl>)_menuImpl;
+
+// Returns the impl. (If called on macOS 14 this would return a subclass of
+// NSCocoaMenuImpl, but private API use is not needed on macOS 14.)
+- (id<CrNSCarbonMenuImpl>)_menuImpl;
+
+// Returns the bounds of the entire menu in screen coordinate space. Available
+// on both Carbon and Cocoa impls, but always (incorrectly) returns a zero
+// origin with the Cocoa impl. Therefore, do not use with macOS 14 or later.
 - (CGRect)_boundsIfOpen;
+
 @end
 
 // --- Private API end ---
@@ -249,15 +255,21 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
   }
 }
 
-- (void)setAnchorRect:(gfx::Rect)rect {
-  _anchorRect = rect;
-}
-
 - (void)controllerWillAddItem:(NSMenuItem*)menuItem
                     fromModel:(ui::MenuModel*)model
                       atIndex:(size_t)index
             withColorProvider:(const ui::ColorProvider*)colorProvider {
   if (model->IsNewFeatureAt(index)) {
+    NSTextAttachment* attachment = [[NSTextAttachment alloc] initWithData:nil
+                                                                   ofType:nil];
+    attachment.image = NewTagImage(colorProvider);
+    NSSize newTagSize = attachment.image.size;
+
+    // The baseline offset of the badge image to the menu text baseline.
+    const int kBadgeBaselineOffset = -4;
+    attachment.bounds = NSMakeRect(0, kBadgeBaselineOffset, newTagSize.width,
+                                   newTagSize.height);
+
     NSMutableAttributedString* attrTitle =
         [[NSMutableAttributedString alloc] initWithString:menuItem.title];
 
@@ -284,101 +296,127 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
 }
 
 - (void)controllerWillAddMenu:(NSMenu*)menu fromModel:(ui::MenuModel*)model {
-  absl::optional<size_t> alerted_index;
+  absl::optional<size_t> alertedIndex;
 
-  // This list will be copied into callback blocks later if it's non-empty, but
-  // since it's fairly small that's not a big deal.
-  std::vector<ui::ElementIdentifier> element_ids;
+  // A map containing elements that need to be tracked, mapping from their
+  // identifiers to their indexes in the menu.
+  std::map<ui::ElementIdentifier, NSInteger> elementIds;
 
   for (size_t i = 0; i < model->GetItemCount(); ++i) {
     if (model->IsAlertedAt(i)) {
-      DCHECK(!alerted_index.has_value());
-      alerted_index = i;
+      CHECK(!alertedIndex.has_value())
+          << "Mac menu code can only alert for one item in a menu";
+      alertedIndex = i;
     }
     const ui::ElementIdentifier identifier = model->GetElementIdentifierAt(i);
     if (identifier) {
-      element_ids.push_back(identifier);
+      elementIds.emplace(identifier, base::checked_cast<NSInteger>(i));
     }
   }
 
-  if (alerted_index.has_value() || !element_ids.empty()) {
-    auto shown_callback = ^(NSNotification* note) {
-      NSMenu* const menu_obj = note.object;
-      if (alerted_index.has_value()) {
-        if ([menu respondsToSelector:@selector(_menuImpl)]) {
-          id<CrNSMenuImpl> menuImpl = [menu_obj _menuImpl];
-          if ([menuImpl respondsToSelector:@selector(highlightItemAtIndex:)]) {
-            const auto index =
-                base::checked_cast<NSInteger>(alerted_index.value());
-            [menuImpl highlightItemAtIndex:index];
-          }
+  // A weak reference to the menu for the two blocks. This shouldn't be
+  // necessary, as there aren't any references back that make a retain cycle,
+  // but it's hard to be fully convinced that such a cycle isn't possible now or
+  // in the future with updates.
+  __weak NSMenu* weakMenu = menu;
+
+  if (alertedIndex.has_value() || !elementIds.empty()) {
+    __block bool menuShown = false;
+    auto shownCallback = ^(NSNotification* note) {
+      NSMenu* strongMenu = weakMenu;
+      if (!strongMenu) {
+        return;
+      }
+
+      if (@available(macOS 14.0, *)) {
+        // This early return handles two cases.
+        //
+        // 1. If this window isn't the window implementing the menu, this call
+        //    to get the frame will return an empty rect. Return, as this would
+        //    be the wrong window.
+        //
+        // 2. When the notification first fires, the layout isn't complete and
+        //    the menu item bounds will be reported to have a width of 10. If
+        //    the width is too small, early return, as the callback will happen
+        //    again, that time with the correct bounds.
+        if (strongMenu.numberOfItems &&
+            NSWidth([strongMenu itemAtIndex:0].accessibilityFrame) < 20) {
+          return;
         }
       }
 
-      // This situation is broken.
-      //
-      // First, NSMenuDidBeginTrackingNotification is the best way to get called
-      // right before the menu is shown, but at the moment of the call, the menu
-      // isn't open yet. Second, to make things worse, the implementation of
-      // -_boundsIfOpen *tries* to return an NSZeroRect if the menu isn't open
-      // yet but fails to detect it correctly, and instead falls over and
-      // returns a bogus bounds. Fortunately, those bounds are broken in a
-      // predictable way, so that situation can be detected. Don't even bother
-      // trying to make the -_boundsIfOpen call on the notification; there's no
-      // point.
-      //
-      // However, it takes just one trip through the main loop for the menu to
-      // appear and the -_boundsIfOpen call to work.
-      dispatch_after(
-          dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC),
-          dispatch_get_main_queue(), ^{
-            // Even though all supported macOS releases have `-_boundsIfOpen`,
-            // because it's not official API, retain the fallback code written
-            // for earlier versions of macOSes.
-            //
-            // The fallback bounds are intentionally twice as wide as they
-            // should be because even though we could check the RTL bit and
-            // guess whether the menu should appear to the left or right of the
-            // anchor, if the anchor is near one side of the screen the menu
-            // could end up on the other side.
-            gfx::Rect screen_rect = self->_anchorRect;
-            CGSize menu_size = [menu_obj size];
-            screen_rect.Inset(gfx::Insets::TLBR(
-                0, -menu_size.width, -menu_size.height, -menu_size.width));
-            if ([menu_obj respondsToSelector:@selector(_boundsIfOpen)]) {
-              CGRect bounds = [menu_obj _boundsIfOpen];
-              // A broken bounds for a menu that isn't
-              // actually yet open looks like: {{zeroish,
-              // main display height}, {zeroish, zeroish}}.
-              auto is_zeroish = [](CGFloat f) { return f >= 0 && f < 0.00001; };
-              if (is_zeroish(bounds.origin.x) && bounds.origin.y > 300 &&
-                  is_zeroish(bounds.size.width) &&
-                  is_zeroish(bounds.size.height)) {
-                // FYI, this never actually happens.
-                LOG(ERROR) << "Get menu bounds failed.";
-              } else {
-                screen_rect = gfx::ScreenRectFromNSRect(bounds);
-              }
-            }
+      // The notification may fire more than once; only process the first
+      // time.
+      if (menuShown) {
+        return;
+      }
+      menuShown = true;
 
-            for (ui::ElementIdentifier element_id : element_ids) {
-              ui::ElementTrackerMac::GetInstance()->NotifyMenuItemShown(
-                  menu_obj, element_id, screen_rect);
-            }
-          });
+      if (alertedIndex.has_value()) {
+        const auto index = base::checked_cast<NSInteger>(alertedIndex.value());
+        if (@available(macOS 14.0, *)) {
+          [strongMenu itemAtIndex:index].accessibilitySelected = true;
+        } else {
+          [strongMenu._menuImpl highlightItemAtIndex:index];
+        }
+      }
+
+      if (@available(macOS 14.0, *)) {
+        for (auto [elementId, index] : elementIds) {
+          NSRect frame = [strongMenu itemAtIndex:index].accessibilityFrame;
+          ui::ElementTrackerMac::GetInstance()->NotifyMenuItemShown(
+              strongMenu, elementId, gfx::ScreenRectFromNSRect(frame));
+        }
+      } else {
+        // macOS 13 and earlier use the old Carbon Menu Manager, and getting the
+        // bounds of menus is pretty wackadoodle.
+        //
+        // Even though with macOS 11 through macOS 13 watching for
+        // NSWindowDidOrderOnScreenAndFinishAnimatingNotification would work to
+        // guarantee that the menu is on the screen and can be queried for size,
+        // with macOS 10.15, there's no involvement from Cocoa, so there's no
+        // good notification that the menu window was shown. Therefore, rely on
+        // NSMenuDidBeginTrackingNotification, but then spin the event loop
+        // once. This practically guarantees that the menu is on screen and can
+        // be queried for size.
+        dispatch_after(
+            dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC),
+            dispatch_get_main_queue(), ^{
+              gfx::Rect bounds =
+                  gfx::ScreenRectFromNSRect(strongMenu._boundsIfOpen);
+              for (auto [elementId, index] : elementIds) {
+                ui::ElementTrackerMac::GetInstance()->NotifyMenuItemShown(
+                    strongMenu, elementId, bounds);
+              }
+            });
+      };
     };
 
-    [_menuObservers
-        addObject:[NSNotificationCenter.defaultCenter
-                      addObserverForName:NSMenuDidBeginTrackingNotification
-                                  object:menu
-                                   queue:nil
-                              usingBlock:shown_callback]];
+    if (@available(macOS 14.0, *)) {
+      NSString* notificationName =
+          @"NSWindowDidOrderOnScreenAndFinishAnimatingNotification";
+      [_menuObservers addObject:[NSNotificationCenter.defaultCenter
+                                    addObserverForName:notificationName
+                                                object:nil
+                                                 queue:nil
+                                            usingBlock:shownCallback]];
+    } else {
+      [_menuObservers
+          addObject:[NSNotificationCenter.defaultCenter
+                        addObserverForName:NSMenuDidBeginTrackingNotification
+                                    object:menu
+                                     queue:nil
+                                usingBlock:shownCallback]];
+    }
   }
 
-  if (!element_ids.empty()) {
-    auto hidden_callback = ^(NSNotification* note) {
-      NSMenu* const menu_obj = note.object;
+  if (!elementIds.empty()) {
+    auto hiddenCallback = ^(NSNotification* note) {
+      NSMenu* strongMenu = weakMenu;
+      if (!strongMenu) {
+        return;
+      }
+
       // We expect to see the following order of events:
       // - element shown
       // - element activated (optional)
@@ -390,9 +428,9 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
       dispatch_after(
           dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC),
           dispatch_get_main_queue(), ^{
-            for (ui::ElementIdentifier element_id : element_ids) {
+            for (auto [elementId, index] : elementIds) {
               ui::ElementTrackerMac::GetInstance()->NotifyMenuItemHidden(
-                  menu_obj, element_id);
+                  strongMenu, elementId);
             }
           });
     };
@@ -402,7 +440,7 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
                       addObserverForName:NSMenuDidEndTrackingNotification
                                   object:menu
                                    queue:nil
-                              usingBlock:hidden_callback]];
+                              usingBlock:hiddenCallback]];
   }
 }
 

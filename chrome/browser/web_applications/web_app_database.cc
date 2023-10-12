@@ -272,6 +272,8 @@ WebAppManagement::Type ProtoToWebAppManagement(WebAppManagementProto type) {
       return WebAppManagement::Type::kOem;
     case WebAppManagementProto::ONEDRIVEINTEGRATION:
       return WebAppManagement::Type::kOneDriveIntegration;
+    case WebAppManagementProto::APS_DEFAULT:
+      return WebAppManagement::Type::kApsDefault;
   }
 }
 
@@ -297,6 +299,8 @@ WebAppManagementProto WebAppManagementToProto(WebAppManagement::Type type) {
       return WebAppManagementProto::OEM;
     case WebAppManagement::Type::kOneDriveIntegration:
       return WebAppManagementProto::ONEDRIVEINTEGRATION;
+    case WebAppManagement::Type::kApsDefault:
+      return WebAppManagementProto::APS_DEFAULT;
   }
 }
 
@@ -487,6 +491,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
       web_app.sources_.Has(WebAppManagement::kOem));
   local_data->mutable_sources()->set_one_drive_integration(
       web_app.sources_.Has(WebAppManagement::kOneDriveIntegration));
+  local_data->mutable_sources()->set_aps_default(
+      web_app.sources_.Has(WebAppManagement::kApsDefault));
 
   local_data->set_is_locally_installed(web_app.is_locally_installed());
 
@@ -904,6 +910,11 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
         web_app.generated_icon_fix().value();
   }
 
+  local_data->set_supported_links_offer_ignore_count(
+      web_app.supported_links_offer_ignore_count());
+  local_data->set_supported_links_offer_dismiss_count(
+      web_app.supported_links_offer_dismiss_count());
+
   return local_data;
 }
 
@@ -954,21 +965,16 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   sources.PutOrRemove(WebAppManagement::kDefault,
                       local_data.sources().default_());
   sources.PutOrRemove(WebAppManagement::kOem, local_data.sources().oem());
-  if (local_data.sources().has_sub_app()) {
-    sources.PutOrRemove(WebAppManagement::kSubApp,
-                        local_data.sources().sub_app());
-  }
-  if (local_data.sources().has_kiosk()) {
-    sources.PutOrRemove(WebAppManagement::kKiosk, local_data.sources().kiosk());
-  }
-  if (local_data.sources().has_command_line()) {
-    sources.PutOrRemove(WebAppManagement::kCommandLine,
-                        local_data.sources().command_line());
-  }
-  if (local_data.sources().has_one_drive_integration()) {
-    sources.PutOrRemove(WebAppManagement::kOneDriveIntegration,
-                        local_data.sources().one_drive_integration());
-  }
+  sources.PutOrRemove(WebAppManagement::kSubApp,
+                      local_data.sources().sub_app());
+  sources.PutOrRemove(WebAppManagement::kKiosk, local_data.sources().kiosk());
+  sources.PutOrRemove(WebAppManagement::kCommandLine,
+                      local_data.sources().command_line());
+  sources.PutOrRemove(WebAppManagement::kOneDriveIntegration,
+                      local_data.sources().one_drive_integration());
+  sources.PutOrRemove(WebAppManagement::kApsDefault,
+                      local_data.sources().aps_default());
+
   if (sources.Empty() && !local_data.is_uninstalling()) {
     DLOG(ERROR) << "WebApp proto parse error: no source in sources field, "
                    "and is_uninstalling isn't true.";
@@ -1668,6 +1674,16 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   if (local_data.has_generated_icon_fix() &&
       generated_icon_fix_util::IsValid(local_data.generated_icon_fix())) {
     web_app->SetGeneratedIconFix(local_data.generated_icon_fix());
+  }
+
+  if (local_data.has_supported_links_offer_ignore_count()) {
+    web_app->SetSupportedLinksOfferIgnoreCount(
+        local_data.supported_links_offer_ignore_count());
+  }
+
+  if (local_data.has_supported_links_offer_dismiss_count()) {
+    web_app->SetSupportedLinksOfferDismissCount(
+        local_data.supported_links_offer_dismiss_count());
   }
 
   return web_app;

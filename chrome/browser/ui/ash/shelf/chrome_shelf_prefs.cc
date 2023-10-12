@@ -139,12 +139,22 @@ bool IsSafeToApplyDefaultPinLayout(Profile* profile) {
   const syncer::SyncService* sync_service =
       SyncServiceFactory::GetForProfile(profile);
   // No |sync_service| in incognito mode.
-  if (!sync_service)
+  if (!sync_service) {
     return true;
+  }
 
   // Tablet form-factor devices do not have position sync.
-  if (ash::switches::IsTabletFormFactor())
+  if (ash::switches::IsTabletFormFactor()) {
     return true;
+  }
+
+  // Some browser tests don't start sync fully as there is no server to download
+  // the initial data from. This prevents applying the default pin layout,
+  // required in some tests. To support this, the behavior can be overridden via
+  // command-line flags.
+  if (ash::switches::ShouldAllowDefaultShelfPinLayoutIgnoringSync()) {
+    return true;
+  }
 
   const syncer::SyncUserSettings* settings = sync_service->GetUserSettings();
 
@@ -423,7 +433,7 @@ std::vector<ash::ShelfID> ChromeShelfPrefs::GetPinnedAppsFromSync(
     // the app service.
     bool is_ash_chrome = app_id == app_constants::kChromeAppId;
     if (!is_ash_chrome && !helper->IsValidIDForCurrentUser(app_id) &&
-        !helper->IsValidPromisePackageIdFromAppService(promise_package_id)) {
+        !ShelfControllerHelper::IsPromiseApp(profile_, promise_package_id)) {
       continue;
     }
 

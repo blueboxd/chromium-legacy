@@ -137,6 +137,8 @@ source_set("common") {
     "input/touch_event_stream_validator.h",
     "input/touchpad_tap_suppression_controller.cc",
     "input/touchpad_tap_suppression_controller.h",
+    "input/touchscreen_tap_suppression_controller.cc",
+    "input/touchscreen_tap_suppression_controller.h",
     "input/web_touch_event_traits.cc",
     "input/web_touch_event_traits.h",
     "media/cdm_info.cc",
@@ -307,10 +309,7 @@ source_set("common") {
     ]
 
     if (use_seccomp_bpf) {
-      sources += [
-        "//sandbox/policy/linux/bpf_base_policy_linux.cc",
-        "//sandbox/policy/linux/bpf_base_policy_linux.h",
-      ]
+      deps += [ "//sandbox/policy" ]
     }
   }
 
@@ -480,12 +479,13 @@ mojom("mojo_bindings") {
     "web_ui.mojom",
   ]
 
+  if (is_linux || is_chromeos) {
+    sources += [ "thread_type_switcher.mojom" ]
+  }
+
   enabled_features = []
   if (enable_ipc_logging) {
     enabled_features += [ "ipc_logging" ]
-  }
-  if (is_linux || is_chromeos) {
-    enabled_features += [ "supports_thread_types" ]
   }
   if (use_clang_profiling_inside_sandbox) {
     enabled_features += [ "clang_profiling_inside_sandbox" ]

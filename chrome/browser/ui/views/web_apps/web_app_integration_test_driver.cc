@@ -40,15 +40,13 @@
 #include "chrome/browser/apps/app_service/app_icon/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_registry_cache_waiter.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/intent_helper/intent_picker_features.h"
+#include "chrome/browser/apps/link_capturing/link_capturing_features.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
@@ -76,6 +74,7 @@
 #include "chrome/browser/ui/web_applications/sub_apps_install_dialog_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
@@ -165,7 +164,6 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "base/test/test_future.h"
 #include "base/version.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_lacros.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
@@ -181,7 +179,6 @@
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/apps/app_shim/web_app_shim_manager_delegate_mac.h"
 #include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/app_shim_registry_mac.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
@@ -194,7 +191,6 @@
 #if BUILDFLAG(IS_WIN)
 #include "base/test/test_reg_util_win.h"
 #include "base/win/shortcut.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/web_applications/os_integration/web_app_handler_registration_utils_win.h"
 #include "chrome/installer/util/shell_util.h"
 #endif
@@ -276,6 +272,7 @@ void FlushShortcutTasks() {
 struct SiteConfig {
   std::string relative_url;
   std::string relative_manifest_id;
+  absl::optional<std::string> parent_manifest_id;
   std::string app_name;
   std::u16string wco_not_enabled_title;
   SkColor icon_color;
@@ -402,6 +399,7 @@ base::flat_map<Site, SiteConfig> g_site_configs = {
      {.relative_url = "/webapps_integration/has_sub_apps/sub_app1/basic.html",
       .relative_manifest_id =
           "webapps_integration/has_sub_apps/sub_app1/basic.html",
+      .parent_manifest_id = "/webapps_integration/has_sub_apps/basic.html",
       .app_name = "Sub App 1",
       .wco_not_enabled_title = u"Sub App 1",
       .icon_color = SK_ColorBLUE}},
@@ -409,6 +407,7 @@ base::flat_map<Site, SiteConfig> g_site_configs = {
      {.relative_url = "/webapps_integration/has_sub_apps/sub_app2/basic.html",
       .relative_manifest_id =
           "webapps_integration/has_sub_apps/sub_app2/basic.html",
+      .parent_manifest_id = "/webapps_integration/has_sub_apps/basic.html",
       .app_name = "Sub App 2",
       .wco_not_enabled_title = u"Sub App 2",
       .icon_color = SK_ColorBLUE}},
@@ -1204,7 +1203,7 @@ void WebAppIntegrationTestDriver::CreateShortcut(Site site,
   }
   MaybeNavigateTabbedBrowserInScope(site);
   bool open_in_window = options == WindowOptions::kWindowed;
-  chrome::SetAutoAcceptWebAppDialogForTesting(
+  SetAutoAcceptWebAppDialogForTesting(
       /*auto_accept=*/true,
       /*auto_open_in_window=*/open_in_window);
   WebAppTestInstallWithOsHooksObserver observer(profile());
@@ -1212,7 +1211,7 @@ void WebAppIntegrationTestDriver::CreateShortcut(Site site,
   BrowserAddedWaiter browser_added_waiter;
   CHECK(chrome::ExecuteCommand(browser(), IDC_CREATE_SHORTCUT));
   active_app_id_ = observer.Wait();
-  chrome::SetAutoAcceptWebAppDialogForTesting(false, false);
+  SetAutoAcceptWebAppDialogForTesting(false, false);
   if (open_in_window) {
     browser_added_waiter.Wait();
     app_browser_ = browser_added_waiter.browser_added();
@@ -3935,7 +3934,15 @@ webapps::AppId WebAppIntegrationTestDriver::GetAppIdBySiteMode(Site site) {
   GURL start_url = GetTestServerForSiteMode(site).GetURL(relative_url);
   CHECK(start_url.is_valid());
 
-  return GenerateAppId(manifest_id, start_url);
+  auto parent_manifest = site_config.parent_manifest_id;
+  if (parent_manifest.has_value()) {
+    webapps::ManifestId parent_manifest_id =
+        GetTestServerForSiteMode(site).GetURL(parent_manifest.value());
+    return GenerateAppId(manifest_id, start_url, parent_manifest_id);
+
+  } else {
+    return GenerateAppId(manifest_id, start_url);
+  }
 }
 
 GURL WebAppIntegrationTestDriver::GetUrlForSite(Site site) {
@@ -4585,16 +4592,6 @@ WebAppIntegrationTest::~WebAppIntegrationTest() = default;
 
 void WebAppIntegrationTest::SetUp() {
   helper_.SetUp();
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // TODO(crbug.com/1466885): Remove when M117 reaches stable.
-  if (GetAshChromeVersion() < base::Version({117, 0, 5914})) {
-    StartUniqueAshChrome(
-        /*enabled_features=*/{}, /*disabled_features=*/{},
-        /*additional_cmdline_switches=*/{},
-        "crbug/1466885 switch to shared ash when WebAppIntegrationTest issue "
-        "is fixed");
-  }
-#endif
   InProcessBrowserTest::SetUp();
 }
 

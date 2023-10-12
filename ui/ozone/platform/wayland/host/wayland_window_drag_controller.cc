@@ -130,7 +130,11 @@ bool WaylandWindowDragController::StartDragSession(
     return false;
   }
 
-  VLOG(1) << "Starting DND session.";
+  VLOG(1) << "Starting DND session. serial=" << serial->value
+          << ", data_source="
+          << (drag_source == DragEventSource::kMouse ? "mouse" : "touch")
+          << ", serial tracker=" << connection_->serial_tracker().ToString();
+
   state_ = State::kAttached;
   origin_window_ = origin;
   drag_source_ = drag_source;
@@ -278,9 +282,7 @@ void WaylandWindowDragController::OnDragMotion(const gfx::PointF& location) {
 
   // Forward cursor location update info to the input handling delegate.
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  should_process_drag_motion_events_ =
-      !(static_cast<WaylandToplevelWindow*>(drag_target_window_)
-            ->IsScreenCoordinatesEnabled());
+  should_process_drag_motion_events_ = false;
 #else
   // non-lacros platforms never use global coordinates so they always process
   // drag events.
@@ -461,7 +463,14 @@ uint32_t WaylandWindowDragController::DispatchEvent(
   if (event->type() == ET_MOUSE_MOVED || event->type() == ET_MOUSE_DRAGGED ||
       event->type() == ET_TOUCH_MOVED) {
     HandleMotionEvent(event->AsLocatedEvent());
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    if (event->type() != ET_TOUCH_MOVED) {
+      // Pass through touch so that touch position will be updated.
+      return POST_DISPATCH_STOP_PROPAGATION;
+    }
+#else
     return POST_DISPATCH_STOP_PROPAGATION;
+#endif
   }
   return POST_DISPATCH_PERFORM_DEFAULT;
 }

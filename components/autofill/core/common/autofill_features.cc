@@ -84,6 +84,12 @@ BASE_FEATURE(kAutofillConsiderPhoneNumberSeparatorsValidLabels,
              "AutofillConsiderPhoneNumberSeparatorsValidLabels",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, contenteditables are extracted and filled.
+// TODO(crbug.com/1490372): Cleanup when launched.
+BASE_FEATURE(kAutofillContentEditables,
+             "AutofillContentEditables",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Crowdsourcing already prefers PHONE_HOME_CITY_AND_NUMBER over
 // PHONE_HOME_WHOLE_NUMBER. With this feature, local heuristics do the same.
 BASE_FEATURE(kAutofillDefaultToCityAndNumber,
@@ -509,13 +515,6 @@ BASE_FEATURE(kAutofillAlwaysParsePlaceholders,
              "AutofillAlwaysParsePlaceholders",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If the feature is enabled, browser forms for which Autofill has received
-// predictions, are split into renderer forms before passing them on to password
-// manager.
-BASE_FEATURE(kAutofillPassRendererFormsToPasswordManager,
-             "AutofillPassRendererFormsToPasswordManager",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If the feature is enabled, paint checks over individual `PopupCellView`s (to
 // verify that a user's cursor has been outside the cell before accepting it)
 // are disabled.
@@ -527,6 +526,13 @@ BASE_FEATURE(kAutofillPopupDisablePaintChecks,
 BASE_FEATURE(kAutofillPopupDoesNotOverlapWithContextMenu,
              "AutofillPopupDoesNotOverlapWithContextMenu",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If the feature is enabled, custom cursors exceeding the (24 dips) dimension
+// limit are disallowed for all active tabs in all active windows.
+COMPONENT_EXPORT(AUTOFILL)
+BASE_FEATURE(kAutofillPopupMultiWindowCursorSuppression,
+             "AutofillPopupMultiWindowCursorSuppression",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the threshold for accepting Autofill popup suggestions
 // should take into account latency information of the user event.
@@ -634,7 +640,7 @@ BASE_FEATURE(kAutofillUseNewSectioningMethod,
 // TODO(crbug.com/1153539): Remove the feature when the experiment is completed.
 BASE_FEATURE(kAutofillUseParameterizedSectioning,
              "AutofillUseParameterizedSectioning",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 // In the experiment, we test different combinations of these parameters.
 const base::FeatureParam<bool> kAutofillSectioningModeIgnoreAutocomplete{
     &kAutofillUseParameterizedSectioning, "ignore_autocomplete", false};

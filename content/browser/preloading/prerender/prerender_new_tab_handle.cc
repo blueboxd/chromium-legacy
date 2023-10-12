@@ -47,9 +47,16 @@ PrerenderNewTabHandle::PrerenderNewTabHandle(
   // The delegate is swapped with a proper one on activation.
   web_contents_delegate_ =
       GetContentClient()->browser()->CreatePrerenderWebContentsDelegate();
+  web_contents_delegate_->PrerenderWebContentsCreated(web_contents_.get());
   web_contents_->SetDelegate(web_contents_delegate_.get());
 
+  // The prerendering WebContents is not visible until activation but should
+  // have a valid initial empty primary page. This condition is important as
+  // WebContentsObservers attached to the prerendering WebContents may assume
+  // there is the primary page and access it during prerendering.
   CHECK_EQ(web_contents_->GetVisibility(), Visibility::HIDDEN);
+  CHECK(web_contents_->GetPrimaryMainFrame());
+  CHECK(web_contents_->GetPrimaryMainFrame()->is_initial_empty_document());
 }
 
 PrerenderNewTabHandle::~PrerenderNewTabHandle() {

@@ -43,6 +43,8 @@
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
+#include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/aom/accessible_node_list.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
@@ -102,6 +104,8 @@
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_g_element.h"
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_tree_id.h"
 #if DCHECK_IS_ON()
 #include "third_party/blink/renderer/modules/accessibility/ax_debug_utils.h"
 #endif
@@ -157,6 +161,8 @@ String IgnoredReasonName(AXIgnoredReason reason) {
       return "emptyAlt";
     case kAXEmptyText:
       return "emptyText";
+    case kAXHiddenByChildTree:
+      return "hiddenByChildTree";
     case kAXInertElement:
       return "inertElement";
     case kAXInertSubtree:
@@ -588,6 +594,7 @@ AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
       cached_is_ignored_but_included_in_tree_(false),
       cached_is_inert_(false),
       cached_is_aria_hidden_(false),
+      cached_is_hidden_by_child_tree_(false),
       cached_is_descendant_of_disabled_node_(false),
       cached_can_set_focus_attribute_(false),
       cached_live_region_root_(nullptr),
@@ -1564,9 +1571,16 @@ void AXObject::SerializeActionAttributes(ui::AXNodeData* node_data) {
 }
 
 void AXObject::SerializeChildTreeID(ui::AXNodeData* node_data) {
-  // If this is an HTMLFrameOwnerElement (such as an iframe), we may need
-  // to embed the ID of the child frame.
-  if (!IsChildTreeOwner()) {
+  // If a child tree has explicitly been stitched at this object via the
+  // `ax::mojom::blink::Action::kStitchChildTree`, then override any child trees
+  // coming from HTML. If this is an HTMLFrameOwnerElement (such as an iframe),
+  if (child_tree_id_) {
+    node_data->AddChildTreeId(*child_tree_id_);
+    return;
+  }
+
+  // we may need to embed the ID of the child frame.
+  if (!IsEmbeddingElement()) {
     // TODO(crbug.com/1342603) Determine why these are firing in the wild and,
     // once fixed, turn into a DCHECK.
     SANITIZER_CHECK(!IsFrame(GetNode()))
@@ -3156,14 +3170,17 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   // dependent on having the correct new cached value.
   bool is_inert = ComputeIsInertViaStyle(style);
   bool is_aria_hidden = ComputeIsAriaHidden();
+  bool is_hidden_by_child_tree = ComputeIsHiddenByChildTree();
   if (cached_is_inert_ != is_inert ||
-      cached_is_aria_hidden_ != is_aria_hidden) {
+      cached_is_aria_hidden_ != is_aria_hidden ||
+      cached_is_hidden_by_child_tree_ != is_hidden_by_child_tree) {
     // Update children if not already dirty (e.g. during Init() time.
     if (CanHaveChildren()) {
       SetNeedsToUpdateChildren();
     }
     cached_is_inert_ = is_inert;
     cached_is_aria_hidden_ = is_aria_hidden;
+    cached_is_hidden_by_child_tree_ = is_hidden_by_child_tree;
   }
 
   // Must be after inert computation, because focusability depends on that, but
@@ -3298,6 +3315,13 @@ bool AXObject::ShouldIgnoreForHiddenOrInert(
   if (cached_is_inert_) {
     if (ignored_reasons) {
       ComputeIsInert(ignored_reasons);
+    }
+    return true;
+  }
+
+  if (cached_is_hidden_by_child_tree_) {
+    if (ignored_reasons) {
+      ignored_reasons->emplace_back(kAXHiddenByChildTree);
     }
     return true;
   }
@@ -3474,6 +3498,27 @@ bool AXObject::ComputeIsAriaHidden(IgnoredReasons* ignored_reasons) const {
   return false;
 }
 
+bool AXObject::IsHiddenByChildTree() const {
+  CHECK(CanAccessCachedValues());
+  UpdateCachedAttributeValuesIfNeeded();
+  return cached_is_hidden_by_child_tree_;
+}
+
+bool AXObject::ComputeIsHiddenByChildTree(
+    IgnoredReasons* ignored_reasons) const {
+  const AXObject* parent = ParentObject();
+  if (!parent) {
+    return false;
+  }
+  if (parent->child_tree_id()) {
+    if (ignored_reasons) {
+      ignored_reasons->emplace_back(kAXHiddenByChildTree, parent);
+    }
+    return true;
+  }
+  return parent->IsHiddenByChildTree();
+}
+
 bool AXObject::IsModal() const {
   if (RoleValue() != ax::mojom::blink::Role::kDialog &&
       RoleValue() != ax::mojom::blink::Role::kAlertDialog)
@@ -3520,7 +3565,8 @@ bool AXObject::IsBlockedByAriaModalDialog(
 bool AXObject::IsVisible() const {
   // TODO(accessibility) Consider exposing inert objects as visible, since they
   // are visible. It should be fine, since the objexcts are ignored.
-  return !IsAriaHidden() && !IsInert() && !IsHiddenViaStyle();
+  return !IsDetached() && !IsAriaHidden() && !IsHiddenByChildTree() &&
+         !IsInert() && !IsHiddenViaStyle();
 }
 
 const AXObject* AXObject::AriaHiddenRoot() const {
@@ -3666,6 +3712,12 @@ bool AXObject::IsExcludedByFormControlsFilter() const {
       mode.HasExperimentalFlags(ui::AXMode::kExperimentalFormControls);
 
   if (!filter_to_form_controls) {
+    return false;
+  }
+
+  // Nodes at which another tree has been stitched should always remain in the
+  // tree so that browser code can traverse through them to the child tree.
+  if (child_tree_id_) {
     return false;
   }
 
@@ -3862,6 +3914,10 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
     return true;
   }
 
+  if (IsHiddenByChildTree()) {
+    return false;
+  }
+
   if (IsExcludedByFormControlsFilter()) {
     return false;
   }
@@ -3898,7 +3954,7 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
     // Exception: iframes, in order to stop exposing aria-hidden iframes, where
     // there is no possibility for the content within to know it's aria-hidden.
     if (IsAriaHidden()) {
-      return !IsChildTreeOwner();
+      return !IsEmbeddingElement();
     }
   }
 
@@ -4048,29 +4104,6 @@ bool AXObject::CanSetValueAttribute() const {
   }
 }
 
-bool AXObject::IsFocusableStyleUsingBestAvailableState() const {
-  auto* element = GetElement();
-  DCHECK(element);
-
-  // If this element's layout tree does not need an update, it means that we can
-  // rely on Element's IsFocusableStyle directly, which is the best available
-  // source of information.
-  // Note that we also allow this to be used if we're in a style recalc, since
-  // we might get here through layout object attachment. In that case, the dirty
-  // bits may not have been cleared yet, but all relevant style and layout tree
-  // should be up to date. Note that this quirk can be fixed by deferring AX
-  // tree updates to happen after the layout tree attachment has finished.
-  if (GetDocument()->InStyleRecalc() ||
-      !GetDocument()->NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
-          *element)) {
-    return element->IsFocusableStyle();
-  }
-
-  // The best available source of information is now the AX tree, so use that to
-  // figure out whether we have focusable style.
-  return element->IsBaseElementFocusableStyle();
-}
-
 bool AXObject::CanSetFocusAttribute() const {
   CHECK(CanAccessCachedValues());
 
@@ -4078,38 +4111,34 @@ bool AXObject::CanSetFocusAttribute() const {
   return cached_can_set_focus_attribute_;
 }
 
-// This does not use Element::IsFocusable(), as that can sometimes recalculate
-// styles because of IsFocusableStyle() check, resetting the document lifecycle.
+// TODO(accessibility) Look at reusing Element::IsFocusable() or
+// AXObject::IsKeyboardFocusable(). As long as we guard against style recalc by
+// returning early if IsHiddenViaStyle() is true, we can call
+// Element::IsKeyboardFocusable(), which would otherwise recalculate style at an
+// awkward time.
 bool AXObject::ComputeCanSetFocusAttribute() const {
   DCHECK(!IsDetached());
   DCHECK(GetDocument());
+
+  // Focusable: web area -- this is the only focusable non-element. Web areas
+  // inside portals are not focusable though (portal contents cannot get focus).
+  if (IsWebArea()) {
+    return true;
+  }
 
   // Objects within a portal are not focusable.
   // Note that they are ignored but can be included in the tree.
   bool inside_portal =
       GetDocument()->GetPage() && GetDocument()->GetPage()->InsidePortal();
-  if (inside_portal)
-    return false;
-
-  // The portal itself is focusable. Portals are treated as buttons in platform
-  // APIs, hiding their subtree.
-  if (RoleValue() == ax::mojom::blink::Role::kPortal)
-    return true;
-
-  // Display-locked nodes that have content-visibility: hidden are not exposed
-  // to accessibility in any way, so they are not focusable. Note that for
-  // content-visibility: auto cases, `ShouldIgnoreNodeDueToDisplayLock()` would
-  // return false, since we're not ignoring the element in that case.
-  if (GetNode() &&
-      DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
-          *GetNode(), DisplayLockActivationReason::kAccessibility)) {
+  if (inside_portal) {
     return false;
   }
 
-  // Focusable: web area -- this is the only focusable non-element. Web areas
-  // inside portals are not focusable though (portal contents cannot get focus).
-  if (IsWebArea())
+  // The portal itself is focusable. Portals are treated as buttons in platform
+  // APIs, hiding their subtree.
+  if (RoleValue() == ax::mojom::blink::Role::kPortal) {
     return true;
+  }
 
   // NOT focusable: objects with no DOM node, e.g. extra layout blocks inserted
   // as filler, or objects where the node is not an element, such as a text
@@ -4124,8 +4153,9 @@ bool AXObject::ComputeCanSetFocusAttribute() const {
 
   // NOT focusable: child tree owners (it's the content area that will be marked
   // focusable in the a11y tree).
-  if (IsChildTreeOwner())
+  if (IsEmbeddingElement()) {
     return false;
+  }
 
   // NOT focusable: disabled form controls.
   if (IsDisabledFormControl(elem))
@@ -4135,46 +4165,52 @@ bool AXObject::ComputeCanSetFocusAttribute() const {
   // unless they are part of a <datalist>, in which case they can be displayed
   // by the browser process, but not the renderer.
   // TODO(crbug.com/1399852) Address gaps in datalist a11y.
-  if (auto* option = DynamicTo<HTMLOptionElement>(elem))
+  if (auto* option = DynamicTo<HTMLOptionElement>(elem)) {
     return !option->OwnerDataListElement();
+  }
+
+  // Invisible nodes are never focusable.
+  // We already have these cached, so it's a very quick check.
+  // This also prevents implementations of Element::SupportsFocus()
+  // from trying to update style on descendants of content-visibility:hidden
+  // nodes, or display:none nodes, which are the only nodes that don't have
+  // updated style at this point.
+  if (cached_is_hidden_via_style_) {
+    return false;
+  }
+
+  // TODO(crbug.com/1489580) Investigate why this is not yet true, and the
+  // early return is necessary, rather than just having a CHECK().
+  // At this point, all nodes that are not display:none or
+  // content-visibility:hidden should have updated style, which means it is safe
+  // to call Element::SupportsFocus(), Element::IsKeyboardFocusable(), and
+  // Element::IsFocusableStyle() without causing an update.
+  // Updates are problematic when we are expecting the tree to be frozen,
+  // or are in the middle of ProcessDeferredAccessibilityEvents(), where an
+  // update would cause unwanted recursion.
+  // Code that pvoes that this is impossible to reach is at:
+  // AXObjectCacheImpl::CheckStyleIsComplete().
+  if (elem->NeedsStyleRecalc()) {
+    DCHECK(false) << "Avoiding IsFocusableStyle() crash for style update on:"
+                  << "\n* Element: " << elem
+                  << "\n* LayoutObject: " << elem->GetLayoutObject()
+                  << "\n* NeedsStyleRecalc: " << elem->NeedsStyleRecalc()
+                  << "\n* IsDisplayLockedPreventingPaint: "
+                  << DisplayLockUtilities::IsDisplayLockedPreventingPaint(elem);
+    return false;
+  }
 
   // NOT focusable: hidden elements.
-  // TODO(aleventhal) Consider caching visibility when it's safe to compute.
-  if (!IsA<HTMLAreaElement>(elem) && !IsFocusableStyleUsingBestAvailableState())
+  if (!IsA<HTMLAreaElement>(elem) && !elem->IsFocusableStyle()) {
     return false;
+  }
 
   // Focusable: element supports focus.
-  if (elem->SupportsFocus())
-    return true;
-
-  // NOT focusable: everything else.
-  return false;
+  return elem->SupportsFocus();
 }
 
 bool AXObject::IsKeyboardFocusable() const {
-  auto* document = GetDocument();
-  auto* element = GetElement();
-  if (!document || !element) {
-    return false;
-  }
-  DocumentLifecycle::DisallowTransitionScope scope(document->Lifecycle());
-  if (IsA<HTMLFrameOwnerElement>(element)) {
-    // TODO(crbug.com/1444450) Frame owner elements return true for
-    // IsFocusable(), because the logic in focus_controller.cc requires them to
-    // be focusable in order to find them and navigate to their contents.
-    // However, frames are not actually focusable. Remove this special-case once
-    // frame owner elements have SupportsFocus() == false.
-    return false;
-  }
-  // content-visibility:hidden or content-visibility: auto nodes (when locked)
-  // cannot be marked as keyboard focusable, because then we'll need to do a
-  // style/layout update within the locked subtree to get scroller information.
-  // For all practical purposes, it's unlikely to matter if display-locked
-  // content is marked non-focusable, so let's just avoid the lifecycle update.
-  if (DisplayLockUtilities::IsDisplayLockedPreventingPaint(element)) {
-    return false;
-  }
-  return element->IsKeyboardFocusable();
+  return CanSetFocusAttribute() && GetElement()->IsKeyboardFocusable();
 }
 
 bool AXObject::CanSetSelectedAttribute() const {
@@ -4738,7 +4774,7 @@ bool AXObject::IsDescendantOfLandmarkDisallowedElement() const {
 
 void AXObject::LoadInlineTextBoxes() {}
 
-void AXObject::ForceAddInlineTextBoxChildren() {}
+void AXObject::LoadInlineTextBoxesHelper() {}
 
 AXObject* AXObject::NextOnLine() const {
   return nullptr;
@@ -5002,7 +5038,7 @@ const AtomicString& AXObject::LiveRegionRelevant() const {
 
 bool AXObject::IsDisabled() const {
   // <embed> or <object> with unsupported plugin, or more iframes than allowed.
-  if (IsChildTreeOwner()) {
+  if (IsEmbeddingElement()) {
     if (IsAriaHidden()) {
       return true;
     }
@@ -5118,6 +5154,13 @@ ax::mojom::blink::Role AXObject::DetermineAriaRoleAttribute() const {
       role = ax::mojom::blink::Role::kTextFieldWithComboBox;
     else if (GetElement() && GetElement()->SupportsFocus())
       role = ax::mojom::blink::Role::kComboBoxMenuButton;
+  }
+
+  // Distinguish orphaned options out of the listbox context
+  if (role == ax::mojom::blink::Role::kListBoxOption) {
+    AXObject* parent = ParentObjectIncludedInTree();
+    if (parent && parent->RoleValue() != ax::mojom::blink::Role::kListBox)
+      return ax::mojom::blink::Role::kUnknown;
   }
 
   return role;
@@ -5819,6 +5862,21 @@ void AXObject::DetachFromParent() {
   parent_ = nullptr;
 }
 
+void AXObject::SetChildTree(const ui::AXTreeID& child_tree_id) {
+  CHECK(!IsDetached());
+  CHECK_GE(GetDocument()->Lifecycle().GetState(),
+           DocumentLifecycle::kLayoutClean)
+      << "Stitching a child tree is an action, and all actions should be "
+         "performed when the layout is clean.";
+  if (child_tree_id == ui::AXTreeIDUnknown() ||
+      child_tree_id_ == child_tree_id) {
+    return;
+  }
+  child_tree_id_ = child_tree_id;
+  AXObjectCache().RemoveSubtreeWhenSafe(GetNode(), /* remove_root */ false);
+  AXObjectCache().UpdateAXForAllDocuments();
+}
+
 void AXObject::ClearChildren() const {
   CHECK(!IsDetached());
   CHECK(!AXObjectCache().IsFrozen())
@@ -5904,7 +5962,7 @@ void AXObject::ClearChildren() const {
     // at this time. However, do allow invalidations if an object changes its
     // display locking (content-visibility: auto) status, as this may be the
     // only chance to do that, and it's safe to do now.
-    AXObject* ax_child_from_node = AXObjectCache().SafeGet(child_node, true);
+    AXObject* ax_child_from_node = AXObjectCache().Get(child_node);
     if (ax_child_from_node &&
         ax_child_from_node->CachedParentObject() == this) {
       ax_child_from_node->DetachFromParent();
@@ -6360,22 +6418,6 @@ AXObject::AXObjectVector AXObject::TableCellChildren() const {
   return result;
 }
 
-const AXObject* AXObject::TableRowParent() const {
-  const AXObject* row = ParentObjectUnignored();
-  while (row && !row->IsTableRowLikeRole() &&
-         row->RoleValue() == ax::mojom::blink::Role::kGenericContainer)
-    row = row->ParentObjectUnignored();
-  return row;
-}
-
-const AXObject* AXObject::TableParent() const {
-  const AXObject* table = ParentObjectUnignored();
-  while (table && !table->IsTableLikeRole() &&
-         table->RoleValue() == ax::mojom::blink::Role::kGenericContainer)
-    table = table->ParentObjectUnignored();
-  return table;
-}
-
 int AXObject::GetDOMNodeId() const {
   Node* node = GetNode();
   if (node)
@@ -6616,6 +6658,21 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
     case ax::mojom::blink::Action::kScrollUp:
       Scroll(action_data.action);
       return true;
+    case ax::mojom::blink::Action::kStitchChildTree:
+      if (action_data.target_node_id == static_cast<int32_t>(AXID())) {
+        return false;
+      }
+      if (action_data.child_tree_id == ui::AXTreeIDUnknown()) {
+        return false;  // No child tree ID provided.;
+      }
+      // This action can only be performed on elements, since only elements can
+      // be parents of child trees. The closest example in HTML is an iframe,
+      // but this action extends the same functionality to all HTML elements.
+      if (!GetElement()) {
+        return false;
+      }
+      SetChildTree(action_data.child_tree_id);
+      return true;
     case ax::mojom::blink::Action::kAnnotatePageImages:
     case ax::mojom::blink::Action::kCustomAction:
     case ax::mojom::blink::Action::kGetImageData:
@@ -6635,7 +6692,7 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
     case ax::mojom::blink::Action::kSuspendMedia:
     case ax::mojom::blink::Action::kLongClick:
     case ax::mojom::blink::Action::kScrollToPositionAtRowColumn:
-      return false;
+      return false;  // Handled in `RenderAccessibilityImpl`.
   }
 }
 
@@ -7671,6 +7728,10 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
       }
     } else if (AriaHiddenRoot()) {
       string_builder = string_builder + " ariaHiddenRootExtra";
+    }
+    if (cached_values_only ? cached_is_hidden_by_child_tree_
+                           : IsHiddenByChildTree()) {
+      string_builder = string_builder + " isHiddenByChildTree";
     }
     if (cached_values_only ? cached_is_hidden_via_style_ : IsHiddenViaStyle()) {
       string_builder = string_builder + " isHiddenViaCSS";

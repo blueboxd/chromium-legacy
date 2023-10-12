@@ -23,12 +23,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom-shared.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
+#include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
@@ -70,12 +71,12 @@ namespace web_app {
 class CreateShortcutBrowserTest : public WebAppControllerBrowserTest {
  public:
   webapps::AppId InstallShortcutAppForCurrentUrl(bool open_as_window = false) {
-    chrome::SetAutoAcceptWebAppDialogForTesting(true, open_as_window);
+    SetAutoAcceptWebAppDialogForTesting(true, open_as_window);
     WebAppTestInstallObserver observer(profile());
     observer.BeginListening();
     CHECK(chrome::ExecuteCommand(browser(), IDC_CREATE_SHORTCUT));
     webapps::AppId app_id = observer.Wait();
-    chrome::SetAutoAcceptWebAppDialogForTesting(false, false);
+    SetAutoAcceptWebAppDialogForTesting(false, false);
     return app_id;
   }
 
@@ -377,6 +378,32 @@ IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest_CreateShortcutIgnoresManifest,
     EXPECT_EQ(registrar().GetAppById(app_id)->start_url(),
               PageWithDifferentStartUrlManifestStartUrl());
   }
+}
+
+IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest_CreateShortcutIgnoresManifest,
+                       CanInstallOverTabShortcutApp) {
+  NavigateToURLAndWait(browser(), GetInstallableAppURL());
+  webapps::AppId shortcut_app_id = InstallShortcutAppForCurrentUrl();
+
+  bool create_shortcut_ignores_manifest = GetParam();
+  if (create_shortcut_ignores_manifest) {
+    EXPECT_TRUE(registrar().IsShortcutApp(shortcut_app_id));
+  } else {
+    EXPECT_FALSE(registrar().IsShortcutApp(shortcut_app_id));
+  }
+
+  Browser* new_browser =
+      NavigateInNewWindowAndAwaitInstallabilityCheck(GetInstallableAppURL());
+
+  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, new_browser), kEnabled);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kEnabled);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, new_browser),
+            kNotPresent);
+
+  webapps::AppId web_app_id = test::InstallPwaForCurrentUrl(new_browser);
+
+  EXPECT_EQ(shortcut_app_id, web_app_id);
+  EXPECT_FALSE(registrar().IsShortcutApp(web_app_id));
 }
 
 INSTANTIATE_TEST_SUITE_P(

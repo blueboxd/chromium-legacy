@@ -31,8 +31,6 @@
 # You should specify the tests one-by-one in most cases, instead of this.
 tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1379756
-  "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_floating",
-  "inputs.VirtualKeyboardGlideTyping.tablet_floating",
   "inputs.VirtualKeyboardHandwriting.floating",
 
   # crbug.com/1263233
@@ -63,11 +61,6 @@ tast_disabled_tests_from_chrome_all = [
   "security.SELinuxFilesARC",
   "security.NetworkListenersARC",
   "security.SELinuxProcessesARC",
-
-  # https://crbug.com/1430753
-  "mlservice.WebHandwritingRecognitionNotSupported",
-  "security.ChromeSandboxed",
-  "security.GPUSandboxed",
 
   # https://crbug.com/1282481
   "quicksettings.OpenSettings.qs_revamp_disabled",
@@ -126,9 +119,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1362182
   "feedback.AttachFile",
 
-  # https://crbug.com/1365284
-  "crostini.RestartApp.clamshell_stable",
-
   # https://crbug.com/1366112
   "crostini.ResizeInstallation.stable",
 
@@ -138,9 +128,6 @@ tast_disabled_tests_from_chrome_all = [
   "crostini.SecureCopyPaste.paste_wayland_bullseye_stable",
   "crostini.RestartIcon.buster_stable",
   "crostini.RestartIcon.bullseye_stable",
-
-  # https://crbug.com/1455410
-  "crostini.RestartApp.bullseye_clamshell_stable",
 
   # https://crbug.com/1368586
   "u2fd.WebauthnUsingPassword.gsc",
@@ -166,18 +153,6 @@ tast_disabled_tests_from_chrome_all = [
   "crostini.ResizeRestart.bullseye_stable",
   "crostini.ResizeRestart.buster_stable",
 
-  # https://b/272357159
-  "crostini.AppAudacity.bullseye_clamshell_stable",
-  "crostini.AppAudacity.buster_clamshell_stable",
-  "crostini.AppEmacs.bullseye_clamshell_stable",
-  "crostini.AppEmacs.clamshell_stable",
-  "crostini.AppGedit.bullseye_clamshell_stable",
-  "crostini.AppGedit.clamshell_stable",
-  "crostini.AppGeditUnshareFolder.bullseye_clamshell_stable",
-  "crostini.AppGeditUnshareFolder.clamshell_stable",
-  "crostini.AppVscode.bullseye_clamshell_stable",
-  "crostini.AppVscode.clamshell_stable",
-
   # b/287525851
   "arc.AudioValidity.playback",
   "arc.AudioValidity.record",
@@ -193,9 +168,6 @@ tast_disabled_tests_from_chrome_all = [
 
   # b/296913657
   "secagentd.ProcessEvents@amd64-generic",
-
-  # b/301133350
-  "privacyhub.SettingsPage.feature_v1_mic_cam_loc_golden",
 
   # READ COMMENT AT TOP BEFORE ADDING NEW TESTS HERE.
 ]
@@ -218,9 +190,6 @@ tast_disabled_tests_from_lacros_all = [
   # https://crbug.com/1329764
   "policy.HistoryClustersVisible",
 
-  # http://b/301459041
-  "lacros.Activate.keep_alive",
-
   # https://crbug.com/1361163
   "lacros.AudioPinnedStream.play",
   "lacros.AudioPinnedStream.record",
@@ -242,6 +211,13 @@ tast_disabled_tests_from_lacros_all = [
 
   # https://crbug.com/1470305
   "inputs.VirtualKeyboardTypingOmnibox.a11y_lacros",
+
+  # On branch day, Lacros is +3 newer than ash which break the test.
+  "lacros.CompareVersionWithAsh",
+
+  # b/b/288933829, until LKGM containing 120.0.6049.0-onward ASH Chrome comes.
+  "inputs.PhysicalKeyboardMultiwordSuggestion.lacros",
+  "inputs.VirtualKeyboardHandwriting.floating_lacros",
 
   # THIS IS THE LACROS LIST, SCROLL UP FOR CHROME/CHROMEOS.
 ]

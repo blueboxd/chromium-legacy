@@ -19,6 +19,7 @@ import org.chromium.components.metrics.MetricsFeatures;
 import org.chromium.components.metrics.MetricsSwitches;
 import org.chromium.components.network_session_configurator.NetworkSessionSwitches;
 import org.chromium.components.permissions.PermissionsAndroidFeatureList;
+import org.chromium.components.safe_browsing.SafeBrowsingFeatures;
 import org.chromium.components.variations.VariationsSwitches;
 import org.chromium.components.viz.common.VizFeatures;
 import org.chromium.content_public.common.ContentFeatures;
@@ -243,6 +244,9 @@ public final class ProductionSupportedFlagList {
                             + "accessory."),
             Flag.baseFeature(NetworkServiceFeatures.PRIVATE_STATE_TOKENS,
                     "Enables the prototype Private State Tokens API."),
+            Flag.baseFeature(NetworkServiceFeatures.COOKIE_ACCESS_DETAILS_NOTIFICATION_DE_DUPING,
+                    "Enables de-duplicating cookie access details that are sent to observers via"
+                            + " OnCookiesAccessed."),
             Flag.baseFeature(AwFeatures.WEBVIEW_EMPTY_COMPONENT_LOADER_POLICY,
                     "Enables loading a fake empty (no-op) component during WebView startup."),
             Flag.commandLine(AwSwitches.WEBVIEW_SELECTIVE_IMAGE_INVERSION_DARKENING,
@@ -339,9 +343,6 @@ public final class ProductionSupportedFlagList {
                     "Controls whether wake ups are possible for canceled tasks."),
             Flag.baseFeature(BaseFeatures.REMOVE_CANCELED_TASKS_IN_TASK_QUEUE,
                     "Controls whether or not canceled delayed tasks are removed from task queues."),
-            Flag.baseFeature(BlinkFeatures.VIEW_TRANSITION,
-                    "Enables the experimental View Transitions API."
-                            + " See https://github.com/WICG/view-transitions/blob/main/explainer.md."),
             Flag.baseFeature(BlinkFeatures.VIEW_TRANSITION_ON_NAVIGATION,
                     "Enables the experimental View Transitions API for navigations."
                             + " See https://github.com/WICG/view-transitions/blob/main/explainer.md."),
@@ -372,7 +373,6 @@ public final class ProductionSupportedFlagList {
                     "If enabled, reads and decodes navigation body data off the main thread."),
             Flag.baseFeature(BlinkFeatures.SPARSE_OBJECT_PAINT_PROPERTIES),
             Flag.baseFeature(BlinkFeatures.SVG_RASTER_OPTIMIZATIONS),
-            Flag.baseFeature(BlinkFeatures.COMPOSITE_SCROLL_AFTER_PAINT),
             Flag.baseFeature(BlinkFeatures.HIT_TEST_OPAQUENESS),
             Flag.baseFeature(BlinkFeatures.INTERSECTION_OPTIMIZATION),
             Flag.baseFeature(BlinkFeatures.SOLID_COLOR_LAYERS),
@@ -403,15 +403,9 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(MetricsFeatures.METRICS_SERVICE_ALLOW_EARLY_LOG_CLOSE,
                     "Controls whether a log is allowed to be closed when Chrome"
                             + " is backgrounded/foregrounded early."),
-            Flag.baseFeature(MetricsFeatures.METRICS_SERVICE_ASYNC_INDEPENDENT_LOGS,
-                    "Controls whether the metrics service should finalize certain independent"
-                            + " logs asynchronously."),
             Flag.baseFeature(MetricsFeatures.MERGE_SUBPROCESS_METRICS_ON_BG_AND_FG,
                     "Controls whether child process histograms are merged on background "
                             + "and foreground."),
-            Flag.baseFeature(MetricsFeatures.RESTORE_UMA_CLIENT_ID_INDEPENDENT_LOGS,
-                    "Controls whether independent logs from PMA files will use the embedded "
-                            + "client uuid as the log's client ID."),
             Flag.baseFeature(MetricsFeatures.FLUSH_PERSISTENT_SYSTEM_PROFILE_ON_WRITE,
                     "Controls whether to schedule a flush of persistent histogram memory "
                             + "immediately after writing a system profile to it."),
@@ -456,6 +450,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_METRICS_FILTERING,
                     "If enabled, clients used to be out-sampled will report filtered metrics."
                             + " This has no effect if metrics reporting is disabled"),
+            Flag.baseFeature(SafeBrowsingFeatures.SAFE_BROWSING_SKIP_SUBRESOURCES,
+                "When enabled, Safe Browsing will skip subresources"),
             Flag.baseFeature("SafeBrowsingOnUIThread"),
             Flag.baseFeature(BlinkFeatures.ANDROID_EXTENDED_KEYBOARD_SHORTCUTS,
                     "Enables WebView to use the extended keyboard shortcuts added for Android U"),
@@ -576,6 +572,7 @@ public final class ProductionSupportedFlagList {
                     GwpAsanFeatures.GWP_ASAN_PARTITION_ALLOC, "GWP-ASan for PartitionAlloc."),
             Flag.baseFeature(CcFeatures.USE_MAP_RECT_FOR_PIXEL_MOVEMENT,
                     "Enables the usage of MapRect for computing filter pixel movement."),
+            Flag.baseFeature("UseRustJsonParser"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

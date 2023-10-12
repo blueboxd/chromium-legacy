@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
@@ -41,8 +41,7 @@
 - (instancetype)initWithBrowser:(Browser*)browser
                     syncService:(syncer::SyncService*)syncService
                        delegate:(id<BookmarkPromoControllerDelegate>)delegate
-                      presenter:(id<SigninPresenter>)presenter
-             baseViewController:(UIViewController*)baseViewController {
+                      presenter:(id<SigninPresenter>)presenter {
   DCHECK(browser);
   self = [super init];
   if (self) {
@@ -62,8 +61,7 @@
                           syncService:syncService
                           accessPoint:signin_metrics::AccessPoint::
                                           ACCESS_POINT_BOOKMARK_MANAGER
-                            presenter:presenter
-                   baseViewController:baseViewController];
+                            presenter:presenter];
     _signinPromoViewMediator.consumer = self;
     if (base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)) {
       _signinPromoViewMediator.dataTypeToWaitForInitialSync =
@@ -114,7 +112,7 @@
     if (base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)) {
       PrefService* prefs = browserState->GetPrefs();
       const std::string lastSignedInGaiaId =
-          prefs->GetString(prefs::kGoogleServicesLastGaiaId);
+          prefs->GetString(prefs::kGoogleServicesLastSyncingGaiaId);
       // If the last signed-in user did not remove data during sign-out, don't
       // show the signin promo.
       if (lastSignedInGaiaId.empty()) {

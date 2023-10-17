@@ -355,15 +355,14 @@
 	path = third_party/google_toolbox_for_mac/src
 	url = https://chromium.googlesource.com/external/github.com/google/google-toolbox-for-mac.git
 	gclient-condition = checkout_ios or checkout_mac
+[submodule "third_party/google-truth/src"]
+	path = third_party/google-truth/src
+	url = https://chromium.googlesource.com/external/github.com/google/truth.git
+	gclient-condition = checkout_android
 	ignore = all
 [submodule "third_party/googletest/src"]
 	path = third_party/googletest/src
 	url = https://chromium.googlesource.com/external/github.com/google/googletest.git
-	ignore = all
-[submodule "third_party/gnu_binutils"]
-	path = third_party/gnu_binutils
-	url = https://chromium.googlesource.com/native_client/deps/third_party/gnu_binutils.git
-	gclient-condition = checkout_nacl and checkout_win
 	ignore = all
 [submodule "third_party/gperf"]
 	path = third_party/gperf
@@ -539,20 +538,10 @@
 	url = https://chromium.googlesource.com/external/github.com/google/material-design-icons.git
 	gclient-condition = checkout_ios
 	ignore = all
-[submodule "third_party/mingw-w64/mingw/bin"]
-	path = third_party/mingw-w64/mingw/bin
-	url = https://chromium.googlesource.com/native_client/deps/third_party/mingw-w64/mingw/bin.git
-	gclient-condition = checkout_nacl and checkout_win
-	ignore = all
 [submodule "third_party/minigbm/src"]
 	path = third_party/minigbm/src
 	url = https://chromium.googlesource.com/chromiumos/platform/minigbm.git
 	gclient-condition = checkout_linux
-	ignore = all
-[submodule "third_party/nacl_sdk_binaries"]
-	path = third_party/nacl_sdk_binaries
-	url = https://chromium.googlesource.com/chromium/deps/nacl_sdk_binaries.git
-	gclient-condition = checkout_nacl and checkout_win
 	ignore = all
 [submodule "third_party/nasm"]
 	path = third_party/nasm

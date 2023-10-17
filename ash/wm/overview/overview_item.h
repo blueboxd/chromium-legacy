@@ -88,11 +88,11 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
                  OverviewAnimationType animation_type) override;
   gfx::Transform ComputeTargetTransform(
       const gfx::RectF& target_bounds) override;
-  float GetItemScale(const gfx::Size& size) override;
+  float GetItemScale(int height) override;
   void ScaleUpSelectedItem(OverviewAnimationType animation_type) override;
   void EnsureVisible() override;
   gfx::RectF GetTargetBoundsInScreen() const override;
-  gfx::RectF GetWindowTargetBoundsWithInsets() const override;
+  gfx::RectF GetTargetBoundsWithInsets() const override;
   gfx::RectF GetTransformedBounds() const override;
   OverviewFocusableView* GetFocusableView() const override;
   views::View* GetBackDropView() const override;
@@ -111,7 +111,6 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   void OnOverviewItemContinuousScroll(const gfx::Transform& target_transform,
                                       float scroll_ratio) override;
   void SetVisibleDuringItemDragging(bool visible, bool animate) override;
-  void UpdateShadowTypeForDrag(bool is_dragging) override;
   void UpdateCannotSnapWarningVisibility(bool animate) override;
   void HideCannotSnapWarning(bool animate) override;
   void OnMovingItemToAnotherDesk() override;
@@ -235,16 +234,6 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   // windows in the future, combine these.
   std::unique_ptr<DragWindowController> item_mirror_for_dragging_;
   std::unique_ptr<DragWindowController> window_mirror_for_dragging_;
-
-  // True if the windows are still alive so they can have a closing animation.
-  // These windows should not be used in calculations for
-  // OverviewGrid::PositionWindows.
-  bool animating_to_close_ = false;
-
-  // True if this overview item is currently being dragged around.
-  bool is_being_dragged_ = false;
-
-  bool prepared_for_overview_ = false;
 
   // Disable animations on the contained window while it is being managed by the
   // overview item.

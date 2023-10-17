@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <codecvt>
-
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
@@ -83,7 +81,8 @@ class DlpFilesAppBrowserTestBase {
   std::unique_ptr<KeyedService> SetDlpRulesManager(
       content::BrowserContext* context) {
     auto dlp_rules_manager =
-        std::make_unique<testing::NiceMock<policy::MockDlpRulesManager>>();
+        std::make_unique<testing::NiceMock<policy::MockDlpRulesManager>>(
+            Profile::FromBrowserContext(context));
     mock_rules_manager_ = dlp_rules_manager.get();
     ON_CALL(*mock_rules_manager_, IsFilesPolicyEnabled)
         .WillByDefault(testing::Return(true));
@@ -354,7 +353,6 @@ class DlpFilesAppBrowserTestBase {
       chromeos::DlpClient::GetFilesSourcesCallback callback) {
     std::move(callback).Run(response);
   }
-
 };
 
 constexpr char kFileTransferConnectorSettingsForDlp[] = R"(
@@ -927,13 +925,12 @@ class FileTransferConnectorFilesAppBrowserTest
 
     // Verify the displayed blocked files shown in the dialog.
     std::vector<std::string> displayed_files;
-    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> converter;
     for (const auto* row_view : view->children()) {
       const views::Label* label =
           static_cast<const views::Label*>(row_view->GetViewByID(
               policy::PolicyDialogBase::kConfidentialRowTitleViewId));
       if (label) {
-        displayed_files.push_back(converter.to_bytes(label->GetText()));
+        displayed_files.push_back(base::UTF16ToUTF8(label->GetText()));
       }
     }
     EXPECT_THAT(displayed_files,
@@ -968,13 +965,12 @@ class FileTransferConnectorFilesAppBrowserTest
 
     // Verify the displayed blocked files shown in the dialog.
     std::vector<std::string> displayed_files;
-    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> converter;
     for (const auto* row_view : view->children()) {
       const views::Label* label =
           static_cast<const views::Label*>(row_view->GetViewByID(
               policy::PolicyDialogBase::kConfidentialRowTitleViewId));
       if (label) {
-        displayed_files.push_back(converter.to_bytes(label->GetText()));
+        displayed_files.push_back(base::UTF16ToUTF8(label->GetText()));
       }
     }
     EXPECT_THAT(displayed_files,

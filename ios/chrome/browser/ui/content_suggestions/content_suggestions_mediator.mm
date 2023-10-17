@@ -710,6 +710,15 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   [self hideTabResumption];
 }
 
+- (void)loadParcelTrackingPage:(GURL)parcelTrackingURL {
+  [self.NTPMetricsDelegate parcelTrackingOpened];
+  [self.contentSuggestionsMetricsRecorder
+      recordMagicStackModuleEngagementForType:ContentSuggestionsModuleType::
+                                                  kParcelTracking];
+  UrlLoadingBrowserAgent::FromBrowser(self.browser)
+      ->Load(UrlLoadParams::InCurrentTab(parcelTrackingURL));
+}
+
 #pragma mark - ContentSuggestionsGestureCommands
 
 - (void)openNewTabWithMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
@@ -1010,7 +1019,8 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
       _safetyCheckState.runningState == RunningSafetyCheckState::kDefault) {
     [self.consumer showSafetyCheck:_safetyCheckState];
   }
-  if (IsIOSParcelTrackingEnabled()) {
+  if (IsIOSParcelTrackingEnabled() &&
+      !IsParcelTrackingDisabled(GetApplicationContext()->GetLocalState())) {
     __weak ContentSuggestionsMediator* weakSelf = self;
     _shoppingService->GetAllParcelStatuses(base::BindOnce(^(
         bool success,
@@ -1180,7 +1190,8 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
     [self addSafetyCheckToMagicStackOrder:magicStackModules];
   }
 
-  if (IsIOSParcelTrackingEnabled()) {
+  if (IsIOSParcelTrackingEnabled() &&
+      !IsParcelTrackingDisabled(GetApplicationContext()->GetLocalState())) {
     if ([_parcelTrackingItems count] > 2) {
       [magicStackModules
           addObject:@(int(
@@ -1248,7 +1259,9 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
         [magicStackOrder addObject:moduleNumber];
         break;
       case ContentSuggestionsModuleType::kParcelTracking:
-        if (IsIOSParcelTrackingEnabled()) {
+        if (IsIOSParcelTrackingEnabled() &&
+            !IsParcelTrackingDisabled(
+                GetApplicationContext()->GetLocalState())) {
           if ([_parcelTrackingItems count] > 2) {
             [magicStackOrder addObject:@(int(ContentSuggestionsModuleType::
                                                  kParcelTrackingSeeMore))];
@@ -1468,6 +1481,10 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 // Shows the tab resumption tile if there is a `_tabResumptionItem` to present.
 - (void)showTabResumptionTile {
+  if (!self.webState) {
+    return;
+  }
+
   CHECK(IsTabResumptionEnabled());
   if (!self.consumer ||
       tab_resumption_prefs::IsTabResumptionDisabled(_localState)) {

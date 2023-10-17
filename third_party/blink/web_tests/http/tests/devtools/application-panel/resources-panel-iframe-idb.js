@@ -11,18 +11,16 @@ import * as Application from 'devtools/panels/application/application.js';
 
 (async function() {
   TestRunner.addResult(`Tests Application Panel's handling of storages in iframes.\n`);
-  await TestRunner.loadLegacyModule('console');
   // Note: every test that uses a storage API must manually clean-up state from previous tests.
   await ApplicationTestRunner.resetState();
 
-  await TestRunner.loadLegacyModule('console');
   await TestRunner.showPanel('resources');
 
   function createIndexedDBInMainFrame(callback) {
     var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
-    var model = TestRunner.mainTarget.model(Resources.IndexedDBModel);
+    var model = TestRunner.mainTarget.model(Application.IndexedDBModel.IndexedDBModel);
     ApplicationTestRunner.createDatabase(mainFrameId, 'Database-main-frame', () => {
-      var event = model.addEventListener(Resources.IndexedDBModel.Events.DatabaseAdded, () => {
+      var event = model.addEventListener(Application.IndexedDBModel.Events.DatabaseAdded, () => {
         Common.EventTarget.removeEventListeners([event]);
         callback();
       });

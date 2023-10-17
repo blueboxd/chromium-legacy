@@ -463,8 +463,19 @@ class PrerenderBookmarkBarOnPressedNavigationTest
       ukm_entry_builder_;
 };
 
-IN_PROC_BROWSER_TEST_F(PrerenderBookmarkBarOnPressedNavigationTest,
-                       PrerenderActivation) {
+// TODO(crbug.com/1491942): This fails with the field trial testing config.
+class PrerenderBookmarkBarOnPressedNavigationTestNoTestingConfig
+    : public PrerenderBookmarkBarOnPressedNavigationTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PrerenderBookmarkBarOnPressedNavigationTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch("disable-field-trial-config");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(
+    PrerenderBookmarkBarOnPressedNavigationTestNoTestingConfig,
+    PrerenderActivation) {
   base::HistogramTester histogram_tester;
   // Navigate to an non-empty tab
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
@@ -483,7 +494,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBookmarkBarOnPressedNavigationTest,
   {
     ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
     // Navigate away to flush the metrics and check.
-    ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
     auto ukm_entries = test_ukm_recorder()->GetEntries(
         Preloading_Attempt::kEntryName,
         content::test::kPreloadingAttemptUkmMetrics);
@@ -512,7 +524,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBookmarkBarOnPressedNavigationTest,
       "Preloading.Prerender.Attempt.PointerDownOnBookmarkBar.TriggeringOutcome",
       kPreloadingTriggeringOutcomeSuccess, 1);
   // Navigate away to flush the metrics and check.
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
   ASSERT_EQ(bookmark_navigation_list().size(), 2u);
   for (int i = 0; i < 2; ++i) {
     EXPECT_EQ(
@@ -622,8 +635,8 @@ class PrerenderBookmarkBarOnHoverNavigationTest
       ukm_entry_builder_;
 };
 
-// TODO(https://crbug.com/1491974): Times out on Mac and Linux.
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+// TODO(https://crbug.com/1491974): Times out on Win, Mac and Linux.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #define MAYBE_PrerenderActivation DISABLED_PrerenderActivation
 #else
 #define MAYBE_PrerenderActivation PrerenderActivation
@@ -647,7 +660,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBookmarkBarOnHoverNavigationTest,
   {
     ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
     // Navigate away to flush the metrics and check.
-    ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
     auto ukm_entries = test_ukm_recorder()->GetEntries(
         Preloading_Attempt::kEntryName,
         content::test::kPreloadingAttemptUkmMetrics);
@@ -685,10 +699,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBookmarkBarOnHoverNavigationTest,
       "Bookmarks.BookmarkBar.PrerenderNavigationToActivation", 1);
 }
 
+// TODO(crbug.com/1491942): This fails with the field trial testing config.
+class PrerenderBookmarkBarOnHoverNavigationTestNoTestingConfig
+    : public PrerenderBookmarkBarOnHoverNavigationTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PrerenderBookmarkBarOnHoverNavigationTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch("disable-field-trial-config");
+  }
+};
+
 // This test verifies prerender cancellation triggered by mouseExited, and
 // another prerender can trigger normally after that.
-// TODO(https://crbug.com/1491974): Times out on Mac and Linux.
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+// TODO(https://crbug.com/1491974): Times out on Win, Mac and Linux.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #define MAYBE_PrerenderMouseExitedCancellationAndPrerenderActivation \
   DISABLED_PrerenderMouseExitedCancellationAndPrerenderActivation
 #else
@@ -696,7 +720,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBookmarkBarOnHoverNavigationTest,
   PrerenderMouseExitedCancellationAndPrerenderActivation
 #endif
 IN_PROC_BROWSER_TEST_F(
-    PrerenderBookmarkBarOnHoverNavigationTest,
+    PrerenderBookmarkBarOnHoverNavigationTestNoTestingConfig,
     MAYBE_PrerenderMouseExitedCancellationAndPrerenderActivation) {
   base::HistogramTester histogram_tester;
   // Navigate to an non-empty tab
@@ -726,7 +750,8 @@ IN_PROC_BROWSER_TEST_F(
   {
     ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
     // Navigate away to flush the metrics and check.
-    ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
     auto ukm_entries = test_ukm_recorder()->GetEntries(
         Preloading_Attempt::kEntryName,
         content::test::kPreloadingAttemptUkmMetrics);
@@ -825,7 +850,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBookmarkBarOnHoverNavigationTest,
 
   {
     // Navigate away to flush the metrics and check.
-    ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
     ukm::SourceId ukm_source_id =
         GetActiveWebContents()->GetPrimaryMainFrame()->GetPageUkmSourceId();
     auto attempt_ukm_entries = test_ukm_recorder()->GetEntries(
@@ -901,7 +927,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBookmarkBarDisabledNavigationTest,
   ClickOnBookmarkBarLink();
 
   // Navigate away to flush the metrics and check.
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
   ASSERT_EQ(bookmark_navigation_list().size(), 1u);
   for (int i = 0; i < 1; ++i) {
     EXPECT_EQ(

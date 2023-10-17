@@ -297,6 +297,12 @@ const base::FeatureParam<content::DIPSTriggeringAction> kDIPSTriggeringAction{
 const base::FeatureParam<base::TimeDelta> kDIPSClientBounceDetectionTimeout{
     &kDIPS, "client_bounce_detection_timeout", base::Seconds(10)};
 
+// Enables disconnecting the `ExtensionMessagePort` when the page using the port
+// enters BFCache.
+BASE_FEATURE(kDisconnectExtensionMessagePortWhenPageEntersBFCache,
+             "DisconnectExtensionMessagePortWhenPageEntersBFCache",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable document policy for configuring and restricting feature behavior.
 BASE_FEATURE(kDocumentPolicy,
              "DocumentPolicy",
@@ -347,10 +353,10 @@ BASE_FEATURE(kEnableServiceWorkersForChromeScheme,
 // We enable it here by default to support use in origin trials.
 BASE_FEATURE(kFedCm, "FedCm", base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables usage of the FedCM AccountAutoSelectedFlag feature. ChromeStatus
-// entry: https://chromestatus.com/feature/5384360374566912
-BASE_FEATURE(kFedCmAccountAutoSelectedFlag,
-             "FedCmAccountAutoSelectedFlag",
+// Enables usage of the FedCM IdentityCredentialAutoSelectedFlag feature.
+// ChromeStatus entry: https://chromestatus.com/feature/5384360374566912
+BASE_FEATURE(kFedCmIdentityCredentialAutoSelectedFlag,
+             "FedCmIdentityCredentialAutoSelectedFlag",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM Authz API.
@@ -1164,9 +1170,10 @@ BASE_FEATURE(kWebAssemblyTrapHandler,
 BASE_FEATURE(kWebBluetooth, "WebBluetooth", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether Web Bluetooth should use the new permissions backend. The
-// new permissions backend uses ChooserContextBase, which is used by other
-// device APIs, such as WebUSB. When enabled, WebBluetoothWatchAdvertisements
-// and WebBluetoothGetDevices blink features are also enabled.
+// new permissions backend uses ObjectPermissionContextBase, which is used by
+// other device APIs, such as WebUSB. When enabled,
+// WebBluetoothWatchAdvertisements and WebBluetoothGetDevices blink features are
+// also enabled.
 BASE_FEATURE(kWebBluetoothNewPermissionsBackend,
              "WebBluetoothNewPermissionsBackend",
              base::FEATURE_DISABLED_BY_DEFAULT);

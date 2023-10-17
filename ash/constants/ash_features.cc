@@ -202,11 +202,6 @@ BASE_FEATURE(kAsynchronousScannerDiscovery,
              "AsynchronousScannerDiscovery",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables warning in the quick settings when NBS device is in use.
-BASE_FEATURE(kAudioHFPNbsWarning,
-             "AudioHFPNbsWarning",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables the ui to show the toggle for controlling hfp-mic-sr.
 BASE_FEATURE(kAudioHFPMicSRToggle,
              "AudioHFPMicSRToggle",
@@ -321,11 +316,6 @@ BASE_FEATURE(kBorealisBigGl, "BorealisBigGl", base::FEATURE_ENABLED_BY_DEFAULT);
 // Enable dGPU when using Borealis.
 BASE_FEATURE(kBorealisDGPU, "BorealisDGPU", base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enable experimental disk management changes for Borealis.
-BASE_FEATURE(kBorealisDiskManagement,
-             "BorealisDiskManagement",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enable borealis on this device. This won't necessarily allow it, since you
 // might fail subsequent checks.
 BASE_FEATURE(kBorealisPermitted,
@@ -357,12 +347,6 @@ BASE_FEATURE(kBorealisLinuxMode,
 BASE_FEATURE(kBorealisProvision,
              "BorealisProvision",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enable storage ballooning for Borealis. This takes precedence over
-// kBorealisDiskManagement.
-BASE_FEATURE(kBorealisStorageBallooning,
-             "BorealisStorageBallooning",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Use the new WebUI installer instead of views installer.
 BASE_FEATURE(kBorealisWebUIInstaller,
@@ -1066,6 +1050,12 @@ BASE_FEATURE(kFastPairDevicesBluetoothSettings,
              "FastPairDevicesBluetoothSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Accelerates the split screen setup process by showing partial overview on
+// window snapped.
+BASE_FEATURE(kFasterSplitScreenSetup,
+             "FasterSplitScreenSetup",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, allows the creation of up to 16 desks (default is 8). This flag
 // is intended to be controlled by the feature management module.
 BASE_FEATURE(kFeatureManagement16Desks,
@@ -1167,6 +1157,11 @@ BASE_FEATURE(kFilesNewDirectoryTree,
 
 // Enables V2 of search functionality in files.
 BASE_FEATURE(kFilesSearchV2, "FilesSearchV2", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables local image search by query in the Files app.
+BASE_FEATURE(kFilesLocalImageSearch,
+             "FilesLocalImageSearch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables partitioning of removable disks in file manager.
 BASE_FEATURE(kFilesSinglePartitionFormat,
@@ -1725,12 +1720,6 @@ BASE_FEATURE(kLockScreenMediaControls,
              "LockScreenMediaControls",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables the Device Trust connector client code is enabled on the login
-// screen.
-BASE_FEATURE(kLoginScreenDeviceTrustConnectorEnabled,
-             "LoginScreenDeviceTrustConnectorEnabled",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Feature to allow MAC address randomization to be enabled for WiFi networks.
 BASE_FEATURE(kMacAddressRandomization,
              "MacAddressRandomization",
@@ -1849,11 +1838,6 @@ BASE_FEATURE(kNightLight, "NightLight", base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kNotificationExpansionAnimation,
              "NotificationExpansionAnimation",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Shorten notification timeouts to 6 seconds.
-BASE_FEATURE(kNotificationExperimentalShortTimeouts,
-             "NotificationExperimentalShortTimeouts",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables dragging the image from a notification by mouse or gesture.
 BASE_FEATURE(kNotificationImageDrag,
@@ -2145,6 +2129,10 @@ BASE_FEATURE(kPolicyProvidedTrustAnchorsAllowedAtLockScreen,
              "PolicyProvidedTrustAnchorsAllowedAtLockScreen",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPostLoginGlanceables,
+             "PostLoginGlanceables",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables the preference of using constant frame rate for camera
 // when streaming.
 BASE_FEATURE(kPreferConstantFrameRate,
@@ -2252,6 +2240,9 @@ BASE_FEATURE(kProjectorMuting,
 BASE_FEATURE(kProjectorRedirectToPwa,
              "ProjectorRedirectToPwa",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether projector V2 is enabled.
+BASE_FEATURE(kProjectorV2, "ProjectorV2", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the transcript chapter title feature is enabled.
 BASE_FEATURE(kProjectorTranscriptChapterTitle,
@@ -2511,13 +2502,6 @@ BASE_FEATURE(kSmartDimExperimentalComponent,
 // notification for users who previously had this feature enabled.
 BASE_FEATURE(kSmartLockSignInRemoved,
              "SmartLockSignInRemoved",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Replaces Smart Lock UI in lock screen password box with new UI similar to
-// fingerprint auth. Adds Smart Lock to "Lock screen and sign-in" section of
-// settings.
-BASE_FEATURE(kSmartLockUIRevamp,
-             "SmartLockUIRevamp",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the consumer and enterprise support for provisioning eSIM profiles
@@ -2981,10 +2965,6 @@ bool AreSystemSoundsEnabled() {
   return base::FeatureList::IsEnabled(kSystemSounds);
 }
 
-bool IsAudioHFPNbsWarningEnabled() {
-  return base::FeatureList::IsEnabled(kAudioHFPNbsWarning);
-}
-
 bool IsAudioHFPMicSRToggleEnabled() {
   return base::FeatureList::IsEnabled(kAudioHFPMicSRToggle);
 }
@@ -3343,6 +3323,10 @@ bool IsFastPairSavedDevicesStrictOptInEnabled() {
   return base::FeatureList::IsEnabled(kFastPairSavedDevicesStrictOptIn);
 }
 
+bool IsFasterSplitScreenSetupEnabled() {
+  return base::FeatureList::IsEnabled(kFasterSplitScreenSetup);
+}
+
 bool IsFederatedServiceEnabled() {
   return base::FeatureList::IsEnabled(kFederatedService);
 }
@@ -3372,6 +3356,10 @@ bool IsFilesConflictDialogEnabled() {
 
 bool IsFilesSearchV2Enabled() {
   return base::FeatureList::IsEnabled(kFilesSearchV2);
+}
+
+bool IsFilesLocalImageSearchEnabled() {
+  return base::FeatureList::IsEnabled(kFilesLocalImageSearch);
 }
 
 bool IsFloatingWorkspaceEnabled() {
@@ -3507,8 +3495,7 @@ bool IsHotspotEnabled() {
 }
 
 bool IsInstantHotspotRebrandEnabled() {
-  return base::FeatureList::IsEnabled(kInstantHotspotRebrand) &&
-         base::FeatureList::IsEnabled(kQsRevamp);
+  return base::FeatureList::IsEnabled(kInstantHotspotRebrand);
 }
 
 bool IsScreenSaverDurationEnabled() {
@@ -3663,10 +3650,6 @@ bool IsLockScreenNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kLockScreenNotifications);
 }
 
-bool IsLoginScreenDeviceTrustConnectorFeatureEnabled() {
-  return base::FeatureList::IsEnabled(kLoginScreenDeviceTrustConnectorEnabled);
-}
-
 bool IsProductivityLauncherImageSearchEnabled() {
   return base::FeatureList::IsEnabled(kProductivityLauncherImageSearch);
 }
@@ -3751,10 +3734,6 @@ bool IsSystemNudgeV2Enabled() {
 
 bool IsNotificationExpansionAnimationEnabled() {
   return base::FeatureList::IsEnabled(kNotificationExpansionAnimation);
-}
-
-bool IsNotificationExperimentalShortTimeoutsEnabled() {
-  return base::FeatureList::IsEnabled(kNotificationExperimentalShortTimeouts);
 }
 
 bool IsNotificationImageDragEnabled() {
@@ -3944,6 +3923,10 @@ bool IsPipTuckEnabled() {
   return base::FeatureList::IsEnabled(kPipTuck);
 }
 
+bool ArePostLoginGlanceablesEnabled() {
+  return base::FeatureList::IsEnabled(kPostLoginGlanceables);
+}
+
 bool IsPrinterSettingsPrinterStatusEnabled() {
   return base::FeatureList::IsEnabled(kPrinterSettingsPrinterStatus);
 }
@@ -3990,6 +3973,8 @@ bool IsProjectorUpdateIndexableTextEnabled() {
   return base::FeatureList::IsEnabled(kProjectorUpdateIndexableText);
 }
 
+// TODO(b/305075031): Remove `kQsRevamp` and this method after all the clean up
+// is done.
 bool IsQsRevampEnabled() {
   return base::FeatureList::IsEnabled(kQsRevamp);
 }
@@ -4009,6 +3994,10 @@ bool IsProjectorMutingEnabled() {
 
 bool IsProjectorRedirectToPwaEnabled() {
   return base::FeatureList::IsEnabled(kProjectorRedirectToPwa);
+}
+
+bool IsProjectorV2Enabled() {
+  return base::FeatureList::IsEnabled(kProjectorV2);
 }
 
 bool IsProjectorTranscriptChapterTitleEnabled() {

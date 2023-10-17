@@ -801,7 +801,7 @@ AXObject* AXObjectCacheImpl::ObjectFromAXID(AXID id) const {
   return it != objects_.end() ? it->value : nullptr;
 }
 
-Node* AXObjectCacheImpl::FocusedElement() {
+Node* AXObjectCacheImpl::FocusedNode() {
   Node* focused_node = document_->FocusedElement();
   if (!focused_node)
     focused_node = document_;
@@ -848,7 +848,7 @@ void AXObjectCacheImpl::UpdateAXForAllDocuments() {
   }
 }
 
-AXObject* AXObjectCacheImpl::GetOrCreateFocusedObjectFromNode(Node* node) {
+AXObject* AXObjectCacheImpl::FocusedObject() {
 #if DCHECK_IS_ON()
   DCHECK(GetDocument().Lifecycle().GetState() >=
          DocumentLifecycle::kAfterPerformLayout);
@@ -858,9 +858,10 @@ AXObject* AXObjectCacheImpl::GetOrCreateFocusedObjectFromNode(Node* node) {
   }
 #endif
 
-  CHECK(node);
+  Node* focused_node = FocusedNode();
+  CHECK(focused_node);
 
-  AXObject* obj = GetOrCreate(node);
+  AXObject* obj = GetOrCreate(focused_node);
   if (!obj) {
     // In rare cases it's possible for the focus to not exist in the tree.
     // An example would be a focused element inside of an image map that
@@ -876,10 +877,6 @@ AXObject* AXObjectCacheImpl::GetOrCreateFocusedObjectFromNode(Node* node) {
     obj = obj->ParentObjectIncludedInTree();
 
   return obj;
-}
-
-AXObject* AXObjectCacheImpl::FocusedObject() {
-  return GetOrCreateFocusedObjectFromNode(FocusedElement());
 }
 
 const ui::AXMode& AXObjectCacheImpl::GetAXMode() {
@@ -1736,7 +1733,7 @@ void AXObjectCacheImpl::Remove(Node* node, bool notify_parent) {
   whitespace_ignored_map_.erase(node->GetDomNodeId());
 
   if (node == active_aria_modal_dialog_) {
-    UpdateActiveAriaModalDialog(FocusedElement());
+    UpdateActiveAriaModalDialog(FocusedNode());
   }
 
   auto iter = node_object_mapping_.find(node);
@@ -1834,8 +1831,7 @@ void AXObjectCacheImpl::RemoveSubtreeWhenSafe(Node* node, bool remove_root) {
 
 void AXObjectCacheImpl::RemoveSubtreeWithFlatTraversal(const Node* node,
                                                        bool remove_root,
-                                                       bool notify_parent,
-                                                       bool only_layout) {
+                                                       bool notify_parent) {
   DCHECK(node);
   // Previously used DCHECK(AXObject::CanSafelyUseFlatTreeTraversalNow()) but
   // failed because document had pending slot assignment in
@@ -1853,7 +1849,7 @@ void AXObjectCacheImpl::RemoveSubtreeWithFlatTraversal(const Node* node,
          child_node;
          child_node = LayoutTreeBuilderTraversal::NextSibling(*child_node)) {
       RemoveSubtreeWithFlatTraversal(child_node, /* remove_root */ true,
-                                     /* notify_parent */ false, only_layout);
+                                     /* notify_parent */ false);
     }
   }
 
@@ -1875,7 +1871,7 @@ void AXObjectCacheImpl::RemoveSubtreeWithFlatTraversal(const Node* node,
       DCHECK(ax_included_child->GetNode() != node);
       RemoveSubtreeWithFlatTraversal(ax_included_child->GetNode(),
                                      /* remove_root */ true,
-                                     /* notify_parent */ false, only_layout);
+                                     /* notify_parent */ false);
     } else {
       RemoveIncludedSubtree(ax_included_child, /* remove_root */ true);
     }
@@ -1887,9 +1883,7 @@ void AXObjectCacheImpl::RemoveSubtreeWithFlatTraversal(const Node* node,
   AXObject* parent_to_notify =
       notify_parent ? object->CachedParentObject() : nullptr;
   if (remove_root) {
-    if (!only_layout || IsA<AXLayoutObject>(object)) {
-      Remove(object, /* notify_parent */ false);
-    }
+    Remove(object, /* notify_parent */ false);
   }
   if (parent_to_notify) {
     if (processing_deferred_events_) {
@@ -2275,17 +2269,11 @@ void AXObjectCacheImpl::SubtreeIsAttached(Node* node) {
     return;
   }
 
-  // If we're removing layout from a subtree, we only need to remove
-  // AXLayoutObjects. This helps avoid duplicate menu hide events,  e.g.
-  // in DumpAccessibilityEventsTest.AccessibilityEventsMenubarShowHideMenus.
-  bool only_layout = IsA<AXLayoutObject>(obj) && !node->GetLayoutObject();
-
   // Note that technically we do not need to remove the root node for a
   // display-locking (content-visibility) change, since it is only the
   // descendants that gain or lose their objects, but its easier to be
   // consistent here.
-  RemoveSubtreeWithFlatTraversal(node, /* remove_root */ true,
-                                 /* notify_parent */ true, only_layout);
+  RemoveSubtreeWithFlatTraversal(node);
 }
 
 void AXObjectCacheImpl::NodeIsAttached(Node* node) {
@@ -2317,8 +2305,7 @@ void AXObjectCacheImpl::NodeIsAttached(Node* node) {
     if (AXObject* obj = SafeGet(node); obj && !IsA<AXLayoutObject>(obj)) {
       // Had a previous AXObject, but wasn't an AXLayoutObject, even though
       // there is a layout object available.
-      RemoveSubtreeWithFlatTraversal(node, /* remove_root */ true,
-                                     /* notify_parent */ true);
+      RemoveSubtreeWithFlatTraversal(node);
       return;
     }
   }
@@ -3465,13 +3452,7 @@ void AXObjectCacheImpl::HandleNodeLostFocusWithCleanLayout(Node* node) {
 }
 
 void AXObjectCacheImpl::HandleNodeGainedFocusWithCleanLayout(Node* node) {
-  node = FocusedElement();  // Needs to get this with clean layout.
-  if (!node || !node->GetDocument().View())
-    return;
-
-  AXObject* obj = GetOrCreateFocusedObjectFromNode(node);
-  if (!obj)
-    return;
+  AXObject* obj = FocusedObject();
 
   TRACE_EVENT1("accessibility",
                "AXObjectCacheImpl::HandleNodeGainedFocusWithCleanLayout", "id",
@@ -4332,7 +4313,7 @@ void AXObjectCacheImpl::HandleFocusedUIElementChanged(
 
   UpdateActiveAriaModalDialog(new_focused_element);
 
-  DeferTreeUpdate(TreeUpdateReason::kNodeGainedFocus, FocusedElement());
+  DeferTreeUpdate(TreeUpdateReason::kNodeGainedFocus, FocusedNode());
 }
 
 // Check if the focused node is inside an active aria-modal dialog. If so, we
@@ -4413,19 +4394,24 @@ bool AXObjectCacheImpl::SerializeEntireTree(size_t max_node_count,
                                             base::TimeDelta timeout,
                                             ui::AXTreeUpdate* response) {
   // Ensure that an initial tree exists.
-  UpdateAXForAllDocuments();
+  CHECK(IsFrozen());
+  CHECK(!IsDirty());
+  CHECK(Root());
+  CHECK(!Root()->IsDetached());
 
   // Pass true for truncate_inline_textboxes, as they are just extra noise for
   // consumers of the entire tree (e.g. AXTreeSnapshotter). This avoids passing
   // the inline text boxes, even if a previous AXContext had loaded them.
   BlinkAXTreeSource* tree_source =
       BlinkAXTreeSource::Create(*this, /* truncate inline textboxes */ true);
+  // The new tree source is frozen for its entire lifetime.
+  tree_source->Freeze();
 
   // The serializer returns an ui::AXTreeUpdate, which can store a complete
   // or a partial accessibility tree. AXTreeSerializer is stateful, but the
   // first time you serialize from a brand-new tree you're guaranteed to get a
   // complete tree.
-  ui::AXTreeSerializer<AXObject*, HeapVector<AXObject*>> serializer(
+  ui::AXTreeSerializer<AXObject*, HeapVector<Member<AXObject>>> serializer(
       tree_source);
 
   if (max_node_count)
@@ -4433,17 +4419,10 @@ bool AXObjectCacheImpl::SerializeEntireTree(size_t max_node_count,
   if (!timeout.is_zero())
     serializer.set_timeout(timeout);
 
-  tree_source->Freeze();
-
-  if (!tree_source->GetRoot() || tree_source->GetRoot()->IsDetached()) {
-    NOTREACHED_NORETURN();
-  }
-
-  bool success = serializer.SerializeChanges(tree_source->GetRoot(), response);
-  DCHECK(success)
+  bool success = serializer.SerializeChanges(Root(), response);
+  CHECK(success)
       << "Serializer failed. Should have hit DCHECK inside of serializer.";
 
-  tree_source->Thaw();
   return true;
 }
 

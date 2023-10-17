@@ -194,7 +194,8 @@ struct GenericHashTraitsBase {
   struct NeedsToForbidGCOnMove {
     // TODO(yutak): Consider using of std:::is_trivially_move_constructible
     // when it is accessible.
-    static constexpr bool value = !std::is_pod<T>::value;
+    static constexpr bool value =
+        !std::is_trivial_v<T> || !std::is_standard_layout_v<T>;
   };
 
   // The kCanTraceConcurrently value is used by Oilpan concurrent marking. Only

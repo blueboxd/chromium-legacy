@@ -44,10 +44,6 @@
 #include "content/public/browser/child_process_host.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/overscroll_configuration.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -932,19 +928,9 @@ DropData* WebContentsViewAura::GetDropData() const {
   return current_drag_data_.get();
 }
 
-void WebContentsViewAura::CancelDragDropForPortalActivation() {
-  // Note: We only want to cancel drags that originate from the predecessor
-  // WebContents to prevent possible unintentional cross-origin data accesses.
-  // |drag_security_info_| is only initiated if the drag originated in this
-  // WebContents. Drags from other tabs or from outside Chrome are not subject
-  // to this restriction (as they demonstrate sufficient user intent), and
-  // should continue to work across portal activations.
-  if (auto* drag_drop_client =
-          aura::client::GetDragDropClient(GetNativeView()->GetRootWindow());
-      drag_drop_client && drag_drop_client->IsDragDropInProgress() &&
-      drag_security_info_.did_initiate()) {
-    drag_drop_client->DragCancel();
-  }
+void WebContentsViewAura::TransferDragSecurityInfo(WebContentsView* view) {
+  WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(view);
+  drag_security_info_ = view_aura->drag_security_info_;
 }
 
 gfx::Rect WebContentsViewAura::GetViewBounds() const {

@@ -57,6 +57,9 @@ const char kLocalPasswordMigrationWarningShownAtStartup[] =
     "local_passwords_migration_warning_shown_at_startup";
 const char kLocalPasswordMigrationWarningPrefsVersion[] =
     "local_passwords_migration_warning_reset_count";
+
+const char kPasswordGenerationBottomSheetDismissCount[] =
+    "password_generation_bottom_sheet_dismiss_count";
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -142,6 +145,9 @@ const char kAccountStorageNewFeatureIconImpressions[] =
 const char kPasswordManagerPromoCardsList[] =
     "password_manager.password_promo_cards_list";
 #endif
+
+const char kPasswordSharingEnabled[] =
+    "password_manager.password_sharing_enabled";
 
 }  // namespace prefs
 }  // namespace password_manager

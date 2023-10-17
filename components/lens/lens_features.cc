@@ -102,23 +102,17 @@ constexpr base::FeatureParam<int> kMaxPixelsForImageSearch{
 const base::FeatureParam<bool> kEnableLensFullscreenSearch{
     &kLensSearchOptimizations, "enable-lens-fullscreen-search", false};
 
-const base::FeatureParam<bool> kLensContextMenuUseAlternateText{
-    &kLensSearchOptimizations, "use-lens-context-menu-alternate-text", false};
+const base::FeatureParam<int> kEncodingQualityJpeg{
+    &kLensImageFormatOptimizations, "encoding-quality-jpeg", 40};
 
-const base::FeatureParam<bool> kUseWebpInImageSearch{
-    &kLensImageFormatOptimizations, "use-webp-image-search", true};
-
-const base::FeatureParam<int> kEncodingQualityImageSearch{
-    &kLensImageFormatOptimizations, "encoding-quality-image-search", 45};
+const base::FeatureParam<int> kEncodingQualityWebp{
+    &kLensImageFormatOptimizations, "encoding-quality-webp", 45};
 
 const base::FeatureParam<bool> kUseWebpInRegionSearch{
     &kLensImageFormatOptimizations, "use-webp-region-search", false};
 
 const base::FeatureParam<bool> kUseJpegInRegionSearch{
     &kLensImageFormatOptimizations, "use-jpeg-region-search", true};
-
-const base::FeatureParam<int> kEncodingQualityRegionSearch{
-    &kLensImageFormatOptimizations, "encoding-quality-region-search", 40};
 
 constexpr base::FeatureParam<std::string> kLensPingURL{
     &kEnableLensPing, "lens-ping-url",
@@ -198,19 +192,12 @@ bool IsLensRegionSearchStaticPageEnabled() {
   return base::FeatureList::IsEnabled(kLensRegionSearchStaticPage);
 }
 
-bool UseLensContextMenuItemAlternateText() {
-  return base::FeatureList::IsEnabled(kLensStandalone) &&
-         base::FeatureList::IsEnabled(kLensSearchOptimizations) &&
-         kLensContextMenuUseAlternateText.Get();
+int GetEncodingQualityJpeg() {
+  return kEncodingQualityJpeg.Get();
 }
 
-bool IsWebpForImageSearchEnabled() {
-  return base::FeatureList::IsEnabled(kLensImageFormatOptimizations) &&
-         kUseWebpInImageSearch.Get();
-}
-
-int GetImageSearchEncodingQuality() {
-  return kEncodingQualityImageSearch.Get();
+int GetEncodingQualityWebp() {
+  return kEncodingQualityWebp.Get();
 }
 
 bool IsWebpForRegionSearchEnabled() {
@@ -221,10 +208,6 @@ bool IsWebpForRegionSearchEnabled() {
 bool IsJpegForRegionSearchEnabled() {
   return base::FeatureList::IsEnabled(kLensImageFormatOptimizations) &&
          kUseJpegInRegionSearch.Get();
-}
-
-int GetRegionSearchEncodingQuality() {
-  return kEncodingQualityRegionSearch.Get();
 }
 
 bool GetEnableContextMenuInLensSidePanel() {

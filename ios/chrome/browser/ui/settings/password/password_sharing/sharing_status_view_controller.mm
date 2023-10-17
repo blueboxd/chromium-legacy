@@ -29,7 +29,7 @@ const NSInteger kProgressBarCirclesAmount = 20;
 
 // Loaded images size dimensions.
 const CGFloat kProfileImageSize = 60.0;
-const CGFloat kShieldLockSize = 30.0;
+const CGFloat kLockSymbolPointSize = 24.0;
 
 // Spacing and padding constraints.
 const CGFloat kVerticalSpacing = 16.0;
@@ -48,6 +48,10 @@ const CGFloat kSharingCancelledDuration = 0.5;
 const CGFloat kImagesSlidingOutDistance = 78;
 const CGFloat kImagesSlidingInDistance = 51;
 
+// Tags marking parts of string that should have a bold font.
+NSString* const kBeginBoldTag = @"BEGIN_BOLD[ \t]*";
+NSString* const kEndBoldTag = @"[ \t]*END_BOLD";
+
 }  // namespace
 
 @interface SharingStatusViewController ()
@@ -56,11 +60,12 @@ const CGFloat kImagesSlidingInDistance = 51;
 @property(nonatomic, strong) UIImageView* senderImageView;
 @property(nonatomic, strong) UIImage* senderImage;
 
-// Profile image of the recipients.
-@property(nonatomic, strong) UIImageView* recipientImage;
+// Profile image of the recipient (or merged avatar of multiple recipients).
+@property(nonatomic, strong) UIImageView* recipientImageView;
+@property(nonatomic, strong) UIImage* recipientImage;
 
-// Shield icon with a lock.
-@property(nonatomic, strong) UIImageView* shieldLockImage;
+// Lock image displayed in the animation.
+@property(nonatomic, strong) UIImageView* lockImage;
 
 // Rectangle view with fixed length and height containing fixed amount of
 // circles.
@@ -70,13 +75,13 @@ const CGFloat kImagesSlidingInDistance = 51;
 // of recipients sliding to the right.
 @property(nonatomic, strong) UIViewPropertyAnimator* imagesSlidingOutAnimation;
 
-// Animates shield lock appearing in the middle between profile images and the
-// progress bar going from the left to right.
+// Animates lock appearing in the middle between profile images and the progress
+// bar going from the left to right.
 @property(nonatomic, strong)
     UIViewPropertyAnimator* progressBarLoadingAnimation;
 
-// Animates progress bar and shield lock disappearing and profile images sliding
-// to the middle.
+// Animates progress bar and lock disappearing and profile images sliding to the
+// middle.
 @property(nonatomic, strong) UIViewPropertyAnimator* imagesSlidingInAnimation;
 
 // Animates profile images sliding to the middle on cancel button tap.
@@ -88,6 +93,9 @@ const CGFloat kImagesSlidingInDistance = 51;
 
 // Subtitle string that will be displayed when the sharing is succesful.
 @property(nonatomic, strong) NSString* subtitleString;
+
+// Footer string that will be displayed when the sharing is succesful.
+@property(nonatomic, strong) NSString* footerString;
 
 // The button that cancels the sharing process.
 @property(nonatomic, strong) UIButton* cancelButton;
@@ -115,16 +123,16 @@ const CGFloat kImagesSlidingInDistance = 51;
   [animationView addSubview:senderImageView];
 
   // Add recipient profile image.
-  UIImageView* recipientImage = [self createRecipientImage];
-  [animationView insertSubview:recipientImage belowSubview:senderImageView];
+  UIImageView* recipientImageView = [self createRecipientImageView];
+  [animationView insertSubview:recipientImageView belowSubview:senderImageView];
 
   // Add progress bar view.
   UIView* progressBarView = [self createProgressBarView];
-  [animationView insertSubview:progressBarView belowSubview:recipientImage];
+  [animationView insertSubview:progressBarView belowSubview:recipientImageView];
 
-  // Add shield lock image.
-  UIImageView* shieldLockImage = [self createShieldLockImage];
-  [progressBarView addSubview:shieldLockImage];
+  // Add lock image.
+  UIImageView* lockImage = [self createLockImage];
+  [progressBarView addSubview:lockImage];
 
   // Add progress bar circles.
   [self createProgressBarSubviews];
@@ -157,9 +165,9 @@ const CGFloat kImagesSlidingInDistance = 51;
         constraintEqualToAnchor:animationView.centerXAnchor],
 
     // Recipient image constraints.
-    [recipientImage.centerYAnchor
+    [recipientImageView.centerYAnchor
         constraintEqualToAnchor:senderImageView.centerYAnchor],
-    [recipientImage.centerXAnchor
+    [recipientImageView.centerXAnchor
         constraintEqualToAnchor:senderImageView.centerXAnchor],
 
     // Progress bar constraints.
@@ -170,10 +178,10 @@ const CGFloat kImagesSlidingInDistance = 51;
     [progressBarView.widthAnchor constraintEqualToConstant:kProgressBarWidth],
     [progressBarView.heightAnchor constraintEqualToConstant:kProgressBarHeight],
 
-    // Shield lock image constraints.
-    [shieldLockImage.centerYAnchor
+    // Lock image constraints.
+    [lockImage.centerYAnchor
         constraintEqualToAnchor:senderImageView.centerYAnchor],
-    [shieldLockImage.centerXAnchor
+    [lockImage.centerXAnchor
         constraintEqualToAnchor:senderImageView.centerXAnchor],
 
     // Title constraints.
@@ -199,14 +207,29 @@ const CGFloat kImagesSlidingInDistance = 51;
   [self.imagesSlidingOutAnimation startAnimation];
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+  [self.imagesSlidingOutAnimation stopAnimation:YES];
+  [self.progressBarLoadingAnimation stopAnimation:YES];
+  [self.imagesSlidingInAnimation stopAnimation:YES];
+}
+
 #pragma mark - SharingStatusConsumer
 
 - (void)setSenderImage:(UIImage*)senderImage {
   _senderImage = senderImage;
 }
 
+- (void)setRecipientImage:(UIImage*)recipientImage {
+  _recipientImage = recipientImage;
+}
+
 - (void)setSubtitleString:(NSString*)subtitleString {
   _subtitleString = subtitleString;
+}
+
+- (void)setFooterString:(NSString*)footerString {
+  _footerString = footerString;
 }
 
 #pragma mark - Private
@@ -222,14 +245,13 @@ const CGFloat kImagesSlidingInDistance = 51;
 }
 
 // Helper for creating recipient image view.
-- (UIImageView*)createRecipientImage {
-  // TODO(crbug.com/1463882): Add actual recipient icon.
-  UIImageView* recipientImage = [[UIImageView alloc]
-      initWithImage:DefaultSymbolTemplateWithPointSize(kPersonCropCircleSymbol,
-                                                       kProfileImageSize)];
-  recipientImage.translatesAutoresizingMaskIntoConstraints = NO;
-  self.recipientImage = recipientImage;
-  return recipientImage;
+- (UIImageView*)createRecipientImageView {
+  UIImageView* recipientImageView = [[UIImageView alloc]
+      initWithImage:CircularImageFromImage(self.recipientImage,
+                                           kProfileImageSize)];
+  recipientImageView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.recipientImageView = recipientImageView;
+  return recipientImageView;
 }
 
 // Helper for creating progress bar view.
@@ -242,17 +264,16 @@ const CGFloat kImagesSlidingInDistance = 51;
   return progressBarView;
 }
 
-// Helper for creating the shield lock image view.
-- (UIImageView*)createShieldLockImage {
-  // TODO(crbug.com/1463882): Add correct shield image.
-  UIImageView* shieldLockImage = [[UIImageView alloc]
-      initWithImage:CustomSymbolWithPointSize(kShieldSymbol, kShieldLockSize)];
-  shieldLockImage.translatesAutoresizingMaskIntoConstraints = NO;
-  shieldLockImage.backgroundColor =
-      [UIColor colorNamed:kPrimaryBackgroundColor];
-  shieldLockImage.hidden = YES;
-  self.shieldLockImage = shieldLockImage;
-  return shieldLockImage;
+// Helper for creating the lock image view.
+- (UIImageView*)createLockImage {
+  UIImageView* lockImage = [[UIImageView alloc]
+      initWithImage:DefaultSymbolWithPointSize(kLockSymbol,
+                                               kLockSymbolPointSize)];
+  lockImage.translatesAutoresizingMaskIntoConstraints = NO;
+  lockImage.backgroundColor = [UIColor colorNamed:kPrimaryBackgroundColor];
+  lockImage.hidden = YES;
+  self.lockImage = lockImage;
+  return lockImage;
 }
 
 // Creates `kProgressBarCirclesAmount` blue circles in the progress bar view.
@@ -304,8 +325,8 @@ const CGFloat kImagesSlidingInDistance = 51;
 // Creates sharing status animations that are started one by one.
 - (void)createAnimations {
   UIImageView* senderImageView = self.senderImageView;
-  UIImageView* recipientImage = self.recipientImage;
-  UIImageView* shieldLockImage = self.shieldLockImage;
+  UIImageView* recipientImageView = self.recipientImageView;
+  UIImageView* lockImage = self.lockImage;
   UIView* progressBarView = self.progressBarView;
 
   self.imagesSlidingOutAnimation = [[UIViewPropertyAnimator alloc]
@@ -316,9 +337,9 @@ const CGFloat kImagesSlidingInDistance = 51;
               senderImageView.center = CGPointMake(
                   senderImageView.center.x - kImagesSlidingOutDistance,
                   senderImageView.center.y);
-              recipientImage.center = CGPointMake(
-                  recipientImage.center.x + kImagesSlidingOutDistance,
-                  recipientImage.center.y);
+              recipientImageView.center = CGPointMake(
+                  recipientImageView.center.x + kImagesSlidingOutDistance,
+                  recipientImageView.center.y);
             }];
 
   __weak __typeof(self) weakSelf = self;
@@ -331,7 +352,7 @@ const CGFloat kImagesSlidingInDistance = 51;
       initWithDuration:kProgressBarLoadingDuration
                  curve:UIViewAnimationCurveEaseInOut
             animations:^{
-              shieldLockImage.hidden = NO;
+              lockImage.hidden = NO;
 
               for (NSInteger i = 0; i < kProgressBarCirclesAmount; i++) {
                 [UIView animateWithDuration:0
@@ -354,14 +375,14 @@ const CGFloat kImagesSlidingInDistance = 51;
       initWithDuration:kImagesSlidingInDuration
                  curve:UIViewAnimationCurveEaseInOut
             animations:^{
-              shieldLockImage.hidden = YES;
+              lockImage.hidden = YES;
               progressBarView.hidden = YES;
               senderImageView.center = CGPointMake(
                   senderImageView.center.x + kImagesSlidingInDistance,
                   senderImageView.center.y);
-              recipientImage.center = CGPointMake(
-                  recipientImage.center.x - kImagesSlidingInDistance,
-                  recipientImage.center.y);
+              recipientImageView.center = CGPointMake(
+                  recipientImageView.center.x - kImagesSlidingInDistance,
+                  recipientImageView.center.y);
             }];
   __weak __typeof(self.delegate) weakDelegate = self.delegate;
   [self.imagesSlidingInAnimation
@@ -374,12 +395,12 @@ const CGFloat kImagesSlidingInDistance = 51;
       initWithDuration:kSharingCancelledDuration
                  curve:UIViewAnimationCurveEaseInOut
             animations:^{
-              shieldLockImage.hidden = YES;
+              lockImage.hidden = YES;
               progressBarView.hidden = YES;
               senderImageView.center = CGPointMake(progressBarView.center.x,
                                                    senderImageView.center.y);
-              recipientImage.center = CGPointMake(progressBarView.center.x,
-                                                  recipientImage.center.y);
+              recipientImageView.center = CGPointMake(
+                  progressBarView.center.x, recipientImageView.center.y);
             }];
   [self.sharingCancelledAnimation
       addCompletion:^(UIViewAnimatingPosition finalPosition) {
@@ -402,10 +423,23 @@ const CGFloat kImagesSlidingInDistance = 51;
 
 // Adds link attribute to the specified `range` of the `view`.
 - (void)addLinkAttributeToTextView:(UITextView*)view range:(NSRange)range {
-  NSMutableAttributedString* newView = [[NSMutableAttributedString alloc]
+  NSMutableAttributedString* linkText = [[NSMutableAttributedString alloc]
       initWithAttributedString:view.attributedText];
-  [newView addAttribute:NSLinkAttributeName value:@"" range:range];
-  view.attributedText = newView;
+  [linkText addAttribute:NSLinkAttributeName value:@"" range:range];
+  view.attributedText = linkText;
+}
+
+// Adds bold attribute to the specified `range` of the `view`.
+- (void)addBoldAttributeToTextView:(UITextView*)view range:(NSRange)range {
+  NSMutableAttributedString* boldText = [[NSMutableAttributedString alloc]
+      initWithAttributedString:view.attributedText];
+  UIFontDescriptor* boldDescriptor = [[UIFontDescriptor
+      preferredFontDescriptorWithTextStyle:UIFontTextStyleBody]
+      fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
+  [boldText addAttribute:NSFontAttributeName
+                   value:[UIFont fontWithDescriptor:boldDescriptor size:0.0]
+                   range:range];
+  view.attributedText = boldText;
 }
 
 // Helper to create the subtitle.
@@ -413,10 +447,17 @@ const CGFloat kImagesSlidingInDistance = 51;
   UITextView* subtitle = [self createTextView];
   subtitle.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   subtitle.textColor = [UIColor colorNamed:kTextPrimaryColor];
-  // TODO(crbug.com/1463882): Make parts of the string bold.
-  StringWithTags stringWithTags = ParseStringWithLinks(self.subtitleString);
-  subtitle.text = stringWithTags.string;
-  [self addLinkAttributeToTextView:subtitle range:stringWithTags.ranges[0]];
+
+  StringWithTags stringWithBolds =
+      ParseStringWithTags(self.subtitleString, kBeginBoldTag, kEndBoldTag);
+  StringWithTags stringWithLinks = ParseStringWithLinks(stringWithBolds.string);
+  subtitle.text = stringWithLinks.string;
+
+  for (const NSRange& range : stringWithBolds.ranges) {
+    [self addBoldAttributeToTextView:subtitle range:range];
+  }
+  [self addLinkAttributeToTextView:subtitle range:stringWithLinks.ranges[0]];
+
   return subtitle;
 }
 
@@ -426,10 +467,7 @@ const CGFloat kImagesSlidingInDistance = 51;
   footer.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
   footer.textColor = [UIColor colorNamed:kTextSecondaryColor];
 
-  // TODO(crbug.com/1463882): Add passing link value.
-  StringWithTags stringWithTags =
-      ParseStringWithLinks(base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
-          IDS_IOS_PASSWORD_SHARING_SUCCESS_FOOTNOTE, u"")));
+  StringWithTags stringWithTags = ParseStringWithLinks(self.footerString);
   footer.text = stringWithTags.string;
   [self addLinkAttributeToTextView:footer range:stringWithTags.ranges[0]];
 

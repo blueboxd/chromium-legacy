@@ -31,7 +31,7 @@
 #include "chrome/browser/password_manager/field_info_manager_factory.h"
 #include "chrome/browser/password_manager/password_manager_settings_service_factory.h"
 #include "chrome/browser/password_manager/password_reuse_manager_factory.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -687,8 +687,8 @@ password_manager::PasswordStoreInterface*
 ChromePasswordManagerClient::GetProfilePasswordStore() const {
   // Always use EXPLICIT_ACCESS as the password manager checks IsOffTheRecord
   // itself when it shouldn't access the PasswordStore.
-  return PasswordStoreFactory::GetForProfile(profile_,
-                                             ServiceAccessType::EXPLICIT_ACCESS)
+  return ProfilePasswordStoreFactory::GetForProfile(
+             profile_, ServiceAccessType::EXPLICIT_ACCESS)
       .get();
 }
 
@@ -1064,8 +1064,13 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
       password_generation_driver_receivers_.GetCurrentTargetFrame(),
       ui_data.bounds);
 
+  auto has_saved_credentials =
+      !credential_cache_.GetCredentialStore(rfh->GetLastCommittedOrigin())
+           .GetCredentials()
+           .empty();
   generation_controller->OnAutomaticGenerationAvailable(
-      base::AsWeakPtr(driver), ui_data, element_bounds_in_screen_space);
+      base::AsWeakPtr(driver), ui_data, has_saved_credentials,
+      element_bounds_in_screen_space);
   // Trigger password suggestions. This is a fallback case if the field was
   // wrongly classified as new password field.
   driver->GetPasswordAutofillManager()->MaybeShowPasswordSuggestions(

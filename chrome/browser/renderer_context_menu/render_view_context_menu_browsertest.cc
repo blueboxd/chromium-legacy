@@ -85,7 +85,6 @@
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -2134,9 +2133,19 @@ IN_PROC_BROWSER_TEST_F(ContextMenuFencedFrameTest,
                              IDC_CONTENT_CONTEXT_INSPECTELEMENT}));
 }
 
+// TODO(crbug.com/1491942): This fails with the field trial testing config.
+class ContextMenuFencedFrameTestNoTestingConfig
+    : public ContextMenuFencedFrameTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContextMenuFencedFrameTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch("disable-field-trial-config");
+  }
+};
+
 // Test that automatic beacons are sent after clicking "Open Link in New Tab"
 // from a contextual menu inside of a fenced frame.
-IN_PROC_BROWSER_TEST_F(ContextMenuFencedFrameTest,
+IN_PROC_BROWSER_TEST_F(ContextMenuFencedFrameTestNoTestingConfig,
                        AutomaticBeaconSentAfterContextMenuNavigation) {
   privacy_sandbox::ScopedPrivacySandboxAttestations scoped_attestations(
       privacy_sandbox::PrivacySandboxAttestations::CreateForTesting());
@@ -3127,11 +3136,11 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenReadingMode) {
-  // Open in reading mode is not an option when text is unselected.
+  // Open in reading mode is an option when text is unselected.
   std::unique_ptr<TestRenderViewContextMenu> menu1 =
       CreateContextMenuMediaTypeNone(GURL("http://www.google.com/"),
                                      GURL("http://www.google.com/"));
-  ASSERT_FALSE(menu1->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE));
+  ASSERT_TRUE(menu1->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE));
 
   // Open in reading mode is an option when non-editable text is selected.
   std::unique_ptr<TestRenderViewContextMenu> menu2 =

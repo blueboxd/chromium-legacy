@@ -25,6 +25,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -86,7 +87,7 @@ using blink::mojom::GenericIssueErrorType;
 // https://chromium-review.googlesource.com/c/chromium/src/+/4543002.
 namespace autofill::form_util {
 
-using Type = WebFormControlElement::Type;
+using Type = blink::FormControlType;
 using ::autofill::mojom::ButtonTitleType;
 
 struct ShadowFieldData {
@@ -1192,9 +1193,9 @@ void FillFormField(const FormFieldData& data,
   }
 
   if (is_initiating_node &&
-      ((IsTextInput(input_element) || IsMonthInput(input_element)) ||
+      (IsTextInput(input_element) || IsMonthInput(input_element) ||
        IsTextAreaElement(*field))) {
-    int length = field->Value().length();
+    auto length = base::checked_cast<unsigned>(field->Value().length());
     field->SetSelectionRange(length, length);
     // selectionchange event is capable of destroying the frame.
     if (!field->GetDocument().GetFrame()) {
@@ -1979,35 +1980,35 @@ bool IsAutofillableElement(const WebFormControlElement& element) {
           base::FeatureList::IsEnabled(features::kAutofillEnableSelectList));
 }
 
-FormControlType ToAutofillFormControlType(WebFormControlElement::Type type) {
+FormControlType ToAutofillFormControlType(blink::FormControlType type) {
   switch (type) {
-    case WebFormControlElement::Type::kInputCheckbox:
+    case blink::FormControlType::kInputCheckbox:
       return FormControlType::kInputCheckbox;
-    case WebFormControlElement::Type::kInputEmail:
+    case blink::FormControlType::kInputEmail:
       return FormControlType::kInputEmail;
-    case WebFormControlElement::Type::kInputMonth:
+    case blink::FormControlType::kInputMonth:
       return FormControlType::kInputMonth;
-    case WebFormControlElement::Type::kInputNumber:
+    case blink::FormControlType::kInputNumber:
       return FormControlType::kInputNumber;
-    case WebFormControlElement::Type::kInputPassword:
+    case blink::FormControlType::kInputPassword:
       return FormControlType::kInputPassword;
-    case WebFormControlElement::Type::kInputRadio:
+    case blink::FormControlType::kInputRadio:
       return FormControlType::kInputRadio;
-    case WebFormControlElement::Type::kInputSearch:
+    case blink::FormControlType::kInputSearch:
       return FormControlType::kInputSearch;
-    case WebFormControlElement::Type::kInputTelephone:
+    case blink::FormControlType::kInputTelephone:
       return FormControlType::kInputTelephone;
-    case WebFormControlElement::Type::kInputText:
+    case blink::FormControlType::kInputText:
       return FormControlType::kInputText;
-    case WebFormControlElement::Type::kInputUrl:
+    case blink::FormControlType::kInputUrl:
       return FormControlType::kInputUrl;
-    case WebFormControlElement::Type::kSelectOne:
+    case blink::FormControlType::kSelectOne:
       return FormControlType::kSelectOne;
-    case WebFormControlElement::Type::kSelectMultiple:
+    case blink::FormControlType::kSelectMultiple:
       return FormControlType::kSelectMultiple;
-    case WebFormControlElement::Type::kSelectList:
+    case blink::FormControlType::kSelectList:
       return FormControlType::kSelectList;
-    case WebFormControlElement::Type::kTextArea:
+    case blink::FormControlType::kTextArea:
       return FormControlType::kTextArea;
     default:
       NOTREACHED_NORETURN();
@@ -2291,9 +2292,8 @@ void WebFormControlElementToFormField(
   // Constrain the maximum data length to prevent a malicious site from DOS'ing
   // the browser: http://crbug.com/49332
   field->value = std::move(value).substr(0, kMaxStringLength);
-  constexpr auto kMaxLength = static_cast<unsigned>(kMaxStringLength);
-  field->selection_start = std::min(element.SelectionStart(), kMaxLength);
-  field->selection_end = std::min(element.SelectionEnd(), kMaxLength);
+  field->selection_start = std::min(element.SelectionStart(), kMaxStringLength);
+  field->selection_end = std::min(element.SelectionEnd(), kMaxStringLength);
 
   // If the field was autofilled or the user typed into it, check the value
   // stored in |field_data_manager| against the value property of the DOM
@@ -2524,11 +2524,11 @@ std::optional<FormData> FindFormForContentEditable(
   return form;
 }
 
-std::vector<WebFormControlElement> ApplyAutofillAction(
+std::vector<WebFormControlElement> ApplyFormAction(
     const FormData& form,
     const WebFormControlElement& initiating_element,
-    mojom::AutofillActionType action_type,
-    mojom::AutofillActionPersistence action_persistence) {
+    mojom::ActionType action_type,
+    mojom::ActionPersistence action_persistence) {
   DCHECK(!initiating_element.IsNull());
 
   WebFormElement form_element = GetOwningForm(initiating_element);
@@ -2563,8 +2563,8 @@ std::vector<WebFormControlElement> ApplyAutofillAction(
 
   // If this is a preview, prevent already autofilled fields from being
   // highlighted.
-  if (action_type == mojom::AutofillActionType::kFill &&
-      action_persistence == mojom::AutofillActionPersistence::kPreview &&
+  if (action_type == mojom::ActionType::kFill &&
+      action_persistence == mojom::ActionPersistence::kPreview &&
       base::FeatureList::IsEnabled(
           features::kAutofillHighlightOnlyChangedValuesInPreviewMode)) {
     for (auto& element : control_elements) {
@@ -2573,7 +2573,7 @@ std::vector<WebFormControlElement> ApplyAutofillAction(
   }
 
   auto fill_or_preview =
-      action_persistence == mojom::AutofillActionPersistence::kPreview
+      action_persistence == mojom::ActionPersistence::kPreview
           ? &PreviewFormField
           : &FillFormField;
 
@@ -2590,17 +2590,16 @@ std::vector<WebFormControlElement> ApplyAutofillAction(
     WebFormControlElement& element = *it;
     element.SetAutofillSection(WebString::FromUTF8(field.section.ToString()));
 
-    if ((action_type == mojom::AutofillActionType::kFill &&
+    if ((action_type == mojom::ActionType::kFill &&
          ShouldSkipFillField(field, element, initiating_element)) ||
-        (action_type == mojom::AutofillActionType::kUndo &&
-         !element.IsAutofilled())) {
+        (action_type == mojom::ActionType::kUndo && !element.IsAutofilled())) {
       continue;
     }
 
     // Autofill the initiating element.
     bool is_initiating_element = (element == initiating_element);
     if (is_initiating_element) {
-      if (action_persistence == mojom::AutofillActionPersistence::kFill &&
+      if (action_persistence == mojom::ActionPersistence::kFill &&
           element.Focused()) {
         initially_focused_element = &element;
       }
@@ -2609,7 +2608,7 @@ std::vector<WebFormControlElement> ApplyAutofillAction(
       // In preview mode, only fill the field if it changes the fields value.
       // With this, the WebAutofillState is not changed from kAutofilled to
       // kPreviewed. This prevents the highlighting to change.
-      if (action_persistence == mojom::AutofillActionPersistence::kFill ||
+      if (action_persistence == mojom::ActionPersistence::kFill ||
           field.value != element.Value().Utf16() ||
           !base::FeatureList::IsEnabled(
               features::kAutofillHighlightOnlyChangedValuesInPreviewMode)) {
@@ -2652,11 +2651,11 @@ std::vector<WebFormControlElement> ApplyAutofillAction(
 }
 
 void ClearPreviewedElements(
-    mojom::AutofillActionType action_type,
+    mojom::ActionType action_type,
     std::vector<blink::WebFormControlElement>& previewed_elements,
     const WebFormControlElement& initiating_element,
     blink::WebAutofillState old_autofill_state) {
-  if (action_type == mojom::AutofillActionType::kFill &&
+  if (action_type == mojom::ActionType::kFill &&
       base::FeatureList::IsEnabled(
           features::kAutofillHighlightOnlyChangedValuesInPreviewMode)) {
     // If this is a synthetic form, get the unowned form elements. Otherwise,
@@ -2672,9 +2671,8 @@ void ClearPreviewedElements(
     }
   }
   WebAutofillState default_autofill_state =
-      action_type == mojom::AutofillActionType::kFill
-          ? WebAutofillState::kNotFilled
-          : WebAutofillState::kAutofilled;
+      action_type == mojom::ActionType::kFill ? WebAutofillState::kNotFilled
+                                              : WebAutofillState::kAutofilled;
   for (WebFormControlElement& control_element : previewed_elements) {
     // We do not add null elements to `previewed_elements_` in AutofillAgent.
     DCHECK(!control_element.IsNull());
@@ -2691,7 +2689,8 @@ void ClearPreviewedElements(
         // Clearing the suggested value in the focused node (above) can cause
         // selection to be lost. We force selection range to restore the text
         // cursor.
-        int length = control_element.Value().length();
+        auto length =
+            base::checked_cast<unsigned>(control_element.Value().length());
         control_element.SetSelectionRange(length, length);
         control_element.SetAutofillState(old_autofill_state);
       } else {
@@ -2760,7 +2759,9 @@ bool IsWebElementEmpty(const blink::WebElement& root) {
 void PreviewSuggestion(const std::u16string& suggestion,
                        const std::u16string& user_input,
                        blink::WebFormControlElement* input_element) {
-  input_element->SetSelectionRange(user_input.length(), suggestion.length());
+  input_element->SetSelectionRange(
+      base::checked_cast<unsigned>(user_input.length()),
+      base::checked_cast<unsigned>(suggestion.length()));
 }
 
 std::u16string FindChildText(const WebNode& node) {

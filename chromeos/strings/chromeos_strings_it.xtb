@@ -75,6 +75,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> gestisce questo utente e potrebbe gestire le impostazioni e monitorare l'attività utente da remoto.</translation>
 <translation id="150962533380566081">PUK non valido.</translation>
 <translation id="1510238584712386396">Avvio app</translation>
+<translation id="1515129336378114413">home page del browser</translation>
 <translation id="1526389707933164996">Animazione del salvaschermo</translation>
 <translation id="152892567002884378">Alza il volume</translation>
 <translation id="1555130319947370107">Blu</translation>
@@ -119,6 +120,7 @@
 <translation id="1768959921651994223">Tipo di autenticazione</translation>
 <translation id="1776228893584526149">Tonalità sfondo</translation>
 <translation id="1782199038061388045">traduzione</translation>
+<translation id="1788485524395674731">Questa app è gestita dall'amministratore.</translation>
 <translation id="1792647875738159689">Annullamento scansione…</translation>
 <translation id="1801418420130173017">Disabilita il tema scuro</translation>
 <translation id="1807246157184219062">Chiaro</translation>
@@ -194,6 +196,7 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> DPI</translation>
 <translation id="2338501278241028356">Attiva il Bluetooth per trovare dispositivi nelle vicinanze</translation>
 <translation id="2346474577291266260">Eccellente (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="2358070305000735383">La finestra di dialogo di modifica per <ph name="DESCRIPTION" /> è aperta.</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2364498172489649528">Superato</translation>
 <translation id="2367335866686097760">Mappatura tasti per il tasto</translation>
@@ -482,6 +485,7 @@
 <translation id="4793756956024303490">Algoritmo di compressione</translation>
 <translation id="4794140124556169553">L'esecuzione di un test della CPU potrebbe incidere sulle prestazioni del sistema</translation>
 <translation id="4798078634453489142">Rimuovi un APN per aggiungerne uno nuovo</translation>
+<translation id="479989351350248267">ricerca</translation>
 <translation id="4800589996161293643">Community di Chromebook</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Processo di stampa <ph name="DOCUMENT_TITLE" /> annullato</translation>
@@ -625,6 +629,7 @@
 <translation id="584953448295717128">APN rilevato automaticamente.</translation>
 <translation id="5849570051105887917">Codice del provider principale</translation>
 <translation id="5859603669299126575">Album di Galleria d'arte</translation>
+<translation id="5859969039821714932">Scorciatoia non disponibile. Premi una nuova scorciatoia senza <ph name="KEY" />.</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5860491529813859533">Attiva</translation>
 <translation id="5876385649737594562">Attiva per selezionare le opzioni</translation>
@@ -711,7 +716,6 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Debole (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Vai alle impostazioni dell'account</translation>
-<translation id="6461047516875166066">Dimmi di più</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Scansionare di nuovo la pagina?}=1{Scansionare di nuovo pagina {PAGE_NUMBER}?}other{Scansionare di nuovo pagina {PAGE_NUMBER}?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287">Gestito da <ph name="MANAGER" /></translation>
@@ -746,6 +750,7 @@
 <translation id="6659594942844771486">Scheda</translation>
 <translation id="6673898378497337661">aumenta la luminosità della tastiera</translation>
 <translation id="6692996468359469499">Ricevi informazioni correlate alla tua selezione</translation>
+<translation id="6694534975463174713">serratura</translation>
 <translation id="6704062477274546131">Risoluzione DNS</translation>
 <translation id="6723839937902243910">Alimentazione</translation>
 <translation id="6723847290197874913">Retroilluminazione della tastiera</translation>
@@ -790,6 +795,7 @@
 <translation id="7103252855940681301">Il nome del dispositivo <ph name="INDEX" /> di <ph name="COUNT" /> è: <ph name="NAME" />.</translation>
 <translation id="7107255225945990211">Scegli artwork esclusive di <ph name="PRODUCT_NAME" /></translation>
 <translation id="7108668606237948702">invio</translation>
+<translation id="7119389851461848805">accensione</translation>
 <translation id="7130438335435247835">Nome punto di accesso (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Server dei nomi}other{Server dei nomi}}</translation>
 <translation id="7135814714616751706">Cerca scorciatoie</translation>
@@ -833,7 +839,6 @@
 <translation id="7401543881546089382">Elimina collegamento</translation>
 <translation id="741244894080940828">conversione</translation>
 <translation id="7415801143053185905">Latenza HTTP molto elevata</translation>
-<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{L'amministratore ha impostato l'avvio automatico di <ph name="APP_NAME_1" /> ogni volta che accedi.}=2{L'amministratore ha impostato l'avvio automatico di <ph name="APP_NAME_1" /> e <ph name="APP_NAME_2" /> ogni volta che accedi.}=3{L'amministratore ha impostato l'avvio automatico di <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> e <ph name="APP_NAME_3" /> ogni volta che accedi.}other{L'amministratore ha impostato l'avvio automatico di <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> e altre # app ogni volta che accedi.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">Connettiti a una rete e ricarica la pagina per visualizzare e impostare gli avatar.</translation>
 <translation id="7469648432129124067">Portale rilevato</translation>
@@ -947,6 +952,7 @@
 <translation id="8336739000755212683">Modifica l'immagine dell'account del dispositivo</translation>
 <translation id="8347126826554447157"><ph name="SHORCTCUT1" /> o <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Processi di stampa</translation>
+<translation id="8349826889576450703">Avvio applicazioni</translation>
 <translation id="8351855506390808906">Mappatura tasti per il punto di contatto</translation>
 <translation id="8352772353338965963">Aggiungi un account per l'accesso simultaneo. Poiché gli account che hanno effettuato l'accesso sono tutti accessibili senza password, devi utilizzare questa funzione solo con gli account attendibili.</translation>
 <translation id="8364946094152050673">il campo dei server dei nomi è vuoto</translation>
@@ -1020,6 +1026,7 @@
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Il dispositivo è un tablet.</translation>
 <translation id="8881098542468797602">Test effettuato correttamente</translation>
+<translation id="8892443466059986410">Annulla la modifica della scorciatoia</translation>
 <translation id="8898840733695078011">Intensità del segnale</translation>
 <translation id="8909114361904403025">Freccia su</translation>
 <translation id="8910721771319628100">la rete predefinita è al di sopra della soglia di latenza</translation>
@@ -1039,9 +1046,9 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Scansiona}=1{Scansiona pagina {NUMBER_OF_PAGES}}other{Scansiona pagina {NUMBER_OF_PAGES}}}</translation>
 <translation id="8997710128084572139">Percentuale di batteria del dispositivo a <ph name="BATTERY_PERCENTAGE" />%.</translation>
-<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{L'app <ph name="APP_NAME_1" /> è stata avviata automaticamente}other{# app sono state avviate automaticamente}}</translation>
 <translation id="8998289560386111590">Non disponibile sul tuo dispositivo</translation>
 <translation id="9003704114456258138">Frequenza</translation>
+<translation id="901834265349196618">email</translation>
 <translation id="9024331582947483881">schermo intero</translation>
 <translation id="9025198690966128418">Utilizza come dispositivo personale</translation>
 <translation id="902638246363752736">Impostazioni tastiera</translation>
@@ -1082,6 +1089,7 @@
 <translation id="945522503751344254">Invia feedback</translation>
 <translation id="952992212772159698">Non attivo</translation>
 <translation id="960719561871045870">Codice operatore</translation>
+<translation id="966787709310836684">menu</translation>
 <translation id="979450713603643090">Rosa chiaro</translation>
 <translation id="982713511914535780">Esegui test esaurimento batteria</translation>
 <translation id="987264212798334818">Generali</translation>

@@ -164,6 +164,7 @@ dominantBaseline
 dynamicRangeLimit
 emptyCells
 fallback
+fieldSizing
 fill
 fillOpacity
 fillRule
@@ -203,7 +204,6 @@ fontVariantPosition
 fontVariationSettings
 fontWeight
 forcedColorAdjust
-formSizing
 gap
 getPropertyPriority
 getPropertyValue
@@ -438,6 +438,7 @@ tableLayout
 textAlign
 textAlignLast
 textAnchor
+textAutospace
 textBoxTrim
 textCombineUpright
 textDecoration

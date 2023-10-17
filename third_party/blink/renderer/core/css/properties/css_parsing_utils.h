@@ -217,6 +217,8 @@ CSSValue* ConsumeIntrinsicSizeLonghand(CSSParserTokenRange&,
 CSSIdentifierValue* ConsumeShapeBox(CSSParserTokenRange&);
 CSSIdentifierValue* ConsumeVisualBox(CSSParserTokenRange&);
 
+CSSIdentifierValue* ConsumeCoordBox(CSSParserTokenRange&);
+
 CSSIdentifierValue* ConsumeGeometryBox(CSSParserTokenRange&);
 
 enum class IsImplicitProperty { kNotImplicit, kImplicit };
@@ -349,6 +351,7 @@ void AddBackgroundValue(CSSValue*& list, CSSValue*);
 CSSValue* ConsumeBackgroundAttachment(CSSParserTokenRange&);
 CSSValue* ConsumeBackgroundBlendMode(CSSParserTokenRange&);
 CSSValue* ConsumeBackgroundBox(CSSParserTokenRange&);
+CSSValue* ConsumeBackgroundBoxOrText(CSSParserTokenRange&);
 CSSValue* ConsumeBackgroundComposite(CSSParserTokenRange&);
 bool ConsumeBackgroundPosition(CSSParserTokenRange&,
                                const CSSParserContext&,
@@ -373,7 +376,7 @@ bool ParseBackgroundOrMask(bool,
                            const CSSParserLocalContext&,
                            HeapVector<CSSPropertyValue, 64>&);
 
-CSSValue* ConsumeGeometryBoxOrNoClip(CSSParserTokenRange&);
+CSSValue* ConsumeCoordBoxOrNoClip(CSSParserTokenRange&);
 
 bool ConsumeRepeatStyleComponent(CSSParserTokenRange&,
                                  CSSValue*& value1,
@@ -524,6 +527,13 @@ bool ConsumeRadii(CSSValue* horizontal_radii[4],
                   bool use_legacy_parsing);
 
 CSSValue* ConsumeTextDecorationLine(CSSParserTokenRange&);
+
+// Consume the `autospace` production.
+// https://drafts.csswg.org/css-text-4/#typedef-autospace
+CSSValue* ConsumeAutospace(CSSParserTokenRange&);
+// Consume the `spacing-trim` production.
+// https://drafts.csswg.org/css-text-4/#typedef-spacing-trim
+CSSValue* ConsumeSpacingTrim(CSSParserTokenRange&);
 
 CSSValue* ConsumeToggleGroup(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeToggleSpecifier(CSSParserTokenRange&, const CSSParserContext&);

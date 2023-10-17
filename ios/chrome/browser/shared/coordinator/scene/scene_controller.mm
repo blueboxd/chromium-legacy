@@ -51,7 +51,7 @@
 #import "ios/chrome/browser/crash_report/model/crash_report_helper.h"
 #import "ios/chrome/browser/default_browser/model/promo_source.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
-#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/geolocation_logger.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -1658,8 +1658,7 @@ void InjectNTP(Browser* browser) {
     self.settingsNavigationController =
         [SettingsNavigationController userFeedbackControllerForBrowser:browser
                                                               delegate:self
-                                                      userFeedbackData:data
-                                                               handler:handler];
+                                                      userFeedbackData:data];
     [baseViewController presentViewController:self.settingsNavigationController
                                      animated:YES
                                    completion:nil];
@@ -2393,24 +2392,6 @@ void InjectNTP(Browser* browser) {
 - (void)settingsWasDismissed {
   [self.settingsNavigationController cleanUpSettings];
   self.settingsNavigationController = nil;
-}
-
-- (id<ApplicationCommands, BrowserCommands>)handlerForSettings {
-  // Assume that settings always wants the dispatcher from the main BVC.
-  return static_cast<id<ApplicationCommands, BrowserCommands>>(
-      self.mainInterface.browser->GetCommandDispatcher());
-}
-
-- (id<ApplicationCommands>)handlerForApplicationCommands {
-  // Assume that settings always wants the dispatcher from the main BVC.
-  return HandlerForProtocol(self.mainInterface.browser->GetCommandDispatcher(),
-                            ApplicationCommands);
-}
-
-- (id<SnackbarCommands>)handlerForSnackbarCommands {
-  // Assume that settings always wants the dispatcher from the main BVC.
-  return HandlerForProtocol(self.mainInterface.browser->GetCommandDispatcher(),
-                            SnackbarCommands);
 }
 
 #pragma mark - TabGridCoordinatorDelegate

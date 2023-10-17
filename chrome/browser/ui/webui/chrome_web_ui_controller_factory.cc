@@ -182,6 +182,7 @@
 #include "chrome/browser/ui/webui/web_app_internals/web_app_internals_ui.h"
 #include "chrome/browser/ui/webui/webui_gallery/webui_gallery_ui.h"
 #include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
+#include "chrome/browser/ui/webui/whats_new/whats_new_util.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -200,9 +201,10 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/ui/webui/dlp_internals/dlp_internals_ui.h"
 #include "chromeos/crosapi/cpp/gurl_os_handler_utils.h"
 #include "url/url_util.h"
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"  // nogncheck
@@ -790,7 +792,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 #endif
   if (url.host_piece() == chrome::kChromeUIWhatsNewHost &&
-      base::FeatureList::IsEnabled(features::kChromeWhatsNewUI)) {
+      whats_new::IsEnabled()) {
     return &NewWebUI<WhatsNewUI>;
   }
   if (url.host_piece() == chrome::kChromeUIOmniboxPopupHost &&
@@ -829,6 +831,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     BUILDFLAG(IS_FUCHSIA)
   if (url.host_piece() == chrome::kChromeUIWebAppSettingsHost)
     return &NewWebUI<WebAppSettingsUI>;
+#endif
+#if BUILDFLAG(IS_CHROMEOS)
+  if (url.host_piece() == chrome::kChromeUIDlpInternalsHost) {
+    return &NewWebUI<policy::DlpInternalsUI>;
+  }
 #endif
   if (IsAboutUI(url))
     return &NewWebUI<AboutUI>;
@@ -1126,6 +1133,7 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     GURL(chrome::kChromeUIComponentsUrl),
     GURL(chrome::kChromeUICreditsURL),
     GURL(chrome::kChromeUIDeviceLogUrl),
+    GURL(chrome::kChromeUIDlpInternalsURL),
     GURL(chrome::kChromeUIExtensionsInternalsURL),
     GURL(chrome::kChromeUIExtensionsURL),
     GURL(chrome::kChromeUIFlagsURL),

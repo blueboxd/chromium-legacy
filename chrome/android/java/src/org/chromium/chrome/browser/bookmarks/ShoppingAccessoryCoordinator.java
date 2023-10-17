@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.ShoppingAccessoryViewProperties.PriceInfo;
 import org.chromium.components.commerce.core.CommerceSubscription;
 import org.chromium.components.commerce.core.ShoppingService;
@@ -29,15 +30,13 @@ public class ShoppingAccessoryCoordinator {
     /**
      * Factory constructor for building the view programmatically.
      * @param context The calling context, usually the parent view.
-     * @param visual Whether the visual row should be used.
      */
     static ShoppingAccessoryView buildView(Context context) {
         ShoppingAccessoryView view = new ShoppingAccessoryView(context, null);
         view.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        LayoutInflater.from(context).inflate(
-                org.chromium.chrome.R.layout.shopping_accessory_view_layout, view);
+        LayoutInflater.from(context).inflate(R.layout.shopping_accessory_view_layout, view);
         view.onFinishInflate();
         return view;
     }

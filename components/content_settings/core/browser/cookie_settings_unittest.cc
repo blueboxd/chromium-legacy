@@ -63,32 +63,32 @@ struct TestCase {
 
 static constexpr TestCase kTestCases[] = {
     {"disable_all", false, false, false, false},
-    {"disable_SAA_disable_TopLevel_disable_3PCD_enable_metadata", false, false,
-     false, true},
-    {"disable_SAA_enable_TopLevel_disable_3PCD_enable_metadata", false, true,
-     false, true},
-    {"disable_SAA_enable_TopLevel_disable_3PCD_disable_metadata", false, true,
-     false, false},
+    {"ineligible_SAA_ineligible_TopLevel_disable_3PCD_enable_metadata", false,
+     false, false, true},
+    {"ineligible_SAA_eligible_TopLevel_disable_3PCD_enable_metadata", false,
+     true, false, true},
+    {"ineligible_SAA_eligible_TopLevel_disable_3PCD_disable_metadata", false,
+     true, false, false},
 #if !BUILDFLAG(IS_IOS)
-    {"disable_SAA_enable_TopLevel_enable_3PCD_enable_metadata", false, true,
-     true, true},
-    {"disable_SAA_disable_TopLevel_enable_3PCD_enable_metadata", false, false,
-     true, true},
-    {"enable_SAA_disable_TopLevel_disable_3PCD_enable_metadata", true, false,
+    {"ineligible_SAA_eligible_TopLevel_enable_3PCD_enable_metadata", false,
+     true, true, true},
+    {"ineligible_SAA_ineligible_TopLevel_enable_3PCD_enable_metadata", false,
+     false, true, true},
+    {"eligible_SAA_ineligible_TopLevel_disable_3PCD_enable_metadata", true,
+     false, false, true},
+    {"eligible_SAA_ineligible_TopLevel_enable_3PCD_enable_metadata", true,
+     false, true, true},
+    {"eligible_SAA_eligible_TopLevel_disable_3PCD_enable_metadata", true, true,
      false, true},
-    {"enable_SAA_disable_TopLevel_enable_3PCD_enable_metadata", true, false,
-     true, true},
-    {"enable_SAA_enable_TopLevel_disable_3PCD_enable_metadata", true, true,
-     false, true},
-    {"disable_SAA_enable_TopLevel_enable_3PCD_disable_metadata", false, true,
-     true, false},
-    {"disable_SAA_disable_TopLevel_enable_3PCD_disable_metadata", false, false,
-     true, false},
-    {"enable_SAA_disable_TopLevel_disable_3PCD_disable_metadata", true, false,
-     false, false},
-    {"enable_SAA_disable_TopLevel_enable_3PCD_disable_metadata", true, false,
-     true, false},
-    {"enable_SAA_enable_TopLevel_disable_3PCD_disable_metadata", true, true,
+    {"ineligible_SAA_eligible_TopLevel_enable_3PCD_disable_metadata", false,
+     true, true, false},
+    {"ineligible_SAA_ineligible_TopLevel_enable_3PCD_disable_metadata", false,
+     false, true, false},
+    {"eligible_SAA_ineligible_TopLevel_disable_3PCD_disable_metadata", true,
+     false, false, false},
+    {"eligible_SAA_ineligible_TopLevel_enable_3PCD_disable_metadata", true,
+     false, true, false},
+    {"eligible_SAA_eligible_TopLevel_disable_3PCD_disable_metadata", true, true,
      false, false},
     {"enable_all", true, true, true, true},
 #endif
@@ -175,10 +175,9 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
       disabled_features.push_back(net::features::kTpcdSupportSettings);
     }
 
-    if (IsStorageAccessGrantEligible()) {
+    if (IsStorageAccessGrantEligible() ||
+        IsTopLevelStorageAccessGrantEligible()) {
       enabled_features.push_back({blink::features::kStorageAccessAPI, {}});
-    } else {
-      disabled_features.push_back(blink::features::kStorageAccessAPI);
     }
 #endif
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
@@ -258,12 +257,8 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
   // A version of above that considers Top-Level Storage Access API grant
   // instead of Storage Access API grant.
   ContentSetting SettingWithTopLevelSaaOverride() const {
-    // TODO(crbug.com/1385156): Check TopLevelStorageAccessAPI instead after
-    // separating the feature flag.
-    return (IsStorageAccessGrantEligible() &&
-            IsTopLevelStorageAccessGrantEligible())
-               ? CONTENT_SETTING_ALLOW
-               : CONTENT_SETTING_BLOCK;
+    return IsTopLevelStorageAccessGrantEligible() ? CONTENT_SETTING_ALLOW
+                                                  : CONTENT_SETTING_BLOCK;
   }
 
   // Assumes that cookie access would be blocked if not for a
@@ -295,12 +290,7 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
   // instead of Storage Access API grant.
   net::cookie_util::StorageAccessResult
   BlockedStorageAccessResultWithTopLevelSaaOverride() const {
-    // TODO(crbug.com/1385156): Check TopLevelStorageAccessAPI instead after
-    // separating the feature flag.
-    if (IsStorageAccessGrantEligible() &&
-        IsTopLevelStorageAccessGrantEligible()) {
-      // TODO(crbug.com/1385156): Separate metrics between StorageAccessAPI
-      // and the page-level variant.
+    if (IsTopLevelStorageAccessGrantEligible()) {
       return net::cookie_util::StorageAccessResult::
           ACCESS_ALLOWED_TOP_LEVEL_STORAGE_ACCESS_GRANT;
     }
@@ -1331,8 +1321,7 @@ TEST_P(CookieSettingsTest, GetCookieSettingSAA) {
 }
 
 // A top-level storage access grant should behave similarly to standard SAA
-// grants. TODO(crbug.com/1385156): as requirements for the two APIs solidify,
-// this will likely not continue to be true.
+// grants.
 TEST_P(CookieSettingsTest, GetCookieSettingTopLevelStorageAccess) {
   const GURL top_level_url(kFirstPartySite);
   const GURL url(kAllowedSite);

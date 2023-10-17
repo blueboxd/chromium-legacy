@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(EnableLinkCapturingInfobarBrowserTest,
   const auto [app_id, in_scope_url] = InstallTestApp();
   TurnOnLinkCapturing(app_id);
 
-  ui_test_utils::NavigateToURL(browser(), in_scope_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), in_scope_url));
   ASSERT_TRUE(ClickIntentPickerAndWaitForBubble());
 
   ui_test_utils::BrowserChangeObserver browser_added_waiter(
@@ -405,8 +405,9 @@ IN_PROC_BROWSER_TEST_F(EnableLinkCapturingInfobarBrowserTest, BarRemoved) {
   EXPECT_FALSE(GetLinkCapturingInfoBar(web_contents.get()));
 }
 
+// TODO(https://crbug.com/1492121): Flaky on all platforms.
 IN_PROC_BROWSER_TEST_F(EnableLinkCapturingInfobarBrowserTest,
-                       InfoBarHiddenAfterDismissals) {
+                       DISABLED_InfoBarHiddenAfterDismissals) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const auto [_, in_scope_url] = InstallTestApp();
 

@@ -25,7 +25,6 @@
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
-#include "components/autofill/core/browser/webdata/autofill_webdata_backend_util.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -127,21 +126,14 @@ AutofillWebDataBackendImpl::AutofillWebDataBackendImpl(
     scoped_refptr<WebDatabaseBackend> web_database_backend,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<base::SequencedTaskRunner> db_task_runner,
-    const base::RepeatingCallback<void(syncer::ModelType)>& on_changed_callback,
-    const base::RepeatingClosure& on_address_conversion_completed_callback,
     const base::RepeatingCallback<void(syncer::ModelType)>&
-        on_sync_started_callback,
-    const base::RepeatingCallback<void(syncer::ModelType)>&
-        on_sync_updates_received_callback)
+        on_autofill_changed_by_sync_callback)
     : base::RefCountedDeleteOnSequence<AutofillWebDataBackendImpl>(
           std::move(db_task_runner)),
       ui_task_runner_(ui_task_runner),
       web_database_backend_(web_database_backend),
-      on_changed_callback_(on_changed_callback),
-      on_address_conversion_completed_callback_(
-          on_address_conversion_completed_callback),
-      on_sync_started_callback_(on_sync_started_callback),
-      on_sync_updates_received_callback_(on_sync_updates_received_callback) {}
+      on_autofill_changed_by_sync_callback_(
+          on_autofill_changed_by_sync_callback) {}
 
 void AutofillWebDataBackendImpl::AddObserver(
     AutofillWebDataServiceObserverOnDBSequence* observer) {
@@ -213,47 +205,14 @@ void AutofillWebDataBackendImpl::NotifyOfCreditCardChanged(
     db_observer.CreditCardChanged(change);
 }
 
-void AutofillWebDataBackendImpl::NotifyOfMultipleAutofillChanges(
+void AutofillWebDataBackendImpl::NotifyOnAutofillChangedBySync(
     syncer::ModelType model_type) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-
-  // UI sequence notification.
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::BindOnce(on_changed_callback_, model_type));
-}
-
-void AutofillWebDataBackendImpl::NotifyOfAddressConversionCompleted() {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-
-  // UI sequence notification.
-  ui_task_runner_->PostTask(FROM_HERE,
-                            on_address_conversion_completed_callback_);
-}
-
-void AutofillWebDataBackendImpl::NotifyThatSyncHasStarted(
-    syncer::ModelType model_type) {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-
-  if (on_sync_started_callback_.is_null())
-    return;
-
-  // UI sequence notification.
-  ui_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(on_sync_started_callback_, model_type));
-}
-
-void AutofillWebDataBackendImpl::NotifyOnSyncUpdatesReceived(
-    syncer::ModelType model_type) {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-
-  if (on_sync_updates_received_callback_.is_null()) {
-    return;
-  }
 
   // UI sequence notification.
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(on_sync_updates_received_callback_, model_type));
+      base::BindOnce(on_autofill_changed_by_sync_callback_, model_type));
 }
 
 base::SupportsUserData* AutofillWebDataBackendImpl::GetDBUserData() {
@@ -465,16 +424,6 @@ std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerProfiles(
   return std::unique_ptr<WDTypedResult>(
       new WDResult<std::vector<std::unique_ptr<AutofillProfile>>>(
           AUTOFILL_PROFILES_RESULT, std::move(profiles)));
-}
-
-WebDatabase::State
-AutofillWebDataBackendImpl::ConvertWalletAddressesAndUpdateWalletCards(
-    const std::string& app_locale,
-    const std::string& primary_account_email,
-    WebDatabase* db) {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  return util::ConvertWalletAddressesAndUpdateWalletCards(
-      app_locale, primary_account_email, this, db);
 }
 
 std::unique_ptr<WDTypedResult>

@@ -329,8 +329,7 @@ void AnnotateFieldsWithSignatures(
 // fields, both of which are cached in the Document.
 bool HasPasswordField(const WebLocalFrame& frame) {
   auto ContainsPasswordField = [&](const auto& fields) {
-    return base::Contains(fields,
-                          blink::WebFormControlElement::Type::kInputPassword,
+    return base::Contains(fields, blink::FormControlType::kInputPassword,
                           &WebFormControlElement::FormControlTypeForAutofill);
   };
 
@@ -845,8 +844,9 @@ void PasswordAutofillAgent::FillPasswordSuggestion(
     const std::u16string& username,
     const std::u16string& password) {
   auto element = focused_element().DynamicTo<WebInputElement>();
-  if (element.IsNull())
+  if (element.IsNull() || focused_element().IsReadOnly()) {
     return;
+  }
 
   WebInputElement username_element;
   WebInputElement password_element;
@@ -896,14 +896,15 @@ void PasswordAutofillAgent::FillPasswordSuggestion(
     }
   }
 
-  element.SetSelectionRange(element.Value().length(), element.Value().length());
+  auto length = base::checked_cast<unsigned>(element.Value().length());
+  element.SetSelectionRange(length, length);
 }
 
 void PasswordAutofillAgent::FillIntoFocusedField(
     bool is_password,
     const std::u16string& credential) {
   auto focused_input_element = focused_element().DynamicTo<WebInputElement>();
-  if (focused_input_element.IsNull()) {
+  if (focused_input_element.IsNull() || focused_input_element.IsReadOnly()) {
     return;
   }
   if (!is_password) {
@@ -1589,7 +1590,7 @@ void PasswordAutofillAgent::KeyboardReplacingSurfaceClosed(
   keyboard_replacing_surface_state_ = KeyboardReplacingSurfaceState::kWasShown;
 
   auto focused_input_element = focused_element().DynamicTo<WebInputElement>();
-  if (focused_input_element.IsNull()) {
+  if (focused_input_element.IsNull() || focused_element().IsReadOnly()) {
     return;
   }
 
@@ -1763,8 +1764,9 @@ void PasswordAutofillAgent::ClearPreview(WebInputElement* username,
   if (!username->IsNull() && !username->SuggestedValue().IsEmpty()) {
     username->SetSuggestedValue(WebString());
     username->SetAutofillState(username_autofill_state_);
-    username->SetSelectionRange(username_query_prefix_.length(),
-                                username->Value().length());
+    username->SetSelectionRange(
+        base::checked_cast<unsigned>(username_query_prefix_.length()),
+        base::checked_cast<unsigned>(username->Value().length()));
   }
   if (!password->IsNull() && !password->SuggestedValue().IsEmpty()) {
     password->SetSuggestedValue(WebString());
@@ -2211,7 +2213,7 @@ bool PasswordAutofillAgent::IsPasswordFieldFilledByUser(
     const WebFormControlElement& element) const {
   FieldRendererId element_id = form_util::GetFieldRendererId(element);
   return element.FormControlTypeForAutofill() ==
-             blink::WebFormControlElement::Type::kInputPassword &&
+             blink::FormControlType::kInputPassword &&
          (field_data_manager_->DidUserType(element_id) ||
           field_data_manager_->WasAutofilledOnUserTrigger(element_id));
 }

@@ -186,7 +186,7 @@
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-shared.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/mojom/navigation/prefetched_signed_exchange_info.mojom.h"
-#include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature_state.mojom.h"
+#include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/storage_key/ancestor_chain_bit.mojom.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom-forward.h"
@@ -736,83 +736,6 @@ network::mojom::RequestDestination GetDestinationFromFrameTreeNode(
       NOTREACHED();
       return network::mojom::RequestDestination::kFencedframe;
   }
-}
-
-std::pair<url::Origin, std::string>
-GetOriginForURLLoaderFactoryUncheckedWithDebugInfo(
-    NavigationRequest* navigation_request) {
-  DCHECK(navigation_request);
-  const blink::mojom::CommonNavigationParams& common_params =
-      navigation_request->common_params();
-
-  if (navigation_request->DidEncounterError()) {
-    // Error pages commit in an opaque origin in the renderer process. If this
-    // NavigationRequest resulted in committing an error page, return an
-    // opaque origin that has precursor information consistent with the URL
-    // being requested.  Note: this is intentionally done first; cases like
-    // errors in srcdoc frames need not inherit the parent's origin for errors.
-    return std::make_pair(
-        url::Origin::Create(common_params.url).DeriveNewOpaqueOrigin(),
-        "error");
-  }
-
-  // Check if this is loadDataWithBaseUrl (which needs special treatment).
-  if (navigation_request->IsLoadDataWithBaseURL()) {
-    // A (potentially attacker-controlled) renderer process should not be able
-    // to use loadDataWithBaseUrl code path to initiate fetches on behalf of a
-    // victim origin (fetches controlled by attacker-provided
-    // |common_params.url| data: URL in a victim's origin from the
-    // attacker-provided |common_params.base_url_for_data_url|).  Browser
-    // process should verify that |common_params.base_url_for_data_url| is empty
-    // for all renderer-initiated navigations (e.g. see
-    // VerifyBeginNavigationCommonParams), but as a defense-in-depth this is
-    // also asserted below.
-    // History navigations are exempt from this rule because, although they can
-    // be renderer-initaited via the js history API, the renderer does not
-    // choose the url being navigated to. A renderer-initiated history
-    // navigation may therefore navigate back to a previous browser-initiated
-    // loadDataWithBaseUrl.
-    CHECK(navigation_request->browser_initiated() ||
-          NavigationTypeUtils::IsHistory(
-              navigation_request->common_params().navigation_type));
-
-    // loadDataWithBaseUrl submits a data: |common_params.url| (which has a
-    // opaque origin), but commits that URL as if it came from
-    // |common_params.base_url_for_data_url|.  See also
-    // https://crbug.com/976253.
-    return std::make_pair(
-        url::Origin::Create(common_params.base_url_for_data_url),
-        "load_data_with_base_url");
-  }
-
-  // Srcdoc subframes need to inherit their origin from their parent frame.
-  if (navigation_request->GetURL().IsAboutSrcdoc()) {
-    RenderFrameHostImpl* parent =
-        navigation_request->frame_tree_node()->parent();
-
-    // The only path for `parent` to be missing for a srcdoc navigation is if a
-    // renderer executes `location = "about:srcdoc` instead of embedding an
-    // <iframe srcdoc="..."></iframe> element; this is covered by
-    // NavigationBrowserTest.BlockedSrcDoc* tests.  However, we should never get
-    // here in such a case, because it would result in an error page which would
-    // be handled by the DidEncounterError() case above.
-    DCHECK(parent);
-    return std::make_pair(parent->GetLastCommittedOrigin(), "about_srcdoc");
-  }
-
-  // In cases not covered above, URLLoaderFactory should be associated with the
-  // origin of |common_params.url| and/or |common_params.initiator_origin|.
-  return std::make_pair(
-      url::Origin::Resolve(
-          common_params.url,
-          common_params.initiator_origin.value_or(url::Origin())),
-      "url_or_initiator");
-}
-
-url::Origin GetOriginForURLLoaderFactoryUnchecked(
-    NavigationRequest* navigation_request) {
-  return GetOriginForURLLoaderFactoryUncheckedWithDebugInfo(navigation_request)
-      .first;
 }
 
 // Returns true if the parent's COEP policy `parent_coep` should block a child
@@ -1366,7 +1289,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           /*view_transition_state=*/absl::nullopt,
           /*soft_navigation_heuristics_task_id=*/absl::nullopt,
           /*modified_runtime_features=*/
-          base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
+          base::flat_map<::blink::mojom::RuntimeFeature, bool>(),
           /*fenced_frame_properties=*/absl::nullopt,
           /*not_restored_reasons=*/nullptr,
           /*load_with_storage_access=*/load_with_storage_access,
@@ -1510,7 +1433,7 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           /*view_transition_state=*/absl::nullopt,
           /*soft_navigation_heuristics_task_id=*/absl::nullopt,
           /*modified_runtime_features=*/
-          base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
+          base::flat_map<::blink::mojom::RuntimeFeature, bool>(),
           /*fenced_frame_properties=*/absl::nullopt,
           /*not_restored_reasons=*/nullptr,
           /*load_with_storage_access=*/false,
@@ -2684,7 +2607,7 @@ void NavigationRequest::BeginNavigationImpl() {
 
       // Enforce cross-origin-opener-policy for about:blank, about:srcdoc and
       // MHTML iframe, before selecting the RenderFrameHost.
-      const url::Origin origin = GetOriginForURLLoaderFactoryUnchecked(this);
+      const url::Origin origin = GetOriginForURLLoaderFactoryUnchecked();
       const net::SchemefulSite site = net::SchemefulSite(origin);
 
       // Set the COOP origin in the policy container builder via the mutable
@@ -2717,6 +2640,9 @@ void NavigationRequest::BeginNavigationImpl() {
 void NavigationRequest::
     SelectFrameHostForCrossDocumentNavigationWithNoUrlLoader() {
   DCHECK(!NeedsUrlLoader());
+  CHECK(!HasRenderFrameHost())
+      << "`render_frame_host_` should not be set before the "
+         "`NavigationRequest` starts to select the RFH.";
 
   if (auto result =
           frame_tree_node_->render_manager()->GetFrameHostForNavigation(
@@ -3267,7 +3193,7 @@ void NavigationRequest::OnRequestRedirected(
     // OnRequestFailedInternal has destroyed the NavigationRequest.
     return;
   }
-  const url::Origin origin = GetOriginForURLLoaderFactoryUnchecked(this);
+  const url::Origin origin = GetOriginForURLLoaderFactoryUnchecked();
   // Set the COOP origin in the policy container builder via the mutable
   // reference before coop is sent to EnforceCOOP.
   network::CrossOriginOpenerPolicy& coop =
@@ -4283,6 +4209,9 @@ void NavigationRequest::SelectFrameHostForOnResponseStarted(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     bool is_download,
     absl::optional<SubresourceLoaderParams> subresource_loader_params) {
+  CHECK(!HasRenderFrameHost())
+      << "`render_frame_host_` should not be set before the "
+         "`NavigationRequest` starts to select the RFH.";
   ScopedCrashKeys crash_keys(*this);
 
   std::string rfh_selected_reason;
@@ -4671,6 +4600,13 @@ void NavigationRequest::OnRequestFailedInternal(
   // anymore from now while the error page is being loaded.
   loader_.reset();
 
+  // Reset the RenderFrameHost R1 that had been computed for committing the
+  // failed navigation. This breaks the binding between the current
+  // NavigationRequest and R1, so that if we create another speculative
+  // RenderFrameHost R2 to commit an error page after this, deleting R1 won't
+  // try to delete this NavigationRequest along with it.
+  render_frame_host_ = absl::nullopt;
+
   ssl_info_ = status.ssl_info;
 
   devtools_instrumentation::OnNavigationRequestFailed(*this, status);
@@ -4722,6 +4658,10 @@ void NavigationRequest::SelectFrameHostForOnRequestFailedInternal(
     bool exists_in_cache,
     bool skip_throttles,
     const absl::optional<std::string>& error_page_content) {
+  CHECK(!HasRenderFrameHost())
+      << "`render_frame_host_` should not be set before the "
+         "`NavigationRequest` starts to select the RFH.";
+
   switch (ComputeErrorPageProcess()) {
     case ErrorPageProcess::kCurrentProcess:
       // There's no way to get here with a same-document navigation, it would
@@ -4780,10 +4720,6 @@ void NavigationRequest::SelectFrameHostForOnRequestFailedInternal(
     }
   }
 
-  // Sanity check that we haven't changed the RenderFrameHost picked for the
-  // error page in OnRequestFailedInternal when running the WillFailRequest
-  // checks.
-  CHECK(!HasRenderFrameHost() || GetRenderFrameHost() == render_frame_host);
   render_frame_host_ = render_frame_host->GetSafeRef();
 
   // Update the associated RenderFrameHost type.
@@ -5426,21 +5362,15 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       !response_should_be_rendered_) {
     MaybeAddResourceTimingEntryForCancelledNavigation();
 
-    // Reset the RenderFrameHost that had been computed for the commit of the
-    // navigation.
-    // TODO(https://crbug.com/1416916): Reconsider if we really need to unset
-    // the `render_frame_host_` here, as the NavigationRequest might stay alive
-    // for a bit longer to commit an error page.
-    render_frame_host_ = absl::nullopt;
-
     // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
     if (!response_should_be_rendered_) {
-      // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
-      // destroyed the NavigationRequest.
       OnRequestFailedInternal(
           network::URLLoaderCompletionStatus(net::ERR_ABORTED),
           true /* skip_throttles */, absl::nullopt /* error_page_content */,
           false /* collapse_frame */);
+
+      // DO NOT ADD CODE after this. The previous call to
+      // OnRequestFailedInternal has destroyed the NavigationRequest.
       return;
     }
 
@@ -5458,12 +5388,6 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
 
   if (result.action() == NavigationThrottle::BLOCK_RESPONSE) {
     DCHECK_EQ(net::ERR_BLOCKED_BY_RESPONSE, result.net_error_code());
-    // Reset the RenderFrameHost that had been computed for the commit of the
-    // navigation.
-    // TODO(https://crbug.com/1416916): Reconsider if we really need to unset
-    // the `render_frame_host_` here, as the NavigationRequest might stay alive
-    // for a bit longer to commit an error page.
-    render_frame_host_ = absl::nullopt;
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(result.net_error_code()),
         true /* skip_throttles */, result.error_page_content(),
@@ -6438,20 +6362,9 @@ NavigationRequest::CheckCSPEmbeddedEnforcement() {
   const network::mojom::AllowCSPFromHeaderValue* allow_csp_from =
       response() ? response()->parsed_headers->allow_csp_from.get() : nullptr;
 
-  const url::Origin& request_origin =
-      GetParentFrame()->GetLastCommittedOrigin();
-
   if (network::AllowsBlanketEnforcementOfRequiredCSP(
-          request_origin, GetURL(), allow_csp_from, required_csp_)) {
-    if (request_origin.IsSameOriginWith(GetURL()) && response() &&
-        !network::AllowCspFromAllowOrigin(request_origin, allow_csp_from) &&
-        !network::Subsumes(
-            *required_csp_,
-            response()->parsed_headers->content_security_policy)) {
-      GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-          GetParentFrame(),
-          blink::mojom::WebFeature::kCSPEESameOriginBlanketEnforcement);
-    }
+          GetParentFrame()->GetLastCommittedOrigin(), GetURL(), allow_csp_from,
+          required_csp_)) {
     // Enforce the required CSPs on the frame by passing them down to blink.
     policy_container_builder_->AddContentSecurityPolicy(required_csp_->Clone());
     return CSPEmbeddedEnforcementResult::ALLOW_RESPONSE;
@@ -7512,7 +7425,7 @@ NavigationRequest::GetOriginForURLLoaderFactoryBeforeResponseWithDebugInfo(
     network::mojom::WebSandboxFlags sandbox_flags) {
   // Calculate an approximation of the origin. The sandbox/csp are ignored.
   std::pair<url::Origin, std::string> origin_and_debug_info =
-      GetOriginForURLLoaderFactoryUncheckedWithDebugInfo(this);
+      GetOriginForURLLoaderFactoryUncheckedWithDebugInfo();
 
   // Apply sandbox flags.
   // See https://html.spec.whatwg.org/#sandboxed-origin-browsing-context-flag
@@ -8314,7 +8227,14 @@ GlobalRenderFrameHostId NavigationRequest::GetPreviousRenderFrameHostId() {
   // is saved in `current_render_frame_host_id_at_construction_`), if another
   // navigation caused a new RenderFrameHost to be committed while this
   // navigation is in progress.
-  return frame_tree_node_->current_frame_host()->GetGlobalId();
+  if (frame_tree_node_->current_frame_host()) {
+    return frame_tree_node_->current_frame_host()->GetGlobalId();
+  } else {
+    // It's possible for `frame_tree_node_->current_frame_host()` to be null if
+    // we're in the middle of destructing the navigating FrameTreeNode. In this
+    // case, just return `current_render_frame_host_id_at_construction_`.
+    return current_render_frame_host_id_at_construction_;
+  }
 }
 
 int NavigationRequest::GetExpectedRenderProcessHostId() {
@@ -9027,7 +8947,7 @@ void NavigationRequest::ComputePoliciesToCommit() {
   // to the origin of the creation URL, prior to opaquification.
   policy_container_builder_->SetIsOriginPotentiallyTrustworthy(
       network::IsOriginPotentiallyTrustworthy(
-          GetOriginForURLLoaderFactoryUnchecked(this)));
+          GetOriginForURLLoaderFactoryUnchecked()));
 
   policy_container_builder_->SetCrossOriginEmbedderPolicy(
       ComputeCrossOriginEmbedderPolicy());
@@ -9870,6 +9790,74 @@ void NavigationRequest::RecordEarlyRenderFrameHostSwapMetrics() {
         "Navigation.EarlyRenderFrameHostSwap.IsInOutermostMainFrame",
         IsInOutermostMainFrame());
   }
+}
+
+std::pair<url::Origin, std::string>
+NavigationRequest::GetOriginForURLLoaderFactoryUncheckedWithDebugInfo() {
+  if (DidEncounterError()) {
+    // Error pages commit in an opaque origin in the renderer process. If this
+    // NavigationRequest resulted in committing an error page, return an
+    // opaque origin that has precursor information consistent with the URL
+    // being requested.  Note: this is intentionally done first; cases like
+    // errors in srcdoc frames need not inherit the parent's origin for errors.
+    return std::make_pair(
+        url::Origin::Create(common_params().url).DeriveNewOpaqueOrigin(),
+        "error");
+  }
+
+  // Check if this is loadDataWithBaseUrl (which needs special treatment).
+  if (IsLoadDataWithBaseURL()) {
+    // A (potentially attacker-controlled) renderer process should not be able
+    // to use loadDataWithBaseUrl code path to initiate fetches on behalf of a
+    // victim origin (fetches controlled by attacker-provided
+    // |common_params.url| data: URL in a victim's origin from the
+    // attacker-provided |common_params.base_url_for_data_url|).  Browser
+    // process should verify that |common_params.base_url_for_data_url| is empty
+    // for all renderer-initiated navigations (e.g. see
+    // VerifyBeginNavigationCommonParams), but as a defense-in-depth this is
+    // also asserted below.
+    // History navigations are exempt from this rule because, although they can
+    // be renderer-initaited via the js history API, the renderer does not
+    // choose the url being navigated to. A renderer-initiated history
+    // navigation may therefore navigate back to a previous browser-initiated
+    // loadDataWithBaseUrl.
+    CHECK(browser_initiated() ||
+          NavigationTypeUtils::IsHistory(common_params().navigation_type));
+
+    // loadDataWithBaseUrl submits a data: |common_params.url| (which has a
+    // opaque origin), but commits that URL as if it came from
+    // |common_params.base_url_for_data_url|.  See also
+    // https://crbug.com/976253.
+    return std::make_pair(
+        url::Origin::Create(common_params().base_url_for_data_url),
+        "load_data_with_base_url");
+  }
+
+  // Srcdoc subframes need to inherit their origin from their parent frame.
+  if (GetURL().IsAboutSrcdoc()) {
+    RenderFrameHostImpl* parent = frame_tree_node()->parent();
+
+    // The only path for `parent` to be missing for a srcdoc navigation is if a
+    // renderer executes `location = "about:srcdoc` instead of embedding an
+    // <iframe srcdoc="..."></iframe> element; this is covered by
+    // NavigationBrowserTest.BlockedSrcDoc* tests.  However, we should never get
+    // here in such a case, because it would result in an error page which would
+    // be handled by the DidEncounterError() case above.
+    DCHECK(parent);
+    return std::make_pair(parent->GetLastCommittedOrigin(), "about_srcdoc");
+  }
+
+  // In cases not covered above, URLLoaderFactory should be associated with the
+  // origin of |common_params.url| and/or |common_params.initiator_origin|.
+  return std::make_pair(
+      url::Origin::Resolve(
+          common_params().url,
+          common_params().initiator_origin.value_or(url::Origin())),
+      "url_or_initiator");
+}
+
+url::Origin NavigationRequest::GetOriginForURLLoaderFactoryUnchecked() {
+  return GetOriginForURLLoaderFactoryUncheckedWithDebugInfo().first;
 }
 
 }  // namespace content

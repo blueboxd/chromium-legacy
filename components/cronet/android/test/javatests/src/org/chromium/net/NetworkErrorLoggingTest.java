@@ -19,9 +19,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.net.CronetTestRule.CronetImplementation;
 import org.chromium.net.CronetTestRule.IgnoreFor;
+
 /** Tests requests that generate Network Error Logging reports. */
+@DoNotBatch(reason = "crbug/1459563")
 @RunWith(AndroidJUnit4.class)
 @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
         reason = "The fallback implementation doesn't support network error logging")
@@ -64,9 +67,7 @@ public class NetworkErrorLoggingTest {
         callback.blockForDone();
         dataProvider.assertClosed();
         assertThat(callback.getResponseInfoWithChecks()).hasHttpStatusCodeThat().isEqualTo(200);
-        assertThat(Http2TestServer.getReportingCollector().containsReport(
-                           "{\"type\": \"test_report\"}"))
-                .isTrue();
+        Http2TestServer.getReportingCollector().assertContainsReport("{\"type\": \"test_report\"}");
     }
 
     @Test
@@ -84,21 +85,20 @@ public class NetworkErrorLoggingTest {
         callback.blockForDone();
         assertThat(callback.getResponseInfoWithChecks()).hasHttpStatusCodeThat().isEqualTo(200);
         Http2TestServer.getReportingCollector().waitForReports(1);
-        assertThat(Http2TestServer.getReportingCollector().containsReport(""
-                           + "{"
-                           + "  \"type\": \"network-error\","
-                           + "  \"url\": \"" + url + "\","
-                           + "  \"body\": {"
-                           + "    \"method\": \"GET\","
-                           + "    \"phase\": \"application\","
-                           + "    \"protocol\": \"h2\","
-                           + "    \"referrer\": \"\","
-                           + "    \"sampling_fraction\": 1.0,"
-                           + "    \"status_code\": 200,"
-                           + "    \"type\": \"ok\""
-                           + "  }"
-                           + "}"))
-                .isTrue();
+        Http2TestServer.getReportingCollector().assertContainsReport(""
+                + "{"
+                + "  \"type\": \"network-error\","
+                + "  \"url\": \"" + url + "\","
+                + "  \"body\": {"
+                + "    \"method\": \"GET\","
+                + "    \"phase\": \"application\","
+                + "    \"protocol\": \"h2\","
+                + "    \"referrer\": \"\","
+                + "    \"sampling_fraction\": 1.0,"
+                + "    \"status_code\": 200,"
+                + "    \"type\": \"ok\""
+                + "  }"
+                + "}");
     }
 
     @Test
@@ -147,20 +147,19 @@ public class NetworkErrorLoggingTest {
         // Note that because we don't know in advance what the server IP address is for preloaded
         // origins, we'll always get a "downgraded" dns.address_changed NEL report if we don't
         // receive a replacement NEL policy with the request.
-        assertThat(Http2TestServer.getReportingCollector().containsReport(""
-                           + "{"
-                           + "  \"type\": \"network-error\","
-                           + "  \"url\": \"" + url + "\","
-                           + "  \"body\": {"
-                           + "    \"method\": \"GET\","
-                           + "    \"phase\": \"dns\","
-                           + "    \"protocol\": \"h2\","
-                           + "    \"referrer\": \"\","
-                           + "    \"sampling_fraction\": 1.0,"
-                           + "    \"status_code\": 0,"
-                           + "    \"type\": \"dns.address_changed\""
-                           + "  }"
-                           + "}"))
-                .isTrue();
+        Http2TestServer.getReportingCollector().assertContainsReport(""
+                + "{"
+                + "  \"type\": \"network-error\","
+                + "  \"url\": \"" + url + "\","
+                + "  \"body\": {"
+                + "    \"method\": \"GET\","
+                + "    \"phase\": \"dns\","
+                + "    \"protocol\": \"h2\","
+                + "    \"referrer\": \"\","
+                + "    \"sampling_fraction\": 1.0,"
+                + "    \"status_code\": 0,"
+                + "    \"type\": \"dns.address_changed\""
+                + "  }"
+                + "}");
     }
 }

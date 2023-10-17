@@ -19,8 +19,8 @@ class LayoutBox;
 struct CORE_EXPORT NGExclusionShapeData final
     : public GarbageCollected<NGExclusionShapeData> {
   NGExclusionShapeData(const LayoutBox* layout_box,
-                       const NGBoxStrut& margins,
-                       const NGBoxStrut& shape_insets)
+                       const BoxStrut& margins,
+                       const BoxStrut& shape_insets)
       : layout_box(layout_box), margins(margins), shape_insets(shape_insets) {}
   NGExclusionShapeData(const NGExclusionShapeData& other)
       : layout_box(other.layout_box),
@@ -30,8 +30,8 @@ struct CORE_EXPORT NGExclusionShapeData final
   void Trace(Visitor*) const;
 
   Member<const LayoutBox> layout_box;
-  const NGBoxStrut margins;
-  const NGBoxStrut shape_insets;
+  const BoxStrut margins;
+  const BoxStrut shape_insets;
 };
 
 // Struct that represents an exclusion for float and initial letter box.
@@ -41,30 +41,30 @@ struct CORE_EXPORT NGExclusion final : public GarbageCollected<NGExclusion> {
     kInitialLetterBox,
   };
 
-  NGExclusion(const NGBfcRect& rect,
+  NGExclusion(const BfcRect& rect,
               const EFloat type,
               const Kind kind,
               const NGExclusionShapeData* shape_data)
       : rect(rect), type(type), kind(kind), shape_data(std::move(shape_data)) {}
 
-  static const NGExclusion* Create(const NGBfcRect& rect,
+  static const NGExclusion* Create(const BfcRect& rect,
                                    const EFloat type,
                                    NGExclusionShapeData* shape_data = nullptr) {
     return MakeGarbageCollected<NGExclusion>(rect, type, kFloat,
                                              std::move(shape_data));
   }
 
-  static const NGExclusion* CreateForInitialLetterBox(const NGBfcRect& rect,
+  static const NGExclusion* CreateForInitialLetterBox(const BfcRect& rect,
                                                       const EFloat type) {
     return MakeGarbageCollected<NGExclusion>(rect, type, kInitialLetterBox,
                                              nullptr);
   }
 
-  const NGExclusion* CopyWithOffset(const NGBfcDelta& offset_delta) const {
+  const NGExclusion* CopyWithOffset(const BfcDelta& offset_delta) const {
     if (!offset_delta.line_offset_delta && !offset_delta.block_offset_delta)
       return this;
 
-    NGBfcRect new_rect = rect;
+    BfcRect new_rect = rect;
     new_rect.start_offset += offset_delta;
     new_rect.end_offset += offset_delta;
 
@@ -78,7 +78,7 @@ struct CORE_EXPORT NGExclusion final : public GarbageCollected<NGExclusion> {
 
   void Trace(Visitor* visitor) const { visitor->Trace(shape_data); }
 
-  const NGBfcRect rect;
+  const BfcRect rect;
   const EFloat type;
   const Kind kind;
   bool is_past_other_exclusions = false;

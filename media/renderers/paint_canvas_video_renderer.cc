@@ -778,6 +778,14 @@ VideoPixelFormatAsSkYUVAInfoValues(VideoPixelFormat format) {
   }
 }
 
+// Controls whether the one-copy path when copying a VideoFrame to a GL texture
+// is enabled or disabled. The one-copy path being enabled is the default
+// production state - this Feature is used to be able to disable this path for
+// performance testing.
+BASE_FEATURE(kOneCopyUploadOfVideoFrameToGLTexture,
+             "OneCopyUploadOfVideoFrameToGLTexture",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Whether SharedImage is used to perform direct GPU-GPU VideoFrame to GL
 // texture uploads (when allowed) rather than legacy mailboxes.
 BASE_FEATURE(kUseSharedImageForDirectUpload,
@@ -1055,7 +1063,7 @@ void PaintCanvasVideoRenderer::Paint(
     VideoTransformation video_transformation,
     viz::RasterContextProvider* raster_context_provider) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (flags.getAlpha() == 0) {
+  if (flags.isFullyTransparent()) {
     return;
   }
 
@@ -1168,8 +1176,7 @@ void PaintCanvasVideoRenderer::Paint(
   // This if is a special handling of video for SkiaPaintcanvas backend, where
   // the video does not need any transform and it is enough to draw the frame
   // directly into the skia canvas
-  if (!need_transform && video_frame->IsMappable() &&
-      flags.getAlpha() == SK_AlphaOPAQUE &&
+  if (!need_transform && video_frame->IsMappable() && flags.isOpaque() &&
       flags.getBlendMode() == SkBlendMode::kSrc &&
       flags.getFilterQuality() == cc::PaintFlags::FilterQuality::kLow &&
       (pixels = canvas->accessTopLayerPixels(&info, &row_bytes, &origin)) &&
@@ -1527,18 +1534,20 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
         (video_frame->NumTextures() > 1 ||
          video_frame->shared_image_format_type() ==
              SharedImageFormatType::kSharedImageFormat)) {
-      if (allow_shared_image_for_direct_upload &&
-          base::FeatureList::IsEnabled(kUseSharedImageForDirectUpload)) {
-        if (UploadVideoFrameToGLTextureViaSharedImage(
-                raster_context_provider, destination_gl, video_frame, target,
-                texture, internal_format, format, type, flip_y)) {
-          return true;
-        }
-      } else {
-        if (UploadVideoFrameToGLTexture(
-                raster_context_provider, destination_gl, video_frame.get(),
-                target, texture, internal_format, format, type, flip_y)) {
-          return true;
+      if (base::FeatureList::IsEnabled(kOneCopyUploadOfVideoFrameToGLTexture)) {
+        if (allow_shared_image_for_direct_upload &&
+            base::FeatureList::IsEnabled(kUseSharedImageForDirectUpload)) {
+          if (UploadVideoFrameToGLTextureViaSharedImage(
+                  raster_context_provider, destination_gl, video_frame, target,
+                  texture, internal_format, format, type, flip_y)) {
+            return true;
+          }
+        } else {
+          if (UploadVideoFrameToGLTexture(
+                  raster_context_provider, destination_gl, video_frame.get(),
+                  target, texture, internal_format, format, type, flip_y)) {
+            return true;
+          }
         }
       }
     }
@@ -1653,14 +1662,19 @@ bool PaintCanvasVideoRenderer::UploadVideoFrameToGLTextureViaSharedImage(
       raster_context_provider, static_cast<GLenum>(internal_format), type);
 
   // Create a SharedImage to associate with `texture`.
+  uint32_t usage =
+      gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_RASTER;
+  if (raster_context_provider->ContextCapabilities().supports_oop_raster) {
+    usage |= gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+  }
+
   gpu::MailboxHolder destination_holder;
   destination_holder.texture_target = target;
   destination_holder.mailbox = sii->CreateSharedImage(
       shared_image_format, video_frame->visible_rect().size(),
       GetVideoFrameRGBColorSpacePreferringSRGB(video_frame.get()),
-      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
-      gpu::SHARED_IMAGE_USAGE_GLES2, "PaintCanvasVideoRenderer_DirectUpload",
-      gpu::kNullSurfaceHandle);
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
+      "PaintCanvasVideoRenderer_DirectUpload", gpu::kNullSurfaceHandle);
 
   // Copy the VideoFrame's textures to the SI.
   destination_holder.sync_token = sii->GenUnverifiedSyncToken();
@@ -1836,18 +1850,20 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
   // accurate.
   if ((media::IsOpaque(video_frame->format()) || premultiply_alpha) &&
       level == 0) {
-    if (allow_shared_image_for_direct_upload &&
-        base::FeatureList::IsEnabled(kUseSharedImageForDirectUpload)) {
-      if (UploadVideoFrameToGLTextureViaSharedImage(
-              raster_context_provider, destination_gl, video_frame, target,
-              texture, internal_format, format, type, flip_y)) {
-        return true;
-      }
-    } else {
-      if (UploadVideoFrameToGLTexture(raster_context_provider, destination_gl,
-                                      video_frame, target, texture,
-                                      internal_format, format, type, flip_y)) {
-        return true;
+    if (base::FeatureList::IsEnabled(kOneCopyUploadOfVideoFrameToGLTexture)) {
+      if (allow_shared_image_for_direct_upload &&
+          base::FeatureList::IsEnabled(kUseSharedImageForDirectUpload)) {
+        if (UploadVideoFrameToGLTextureViaSharedImage(
+                raster_context_provider, destination_gl, video_frame, target,
+                texture, internal_format, format, type, flip_y)) {
+          return true;
+        }
+      } else {
+        if (UploadVideoFrameToGLTexture(
+                raster_context_provider, destination_gl, video_frame, target,
+                texture, internal_format, format, type, flip_y)) {
+          return true;
+        }
       }
     }
   }

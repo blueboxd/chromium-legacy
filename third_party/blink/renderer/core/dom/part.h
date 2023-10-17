@@ -34,7 +34,8 @@ class CORE_EXPORT Part : public ScriptWrappable {
   virtual Node* NodeToSortBy() const = 0;
   virtual Part* ClonePart(NodeCloningData&, Node&) const = 0;
   virtual PartRoot* GetAsPartRoot() const { return nullptr; }
-  PartRoot* root() const { return root_; }
+  virtual bool IncludeInPartsList() const { return true; }
+  PartRoot* root() const { return root_.Get(); }
   void MoveToRoot(PartRoot* new_root);
   virtual Document& GetDocument() const = 0;
   void PartDisconnected(Node& node);
@@ -46,7 +47,8 @@ class CORE_EXPORT Part : public ScriptWrappable {
   virtual void disconnect();
 
  protected:
-  Part(PartRoot& root, const Vector<String> metadata);
+  Part(PartRoot& root, const Vector<String> metadata)
+      : root_(root), metadata_(metadata) {}
   bool IsConnected() { return connected_; }
 
  private:

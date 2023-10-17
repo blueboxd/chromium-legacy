@@ -36,6 +36,10 @@ namespace web {
 class WebState;
 }
 
+namespace plus_addresses {
+class PlusAddressService;
+}
+
 namespace autofill {
 
 // Chrome iOS implementation of AutofillClient.
@@ -137,7 +141,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   void HideAutofillPopup(PopupHidingReason reason) override;
   bool IsAutocompleteEnabled() const override;
   bool IsPasswordManagerEnabled() override;
-  void DidFillOrPreviewForm(mojom::AutofillActionPersistence action_persistence,
+  void DidFillOrPreviewForm(mojom::ActionPersistence action_persistence,
                             AutofillTriggerSource trigger_source,
                             bool is_refill) override;
   void DidFillOrPreviewField(const std::u16string& autofilled_value,
@@ -147,6 +151,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   FormInteractionsFlowId GetCurrentFormInteractionsFlowId() override;
   LogManager* GetLogManager() const override;
   bool IsLastQueriedField(FieldGlobalId field_id) override;
+  plus_addresses::PlusAddressService* GetPlusAddressService() override;
 
   // RiskDataLoader:
   void LoadRiskData(

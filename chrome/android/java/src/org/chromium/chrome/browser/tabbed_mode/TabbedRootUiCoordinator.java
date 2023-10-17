@@ -466,7 +466,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 mActivityLifecycleDispatcher, mCompositorViewHolderSupplier.get(),
                 mCallbackController.makeCancelable(
                         () -> mLayoutManager.getActiveLayout().requestUpdate()),
-                mActivityTabProvider, mInsetObserverViewSupplier.get(),
+                mActivityTabProvider, mInsetObserverViewSupplier.get(), mStartSurfaceSupplier,
                 new BackActionDelegate() {
                     @Override
                     public @ActionType int getBackActionType(Tab tab) {
@@ -676,7 +676,10 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
 
         if (!didTriggerPromo && TrackingProtectionNoticeController.shouldShowNotice()) {
             TrackingProtectionNoticeController.create(
-                    mActivity, mActivityTabProvider, mMessageDispatcher);
+                    mActivity,
+                    mActivityTabProvider,
+                    mMessageDispatcher,
+                    new SettingsLauncherImpl());
             // Promo will be triggered eventually. We don't want for this promo to clash with other
             // promos in the same run.
             didTriggerPromo = true;

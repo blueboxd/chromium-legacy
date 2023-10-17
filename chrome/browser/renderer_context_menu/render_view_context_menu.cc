@@ -1156,17 +1156,10 @@ void RenderViewContextMenu::InitMenu() {
     AppendPlatformEditableItems();
   }
 
+  // Show Read Anything option if it's not already open in the side panel.
   if (features::IsReadAnythingEnabled()) {
-    const bool is_content_type_supported =
-        content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY) ||
-        content_type_->SupportsGroup(
-            ContextMenuContentType::ITEM_GROUP_EDITABLE);
-    const bool should_append_read_anything_item =
-        GetBrowser() && GetBrowser()->is_type_normal() &&
-        !IsReadAnythingEntryShowing(GetBrowser()) &&
-        (is_content_type_supported ||
-         base::FeatureList::IsEnabled(features::kSidePanelPinning));
-    if (should_append_read_anything_item) {
+    if (GetBrowser() && GetBrowser()->is_type_normal() &&
+        !IsReadAnythingEntryShowing(GetBrowser())) {
       AppendReadingModeItem();
     }
   }
@@ -1890,17 +1883,11 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
     return;
   }
 
-  std::u16string menu_string =
+  menu_model_.AddItem(
+      GetSearchForImageIdc(),
       l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHLENSFORIMAGE,
-                                 GetImageSearchProviderName(provider));
+                                 provider->short_name()));
 
-  if (lens::features::UseLensContextMenuItemAlternateText()) {
-    menu_string = l10n_util::GetStringFUTF16(
-        IDS_CONTENT_CONTEXT_SEARCHLENSFORIMAGE_ALT_TEXT,
-        provider->short_name());
-  }
-
-  menu_model_.AddItem(GetSearchForImageIdc(), menu_string);
   if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser())) {
     menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
   }

@@ -1123,7 +1123,7 @@
         ],
         "policies": {
           "PrintingAPIExtensionsAllowlist": [
-            "value1"
+            "abcdefghijklmnopabcdefghijklmnop"
           ]
         },
         "prefs": {
@@ -4250,6 +4250,42 @@
         },
         "prefs": {
           "ash.touchpad_scroll_screen_oobe_enabled": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+  "ShowHumanPresenceSensorScreenEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "The default is changed by default_for_enterprise_users",
+        "policies": {},
+        "prefs": {
+          "ash.human_presence_sensor_scren_oobe_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ShowHumanPresenceSensorScreenEnabled": false
+        },
+        "prefs": {
+          "ash.human_presence_sensor_scren_oobe_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ShowHumanPresenceSensorScreenEnabled": true
+        },
+        "prefs": {
+          "ash.human_presence_sensor_scren_oobe_enabled": {
             "value": true
           }
         }
@@ -22563,6 +22599,10 @@
           }, {
             "policy_id": "unknown_id_should_be_filtered",
             "file_extensions": ["filtered"]
+          },
+          {
+            "policy_id": "VirtualTask/microsoft-office",
+            "file_extensions": ["pptx"]
           }]
         },
         "prefs": {
@@ -22573,7 +22613,8 @@
               ".pdf": "pnomlkjighijklmnopabcdefghijklff",
               ".arc": "com.android.google.pm",
               ".arcpp": "com.android.google.pm",
-              ".proj": "projector"
+              ".proj": "projector",
+              ".pptx": "VirtualTask/microsoft-office"
             }
           }
         }
@@ -25382,6 +25423,71 @@
           "ash.settings.extended_fkeys_modifier": {
             "location": "user_profile",
             "value": 1
+          }
+        }
+      }
+    ]
+  },
+  "PasswordSharingEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "PasswordSharingEnabled": false
+        },
+        "prefs": {
+          "password_manager.password_sharing_enabled": {}
+        }
+      }
+    ]
+  },
+  "ZstdContentEncodingEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "net.zstd_content_encoding_enabled": {
+            "location": "local_state",
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "ZstdContentEncodingEnabled": false
+        },
+        "prefs": {
+          "net.zstd_content_encoding_enabled": {
+            "location": "local_state",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ZstdContentEncodingEnabled": true
+        },
+        "prefs": {
+          "net.zstd_content_encoding_enabled": {
+            "location": "local_state",
+            "value": true
           }
         }
       }

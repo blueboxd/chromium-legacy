@@ -32,6 +32,7 @@ import json
 import re
 import six
 import unittest
+from unittest import mock
 
 from blinkpy.common import exit_codes
 from blinkpy.common.host_mock import MockHost
@@ -164,6 +165,7 @@ class StreamTestingMixin(object):
         self.assertTrue(stream.getvalue())
 
 
+@mock.patch('signal.signal', lambda _signum, _handler: None)
 class RunTest(unittest.TestCase, StreamTestingMixin):
     def setUp(self):
         # A real PlatformInfo object is used here instead of a
@@ -347,18 +349,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         ],
                                            tests_included=True,
                                            shared_port=False)
-        if six.PY2:
-            self.assertTrue(
-                any([
-                    'Interrupted, exiting' in line
-                    for line in regular_output.buflist
-                ]))
-        else:
-            self.assertTrue(
-                any([
-                    'Interrupted, exiting' in line
-                    for line in regular_output.getvalue().splitlines()
-                ]))
+
+        self.assertTrue(
+            any([
+                'Interrupted, exiting' in line
+                for line in regular_output.getvalue().splitlines()
+            ]))
 
     def test_no_tests_found(self):
         details, err, _ = logging_run(['resources'], tests_included=True)
@@ -2137,7 +2133,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         extra_txt = test.MOCK_WEB_TESTS + 'passes/testharness-expected.txt'
         host.filesystem.write_text_file(
             extra_txt,
-            'This is a testharness.js-based test.\nPASS: bah\nHarness: the test ran to completion.'
+            'This is a testharness.js-based test.\n[PASS] bah\nHarness: the test ran to completion.'
         )
         extra_wav = test.MOCK_WEB_TESTS + 'passes/testharness-expected.wav'
         host.filesystem.write_text_file(extra_wav, 'Extra wav')
@@ -2167,7 +2163,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         extra_txt = test.MOCK_WEB_TESTS + 'passes/testharness-expected.txt'
         host.filesystem.write_text_file(
             extra_txt,
-            'This is a testharness.js-based test.\nPASS: bah\nHarness: the test ran to completion.'
+            'This is a testharness.js-based test.\n[PASS] bah\nHarness: the test ran to completion.'
         )
         test_name = 'passes/testharness.html'
         run_details, log_stream, _ = logging_run([test_name],
@@ -2182,7 +2178,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         extra_txt = test.MOCK_WEB_TESTS + 'passes/testharness-expected.txt'
         host.filesystem.write_text_file(
             extra_txt,
-            'This is a testharness.js-based test.\nFAIL: bah\nHarness: the test ran to completion.'
+            'This is a testharness.js-based test.\n[FAIL] bah\nHarness: the test ran to completion.'
         )
         test_name = 'passes/testharness.html'
         run_details, log_stream, _ = logging_run([test_name],
@@ -2207,7 +2203,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         platform_baseline = test.MOCK_WEB_TESTS + 'platform/test-mac-mac10.10/passes/testharness-expected.txt'
         host.filesystem.write_text_file(
             platform_baseline,
-            'This is a testharness.js-based test.\nPASS: bah\nHarness: the test ran to completion.'
+            'This is a testharness.js-based test.\n[PASS] bah\nHarness: the test ran to completion.'
         )
         run_details, log_stream, _ = logging_run(['passes/testharness.html'],
                                                  tests_included=True,
@@ -2223,7 +2219,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
                         'failures/unexpected/testharness-expected.txt')
         # The expected.txt contains the same content as the actual output.
         host.filesystem.write_text_file(
-            expected_txt, 'This is a testharness.js-based test.\nFAIL: bah\n'
+            expected_txt, 'This is a testharness.js-based test.\n[FAIL] bah\n'
             'Harness: the test ran to completion.')
 
         # Run without --ignore-testharness-expected.txt. The test should pass.

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -211,6 +212,8 @@ class ScalableIphBrowserTestPreinstallApps : public ScalableIphBrowserTest {
     ScalableIphBrowserTest::SetUpDefaultCommandLine(command_line);
 
     command_line->RemoveSwitch(switches::kDisableDefaultApps);
+    command_line->AppendSwitch(
+        ash::switches::kAllowDefaultShelfPinLayoutIgnoringSync);
   }
 };
 
@@ -740,7 +743,16 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, OnSuspendDoneWithLockScreen) {
   testing::Mock::VerifyAndClearExpectations(mock_tracker());
 }
 
-IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, AppListShown) {
+// TODO(crbug.com/1491942): This fails with the field trial testing config.
+class ScalableIphBrowserTestNoTestingConfig : public ScalableIphBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ScalableIphBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch("disable-field-trial-config");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestNoTestingConfig, AppListShown) {
   EXPECT_CALL(*mock_tracker(),
               NotifyEvent(scalable_iph::kEventNameAppListShown));
 
@@ -908,9 +920,8 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestPreinstallApps,
       ash::AppListLaunchedFrom::kLaunchedFromGrid);
 }
 
-// TODO(b/302092772): Re-enable once the crash is fixed.
 IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestPreinstallApps,
-                       DISABLED_ShelfItemActivationWebApp) {
+                       ShelfItemActivationWebApp) {
   if (!IsGoogleChrome()) {
     GTEST_SKIP()
         << "Google Chrome is required for preinstall apps used by this test";

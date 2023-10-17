@@ -541,17 +541,17 @@ export class TaskController {
   }
 
   /**
-   * Return the tasks for the FileEntry |entry|.
+   * Return the tasks for the `entry`.
    * @param entry
    */
-  async getEntryFileTasks(entry: FileEntry): Promise<FileTasks> {
+  async getEntryFileTasks(entry: Entry): Promise<FileTasks> {
     return FileTasks.create(
         this.volumeManager_, this.metadataModel_, this.directoryModel_,
         this.ui_, this.fileTransferController_!, [entry], this.taskHistory_,
         this.crostini_, this.progressCenter_, this);
   }
 
-  async executeEntryTask(entry: FileEntry) {
+  async executeEntryTask(entry: Entry) {
     const tasks = await this.getEntryFileTasks(entry);
     tasks.executeDefault();
   }

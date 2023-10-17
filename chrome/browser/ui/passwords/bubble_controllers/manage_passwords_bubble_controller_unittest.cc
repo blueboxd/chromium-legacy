@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -65,7 +65,7 @@ class ManagePasswordsBubbleControllerTest : public ::testing::Test {
     ON_CALL(*mock_delegate_, GetPasswordFormMetricsRecorder())
         .WillByDefault(Return(nullptr));
 
-    PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
+    ProfilePasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
         profile(), base::BindRepeating(
                        &password_manager::BuildPasswordStoreInterface<
                            content::BrowserContext,
@@ -90,7 +90,7 @@ class ManagePasswordsBubbleControllerTest : public ::testing::Test {
 
   password_manager::MockPasswordStoreInterface* GetStore() {
     return static_cast<password_manager::MockPasswordStoreInterface*>(
-        PasswordStoreFactory::GetInstance()
+        ProfilePasswordStoreFactory::GetInstance()
             ->GetForProfile(profile(), ServiceAccessType::EXPLICIT_ACCESS)
             .get());
   }

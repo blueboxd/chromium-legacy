@@ -28,6 +28,7 @@
 
 namespace {
 
+constexpr NSString* kWebsite = @"example.com";
 const CGFloat kProfileImageSize = 60.0;
 
 NSArray<RecipientInfoForIOSDisplay*>* CreateRecipients(int amount) {
@@ -49,7 +50,9 @@ NSArray<RecipientInfoForIOSDisplay*>* CreateRecipients(int amount) {
 @interface FakeSharingStatusConsumer : NSObject <SharingStatusConsumer>
 
 @property(nonatomic, strong) UIImage* senderImage;
+@property(nonatomic, strong) UIImage* recipientImage;
 @property(nonatomic, strong) NSString* subtitleString;
+@property(nonatomic, strong) NSString* footerString;
 
 @end
 
@@ -59,8 +62,16 @@ NSArray<RecipientInfoForIOSDisplay*>* CreateRecipients(int amount) {
   _senderImage = senderImage;
 }
 
+- (void)setRecipientImage:(UIImage*)recipientImage {
+  _recipientImage = recipientImage;
+}
+
 - (void)setSubtitleString:(NSString*)subtitleString {
   _subtitleString = subtitleString;
+}
+
+- (void)setFooterString:(NSString*)footerString {
+  _footerString = footerString;
 }
 
 @end
@@ -112,7 +123,8 @@ TEST_F(SharingStatusMediatorTest, NotifiesSignedInConsumerAboutTheirAvatar) {
   auto* mediator = [[SharingStatusMediator alloc]
         initWithAuthService:GetAuthenticationService()
       accountManagerService:GetAccountManagerService()
-                 recipients:CreateRecipients(1)];
+                 recipients:CreateRecipients(1)
+                    website:kWebsite];
   mediator.consumer = consumer;
 
   EXPECT_NSEQ(UIImagePNGRepresentation(CircularImageFromImage(
@@ -127,12 +139,27 @@ TEST_F(SharingStatusMediatorTest, NotifiesSignedOutConsumerWithDefaultAvatar) {
   auto* mediator = [[SharingStatusMediator alloc]
         initWithAuthService:GetAuthenticationService()
       accountManagerService:GetAccountManagerService()
-                 recipients:CreateRecipients(1)];
+                 recipients:CreateRecipients(1)
+                    website:kWebsite];
   mediator.consumer = consumer;
 
   EXPECT_NSEQ(UIImagePNGRepresentation(DefaultSymbolTemplateWithPointSize(
                   kPersonCropCircleSymbol, kProfileImageSize)),
               UIImagePNGRepresentation(consumer.senderImage));
+}
+
+TEST_F(SharingStatusMediatorTest, NotifiesConsumerWithRecipientImage) {
+  auto* consumer = [[FakeSharingStatusConsumer alloc] init];
+  auto* mediator = [[SharingStatusMediator alloc]
+        initWithAuthService:GetAuthenticationService()
+      accountManagerService:GetAccountManagerService()
+                 recipients:CreateRecipients(1)
+                    website:kWebsite];
+  mediator.consumer = consumer;
+
+  EXPECT_NSEQ(UIImagePNGRepresentation(DefaultSymbolTemplateWithPointSize(
+                  kPersonCropCircleSymbol, 40.0)),
+              UIImagePNGRepresentation(consumer.recipientImage));
 }
 
 TEST_F(SharingStatusMediatorTest,
@@ -141,13 +168,14 @@ TEST_F(SharingStatusMediatorTest,
   auto* mediator = [[SharingStatusMediator alloc]
         initWithAuthService:GetAuthenticationService()
       accountManagerService:GetAccountManagerService()
-                 recipients:CreateRecipients(1)];
+                 recipients:CreateRecipients(1)
+                    website:kWebsite];
   mediator.consumer = consumer;
 
-  EXPECT_NSEQ(
-      base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
-          IDS_IOS_PASSWORD_SHARING_SUCCESS_SUBTITLE, u"test0@gmail.com", u"")),
-      consumer.subtitleString);
+  EXPECT_NSEQ(base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
+                  IDS_IOS_PASSWORD_SHARING_SUCCESS_SUBTITLE, u"test0@gmail.com",
+                  u"example.com")),
+              consumer.subtitleString);
 }
 
 TEST_F(SharingStatusMediatorTest,
@@ -156,11 +184,26 @@ TEST_F(SharingStatusMediatorTest,
   auto* mediator = [[SharingStatusMediator alloc]
         initWithAuthService:GetAuthenticationService()
       accountManagerService:GetAccountManagerService()
-                 recipients:CreateRecipients(2)];
+                 recipients:CreateRecipients(2)
+                    website:kWebsite];
   mediator.consumer = consumer;
 
-  EXPECT_NSEQ(
-      base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
-          IDS_IOS_PASSWORD_SHARING_SUCCESS_SUBTITLE_MULTIPLE_RECIPIENTS, u"")),
-      consumer.subtitleString);
+  EXPECT_NSEQ(base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
+                  IDS_IOS_PASSWORD_SHARING_SUCCESS_SUBTITLE_MULTIPLE_RECIPIENTS,
+                  u"example.com")),
+              consumer.subtitleString);
+}
+
+TEST_F(SharingStatusMediatorTest, NotifiesConsumerAboutFooter) {
+  auto* consumer = [[FakeSharingStatusConsumer alloc] init];
+  auto* mediator = [[SharingStatusMediator alloc]
+        initWithAuthService:GetAuthenticationService()
+      accountManagerService:GetAccountManagerService()
+                 recipients:CreateRecipients(2)
+                    website:kWebsite];
+  mediator.consumer = consumer;
+
+  EXPECT_NSEQ(base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
+                  IDS_IOS_PASSWORD_SHARING_SUCCESS_FOOTNOTE, u"example.com")),
+              consumer.footerString);
 }

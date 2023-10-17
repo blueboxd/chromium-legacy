@@ -25,7 +25,7 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/preconnect_manager.h"
@@ -574,7 +574,7 @@ class RenderViewContextMenuPrefsTest
     DownloadCoreServiceFactory::GetForBrowserContext(profile())
         ->SetDownloadManagerDelegateForTesting(
             std::make_unique<ChromeDownloadManagerDelegate>(profile()));
-    PasswordStoreFactory::GetInstance()->SetTestingFactory(
+    ProfilePasswordStoreFactory::GetInstance()->SetTestingFactory(
         GetBrowserContext(),
         base::BindRepeating(&password_manager::BuildPasswordStoreInterface<
                             content::BrowserContext,
@@ -1758,8 +1758,16 @@ TEST_F(RenderViewContextMenuPrefsTest,
 
 // Verify that the adding the Lens image search option to the menu
 // issues a preconnection request to lens.google.com.
+// TODO(crbug.com/1492349): Test is flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_LensImageSearchIssuesGoogleLensPreconnect \
+  DISABLED_LensImageSearchIssuesGoogleLensPreconnect
+#else
+#define MAYBE_LensImageSearchIssuesGoogleLensPreconnect \
+  LensImageSearchIssuesGoogleLensPreconnect
+#endif
 TEST_F(RenderViewContextMenuPrefsTest,
-       LensImageSearchIssuesGoogleLensPreconnect) {
+       MAYBE_LensImageSearchIssuesGoogleLensPreconnect) {
   BeginPreresolveListening();
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(lens::features::kLensStandalone);

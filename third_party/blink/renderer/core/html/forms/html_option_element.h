@@ -79,6 +79,7 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
 
   HTMLDataListElement* OwnerDataListElement() const;
   HTMLSelectElement* OwnerSelectElement() const;
+  HTMLSelectListElement* OwnerSelectList() const;
 
   String label() const;
   void setLabel(const AtomicString&);
@@ -87,6 +88,7 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
 
   bool IsDisabledFormControl() const override;
   String DefaultToolTip() const override;
+  void DefaultEventHandler(Event&) override;
 
   String TextIndentedToRespectGroupLabel() const;
 

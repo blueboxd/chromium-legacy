@@ -14,13 +14,16 @@
 #include "ash/wm/wm_event.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/header_view.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_utils.h"
 #include "ui/views/widget/widget.h"
@@ -234,6 +237,38 @@ TEST_F(FrameCaptionButtonContainerViewTest, ShouldShowCloseButtonTrue) {
   FrameCaptionButtonContainerView::TestApi testApi(&container);
   EXPECT_TRUE(testApi.close_button()->GetVisible());
   EXPECT_TRUE(testApi.close_button()->GetEnabled());
+}
+
+// Test that the close button is disabled and has correct Tooltip when
+// `is_close_button_enabled` is `false`.
+TEST_F(FrameCaptionButtonContainerViewTest, CloseButtonIsDisabled) {
+  FrameCaptionButtonContainerView container(
+      CreateTestWidget(MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED,
+                       CLOSE_BUTTON_VISIBLE),
+      false /*=is_close_button_enabled*/);
+  InitContainer(&container);
+  views::test::RunScheduledLayout(&container);
+  FrameCaptionButtonContainerView::TestApi testApi(&container);
+  EXPECT_TRUE(testApi.close_button()->GetVisible());
+  EXPECT_FALSE(testApi.close_button()->GetEnabled());
+  EXPECT_EQ(testApi.close_button()->GetTooltipText(),
+            l10n_util::GetStringUTF16(IDS_APP_CLOSE_BUTTON_DISABLED_BY_ADMIN));
+}
+
+// Test that the close button is enabled and has correct Tooltip when
+// `is_close_button_enabled` is `true`.
+TEST_F(FrameCaptionButtonContainerViewTest, CloseButtonIsEnabled) {
+  FrameCaptionButtonContainerView container(
+      CreateTestWidget(MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED,
+                       CLOSE_BUTTON_VISIBLE),
+      true /*=is_close_button_enabled*/);
+  InitContainer(&container);
+  views::test::RunScheduledLayout(&container);
+  FrameCaptionButtonContainerView::TestApi testApi(&container);
+  EXPECT_TRUE(testApi.close_button()->GetVisible());
+  EXPECT_TRUE(testApi.close_button()->GetEnabled());
+  EXPECT_EQ(testApi.close_button()->GetTooltipText(),
+            l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
 }
 
 // Test that the close button is not visible when

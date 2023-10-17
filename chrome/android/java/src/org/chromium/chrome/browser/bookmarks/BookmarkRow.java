@@ -87,10 +87,12 @@ public abstract class BookmarkRow
             BookmarkRow row, Context context, boolean isVisualRefreshEnabled) {
         row.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        LayoutInflater.from(context).inflate(isVisualRefreshEnabled
-                        ? org.chromium.chrome.R.layout.bookmark_row_layout_visual
-                        : org.chromium.chrome.R.layout.bookmark_row_layout,
-                row);
+        LayoutInflater.from(context)
+                .inflate(
+                        isVisualRefreshEnabled
+                                ? R.layout.bookmark_row_layout_visual
+                                : R.layout.bookmark_row_layout,
+                        row);
         row.onFinishInflate();
     }
 
@@ -227,16 +229,8 @@ public abstract class BookmarkRow
                                 : R.string.reading_list_mark_as_read,
                         0, 0));
             }
-            listItems.add(buildMenuListItem(R.string.bookmark_item_select, 0, 0));
-            listItems.add(buildMenuListItem(R.string.bookmark_item_delete, 0, 0));
-            listItems.add(buildMenuListItem(R.string.bookmark_item_edit, 0, 0));
-            listItems.add(buildMenuListItem(R.string.bookmark_item_move, 0, 0));
-        } else {
-            listItems.add(buildMenuListItem(R.string.bookmark_item_select, 0, 0));
-            listItems.add(buildMenuListItem(R.string.bookmark_item_edit, 0, 0));
-            listItems.add(buildMenuListItem(R.string.bookmark_item_move, 0, 0, canMove));
-            listItems.add(buildMenuListItem(R.string.bookmark_item_delete, 0, 0));
         }
+        addListItems(listItems, canMove);
 
         if (mDelegate.getCurrentUiMode() == BookmarkUiMode.SEARCHING) {
             listItems.add(buildMenuListItem(R.string.bookmark_show_in_folder, 0, 0));
@@ -252,6 +246,13 @@ public abstract class BookmarkRow
         }
 
         return listItems;
+    }
+
+    private void addListItems(ModelList listItems, boolean canMove) {
+        listItems.add(buildMenuListItem(R.string.bookmark_item_select, 0, 0));
+        listItems.add(buildMenuListItem(R.string.bookmark_item_move, 0, 0, canMove));
+        listItems.add(buildMenuListItem(R.string.bookmark_item_edit, 0, 0));
+        listItems.add(buildMenuListItem(R.string.bookmark_item_delete, 0, 0));
     }
 
     private ListMenu getListMenu() {

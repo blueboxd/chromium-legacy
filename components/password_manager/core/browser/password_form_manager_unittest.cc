@@ -33,6 +33,7 @@
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/mock_webauthn_credentials_delegate.h"
 #include "components/password_manager/core/browser/passkey_credential.h"
@@ -622,7 +623,7 @@ TEST_P(PasswordFormManagerTest, Autofill) {
   CreateFormManager(observed_form_);
   EXPECT_CALL(driver_, FormEligibleForGenerationFound(_)).Times(0);
   PasswordFormFillData fill_data;
-  EXPECT_CALL(driver_, SetPasswordFillData(_)).WillOnce(SaveArg<0>(&fill_data));
+  EXPECT_CALL(driver_, SetPasswordFillData).WillOnce(SaveArg<0>(&fill_data));
   CreateFormManager(observed_form_);
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
@@ -646,19 +647,19 @@ TEST_P(PasswordFormManagerTest, Autofill) {
 
 TEST_P(PasswordFormManagerTest, AutofillNotMoreThan5Times) {
   PasswordFormManager::set_wait_for_server_predictions_for_filling(false);
-  EXPECT_CALL(driver_, SetPasswordFillData(_));
+  EXPECT_CALL(driver_, SetPasswordFillData);
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
   task_environment_.FastForwardUntilNoTasksRemain();
   Mock::VerifyAndClearExpectations(&driver_);
 
   for (size_t i = 0; i < PasswordFormManager::kMaxTimesAutofill - 1; ++i) {
-    EXPECT_CALL(driver_, SetPasswordFillData(_));
+    EXPECT_CALL(driver_, SetPasswordFillData);
     form_manager_->Fill();
     Mock::VerifyAndClearExpectations(&driver_);
   }
 
-  EXPECT_CALL(driver_, SetPasswordFillData(_)).Times(0);
+  EXPECT_CALL(driver_, SetPasswordFillData).Times(0);
   form_manager_->Fill();
 }
 
@@ -673,7 +674,7 @@ TEST_P(PasswordFormManagerTest, AutofillSignUpForm) {
   observed_form_.fields.back().autocomplete_attribute = "new-password";
 
   PasswordFormFillData fill_data;
-  EXPECT_CALL(driver_, SetPasswordFillData(_)).WillOnce(SaveArg<0>(&fill_data));
+  EXPECT_CALL(driver_, SetPasswordFillData).WillOnce(SaveArg<0>(&fill_data));
 
   PasswordFormGenerationData generation_data;
   EXPECT_CALL(driver_, FormEligibleForGenerationFound(_))
@@ -732,7 +733,7 @@ TEST_P(PasswordFormManagerTest, GenerationOnNewAndConfirmPasswordFields) {
 
 TEST_P(PasswordFormManagerTest, AutofillWithBlocklistedMatch) {
   PasswordFormFillData fill_data;
-  EXPECT_CALL(driver_, SetPasswordFillData(_)).WillOnce(SaveArg<0>(&fill_data));
+  EXPECT_CALL(driver_, SetPasswordFillData).WillOnce(SaveArg<0>(&fill_data));
   fetcher_->SetNonFederated({&saved_match_});
   fetcher_->SetBlocklisted(true);
   fetcher_->NotifyFetchCompleted();
@@ -782,7 +783,7 @@ TEST_P(PasswordFormManagerTest, SetSubmittedMultipleTimes) {
 // server predictions and fills on receiving them.
 TEST_P(PasswordFormManagerTest, ServerPredictionsWithinDelay) {
   // Expects no filling on save matches receiving.
-  EXPECT_CALL(driver_, SetPasswordFillData(_)).Times(0);
+  EXPECT_CALL(driver_, SetPasswordFillData).Times(0);
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
   Mock::VerifyAndClearExpectations(&driver_);
 
@@ -790,19 +791,19 @@ TEST_P(PasswordFormManagerTest, ServerPredictionsWithinDelay) {
       observed_form_, {std::make_pair(2, autofill::PASSWORD)});
 
   // Expect filling without delay on receiving server predictions.
-  EXPECT_CALL(driver_, SetPasswordFillData(_)).Times(1);
+  EXPECT_CALL(driver_, SetPasswordFillData).Times(1);
   form_manager_->ProcessServerPredictions(predictions);
   Mock::VerifyAndClearExpectations(&driver_);
 
   // Expect no filling on receiving predictions again.
-  EXPECT_CALL(driver_, SetPasswordFillData(_)).Times(0);
+  EXPECT_CALL(driver_, SetPasswordFillData).Times(0);
   form_manager_->ProcessServerPredictions(predictions);
 }
 
 // Tests that PasswordFormManager fills after some delay even without
 // server predictions.
 TEST_P(PasswordFormManagerTest, ServerPredictionsAfterDelay) {
-  EXPECT_CALL(driver_, SetPasswordFillData(_)).Times(1);
+  EXPECT_CALL(driver_, SetPasswordFillData).Times(1);
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
   // Expect filling after passing filling delay.
 
@@ -815,7 +816,7 @@ TEST_P(PasswordFormManagerTest, ServerPredictionsAfterDelay) {
 
   // Expect filling on receiving server predictions because it was less than
   // kMaxTimesAutofill attempts to fill.
-  EXPECT_CALL(driver_, SetPasswordFillData(_)).Times(1);
+  EXPECT_CALL(driver_, SetPasswordFillData).Times(1);
   form_manager_->ProcessServerPredictions(predictions);
   task_environment_.FastForwardUntilNoTasksRemain();
 }
@@ -825,7 +826,7 @@ TEST_P(PasswordFormManagerTest, ServerPredictionsAfterDelay) {
 TEST_P(PasswordFormManagerTest, ServerPredictionsBeforeFetcher) {
   // Expect no filling after receiving saved matches from |fetcher_|, since
   // |form_manager| is waiting for server-side predictions.
-  EXPECT_CALL(driver_, SetPasswordFillData(_)).Times(0);
+  EXPECT_CALL(driver_, SetPasswordFillData).Times(0);
   CreateFormManager(observed_form_);
 
   std::map<FormSignature, FormPredictions> predictions = CreatePredictions(
@@ -834,7 +835,7 @@ TEST_P(PasswordFormManagerTest, ServerPredictionsBeforeFetcher) {
   Mock::VerifyAndClearExpectations(&driver_);
 
   // Expect filling without delay on receiving server predictions.
-  EXPECT_CALL(driver_, SetPasswordFillData(_)).Times(1);
+  EXPECT_CALL(driver_, SetPasswordFillData).Times(1);
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 }
 
@@ -1613,7 +1614,7 @@ bool ParsingSuccessReported(const ukm::mojom::UkmEntry* entry,
 // Test that an attempt to log to ReadonlyWhenFilling UKM is made when filling.
 TEST_P(PasswordFormManagerTest, RecordReadonlyWhenFilling) {
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-  EXPECT_CALL(driver_, SetPasswordFillData(_));
+  EXPECT_CALL(driver_, SetPasswordFillData);
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
   task_environment_.FastForwardUntilNoTasksRemain();
@@ -2062,7 +2063,7 @@ TEST_P(PasswordFormManagerTest, HasObservedFormChangedCssClasses) {
 
 TEST_P(PasswordFormManagerTest, UpdateFormAndFill) {
   CreateFormManager(observed_form_);
-  EXPECT_CALL(driver_, SetPasswordFillData(_));
+  EXPECT_CALL(driver_, SetPasswordFillData);
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
   task_environment_.FastForwardUntilNoTasksRemain();
   Mock::VerifyAndClearExpectations(&driver_);
@@ -2074,7 +2075,7 @@ TEST_P(PasswordFormManagerTest, UpdateFormAndFill) {
   form.fields[kPasswordFieldIndex].unique_renderer_id.value() += 1000;
 
   PasswordFormFillData fill_data;
-  EXPECT_CALL(driver_, SetPasswordFillData(_)).WillOnce(SaveArg<0>(&fill_data));
+  EXPECT_CALL(driver_, SetPasswordFillData).WillOnce(SaveArg<0>(&fill_data));
   form_manager_->UpdateFormManagerWithFormChanges(form, {});
   form_manager_->Fill();
   task_environment_.FastForwardUntilNoTasksRemain();
@@ -2288,7 +2289,7 @@ TEST_P(PasswordFormManagerTest, SaveHttpAuthNoHttpAuthStored) {
     http_auth_form.scheme = PasswordForm::Scheme::kBasic;
 
     // Check that no filling because no http auth credentials are stored.
-    EXPECT_CALL(driver_, SetPasswordFillData(_)).Times(0);
+    EXPECT_CALL(driver_, SetPasswordFillData).Times(0);
     EXPECT_CALL(client_, AutofillHttpAuth(_, _)).Times(0);
 
     CreateFormManagerForNonWebForm(http_auth_form);
@@ -2791,6 +2792,125 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowWithPrefilledUsername) {
   Mock::VerifyAndClearExpectations(&mock_autofill_download_manager_);
 }
 
+// Tests that if prefilled username inside the password form has a matching
+// value with a field found outside of the password form the vote will be sent
+// correctly. In this test case, there is an intermediary field between them.
+TEST_P(PasswordFormManagerTest,
+       UsernameFirstFlowWithIntermediaryFieldsAndPrefilledUsername) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kUsernameFirstFlowFallbackCrowdsourcing,
+                            features::kUsernameFirstFlowWithIntermediateValues,
+                            features::kUsernameFirstFlowStoreSeveralValues},
+      /*disabled_features=*/{});
+
+  CreateFormManager(submitted_form_);
+  fetcher_->NotifyFetchCompleted();
+
+  // Create possible username data.
+  PossibleUsernameData possible_username_data(
+      saved_match_.signon_realm, kSingleUsernameFieldRendererId,
+      submitted_form_.fields[kUsernameFieldIndex].value, base::Time::Now(),
+      /*driver_id=*/0,
+      /*autocomplete_attribute_has_username=*/false, /*is_likely_otp=*/false);
+
+  // Server has no predictions for the single username form.
+  // `possible_username_data.form_predictions` is required to be set correctly
+  // with field signature, form signature, and field renderer id to be able to
+  // send single username votes.
+  auto server_prediction = MakeSingleUsernamePredictions();
+  server_prediction.fields[0].type = autofill::NO_SERVER_DATA;
+  possible_username_data.form_predictions = server_prediction;
+
+  // Create more recent data.
+  const std::u16string possible_username_otp = u"not_username_value";
+  PossibleUsernameData possible_username_data_otp(
+      saved_match_.signon_realm, autofill::FieldRendererId(103u),
+      possible_username_otp, base::Time::Now(),
+      /*driver_id=*/0, /*autocomplete_attribute_has_username=*/false,
+      /*is_likely_otp=*/false);
+
+  base::LRUCache<PossibleUsernameFieldIdentifier, PossibleUsernameData>
+      possible_usernames = MakePossibleUsernamesCache(
+          {possible_username_data_otp, possible_username_data});
+
+  ASSERT_TRUE(form_manager_->ProvisionallySave(submitted_form_, &driver_,
+                                               &possible_usernames));
+
+  // Check that uploads for both single username and sign-up form happen.
+  testing::InSequence in_sequence;
+
+  // Upload username first flow vote on the single username form.
+#if !BUILDFLAG(IS_ANDROID)
+  EXPECT_CALL(mock_autofill_download_manager_,
+              StartUploadRequest(SignatureIs(kSingleUsernameFormSignature),
+                                 false, ServerFieldTypeSet{SINGLE_USERNAME}, _,
+                                 true, nullptr, /*observer=*/IsNull()));
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+  // Upload username first flow vote on the sign-up form.
+  autofill::AutofillUploadContents::SingleUsernameData
+      expected_single_username_data;
+  expected_single_username_data.set_username_form_signature(
+      kSingleUsernameFormSignature.value());
+  expected_single_username_data.set_username_field_signature(
+      kSingleUsernameFieldSignature.value());
+  expected_single_username_data.set_value_type(
+      autofill::AutofillUploadContents::VALUE_WITH_NO_WHITESPACE);
+  expected_single_username_data.set_prompt_edit(
+      autofill::AutofillUploadContents::NOT_EDITED_POSITIVE);
+  EXPECT_CALL(
+      mock_autofill_download_manager_,
+      StartUploadRequest(
+          AllOf(SignatureIs(CalculateFormSignature(submitted_form_)),
+                UploadedSingleUsernameDataIs({expected_single_username_data})),
+          _, _, _, _, _, /*observer=*/IsNull()));
+
+  // Simulate showing the prompt and saving the suggested value.
+  form_manager_->SaveSuggestedUsernameValueToVotesUploader();
+
+  base::HistogramTester histogram_tester;
+
+  form_manager_->Save();
+
+#if !BUILDFLAG(IS_ANDROID)
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.SingleUsername.PasswordFormHadUsernameField", 1, 1);
+#else
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.SingleUsername.PasswordFormHadUsernameField", 0);
+#endif
+  Mock::VerifyAndClearExpectations(&mock_autofill_download_manager_);
+}
+
+// Test that the username field in a single username form can be filled.
+TEST_P(PasswordFormManagerTest, UsernameFirstFlowFillSingleUsernameForm) {
+  // Create the form manager for a form with only a username in it.
+  CreateFormManager(non_password_form_);
+
+  SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
+
+  PasswordFormFillData fill_data;
+  EXPECT_CALL(driver_, SetPasswordFillData).WillOnce(SaveArg<0>(&fill_data));
+
+  // Provide server predictions for the single username form, which will trigger
+  // FillNow().
+  std::map<FormSignature, FormPredictions> predictions =
+      CreatePredictions(non_password_form_,
+                        {std::make_pair(kUsernameFieldIndex, SINGLE_USERNAME)});
+  form_manager_->ProcessServerPredictions(predictions);
+
+  // Verify the fill data used for autofilling the single username form.
+  EXPECT_EQ(non_password_form_.fields[kUsernameFieldIndex].unique_renderer_id,
+            fill_data.username_element_renderer_id);
+  EXPECT_EQ(saved_match_.username_value,
+            fill_data.preferred_login.username_value);
+  EXPECT_EQ(autofill::FieldRendererId(),
+            fill_data.password_element_renderer_id);
+  EXPECT_EQ(saved_match_.password_value,
+            fill_data.preferred_login.password_value);
+}
+
 // Tests that a negative vote is sent when a single username candidate is
 // populated in a prompt, but then is removed by the user in the prompt.
 TEST_P(PasswordFormManagerTest, NegativeUsernameFirstFlowVotes) {
@@ -2980,16 +3100,14 @@ TEST_P(PasswordFormManagerTest, PossibleUsernameServerPredictions) {
   }
 }
 
-// Tests that the most recent possible username is used, even if there
-// is a `SINGLE_USERNAME` server prediction for a less recent possible username
-// in Username First Flow.
-// TODO: crbug.com/1470586 - Update the test once server predictions are
-// prioritized.
-TEST_P(PasswordFormManagerTest, PossibleUsernamesPrioritizeMostRecent) {
+// Tests that the possible username with server prediction is picked as a
+// username in password save prompt, even if there is a field that was more
+// recently typed by the user as a possible username in Username First Flow.
+TEST_P(PasswordFormManagerTest, PossibleUsernamesPrioritizeServerPrediction) {
   const std::u16string possible_username_with_prediction =
       u"possible_username_with_prediction";
   PossibleUsernameData possible_username_data_with_prediction(
-      saved_match_.signon_realm, autofill::FieldRendererId(102u),
+      saved_match_.signon_realm, kSingleUsernameFieldRendererId,
       possible_username_with_prediction, base::Time::Now(),
       /*driver_id=*/0, /*autocomplete_attribute_has_username=*/false,
       /*is_likely_otp=*/false);
@@ -3009,16 +3127,17 @@ TEST_P(PasswordFormManagerTest, PossibleUsernamesPrioritizeMostRecent) {
   // The most recent username doesn't have a prediction, while the least recent
   // has.
   base::LRUCache<PossibleUsernameFieldIdentifier, PossibleUsernameData>
-      possible_usernames = MakePossibleUsernamesCache(
-          {possible_username_data_with_prediction,
-           possible_username_data_without_prediction});
+      possible_usernames =
+          MakePossibleUsernamesCache({possible_username_data_without_prediction,
+                                      possible_username_data_with_prediction});
 
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
 
-  ASSERT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_,
+  EXPECT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_,
                                                &possible_usernames));
-  EXPECT_TRUE(form_manager_->GetPendingCredentials().username_value.empty());
+  EXPECT_EQ(possible_username_with_prediction,
+            form_manager_->GetPendingCredentials().username_value);
 }
 
 // Tests that boolean representing autocomplete = "username" is taken into
@@ -4077,7 +4196,7 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, SaveHttpAuthNoHttpAuthStored) {
     PasswordForm http_auth_form = parsed_observed_form_;
     http_auth_form.scheme = PasswordForm::Scheme::kBasic;
     // Check that no filling because no http auth credentials are stored.
-    EXPECT_CALL(driver_, SetPasswordFillData(_)).Times(0);
+    EXPECT_CALL(driver_, SetPasswordFillData).Times(0);
     EXPECT_CALL(client_, AutofillHttpAuth(_, _)).Times(0);
     CreateFormManagerForNonWebForm(http_auth_form);
     std::vector<const PasswordForm*> saved_matches;

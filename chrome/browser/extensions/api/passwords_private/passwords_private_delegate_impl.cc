@@ -25,7 +25,7 @@
 #include "chrome/browser/password_manager/affiliation_service_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_sender_service_factory.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -56,6 +56,7 @@
 #include "components/password_manager/core/browser/sharing/password_sender_service.h"
 #include "components/password_manager/core/browser/sharing/recipients_fetcher_impl.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
+#include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -285,7 +286,7 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
     : profile_(profile),
       saved_passwords_presenter_(
           AffiliationServiceFactory::GetForProfile(profile),
-          PasswordStoreFactory::GetForProfile(
+          ProfilePasswordStoreFactory::GetForProfile(
               profile,
               ServiceAccessType::EXPLICIT_ACCESS),
           AccountPasswordStoreFactory::GetForProfile(
@@ -393,7 +394,7 @@ void PasswordsPrivateDelegateImpl::GetPasswordExceptionsList(
 absl::optional<api::passwords_private::UrlCollection>
 PasswordsPrivateDelegateImpl::GetUrlCollection(const std::string& url) {
   GURL url_with_scheme = password_manager_util::ConstructGURLWithScheme(url);
-  if (!password_manager_util::IsValidPasswordURL(url_with_scheme)) {
+  if (!password_manager::IsValidPasswordURL(url_with_scheme)) {
     return absl::nullopt;
   }
   return absl::optional<api::passwords_private::UrlCollection>(

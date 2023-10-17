@@ -705,6 +705,7 @@ targets.legacy_basic_suite(
             # put the stub string here.
             tast_expr = "STUB_STRING_TO_RUN_TAST_TESTS",
             test_level_retries = 2,
+            ci_only = True,
             timeout_sec = 7200,
             experiment_percentage = 100,
             shards = 3,
@@ -723,6 +724,7 @@ targets.legacy_basic_suite(
             # put the stub string here.
             tast_expr = "STUB_STRING_TO_RUN_TAST_TESTS",
             test_level_retries = 1,
+            ci_only = True,
             timeout_sec = 7200,
             experiment_percentage = 100,
             shards = 2,
@@ -4960,7 +4962,7 @@ targets.legacy_basic_suite(
                 "--test-launcher-filter-file=../../testing/buildbot/filters/accessibility-linux.browser_tests.filter",
             ],
             swarming = targets.swarming(
-                shards = 8,
+                shards = 20,
             ),
         ),
         "content_browsertests": targets.legacy_test_config(
@@ -4995,7 +4997,7 @@ targets.legacy_basic_suite(
     tests = {
         "lacros_chrome_browsertests_run_in_series": targets.legacy_test_config(
             args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
+                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter;../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
             ],
             swarming = targets.swarming(
                 shards = 2,
@@ -5010,7 +5012,7 @@ targets.legacy_basic_suite(
         "interactive_ui_tests": targets.legacy_test_config(
             test = "interactive_ui_tests",
             args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
+                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
             ],
             swarming = targets.swarming(
                 shards = 3,

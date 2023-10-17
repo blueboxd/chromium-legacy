@@ -12,18 +12,16 @@ import * as Application from 'devtools/panels/application/application.js';
 
 (async function() {
   TestRunner.addResult(`Tests Application Panel response to a main frame navigation.\n`);
-  await TestRunner.loadLegacyModule('console');
   // Note: every test that uses a storage API must manually clean-up state from previous tests.
   await ApplicationTestRunner.resetState();
 
-  await TestRunner.loadLegacyModule('console');
   await TestRunner.showPanel('resources');
 
   function createIndexedDB(callback) {
     var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
-    var model = TestRunner.mainTarget.model(Resources.IndexedDBModel);
+    var model = TestRunner.mainTarget.model(Application.IndexedDBModel.IndexedDBModel);
     ApplicationTestRunner.createDatabase(mainFrameId, 'Database1', () => {
-      var event = model.addEventListener(Resources.IndexedDBModel.Events.DatabaseAdded, () => {
+      var event = model.addEventListener(Application.IndexedDBModel.Events.DatabaseAdded, () => {
         Common.EventTarget.removeEventListeners([event]);
         callback();
       });
@@ -42,7 +40,7 @@ import * as Application from 'devtools/panels/application/application.js';
     var view = Application.ResourcesPanel.ResourcesPanel.instance();
     TestRunner.addResult(label);
     dump(view.sidebar.sidebarTree.rootElement(), '');
-    TestRunner.addResult('Visible view is a query view: ' + (view.visibleView instanceof Resources.DatabaseQueryView));
+    TestRunner.addResult('Visible view is a query view: ' + (view.visibleView instanceof Application.DatabaseQueryView.DatabaseQueryView));
   }
 
   function fireFrameNavigated() {

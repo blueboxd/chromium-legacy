@@ -14,7 +14,7 @@
 #import "components/prefs/pref_service.h"
 #import "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
-#import "ios/web_view/internal/passwords/web_view_password_store_factory.h"
+#import "ios/web_view/internal/passwords/web_view_profile_password_store_factory.h"
 #import "ios/web_view/internal/web_view_browser_state.h"
 
 namespace ios_web_view {
@@ -43,7 +43,7 @@ WebViewPasswordReuseManagerFactory::WebViewPasswordReuseManagerFactory()
     : BrowserStateKeyedServiceFactory(
           "PasswordReuseManager",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(WebViewPasswordStoreFactory::GetInstance());
+  DependsOn(WebViewProfilePasswordStoreFactory::GetInstance());
 }
 
 WebViewPasswordReuseManagerFactory::~WebViewPasswordReuseManagerFactory() =
@@ -61,7 +61,7 @@ WebViewPasswordReuseManagerFactory::BuildServiceInstanceFor(
       std::make_unique<password_manager::PasswordReuseManagerImpl>();
 
   reuse_manager->Init(browser_state->GetPrefs(),
-                      WebViewPasswordStoreFactory::GetForBrowserState(
+                      WebViewProfilePasswordStoreFactory::GetForBrowserState(
                           browser_state, ServiceAccessType::EXPLICIT_ACCESS)
                           .get(),
                       WebViewAccountPasswordStoreFactory::GetForBrowserState(

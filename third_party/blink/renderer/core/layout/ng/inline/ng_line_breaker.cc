@@ -57,7 +57,7 @@ inline LineBreakStrictness StrictnessFromLineBreak(LineBreak line_break) {
 
 // Returns smallest negative left and right bearing in `box_fragment`.
 // This function is used for calculating side bearing.
-NGLineBoxStrut ComputeNegativeSideBearings(
+LineBoxStrut ComputeNegativeSideBearings(
     const NGPhysicalBoxFragment& box_fragment) {
   const auto get_shape_result =
       [](const NGInlineCursor cursor) -> const ShapeResultView* {
@@ -72,7 +72,7 @@ NGLineBoxStrut ComputeNegativeSideBearings(
     return item.TextShapeResult();
   };
 
-  NGLineBoxStrut side_bearing;
+  LineBoxStrut side_bearing;
 
   for (NGInlineCursor cursor(box_fragment); cursor; cursor.MoveToNextLine()) {
     // Take left/right bearing from the first/last child in the line if it has
@@ -225,9 +225,9 @@ inline bool HasUnpositionedFloats(const NGInlineItemResults& item_results) {
 LayoutUnit ComputeInlineEndSize(const NGConstraintSpace& space,
                                 const ComputedStyle* style) {
   DCHECK(style);
-  NGBoxStrut margins = ComputeMarginsForSelf(space, *style);
-  NGBoxStrut borders = ComputeBordersForInline(*style);
-  NGBoxStrut paddings = ComputePadding(space, *style);
+  BoxStrut margins = ComputeMarginsForSelf(space, *style);
+  BoxStrut borders = ComputeBordersForInline(*style);
+  BoxStrut paddings = ComputePadding(space, *style);
 
   return margins.inline_end + borders.inline_end + paddings.inline_end;
 }
@@ -2593,7 +2593,7 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item,
         ShouldApplyInlineKerning(physical_box_fragment)) {
       // Apply "Inline Kerning" to the initial letter box[1].
       // [1] https://drafts.csswg.org/css-inline/#initial-letter-inline-position
-      const NGLineBoxStrut side_bearing =
+      const LineBoxStrut side_bearing =
           ComputeNegativeSideBearings(physical_box_fragment);
       if (IsLtr(base_direction_)) {
         item_result->margins.inline_start += side_bearing.inline_start;
@@ -2854,7 +2854,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
       constraint_space_.AvailableSize(),
       constraint_space_.PercentageResolutionSize(),
       constraint_space_.ReplacedPercentageResolutionSize(),
-      {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
+      {constraint_space_.GetBfcOffset().line_offset, bfc_block_offset},
       constraint_space_, node_.Style());
 
   bool float_after_line =
@@ -2887,7 +2887,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   }
 
   NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
-      {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
+      {constraint_space_.GetBfcOffset().line_offset, bfc_block_offset},
       constraint_space_.AvailableSize().inline_size);
 
   DCHECK_EQ(bfc_block_offset, opportunity.rect.BlockStartOffset());

@@ -166,13 +166,8 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
    * @param {ButtonState} previousBackButtonState
    */
   async function navigateForwardForInstall(page, previousBackButtonState) {
-    const checkShowBusyState =
-        (page !== profileDiscoveryPage && page !== finalPage);
     assertEquals(eSimPage.buttonState.forward, ButtonState.ENABLED);
     assertEquals(eSimPage.buttonState.backward, previousBackButtonState);
-    if (checkShowBusyState) {
-      assertFalse(page.showBusy);
-    }
 
     // If back button is hidden before installation began, the new back button
     // state should also be hidden, if it was enabled new back button state
@@ -186,8 +181,11 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
     assertEquals(eSimPage.buttonState.forward, ButtonState.DISABLED);
     assertEquals(eSimPage.buttonState.cancel, ButtonState.DISABLED);
     assertEquals(eSimPage.buttonState.backward, newBackButtonState);
-    if (checkShowBusyState) {
-      assertTrue(page.showBusy);
+
+    if (page !== profileLoadingPage && page !== profileDiscoveryConsentPage &&
+        page !== finalPage) {
+      assertEquals(
+          ESimPageName.PROFILE_INSTALLING, eSimPage.selectedESimPageName_);
     }
 
     await flushAsync();
@@ -277,6 +275,10 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
     assertButtonState(
         /*forwardButtonShouldBeEnabled=*/ false,
         /*backButtonState=*/ ButtonState.HIDDEN);
+    assertEquals(eSimPage.header, eSimPage.i18n('profileLoadingPageTitle'));
+    assertEquals(
+        profileLoadingPage.loadingMessage,
+        eSimPage.i18n('profileLoadingPageMessage'));
     await flushAsync();
   }
 
@@ -285,6 +287,7 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
     assertButtonState(
         /*forwardButtonShouldBeEnabled*/ true,
         /*backButtonState*/ ButtonState.HIDDEN);
+    assertEquals(eSimPage.header, eSimPage.i18n('profileDiscoveryPageTitle'));
   }
 
   function assertActivationCodePage(
@@ -305,6 +308,7 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
     }
     assertSelectedPage(ESimPageName.CONFIRMATION_CODE, confirmationCodePage);
     assertButtonState(forwardButtonShouldBeEnabled, backButtonState);
+    assertEquals(eSimPage.header, eSimPage.i18n('confimationCodePageTitle'));
   }
 
   test('Error fetching profiles', async function() {
@@ -782,36 +786,6 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
       });
     });
   });
-
-  test(
-      'Show cellular disconnect warning if connected to pSIM network',
-      async function() {
-        assertEquals(
-            profileLoadingPage.loadingMessage,
-            eSimPage.i18n('eSimProfileDetectMessage'));
-
-        const pSimNetwork =
-            OncMojo.getDefaultNetworkState(NetworkType.kCellular, 'cellular');
-        pSimNetwork.connectionState = ConnectionStateType.kConnected;
-        networkConfigRemote.addNetworksForTest([pSimNetwork]);
-        MojoInterfaceProviderImpl.getInstance().remote_ = networkConfigRemote;
-        await flushAsync();
-
-        assertEquals(
-            profileLoadingPage.loadingMessage,
-            eSimPage.i18n(
-                'eSimProfileDetectDuringActiveCellularConnectionMessage'));
-
-        // Disconnect from the network.
-        networkConfigRemote.removeNetworkForTest(pSimNetwork);
-        await flushAsync();
-
-        // The warning should still be showing.
-        assertEquals(
-            profileLoadingPage.loadingMessage,
-            eSimPage.i18n(
-                'eSimProfileDetectDuringActiveCellularConnectionMessage'));
-      });
 
   test('Show final page with error if no EUICC', async function() {
     eSimPage.initSubflow();

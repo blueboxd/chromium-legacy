@@ -131,18 +131,20 @@ public class SigninManagerImplTest {
         when(mNativeMock.isSigninAllowedByPolicy(NATIVE_SIGNIN_MANAGER)).thenReturn(true);
         // Pretend Google Play services are available as it is required for the sign-in
         when(mExternalAuthUtils.isGooglePlayServicesMissing(any())).thenReturn(false);
-        when(mProfile.isChild()).thenReturn(false);
-        doAnswer(invocation -> {
-            Runnable runnable = invocation.getArgument(0);
-            runnable.run();
-            return null;
-        })
+        doAnswer(
+                        invocation -> {
+                            Runnable runnable = invocation.getArgument(0);
+                            runnable.run();
+                            return null;
+                        })
                 .when(mAccountTrackerService)
-                .seedAccountsIfNeeded(any(Runnable.class));
+                .legacySeedAccountsIfNeeded(any(Runnable.class));
         // Suppose that the accounts are already seeded
         when(mIdentityManagerNativeMock.findExtendedAccountInfoByEmailAddress(
                      NATIVE_IDENTITY_MANAGER, ACCOUNT_INFO.getEmail()))
                 .thenReturn(ACCOUNT_INFO);
+        when(mIdentityManagerNativeMock.isClearPrimaryAccountAllowed(NATIVE_IDENTITY_MANAGER))
+                .thenReturn(true);
 
         AccountManagerFacadeProvider.setInstanceForTests(mFakeAccountManagerFacade);
 
@@ -527,7 +529,8 @@ public class SigninManagerImplTest {
         when(mIdentityManagerNativeMock.getPrimaryAccountInfo(
                      eq(NATIVE_IDENTITY_MANAGER), anyInt()))
                 .thenReturn(ACCOUNT_INFO);
-        when(mProfile.isChild()).thenReturn(true);
+        when(mIdentityManagerNativeMock.isClearPrimaryAccountAllowed(NATIVE_IDENTITY_MANAGER))
+                .thenReturn(false);
 
         assertFalse(mSigninManager.isSignOutAllowed());
     }

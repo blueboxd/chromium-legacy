@@ -17,7 +17,7 @@
 #import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_affiliation_service_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_bulk_leak_check_service_factory.h"
-#import "ios/chrome/browser/passwords/model/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/passwords/model/password_checkup_metrics.h"
 
 namespace {
@@ -76,7 +76,7 @@ PasswordCheckState ConvertBulkCheckState(State state) {
 IOSChromePasswordCheckManager::IOSChromePasswordCheckManager(
     ChromeBrowserState* browser_state)
     : browser_state_(browser_state),
-      profile_store_(IOSChromePasswordStoreFactory::GetForBrowserState(
+      profile_store_(IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
           browser_state,
           ServiceAccessType::EXPLICIT_ACCESS)),
       account_store_(IOSChromeAccountPasswordStoreFactory::GetForBrowserState(

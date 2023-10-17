@@ -1555,8 +1555,12 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         // Show the tab hover card.
         int hoveredTabIndex = findIndexForTab(mLastHoveredTab.getId());
-        mTabHoverCardView.show(mModel.getTabAt(hoveredTabIndex), mLastHoveredTab,
-                hoveredTabIndex == mModel.index(), mHeight);
+        mTabHoverCardView.show(
+                mModel.getTabAt(hoveredTabIndex),
+                hoveredTabIndex == mModel.index(),
+                mLastHoveredTab.getDrawX(),
+                mLastHoveredTab.getWidth(),
+                mHeight);
     }
 
     private void updateHoveredFolioTabState(StripLayoutTab tab, boolean hovered) {
@@ -1985,11 +1989,21 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         return TabModel.INVALID_TAB_INDEX;
     }
 
+    int getNumLiveTabs() {
+        int numLiveTabs = 0;
+
+        for (int i = 0; i < mStripTabs.length; i++) {
+            if (!mStripTabs[i].isDying()) numLiveTabs++;
+        }
+
+        return numLiveTabs;
+    }
+
     private List<Animator> computeAndUpdateTabWidth(boolean animate, boolean deferAnimations) {
         // Remove any queued resize messages.
         mStripTabEventHandler.removeMessages(MESSAGE_RESIZE);
 
-        int numTabs = Math.max(mStripTabs.length, 1);
+        int numTabs = Math.max(getNumLiveTabs(), 1);
 
         // 1. Compute the width of the available space for all tabs.
         float stripWidth = mWidth - mLeftMargin - mRightMargin;

@@ -58,8 +58,8 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
     container_builder_.SetEndMarginStrut(result.EndMarginStrut());
 
     // Ensure that the parent layout hasn't asked us to move our BFC position.
-    DCHECK_EQ(ConstraintSpace().BfcOffset(),
-              previous_result_.GetConstraintSpaceForCaching().BfcOffset());
+    DCHECK_EQ(ConstraintSpace().GetBfcOffset(),
+              previous_result_.GetConstraintSpaceForCaching().GetBfcOffset());
     container_builder_.SetBfcLineOffset(result.BfcLineOffset());
     if (result.BfcBlockOffset())
       container_builder_.SetBfcBlockOffset(*result.BfcBlockOffset());
@@ -92,7 +92,7 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
     DCHECK(!result.SubtreeModifiedMarginStrut());
     DCHECK(result.EndMarginStrut().IsEmpty());
 
-    DCHECK_EQ(ConstraintSpace().BfcOffset(), NGBfcOffset());
+    DCHECK_EQ(ConstraintSpace().GetBfcOffset(), BfcOffset());
     DCHECK_EQ(result.BfcLineOffset(), LayoutUnit());
     DCHECK_EQ(result.BfcBlockOffset().value_or(LayoutUnit()), LayoutUnit());
 
@@ -259,7 +259,7 @@ const NGLayoutResult* NGSimplifiedLayoutAlgorithm::Layout() {
     if (!result)
       return nullptr;
 
-    const NGMarginStrut end_margin_strut = result->EndMarginStrut();
+    const MarginStrut end_margin_strut = result->EndMarginStrut();
     // No margins should pierce outside formatting-context roots.
     DCHECK(!result->PhysicalFragment().IsFormattingContextRoot() ||
            end_margin_strut.IsEmpty());
@@ -278,7 +278,7 @@ const NGLayoutResult* NGSimplifiedLayoutAlgorithm::Layout() {
     // ideal. We should save this on the physical fragment which initially
     // calculated it.
     const auto* layer = child.GetLayoutBox()->Layer();
-    NGLogicalStaticPosition position = layer->GetStaticPosition();
+    LogicalStaticPosition position = layer->GetStaticPosition();
     container_builder_.AddOutOfFlowChildCandidate(
         To<NGBlockNode>(child), position.offset, position.inline_edge,
         position.block_edge);
@@ -334,7 +334,7 @@ NGSimplifiedLayoutAlgorithm::LayoutWithItemsBuilder() {
 void NGSimplifiedLayoutAlgorithm::AddChildFragment(
     const NGLink& old_fragment,
     const NGPhysicalFragment& new_fragment,
-    const NGMarginStrut* margin_strut,
+    const MarginStrut* margin_strut,
     bool is_self_collapsing) {
   DCHECK_EQ(old_fragment->Size(), new_fragment.Size());
 

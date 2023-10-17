@@ -577,7 +577,13 @@ void PrefetchService::OnGotServiceWorkerResult(
     base::Time check_has_service_worker_start_time,
     OnEligibilityResultCallback result_callback,
     ServiceWorkerCapability service_worker_capability) const {
-  if (prefetch_container && prefetch_container->HasPreloadingAttempt()) {
+  if (!prefetch_container) {
+    std::move(result_callback)
+        .Run(std::move(prefetch_container), false, absl::nullopt);
+    return;
+  }
+  CHECK(prefetch_container);
+  if (prefetch_container->HasPreloadingAttempt()) {
     const auto duration =
         base::Time::Now() - check_has_service_worker_start_time;
     auto* preloading_attempt = static_cast<PreloadingAttemptImpl*>(
@@ -591,7 +597,7 @@ void PrefetchService::OnGotServiceWorkerResult(
       break;
     case ServiceWorkerCapability::SERVICE_WORKER_WITH_FETCH_HANDLER:
       std::move(result_callback)
-          .Run(prefetch_container, false,
+          .Run(std::move(prefetch_container), false,
                PrefetchStatus::kPrefetchNotEligibleUserHasServiceWorker);
       return;
   }
@@ -605,7 +611,7 @@ void PrefetchService::OnGotServiceWorkerResult(
       !prefetch_container
            ->IsIsolatedNetworkContextRequiredForCurrentPrefetch()) {
     std::move(result_callback)
-        .Run(prefetch_container, false,
+        .Run(std::move(prefetch_container), false,
              PrefetchStatus::
                  kPrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy);
     return;
@@ -614,7 +620,8 @@ void PrefetchService::OnGotServiceWorkerResult(
   // isolated network context.
   if (!prefetch_container
            ->IsIsolatedNetworkContextRequiredForCurrentPrefetch()) {
-    std::move(result_callback).Run(prefetch_container, true, absl::nullopt);
+    std::move(result_callback)
+        .Run(std::move(prefetch_container), true, absl::nullopt);
     return;
   }
   StoragePartition* default_storage_partition =
@@ -625,7 +632,8 @@ void PrefetchService::OnGotServiceWorkerResult(
   default_storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
       url, options, net::CookiePartitionKeyCollection::Todo(),
       base::BindOnce(&PrefetchService::OnGotCookiesForEligibilityCheck,
-                     weak_method_factory_.GetWeakPtr(), url, prefetch_container,
+                     weak_method_factory_.GetWeakPtr(), url,
+                     std::move(prefetch_container),
                      std::move(result_callback)));
 }
 
@@ -1198,26 +1206,13 @@ void PrefetchService::OnPrefetchRedirect(
       active_prefetches_.find(prefetch_container->GetPrefetchContainerKey()) !=
       active_prefetches_.end());
 
-  prefetch_container->AddRedirectHop(redirect_info);
-
   // Update the prefetch's referrer in case a redirect requires a change in
   // network context and a new request needs to be started.
-  prefetch_container->UpdateReferrer(
-      GURL(redirect_info.new_referrer),
+  const auto new_referrer_policy =
       blink::ReferrerUtils::NetToMojoReferrerPolicy(
-          redirect_info.new_referrer_policy));
-
-  // Check that the prefetch's referrer policy is sufficiently strict to allow
-  // for the redirect to be followed.
-  net::SchemefulSite previous_site =
-      prefetch_container->GetSiteForPreviousRedirectHop(redirect_info.new_url);
-  net::SchemefulSite redirect_site(redirect_info.new_url);
-  bool is_referrer_policy_sufficiently_strict =
-      IsReferrerPolicySufficientlyStrict(
-          prefetch_container->GetReferrer().policy);
+          redirect_info.new_referrer_policy);
 
   absl::optional<PrefetchRedirectResult> failure;
-
   if (!base::FeatureList::IsEnabled(features::kPrefetchRedirects)) {
     failure = PrefetchRedirectResult::kFailedRedirectsDisabled;
   } else if (redirect_info.new_method != "GET") {
@@ -1226,8 +1221,11 @@ void PrefetchService::OnPrefetchRedirect(
              redirect_head->headers->response_code() < 300 ||
              redirect_head->headers->response_code() >= 400) {
     failure = PrefetchRedirectResult::kFailedInvalidResponseCode;
-  } else if (previous_site != redirect_site &&
-             !is_referrer_policy_sufficiently_strict) {
+  } else if (net::SchemefulSite(prefetch_container->GetCurrentURL()) !=
+                 net::SchemefulSite(redirect_info.new_url) &&
+             !IsReferrerPolicySufficientlyStrict(new_referrer_policy)) {
+    // The new referrer policy is not sufficiently strict to allow cross-site
+    // redirects.
     failure = PrefetchRedirectResult::kFailedInsufficientReferrerPolicy;
   }
 
@@ -1242,6 +1240,10 @@ void PrefetchService::OnPrefetchRedirect(
     RecordRedirectResult(*failure);
     return;
   }
+
+  prefetch_container->AddRedirectHop(redirect_info);
+  prefetch_container->UpdateReferrer(GURL(redirect_info.new_referrer),
+                                     new_referrer_policy);
 
   RecordRedirectNetworkContextTransition(
       prefetch_container
@@ -1559,12 +1561,6 @@ std::vector<PrefetchContainer*> PrefetchService::FindPrefetchContainerToServe(
         matches.push_back(prefetch);
         break;
     }
-  }
-  // Filter by prefetch redirect support
-  if (!base::FeatureList::IsEnabled(features::kPrefetchRedirects)) {
-    base::EraseIf(matches, [](const auto* prefetch_container) {
-      return prefetch_container->GetRedirectChainSize() > 1;
-    });
   }
   return matches;
 }

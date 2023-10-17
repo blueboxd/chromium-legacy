@@ -12,8 +12,8 @@
 #include "third_party/blink/renderer/core/layout/geometry/axis.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/list/layout_outside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -107,16 +107,16 @@ class CORE_EXPORT NGLayoutInputNode {
   bool ShouldBeConsideredAsReplaced() const {
     return box_->ShouldBeConsideredAsReplaced();
   }
-  bool IsListItem() const { return IsBlock() && box_->IsLayoutNGListItem(); }
+  bool IsListItem() const { return IsBlock() && box_->IsLayoutListItem(); }
   // Returns the list marker if |this.IsListItem()| with an outside list marker.
   // Otherwise |nullptr|.
   NGBlockNode ListMarkerBlockNodeIfListItem() const;
   bool IsListMarker() const {
-    return IsBlock() && box_->IsLayoutNGOutsideListMarker();
+    return IsBlock() && box_->IsLayoutOutsideListMarker();
   }
   bool ListMarkerOccupiesWholeLine() const {
     DCHECK(IsListMarker());
-    return To<LayoutNGOutsideListMarker>(box_.Get())->NeedsOccupyWholeLine();
+    return To<LayoutOutsideListMarker>(box_.Get())->NeedsOccupyWholeLine();
   }
   bool IsButton() const { return IsBlock() && box_->IsButton(); }
   bool IsFieldsetContainer() const { return IsBlock() && box_->IsFieldset(); }
@@ -231,7 +231,7 @@ class CORE_EXPORT NGLayoutInputNode {
   PhysicalSize InitialContainingBlockSize() const;
 
   // Returns the LayoutObject which is associated with this node.
-  LayoutBox* GetLayoutBox() const { return box_; }
+  LayoutBox* GetLayoutBox() const { return box_.Get(); }
 
   const ComputedStyle& Style() const { return box_->StyleRef(); }
 

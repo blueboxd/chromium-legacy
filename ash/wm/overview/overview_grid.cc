@@ -57,6 +57,7 @@
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/backdrop_controller.h"
@@ -66,6 +67,7 @@
 #include "base/functional/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
+#include "base/trace_event/trace_event.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
@@ -353,7 +355,7 @@ std::unique_ptr<views::Widget> CreateSaveDeskButtonContainerWidget(
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
   // This should not show up in the MRU list. Otherwise, it will be treated as
   // unsupported crostini app.
-  params.init_properties_container.SetProperty(kExcludeInMruKey, true);
+  params.init_properties_container.SetProperty(kOverviewUiKey, true);
 
   auto widget = std::make_unique<views::Widget>();
   widget->set_focus_on_creation(false);
@@ -363,7 +365,6 @@ std::unique_ptr<views::Widget> CreateSaveDeskButtonContainerWidget(
 
   aura::Window* window = widget->GetNativeWindow();
   window->parent()->StackChildAtBottom(window);
-  window->SetId(kShellWindowId_SaveDeskButtonContainer);
   return widget;
 }
 
@@ -1731,9 +1732,8 @@ void OverviewGrid::EndScroll() {
 int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(
     OverviewItemBase* item,
     int height) {
-  const gfx::Size item_size(0, height);
   gfx::SizeF target_size = item->GetTargetBoundsInScreen().size();
-  float scale = item->GetItemScale(item_size);
+  float scale = item->GetItemScale(height);
   OverviewGridWindowFillMode grid_fill_mode = item->GetWindowDimensionsType();
 
   // The drop target, unlike the other windows has its bounds set directly, so
@@ -1773,9 +1773,8 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(
         target_size.SetToMin(gfx::SizeF(work_area_size));
       }
 
-      const gfx::SizeF inset_size(0, height);
       scale = ScopedOverviewTransformWindow::GetItemScale(
-          target_size, inset_size, GetTopViewInset(dragged_windows),
+          target_size.height(), height, GetTopViewInset(dragged_windows),
           kHeaderHeightDp);
     }
   }
@@ -2024,7 +2023,6 @@ void OverviewGrid::UpdateNoWindowsWidget(bool no_items,
 
     aura::Window* widget_window = no_windows_widget_->GetNativeWindow();
     widget_window->parent()->StackChildAtBottom(widget_window);
-    widget_window->SetId(kShellWindowId_OverviewNoWindowsLabelWindow);
 
     ScopedOverviewAnimationSettings settings(
         animate && !is_continuous_enter ? OVERVIEW_ANIMATION_NO_RECENTS_FADE

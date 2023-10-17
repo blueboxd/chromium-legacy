@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/editor_menu/editor_menu_view_delegate.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/ime/text_input_flags.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/color/color_id.h"
@@ -41,8 +42,9 @@ constexpr gfx::Size kArrowButtonSize(32, 32);
 }  // namespace
 
 EditorMenuTextfieldView::EditorMenuTextfieldView(
+    EditorMenuMode editor_menu_mode,
     EditorMenuViewDelegate* delegate)
-    : delegate_(delegate) {
+    : editor_menu_mode_(editor_menu_mode), delegate_(delegate) {
   CHECK(delegate_);
 }
 
@@ -89,8 +91,14 @@ void EditorMenuTextfieldView::InitLayout() {
   textfield_ = AddChildView(std::make_unique<views::Textfield>());
   textfield_->set_controller(this);
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
+  // TODO:b:302404392 - Consider removing the line below after fixing the autocorrect crash
+  // issue in native views
+  textfield_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
   textfield_->SetAccessibleName(kContainerTitle);
-  textfield_->SetPlaceholderText(kContainerTitle);
+  textfield_->SetPlaceholderText(l10n_util::GetStringUTF16(
+      editor_menu_mode_ == EditorMenuMode::kWrite
+          ? IDS_EDITOR_MENU_WRITE_CARD_FREEFORM_PLACEHOLDER
+          : IDS_EDITOR_MENU_REWRITE_CARD_FREEFORM_PLACEHOLDER));
   textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
   textfield_->RemoveHoverEffect();
   textfield_->SetExtraInsets(

@@ -109,18 +109,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Download.Bubble.DragInfo" enum="Download.DragInfo"
-    expires_after="2023-11-12">
-  <owner>xinghuilu@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    This tracks drag events on a complete download on the bubble, and also
-    general download completion on the bubble as a point of reference. Note that
-    the completion can be logged multiple times for a single download if the
-    download bubble is shown and dismissed multiple times.
-  </summary>
-</histogram>
-
 <histogram name="Download.Bubble.LoadAndSetIconLatency" units="ms"
     expires_after="2023-08-20">
   <obsolete>
@@ -349,27 +337,6 @@ chromium-metrics-reviews@google.com.
     Records when user is shown the download danger prompt while attempting to
     recover a blocked download from chrome://downloads, grouped by the type of
     file.
-  </summary>
-</histogram>
-
-<histogram name="Download.DownloadManagerImpl.CreateDownloadItemTime"
-    units="ms" expires_after="2024-03-17">
-  <owner>chlily@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records time taken to execute DownloadManagerImpl::CreateDownloadItem(),
-    logged on each execution.
-  </summary>
-</histogram>
-
-<histogram name="Download.DownloadManagerImpl.PostInitializationTime"
-    units="ms" expires_after="2024-03-17">
-  <owner>chlily@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records time taken to execute DownloadManagerImpl::PostInitialization(),
-    logged on each execution unless the function returns early due to already
-    being initialized.
   </summary>
 </histogram>
 
@@ -646,62 +613,6 @@ chromium-metrics-reviews@google.com.
   <owner>clank-downloads@google.com</owner>
   <summary>
     Records events for download later feature in download Android UI.
-  </summary>
-</histogram>
-
-<histogram name="Download.LoadHistoryDownloads.AddExtensionInfoAndNotifyTime"
-    units="ms" expires_after="2024-03-17">
-  <owner>chlily@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records the time taken to add the DownloadedByExtension data to the
-    DownloadItem and notify observers in
-    DownloadHistory::LoadHistoryDownloads(), logged on each loop iteration (once
-    per DownloadRow) if extensions are enabled.
-  </summary>
-</histogram>
-
-<histogram
-    name="Download.LoadHistoryDownloads.DeserializeStoragePartitionConfigTime"
-    units="ms" expires_after="2024-03-17">
-  <owner>chlily@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records the time taken to obtain the StoragePartitionConfig from the
-    serialized embedder download data in
-    DownloadHistory::LoadHistoryDownloads(), logged on each loop iteration (once
-    per DownloadRow).
-  </summary>
-</histogram>
-
-<histogram name="Download.LoadHistoryDownloads.DownloadRows" units="rows"
-    expires_after="2024-03-17">
-  <owner>chlily@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records the number of rows passed to
-    DownloadHistory::LoadHistoryDownloads(), logged on each execution.
-  </summary>
-</histogram>
-
-<histogram name="Download.LoadHistoryDownloads.NotifyObserversTime" units="ms"
-    expires_after="2024-03-17">
-  <owner>chlily@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records the total time taken to call OnHistoryQueryComplete() on all the
-    observers in DownloadHistory::LoadHistoryDownloads(), logged on each
-    execution of the latter.
-  </summary>
-</histogram>
-
-<histogram name="Download.LoadHistoryDownloadsTime" units="ms"
-    expires_after="2024-03-17">
-  <owner>chlily@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records time taken to execute DownloadHistory::LoadHistoryDownloads(),
-    logged on each execution.
   </summary>
 </histogram>
 

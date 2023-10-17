@@ -19,7 +19,7 @@ class NGBoxFragmentBuilder;
 class NGBlockNode;
 class NGConstraintSpace;
 class NGLayoutResult;
-struct NGLogicalStaticPosition;
+struct LogicalStaticPosition;
 
 struct CORE_EXPORT NGLogicalOutOfFlowDimensions {
   LayoutUnit MarginBoxInlineStart() const {
@@ -35,9 +35,9 @@ struct CORE_EXPORT NGLogicalOutOfFlowDimensions {
     return inset.block_start + size.block_size + margins.block_end;
   }
 
-  NGBoxStrut inset;
+  BoxStrut inset;
   LogicalSize size = {kIndefiniteSize, kIndefiniteSize};
-  NGBoxStrut margins;
+  BoxStrut margins;
 };
 
 struct CORE_EXPORT NGLogicalOutOfFlowInsets {
@@ -59,12 +59,12 @@ CORE_EXPORT LogicalRect
 ComputeOutOfFlowAvailableRect(const NGBlockNode&,
                               const NGConstraintSpace&,
                               const NGLogicalOutOfFlowInsets&,
-                              const NGLogicalStaticPosition&);
+                              const LogicalStaticPosition&);
 CORE_EXPORT LogicalRect
 ComputeOutOfFlowAvailableRect(const NGBlockNode&,
                               const LogicalSize& available_size,
                               const NGLogicalOutOfFlowInsets&,
-                              const NGLogicalStaticPosition&);
+                              const LogicalStaticPosition&);
 
 // The following routines implement the absolute size resolution algorithm.
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-width
@@ -85,8 +85,8 @@ CORE_EXPORT bool ComputeOutOfFlowInlineDimensions(
     const ComputedStyle& style,
     const NGConstraintSpace&,
     const NGLogicalOutOfFlowInsets&,
-    const NGBoxStrut& border_padding,
-    const NGLogicalStaticPosition&,
+    const BoxStrut& border_padding,
+    const LogicalStaticPosition&,
     LogicalSize computed_available_size,
     const absl::optional<LogicalSize>& replaced_size,
     const WritingDirectionMode container_writing_direction,
@@ -100,8 +100,8 @@ CORE_EXPORT const NGLayoutResult* ComputeOutOfFlowBlockDimensions(
     const ComputedStyle& style,
     const NGConstraintSpace&,
     const NGLogicalOutOfFlowInsets&,
-    const NGBoxStrut& border_padding,
-    const NGLogicalStaticPosition&,
+    const BoxStrut& border_padding,
+    const LogicalStaticPosition&,
     LogicalSize computed_available_size,
     const absl::optional<LogicalSize>& replaced_size,
     const WritingDirectionMode container_writing_direction,

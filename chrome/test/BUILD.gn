@@ -83,7 +83,6 @@ if (is_android) {
   android_library("test_support_java") {
     testonly = true
     deps = [
-      "//base:jni_java",
       "//chrome/android:chrome_all_java",
       "//chrome/browser/feedback/android:java",
       "//chrome/browser/profiles/android:java",
@@ -96,6 +95,7 @@ if (is_android) {
       "//content/public/android:content_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/blink/public/mojom:android_mojo_bindings_java",
+      "//third_party/jni_zero:jni_zero_java",
     ]
     srcjar_deps = [ ":test_support_jni_headers" ]
     sources = [
@@ -1035,6 +1035,7 @@ if (is_chromeos && is_chromeos_device) {
         "../browser/ash/featured_integration_test.cc",
         "../browser/ash/login/lock/lock_screen_integration_test.cc",
         "../browser/ash/ml_integration_test.cc",
+        "../browser/ash/screenshot_integration_test.cc",
         "../browser/ui/ash/app_list/app_list_integration_test.cc",
         "../browser/ui/ash/quick_settings_integration_test.cc",
         "../browser/ui/ash/shelf/shelf_integration_test.cc",
@@ -1268,6 +1269,10 @@ if (is_android) {
       "//components/user_manager:user_manager",
       "//components/webapps/browser:test_support",
     ]
+
+    if (enable_chrome_android_internal) {
+      data_deps = [ "//clank/build/bot/filters:android_browsertests_filters" ]
+    }
 
     # Add unwind tables in android_browsertests apk to support enabling
     # sampling profiler. The unwind tables are generated from debug info in the
@@ -2735,8 +2740,6 @@ if (!is_android) {
       sources += [
         # TODO(b/301587955): Fix placement of supervised_user/e2e test files and their dependencies.
         "../browser/supervised_user/url_filter_interactive_uitest.cc",
-        "supervised_user/custom_state_observers.cc",
-        "supervised_user/custom_state_observers.h",
         "supervised_user/family_live_test.cc",
         "supervised_user/family_live_test.h",
         "supervised_user/family_member.cc",
@@ -2959,6 +2962,7 @@ if (!is_android) {
       deps += [
         "//chrome/browser/chromeos",
         "//chrome/browser/chromeos:test_support",
+        "//chrome/browser/chromeos/cros_apps:all_browser_tests",
         "//chrome/browser/web_applications/app_service",
         "//chromeos/constants",
         "//chromeos/dbus/dlp:dlp",
@@ -3898,6 +3902,7 @@ if (!is_android) {
         "../browser/ui/views/importer/import_lock_dialog_view_browsertest.cc",
         "../browser/ui/views/javascript_tab_modal_dialog_view_views_browsertest.cc",
         "../browser/ui/views/location_bar/content_setting_bubble_dialog_browsertest.cc",
+        "../browser/ui/views/location_bar/cookie_controls/cookie_controls_bubble_view_browsertest.cc",
         "../browser/ui/views/location_bar/custom_tab_bar_view_browsertest.cc",
         "../browser/ui/views/location_bar/location_bar_view_browsertest.cc",
         "../browser/ui/views/location_bar/location_icon_view_browsertest.cc",
@@ -4084,9 +4089,12 @@ if (!is_android) {
         "../browser/supervised_user/supervised_user_url_filter_browsertest.cc",
         "../browser/ui/views/extensions/extension_install_dialog_view_supervised_browsertest.cc",
       ]
-      if (enable_extensions) {
+
+      # Extension approvals tests for Desktop platforms only.
+      # ChromeOS has a different platform-specific approval flow.
+      if (enable_extensions && (is_win || is_mac || is_linux)) {
         sources += [
-          "../browser/supervised_user/supervised_user_extension_browsertest.cc",
+          "../browser/supervised_user/linux_mac_windows/supervised_user_extension_browsertest.cc",
           "../browser/ui/views/supervised_user/extension_install_blocked_by_parent_dialog_browsertest.cc",
           "../browser/ui/views/supervised_user/parent_permission_dialog_view_browsertest.cc",
           "../browser/ui/views/supervised_user/parent_permission_extension_flow_view_browsertest.cc",
@@ -4200,6 +4208,7 @@ if (!is_android) {
         "../browser/ash/display/display_prefs_browsertest.cc",
         "../browser/ash/display/quirks_browsertest.cc",
         "../browser/ash/drive/drive_integration_service_browsertest.cc",
+        "../browser/ash/eche_app/eche_app_accessibility_provider_proxy_browsertest.cc",
         "../browser/ash/file_manager/external_filesystem_apitest.cc",
         "../browser/ash/file_manager/file_manager_browsertest.cc",
         "../browser/ash/file_manager/file_manager_browsertest_base.cc",
@@ -4637,6 +4646,12 @@ if (!is_android) {
         "../browser/ui/webui/ash/parent_access/parent_access_browsertest_base.cc",
         "../browser/ui/webui/ash/parent_access/parent_access_browsertest_base.h",
         "../browser/ui/webui/ash/parent_access/parent_access_dialog_browsertest.cc",
+        "../browser/ui/webui/ash/settings/integration_tests/os_settings_auto_screen_lock_browsertest.cc",
+        "../browser/ui/webui/ash/settings/integration_tests/os_settings_lock_screen_authentication_browsertest.cc",
+        "../browser/ui/webui/ash/settings/integration_tests/os_settings_notification_settings_browsertest.cc",
+        "../browser/ui/webui/ash/settings/integration_tests/os_settings_password_setup_browsertest.cc",
+        "../browser/ui/webui/ash/settings/integration_tests/os_settings_pin_setup_browsertest.cc",
+        "../browser/ui/webui/ash/settings/integration_tests/os_settings_recovery_browsertest.cc",
         "../browser/ui/webui/ash/settings/pages/a11y/accessibility_handler_browsertest.cc",
         "../browser/ui/webui/ash/settings/pages/files/google_drive_handler_browsertest.cc",
         "../browser/ui/webui/ash/settings/pages/people/account_manager_ui_handler_browsertest.cc",
@@ -4644,12 +4659,6 @@ if (!is_android) {
         "../browser/ui/webui/ash/smb_shares/smb_credentials_dialog_browsertest.cc",
         "../browser/ui/webui/ash/system_web_dialog_browsertest.cc",
         "../browser/ui/webui/nearby_share/nearby_share_dialog_ui_browsertest.cc",
-        "../browser/ui/webui/settings/ash/os_settings_auto_screen_lock_browsertest.cc",
-        "../browser/ui/webui/settings/ash/os_settings_lock_screen_authentication_browsertest.cc",
-        "../browser/ui/webui/settings/ash/os_settings_notification_settings_browsertest.cc",
-        "../browser/ui/webui/settings/ash/os_settings_password_setup_browsertest.cc",
-        "../browser/ui/webui/settings/ash/os_settings_pin_setup_browsertest.cc",
-        "../browser/ui/webui/settings/ash/os_settings_recovery_browsertest.cc",
         "../browser/ui/webui/signin/ash/inline_login_dialog_browsertest.cc",
         "../browser/ui/webui/signin/ash/inline_login_handler_impl_browsertest.cc",
         "../browser/ui/webui/signin/ash/signin_helper_browsertest.cc",
@@ -4665,7 +4674,7 @@ if (!is_android) {
         # actually needed and also which should be pulled in via
         # data or data_deps and through which dependencies.
         "//chromeos/test/data/",
-        "//ui/file_manager/integration_tests/",
+        "//ui/file_manager/integration_tests/testing_provider/",
         "$root_out_dir/chromevox_test_data/",
         "$root_out_dir/content_shell.pak",
         "$root_out_dir/resources/chromeos/",
@@ -4679,6 +4688,7 @@ if (!is_android) {
         "//ash/keyboard/ui:resources",
         "//chrome",
         "//testing/buildbot/filters:chromeos_filters",
+        "//ui/file_manager/integration_tests:build",
       ]
       if (use_dbus) {
         deps += [ "//dbus:test_support" ]
@@ -4958,6 +4968,7 @@ if (!is_android) {
         "//ui/events/devices:test_support",
         "//ui/file_manager:file_manager_gen_resources_grit",
         "//ui/file_manager:resources_grit",
+        "//ui/file_manager/integration_tests:build",
         "//ui/webui/resources/cr_components/app_management:mojo_bindings",
         "//ui/wm/public",
         "//url",
@@ -5319,58 +5330,8 @@ if (is_chromeos_lacros) {
     ]
   }
 
-  # TODO(crbug/1474709): Merge lacros_chrome_browsertests with
-  # lacros_chrome_browsertests_run_in_series.
-  # We are in progress with the migration. Please do NOT add any new tests
-  # in lacros_chrome_browsertests.
-  test("lacros_chrome_browsertests") {
-    use_xvfb = use_xvfb_in_this_config
-
-    configs += [ "//build/config:precompiled_headers" ]
-    defines = [
-      "HAS_OUT_OF_PROC_TEST_RUNNER",
-      "CHROME_VERSION_MAJOR=" + chrome_version_major,
-    ]
-
-    sources = []
-
-    deps = [
-      ":browser_tests_runner",
-      ":lacros_test_support_ui",
-      ":sync_integration_test_support",
-      ":test_support",
-      "//chrome/app:command_ids",
-      "//chrome/browser/chromeos",
-      "//chrome/browser/chromeos:test_support",
-      "//chromeos/crosapi/mojom",
-      "//chromeos/lacros",
-      "//chromeos/lacros:test_support",
-      "//chromeos/startup",
-      "//components/proxy_config:proxy_config",
-      "//components/sync:test_support",
-      "//components/user_manager",
-      "//ui/ozone",
-      "//ui/platform_window",
-    ]
-
-    data = [
-      "//content/test/data/",
-      "data/media/",
-      "data/extensions/api_test/shared_storage_private/",
-      "data/extensions/api_test/login_screen_apis/",
-      "data/extensions/platform_apps/minimal/",
-    ]
-
-    data_deps = [
-      "//build:version_metadata",
-      "//chrome:packed_resources",
-      "//testing/buildbot/filters:lacros_chrome_browsertests_filters",
-    ]
-  }
-
   # This test target is intended for lacros chrome specific tests that depend
-  # on crosapi and must run in series, for those that can run in parallel,
-  # please use lacros_chrome_browsertests target instead.
+  # on crosapi.
   test("lacros_chrome_browsertests_run_in_series") {
     use_xvfb = use_xvfb_in_this_config
 
@@ -6372,6 +6333,7 @@ test("unit_tests") {
       "../browser/metrics/chrome_metrics_service_client_ash_unittest.cc",
       "../browser/metrics/chromeos_metrics_provider_unittest.cc",
       "../browser/policy/messaging_layer/upload/file_upload_impl_unittest.cc",
+      "../browser/prefs/chrome_pref_service_factory_ash_unittest.cc",
       "../browser/ui/ash/arc_vm_data_migration_confirmation_dialog_unittest.cc",
       "../browser/ui/ash/clipboard_history_url_title_fetcher_impl_unittest.cc",
     ]
@@ -7999,6 +7961,7 @@ test("unit_tests") {
       "//chrome/browser/resources/new_tab_page_instant:resources_grit",
       "//chrome/browser/share/core/crow:crow_configuration_unittest",
       "//chrome/browser/support_tool:support_tool_proto",
+      "//chrome/browser/ui/actions:unit_tests",
       "//chrome/browser/ui/color:color_headers",
       "//chrome/browser/ui/color:mixers",
       "//chrome/browser/ui/webui/discards:mojo_bindings",
@@ -8089,6 +8052,7 @@ test("unit_tests") {
       "../browser/hid/hid_pinned_notification_unittest.cc",
       "../browser/media/platform_verification_chromeos_unittest.cc",
       "../browser/performance_manager/policies/oom_score_policy_chromeos_unittest.cc",
+      "../browser/performance_manager/policies/report_page_processes_policy_unittest.cc",
       "../browser/policy/system_features_disable_list_policy_handler_unittest.cc",
       "../browser/speech/tts_crosapi_util_unittest.cc",
       "../browser/ui/webui/certificate_provisioning_ui_handler_unittest.cc",
@@ -9376,7 +9340,6 @@ test("unit_tests") {
       "../browser/enterprise/connectors/device_trust/attestation/browser/browser_attestation_service_unittest.cc",
       "../browser/enterprise/connectors/device_trust/attestation/browser/device_attester_unittest.cc",
       "../browser/enterprise/connectors/device_trust/attestation/browser/profile_attester_unittest.cc",
-      "../browser/enterprise/connectors/device_trust/attestation/desktop/desktop_attestation_service_unittest.cc",
       "../browser/enterprise/connectors/device_trust/browser/signing_key_policy_observer.cc",
       "../browser/enterprise/connectors/device_trust/signals/dependency_factory_impl_unittest.cc",
       "../browser/enterprise/profile_management/profile_management_navigation_throttle_unittest.cc",
@@ -9647,6 +9610,7 @@ test("unit_tests") {
       "../browser/ui/views/commerce/price_tracking_email_dialog_view_unittest.cc",
       "../browser/ui/views/commerce/price_tracking_icon_view_integration_test.cc",
       "../browser/ui/views/commerce/price_tracking_view_unittest.cc",
+      "../browser/ui/views/compose/compose_dialog_controller_unittest.cc",
       "../browser/ui/views/confirm_bubble_views_unittest.cc",
       "../browser/ui/views/content_setting_bubble_contents_unittest.cc",
       "../browser/ui/views/content_setting_site_row_view_unittest.cc",
@@ -10807,7 +10771,7 @@ if (!is_android && !is_chromeos_device) {
           "../browser/ui/ash/quick_settings_integration_test.cc",
           "../browser/ui/ash/user_education/welcome_tour/welcome_tour_interactive_uitest.cc",
           "../browser/ui/web_applications/test/system_web_app_interactive_uitest.cc",
-          "../browser/ui/webui/settings/ash/privacy_hub_interactive_uitest.cc",
+          "../browser/ui/webui/ash/settings/integration_tests/privacy_hub_interactive_uitest.cc",
           "//ash/drag_drop/drag_drop_interactive_uitest.cc",
 
           # These cannot live in ":test_support" because they use
@@ -11114,6 +11078,10 @@ if (!is_android && !is_chromeos_device) {
     if (safe_browsing_mode == 1) {
       sources += [ "../browser/safe_browsing/safe_browsing_navigation_observer_interactive_test.cc" ]
     }
+
+    if (enterprise_data_controls) {
+      deps += [ "//components/enterprise/data_controls" ]
+    }
   }
 }
 
@@ -11156,7 +11124,6 @@ if (is_android) {
   android_library("sync_integration_test_support_java") {
     testonly = true
     deps = [
-      "//base:jni_java",
       "//chrome/android:chrome_all_java",
       "//chrome/browser/profiles/android:java",
       "//chrome/test/android:chrome_java_integration_test_support",
@@ -11164,6 +11131,7 @@ if (is_android) {
       "//components/signin/public/android:java",
       "//components/sync/android:sync_java",
       "//content/public/test/android:content_java_test_support",
+      "//third_party/jni_zero:jni_zero_java",
       "//third_party/junit",
     ]
     sources = [ "../android/javatests/src/org/chromium/chrome/browser/sync/SyncTestSigninUtils.java" ]
@@ -11859,12 +11827,27 @@ if (is_chromeos_ash) {
 }
 
 if (is_win) {
+  action("generate_allowed_imports") {
+    testonly = true
+    script = "delayload/generate_allowed_imports.py"
+    sources = [ "delayload/supported_imports_10.0.10240.txt" ]
+    outputs = [ "$target_gen_dir/chrome/test/delayload/supported_imports.inc" ]
+    args = [
+      "--exports-file",
+      rebase_path("delayload/supported_imports_10.0.10240.txt", root_build_dir),
+      "--out-file",
+      rebase_path("$target_gen_dir/chrome/test/delayload/supported_imports.inc",
+                  root_build_dir),
+    ]
+  }
+
   test("delayloads_unittests") {
     output_name = "delayloads_unittests"
     sources = [ "delayload/delayloads_unittest.cc" ]
 
     include_dirs = [ "$target_gen_dir" ]
     deps = [
+      ":generate_allowed_imports",
       "//base",
       "//base/test:test_support",
       "//chrome",

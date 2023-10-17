@@ -12,7 +12,7 @@ import org.chromium.device.DeviceFeatureList;
 import org.chromium.device.DeviceFeatureMap;
 
 public class CredManSupportProvider {
-    private static final int GMSCORE_MIN_VERSION_CREDMAN = 233100000;
+    private static final int GMSCORE_MIN_VERSION_CREDMAN = 234100000;
 
     private static @CredManSupport int sCredManSupport;
 
@@ -46,7 +46,7 @@ public class CredManSupportProvider {
                                     .getFieldTrialParamByFeatureAsBoolean(
                                             DeviceFeatureList.WEBAUTHN_ANDROID_CRED_MAN,
                                             "gpm_in_cred_man",
-                                            false)
+                                            new CredManUiModeRecommender().recommendsCustomUi())
                             ? CredManSupport.FULL_UNLESS_INAPPLICABLE
                             : CredManSupport.PARALLEL_WITH_FIDO_2;
             return sCredManSupport;

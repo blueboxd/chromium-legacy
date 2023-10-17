@@ -29,7 +29,6 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,6 +36,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
+#include "components/enterprise/data_controls/dlp_histogram_helper.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -58,7 +58,6 @@ constexpr char kDlpFilesNotificationId[] = "dlp_files";
 
 std::u16string GetNotificationTitle(NotificationType type,
                                     dlp::FileAction action,
-
                                     absl::optional<size_t> file_count) {
   switch (type) {
     case NotificationType::kError:
@@ -100,12 +99,15 @@ std::u16string GetNotificationMessage(
 
 std::u16string GetOkButton(NotificationType type,
                            dlp::FileAction action,
-                           size_t file_count) {
-  // Multiple files - both warnings and errors have a Review button.
-  if (file_count > 1) {
+                           size_t file_count,
+                           bool always_show_review) {
+  // Multiple files or custom dialog settings - both warnings and errors have a
+  // Review button.
+  if (file_count > 1 || always_show_review) {
     return l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_REVIEW_BUTTON);
   }
-  // Single file - button text depends on the type.
+  // Single file and no admin defined custom dialog settings - button text
+  // depends on the type.
   switch (type) {
     case NotificationType::kError:
       return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
@@ -201,6 +203,19 @@ std::string GetNotificationId(size_t count) {
          base::NumberToString(count);
 }
 
+// Returns whether custom dialog settings have been defined for at least one
+// block reason.
+bool HasCustomDialogSettings(
+    const std::map<FilesPolicyDialog::BlockReason, FilesPolicyDialog::Info>&
+        dialog_info_map) {
+  for (const auto& [_, dialog_info] : dialog_info_map) {
+    if (dialog_info.HasCustomDetails()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Notification click handler implementation for files policy notifications.
 // The handler ensures that we only handle the button click once. This is
 // required because some of the parameters are move-only types and wouldn't be
@@ -271,8 +286,10 @@ void FilesPolicyNotificationManager::ShowDlpBlockedFiles(
     absl::optional<file_manager::io_task::IOTaskId> task_id,
     std::vector<base::FilePath> blocked_files,
     dlp::FileAction action) {
-  DlpHistogramEnumeration(dlp::kFileActionBlockedUMA, action);
-  DlpCountHistogram10000(dlp::kFilesBlockedCountUMA, blocked_files.size());
+  data_controls::DlpHistogramEnumeration(
+      data_controls::dlp::kFileActionBlockedUMA, action);
+  data_controls::DlpCountHistogram10000(
+      data_controls::dlp::kFilesBlockedCountUMA, blocked_files.size());
 
   // If `task_id` has value, the corresponding IOTask should be updated
   // accordingly.
@@ -315,8 +332,10 @@ void FilesPolicyNotificationManager::ShowDlpWarning(
     std::vector<base::FilePath> warning_files,
     const DlpFileDestination& destination,
     dlp::FileAction action) {
-  DlpHistogramEnumeration(dlp::kFileActionWarnedUMA, action);
-  DlpCountHistogram10000(dlp::kFilesWarnedCountUMA, warning_files.size());
+  data_controls::DlpHistogramEnumeration(
+      data_controls::dlp::kFileActionWarnedUMA, action);
+  data_controls::DlpCountHistogram10000(
+      data_controls::dlp::kFilesWarnedCountUMA, warning_files.size());
 
   // If `task_id` has value, the corresponding IOTask should be paused.
   if (task_id.has_value()) {
@@ -486,7 +505,8 @@ void FilesPolicyNotificationManager::HandleDlpWarningNotificationClick(
     case NotificationButton::OK:
       CHECK(warning_info->dialog_info.GetFiles().size() >= 1);
 
-      if (warning_info->dialog_info.GetFiles().size() == 1) {
+      if (warning_info->dialog_info.GetFiles().size() == 1 &&
+          !warning_info->dialog_info.HasCustomDetails()) {
         // Action anyway.
         std::move(warning_info->warning_callback)
             .Run(/*user_justification=*/absl::nullopt, /*should_proceed=*/true);
@@ -523,6 +543,10 @@ void FilesPolicyNotificationManager::HandleDlpErrorNotificationClick(
 
   Dismiss(context_, notification_id);
 
+  auto dialog_info = FilesPolicyDialog::Info::Error(
+      FilesPolicyDialog::BlockReason::kDlp, files);
+  bool always_show_review = dialog_info.HasCustomDetails();
+
   switch (button_index.value()) {
     case NotificationButton::CANCEL:
       // Nothing more to do.
@@ -530,16 +554,14 @@ void FilesPolicyNotificationManager::HandleDlpErrorNotificationClick(
     case NotificationButton::OK:
       DCHECK(files.size() >= 1);
 
-      if (files.size() == 1) {
+      if (files.size() == 1 && !always_show_review) {
         // Learn more.
-        // TODO(b/291896216): Open page based on policy.
         dlp::OpenLearnMore();
       } else {
         // Review.
         FileTaskInfo info(action);
         info.SetBlockedFiles(FilesPolicyDialog::BlockReason::kDlp,
-                             FilesPolicyDialog::Info::Error(
-                                 FilesPolicyDialog::BlockReason::kDlp, files));
+                             std::move(dialog_info));
         non_io_tasks_.emplace(notification_id, std::move(info));
         // Always open the Files app. This should notify us through
         // OnBrowserSetLastActive() to show the dialog.
@@ -709,17 +731,21 @@ void FilesPolicyNotificationManager::ShowFilesPolicyNotification(
   std::u16string file_name;
   absl::optional<FilesPolicyDialog::BlockReason> reason;
   FileTaskInfo& task_info = io_tasks_.at(task_id);
+  bool always_show_review;
   if (HasWarning(task_id)) {
     CHECK(!task_info.GetWarningInfo()->dialog_info.GetFiles().empty());
     file_count = task_info.GetWarningInfo()->dialog_info.GetFiles().size();
     file_name =
         task_info.GetWarningInfo()->dialog_info.GetFiles().begin()->title;
+    always_show_review =
+        task_info.GetWarningInfo()->dialog_info.HasCustomDetails();
   } else {
     CHECK(HasBlockedFiles(task_id));
     file_count = task_info.GetBlockedFilesSize();
     file_name =
         task_info.block_info_map().begin()->second.GetFiles().front().title;
     reason = task_info.block_info_map().begin()->first;
+    always_show_review = HasCustomDialogSettings(task_info.block_info_map());
   }
   auto notification = file_manager::CreateSystemNotification(
       notification_id, GetNotificationTitle(type, action, file_count),
@@ -729,7 +755,8 @@ void FilesPolicyNotificationManager::ShowFilesPolicyNotification(
       optional_fields);
   notification->set_buttons(
       {message_center::ButtonInfo(GetCancelButton(type)),
-       message_center::ButtonInfo(GetOkButton(type, action, file_count))});
+       message_center::ButtonInfo(
+           GetOkButton(type, action, file_count, always_show_review))});
   auto* profile = Profile::FromBrowserContext(context_);
   DCHECK(profile);
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
@@ -760,13 +787,16 @@ void FilesPolicyNotificationManager::HandleFilesPolicyWarningNotificationClick(
       break;
     case NotificationButton::OK:
       if (io_tasks_.at(task_id)
-              .GetWarningInfo()
-              ->dialog_info.GetFiles()
-              .size() == 1) {
-        // Single file - proceed.
+                  .GetWarningInfo()
+                  ->dialog_info.GetFiles()
+                  .size() == 1 &&
+          !io_tasks_.at(task_id)
+               .GetWarningInfo()
+               ->dialog_info.HasCustomDetails()) {
+        // Single file, no custom dialog settings - proceed.
         Resume(task_id);
       } else {
-        // Multiple files - review.
+        // Multiple files or custom dialog settings - review.
         ShowDialog(task_id, FilesDialogType::kWarning);
       }
       break;
@@ -796,14 +826,19 @@ void FilesPolicyNotificationManager::HandleFilesPolicyErrorNotificationClick(
       OnErrorItemDismissed(task_id);
       return;
     case NotificationButton::OK:
-      if (io_tasks_.at(task_id).GetBlockedFilesSize() == 1) {
-        // Single file - open help page.
-        // TODO(b/291896216): Open page based on policy.
-        dlp::OpenLearnMore();
+      if (io_tasks_.at(task_id).GetBlockedFilesSize() == 1 &&
+          !io_tasks_.at(task_id)
+               .block_info_map()
+               .begin()
+               ->second.HasCustomDetails()) {
+        // Single file, no custom dialog settings - open help page.
+        // Note that this can only be DLP, since when custom learn more URL is
+        // available, currently only for EC, we show the review button.
+        dlp::OpenLearnMore(GURL(dlp::kDlpLearnMoreUrl));
         // Only delete if we don't need to show the dialog.
         OnErrorItemDismissed(task_id);
       } else {
-        // Multiple files - review.
+        // Multiple files or custom dialog settings - review.
         ShowDialog(task_id, FilesDialogType::kError);
       }
       return;
@@ -920,7 +955,8 @@ void FilesPolicyNotificationManager::OnBrowserAdded(Browser* browser) {
   }
 
   // Files app successfully opened.
-  DlpBooleanHistogram(dlp::kFilesAppOpenTimedOutUMA, /*value=*/false);
+  data_controls::DlpBooleanHistogram(
+      data_controls::dlp::kFilesAppOpenTimedOutUMA, /*value=*/false);
   ShowPendingDialog(browser->window()->GetNativeWindow());
 }
 
@@ -1029,14 +1065,13 @@ void FilesPolicyNotificationManager::OnNonIOTaskWarningDialogClicked(
   non_io_tasks_.erase(notification_id);
 }
 
-void FilesPolicyNotificationManager::OnLearnMoreButtonClicked(
+void FilesPolicyNotificationManager::OnDlpLearnMoreButtonClicked(
     const std::string& notification_id,
     absl::optional<int> button_index) {
   if (!button_index || button_index.value() != 0) {
     return;
   }
 
-  // TODO(b/291896216): Open page based on policy.
   dlp::OpenLearnMore();
 
   Dismiss(context_, notification_id);
@@ -1100,8 +1135,9 @@ void FilesPolicyNotificationManager::ShowDlpBlockNotification(
         optional_fields);
     notification->set_buttons(
         {message_center::ButtonInfo(GetCancelButton(NotificationType::kError)),
-         message_center::ButtonInfo(GetOkButton(
-             NotificationType::kError, action, blocked_files.size()))});
+         message_center::ButtonInfo(
+             GetOkButton(NotificationType::kError, action, blocked_files.size(),
+                         /*always_show_review=*/false))});
   } else {
     std::u16string title;
     std::u16string message;
@@ -1137,7 +1173,7 @@ void FilesPolicyNotificationManager::ShowDlpBlockNotification(
         notification_id, title, message,
         base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
             base::BindRepeating(
-                &FilesPolicyNotificationManager::OnLearnMoreButtonClicked,
+                &FilesPolicyNotificationManager::OnDlpLearnMoreButtonClicked,
                 weak_factory_.GetWeakPtr(), notification_id)));
     notification->set_buttons({message_center::ButtonInfo(
         l10n_util::GetStringUTF16(IDS_LEARN_MORE))});
@@ -1158,7 +1194,6 @@ void FilesPolicyNotificationManager::ShowDlpWarningNotification(
   if (base::FeatureList::IsEnabled(features::kNewFilesPolicyUX)) {
     const std::string& notification_id =
         GetNotificationId(notification_count_++);
-
     // Store the task info.
     FileTaskInfo info(action);
     info.SetWarningInfo(
@@ -1173,7 +1208,8 @@ void FilesPolicyNotificationManager::ShowDlpWarningNotification(
     std::vector<message_center::ButtonInfo> buttons = {
         message_center::ButtonInfo(GetCancelButton(NotificationType::kWarning)),
         message_center::ButtonInfo(GetOkButton(NotificationType::kWarning,
-                                               action, warning_files.size()))};
+                                               action, warning_files.size(),
+                                               /*always_show_review=*/false))};
     // The notification should stay visible until actioned upon.
     message_center::RichNotificationData optional_fields;
     optional_fields.never_timeout = true;
@@ -1251,7 +1287,8 @@ void FilesPolicyNotificationManager::PauseIOTask(
           ->dialog_info.GetFiles()
           .begin()
           ->file_path.BaseName()
-          .value());
+          .value(),
+      io_tasks_.at(task_id).GetWarningInfo()->dialog_info.HasCustomDetails());
   io_task_controller->Pause(task_id, std::move(pause_params));
   // Start warning timer.
   io_tasks_warning_timers_[task_id] = std::make_unique<base::OneShotTimer>();
@@ -1269,7 +1306,8 @@ void FilesPolicyNotificationManager::OnIOTaskAppLaunchTimedOut(
   }
   DCHECK(pending_dialogs_.front()->task_id == task_id);
   // Stop waiting for the Files App and fallback to system modal.
-  DlpBooleanHistogram(dlp::kFilesAppOpenTimedOutUMA, /*value=*/true);
+  data_controls::DlpBooleanHistogram(
+      data_controls::dlp::kFilesAppOpenTimedOutUMA, /*value=*/true);
   ShowPendingDialog(/*modal_parent=*/nullptr);
 }
 
@@ -1282,7 +1320,8 @@ void FilesPolicyNotificationManager::OnNonIOTaskAppLaunchTimedOut(
   }
   DCHECK(pending_dialogs_.front()->notification_id == notification_id);
   // Stop waiting for the Files App and fallback to system modal.
-  DlpBooleanHistogram(dlp::kFilesAppOpenTimedOutUMA, /*value=*/true);
+  data_controls::DlpBooleanHistogram(
+      data_controls::dlp::kFilesAppOpenTimedOutUMA, /*value=*/true);
   ShowPendingDialog(/*modal_parent=*/nullptr);
 }
 
@@ -1312,8 +1351,9 @@ void FilesPolicyNotificationManager::OnIOTaskWarningTimedOut(
   // Close the warning dialog if there's any.
   io_tasks_.at(task_id).CloseWidget();
 
-  DlpHistogramEnumeration(dlp::kFileActionWarnTimedOutUMA,
-                          io_tasks_.at(task_id).action());
+  data_controls::DlpHistogramEnumeration(
+      data_controls::dlp::kFileActionWarnTimedOutUMA,
+      io_tasks_.at(task_id).action());
 
   // Abort the IOtask. No need to run the warning callback here as it will be
   // called in OnIOTaskStatus when there's an update sent that the task
@@ -1337,8 +1377,9 @@ void FilesPolicyNotificationManager::OnNonIOTaskWarningTimedOut(
   // Close the warning dialog if there's any.
   non_io_tasks_.at(notification_id).CloseWidget();
 
-  DlpHistogramEnumeration(dlp::kFileActionWarnTimedOutUMA,
-                          non_io_tasks_.at(notification_id).action());
+  data_controls::DlpHistogramEnumeration(
+      data_controls::dlp::kFileActionWarnTimedOutUMA,
+      non_io_tasks_.at(notification_id).action());
 
   // Run the warning callback with false.
   std::move(

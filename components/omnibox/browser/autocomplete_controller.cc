@@ -43,6 +43,7 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/autocomplete_scoring_model_service.h"
 #include "components/omnibox/browser/autocomplete_scoring_signals_annotator.h"
 #include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/bookmark_scoring_signals_annotator.h"
@@ -184,18 +185,6 @@ bool ShouldPreserveLastDefaultMatch(bool sync_pass_done,
     return true;
 }
 
-std::u16string GetDomain(const AutocompleteMatch& match) {
-  DCHECK(match.type == AutocompleteMatchType::HISTORY_URL ||
-         match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY);
-  GURL url = match.type == AutocompleteMatchType::HISTORY_URL
-                 ? match.destination_url
-                 : GURL(match.website_uri);
-  std::u16string url_host;
-  std::u16string url_domain;
-  url_formatter::SplitHost(url, &url_host, &url_domain, nullptr);
-  return url_domain;
-}
-
 }  // namespace
 
 // static
@@ -300,7 +289,8 @@ void AutocompleteController::ExtendMatchSubtypes(
 AutocompleteController::AutocompleteController(
     std::unique_ptr<AutocompleteProviderClient> provider_client,
     int provider_types,
-    bool is_cros_launcher)
+    bool is_cros_launcher,
+    bool disable_ml)
     : provider_client_(std::move(provider_client)),
       bookmark_provider_(nullptr),
       document_provider_(nullptr),
@@ -313,6 +303,7 @@ AutocompleteController::AutocompleteController(
       notify_changed_debouncer_(false, 200),
       is_cros_launcher_(is_cros_launcher),
       search_service_worker_signal_sent_(false),
+      disable_ml_(disable_ml),
       template_url_service_(provider_client_->GetTemplateURLService()),
       triggered_feature_service_(
           provider_client_->GetOmniboxTriggeredFeatureService()),
@@ -456,13 +447,6 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   // arithmetic mean.
   base::TimeTicks start_time = base::TimeTicks::Now();
 
-  // Keep a max-heap of negative relevances to quickly estimate a relevance
-  // cutoff that can be used to improve counterfactual triggering.
-  // Prevent memory churn by starting with full size heap, ready for
-  // first change to be pushed without reallocation.
-  std::vector<int> relevances(internal_result_.GetDynamicMaxMatches() + 1, 0);
-  relevances.pop_back();
-
   for (const auto& provider : providers_) {
     // Starter Pack engines in keyword mode only run a subset of the providers,
     // so call `ShouldRunProvider()` to determine which ones should run.
@@ -471,19 +455,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
     }
 
     base::TimeTicks provider_start_time = base::TimeTicks::Now();
-    if (history_fuzzy_provider_) {
-      history_fuzzy_provider_->SetCounterfactualRelevanceHint(
-          -relevances.front());
-    }
     provider->Start(input_, minimal_changes);
-
-    for (const AutocompleteMatch& match : provider->matches()) {
-      relevances.push_back(-match.relevance);
-      std::push_heap(relevances.begin(), relevances.end());
-      std::pop_heap(relevances.begin(), relevances.end());
-      relevances.pop_back();
-      DCHECK(std::is_heap(relevances.begin(), relevances.end()));
-    }
 
     // `UmaHistogramTimes()` uses 1ms - 10s buckets, whereas this uses 1ms - 5s
     // buckets.
@@ -1030,7 +1002,8 @@ void AutocompleteController::UpdateResult(
 
   // When sync ML scoring is enabled, run ML scoring in the sync pass and other
   // async update passes. Otherwise, only run ML scoring after all async passes.
-  if ((OmniboxFieldTrial::IsMlSyncBatchUrlScoringEnabled() ||
+  if (!disable_ml_ &&
+      (OmniboxFieldTrial::IsMlSyncBatchUrlScoringEnabled() ||
        (done_ && sync_pass_done_ &&
         OmniboxFieldTrial::IsMlUrlScoringEnabled())) &&
       provider_client_->GetAutocompleteScoringModelService()) {
@@ -1821,6 +1794,9 @@ void AutocompleteController::OnUrlScoringModelDone(
     relevance_heap.pop();
     prediction_and_match_itr_heap.pop();
   }
+
+  for (Observer& obs : observers_)
+    obs.OnMlScored(this, internal_result_);
 
   std::move(completion_callback).Run();
 }

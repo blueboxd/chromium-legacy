@@ -2883,7 +2883,9 @@ AutotestPrivateRegisterComponentFunction::Run() {
 
   g_browser_process->platform_part()
       ->cros_component_manager()
-      ->RegisterCompatiblePath(params->name, base::FilePath(params->path));
+      ->RegisterCompatiblePath(
+          params->name, component_updater::CompatibleComponentInfo(
+                            base::FilePath(params->path), absl::nullopt));
 
   return RespondNow(NoArguments());
 }
@@ -4202,7 +4204,8 @@ AutotestPrivateGetDefaultPinnedAppIdsFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateGetDefaultPinnedAppIdsFunction::Run() {
   std::vector<std::string> default_pinned_app_ids;
-  for (const char* default_app_id : GetDefaultPinnedAppsForFormFactor()) {
+  for (const char* default_app_id :
+       GetDefaultPinnedAppsForFormFactor(browser_context())) {
     default_pinned_app_ids.emplace_back(default_app_id);
   }
 

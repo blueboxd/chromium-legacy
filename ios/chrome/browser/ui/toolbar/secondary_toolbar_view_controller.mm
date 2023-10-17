@@ -29,10 +29,7 @@
 
 @end
 
-@implementation SecondaryToolbarViewController {
-  /// The disabler created when the keyboard is visible.
-  std::unique_ptr<ScopedFullscreenDisabler> _keyboardDisabler;
-}
+@implementation SecondaryToolbarViewController
 
 @dynamic view;
 
@@ -59,7 +56,6 @@
 
 - (void)disconnect {
   _fullscreenController = nullptr;
-  _keyboardDisabler = nullptr;
 }
 
 #pragma mark - AdaptiveToolbarViewController
@@ -68,6 +64,16 @@
   [super collapsedToolbarButtonTapped];
 
   if ([self.view.locationBarKeyboardConstraint isActive]) {
+    // When the bottom omnibox is collapsed above the keyboard, it's positioned
+    // behind an `omniboxTypingShield` (transparent view) in the
+    // `formInputAccessoryView`. This allow the keyboard to know about the size
+    // of the omnibox (crbug.com/1490601).
+    // When voice over is off, tapping the collapsed bottom omnibox interacts
+    // with the `omniboxTypingShield`. The logic to dismiss the keyboard is
+    // handled in `formInputAccessoryViewHandler`. However, the typing shield
+    // has `isAccessibilityElement` equals NO to let the user interact with the
+    // omnibox on voice over. In this mode, logic to dismiss the keyboard is
+    // handled here in `SecondaryToolbarViewController`.
     CHECK(IsBottomOmniboxSteadyStateEnabled());
     CHECK([self hasOmnibox]);
     UIResponder* responder = GetFirstResponder();
@@ -119,14 +125,8 @@
 
 /// Collapses secondary toolbar when it's moved above the keyboard.
 - (void)collapseForKeyboard {
-  // Disable fullscreen because:
-  // - It interfers with the animation when moving the secondary toolbar above
-  // the keyboard.
-  // - Fullscreen should not resize the toolbar it's above the keyboard.
   if (_fullscreenController) {
-    _keyboardDisabler =
-        std::make_unique<ScopedFullscreenDisabler>(_fullscreenController);
-    _fullscreenController->ForceEnterFullscreen();
+    _fullscreenController->EnterForceFullscreenMode();
   }
   self.view.locationBarTopConstraint.constant = 0;
   self.view.bottomSeparator.alpha = 1.0;
@@ -136,8 +136,7 @@
 /// Resets secondary toolbar when it's detached from the keyboard.
 - (void)removeFromKeyboard {
   if (_fullscreenController) {
-    _fullscreenController->ExitFullscreenWithoutAnimation();
-    _keyboardDisabler = nullptr;
+    _fullscreenController->ExitForceFullscreenMode();
   }
   self.view.bottomSeparator.alpha = 0.0;
   [self.toolbarHeightDelegate secondaryToolbarRemovedFromKeyboard];

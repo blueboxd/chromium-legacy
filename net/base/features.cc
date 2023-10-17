@@ -75,20 +75,6 @@ BASE_FEATURE(kUseAlternativePortForGloballyReachableCheck,
              "UseAlternativePortForGloballyReachableCheck",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-const base::FeatureParam<IPv6ReachabilityOverride>::Option
-    ipv6_reachability_override_options[] = {
-        {IPv6ReachabilityOverride::kReachable, "reachable"},
-        {IPv6ReachabilityOverride::kUniqueLocalAddressReachable,
-         "unique_local_address"},
-        {IPv6ReachabilityOverride::kPubliclyRoutable, "publicly_routable"},
-};
-
-const base::FeatureParam<IPv6ReachabilityOverride>
-    kIPv6ReachabilityOverrideParam{&kEnableIPv6ReachabilityOverride,
-                                   "IPv6ReachabilityOverride",
-                                   IPv6ReachabilityOverride::kReachable,
-                                   &ipv6_reachability_override_options};
-
 BASE_FEATURE(kEnableIPv6ReachabilityOverride,
              "EnableIPv6ReachabilityOverride",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -412,6 +398,10 @@ const base::FeatureParam<base::TimeDelta> kIpPrivacyProxyListMinFetchInterval{
 
 const base::FeatureParam<bool> kIpPrivacyDirectOnly{
     &kEnableIpProtectionProxy, /*name=*/"IpPrivacyDirectOnly",
+    /*default_value=*/false};
+
+const base::FeatureParam<bool> kIpPrivacyBsaEnablePrivacyPass{
+    &kEnableIpProtectionProxy, /*name=*/"IpPrivacyBsaEnablePrivacyPass",
     /*default_value=*/false};
 
 // Network-change migration requires NetworkHandle support, which are currently

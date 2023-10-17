@@ -31,13 +31,12 @@
 #include "components/browsing_data/content/mock_local_storage_helper.h"
 #include "components/browsing_data/content/mock_service_worker_helper.h"
 #include "components/browsing_data/content/mock_shared_worker_helper.h"
+#include "components/browsing_data/core/features.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
 #include "components/supervised_user/core/common/features.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/buildflags/buildflags.h"
@@ -69,6 +68,12 @@ class CookiesTreeModelTest : public testing::Test {
   }
 
   void SetUp() override {
+    if (base::FeatureList::IsEnabled(
+            browsing_data::features::kDeprecateCookiesTreeModel)) {
+      GTEST_SKIP() << "kDeprecateCookiesTreeModel is enabled skipping "
+                      "CookiesTreeModel tests";
+    }
+
     profile_ = std::make_unique<TestingProfile>();
     auto* storage_partition = profile_->GetDefaultStoragePartition();
     mock_browsing_data_cookie_helper_ =

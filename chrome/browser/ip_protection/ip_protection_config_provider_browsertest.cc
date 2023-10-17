@@ -57,11 +57,15 @@ class IpProtectionConfigGetterInterceptor
         token_(std::move(token)),
         expiration_(expiration),
         should_intercept_(should_intercept) {
-    getter_->receivers_for_testing().SwapImplForTesting(receiver_id_, this);
+    auto* old_impl =
+        getter_->receivers_for_testing().SwapImplForTesting(receiver_id_, this);
+    // We should only ever be replacing `getter` as the impl.
+    CHECK_EQ(getter, old_impl);
   }
 
   ~IpProtectionConfigGetterInterceptor() override {
-    getter_->receivers_for_testing().SwapImplForTesting(receiver_id_, getter_);
+    std::ignore = getter_->receivers_for_testing().SwapImplForTesting(
+        receiver_id_, getter_);
   }
 
   network::mojom::IpProtectionConfigGetter* GetForwardingInterface() override {

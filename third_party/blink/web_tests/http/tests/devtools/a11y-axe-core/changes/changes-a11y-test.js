@@ -4,11 +4,12 @@
 
 import {TestRunner} from 'test_runner';
 import {AxeCoreTestRunner} from 'axe_core_test_runner';
+
+import * as Diff from "devtools/third_party/diff/diff.js";
 import * as UI from 'devtools/ui/legacy/legacy.js';
 
 (async function() {
   TestRunner.addResult('Tests accessibility in the Changes drawer.');
-  await TestRunner.loadLegacyModule('changes');
 
   const diff = [
     {0: Diff.Diff.Operation.Insert, 1: ['line 1 inserted']},

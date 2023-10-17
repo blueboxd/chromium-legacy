@@ -78,6 +78,21 @@ Matcher<Suggestion> EqualsSuggestion(PopupItemId id,
             Suggestion::Text(text, Suggestion::Text::IsPrimary(true))));
 }
 
+Matcher<Suggestion> EqualsIbanSuggestion(
+    const std::u16string& text,
+    const Suggestion::Payload& payload,
+    const std::u16string& first_label_value) {
+  return AllOf(Field(&Suggestion::popup_item_id, PopupItemId::kIbanEntry),
+               Field(&Suggestion::main_text,
+                     Suggestion::Text(text, Suggestion::Text::IsPrimary(true))),
+               Field(&Suggestion::payload, payload),
+               Field(&Suggestion::labels,
+                     first_label_value.empty()
+                         ? std::vector<std::vector<Suggestion::Text>>{}
+                         : std::vector<std::vector<Suggestion::Text>>{
+                               {Suggestion::Text(first_label_value)}}));
+}
+
 }  // namespace
 
 // Test component for tests to access implementation details in
@@ -128,6 +143,13 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
             /*coupon_service_delegate=*/nullptr, /*shopping_service=*/nullptr));
   }
 
+  void TearDown() override {
+    if (did_set_up_image_resource_for_test_) {
+      CleanUpIbanImageResources();
+      did_set_up_image_resource_for_test_ = false;
+    }
+  }
+
   CreditCard CreateServerCard(
       const std::string& guid = "00000000-0000-0000-0000-000000000001",
       const std::string& server_id = "server_id1",
@@ -152,7 +174,7 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
     return local_card;
   }
 
-  gfx::Image CreateFakeImage() { return gfx::test::CreateImage(32, 32); }
+  gfx::Image CustomIconForTest() { return gfx::test::CreateImage(32, 32); }
 
   void SetUpIbanImageResources() {
     original_resource_bundle_ =
@@ -161,7 +183,8 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
         "en-US", &mock_resource_delegate_,
         ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
     ON_CALL(mock_resource_delegate_, GetImageNamed(IDR_AUTOFILL_IBAN))
-        .WillByDefault(testing::Return(CreateFakeImage()));
+        .WillByDefault(testing::Return(CustomIconForTest()));
+    did_set_up_image_resource_for_test_ = true;
   }
 
   void CleanUpIbanImageResources() {
@@ -201,6 +224,9 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
   scoped_refptr<AutofillWebDataService> database_;
   testing::NiceMock<ui::MockResourceBundleDelegate> mock_resource_delegate_;
   raw_ptr<ui::ResourceBundle> original_resource_bundle_;
+  // Tracks whether SetUpIbanImageResources() has been called, so that the
+  // created images can be cleaned up when the test has finished.
+  bool did_set_up_image_resource_for_test_ = false;
 };
 
 // Tests that special characters will be used while prefix matching the user's
@@ -1043,15 +1069,75 @@ TEST_F(AutofillSuggestionGeneratorTest,
 }
 #endif  // if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
+TEST_F(
+    AutofillSuggestionGeneratorTest,
+    CreateSuggestionsFromProfiles_GroupFillingLabels_AddFillAddressAndDifferentiatingLabel) {
+  base::test::ScopedFeatureList scoped_features_list(
+      features::kAutofillGranularFillingAvailable);
+  AutofillProfile profile = test::GetFullProfile();
+  std::vector<Suggestion> suggestions =
+      suggestion_generator()->CreateSuggestionsFromProfiles(
+          {&profile}, /*field_types=*/{NAME_FIRST},
+          /*last_targeted_fields=*/
+          GetServerFieldTypesOfGroup(FieldTypeGroup::kName),
+          ADDRESS_HOME_ADDRESS,
+          /*trigger_field_max_length=*/0);
+
+  ASSERT_EQ(suggestions.size(), 1u);
+  EXPECT_EQ(suggestions[0].labels,
+            std::vector<std::vector<Suggestion::Text>>(
+                {{Suggestion::Text(u"Fill address"), Suggestion::Text(u"-"),
+                  Suggestion::Text(u"John H. Doe")}}));
+}
+
+// When there is no differentiating label, we add only the granular filling
+// label, either "Fill full name" or "Fill address".
+TEST_F(AutofillSuggestionGeneratorTest,
+       CreateSuggestionsFromProfiles_GroupFillingLabels_AddOnlyFillName) {
+  base::test::ScopedFeatureList scoped_features_list(
+      features::kAutofillGranularFillingAvailable);
+  AutofillProfile profile = test::GetFullProfile();
+  std::vector<Suggestion> suggestions =
+      suggestion_generator()->CreateSuggestionsFromProfiles(
+          {&profile}, /*field_types=*/{NAME_FIRST},
+          /*last_targeted_fields=*/
+          GetServerFieldTypesOfGroup(FieldTypeGroup::kName), NAME_FIRST,
+          /*trigger_field_max_length=*/0);
+
+  ASSERT_EQ(suggestions.size(), 1u);
+  EXPECT_EQ(suggestions[0].labels,
+            std::vector<std::vector<Suggestion::Text>>(
+                {{Suggestion::Text(u"Fill full name")}}));
+}
+
+TEST_F(
+    AutofillSuggestionGeneratorTest,
+    CreateSuggestionsFromProfiles_GroupFillingLabels_AddFillNameAndDifferentiatingLabel) {
+  base::test::ScopedFeatureList scoped_features_list(
+      features::kAutofillGranularFillingAvailable);
+  AutofillProfile profile = test::GetFullProfile();
+  std::vector<Suggestion> suggestions =
+      suggestion_generator()->CreateSuggestionsFromProfiles(
+          {&profile}, /*field_types=*/{ADDRESS_HOME_CITY},
+          /*last_targeted_fields=*/
+          GetServerFieldTypesOfGroup(FieldTypeGroup::kName), NAME_FIRST,
+          /*trigger_field_max_length=*/0);
+
+  ASSERT_EQ(suggestions.size(), 1u);
+  EXPECT_EQ(suggestions[0].labels,
+            std::vector<std::vector<Suggestion::Text>>(
+                {{Suggestion::Text(u"Fill full name"), Suggestion::Text(u"-"),
+                  Suggestion::Text(u"Elysium")}}));
+}
+
 // TODO(crbug.com/1459990): Consider having a test fixture for granular filling
 // related tests. In general these tests are quite lengthy and finding a way to
 // make them more concise is desirable.
 TEST_F(AutofillSuggestionGeneratorTest,
        CreateSuggestionsFromProfiles_FirstLevelChildrenSuggestions) {
-  base::test::ScopedFeatureList feature_list(
+  base::test::ScopedFeatureList scoped_features_list(
       features::kAutofillGranularFillingAvailable);
   AutofillProfile profile = test::GetFullProfile();
-
   std::vector<Suggestion> suggestions =
       suggestion_generator()->CreateSuggestionsFromProfiles(
           {&profile}, /*field_types=*/{NAME_FIRST},
@@ -1114,10 +1200,9 @@ TEST_F(AutofillSuggestionGeneratorTest,
 
 TEST_F(AutofillSuggestionGeneratorTest,
        CreateSuggestionsFromProfiles_SecondLevelChildrenSuggestions) {
-  base::test::ScopedFeatureList feature_list(
+  base::test::ScopedFeatureList scoped_features_list(
       features::kAutofillGranularFillingAvailable);
   AutofillProfile profile = test::GetFullProfile();
-
   std::vector<Suggestion> suggestions =
       suggestion_generator()->CreateSuggestionsFromProfiles(
           {&profile}, /*field_types=*/{NAME_FIRST},
@@ -1149,7 +1234,7 @@ TEST_F(AutofillSuggestionGeneratorTest,
 TEST_F(
     AutofillSuggestionGeneratorTest,
     CreateSuggestionsFromProfiles_LastTargetedFieldsIsSingleField_FieldByFieldFilling) {
-  base::test::ScopedFeatureList feature_list(
+  base::test::ScopedFeatureList scoped_features_list(
       features::kAutofillGranularFillingAvailable);
   AutofillProfile profile = test::GetFullProfile();
 
@@ -1159,15 +1244,15 @@ TEST_F(
           absl::optional<ServerFieldTypeSet>({NAME_LAST}), NAME_FIRST,
           /*trigger_field_max_length=*/0);
 
+  ASSERT_EQ(suggestions.size(), 1u);
   EXPECT_EQ(suggestions[0].popup_item_id, PopupItemId::kFieldByFieldFilling);
 }
 
 TEST_F(AutofillSuggestionGeneratorTest,
        CreateSuggestionsFromProfiles_LastTargetedFieldsIsGroup_GroupFilling) {
-  base::test::ScopedFeatureList feature_list(
+  base::test::ScopedFeatureList scoped_features_list(
       features::kAutofillGranularFillingAvailable);
   AutofillProfile profile = test::GetFullProfile();
-
   std::vector<Suggestion> suggestions =
       suggestion_generator()->CreateSuggestionsFromProfiles(
           {&profile}, /*field_types=*/{NAME_FIRST},
@@ -1181,16 +1266,16 @@ TEST_F(AutofillSuggestionGeneratorTest,
 TEST_F(
     AutofillSuggestionGeneratorTest,
     CreateSuggestionsFromProfiles_LastTargetedFieldsAreAllServerFields_FullForm) {
-  base::test::ScopedFeatureList feature_list(
+  base::test::ScopedFeatureList scoped_features_list(
       features::kAutofillGranularFillingAvailable);
   AutofillProfile profile = test::GetFullProfile();
-
   std::vector<Suggestion> suggestions =
       suggestion_generator()->CreateSuggestionsFromProfiles(
           {&profile}, /*field_types=*/{NAME_FIRST},
           absl::optional<ServerFieldTypeSet>(kAllServerFieldTypes), NAME_FIRST,
           /*trigger_field_max_length=*/0);
 
+  ASSERT_EQ(suggestions.size(), 1u);
   EXPECT_EQ(suggestions[0].popup_item_id, PopupItemId::kAddressEntry);
 }
 
@@ -1198,10 +1283,9 @@ TEST_F(
 // fields are a group but the triggering field does not match any group.
 TEST_F(AutofillSuggestionGeneratorTest,
        CreateSuggestionsFromProfiles_LastTargetedFieldsAreGroup_Fallback) {
-  base::test::ScopedFeatureList feature_list(
+  base::test::ScopedFeatureList scoped_features_list(
       features::kAutofillGranularFillingAvailable);
   AutofillProfile profile = test::GetFullProfile();
-
   std::vector<Suggestion> suggestions =
       suggestion_generator()->CreateSuggestionsFromProfiles(
           {&profile}, /*field_types=*/{CREDIT_CARD_TYPE},
@@ -1209,6 +1293,7 @@ TEST_F(AutofillSuggestionGeneratorTest,
           CREDIT_CARD_TYPE,
           /*trigger_field_max_length=*/0);
 
+  ASSERT_EQ(suggestions.size(), 1u);
   EXPECT_EQ(suggestions[0].popup_item_id, PopupItemId::kAddressEntry);
 }
 
@@ -1219,7 +1304,7 @@ TEST_F(AutofillSuggestionGeneratorTest,
 // "random" field.
 TEST_F(AutofillSuggestionGeneratorTest,
        CreateSuggestionsFromProfiles_ChildrenSuggestionsPhoneField) {
-  base::test::ScopedFeatureList feature_list(
+  base::test::ScopedFeatureList scoped_features_list(
       features::kAutofillGranularFillingAvailable);
   AutofillProfile profile = test::GetFullProfile();
   std::vector<Suggestion> suggestions =
@@ -1252,10 +1337,9 @@ TEST_F(AutofillSuggestionGeneratorTest,
 
 TEST_F(AutofillSuggestionGeneratorTest,
        CreateSuggestionsFromProfiles_ChildrenSuggestionsAddressField) {
-  base::test::ScopedFeatureList feature_list(
+  base::test::ScopedFeatureList scoped_features_list(
       features::kAutofillGranularFillingAvailable);
   AutofillProfile profile = test::GetFullProfile();
-
   std::vector<Suggestion> suggestions =
       suggestion_generator()->CreateSuggestionsFromProfiles(
           {&profile}, /*field_types=*/{ADDRESS_HOME_LINE1},
@@ -1278,6 +1362,7 @@ TEST_F(AutofillSuggestionGeneratorTest,
   // 12. line separator
   // 13. edit address
   // 14. delete address
+  ASSERT_EQ(suggestions.size(), 1u);
   ASSERT_EQ(14U, suggestions[0].children.size());
   EXPECT_THAT(suggestions[0].children[4],
               Field(&Suggestion::popup_item_id, PopupItemId::kFillFullAddress));
@@ -1286,9 +1371,8 @@ TEST_F(AutofillSuggestionGeneratorTest,
 TEST_F(
     AutofillSuggestionGeneratorTest,
     CreateSuggestionsFromProfiles_ChildrenSuggestions_HouseNumberAndStreetNameCanBeNestedUnderDifferentAddressLines) {
-  base::test::ScopedFeatureList feature_list(
+  base::test::ScopedFeatureList scoped_features_list(
       features::kAutofillGranularFillingAvailable);
-
   AutofillProfile profile;
   // Update the profile to have house number and street name information in
   // different address lines.
@@ -1425,7 +1509,7 @@ TEST_F(AutofillSuggestionGeneratorTest,
 TEST_F(
     AutofillSuggestionGeneratorTest,
     CreateSuggestionsFromProfiles_GranularityNotFullForm_FillEverythingChildSuggestion) {
-  base::test::ScopedFeatureList feature_list(
+  base::test::ScopedFeatureList scoped_features_list(
       features::kAutofillGranularFillingAvailable);
   AutofillProfile profile = test::GetFullProfile();
 
@@ -1438,6 +1522,7 @@ TEST_F(
           absl::optional<ServerFieldTypeSet>({NAME_FIRST}), ADDRESS_HOME_LINE1,
           /*trigger_field_max_length=*/0);
 
+  ASSERT_EQ(suggestions.size(), 1u);
   EXPECT_TRUE(base::ranges::any_of(suggestions[0].children, [](auto child) {
     return child.popup_item_id ==
            PopupItemId::kFillEverythingFromAddressProfile;
@@ -1712,9 +1797,10 @@ TEST_F(AutofillSuggestionGeneratorTest,
   bool should_display_gpay_logo;
   bool with_offer;
   autofill_metrics::CardMetadataLoggingContext metadata_logging_context;
-  auto suggestions = suggestion_generator()->GetSuggestionsForCreditCards(
-      FormFieldData(), CREDIT_CARD_NUMBER, should_display_gpay_logo, with_offer,
-      metadata_logging_context);
+  std::vector<Suggestion> suggestions =
+      suggestion_generator()->GetSuggestionsForCreditCards(
+          FormFieldData(), CREDIT_CARD_NUMBER, should_display_gpay_logo,
+          with_offer, metadata_logging_context);
 
   EXPECT_TRUE(with_offer);
   ASSERT_EQ(suggestions.size(), 3U);
@@ -1744,7 +1830,7 @@ TEST_F(AutofillSuggestionGeneratorTest,
       {virtual_card.guid(),
        VirtualCardUsageData::VirtualCardLastFour(u"1234")});
   autofill_metrics::CardMetadataLoggingContext metadata_logging_context;
-  auto suggestions =
+  std::vector<Suggestion> suggestions =
       suggestion_generator()->GetSuggestionsForVirtualCardStandaloneCvc(
           metadata_logging_context, virtual_card_guid_to_last_four_map);
 
@@ -1767,9 +1853,10 @@ TEST_F(AutofillSuggestionGeneratorTest, ShouldDisplayGpayLogo) {
     bool should_display_gpay_logo;
     bool with_offer;
     autofill_metrics::CardMetadataLoggingContext metadata_logging_context;
-    auto suggestions = suggestion_generator()->GetSuggestionsForCreditCards(
-        FormFieldData(), CREDIT_CARD_NUMBER, should_display_gpay_logo,
-        with_offer, metadata_logging_context);
+    std::vector<Suggestion> suggestions =
+        suggestion_generator()->GetSuggestionsForCreditCards(
+            FormFieldData(), CREDIT_CARD_NUMBER, should_display_gpay_logo,
+            with_offer, metadata_logging_context);
 
     EXPECT_EQ(suggestions.size(), 2U);
     EXPECT_TRUE(should_display_gpay_logo);
@@ -1792,9 +1879,10 @@ TEST_F(AutofillSuggestionGeneratorTest, ShouldDisplayGpayLogo) {
     bool should_display_gpay_logo;
     bool with_offer;
     autofill_metrics::CardMetadataLoggingContext metadata_logging_context;
-    auto suggestions = suggestion_generator()->GetSuggestionsForCreditCards(
-        FormFieldData(), CREDIT_CARD_NUMBER, should_display_gpay_logo,
-        with_offer, metadata_logging_context);
+    std::vector<Suggestion> suggestions =
+        suggestion_generator()->GetSuggestionsForCreditCards(
+            FormFieldData(), CREDIT_CARD_NUMBER, should_display_gpay_logo,
+            with_offer, metadata_logging_context);
 
     EXPECT_EQ(suggestions.size(), 2U);
     EXPECT_FALSE(should_display_gpay_logo);
@@ -1819,9 +1907,10 @@ TEST_F(AutofillSuggestionGeneratorTest, ShouldDisplayGpayLogo) {
     bool should_display_gpay_logo;
     bool with_offer;
     autofill_metrics::CardMetadataLoggingContext metadata_logging_context;
-    auto suggestions = suggestion_generator()->GetSuggestionsForCreditCards(
-        FormFieldData(), CREDIT_CARD_NUMBER, should_display_gpay_logo,
-        with_offer, metadata_logging_context);
+    std::vector<Suggestion> suggestions =
+        suggestion_generator()->GetSuggestionsForCreditCards(
+            FormFieldData(), CREDIT_CARD_NUMBER, should_display_gpay_logo,
+            with_offer, metadata_logging_context);
 
     EXPECT_EQ(suggestions.size(), 1U);
     EXPECT_TRUE(should_display_gpay_logo);
@@ -1834,9 +1923,10 @@ TEST_F(AutofillSuggestionGeneratorTest, ShouldDisplayGpayLogo) {
     bool should_display_gpay_logo;
     bool with_offer;
     autofill_metrics::CardMetadataLoggingContext metadata_logging_context;
-    auto suggestions = suggestion_generator()->GetSuggestionsForCreditCards(
-        FormFieldData(), CREDIT_CARD_NUMBER, should_display_gpay_logo,
-        with_offer, metadata_logging_context);
+    std::vector<Suggestion> suggestions =
+        suggestion_generator()->GetSuggestionsForCreditCards(
+            FormFieldData(), CREDIT_CARD_NUMBER, should_display_gpay_logo,
+            with_offer, metadata_logging_context);
 
     EXPECT_TRUE(suggestions.empty());
     EXPECT_TRUE(should_display_gpay_logo);
@@ -1948,81 +2038,145 @@ TEST_F(AutofillSuggestionGeneratorTest,
       suggestion_generator()->ShouldShowVirtualCardOption(&local_card));
 }
 
-TEST_F(AutofillSuggestionGeneratorTest, GetIbanSuggestions) {
+TEST_F(AutofillSuggestionGeneratorTest, GetLocalIbanSuggestions) {
   SetUpIbanImageResources();
 
-  auto MakeIban = [](const std::u16string& value,
-                     const std::u16string& nickname) {
+  auto MakeLocalIban = [](const std::u16string& value,
+                          const std::u16string& nickname) {
     Iban iban(Iban::Guid(base::Uuid::GenerateRandomV4().AsLowercaseString()));
     iban.set_value(value);
     if (!nickname.empty())
       iban.set_nickname(nickname);
     return iban;
   };
-  Iban iban0 = MakeIban(u"CH56 0483 5012 3456 7800 9", u"My doctor's IBAN");
-  Iban iban1 = MakeIban(u"DE91 1000 0000 0123 4567 89", u"My brother's IBAN");
+  Iban iban0 =
+      MakeLocalIban(u"CH56 0483 5012 3456 7800 9", u"My doctor's IBAN");
+  Iban iban1 =
+      MakeLocalIban(u"DE91 1000 0000 0123 4567 89", u"My brother's IBAN");
   Iban iban2 =
-      MakeIban(u"GR96 0810 0010 0000 0123 4567 890", u"My teacher's IBAN");
-  Iban iban3 = MakeIban(u"PK70 BANK 0000 1234 5678 9000", u"");
+      MakeLocalIban(u"GR96 0810 0010 0000 0123 4567 890", u"My teacher's IBAN");
+  Iban iban3 = MakeLocalIban(u"PK70 BANK 0000 1234 5678 9000", u"");
 
   std::vector<Suggestion> iban_suggestions =
       AutofillSuggestionGenerator::GetSuggestionsForIbans(
           {&iban0, &iban1, &iban2, &iban3});
 
   // There are 6 suggestions, 4 for IBAN suggestions, followed by a separator,
-  // and followed by "Manage payment methods..." which redirect to Chrome
-  // payment settings page.
+  // and followed by "Manage payment methods..." which redirects to the Chrome
+  // payment methods settings page.
   ASSERT_EQ(iban_suggestions.size(), 6u);
 
-  EXPECT_EQ(iban_suggestions[0].main_text.value,
-            iban0.GetIdentifierStringForAutofillDisplay());
-  EXPECT_EQ(iban_suggestions[0].GetPayload<Suggestion::ValueToFill>().value(),
-            iban0.GetStrippedValue());
-  ASSERT_EQ(iban_suggestions[0].labels.size(), 1u);
-  ASSERT_EQ(iban_suggestions[0].labels[0].size(), 1u);
-  EXPECT_EQ(iban_suggestions[0].labels[0][0].value, u"My doctor's IBAN");
-  EXPECT_EQ(iban_suggestions[0].popup_item_id, PopupItemId::kIbanEntry);
-  EXPECT_TRUE(
-      AreImagesEqual(iban_suggestions[0].custom_icon, CreateFakeImage()));
+  EXPECT_THAT(
+      iban_suggestions[0],
+      EqualsIbanSuggestion(iban0.GetIdentifierStringForAutofillDisplay(),
+                           Suggestion::ValueToFill(iban0.GetStrippedValue()),
+                           iban0.nickname()));
 
-  EXPECT_EQ(iban_suggestions[1].main_text.value,
-            iban1.GetIdentifierStringForAutofillDisplay());
-  EXPECT_EQ(iban_suggestions[1].GetPayload<Suggestion::ValueToFill>().value(),
-            iban1.GetStrippedValue());
-  ASSERT_EQ(iban_suggestions[1].labels.size(), 1u);
-  ASSERT_EQ(iban_suggestions[1].labels[0].size(), 1u);
-  EXPECT_EQ(iban_suggestions[1].labels[0][0].value, u"My brother's IBAN");
-  EXPECT_EQ(iban_suggestions[1].popup_item_id, PopupItemId::kIbanEntry);
-  EXPECT_TRUE(
-      AreImagesEqual(iban_suggestions[1].custom_icon, CreateFakeImage()));
+  EXPECT_THAT(
+      iban_suggestions[1],
+      EqualsIbanSuggestion(iban1.GetIdentifierStringForAutofillDisplay(),
+                           Suggestion::ValueToFill(iban1.GetStrippedValue()),
+                           iban1.nickname()));
 
-  EXPECT_EQ(iban_suggestions[2].main_text.value,
-            iban2.GetIdentifierStringForAutofillDisplay());
-  EXPECT_EQ(iban_suggestions[2].GetPayload<Suggestion::ValueToFill>().value(),
-            iban2.GetStrippedValue());
-  ASSERT_EQ(iban_suggestions[2].labels.size(), 1u);
-  ASSERT_EQ(iban_suggestions[2].labels[0].size(), 1u);
-  EXPECT_EQ(iban_suggestions[2].labels[0][0].value, u"My teacher's IBAN");
-  EXPECT_EQ(iban_suggestions[2].popup_item_id, PopupItemId::kIbanEntry);
-  EXPECT_TRUE(
-      AreImagesEqual(iban_suggestions[2].custom_icon, CreateFakeImage()));
+  EXPECT_THAT(
+      iban_suggestions[2],
+      EqualsIbanSuggestion(iban2.GetIdentifierStringForAutofillDisplay(),
+                           Suggestion::ValueToFill(iban2.GetStrippedValue()),
+                           iban2.nickname()));
 
-  EXPECT_EQ(iban_suggestions[3].main_text.value,
-            iban3.GetIdentifierStringForAutofillDisplay());
-  EXPECT_EQ(iban_suggestions[3].GetPayload<Suggestion::ValueToFill>().value(),
-            iban3.GetStrippedValue());
-  EXPECT_EQ(iban_suggestions[3].labels.size(), 0u);
-  EXPECT_EQ(iban_suggestions[3].popup_item_id, PopupItemId::kIbanEntry);
-  EXPECT_TRUE(
-      AreImagesEqual(iban_suggestions[3].custom_icon, CreateFakeImage()));
+  EXPECT_THAT(
+      iban_suggestions[3],
+      EqualsIbanSuggestion(iban3.GetIdentifierStringForAutofillDisplay(),
+                           Suggestion::ValueToFill(iban3.GetStrippedValue()),
+                           iban3.nickname()));
 
   EXPECT_EQ(iban_suggestions[4].popup_item_id, PopupItemId::kSeparator);
 
   EXPECT_EQ(iban_suggestions[5].main_text.value,
             l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_PAYMENT_METHODS));
   EXPECT_EQ(iban_suggestions[5].popup_item_id, PopupItemId::kAutofillOptions);
+}
 
-  CleanUpIbanImageResources();
+TEST_F(AutofillSuggestionGeneratorTest, GetServerIbanSuggestions) {
+  SetUpIbanImageResources();
+
+  Iban server_iban1 = test::GetServerIban();
+  Iban server_iban2 = test::GetServerIban2();
+  Iban server_iban3 = test::GetServerIban3();
+
+  std::vector<Suggestion> iban_suggestions =
+      AutofillSuggestionGenerator::GetSuggestionsForIbans(
+          {&server_iban1, &server_iban2, &server_iban3});
+
+  // There are 5 suggestions, 3 for IBAN suggestions, followed by a separator,
+  // and followed by "Manage payment methods..." which redirects to the Chrome
+  // payment methods settings page.
+  ASSERT_EQ(iban_suggestions.size(), 5u);
+
+  EXPECT_THAT(
+      iban_suggestions[0],
+      EqualsIbanSuggestion(server_iban1.GetIdentifierStringForAutofillDisplay(),
+                           Suggestion::BackendId(server_iban1.instrument_id()),
+                           server_iban1.nickname()));
+
+  EXPECT_THAT(
+      iban_suggestions[1],
+      EqualsIbanSuggestion(server_iban2.GetIdentifierStringForAutofillDisplay(),
+                           Suggestion::BackendId(server_iban2.instrument_id()),
+                           server_iban2.nickname()));
+
+  EXPECT_THAT(
+      iban_suggestions[2],
+      EqualsIbanSuggestion(server_iban3.GetIdentifierStringForAutofillDisplay(),
+                           Suggestion::BackendId(server_iban3.instrument_id()),
+                           server_iban3.nickname()));
+
+  EXPECT_EQ(iban_suggestions[3].popup_item_id, PopupItemId::kSeparator);
+
+  EXPECT_EQ(iban_suggestions[4].main_text.value,
+            l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_PAYMENT_METHODS));
+  EXPECT_EQ(iban_suggestions[4].popup_item_id, PopupItemId::kAutofillOptions);
+}
+
+TEST_F(AutofillSuggestionGeneratorTest, GetLocalAndServerIbanSuggestions) {
+  SetUpIbanImageResources();
+
+  Iban server_iban1 = test::GetServerIban();
+  Iban server_iban2 = test::GetServerIban2();
+  Iban local_iban1 = test::GetIban();
+
+  std::vector<Suggestion> iban_suggestions =
+      AutofillSuggestionGenerator::GetSuggestionsForIbans(
+          {&server_iban1, &server_iban2, &local_iban1});
+
+  // There are 5 suggestions, 3 for IBAN suggestions, followed by a separator,
+  // and followed by "Manage payment methods..." which redirects to the Chrome
+  // payment methods settings page.
+  ASSERT_EQ(iban_suggestions.size(), 5u);
+
+  EXPECT_THAT(
+      iban_suggestions[0],
+      EqualsIbanSuggestion(server_iban1.GetIdentifierStringForAutofillDisplay(),
+                           Suggestion::BackendId(server_iban1.instrument_id()),
+                           server_iban1.nickname()));
+
+  EXPECT_THAT(
+      iban_suggestions[1],
+      EqualsIbanSuggestion(server_iban2.GetIdentifierStringForAutofillDisplay(),
+                           Suggestion::BackendId(server_iban2.instrument_id()),
+                           server_iban2.nickname()));
+
+  EXPECT_THAT(iban_suggestions[2],
+              EqualsIbanSuggestion(
+                  local_iban1.GetIdentifierStringForAutofillDisplay(),
+                  Suggestion::ValueToFill(local_iban1.GetStrippedValue()),
+                  local_iban1.nickname()));
+
+  EXPECT_EQ(iban_suggestions[3].popup_item_id, PopupItemId::kSeparator);
+
+  EXPECT_EQ(iban_suggestions[4].main_text.value,
+            l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_PAYMENT_METHODS));
+  EXPECT_EQ(iban_suggestions[4].popup_item_id, PopupItemId::kAutofillOptions);
 }
 
 TEST_F(AutofillSuggestionGeneratorTest,
@@ -2559,7 +2713,7 @@ TEST_P(AutofillSuggestionGeneratorTestForMetadata,
   CreditCard server_card = CreateServerCard();
   GURL card_art_url = GURL("https://www.example.com/card-art");
   server_card.set_card_art_url(card_art_url);
-  gfx::Image fake_image = CreateFakeImage();
+  gfx::Image fake_image = CustomIconForTest();
   personal_data()->AddCardArtImage(card_art_url, fake_image);
 
   Suggestion virtual_card_suggestion =
@@ -2616,7 +2770,7 @@ TEST_P(AutofillSuggestionGeneratorTestForMetadata,
 
   GURL card_art_url = GURL("https://www.example.com/card-art");
   server_card.set_card_art_url(card_art_url);
-  gfx::Image fake_image = CreateFakeImage();
+  gfx::Image fake_image = CustomIconForTest();
   personal_data()->AddServerCreditCard(server_card);
   personal_data()->AddCardArtImage(card_art_url, fake_image);
 
@@ -2727,7 +2881,7 @@ TEST_P(AutofillSuggestionGeneratorTestForMetadata,
       GURL(card_has_capital_one_icon() ? kCapitalOneCardArtUrl
                                        : "https://www.example.com/card-art");
   server_card.set_card_art_url(card_art_url);
-  gfx::Image fake_image = CreateFakeImage();
+  gfx::Image fake_image = CustomIconForTest();
   personal_data()->AddCardArtImage(card_art_url, fake_image);
 
   Suggestion virtual_card_suggestion =

@@ -2467,6 +2467,18 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="PasswordManager.PasswordNotesMigrationToOSCrypt.{Store}DeletedNotesCount"
+    units="count" expires_after="M120">
+  <owner>rgod@google.com</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Records number of notes which are missing from the keychain during migration
+    to OSCrypt on iOS. Recorded when migration succeeds.
+  </summary>
+  <token key="Store" variants="Store"/>
+</histogram>
+
+<histogram
     name="PasswordManager.PasswordNotesMigrationToOSCrypt.{Store}KeychainRetrievalError"
     enum="ErrSecOSStatus" expires_after="M120">
   <owner>rgod@google.com</owner>
@@ -2474,6 +2486,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records keychain retrieval error code received during the migration of
     password notes to OSCrypt on iOS {Store}. Recorded when retrieval fails.
+  </summary>
+  <token key="Store" variants="Store"/>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordNotesMigrationToOSCrypt.{Store}MigratedNotesCount"
+    units="count" expires_after="M120">
+  <owner>rgod@google.com</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Records number of notes successfully migrated to encryption with OSCrypt on
+    iOS. Recorded when migration succeeds.
   </summary>
   <token key="Store" variants="Store"/>
 </histogram>
@@ -3233,7 +3257,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.Settings.Export.Event"
-    enum="PasswordExportEvent" expires_after="2023-11-19">
+    enum="PasswordExportEvent" expires_after="M125">
   <owner>ioanap@chromium.org</owner>
   <owner>atsvirchkova@google.com</owner>
   <summary>
@@ -3244,7 +3268,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.Settings.Export.Result2"
-    enum="HistogramExportResult" expires_after="2024-02-19">
+    enum="HistogramExportResult" expires_after="M125">
   <owner>ioanap@chromium.org</owner>
   <owner>atsvirchkova@google.com</owner>
   <summary>

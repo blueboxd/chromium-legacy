@@ -18,8 +18,7 @@
 # huge sequence of random-looking conditionals.
 
 import("//base/allocator/allocator.gni")
-import(
-    "//base/allocator/partition_allocator/src/partition_alloc/partition_alloc.gni")
+import("//base/allocator/partition_allocator/partition_alloc.gni")
 import("//base/debug/debug.gni")
 import("//base/trace_event/tracing.gni")
 import("//build/buildflag_header.gni")
@@ -291,6 +290,7 @@ component("base") {
     "containers/linked_list.cc",
     "containers/linked_list.h",
     "containers/lru_cache.h",
+    "containers/map_util.h",
     "containers/small_map.h",
     "containers/span.h",
     "containers/stack.h",
@@ -1039,7 +1039,7 @@ component("base") {
   deps = [
     ":message_pump_buildflags",
     "//base/allocator:buildflags",
-    "//base/allocator/partition_allocator/src/partition_alloc:raw_ptr",
+    "//base/allocator/partition_allocator:raw_ptr",
     "//base/third_party/double_conversion",
     "//base/third_party/dynamic_annotations",
     "//build:blink_buildflags",
@@ -1078,8 +1078,8 @@ component("base") {
     ":sanitizer_buildflags",
     ":synchronization_buildflags",
     ":tracing_buildflags",
-    "//base/allocator/partition_allocator/src/partition_alloc:buildflags",
-    "//base/allocator/partition_allocator/src/partition_alloc:raw_ptr",
+    "//base/allocator/partition_allocator:buildflags",
+    "//base/allocator/partition_allocator:raw_ptr",
     "//base/numerics:base_numerics",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
@@ -1706,8 +1706,8 @@ component("base") {
     # partition_alloc code if use_partition_alloc = false because no code uses
     # partition_alloc.
     public_deps += [
-      "allocator/partition_allocator/src/partition_alloc",
-      "allocator/partition_allocator/src/partition_alloc:raw_ptr",
+      "allocator/partition_allocator:partition_alloc",
+      "allocator/partition_allocator:raw_ptr",
     ]
   }
 
@@ -2669,11 +2669,11 @@ component("i18n") {
   defines = [ "BASE_I18N_IMPLEMENTATION" ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
   public_deps = [
+    ":base",
     "//third_party/ced",
     "//third_party/icu",
   ]
   deps = [
-    ":base",
     "//base/third_party/dynamic_annotations",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
@@ -3127,6 +3127,7 @@ test("base_unittests") {
     "containers/intrusive_heap_unittest.cc",
     "containers/linked_list_unittest.cc",
     "containers/lru_cache_unittest.cc",
+    "containers/map_util_unittest.cc",
     "containers/small_map_unittest.cc",
     "containers/span_unittest.cc",
     "containers/unique_ptr_adapters_unittest.cc",
@@ -3287,6 +3288,7 @@ test("base_unittests") {
     "sequence_checker_unittest.cc",
     "sequence_token_unittest.cc",
     "state_transitions_unittest.cc",
+    "std_clamp_unittest.cc",
     "stl_util_unittest.cc",
     "strings/abseil_string_number_conversions_unittest.cc",
     "strings/escape_unittest.cc",
@@ -3467,10 +3469,7 @@ test("base_unittests") {
   }
 
   if (use_safe_libcxx) {
-    sources += [
-      "libcpp_hardening_test.cc",
-      "std_clamp_unittest.cc",
-    ]
+    sources += [ "libcpp_hardening_test.cc" ]
   }
 
   defines = []
@@ -4455,6 +4454,8 @@ if (is_android) {
       "android/java/src/org/chromium/base/supplier/OneshotSupplier.java",
       "android/java/src/org/chromium/base/supplier/OneshotSupplierImpl.java",
       "android/java/src/org/chromium/base/supplier/Supplier.java",
+      "android/java/src/org/chromium/base/supplier/SyncOneshotSupplier.java",
+      "android/java/src/org/chromium/base/supplier/SyncOneshotSupplierImpl.java",
       "android/java/src/org/chromium/base/supplier/UnownedUserDataSupplier.java",
       "android/java/src/org/chromium/base/task/AsyncTask.java",
       "android/java/src/org/chromium/base/task/BackgroundOnlyAsyncTask.java",
@@ -4528,13 +4529,13 @@ if (is_android) {
       ":base_java",
       ":base_java_test_support",
       ":base_java_test_support_uncommon",
-      "//base:jni_java",
       "//base/test:test_support_java",
       "//build/android:build_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_test_monitor_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/hamcrest:hamcrest_java",
+      "//third_party/jni_zero:jni_zero_java",
       "//third_party/junit:junit",
       "//third_party/mockito:mockito_java",
     ]
@@ -4592,9 +4593,9 @@ if (is_android) {
 
     deps = [
       ":base_java",
-      "//base:jni_java",
       "//build/android:build_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
+      "//third_party/jni_zero:jni_zero_java",
       "//third_party/junit:junit",
     ]
   }
@@ -4604,7 +4605,6 @@ if (is_android) {
 
     deps = [
       ":base_java",
-      "//base:jni_java",
       "//build/android:build_java",
       "//third_party/accessibility_test_framework:accessibility_test_framework_java",
       "//third_party/android_deps:espresso_java",
@@ -4618,6 +4618,7 @@ if (is_android) {
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/androidx:androidx_test_uiautomator_uiautomator_java",
       "//third_party/hamcrest:hamcrest_java",
+      "//third_party/jni_zero:jni_zero_java",
       "//third_party/junit",
     ]
 
@@ -4714,10 +4715,10 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
-      "//base:jni_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_test_monitor_java",
       "//third_party/hamcrest:hamcrest_java",
+      "//third_party/jni_zero:jni_zero_java",
       "//third_party/junit:junit",
     ]
 
@@ -4817,6 +4818,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/supplier/ObservableSupplierImplTest.java",
       "android/junit/src/org/chromium/base/supplier/OneShotCallbackTest.java",
       "android/junit/src/org/chromium/base/supplier/OneshotSupplierImplTest.java",
+      "android/junit/src/org/chromium/base/supplier/SyncOneshotSupplierImplTest.java",
       "android/junit/src/org/chromium/base/supplier/UnownedUserDataSupplierTest.java",
       "android/junit/src/org/chromium/base/task/AsyncTaskThreadTest.java",
       "android/junit/src/org/chromium/base/task/SequencedTaskRunnerTaskMigrationTest.java",
@@ -4845,13 +4847,13 @@ if (is_android) {
       ":base_java_test_support_uncommon",
       ":base_junit_test_support",
       ":base_shared_preferences_java",
-      "//base:jni_java",
       "//base/test:test_support_java",
       "//third_party/android_deps:guava_android_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_test_core_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/hamcrest:hamcrest_java",
+      "//third_party/jni_zero:jni_zero_java",
     ]
   }
 
@@ -4885,8 +4887,8 @@ if (is_android) {
     srcjar_deps = [ ":base_profiler_test_support_jni" ]
 
     deps = [
-      "//base:jni_java",
       "//build/android:build_java",
+      "//third_party/jni_zero:jni_zero_java",
     ]
   }
 
@@ -4895,7 +4897,7 @@ if (is_android) {
 
     deps = [
       ":base_java",
-      "//base:jni_java",
+      "//third_party/jni_zero:jni_zero_java",
     ]
 
     sources = [
@@ -5067,7 +5069,7 @@ source_set("partition_alloc_test_support") {
     sources += [ "allocator/partition_allocator/src/partition_alloc/partition_alloc_base/threading/platform_thread_android_for_testing.cc" ]
   }
   public_deps = [
-    "allocator/partition_allocator/src/partition_alloc:buildflags",
+    "allocator/partition_allocator:buildflags",
     "//build:branding_buildflags",
     "//build/config/compiler:compiler_buildflags",
   ]

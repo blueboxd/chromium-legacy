@@ -309,20 +309,15 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
     test::SetServerCreditCards(GetServerDataTable(), server_cards);
   }
 
-  void SetServerProfiles(const std::vector<AutofillProfile>& server_profiles) {
-    GetServerDataTable()->SetServerProfiles(server_profiles);
-  }
-
-  void ConvertWalletAddressesAndUpdateWalletCards() {
-    // Simulate new data is coming from sync which triggers a conversion of
-    // wallet addresses which in turn triggers a refresh.
-    personal_data_->AutofillMultipleChangedBySync(syncer::AUTOFILL_WALLET_DATA);
-    PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  }
-
   void AddOfferDataForTest(AutofillOfferData offer_data) {
     personal_data_->AddOfferDataForTest(
         std::make_unique<AutofillOfferData>(offer_data));
+  }
+
+  void AddLocalIban(Iban& iban) {
+    iban.set_identifier(Iban::Guid(personal_data_->AddIban(iban)));
+    PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+    iban.set_record_type(Iban::kLocalIban);
   }
 
   std::unique_ptr<PersonalDataManager> personal_data_;
@@ -984,6 +979,60 @@ TEST_F(PersonalDataManagerTest, AddAndReloadServerIbans) {
   ExpectSameElements(expected_ibans, personal_data_->GetServerIbans());
 }
 
+// Test that all (local and server) IBANs can be returned.
+TEST_F(PersonalDataManagerTest, GetIbans) {
+  personal_data_->SetSyncingForTest(true);
+
+  Iban local_iban1;
+  local_iban1.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue)));
+  Iban local_iban2;
+  local_iban2.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue_1)));
+  Iban server_iban1 = test::GetServerIban();
+  Iban server_iban2 = test::GetServerIban2();
+
+  AddLocalIban(local_iban1);
+  AddLocalIban(local_iban2);
+
+  GetServerDataTable()->SetServerIbans({server_iban1, server_iban2});
+  personal_data_->Refresh();
+  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+
+  std::vector<const Iban*> all_ibans = {&local_iban1, &local_iban2,
+                                        &server_iban1, &server_iban2};
+  ExpectSameElements(all_ibans, personal_data_->GetIbans());
+}
+
+// Test that deduplication works correctly when a local IBAN has a matching
+// prefix and suffix (either equal or starting with) and the same length as the
+// server IBANs.
+TEST_F(PersonalDataManagerTest, GetIbansToSuggest) {
+  personal_data_->SetSyncingForTest(true);
+
+  // Create two IBANs, and two server IBANs.
+  // `local_iban1` and `server_iban1` have the same prefix, suffix and length.
+  Iban local_iban1;
+  local_iban1.set_value(u"FR76 3000 6000 0112 3456 7890 189");
+  Iban local_iban2;
+  local_iban2.set_value(u"CH56 0483 5012 3456 7800 9");
+  Iban server_iban1(Iban::InstrumentId("1234567"));
+  server_iban1.set_prefix(u"FR76");
+  server_iban1.set_suffix(u"0189");
+  server_iban1.set_length(27);
+  Iban server_iban2 = test::GetServerIban2();
+  server_iban2.set_length(34);
+
+  AddLocalIban(local_iban1);
+  AddLocalIban(local_iban2);
+
+  GetServerDataTable()->SetServerIbans({server_iban1, server_iban2});
+  personal_data_->Refresh();
+  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+
+  std::vector<const Iban*> ibans_to_suggest = {&server_iban1, &server_iban2,
+                                               &local_iban2};
+  ExpectSameElements(ibans_to_suggest, personal_data_->GetIbansToSuggest());
+}
+
 TEST_F(PersonalDataManagerTest, NoIbansAddedIfDisabled) {
   prefs::SetAutofillPaymentMethodsEnabled(prefs_.get(), false);
 
@@ -1025,19 +1074,8 @@ TEST_F(PersonalDataManagerTest, AddLocalIbans) {
   // Attempt to add all three IBANs to the database. The first two should add
   // successfully, but the third should get skipped because its value is
   // identical to `iban2`.
-  std::string guid = personal_data_->AddIban(iban1);
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  // Should set identifier and record_type manually here as `iban1` has been
-  // passed by value above in `AddIban`, and `AddIban` method sets identifier
-  // and record_type to the given `iban1`.
-  iban1.set_identifier(Iban::Guid(guid));
-  iban1.set_record_type(Iban::kLocalIban);
-
-  guid = personal_data_->AddIban(iban2);
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  iban2.set_identifier(Iban::Guid(guid));
-  iban2.set_record_type(Iban::kLocalIban);
-
+  AddLocalIban(iban1);
+  AddLocalIban(iban2);
   // Do not add `PersonalDataProfileTaskWaiter(*personal_data_).Wait()` for this
   // `AddIban` operation, as it will be terminated prematurely for
   // `iban2_with_different_nickname` due to the presence of an IBAN with the
@@ -1052,14 +1090,7 @@ TEST_F(PersonalDataManagerTest, UpdateLocalIbans) {
   Iban iban;
   iban.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue)));
   iban.set_nickname(u"Nickname for Iban");
-
-  std::string guid = personal_data_->AddIban(iban);
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  // Should set identifier and record_type manually here as `iban` has been
-  // passed by value above in `AddIban`, and `AddIban` method sets identifier
-  // and record_type to the given `iban`.
-  iban.set_identifier(Iban::Guid(guid));
-  iban.set_record_type(Iban::kLocalIban);
+  AddLocalIban(iban);
 
   // Verify the `iban` has been added successfully.
   std::vector<Iban*> ibans = {&iban};
@@ -1086,24 +1117,17 @@ TEST_F(PersonalDataManagerTest, RemoveLocalIbans) {
   Iban iban;
   iban.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue)));
   iban.set_nickname(u"Nickname for Iban");
-
-  std::string guid = personal_data_->AddIban(iban);
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  // Should set identifier and record_type manually here as `iban` has been
-  // passed by value above in `AddIban`, and `AddIban` method sets identifier
-  // and record_type to the given `iban`.
-  iban.set_identifier(Iban::Guid(guid));
-  iban.set_record_type(Iban::kLocalIban);
+  AddLocalIban(iban);
 
   // Verify the `iban` has been added successfully.
   std::vector<Iban*> ibans = {&iban};
   ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 
-  RemoveByGUIDFromPersonalDataManager(guid);
+  RemoveByGUIDFromPersonalDataManager(iban.guid());
   EXPECT_TRUE(personal_data_->GetLocalIbans().empty());
 
   // Verify that removal of a GUID that doesn't exist won't crash.
-  RemoveByGUIDFromPersonalDataManager(guid);
+  RemoveByGUIDFromPersonalDataManager(iban.guid());
 }
 
 // Ensure that new IBANs can be updated and saved via
@@ -2139,7 +2163,6 @@ TEST_F(PersonalDataManagerTest, GetProfilesToSuggest_ProfileAutofillDisabled) {
   // Disable Profile autofill.
   prefs::SetAutofillProfileEnabled(personal_data_->pref_service_, false);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  ConvertWalletAddressesAndUpdateWalletCards();
 
   // Check that profiles were saved.
   const size_t expected_profiles = 1;
@@ -2164,7 +2187,6 @@ TEST_F(PersonalDataManagerTest,
 
   personal_data_->Refresh();
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  ConvertWalletAddressesAndUpdateWalletCards();
 
   // Expect that all profiles are suggested.
   const size_t expected_profiles = 1;
@@ -2844,28 +2866,6 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
   Check(*added_card, 2u, kSomeLaterTime, kArbitraryTime);
 }
 
-TEST_F(PersonalDataManagerTest, ClearAllServerData) {
-  // Add a server card.
-  std::vector<CreditCard> server_cards;
-  server_cards.emplace_back(CreditCard::RecordType::kMaskedServerCard, "a123");
-  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
-                          "3456" /* Visa */, "01", "2999", "1");
-  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
-  SetServerCards(server_cards);
-  personal_data_->Refresh();
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-
-  // The card and profile should be there.
-  ResetPersonalDataManager();
-  EXPECT_FALSE(personal_data_->GetCreditCards().empty());
-
-  personal_data_->ClearAllServerData();
-
-  // Reload the database, everything should be gone.
-  ResetPersonalDataManager();
-  EXPECT_TRUE(personal_data_->GetCreditCards().empty());
-}
-
 TEST_F(PersonalDataManagerTest, ClearAllLocalData) {
   // Add some local data.
   AddProfileToPersonalDataManager(test::GetFullProfile());
@@ -2938,64 +2938,6 @@ TEST_F(PersonalDataManagerTest, DeleteAllLocalCreditCards) {
   EXPECT_EQ(0U, personal_data_->GetLocalCreditCards().size());
 }
 
-// Tests that Wallet addresses do NOT get converted if they're stored in
-// ephemeral storage.
-TEST_F(PersonalDataManagerSyncTransportModeTest,
-       DoNotConvertWalletAddressesInEphemeralStorage) {
-  ///////////////////////////////////////////////////////////////////////
-  // Setup.
-  ///////////////////////////////////////////////////////////////////////
-  ASSERT_FALSE(personal_data_->IsSyncFeatureEnabledForPaymentsServerMetrics());
-
-  // Add a local profile.
-  AutofillProfile local_profile;
-  test::SetProfileInfo(&local_profile, "Josephine", "Alicia", "Saenz", "",
-                       "Fox", "1212 Center.", "Bld. 5", "", "", "", "", "");
-  AddProfileToPersonalDataManager(local_profile);
-
-  // Add two server profiles: The first is unique, the second is similar to the
-  // local one but has some additional info.
-  std::vector<AutofillProfile> server_profiles;
-  server_profiles.emplace_back(AutofillProfile::SERVER_PROFILE,
-                               "server_address1");
-  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "", "",
-                       "1212 Center", "Bld. 5", "Orlando", "FL", "32801", "US",
-                       "");
-  server_profiles.back().SetRawInfo(NAME_FULL, u"John Doe");
-
-  server_profiles.emplace_back(AutofillProfile::SERVER_PROFILE,
-                               "server_address2");
-  test::SetProfileInfo(&server_profiles.back(), "Josephine", "Alicia", "Saenz",
-                       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
-                       "Orlando", "FL", "32801", "US", "19482937549");
-  server_profiles.back().SetRawInfo(NAME_FULL, u"Josephine Alicia Saenz");
-  SetServerProfiles(server_profiles);
-
-  ASSERT_TRUE(AutofillProfileComparator(personal_data_->app_locale())
-                  .AreMergeable(local_profile, server_profiles.back()));
-
-  // Make sure everything is set up correctly.
-  personal_data_->Refresh();
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  ASSERT_EQ(1U, personal_data_->GetProfiles().size());
-  ASSERT_EQ(2U, personal_data_->GetServerProfiles().size());
-
-  ///////////////////////////////////////////////////////////////////////
-  // Tested method.
-  ///////////////////////////////////////////////////////////////////////
-  // Since the wallet addresses are in ephemeral storage, they should *not* get
-  // converted to local addresses.
-  ConvertWalletAddressesAndUpdateWalletCards();
-
-  ///////////////////////////////////////////////////////////////////////
-  // Validation.
-  ///////////////////////////////////////////////////////////////////////
-  // There should be no changes to the local profiles: No new one added, and no
-  // changes to the existing one (even though the second server profile contains
-  // additional information and is mergeable in principle).
-  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
-  EXPECT_EQ(local_profile, *personal_data_->GetProfiles()[0]);
-}
 
 TEST_F(PersonalDataManagerTest, RemoveByGUID_ResetsBillingAddress) {
   ///////////////////////////////////////////////////////////////////////

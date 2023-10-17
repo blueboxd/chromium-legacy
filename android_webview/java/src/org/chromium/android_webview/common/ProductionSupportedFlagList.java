@@ -267,6 +267,10 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE,
                     "Upload UMA metrics logs through MetricsUploadService not via GMS-core"
                             + " directly."),
+            Flag.baseFeature(
+                     AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE_ONLY_SDK_RUNTIME,
+                    "Upload UMA metrics logs through MetricsUploadService not via GMS-core"
+                            + " directly when running within the SDK Runtime."),
             Flag.baseFeature(AndroidMetricsFeatures.ANDROID_METRICS_ASYNC_METRIC_LOGGING,
                     "Initiate metric uploading on a background thread."),
             Flag.baseFeature(BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
@@ -452,6 +456,8 @@ public final class ProductionSupportedFlagList {
                             + " This has no effect if metrics reporting is disabled"),
             Flag.baseFeature(SafeBrowsingFeatures.SAFE_BROWSING_SKIP_SUBRESOURCES,
                 "When enabled, Safe Browsing will skip subresources"),
+            Flag.baseFeature("SafeBrowsingSkipSubResources2",
+                "When enabled, Safe Browsing will skip WebTransport and WebSockets"),
             Flag.baseFeature("SafeBrowsingOnUIThread"),
             Flag.baseFeature(BlinkFeatures.ANDROID_EXTENDED_KEYBOARD_SHORTCUTS,
                     "Enables WebView to use the extended keyboard shortcuts added for Android U"),

@@ -18,7 +18,7 @@
 #import "components/feature_engagement/public/feature_constants.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "components/sync/service/sync_service.h"
-#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/settings/model/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -1212,6 +1212,18 @@ void RecordPromoStatsToUMAForAction(PromoStatistics* promo_stats,
 
 void RecordPromoStatsToUMAForAppear(PromoStatistics* promo_stats) {
   RecordPromoStatsToUMAForActionString(promo_stats, kAppearAction);
+}
+
+void RecordPromoDisplayStatsToUMA() {
+  base::UmaHistogramCounts100(
+      "IOS.DefaultBrowserPromo.DaysSinceLastPromoInteraction",
+      NumDaysSincePromoInteraction());
+  base::UmaHistogramCounts100(
+      "IOS.DefaultBrowserPromo.GenericPromoDisplayCount",
+      GenericPromoInteractionCount());
+  base::UmaHistogramCounts100(
+      "IOS.DefaultBrowserPromo.TailoredPromoDisplayCount",
+      TailoredPromoInteractionCount());
 }
 
 void LogBrowserLaunched(bool is_cold_start) {

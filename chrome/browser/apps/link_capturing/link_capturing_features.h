@@ -10,19 +10,23 @@
 namespace apps::features {
 
 BASE_DECLARE_FEATURE(kLinkCapturingUiUpdate);
-BASE_DECLARE_FEATURE(kLinkCapturingInfoBar);
 
 // Enables user link capturing on desktop platforms, i.e. Windows, Mac
 // Linux amd Fuchsia.
 BASE_DECLARE_FEATURE(kDesktopPWAsLinkCapturing);
 
+#if BUILDFLAG(IS_CHROMEOS)
+// Enables link capturing into apps when links are clicked from another app
+// context, regardless of user setting.
+BASE_DECLARE_FEATURE(kAppToAppLinkCapturing);
+
+// Enables link capturing into a specific set of Google Workspace apps when
+// links are clicked from another app context, regardless of user setting.
+BASE_DECLARE_FEATURE(kAppToAppLinkCapturingWorkspaceApps);
+#endif
+
 // Returns true if the overall link capturing UI update feature is enabled.
 bool LinkCapturingUiUpdateEnabled();
-
-// Returns true if the Link Capturing Info Bar should be shown when launching an
-// app through the Intent Picker. Only returns true if
-// LinkCapturingUiUpdateEnabled() returns true.
-bool LinkCapturingInfoBarEnabled();
 
 }  // namespace apps::features
 

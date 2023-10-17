@@ -31,7 +31,7 @@ struct CORE_EXPORT NGUnpositionedFloat final {
                       const LogicalSize available_size,
                       const LogicalSize percentage_size,
                       const LogicalSize replaced_percentage_size,
-                      const NGBfcOffset& origin_bfc_offset,
+                      const BfcOffset& origin_bfc_offset,
                       const NGConstraintSpace& parent_space,
                       const ComputedStyle& parent_style)
       : node(node),
@@ -49,14 +49,14 @@ struct CORE_EXPORT NGUnpositionedFloat final {
   const LogicalSize available_size;
   const LogicalSize percentage_size;
   const LogicalSize replaced_percentage_size;
-  const NGBfcOffset origin_bfc_offset;
+  const BfcOffset origin_bfc_offset;
   const NGConstraintSpace& parent_space;
   const ComputedStyle& parent_style;
 
   // layout_result and margins are used as a cache when measuring the
   // inline_size of a float in an inline context.
   const NGLayoutResult* layout_result = nullptr;
-  NGBoxStrut margins;
+  BoxStrut margins;
 
   bool IsLineLeft(TextDirection cb_direction) const {
     return node.Style().Floating(cb_direction) == EFloat::kLeft;

@@ -152,7 +152,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
    public:
     NGBlockNode node;
     const NGConstraintSpace constraint_space;
-    const NGLogicalStaticPosition static_position;
+    const LogicalStaticPosition static_position;
     PhysicalSize container_physical_content_size;
     const ContainingBlockInfo container_info;
     const WritingDirectionMode default_writing_direction;
@@ -164,7 +164,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
     NodeInfo(NGBlockNode node,
              const NGConstraintSpace constraint_space,
-             const NGLogicalStaticPosition static_position,
+             const LogicalStaticPosition static_position,
              PhysicalSize container_physical_content_size,
              const ContainingBlockInfo container_info,
              const WritingDirectionMode default_writing_direction,
@@ -198,7 +198,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
    public:
     // Absolutized inset property values. Not necessarily the insets of the box.
-    NGBoxStrut insets_for_get_computed_style;
+    BoxStrut insets_for_get_computed_style;
     // Offset to container's border box.
     LogicalOffset offset;
     // If |has_cached_layout_result| is true, this will hold the cached layout
@@ -392,9 +392,9 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   // paint-layer.
   void SaveStaticPositionOnPaintLayer(
       LayoutBox* layout_box,
-      const NGLogicalStaticPosition& position) const;
-  NGLogicalStaticPosition ToStaticPositionForLegacy(
-      NGLogicalStaticPosition position) const;
+      const LogicalStaticPosition& position) const;
+  LogicalStaticPosition ToStaticPositionForLegacy(
+      LogicalStaticPosition position) const;
 
   const NGFragmentBuilder::ChildrenVector& FragmentationContextChildren()
       const {

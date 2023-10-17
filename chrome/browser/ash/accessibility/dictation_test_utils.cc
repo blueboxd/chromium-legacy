@@ -217,7 +217,9 @@ void DictationTestUtils::SendFinalResultAndWaitForEditableValue(
     const std::string& result,
     const std::string& value) {
   SendFinalResultAndWait(result);
-  automation_test_utils_->WaitForValueChangedEvent();
+  if (speech_recognition_type_ == speech::SpeechRecognitionType::kNetwork) {
+    automation_test_utils_->WaitForValueChangedEvent();
+  }
   WaitForEditableValue(value);
 }
 
@@ -338,7 +340,7 @@ void DictationTestUtils::SetUpPumpkinDir() {
 void DictationTestUtils::SetUpTestSupport() {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath source_dir;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_dir));
+  CHECK(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_dir));
   auto test_support_path = source_dir.AppendASCII(kTestSupportPath);
   std::string script;
   ASSERT_TRUE(base::ReadFileToString(test_support_path, &script))

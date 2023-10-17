@@ -484,6 +484,7 @@
 <translation id="4793756956024303490">შეკუმშვის ალგორითმი</translation>
 <translation id="4794140124556169553">CPU-ს ტესტის გაშვება, შესაძლოა, აისახოს სისტემის წარმადობაზე</translation>
 <translation id="4798078634453489142">ახალი APN-ის დასამატებლად ამოშალეთ არსებული APN</translation>
+<translation id="479989351350248267">ძიება</translation>
 <translation id="4800589996161293643">Chromebook საზოგადოება</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">ბეჭდვის დავალება გაუქმდა <ph name="DOCUMENT_TITLE" />-ისთვის</translation>
@@ -714,7 +715,6 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">სუსტი (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">ანგარიშის პარამეტრებზე გადასვლა</translation>
-<translation id="6461047516875166066">ვრცლად</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{გსურთ გვერდის ხელახლა სკანირება?}=1{გსურთ გვერდი {PAGE_NUMBER}-ის ხელახლა სკანირება?}other{გსურთ გვერდი {PAGE_NUMBER}-ის ხელახლა სკანირება?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287">მართავს <ph name="MANAGER" /></translation>
@@ -793,6 +793,7 @@
 <translation id="7103252855940681301">მოწყობილობა <ph name="INDEX" /> / <ph name="COUNT" />-დან, სახელწოდებით — <ph name="NAME" />.</translation>
 <translation id="7107255225945990211">ექსკლუზიურად <ph name="PRODUCT_NAME" />-ზე ხელმისაწვდომი ნამუშევრების არჩევა</translation>
 <translation id="7108668606237948702">შეყვანა</translation>
+<translation id="7119389851461848805">ენერგია</translation>
 <translation id="7130438335435247835">წვდომის წერტილი (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{სახელთა სერვერი}other{სახელთა სერვერები}}</translation>
 <translation id="7135814714616751706">მალსახმობების ძიება</translation>
@@ -836,7 +837,6 @@
 <translation id="7401543881546089382">წაშალეთ მალსახმობი</translation>
 <translation id="741244894080940828">გარდაქმნა</translation>
 <translation id="7415801143053185905">HTTP რეაგირების დრო ზედმეტად დიდია</translation>
-<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{თქვენმა ადმინისტრატორმა დააყენა პარამეტრები ისე, რომ <ph name="APP_NAME_1" /> ავტომატურად გაეშვება ყოველთვის, როცა სისტემაში შეხვალთ.}=2{თქვენმა ადმინისტრატორმა დააყენა პარამეტრები ისე, რომ <ph name="APP_NAME_1" /> და <ph name="APP_NAME_2" /> ავტომატურად გაეშვება ყოველთვის, როცა სისტემაში შეხვალთ.}=3{თქვენმა ადმინისტრატორმა დააყენა პარამეტრები ისე, რომ <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> და <ph name="APP_NAME_3" /> ავტომატურად გაეშვება ყოველთვის, როცა სისტემაში შეხვალთ.}other{თქვენმა ადმინისტრატორმა დააყენა პარამეტრები ისე, რომ <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> და # სხვა აპი ავტომატურად გაეშვება ყოველთვის, როცა სისტემაში შეხვალთ.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">ავატარების სანახავად და დასაყენებლად დაუკავშირდით ქსელს და გადატვირთეთ გვერდი.</translation>
 <translation id="7469648432129124067">აღმოჩენილია პორტალი</translation>
@@ -950,6 +950,7 @@
 <translation id="8336739000755212683">მოწყობილობის ანგარიშის სურათის შეცვლა</translation>
 <translation id="8347126826554447157"><ph name="SHORCTCUT1" /> ან <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">ბეჭდვის დავალებები</translation>
+<translation id="8349826889576450703">გამშვები</translation>
 <translation id="8351855506390808906">კლავიშთა დანიშვნის შეხების წერტილი</translation>
 <translation id="8352772353338965963">დაამატეთ ანგარიში მრავლობითი შესვლისთვის. სისტემაში შესულ ანგარიშზე წვდომის მიღება შესაძლებელია პაროლის შეყვანის გარეშე, ამიტომ ეს ფუნქცია უნდა გამოიყენოთ მხოლოდ სანდო ანგარიშებზე.</translation>
 <translation id="8364946094152050673">სახელის ცარიელი სერვერები</translation>
@@ -1043,9 +1044,9 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{სკანირება}=1{გვერდის {NUMBER_OF_PAGES} სკანირება}other{გვერდის {NUMBER_OF_PAGES} სკანირება}}</translation>
 <translation id="8997710128084572139">მოწყობილობის ბატარეის დონეა <ph name="BATTERY_PERCENTAGE" />%.</translation>
-<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> ავტომატურად გაეშვა}other{# აპი ავტომატურად გაეშვა}}</translation>
 <translation id="8998289560386111590">მიუწვდომელია თქვენს მოწყობილობაზე</translation>
 <translation id="9003704114456258138">სიხშირე</translation>
+<translation id="901834265349196618">ელფოსტა</translation>
 <translation id="9024331582947483881">მთელ ეკრანზე</translation>
 <translation id="9025198690966128418">პირად მოწყობილობად გამოყენება</translation>
 <translation id="902638246363752736">კლავიატურის პარამეტრები</translation>
@@ -1086,6 +1087,7 @@
 <translation id="945522503751344254">შეფასების გაგზავნა</translation>
 <translation id="952992212772159698">არ არის გააქტიურებული</translation>
 <translation id="960719561871045870">ოპერატორის კოდი</translation>
+<translation id="966787709310836684">მენიუ</translation>
 <translation id="979450713603643090">ღია ვარდისფერი</translation>
 <translation id="982713511914535780">განმუხტვის ტესტის გაშვება</translation>
 <translation id="987264212798334818">ზოგადი</translation>

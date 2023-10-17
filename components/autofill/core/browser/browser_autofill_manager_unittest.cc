@@ -274,7 +274,7 @@ class MockAutofillClient : public TestAutofillClient {
   MOCK_METHOD(bool, IsPasswordManagerEnabled, (), (override));
   MOCK_METHOD(void,
               DidFillOrPreviewForm,
-              (mojom::AutofillActionPersistence action_persistence,
+              (mojom::ActionPersistence action_persistence,
                AutofillTriggerSource trigger_source,
                bool is_refill),
               (override));
@@ -544,9 +544,9 @@ class MockAutofillDriver : public TestAutofillDriver {
 
   // Mock methods to enable testability.
   MOCK_METHOD((std::vector<FieldGlobalId>),
-              ApplyAutofillAction,
-              (mojom::AutofillActionType action_type,
-               mojom::AutofillActionPersistence action_persistence,
+              ApplyFormAction,
+              (mojom::ActionType action_type,
+               mojom::ActionPersistence action_persistence,
                const FormData& data,
                const url::Origin& triggered_origin,
                (const base::flat_map<FieldGlobalId, ServerFieldType>&)),
@@ -787,10 +787,11 @@ class BrowserAutofillManagerTest : public testing::Test {
   }
 
   void AddFormFillHistoryEntry(
-      base::span<const FormFieldData* const> filled_fields,
+      std::vector<const FormFieldData* const> filled_fields,
+      std::vector<const AutofillField* const> filled_autofill_fields,
       bool is_refill) {
     test_api(*browser_autofill_manager_)
-        .AddFormFillEntry(filled_fields, is_refill);
+        .AddFormFillEntry(filled_fields, filled_autofill_fields, is_refill);
   }
 
   void FillAutofillFormData(
@@ -803,7 +804,7 @@ class BrowserAutofillManagerTest : public testing::Test {
         form, field, {},
         AutofillSuggestionTriggerSource::kTextFieldDidReceiveKeyDown);
     browser_autofill_manager_->FillOrPreviewForm(
-        mojom::AutofillActionPersistence::kFill, form, field,
+        mojom::ActionPersistence::kFill, form, field,
         Suggestion::BackendId(guid), trigger_details);
   }
 
@@ -818,7 +819,7 @@ class BrowserAutofillManagerTest : public testing::Test {
       AutofillTriggerDetails trigger_details = {
           .trigger_source = AutofillTriggerSource::kPopup}) {
     FormData response_data;
-    EXPECT_CALL(*autofill_driver_, ApplyAutofillAction)
+    EXPECT_CALL(*autofill_driver_, ApplyFormAction)
         .WillOnce(DoAll(SaveArg<2>(&response_data),
                         Return(std::vector<FieldGlobalId>{})));
     FillAutofillFormData(input_form, input_field, guid, trigger_details);
@@ -826,12 +827,12 @@ class BrowserAutofillManagerTest : public testing::Test {
   }
 
   FormData PreviewVirtualCardDataAndGetResults(
-      mojom::AutofillActionPersistence action_persistence,
+      mojom::ActionPersistence action_persistence,
       const std::string& guid,
       const FormData& input_form,
       const FormFieldData& input_field) {
     FormData response_data;
-    EXPECT_CALL(*autofill_driver_, ApplyAutofillAction)
+    EXPECT_CALL(*autofill_driver_, ApplyFormAction)
         .WillOnce((DoAll(SaveArg<2>(&response_data),
                          Return(std::vector<FieldGlobalId>{}))));
     browser_autofill_manager_->FillOrPreviewVirtualCardInformation(
@@ -908,9 +909,9 @@ class BrowserAutofillManagerTest : public testing::Test {
                             "2017", "1");
     card->SetNetworkForMaskedCard(kVisaCard);
 
-    EXPECT_CALL(*autofill_driver_, ApplyAutofillAction).Times(AtLeast(1));
+    EXPECT_CALL(*autofill_driver_, ApplyFormAction).Times(AtLeast(1));
     browser_autofill_manager_->FillOrPreviewCreditCardForm(
-        mojom::AutofillActionPersistence::kFill, *form, form->fields[0], card,
+        mojom::ActionPersistence::kFill, *form, form->fields[0], card,
         {.trigger_source = AutofillTriggerSource::kPopup});
   }
 
@@ -1047,7 +1048,9 @@ class BrowserAutofillManagerTest : public testing::Test {
                     expected.was_autofilled),
               Field("had_value_after_filling",
                     &FillFieldLogEvent::had_value_after_filling,
-                    expected.had_value_after_filling)));
+                    expected.had_value_after_filling),
+              Field("filling_method", &FillFieldLogEvent::filling_method,
+                    expected.filling_method)));
   }
 
   // Matches a TypingFieldLogEvent by equality of fields.
@@ -1421,7 +1424,7 @@ TEST_F(BrowserAutofillManagerTest, OnFormsSeen_DifferentFormStructures) {
 // Tests that only fields from `field_types_to_fill` are filled.
 TEST_F(BrowserAutofillManagerTest,
        FillingDetails_FieldTypesToFill_FillOnlySpecificFields) {
-  base::test::ScopedFeatureList features(
+  base::test::ScopedFeatureList enabled_features(
       features::kAutofillGranularFillingAvailable);
   // Set up our form data.
   FormData form = test::GetFormData(
@@ -1566,7 +1569,7 @@ TEST_F(BrowserAutofillManagerTest,
 #else
 TEST_F(BrowserAutofillManagerTest,
        GetProfileSuggestions_UnrecognizedAttribute_Predictions_Desktop) {
-  base::test::ScopedFeatureList features(
+  base::test::ScopedFeatureList enabled_features(
       features::kAutofillPredictionsForAutocompleteUnrecognized);
 
   // Create a form where the first field has ac=unrecognized.
@@ -2714,8 +2717,8 @@ TEST_F(BrowserAutofillManagerTest, OnCreditCardFetched_StoreInstrumentId) {
   FormsSeen({form});
   CreditCard credit_card = test::WithCvc(test::GetMaskedServerCard());
   browser_autofill_manager_->FillOrPreviewCreditCardForm(
-      mojom::AutofillActionPersistence::kFill, form, form.fields[0],
-      &credit_card, {.trigger_source = AutofillTriggerSource::kPopup});
+      mojom::ActionPersistence::kFill, form, form.fields[0], &credit_card,
+      {.trigger_source = AutofillTriggerSource::kPopup});
 
   test_api(*browser_autofill_manager_)
       .OnCreditCardFetched(CreditCardFetchResult::kSuccess, &credit_card);
@@ -2923,11 +2926,11 @@ TEST_F(BrowserAutofillManagerTest, DoNotFillIfFormFieldChanged) {
   ASSERT_TRUE(profile);
 
   FormData response_data;
-  EXPECT_CALL(*autofill_driver_, ApplyAutofillAction)
+  EXPECT_CALL(*autofill_driver_, ApplyFormAction)
       .WillOnce((DoAll(SaveArg<2>(&response_data),
                        Return(std::vector<FieldGlobalId>{}))));
   test_api(*browser_autofill_manager_)
-      .FillOrPreviewDataModelForm(mojom::AutofillActionPersistence::kFill, form,
+      .FillOrPreviewDataModelForm(mojom::ActionPersistence::kFill, form,
                                   form.fields.front(), profile, nullptr,
                                   form_structure, autofill_field);
   std::vector<FormFieldData> filled_fields(response_data.fields.begin(),
@@ -2959,9 +2962,9 @@ TEST_F(BrowserAutofillManagerTest, DoNotFillIfFormChanged) {
   ASSERT_TRUE(profile);
 
   FormData response_data;
-  EXPECT_CALL(*autofill_driver_, ApplyAutofillAction).Times(0);
+  EXPECT_CALL(*autofill_driver_, ApplyFormAction).Times(0);
   test_api(*browser_autofill_manager_)
-      .FillOrPreviewDataModelForm(mojom::AutofillActionPersistence::kFill, form,
+      .FillOrPreviewDataModelForm(mojom::ActionPersistence::kFill, form,
                                   form.fields.front(), profile, nullptr,
                                   form_structure, autofill_field);
 }
@@ -2974,26 +2977,26 @@ TEST_F(BrowserAutofillManagerTest, UndoAutofillCallsDriver) {
   std::vector<FieldGlobalId> safe_fields{form.fields.front().global_id()};
   ASSERT_TRUE(browser_autofill_manager_->GetCachedFormAndField(
       form, form.fields.front(), &form_structure, &autofill_field));
-  EXPECT_CALL(*autofill_driver_, ApplyAutofillAction)
+  EXPECT_CALL(*autofill_driver_, ApplyFormAction)
       .Times(2)
       .WillRepeatedly(Return(safe_fields));
   test_api(*browser_autofill_manager_)
       .FillOrPreviewDataModelForm(
-          mojom::AutofillActionPersistence::kFill, form, form.fields.front(),
+          mojom::ActionPersistence::kFill, form, form.fields.front(),
           personal_data().GetProfiles().front(), /*optional_cvc=*/nullptr,
           form_structure, autofill_field);
 
-  browser_autofill_manager_->UndoAutofill(
-      mojom::AutofillActionPersistence::kFill, form, form.fields.front());
+  browser_autofill_manager_->UndoAutofill(mojom::ActionPersistence::kFill, form,
+                                          form.fields.front());
 }
 
 TEST_F(BrowserAutofillManagerTest, UndoResetsCachedAutofillState) {
   FormData form = CreateTestAddressFormData();
-  std::vector<const FormFieldData* const> filled_fields = {
-      &form.fields.front()};
+  AutofillField filled_autofill_field(form.fields.front());
 
   form.fields.front().is_autofilled = false;
-  AddFormFillHistoryEntry(filled_fields, /*is_refill=*/false);
+  AddFormFillHistoryEntry({&form.fields.front()}, {&filled_autofill_field},
+                          /*is_refill=*/false);
   form.fields.front().is_autofilled = true;
   FormsSeen({form});
 
@@ -3004,8 +3007,8 @@ TEST_F(BrowserAutofillManagerTest, UndoResetsCachedAutofillState) {
       form, form.fields.front(), &form_structure, &autofill_field));
   ASSERT_TRUE(autofill_field->is_autofilled);
 
-  browser_autofill_manager_->UndoAutofill(
-      mojom::AutofillActionPersistence::kFill, form, form.fields.front());
+  browser_autofill_manager_->UndoAutofill(mojom::ActionPersistence::kFill, form,
+                                          form.fields.front());
 
   ASSERT_TRUE(browser_autofill_manager_->GetCachedFormAndField(
       form, form.fields.front(), &form_structure, &autofill_field));
@@ -3024,7 +3027,7 @@ TEST_F(BrowserAutofillManagerTest,
   EXPECT_CALL(autofill_client_, DidFillOrPreviewForm);
   test_api(*browser_autofill_manager_)
       .FillOrPreviewDataModelForm(
-          mojom::AutofillActionPersistence::kFill, form, form.fields.front(),
+          mojom::ActionPersistence::kFill, form, form.fields.front(),
           personal_data().GetCreditCards()[0], /*optional_cvc=*/nullptr,
           form_structure, autofill_field);
 }
@@ -3047,7 +3050,7 @@ TEST_F(BrowserAutofillManagerTest, DoNotFillIfFormFieldRemoved) {
   AutofillProfile* profile = personal_data().GetProfileByGUID(MakeGuid(1));
   ASSERT_TRUE(profile);
 
-  EXPECT_CALL(*autofill_driver_, ApplyAutofillAction).Times(0);
+  EXPECT_CALL(*autofill_driver_, ApplyFormAction).Times(0);
 }
 
 // Tests that BrowserAutofillManager ignores loss of focus events sent from the
@@ -3172,7 +3175,7 @@ TEST_P(BrowserAutofillManagerLogAblationTest, TestLogging) {
                                   << static_cast<int>(form_type));
 
   if (!params.run_with_data_on_file) {
-    personal_data().ClearAllServerData();
+    personal_data().ClearAllServerDataForTesting();
     personal_data().ClearAllLocalData();
   }
 
@@ -3707,11 +3710,11 @@ TEST_F(BrowserAutofillManagerTest, AutocompleteUnrecognizedFillingBehavior) {
 
   // Fill the `form` as-if through manual fallbacks. Expect that every field
   // gets filled.
-  EXPECT_CALL(*autofill_driver_, ApplyAutofillAction)
+  EXPECT_CALL(*autofill_driver_, ApplyFormAction)
       .WillOnce(DoAll(SaveArg<2>(&filled_form),
                       Return(std::vector<FieldGlobalId>{})));
   browser_autofill_manager_->FillOrPreviewForm(
-      mojom::AutofillActionPersistence::kFill, form, form.fields[0],
+      mojom::ActionPersistence::kFill, form, form.fields[0],
       Suggestion::BackendId(kElvisProfileGuid),
       {.trigger_source =
            AutofillTriggerSource::kManualFallbackForAutocompleteUnrecognized});
@@ -4472,7 +4475,7 @@ TEST_F(BrowserAutofillManagerTest, PreviewCreditCardForm_VirtualCard) {
   FormsSeen({form});
 
   FormData response_data = PreviewVirtualCardDataAndGetResults(
-      mojom::AutofillActionPersistence::kPreview, virtual_card.guid(), form,
+      mojom::ActionPersistence::kPreview, virtual_card.guid(), form,
       form.fields[1]);
 
   std::u16string expected_cardholder_name = u"Lorem Ipsum";
@@ -5715,6 +5718,14 @@ class BrowserAutofillManagerWithLogEventsTest
   }
 
   template <class T>
+  size_t CountEventOfType(
+      const std::vector<AutofillField::FieldLogEventType>& events) {
+    return base::ranges::count_if(events, [](const auto& event) {
+      return absl::holds_alternative<T>(event);
+    });
+  }
+
+  template <class T>
   const T* FindFirstEventOfType(
       const std::vector<AutofillField::FieldLogEventType>& events) {
     return FindNthEventOfType<T>(events, 1);
@@ -5777,6 +5788,7 @@ TEST_F(BrowserAutofillManagerWithLogEventsTest, LogEventsAtFormSubmitted) {
         .autofill_skipped_status = FieldFillingSkipReason::kNotSkipped,
         .was_autofilled = OptionalBoolean::kTrue,
         .had_value_after_filling = OptionalBoolean::kTrue,
+        .filling_method = AutofillFillingMethod::kFullForm,
     });
     EXPECT_THAT(autofill_field_ptr->field_log_events(),
                 ArrayEquals(expected_events));
@@ -5853,6 +5865,7 @@ TEST_F(BrowserAutofillManagerWithLogEventsTest,
           .autofill_skipped_status = FieldFillingSkipReason::kNotSkipped,
           .was_autofilled = OptionalBoolean::kTrue,
           .had_value_after_filling = OptionalBoolean::kTrue,
+          .filling_method = AutofillFillingMethod::kFullForm,
       });
     } else if (autofill_field_ptr->parseable_label() == u"Phone Number" ||
                autofill_field_ptr->parseable_label() == u"Email") {
@@ -5863,6 +5876,7 @@ TEST_F(BrowserAutofillManagerWithLogEventsTest,
           .autofill_skipped_status = FieldFillingSkipReason::kNotSkipped,
           .was_autofilled = OptionalBoolean::kFalse,
           .had_value_after_filling = OptionalBoolean::kFalse,
+          .filling_method = AutofillFillingMethod::kFullForm,
       });
     } else if (autofill_field_ptr->parseable_label() == u"Last Name") {
       // Not filled because the field contained a user typed value already.
@@ -5880,11 +5894,61 @@ TEST_F(BrowserAutofillManagerWithLogEventsTest,
           .autofill_skipped_status = FieldFillingSkipReason::kNotSkipped,
           .was_autofilled = OptionalBoolean::kTrue,
           .had_value_after_filling = OptionalBoolean::kTrue,
+          .filling_method = AutofillFillingMethod::kFullForm,
       });
     }
     EXPECT_THAT(autofill_field_ptr->field_log_events(),
                 ArrayEquals(expected_events));
   }
+}
+
+TEST_F(BrowserAutofillManagerWithLogEventsTest,
+       FillingMethod_TargetedAllFields_FullForm) {
+  base::test::ScopedFeatureList enabled_features(
+      features::kAutofillGranularFillingAvailable);
+
+  FormData form =
+      test::GetFormData({.fields = {{.role = NAME_FIRST,
+                                     .autocomplete_attribute = "given-name"}}});
+  FormsSeen({form});
+  FillAutofillFormDataAndGetResults(
+      form, form.fields[0], MakeGuid(1),
+      {.trigger_source = AutofillTriggerSource::kPopup,
+       .field_types_to_fill = kAllServerFieldTypes});
+  const std::vector<AutofillField::FieldLogEventType>& fill_field_log_events =
+      browser_autofill_manager_->GetAutofillField(form, form.fields[0])
+          ->field_log_events();
+
+  ASSERT_EQ(CountEventOfType<FillFieldLogEvent>(fill_field_log_events), 1u);
+  const FillFieldLogEvent* first_fill_field_log_event =
+      FindFirstEventOfType<FillFieldLogEvent>(fill_field_log_events);
+  EXPECT_EQ(first_fill_field_log_event->filling_method,
+            AutofillFillingMethod::kFullForm);
+}
+
+TEST_F(BrowserAutofillManagerWithLogEventsTest,
+       FillingMethod_TargetedGranularFillingGroup_GroupFiling) {
+  base::test::ScopedFeatureList enabled_features(
+      features::kAutofillGranularFillingAvailable);
+
+  FormData form =
+      test::GetFormData({.fields = {{.role = NAME_FIRST,
+                                     .autocomplete_attribute = "given-name"}}});
+  FormsSeen({form});
+  FillAutofillFormDataAndGetResults(
+      form, form.fields[0], MakeGuid(1),
+      {.trigger_source = AutofillTriggerSource::kPopup,
+       .field_types_to_fill =
+           GetServerFieldTypesOfGroup(FieldTypeGroup::kName)});
+  const std::vector<AutofillField::FieldLogEventType>& fill_field_log_events =
+      browser_autofill_manager_->GetAutofillField(form, form.fields[0])
+          ->field_log_events();
+
+  ASSERT_EQ(CountEventOfType<FillFieldLogEvent>(fill_field_log_events), 1u);
+  const FillFieldLogEvent* first_fill_field_log_event =
+      FindFirstEventOfType<FillFieldLogEvent>(fill_field_log_events);
+  EXPECT_EQ(first_fill_field_log_event->filling_method,
+            AutofillFillingMethod::kGroupFilling);
 }
 
 // Test that we record FillFieldLogEvents after filling a form twice, the first
@@ -5946,6 +6010,7 @@ TEST_F(BrowserAutofillManagerWithLogEventsTest, LogEventsAtRefillForm) {
       .autofill_skipped_status = FieldFillingSkipReason::kNotSkipped,
       .was_autofilled = OptionalBoolean::kTrue,
       .had_value_after_filling = OptionalBoolean::kTrue,
+      .filling_method = AutofillFillingMethod::kFullForm,
   };
   FillFieldLogEvent expected_fill_field_log_event2{
       .fill_event_id = trigger_fill_field_log_event2->fill_event_id,
@@ -5953,6 +6018,7 @@ TEST_F(BrowserAutofillManagerWithLogEventsTest, LogEventsAtRefillForm) {
       .autofill_skipped_status = FieldFillingSkipReason::kNotSkipped,
       .was_autofilled = OptionalBoolean::kTrue,
       .had_value_after_filling = OptionalBoolean::kTrue,
+      .filling_method = AutofillFillingMethod::kFullForm,
   };
 
   for (const auto& autofill_field_ptr : *form_structure) {
@@ -5993,6 +6059,7 @@ TEST_F(BrowserAutofillManagerWithLogEventsTest, LogEventsAtRefillForm) {
       expected_event2.autofill_skipped_status =
           FieldFillingSkipReason::kAutofilledFieldsNotRefill;
       expected_event2.was_autofilled = OptionalBoolean::kFalse;
+      expected_event2.filling_method = AutofillFillingMethod::kNone;
       expected_events.push_back(expected_event2);
     }
     EXPECT_THAT(autofill_field_ptr->field_log_events(),
@@ -6044,6 +6111,7 @@ TEST_F(BrowserAutofillManagerWithLogEventsTest, LogEventsAtUserTypingInField) {
       .autofill_skipped_status = FieldFillingSkipReason::kNotSkipped,
       .was_autofilled = OptionalBoolean::kTrue,
       .had_value_after_filling = OptionalBoolean::kTrue,
+      .filling_method = AutofillFillingMethod::kFullForm,
   };
 
   for (const auto& autofill_field_ptr : *form_structure) {
@@ -6119,6 +6187,7 @@ TEST_F(BrowserAutofillManagerWithLogEventsTest,
       .autofill_skipped_status = FieldFillingSkipReason::kNotSkipped,
       .was_autofilled = OptionalBoolean::kTrue,
       .had_value_after_filling = OptionalBoolean::kTrue,
+      .filling_method = AutofillFillingMethod::kFullForm,
   };
 
   for (const auto& autofill_field_ptr : *form_structure) {
@@ -6150,6 +6219,7 @@ TEST_F(BrowserAutofillManagerWithLogEventsTest,
           .autofill_skipped_status = FieldFillingSkipReason::kNotSkipped,
           .was_autofilled = OptionalBoolean::kFalse,
           .had_value_after_filling = OptionalBoolean::kFalse,
+          .filling_method = AutofillFillingMethod::kFullForm,
       });
     } else {
       expected_events.push_back(expected_fill_field_log_event);
@@ -8161,7 +8231,7 @@ TEST_F(BrowserAutofillManagerTest, ProfileDisabledDoesNotFillFormData) {
   FormsSeen({form});
 
   // Expect no fields filled, no form data sent to renderer.
-  EXPECT_CALL(*autofill_driver_, ApplyAutofillAction).Times(0);
+  EXPECT_CALL(*autofill_driver_, ApplyFormAction).Times(0);
 
   FillAutofillFormData(form, *form.fields.begin(), MakeGuid(1));
 }
@@ -8190,7 +8260,7 @@ TEST_F(BrowserAutofillManagerTest, CreditCardDisabledDoesNotFillFormData) {
   FormsSeen({form});
 
   // Expect no fields filled, no form data sent to renderer.
-  EXPECT_CALL(*autofill_driver_, ApplyAutofillAction).Times(0);
+  EXPECT_CALL(*autofill_driver_, ApplyFormAction).Times(0);
   FillAutofillFormData(form, *form.fields.begin(), MakeGuid(4));
 }
 
@@ -10391,12 +10461,12 @@ TEST_P(BrowserAutofillManagerRefillTest,
   if (test_case.triggers_refill) {
     // Prepare intercepting the filling operation to the driver and capture
     // the re-filled form data.
-    EXPECT_CALL(*autofill_driver_, ApplyAutofillAction)
+    EXPECT_CALL(*autofill_driver_, ApplyFormAction)
         .Times(1)
         .WillOnce(DoAll(SaveArg<2>(&refilled_form),
                         Return(std::vector<FieldGlobalId>{})));
   } else {
-    EXPECT_CALL(*autofill_driver_, ApplyAutofillAction).Times(0);
+    EXPECT_CALL(*autofill_driver_, ApplyFormAction).Times(0);
   }
   // Simulate that JavaScript modifies the expiration date field.
   FormData form_after_js_modification = first_fill_data;

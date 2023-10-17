@@ -421,6 +421,15 @@ void DropCompletionCallback(WebDragDest* drag_dest,
   _dragSecurityInfo.OnDragEnded();
 }
 
+- (content::WebContentsViewDragSecurityInfo)dragSecurityInfo {
+  return _dragSecurityInfo;
+}
+
+- (void)setDragSecurityInfo:
+    (content::WebContentsViewDragSecurityInfo)dragSecurityInfo {
+  _dragSecurityInfo = dragSecurityInfo;
+}
+
 @end
 
 namespace content {

@@ -1677,7 +1677,6 @@ source_set("net_deps") {
     ":cronet_buildflags",
     ":isolation_info_proto",
     ":net_export_header",
-    ":net_resources",
     ":preload_decoder",
     "//base",
     "//base/third_party/dynamic_annotations",
@@ -1686,6 +1685,10 @@ source_set("net_deps") {
     "//third_party/zlib",
     "//url:buildflags",
   ]
+
+  if (!disable_file_support) {
+    public_deps += [ ":net_resources" ]
+  }
 
   public_configs = net_configs
 

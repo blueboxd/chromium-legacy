@@ -314,11 +314,36 @@
       </message>
 
       <!-- Editor Menu -->
-      <message name="IDS_EDITOR_MENU_PROMO_CARD_VIEW_DISMISS_BUTTON" desc="Label on the dismiss button in the dialog that is shown to introduce the Editor Menu feature.">
+      <!-- TODO(b/286268215): Finalize these strings and make them translatable. -->
+      <message name="IDS_EDITOR_MENU_PROMO_CARD_TITLE" desc="Title text in the dialog that is shown to introduce the Editor Menu feature." translateable="false">
+        Write faster and with more confidence
+      </message>
+      <message name="IDS_EDITOR_MENU_PROMO_CARD_DESC" desc="Description text in the dialog that is shown to introduce the Editor Menu feature." translateable="false">
+        Use Orca to create a draft or refine existing work, powered by Google AI
+      </message>
+      <message name="IDS_EDITOR_MENU_PROMO_CARD_DISMISS_BUTTON" desc="Label on the dismiss button in the dialog that is shown to introduce the Editor Menu feature." translateable="false">
         Dismiss
       </message>
-      <message name="IDS_EDITOR_MENU_PROMO_CARD_VIEW_TELL_ME_MORE_BUTTON" desc="Label on the tell me more button in the dialog that is shown to introduce the Editor Menu feature.">
-        Tell me more
+      <message name="IDS_EDITOR_MENU_PROMO_CARD_TRY_IT_BUTTON" desc="Label on the try it button in the dialog that is shown to introduce the Editor Menu feature." translateable="false">
+        Try it
+      </message>
+      <message name="IDS_EDITOR_MENU_WRITE_CARD_TITLE" desc="Title text in the Editor Menu when shown in write mode." translateable="false">
+        Writing help
+      </message>
+      <message name="IDS_EDITOR_MENU_WRITE_CARD_FREEFORM_PLACEHOLDER" desc="Placeholder text in the freeform textfield of the Editor Menu when shown in write mode." translateable="false">
+        What's your writing goal?
+      </message>
+      <message name="IDS_EDITOR_MENU_REWRITE_CARD_TITLE" desc="Title text in the Editor Menu when shown in rewrite mode." translateable="false">
+        Rewrite
+      </message>
+      <message name="IDS_EDITOR_MENU_REWRITE_CARD_FREEFORM_PLACEHOLDER" desc="Placeholder text in the freeform textfield of the Editor Menu when shown in rewrite mode." translateable="false">
+        Custom (e.g. sound more confident)
+      </message>
+      <message name="IDS_EDITOR_MENU_SETTINGS_TOOLTIP" desc="Tooltip text for the settings button in the Editor Menu." translateable="false">
+        Settings
+      </message>
+      <message name="IDS_EDITOR_MENU_EXPERIMENT_BADGE" desc="Label on the badge shown next to the Editor Menu title to indicate that it is an experimental feature." translateable="false">
+        Experiment
       </message>
 
       <!-- Multitask Menu -->
@@ -2502,22 +2527,19 @@
           Off
         </message>
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_TITLE" desc="Label for the drop down menu of ambient mode duration settings.">
-         Show screen saver
+          While charging, show screen saver for
         </message>
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_MINUTES" desc="Label for the screen saver duration option in minutes.">
-         for <ph name="MINUTES">$1<ex>10</ex></ph> minutes
+          <ph name="MINUTES">$1<ex>10</ex></ph> mins
         </message>
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_ONE_HOUR" desc="Label for the screen saver duration option 1 hour.">
-         for 1 hour
+          1 hr
         </message>
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_FOREVER" desc="Label for the screen saver duration option forever.">
-         forever
-        </message>
-        <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_DESCRIPTION" desc="Label for the screen saver duration description.">
-         To conserve battery, screen saver works only while charging.
+          Forever
         </message>
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_TITLE" desc="Label for the radio button group of ambient mode topic source, where the screen contents come from.">
-         Image source
+          Image source
         </message>
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS" desc="Label for the radio button to choose the topic source from Google Photos. The radio button allows the user to set Google Photos for ambient mode, which shows photos to the user when their device is idle.">
           Google Photos
@@ -4498,6 +4520,18 @@
         <message name="IDS_SETTINGS_APN_DIALOG_SAVE" desc="Text used to save a modified APN.">
           Save
         </message>
+        <message name="IDS_SETTINGS_APN_DIALOG_A11Y_ADD_ENABLED" desc="A11y announcement when 'Add' button becomes enabled in the APN detail dialog.">
+          Add APN button is now enabled
+        </message>
+        <message name="IDS_SETTINGS_APN_DIALOG_A11Y_SAVE_ENABLED" desc="A11y announcement when 'Save' button becomes enabled in the APN detail dialog.">
+          Save APN button is now enabled
+        </message>
+        <message name="IDS_SETTINGS_APN_DIALOG_A11Y_ADD_DISABLED" desc="A11y announcement when 'Add' button becomes disabled in the APN detail dialog.">
+          Add APN button is now disabled
+        </message>
+        <message name="IDS_SETTINGS_APN_DIALOG_A11Y_SAVE_DISABLED" desc="A11y announcement when 'Save' button becomes disabled in the APN detail dialog.">
+          Save APN button is now disabled
+        </message>
         <message name="IDS_SETTINGS_APN_DIALOG_CANCEL" desc="Text used to cancel the APN dialog.">
           Cancel
         </message>
@@ -4543,26 +4577,32 @@
         <!-- End of Arc Input Overlay -->
       </if>
 
-       <!-- Strings for WebAppSettings -->
-    <message name="IDS_RUN_ON_OS_LOGIN_ENABLED_MESSAGE" desc="This is the message of the notification when an application is automatically started on OS login.[ICU Syntax]">
-      {NUM_ROOL_APPS, plural, offset:2
-      =1 {Your administrator has set <ph name="APP_NAME_1">{APP_NAME_1}</ph> to start automatically every time you log in.}
-      =2 {Your administrator has set <ph name="APP_NAME_1">{APP_NAME_1}</ph> and <ph name="APP_NAME_2">{APP_NAME_2}</ph> to start automatically every time you log in.}
-      =3 {Your administrator has set <ph name="APP_NAME_1">{APP_NAME_1}</ph>, <ph name="APP_NAME_2">{APP_NAME_2}</ph> and <ph name="APP_NAME_3">{APP_NAME_3}</ph> to start automatically every time you log in.}
-      other {Your administrator has set <ph name="APP_NAME_1">{APP_NAME_1}</ph>, <ph name="APP_NAME_2">{APP_NAME_2}</ph> and # other apps to start automatically every time you log in.}
-      }
+      <!-- Strings for WebAppSettings -->
+      <message name="IDS_RUN_ON_OS_LOGIN_ENABLED_MESSAGE" desc="This is the message of the notification when an application is automatically started on OS login.[ICU Syntax]">
+        {NUM_ROOL_APPS, plural, offset:2
+          =1 {Your administrator has set <ph name="APP_NAME_1">{APP_NAME_1}</ph> to start automatically every time you log in.}
+          =2 {Your administrator has set <ph name="APP_NAME_1">{APP_NAME_1}</ph> and <ph name="APP_NAME_2">{APP_NAME_2}</ph> to start automatically every time you log in.}
+          =3 {Your administrator has set <ph name="APP_NAME_1">{APP_NAME_1}</ph>, <ph name="APP_NAME_2">{APP_NAME_2}</ph> and <ph name="APP_NAME_3">{APP_NAME_3}</ph> to start automatically every time you log in.}
+          other {Your administrator has set <ph name="APP_NAME_1">{APP_NAME_1}</ph>, <ph name="APP_NAME_2">{APP_NAME_2}</ph> and # other apps to start automatically every time you log in.}
+        }
       </message>
 
-       <message name="IDS_RUN_ON_OS_LOGIN_ENABLED_TITLE" desc="This is the title of the notification when an application is automatically started on OS login. [ICU Syntax]">
-      {NUM_ROOL_APPS, plural,
-      =1 {<ph name="APP_NAME_1">{APP_NAME_1}</ph> was started automatically}
-      other {# apps were started automatically}
-      }
+      <message name="IDS_RUN_ON_OS_LOGIN_ENABLED_TITLE" desc="This is the title of the notification when an application is automatically started on OS login. [ICU Syntax]">
+        {NUM_ROOL_APPS, plural,
+          =1 {<ph name="APP_NAME_1">{APP_NAME_1}</ph> was started automatically}
+          other {# apps were started automatically}
+        }
       </message>
 
-       <message name="IDS_RUN_ON_OS_LOGIN_ENABLED_LEARN_MORE" desc="This is the button-text of the notification when an application is automatically started on OS login.">
-      Learn more
+      <message name="IDS_RUN_ON_OS_LOGIN_ENABLED_LEARN_MORE" desc="This is the button-text of the notification when an application is automatically started on OS login.">
+        Learn more
       </message>
+
+      <message name="IDS_APP_CLOSE_BUTTON_DISABLED_BY_ADMIN" desc="Text for the close button when prevent close is enabled by the administrator">
+        Your administrator doesn't allow closing this app
+      </message>
+      <!-- End of Strings for WebAppSettings -->
+
     </messages>
   </release>
 </grit>

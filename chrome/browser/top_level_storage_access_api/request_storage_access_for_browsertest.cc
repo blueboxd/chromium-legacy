@@ -271,44 +271,39 @@ IN_PROC_BROWSER_TEST_F(RequestStorageAccessForBrowserTest,
   ASSERT_EQ(content::GetCookies(browser()->profile(), GetURL(kHostC)),
             "cross-site=c.test");
 
-  NavigateToPageWithFrame(kHostA);
-  NavigateFrameTo(kHostB, "/iframe.html");
-  NavigateNestedFrameTo(kHostC, "/echoheader?cookie");
-
-  // Manually create a pre-expired grant and ensure it doesn't grant access.
   const base::TimeDelta lifetime = base::Hours(24);
   const base::Time creation_time =
       base::Time::Now() - base::Minutes(5) - lifetime;
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   content_settings::ContentSettingConstraints constraints(creation_time);
   constraints.set_lifetime(lifetime);
   constraints.set_session_model(content_settings::SessionModel::UserSession);
-  settings_map->SetContentSettingDefaultScope(
-      GetURL(kHostB), GetURL(kHostA),
-      ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS, CONTENT_SETTING_ALLOW,
-      constraints);
-  settings_map->SetContentSettingDefaultScope(
-      GetURL(kHostC), GetURL(kHostA),
-      ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS, CONTENT_SETTING_ALLOW,
-      constraints);
 
-  // Manually send our expired setting. This needs to be done manually because
-  // normally this expired value would be filtered out before sending and time
-  // cannot be properly mocked in a browser test.
-  ContentSettingsForOneType settings;
+  // Manually create a pre-expired grant and ensure it doesn't grant access.
+  // This needs to be done manually because normally this expired value would be
+  // filtered out before sending and time cannot be properly mocked in a browser
+  // test.
+  //
+  // We also do not set the setting in the browser process's
+  // HostContentSettingsMap, since doing so provokes a
+  // CookieManager::SetContentSettings IPC from ProfileNetworkContextService,
+  // and we don't have a good way of synchronizing with that IPC such that we
+  // can override the settings used by the Network Service to intentionally
+  // include expired settings. (We'd need to synchronize with this IPC since the
+  // browser process filters out expired settings before sending the IPC.)
   content_settings::RuleMetaData metadata;
   metadata.SetFromConstraints(constraints);
-  settings.emplace_back(
-      ContentSettingsPattern::FromURLNoWildcard(GetURL(kHostB)),
-      ContentSettingsPattern::FromURLNoWildcard(GetURL(kHostA)),
-      base::Value(CONTENT_SETTING_ALLOW), "preference",
-      /*incognito=*/false, metadata);
-  settings.emplace_back(
-      ContentSettingsPattern::FromURLNoWildcard(GetURL(kHostC)),
-      ContentSettingsPattern::FromURLNoWildcard(GetURL(kHostA)),
-      base::Value(CONTENT_SETTING_ALLOW), "preference",
-      /*incognito=*/false);
+  ContentSettingsForOneType settings = {
+      ContentSettingPatternSource(
+          ContentSettingsPattern::FromURLNoWildcard(GetURL(kHostB)),
+          ContentSettingsPattern::FromURLNoWildcard(GetURL(kHostA)),
+          base::Value(CONTENT_SETTING_ALLOW), "preference",
+          /*incognito=*/false, metadata),
+      ContentSettingPatternSource(
+          ContentSettingsPattern::FromURLNoWildcard(GetURL(kHostC)),
+          ContentSettingsPattern::FromURLNoWildcard(GetURL(kHostA)),
+          base::Value(CONTENT_SETTING_ALLOW), "preference",
+          /*incognito=*/false, metadata),
+  };
 
   auto* cookie_manager = browser()
                              ->profile()
@@ -323,8 +318,10 @@ IN_PROC_BROWSER_TEST_F(RequestStorageAccessForBrowserTest,
       ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS, settings, barrier);
   runloop.Run();
 
+  NavigateToPageWithFrame(kHostA);
   NavigateFrameTo(kHostB, "/iframe.html");
   NavigateNestedFrameTo(kHostC, "/echoheader?cookie");
+
   EXPECT_EQ(GetNestedFrameContent(), "None");
   EXPECT_EQ(ReadCookiesViaJS(GetNestedFrame()), "");
 
@@ -333,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(RequestStorageAccessForBrowserTest,
             "");
   EXPECT_EQ(CookiesFromFetchWithCredentials(GetPrimaryMainFrame(), kHostC,
                                             /*cors_enabled=*/true),
-            "cross-site=c.test");
+            "");
 
   EXPECT_EQ(CookiesFromFetchWithCredentials(GetFrame(), kHostB,
                                             /*cors_enabled=*/true),
@@ -862,22 +859,19 @@ class RequestStorageAccessForExplicitlyDisabledBrowserTest
 
  protected:
   std::vector<base::test::FeatureRef> GetDisabledFeatures() override {
-    // The test should validate that either flag alone disables the API.
-    // Note that enabling the extension and not the standard API means both are
-    // disabled.
     if (enable_standard_storage_access_api_) {
       return {blink::features::kStorageAccessAPIForOriginExtension};
     }
-    return {blink::features::kStorageAccessAPI};
+    return {blink::features::kStorageAccessAPI,
+            blink::features::kStorageAccessAPIForOriginExtension};
   }
   std::vector<base::test::FeatureRefAndParams> GetEnabledFeatures() override {
     // When the standard API is enabled, return the parent class's enabled
-    // feature list. Otherwise, enable only the extension; this should not take
-    // effect.
+    // feature list.
     if (enable_standard_storage_access_api_) {
       return RequestStorageAccessForBaseBrowserTest::GetEnabledFeatures();
     }
-    return {{blink::features::kStorageAccessAPIForOriginExtension, {}}};
+    return {};
   }
 
  private:
@@ -889,9 +883,9 @@ IN_PROC_BROWSER_TEST_P(RequestStorageAccessForExplicitlyDisabledBrowserTest,
   NavigateToPageWithFrame(kHostA);
   // Ensure that the proposed extension is not available unless explicitly
   // enabled.
-  EXPECT_TRUE(EvalJs(GetPrimaryMainFrame(),
-                     "\"requestStorageAccessFor\" in document === false")
-                  .ExtractBool());
+  EXPECT_FALSE(
+      EvalJs(GetPrimaryMainFrame(), "\"requestStorageAccessFor\" in document")
+          .ExtractBool());
 }
 
 INSTANTIATE_TEST_SUITE_P(

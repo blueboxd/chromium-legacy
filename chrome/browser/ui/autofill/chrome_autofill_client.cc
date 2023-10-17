@@ -776,17 +776,21 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     LocalSaveCardPromptCallback callback) {
 #if BUILDFLAG(IS_ANDROID)
   DCHECK(options.show_prompt);
-  if (options.card_save_type ==
-      ChromeAutofillClient::CardSaveType::kCvcSaveOnly) {
-    // TODO (crbug.com/1485194): Create a Message UI for saving CVC to an
-    // existing local card.
-    NOTIMPLEMENTED();
-    return;
-  }
   AutofillSaveCardUiInfo ui_info =
       AutofillSaveCardUiInfo::CreateForLocalSave(options, card);
   auto save_card_delegate = std::make_unique<AutofillSaveCardDelegateAndroid>(
       std::move(callback), options, web_contents());
+
+  // If a CVC is detected for an existing local card in the checkout form, the
+  // CVC save prompt is shown in a message.
+  if (options.card_save_type ==
+      ChromeAutofillClient::CardSaveType::kCvcSaveOnly) {
+    autofill_cvc_save_message_delegate_ =
+        std::make_unique<AutofillCvcSaveMessageDelegate>(web_contents());
+    autofill_cvc_save_message_delegate_->ShowMessage(
+        ui_info, std::move(save_card_delegate));
+    return;
+  }
 
   // Saving a new local card (may include CVC) via a bottom sheet.
   if (base::FeatureList::IsEnabled(
@@ -819,19 +823,6 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     UploadSaveCardPromptCallback callback) {
 #if BUILDFLAG(IS_ANDROID)
   DCHECK(options.show_prompt);
-  // If a CVC is detected for an existing server card in the checkout form, the
-  // CVC save prompt is shown in a message.
-  if (options.card_save_type == AutofillClient::CardSaveType::kCvcSaveOnly) {
-    if (!autofill_cvc_save_message_delegate_) {
-      autofill_cvc_save_message_delegate_ =
-          std::make_unique<AutofillCvcSaveMessageDelegate>(web_contents());
-    }
-    autofill_cvc_save_message_delegate_->ShowMessage();
-    return;
-  }
-
-  // For new cards, the save card prompt is shown either in a bottom sheet or in
-  // an infobar.
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(GetProfile());
   AccountInfo account_info = identity_manager->FindExtendedAccountInfo(
@@ -840,6 +831,19 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
       options, card, legal_message_lines, account_info);
   auto save_card_delegate = std::make_unique<AutofillSaveCardDelegateAndroid>(
       std::move(callback), options, web_contents());
+
+  // If a CVC is detected for an existing server card in the checkout form, the
+  // CVC save prompt is shown in a message.
+  if (options.card_save_type == AutofillClient::CardSaveType::kCvcSaveOnly) {
+      autofill_cvc_save_message_delegate_ =
+          std::make_unique<AutofillCvcSaveMessageDelegate>(web_contents());
+      autofill_cvc_save_message_delegate_->ShowMessage(
+          ui_info, std::move(save_card_delegate));
+      return;
+  }
+
+  // For new cards, the save card prompt is shown either in a bottom sheet or in
+  // an infobar.
   if (base::FeatureList::IsEnabled(
           features::kAutofillEnablePaymentsAndroidBottomSheet)) {
     if (auto* bridge = GetOrCreateAutofillSaveCardBottomSheetBridge()) {
@@ -1205,11 +1209,11 @@ bool ChromeAutofillClient::IsPasswordManagerEnabled() {
 }
 
 void ChromeAutofillClient::DidFillOrPreviewForm(
-    mojom::AutofillActionPersistence action_persistence,
+    mojom::ActionPersistence action_persistence,
     AutofillTriggerSource trigger_source,
     bool is_refill) {
 #if BUILDFLAG(IS_ANDROID)
-  if (action_persistence == mojom::AutofillActionPersistence::kFill &&
+  if (action_persistence == mojom::ActionPersistence::kFill &&
       trigger_source == AutofillTriggerSource::kTouchToFillCreditCard &&
       !is_refill) {
     // TODO(crbug.com/1428492): Test that the message was announced.
@@ -1374,13 +1378,6 @@ void ChromeAutofillClient::SetAutofillSaveCardBottomSheetBridgeForTesting(
         autofill_save_card_bottom_sheet_bridge) {
   autofill_save_card_bottom_sheet_bridge_ =
       std::move(autofill_save_card_bottom_sheet_bridge);
-}
-
-void ChromeAutofillClient::SetAutofillCvcSaveMessageDelegateForTesting(
-    std::unique_ptr<AutofillCvcSaveMessageDelegate>
-        autofill_cvc_save_message_delegate) {
-  autofill_cvc_save_message_delegate_ =
-      std::move(autofill_cvc_save_message_delegate);
 }
 #endif
 

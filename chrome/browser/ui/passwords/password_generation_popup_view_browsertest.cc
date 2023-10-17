@@ -19,7 +19,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
-#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -123,8 +123,9 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest, PopupInAxTree) {
 
   views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
                                        "PasswordGenerationPopupViewViews");
-  content::EvalJs(WebContents(),
-                  "document.getElementById('password_field').focus()");
+  // TODO: handle return value.
+  std::ignore = content::EvalJs(
+      WebContents(), "document.getElementById('password_field').focus()");
   auto* client = ChromePasswordManagerClient::FromWebContents(WebContents());
   client->GeneratePassword(
       autofill::password_generation::PasswordGenerationType::kManual);
@@ -187,8 +188,9 @@ IN_PROC_BROWSER_TEST_P(PasswordGenerationPopupViewWithContentExperimentTest,
                        DoesNotCrashShowingGenerationOfferWithModifiedContent) {
   views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
                                        "PasswordGenerationPopupViewViews");
-  content::EvalJs(WebContents(),
-                  "document.getElementById('password_field').focus()");
+  // TODO: handle return value.
+  std::ignore = content::EvalJs(
+      WebContents(), "document.getElementById('password_field').focus()");
   auto* client = ChromePasswordManagerClient::FromWebContents(WebContents());
   client->GeneratePassword(
       autofill::password_generation::PasswordGenerationType::kManual);

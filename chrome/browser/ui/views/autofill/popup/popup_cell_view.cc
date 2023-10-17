@@ -32,7 +32,6 @@ namespace autofill {
 
 PopupCellView::PopupCellView() {
   SetNotifyEnterExitOnChild(true);
-  SetFocusBehavior(FocusBehavior::ALWAYS);
   RefreshStyle();
 }
 
@@ -40,16 +39,8 @@ PopupCellView::~PopupCellView() = default;
 
 bool PopupCellView::HandleKeyPressEvent(
     const content::NativeWebKeyboardEvent& event) {
-  switch (event.windows_key_code) {
-    case ui::VKEY_RETURN:
-      if (on_accepted_callback_) {
-        on_accepted_callback_.Run(base::TimeTicks::Now());
-        return true;
-      }
-      return false;
-    default:
-      return false;
-  }
+  // TODO(1491373): Remove when PopupCellWithButtonView gets reworked as a row.
+  return false;
 }
 
 void PopupCellView::SetSelected(bool selected) {
@@ -78,35 +69,11 @@ bool PopupCellView::IsHighlighted() const {
   return selected_ || permanently_highlighted_;
 }
 
-void PopupCellView::SetTooltipText(std::u16string tooltip_text) {
-  if (tooltip_text_ == tooltip_text) {
-    return;
-  }
-
-  tooltip_text_ = std::move(tooltip_text);
-  TooltipTextChanged();
-}
-
-std::u16string PopupCellView::GetTooltipText(const gfx::Point& p) const {
-  return tooltip_text_;
-}
-
 void PopupCellView::SetAccessibilityDelegate(
     std::unique_ptr<AccessibilityDelegate> a11y_delegate) {
   a11y_delegate_ = std::move(a11y_delegate);
 }
 
-void PopupCellView::SetOnEnteredCallback(base::RepeatingClosure callback) {
-  on_entered_callback_ = std::move(callback);
-}
-
-void PopupCellView::SetOnExitedCallback(base::RepeatingClosure callback) {
-  on_exited_callback_ = std::move(callback);
-}
-
-void PopupCellView::SetOnAcceptedCallback(OnAcceptedCallback callback) {
-  on_accepted_callback_ = std::move(callback);
-}
 
 void PopupCellView::SetOnSelectedCallback(base::RepeatingClosure callback) {
   on_selected_callback_ = std::move(callback);
@@ -118,14 +85,6 @@ void PopupCellView::SetOnUnselectedCallback(base::RepeatingClosure callback) {
 
 void PopupCellView::TrackLabel(views::Label* label) {
   tracked_labels_.push_back(label);
-}
-
-bool PopupCellView::HandleAccessibleAction(
-    const ui::AXActionData& action_data) {
-  if (action_data.action == ax::mojom::Action::kFocus && on_entered_callback_) {
-    on_entered_callback_.Run();
-  }
-  return View::HandleAccessibleAction(action_data);
 }
 
 void PopupCellView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -172,10 +131,6 @@ void PopupCellView::RefreshStyle() {
 
 BEGIN_METADATA(PopupCellView, views::View)
 ADD_PROPERTY_METADATA(bool, Selected)
-ADD_PROPERTY_METADATA(std::u16string, TooltipText)
-ADD_PROPERTY_METADATA(PopupCellView::OnAcceptedCallback, OnAcceptedCallback)
-ADD_PROPERTY_METADATA(base::RepeatingClosure, OnSelectedCallback)
-ADD_PROPERTY_METADATA(base::RepeatingClosure, OnUnselectedCallback)
 END_METADATA
 
 }  // namespace autofill

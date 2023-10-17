@@ -576,6 +576,7 @@ extern const base::FeatureParam<bool> kDomainSuggestionsAlternativeScoring;
 struct MLConfig {
   MLConfig();
   MLConfig(const MLConfig&);
+  MLConfig& operator=(const MLConfig& other);
 
   // If true, logs Omnibox URL scoring signals to OmniboxEventProto.
   // Equivalent to omnibox::kLogUrlScoringSignals.
@@ -696,6 +697,30 @@ extern const base::FeatureParam<bool>
     kRealboxSecondaryZeroSuggestCounterfactual;
 
 // <- Two-column realbox
+// ---------------------------------------------------------
+// Inspire Me ->
+
+// Specify number of additional Related and Trending queries appended to the
+// suggestion list, when the Inspire Me feature is enabled.
+constexpr base::FeatureParam<int> kInspireMeAdditionalRelatedQueries(
+    &omnibox::kInspireMe,
+    "AdditionalRelatedQueries",
+    0);
+
+constexpr base::FeatureParam<int> kInspireMeAdditionalTrendingQueries(
+    &omnibox::kInspireMe,
+    "AdditionalTrendingQueries",
+    10);
+
+constexpr base::FeatureParam<int> kInspireMePsuggestQueries(
+    &omnibox::kInspireMe,
+    "PersonalizedSuggestQueries",
+    20);
+
+constexpr base::FeatureParam<int>
+    kInspireMeNTPZPSLimit(&omnibox::kInspireMe, "NTPZPSSuggestionsLimit", 20);
+
+// <- Inspire Me
 // ---------------------------------------------------------
 // Actions In Suggest ->
 //

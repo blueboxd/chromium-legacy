@@ -120,7 +120,6 @@ Per modificare questa impostazione, <ph name="BEGIN_LINK" />cancella i dati di C
 <translation id="5688047395118852662">In questa scheda vengono mostrati suggerimenti su come utilizzare al meglio Chromium.</translation>
 <translation id="5700709190537129682">Chromium non può controllare le tue password</translation>
 <translation id="5777187867430702742">Pagina di Chromium</translation>
-<translation id="584303319228224680">Monitora automaticamente i tuoi pacchi su Chromium</translation>
 <translation id="5889847953983052353">Quando la funzionalità è attiva:
 <ph name="BEGIN_INDENT" /> • Contribuisci a migliorare Chromium per le persone che lo usano come fai tu.<ph name="END_INDENT" />
 
@@ -160,6 +159,7 @@ Solo chi conosce la tua passphrase può leggere i tuoi dati criptati. La passphr
 <translation id="6911341667534646387">Continua a usare i dati di Chromium nel tuo Account Google</translation>
 <translation id="7006920032187763988">Puoi utilizzare le password salvate con Gestore delle password in altre app sull'iPad.</translation>
 <translation id="7018284295775193585">Impossibile aggiornare Chromium</translation>
+<translation id="7025471822960602362">Traccia i pacchi rilevati su Chromium</translation>
 <translation id="7045244423563602563">Personalizza Chromium</translation>
 <translation id="7055269218854630176">La tua organizzazione, <ph name="DOMAIN" />, gestisce l'account a cui stai accedendo e la modalità di utilizzo di Chromium. L'amministratore può configurare o limitare determinate funzionalità.</translation>
 <translation id="7099326575020694068">Chromium non può utilizzare la videocamera in modalità Visualizzazione divisa</translation>

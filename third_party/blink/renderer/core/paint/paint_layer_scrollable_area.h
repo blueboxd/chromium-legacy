@@ -62,6 +62,7 @@ namespace blink {
 enum ResizerHitTestType { kResizerForPointer, kResizerForTouch };
 
 class ComputedStyle;
+class Element;
 class HitTestResult;
 class LayoutBox;
 class LayoutCustomScrollbarPart;
@@ -382,7 +383,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
     return HasHorizontalOverflow() || HasVerticalOverflow();
   }
 
-  LayoutCustomScrollbarPart* ScrollCorner() const { return scroll_corner_; }
+  LayoutCustomScrollbarPart* ScrollCorner() const {
+    return scroll_corner_.Get();
+  }
 
   void Resize(const gfx::Point& pos, const gfx::Vector2d& old_offset);
   gfx::Vector2d OffsetFromResizeCorner(const gfx::Point& absolute_point) const;
@@ -437,7 +440,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   PaintLayer* Layer() const override;
 
-  LayoutCustomScrollbarPart* Resizer() const { return resizer_; }
+  LayoutCustomScrollbarPart* Resizer() const { return resizer_.Get(); }
 
   gfx::Rect RectForHorizontalScrollbar() const;
   gfx::Rect RectForVerticalScrollbar() const;
@@ -651,9 +654,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   ScrollingCoordinator* GetScrollingCoordinator() const;
 
-  PaintLayerScrollableAreaRareData* RareData() { return rare_data_; }
+  PaintLayerScrollableAreaRareData* RareData() { return rare_data_.Get(); }
   const PaintLayerScrollableAreaRareData* RareData() const {
-    return rare_data_;
+    return rare_data_.Get();
   }
 
   PaintLayerScrollableAreaRareData& EnsureRareData() {

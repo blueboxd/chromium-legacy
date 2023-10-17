@@ -146,10 +146,7 @@ class PersonalDataManager : public KeyedService,
       std::unique_ptr<WDTypedResult> result) override;
 
   // AutofillWebDataServiceObserverOnUISequence:
-  void AutofillMultipleChangedBySync(syncer::ModelType model_type) override;
-  void AutofillAddressConversionCompleted() override;
-  void SyncStarted(syncer::ModelType model_type) override;
-  void OnSyncUpdatesReceived(syncer::ModelType model_type) override;
+  void OnAutofillChangedBySync(syncer::ModelType model_type) override;
 
   // SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
@@ -300,7 +297,7 @@ class PersonalDataManager : public KeyedService,
   void ResetFullServerCards();
 
   // Deletes all server profiles and cards (both masked and unmasked).
-  void ClearAllServerData();
+  void ClearAllServerDataForTesting();
 
   // Deletes all local profiles and cards.
   virtual void ClearAllLocalData();
@@ -380,6 +377,12 @@ class PersonalDataManager : public KeyedService,
   virtual std::vector<Iban*> GetLocalIbans() const;
   // Returns server IBANs.
   virtual std::vector<const Iban*> GetServerIbans() const;
+  // Returns all IBANs, server and local.
+  virtual std::vector<const Iban*> GetIbans() const;
+  // Returns all IBANs, server and local. All local IBANs that share the same
+  // prefix, suffix, and length as any existing server IBAN will be considered a
+  // duplicate IBAN. These duplicate IBANs will not be returned in the list.
+  virtual std::vector<const Iban*> GetIbansToSuggest() const;
 
   // Returns the Payments customer data. Returns nullptr if no data is present.
   virtual PaymentsCustomerData* GetPaymentsCustomerData() const;
@@ -844,33 +847,6 @@ class PersonalDataManager : public KeyedService,
   // prefs::kAutofillProfileEnabled changes.
   void EnableAutofillPrefChanged();
 
-  // Converts the Wallet addresses to local autofill profiles. This should be
-  // called after all the syncable data has been processed (local cards and
-  // profiles, Wallet data and metadata). Also updates Wallet cards' billing
-  // address id to point to the local profiles.
-  void ConvertWalletAddressesAndUpdateWalletCards();
-
-  // Converts the Wallet addresses into local profiles either by merging with an
-  // existing |local_profiles| of by adding a new one. Populates the
-  // |server_id_profiles_map| to be used when updating cards where the address
-  // was already converted. Also populates the |guids_merge_map| to keep the
-  // link between the Wallet address and the equivalent local profile (from
-  // merge or creation).
-  bool ConvertWalletAddressesToLocalProfiles(
-      std::vector<AutofillProfile>* local_profiles,
-      std::unordered_map<std::string, AutofillProfile*>* server_id_profiles_map,
-      std::unordered_map<std::string, std::string>* guids_merge_map);
-
-  // Goes through the Wallet cards to find cards where the billing address is a
-  // Wallet address which was already converted in a previous pass. Looks for a
-  // matching local profile and updates the |guids_merge_map| to make the card
-  // refer to it.
-  bool UpdateWalletCardsAlreadyConvertedBillingAddresses(
-      const std::vector<AutofillProfile>& local_profiles,
-      const std::unordered_map<std::string, AutofillProfile*>&
-          server_id_profiles_map,
-      std::unordered_map<std::string, std::string>* guids_merge_map) const;
-
   // Removes profile from web database according to |guid| and resets credit
   // card's billing address if that address is used by any credit cards.
   // The method does not refresh, this allows multiple removal with one
@@ -880,9 +856,7 @@ class PersonalDataManager : public KeyedService,
 
   // Add/Update/Removes a profile in AutofillTable asynchronously. The changes
   // only surface in the PDM after the task on the DB sequence has finished.
-  // TODO(crbug.cm/1420547): `enforced` should not be used. Remove it.
-  void AddProfileToDB(const AutofillProfile& profile);
-  void UpdateProfileInDB(const AutofillProfile& profile, bool enforced = false);
+  void UpdateProfileInDB(const AutofillProfile& profile);
   void RemoveProfileFromDB(const std::string& guid);
 
   // Triggered when a profile is added/updated/removed on db.

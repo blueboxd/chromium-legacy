@@ -63,8 +63,9 @@ class BackgroundImageGeometry {
   const PhysicalRect& UnsnappedDestRect() const { return unsnapped_dest_rect_; }
   const PhysicalRect& SnappedDestRect() const { return snapped_dest_rect_; }
 
-  // Compute the phase relative to the (snapped) destination offset.
-  PhysicalOffset ComputeDestPhase() const;
+  // Compute the phase of the image accounting for the size and spacing of the
+  // image.
+  PhysicalOffset ComputePhase() const;
 
   // Tile size is the area into which to draw one copy of the image. It
   // need not be the same as the intrinsic size of the image; if not,
@@ -135,8 +136,8 @@ class BackgroundImageGeometry {
   void ComputeDestRectAdjustments(const FillLayer&,
                                   const PhysicalRect&,
                                   bool,
-                                  NGPhysicalBoxStrut&,
-                                  NGPhysicalBoxStrut&) const;
+                                  PhysicalBoxStrut&,
+                                  PhysicalBoxStrut&) const;
 
   // Positioning area adjustments modify the size of the
   // positioning area to snap values and apply the
@@ -144,8 +145,8 @@ class BackgroundImageGeometry {
   void ComputePositioningAreaAdjustments(const FillLayer&,
                                          const PhysicalRect&,
                                          bool,
-                                         NGPhysicalBoxStrut&,
-                                         NGPhysicalBoxStrut&) const;
+                                         PhysicalBoxStrut&,
+                                         PhysicalBoxStrut&) const;
 
   void ComputePositioningArea(const PaintInfo&,
                               const FillLayer&,

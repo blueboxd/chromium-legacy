@@ -1193,10 +1193,12 @@ PopoverValueType GetPopoverTypeFromAttributeValue(const AtomicString& value) {
 }  // namespace
 
 void HTMLElement::UpdatePopoverAttribute(const AtomicString& value) {
-  if (HTMLListboxElement::IsSelectlistAssociated(this)) {
-    CHECK(RuntimeEnabledFeatures::HTMLSelectListElementEnabled());
-    // Selectlist listboxes manage their own popover state.
-    return;
+  if (auto* listbox = DynamicTo<HTMLListboxElement>(this)) {
+    if (listbox->OwnerSelectList()) {
+      CHECK(RuntimeEnabledFeatures::HTMLSelectListElementEnabled());
+      // Selectlist listboxes manage their own popover state.
+      return;
+    }
   }
 
   PopoverValueType type = GetPopoverTypeFromAttributeValue(value);
@@ -1307,8 +1309,9 @@ bool HTMLElement::IsPopoverReady(PopoverTriggerAction action,
     }
   };
 
-  if (!HasPopoverAttribute() &&
-      !HTMLListboxElement::IsSelectlistAssociated(this)) {
+  auto* listbox = DynamicTo<HTMLListboxElement>(this);
+  bool is_selectlist_listbox = listbox && listbox->OwnerSelectList();
+  if (!HasPopoverAttribute() && !is_selectlist_listbox) {
     maybe_throw_exception(DOMExceptionCode::kNotSupportedError,
                           "Not supported on elements that do not have a valid "
                           "value for the 'popover' attribute.");
@@ -3021,8 +3024,11 @@ void HTMLElement::OnDirAttrChanged(const AttributeModificationParams& params) {
   }
 
   if (is_old_auto && !is_new_auto) {
-    ClearSelfOrAncestorHasDirAutoAttribute();
-    UpdateDescendantHasDirAutoAttribute(false /* has_dir_auto */);
+    if (!RuntimeEnabledFeatures::CSSPseudoDirEnabled() ||
+        !RecalcSelfOrAncestorHasDirAuto()) {
+      ClearSelfOrAncestorHasDirAutoAttribute();
+      UpdateDescendantHasDirAutoAttribute(false /* has_dir_auto */);
+    }
   } else if (!is_old_auto && is_new_auto) {
     SetSelfOrAncestorHasDirAutoAttribute();
     UpdateDescendantHasDirAutoAttribute(true /* has_dir_auto */);

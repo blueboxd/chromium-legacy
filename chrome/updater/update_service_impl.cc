@@ -217,7 +217,7 @@ MakeUpdateClientCrxStateChangeCallback(
       config, persisted_data, new_install, callback);
 }
 
-std::vector<absl::optional<update_client::CrxComponent>> GetComponents(
+void GetComponents(
     scoped_refptr<Configurator> config,
     scoped_refptr<PersistedData> persisted_data,
     const AppClientInstallData& app_client_install_data,
@@ -225,55 +225,61 @@ std::vector<absl::optional<update_client::CrxComponent>> GetComponents(
     UpdateService::Priority priority,
     bool update_blocked,
     UpdateService::PolicySameVersionUpdate policy_same_version_update,
-    const std::vector<std::string>& ids) {
+    const std::vector<std::string>& ids,
+    base::OnceCallback<
+        void(const std::vector<absl::optional<update_client::CrxComponent>>&)>
+        callback) {
   VLOG(1) << __func__
           << ". Same version update: " << policy_same_version_update;
   const bool is_foreground = priority == UpdateService::Priority::kForeground;
-  std::vector<absl::optional<update_client::CrxComponent>> components;
+  auto barrier_callback =
+      base::BarrierCallback<absl::optional<update_client::CrxComponent>>(
+          ids.size(), std::move(callback));
   for (const auto& id : ids) {
-    components.push_back(
-        base::MakeRefCounted<Installer>(
-            id,
-            [&app_client_install_data, &id]() {
-              auto it = app_client_install_data.find(id);
-              return it != app_client_install_data.end() ? it->second : "";
-            }(),
-            [&app_install_data_index, &id]() {
-              auto it = app_install_data_index.find(id);
-              return it != app_install_data_index.end() ? it->second : "";
-            }(),
-            [&config, &id]() {
-              return config->GetPolicyService()->GetTargetChannel(id).policy_or(
-                  std::string());
-            }(),
-            [&config, &id]() {
-              return config->GetPolicyService()
-                  ->GetTargetVersionPrefix(id)
-                  .policy_or(std::string());
-            }(),
-            [&config, &id]() {
-              return config->GetPolicyService()
-                  ->IsRollbackToTargetVersionAllowed(id)
-                  .policy_or(false);
-            }(),
-            [&config, &id, &is_foreground, update_blocked]() {
-              if (update_blocked) {
-                return true;
-              }
-              PolicyStatus<int> app_updates =
-                  config->GetPolicyService()->GetPolicyForAppUpdates(id);
-              return app_updates &&
-                     (app_updates.policy() == kPolicyDisabled ||
-                      (!is_foreground &&
-                       app_updates.policy() == kPolicyManualUpdatesOnly) ||
-                      (is_foreground &&
-                       app_updates.policy() == kPolicyAutomaticUpdatesOnly));
-            }(),
-            policy_same_version_update, persisted_data,
-            config->GetCrxVerifierFormat())
-            ->MakeCrxComponent());
+    base::MakeRefCounted<Installer>(
+        id,
+        [&app_client_install_data, &id]() {
+          auto it = app_client_install_data.find(id);
+          return it != app_client_install_data.end() ? it->second : "";
+        }(),
+        [&app_install_data_index, &id]() {
+          auto it = app_install_data_index.find(id);
+          return it != app_install_data_index.end() ? it->second : "";
+        }(),
+        [&config, &id]() {
+          return config->GetPolicyService()->GetTargetChannel(id).policy_or(
+              std::string());
+        }(),
+        [&config, &id]() {
+          return config->GetPolicyService()
+              ->GetTargetVersionPrefix(id)
+              .policy_or(std::string());
+        }(),
+        [&config, &id]() {
+          return config->GetPolicyService()
+              ->IsRollbackToTargetVersionAllowed(id)
+              .policy_or(false);
+        }(),
+        [&config, &id, &is_foreground, update_blocked]() {
+          if (update_blocked) {
+            return true;
+          }
+          PolicyStatus<int> app_updates =
+              config->GetPolicyService()->GetPolicyForAppUpdates(id);
+          return app_updates &&
+                 (app_updates.policy() == kPolicyDisabled ||
+                  (!is_foreground &&
+                   app_updates.policy() == kPolicyManualUpdatesOnly) ||
+                  (is_foreground &&
+                   app_updates.policy() == kPolicyAutomaticUpdatesOnly));
+        }(),
+        policy_same_version_update, persisted_data,
+        config->GetCrxVerifierFormat())
+        ->MakeCrxComponent(
+            base::BindOnce([](update_client::CrxComponent component) {
+              return component;
+            }).Then(barrier_callback));
   }
-  return components;
 }
 
 }  // namespace
@@ -329,7 +335,11 @@ void UpdateServiceImpl::GetAppStates(
     AppState app_state;
     app_state.app_id = app_id;
     app_state.version = persisted_data_->GetProductVersion(app_id);
+    app_state.version_path = persisted_data_->GetProductVersionPath(app_id);
+    app_state.version_key = persisted_data_->GetProductVersionKey(app_id);
     app_state.ap = persisted_data_->GetAP(app_id);
+    app_state.ap_path = persisted_data_->GetAPPath(app_id);
+    app_state.ap_key = persisted_data_->GetAPKey(app_id);
     app_state.brand_code = persisted_data_->GetBrandCode(app_id);
     app_state.brand_path = persisted_data_->GetBrandPath(app_id);
     app_state.ecp = persisted_data_->GetExistenceCheckerPath(app_id);

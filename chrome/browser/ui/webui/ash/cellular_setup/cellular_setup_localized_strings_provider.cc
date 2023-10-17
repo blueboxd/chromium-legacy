@@ -92,8 +92,8 @@ constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
      IDS_CELLULAR_SETUP_ESIM_PAGE_CONFIRMATION_CODE_ERROR},
     {"confirmationCodeLoading",
      IDS_CELLULAR_SETUP_ESIM_PAGE_CONFIRMATION_CODE_LOADING},
-    {"verifyingActivationCode",
-     IDS_CELLULAR_SETUP_ESIM_PAGE_VERIFYING_ACTIVATION_CODE},
+    {"profileInstallingMessage",
+     IDS_CELLULAR_SETUP_ESIM_PROFILE_INSTALLING_MESSAGE},
     {"profileDiscoveryConsentTitle",
      IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_TITLE},
     {"profileDiscoveryConsentMessageWithLink",
@@ -101,7 +101,14 @@ constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
     {"profileDiscoveryConsentScan",
      IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_SCAN},
     {"profileDiscoveryConsentCancel",
-     IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_CANCEL}};
+     IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_CANCEL},
+    {"profileDiscoveryPageTitle",
+     IDS_CELLULAR_SETUP_PROFILE_DISCOVERY_PAGE_TITLE},
+    {"confimationCodePageTitle",
+     IDS_CELLULAR_SETUP_CONFIRMATION_CODE_PAGE_TITLE},
+    {"profileLoadingPageTitle", IDS_CELLULAR_SETUP_ESIM_PROFILE_LOADING_TITLE},
+    {"profileLoadingPageMessage",
+     IDS_CELLULAR_SETUP_ESIM_PROFILE_LOADING_MESSAGE}};
 
 struct NamedBoolean {
   const char* name;

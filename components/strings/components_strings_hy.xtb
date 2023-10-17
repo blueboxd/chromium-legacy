@@ -147,6 +147,7 @@
 <translation id="1264309058268477500">Այլ</translation>
 <translation id="1264974993859112054">Սպորտ</translation>
 <translation id="1266469291454105242">Սարքի ապակողպում</translation>
+<translation id="126728463333482584">Դուք առաջիններից եք, ով փորձարկում է Հետագծման արգելափակումը՝ գործառույթ, որը սահմանափակում է կայքերի կողմից երրորդ կողմերի քուքիների օգտագործումը՝ ձեր գործողությունները համացանցում հետագծելու նպատակով։</translation>
 <translation id="1268480293435976622">Envelope Chinese #7</translation>
 <translation id="1269516672602708785">Արագ ստեղծել կայք Google Կայքերում</translation>
 <translation id="1270328905573953738">Տեղափոխություններ</translation>
@@ -332,6 +333,7 @@
 <translation id="1615402009686901181">Ըստ ադմինիստրատորի սահմանած կանոնի՝ էկրանի տեսագրման հնարավորությունն անջատվում է, երբ գաղտնի բովանդակություն է տեսանելի</translation>
 <translation id="1617276713587758852">Քրոսովերներ</translation>
 <translation id="1618571384971354160">Քարշակ մեքենաների ծառայություններ և ճանապարհային օգնություն</translation>
+<translation id="1619007254056372606">Կառավարել սարքում կայքերի տվյալները</translation>
 <translation id="1620510694547887537">Տեսախցիկ</translation>
 <translation id="1622571349153632031">Բուսակերական խոհանոց</translation>
 <translation id="162285686621567578">Այս կայքն արգելափակվել է ձեր ծնողի կողմից։</translation>
@@ -468,6 +470,7 @@
 <translation id="1875512691959384712">Google Ձևաթղթեր</translation>
 <translation id="1876399092304384674">Ըստ ամսաթվի</translation>
 <translation id="187918866476621466">Բացել մեկնարկի էջերը</translation>
+<translation id="1880901968112404879">Հաջորդ անգամ ավելի արագ վճարելու համար պահեք ձեր քարտը, անվտանգության գաղտնագրված կոդը և վճարային հասցեն ձեր Google հաշվում</translation>
 <translation id="1883255238294161206">Ծալել ցանկը</translation>
 <translation id="1884843295353628214">Ջազ</translation>
 <translation id="1890171020361705182">Dino խաղ։ Պիքսելային դինոզավրը վազում է անապատով՝ խուսափելով կակտուսներից և պտերոդակտիլներից։ Երբ լսեք ձայնային հուշում, հպեք էկրանին՝ խոչընդոտի վրայով ցատկելու համար։</translation>
@@ -695,6 +698,7 @@
 <translation id="2361263712565360498">275 x 395 մմ</translation>
 <translation id="236340516568226369">Չափափոխման ընտրացանկ</translation>
 <translation id="2365355378251437925">Լրացրեք «<ph name="FIELD" />» դաշտը</translation>
+<translation id="2365382709349300355">1 ֆայլ արգելափակվել է կանոնների համաձայն</translation>
 <translation id="2365508935344991784">Բացօթյա տարածքների կահույք</translation>
 <translation id="2366689192918515749">Միս և ծովամթերք</translation>
 <translation id="2367567093518048410">Մակարդակ</translation>
@@ -1246,6 +1250,7 @@
 <translation id="3552297013052089404">Sans-serif տառատեսակ</translation>
 <translation id="3558573058928565255">Ցերեկ</translation>
 <translation id="355995771319966853">Հետարկել ինքնալրացումը</translation>
+<translation id="3560408312959371419">Հետագծումից պաշտպանության պարամետրեր և սարքում կայքերի տվյալների կառավարում</translation>
 <translation id="3560824484345057728">Տեսնել առնչվող կայքերը</translation>
 <translation id="3566021033012934673">Ձեր կապակցումը պաշտպանված չէ</translation>
 <translation id="3566336457819493938">215 x 315 մմ</translation>
@@ -2423,6 +2428,7 @@
 <translation id="5967867314010545767">Հեռացնել պատմությունից</translation>
 <translation id="5968022600320704045">Որոնման արդյունքներ չկան</translation>
 <translation id="5969199813874624822">Պահել և հետագծել գինը</translation>
+<translation id="5973514677932942122"><ph name="EXPIRATION_DATE" /> | <ph name="SECURITY_CODE" /></translation>
 <translation id="5974052231147553524">Վեցերորդ գլանափաթեթ</translation>
 <translation id="5975083100439434680">Փոքրացնել</translation>
 <translation id="5979084224081478209">Ստուգել գաղտնաբառերը</translation>
@@ -2914,6 +2920,7 @@
 <translation id="6965382102122355670">Եղավ</translation>
 <translation id="6965978654500191972">Սարք</translation>
 <translation id="696703987787944103">Ընկալիչ</translation>
+<translation id="6967851206780867018">1 ֆայլ արգելափակվել է բովանդակության պատճառով</translation>
 <translation id="6970885655016700774">Գործվածք (արխիվային)</translation>
 <translation id="6971439137020188025">Արագ ստեղծել Google ներկայացում Սլայդներում</translation>
 <translation id="6972629891077993081">HID սարքեր</translation>
@@ -2966,6 +2973,7 @@
 <translation id="70705239631109039">Ձեր կապը լիարժեք պաշտպանված չէ</translation>
 <translation id="7075452647191940183">Հարցումը չափազանց մեծ է</translation>
 <translation id="7078665357168027058">RA3</translation>
+<translation id="7079138647457502205">Համացանցի ավելի անվտանգ օգտագործում</translation>
 <translation id="7079718277001814089">Այս կայքը վնասաբեր ծրագիր է պարունակում</translation>
 <translation id="7081308185095828845">Այս գործառույթը հասանելի չէ ձեր սարքում</translation>
 <translation id="7083258188081898530">Դարակ 9</translation>
@@ -3362,6 +3370,7 @@
 <translation id="7802989406998618639">Մուտքագրեք <ph name="SIDE_OF_CARD" /> գտնվող <ph name="NUMBER_OF_DIGITS" />-թվանշանից բաղկացած անվտանգության կոդը, որպեսզի բանկը կարողանա հաստատել ձեր ինքնությունը</translation>
 <translation id="780301667611848630">Ոչ</translation>
 <translation id="7805768142964895445">Կարգավիճակ</translation>
+<translation id="7810410097247356677">Հաջորդ անգամ ավելի արագ վճարելու համար պահեք քարտը և անվտանգության գաղտնագրված կոդը ձեր սարքում</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Հեռացնե՞լ Chrome-ի առաջարկներից:</translation>
 <translation id="781440967107097262">Կիսվե՞լ սեղմատախտակով</translation>
@@ -3382,7 +3391,6 @@
 <translation id="7865448901209910068">Լավագույն արագություն</translation>
 <translation id="7870281855125116701">Գտնվել է զեղչ</translation>
 <translation id="7871445724586827387">Փոխել Google հաշվի գաղտնաբառը</translation>
-<translation id="7876615279559620350">Ավելի արագ վճարելու համար պահեք այս քարտի CVC-ն ձեր Google հաշվում</translation>
 <translation id="7877007680666472091">պաշտպանված բովանդակության նույնացուցիչներ</translation>
 <translation id="7878562273885520351">Ձեր գաղտնաբառը կարող են հափշտակել</translation>
 <translation id="7880146494886811634">Պահել հասցեն</translation>
@@ -3607,7 +3615,6 @@
 <translation id="8308653357438598313">Ուղիղ հեռարձակումներ</translation>
 <translation id="8311895354659782580">Անշարժ գույքի կատալոգներ</translation>
 <translation id="8316555157357957253">Այժմ օգտագործվում է</translation>
-<translation id="8317570861267063617">Ավելի արագ վճարելու համար պահեք այս քարտի CVC-ն ձեր սարքում</translation>
 <translation id="8319269383395457801">Բնակելի անշարժ գույքի վաճառք</translation>
 <translation id="831997045666694187">Մինչև երեկո</translation>
 <translation id="8321476692217554900">ծանուցումներ</translation>
@@ -3894,6 +3901,7 @@
 <translation id="893332455753468063">Ավելացրեք անունը</translation>
 <translation id="8942355029279167844">Ձեր ադմինիստրատորը թույլատրել է <ph name="APP_NAME" /> հավելվածին հավաքել դիագնոստիկ տվյալներ՝ ծառայության որակը բարելավելու նպատակով։ Լրացուցիչ տեղեկությունների համար անցեք <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> էջ։</translation>
 <translation id="8943282376843390568">Լայմ</translation>
+<translation id="8944485226638699751">Սահմանափակված են</translation>
 <translation id="8949493680961858543">A1x4</translation>
 <translation id="8951415078585015151">Օրենք և կառավարություն</translation>
 <translation id="8954252855949068147">Հագուստ և կոշիկ</translation>

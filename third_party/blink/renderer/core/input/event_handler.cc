@@ -1153,7 +1153,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
 
     // Set Effective pan action before Pointer cursor is updated.
     const WebPointerEvent web_pointer_event(WebInputEvent::Type::kPointerMove,
-                                            mev.Event());
+                                            mev.Event().FlattenTransform());
     pointer_event_manager_->SendEffectivePanActionAtPointer(web_pointer_event,
                                                             mev.InnerNode());
 
@@ -1440,12 +1440,12 @@ Element* EventHandler::CurrentTouchDownElement() {
   return pointer_event_manager_->CurrentTouchDownElement();
 }
 
-void EventHandler::SetDownloadModifierTaskHandle(TaskHandle task_handle) {
-  download_modifier_task_handle_ = std::move(task_handle);
+void EventHandler::SetDelayedNavigationTaskHandle(TaskHandle task_handle) {
+  delayed_navigation_task_handle_ = std::move(task_handle);
 }
 
-TaskHandle& EventHandler::GetDownloadModifierTaskHandle() {
-  return download_modifier_task_handle_;
+TaskHandle& EventHandler::GetDelayedNavigationTaskHandle() {
+  return delayed_navigation_task_handle_;
 }
 
 bool EventHandler::IsPointerIdActiveOnFrame(PointerId pointer_id,
@@ -1574,12 +1574,8 @@ WebInputEventResult EventHandler::HandleGestureEvent(
   DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
   DCHECK_NE(0, gesture_event.FrameScale());
 
-  // Scrolling-related gesture events invoke EventHandler recursively for each
-  // frame down the chain, doing a single-frame hit-test per frame. This matches
-  // handleWheelEvent.
-  // FIXME: Add a test that traverses this path, e.g. for devtools overlay.
-  if (gesture_event.IsScrollEvent())
-    return HandleGestureScrollEvent(gesture_event);
+  // Gesture scroll events are handled on the compositor thread.
+  DCHECK(!gesture_event.IsScrollEvent());
 
   // Hit test across all frames and do touch adjustment as necessary for the
   // event type.

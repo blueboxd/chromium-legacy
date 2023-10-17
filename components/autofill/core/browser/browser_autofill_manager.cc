@@ -499,12 +499,12 @@ std::u16string RemoveWhiteSpaceAndConjugatingCharacters(
   return sanitized_value;
 }
 
-std::string_view AutofillActionPersistenceToString(
-    mojom::AutofillActionPersistence action_persistence) {
+std::string_view ActionPersistenceToString(
+    mojom::ActionPersistence action_persistence) {
   switch (action_persistence) {
-    case mojom::AutofillActionPersistence::kFill:
+    case mojom::ActionPersistence::kFill:
       return "fill";
-    case mojom::AutofillActionPersistence::kPreview:
+    case mojom::ActionPersistence::kPreview:
       return "preview";
   }
 }
@@ -1057,9 +1057,9 @@ bool BrowserAutofillManager::WasSuggestionPreviouslyHidden(
     return false;
   }
   // Getting the filling-relevant fields so that suggestions are based only on
-  // those fields. Function BrowserAutofillManager::GetSkipStatuses assumes that
-  // the passed FormData and FormStructure have the same size. If it's not the
-  // case we just assume as a fallback that all fields are relevant.
+  // those fields. BrowserAutofillManager::GetFieldFillingSkipReasons() assumes
+  // that the passed FormData and FormStructure have the same size. If it's not
+  // the case we just assume as a fallback that all fields are relevant.
   std::vector<FieldFillingSkipReason> skip_reasons =
       form.fields.size() == form_structure->field_count()
           ? GetFieldFillingSkipReasons(
@@ -1367,7 +1367,7 @@ bool BrowserAutofillManager::WillFillCreditCardNumber(
 }
 
 void BrowserAutofillManager::FillOrPreviewCreditCardForm(
-    mojom::AutofillActionPersistence action_persistence,
+    mojom::ActionPersistence action_persistence,
     const FormData& form,
     const FormFieldData& field,
     const CreditCard* credit_card,
@@ -1378,8 +1378,7 @@ void BrowserAutofillManager::FillOrPreviewCreditCardForm(
     return;
 
   credit_card_ = credit_card ? *credit_card : CreditCard();
-  bool is_preview =
-      action_persistence != mojom::AutofillActionPersistence::kFill;
+  bool is_preview = action_persistence != mojom::ActionPersistence::kFill;
   bool is_virtual_card_standalone_cvc =
       credit_card->record_type() == CreditCard::RecordType::kVirtualCard &&
       (autofill_field->Type().GetStorableType() ==
@@ -1409,7 +1408,7 @@ void BrowserAutofillManager::FillOrPreviewCreditCardForm(
 }
 
 void BrowserAutofillManager::FillOrPreviewProfileForm(
-    mojom::AutofillActionPersistence action_persistence,
+    mojom::ActionPersistence action_persistence,
     const FormData& form,
     const FormFieldData& field,
     const AutofillProfile& profile,
@@ -1424,7 +1423,7 @@ void BrowserAutofillManager::FillOrPreviewProfileForm(
 }
 
 void BrowserAutofillManager::UndoAutofill(
-    mojom::AutofillActionPersistence action_persistence,
+    mojom::ActionPersistence action_persistence,
     FormData form,
     const FormFieldData& trigger_field) {
   if (!form_autofill_history_.HasHistory(trigger_field.global_id())) {
@@ -1450,16 +1449,18 @@ void BrowserAutofillManager::UndoAutofill(
   });
 
   for (FormFieldData& field : form.fields) {
-    const auto& [previous_value, previous_is_autofilled] =
-        operation.GetAutofillValue(field.global_id());
+    const FormAutofillHistory::FieldFillingEntry& previous_state =
+        operation.GetFieldFillingEntry(field.global_id());
     // Update `field` to send for the renderer.
-    field.value = previous_value;
-    field.is_autofilled = previous_is_autofilled;
+    field.value = previous_state.value;
+    field.is_autofilled = previous_state.is_autofilled;
 
     // If the field is cached update the cached autofill state in the browser.
     // TODO(crbug.com/1345089): Consider updating the value too.
     if (AutofillField* autofill_field = GetAutofillField(form, field)) {
-      autofill_field->is_autofilled = previous_is_autofilled;
+      autofill_field->is_autofilled = previous_state.is_autofilled;
+      autofill_field->set_autofill_source_profile_guid(
+          previous_state.autofill_source_profile_guid);
     }
   }
 
@@ -1467,18 +1468,18 @@ void BrowserAutofillManager::UndoAutofill(
   // values to fields to something that already existed in it prior to the
   // filling, it is okay to bypass the filling security checks and hence passing
   // dummy values for `triggered_origin` and `field_type_map`.
-  driver().ApplyAutofillAction(mojom::AutofillActionType::kUndo,
-                               action_persistence, form, url::Origin(),
-                               /*field_type_map=*/{});
+  driver().ApplyFormAction(mojom::ActionType::kUndo, action_persistence, form,
+                           url::Origin(),
+                           /*field_type_map=*/{});
   // Do not clear history on previews as it might be used for future previews or
   // for the filling.
-  if (action_persistence == mojom::AutofillActionPersistence::kFill) {
+  if (action_persistence == mojom::ActionPersistence::kFill) {
     form_autofill_history_.EraseFormFillEntry(operation);
   }
 }
 
 void BrowserAutofillManager::FillOrPreviewForm(
-    mojom::AutofillActionPersistence action_persistence,
+    mojom::ActionPersistence action_persistence,
     const FormData& form,
     const FormFieldData& field,
     Suggestion::BackendId backend_id,
@@ -1520,9 +1521,9 @@ void BrowserAutofillManager::FillCreditCardFormImpl(
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
 
-  FillOrPreviewDataModelForm(mojom::AutofillActionPersistence::kFill, form,
-                             field, &credit_card, &cvc, form_structure,
-                             autofill_field, trigger_details,
+  FillOrPreviewDataModelForm(mojom::ActionPersistence::kFill, form, field,
+                             &credit_card, &cvc, form_structure, autofill_field,
+                             trigger_details,
                              /*is_refill=*/false);
 }
 
@@ -1531,12 +1532,12 @@ void BrowserAutofillManager::FillProfileFormImpl(
     const FormFieldData& field,
     const AutofillProfile& profile,
     const AutofillTriggerDetails& trigger_details) {
-  FillOrPreviewProfileForm(mojom::AutofillActionPersistence::kFill, form, field,
+  FillOrPreviewProfileForm(mojom::ActionPersistence::kFill, form, field,
                            profile, trigger_details);
 }
 
 void BrowserAutofillManager::FillOrPreviewVirtualCardInformation(
-    mojom::AutofillActionPersistence action_persistence,
+    mojom::ActionPersistence action_persistence,
     const std::string& guid,
     const FormData& form,
     const FormFieldData& field,
@@ -2443,7 +2444,7 @@ BrowserAutofillManager::GetFieldFillingSkipReasons(
 }
 
 void BrowserAutofillManager::FillOrPreviewDataModelForm(
-    mojom::AutofillActionPersistence action_persistence,
+    mojom::ActionPersistence action_persistence,
     const FormData& form,
     const FormFieldData& field,
     absl::variant<const AutofillProfile*, const CreditCard*>
@@ -2462,7 +2463,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
 
   LogBuffer buffer(IsLoggingActive(log_manager()));
   LOG_AF(buffer) << "action_persistence: "
-                 << AutofillActionPersistenceToString(action_persistence);
+                 << ActionPersistenceToString(action_persistence);
   LOG_AF(buffer) << "is credit card section: " << is_credit_card << Br{};
   LOG_AF(buffer) << "is refill: " << is_refill << Br{};
   LOG_AF(buffer) << *form_structure << Br{};
@@ -2473,7 +2474,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
 
   // TODO(crbug/1203667#c9): Skip if the form has changed in the meantime, which
   // may happen with refills.
-  if (action_persistence == mojom::AutofillActionPersistence::kFill) {
+  if (action_persistence == mojom::ActionPersistence::kFill) {
     base::UmaHistogramBoolean(
         "Autofill.SkippingFormFillDueToChangedFieldCount",
         form_structure->field_count() != form.fields.size());
@@ -2491,8 +2492,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
     return;
   }
 
-  if (action_persistence == mojom::AutofillActionPersistence::kFill &&
-      !is_refill) {
+  if (action_persistence == mojom::ActionPersistence::kFill && !is_refill) {
     SetFillingContext(
         *form_structure,
         std::make_unique<FillingContext>(*autofill_trigger_field,
@@ -2510,12 +2510,12 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
 
   // Contains those fields that BrowserAutofillManager can and wants to fill.
   // This is used for logging in CreditCardFormEventLogger.
-  base::flat_set<FieldGlobalId> newly_filled_fields;
-  newly_filled_fields.reserve(form_structure->field_count());
+  base::flat_set<FieldGlobalId> newly_filled_field_ids;
+  newly_filled_field_ids.reserve(form_structure->field_count());
 
   // Log events on the field which triggers the Autofill suggestion.
   absl::optional<FillEventId> fill_event_id;
-  if (action_persistence == mojom::AutofillActionPersistence::kFill) {
+  if (action_persistence == mojom::ActionPersistence::kFill) {
     std::string country_code;
     if (const autofill::AutofillProfile** address =
             absl::get_if<const AutofillProfile*>(&profile_or_credit_card)) {
@@ -2583,6 +2583,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
             .autofill_skipped_status = skip_reasons[i],
             .was_autofilled = OptionalBoolean::kFalse,
             .had_value_after_filling = ToOptionalBoolean(has_value_before),
+            .filling_method = AutofillFillingMethod::kNone,
         });
       }
       continue;
@@ -2617,7 +2618,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
         data_util::DetermineGroups(*form_structure), action_persistence,
         &failure_to_fill);
     if (is_newly_autofilled)
-      newly_filled_fields.insert(result.fields[i].global_id());
+      newly_filled_field_ids.insert(result.fields[i].global_id());
 
     const bool has_value_after = !result.fields[i].value.empty();
     const bool is_autofilled_after = result.fields[i].is_autofilled;
@@ -2631,6 +2632,11 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
           .autofill_skipped_status = FieldFillingSkipReason::kNotSkipped,
           .was_autofilled = ToOptionalBoolean(is_autofilled_after),
           .had_value_after_filling = ToOptionalBoolean(has_value_after),
+          .filling_method = base::FeatureList::IsEnabled(
+                                features::kAutofillGranularFillingAvailable)
+                                ? GetFillingMethodFromTargetedFields(
+                                      trigger_details.field_types_to_fill)
+                                : AutofillFillingMethod::kFullForm,
       });
     }
 
@@ -2658,26 +2664,31 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
         return std::make_pair(field->global_id(),
                               field->Type().GetStorableType());
       });
-  std::vector<FieldGlobalId> safe_fields = driver().ApplyAutofillAction(
-      mojom::AutofillActionType::kFill, action_persistence, result,
-      field.origin, field_types);
+  std::vector<FieldGlobalId> safe_fields =
+      driver().ApplyFormAction(mojom::ActionType::kFill, action_persistence,
+                               result, field.origin, field_types);
   client().DidFillOrPreviewForm(action_persistence,
                                 trigger_details.trigger_source, is_refill);
 
-  // This will hold the fields (and corresponding autofill fields) in the
-  // intersection of safe_fields and newly_filled_fields.
+  // This will hold the fields (and autofill_fields) in the intersection of
+  // safe_fields and newly_filled_fields_id.
   std::vector<const FormFieldData*> safe_newly_filled_fields;
+  std::vector<const AutofillField*> safe_newly_filled_autofill_fields;
 
   // Report the fields that were not filled due to the iframe security policy.
-  for (FieldGlobalId field_global_id : newly_filled_fields) {
-    if (base::Contains(safe_fields, field_global_id)) {
-      // A safe field was filled.
+  for (FieldGlobalId newly_filled_field_id : newly_filled_field_ids) {
+    if (base::Contains(safe_fields, newly_filled_field_id)) {
+      // A safe field was filled. Both functions will not return a nullptr
+      // because they passed the `FieldFillingSkipReason::kFormChanged`
+      // condition.
       safe_newly_filled_fields.push_back(
-          form.FindFieldByGlobalId(field_global_id));
+          form.FindFieldByGlobalId(newly_filled_field_id));
+      safe_newly_filled_autofill_fields.push_back(
+          form_structure->GetFieldById(newly_filled_field_id));
       continue;
     }
     // Find and report index of fields that were not filled.
-    auto it = base::ranges::find(result.fields, field_global_id,
+    auto it = base::ranges::find(result.fields, newly_filled_field_id,
                                  &FormFieldData::global_id);
     if (it != result.fields.end()) {
       size_t index = it - result.fields.begin();
@@ -2689,9 +2700,9 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
   }
 
   // Save filling history to support undoing it later if needed.
-  if (action_persistence == mojom::AutofillActionPersistence::kFill) {
-    form_autofill_history_.AddFormFillEntry(safe_newly_filled_fields,
-                                            is_refill);
+  if (action_persistence == mojom::ActionPersistence::kFill) {
+    form_autofill_history_.AddFormFillEntry(
+        safe_newly_filled_fields, safe_newly_filled_autofill_fields, is_refill);
   }
 
   LOG_AF(buffer) << CTag{"table"};
@@ -2704,8 +2715,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
                   profile_or_credit_card);
 
   // Call OnDidFillSuggestion() to log the metrics.
-  if (action_persistence == mojom::AutofillActionPersistence::kFill &&
-      !is_refill) {
+  if (action_persistence == mojom::ActionPersistence::kFill && !is_refill) {
     if (is_credit_card) {
       // The originally selected masked card is `credit_card_`. So we must log
       // `credit_card_` as opposed to
@@ -2713,7 +2723,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
       // whether the user filled the form using a masked card suggestion.
       credit_card_form_event_logger_->OnDidFillSuggestion(
           credit_card_, *form_structure, *autofill_trigger_field,
-          newly_filled_fields,
+          newly_filled_field_ids,
           base::flat_set<FieldGlobalId>(std::move(safe_fields)),
           signin_state_for_metrics_, trigger_details.trigger_source);
     } else {
@@ -2733,8 +2743,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
   }
 
   // Note that this may invalidate |profile_or_credit_card|.
-  if (action_persistence == mojom::AutofillActionPersistence::kFill &&
-      !is_refill) {
+  if (action_persistence == mojom::ActionPersistence::kFill && !is_refill) {
     client().GetPersonalDataManager()->RecordUseOf(profile_or_credit_card);
   }
 
@@ -2746,7 +2755,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
 }
 
 bool BrowserAutofillManager::ShouldPreventAutofillFromOverridingPrefilledField(
-    mojom::AutofillActionPersistence action_persistence,
+    mojom::ActionPersistence action_persistence,
     AutofillField* cached_field,
     FormFieldData* field_data,
     bool is_initiating_field,
@@ -2781,7 +2790,7 @@ bool BrowserAutofillManager::ShouldPreventAutofillFromOverridingPrefilledField(
     std::u16string sanitized_fill_value =
         RemoveWhiteSpaceAndConjugatingCharacters(fill_value);
 
-    if (action_persistence == mojom::AutofillActionPersistence::kFill &&
+    if (action_persistence == mojom::ActionPersistence::kFill &&
         !sanitized_fill_value.empty() &&
         !base::EqualsCaseInsensitiveASCII(sanitized_field_value,
                                           sanitized_fill_value) &&
@@ -3307,7 +3316,7 @@ bool BrowserAutofillManager::FillFieldWithValue(
     bool should_notify,
     const std::u16string& cvc,
     uint32_t profile_form_bitmask,
-    mojom::AutofillActionPersistence action_persistence,
+    mojom::ActionPersistence action_persistence,
     std::string* failure_to_fill) {
   bool filled_field = field_filler_.FillFormField(
       *autofill_field, profile_or_credit_card, forced_fill_values, field_data,
@@ -3316,7 +3325,7 @@ bool BrowserAutofillManager::FillFieldWithValue(
     if (failure_to_fill) {
       *failure_to_fill = "Decided to fill";
     }
-    if (action_persistence == mojom::AutofillActionPersistence::kFill ||
+    if (action_persistence == mojom::ActionPersistence::kFill ||
         !base::FeatureList::IsEnabled(
             features::kAutofillOnlyCacheIsAutofilledOnFill)) {
       // Mark the cached field as autofilled, so that we can detect when a
@@ -3466,14 +3475,14 @@ void BrowserAutofillManager::TriggerRefill(
     const auto& [credit_card, cvc] =
         absl::get<std::pair<CreditCard, std::u16string>>(
             filling_context->profile_or_credit_card_with_cvc);
-    FillOrPreviewDataModelForm(mojom::AutofillActionPersistence::kFill, form,
-                               field, &credit_card, &cvc, form_structure,
+    FillOrPreviewDataModelForm(mojom::ActionPersistence::kFill, form, field,
+                               &credit_card, &cvc, form_structure,
                                autofill_field, trigger_details,
                                /*is_refill=*/true);
   } else if (absl::holds_alternative<AutofillProfile>(
                  filling_context->profile_or_credit_card_with_cvc)) {
     FillOrPreviewDataModelForm(
-        mojom::AutofillActionPersistence::kFill, form, field,
+        mojom::ActionPersistence::kFill, form, field,
         &absl::get<AutofillProfile>(
             filling_context->profile_or_credit_card_with_cvc),
         /*optional_cvc=*/nullptr, form_structure, autofill_field,

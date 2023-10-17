@@ -13,8 +13,9 @@ import android.widget.Magnifier;
 
 import androidx.annotation.RequiresApi;
 
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 
 /**
@@ -96,6 +97,12 @@ public class MagnifierSurfaceControl implements MagnifierWrapper {
         return mViewCallback.getReadbackView() != null;
     }
 
+    @Override
+    public void childLocalSurfaceIdChanged() {
+        if (mNativeMagnifierSurfaceControl == 0) return;
+        MagnifierSurfaceControlJni.get().childLocalSurfaceIdChanged(mNativeMagnifierSurfaceControl);
+    }
+
     private void createNativeIfNeeded() {
         if (mNativeMagnifierSurfaceControl != 0) return;
         if (getView() == null) return;
@@ -168,5 +175,7 @@ public class MagnifierSurfaceControl implements MagnifierWrapper {
                 int bottomShadowHeight, int bottomShadowWidthReduction);
         void destroy(long magnifierSurfaceControl);
         void setReadbackOrigin(long nativeMagnifierSurfaceControl, float x, float y);
+
+        void childLocalSurfaceIdChanged(long nativeMagnifierSurfaceControl);
     }
 }

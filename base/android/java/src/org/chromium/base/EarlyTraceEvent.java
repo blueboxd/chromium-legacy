@@ -10,9 +10,9 @@ import android.os.SystemClock;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
+import org.jni_zero.CalledByNative;
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -240,10 +240,13 @@ public class EarlyTraceEvent {
      */
     @CalledByNative
     static void setBackgroundStartupTracingFlag(boolean enabled) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(BACKGROUND_STARTUP_TRACING_ENABLED_KEY, enabled)
-                .apply();
+        // Setting preferences might cause a disk write
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            ContextUtils.getAppSharedPreferences()
+                    .edit()
+                    .putBoolean(BACKGROUND_STARTUP_TRACING_ENABLED_KEY, enabled)
+                    .apply();
+        }
     }
 
     /**

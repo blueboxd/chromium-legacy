@@ -77,7 +77,7 @@ class CORE_EXPORT NGLayoutResult final
   // still replaced with |nullopt|.
   NGLayoutResult(const NGLayoutResult& other,
                  const NGConstraintSpace& new_space,
-                 const NGMarginStrut& new_end_margin_strut,
+                 const MarginStrut& new_end_margin_strut,
                  LayoutUnit bfc_line_offset,
                  absl::optional<LayoutUnit> bfc_block_offset,
                  LayoutUnit block_offset_delta);
@@ -163,7 +163,7 @@ class CORE_EXPORT NGLayoutResult final
   // Returns the absolutized inset property values in the parent's writing mode.
   // Not necessarily the insets of the actual box in the container, but matches
   // the result of the `getComputedStyle()` JavaScript API.
-  const NGBoxStrut& OutOfFlowInsetsForGetComputedStyle() const {
+  const BoxStrut& OutOfFlowInsetsForGetComputedStyle() const {
     CHECK(bitfields_.has_oof_insets_for_get_computed_style);
     return oof_insets_for_get_computed_style_;
   }
@@ -282,8 +282,8 @@ class CORE_EXPORT NGLayoutResult final
     return BfcBlockOffset();
   }
 
-  const NGMarginStrut EndMarginStrut() const {
-    return rare_data_ ? rare_data_->end_margin_strut : NGMarginStrut();
+  const MarginStrut EndMarginStrut() const {
+    return rare_data_ ? rare_data_->end_margin_strut : MarginStrut();
   }
 
   // Get the intrinsic block-size of the fragment. This is the block-size the
@@ -492,7 +492,7 @@ class CORE_EXPORT NGLayoutResult final
     friend class NGOutOfFlowLayoutPart;
 
     void SetOutOfFlowInsetsForGetComputedStyle(
-        const NGBoxStrut& insets,
+        const BoxStrut& insets,
         bool can_use_out_of_flow_positioned_first_tier_cache) {
       // OOF-positioned nodes *must* always have an initial BFC-offset.
       DCHECK(layout_result_->physical_fragment_->IsOutOfFlowPositioned());
@@ -895,7 +895,7 @@ class CORE_EXPORT NGLayoutResult final
     void Trace(Visitor* visitor) const;
 
     Member<const NGEarlyBreak> early_break;
-    NGMarginStrut end_margin_strut;
+    MarginStrut end_margin_strut;
     union {
       // Only set in the initial column balancing layout pass, when we have no
       // clue what the column block-size is going to be.
@@ -1025,11 +1025,11 @@ class CORE_EXPORT NGLayoutResult final
   // *always* the initial value.
   Member<RareData> rare_data_;
   union {
-    NGBfcOffset bfc_offset_;
+    BfcOffset bfc_offset_;
     // This is the absolutized inset property values of an OOF-positioned object
     // in its parent's writing-mode. This is set by the |NGOutOfFlowLayoutPart|
     // while generating this layout result.
-    NGBoxStrut oof_insets_for_get_computed_style_;
+    BoxStrut oof_insets_for_get_computed_style_;
   };
 
   LayoutUnit intrinsic_block_size_;

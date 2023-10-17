@@ -5,19 +5,40 @@
 package org.chromium.chrome.browser.privacy_sandbox;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
+import android.net.Uri;
+import android.provider.Browser;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.Callback;
+import org.chromium.base.IntentUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
+import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
+import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.ListMenuItemType;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenu.Delegate;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButtonDelegate;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
+import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageDispatcher;
 import org.chromium.components.messages.MessageIdentifier;
 import org.chromium.components.messages.PrimaryActionClickBehavior;
+import org.chromium.components.privacy_sandbox.TrackingProtectionSettings;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
+import org.chromium.ui.modelutil.MVCListAdapter;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 
@@ -27,10 +48,47 @@ public class TrackingProtectionNoticeController {
     private ActivityTabProvider mActivityTabProvider;
     private ActivityTabTabObserver mActivityTabTabObserver;
     private MessageDispatcher mMessageDispatcher;
+    private SettingsLauncher mSettingsLauncher;
+    private static final String TRACKING_PROTECTION_HELP_CENTER =
+            "https://support.google.com/chrome/?p=tracking_protection";
 
     // Setting an indefinite message auto dismiss duration is not possible,
     // hence we provide a value high enough to maintain the message visible.
     private static final int AUTODISMISS_DURATION_ONE_DAY = 24 * 60 * 60 * 1000;
+    private PropertyModel mMessage;
+
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    @IntDef({
+        NoticeControllerEvent.CONTROLLER_CREATED,
+        NoticeControllerEvent.ACTIVE_TAB_CHANGED,
+        NoticeControllerEvent.NAVIGATION_FINISHED,
+        NoticeControllerEvent.CONTROLLER_NO_LONGER_OBSERVING,
+        NoticeControllerEvent.NON_SECURE_CONNECTION,
+        NoticeControllerEvent.NOTICE_ALREADY_SHOWING,
+        NoticeControllerEvent.NOTICE_REQUESTED_AND_SHOWN,
+        NoticeControllerEvent.NOTICE_REQUESTED_BUT_NOT_SHOWN
+    })
+    public @interface NoticeControllerEvent {
+        int CONTROLLER_CREATED = 0;
+        int ACTIVE_TAB_CHANGED = 1;
+        int NAVIGATION_FINISHED = 2;
+        int CONTROLLER_NO_LONGER_OBSERVING = 3;
+        int NON_SECURE_CONNECTION = 4;
+        int NOTICE_ALREADY_SHOWING = 5;
+        int NOTICE_REQUESTED_AND_SHOWN = 6;
+        int NOTICE_REQUESTED_BUT_NOT_SHOWN = 7;
+
+        int COUNT = 8;
+    }
+
+    public static final String NOTICE_CONTROLLER_EVENT_HISTOGRAM =
+            "PrivacySandbox.TrackingProtection.Onboarding.NoticeControllerEvent";
+
+    private static void logNoticeControllerEvent(@NoticeControllerEvent int action) {
+        RecordHistogram.recordEnumeratedHistogram(
+                NOTICE_CONTROLLER_EVENT_HISTOGRAM, action, NoticeControllerEvent.COUNT);
+    }
 
     /**
      * Checks whether the Tracking Protection Notice should be shown.
@@ -53,18 +111,21 @@ public class TrackingProtectionNoticeController {
     public static TrackingProtectionNoticeController create(
             Context context,
             ActivityTabProvider activityTabProvider,
-            MessageDispatcher messageDispatcher) {
+            MessageDispatcher messageDispatcher,
+            @NonNull SettingsLauncher settingsLauncher) {
         return new TrackingProtectionNoticeController(
-                context, activityTabProvider, messageDispatcher);
+                context, activityTabProvider, messageDispatcher, settingsLauncher);
     }
 
     private TrackingProtectionNoticeController(
             Context context,
             ActivityTabProvider activityTabProvider,
-            MessageDispatcher messageDispatcher) {
+            MessageDispatcher messageDispatcher,
+            SettingsLauncher settingsLauncher) {
         mContext = context;
         mActivityTabProvider = activityTabProvider;
         mMessageDispatcher = messageDispatcher;
+        mSettingsLauncher = settingsLauncher;
 
         createActivityTabTabObserver(tab -> showNotice());
     }
@@ -72,21 +133,33 @@ public class TrackingProtectionNoticeController {
     private void showNotice() {
         if (mMessageDispatcher == null) return;
 
-        // TODO(b/295927778): Use final strings.
         Resources resources = mContext.getResources();
-        PropertyModel message =
+
+        if (mMessage != null) {
+            logNoticeControllerEvent(NoticeControllerEvent.NOTICE_ALREADY_SHOWING);
+        }
+
+        mMessage =
                 new PropertyModel.Builder(MessageBannerProperties.ALL_KEYS)
                         .with(
                                 MessageBannerProperties.MESSAGE_IDENTIFIER,
                                 MessageIdentifier.TRACKING_PROTECTION_NOTICE)
-                        .with(MessageBannerProperties.TITLE, "Loremi sumd lors Tametco")
+                        .with(
+                                MessageBannerProperties.TITLE,
+                                resources.getString(
+                                        R.string.tracking_protection_onboarding_notice_title))
                         .with(
                                 MessageBannerProperties.DESCRIPTION,
-                                "Lor'mi sum ol rsi ametc ns"
-                                        + " cteturadip Scingeli Seddoeiusm, tempo incidi untut abor"
-                                        + " etdol remag-aaliq autenim dm nimve iam ui nos rudexe.")
-                        .with(MessageBannerProperties.PRIMARY_BUTTON_TEXT, "Lor mi")
-                        .with(MessageBannerProperties.SECONDARY_BUTTON_MENU_TEXT, "Loremips")
+                                resources.getString(
+                                        R.string.tracking_protection_onboarding_notice_body))
+                        .with(
+                                MessageBannerProperties.PRIMARY_BUTTON_TEXT,
+                                resources.getString(
+                                        R.string
+                                                .tracking_protection_onboarding_notice_ack_button_label))
+                        .with(
+                                MessageBannerProperties.SECONDARY_MENU_BUTTON_DELEGATE,
+                                new SecondaryMenuButtonDelegate())
                         .with(MessageBannerProperties.ICON_RESOURCE_ID, R.drawable.ic_eye_crossed)
                         .with(
                                 MessageBannerProperties.SECONDARY_ICON_RESOURCE_ID,
@@ -97,24 +170,37 @@ public class TrackingProtectionNoticeController {
                         .with(
                                 MessageBannerProperties.ON_PRIMARY_ACTION,
                                 () -> {
-                                    // TODO(b/295927778): Report action to the bridge
+                                    TrackingProtectionBridge.noticeActionTaken(NoticeAction.GOT_IT);
                                     return PrimaryActionClickBehavior.DISMISS_IMMEDIATELY;
                                 })
-                        .with(
-                                MessageBannerProperties.ON_SECONDARY_ACTION,
-                                () -> {
-                                    // TODO(b/295927778): Launch settings and Report
-                                    // action to the bridge
-                                })
-                        .with(
-                                MessageBannerProperties.ON_DISMISSED,
-                                (dismissReason) -> {
-                                    // TODO(b/295927778): Report actions to the bridge
-                                })
+                        .with(MessageBannerProperties.ON_DISMISSED, onNoticeDismissed())
                         .build();
-        mMessageDispatcher.enqueueWindowScopedMessage(message, /* highPriority= */ true);
+        mMessageDispatcher.enqueueWindowScopedMessage(mMessage, /* highPriority= */ true);
+
+        // TODO(b/295927778): Move to the proper ON_SHOWN callback when implemented
+        //  in crbug.com/1491318.
+        logNoticeControllerEvent(NoticeControllerEvent.NOTICE_REQUESTED_AND_SHOWN);
 
         destroy();
+    }
+
+    private static Callback<Integer> onNoticeDismissed() {
+        return (dismissReason) -> {
+            switch (dismissReason) {
+                case DismissReason.GESTURE:
+                    TrackingProtectionBridge.noticeShown();
+                    TrackingProtectionBridge.noticeActionTaken(NoticeAction.CLOSED);
+                    break;
+                case DismissReason.PRIMARY_ACTION:
+                case DismissReason.SECONDARY_ACTION:
+                    // TODO(b/295927778): Move Shown action recording to the proper callback when
+                    // implemented in crbug.com/1491318.
+                    TrackingProtectionBridge.noticeShown();
+                    break;
+                default:
+                    TrackingProtectionBridge.noticeActionTaken(NoticeAction.OTHER);
+            }
+        };
     }
 
     private void createActivityTabTabObserver(Callback showNoticeCallback) {
@@ -122,11 +208,13 @@ public class TrackingProtectionNoticeController {
                 new ActivityTabTabObserver(mActivityTabProvider) {
                     @Override
                     protected void onObservingDifferentTab(Tab tab, boolean hint) {
+                        logNoticeControllerEvent(NoticeControllerEvent.ACTIVE_TAB_CHANGED);
                         maybeShowNotice(tab);
                     }
 
                     @Override
                     public void onPageLoadFinished(Tab tab, GURL url) {
+                        logNoticeControllerEvent(NoticeControllerEvent.NAVIGATION_FINISHED);
                         maybeShowNotice(tab);
                     }
 
@@ -143,14 +231,96 @@ public class TrackingProtectionNoticeController {
                                                         .TRACKING_PROTECTION_ONBOARDING_SKIP_SECURE_PAGE_CHECK)
                                         || securityLevel == ConnectionSecurityLevel.SECURE)) {
                             showNoticeCallback.onResult(tab);
+                        } else if (shouldShowNotice()) {
+                            if (securityLevel != ConnectionSecurityLevel.SECURE) {
+                                logNoticeControllerEvent(
+                                        NoticeControllerEvent.NON_SECURE_CONNECTION);
+                            }
+                            logNoticeControllerEvent(
+                                    NoticeControllerEvent.NOTICE_REQUESTED_BUT_NOT_SHOWN);
                         }
                     }
                 };
+        logNoticeControllerEvent(NoticeControllerEvent.CONTROLLER_CREATED);
+    }
+
+    private final class SecondaryMenuButtonDelegate implements ListMenuButtonDelegate {
+
+        private static final int SETTINGS_ITEM_ID = 1;
+        private static final int LEARN_MORE_ITEM_ID = 2;
+
+        @Override
+        public ListMenu getListMenu() {
+            Resources res = mContext.getResources();
+            ListItem settingsItem =
+                    getMenuItem(
+                            SETTINGS_ITEM_ID,
+                            res.getString(
+                                    R.string
+                                            .tracking_protection_onboarding_notice_settings_button_label));
+            ListItem learnMoreItem =
+                    getMenuItem(
+                            LEARN_MORE_ITEM_ID,
+                            res.getString(
+                                    R.string
+                                            .tracking_protection_onboarding_notice_learn_more_button_label));
+
+            MVCListAdapter.ModelList menuItems = new MVCListAdapter.ModelList();
+            menuItems.add(settingsItem);
+            menuItems.add(learnMoreItem);
+
+            BasicListMenu listMenu = new BasicListMenu(mContext, menuItems, onClickDelegate());
+
+            return listMenu;
+        }
+
+        private ListItem getMenuItem(int itemID, String title) {
+            PropertyModel.Builder settingsModel =
+                    new PropertyModel.Builder(ListMenuItemProperties.ALL_KEYS)
+                            .with(ListMenuItemProperties.ENABLED, true)
+                            .with(ListMenuItemProperties.MENU_ITEM_ID, itemID)
+                            .with(ListMenuItemProperties.TITLE, title);
+            ListItem settingsItem = new ListItem(ListMenuItemType.MENU_ITEM, settingsModel.build());
+            return settingsItem;
+        }
+
+        private Delegate onClickDelegate() {
+            return (clickedItem) -> {
+                int clickedItemID = clickedItem.get(ListMenuItemProperties.MENU_ITEM_ID);
+
+                if (clickedItemID == SETTINGS_ITEM_ID) {
+                    mSettingsLauncher.launchSettingsActivity(
+                            mContext, TrackingProtectionSettings.class);
+                    TrackingProtectionBridge.noticeActionTaken(
+                            org.chromium.chrome.browser.privacy_sandbox.NoticeAction.SETTINGS);
+                } else if (clickedItemID == LEARN_MORE_ITEM_ID) {
+                    openUrlInCct(TRACKING_PROTECTION_HELP_CENTER);
+                    TrackingProtectionBridge.noticeActionTaken(
+                            org.chromium.chrome.browser.privacy_sandbox.NoticeAction.LEARN_MORE);
+                }
+
+                mMessageDispatcher.dismissMessage(mMessage, DismissReason.SECONDARY_ACTION);
+            };
+        }
+    }
+
+    private void openUrlInCct(String url) {
+        CustomTabsIntent customTabIntent =
+                new CustomTabsIntent.Builder().setShowTitle(true).build();
+        customTabIntent.intent.setData(Uri.parse(url));
+        Intent intent =
+                LaunchIntentDispatcher.createCustomTabActivityIntent(
+                        mContext, customTabIntent.intent);
+        intent.setPackage(mContext.getPackageName());
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName());
+        IntentUtils.addTrustedIntentExtras(intent);
+        IntentUtils.safeStartActivity(mContext, intent);
     }
 
     public void destroy() {
         if (mActivityTabTabObserver != null) {
             mActivityTabTabObserver.destroy();
+            logNoticeControllerEvent(NoticeControllerEvent.CONTROLLER_NO_LONGER_OBSERVING);
         }
     }
 }

@@ -127,10 +127,7 @@ preprocess_if_expr("preprocess_static_image_loader") {
 
   in_files = image_loader_static_js_files
 
-  deps = [
-    "//ui/file_manager/image_loader:background",
-    "//ui/file_manager/image_loader:js_modules",
-  ]
+  deps = [ "//ui/file_manager/image_loader:js_modules" ]
 }
 
 if (enable_webui_inline_sourcemaps) {
@@ -180,6 +177,7 @@ ts_library("build_ts") {
   composite = true
 
   path_mappings = [
+    "chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/*|preprocessed/image_loader/*",
     "tslib|" + rebase_path(
             "//third_party/material_web_components/components-chromium/node_modules/tslib/tslib.d.ts",
             target_gen_dir),
@@ -385,7 +383,6 @@ copy("for_image_loader") {
   sources = [
     "$target_gen_dir/tsc/file_manager/common/js/file_types_base.js",
     "$target_gen_dir/tsc/file_manager/common/js/lru_cache.js",
-    "file_manager/common/js/test_error_reporting.js",
   ]
   outputs = [ "$target_gen_dir/file_manager/common/js/{{source_file_part}}" ]
   if (enable_webui_inline_sourcemaps) {
@@ -440,7 +437,6 @@ generate_grd("build_grd") {
       "file_manager/common/js/file_types_base.js",
       "file_manager/common/js/file_types_data.js",
       "file_manager/common/js/lru_cache.js",
-      "file_manager/common/js/test_error_reporting.js",
     ]
 
     resource_path_rewrites += [

@@ -115,7 +115,7 @@ class ImageService::SuggestEntityImageURLFetcher {
                             *autocomplete_scheme_classifier_);
     SearchSuggestionParser::Results results;
     if (!SearchSuggestionParser::ParseSuggestResults(
-            *response_data, input.text(), *autocomplete_scheme_classifier_,
+            *response_data, input, *autocomplete_scheme_classifier_,
             /*default_result_relevance=*/100,
             /*is_keyword_result=*/false, &results)) {
       UmaHistogramEnumerationForClient(
@@ -223,13 +223,15 @@ void ImageService::GetConsentToFetchImage(
     case mojom::ClientId::Journeys:
     case mojom::ClientId::JourneysSidePanel:
     case mojom::ClientId::NtpQuests: {
-      return history_consent_helper_->EnqueueRequest(std::move(callback));
+      return history_consent_helper_->EnqueueRequest(std::move(callback),
+                                                     client_id);
     }
     case mojom::ClientId::NtpRealbox:
       // TODO(b/244507194): Figure out consent story for NTP realbox case.
       return std::move(callback).Run(PageImageServiceConsentStatus::kFailure);
     case mojom::ClientId::Bookmarks: {
-      return bookmarks_consent_helper_->EnqueueRequest(std::move(callback));
+      return bookmarks_consent_helper_->EnqueueRequest(std::move(callback),
+                                                       client_id);
     }
   }
 }

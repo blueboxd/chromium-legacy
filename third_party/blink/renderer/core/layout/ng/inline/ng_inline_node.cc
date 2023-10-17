@@ -19,7 +19,9 @@
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
-#include "third_party/blink/renderer/core/layout/list_marker.h"
+#include "third_party/blink/renderer/core/layout/list/layout_inline_list_item.h"
+#include "third_party/blink/renderer/core/layout/list/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/list/list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_initial_letter_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
@@ -31,8 +33,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_auto_space.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inline_list_item.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -259,7 +259,7 @@ void CollectInlinesInternal(ItemsBuilder* builder,
   LayoutObject* node = GetLayoutObjectForFirstChildNode(block);
 
   const LayoutObject* symbol =
-      LayoutNGListItem::FindSymbolMarkerLayoutText(block);
+      LayoutListItem::FindSymbolMarkerLayoutText(block);
   const LayoutObject* inline_list_item_marker = nullptr;
   while (node) {
     if (auto* counter = DynamicTo<LayoutCounter>(node)) {
@@ -317,7 +317,7 @@ void CollectInlinesInternal(ItemsBuilder* builder,
       builder->ClearInlineFragment(node);
     } else if (node->IsAtomicInlineLevel()) {
       if (node->IsBoxListMarkerIncludingNG()) {
-        // LayoutNGListItem produces the 'outside' list marker as an inline
+        // LayoutListItem produces the 'outside' list marker as an inline
         // block. This is an out-of-flow item whose position is computed
         // automatically.
         builder->AppendOpaque(NGInlineItem::kListMarker, node);
@@ -333,10 +333,10 @@ void CollectInlinesInternal(ItemsBuilder* builder,
       }
       builder->ClearInlineFragment(node);
     } else if (auto* layout_inline = DynamicTo<LayoutInline>(node)) {
-      if (auto* inline_list_item = DynamicTo<LayoutNGInlineListItem>(node)) {
+      if (auto* inline_list_item = DynamicTo<LayoutInlineListItem>(node)) {
         inline_list_item->UpdateMarkerTextIfNeeded();
         inline_list_item_marker =
-            LayoutNGListItem::FindSymbolMarkerLayoutText(inline_list_item);
+            LayoutListItem::FindSymbolMarkerLayoutText(inline_list_item);
       }
       builder->UpdateShouldCreateBoxFragment(layout_inline);
 

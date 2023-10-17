@@ -50,6 +50,7 @@ extern NSString* const kMulticolorPasswordSymbol;
 #endif  // BUILDFLAG(IS_IOS_MACCATALYST)
 extern NSString* const kCameraLensSymbol;
 extern NSString* const kDownTrendSymbol;
+extern NSString* const kUpTrendSymbol;
 extern NSString* const kShieldSymbol;
 extern NSString* const kCloudSlashSymbol;
 extern NSString* const kCloudAndArrowUpSymbol;
@@ -192,6 +193,7 @@ extern NSString* const kExclamationMarkBubbleSymbol;
 extern NSString* const kShippingBoxFillSymbol;
 extern NSString* const kButtonProgrammableSymbol;
 extern NSString* const kCircleCircleFillSymbol;
+extern NSString* const kLockSymbol;
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

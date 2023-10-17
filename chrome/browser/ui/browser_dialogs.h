@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
+#include "components/compose/buildflags.h"
 #include "content/public/browser/bluetooth_delegate.h"
 #include "content/public/browser/login_delegate.h"
 #include "extensions/buildflags/buildflags.h"
@@ -23,6 +24,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/models/dialog_model.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
@@ -51,13 +53,6 @@ namespace permissions {
 class ChooserController;
 enum class PermissionAction;
 }  // namespace permissions
-
-namespace safe_browsing {
-class ChromeCleanerController;
-class ChromeCleanerDialogController;
-class ChromeCleanerRebootDialogController;
-class SettingsResetPromptController;
-}  // namespace safe_browsing
 
 namespace task_manager {
 class TaskManagerTableModel;
@@ -159,31 +154,6 @@ std::unique_ptr<LoginHandler> CreateLoginHandlerViews(
 
 #endif  // TOOLKIT_VIEWS
 
-#if BUILDFLAG(IS_WIN)
-
-// Shows the settings reset prompt dialog asking the user if they want to reset
-// some of their settings.
-void ShowSettingsResetPrompt(
-    Browser* browser,
-    safe_browsing::SettingsResetPromptController* controller);
-
-// Shows the Chrome Cleanup dialog asking the user if they want to clean their
-// system from unwanted software. This is called when unwanted software has been
-// detected on the system.
-void ShowChromeCleanerPrompt(
-    Browser* browser,
-    safe_browsing::ChromeCleanerDialogController* dialog_controller,
-    safe_browsing::ChromeCleanerController* cleaner_controller);
-
-// Shows the Chrome Cleanup reboot dialog asking the user if they want to
-// restart their computer once a cleanup has finished. This is called when the
-// Chrome Cleanup ends in a reboot required state.
-void ShowChromeCleanerRebootPrompt(
-    Browser* browser,
-    safe_browsing::ChromeCleanerRebootDialogController* dialog_controller);
-
-#endif  // BUILDFLAG(IS_WIN)
-
 // Returns a OnceClosure that client code can call to close the device chooser.
 // This OnceClosure references the actual dialog as a WeakPtr, so it's safe to
 // call at any point.
@@ -205,6 +175,11 @@ std::unique_ptr<ui::DialogModel> CreateWindowNamePromptDialogModelForTesting(
 // provided.
 using OnProceedCallback = base::OnceCallback<
     void(bool accepted, const std::string& address, const std::string& port)>;
+
+#if BUILDFLAG(ENABLE_COMPOSE)
+void ShowComposeDialog(content::WebContents& web_contents,
+                       const gfx::RectF& element_bounds);
+#endif
 
 }  // namespace chrome
 

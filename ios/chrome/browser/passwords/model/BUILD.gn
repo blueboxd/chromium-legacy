@@ -134,8 +134,8 @@ source_set("store_factory") {
     "ios_chrome_password_change_success_tracker_factory.h",
     "ios_chrome_password_reuse_manager_factory.cc",
     "ios_chrome_password_reuse_manager_factory.h",
-    "ios_chrome_password_store_factory.h",
-    "ios_chrome_password_store_factory.mm",
+    "ios_chrome_profile_password_store_factory.h",
+    "ios_chrome_profile_password_store_factory.mm",
     "ios_password_store_utils.h",
     "ios_password_store_utils.mm",
   ]
@@ -306,7 +306,6 @@ source_set("eg2_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/signin:fake_system_identity",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
-    "//ios/chrome/browser/ui/autofill/form_input_accessory:eg_test_support+eg2",
     "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/browser/ui/passwords/bottom_sheet:eg_test_support+eg2",
     "//ios/chrome/test:eg_test_support+eg2",

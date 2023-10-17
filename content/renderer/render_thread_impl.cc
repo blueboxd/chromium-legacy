@@ -1102,6 +1102,11 @@ RenderThreadImpl::GetVideoFrameCompositorContextProvider(
 
   bool support_locking = false;
   bool support_gles2_interface = true;
+  // Use RasterInterface if kRasterInterfaceInVideoResourceUpdater is enabled.
+  if (base::FeatureList::IsEnabled(
+          media::kRasterInterfaceInVideoResourceUpdater)) {
+    support_gles2_interface = false;
+  }
   bool support_raster_interface = true;
   bool support_oop_rasterization = false;
   bool support_grcontext = false;
@@ -1560,9 +1565,14 @@ void RenderThreadImpl::UpdateSystemColorInfo(
     blink::ColorProvidersChanged();
   }
 
-  bool did_system_color_info_change =
-      ui::NativeTheme::GetInstanceForWeb()->UpdateSystemColorInfo(
-          params->is_dark_mode, params->forced_colors, params->colors);
+  auto* native_theme = ui::NativeTheme::GetInstanceForWeb();
+
+  bool did_system_color_info_change = native_theme->UpdateSystemColorInfo(
+      params->is_dark_mode, params->forced_colors, params->colors);
+
+  did_system_color_info_change |=
+      native_theme->user_color() != params->accent_color;
+  native_theme->set_user_color(params->accent_color);
 
   if (did_system_color_info_change) {
     // Notify blink of system color info changes. These give blink the

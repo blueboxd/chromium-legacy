@@ -34,6 +34,7 @@ chromium-metrics-reviews@google.com.
   <variant name="DebugPrintLayerHierarchy"/>
   <variant name="DebugPrintViewHierarchy"/>
   <variant name="DebugPrintWindowHierarchy"/>
+  <variant name="DebugShowInformedRestore"/>
   <variant name="DebugShowToast"/>
   <variant name="DebugSystemUiStyleViewer"/>
   <variant name="DebugToggleDarkMode"/>
@@ -6266,9 +6267,10 @@ chromium-metrics-reviews@google.com.
   <owner>jimmyxgong@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
-    Record which accelerator is added by the user for {ActionName}. A shortcut
-    is encoded as an int where the high 16 bits represent all the modifiers
-    used, and the 0-15 bits represent which key is used.
+    Record which accelerator is added by the user for {ActionName}. This metric
+    also includes accelerators added from editing an accelerator. A shortcut is
+    encoded as an int where the high 16 bits represent all the modifiers used,
+    and the 0-15 bits represent which key is used.
   </summary>
   <token key="ActionName" variants="AcceleratorActionName"/>
 </histogram>
@@ -6349,6 +6351,19 @@ chromium-metrics-reviews@google.com.
     <variant name=".InSession2"
         summary="after observing good ADF for 5 seconds"/>
   </token>
+</histogram>
+
+<histogram name="Ash.Snap.CloseTwoWindowsDuration" units="seconds"
+    expires_after="2024-01-14">
+  <owner>sophiewen@chromium.org</owner>
+  <owner>michelefan@chromium.org</owner>
+  <summary>
+    The elapsed time between a first snapped window getting closed and a second
+    snapped window getting closed. Starts recording when a snapped window is
+    closed. Ends recording when a snapped window on the opposite side is closed,
+    or if a snapped window on the opposite side is unsnapped, records the
+    maximum value of 50 hours (18000 seconds).
+  </summary>
 </histogram>
 
 <histogram name="Ash.Snap.MinimizeTwoWindowsDuration" units="seconds"
@@ -7421,7 +7436,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Window.AnimationSmoothness.CrossFade" units="%"
-    expires_after="2023-11-12">
+    expires_after="2024-10-16">
   <owner>sammiequon@chromium.org</owner>
   <owner>wutao@chromium.org</owner>
   <summary>
@@ -7434,7 +7449,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Window.AnimationSmoothness.CrossFade.DragMaximize"
-    units="%" expires_after="2024-06-25">
+    units="%" expires_after="2024-10-16">
   <owner>sammiequon@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -7450,7 +7465,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Window.AnimationSmoothness.CrossFade.DragUnmaximize"
-    units="%" expires_after="2024-06-25">
+    units="%" expires_after="2024-10-16">
   <owner>sammiequon@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -7464,7 +7479,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Window.AnimationSmoothness.Hide" units="%"
-    expires_after="2024-02-25">
+    expires_after="2024-10-16">
   <owner>sammiequon@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -7477,7 +7492,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Window.AnimationSmoothness.Minimize" units="%"
-    expires_after="2024-07-24">
+    expires_after="2024-10-16">
   <owner>oshima@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
@@ -7491,7 +7506,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Window.AnimationSmoothness.Snap" units="%"
-    expires_after="2024-05-15">
+    expires_after="2024-10-16">
   <owner>oshima@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
@@ -7506,7 +7521,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Window.AnimationSmoothness.Unminimize" units="%"
-    expires_after="2024-05-15">
+    expires_after="2024-10-16">
   <owner>oshima@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>

@@ -786,7 +786,9 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
       ->ConfigureDefaultNetworkContextParams(network_context_params);
 
   network_context_params->enable_zstd =
-      base::FeatureList::IsEnabled(net::features::kZstdContentEncoding);
+      base::FeatureList::IsEnabled(net::features::kZstdContentEncoding) &&
+      g_browser_process->local_state()->GetBoolean(
+          prefs::kZstdContentEncodingEnabled);
   network_context_params->accept_language = ComputeAcceptLanguage();
   network_context_params->enable_referrers = enable_referrers_.GetValue();
 
@@ -1017,6 +1019,10 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   }
 
   network_context_params->afp_block_list_experiment_enabled =
+      (base::FeatureList::IsEnabled(
+           features::
+               kEnableNetworkServiceResourceBlockListIfThirdPartyCookiesBlocked) &&
+       cookie_settings_->ShouldBlockThirdPartyCookies()) ||
       (!profile_->IsOffTheRecord() &&
        base::FeatureList::IsEnabled(
            features::kEnableNetworkServiceResourceBlockList)) ||

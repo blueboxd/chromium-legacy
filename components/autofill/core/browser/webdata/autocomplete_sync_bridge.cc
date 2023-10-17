@@ -192,7 +192,7 @@ class SyncDifferenceTracker {
       return ModelError(FROM_HERE, "Failed updating WebDatabase");
     }
     if (!delete_from_local_.empty() || !save_to_local_.empty()) {
-      web_data_backend->NotifyOfMultipleAutofillChanges(syncer::AUTOFILL);
+      web_data_backend->NotifyOnAutofillChangedBySync(syncer::AUTOFILL);
     }
     return {};
   }
@@ -344,7 +344,6 @@ optional<syncer::ModelError> AutocompleteSyncBridge::MergeFullSyncData(
                                       change_processor()));
 
   web_data_backend_->CommitChanges();
-  web_data_backend_->NotifyThatSyncHasStarted(syncer::AUTOFILL);
   return {};
 }
 
@@ -369,7 +368,6 @@ optional<ModelError> AutocompleteSyncBridge::ApplyIncrementalSyncChanges(
                                       change_processor()));
 
   web_data_backend_->CommitChanges();
-  web_data_backend_->NotifyOnSyncUpdatesReceived(syncer::AUTOFILL);
   return {};
 }
 

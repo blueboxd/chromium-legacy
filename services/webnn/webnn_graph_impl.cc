@@ -108,13 +108,14 @@ webnn::Conv2dAttributes ConvertToConv2dAttributes(
   // Convert padding, strides, dilations.
   auto& mojo_padding = conv2d->padding;
   component_attributes.padding = webnn::Padding2d{
-      .beginning = webnn::Size2d{.height = mojo_padding->beginning->height,
-                                 .width = mojo_padding->beginning->width},
-      .ending = webnn::Size2d{.height = mojo_padding->ending->height,
-                              .width = mojo_padding->ending->width}};
-  component_attributes.strides = webnn::Size2d{
+      .beginning =
+          webnn::Size2d<uint32_t>{.height = mojo_padding->beginning->height,
+                                  .width = mojo_padding->beginning->width},
+      .ending = webnn::Size2d<uint32_t>{.height = mojo_padding->ending->height,
+                                        .width = mojo_padding->ending->width}};
+  component_attributes.strides = webnn::Size2d<uint32_t>{
       .height = conv2d->strides->height, .width = conv2d->strides->width};
-  component_attributes.dilations = webnn::Size2d{
+  component_attributes.dilations = webnn::Size2d<uint32_t>{
       .height = conv2d->dilations->height, .width = conv2d->dilations->width};
 
   // Convert groups, input and filter layout.
@@ -144,28 +145,29 @@ webnn::Pool2dAttributes ConvertToPool2dAttributes(
     const mojom::Operand* output) {
   webnn::Pool2dAttributes component_attributes;
   auto& window_dimensions = pool2d->window_dimensions;
-  component_attributes.window_dimensions = webnn::Size2d{
+  component_attributes.window_dimensions = webnn::Size2d<uint32_t>{
       .height = window_dimensions->height, .width = window_dimensions->width};
   auto& mojo_padding = pool2d->padding;
   component_attributes.padding = webnn::Padding2d{
-      .beginning = webnn::Size2d{.height = mojo_padding->beginning->height,
-                                 .width = mojo_padding->beginning->width},
-      .ending = webnn::Size2d{.height = mojo_padding->ending->height,
-                              .width = mojo_padding->ending->width}};
-  component_attributes.strides = webnn::Size2d{
+      .beginning =
+          webnn::Size2d<uint32_t>{.height = mojo_padding->beginning->height,
+                                  .width = mojo_padding->beginning->width},
+      .ending = webnn::Size2d<uint32_t>{.height = mojo_padding->ending->height,
+                                        .width = mojo_padding->ending->width}};
+  component_attributes.strides = webnn::Size2d<uint32_t>{
       .height = pool2d->strides->height, .width = pool2d->strides->width};
-  component_attributes.dilations = webnn::Size2d{
+  component_attributes.dilations = webnn::Size2d<uint32_t>{
       .height = pool2d->dilations->height, .width = pool2d->dilations->width};
   component_attributes.layout =
       MojoInputOperandLayoutToComponent(pool2d->layout);
   CHECK_EQ(output->dimensions.size(), 4u);
   switch (component_attributes.layout) {
     case webnn::InputOperandLayout::kNchw:
-      component_attributes.output_sizes = webnn::Size2d{
+      component_attributes.output_sizes = webnn::Size2d<uint32_t>{
           .height = output->dimensions[2], .width = output->dimensions[3]};
       break;
     case webnn::InputOperandLayout::kNhwc:
-      component_attributes.output_sizes = webnn::Size2d{
+      component_attributes.output_sizes = webnn::Size2d<uint32_t>{
           .height = output->dimensions[1], .width = output->dimensions[2]};
       break;
   }
@@ -199,6 +201,18 @@ absl::optional<webnn::GemmAttributes> ConvertToGemmAttributes(
   component_attributes.beta = mojo_attributes->beta;
   component_attributes.a_transpose = mojo_attributes->a_transpose;
   component_attributes.b_transpose = mojo_attributes->b_transpose;
+  return component_attributes;
+}
+
+webnn::SliceAttributes ConvertToSliceAttributes(
+    const webnn::mojom::SlicePtr& slice) {
+  webnn::SliceAttributes component_attributes;
+  component_attributes.starts.reserve(slice->starts_and_sizes.size());
+  component_attributes.sizes.reserve(slice->starts_and_sizes.size());
+  for (const auto& start_and_size : slice->starts_and_sizes) {
+    component_attributes.starts.push_back(start_and_size->start);
+    component_attributes.sizes.push_back(start_and_size->size);
+  }
   return component_attributes;
 }
 
@@ -248,6 +262,35 @@ bool ValidateClamp(const IdToOperandMap& id_to_operand_map,
 
   if (output->dimensions != input->dimensions) {
     // The output shape is not expected.
+    return false;
+  }
+
+  return true;
+}
+
+bool ValidateConcat(const IdToOperandMap& id_to_operand_map,
+                    const mojom::ConcatPtr& concat) {
+  auto* output = GetMojoOperand(id_to_operand_map, concat->output_operand_id);
+  if (!output) {
+    // The concat operator is invalid.
+    return false;
+  }
+
+  std::vector<Operand> inputs;
+  inputs.reserve(concat->input_operand_ids.size());
+  for (const auto& input_operand_id : concat->input_operand_ids) {
+    auto* input = GetMojoOperand(id_to_operand_map, input_operand_id);
+    if (!input || input == output) {
+      return false;
+    }
+    inputs.push_back(ConvertToComponentOperand(input));
+  }
+
+  auto validated_output = ValidateConcatAndInferOutput(inputs, concat->axis);
+  if (!validated_output.has_value()) {
+    return false;
+  }
+  if (validated_output != ConvertToComponentOperand(output)) {
     return false;
   }
 
@@ -388,6 +431,23 @@ bool ValidateRelu(const IdToOperandMap& id_to_operand_map,
   return true;
 }
 
+bool ValidateResample2d(const IdToOperandMap& id_to_operand_map,
+                        const mojom::Resample2dPtr& resample2d) {
+  auto* input = GetMojoOperand(id_to_operand_map, resample2d->input_operand_id);
+  auto* output =
+      GetMojoOperand(id_to_operand_map, resample2d->output_operand_id);
+  if (!input || !output || output == input) {
+    // The resample2d operator is invalid.
+    return false;
+  }
+  if (output->data_type != input->data_type) {
+    // The output data type doesn't match input data type.
+    return false;
+  }
+
+  return true;
+}
+
 bool ValidateReshape(const IdToOperandMap& id_to_operand_map,
                      const mojom::OperatorPtr& operation) {
   auto* input = GetMojoOperand(id_to_operand_map, operation->input_operands);
@@ -416,6 +476,28 @@ bool ValidateReshape(const IdToOperandMap& id_to_operand_map,
   return true;
 }
 
+bool ValidateSlice(const IdToOperandMap& id_to_operand_map,
+                   const mojom::SlicePtr& slice) {
+  auto* input = GetMojoOperand(id_to_operand_map, slice->input_operand_id);
+  auto* output = GetMojoOperand(id_to_operand_map, slice->output_operand_id);
+
+  if (!input || !output || output == input) {
+    // The slice operator is invalid.
+    return false;
+  }
+
+  auto validated_output = ValidateSliceAndInferOutput(
+      ConvertToComponentOperand(input), ConvertToSliceAttributes(slice));
+  if (!validated_output.has_value()) {
+    return false;
+  }
+  if (validated_output != ConvertToComponentOperand(output)) {
+    return false;
+  }
+
+  return true;
+}
+
 bool ValidateSoftmax(const IdToOperandMap& id_to_operand_map,
                      const mojom::SoftmaxPtr& softmax) {
   auto* input = GetMojoOperand(id_to_operand_map, softmax->input_operand_id);
@@ -431,6 +513,51 @@ bool ValidateSoftmax(const IdToOperandMap& id_to_operand_map,
   }
   if (validated_output != ConvertToComponentOperand(output)) {
     return false;
+  }
+
+  return true;
+}
+
+bool ValidateSplit(const IdToOperandMap& id_to_operand_map,
+                   const mojom::SplitPtr& split) {
+  auto* input = GetMojoOperand(id_to_operand_map, split->input_operand_id);
+  if (!input) {
+    // The split operator is invalid.
+    return false;
+  }
+  std::vector<uint32_t> splits;
+  splits.reserve(split->output_operand_ids.size());
+  for (uint64_t output_id : split->output_operand_ids) {
+    auto* output = GetMojoOperand(id_to_operand_map, output_id);
+    if (!output || input == output) {
+      return false;
+    }
+
+    if (split->axis >= output->dimensions.size()) {
+      return false;
+    }
+    splits.push_back(output->dimensions[split->axis]);
+  }
+
+  auto validated_output =
+      ValidateSplitAndInferOutput(ConvertToComponentOperand(input),
+                                  {.splits = splits, .axis = split->axis});
+  if (!validated_output.has_value()) {
+    return false;
+  }
+
+  if (split->output_operand_ids.size() != validated_output->size()) {
+    // The number of specified outputs did not match the expected number of
+    // outputs.
+    return false;
+  }
+
+  for (uint32_t i = 0; i < validated_output->size(); ++i) {
+    auto* output =
+        GetMojoOperand(id_to_operand_map, split->output_operand_ids[i]);
+    if (validated_output->at(i) != ConvertToComponentOperand(output)) {
+      return false;
+    }
   }
 
   return true;
@@ -502,14 +629,22 @@ bool ValidateOperation(const IdToOperandMap& id_to_operand_map,
   switch (operation->which()) {
     case mojom::Operation::Tag::kClamp:
       return ValidateClamp(id_to_operand_map, operation->get_clamp());
+    case mojom::Operation::Tag::kConcat:
+      return ValidateConcat(id_to_operand_map, operation->get_concat());
     case mojom::Operation::Tag::kConv2d:
       return ValidateConv2d(id_to_operand_map, operation->get_conv2d());
     case mojom::Operation::Tag::kPool2d:
       return ValidatePool2d(id_to_operand_map, operation->get_pool2d());
+    case mojom::Operation::Tag::kResample2d:
+      return ValidateResample2d(id_to_operand_map, operation->get_resample2d());
     case mojom::Operation::Tag::kRelu:
       return ValidateRelu(id_to_operand_map, operation->get_relu());
+    case mojom::Operation::Tag::kSlice:
+      return ValidateSlice(id_to_operand_map, operation->get_slice());
     case mojom::Operation::Tag::kSoftmax:
       return ValidateSoftmax(id_to_operand_map, operation->get_softmax());
+    case mojom::Operation::Tag::kSplit:
+      return ValidateSplit(id_to_operand_map, operation->get_split());
     case mojom::Operation::Tag::kTranspose:
       return ValidateTranspose(id_to_operand_map, operation->get_transpose());
     case mojom::Operation::Tag::kGenericOperator:
@@ -634,15 +769,15 @@ bool WebNNGraphImpl::ValidateGraph(const mojom::GraphInfoPtr& graph_info) {
 void WebNNGraphImpl::Compute(
     base::flat_map<std::string, mojo_base::BigBuffer> named_inputs,
     mojom::WebNNGraph::ComputeCallback callback) {
-  // Validate the inputs for computation match the built graph's expected.
-  if (!base::ranges::equal(
-          named_inputs, compute_resource_info_.input_name_to_byte_length_map,
-          [](const auto& iter_a, const auto& iter_b) {
-            // Compare the input name with the key of map and the byte length of
-            // buffer with value of map.
-            return iter_a.first == iter_b.first &&
-                   iter_a.second.size() == iter_b.second;
-          })) {
+  // Validate the inputs for computation match the built graph's expectation.
+  if (!base::ranges::equal(named_inputs,
+                           compute_resource_info_.input_name_to_byte_length_map,
+                           [](const auto& iter_a, const auto& iter_b) {
+                             // Compare the input name with the key of map and
+                             // the byte length of buffer with value of map.
+                             return iter_a.first == iter_b.first &&
+                                    iter_a.second.size() == iter_b.second;
+                           })) {
     std::move(callback).Run(mojom::ComputeResult::kInvalidInputs,
                             absl::nullopt);
     return;

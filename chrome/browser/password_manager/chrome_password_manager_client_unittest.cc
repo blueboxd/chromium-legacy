@@ -25,7 +25,7 @@
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_manager_settings_service_factory.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -383,7 +383,7 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
 void ChromePasswordManagerClientTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
 
-  PasswordStoreFactory::GetInstance()->SetTestingFactory(
+  ProfilePasswordStoreFactory::GetInstance()->SetTestingFactory(
       GetBrowserContext(),
       base::BindRepeating(&password_manager::BuildPasswordStoreInterface<
                           content::BrowserContext,
@@ -614,7 +614,7 @@ TEST_F(ChromePasswordManagerClientTest, ReceivesAutofillPredictions) {
         {autofill::AutofillManagerEvent::kFormsSeen});
     autofill_driver->renderer_events().FormsSeen(/*updated_forms=*/{form},
                                                  /*removed_forms=*/{});
-    waiter.Wait(/*num_awaiting_calls=*/1);
+    ASSERT_TRUE(waiter.Wait(/*num_awaiting_calls=*/1));
   }
 
   // Simulate that the field types have been determined, since server
@@ -673,7 +673,7 @@ TEST_F(ChromePasswordManagerClientTest,
                                              /*removed_forms=*/{});
     child_driver->renderer_events().FormsSeen(/*updated_forms=*/{child_form},
                                               /*removed_forms=*/{});
-    waiter.Wait(/*num_awaiting_calls=*/2);
+    ASSERT_TRUE(waiter.Wait(/*num_awaiting_calls=*/2));
   }
 
   // Simulate that the field types have been determined, since server
@@ -805,7 +805,7 @@ class ChromePasswordManagerClientSchemeTest
  public:
   void SetUp() override {
     ChromePasswordManagerClientTest::SetUp();
-    PasswordStoreFactory::GetInstance()->SetTestingFactory(
+    ProfilePasswordStoreFactory::GetInstance()->SetTestingFactory(
         GetBrowserContext(),
         base::BindRepeating(&password_manager::BuildPasswordStoreInterface<
                             content::BrowserContext,
@@ -1116,7 +1116,7 @@ class ChromePasswordManagerClientAndroidTest
 
 void ChromePasswordManagerClientAndroidTest::SetUp() {
   ChromePasswordManagerClientTest::SetUp();
-  PasswordStoreFactory::GetInstance()->SetTestingFactory(
+  ProfilePasswordStoreFactory::GetInstance()->SetTestingFactory(
       GetBrowserContext(),
       base::BindRepeating(
           &password_manager::BuildPasswordStoreInterface<

@@ -46,6 +46,19 @@ struct Clamp {
   float max_value;
 };
 
+// Represents the concat operation that concatenates the input tensors along
+// the given axis.
+struct Concat {
+  // The ids of input operand are used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  array<uint64> input_operand_ids;
+  // The id of output operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 output_operand_id;
+  // The axis used to concatenate along.
+  uint32 axis;
+};
+
 // Represents the `MLInputOperandLayout` that specifies the layout format of
 // the input tensor. `kChannelsFirst` means `nchw` (batches, channels, height,
 // width), `kChannelsLast` means `nhwc` (batches, height, width, channels).
@@ -140,6 +153,23 @@ struct Pool2d {
   InputOperandLayout layout;
 };
 
+struct StartAndSize {
+  uint32 start;
+  uint32 size;
+};
+
+struct Slice {
+  // The id of input operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 input_operand_id;
+  // The id of output operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 output_operand_id;
+  // An array containing the number of elements of the input window in each
+  // dimension.
+  array<StartAndSize> starts_and_sizes;
+};
+
 // Contains the attributes of gemm operator.
 struct GemmAttributes {
   // The optional third tensor in expression alpha * A * B + beta * C.
@@ -176,6 +206,29 @@ struct Softmax {
   uint64 output_operand_id;
 };
 
+// Represents a split operation that splits an input tensor into multiple
+// output tensors. The shape of the outputs and the specified axis determine
+// how the split will be performed. Since axis specifies which input dimension
+// will be split, the sum of all output dimension sizes along the axis
+// dimension must be equal to the input tensor’s axis dimension.
+// Example:
+//  input =     [1, 2, 3, (4)]
+//  axis = 3
+//  output[0] = [1, 2, 3, (1)]
+//  output[1] = [1, 2, 3, (2)]
+//  output[2] = [1, 2, 3, (1)]
+struct Split {
+  // The id of input operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 input_operand_id;
+  // The ids of output operands used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  array<uint64> output_operand_ids;
+
+  // Axis specifies which input tensor dimension will be split.
+  uint32 axis = 0;
+};
+
 // Represents the transpose operation that permutes the dimensions of the
 // input tensor following the given permutation.
 struct Transpose {
@@ -190,6 +243,22 @@ struct Transpose {
 // Holds one of operator attributes.
 union OperatorAttributes {
   GemmAttributes gemm;
+};
+
+// Resample the tensor values from the source to the destination spatial
+// dimensions.
+struct Resample2d {
+  // The id of input operand.
+  uint64 input_operand_id;
+  // The id of output operand.
+  uint64 output_operand_id;
+
+  enum InterpolationMode {
+    kNearestNeighbor,
+    kLinear,
+  };
+
+  InterpolationMode mode;
 };
 
 // Represents the operations defined in `MLGraphBuilder` that describes the
@@ -223,10 +292,14 @@ struct Operator {
 // Holds one of operator.
 union Operation {
   Clamp clamp;
+  Concat concat;
   Conv2d conv2d;
   Pool2d pool2d;
   Relu relu;
+  Resample2d resample2d;
+  Slice slice;
   Softmax softmax;
+  Split split;
   Transpose transpose;
 
   // TODO(crbug.com/1273291): The `generic_operator` will be removed.

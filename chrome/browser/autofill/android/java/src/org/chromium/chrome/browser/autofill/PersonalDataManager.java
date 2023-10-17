@@ -7,11 +7,12 @@ package org.chromium.chrome.browser.autofill;
 import android.content.Context;
 import android.graphics.Bitmap;
 
+import org.jni_zero.CalledByNative;
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.autofill.AutofillProfile;
@@ -597,18 +598,23 @@ public class PersonalDataManager {
     }
 
     public String getShippingAddressLabelWithCountryForPaymentRequest(AutofillProfile profile) {
-        return PersonalDataManagerJni.get().getShippingAddressLabelWithCountryForPaymentRequest(
-                mPersonalDataManagerAndroid, PersonalDataManager.this, profile);
+        return PersonalDataManagerJni.get()
+                .getShippingAddressLabelForPaymentRequest(
+                        mPersonalDataManagerAndroid,
+                        PersonalDataManager.this,
+                        profile,
+                        profile.getGUID(),
+                        /* includeCountry= */ true);
     }
 
     public String getShippingAddressLabelWithoutCountryForPaymentRequest(AutofillProfile profile) {
-        return PersonalDataManagerJni.get().getShippingAddressLabelWithoutCountryForPaymentRequest(
-                mPersonalDataManagerAndroid, PersonalDataManager.this, profile);
-    }
-
-    public String getBillingAddressLabelForPaymentRequest(AutofillProfile profile) {
-        return PersonalDataManagerJni.get().getBillingAddressLabelForPaymentRequest(
-                mPersonalDataManagerAndroid, PersonalDataManager.this, profile);
+        return PersonalDataManagerJni.get()
+                .getShippingAddressLabelForPaymentRequest(
+                        mPersonalDataManagerAndroid,
+                        PersonalDataManager.this,
+                        profile,
+                        profile.getGUID(),
+                        /* includeCountry= */ false);
     }
 
     /**
@@ -916,14 +922,12 @@ public class PersonalDataManager {
                 AutofillProfile profile, String guid);
         String setProfileToLocal(long nativePersonalDataManagerAndroid, PersonalDataManager caller,
                 AutofillProfile profile, String guid);
-        String getShippingAddressLabelWithCountryForPaymentRequest(
-                long nativePersonalDataManagerAndroid, PersonalDataManager caller,
-                AutofillProfile profile);
-        String getShippingAddressLabelWithoutCountryForPaymentRequest(
-                long nativePersonalDataManagerAndroid, PersonalDataManager caller,
-                AutofillProfile profile);
-        String getBillingAddressLabelForPaymentRequest(long nativePersonalDataManagerAndroid,
-                PersonalDataManager caller, AutofillProfile profile);
+        String getShippingAddressLabelForPaymentRequest(
+                long nativePersonalDataManagerAndroid,
+                PersonalDataManager caller,
+                AutofillProfile profile,
+                String guid,
+                boolean includeCountry);
         String[] getCreditCardGUIDsForSettings(
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller);
         String[] getCreditCardGUIDsToSuggest(

@@ -4,6 +4,8 @@
 
 #include "content/browser/webid/federated_auth_request_impl.h"
 
+#include <random>
+
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
@@ -68,6 +70,17 @@ namespace {
 static constexpr base::TimeDelta kDefaultTokenRequestDelay = base::Seconds(3);
 static constexpr base::TimeDelta kMaxRejectionTime = base::Seconds(60);
 
+// Users spend less time on Android to dismiss the UI. Given the difference, we
+// use two set of values. The values are calculated based on UMA data to follow
+// lognormal distribution.
+#if BUILDFLAG(IS_ANDROID)
+static constexpr double kRejectionLogNormalMu = 7.4;
+static constexpr double kRejectionLogNormalSigma = 1.24;
+#else
+static constexpr double kRejectionLogNormalMu = 8.6;
+static constexpr double kRejectionLogNormalSigma = 1.4;
+#endif  // BUILDFLAG(IS_ANDROID)
+
 std::string ComputeUrlEncodedTokenPostData(
     const std::string& client_id,
     const std::string& nonce,
@@ -107,15 +120,17 @@ std::string ComputeUrlEncodedTokenPostData(
   }
   query += "disclosure_text_shown=" + disclosure_text_shown;
 
-  if (IsFedCmAccountAutoSelectedFlagEnabled()) {
-    // Shares with IdP that whether the account was automatically selected. This
-    // could help developers to better comprehend the token request and segment
-    // metrics accordingly.
-    std::string is_account_auto_selected = is_auto_reauthn ? "true" : "false";
+  if (IsFedCmIdentityCredentialAutoSelectedFlagEnabled()) {
+    // Shares with IdP that whether the identity credential was automatically
+    // selected. This could help developers to better comprehend the token
+    // request and segment metrics accordingly.
+    std::string is_identity_credential_auto_selected =
+        is_auto_reauthn ? "true" : "false";
     if (!query.empty()) {
       query += "&";
     }
-    query += "is_account_auto_selected=" + is_account_auto_selected;
+    query += "is_identity_credential_auto_selected=" +
+             is_identity_credential_auto_selected;
   }
 
   if (IsFedCmAuthzEnabled()) {
@@ -266,6 +281,21 @@ FederatedAuthRequestResultToMetricsEndpointErrorCode(
       return IdpNetworkRequestManager::MetricsEndpointErrorCode::kOther;
     }
   }
+}
+
+// The time from when the accounts dialog is shown to when a user explicitly
+// closes it follows normal distribution. To make the random failures
+// indistinguishable from user declines, we use lognormal distribution to
+// generate the random number.
+base::TimeDelta GetRandomRejectionTime() {
+  base::RandomBitGenerator generator;
+  std::lognormal_distribution<double> distribution(kRejectionLogNormalMu,
+                                                   kRejectionLogNormalSigma);
+
+  base::TimeDelta rejection_time =
+      base::Seconds(distribution(generator) / 1000);
+
+  return std::min(kMaxRejectionTime, rejection_time);
 }
 
 std::string FormatOriginForDisplay(const url::Origin& origin) {
@@ -522,7 +552,7 @@ void FederatedAuthRequestImpl::CompleteDigitalCredentialRequest(
   if (!digital_credential_provider_) {
     std::move(digital_credential_request_callback_)
         .Run(RequestTokenStatus::kError, absl::nullopt, "", /*error=*/nullptr,
-             /*is_account_auto_selected=*/false);
+             /*is_identity_credential_auto_selected=*/false);
     return;
   }
 
@@ -530,11 +560,11 @@ void FederatedAuthRequestImpl::CompleteDigitalCredentialRequest(
     std::move(digital_credential_request_callback_)
         .Run(RequestTokenStatus::kSuccess, absl::nullopt, response,
              /*error=*/nullptr,
-             /*is_account_auto_selected=*/false);
+             /*is_identity_credential_auto_selected=*/false);
   } else {
     std::move(digital_credential_request_callback_)
         .Run(RequestTokenStatus::kError, absl::nullopt, "", /*error=*/nullptr,
-             /*is_account_auto_selected=*/false);
+             /*is_identity_credential_auto_selected=*/false);
   }
 }
 
@@ -610,7 +640,7 @@ void FederatedAuthRequestImpl::RequestToken(
   if (is_multi_idp_input && !IsFedCmMultipleIdentityProvidersEnabled()) {
     std::move(callback).Run(RequestTokenStatus::kError, absl::nullopt, "",
                             /*error=*/nullptr,
-                            /*is_account_auto_selected=*/false);
+                            /*is_identity_credential_auto_selected=*/false);
     return;
   }
 
@@ -621,7 +651,7 @@ void FederatedAuthRequestImpl::RequestToken(
       // Multi IdP API support.
       std::move(callback).Run(RequestTokenStatus::kError, absl::nullopt, "",
                               /*error=*/nullptr,
-                              /*is_account_auto_selected=*/false);
+                              /*is_identity_credential_auto_selected=*/false);
       return;
     }
 
@@ -631,7 +661,7 @@ void FederatedAuthRequestImpl::RequestToken(
       // requests.
       std::move(callback).Run(RequestTokenStatus::kErrorTooManyRequests,
                               absl::nullopt, "", /*error=*/nullptr,
-                              /*is_account_auto_selected=*/false);
+                              /*is_identity_credential_auto_selected=*/false);
       return;
     }
 
@@ -644,7 +674,7 @@ void FederatedAuthRequestImpl::RequestToken(
     if (!digital_credential_provider_) {
       std::move(digital_credential_request_callback_)
           .Run(RequestTokenStatus::kError, absl::nullopt, "", /*error=*/nullptr,
-               /*is_account_auto_selected=*/false);
+               /*is_identity_credential_auto_selected=*/false);
       return;
     }
 
@@ -693,7 +723,7 @@ void FederatedAuthRequestImpl::RequestToken(
 
     std::move(callback).Run(RequestTokenStatus::kErrorTooManyRequests,
                             absl::nullopt, "", /*error=*/nullptr,
-                            /*is_account_auto_selected=*/false);
+                            /*is_identity_credential_auto_selected=*/false);
     return;
   }
 
@@ -2144,8 +2174,9 @@ void FederatedAuthRequestImpl::CompleteRequest(
     }
   }
 
-  bool is_account_auto_selected =
-      IsFedCmAccountAutoSelectedFlagEnabled() && dialog_type_ == kAutoReauth;
+  bool is_identity_credential_auto_selected =
+      IsFedCmIdentityCredentialAutoSelectedFlagEnabled() &&
+      dialog_type_ == kAutoReauth;
 
   CleanUp();
 
@@ -2163,16 +2194,14 @@ void FederatedAuthRequestImpl::CompleteRequest(
         FederatedAuthRequestResultToRequestTokenStatus(result);
     std::move(auth_request_token_callback_)
         .Run(status, selected_idp_config_url, id_token, std::move(error),
-             is_account_auto_selected);
+             is_identity_credential_auto_selected);
     auth_request_token_callback_.Reset();
   } else {
     base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&FederatedAuthRequestImpl::OnRejectRequest,
                        weak_ptr_factory_.GetWeakPtr()),
-        // TODO(crbug.com/1344150): Use normal distribution after sufficient
-        // data is collected.
-        base::RandTimeDeltaUpTo(kMaxRejectionTime));
+        GetRandomRejectionTime());
   }
 }
 

@@ -42,6 +42,7 @@ NSString* const kMulticolorPasswordSymbol = @"multicolor_password";
 #endif  // BUILDFLAG(IS_IOS_MACCATALYST)
 NSString* const kCameraLensSymbol = @"camera_lens";
 NSString* const kDownTrendSymbol = @"line_downtrend";
+NSString* const kUpTrendSymbol = @"line_uptrend";
 NSString* const kIncognitoCircleFilliOS14Symbol =
     @"incognito_circle_fill_ios14";
 NSString* const kShieldSymbol = @"shield";
@@ -186,6 +187,7 @@ NSString* const kExclamationMarkBubbleSymbol = @"exclamationmark.bubble";
 NSString* const kShippingBoxFillSymbol = @"shippingbox.fill";
 NSString* const kButtonProgrammableSymbol = @"button.programmable";
 NSString* const kCircleCircleFillSymbol = @"circle.circle.fill";
+NSString* const kLockSymbol = @"lock";
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

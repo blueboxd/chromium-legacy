@@ -462,6 +462,7 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
             this.pendingAcceleratorInfo.layoutProperties.standardAccelerator
                 .keyDisplay);
         this.hasError = true;
+        this.makeA11yAnnouncement(this.statusMessage);
         return;
       }
       case AcceleratorConfigResult.kSuccess: {
@@ -520,6 +521,13 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
                               // 'LaunchApplication1' and will display as
                               // 'overview' icon.
         return 'LaunchApplication1';
+      case 'Backquote':
+        // Backquote `key` will become 'unidentified' when ctrl
+        // is pressed.
+        if (e.ctrlKey && e.key === 'Unidentified') {
+          return unidentifiedKeyCodeToKey[e.keyCode];
+        }
+        return e.key;
       case '':
         // If there is no `code`, check the `key`. If the `key` is
         // `unidentified`, we need to manually lookup the key.

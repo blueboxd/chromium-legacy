@@ -37,27 +37,9 @@ class AutofillWebDataServiceObserverOnDBSequence {
 
 class AutofillWebDataServiceObserverOnUISequence {
  public:
-  // Called on UI sequence when multiple Autofill entries have been modified by
-  // Sync.
-  virtual void AutofillMultipleChangedBySync(syncer::ModelType model_type) {}
-
-  virtual void AutofillAddressConversionCompleted() {}
-
-  virtual void AutofillProfileChanged(const AutofillProfileChange& change) {}
-
-  // Called on the UI sequence when sync has first been enabled for
-  // |model_type|. (NOT called on subsequent browser startups!)
-  virtual void SyncStarted(syncer::ModelType /* model_type */) {}
-
-  // Called after call to
-  // `AutofillWebDataServiceObserverOnDBSequence::AutofillProfileChanged` on UI
-  // sequence on any incremental updates when sync has been running and the
-  // changes have been committed to DB.
-  // Note, there is a possibility that PDM::Refresh is not finished yet, thus
-  // cleanups are run on stale data, due to asynchronous calls.
-  // TODO(crbug.com/1477292): Should also be called for `model_type` related to
-  // payments.
-  virtual void OnSyncUpdatesReceived(syncer::ModelType model_type) {}
+  // Called on UI sequence when Autofill entries have been modified by
+  // Sync. Can be called multiple times for the same `model_type`.
+  virtual void OnAutofillChangedBySync(syncer::ModelType model_type) {}
 
  protected:
   virtual ~AutofillWebDataServiceObserverOnUISequence() {}

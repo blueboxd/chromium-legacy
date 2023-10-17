@@ -55,6 +55,7 @@ constexpr char kEpsonNoFlipModels[] =
     "|LX-10050MF"
     "|LX-6050MF"
     "|LX-7550MF"
+    "|PX-M382F"
     "|PX-M7070FX"
     "|PX-M7080FX"
     "|PX-M7090FX"
@@ -62,6 +63,7 @@ constexpr char kEpsonNoFlipModels[] =
     "|PX-M7110FP"
     "|PX-M860F"
     "|PX-M880FX"
+    "|RR-400W"
     "|WF-6530"
     "|WF-6590"
     "|WF-6593"
@@ -85,6 +87,7 @@ constexpr char kEpsonNoFlipModels[] =
     "|WF-C878Ra"
     "|WF-C879R"
     "|WF-C879Ra"
+    "|WF-M5899"
     "|WF-M21000"
     "|WF-M21000a"
     "|WF-M21000c"
@@ -285,6 +288,15 @@ class LorgnetteScannerManagerImpl final : public LorgnetteScannerManager {
   // LorgnetteScannerManager:
   void CancelScan(CancelCallback cancel_callback) override {
     GetLorgnetteManagerClient()->CancelScan(std::move(cancel_callback));
+  }
+
+  // LorgnetteScannerManager:
+  void CancelScan(const lorgnette::CancelScanRequest& request,
+                  CancelScanCallback callback) override {
+    GetLorgnetteManagerClient()->CancelScan(
+        request,
+        base::BindOnce(&LorgnetteScannerManagerImpl::OnCancelScanResponse,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
  private:
@@ -510,6 +522,12 @@ class LorgnetteScannerManagerImpl final : public LorgnetteScannerManager {
   void OnReadScanDataResponse(
       ReadScanDataCallback callback,
       absl::optional<lorgnette::ReadScanDataResponse> response) {
+    std::move(callback).Run(response);
+  }
+
+  void OnCancelScanResponse(
+      CancelScanCallback callback,
+      absl::optional<lorgnette::CancelScanResponse> response) {
     std::move(callback).Run(response);
   }
 

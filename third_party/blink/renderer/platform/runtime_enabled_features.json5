@@ -259,8 +259,10 @@
       public: true,
     },
     {
+      // Shipping in M120.  Flag should be removed after M120 has been
+      // shipping to stable for a few weeks.
       name: "AccordionPattern",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "AddIdentityInCanMakePaymentEvent",
@@ -809,6 +811,11 @@
       status: "stable",
     },
     {
+      // https://chromestatus.com/feature/5125388091260928
+      name: "CSSBackgroundClipUnprefix",
+      status: "stable",
+    },
+    {
       name: "CSSBaselineSource",
       status: "stable",
     },
@@ -875,6 +882,11 @@
       status: "experimental",
     },
     {
+      // crbug.com/1447058
+      name: "CssFieldSizing",
+      status: "experimental",
+    },
+    {
       // Don't allow new line as preceding character for ::first-letter.
       // See crbug.com/1477217
       name: "CSSFirstLetterNoNewLineAsPrecedingChar",
@@ -896,11 +908,6 @@
       name: "CSSFontSizeAdjust",
       status: "experimental",
       base_feature: "none",
-    },
-    {
-      // crbug.com/1447058
-      name: "CssFormSizing",
-      status: "experimental",
     },
     {
       name: "CSSGridTemplatePropertyInterpolation",
@@ -1060,8 +1067,10 @@
       base_feature: "none",
     },
     {
+      // Shipping in M120.  Flag should be removed after M120 has been
+      // shipping to stable for a few weeks.
       name: "CSSPseudoDir",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSPseudoHasNonForgivingParsing",
@@ -1160,7 +1169,7 @@
     {
       // crbug.com/1463890: CSS `text-autospace` property
       name: "CSSTextAutoSpace",
-      // The status is not set yet, as this feature flag changes the default behavior, which affects some web tests.
+      status: "experimental",
     },
     {
       // TODO(https://crbug.com/1411581):
@@ -1236,7 +1245,7 @@
     // Support for registered custom properties with <image> syntax.
     {
       name: "CSSVariables2ImageValues",
-      status: "experimental",
+      status: "stable",
     },
     // Support for registered custom properties with <transform-list> and
     // <transform-function> syntax.
@@ -1295,12 +1304,6 @@
     {
       name: "DelegatedInkTrails",
       status: "stable",
-    },
-    // https://github.com/w3c/resource-timing/pull/343
-    {
-      name: "DeliveryType",
-      status: "stable",
-      base_feature: "none",
     },
     {
       name: "DeprecatedNonStreamingDeclarativeShadowDOM",
@@ -1623,13 +1626,6 @@
       base_feature: "none",
     },
     {
-      name: "FedCmAccountAutoSelectedFlag",
-      depends_on: ["FedCm"],
-      public: true,
-      status: "test",
-      base_feature: "none",
-    },
-    {
       name: "FedCmAuthz",
       depends_on: ["FedCm"],
       public: true,
@@ -1645,6 +1641,13 @@
     },
     {
       name: "FedCmHostedDomain",
+      depends_on: ["FedCm"],
+      public: true,
+      status: "test",
+      base_feature: "none",
+    },
+    {
+      name: "FedCmIdentityCredentialAutoSelectedFlag",
       depends_on: ["FedCm"],
       public: true,
       status: "test",
@@ -2088,6 +2091,12 @@
       base_feature: "none",
     },
     {
+      // http://crbug.com/1478969
+      // https://github.com/whatwg/html/pull/9538
+      name: "HTMLUnsafeMethods",
+      status: "experimental",
+    },
+    {
       name: "IdleDetection",
       public: true,
       status: "stable",
@@ -2307,6 +2316,7 @@
     },
     {
       name: "MachineLearningModelLoader",
+      public: true,
       status: "experimental",
       base_feature: "none",
     },
@@ -3690,6 +3700,10 @@
       status: "stable",
     },
     {
+      name: "SvgTextFixHittestAfterScale",
+      status: "stable",
+    },
+    {
       name: "SvgTextSkipZeroLengthItems",
       status: "stable",
     },
@@ -3882,6 +3896,10 @@
       base_feature: "none",
       origin_trial_feature_name: "UnrestrictedSharedArrayBuffer",
       origin_trial_os: ["win", "mac", "linux", "fuchsia", "chromeos"],
+    },
+    {
+      name: "URLCanParse",
+      status: "experimental",
     },
     {
       name: "URLPatternCompareComponent",

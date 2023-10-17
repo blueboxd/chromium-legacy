@@ -35,27 +35,13 @@ AutofillWebDataService::AutofillWebDataService(
       ui_task_runner_(std::move(ui_task_runner)),
       db_task_runner_(std::move(db_task_runner)),
       autofill_backend_(nullptr) {
-  base::RepeatingCallback<void(syncer::ModelType)> on_changed_callback =
-      base::BindRepeating(
-          &AutofillWebDataService::NotifyAutofillMultipleChangedOnUISequence,
-          weak_ptr_factory_.GetWeakPtr());
-  base::RepeatingClosure on_address_conversion_completed_callback =
-      base::BindRepeating(
-          &AutofillWebDataService::
-              NotifyAutofillAddressConversionCompletedOnUISequence,
-          weak_ptr_factory_.GetWeakPtr());
-  base::RepeatingCallback<void(syncer::ModelType)> on_sync_started_callback =
-      base::BindRepeating(
-          &AutofillWebDataService::NotifySyncStartedOnUISequence,
-          weak_ptr_factory_.GetWeakPtr());
   base::RepeatingCallback<void(syncer::ModelType)>
-      on_sync_updates_received_callback = base::BindRepeating(
-          &AutofillWebDataService::NotifyOnSyncUpdatesReceivedOnUISequence,
+      on_autofill_changed_by_sync_callback = base::BindRepeating(
+          &AutofillWebDataService::NotifyOnAutofillChangedBySyncOnUISequence,
           weak_ptr_factory_.GetWeakPtr());
   autofill_backend_ = new AutofillWebDataBackendImpl(
       wdbs_->GetBackend(), ui_task_runner_, db_task_runner_,
-      on_changed_callback, on_address_conversion_completed_callback,
-      on_sync_started_callback, on_sync_updates_received_callback);
+      on_autofill_changed_by_sync_callback);
 }
 
 AutofillWebDataService::AutofillWebDataService(
@@ -67,9 +53,6 @@ AutofillWebDataService::AutofillWebDataService(
       autofill_backend_(new AutofillWebDataBackendImpl(nullptr,
                                                        ui_task_runner_,
                                                        db_task_runner_,
-                                                       base::NullCallback(),
-                                                       base::NullCallback(),
-                                                       base::NullCallback(),
                                                        base::NullCallback())) {}
 
 void AutofillWebDataService::ShutdownOnUISequence() {
@@ -163,16 +146,6 @@ WebDataServiceBase::Handle AutofillWebDataService::GetServerProfiles(
       base::BindOnce(&AutofillWebDataBackendImpl::GetServerProfiles,
                      autofill_backend_),
       consumer);
-}
-
-void AutofillWebDataService::ConvertWalletAddressesAndUpdateWalletCards(
-    const std::string& app_locale,
-    const std::string& primary_account_email) {
-  wdbs_->ScheduleDBTask(
-      FROM_HERE,
-      base::BindOnce(&AutofillWebDataBackendImpl::
-                         ConvertWalletAddressesAndUpdateWalletCards,
-                     autofill_backend_, app_locale, primary_account_email));
 }
 
 WebDataServiceBase::Handle
@@ -463,33 +436,11 @@ AutofillWebDataService::RemoveExpiredAutocompleteEntries(
 
 AutofillWebDataService::~AutofillWebDataService() = default;
 
-void AutofillWebDataService::NotifyAutofillMultipleChangedOnUISequence(
+void AutofillWebDataService::NotifyOnAutofillChangedBySyncOnUISequence(
     syncer::ModelType model_type) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   for (auto& ui_observer : ui_observer_list_)
-    ui_observer.AutofillMultipleChangedBySync(model_type);
-}
-
-void AutofillWebDataService::
-    NotifyAutofillAddressConversionCompletedOnUISequence() {
-  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-  for (auto& ui_observer : ui_observer_list_)
-    ui_observer.AutofillAddressConversionCompleted();
-}
-
-void AutofillWebDataService::NotifySyncStartedOnUISequence(
-    syncer::ModelType model_type) {
-  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-  for (auto& ui_observer : ui_observer_list_)
-    ui_observer.SyncStarted(model_type);
-}
-
-void AutofillWebDataService::NotifyOnSyncUpdatesReceivedOnUISequence(
-    syncer::ModelType model_type) {
-  CHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-  for (auto& ui_observer : ui_observer_list_) {
-    ui_observer.OnSyncUpdatesReceived(model_type);
-  }
+    ui_observer.OnAutofillChangedBySync(model_type);
 }
 
 }  // namespace autofill

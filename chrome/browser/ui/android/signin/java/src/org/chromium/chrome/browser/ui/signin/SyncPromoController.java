@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.services.SigninPreferencesManager;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher.AccessPoint;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.widget.impression.ImpressionTracker;
@@ -44,6 +45,8 @@ import org.chromium.components.signin.identitymanager.AccountInfoServiceProvider
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
+import org.chromium.components.sync.SyncService;
+import org.chromium.components.sync.UserSelectableType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -141,15 +144,6 @@ public class SyncPromoController {
             ChromeSharedPreferences.getInstance().removeKey(
                     ChromePreferenceKeys.SIGNIN_PROMO_NTP_LAST_SHOWN_TIME);
         }
-    }
-
-    private static boolean canShowBookmarkPromo() {
-        boolean isPromoDismissed = ChromeSharedPreferences.getInstance().readBoolean(
-                ChromePreferenceKeys.SIGNIN_PROMO_BOOKMARKS_DECLINED, false);
-        return ChromeSharedPreferences.getInstance().readInt(
-                       getPromoShowCountPreferenceName(SigninAccessPoint.BOOKMARK_MANAGER))
-                < MAX_IMPRESSIONS_BOOKMARKS
-                && !isPromoDismissed;
     }
 
     private static boolean timeElapsedSinceFirstShownExceedsLimit() {
@@ -261,8 +255,7 @@ public class SyncPromoController {
             case SigninAccessPoint.NTP_CONTENT_SUGGESTIONS:
                 return canShowNTPPromo();
             case SigninAccessPoint.RECENT_TABS:
-                // There is no impression limit or dismiss button in Recent Tabs promo.
-                return true;
+                return canShowRecentTabsPromo();
             case SigninAccessPoint.SETTINGS:
                 return canShowSettingsPromo();
             default:
@@ -305,6 +298,28 @@ public class SyncPromoController {
         if (accountInfo == null) return false;
 
         return accountInfo.getAccountCapabilities().canOfferExtendedSyncPromos() == Tribool.TRUE;
+    }
+
+    private boolean canShowBookmarkPromo() {
+        boolean isPromoDismissed =
+                ChromeSharedPreferences.getInstance()
+                        .readBoolean(ChromePreferenceKeys.SIGNIN_PROMO_BOOKMARKS_DECLINED, false);
+        SyncService syncService = SyncServiceFactory.getForProfile(mProfile);
+        boolean isTypeManagedByPolicy =
+                syncService.isTypeManagedByPolicy(UserSelectableType.BOOKMARKS)
+                        && syncService.isTypeManagedByPolicy(UserSelectableType.READING_LIST);
+        return !isTypeManagedByPolicy
+                && ChromeSharedPreferences.getInstance()
+                                .readInt(
+                                        getPromoShowCountPreferenceName(
+                                                SigninAccessPoint.BOOKMARK_MANAGER))
+                        < MAX_IMPRESSIONS_BOOKMARKS
+                && !isPromoDismissed;
+    }
+
+    private boolean canShowRecentTabsPromo() {
+        return !SyncServiceFactory.getForProfile(mProfile)
+                .isTypeManagedByPolicy(UserSelectableType.TABS);
     }
 
     // Find the visible account for sync promos

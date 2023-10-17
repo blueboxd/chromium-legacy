@@ -102,7 +102,9 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   if (self.traitCollection.horizontalSizeClass !=
-      previousTraitCollection.horizontalSizeClass) {
+          previousTraitCollection.horizontalSizeClass ||
+      previousTraitCollection.preferredContentSizeCategory !=
+          self.traitCollection.preferredContentSizeCategory) {
     [self updateFakeboxDisplay];
   }
 }
@@ -218,15 +220,6 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
 
 - (void)layoutHeader {
   [self.headerView layoutIfNeeded];
-}
-
-- (void)updateConstraints {
-  self.doodleTopMarginConstraint.constant =
-      content_suggestions::DoodleTopMargin(0, self.traitCollection);
-  self.headerViewHeightConstraint.constant =
-      content_suggestions::HeightForLogoHeader(self.logoIsShowing,
-                                               self.logoVendor.isShowingDoodle,
-                                               self.traitCollection);
 }
 
 - (CGFloat)pinnedOffsetY {
@@ -428,6 +421,9 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
 
 - (void)openLens {
   [self.NTPMetricsRecorder recordLensTapped];
+  if (IsIOSLargeFakeboxEnabled()) {
+    TriggerHapticFeedbackForSelectionChange();
+  }
   OpenLensInputSelectionCommand* command = [[OpenLensInputSelectionCommand
       alloc]
           initWithEntryPoint:LensEntrypoint::NewTabPage
@@ -439,6 +435,9 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
 - (void)loadVoiceSearch:(id)sender {
   DCHECK(self.voiceSearchIsEnabled);
   [self.NTPMetricsRecorder recordVoiceSearchTapped];
+  if (IsIOSLargeFakeboxEnabled()) {
+    TriggerHapticFeedbackForSelectionChange();
+  }
   UIView* voiceSearchButton = base::apple::ObjCCastStrict<UIView>(sender);
   [self.layoutGuideCenter referenceView:voiceSearchButton
                               underName:kVoiceSearchButtonGuide];
@@ -460,6 +459,9 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
 
 - (void)fakeboxTapped {
   [self.NTPMetricsRecorder recordFakeOmniboxTapped];
+  if (IsIOSLargeFakeboxEnabled()) {
+    TriggerHapticFeedbackForSelectionChange();
+  }
   [self.commandHandler fakeboxTapped];
 }
 
@@ -484,6 +486,8 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
 // If display is compact size, shows fakebox. If display is regular size,
 // shows fakebox if the logo is visible and hides otherwise
 - (void)updateFakeboxDisplay {
+  self.doodleTopMarginConstraint.constant =
+      content_suggestions::DoodleTopMargin(0, self.traitCollection);
   [self.doodleHeightConstraint
       setConstant:content_suggestions::DoodleHeight(
                       self.logoVendor.showingLogo,

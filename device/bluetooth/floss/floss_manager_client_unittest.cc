@@ -61,12 +61,6 @@ class TestManagerObserver : public FlossManagerClient::Observer {
   void AdapterEnabledChanged(int adapter, bool enabled) override {
     adapter_enabled_changed_count_++;
     adapter_enabled_[adapter] = enabled;
-
-    // An adapter with a changed `enabled` status is implicitly present. Mark
-    // present if it hasn't been
-    if (!adapter_present_[adapter]) {
-      AdapterPresent(adapter, true);
-    }
   }
 
   int manager_present_count_ = 0;
@@ -86,6 +80,10 @@ class TestManagerObserver : public FlossManagerClient::Observer {
 class FlossManagerClientTest : public testing::Test {
  public:
   FlossManagerClientTest() = default;
+
+  base::Version GetCurrVersion() {
+    return floss::version::GetMaximalSupportedVersion();
+  }
 
   void SetUpMocks() {
     auto obj_mgr_path =
@@ -326,6 +324,8 @@ class FlossManagerClientTest : public testing::Test {
 
   void DoGetFlossApiVersion() { client_->DoGetFlossApiVersion(); }
 
+  bool IsCompatibleFlossApi() { return client_->IsCompatibleFlossApi(); }
+
   void EndRunLoopCallback(base::RepeatingClosure quit, DBusResult<bool> ret) {
     std::move(quit).Run();
   }
@@ -362,7 +362,7 @@ class FlossManagerClientTest : public testing::Test {
 TEST_F(FlossManagerClientTest, QueriesAdapterPresenceOnInit) {
   TestManagerObserver observer(client_.get());
   client_->Init(bus_.get(), kManagerInterface, /*adapter_index=*/-1,
-                base::DoNothing());
+                GetCurrVersion(), base::DoNothing());
   EXPECT_EQ(observer.manager_present_count_, 1);
   EXPECT_TRUE(observer.manager_present_);
 
@@ -380,7 +380,7 @@ TEST_F(FlossManagerClientTest, QueriesAdapterPresenceOnInit) {
 TEST_F(FlossManagerClientTest, VerifyAdapterPresent) {
   TestManagerObserver observer(client_.get());
   client_->Init(bus_.get(), kManagerInterface, /*adapter_index=*/-1,
-                base::DoNothing());
+                GetCurrVersion(), base::DoNothing());
   EXPECT_EQ(observer.adapter_present_count_, 2);
   EXPECT_EQ(observer.adapter_enabled_changed_count_, 2);
   EXPECT_TRUE(observer.adapter_present_[0]);
@@ -412,7 +412,7 @@ TEST_F(FlossManagerClientTest, VerifyAdapterPresent) {
 TEST_F(FlossManagerClientTest, VerifyAdapterEnabled) {
   TestManagerObserver observer(client_.get());
   client_->Init(bus_.get(), kManagerInterface, /*adapter_index=*/-1,
-                base::DoNothing());
+                GetCurrVersion(), base::DoNothing());
   // Pre-conditions
   EXPECT_FALSE(client_->GetAdapterEnabled(0));
   EXPECT_TRUE(client_->GetAdapterEnabled(5));
@@ -445,7 +445,9 @@ TEST_F(FlossManagerClientTest, VerifyAdapterEnabled) {
 
   EXPECT_EQ(observer.adapter_enabled_changed_count_, 4);
   EXPECT_TRUE(observer.adapter_enabled_[1]);
-  EXPECT_TRUE(observer.adapter_present_[1]);
+  // On enabled = true, present = true is implied. The platform should emit both
+  // but the client shouldn't depend on it.
+  EXPECT_FALSE(observer.adapter_present_[1]);
 
   // 5 was unchanged
   EXPECT_TRUE(client_->GetAdapterEnabled(5));
@@ -456,7 +458,7 @@ TEST_F(FlossManagerClientTest, VerifyAdapterEnabled) {
 TEST_F(FlossManagerClientTest, HandleManagerPresence) {
   TestManagerObserver observer(client_.get());
   client_->Init(bus_.get(), kManagerInterface, /*adapter_index=*/-1,
-                base::DoNothing());
+                GetCurrVersion(), base::DoNothing());
   dbus::ObjectPath opath = dbus::ObjectPath(kManagerObject);
   EXPECT_EQ(observer.manager_present_count_, 1);
 
@@ -509,7 +511,7 @@ TEST_F(FlossManagerClientTest, SetFlossEnabledRetries) {
   TestManagerObserver observer(client_.get());
   floss_enabled_target_ = false;
   client_->Init(bus_.get(), kManagerInterface, /*adapter_index=*/-1,
-                base::DoNothing());
+                GetCurrVersion(), base::DoNothing());
 
   // First confirm we had it set to False
   EXPECT_EQ(method_called_[manager::kSetFlossEnabled], 1);
@@ -529,13 +531,29 @@ TEST_F(FlossManagerClientTest, SetFlossEnabledRetries) {
 }
 
 TEST_F(FlossManagerClientTest, GetFlossApiVersion) {
+  base::Version version = floss::version::IntoVersion(floss_api_version_);
+
   TestManagerObserver observer(client_.get());
   client_->Init(bus_.get(), kManagerInterface, /*adapter_index=*/-1,
-                base::DoNothing());
+                GetCurrVersion(), base::DoNothing());
 
+  method_called_.clear();
   DoGetFlossApiVersion();
 
   EXPECT_EQ(method_called_[manager::kGetFlossApiVersion], 1);
-  EXPECT_EQ(client_->GetFlossApiVersion(), floss_api_version_);
+  EXPECT_EQ(client_->GetFlossApiVersion(), version);
+}
+
+TEST_F(FlossManagerClientTest, NewFlossDaemonIsNotCompatible) {
+  // Given Floss daemon's Floss API version is a newer one.
+  floss_api_version_ = 0xffffffff;
+
+  // When FlossManagerClient gets the Floss API version at initialized.
+  TestManagerObserver observer(client_.get());
+  client_->Init(bus_.get(), kManagerInterface, /*adapter_index=*/-1,
+                GetCurrVersion(), base::DoNothing());
+
+  // Then, the Floss API exported by Floss daemon is not compatible.
+  EXPECT_FALSE(IsCompatibleFlossApi());
 }
 }  // namespace floss

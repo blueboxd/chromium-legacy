@@ -15,7 +15,7 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
-#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/follow/follow_action_state.h"
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/ntp/features.h"
@@ -531,6 +531,23 @@ using base::UserMetricsAction;
   [self.mediator disconnect];
   self.mediator = nil;
   self.viewController = nil;
+}
+
+- (void)adjustPopupSize {
+  if (self.overflowMenuMediator) {
+    UIViewController* menu = self.baseViewController.presentedViewController;
+    UIPopoverPresentationController* popoverPresentationController =
+        menu.popoverPresentationController;
+
+    LayoutGuideCenter* layoutGuideCenter =
+        LayoutGuideCenterForBrowser(self.browser);
+    UILayoutGuide* layoutGuide =
+        [layoutGuideCenter makeLayoutGuideNamed:kToolsMenuGuide];
+    [self.baseViewController.view addLayoutGuide:layoutGuide];
+
+    // Re-anchor the popover if necessary, when the parent view's size changes.
+    popoverPresentationController.sourceRect = layoutGuide.layoutFrame;
+  }
 }
 
 #pragma mark - OverflowMenuCustomizationCommands

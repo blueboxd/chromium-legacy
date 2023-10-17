@@ -27,6 +27,7 @@ suite('AppTest', () => {
                 mock, new CustomizeChromePageCallbackRouter()));
     handler.setResultFor('getBackgroundImages', new Promise(() => {}));
     handler.setResultFor('getBackgroundCollections', new Promise(() => {}));
+    handler.setResultFor('getDescriptors', new Promise(() => {}));
     callbackRouter = CustomizeChromeApiProxy.getInstance()
                          .callbackRouter.$.bindNewPipeAndPassRemote();
     customizeChromeApp = document.createElement('customize-chrome-app');
@@ -161,24 +162,6 @@ suite('AppTest', () => {
             !!customizeChromeApp.shadowRoot!.querySelector('#extensions'),
             flagEnabled);
       });
-    });
-  });
-
-  [true, false].forEach((flagEnabled) => {
-    suite(`WallpaperSearchEnabled_${flagEnabled}`, () => {
-      suiteSetup(() => {
-        loadTimeData.overrideValues({
-          'wallpaperSearchEnabled': flagEnabled,
-        });
-      });
-
-      test(
-          `wallpaper search does ${flagEnabled ? '' : 'not '}show`,
-          async () => {
-            assertEquals(
-                !!customizeChromeApp.shadowRoot!.querySelector('#wallpaper'),
-                flagEnabled);
-          });
     });
   });
 });

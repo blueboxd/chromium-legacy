@@ -2825,6 +2825,9 @@ MLOperand* BuildElementWiseBinary(V8TestingScope& scope,
     case ElementWiseBinaryKind::kMax:
       output = builder->max(a, b, scope.GetExceptionState());
       break;
+    case ElementWiseBinaryKind::kPow:
+      output = builder->pow(a, b, scope.GetExceptionState());
+      break;
   }
   EXPECT_NE(output, nullptr);
   EXPECT_EQ(output->Kind(), MLOperand::OperandKind::kOutput);
@@ -2849,6 +2852,9 @@ MLOperand* BuildElementWiseBinary(V8TestingScope& scope,
       break;
     case ElementWiseBinaryKind::kMax:
       EXPECT_EQ(op->Kind(), MLOperator::OperatorKind::kMax);
+      break;
+    case ElementWiseBinaryKind::kPow:
+      EXPECT_EQ(op->Kind(), MLOperator::OperatorKind::kPow);
       break;
   }
   EXPECT_EQ(op->IsConnected(), true);
@@ -4136,9 +4142,10 @@ TEST_F(MLGraphBuilderTest, Split) {
     EXPECT_EQ(outputs.size(), 0u);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
-    EXPECT_EQ(scope.GetExceptionState().Message(),
-              "The axis must be in the range [0, N-1] where N is the rank of "
-              "input tensor.");
+    EXPECT_EQ(
+        scope.GetExceptionState().Message(),
+        "The axis must be in the range [0, N-1] where N is the rank of the "
+        "input tensor.");
   }
   {
     // Test throwing exception when axis is larger than input rank when splits
@@ -4154,9 +4161,10 @@ TEST_F(MLGraphBuilderTest, Split) {
     EXPECT_EQ(outputs.size(), 0u);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
-    EXPECT_EQ(scope.GetExceptionState().Message(),
-              "The axis must be in the range [0, N-1] where N is the rank of "
-              "input tensor.");
+    EXPECT_EQ(
+        scope.GetExceptionState().Message(),
+        "The axis must be in the range [0, N-1] where N is the rank of the "
+        "input tensor.");
   }
   {
     // Test throwing exception when splits is equal to 0.
@@ -4171,7 +4179,7 @@ TEST_F(MLGraphBuilderTest, Split) {
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
     EXPECT_EQ(scope.GetExceptionState().Message(),
-              "The splits must be greater than 0.");
+              "The splits must be greater than zero.");
   }
   {
     // Test throwing exception when the splits (unsigned long) can not evenly
@@ -4188,8 +4196,8 @@ TEST_F(MLGraphBuilderTest, Split) {
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
     EXPECT_EQ(scope.GetExceptionState().Message(),
-              "The splits must evenly divide the dimension size of input along "
-              "options.axis.");
+              "The dimension size of the input tensor along "
+              "options.axis must be divisible by splits.");
   }
   {
     // Test throwing exception when the sum of splits (sequence of unsigned
@@ -4205,9 +4213,10 @@ TEST_F(MLGraphBuilderTest, Split) {
     EXPECT_EQ(outputs.size(), 0u);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
-    EXPECT_EQ(scope.GetExceptionState().Message(),
-              "The sum of split sizes must equal to the dimension size of "
-              "input along options.axis.");
+    EXPECT_EQ(
+        scope.GetExceptionState().Message(),
+        "The sum of all sizes in splits must be equal to the dimension size "
+        "of the input tensor specified by options.axis.");
   }
 }
 

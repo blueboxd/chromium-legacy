@@ -4112,6 +4112,11 @@ CSSValue* ConsumeBackgroundBox(CSSParserTokenRange& range) {
                       CSSValueID::kContentBox>(range);
 }
 
+CSSValue* ConsumeBackgroundBoxOrText(CSSParserTokenRange& range) {
+  return ConsumeIdent<CSSValueID::kBorderBox, CSSValueID::kPaddingBox,
+                      CSSValueID::kContentBox, CSSValueID::kText>(range);
+}
+
 CSSValue* ConsumeBackgroundComposite(CSSParserTokenRange& range) {
   return ConsumeIdentRange(range, CSSValueID::kClear, CSSValueID::kPlusLighter);
 }
@@ -4242,13 +4247,11 @@ CSSValue* ParseMaskSize(CSSParserTokenRange& range,
                                    negative_size, ParsingStyle::kNotLegacy);
 }
 
-// https://drafts.fxtf.org/css-masking/#the-mask-clip
-// Syntax: [ <geometry-box> | no-clip ]#
-CSSValue* ConsumeGeometryBoxOrNoClip(CSSParserTokenRange& range) {
+CSSValue* ConsumeCoordBoxOrNoClip(CSSParserTokenRange& range) {
   if (range.Peek().Id() == CSSValueID::kNoClip) {
     return css_parsing_utils::ConsumeIdent(range);
   }
-  return css_parsing_utils::ConsumeGeometryBox(range);
+  return css_parsing_utils::ConsumeCoordBox(range);
 }
 
 namespace {
@@ -4258,7 +4261,11 @@ CSSValue* ConsumeBackgroundComponent(CSSPropertyID resolved_property,
                                      const CSSParserContext& context) {
   switch (resolved_property) {
     case CSSPropertyID::kBackgroundClip:
-      return ConsumeBackgroundBox(range);
+      if (RuntimeEnabledFeatures::CSSBackgroundClipUnprefixEnabled()) {
+        return ConsumeBackgroundBoxOrText(range);
+      } else {
+        return ConsumeBackgroundBox(range);
+      }
     case CSSPropertyID::kBackgroundAttachment:
       return ConsumeBackgroundAttachment(range);
     case CSSPropertyID::kBackgroundOrigin:
@@ -4287,11 +4294,11 @@ CSSValue* ConsumeBackgroundComponent(CSSPropertyID resolved_property,
     case CSSPropertyID::kBackgroundColor:
       return ConsumeColor(range, context);
     case CSSPropertyID::kMaskClip:
-      return ConsumeGeometryBoxOrNoClip(range);
+      return ConsumeCoordBoxOrNoClip(range);
     case CSSPropertyID::kWebkitMaskClip:
       return ConsumePrefixedBackgroundBox(range, AllowTextValue::kAllow);
     case CSSPropertyID::kMaskOrigin:
-      return ConsumeGeometryBox(range);
+      return ConsumeCoordBox(range);
     case CSSPropertyID::kWebkitMaskOrigin:
       return ConsumePrefixedBackgroundBox(range, AllowTextValue::kForbid);
     default:
@@ -6602,6 +6609,20 @@ CSSValue* ConsumeTextDecorationLine(CSSParserTokenRange& range) {
     return nullptr;
   }
   return list;
+}
+
+// Consume the `autospace` production.
+// https://drafts.csswg.org/css-text-4/#typedef-autospace
+CSSValue* ConsumeAutospace(CSSParserTokenRange& range) {
+  // Currently, only `no-autospace` is supported.
+  return ConsumeIdent<CSSValueID::kNoAutospace>(range);
+}
+
+// Consume the `spacing-trim` production.
+// https://drafts.csswg.org/css-text-4/#typedef-spacing-trim
+CSSValue* ConsumeSpacingTrim(CSSParserTokenRange& range) {
+  // Currently, only `space-first` and `space-all` are supported.
+  return ConsumeIdent<CSSValueID::kSpaceFirst, CSSValueID::kSpaceAll>(range);
 }
 
 CSSValue* ConsumeToggleGroup(CSSParserTokenRange& range,

@@ -196,7 +196,7 @@ inline LayoutUnit UnclampedFragmentainerSpaceLeft(
 // below). For all other fragments, leading/trailing block margins must be
 // ignored.
 inline void AdjustMarginsForFragmentation(const NGBlockBreakToken* break_token,
-                                          NGBoxStrut* box_strut) {
+                                          BoxStrut* box_strut) {
   if (!break_token)
     return;
 
@@ -486,7 +486,7 @@ NGConstraintSpace CreateConstraintSpaceForFragmentainer(
 NGBoxFragmentBuilder CreateContainerBuilderForMulticol(
     const NGBlockNode& multicol,
     const NGConstraintSpace& space,
-    const NGFragmentGeometry& fragment_geometry);
+    const FragmentGeometry& fragment_geometry);
 NGConstraintSpace CreateConstraintSpaceForMulticol(const NGBlockNode& multicol);
 
 // Return the adjusted child margin to be applied at the end of a fragment.

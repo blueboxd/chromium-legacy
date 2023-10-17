@@ -102,6 +102,9 @@ chromium-metrics-reviews@google.com.
       summary="Feature is trying to be updated from full server card checkout"/>
   <variant name="CheckoutLocalCard"
       summary="Feature is trying to be updated from local card checkout"/>
+  <variant name="CheckoutMaskedServerCard"
+      summary="Feature is trying to be updated from masked server card
+               checkout"/>
   <variant name="CheckoutVirtualCard"
       summary="Feature is trying to be updated from virtual card checkout"/>
   <variant name="SettingsPage"
@@ -5629,16 +5632,6 @@ chromium-metrics-reviews@google.com.
     Logs the impact of the AutofillVoteForSelectOptionValues experiment. Metrics
     are only recorded for submitted forms (not for blur votes) to prevent double
     counting.
-  </summary>
-</histogram>
-
-<histogram name="Autofill.WalletAddressConversionType"
-    enum="AutofillWalletAddressConversionType" expires_after="2023-12-12">
-  <owner>battre@chromium.org</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>
-    Tracks how the different wallet addresses are converted to local autofill
-    profiles.
   </summary>
 </histogram>
 

@@ -215,7 +215,7 @@ class QuickOfficeBrowserTestBase : public InProcessBrowserTest {
     service->component_loader()->AddDefaultComponentExtensions(false);
 
     embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
-    embedded_test_server()->Start();
+    ASSERT_TRUE(embedded_test_server()->Start());
 
     InProcessBrowserTest::SetUpOnMainThread();
   }
@@ -1494,11 +1494,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableSearchV2(),
         TestCase("searchFileSystemProvider").EnableSearchV2(),
         TestCase("searchImageByContent")
-            .EnableImageContentSearch()
-            .EnableSearchV2()
-        // TODO(b/189173190): Enable
-        // TestCase("searchQueryLaunchParam")
-        ));
+            .EnableLocalImageSearch()
+            .EnableSearchV2(),
+        TestCase("searchQueryLaunchParam")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Metrics, /* metrics.js */

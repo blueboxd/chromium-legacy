@@ -479,7 +479,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/download/background_service:background_service",
     "//ios/chrome/browser/external_files",
     "//ios/chrome/browser/favicon",
-    "//ios/chrome/browser/feature_engagement",
+    "//ios/chrome/browser/feature_engagement/model",
     "//ios/chrome/browser/first_run",
     "//ios/chrome/browser/geolocation",
     "//ios/chrome/browser/history",
@@ -797,5 +797,24 @@ if (current_toolchain == default_toolchain) {
       extension_target =
           "//ios/chrome/intents_extension/appex(${_extension_toolchain})"
     }
+  }
+}
+
+if (!ios_use_chrome_main_module) {
+  ios_framework_bundle("chrome_main_framework") {
+    info_plist = "resources/Info.plist"
+    output_name = "ChromeMain"
+    extra_substitutions = [
+      "CONTENT_WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.ContentTodayExtension",
+      "CHROMIUM_BUNDLE_ID=$chromium_bundle_id.chrome_main",
+      "CHROMIUM_HANDOFF_ID=$chromium_handoff_id",
+      "CHROMIUM_SHORT_NAME=ChromeMain",
+      "CHROMIUM_URL_SCHEME_1=$url_unsecure_scheme",
+      "CHROMIUM_URL_SCHEME_2=$url_secure_scheme",
+      "CHROMIUM_URL_SCHEME_3=$url_x_callback_scheme",
+      "CHROMIUM_URL_CHANNEL_SCHEME=$url_channel_scheme",
+      "SSOAUTH_URL_SCHEME=$url_ssoauth_scheme",
+      "IOS_MOVE_TAB_ACTIVITY_TYPE=$ios_move_tab_activity_type",
+    ]
   }
 }

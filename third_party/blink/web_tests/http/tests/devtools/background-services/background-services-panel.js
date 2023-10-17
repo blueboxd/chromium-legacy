@@ -36,7 +36,7 @@ async function toggleRecord(model) {
 
   // Wait for the view to be aware of the change.
   await new Promise(r => {
-    model.addEventListener(Resources.BackgroundServiceModel.Events.RecordingStateChanged, r);
+    model.addEventListener(Application.BackgroundServiceModel.Events.RecordingStateChanged, r);
   });
 
   // Yield thread in case this listener was called before the UI's listener.
@@ -45,10 +45,9 @@ async function toggleRecord(model) {
 
 (async function() {
   TestRunner.addResult(`Tests the bottom panel shows information as expected.\n`);
-  await TestRunner.loadLegacyModule('resources');
   await TestRunner.showPanel('resources');
 
-  const backgroundServiceModel = TestRunner.mainTarget.model(Resources.BackgroundServiceModel);
+  const backgroundServiceModel = TestRunner.mainTarget.model(Application.BackgroundServiceModel.BackgroundServiceModel);
   backgroundServiceModel.enable(Protocol.BackgroundService.ServiceName.BackgroundFetch);
 
   dumpPreviewPanel();

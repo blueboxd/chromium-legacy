@@ -166,6 +166,11 @@ extern const char kSpotlightDonateNewIntentsDescription[];
 extern const char kBreakpadNoDelayInitialUploadName[];
 extern const char kBreakpadNoDelayInitialUploadDescription[];
 
+// Title and description for the flag to enable deletion of undecryptable
+// passwords from Sync.
+extern const char kClearUndecryptablePasswordsOnSyncName[];
+extern const char kClearUndecryptablePasswordsOnSyncDescription[];
+
 // Title and description for the flag to enable the content notifications
 // feature.
 extern const char kContentPushNotificationsName[];
@@ -262,11 +267,6 @@ extern const char kDiscoverFeedSportCardDescription[];
 // and related UI features.
 extern const char kEnableBookmarksAccountStorageName[];
 extern const char kEnableBookmarksAccountStorageDescription[];
-
-// Title and description for the flag to enable checking feed visibility on
-// attention log start.
-extern const char kEnableCheckVisibilityOnAttentionLogStartName[];
-extern const char kEnableCheckVisibilityOnAttentionLogStartDescription[];
 
 // Title and description for the flag to enable the muting of compromised
 // passwords in the Password Manager.
@@ -367,11 +367,6 @@ extern const char kEnableReadingListAccountStorageDescription[];
 // list screen.
 extern const char kEnableReadingListSignInPromoName[];
 extern const char kEnableReadingListSignInPromoDescription[];
-
-// Title and description for the flag to enable refining data source reload
-// reporting when having a very short attention log.
-extern const char kEnableRefineDataSourceReloadReportingName[];
-extern const char kEnableRefineDataSourceReloadReportingDescription[];
 
 // Title and description for the flag to enable omnibox suggestions scrolling on
 // iPad.
@@ -583,11 +578,6 @@ extern const char kMixedContentAutoupgradeDescription[];
 extern const char kModernTabStripName[];
 extern const char kModernTabStripDescription[];
 
-// Title and description of the flag to enable multiline gradient support in
-// FadeTruncatingLabel.
-extern const char kMultilineFadeTruncatingLabelName[];
-extern const char kMultilineFadeTruncatingLabelDescription[];
-
 // Title and description of the flag to enable the native Find in Page API
 // for iOS 16 and later.
 extern const char kNativeFindInPageName[];
@@ -615,14 +605,18 @@ extern const char kNTPViewHierarchyRepairDescription[];
 extern const char kOmniboxFocusTriggersSRPZeroSuggestName[];
 extern const char kOmniboxFocusTriggersSRPZeroSuggestDescription[];
 
-// Title and description for fuzzy URL suggestions feature.
-extern const char kOmniboxFuzzyUrlSuggestionsName[];
-extern const char kOmniboxFuzzyUrlSuggestionsDescription[];
-
 // Title and description for the flag to enable Omnibox HTTPS upgrades for
 // schemeless navigations.
 extern const char kOmniboxHttpsUpgradesName[];
 extern const char kOmniboxHttpsUpgradesDescription[];
+
+// Title and description for the Inspire Me omnibox flag.
+extern const char kOmniboxInspireMeName[];
+extern const char kOmniboxInspireMeDescription[];
+
+// Title and description for the Inspire Me for Signed Out Users omnibox flag.
+extern const char kOmniboxInspireMeSignedOutName[];
+extern const char kOmniboxInspireMeSignedOutDescription[];
 
 // Title and description for the flag to enable Omnibox Grouping implementation
 // for ZPS.
@@ -651,11 +645,6 @@ extern const char kOmniboxMaxURLMatchesDescription[];
 // matches in the omnibox popup.
 extern const char kOmniboxMaxZPSMatchesName[];
 extern const char kOmniboxMaxZPSMatchesDescription[];
-
-// Title and description for the flag to inscrease the maximum number of lines
-// for search suggestions.
-extern const char kOmniboxMultilineSearchSuggestName[];
-extern const char kOmniboxMultilineSearchSuggestDescription[];
 
 // Title and description for the flag to swap Omnibox Textfield implementation
 // to a new experimental one.
@@ -837,6 +826,11 @@ extern const char kShowAutofillTypePredictionsDescription[];
 extern const char kShowInactiveTabsCountName[];
 extern const char kShowInactiveTabsCountDescription[];
 
+// Title and description for the flag to enable ignoring undecryptable passwords
+// in the password storage.
+extern const char kSkipUndecryptablePasswordsName[];
+extern const char kSkipUndecryptablePasswordsDescription[];
+
 // Title and description for the flag to add the Price Tracking destination
 // (with Smart Sorting) to the new overflow menu.
 extern const char kSmartSortingPriceTrackingDestinationName[];
@@ -882,6 +876,11 @@ extern const char kThemeColorInTopToolbarDescription[];
 // the device camera from the home screen widget.
 extern const char kEnableLensInHomeScreenWidgetName[];
 extern const char kEnableLensInHomeScreenWidgetDescription[];
+
+// Title and description for the flag to enable the iOS Hide Feed with Search
+// Choice feature.
+extern const char kIOSHideFeedWithSearchChoiceName[];
+extern const char kIOSHideFeedWithSearchChoiceDescription[];
 
 // Title and description for the flag to enable the iOS Large Fakebox feature
 extern const char kIOSLargeFakeboxName[];

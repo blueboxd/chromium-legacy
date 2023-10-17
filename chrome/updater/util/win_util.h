@@ -345,8 +345,8 @@ bool CompareOSVersions(const OSVERSIONINFOEX& os, BYTE oper);
 // and cannot be reversed.
 bool EnableProcessHeapMetadataProtection();
 
-// Creates a unique temporary directory. The directory is created under
-// %ProgramFiles% if the caller is admin, so it is secure.
+// Creates a unique temporary directory. The directory is created under a secure
+// location if the caller is admin.
 absl::optional<base::ScopedTempDir> CreateSecureTempDir();
 
 // Signals the shutdown event that causes legacy GoogleUpdate processes to exit.
@@ -423,7 +423,7 @@ absl::optional<std::wstring> GetRegKeyContents(const std::wstring& reg_key);
 // operating system. The function assumes that the locale value for the calling
 // thread is set, otherwise, the function uses the user/system default LANGID,
 // or it defaults to US English.
-std::string GetTextForSystemError(int error);
+std::wstring GetTextForSystemError(int error);
 
 }  // namespace updater
 

@@ -17,6 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "components/exo/custom_window_state_delegate.h"
 #include "components/exo/shell_surface_util.h"
@@ -286,13 +287,14 @@ void ShellSurface::Grab() {
   has_grab_ = true;
 }
 
-void ShellSurface::StartMove() {
+bool ShellSurface::StartMove() {
   TRACE_EVENT0("exo", "ShellSurface::StartMove");
 
-  if (!widget_)
-    return;
+  if (!widget_) {
+    return false;
+  }
 
-  AttemptToStartDrag(HTCAPTION);
+  return AttemptToStartDrag(HTCAPTION);
 }
 
 bool ShellSurface::RotatePaneFocusFromView(views::View* focused_view,
@@ -314,13 +316,14 @@ bool ShellSurface::RotatePaneFocusFromView(views::View* focused_view,
   return true;
 }
 
-void ShellSurface::StartResize(int component) {
+bool ShellSurface::StartResize(int component) {
   TRACE_EVENT1("exo", "ShellSurface::StartResize", "component", component);
 
-  if (!widget_)
-    return;
+  if (!widget_) {
+    return false;
+  }
 
-  AttemptToStartDrag(component);
+  return AttemptToStartDrag(component);
 }
 
 void ShellSurface::AddObserver(ShellSurfaceObserver* observer) {
@@ -535,6 +538,13 @@ void ShellSurface::OnWindowPropertyChanged(aura::Window* window,
                                            intptr_t old_value) {
   ShellSurfaceBase::OnWindowPropertyChanged(window, key, old_value);
   if (IsShellSurfaceWindow(window)) {
+    if (key == chromeos::kIsShowingInOverviewKey) {
+      if (!overview_change_callback_.is_null()) {
+        overview_change_callback_.Run(
+            window->GetProperty(chromeos::kIsShowingInOverviewKey));
+      }
+    }
+
     if (key == aura::client::kRasterScale) {
       float raster_scale = window->GetProperty(aura::client::kRasterScale);
 
@@ -838,13 +848,14 @@ bool ShellSurface::GetCanResizeFromSizeConstraints() const {
   return (minimum_size_.IsEmpty() || minimum_size_ != maximum_size_);
 }
 
-void ShellSurface::AttemptToStartDrag(int component) {
+bool ShellSurface::AttemptToStartDrag(int component) {
   ash::WindowState* window_state =
       ash::WindowState::Get(widget_->GetNativeWindow());
 
   // Ignore if surface is already being dragged.
-  if (window_state->is_dragged())
-    return;
+  if (window_state->is_dragged()) {
+    return true;
+  }
 
   aura::Window* target = widget_->GetNativeWindow();
   ash::ToplevelWindowEventHandler* toplevel_handler =
@@ -857,24 +868,29 @@ void ShellSurface::AttemptToStartDrag(int component) {
   aura::Window* gesture_target = toplevel_handler->gesture_target();
   if (!gesture_target && !mouse_pressed_handler &&
       target->Contains(mouse_pressed_handler)) {
-    return;
+    return false;
   }
+
+  bool started = false;
 
   if (gesture_target) {
     gfx::PointF location = toplevel_handler->event_location_in_gesture_target();
     aura::Window::ConvertPointToTarget(
         gesture_target, widget_->GetNativeWindow()->GetRootWindow(), &location);
-    toplevel_handler->AttemptToStartDrag(target, location, component, {});
+    started =
+        toplevel_handler->AttemptToStartDrag(target, location, component, {});
   } else {
     gfx::Point location = aura::Env::GetInstance()->last_mouse_location();
     ::wm::ConvertPointFromScreen(widget_->GetNativeWindow()->GetRootWindow(),
                                  &location);
-    toplevel_handler->AttemptToStartDrag(target, gfx::PointF(location),
-                                         component, {});
+    started = toplevel_handler->AttemptToStartDrag(
+        target, gfx::PointF(location), component, {});
   }
   // Notify client that resizing state has changed.
   if (IsResizing())
     Configure();
+
+  return started;
 }
 
 void ShellSurface::EndDrag() {

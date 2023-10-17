@@ -108,7 +108,7 @@ const char kExpectedSearchUrlLinkMetadata[] =
 
 base::FilePath model_file_path() {
   base::FilePath source_root_dir;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
+  base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_root_dir);
   return source_root_dir.AppendASCII("chrome")
       .AppendASCII("test")
       .AppendASCII("data")
@@ -414,7 +414,8 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
     std::string createIframeScript =
         "const frame = document.createElement('iframe');"
         "document.body.appendChild(frame);";
-    content::ExecJs(iframe, createIframeScript);
+    // TODO: handle return value
+    std::ignore = content::ExecJs(iframe, createIframeScript);
     content::RenderFrameHost* nested_iframe = content::ChildFrameAt(iframe, 0);
 
     return content::ExecJs(nested_iframe, code);
@@ -1726,8 +1727,7 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
       src_url,
       /*is_image_translate=*/false,
       /*additional_query_params_modified=*/"", thumbnail_data, original_size,
-      downscaled_size,
-      /*image_extension=*/"", content_type);
+      downscaled_size, content_type);
   EXPECT_TRUE(side_panel_coordinator()->IsSidePanelShowing());
 
   WaitForCompanionToBeLoaded();
@@ -1781,8 +1781,7 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
       src_url,
       /*is_image_translate=*/true,
       /*additional_query_params_modified=*/"", thumbnail_data, original_size,
-      downscaled_size,
-      /*image_extension=*/"", content_type);
+      downscaled_size, content_type);
   EXPECT_TRUE(side_panel_coordinator()->IsSidePanelShowing());
 
   WaitForCompanionToBeLoaded();

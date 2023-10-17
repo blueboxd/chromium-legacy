@@ -2288,12 +2288,13 @@ void StyleEngine::CollectFeaturesTo(RuleFeatureSet& features) {
   CollectScopedStyleFeaturesTo(features);
 }
 
-void StyleEngine::EnsureUAStyleForFullscreen() {
+void StyleEngine::EnsureUAStyleForFullscreen(const Element& element) {
   DCHECK(global_rule_set_);
   if (global_rule_set_->HasFullscreenUAStyle()) {
     return;
   }
-  CSSDefaultStyleSheets::Instance().EnsureDefaultStyleSheetForFullscreen();
+  CSSDefaultStyleSheets::Instance().EnsureDefaultStyleSheetForFullscreen(
+      element);
   global_rule_set_->MarkDirty();
   UpdateActiveStyle();
 }
@@ -2598,9 +2599,6 @@ void StyleEngine::ApplyUserRuleSetChanges(
     // from user stylesheets.
     MarkPositionFallbackStylesDirty();
   }
-
-  // TODO(crbug.com/1463966): @view-transitions doesn't yet work from user
-  // stylesheets.
 
   InvalidateForRuleSetChanges(GetDocument(), changed_rule_sets,
                               changed_rule_flags, kInvalidateAllScopes);
@@ -3324,6 +3322,7 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
   // Update quotes only if there are any scopes marked dirty.
   if (StyleContainmentScopeTree* tree = GetStyleContainmentScopeTree()) {
     tree->UpdateQuotes();
+    tree->UpdateCounters();
   }
   if (container == GetDocument().documentElement()) {
     // If the container is the root element, there may be body styles which have
@@ -3501,6 +3500,7 @@ void StyleEngine::UpdateStyleAndLayoutTree() {
     // Update quotes only if there are any scopes marked dirty.
     if (StyleContainmentScopeTree* tree = GetStyleContainmentScopeTree()) {
       tree->UpdateQuotes();
+      tree->UpdateCounters();
     }
   } else {
     style_recalc_root_.Clear();

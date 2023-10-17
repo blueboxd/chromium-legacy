@@ -67,33 +67,11 @@ class PopupCellView : public views::View {
 
   bool IsHighlighted() const;
 
-  // Gets and sets the tooltip of the cell.
-  const std::u16string& GetTooltipText() const { return tooltip_text_; }
-  void SetTooltipText(std::u16string tooltip_text);
-
   // Sets the accessibility delegate that is consulted when providing accessible
   // node data.
   void SetAccessibilityDelegate(
       std::unique_ptr<AccessibilityDelegate> a11y_delegate);
 
-  // Gets and sets the callback that is run when the cell is entered (via mouse
-  // or gesture event).
-  const base::RepeatingClosure& GetOnEnteredCallback() const {
-    return on_entered_callback_;
-  }
-  void SetOnEnteredCallback(base::RepeatingClosure callback);
-  // Gets and sets the callback that is run when the cell is exited.
-  const base::RepeatingClosure& GetOnExitedCallback() const {
-    return on_exited_callback_;
-  }
-  void SetOnExitedCallback(base::RepeatingClosure callback);
-  // Gets and sets the callback that is run when the cell is accepted (left
-  // mouse click, tap, enter key).
-  using OnAcceptedCallback = base::RepeatingCallback<void(base::TimeTicks)>;
-  const PopupCellView::OnAcceptedCallback& GetOnAcceptedCallback() const {
-    return on_accepted_callback_;
-  }
-  void SetOnAcceptedCallback(OnAcceptedCallback callback);
   // Gets and sets the callbacks for when the cell is (un)selected.
   const base::RepeatingClosure& GetOnSelectedCallback() const {
     return on_selected_callback_;
@@ -120,7 +98,6 @@ class PopupCellView : public views::View {
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
 
  protected:
   // The selection state.
@@ -134,17 +111,8 @@ class PopupCellView : public views::View {
   // into account) and runs the OnAccepted callback.
   void RunOnAcceptedForEvent(const ui::Event& event);
 
-  // views::View:
-  std::u16string GetTooltipText(const gfx::Point& p) const override;
-
-  // The tooltip text for this cell.
-  std::u16string tooltip_text_;
   // The accessibility delegate.
   std::unique_ptr<AccessibilityDelegate> a11y_delegate_;
-
-  base::RepeatingClosure on_entered_callback_;
-  base::RepeatingClosure on_exited_callback_;
-  OnAcceptedCallback on_accepted_callback_;
 
   // The labels whose style is updated when the cell's selection status changes.
   std::vector<raw_ptr<views::Label>> tracked_labels_;
@@ -152,10 +120,8 @@ class PopupCellView : public views::View {
 };
 
 BEGIN_VIEW_BUILDER(/* no export*/, PopupCellView, views::View)
-VIEW_BUILDER_PROPERTY(std::u16string, TooltipText)
 VIEW_BUILDER_PROPERTY(std::unique_ptr<PopupCellView::AccessibilityDelegate>,
                       AccessibilityDelegate)
-VIEW_BUILDER_PROPERTY(PopupCellView::OnAcceptedCallback, OnAcceptedCallback)
 VIEW_BUILDER_PROPERTY(base::RepeatingClosure, OnSelectedCallback)
 VIEW_BUILDER_PROPERTY(base::RepeatingClosure, OnUnselectedCallback)
 END_VIEW_BUILDER

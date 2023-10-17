@@ -20,6 +20,7 @@
 #include "components/sync_preferences/pref_model_associator_client.h"
 #include "components/sync_preferences/preferences_merge_helper.h"
 #include "components/sync_preferences/syncable_prefs_database.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace sync_preferences {
 
@@ -165,11 +166,15 @@ base::Value::Dict DualLayerUserPrefStore::GetValues() const {
   base::Value::Dict values = local_pref_store_->GetValues();
 
   for (const std::string& pref_name : GetPrefNamesInAccountStore()) {
-    const base::Value* value = nullptr;
-    // GetValue() will merge the value if needed.
-    GetValue(pref_name, &value);
-    CHECK(value);
-    values.SetByDottedPath(pref_name, value->Clone());
+    // Filter out prefs which should not be queried from the account store, for
+    // example, prefs requiring history opt-in if history sync is off.
+    if (ShouldGetValueFromAccountStore(pref_name)) {
+      const base::Value* value = nullptr;
+      // GetValue() will merge the value if needed.
+      GetValue(pref_name, &value);
+      CHECK(value);
+      values.SetByDottedPath(pref_name, value->Clone());
+    }
   }
   return values;
 }
@@ -498,14 +503,16 @@ void DualLayerUserPrefStore::DisableTypeAndClearAccountStore(
                 .GetSyncablePrefMetadata(pref_name);
         metadata.has_value() && metadata->model_type() == model_type) {
       const base::Value* value = nullptr;
-      CHECK(GetValue(pref_name, &value));
-
       // Should only notify observers if the effective value changes.
       // Note: A notification is still sent if a pref goes from an
       // explicitly-set value to an equal default value.
-      bool should_notify = true;
+      // Note: If the pref requires history opt-in, but history sync is
+      // disabled, GetValue() will not return the account value, and in case
+      // no value for the pref exists in the local store, no notification should
+      // be sent out.
+      bool should_notify = GetValue(pref_name, &value);
       if (const base::Value* local_value = nullptr;
-          local_pref_store_->GetValue(pref_name, &local_value)) {
+          value && local_pref_store_->GetValue(pref_name, &local_value)) {
         should_notify = (*local_value != *value);
       }
       {
@@ -720,17 +727,44 @@ void DualLayerUserPrefStore::OnStateChanged(syncer::SyncService* sync_service) {
     return;
   }
 
-  is_history_sync_enabled_ = is_history_sync_enabled;
-
   if (!pref_model_associator_client_) {
+    is_history_sync_enabled_ = is_history_sync_enabled;
     return;
   }
 
+  // Store the old values for sensitive prefs in a map and only inform the
+  // observers if the effective values change.
+  // Note: absl::optional is used as the value type since it makes the
+  // comparison with the new values easier.
+  std::map<std::string, absl::optional<base::Value>> old_values;
   for (const std::string& pref_name : GetPrefNamesInAccountStore()) {
     auto metadata = pref_model_associator_client_->GetSyncablePrefsDatabase()
                         .GetSyncablePrefMetadata(pref_name);
     CHECK(metadata.has_value());
+    // Add effective value for sensitive prefs to `old_values`.
     if (metadata->is_history_opt_in_required()) {
+      if (const base::Value* value = nullptr; GetValue(pref_name, &value)) {
+        old_values.emplace(pref_name, value->Clone());
+      } else {
+        // Put in absl::nullopt to mark pref not existing in the store. This
+        // helps avoid an extra call to GetPrefNamesInAccount() later.
+        old_values.emplace(pref_name, absl::nullopt);
+      }
+    }
+  }
+
+  is_history_sync_enabled_ = is_history_sync_enabled;
+
+  // The history sync state has changed. Check for any change in the effective
+  // values of any of the sensitive prefs as a consequence.
+  for (const auto& [pref_name, old_value] : old_values) {
+    absl::optional<base::Value> new_value;
+    if (const base::Value* value = nullptr; GetValue(pref_name, &value)) {
+      new_value = value->Clone();
+    }
+
+    // Only notify the observers if the effective value is changing.
+    if (old_value != new_value) {
       for (PrefStore::Observer& observer : observers_) {
         observer.OnPrefValueChanged(pref_name);
       }

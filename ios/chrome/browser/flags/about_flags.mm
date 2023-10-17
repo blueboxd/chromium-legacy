@@ -47,6 +47,7 @@
 #import "components/omnibox/common/omnibox_features.h"
 #import "components/optimization_guide/core/optimization_guide_features.h"
 #import "components/optimization_guide/core/optimization_guide_switches.h"
+#import "components/password_manager/core/browser/features/password_features.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/payments/core/features.h"
 #import "components/policy/core/common/features.h"
@@ -510,12 +511,17 @@ const FeatureEntry::FeatureParam kTabResumptionMostRecentTabOnly[] = {
     {kTabResumptionParameterName, kTabResumptionMostRecentTabOnlyParam}};
 const FeatureEntry::FeatureParam kTabResumptionAllTabs[] = {
     {kTabResumptionParameterName, kTabResumptionAllTabsParam}};
+const FeatureEntry::FeatureParam kTabResumptionAllTabsOneDayThreshold[] = {
+    {kTabResumptionParameterName, kTabResumptionAllTabsOneDayThresholdParam}};
 
 const FeatureEntry::FeatureVariation kTabResumptionVariations[] = {
     {"Most recent tab only", kTabResumptionMostRecentTabOnly,
      std::size(kTabResumptionMostRecentTabOnly), nullptr},
-    {"Most recent tab and last synced tab", kTabResumptionAllTabs,
-     std::size(kTabResumptionAllTabs), nullptr},
+    {"Most recent tab and last synced tab (12 hours threshold)",
+     kTabResumptionAllTabs, std::size(kTabResumptionAllTabs), nullptr},
+    {"Most recent tab and last synced tab (24 hours threshold)",
+     kTabResumptionAllTabsOneDayThreshold,
+     std::size(kTabResumptionAllTabsOneDayThreshold), nullptr},
 };
 
 const FeatureEntry::FeatureParam
@@ -649,6 +655,34 @@ const FeatureEntry::FeatureVariation kOneTapForMapsWithVariations[] = {
      std::size(kOneTapForMapsConsentModeDisabled), nullptr},
 };
 
+constexpr FeatureEntry::FeatureParam kOmniboxInspireMeWith25Total5Trends[] = {
+    {OmniboxFieldTrial::kInspireMeAdditionalTrendingQueries.name, "5"},
+    {OmniboxFieldTrial::kInspireMePsuggestQueries.name, "20"},
+    {OmniboxFieldTrial::kInspireMeNTPZPSLimit.name, "25"}};
+constexpr FeatureEntry::FeatureParam kOmniboxInspireMeWith20Total5Trends[] = {
+    {OmniboxFieldTrial::kInspireMeAdditionalTrendingQueries.name, "5"},
+    {OmniboxFieldTrial::kInspireMePsuggestQueries.name, "15"},
+    {OmniboxFieldTrial::kInspireMeNTPZPSLimit.name, "20"}};
+constexpr FeatureEntry::FeatureParam kOmniboxInspireMeWith25Total10Trends[] = {
+    {OmniboxFieldTrial::kInspireMeAdditionalTrendingQueries.name, "10"},
+    {OmniboxFieldTrial::kInspireMePsuggestQueries.name, "15"},
+    {OmniboxFieldTrial::kInspireMeNTPZPSLimit.name, "25"}};
+constexpr FeatureEntry::FeatureParam kOmniboxInspireMeWith20Total10Trends[] = {
+    {OmniboxFieldTrial::kInspireMeAdditionalTrendingQueries.name, "10"},
+    {OmniboxFieldTrial::kInspireMePsuggestQueries.name, "10"},
+    {OmniboxFieldTrial::kInspireMeNTPZPSLimit.name, "20"}};
+
+constexpr FeatureEntry::FeatureVariation kOmniboxInspireMeVariants[] = {
+    {"25 total, 5 Trends", kOmniboxInspireMeWith25Total5Trends,
+     std::size(kOmniboxInspireMeWith25Total5Trends), "t3363282"},
+    {"20 total, 5 Trends", kOmniboxInspireMeWith20Total5Trends,
+     std::size(kOmniboxInspireMeWith20Total5Trends), "t3363282"},
+    {"25 total, 10 Trends", kOmniboxInspireMeWith25Total10Trends,
+     std::size(kOmniboxInspireMeWith25Total10Trends), "t3363285"},
+    {"20 total, 10 Trends", kOmniboxInspireMeWith20Total10Trends,
+     std::size(kOmniboxInspireMeWith20Total10Trends), "t3363285"},
+};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -751,6 +785,15 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kMaxZeroSuggestMatches,
                                     kOmniboxMaxZPSMatchesVariations,
                                     "OmniboxMaxZPSVariations")},
+    {"omnibox-inspire-me", flag_descriptions::kOmniboxInspireMeName,
+     flag_descriptions::kOmniboxInspireMeDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kInspireMe,
+                                    kOmniboxInspireMeVariants,
+                                    "OmniboxBundledExperimentV1")},
+    {"omnibox-inspire-me-signed-out",
+     flag_descriptions::kOmniboxInspireMeSignedOutName,
+     flag_descriptions::kOmniboxInspireMeSignedOutDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kZeroSuggestOnNTPForSignedOutUsers)},
     {"autofill-use-mobile-label-disambiguation",
      flag_descriptions::kAutofillUseMobileLabelDisambiguationName,
      flag_descriptions::kAutofillUseMobileLabelDisambiguationDescription,
@@ -800,11 +843,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxReportSearchboxStatsName,
      flag_descriptions::kOmniboxReportSearchboxStatsDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(omnibox::kReportSearchboxStats)},
-    {"omnibox-fuzzy-url-suggestions",
-     flag_descriptions::kOmniboxFuzzyUrlSuggestionsName,
-     flag_descriptions::kOmniboxFuzzyUrlSuggestionsDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxFuzzyUrlSuggestions)},
     {"start-surface", flag_descriptions::kStartSurfaceName,
      flag_descriptions::kStartSurfaceDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kStartSurface,
@@ -1006,6 +1044,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kMagicStack,
                                     kMagicStackVariations,
                                     flag_descriptions::kMagicStackName)},
+    {"ios-hide-feed-with-search-choice",
+     flag_descriptions::kIOSHideFeedWithSearchChoiceName,
+     flag_descriptions::kIOSHideFeedWithSearchChoiceDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kIOSHideFeedWithSearchChoice)},
     {"ios-large-fakebox", flag_descriptions::kIOSLargeFakeboxName,
      flag_descriptions::kIOSLargeFakeboxDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSLargeFakebox)},
@@ -1154,16 +1196,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTFLiteLanguageDetectionIgnoreDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(translate::kTFLiteLanguageDetectionIgnoreEnabled)},
-    {"enable-check-visibility-on-attention-log-start",
-     flag_descriptions::kEnableCheckVisibilityOnAttentionLogStartName,
-     flag_descriptions::kEnableCheckVisibilityOnAttentionLogStartDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnableCheckVisibilityOnAttentionLogStart)},
-    {"enable-refine-data-source-reload-reporting",
-     flag_descriptions::kEnableRefineDataSourceReloadReportingName,
-     flag_descriptions::kEnableRefineDataSourceReloadReportingDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnableRefineDataSourceReloadReporting)},
     {"tab-grid-new-transitions", flag_descriptions::kTabGridNewTransitionsName,
      flag_descriptions::kTabGridNewTransitionsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kTabGridNewTransitions)},
@@ -1188,10 +1220,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          feature_engagement::kIPHPriceNotificationsWhileBrowsingFeature)},
-    {"omnibox-multiline-search-suggest",
-     flag_descriptions::kOmniboxMultilineSearchSuggestName,
-     flag_descriptions::kOmniboxMultilineSearchSuggestDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kOmniboxMultilineSearchSuggest)},
     {"autofill-suggest-server-card-instead-of-local-card",
      flag_descriptions::kAutofillSuggestServerCardInsteadOfLocalCardName,
      flag_descriptions::kAutofillSuggestServerCardInsteadOfLocalCardDescription,
@@ -1201,10 +1229,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"ios-password-checkup", flag_descriptions::kIOSPasswordCheckupName,
      flag_descriptions::kIOSPasswordCheckupDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kIOSPasswordCheckup)},
-    {"multiline-fade-truncating-label",
-     flag_descriptions::kMultilineFadeTruncatingLabelName,
-     flag_descriptions::kMultilineFadeTruncatingLabelDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kMultilineFadeTruncatingLabel)},
     {"promos-manager-uses-fet", flag_descriptions::kPromosManagerUsesFETName,
      flag_descriptions::kPromosManagerUsesFETDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kPromosManagerUsesFET)},
@@ -1551,6 +1575,18 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"enable-feed-containment", flag_descriptions::kEnableFeedContainmentName,
      flag_descriptions::kEnableFeedContainmentDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableFeedContainment)},
+    {"delete-undecryptable-passwords",
+     flag_descriptions::kClearUndecryptablePasswordsOnSyncName,
+     flag_descriptions::kClearUndecryptablePasswordsOnSyncDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kClearUndecryptablePasswordsOnSync)},
+    {"ignore-undecryptable-passwords",
+     flag_descriptions::kSkipUndecryptablePasswordsName,
+     flag_descriptions::kSkipUndecryptablePasswordsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kSkipUndecryptablePasswords)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

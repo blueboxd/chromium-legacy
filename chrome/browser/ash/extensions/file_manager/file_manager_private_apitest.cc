@@ -532,7 +532,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, MediaMetadata) {
 
   // Get source media/test/data directory path.
   base::FilePath root_dir;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_dir));
+  CHECK(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &root_dir));
   const base::FilePath media_test_data_dir =
       root_dir.AppendASCII("media").AppendASCII("test").AppendASCII("data");
 
@@ -777,11 +777,12 @@ class FileManagerPrivateApiDlpTest : public FileManagerPrivateApiTest {
     mock_rules_manager_ = nullptr;
     fpnm_ = nullptr;
     FileManagerPrivateApiTest::TearDownOnMainThread();
-  };
+  }
 
   std::unique_ptr<KeyedService> SetDlpRulesManager(
       content::BrowserContext* context) {
-    auto dlp_rules_manager = std::make_unique<policy::MockDlpRulesManager>();
+    auto dlp_rules_manager = std::make_unique<policy::MockDlpRulesManager>(
+        Profile::FromBrowserContext(context));
     mock_rules_manager_ = dlp_rules_manager.get();
     ON_CALL(*mock_rules_manager_, IsFilesPolicyEnabled)
         .WillByDefault(testing::Return(true));

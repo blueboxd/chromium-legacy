@@ -35,7 +35,7 @@ BASE_FEATURE(kAdaptiveScreenBrightnessLogging,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kAppManagementAppDetails,
              "AppManagementAppDetails",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -430,6 +430,15 @@ BASE_FEATURE(kEnableNetworkServiceResourceBlockList,
 // any contents.
 BASE_FEATURE(kEnableNetworkServiceResourceBlockListInOtrSessions,
              "EnableNetworkServiceResourceBlockListInOtrSessions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, resource requests will be evaluated against the Network
+// Service's block list if the setting to block all third party cookies is
+// enabled. The block list is populated by the MaskedDomainList, so
+// "MaskedDomainList" will need to also be enabled for the block list to have
+// any contents.
+BASE_FEATURE(kEnableNetworkServiceResourceBlockListIfThirdPartyCookiesBlocked,
+             "EnableNetworkServiceResourceBlockListIfThirdPartyCookiesBlocked",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable extended descriptions for key settings in Chrome settings.

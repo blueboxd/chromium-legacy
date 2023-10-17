@@ -215,10 +215,10 @@ class CORE_EXPORT Node : public EventTarget {
   Element* parentElement() const;
   ContainerNode* ParentElementOrShadowRoot() const;
   ContainerNode* ParentElementOrDocumentFragment() const;
-  Node* previousSibling() const { return previous_; }
-  bool HasPreviousSibling() const { return previous_; }
-  Node* nextSibling() const { return next_; }
-  bool HasNextSibling() const { return next_; }
+  Node* previousSibling() const { return previous_.Get(); }
+  bool HasPreviousSibling() const { return static_cast<bool>(previous_); }
+  Node* nextSibling() const { return next_.Get(); }
+  bool HasNextSibling() const { return static_cast<bool>(next_); }
   NodeList* childNodes();
   Node* firstChild() const;
   Node* lastChild() const;

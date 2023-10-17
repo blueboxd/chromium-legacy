@@ -522,7 +522,6 @@ std::vector<std::unique_ptr<views::View>> CreateAndTrackSubtextViews(
 
   for (const std::vector<Suggestion::Text>& label_row :
        controller->GetSuggestionAt(line_number).labels) {
-    DCHECK_LE(label_row.size(), 2u);
     DCHECK(!label_row.empty());
     if (base::ranges::all_of(label_row, &std::u16string::empty,
                              &Suggestion::Text::value)) {
@@ -562,8 +561,6 @@ void AddCallbacksToContentView(
       &AutofillPopupController::SelectSuggestion, controller, line_number));
   content_view.SetOnUnselectedCallback(base::BindRepeating(
       &AutofillPopupController::SelectSuggestion, controller, absl::nullopt));
-  content_view.SetOnAcceptedCallback(base::BindRepeating(
-      &AutofillPopupController::AcceptSuggestion, controller, line_number));
 }
 
 void AddSuggestionStrategyContentCellChildren(

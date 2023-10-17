@@ -359,17 +359,17 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   LayoutObject* Parent() const {
     NOT_DESTROYED();
-    return parent_;
+    return parent_.Get();
   }
   bool IsDescendantOf(const LayoutObject*) const;
 
   LayoutObject* PreviousSibling() const {
     NOT_DESTROYED();
-    return previous_;
+    return previous_.Get();
   }
   LayoutObject* NextSibling() const {
     NOT_DESTROYED();
-    return next_;
+    return next_.Get();
   }
 
   DISABLE_CFI_PERF
@@ -904,21 +904,21 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectNGFlexibleBox);
   }
-  bool IsLayoutNGListItem() const {
+  bool IsLayoutListItem() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGListItem);
+    return IsOfType(kLayoutObjectListItem);
   }
   bool IsInlineListItem() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGInlineListItem);
+    return IsOfType(kLayoutObjectInlineListItem);
   }
-  bool IsLayoutNGInsideListMarker() const {
+  bool IsLayoutInsideListMarker() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGInsideListMarker);
+    return IsOfType(kLayoutObjectInsideListMarker);
   }
-  bool IsLayoutNGOutsideListMarker() const {
+  bool IsLayoutOutsideListMarker() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGOutsideListMarker);
+    return IsOfType(kLayoutObjectOutsideListMarker);
   }
   bool IsLayoutTextCombine() const {
     NOT_DESTROYED();
@@ -2495,7 +2495,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // Return the offset from the container() layoutObject (excluding transforms
   // and multicol).
   PhysicalOffset OffsetFromContainer(const LayoutObject*,
-                                     bool ignore_scroll_offset = false) const;
+                                     MapCoordinatesFlags = 0) const;
   // Return the offset from an object from the ancestor. The ancestor need
   // not be on the containing block chain of |this|. Note that this function
   // cannot be used when there are transforms between this object and the
@@ -2677,7 +2677,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // and the <ol>.
   bool AffectsWhitespaceSiblings() const {
     NOT_DESTROYED();
-    return !IsFloatingOrOutOfFlowPositioned() && !IsLayoutNGOutsideListMarker();
+    return !IsFloatingOrOutOfFlowPositioned() && !IsLayoutOutsideListMarker();
   }
 
   // Not returning StyleRef().BoxReflect() because some objects ignore the
@@ -2752,24 +2752,24 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // TODO(1229581): Rename this function.
   bool IsListItemIncludingNG() const {
     NOT_DESTROYED();
-    return IsLayoutNGListItem() || IsInlineListItem();
+    return IsLayoutListItem() || IsInlineListItem();
   }
 
   // There 2 different types of list markers:
-  // * LayoutNGInsideListMarker (LayoutInline): for inside markers
-  // * LayoutNGOutsideListMarker (LayoutNGBlockFlow): for outside markers.
+  // * LayoutInsideListMarker (LayoutInline): for inside markers
+  // * LayoutOutsideListMarker (LayoutNGBlockFlow): for outside markers.
 
   // Any kind of LayoutBox list marker.
   // TODO(1229581): Remove this function. Just use
-  // IsLayoutNGOutsideListMarker().
+  // IsLayoutOutsideListMarker().
   bool IsBoxListMarkerIncludingNG() const {
     NOT_DESTROYED();
-    return IsLayoutNGOutsideListMarker();
+    return IsLayoutOutsideListMarker();
   }
   // Any kind of list marker.
   bool IsListMarker() const {
     NOT_DESTROYED();
-    return IsLayoutNGInsideListMarker() || IsLayoutNGOutsideListMarker();
+    return IsLayoutInsideListMarker() || IsLayoutOutsideListMarker();
   }
 
   // ImageResourceObserver override.
@@ -3470,11 +3470,14 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectCounter,
     kLayoutObjectCustomScrollbarPart,
     kLayoutObjectEmbeddedObject,
+    kLayoutObjectFieldset,
     kLayoutObjectFrame,
+    kLayoutObjectFrameSet,
     kLayoutObjectIFrame,
     kLayoutObjectImage,
-    kLayoutObjectFieldset,
-    kLayoutObjectFrameSet,
+    kLayoutObjectInlineListItem,
+    kLayoutObjectInsideListMarker,
+    kLayoutObjectListItem,
     kLayoutObjectListMarkerImage,
     kLayoutObjectMathML,
     kLayoutObjectMathMLRoot,
@@ -3485,10 +3488,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectNGCustom,
     kLayoutObjectNGFlexibleBox,
     kLayoutObjectNGGrid,
-    kLayoutObjectNGInlineListItem,
-    kLayoutObjectNGInsideListMarker,
-    kLayoutObjectNGListItem,
-    kLayoutObjectNGOutsideListMarker,
+    kLayoutObjectOutsideListMarker,
     kLayoutObjectProgress,
     kLayoutObjectQuote,
     kLayoutObjectReplaced,
@@ -3623,7 +3623,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   virtual PhysicalOffset OffsetFromContainerInternal(
       const LayoutObject*,
-      bool ignore_scroll_offset) const;
+      MapCoordinatesFlags mode) const;
   PhysicalOffset OffsetFromScrollableContainer(const LayoutObject*,
                                                bool ignore_scroll_offset) const;
 

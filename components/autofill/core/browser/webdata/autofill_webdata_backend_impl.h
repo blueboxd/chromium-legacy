@@ -43,23 +43,18 @@ class AutofillWebDataBackendImpl
     : public base::RefCountedDeleteOnSequence<AutofillWebDataBackendImpl>,
       public AutofillWebDataBackend {
  public:
-  // |web_database_backend| is used to access the WebDatabase directly for
-  // Sync-related operations. |ui_task_runner| and |db_task_runner| are the task
+  // `web_database_backend` is used to access the WebDatabase directly for
+  // Sync-related operations. `ui_task_runner` and `db_task_runner` are the task
   // runners that this class uses for UI and DB tasks respectively.
-  // |on_changed_callback| is a closure which can be used to notify the UI
-  // sequence of changes initiated by Sync (this callback may be called multiple
-  // times).
+  // `on_autofill_changed_by_sync_callback_` is a closure which can be used to
+  // notify the UI sequence of changes initiated by Sync (this callback may be
+  // called multiple times).
   AutofillWebDataBackendImpl(
       scoped_refptr<WebDatabaseBackend> web_database_backend,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
       scoped_refptr<base::SequencedTaskRunner> db_task_runner,
       const base::RepeatingCallback<void(syncer::ModelType)>&
-          on_changed_callback,
-      const base::RepeatingClosure& on_address_conversion_completed_callback,
-      const base::RepeatingCallback<void(syncer::ModelType)>&
-          on_sync_started_callback,
-      const base::RepeatingCallback<void(syncer::ModelType)>&
-          on_sync_updates_received_callback);
+          on_autofill_changed_by_sync_callback);
 
   AutofillWebDataBackendImpl(const AutofillWebDataBackendImpl&) = delete;
   AutofillWebDataBackendImpl& operator=(const AutofillWebDataBackendImpl&) =
@@ -78,10 +73,7 @@ class AutofillWebDataBackendImpl
   void NotifyOfAutofillProfileChanged(
       const AutofillProfileChange& change) override;
   void NotifyOfCreditCardChanged(const CreditCardChange& change) override;
-  void NotifyOfMultipleAutofillChanges(syncer::ModelType model_type) override;
-  void NotifyOfAddressConversionCompleted() override;
-  void NotifyThatSyncHasStarted(syncer::ModelType model_type) override;
-  void NotifyOnSyncUpdatesReceived(syncer::ModelType model_type) override;
+  void NotifyOnAutofillChangedBySync(syncer::ModelType model_type) override;
   void CommitChanges() override;
 
   // Returns a SupportsUserData object that may be used to store data accessible
@@ -144,15 +136,6 @@ class AutofillWebDataBackendImpl
       AutofillProfile::Source profile_source,
       WebDatabase* db);
   std::unique_ptr<WDTypedResult> GetServerProfiles(WebDatabase* db);
-
-  // Converts server profiles to local profiles, comparing profiles using
-  // |app_locale| and filling in |primary_account_email| into newly converted
-  // profiles. The task only converts profiles that have not been converted
-  // before.
-  WebDatabase::State ConvertWalletAddressesAndUpdateWalletCards(
-      const std::string& app_locale,
-      const std::string& primary_account_email,
-      WebDatabase* db);
 
   // Returns the number of values such that all for autofill entries with that
   // value, the interval between creation date and last usage is entirely
@@ -295,11 +278,8 @@ class AutofillWebDataBackendImpl
   // TODO(caitkp): Make it so nobody but us needs direct DB access anymore.
   scoped_refptr<WebDatabaseBackend> web_database_backend_;
 
-  base::RepeatingCallback<void(syncer::ModelType)> on_changed_callback_;
-  base::RepeatingClosure on_address_conversion_completed_callback_;
-  base::RepeatingCallback<void(syncer::ModelType)> on_sync_started_callback_;
   base::RepeatingCallback<void(syncer::ModelType)>
-      on_sync_updates_received_callback_;
+      on_autofill_changed_by_sync_callback_;
   base::RepeatingCallback<void(const AutofillProfileDeepChange&)>
       on_autofill_profile_changed_cb_;
 };

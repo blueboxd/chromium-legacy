@@ -33,6 +33,7 @@
 #include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
@@ -169,7 +170,10 @@ void CSSDefaultStyleSheets::VerifyUniversalRuleCount() {
 
   if (fullscreen_style_sheet_) {
     default_fullscreen_style_->CompactRulesIfNeeded();
-    DCHECK_EQ(default_fullscreen_style_->UniversalRules().size(), 7u);
+    // There are 7 rules by default but if the viewport segments MQs are
+    // resolved then we have an additional rule.
+    DCHECK(default_fullscreen_style_->UniversalRules().size() == 7u ||
+           default_fullscreen_style_->UniversalRules().size() == 8u);
   }
 
   if (marker_style_sheet_) {
@@ -196,6 +200,9 @@ void CSSDefaultStyleSheets::InitializeDefaultStyles() {
                                                 ScreenEval());
   default_print_style_->AddRulesFromSheet(DefaultStyleSheet(), PrintEval());
 
+  CHECK(default_html_style_->ViewTransitionsRules().empty())
+      << "@view-transitions is not implemented for the UA stylesheet.";
+
   VerifyUniversalRuleCount();
 }
 
@@ -207,7 +214,7 @@ RuleSet* CSSDefaultStyleSheets::DefaultViewSourceStyle() {
         UncompressResourceAsASCIIString(IDR_UASTYLE_VIEW_SOURCE_CSS));
     default_view_source_style_->AddRulesFromSheet(stylesheet, ScreenEval());
   }
-  return default_view_source_style_;
+  return default_view_source_style_.Get();
 }
 
 static void AddTextTrackCSSProperties(StringBuilder* builder,
@@ -235,9 +242,6 @@ void CSSDefaultStyleSheets::AddRulesToDefaultStyleSheets(
       break;
     case NamespaceType::kMediaControls:
       default_media_controls_style_->AddRulesFromSheet(rules, ScreenEval());
-      break;
-    case NamespaceType::kFullscreen:
-      default_fullscreen_style_->AddRulesFromSheet(rules, ScreenEval());
       break;
   }
   // Add to print and forced color for all namespaces.
@@ -390,8 +394,11 @@ void CSSDefaultStyleSheets::SetMediaControlsStyleSheetLoader(
   media_controls_style_sheet_loader_.swap(loader);
 }
 
-void CSSDefaultStyleSheets::EnsureDefaultStyleSheetForFullscreen() {
+void CSSDefaultStyleSheets::EnsureDefaultStyleSheetForFullscreen(
+    const Element& element) {
   if (fullscreen_style_sheet_) {
+    DCHECK(!default_fullscreen_style_->DidMediaQueryResultsChange(
+        MediaQueryEvaluator(element.GetDocument().GetFrame())));
     return;
   }
 
@@ -399,8 +406,29 @@ void CSSDefaultStyleSheets::EnsureDefaultStyleSheetForFullscreen() {
       UncompressResourceAsASCIIString(IDR_UASTYLE_FULLSCREEN_CSS) +
       LayoutTheme::GetTheme().ExtraFullscreenStyleSheet();
   fullscreen_style_sheet_ = ParseUASheet(fullscreen_rules);
-  AddRulesToDefaultStyleSheets(fullscreen_style_sheet_,
-                               NamespaceType::kFullscreen);
+
+  default_fullscreen_style_->AddRulesFromSheet(
+      fullscreen_style_sheet_,
+      MediaQueryEvaluator(element.GetDocument().GetFrame()));
+  VerifyUniversalRuleCount();
+}
+
+void CSSDefaultStyleSheets::RebuildFullscreenRuleSetIfMediaQueriesChanged(
+    const Element& element) {
+  if (!fullscreen_style_sheet_) {
+    return;
+  }
+
+  if (!default_fullscreen_style_->DidMediaQueryResultsChange(
+          MediaQueryEvaluator(element.GetDocument().GetFrame()))) {
+    return;
+  }
+
+  default_fullscreen_style_ = MakeGarbageCollected<RuleSet>();
+  default_fullscreen_style_->AddRulesFromSheet(
+      fullscreen_style_sheet_,
+      MediaQueryEvaluator(element.GetDocument().GetFrame()));
+  VerifyUniversalRuleCount();
 }
 
 bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetForForcedColors() {

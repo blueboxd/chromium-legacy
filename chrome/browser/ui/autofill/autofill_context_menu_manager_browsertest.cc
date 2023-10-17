@@ -60,10 +60,6 @@ class MockAutofillDriver : public ContentAutofillDriver {
 
   // Mock methods to enable testability.
   MOCK_METHOD(void,
-              RendererShouldFillFieldWithValue,
-              (const FieldGlobalId& field_id, const std::u16string& value),
-              (override));
-  MOCK_METHOD(void,
               OnContextMenuShownInField,
               (const FormGlobalId& form_global_id,
                const FieldGlobalId& field_global_id),
@@ -101,6 +97,7 @@ class AutofillContextMenuManagerTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
     personal_data_ = PersonalDataManagerFactory::GetForProfile(profile());
 
     AddAutofillProfile(test::GetFullProfile());
@@ -116,8 +113,6 @@ class AutofillContextMenuManagerTest : public InProcessBrowserTest {
             nullptr);
     autofill_context_menu_manager()->set_params_for_testing(
         CreateContextMenuParams());
-
-    ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   }
 
   void AddAutofillProfile(const autofill::AutofillProfile& profile) {

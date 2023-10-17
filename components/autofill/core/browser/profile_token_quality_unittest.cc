@@ -168,7 +168,7 @@ TEST_F(ProfileTokenQualityTest, AddObservationsForFilledForm_Edited) {
   // Edit field 2 to a value similar to the originally filled one.
   ASSERT_EQ(profile.GetInfo(ADDRESS_HOME_LINE1, pdm_.app_locale()),
             u"666 Erebus St.");
-  EditFieldValue(form, 2, u"666 Erbus Str");
+  EditFieldValue(form, 2, u"666 erbus str");
   // Edit field 3 to a completely different token.
   EditFieldValue(form, 3, u"different value");
 
@@ -238,29 +238,6 @@ TEST_F(ProfileTokenQualityTest, AddObservationsForFilledForm_SameField) {
       quality.AddObservationsForFilledForm(*form_structure, form, pdm_));
   EXPECT_THAT(quality.GetObservationTypesForFieldType(NAME_FIRST),
               UnorderedElementsAre(ObservationType::kAccepted));
-}
-
-TEST_F(ProfileTokenQualityTest, IsWithinLevenshteinDistance) {
-  // Checks if the Levenshtein distance between `a` and `b` is exactly `k`, by
-  // checking that it is <= `k` but not <= `k-1`.
-  auto has_levenshtein_distance = [](std::u16string_view a,
-                                     std::u16string_view b, size_t k) {
-    return ProfileTokenQuality::IsWithinLevenshteinDistanceForTesting(a, b,
-                                                                      k) &&
-           (k == 0 ||
-            !ProfileTokenQuality::IsWithinLevenshteinDistanceForTesting(a, b,
-                                                                        k - 1));
-  };
-
-  EXPECT_TRUE(has_levenshtein_distance(u"aa", u"aa", 0));
-  EXPECT_TRUE(has_levenshtein_distance(u"a", u"aa", 1));
-  EXPECT_TRUE(has_levenshtein_distance(u"ab", u"aa", 1));
-  EXPECT_TRUE(has_levenshtein_distance(u"aba", u"aa", 1));
-  EXPECT_TRUE(has_levenshtein_distance(u"", u"12", 2));
-  EXPECT_TRUE(has_levenshtein_distance(u"street", u"str.", 3));
-  EXPECT_TRUE(has_levenshtein_distance(u"asdf", u"fdsa", 4));
-  EXPECT_TRUE(has_levenshtein_distance(std::u16string(100, 'a'),
-                                       std::u16string(200, 'a'), 100));
 }
 
 // Tests that `SaveObservationsForFilledFormForAllSubmittedProfiles()` collects

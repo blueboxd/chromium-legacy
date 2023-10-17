@@ -247,6 +247,8 @@ typedef NSDiffableDataSourceSnapshot<NSString*, GridItemIdentifier*> Snapshot;
       };
   collectionView.dataSource = self.diffableDataSource;
 
+  [self reloadDataSource];
+
   // UICollectionViewDropPlaceholder uses a GridCell and needs the class to be
   // registered.
   [collectionView registerClass:[GridCell class]
@@ -482,7 +484,7 @@ typedef NSDiffableDataSourceSnapshot<NSString*, GridItemIdentifier*> Snapshot;
 
 - (void)contentWillAppearAnimated:(BOOL)animated {
   self.gridLayout.animatesItemUpdates = YES;
-  [self reloadCollectionViewData];
+  [self reloadDataSource];
   // Selection is invalid if there are no items.
   if ([self shouldShowEmptyState]) {
     [self animateEmptyStateIn];
@@ -571,7 +573,7 @@ typedef NSDiffableDataSourceSnapshot<NSString*, GridItemIdentifier*> Snapshot;
 
 #pragma mark - UICollectionView Diffable Data Source Helpers
 
-- (void)reloadCollectionViewData {
+- (void)reloadDataSource {
   Snapshot* snapshot = [[Snapshot alloc] init];
   [snapshot appendSectionsWithIdentifiers:@[ kOpenTabsSectionIdentifier ]];
   for (TabSwitcherItem* item in self.items) {
@@ -1261,7 +1263,7 @@ typedef NSDiffableDataSourceSnapshot<NSString*, GridItemIdentifier*> Snapshot;
   _selectedEditingItemIDs.clear();
   _selectedSharableEditingItemIDs.clear();
 
-  [self reloadCollectionViewData];
+  [self reloadDataSource];
 
   [self updateSelectedCollectionViewItemRingAndBringIntoView:YES];
 
@@ -1690,6 +1692,7 @@ typedef NSDiffableDataSourceSnapshot<NSString*, GridItemIdentifier*> Snapshot;
 
   // Select the collection view item for the selected index.
   NSInteger selectedIndex = self.selectedIndex;
+  CHECK(selectedIndex >= 0);
   // Check `selectedIndex` boundaries in order to filter out possible race
   // conditions while mutating the collection.
   if (selectedIndex == NSNotFound ||

@@ -12,10 +12,10 @@
 #include "components/crx_file/id_util.h"
 #include "content/public/common/content_constants.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
-#include "extensions/common/api/messaging/serialization_format.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/mojom/message_port.mojom-shared.h"
 #include "extensions/renderer/api/messaging/message_target.h"
 #include "extensions/renderer/api/messaging/messaging_util.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
@@ -77,8 +77,6 @@ class NativeRendererMessagingServiceTest
   // NativeExtensionBindingsSystemUnittest:
   void SetUp() override {
     NativeExtensionBindingsSystemUnittest::SetUp();
-    messaging_service_ =
-        std::make_unique<NativeRendererMessagingService>(bindings_system());
 
     extension_ = ExtensionBuilder("foo").Build();
     RegisterExtension(extension_);
@@ -94,20 +92,17 @@ class NativeRendererMessagingServiceTest
   void TearDown() override {
     script_context_ = nullptr;
     extension_ = nullptr;
-    messaging_service_.reset();
     NativeExtensionBindingsSystemUnittest::TearDown();
   }
   bool UseStrictIPCMessageSender() override { return true; }
 
   NativeRendererMessagingService* messaging_service() {
-    return messaging_service_.get();
+    return bindings_system()->messaging_service();
   }
   ScriptContext* script_context() { return script_context_; }
   const Extension* extension() { return extension_.get(); }
 
  private:
-  std::unique_ptr<NativeRendererMessagingService> messaging_service_;
-
   raw_ptr<ScriptContext, ExperimentalRenderer> script_context_ = nullptr;
   scoped_refptr<const Extension> extension_;
 };
@@ -116,7 +111,8 @@ TEST_F(NativeRendererMessagingServiceTest, ValidateMessagePort) {
   v8::HandleScope handle_scope(isolate());
 
   base::UnguessableToken other_context_id = base::UnguessableToken::Create();
-  const PortId port_id(other_context_id, 0, false, SerializationFormat::kJson);
+  const PortId port_id(other_context_id, 0, false,
+                       mojom::SerializationFormat::kJson);
 
   EXPECT_FALSE(
       messaging_service()->HasPortForTesting(script_context(), port_id));
@@ -143,7 +139,8 @@ TEST_F(NativeRendererMessagingServiceTest, OpenMessagePort) {
   v8::Local<v8::Context> context = MainContext();
 
   base::UnguessableToken other_context_id = base::UnguessableToken::Create();
-  const PortId port_id(other_context_id, 0, false, SerializationFormat::kJson);
+  const PortId port_id(other_context_id, 0, false,
+                       mojom::SerializationFormat::kJson);
   EXPECT_FALSE(
       messaging_service()->HasPortForTesting(script_context(), port_id));
 
@@ -176,7 +173,7 @@ TEST_F(NativeRendererMessagingServiceTest, OpenMessagePort) {
   EXPECT_CALL(*ipc_message_sender(),
               SendOpenMessagePort(MSG_ROUTING_NONE, port_id));
   messaging_service()->DispatchOnConnect(
-      script_context_set(), port_id, ChannelType::kConnect, channel_name,
+      script_context_set(), port_id, mojom::ChannelType::kConnect, channel_name,
       tab_connection_info, external_connection_info, nullptr);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
 
@@ -200,8 +197,10 @@ TEST_F(NativeRendererMessagingServiceTest, DeliverMessageToPort) {
   v8::Local<v8::Context> context = MainContext();
 
   base::UnguessableToken other_context_id = base::UnguessableToken::Create();
-  const PortId port_id1(other_context_id, 0, false, SerializationFormat::kJson);
-  const PortId port_id2(other_context_id, 1, false, SerializationFormat::kJson);
+  const PortId port_id1(other_context_id, 0, false,
+                        mojom::SerializationFormat::kJson);
+  const PortId port_id2(other_context_id, 1, false,
+                        mojom::SerializationFormat::kJson);
 
   gin::Handle<GinPort> port1 = messaging_service()->CreatePortForTesting(
       script_context(), "channel1", port_id1);
@@ -243,7 +242,8 @@ TEST_F(NativeRendererMessagingServiceTest, DeliverMessageToPort) {
   const char kMessageString[] = R"({"data":"hello"})";
   messaging_service()->DeliverMessage(
       script_context_set(), port_id1,
-      Message(kMessageString, SerializationFormat::kJson, false), nullptr);
+      Message(kMessageString, mojom::SerializationFormat::kJson, false),
+      nullptr);
 
   // Only port1 should have been notified of the message (ports only receive
   // messages directed to themselves).
@@ -258,8 +258,10 @@ TEST_F(NativeRendererMessagingServiceTest, DisconnectMessagePort) {
   v8::Local<v8::Context> context = MainContext();
 
   base::UnguessableToken other_context_id = base::UnguessableToken::Create();
-  const PortId port_id1(other_context_id, 0, false, SerializationFormat::kJson);
-  const PortId port_id2(other_context_id, 1, false, SerializationFormat::kJson);
+  const PortId port_id1(other_context_id, 0, false,
+                        mojom::SerializationFormat::kJson);
+  const PortId port_id2(other_context_id, 1, false,
+                        mojom::SerializationFormat::kJson);
 
   gin::Handle<GinPort> port1 = messaging_service()->CreatePortForTesting(
       script_context(), "channel1", port_id1);
@@ -311,7 +313,8 @@ TEST_F(NativeRendererMessagingServiceTest, PostMessageFromJS) {
   v8::Local<v8::Context> context = MainContext();
 
   base::UnguessableToken other_context_id = base::UnguessableToken::Create();
-  const PortId port_id(other_context_id, 0, false, SerializationFormat::kJson);
+  const PortId port_id(other_context_id, 0, false,
+                       mojom::SerializationFormat::kJson);
 
   gin::Handle<GinPort> port = messaging_service()->CreatePortForTesting(
       script_context(), "channel", port_id);
@@ -328,7 +331,7 @@ TEST_F(NativeRendererMessagingServiceTest, PostMessageFromJS) {
   EXPECT_CALL(*ipc_message_sender(),
               SendPostMessageToPort(
                   port_id, Message(R"({"data":"hello"})",
-                                   SerializationFormat::kJson, false)));
+                                   mojom::SerializationFormat::kJson, false)));
   RunFunctionOnGlobal(post_message, context, std::size(args), args);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
 }
@@ -338,7 +341,8 @@ TEST_F(NativeRendererMessagingServiceTest, DisconnectFromJS) {
   v8::Local<v8::Context> context = MainContext();
 
   base::UnguessableToken other_context_id = base::UnguessableToken::Create();
-  const PortId port_id(other_context_id, 0, false, SerializationFormat::kJson);
+  const PortId port_id(other_context_id, 0, false,
+                       mojom::SerializationFormat::kJson);
 
   gin::Handle<GinPort> port = messaging_service()->CreatePortForTesting(
       script_context(), "channel", port_id);
@@ -363,13 +367,13 @@ TEST_F(NativeRendererMessagingServiceTest, Connect) {
 
   const std::string kChannel = "channel";
   PortId expected_port_id(script_context()->context_id(), 0, true,
-                          SerializationFormat::kJson);
+                          mojom::SerializationFormat::kJson);
   MessageTarget target(MessageTarget::ForExtension(extension()->id()));
   EXPECT_CALL(*ipc_message_sender(),
               SendOpenMessageChannel(script_context(), expected_port_id, target,
-                                     ChannelType::kConnect, kChannel));
+                                     mojom::ChannelType::kConnect, kChannel));
   gin::Handle<GinPort> new_port = messaging_service()->Connect(
-      script_context(), target, "channel", SerializationFormat::kJson);
+      script_context(), target, "channel", mojom::SerializationFormat::kJson);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   ASSERT_FALSE(new_port.IsEmpty());
 
@@ -386,9 +390,9 @@ TEST_F(NativeRendererMessagingServiceTest, SendOneTimeMessageWithCallback) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
 
-  const ChannelType kChannel = ChannelType::kSendMessage;
+  const mojom::ChannelType kChannel = mojom::ChannelType::kSendMessage;
   PortId port_id(script_context()->context_id(), 0, true,
-                 SerializationFormat::kJson);
+                 mojom::SerializationFormat::kJson);
   const char kEchoArgs[] =
       "(function() { this.replyArgs = Array.from(arguments); })";
   v8::Local<v8::Function> response_callback =
@@ -396,7 +400,7 @@ TEST_F(NativeRendererMessagingServiceTest, SendOneTimeMessageWithCallback) {
 
   // Send a message and expect a reply to a passed in callback. A new port
   // should be created, and should remain open until the response is sent.
-  const Message message("\"hi\"", SerializationFormat::kJson, false);
+  const Message message("\"hi\"", mojom::SerializationFormat::kJson, false);
   MessageTarget target(MessageTarget::ForExtension(extension()->id()));
   EXPECT_CALL(*ipc_message_sender(),
               SendOpenMessageChannel(script_context(), port_id, target,
@@ -418,7 +422,7 @@ TEST_F(NativeRendererMessagingServiceTest, SendOneTimeMessageWithCallback) {
               SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true));
   messaging_service()->DeliverMessage(
       script_context_set(), port_id,
-      Message("\"reply\"", SerializationFormat::kJson, false), nullptr);
+      Message("\"reply\"", mojom::SerializationFormat::kJson, false), nullptr);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_EQ("[\"reply\"]", GetStringPropertyFromObject(context->Global(),
                                                        context, "replyArgs"));
@@ -432,13 +436,13 @@ TEST_F(NativeRendererMessagingServiceTest, SendOneTimeMessageWithPromise) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
 
-  const ChannelType kChannel = ChannelType::kSendMessage;
+  const mojom::ChannelType kChannel = mojom::ChannelType::kSendMessage;
   PortId port_id(script_context()->context_id(), 0, true,
-                 SerializationFormat::kJson);
+                 mojom::SerializationFormat::kJson);
 
   // Send a message and expect a reply fulfilling a promise. A new port should
   // be created, and should remain open until the response is sent.
-  const Message message("\"hi\"", SerializationFormat::kJson, false);
+  const Message message("\"hi\"", mojom::SerializationFormat::kJson, false);
   MessageTarget target(MessageTarget::ForExtension(extension()->id()));
   EXPECT_CALL(*ipc_message_sender(),
               SendOpenMessageChannel(script_context(), port_id, target,
@@ -459,7 +463,7 @@ TEST_F(NativeRendererMessagingServiceTest, SendOneTimeMessageWithPromise) {
               SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true));
   messaging_service()->DeliverMessage(
       script_context_set(), port_id,
-      Message("\"reply\"", SerializationFormat::kJson, false), nullptr);
+      Message("\"reply\"", mojom::SerializationFormat::kJson, false), nullptr);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_EQ(v8::Promise::kFulfilled, promise->State());
   EXPECT_EQ("\"reply\"", V8ToString(promise->Result(), context));
@@ -490,7 +494,8 @@ TEST_F(NativeRendererMessagingServiceTest, ReceiveOneTimeMessage) {
 
   const std::string kChannel = "chrome.runtime.sendMessage";
   base::UnguessableToken other_context_id = base::UnguessableToken::Create();
-  const PortId port_id(other_context_id, 0, false, SerializationFormat::kJson);
+  const PortId port_id(other_context_id, 0, false,
+                       mojom::SerializationFormat::kJson);
 
   ExtensionMsg_TabConnectionInfo tab_connection_info;
   tab_connection_info.frame_id = 0;
@@ -510,7 +515,7 @@ TEST_F(NativeRendererMessagingServiceTest, ReceiveOneTimeMessage) {
   EXPECT_CALL(*ipc_message_sender(),
               SendOpenMessagePort(MSG_ROUTING_NONE, port_id));
   messaging_service()->DispatchOnConnect(
-      script_context_set(), port_id, ChannelType::kSendMessage, kChannel,
+      script_context_set(), port_id, mojom::ChannelType::kSendMessage, kChannel,
       tab_connection_info, external_connection_info, nullptr);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_TRUE(
@@ -521,12 +526,13 @@ TEST_F(NativeRendererMessagingServiceTest, ReceiveOneTimeMessage) {
   EXPECT_CALL(*ipc_message_sender(),
               SendPostMessageToPort(
                   port_id, Message(R"({"data":"hi"})",
-                                   SerializationFormat::kJson, false)));
+                                   mojom::SerializationFormat::kJson, false)));
   EXPECT_CALL(*ipc_message_sender(),
               SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true));
   messaging_service()->DeliverMessage(
       script_context_set(), port_id,
-      Message("\"message\"", SerializationFormat::kJson, false), nullptr);
+      Message("\"message\"", mojom::SerializationFormat::kJson, false),
+      nullptr);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_FALSE(
       messaging_service()->HasPortForTesting(script_context(), port_id));
@@ -559,9 +565,10 @@ TEST_F(NativeRendererMessagingServiceTest, TestExternalOneTimeMessages) {
   base::UnguessableToken other_context_id = base::UnguessableToken::Create();
   int next_port_id = 0;
   const PortId on_message_port_id(other_context_id, ++next_port_id, false,
-                                  SerializationFormat::kJson);
+                                  mojom::SerializationFormat::kJson);
   const PortId on_message_external_port_id(other_context_id, ++next_port_id,
-                                           false, SerializationFormat::kJson);
+                                           false,
+                                           mojom::SerializationFormat::kJson);
 
   auto open_port = [this](const PortId& port_id, const ExtensionId& source_id) {
     ExtensionMsg_TabConnectionInfo tab_connection_info;
@@ -583,7 +590,7 @@ TEST_F(NativeRendererMessagingServiceTest, TestExternalOneTimeMessages) {
     EXPECT_CALL(*ipc_message_sender(),
                 SendOpenMessagePort(MSG_ROUTING_NONE, port_id));
     messaging_service()->DispatchOnConnect(
-        script_context_set(), port_id, ChannelType::kSendMessage,
+        script_context_set(), port_id, mojom::ChannelType::kSendMessage,
         messaging_util::kSendMessageChannel, tab_connection_info,
         external_connection_info, nullptr);
     ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
@@ -600,7 +607,8 @@ TEST_F(NativeRendererMessagingServiceTest, TestExternalOneTimeMessages) {
               SendMessageResponsePending(MSG_ROUTING_NONE, on_message_port_id));
   messaging_service()->DeliverMessage(
       script_context_set(), on_message_port_id,
-      Message("\"onMessage\"", SerializationFormat::kJson, false), nullptr);
+      Message("\"onMessage\"", mojom::SerializationFormat::kJson, false),
+      nullptr);
   EXPECT_EQ("\"onMessage\"",
             GetStringPropertyFromObject(context->Global(), context,
                                         "onMessageReceived"));
@@ -610,7 +618,8 @@ TEST_F(NativeRendererMessagingServiceTest, TestExternalOneTimeMessages) {
 
   messaging_service()->DeliverMessage(
       script_context_set(), on_message_external_port_id,
-      Message("\"onMessageExternal\"", SerializationFormat::kJson, false),
+      Message("\"onMessageExternal\"", mojom::SerializationFormat::kJson,
+              false),
       nullptr);
   EXPECT_EQ("\"onMessage\"",
             GetStringPropertyFromObject(context->Global(), context,

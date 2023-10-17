@@ -32,7 +32,7 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
 #import "ios/chrome/browser/ntp/set_up_list_prefs.h"
-#import "ios/chrome/browser/passwords/model/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/promos_manager/mock_promos_manager.h"
 #import "ios/chrome/browser/reading_list/model/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/model/reading_list_test_utils.h"
@@ -123,7 +123,7 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
         segmentation_platform::SegmentationPlatformServiceFactory::
             GetDefaultFactory());
     test_cbs_builder.AddTestingFactory(
-        IOSChromePasswordStoreFactory::GetInstance(),
+        IOSChromeProfilePasswordStoreFactory::GetInstance(),
         base::BindRepeating(
             &password_manager::BuildPasswordStore<
                 web::BrowserState, password_manager::TestPasswordStore>));
@@ -162,7 +162,7 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
     FakeUrlLoadingBrowserAgent::InjectForBrowser(browser_.get());
     url_loader_ = FakeUrlLoadingBrowserAgent::FromUrlLoadingBrowserAgent(
         UrlLoadingBrowserAgent::FromBrowser(browser_.get()));
-    histogram_tester_.reset(new base::HistogramTester());
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
   ~ContentSuggestionsMediatorTest() override { [mediator_ disconnect]; }
@@ -550,4 +550,15 @@ TEST_F(ContentSuggestionsMediatorTest, TestOnServiceStatusChanged) {
   item_state = set_up_list_prefs::GetItemState(local_state_.Get(),
                                                SetUpListItemType::kSignInSync);
   EXPECT_EQ(item_state, SetUpListItemState::kCompleteInList);
+}
+
+// Tests that the -loadParcelTrackingPage ContentSuggestionsCommands
+// implementation logs the correct metric and loads the passed URL.
+TEST_F(ContentSuggestionsMediatorTest, TestParcelTracking) {
+  GURL parcelTrackingURL = GURL("http://chromium.org");
+  [mediator_ loadParcelTrackingPage:parcelTrackingURL];
+  histogram_tester_->ExpectUniqueSample(
+      "IOS.MagicStack.Module.Click",
+      ContentSuggestionsModuleType::kParcelTracking, 1);
+  EXPECT_EQ(parcelTrackingURL, url_loader_->last_params.web_params.url);
 }

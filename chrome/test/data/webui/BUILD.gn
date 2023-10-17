@@ -103,8 +103,10 @@ source_set("browser_tests") {
   }
 
   if (is_chromeos_ash) {
-    sources +=
-        [ "chromeos/personalization_app/personalization_app_browsertest.cc" ]
+    sources += [
+      "chromeos/enterprise_reporting/enterprise_reporting_browsertest.cc",
+      "chromeos/personalization_app/personalization_app_browsertest.cc",
+    ]
   } else {
     sources += [
       "intro/intro_browsertest.cc",
@@ -385,6 +387,9 @@ if (is_chromeos_ash) {
   mojom("web_ui_test_bindings") {
     sources = [ "web_ui_test.mojom" ]
     webui_module_path = "/"
+
+    # Used by legacy MojoWebUIBrowserTest.
+    use_typescript_sources = false
   }
 
   generate_grd("build_web_ui_test_mojo_grdp") {
@@ -433,12 +438,6 @@ ts_library("build_ts") {
     "test_store_ts.ts",
     "test_util.ts",
     "trusted_html.ts",
-
-    # TODO(dpapad): Migrate the files below to TypeScript and remove allowJs
-    # from tsconfig_base.json.
-    "sandbox/gpu_test.js",
-    "sandbox/sandbox_test.js",
-    "password_manager_internals/password_manager_internals_test.js",
   ]
 
   if (is_chromeos_ash) {
@@ -511,7 +510,9 @@ generate_grd("build_grd") {
     "new_tab_page:build_grdp",
     "optimization_guide_internals:build_grdp",
     "password_manager:build_grdp",
+    "password_manager_internals:build_grdp",
     "privacy_sandbox:build_grdp",
+    "sandbox:build_grdp",
     "settings:build_grdp",
     "side_panel:build_grdp",
     "side_panel/customize_chrome:build_grdp",
@@ -550,7 +551,9 @@ generate_grd("build_grd") {
     "$target_gen_dir/new_tab_page/resources.grdp",
     "$target_gen_dir/optimization_guide_internals/resources.grdp",
     "$target_gen_dir/password_manager/resources.grdp",
+    "$target_gen_dir/password_manager_internals/resources.grdp",
     "$target_gen_dir/privacy_sandbox/resources.grdp",
+    "$target_gen_dir/sandbox/resources.grdp",
     "$target_gen_dir/settings/resources.grdp",
     "$target_gen_dir/side_panel/customize_chrome/resources.grdp",
     "$target_gen_dir/side_panel/resources.grdp",
@@ -619,6 +622,8 @@ generate_grd("build_grd") {
       "chromeos/cloud_upload:build_grdp",
       "chromeos/diagnostics:build_grdp",
       "chromeos/emoji_picker:build_grdp",
+      "chromeos/enterprise_reporting:build_grdp",
+      "chromeos/firmware_update:build_grdp",
       "chromeos/manage_mirrorsync:build_grdp",
       "chromeos/office_fallback:build_grdp",
       "chromeos/parent_access:build_grdp",
@@ -639,6 +644,8 @@ generate_grd("build_grd") {
       "$target_gen_dir/chromeos/parent_access/resources.grdp",
       "$target_gen_dir/chromeos/diagnostics/resources.grdp",
       "$target_gen_dir/chromeos/emoji_picker/resources.grdp",
+      "$target_gen_dir/chromeos/enterprise_reporting/resources.grdp",
+      "$target_gen_dir/chromeos/firmware_update/resources.grdp",
       "$target_gen_dir/chromeos/office_fallback/resources.grdp",
       "$target_gen_dir/chromeos/personalization_app/resources.grdp",
       "$target_gen_dir/chromeos/shortcut_customization/resources.grdp",

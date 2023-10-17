@@ -51,7 +51,7 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
 
 // The constants for the constraints affecting the end button; either Lens or
 // Voice Search, depending on if Lens is enabled.
-const CGFloat kEndButtonFakeboxTrailingSpace = 12.0;
+const CGFloat kEndButtonFakeboxTrailingSpace = 13.0;
 const CGFloat kEndButtonOmniboxTrailingSpace = 7.0;
 
 // The constants for the constraints the leading-edge aligned UI elements.
@@ -67,6 +67,9 @@ const CGFloat kLargeFakeboxHorizontalMargin = 8.0;
 // The constants for the constraints affecting the separation between the Lens
 // and Voice Search buttons.
 const CGFloat kEndButtonSeparation = 19.0;
+
+// The height of the divider between the mic and lens icons.
+const CGFloat kIconDividerHeight = 13.0;
 
 // The leading space / padding in the unscrolled fakebox.
 CGFloat HintLabelFakeboxLeadingSpace() {
@@ -198,9 +201,6 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
 // Constraint for positioning the end button away from the fake box rounded
 // rectangle.
 @property(nonatomic, strong) NSLayoutConstraint* endButtonTrailingConstraint;
-// Layout constraint for the invisible button that is where the omnibox should
-// be and that focuses the omnibox when tapped.
-@property(nonatomic, strong) NSLayoutConstraint* invisibleOmniboxConstraint;
 // View used to add on-touch highlight to the fake omnibox.
 @property(nonatomic, strong) UIView* fakeLocationBarHighlightView;
 // View used to simulate the top toolbar when the header is stuck to the top of
@@ -226,15 +226,13 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
 - (void)addToolbarView:(UIView*)toolbarView {
   _toolBarView = toolbarView;
   [self addSubview:toolbarView];
-  self.invisibleOmniboxConstraint =
-      [toolbarView.topAnchor constraintEqualToAnchor:self.topAnchor
-                                            constant:self.safeAreaInsets.top];
   [NSLayoutConstraint activateConstraints:@[
     [toolbarView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
     [toolbarView.heightAnchor
         constraintEqualToConstant:content_suggestions::FakeToolbarHeight()],
     [toolbarView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-    self.invisibleOmniboxConstraint,
+    [toolbarView.topAnchor
+        constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor],
   ]];
 }
 
@@ -385,6 +383,9 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
   // If the Lens button was created, layout the header with the Lens button on
   // the end.
   if (self.lensButton) {
+    if (IsIOSLargeFakeboxEnabled()) {
+      [self addVoiceAndLenseDivider];
+    }
     [NSLayoutConstraint activateConstraints:@[
       // Lens button constraints.
       [self.lensButton.leadingAnchor
@@ -567,7 +568,7 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
   // Adjust the position of the search field's subviews by adjusting their
   // constraint constant value.
   CGFloat subviewsDiff = -maxXInset * percent;
-  self.endButtonTrailingMarginConstraint.constant = -subviewsDiff;
+  self.endButtonTrailingMarginConstraint.constant = 0;
   // The trailing space wanted is a linear scale between the two states of the
   // fakebox: 1) when centered in the NTP and 2) when pinned to the top,
   // emulating the the omnibox.
@@ -577,7 +578,7 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
   if (base::FeatureList::IsEnabled(kNewNTPOmniboxLayout)) {
     // A similar positioning scheme is applied to the leading-edge-aligned
     // hint label as the trailing-edge-aligned buttons.
-    self.hintLabelLeadingMarginConstraint.constant = subviewsDiff;
+    self.hintLabelLeadingMarginConstraint.constant = 0;
     self.hintLabelLeadingConstraint.constant =
         hintLabelScalingExtraOffset +
         Interpolate(HintLabelFakeboxLeadingSpace(),
@@ -618,10 +619,6 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
       [self setFakeboxBackgroundWithProgress:_lastAnimationPercent];
     }
   }
-}
-
-- (void)updateForTopSafeAreaInset:(CGFloat)topSafeAreaInset {
-  self.invisibleOmniboxConstraint.constant = topSafeAreaInset;
 }
 
 #pragma mark - Property accessors
@@ -693,6 +690,25 @@ CGFloat Interpolate(CGFloat from, CGFloat to, CGFloat percent) {
   [_fakeLocationBar
       setStartColor:BlendColors(FakeboxTopColor(), pinnedColor, progress)
            endColor:BlendColors(FakeboxBottomColor(), pinnedColor, progress)];
+}
+
+// Adds a short vertical line between the mic and lens icons in the fakebox.
+- (void)addVoiceAndLenseDivider {
+  UIView* divider = [[UIView alloc] init];
+  divider.backgroundColor = [UIColor colorNamed:kGrey600Color];
+  divider.translatesAutoresizingMaskIntoConstraints = NO;
+  CGFloat dividerWidth = 1.0 / [[UIScreen mainScreen] scale];
+  [self.lensButton.superview addSubview:divider];
+
+  [NSLayoutConstraint activateConstraints:@[
+    [divider.leadingAnchor
+        constraintEqualToAnchor:self.voiceSearchButton.trailingAnchor
+                       constant:kEndButtonSeparation / 2],
+    [divider.centerYAnchor
+        constraintEqualToAnchor:self.fakeLocationBar.centerYAnchor],
+    [divider.heightAnchor constraintEqualToConstant:kIconDividerHeight],
+    [divider.widthAnchor constraintEqualToConstant:dividerWidth],
+  ]];
 }
 
 @end

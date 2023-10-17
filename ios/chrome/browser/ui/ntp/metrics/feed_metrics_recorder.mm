@@ -214,8 +214,8 @@ using feed::FeedUserActionType;
     }
 
     // Total time spent in feed metrics.
-    self.timeSpentInFeed =
-        base::Seconds([defaults doubleForKey:kTimeSpentInFeedAggregateKey]);
+    self.timeSpentInFeed = base::Seconds(
+        self.prefService->GetDouble(kTimeSpentInFeedAggregateKey));
     [self computeActivityBuckets];
     [self recordTimeSpentInFeedIfDayIsDone];
 
@@ -256,8 +256,8 @@ using feed::FeedUserActionType;
     self.timeSpentInFeed = base::Time::Now() - self.feedBecameVisibleTime;
 
     [self checkEngagementGoodVisitWithInteraction:NO];
-    [defaults setDouble:self.timeSpentInFeed.InSecondsF()
-                 forKey:kTimeSpentInFeedAggregateKey];
+    self.prefService->SetDouble(kTimeSpentInFeedAggregateKey,
+                                self.timeSpentInFeed.InSecondsF());
     [defaults setDouble:self.previousTimeInFeedForGoodVisitSession
                  forKey:kLongFeedVisitTimeAggregateKey];
     [defaults setDouble:self.discoverPreviousTimeInFeedGV
@@ -954,10 +954,6 @@ using feed::FeedUserActionType;
     return;
   }
 
-  // Retrieve activity bucket from storage.
-  FeedActivityBucket activityBucket =
-      (FeedActivityBucket)[defaults integerForKey:@(kActivityBucketKey)];
-
   // Calculate activity buckets.
   // Check if the array is initialized.
   NSMutableArray<NSDate*>* lastReportedArray = [[defaults
@@ -987,6 +983,7 @@ using feed::FeedUserActionType;
   [defaults setObject:lastReportedArray
                forKey:kActivityBucketLastReportedDateArrayKey];
 
+  FeedActivityBucket activityBucket = FeedActivityBucket::kNoActivity;
   // Check how many items in array.
   NSUInteger datesActive = lastReportedArray.count;
   switch (datesActive) {
@@ -1007,7 +1004,8 @@ using feed::FeedUserActionType;
       CHECK(NO);
       break;
   }
-  [defaults setInteger:(int)activityBucket forKey:@(kActivityBucketKey)];
+  self.prefService->SetInteger(kActivityBucketKey,
+                               static_cast<int>(activityBucket));
 
   // Activity Buckets Daily Run.
   [self recordActivityBuckets:activityBucket];
@@ -1398,8 +1396,8 @@ using feed::FeedUserActionType;
                  forKey:kLastDayTimeInFeedReportedKey];
     // Reset time spent in feed aggregate.
     self.timeSpentInFeed = base::Seconds(0);
-    [defaults setDouble:self.timeSpentInFeed.InSecondsF()
-                 forKey:kTimeSpentInFeedAggregateKey];
+    self.prefService->SetDouble(kTimeSpentInFeedAggregateKey,
+                                self.timeSpentInFeed.InSecondsF());
   }
 }
 

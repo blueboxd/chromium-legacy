@@ -63,6 +63,8 @@ PageNodeImpl::PageNodeImpl(const WebContentsProxy& contents_proxy,
       browser_context_id_(browser_context_id),
       is_visible_(initial_properties.Has(PagePropertyFlag::kIsVisible)),
       is_audible_(initial_properties.Has(PagePropertyFlag::kIsAudible)),
+      has_picture_in_picture_(
+          initial_properties.Has(PagePropertyFlag::kHasPictureInPicture)),
       page_state_(page_state) {
   // Nodes are created on the UI thread, then accessed on the PM sequence.
   // `weak_this_` can be returned from GetWeakPtrOnUIThread() and dereferenced
@@ -164,6 +166,11 @@ void PageNodeImpl::SetIsAudible(bool is_audible) {
     // can infer the current state change time themselves via NowTicks.
     audible_change_time_ = base::TimeTicks::Now();
   }
+}
+
+void PageNodeImpl::SetHasPictureInPicture(bool has_picture_in_picture) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  has_picture_in_picture_.SetAndMaybeNotify(this, has_picture_in_picture);
 }
 
 void PageNodeImpl::SetUkmSourceId(ukm::SourceId ukm_source_id) {
@@ -269,7 +276,8 @@ FrameNodeImpl* PageNodeImpl::embedder_frame_node() const {
 
 resource_attribution::PageContext PageNodeImpl::resource_context() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return resource_context_;
+  // Re-use the PageToken as the ResourceContext token.
+  return resource_attribution::PageContext(page_token_.value());
 }
 
 PageNodeImpl::EmbeddingType PageNodeImpl::embedding_type() const {
@@ -296,6 +304,11 @@ bool PageNodeImpl::is_visible() const {
 bool PageNodeImpl::is_audible() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return is_audible_.value();
+}
+
+bool PageNodeImpl::has_picture_in_picture() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return has_picture_in_picture_.value();
 }
 
 PageNode::LoadingState PageNodeImpl::loading_state() const {
@@ -538,6 +551,11 @@ bool PageNodeImpl::IsVisible() const {
 base::TimeDelta PageNodeImpl::GetTimeSinceLastVisibilityChange() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return TimeSinceLastVisibilityChange();
+}
+
+bool PageNodeImpl::HasPictureInPicture() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return has_picture_in_picture();
 }
 
 bool PageNodeImpl::IsAudible() const {

@@ -52,7 +52,8 @@ class TestPersonalDataManager : public PersonalDataManager {
   void RemoveByGUID(const std::string& guid) override;
   bool IsEligibleForAddressAccountStorage() const override;
   void AddCreditCard(const CreditCard& credit_card) override;
-  std::string AddIban(Iban iban) override;
+  std::string AddIban(const Iban iban) override;
+  std::string UpdateIban(const Iban& iban) override;
   void DeleteLocalCreditCards(const std::vector<CreditCard>& cards) override;
   void UpdateCreditCard(const CreditCard& credit_card) override;
   void AddFullServerCreditCard(const CreditCard& credit_card) override;
@@ -102,6 +103,9 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   // Adds offer data to |autofill_offer_data_|.
   void AddAutofillOfferData(const AutofillOfferData& offer_data);
+
+  // Adds an `iban` to `server_ibans_`.
+  void AddServerIban(const Iban& iban);
 
   // Adds a `url` to `image` mapping to the local `credit_card_art_images_`
   // cache.
@@ -157,6 +161,10 @@ class TestPersonalDataManager : public PersonalDataManager {
   void ClearCreditCardArtImages() { credit_card_art_images_.clear(); }
 
  private:
+  // This should be called when you just want to delete the element via `guid`
+  // and not trigger `NotifyPersonalDataObserver()`.
+  void RemoveByGuidWithoutNotifications(const std::string& guid);
+
   std::string timezone_country_code_;
   std::string default_country_code_;
   int num_times_save_imported_credit_card_called_ = 0;

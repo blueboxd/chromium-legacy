@@ -53,8 +53,12 @@ class CookieControlsBubbleViewController
 
   void OnFaviconFetched(const favicon_base::FaviconImageResult& result) const;
 
+  void OnReloadingViewTimeout();
+
+  void SwitchToReloadingView();
   void ApplyThirdPartyCookiesAllowedState(base::Time expiration);
   void ApplyThirdPartyCookiesBlockedState();
+  void CloseBubble();
 
   [[nodiscard]] std::unique_ptr<views::View> InitReloadingView(
       content::WebContents* web_contents);

@@ -45,7 +45,7 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/policy/dm_token_utils.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
@@ -328,7 +328,7 @@ class DownloadProtectionServiceTestBase
     // PasswordManager will ignore any forms in a page if the load from the
     // PasswordStore has not completed. ChromePasswordProtectionService uses
     // PasswordStore.
-    PasswordStoreFactory::GetInstance()->SetTestingFactory(
+    ProfilePasswordStoreFactory::GetInstance()->SetTestingFactory(
         profile(),
         base::BindRepeating(
             &password_manager::BuildPasswordStore<
@@ -384,7 +384,8 @@ class DownloadProtectionServiceTestBase
     has_result_ = false;
 
     base::FilePath source_path;
-    ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
+    ASSERT_TRUE(
+        base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_path));
     testdata_path_ = source_path.AppendASCII("chrome")
                          .AppendASCII("test")
                          .AppendASCII("data")

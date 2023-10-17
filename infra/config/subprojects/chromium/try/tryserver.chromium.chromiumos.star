@@ -23,6 +23,7 @@ try_.defaults.set(
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
+    siso_configs = ["builder"],
     siso_enable_cloud_profiler = True,
     siso_enable_cloud_trace = True,
     siso_project = siso.project.DEFAULT_UNTRUSTED,
@@ -142,9 +143,8 @@ try_.builder(
     ],
     builderless = not settings.is_main,
     contact_team_email = "chrome-desktop-engprod@google.com",
-    tryjob = try_.job(
-        experiment_percentage = 100,
-    ),
+    main_list_view = "try",
+    tryjob = try_.job(),
 )
 
 try_.builder(
@@ -177,11 +177,31 @@ try_.builder(
 )
 
 try_.builder(
+    name = "lacros-arm-generic-rel-skylab",
+    branch_selector = branches.selector.CROS_BRANCHES,
+    mirrors = [
+        "ci/lacros-arm-generic-rel-skylab",
+    ],
+    contact_team_email = "chrome-desktop-engprod@google.com",
+    main_list_view = "try",
+)
+
+try_.builder(
     name = "lacros-arm64-generic-rel",
     branch_selector = branches.selector.CROS_BRANCHES,
     mirrors = [
         "ci/lacros-arm64-generic-rel",
     ],
+    main_list_view = "try",
+)
+
+try_.builder(
+    name = "lacros-arm64-generic-rel-skylab",
+    branch_selector = branches.selector.CROS_BRANCHES,
+    mirrors = [
+        "ci/lacros-arm64-generic-rel-skylab",
+    ],
+    contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
 )
 

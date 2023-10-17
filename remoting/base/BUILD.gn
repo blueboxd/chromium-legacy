@@ -35,12 +35,16 @@ source_set("base") {
     "buffered_socket_writer.h",
     "capabilities.cc",
     "capabilities.h",
+    "certificate_helpers.cc",
+    "certificate_helpers.h",
     "chromoting_event.cc",
     "chromoting_event.h",
     "compound_buffer.cc",
     "compound_buffer.h",
     "constants.cc",
     "constants.h",
+    "corp_service_client.cc",
+    "corp_service_client.h",
     "cpu_utils.cc",
     "cpu_utils.h",
     "directory_service_client.cc",
@@ -123,7 +127,12 @@ source_set("base") {
   ]
 
   if (remoting_internal) {
-    deps += [ "//remoting/internal/base:internal_base" ]
+    deps += [
+      "//remoting/internal/base",
+      "//remoting/internal/proto",
+    ]
+  } else {
+    deps += [ "//remoting/proto:internal_stubs" ]
   }
 
   if (is_win) {

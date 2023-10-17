@@ -93,15 +93,6 @@ class AutofillWebDataService : public WebDataServiceBase {
   WebDataServiceBase::Handle GetServerProfiles(
       WebDataServiceConsumer* consumer);
 
-  // Schedules a task to convert server profiles to local profiles, comparing
-  // profiles using |app_locale| and filling in |primary_account_email| into
-  // newly converted profiles. The task only converts profiles that have not
-  // been converted before.
-  // TODO(crbug.com/1348294): Delete this function, which is unused.
-  void ConvertWalletAddressesAndUpdateWalletCards(
-      const std::string& app_locale,
-      const std::string& primary_account_email);
-
   // Schedules a task to count the number of unique autofill values contained
   // in the time interval [|begin|, |end|). |begin| and |end| can be null
   // to indicate no time limitation.
@@ -248,10 +239,7 @@ class AutofillWebDataService : public WebDataServiceBase {
  protected:
   ~AutofillWebDataService() override;
 
-  void NotifyAutofillMultipleChangedOnUISequence(syncer::ModelType model_type);
-  void NotifyAutofillAddressConversionCompletedOnUISequence();
-  void NotifySyncStartedOnUISequence(syncer::ModelType model_type);
-  void NotifyOnSyncUpdatesReceivedOnUISequence(syncer::ModelType model_type);
+  void NotifyOnAutofillChangedBySyncOnUISequence(syncer::ModelType model_type);
 
   base::WeakPtr<AutofillWebDataService> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();

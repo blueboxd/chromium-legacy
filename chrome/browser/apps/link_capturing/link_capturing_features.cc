@@ -20,21 +20,22 @@ BASE_FEATURE(kLinkCapturingUiUpdate,
 #endif
 );
 
-BASE_FEATURE(kLinkCapturingInfoBar,
-             "LinkCapturingInfoBar",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kDesktopPWAsLinkCapturing,
              "DesktopPWAsLinkCapturing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+#if BUILDFLAG(IS_CHROMEOS)
+BASE_FEATURE(kAppToAppLinkCapturing,
+             "AppToAppLinkCapturing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAppToAppLinkCapturingWorkspaceApps,
+             "AppToAppLinkCapturingWorkspaceApps",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 bool LinkCapturingUiUpdateEnabled() {
   return base::FeatureList::IsEnabled(kLinkCapturingUiUpdate);
-}
-
-bool LinkCapturingInfoBarEnabled() {
-  return LinkCapturingUiUpdateEnabled() &&
-         base::FeatureList::IsEnabled(kLinkCapturingInfoBar);
 }
 
 }  // namespace apps::features

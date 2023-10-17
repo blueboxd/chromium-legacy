@@ -26,8 +26,8 @@ struct SameSizeAsNGLayoutResult
   Member<void*> physical_fragment;
   Member<void*> rare_data_;
   union {
-    NGBfcOffset bfc_offset;
-    NGBoxStrut oof_insets_for_get_computed_style;
+    BfcOffset bfc_offset;
+    BoxStrut oof_insets_for_get_computed_style;
   };
   LayoutUnit intrinsic_block_size;
   unsigned bitfields[1];
@@ -143,7 +143,7 @@ NGLayoutResult::NGLayoutResult(NGFragmentBuilderPassKey key,
 
 NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
                                const NGConstraintSpace& new_space,
-                               const NGMarginStrut& new_end_margin_strut,
+                               const MarginStrut& new_end_margin_strut,
                                LayoutUnit bfc_line_offset,
                                absl::optional<LayoutUnit> bfc_block_offset,
                                LayoutUnit block_offset_delta)
@@ -162,7 +162,7 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
     DCHECK(physical_fragment_->IsOutOfFlowPositioned());
     DCHECK_EQ(bfc_line_offset, LayoutUnit());
     DCHECK(bfc_block_offset && bfc_block_offset.value() == LayoutUnit());
-    oof_insets_for_get_computed_style_ = NGBoxStrut();
+    oof_insets_for_get_computed_style_ = BoxStrut();
   }
 
   NGExclusionSpace new_exclusion_space = MergeExclusionSpaces(
@@ -175,7 +175,7 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
     space_.ExclusionSpace().MoveDerivedGeometry(new_exclusion_space);
   }
 
-  if (new_end_margin_strut != NGMarginStrut() || rare_data_) {
+  if (new_end_margin_strut != MarginStrut() || rare_data_) {
     EnsureRareData()->end_margin_strut = new_end_margin_strut;
   }
 }
@@ -222,8 +222,9 @@ NGLayoutResult::NGLayoutResult(const NGPhysicalFragment* physical_fragment,
   }
 #endif
 
-  if (builder->end_margin_strut_ != NGMarginStrut())
+  if (builder->end_margin_strut_ != MarginStrut()) {
     EnsureRareData()->end_margin_strut = builder->end_margin_strut_;
+  }
   if (builder->annotation_overflow_ > LayoutUnit())
     EnsureRareData()->annotation_overflow = builder->annotation_overflow_;
   if (builder->block_end_annotation_space_) {
@@ -284,8 +285,8 @@ NGExclusionSpace NGLayoutResult::MergeExclusionSpaces(
     const NGExclusionSpace& new_input_exclusion_space,
     LayoutUnit bfc_line_offset,
     LayoutUnit block_offset_delta) {
-  NGBfcDelta offset_delta = {bfc_line_offset - other.BfcLineOffset(),
-                             block_offset_delta};
+  BfcDelta offset_delta = {bfc_line_offset - other.BfcLineOffset(),
+                           block_offset_delta};
 
   return NGExclusionSpace::MergeExclusionSpaces(
       /* old_output */ other.ExclusionSpace(),

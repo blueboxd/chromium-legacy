@@ -556,6 +556,59 @@ TEST_F(PageInfoTest, StorageAccessGrantsDisplayedWhenDefaultBlocked) {
                            last_permission_info_list());
 }
 
+TEST_F(PageInfoTest, ShowAutograntedRWSPermissions) {
+  std::set<ContentSettingsType> expected_visible_permissions;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      permissions::features::kShowRelatedWebsiteSetsPermissionGrants);
+  SetURL("https://firstparty.com");
+  constexpr char kToplevelURL[] = "https://firstparty.com";
+  constexpr char kEmbeddedURL[] = "https://embedded.com";
+  auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
+  content_settings::ContentSettingConstraints constraint;
+  constraint.set_session_model(
+      content_settings::SessionModel::NonRestorableUserSession);
+  map->SetContentSettingDefaultScope(GURL(kEmbeddedURL), GURL(kToplevelURL),
+                                     ContentSettingsType::STORAGE_ACCESS,
+                                     CONTENT_SETTING_BLOCK, constraint);
+  page_info()->PresentSitePermissionsForTesting();
+  expected_visible_permissions.insert(ContentSettingsType::STORAGE_ACCESS);
+#if BUILDFLAG(IS_ANDROID)
+  // Geolocation is always allowed to pass through to Android-specific logic to
+  // check for DSE settings (so expect 1 item), but isn't actually shown later
+  // on because this test isn't testing with a default search engine origin.
+  expected_visible_permissions.insert(ContentSettingsType::GEOLOCATION);
+#endif
+  ExpectPermissionInfoList(expected_visible_permissions,
+                           last_permission_info_list());
+}
+
+TEST_F(PageInfoTest, HideAutograntedRWSPermissions) {
+  std::set<ContentSettingsType> expected_visible_permissions;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      permissions::features::kShowRelatedWebsiteSetsPermissionGrants);
+  SetURL("https://firstparty.com");
+  constexpr char kToplevelURL[] = "https://firstparty.com";
+  constexpr char kEmbeddedURL[] = "https://embedded.com";
+  auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
+  content_settings::ContentSettingConstraints constraint;
+  constraint.set_session_model(
+      content_settings::SessionModel::NonRestorableUserSession);
+  map->SetContentSettingDefaultScope(GURL(kEmbeddedURL), GURL(kToplevelURL),
+                                     ContentSettingsType::STORAGE_ACCESS,
+                                     CONTENT_SETTING_ALLOW, constraint);
+  page_info()->PresentSitePermissionsForTesting();
+#if BUILDFLAG(IS_ANDROID)
+  // Geolocation is always allowed to pass through to Android-specific logic to
+  // check for DSE settings (so expect 1 item), but isn't actually shown later
+  // on because this test isn't testing with a default search engine origin.
+  expected_visible_permissions.insert(ContentSettingsType::GEOLOCATION);
+#endif
+  ExpectPermissionInfoList(expected_visible_permissions,
+                           last_permission_info_list());
+}
+
 TEST_F(PageInfoTest, IncognitoPermissionsEmptyByDefault) {
   incognito_page_info()->PresentSitePermissionsForTesting();
   EXPECT_EQ(0u, last_permission_info_list().size());
@@ -1149,10 +1202,10 @@ TEST_F(PageInfoTest, HTTPSSHA1) {
 #if !BUILDFLAG(IS_ANDROID)
 TEST_F(PageInfoTest, NoInfoBar) {
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobars().size());
   bool unused;
   page_info()->OnUIClosing(&unused);
-  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobars().size());
 }
 
 TEST_F(PageInfoTest, ShowInfoBar) {
@@ -1161,30 +1214,30 @@ TEST_F(PageInfoTest, ShowInfoBar) {
 
   EXPECT_CALL(*mock_ui(), SetPermissionInfoStub()).Times(2);
 
-  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobars().size());
   page_info()->OnSitePermissionChanged(ContentSettingsType::GEOLOCATION,
                                        CONTENT_SETTING_ALLOW,
                                        /*requesting_origin=*/absl::nullopt,
                                        /*is_one_time=*/false);
   bool unused;
   page_info()->OnUIClosing(&unused);
-  ASSERT_EQ(1u, infobar_manager()->infobar_count());
+  ASSERT_EQ(1u, infobar_manager()->infobars().size());
 
-  infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
+  infobar_manager()->RemoveInfoBar(infobar_manager()->infobars()[0]);
 }
 
 TEST_F(PageInfoTest, NoInfoBarWhenSoundSettingChanged) {
-  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobars().size());
   page_info()->OnSitePermissionChanged(
       ContentSettingsType::SOUND, CONTENT_SETTING_BLOCK,
       /*requesting_origin=*/absl::nullopt, /*is_one_time=*/false);
   bool unused;
   page_info()->OnUIClosing(&unused);
-  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobars().size());
 }
 
 TEST_F(PageInfoTest, ShowInfoBarWhenSoundSettingAndAnotherSettingChanged) {
-  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobars().size());
   page_info()->OnSitePermissionChanged(ContentSettingsType::JAVASCRIPT,
                                        CONTENT_SETTING_BLOCK,
                                        /*requesting_origin=*/absl::nullopt,
@@ -1194,15 +1247,15 @@ TEST_F(PageInfoTest, ShowInfoBarWhenSoundSettingAndAnotherSettingChanged) {
       /*requesting_origin=*/absl::nullopt, /*is_one_time=*/false);
   bool unused;
   page_info()->OnUIClosing(&unused);
-  EXPECT_EQ(1u, infobar_manager()->infobar_count());
+  EXPECT_EQ(1u, infobar_manager()->infobars().size());
 
-  infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
+  infobar_manager()->RemoveInfoBar(infobar_manager()->infobars()[0]);
 }
 
 TEST_F(PageInfoTest, ShowInfobarWhenMediaChanged) {
   base::HistogramTester histograms;
 
-  ASSERT_EQ(0u, infobar_manager()->infobar_count());
+  ASSERT_EQ(0u, infobar_manager()->infobars().size());
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile());
@@ -1222,7 +1275,7 @@ TEST_F(PageInfoTest, ShowInfobarWhenMediaChanged) {
                                        /*requesting_origin=*/absl::nullopt,
                                        /*is_one_time=*/false);
   page_info()->OnUIClosing(nullptr);
-  EXPECT_EQ(1u, infobar_manager()->infobar_count());
+  EXPECT_EQ(1u, infobar_manager()->infobars().size());
 
   histograms.ExpectUniqueSample(
       "Permissions.PageInfo.Changed.VideoCapture.ReloadInfobarShown",
@@ -1236,7 +1289,7 @@ TEST_F(PageInfoTest, ShowInfobarWhenMediaChanged) {
 TEST_F(PageInfoTest, SuppressInfobarWhenMediaChangedToBlock) {
   base::HistogramTester histograms;
 
-  ASSERT_EQ(0u, infobar_manager()->infobar_count());
+  ASSERT_EQ(0u, infobar_manager()->infobars().size());
 
   // The infobar can be suppressed only if an origin subscribed to permission
   // status change.
@@ -1260,7 +1313,7 @@ TEST_F(PageInfoTest, SuppressInfobarWhenMediaChangedToBlock) {
                                        /*is_one_time=*/false);
 
   page_info()->OnUIClosing(nullptr);
-  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobars().size());
 
   histograms.ExpectUniqueSample(
       "Permissions.PageInfo.Changed.VideoCapture.ReloadInfobarNotShown",
@@ -1273,7 +1326,7 @@ TEST_F(PageInfoTest, SuppressInfobarWhenMediaChangedToBlock) {
 TEST_F(PageInfoTest, SuppressInfobarWhenMediaChangedToAllow) {
   base::HistogramTester histograms;
 
-  ASSERT_EQ(0u, infobar_manager()->infobar_count());
+  ASSERT_EQ(0u, infobar_manager()->infobars().size());
 
   // The infobar can be suppressed only if an origin subscribed to permission
   // status change.
@@ -1298,7 +1351,7 @@ TEST_F(PageInfoTest, SuppressInfobarWhenMediaChangedToAllow) {
                                        /*is_one_time=*/false);
 
   page_info()->OnUIClosing(nullptr);
-  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobars().size());
 
   histograms.ExpectUniqueSample(
       "Permissions.PageInfo.Changed.VideoCapture.ReloadInfobarNotShown",
@@ -1314,7 +1367,7 @@ TEST_F(PageInfoTest, SuppressInfobarWhenMediaChangedToAllow) {
 TEST_F(PageInfoTest, SuppressInfobarWhenMediaChangedToDefault) {
   base::HistogramTester histograms;
 
-  ASSERT_EQ(0u, infobar_manager()->infobar_count());
+  ASSERT_EQ(0u, infobar_manager()->infobars().size());
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile());
@@ -1339,7 +1392,7 @@ TEST_F(PageInfoTest, SuppressInfobarWhenMediaChangedToDefault) {
                                        /*is_one_time=*/false);
 
   page_info()->OnUIClosing(nullptr);
-  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobars().size());
 
   histograms.ExpectUniqueSample(
       "Permissions.PageInfo.Changed.VideoCapture.ReloadInfobarNotShown",
@@ -1354,7 +1407,7 @@ TEST_F(PageInfoTest, SuppressInfobarWhenMediaChangedToDefault) {
 TEST_F(PageInfoTest, ShowInfobarWhenGeolocationChangedToAllow) {
   base::HistogramTester histograms;
 
-  ASSERT_EQ(0u, infobar_manager()->infobar_count());
+  ASSERT_EQ(0u, infobar_manager()->infobars().size());
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetContentSettingDefaultScope(
@@ -1370,7 +1423,7 @@ TEST_F(PageInfoTest, ShowInfobarWhenGeolocationChangedToAllow) {
                                        /*is_one_time=*/false);
 
   page_info()->OnUIClosing(nullptr);
-  EXPECT_EQ(1u, infobar_manager()->infobar_count());
+  EXPECT_EQ(1u, infobar_manager()->infobars().size());
   histograms.ExpectUniqueSample(
       "Permissions.PageInfo.Changed.Geolocation.ReloadInfobarShown",
       permissions::PermissionChangeAction::REALLOWED, 0);
@@ -1381,7 +1434,7 @@ TEST_F(PageInfoTest, ShowInfobarWhenGeolocationChangedToAllow) {
 TEST_F(PageInfoTest, NotSuppressedInfobarWhenGeolocationChangedToBlock) {
   base::HistogramTester histograms;
 
-  ASSERT_EQ(0u, infobar_manager()->infobar_count());
+  ASSERT_EQ(0u, infobar_manager()->infobars().size());
 
   // The infobar can be suppressed only if an origin subscribed to permission
   // status change.
@@ -1393,7 +1446,7 @@ TEST_F(PageInfoTest, NotSuppressedInfobarWhenGeolocationChangedToBlock) {
                                        /*is_one_time=*/false);
 
   page_info()->OnUIClosing(nullptr);
-  EXPECT_EQ(1u, infobar_manager()->infobar_count());
+  EXPECT_EQ(1u, infobar_manager()->infobars().size());
   histograms.ExpectUniqueSample(
       "Permissions.PageInfo.Changed.Geolocation.ReloadInfobarShown",
       permissions::PermissionChangeAction::REVOKED, 0);
@@ -1402,7 +1455,7 @@ TEST_F(PageInfoTest, NotSuppressedInfobarWhenGeolocationChangedToBlock) {
 TEST_F(PageInfoTest, ShowInfobarWhenGeolocationChangedToDefault) {
   base::HistogramTester histograms;
 
-  ASSERT_EQ(0u, infobar_manager()->infobar_count());
+  ASSERT_EQ(0u, infobar_manager()->infobars().size());
 
   // The infobar can be suppressed only if an origin subscribed to permission
   // status change.
@@ -1414,7 +1467,7 @@ TEST_F(PageInfoTest, ShowInfobarWhenGeolocationChangedToDefault) {
                                        /*is_one_time=*/false);
 
   page_info()->OnUIClosing(nullptr);
-  EXPECT_EQ(1u, infobar_manager()->infobar_count());
+  EXPECT_EQ(1u, infobar_manager()->infobars().size());
   histograms.ExpectUniqueSample(
       "Permissions.PageInfo.Changed.Geolocation.ReloadInfobarShown",
       permissions::PermissionChangeAction::RESET_FROM_ALLOWED, 0);
@@ -1424,7 +1477,7 @@ TEST_F(PageInfoTest, ShowInfobarWhenGeolocationChangedToDefault) {
 TEST_F(PageInfoTest, ShowInfobarWhenGeolocationAndMediaChangedToBlock) {
   base::HistogramTester histograms;
 
-  ASSERT_EQ(0u, infobar_manager()->infobar_count());
+  ASSERT_EQ(0u, infobar_manager()->infobars().size());
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile());
@@ -1453,7 +1506,7 @@ TEST_F(PageInfoTest, ShowInfobarWhenGeolocationAndMediaChangedToBlock) {
                                        /*is_one_time=*/false);
 
   page_info()->OnUIClosing(nullptr);
-  EXPECT_EQ(1u, infobar_manager()->infobar_count());
+  EXPECT_EQ(1u, infobar_manager()->infobars().size());
 
   histograms.ExpectUniqueSample(
       "Permissions.PageInfo.Changed.Geolocation.ReloadInfobarShown",
@@ -1489,12 +1542,12 @@ TEST_F(PageInfoTest, ShowInfoBarWhenAllowingThirdPartyCookies) {
                                CookieControlsEnforcement::kNoEnforcement,
                                base::Time());
 
-  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobars().size());
   page_info()->OnThirdPartyToggleClicked(/*block_third_party_cookies=*/false);
   page_info()->OnUIClosing(nullptr);
-  ASSERT_EQ(1u, infobar_manager()->infobar_count());
+  ASSERT_EQ(1u, infobar_manager()->infobars().size());
 
-  infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
+  infobar_manager()->RemoveInfoBar(infobar_manager()->infobars()[0]);
 }
 
 TEST_F(PageInfoTest, ShowInfoBarWhenBlockingThirdPartyCookies) {
@@ -1513,12 +1566,12 @@ TEST_F(PageInfoTest, ShowInfoBarWhenBlockingThirdPartyCookies) {
                                CookieControlsEnforcement::kNoEnforcement,
                                base::Time());
 
-  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  EXPECT_EQ(0u, infobar_manager()->infobars().size());
   page_info()->OnThirdPartyToggleClicked(/*block_third_party_cookies=*/true);
   page_info()->OnUIClosing(nullptr);
-  ASSERT_EQ(1u, infobar_manager()->infobar_count());
+  ASSERT_EQ(1u, infobar_manager()->infobars().size());
 
-  infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
+  infobar_manager()->RemoveInfoBar(infobar_manager()->infobars()[0]);
 }
 
 #endif

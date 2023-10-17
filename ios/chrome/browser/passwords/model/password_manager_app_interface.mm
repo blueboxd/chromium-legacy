@@ -13,7 +13,7 @@
 #import "components/password_manager/core/browser/password_store_interface.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/prefs/pref_service.h"
-#import "ios/chrome/browser/passwords/model/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -65,7 +65,7 @@ class PasswordStoreConsumerHelper : public PasswordStoreConsumer {
                                     URL:(NSURL*)URL {
   // Obtain a PasswordStore.
   scoped_refptr<password_manager::PasswordStoreInterface> passwordStore =
-      IOSChromePasswordStoreFactory::GetForBrowserState(
+      IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
           chrome_test_util::GetOriginalBrowserState(),
           ServiceAccessType::IMPLICIT_ACCESS)
           .get();
@@ -98,7 +98,7 @@ class PasswordStoreConsumerHelper : public PasswordStoreConsumer {
 
 + (void)clearCredentials {
   scoped_refptr<password_manager::PasswordStoreInterface> passwordStore =
-      IOSChromePasswordStoreFactory::GetForBrowserState(
+      IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
           chrome_test_util::GetOriginalBrowserState(),
           ServiceAccessType::IMPLICIT_ACCESS)
           .get();
@@ -110,7 +110,7 @@ class PasswordStoreConsumerHelper : public PasswordStoreConsumer {
 + (int)storedCredentialsCount {
   // Obtain a PasswordStore.
   scoped_refptr<PasswordStoreInterface> passwordStore =
-      IOSChromePasswordStoreFactory::GetForBrowserState(
+      IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
           chrome_test_util::GetOriginalBrowserState(),
           ServiceAccessType::IMPLICIT_ACCESS)
           .get();

@@ -7,9 +7,11 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "extensions/browser/activity.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
+#include "extensions/common/api/messaging/port_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
@@ -20,10 +22,13 @@ class RenderFrameHost;
 }
 
 namespace extensions {
+
+namespace mojom {
 enum class ChannelType;
+}
+
 struct Message;
 struct MessagingEndpoint;
-struct PortId;
 struct PortContext;
 
 // One side of the communication handled by extensions::MessageService.
@@ -42,6 +47,8 @@ class MessagePort {
     virtual void PostMessage(const PortId& port_id, const Message& message) = 0;
   };
 
+  explicit MessagePort(base::WeakPtr<ChannelDelegate> channel_delegate,
+                       const PortId& port_id);
   MessagePort(const MessagePort&) = delete;
   MessagePort& operator=(const MessagePort&) = delete;
 
@@ -66,7 +73,7 @@ class MessagePort {
 
   // Notifies the port that the channel has been opened.
   virtual void DispatchOnConnect(
-      ChannelType channel_type,
+      mojom::ChannelType channel_type,
       const std::string& channel_name,
       absl::optional<base::Value::Dict> source_tab,
       const ExtensionApiFrameIdMap::FrameData& source_frame,
@@ -113,6 +120,9 @@ class MessagePort {
 
  protected:
   MessagePort();
+
+  base::WeakPtr<ChannelDelegate> weak_channel_delegate_;
+  const PortId port_id_;
 
  private:
   // This port should keep the service worker alive while it is open.

@@ -71,7 +71,7 @@ class WebContentsViewAndroid : public WebContentsView,
   void RestoreFocus() override;
   void FocusThroughTabTraversal(bool reverse) override;
   DropData* GetDropData() const override;
-  void CancelDragDropForPortalActivation() override;
+  void TransferDragSecurityInfo(WebContentsView* view) override;
   gfx::Rect GetViewBounds() const override;
   void CreateView(gfx::NativeView context) override;
   RenderWidgetHostViewBase* CreateViewForWidget(
@@ -214,6 +214,11 @@ class WebContentsViewAndroid : public WebContentsView,
 
   gfx::PointF drag_location_;
   gfx::PointF drag_screen_location_;
+
+  // Set to true when the document is handling the drag.  This means that
+  // the document has registeted interest in the dropped data and the
+  // renderer process should pass the data to the document on drop.
+  bool document_is_handling_drag_ = false;
 };
 
 } // namespace content

@@ -324,16 +324,17 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.EnsureRareData()->SetBlockStartAnnotationSpace(space);
   }
 
-  void SetMarginStrut(const NGMarginStrut& margin_strut) {
+  void SetMarginStrut(const MarginStrut& margin_strut) {
 #if DCHECK_IS_ON()
     DCHECK(!is_margin_strut_set_);
     is_margin_strut_set_ = true;
 #endif
-    if (!is_new_fc_ && margin_strut != NGMarginStrut())
+    if (!is_new_fc_ && margin_strut != MarginStrut()) {
       space_.EnsureRareData()->SetMarginStrut(margin_strut);
+    }
   }
 
-  void SetBfcOffset(const NGBfcOffset& bfc_offset) {
+  void SetBfcOffset(const BfcOffset& bfc_offset) {
     if (!is_new_fc_) {
       if (space_.HasRareData())
         space_.rare_data_->bfc_offset = bfc_offset;
@@ -375,14 +376,14 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.EnsureRareData()->SetClearanceOffset(clearance_offset);
   }
 
-  void SetTableCellBorders(const NGBoxStrut& table_cell_borders,
+  void SetTableCellBorders(const BoxStrut& table_cell_borders,
                            WritingDirectionMode cell_writing_direction,
                            WritingDirectionMode table_writing_direction) {
 #if DCHECK_IS_ON()
     DCHECK(!is_table_cell_borders_set_);
     is_table_cell_borders_set_ = true;
 #endif
-    if (table_cell_borders != NGBoxStrut()) {
+    if (table_cell_borders != BoxStrut()) {
       space_.EnsureRareData()->SetTableCellBorders(
           table_cell_borders.ConvertToPhysical(table_writing_direction)
               .ConvertToLogical(cell_writing_direction));

@@ -857,6 +857,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void setInnerHTMLWithDeclarativeShadowDOMForTesting(const String& html);
   String getInnerHTML(const GetInnerHTMLOptions* options) const;
   void setOuterHTML(const String&, ExceptionState& = ASSERT_NO_EXCEPTION);
+  // https://github.com/whatwg/html/pull/9538
+  void setHTMLUnsafe(const String& html, ExceptionState&);
 
   void setPointerCapture(PointerId poinetr_id, ExceptionState&);
   void releasePointerCapture(PointerId pointer_id, ExceptionState&);
@@ -1237,7 +1239,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void UpdateAncestorWithDirAuto(UpdateAncestorTraversal traversal);
 
  protected:
-  bool HasElementData() const { return element_data_; }
+  bool HasElementData() const { return static_cast<bool>(element_data_); }
   const ElementData* GetElementData() const { return element_data_.Get(); }
   UniqueElementData& EnsureUniqueElementData();
 
@@ -1343,6 +1345,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   TextDirection ParentDirectionality() const;
   void AdjustDirectionalityIfNeededAfterChildrenChanged(
       const ChildrenChange& change);
+  bool RecalcSelfOrAncestorHasDirAuto();
   template <typename Traversal>
   absl::optional<TextDirection> ResolveAutoDirectionality(
       bool& is_deferred,
@@ -1496,7 +1499,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   }
 
   void RecomputeDirectionFromParent();
-  bool RecalcSelfOrAncestorHasDirAuto();
 
   ShadowRoot& CreateAndAttachShadowRoot(ShadowRootType);
 

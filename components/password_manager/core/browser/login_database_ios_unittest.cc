@@ -310,22 +310,11 @@ TEST_F(LoginDatabaseIOSTest, DeleteAndRecreateDatabaseFile) {
       BucketsInclude(Bucket(errSecSuccess, 2), Bucket(errSecItemNotFound, 1)));
 }
 
-class LoginDatabaseMigrationToOSCryptTest
-    : public LoginDatabaseIOSTest,
-      public testing::WithParamInterface<bool> {
+class LoginDatabaseMigrationToOSCryptTest : public LoginDatabaseIOSTest {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     database_path_ = temp_dir_.GetPath().AppendASCII("test.db");
-    if (GetParam()) {
-      feature_list_.InitWithFeatures(
-          /*enabled_features=*/{features::kOneReadLoginDatabaseMigration},
-          /*disabled_features=*/{});
-    } else {
-      feature_list_.InitWithFeatures(
-          /*enabled_features=*/{},
-          /*disabled_features=*/{features::kOneReadLoginDatabaseMigration});
-    }
   }
 
   // Creates the database from |sql_file|.
@@ -413,14 +402,13 @@ class LoginDatabaseMigrationToOSCryptTest
   base::FilePath get_database_path() { return database_path_; }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   base::ScopedTempDir temp_dir_;
   base::FilePath database_path_;
 };
 
 // Tests the migration of the login database from version() to
 // kCurrentVersionNumber.
-TEST_P(LoginDatabaseMigrationToOSCryptTest,
+TEST_F(LoginDatabaseMigrationToOSCryptTest,
        MigrationFromVersion38ProfileStore) {
   // Keychain identifier used in the test file.
   const std::string password_keychain_identifier =
@@ -471,7 +459,7 @@ TEST_P(LoginDatabaseMigrationToOSCryptTest,
   DeleteEncryptedPasswordFromKeychain(note_keychain_identifier);
 }
 
-TEST_P(LoginDatabaseMigrationToOSCryptTest,
+TEST_F(LoginDatabaseMigrationToOSCryptTest,
        MigrationFromVersion38SuccessMetricsAccountStore) {
   CreateDatabase("login_db_v38_with_keychain_id.sql");
 
@@ -516,12 +504,8 @@ TEST_P(LoginDatabaseMigrationToOSCryptTest,
   DeleteEncryptedPasswordFromKeychain(note_keychain_identifier);
 }
 
-TEST_P(LoginDatabaseMigrationToOSCryptTest,
+TEST_F(LoginDatabaseMigrationToOSCryptTest,
        MigrationFromVersion38FailureMetricsProfileStore) {
-  // Error can't be easily simulated when reading all keychain at once.
-  if (GetParam()) {
-    return;
-  }
   base::HistogramTester histogram_tester;
 
   CreateDatabase("login_db_v38_with_keychain_id.sql");
@@ -554,12 +538,8 @@ TEST_P(LoginDatabaseMigrationToOSCryptTest,
       "PasswordManager.MigrationToOSCrypt.ProfileStore.ErrorLatency", 1);
 }
 
-TEST_P(LoginDatabaseMigrationToOSCryptTest,
+TEST_F(LoginDatabaseMigrationToOSCryptTest,
        MigrationFromVersion38FailureMetricsAccountStore) {
-  // Error can't be easily simulated when reading all keychain at once.
-  if (GetParam()) {
-    return;
-  }
   base::HistogramTester histogram_tester;
 
   CreateDatabase("login_db_v38_with_keychain_id.sql");
@@ -592,12 +572,8 @@ TEST_P(LoginDatabaseMigrationToOSCryptTest,
       "PasswordManager.MigrationToOSCrypt.AccountStore.ErrorLatency", 1);
 }
 
-TEST_P(LoginDatabaseMigrationToOSCryptTest,
+TEST_F(LoginDatabaseMigrationToOSCryptTest,
        MigrationFromVersion38WithMissingKeychainItems) {
-  // Error can't be easily simulated when reading all keychain at once.
-  if (GetParam()) {
-    return;
-  }
   CreateDatabase("login_db_v38_with_keychain_ids.sql");
 
   // Even though testing file contains two passwords add only one item to the
@@ -632,7 +608,7 @@ TEST_P(LoginDatabaseMigrationToOSCryptTest,
   DeleteEncryptedPasswordFromKeychain(password_keychain_identifier);
 }
 
-TEST_P(LoginDatabaseMigrationToOSCryptTest,
+TEST_F(LoginDatabaseMigrationToOSCryptTest,
        MigrationFromVersion39ProfileStore) {
   // Keychain identifier used in the test file.
   const std::string note_keychain_identifier =
@@ -680,7 +656,7 @@ TEST_P(LoginDatabaseMigrationToOSCryptTest,
   }
 }
 
-TEST_P(LoginDatabaseMigrationToOSCryptTest,
+TEST_F(LoginDatabaseMigrationToOSCryptTest,
        MigrationFromVersion39AccountStore) {
   // The values set in the .sql file are already used by the previous test.
   // Since tests can run in parallel, the IDs nee to be different to avoid
@@ -732,15 +708,15 @@ TEST_P(LoginDatabaseMigrationToOSCryptTest,
   }
 }
 
-TEST_P(LoginDatabaseMigrationToOSCryptTest,
+TEST_F(LoginDatabaseMigrationToOSCryptTest,
        MigrationFromVersion39FailureMetricsProfileStore) {
   base::HistogramTester histogram_tester;
 
   CreateDatabase("login_db_v39_with_note_keychain_id.sql");
 
   // Ensure that the note entry in the db contains invalid keychain ids so that
-  // the migration fails.
-  ReplaceNoteValue("invalid_keychain_id");
+  // the migration fails. This value can't be converted to CFStringRef.
+  ReplaceNoteValue("v10\x97&0\xa2Q\xd8\03\x9fM(\xb2\xa6y\xb8G");
 
   LoginDatabase login_db(get_database_path(), IsAccountStore(false));
   ASSERT_FALSE(login_db.Init());
@@ -762,18 +738,18 @@ TEST_P(LoginDatabaseMigrationToOSCryptTest,
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.PasswordNotesMigrationToOSCrypt.ProfileStore."
       "KeychainRetrievalError",
-      static_cast<int>(errSecItemNotFound), 1);
+      -1, 1);
 }
 
-TEST_P(LoginDatabaseMigrationToOSCryptTest,
+TEST_F(LoginDatabaseMigrationToOSCryptTest,
        MigrationFromVersion39FailureMetricsAccountStore) {
   base::HistogramTester histogram_tester;
 
   CreateDatabase("login_db_v39_with_note_keychain_id.sql");
 
   // Ensure that the note entry in the db contains invalid keychain ids so that
-  // the migration fails.
-  ReplaceNoteValue("invalid_keychain_id");
+  // the migration fails. This value can't be converted to CFStringRef.
+  ReplaceNoteValue("v10\x97&0\xa2Q\xd8\03\x9fM(\xb2\xa6y\xb8G");
 
   LoginDatabase login_db(get_database_path(), IsAccountStore(true));
   ASSERT_FALSE(login_db.Init());
@@ -795,11 +771,53 @@ TEST_P(LoginDatabaseMigrationToOSCryptTest,
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.PasswordNotesMigrationToOSCrypt.AccountStore."
       "KeychainRetrievalError",
-      static_cast<int>(errSecItemNotFound), 1);
+      -1, 1);
 }
 
-INSTANTIATE_TEST_SUITE_P(,  // Empty instantiation name.
-                         LoginDatabaseMigrationToOSCryptTest,
-                         testing::Bool());
+TEST_F(LoginDatabaseMigrationToOSCryptTest,
+       MigrationFromVersion39WithMissingKeychainItems) {
+  // Even though the testing file contains two notes, add only one of them to
+  // the keychain to simulate the `errSecItemNotFound` error.
+  const std::string note_keychain_identifier =
+      "3dbcx93e-37a9-4c9f-aa6a-45812c484bc4";
+  AddItemToKeychain(u"example_note", note_keychain_identifier);
+
+  // Assert that the database was successfully opened and migrated.
+  CreateDatabase("login_db_v39_with_note_keychain_ids.sql");
+  base::HistogramTester histogram_tester;
+  LoginDatabase login_db(get_database_path(), IsAccountStore(false));
+  ASSERT_TRUE(login_db.Init());
+
+  // Check that the first note is still readable and the second one was deleted
+  // during migration.
+  std::vector<PasswordForm> forms;
+  EXPECT_EQ(login_db.GetAllLogins(&forms), FormRetrievalResult::kSuccess);
+  EXPECT_EQ(forms.size(), 2u);
+  EXPECT_EQ(forms[0].notes.size(), 1u);
+  EXPECT_EQ(forms[0].notes[0].value, u"example_note");
+  EXPECT_EQ(forms[1].notes.size(), 0u);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "PasswordManager.PasswordNotesMigrationToOSCrypt"),
+      BucketsInclude(Bucket(PasswordNotesMigrationToOSCrypt::kStarted, 1),
+                     Bucket(PasswordNotesMigrationToOSCrypt::kSuccess, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "PasswordManager.PasswordNotesMigrationToOSCrypt.ProfileStore"),
+      BucketsInclude(Bucket(PasswordNotesMigrationToOSCrypt::kStarted, 1),
+                     Bucket(PasswordNotesMigrationToOSCrypt::kSuccess, 1)));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordNotesMigrationToOSCrypt."
+      "ProfileStore.DeletedNotesCount",
+      1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordNotesMigrationToOSCrypt."
+      "ProfileStore.MigratedNotesCount",
+      1, 1);
+
+  // Clear the note from the keychain to ensure it doesn't affect other tests.
+  DeleteEncryptedPasswordFromKeychain(note_keychain_identifier);
+}
 
 }  // namespace password_manager

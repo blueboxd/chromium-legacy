@@ -15,6 +15,7 @@ import androidx.annotation.IntDef;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
+import org.chromium.chrome.browser.omnibox.suggestions.querytiles.QueryTileView;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.components.browser_ui.widget.tile.TileView;
 import org.chromium.components.browser_ui.widget.tile.TileViewBinder;
@@ -39,6 +40,9 @@ public class BaseCarouselSuggestionItemViewBuilder {
     public @interface ViewType {
         /** Carousel item is a TileView instance. */
         public int TILE_VIEW = 0;
+
+        /** Carousel item is a QueryTile instance. */
+        public int QUERY_TILE = 1;
     }
 
     /**
@@ -51,6 +55,10 @@ public class BaseCarouselSuggestionItemViewBuilder {
         SimpleRecyclerViewAdapter adapter = new SimpleRecyclerViewAdapter(new ModelList());
         adapter.registerType(ViewType.TILE_VIEW,
                 BaseCarouselSuggestionItemViewBuilder::createTileView, TileViewBinder::bind);
+        adapter.registerType(
+                ViewType.QUERY_TILE,
+                BaseCarouselSuggestionItemViewBuilder::createQueryTile,
+                (m, v, p) -> {});
         return new BaseCarouselSuggestionView(parent.getContext(), adapter);
     }
 
@@ -65,10 +73,7 @@ public class BaseCarouselSuggestionItemViewBuilder {
         TileView tile = (TileView) LayoutInflater.from(context).inflate(
                 R.layout.suggestions_tile_view, parent, false);
         tile.setClickable(true);
-
-        Drawable background = OmniboxResourceProvider.resolveAttributeToDrawable(
-                context, BrandedColorScheme.APP_DEFAULT, R.attr.selectableItemBackground);
-        tile.setBackground(background);
+        applyViewBackground(tile);
 
         // Update the background color of the solid circle around the icon (typically a favicon).
         if (OmniboxFeatures.shouldShowModernizeVisualUpdate(context)) {
@@ -78,5 +83,27 @@ public class BaseCarouselSuggestionItemViewBuilder {
             iconBackground.setBackground(modernizedBackground);
         }
         return tile;
+    }
+
+    /**
+     * Create a QueryTile element.
+     *
+     * @param parent ViewGroup that will host the QueryTile.
+     * @return A View element hosting QueryTile.
+     */
+    private static View createQueryTile(ViewGroup parent) {
+        View tile = new QueryTileView(parent.getContext());
+        applyViewBackground(tile);
+        return tile;
+    }
+
+    private static void applyViewBackground(View view) {
+        view.setFocusable(true);
+        Drawable background =
+                OmniboxResourceProvider.resolveAttributeToDrawable(
+                        view.getContext(),
+                        BrandedColorScheme.APP_DEFAULT,
+                        R.attr.selectableItemBackground);
+        view.setBackground(background);
     }
 }

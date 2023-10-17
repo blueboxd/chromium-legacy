@@ -120,7 +120,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />slett Chromium-dataene
 <translation id="5688047395118852662">På dette kortet ser du forslag til hvordan du får mest mulig ut av Chromium.</translation>
 <translation id="5700709190537129682">Chromium kan ikke sjekke passordene dine</translation>
 <translation id="5777187867430702742">Chromium-side</translation>
-<translation id="584303319228224680">Spor pakkene dine automatisk i Chromium</translation>
 <translation id="5889847953983052353">Når dette er på,
 <ph name="BEGIN_INDENT" /> • bidrar du til å gjøre Chromium bedre for folk som bruker nettleseren slik du gjør.<ph name="END_INDENT" />
 
@@ -160,6 +159,7 @@ Bare personer som har passordfrasen din, kan lese de krypterte dataene. Passordf
 <translation id="6911341667534646387">Fortsett å bruke Chromium-dataene i Google-kontoen din</translation>
 <translation id="7006920032187763988">Du kan bruke passordene du har lagret i Passordlagring, i andre apper på iPaden din.</translation>
 <translation id="7018284295775193585">Kan ikke oppdatere Chromium</translation>
+<translation id="7025471822960602362">Spor registrerte pakker i Chromium</translation>
 <translation id="7045244423563602563">Gi Chromium et personlig preg</translation>
 <translation id="7055269218854630176">Organisasjonen din, <ph name="DOMAIN" />, administrerer kontoen du logger på, og hvordan Chromium kan brukes. Administratoren kan konfigurere eller begrense visse funksjoner.</translation>
 <translation id="7099326575020694068">Chromium kan ikke bruke kameraet i modus for delt visning</translation>

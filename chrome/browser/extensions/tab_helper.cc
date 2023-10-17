@@ -41,8 +41,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -386,17 +384,6 @@ void TabHelper::ClearDismissedExtensions() {
   dismissed_extensions_.clear();
 }
 
-bool TabHelper::OnMessageReceived(const IPC::Message& message,
-                                  content::RenderFrameHost* sender) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(TabHelper, message, sender)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ContentScriptsExecuting,
-                        OnContentScriptsExecuting)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void TabHelper::DidCloneToNewWebContents(WebContents* old_web_contents,
                                          WebContents* new_web_contents) {
   // When the WebContents that this is attached to is cloned, give the new clone
@@ -415,14 +402,6 @@ void TabHelper::WebContentsDestroyed() {
 
   reload_required_ = false;
   ClearDismissedExtensions();
-}
-
-void TabHelper::OnContentScriptsExecuting(
-    content::RenderFrameHost* host,
-    const ExecutingScriptsMap& executing_scripts_map,
-    const GURL& on_url) {
-  ActivityLog::GetInstance(profile_)->OnScriptsExecuted(
-      web_contents(), executing_scripts_map, on_url);
 }
 
 const Extension* TabHelper::GetExtension(const ExtensionId& extension_app_id) {

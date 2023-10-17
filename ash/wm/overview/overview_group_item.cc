@@ -12,7 +12,9 @@
 #include "ash/wm/overview/overview_item_base.h"
 #include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/window_util.h"
+#include "base/check_op.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/widget/widget.h"
@@ -125,6 +127,7 @@ void OverviewGroupItem::SetBounds(const gfx::RectF& target_bounds,
       gfx::SizeF(target_bounds.width() / 2.f, target_bounds.height()));
   sub_bounds2.Inset(kRightItemBoundsInsets);
   overview_items_[1]->SetBounds(sub_bounds2, animation_type);
+  UpdateRoundedCornersAndShadow();
 }
 
 gfx::Transform OverviewGroupItem::ComputeTargetTransform(
@@ -141,7 +144,7 @@ gfx::RectF OverviewGroupItem::GetTargetBoundsInScreen() const {
   return target_bounds;
 }
 
-gfx::RectF OverviewGroupItem::GetWindowTargetBoundsWithInsets() const {
+gfx::RectF OverviewGroupItem::GetTargetBoundsWithInsets() const {
   gfx::RectF target_bounds_with_insets = target_bounds_;
   target_bounds_with_insets.Inset(gfx::InsetsF::TLBR(kHeaderHeightDp, 0, 0, 0));
   return target_bounds_with_insets;
@@ -153,14 +156,15 @@ gfx::RectF OverviewGroupItem::GetTransformedBounds() const {
   // actual implementation of this function.
   CHECK_GE(overview_items_.size(), 1u);
   CHECK_LE(overview_items_.size(), 2u);
-  return overview_items_.at(0)->GetTransformedBounds();
+  return overview_items_[0]->GetTransformedBounds();
 }
 
-float OverviewGroupItem::GetItemScale(const gfx::Size& size) {
+float OverviewGroupItem::GetItemScale(int height) {
   // TODO(michelefan): This is a temporary placeholder for the item scale
-  // calculation, which needs to be updated when we start working on the actual
-  // implementation of this function.
-  return overview_items_.at(0)->GetItemScale(size);
+  // calculation, which should be updated when we implement the overview for
+  // vertical split screen.
+  CHECK(!overview_items_.empty());
+  return overview_items_[0]->GetItemScale(height);
 }
 
 void OverviewGroupItem::ScaleUpSelectedItem(
@@ -192,7 +196,9 @@ float OverviewGroupItem::GetOpacity() const {
   return 1.f;
 }
 
-void OverviewGroupItem::PrepareForOverview() {}
+void OverviewGroupItem::PrepareForOverview() {
+  prepared_for_overview_ = true;
+}
 
 void OverviewGroupItem::OnStartingAnimationComplete() {
   for (const auto& item : overview_items_) {
@@ -238,8 +244,6 @@ void OverviewGroupItem::OnOverviewItemContinuousScroll(
 
 void OverviewGroupItem::SetVisibleDuringItemDragging(bool visible,
                                                      bool animate) {}
-
-void OverviewGroupItem::UpdateShadowTypeForDrag(bool is_dragging) {}
 
 void OverviewGroupItem::UpdateCannotSnapWarningVisibility(bool animate) {}
 

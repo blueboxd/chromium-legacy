@@ -20,11 +20,16 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/supervised_user/core/common/buildflags.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/buildflags/buildflags.h"
 #include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/features.h"
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "chrome/common/companion/visual_search/features.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace {
 
@@ -160,8 +165,10 @@ class ProfileKeyedServiceBrowserTest : public InProcessBrowserTest {
         {
 #if !BUILDFLAG(IS_ANDROID)
           features::kTrustSafetySentimentSurvey,
+          companion::visual_search::features::kVisualSearchSuggestions,
 #endif  // !BUILDFLAG(IS_ANDROID)
           blink::features::kBrowsingTopics,
+          features::kCookieDeprecationFacilitatedTesting,
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
           omnibox::kOnDeviceTailModel,
           omnibox::kOnDeviceHeadProviderNonIncognito,
@@ -364,6 +371,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "DeveloperPrivateAPI",
     "DeviceInfoSyncService",
     "DownloadCoreService",
+    "EligibilityServiceFactory",
     "EventRouter",
     "ExtensionActionAPI",
     "ExtensionActionManager",
@@ -513,12 +521,16 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "UsbDeviceResourceManager",
     "UserCloudPolicyInvalidator",
     "UserPolicySigninService",
+#if !BUILDFLAG(IS_ANDROID)
+    "VisualSearchSuggestionsService",
+#endif  // !BUILDFLAG(IS_ANDROID)
     "WarningBadgeService",
     "WarningService",
     "WebAuthenticationProxyAPI",
     "WebDataService",
     "WebNavigationAPI",
     "WebRequestAPI",
+    "WebRequestEventRouter",
     "WebRtcEventLogManagerKeyedService",
     "WebrtcAudioPrivateEventService",
     "feedback::FeedbackUploaderChrome",

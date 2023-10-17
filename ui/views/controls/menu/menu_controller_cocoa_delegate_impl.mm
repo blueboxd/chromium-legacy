@@ -69,7 +69,6 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
   }
 
   // 2. Calculate the size required.
-  NSSize badge_size = [badge_attr_string size];
   NSSize text_size = [badge_attr_string size];
   NSSize canvas_size = NSMakeSize(
       trunc(text_size.width) + 2 * views::BadgePainter::kBadgeInternalPadding +
@@ -110,8 +109,8 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
           return YES;
         }];
   } else {
-    NSImage* badge_image = [[NSImage alloc] initWithSize:badge_size];
-    NSRect dest_rect = NSMakeRect(0, 0, badge_size.width, badge_size.height);
+    NSImage* badge_image = [[NSImage alloc] initWithSize:canvas_size];
+    NSRect dest_rect = NSMakeRect(0, 0, canvas_size.width, canvas_size.height);
     [badge_image lockFocus];
     NSRect badge_frame =
         NSInsetRect(dest_rect, views::BadgePainter::kBadgeHorizontalMargin, 0);
@@ -260,22 +259,13 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
                       atIndex:(size_t)index
             withColorProvider:(const ui::ColorProvider*)colorProvider {
   if (model->IsNewFeatureAt(index)) {
+    NSMutableAttributedString* attrTitle =
+        [[NSMutableAttributedString alloc] initWithString:menuItem.title];
+
     // /!\ WARNING /!\ Do not update this to use NSTextAttachment.image until
     // macOS 10.15 is the minimum required OS. See the details on the class
     // comment above.
     NSTextAttachment* attachment = [[NSTextAttachment alloc] init];
-
-    attachment.image = NewTagImage(colorProvider);
-    NSSize newTagSize = attachment.image.size;
-
-    // The baseline offset of the badge image to the menu text baseline.
-    const int kBadgeBaselineOffset = -4;
-    attachment.bounds = NSMakeRect(0, kBadgeBaselineOffset, newTagSize.width,
-                                   newTagSize.height);
-
-    NSMutableAttributedString* attrTitle =
-        [[NSMutableAttributedString alloc] initWithString:menuItem.title];
-
     attachment.attachmentCell =
         [[NewTagAttachmentCell alloc] initWithColorProvider:colorProvider];
 
@@ -378,17 +368,25 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
         // NSMenuDidBeginTrackingNotification, but then spin the event loop
         // once. This practically guarantees that the menu is on screen and can
         // be queried for size.
+
         dispatch_after(
             dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC),
             dispatch_get_main_queue(), ^{
-              gfx::Rect bounds =
-                  gfx::ScreenRectFromNSRect(strongMenu._boundsIfOpen);
+              gfx::Rect bounds;
+              if ([strongMenu respondsToSelector:@selector(_boundsIfOpen)]) {
+                bounds = gfx::ScreenRectFromNSRect(strongMenu._boundsIfOpen);
+              } else {
+                bounds = self->_anchorRect;
+                CGSize menu_size = [strongMenu size];
+                bounds.Inset(gfx::Insets::TLBR(
+                    0, -menu_size.width, -menu_size.height, -menu_size.width));
+              }
               for (auto [elementId, index] : elementIds) {
                 ui::ElementTrackerMac::GetInstance()->NotifyMenuItemShown(
                     strongMenu, elementId, bounds);
               }
             });
-      };
+      }
     };
 
     if (@available(macOS 14.0, *)) {

@@ -617,10 +617,10 @@ config("compiler") {
     # TODO(crbug.com/1491036): This isn't supported by Cronet's mainline llvm version.
     if (default_toolchain != "//build/toolchain/cros:target" &&
         !llvm_android_mainline) {
-      cflags += [
-        "-mllvm",
-        "-split-threshold-for-reg-with-hint=0",
-      ]
+      # cflags += [
+      #   "-mllvm",
+      #   "-split-threshold-for-reg-with-hint=0",
+      # ]
       if (use_thin_lto && is_a_target_toolchain) {
         if (is_win) {
           ldflags += [ "-mllvm:-split-threshold-for-reg-with-hint=0" ]

@@ -52,7 +52,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeTabbedControllerCocoa
   // parented to overlay window regardless of the current parent.
   void OrderTabWindowZOrderOnTop();
 
-  NSWindow* __weak tab_window_;
+  NSWindow* __unsafe_unretained tab_window_;
   BridgedContentView* __weak tab_content_view_;
   NSTitlebarAccessoryViewController* __strong tab_titlebar_view_controller_;
 };

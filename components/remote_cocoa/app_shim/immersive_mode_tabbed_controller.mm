@@ -148,7 +148,7 @@ void ImmersiveModeTabbedController::UpdateToolbarVisibility(
   LayoutWindowWithAnchorView(tab_window_, tab_content_view_);
 }
 
-void ImmersiveModeTabbedControllerCocoa::AddController() {
+void ImmersiveModeTabbedController::AddController() {
   if (@available(macOS 10.10, *)) {
     NSWindow* window = browser_window();
     if (![window.titlebarAccessoryViewControllers

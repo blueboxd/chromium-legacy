@@ -235,7 +235,7 @@ ImmersiveModeController::~ImmersiveModeController() {
   }
 }
 
-void ImmersiveModeControllerCocoa::Init() {
+void ImmersiveModeController::Enable() {
   DCHECK(!enabled_);
   enabled_ = true;
   if (@available(macOS 10.10, *)) {

@@ -191,6 +191,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="1737078180382804488">Odbacivanje postavljanja pregledanja obavještenja telefona</translation>
 <translation id="174102739345480129">Označivač je isključen.</translation>
 <translation id="1743570585616704562">Nije prepoznato</translation>
+<translation id="1743927604032653654">Suzite obavještenje <ph name="NOTIFICATION_TITLE" /></translation>
 <translation id="1746730358044914197">Načine unosa konfigurira vaš administrator.</translation>
 <translation id="1747336645387973286">rok <ph name="DUE_DATE" /></translation>
 <translation id="1747827819627189109">Tastatura na ekranu je omogućena</translation>
@@ -208,7 +209,6 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="178347895271755507">Postavljanje pregledanja nedavnih fotografija, medijskih fajlova i obavještenja telefona</translation>
 <translation id="1787955149152357925">Isključeno</translation>
 <translation id="1796561540704213354">Web lokacije uključujući posjećene i otvorene stranice</translation>
-<translation id="1797271123677381264">Zaboravljena lozinka</translation>
 <translation id="181103072419391116">Jačina signala <ph name="SIGNAL_STRENGTH" />, upravlja vaš administrator</translation>
 <translation id="1815245884418711390">Uključite/isključite pristupnu tačku. Pristupna tačka je isključena.</translation>
 <translation id="1816896987747843206">Ovo omogućava pristup kameri za sve aplikacije i web lokacije s odobrenjem za nju</translation>
@@ -311,7 +311,6 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="2276987123919776440">15 min</translation>
 <translation id="2277103315734023688">Pomicanje naprijed</translation>
 <translation id="2282073721614284166">Otvaranje linka u kartici</translation>
-<translation id="2284237890386182187">Uključeno, nema povezanih uređaja</translation>
 <translation id="2292698582925480719">Razmjer prikaza</translation>
 <translation id="229397294990920565">Isključivanje prijenosa podataka na mobilnoj mreži...</translation>
 <translation id="2295777434187870477">Mikrofon je uključen. Deaktiviranjem će se isključiti unos govora.</translation>
@@ -532,6 +531,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="3217205077783620295">Zvuk je uključen. Deaktiviranjem će se isključiti zvuk.</translation>
 <translation id="3226991577105957773">i još <ph name="COUNT" /></translation>
 <translation id="3227137524299004712">Mikrofon</translation>
+<translation id="3233611303007751344">Ušteda baterije je isključena</translation>
 <translation id="324366796737464147">Poništavanje buke</translation>
 <translation id="3249513730522716925">Prozor <ph name="WINDOW_TITLE" /> je premješten s radne površine <ph name="ACTIVE_DESK" /> na radnu površinu <ph name="TARGET_DESK" /></translation>
 <translation id="3253743281242075461">Vrsta školskog zadatka: <ph name="GLANCEABLES_CLASSROOM_LIST_NAME" /></translation>
@@ -554,6 +554,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> se može ponovo prijaviti kasnije.</translation>
 <translation id="3321628682574733415">Pogrešan kôd za roditelja</translation>
 <translation id="332827762492701193">Obavještenja su skrivena</translation>
+<translation id="3333674550998107387">Proširite obavještenje <ph name="NOTIFICATION_TITLE" /></translation>
 <translation id="3339826665088060472">Snimanje ekrana, alati za kreiranje slika i snimaka ekrana</translation>
 <translation id="3340978935015468852">postavke</translation>
 <translation id="3341303451326249809">Snimak ekrana je napravljen</translation>
@@ -571,7 +572,6 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="3387527074123400161">ChromiumOS</translation>
 <translation id="3389599499324569679">Uključiti Diktiranje?</translation>
 <translation id="3394432020929931914">, prošireno</translation>
-<translation id="3400357268283240774">Dodatne postavke</translation>
 <translation id="3405101454990027959">Uključi pristup mikrofonu</translation>
 <translation id="3408735331120433841">Trenutno emitirate ekran.</translation>
 <translation id="3409584356742878290">Prikazivanje ili sakrivanje ploče s kontrolnim alatima za programere</translation>
@@ -619,7 +619,6 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="3563775809269155755">Omogućavanje pristupne tačke</translation>
 <translation id="3566240529365775567">Upravo otvoreno</translation>
 <translation id="3571734092741541777">Postavi</translation>
-<translation id="3572988532398145777">Ne možete proširiti obavještenje dok je ploča otvorena. Prvo zatvorite ploču.</translation>
 <translation id="3573179567135747900">Vrati na "<ph name="FROM_LOCALE" />" (potrebno je ponovo pokrenuti)</translation>
 <translation id="3576141592585647168">Promjena vremenske zone</translation>
 <translation id="3577473026931028326">Nešto nije uredu. Pokušajte ponovo.</translation>
@@ -702,7 +701,6 @@ Povežite uređaj na napajanje.</translation>
 <translation id="385300504083504382">Početak</translation>
 <translation id="3859364108019690">Nije moguće prenositi aplikacije</translation>
 <translation id="3861651314799684201">Pritisnite Enter da snimite cijeli ekran</translation>
-<translation id="3865912916886104060">Nije povezan nijedan uređaj. WiFi će se isključiti da se pokrene korištenje pristupne tačke.</translation>
 <translation id="3886872229787704059">Otvoreno danas</translation>
 <translation id="3891340733213178823">Dvaput pritisnite Ctrl + Shift + Q da se odjavite.</translation>
 <translation id="3893630138897523026">ChromeVox (govorne povratne informacije)</translation>
@@ -771,6 +769,8 @@ Povežite uređaj na napajanje.</translation>
 <translation id="4146671046252289537">Premjesti na kraj sljedeće riječi</translation>
 <translation id="4146833061457621061">Pokreni muziku</translation>
 <translation id="4150201353443180367">Ekran</translation>
+<translation id="4156293514828496577">Preostalo je <ph name="PERCENTAGE" />% baterije (otprilike <ph name="TIME_LEFT" />).
+Neke funkcije su ograničene radi povećanja vijeka trajanja baterije.</translation>
 <translation id="4165275524535002941">Kabl možda neće podržavati ekrane</translation>
 <translation id="4177415338862979658">Kliknite da provjerite detalje</translation>
 <translation id="4177913004758410636">{0,plural, =1{Ažurirajte uređaj u roku od jednog dana}one{Ažurirajte uređaj u roku od # dana}few{Ažurirajte uređaj u roku od # dana}other{Ažurirajte uređaj u roku od # dana}}</translation>
@@ -787,7 +787,6 @@ Povežite uređaj na napajanje.</translation>
 <translation id="4197790712631116042">Isključeno</translation>
 <translation id="4201033867194214117">Funkcija <ph name="FEATURE_NAME" /> nije dostupna.</translation>
 <translation id="4201051445878709314">Prikaz prethodnog mjeseca</translation>
-<translation id="4202362334312791952">Povezan je 1 uređaj. WiFi će se isključiti da se pokrene korištenje pristupne tačke.</translation>
 <translation id="4209973997261364186">WiFi je uključen</translation>
 <translation id="4212472694152630271">Prebaci na PIN</translation>
 <translation id="4215497585250573029">Postavke za VPN</translation>
@@ -901,6 +900,7 @@ Povežite uređaj na napajanje.</translation>
 <translation id="4659419629803378708">ChromeVox je omogućen</translation>
 <translation id="4666911709726371538">Više aplikacija</translation>
 <translation id="4667099493359681081">Preuzimanje fajla <ph name="FILENAME" /></translation>
+<translation id="4672539464599646374">Ušteda baterije je uključena</translation>
 <translation id="468293128311738995">Aplikacije s vašeg telefona</translation>
 <translation id="4690510401873698237">Polica na dnu</translation>
 <translation id="4696813013609194136">Otključajte uređaj pomoću koda roditelja</translation>
@@ -1061,6 +1061,8 @@ Povežite uređaj na napajanje.</translation>
 <translation id="5297704307811127955">Isključeno</translation>
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5302048478445481009">Jezik</translation>
+<translation id="5303319262469238330">Preostalo je <ph name="PERCENTAGE" />% baterije
+Neke funkcije su ograničene radi povećanja vijeka trajanja baterije.</translation>
 <translation id="5308380583665731573">Poveži</translation>
 <translation id="5313326810920013265">Bluetooth postavke</translation>
 <translation id="5314219114274263156">Snimak ekrana je napravljen</translation>
@@ -1094,7 +1096,6 @@ Povežite uređaj na napajanje.</translation>
 <translation id="5426063383988017631">Meni postavki je zatvoren</translation>
 <translation id="5428899915242071344">Započni odabir</translation>
 <translation id="5429993543155113935">Anonimni prozori trenutno nisu podržani</translation>
-<translation id="5430931332414098647">Trenutno dijeljenje internetske veze</translation>
 <translation id="5431318178759467895">Boja</translation>
 <translation id="5433020815079095860">Zvučni unos</translation>
 <translation id="544691375626129091">U ovu sesiju su već dodani svi dostupni korisnici.</translation>
@@ -1123,6 +1124,7 @@ Povežite uređaj na napajanje.</translation>
 <translation id="554893713779400387">Uključi/isključi diktiranje</translation>
 <translation id="5551456515017410630">Otvorite/zatvorite kalendar</translation>
 <translation id="5551974246223970793">Odlazak na sljedeće podudaranje prilikom pretraživanja stranice</translation>
+<translation id="5555639311269196631">Isključi pristupnu tačku</translation>
 <translation id="5558091555391176027">Uključite/isključite veliku vidljivost Dijeljenja u blizini</translation>
 <translation id="556042886152191864">Dugme</translation>
 <translation id="5570122939431135380">Otvaranje nove kartice u novom anonimnom prozoru</translation>
@@ -1168,7 +1170,6 @@ Povežite uređaj na napajanje.</translation>
 <translation id="5707775774148071965">Uređaj podržava veću brzinu prijenosa podataka od kabla. Performanse uređaja su možda ograničene.</translation>
 <translation id="5710450975648804523">Uključen je način rada Ne ometaj</translation>
 <translation id="571295407079589142">Prijenos podataka na mobilnoj mreži je isključen</translation>
-<translation id="5716891621595980681">Povezano je više uređaja (ukupno <ph name="DEVICECOUNT" />). WiFi će se isključiti da se pokrene korištenje pristupne tačke.</translation>
 <translation id="5727460725221669831">Ako ste zaboravili lozinku ili ste nedavno promijenili lozinku za Google račun, pokušajte oporaviti ovog korisnika.</translation>
 <translation id="573413375004481890">Ovaj uređaj ne može podržati sve vaše ekrane pa je s jednim prekinuta veza</translation>
 <translation id="5740328398383587084">Dijeljenje u blizini</translation>
@@ -1218,7 +1219,6 @@ Povežite uređaj na napajanje.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Uključeno</translation>
 <translation id="5920710855273935292">Mikrofon je isključen.</translation>
-<translation id="5924855612669061715">Pristupna tačka je uključena</translation>
 <translation id="5946788582095584774">Funkcija <ph name="FEATURE_NAME" /> je uključena.</translation>
 <translation id="5947494881799873997">Vrati</translation>
 <translation id="595202126637698455">Praćenje performansi je omogućeno</translation>
@@ -1234,6 +1234,7 @@ Povežite uređaj na napajanje.</translation>
 <translation id="598407983968395253">Koristi šablon</translation>
 <translation id="598882571027504733">Za primanje ažuriranja, ponovo pokrenite Chromebook dok je tastatura priključena.</translation>
 <translation id="6000279412553873020">Tipke, dugmad i drugo</translation>
+<translation id="6002122790816966947">Vaši uređaji</translation>
 <translation id="6012623610530968780">Stranica <ph name="SELECTED_PAGE" /> od <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="601304062528754300">Istaknite sljedeće stavke na polici</translation>
 <translation id="6015573907265691211">Označi kao završeno</translation>
@@ -1302,6 +1303,7 @@ Povežite uređaj na napajanje.</translation>
 <translation id="6231419273573514727">Performanse perifernog uređaja su možda ograničene</translation>
 <translation id="6232891689835436217">Aplikacija <ph name="APP_NAME" /> trenutno koristi vašu kameru i mikrofon</translation>
 <translation id="6237231532760393653">1X</translation>
+<translation id="62380141479352646">Baterija je slaba. Ušteda baterije je uključena.</translation>
 <translation id="6247728804802644171">Otvorite obavještenja</translation>
 <translation id="6254629735336163724">Zaključano na horizontalnom prikazu</translation>
 <translation id="6259254695169772643">Odaberite pomoću digitalne olovke</translation>
@@ -1416,6 +1418,7 @@ Nova instalacija</translation>
 <translation id="6732800389263199929">+ <ph name="COUNT" /></translation>
 <translation id="6737983188036277605">Kamera i mikrofon su u upotrebi</translation>
 <translation id="6739144137573853180">IDITE U POSTAVKE</translation>
+<translation id="6747985245839783873">Baterija je napunjena <ph name="PERCENTAGE" /> posto. Ušteda baterije je uključena.</translation>
 <translation id="6751052314767925245">Nametnuo vaš administrator</translation>
 <translation id="6751826523481687655">Uključeno je praćenje performansi</translation>
 <translation id="6752912906630585008">Radna površina <ph name="REMOVED_DESK" /> je uklonjena i spojena s radnom površinom <ph name="RECEIVE_DESK" /></translation>
@@ -1515,6 +1518,7 @@ Nova instalacija</translation>
 <translation id="7131634465328662194">Automatski ćete se odjaviti.</translation>
 <translation id="7143207342074048698">Povezivanje</translation>
 <translation id="7144942256906679589">Status baterije</translation>
+<translation id="7145639536026937076">Baterija je napunjena <ph name="PERCENTAGE" />% i puni se. Ušteda baterije je uključena.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7167913274352523149"><ph name="HOTSPOT" />,
         <ph name="NETWORK" /></translation>
@@ -1523,7 +1527,9 @@ Nova instalacija</translation>
 <translation id="7188494361780961876">Meni je pomjeren u gornji lijevi ugao ekrana.</translation>
 <translation id="7189412385142492784">Koliko je udaljena Venera</translation>
 <translation id="7198435252016571249">Kamera se uklopila u donji desni ugao. Došlo je do konflikta s površinom sistema.</translation>
+<translation id="7219573373513695352">Nema povezanih uređaja</translation>
 <translation id="7229029500464092426">Memorija <ph name="AVAILABLE_MEMORY" /> | <ph name="TOTAL_MEMORY" /> ukupno</translation>
+<translation id="7244725679040769470">Preostalo je <ph name="PERCENTAGE" />% baterije. Povežite uređaj s napajanjem.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Ovaj Chromebook se treba ponovo pokrenuti da bi se primijenilo ažuriranje. To može potrajati do jedne minute.</translation>
 <translation id="7256634071279256947">Stražnji mikrofon</translation>
 <translation id="7258828758145722155">Uređeno jučer</translation>
@@ -1917,6 +1923,7 @@ Da isključite uređaj, ponovo pritisnite i zadržite dugme za uključivanje na 
 <translation id="8878886163241303700">Prošireni ekran</translation>
 <translation id="888982883502837004">Ažuriranja firmvera su dostupna za vaš uređaj. Kliknite da pregledate i ažurirate.</translation>
 <translation id="8896630965521842259"><ph name="DESK_TEMPLATE_NAME" /> će se trajno izbrisati</translation>
+<translation id="889790758758811533">Preostalo je <ph name="PERCENTAGE" />% baterije (otprilike <ph name="TIME_LEFT" />). Povežite uređaj s napajanjem.</translation>
 <translation id="88986195241502842">Tipka Page Down</translation>
 <translation id="8905919797434099235">(Bez naslova)</translation>
 <translation id="890616557918890486">Promijeni izvor</translation>

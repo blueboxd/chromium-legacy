@@ -130,6 +130,9 @@ BASE_FEATURE(kIPHSideSearchPageActionLabelFeature,
 BASE_FEATURE(kIPHTabSearchFeature,
              "IPH_TabSearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHTrackingProtectionOffboardingFeature,
+             "IPH_TrackingProtectionOffboarding",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHTrackingProtectionOnboardingFeature,
              "IPH_TrackingProtectionOnboarding",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -256,6 +259,9 @@ BASE_FEATURE(kIPHRequestDesktopSiteOptInFeature,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHRequestDesktopSiteExceptionsGenericFeature,
              "IPH_RequestDesktopSiteExceptionsGeneric",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHRequestDesktopSiteWindowSettingFeature,
+             "IPH_RequestDesktopSiteWindowSetting",
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHShoppingListSaveFlowFeature,
              "IPH_ShoppingListSaveFlow",

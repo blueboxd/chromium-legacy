@@ -5,10 +5,13 @@
 #include "components/services/app_service/public/cpp/app_storage/app_storage.h"
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/callback.h"
+#include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
@@ -33,16 +36,36 @@ constexpr char kAppName2[] = "BBB";
 constexpr Readiness kReadiness1 = Readiness::kReady;
 constexpr Readiness kReadiness2 = Readiness::kDisabledByUser;
 
+constexpr char kAppShortName1[] = "a";
+constexpr char kAppShortName2[] = "b";
+
 }  // namespace
+
+#define MODIFY_FIELD(FIELD, VALUE)                                   \
+  void Modify##FIELD() {                                             \
+    AppPtr app = std::make_unique<App>(kAppType1, kAppId1);          \
+    app->FIELD = VALUE;                                              \
+    std::vector<AppPtr> apps;                                        \
+    apps.push_back(std::move(app));                                  \
+    app_registry_cache_.OnApps(std::move(apps), kAppType1,           \
+                               /*should_notify_initialized=*/false); \
+  }
+
+#define VERIFY_MODIFY_FIELD(FIELD, VALUE)                     \
+  Modify##FIELD();                                            \
+  app_storage()->WaitForSaveFinished(/*expect_app_count=*/2); \
+  apps[0]->FIELD = VALUE;                                     \
+  VerifySavedApps(apps);
 
 // This fake AppStorage is used to test and track all calls to AppStorage.
 class FakeAppStorage : public AppStorage {
  public:
   FakeAppStorage(const base::FilePath& base_path,
-                 AppRegistryCache& app_registry_cache)
-      : AppStorage(base_path, app_registry_cache) {
+                 AppRegistryCache& app_registry_cache,
+                 std::unique_ptr<base::RunLoop> run_loop)
+      : AppStorage(base_path, app_registry_cache, run_loop->QuitClosure()) {
     // Wait for OnGetAppInfoData to be invoked.
-    EXPECT_TRUE(read_result_.Wait());
+    run_loop->Run();
   }
 
   FakeAppStorage(const FakeAppStorage&) = delete;
@@ -51,6 +74,7 @@ class FakeAppStorage : public AppStorage {
   ~FakeAppStorage() override = default;
 
   std::vector<AppPtr>& GetAppInfo() { return apps_; }
+  std::set<AppType>& GetAppTypeInfo() { return app_types_; }
 
   void WaitForSaveFinished(size_t expect_app_count) {
     expect_app_count_ = expect_app_count;
@@ -60,13 +84,15 @@ class FakeAppStorage : public AppStorage {
 
  private:
   // Override to call to AppStorage::OnGetAppInfoData.
-  void OnGetAppInfoData(std::vector<AppPtr> apps) override {
-    for (const auto& app : apps) {
-      apps_.push_back(app->Clone());
+  void OnGetAppInfoData(base::OnceCallback<void()> callback,
+                        std::unique_ptr<AppInfo> app_info) override {
+    if (app_info) {
+      for (const auto& app : app_info->apps) {
+        apps_.push_back(app->Clone());
+      }
     }
 
-    AppStorage::OnGetAppInfoData(std::move(apps));
-    std::move(read_result_.GetCallback()).Run();
+    AppStorage::OnGetAppInfoData(std::move(callback), std::move(app_info));
   }
 
   void OnSaveFinished() override {
@@ -78,9 +104,13 @@ class FakeAppStorage : public AppStorage {
     }
   }
 
-  std::vector<AppPtr> apps_;
+  void OnAppTypeInitialized(apps::AppType app_type) override {
+    app_types_.insert(app_type);
+  }
 
-  base::test::TestFuture<void> read_result_;
+  std::vector<AppPtr> apps_;
+  std::set<AppType> app_types_;
+
   std::unique_ptr<base::test::TestFuture<void>> write_result_;
   size_t expect_app_count_ = -1;
 };
@@ -96,8 +126,9 @@ class AppStorageTest : public testing::Test {
   void SetUp() override { ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir()); }
 
   void CreateAppStorage() {
-    app_storage_ = std::make_unique<FakeAppStorage>(tmp_dir_.GetPath(),
-                                                    app_registry_cache_);
+    app_storage_ = std::make_unique<FakeAppStorage>(
+        tmp_dir_.GetPath(), app_registry_cache_,
+        std::make_unique<base::RunLoop>());
   }
 
   std::vector<AppPtr> CreateOneApp(AppType app_type,
@@ -120,20 +151,25 @@ class AppStorageTest : public testing::Test {
     AppPtr app2 = std::make_unique<App>(kAppType2, kAppId2);
     app2->readiness = kReadiness2;
     app2->name = kAppName2;
+    app2->short_name = kAppShortName1;
+    app2->install_reason = InstallReason::kUser;
+    app2->install_source = InstallSource::kBrowser;
+    app2->is_platform_app = false;
+    app2->recommendable = true;
+    app2->searchable = true;
     apps.push_back(std::move(app2));
 
     // TODO(crbug.com/1385932): Add other files in the App structure.
     return apps;
   }
 
-  void ModifyOneApp() {
-    AppPtr app = std::make_unique<App>(kAppType1, kAppId1);
-    app->name = kAppName2;
-    std::vector<AppPtr> apps;
-    apps.push_back(std::move(app));
-    app_registry_cache_.OnApps(std::move(apps), kAppType1,
-                               /*should_notify_initialized=*/false);
-  }
+  MODIFY_FIELD(name, kAppName2)
+  MODIFY_FIELD(short_name, kAppShortName2)
+  MODIFY_FIELD(install_reason, InstallReason::kDefault)
+  MODIFY_FIELD(install_source, InstallSource::kSync)
+  MODIFY_FIELD(is_platform_app, true)
+  MODIFY_FIELD(recommendable, false)
+  MODIFY_FIELD(searchable, false)
 
   void RemoveOneApp(AppType app_type, const std::string& app_id) {
     AppPtr app = std::make_unique<App>(app_type, app_id);
@@ -144,17 +180,38 @@ class AppStorageTest : public testing::Test {
                                /*should_notify_initialized=*/false);
   }
 
-  void VerifySavedApps(std::vector<AppPtr>& apps) {
+  void VerifySavedApps(std::vector<AppPtr>& apps,
+                       bool should_verify_app_type_init = false) {
     // Create a new AppStorage to read the AppStorage file to verify the app has
     // been written correctly.
-    auto app_storage = std::make_unique<FakeAppStorage>(tmp_dir().GetPath(),
-                                                        app_registry_cache());
+    auto app_storage = std::make_unique<FakeAppStorage>(
+        tmp_dir().GetPath(), app_registry_cache_,
+        std::make_unique<base::RunLoop>());
     EXPECT_TRUE(IsEqual(apps, app_storage->GetAppInfo()));
+
+    if (!should_verify_app_type_init) {
+      return;
+    }
+
+    std::set<AppType> app_types;
+    for (const auto& app : apps) {
+      app_types.insert(app->app_type);
+    }
+
+    EXPECT_EQ(app_types.size(), app_storage->GetAppTypeInfo().size());
+    for (AppType app_type : app_types) {
+      EXPECT_TRUE(base::Contains(app_storage->GetAppTypeInfo(), app_type));
+    }
+  }
+
+  void OnApps(std::vector<AppPtr> deltas,
+              apps::AppType app_type,
+              bool should_notify_initialized) {
+    app_registry_cache_.OnApps(std::move(deltas), kAppType1,
+                               /*should_notify_initialized=*/false);
   }
 
   const base::ScopedTempDir& tmp_dir() { return tmp_dir_; }
-
-  AppRegistryCache& app_registry_cache() { return app_registry_cache_; }
 
   FakeAppStorage* app_storage() { return app_storage_.get(); }
 
@@ -170,6 +227,7 @@ class AppStorageTest : public testing::Test {
 TEST_F(AppStorageTest, ReadFromNotValidFile) {
   CreateAppStorage();
   EXPECT_TRUE(app_storage()->GetAppInfo().empty());
+  EXPECT_TRUE(app_storage()->GetAppTypeInfo().empty());
 }
 
 // Test AppStorage can work when there is no app info in the AppStorage file.
@@ -182,6 +240,7 @@ TEST_F(AppStorageTest, ReadFromEmptyFile) {
 
   CreateAppStorage();
   EXPECT_TRUE(app_storage()->GetAppInfo().empty());
+  EXPECT_TRUE(app_storage()->GetAppTypeInfo().empty());
 }
 
 // Test AppStorageTest can read and write one app.
@@ -190,13 +249,13 @@ TEST_F(AppStorageTest, ReadAndWriteOneApp) {
   EXPECT_TRUE(app_storage()->GetAppInfo().empty());
 
   // Add 1 app.
-  app_registry_cache().OnApps(CreateOneApp(kAppType1, kAppId1), kAppType1,
-                              /*should_notify_initialized=*/false);
+  OnApps(CreateOneApp(kAppType1, kAppId1), kAppType1,
+         /*should_notify_initialized=*/false);
   app_storage()->WaitForSaveFinished(/*expect_app_count=*/1);
 
   // Verify the app is saved correctly.
   auto apps1 = CreateOneApp(kAppType1, kAppId1);
-  VerifySavedApps(apps1);
+  VerifySavedApps(apps1, /*should_verify_app_type_init=*/true);
 
   // Remove the app.
   RemoveOneApp(kAppType1, kAppId1);
@@ -213,20 +272,21 @@ TEST_F(AppStorageTest, ReadAndWriteMultipleApps) {
   EXPECT_TRUE(app_storage()->GetAppInfo().empty());
 
   // Add 2 apps.
-  app_registry_cache().OnApps(CreateTwoApps(), AppType::kUnknown,
-                              /*should_notify_initialized=*/false);
+  OnApps(CreateTwoApps(), AppType::kUnknown,
+         /*should_notify_initialized=*/false);
   app_storage()->WaitForSaveFinished(/*expect_app_count=*/2);
 
   // Verify the apps are saved correctly.
   auto apps = CreateTwoApps();
-  VerifySavedApps(apps);
+  VerifySavedApps(apps, /*should_verify_app_type_init=*/true);
 
-  ModifyOneApp();
-  app_storage()->WaitForSaveFinished(/*expect_app_count=*/2);
-
-  // Verify the apps are saved correctly.
-  apps[0]->name = kAppName2;
-  VerifySavedApps(apps);
+  VERIFY_MODIFY_FIELD(name, kAppName2);
+  VERIFY_MODIFY_FIELD(short_name, kAppShortName2);
+  VERIFY_MODIFY_FIELD(install_reason, InstallReason::kDefault);
+  VERIFY_MODIFY_FIELD(install_source, InstallSource::kSync);
+  VERIFY_MODIFY_FIELD(is_platform_app, true);
+  VERIFY_MODIFY_FIELD(recommendable, false);
+  VERIFY_MODIFY_FIELD(searchable, false);
 
   RemoveOneApp(kAppType1, kAppId1);
   app_storage()->WaitForSaveFinished(/*expect_app_count=*/2);
@@ -249,14 +309,14 @@ TEST_F(AppStorageTest, ReadAndWriteMultipleAppsAtSameTime) {
   EXPECT_TRUE(app_storage()->GetAppInfo().empty());
 
   // Add apps.
-  app_registry_cache().OnApps(CreateOneApp(kAppType1, kAppId1), kAppType1,
-                              /*should_notify_initialized=*/false);
-  app_registry_cache().OnApps(CreateOneApp(kAppType1, kAppId2), kAppType1,
-                              /*should_notify_initialized=*/false);
-  app_registry_cache().OnApps(CreateOneApp(kAppType1, kAppId3), kAppType1,
-                              /*should_notify_initialized=*/false);
+  OnApps(CreateOneApp(kAppType1, kAppId1), kAppType1,
+         /*should_notify_initialized=*/false);
+  OnApps(CreateOneApp(kAppType1, kAppId2), kAppType1,
+         /*should_notify_initialized=*/false);
+  OnApps(CreateOneApp(kAppType1, kAppId3), kAppType1,
+         /*should_notify_initialized=*/false);
 
-  ModifyOneApp();
+  Modifyname();
   app_storage()->WaitForSaveFinished(/*expect_app_count=*/3);
 
   // Verify the apps are saved correctly.
@@ -268,7 +328,7 @@ TEST_F(AppStorageTest, ReadAndWriteMultipleAppsAtSameTime) {
   apps.push_back(std::move(apps1[0]));
   apps.push_back(std::move(apps2[0]));
   apps.push_back(std::move(apps3[0]));
-  VerifySavedApps(apps);
+  VerifySavedApps(apps, /*should_verify_app_type_init=*/true);
 }
 
 // Test AppStorageTest can handle the removed app case(kRemoved).
@@ -277,13 +337,13 @@ TEST_F(AppStorageTest, AddAndRemoveApp) {
   EXPECT_TRUE(app_storage()->GetAppInfo().empty());
 
   // Add 1 app.
-  app_registry_cache().OnApps(CreateOneApp(kAppType1, kAppId1), kAppType1,
-                              /*should_notify_initialized=*/false);
+  OnApps(CreateOneApp(kAppType1, kAppId1), kAppType1,
+         /*should_notify_initialized=*/false);
   app_storage()->WaitForSaveFinished(/*expect_app_count=*/1);
 
   // Verify the app is saved correctly.
   auto apps1 = CreateOneApp(kAppType1, kAppId1);
-  VerifySavedApps(apps1);
+  VerifySavedApps(apps1, /*should_verify_app_type_init=*/true);
 
   // Remove the app.
   std::vector<AppPtr> apps2;
@@ -299,8 +359,8 @@ TEST_F(AppStorageTest, AddAndRemoveApp) {
   AppPtr app3 = std::make_unique<App>(kAppType1, kAppId1);
   app3->readiness = kReadiness1;
   apps2.push_back(std::move(app3));
-  app_registry_cache().OnApps(std::move(apps2), kAppType1,
-                              /*should_notify_initialized=*/false);
+  OnApps(std::move(apps2), kAppType1,
+         /*should_notify_initialized=*/false);
   app_storage()->WaitForSaveFinished(/*expect_app_count=*/1);
 
   // Verify the app has been added.

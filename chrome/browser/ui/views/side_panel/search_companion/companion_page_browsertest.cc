@@ -414,7 +414,7 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
     std::string createIframeScript =
         "const frame = document.createElement('iframe');"
         "document.body.appendChild(frame);";
-    // TODO: handle return value
+    // The return value is not required for this portion.
     std::ignore = content::ExecJs(iframe, createIframeScript);
     content::RenderFrameHost* nested_iframe = content::ChildFrameAt(iframe, 0);
 
@@ -2216,8 +2216,19 @@ IN_PROC_BROWSER_TEST_F(SidePanelCompanion2BrowserDisabledTest,
   EXPECT_EQ(0u, requests_received_on_server());
 }
 
+// TODO(crbug.com/1491942): This fails with the field trial testing config.
+class SidePanelCompanion2BrowserEnabledTestNoTestingConfig
+    : public SidePanelCompanion2BrowserEnabledTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SidePanelCompanion2BrowserEnabledTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch("disable-field-trial-config");
+  }
+};
+
 // Verify that Companion is enabled when `kSidePanelCompanion2` is enabled.
-IN_PROC_BROWSER_TEST_F(SidePanelCompanion2BrowserEnabledTest, FeatureEnabled) {
+IN_PROC_BROWSER_TEST_F(SidePanelCompanion2BrowserEnabledTestNoTestingConfig,
+                       FeatureEnabled) {
   EXPECT_TRUE(companion::IsCompanionFeatureEnabled());
 
   // Load a page on the active tab and open companion side panel

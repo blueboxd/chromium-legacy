@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {getParentEntry} from '../../common/js/api.js';
 import {DialogType} from '../../common/js/dialog_type.js';
 import {isDriveRootEntryList, isFakeEntryInDrives, isGrandRootEntryInDrives, isVolumeEntry, sortEntries} from '../../common/js/entry_utils.js';
 import {FileType} from '../../common/js/file_type.js';
@@ -12,7 +13,7 @@ import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {EntryLocation} from '../../externs/entry_location.js';
 import {FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {CurrentDirectory, EntryType, FileData, State, Volume, VolumeMap} from '../../externs/ts/state.js';
-import {VolumeInfo} from '../../externs/volume_info.js';
+import type {VolumeInfo} from '../../externs/volume_info.js';
 import {constants} from '../../foreground/js/constants.js';
 import {MetadataItem} from '../../foreground/js/metadata/metadata_item.js';
 import type {ActionsProducerGen} from '../../lib/actions_producer.js';
@@ -612,6 +613,11 @@ export function volumeNestingEntries(
     }
   }
 
+  state.allEntries[volumeRootKey].isEjectable =
+      (volumeInfo.source === VolumeManagerCommon.Source.DEVICE &&
+       volumeInfo.volumeType !== VolumeManagerCommon.VolumeType.MTP) ||
+      volumeInfo.source === VolumeManagerCommon.Source.FILE;
+
   if (volumeInfo.volumeType === VolumeType.REMOVABLE) {
     // It should be nested/grouped when there is more than 1 partition in the
     // same device.
@@ -665,12 +671,6 @@ export function volumeNestingEntries(
         icon: constants.ICON_TYPES.UNKNOWN_REMOVABLE,
         isEjectable: false,
       };
-    } else {
-      // Update the isEjectable only if the removable device is not grouped.
-      state.allEntries[volumeRootKey].isEjectable =
-          (volumeInfo.source === VolumeManagerCommon.Source.DEVICE &&
-           volumeInfo.volumeType !== VolumeManagerCommon.VolumeType.MTP) ||
-          volumeInfo.source === VolumeManagerCommon.Source.FILE;
     }
   }
 
@@ -864,4 +864,24 @@ async function readChildEntriesForDirectoryEntry(
     };
     readEntry();
   });
+}
+
+/**
+ * Read child entries for the newly renamed directory entry.
+ * We need to read its parent's children first before reading its own children,
+ * because the newly renamed entry might not be in the store yet after renaming.
+ */
+export async function*
+    readSubDirectoriesForRenamedEntry(newEntry: Entry): ActionsProducerGen {
+  const parentDirectory = await getParentEntry(newEntry);
+  // Read the children of the parent first to make sure the newly added entry
+  // appears in the store.
+  for await (const action of readSubDirectories(parentDirectory)) {
+    yield action;
+  }
+  // Read the children of the newly renamed entry.
+  for await (
+      const action of readSubDirectories(newEntry, /* recursive= */ true)) {
+    yield action;
+  }
 }

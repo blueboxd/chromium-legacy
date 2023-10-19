@@ -8,7 +8,6 @@
 #include "base/ranges/algorithm.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_segment.h"
@@ -32,6 +31,7 @@
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shaping_line_breaker.h"
+#include "third_party/blink/renderer/platform/text/bidi_paragraph.h"
 #include "third_party/blink/renderer/platform/text/character.h"
 
 namespace blink {
@@ -60,7 +60,7 @@ inline LineBreakStrictness StrictnessFromLineBreak(LineBreak line_break) {
 LineBoxStrut ComputeNegativeSideBearings(
     const NGPhysicalBoxFragment& box_fragment) {
   const auto get_shape_result =
-      [](const NGInlineCursor cursor) -> const ShapeResultView* {
+      [](const InlineCursor cursor) -> const ShapeResultView* {
     if (!cursor)
       return nullptr;
     const NGFragmentItem& item = *cursor.CurrentItem();
@@ -74,7 +74,7 @@ LineBoxStrut ComputeNegativeSideBearings(
 
   LineBoxStrut side_bearing;
 
-  for (NGInlineCursor cursor(box_fragment); cursor; cursor.MoveToNextLine()) {
+  for (InlineCursor cursor(box_fragment); cursor; cursor.MoveToNextLine()) {
     // Take left/right bearing from the first/last child in the line if it has
     // `ShapeResult`. The first/last child can be non text item, e.g. image.
     // Note: Items in the line are in visual order. So, first=left, last=right.
@@ -125,7 +125,7 @@ LineBoxStrut ComputeNegativeSideBearings(
     //    * `rect.size.width  = text_ink_bounds.Width()`
     // [1] https://drafts.csswg.org/css-inline/#initial-letter-box-size
     // Sizeing the Initial Letter Box
-    NGInlineCursor child_at_left_edge = cursor;
+    InlineCursor child_at_left_edge = cursor;
     child_at_left_edge.MoveToFirstChild();
     if (auto* shape_result = get_shape_result(child_at_left_edge)) {
       const LayoutUnit left_bearing =
@@ -135,7 +135,7 @@ LineBoxStrut ComputeNegativeSideBearings(
           std::min(side_bearing.inline_start, left_bearing);
     }
 
-    NGInlineCursor child_at_right_edge = cursor;
+    InlineCursor child_at_right_edge = cursor;
     child_at_right_edge.MoveToLastChild();
     if (auto* shape_result = get_shape_result(child_at_right_edge)) {
       const LayoutUnit width = shape_result->SnappedWidth();
@@ -366,11 +366,11 @@ void NGLineBreaker::UpdateAvailableWidth() {
 NGLineBreaker::NGLineBreaker(NGInlineNode node,
                              NGLineBreakerMode mode,
                              const NGConstraintSpace& space,
-                             const NGLineLayoutOpportunity& line_opportunity,
+                             const LineLayoutOpportunity& line_opportunity,
                              const NGLeadingFloats& leading_floats,
                              const NGInlineBreakToken* break_token,
                              const NGColumnSpannerPath* column_spanner_path,
-                             NGExclusionSpace* exclusion_space)
+                             ExclusionSpace* exclusion_space)
     : line_opportunity_(line_opportunity),
       node_(node),
       mode_(mode),
@@ -442,7 +442,7 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
 NGLineBreaker::~NGLineBreaker() = default;
 
 void NGLineBreaker::SetLineOpportunity(
-    const NGLineLayoutOpportunity& line_opportunity) {
+    const LineLayoutOpportunity& line_opportunity) {
   line_opportunity_ = line_opportunity;
   UpdateAvailableWidth();
 }
@@ -548,7 +548,7 @@ void NGLineBreaker::ComputeBaseDirection() {
   // https://w3c.github.io/csswg-drafts/css-writing-modes-3/#valdef-unicode-bidi-plaintext
   // which sets to LTR if no strong characters.
   // https://unicode.org/reports/tr9/#P3
-  base_direction_ = NGBidiParagraph::BaseDirectionForStringOrLtr(
+  base_direction_ = BidiParagraph::BaseDirectionForStringOrLtr(
       StringView(text, start_offset),
       // For CSS processing, line feed (U+000A) is treated as a segment break.
       // https://w3c.github.io/csswg-drafts/css-text-3/#segment-break
@@ -2698,8 +2698,8 @@ void NGLineBreaker::HandleBlockInInline(
     // The exclusion spaces *must* match. If they don't we'll have an incorrect
     // layout (as it will potentially won't consider some preceeding floats).
     // Move the derived geometry for performance.
-    DCHECK(*exclusion_space_ == constraint_space_.ExclusionSpace());
-    constraint_space_.ExclusionSpace().MoveAndUpdateDerivedGeometry(
+    DCHECK(*exclusion_space_ == constraint_space_.GetExclusionSpace());
+    constraint_space_.GetExclusionSpace().MoveAndUpdateDerivedGeometry(
         *exclusion_space_);
 
     NGBlockNode block_node(To<LayoutBox>(item.GetLayoutObject()));
@@ -2886,7 +2886,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
     }
   }
 
-  NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
+  LayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
       {constraint_space_.GetBfcOffset().line_offset, bfc_block_offset},
       constraint_space_.AvailableSize().inline_size);
 

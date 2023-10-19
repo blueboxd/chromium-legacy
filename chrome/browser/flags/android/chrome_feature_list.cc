@@ -401,7 +401,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &supervised_user::kEnableProtoApiForClassifyUrl,
     &supervised_user::kKidFriendlyContentFeed,
     &switches::kForceStartupSigninPromo,
-    &switches::kIdentityStatusConsistency,
     &switches::kForceDisableExtendedSyncPromos,
     &switches::kSearchEngineChoice,
     &switches::kSeedAccountsRevamp,
@@ -1149,7 +1148,7 @@ BASE_FEATURE(kStartSurfaceDisabledFeedImprovement,
 
 BASE_FEATURE(kStartSurfaceWithAccessibility,
              "StartSurfaceWithAccessibility",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSurfacePolish,
              "SurfacePolish",

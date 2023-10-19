@@ -38,6 +38,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
@@ -287,6 +288,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private TabDropTarget mTabDropTarget;
 
     private StripTabHoverCardView mTabHoverCardView;
+    private BrowserControlsStateProvider mBrowserControlStateProvider;
 
     /**
      * Creates an instance of the {@link StripLayoutHelper}.
@@ -302,6 +304,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
      *     for drag and drop.
      * @param dragDropDelegate The @{@link DragAndDropDelegate} passed to @{@link TabDragSource} to
      *     initiate drag and drop.
+     * @param browserControlsStateProvider The @BrowserControlsStateProvider passed for drag and
+     *     drop.
      * @param toolbarContainerView The @{link View} passed to @{link TabDragSource} for drag and
      *     drop.
      */
@@ -314,6 +318,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             CompositorButton modelSelectorButton,
             MultiInstanceManager multiInstanceManager,
             DragAndDropDelegate dragDropDelegate,
+            BrowserControlsStateProvider browserControlsStateProvider,
             View toolbarContainerView) {
         mTabOverlapWidth = ChromeFeatureList.sTabStripRedesign.isEnabled()
                 ? TAB_OVERLAP_WIDTH_LARGE_DP
@@ -327,6 +332,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         mMultiInstanceManager = multiInstanceManager;
         mToolbarContainerView = toolbarContainerView;
         mDragAndDropDelegate = dragDropDelegate;
+        mBrowserControlStateProvider = browserControlsStateProvider;
 
         if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
             // Use toolbar menu button padding to align NTB with menu button.
@@ -884,13 +890,13 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         }
 
         // Otherwise, 2. Build any tabs that are missing.
+        finishAnimationsAndPushTabUpdates();
         List<Animator> animationList = computeAndUpdateTabOrders(false, !onStartup);
         if (animationList == null) animationList = new ArrayList<>();
 
         // 3. Start an animation for the newly created tab.
         StripLayoutTab tab = findTabById(id);
         if (tab != null && !onStartup) {
-            finishAnimationsAndPushTabUpdates();
             animationList.add(CompositorAnimator.ofFloatProperty(mUpdateHost.getAnimationHandler(),
                     tab, StripLayoutTab.Y_OFFSET, tab.getHeight(), 0f, ANIM_TAB_CREATED_MS));
 
@@ -1777,13 +1783,21 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                 || !mScroller.isFinished();
     }
 
+    private void finishAnimations() {
+        // Force any outstanding animations to finish. Need to recurse as some animations (like the
+        // multi-step tab close animation) kick off another animation once the first ends.
+        while (mRunningAnimator != null && mRunningAnimator.isRunning()) {
+            mRunningAnimator.end();
+        }
+        mRunningAnimator = null;
+    }
+
     private void startAnimationList(List<Animator> animationList, AnimatorListener listener) {
         AnimatorSet set = new AnimatorSet();
         set.playTogether(animationList);
         if (listener != null) set.addListener(listener);
-        if (mRunningAnimator != null && mRunningAnimator.isRunning()) {
-            mRunningAnimator.end();
-        }
+
+        finishAnimations();
         mRunningAnimator = set;
         mRunningAnimator.start();
     }
@@ -1795,9 +1809,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     public void finishAnimationsAndPushTabUpdates() {
         if (mRunningAnimator == null) return;
 
-        // 1. Force any outstanding animations to finish.
-        mRunningAnimator.end();
-        mRunningAnimator = null;
+        // 1. Finish animations.
+        finishAnimations();
 
         // 2. Figure out which tabs need to be closed.
         ArrayList<StripLayoutTab> tabsToRemove = new ArrayList<StripLayoutTab>();
@@ -1864,7 +1877,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         float stripWidth = mWidth - mLeftMargin - mRightMargin;
 
         // 2. Compute the effective width of every tab.
-        float tabsWidth = mStripTabs.length * (mCachedTabWidth - mTabOverlapWidth);
+        float tabsWidth = getNumLiveTabs() * (mCachedTabWidth - mTabOverlapWidth);
 
         if (mInReorderMode || mTabGroupMarginAnimRunning) {
             tabsWidth += mStripStartMarginForReorder;
@@ -2229,7 +2242,9 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         for (int i = mStripTabsVisuallyOrdered.length - 1; i >= 0; i--) {
             final StripLayoutTab tab = mStripTabsVisuallyOrdered[i];
-            if (tab.isVisible() && tab.getDrawX() <= x && x <= (tab.getDrawX() + tab.getWidth())) {
+            if (tab.isVisible()
+                    && tab.getTouchTargetLeft() <= x
+                    && x <= tab.getTouchTargetRight()) {
                 return tab;
             }
         }
@@ -3323,7 +3338,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                         mToolbarContainerView,
                         mMultiInstanceManager,
                         mDragAndDropDelegate,
-                        mTabDropTarget);
+                        mTabDropTarget,
+                        mBrowserControlStateProvider);
     }
 
     @VisibleForTesting

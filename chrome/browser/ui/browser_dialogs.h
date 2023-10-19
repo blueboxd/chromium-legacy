@@ -16,10 +16,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "components/compose/buildflags.h"
-#include "content/public/browser/bluetooth_delegate.h"
-#include "content/public/browser/login_delegate.h"
 #include "extensions/buildflags/buildflags.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -28,7 +25,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
-class LoginHandler;
 class Profile;
 
 namespace base {
@@ -43,10 +39,6 @@ class WebContents;
 
 namespace extensions {
 class Extension;
-}
-
-namespace net {
-class AuthChallengeInfo;
 }
 
 namespace permissions {
@@ -115,27 +107,6 @@ void ShowCreateChromeAppShortcutsDialog(
     const std::string& web_app_id,
     base::OnceCallback<void(bool /* created */)> close_callback);
 
-#if PAIR_BLUETOOTH_ON_DEMAND()
-// Shows the dialog to request the Bluetooth credentials for the device
-// identified by |device_identifier|. |device_identifier| is the most
-// appropriate string to display to the user for device identification
-// (e.g. name, MAC address).
-void ShowBluetoothDeviceCredentialsDialog(
-    content::WebContents* web_contents,
-    const std::u16string& device_identifier,
-    content::BluetoothDelegate::PairPromptCallback close_callback);
-
-// Show a user prompt for pairing a Bluetooth device. |device_identifier|
-// is the most appropriate string to display for device identification
-// (e.g. name, MAC address). The |pin| is displayed (if specified),
-// so the user can confirm a matching value is displayed on the device.
-void ShowBluetoothDevicePairConfirmDialog(
-    content::WebContents* web_contents,
-    const std::u16string& device_identifier,
-    const absl::optional<std::u16string>& pin,
-    content::BluetoothDelegate::PairPromptCallback close_callback);
-#endif  // PAIR_BLUETOOTH_ON_DEMAND()
-
 #if BUILDFLAG(IS_MAC)
 
 // Bridging methods that show/hide the toolkit-views based Task Manager on Mac.
@@ -143,16 +114,6 @@ task_manager::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser);
 void HideTaskManagerViews();
 
 #endif  // BUILDFLAG(IS_MAC)
-
-#if defined(TOOLKIT_VIEWS)
-
-// Creates a toolkit-views based LoginHandler (e.g. HTTP-Auth dialog).
-std::unique_ptr<LoginHandler> CreateLoginHandlerViews(
-    const net::AuthChallengeInfo& auth_info,
-    content::WebContents* web_contents,
-    content::LoginDelegate::LoginAuthRequiredCallback auth_required_callback);
-
-#endif  // TOOLKIT_VIEWS
 
 // Returns a OnceClosure that client code can call to close the device chooser.
 // This OnceClosure references the actual dialog as a WeakPtr, so it's safe to
@@ -169,12 +130,6 @@ bool IsDeviceChooserShowingForTesting(Browser* browser);
 void ShowWindowNamePrompt(Browser* browser);
 std::unique_ptr<ui::DialogModel> CreateWindowNamePromptDialogModelForTesting(
     Browser* browser);
-
-// Callback used to indicate whether Direct Sockets connection dialog is
-// accepted or not. If accepted, the remote address and port number are
-// provided.
-using OnProceedCallback = base::OnceCallback<
-    void(bool accepted, const std::string& address, const std::string& port)>;
 
 #if BUILDFLAG(ENABLE_COMPOSE)
 void ShowComposeDialog(content::WebContents& web_contents,

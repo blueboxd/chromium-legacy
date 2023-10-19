@@ -45,19 +45,15 @@ def run_checkstyle(local_path, style_file, java_files):
         'com.puppycrawl.tools.checkstyle.Main', '-c', style_file, '-f', 'xml'
     ] + java_files
     result = subprocess.run(cmd, capture_output=True, check=False, text=True)
-    # Return code 1 means failed checks.
-    if result.returncode and result.returncode != 1:
-        sys.stderr.write(result.stderr)
-        sys.stderr.write(
-            '\nCheckstyle failed. This might mean you have a syntax error\n')
-        sys.exit(-1)
 
     stderr_lines = result.stderr.splitlines()
-    # One line is always: "Checkstyle ends with # warnings".
+    # One line is always: "Checkstyle ends with # warnings/errors".
     if len(stderr_lines) > 1 or (stderr_lines
                                  and 'ends with' not in stderr_lines[0]):
         sys.stderr.write(result.stderr)
-        sys.stderr.write('\nCheckstyle had unexpected output\n')
+        sys.stderr.write(
+            f'\nCheckstyle failed with returncode={result.returncode}.\n')
+        sys.stderr.write('This might mean you have a syntax error\n')
         sys.exit(-1)
 
     try:

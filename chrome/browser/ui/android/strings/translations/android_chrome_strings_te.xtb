@@ -285,6 +285,7 @@
 <translation id="2571834852878229351">మీ స్వంత పాస్‌వర్డ్‌ను క్రియేట్ చేసుకోండి</translation>
 <translation id="2573452357057307036">Chromeను మీ ఆటోమేటిక్ బ్రౌజర్‌గా సెట్ చేయడం ఎలాగో తెలుసుకోండి</translation>
 <translation id="2574249610672786438">Chromeను ఎక్కడ ఉపయోగించినా మీ ట్యాబ్‌లను చూసేందుకు, మీ పరికరాలన్నింటిలో సైన్ ఇన్ చేయండి</translation>
+<translation id="2578337197553672982">టీనేజర్‌ల కోసం Google కంటెంట్</translation>
 <translation id="2581165646603367611">ఇది Chrome ముఖ్యమైనదిగా భావించని కుక్కీలు, కాష్, సైట్‌ల ఇతర డేటాను తీసివేస్తుంది.</translation>
 <translation id="2587052924345400782">సరికొత్త వెర్షన్ ఉంది</translation>
 <translation id="2593272815202181319">మోనోస్పేస్</translation>
@@ -352,7 +353,6 @@
 <translation id="2909615210195135082">Google నోటిఫికేషన్‌ల ప్లాట్‌ఫామ్</translation>
 <translation id="2912296070571964914">మీకు ఆసక్తికరమైన టాపిక్‌లను మేనేజ్ చేయండి</translation>
 <translation id="2912345083818861431">తెరిచి ఉన్న అజ్ఞాత ట్యాబ్‌లను చూడడానికి స్క్రీన్ లాక్‌ను ఉపయోగించండి</translation>
-<translation id="2922568440285376746">Google <ph name="BEGIN_NEW" />New<ph name="END_NEW" />తో ఇమేజ్ లోపల సెర్చ్ చేయండి</translation>
 <translation id="2923908459366352541">పేరు చెల్లదు</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> స్టోరేజ్‌</translation>
 <translation id="2932222164150889403">మీ కీబోర్డ్ మారదు</translation>
@@ -687,7 +687,6 @@
 <translation id="4684427112815847243">అంతా సింక్ చేయండి</translation>
 <translation id="4685741273709472646">డ్రాప్‌డౌన్ లిస్ట్ నుండి ఎంచుకోండి</translation>
 <translation id="4687718960473379118">సైట్ సూచించిన యాడ్‌లు</translation>
-<translation id="4689792375321623175">Google <ph name="BEGIN_NEW" />New<ph name="END_NEW" />తో ఇమేజ్‌ను సెర్చ్ చేయండి</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4699172675775169585">కాష్ చేసిన చిత్రాలు మరియు ఫైళ్లు</translation>
 <translation id="4710167854527459075">సరికొత్తవి సార్ట్ చేయి</translation>
@@ -701,6 +700,7 @@
 <translation id="4742970037960872810">హైలైట్‌ను తీసివేయండి</translation>
 <translation id="4743664893327841597">అడ్రస్ బార్‌లో లేదా సెర్చ్ బాక్స్‌లో మీరు ఏదైతే టైప్ చేస్తారో, అది ఆటోమేటిక్‌గా సెట్ చేసి ఉండే మీ సెర్చ్ ఇంజిన్‌కు పంపబడుతుంది</translation>
 <translation id="4749960740855309258">కొత్త ట్యాబ్‌ను తెరవండి</translation>
+<translation id="4750356170202299988">టీనేజర్‌ల Google కంటెంట్</translation>
 <translation id="4758061975920522644">ఇమేజ్‌ను మాత్రమే షేర్ చేయండి</translation>
 <translation id="4759238208242260848">డౌన్‌లోడ్‌లు</translation>
 <translation id="4763480195061959176">వీడియో</translation>
@@ -1182,6 +1182,7 @@
 <translation id="7187993566681480880">Chromeలో మిమ్మల్ని సురక్షితంగా ఉంచుతుంది, మీరు సైన్ ఇన్ చేసినప్పుడు ఇతర Google యాప్‌లలో మీ భద్రతను మెరుగుపరచడానికి ఉపయోగించబడవచ్చు.</translation>
 <translation id="7191430249889272776">బ్యాక్‌గ్రౌండ్‌లో ట్యాబ్ తెరవబడింది.</translation>
 <translation id="7196215469483532480">గోప్యతా గైడ్ వివరణ షీట్ ఫుల్-స్క్రీన్‌లో తెరవబడింది</translation>
+<translation id="7205672015775254816">టీనేజర్‌ల కోసం Google కంటెంట్ - ఆఫ్</translation>
 <translation id="7207760545532569765">బ్యాక్‌గ్రౌండ్ ట్యాబ్‌లుగా <ph name="TAB_COUNT" />ట్యాబ్‌లను రీస్టోర్ చేయండి.</translation>
 <translation id="7217781228893594884">మీరు Chrome నుండి నిష్క్రమించినప్పుడు అజ్ఞాత ట్యాబ్‌లు లాక్ అవుతాయి</translation>
 <translation id="7221869452894271364">ఈ పేజీని మళ్లీ లోడ్ చేయి</translation>
@@ -1329,6 +1330,7 @@
 <translation id="7876243839304621966">అన్నీ తొలగించండి</translation>
 <translation id="7886917304091689118">Chromeలో అమలు అవుతోంది</translation>
 <translation id="7887174313503389866">ముఖ్య గోప్యతా, సెక్యూరిటీ కంట్రోల్స్ ఉత్పత్తి పరిచయ వివరాలను తెలుసుకోండి. మరిన్ని ఆప్షన్‌ల కోసం, ఒక్కో సెట్టింగ్‌కు వెళ్లండి.</translation>
+<translation id="7896724475402191389">టీనేజర్‌ల కోసం కంటెంట్ - ఆఫ్</translation>
 <translation id="7903184275147100332">దీనికి ఒక నిమిషం పట్టవచ్చు</translation>
 <translation id="7914399737746719723">యాప్ ఇన్‌స్టాల్ చేయబడింది</translation>
 <translation id="7919123827536834358">ఈ భాషలను ఆటోమేటిక్‌గా అనువదించు</translation>

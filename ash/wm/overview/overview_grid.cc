@@ -182,7 +182,7 @@ class OverviewMetricsTracker : public OverviewGrid::MetricsTracker {
                          bool single_animation_in_clamshell,
                          bool minimized_in_tablet)
       : tracker_(compositor->RequestNewThroughputTracker()) {
-    tracker_.Start(metrics_util::ForSmoothness(base::BindRepeating(
+    tracker_.Start(metrics_util::ForSmoothnessV3(base::BindRepeating(
         &OverviewMetricsTracker::ReportOverviewSmoothness, in_split_view,
         single_animation_in_clamshell, minimized_in_tablet)));
   }
@@ -240,7 +240,7 @@ class ShutdownAnimationMetricsTrackerObserver : public OverviewObserver,
                          single_animation,
                          minimized_in_tablet) {
     compositor->AddObserver(this);
-    Shell::Get()->overview_controller()->AddObserver(this);
+    OverviewController::Get()->AddObserver(this);
   }
   ShutdownAnimationMetricsTrackerObserver(
       const ShutdownAnimationMetricsTrackerObserver&) = delete;
@@ -248,8 +248,10 @@ class ShutdownAnimationMetricsTrackerObserver : public OverviewObserver,
       const ShutdownAnimationMetricsTrackerObserver&) = delete;
   ~ShutdownAnimationMetricsTrackerObserver() override {
     compositor_->RemoveObserver(this);
-    if (Shell::Get()->overview_controller())
-      Shell::Get()->overview_controller()->RemoveObserver(this);
+    if (OverviewController* overview_controller =
+            Shell::Get()->overview_controller()) {
+      overview_controller->RemoveObserver(this);
+    }
   }
 
   // OverviewObserver:
@@ -405,11 +407,10 @@ bool ShouldExcludeItemFromGridLayout(
 }
 
 bool IsUnsupportedWindow(aura::Window* window) {
-  const bool has_restore_id = !wm::GetTransientParent(window) &&
-                              (Shell::Get()
-                                   ->overview_controller()
-                                   ->disable_app_id_check_for_saved_desks() ||
-                               !saved_desk_util::GetAppId(window).empty());
+  const bool has_restore_id =
+      !wm::GetTransientParent(window) &&
+      (OverviewController::Get()->disable_app_id_check_for_saved_desks() ||
+       !saved_desk_util::GetAppId(window).empty());
 
   return !DeskTemplate::IsAppTypeSupported(window) || !has_restore_id;
 }
@@ -889,11 +890,9 @@ void OverviewGrid::RemoveItem(OverviewItemBase* overview_item,
   if (overview_session_)
     overview_session_->UpdateFrameThrottling();
 
-  if (!item_destroying)
+  if (!item_destroying || !overview_session_) {
     return;
-
-  if (!overview_session_)
-    return;
+  }
 
   if (empty()) {
     overview_session_->OnGridEmpty();
@@ -1556,24 +1555,25 @@ bool OverviewGrid::IntersectsWithDesksBar(const gfx::Point& screen_location,
 
 bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     const gfx::Point& screen_location,
-    OverviewItemBase* drag_item) {
-  DCHECK(desks_util::ShouldDesksBarBeCreated());
+    OverviewItemBase* dragged_item) {
+  CHECK(desks_util::ShouldDesksBarBeCreated());
 
-  aura::Window* const dragged_window = drag_item->GetWindow();
-  const bool dragged_window_is_visible_on_all_desks =
-      dragged_window &&
-      desks_util::IsWindowVisibleOnAllWorkspaces(dragged_window);
+  const bool has_windows_visible_on_all_desks =
+      dragged_item->HasVisibleOnAllDesksWindow();
+
   // End the drag for the LegacyDeskBarView.
   if (!IntersectsWithDesksBar(screen_location,
                               /*update_desks_bar_drag_details=*/
-                              !dragged_window_is_visible_on_all_desks,
+                              !has_windows_visible_on_all_desks,
                               /*for_drop=*/true)) {
     return false;
   }
 
-  if (dragged_window_is_visible_on_all_desks) {
+  if (has_windows_visible_on_all_desks) {
     // Show toast since items that are visible on all desks should not be able
     // to be unassigned during overview.
+    // TODO(b/306034162): Consider updating the string for the toast with the
+    // existence of group item.
     Shell::Get()->toast_manager()->Show(
         ToastData(kMoveVisibleOnAllDesksWindowToastId,
                   ToastCatalogName::kMoveVisibleOnAllDesksWindow,
@@ -1583,6 +1583,22 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
   }
 
   auto* desks_controller = DesksController::Get();
+
+  auto move_windows_to_target_desk = [&](Desk* target_desk) -> bool {
+    bool did_any_window_move = false;
+    for (auto* dragged_window : dragged_item->GetWindows()) {
+      if (!desks_controller->MoveWindowFromActiveDeskTo(
+              dragged_window, target_desk, root_window_,
+              DesksMoveWindowFromActiveDeskSource::kDragAndDrop)) {
+        CHECK(!did_any_window_move);
+        return false;
+      }
+      did_any_window_move = true;
+    }
+    return true;
+  };
+
+  const bool is_jellyroll_enabled = chromeos::features::IsJellyrollEnabled();
   for (auto* mini_view : desks_bar_view_->mini_views()) {
     if (!mini_view->IsPointOnMiniView(screen_location))
       continue;
@@ -1591,7 +1607,7 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     if (target_desk == desks_controller->active_desk())
       return false;
 
-    if (chromeos::features::IsJellyrollEnabled()) {
+    if (is_jellyroll_enabled) {
       // Make sure that new desk button goes back to the expanded state after
       // the window is dropped on an existing desk.
       desks_bar_view_->UpdateDeskIconButtonState(
@@ -1599,31 +1615,27 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
           /*target_state=*/CrOSNextDeskIconButton::State::kExpanded);
     }
 
-    return desks_controller->MoveWindowFromActiveDeskTo(
-        dragged_window, target_desk, root_window_,
-        DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
+    return move_windows_to_target_desk(target_desk);
   }
 
-  if (!desks_controller->CanCreateDesks())
+  if (!desks_controller->CanCreateDesks()) {
     return false;
+  }
 
-  if (chromeos::features::IsJellyrollEnabled()) {
-    if (!desks_bar_view_->new_desk_button()->IsPointOnButton(screen_location)) {
-      return false;
-    }
-  } else {
-    if (!desks_bar_view_->expanded_state_new_desk_button()->IsPointOnButton(
-            screen_location)) {
-      return false;
-    }
+  const bool is_point_on_new_desk_button =
+      is_jellyroll_enabled
+          ? desks_bar_view_->new_desk_button()->IsPointOnButton(screen_location)
+          : desks_bar_view_->expanded_state_new_desk_button()->IsPointOnButton(
+                screen_location);
+
+  if (!is_point_on_new_desk_button) {
+    return false;
   }
 
   desks_bar_view_->OnNewDeskButtonPressed(
       DesksCreationRemovalSource::kDragToNewDeskButton);
 
-  return desks_controller->MoveWindowFromActiveDeskTo(
-      dragged_window, desks_controller->desks().back().get(), root_window_,
-      DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
+  return move_windows_to_target_desk(desks_controller->desks().back().get());
 }
 
 void OverviewGrid::MaybeExpandDesksBarView(const gfx::PointF& screen_location) {
@@ -1649,7 +1661,7 @@ void OverviewGrid::MaybeShrinkDesksBarView() {
 }
 
 void OverviewGrid::StartScroll() {
-  Shell::Get()->overview_controller()->PauseOcclusionTracker();
+  OverviewController::Get()->PauseOcclusionTracker();
 
   // Users are not allowed to scroll past the leftmost or rightmost bounds of
   // the items on screen in the grid. |scroll_offset_min_| is the amount needed
@@ -1719,7 +1731,7 @@ bool OverviewGrid::UpdateScrollOffset(float delta) {
 }
 
 void OverviewGrid::EndScroll() {
-  Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
+  OverviewController::Get()->UnpauseOcclusionTracker(
       kOcclusionUnpauseDurationForScroll);
   for (const auto& item : window_list_)
     item->set_scrolling_bounds(absl::nullopt);
@@ -2072,9 +2084,7 @@ void OverviewGrid::UpdateSaveDeskButtons() {
       !Shell::Get()->tablet_mode_controller()->InTabletMode() &&
       !IsShowingSavedDeskLibrary() && desks_widget_ &&
       (!features::IsContinuousOverviewScrollAnimationEnabled() ||
-       !Shell::Get()
-            ->overview_controller()
-            ->is_continuous_scroll_in_progress());
+       !OverviewController::Get()->is_continuous_scroll_in_progress());
 
   const bool visibility_changed =
       target_visible != IsSaveDeskButtonContainerVisible();
@@ -2261,8 +2271,15 @@ SavedDeskSaveDeskButtonContainer* OverviewGrid::GetSaveDeskButtonContainer()
 void OverviewGrid::OnSplitViewStateChanged(
     SplitViewController::State previous_state,
     SplitViewController::State state) {
+  if (features::IsFasterSplitScreenSetupEnabled()) {
+    // When an activated is auto snapped, it will send a state change and try to
+    // end overview here. Ignore split view state when `kFasterSplitScreenSetup`
+    // is enabled.
+    return;
+  }
+
   // Do nothing if overview is being shutdown.
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  OverviewController* overview_controller = OverviewController::Get();
   if (!overview_controller->InOverviewSession())
     return;
 
@@ -2305,7 +2322,7 @@ void OverviewGrid::OnSplitViewDividerPositionChanged() {
 }
 
 void OverviewGrid::OnScreenCopiedBeforeRotation() {
-  Shell::Get()->overview_controller()->PauseOcclusionTracker();
+  OverviewController::Get()->PauseOcclusionTracker();
 
   for (auto& window : window_list()) {
     window->UpdateRoundedCornersAndShadow();
@@ -2316,8 +2333,9 @@ void OverviewGrid::OnScreenCopiedBeforeRotation() {
 void OverviewGrid::OnScreenRotationAnimationFinished(
     ScreenRotationAnimator* animator,
     bool canceled) {
-  Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
-  Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
+  OverviewController* overview_controller = OverviewController::Get();
+  overview_controller->DelayedUpdateRoundedCornersAndShadow();
+  overview_controller->UnpauseOcclusionTracker(
       kOcclusionUnpauseDurationForRotation);
 }
 

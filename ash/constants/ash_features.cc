@@ -108,7 +108,7 @@ BASE_FEATURE(kSuppressTextMessages,
 
 BASE_FEATURE(kAltClickAndSixPackCustomization,
              "AltClickAndSixPackCustomization",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to enable AutoEnrollment for Kiosk in OOBE
 BASE_FEATURE(kAutoEnrollmentKioskInOobe,
@@ -1827,9 +1827,7 @@ BASE_FEATURE(kSysUiDownloadsIntegrationV2,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the use of the new System Nudges. (go/cros-educationalnudge-spec)
-BASE_FEATURE(kSystemNudgeV2,
-             "SystemNudgeV2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kSystemNudgeV2, "SystemNudgeV2", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the Night Light feature.
 BASE_FEATURE(kNightLight, "NightLight", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -2031,6 +2029,11 @@ BASE_FEATURE(kPerDeskShelf, "PerDeskShelf", base::FEATURE_DISABLED_BY_DEFAULT);
 // Provides a UI for users to view information about their Android phone
 // and perform phone-side actions within ChromeOS.
 BASE_FEATURE(kPhoneHub, "PhoneHub", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Retry generating attestation certificates when there are failures.
+BASE_FEATURE(kPhoneHubAttestationRetries,
+             "PhoneHubAttestationRetries",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the Camera Roll feature in Phone Hub, which allows users to access
 // recent photos and videos taken on a connected Android device
@@ -2912,6 +2915,12 @@ BASE_FEATURE(kPeripheralCustomization,
              "PeripheralCustomization",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enable peripheral notification to notify users when a input device is
+// connected to the user's chromebook for the first time.
+BASE_FEATURE(kPeripheralNotification,
+             "PeripheralNotification",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables whether to store UMA logs per-user and whether metrics
 // consent is per-user.
 BASE_FEATURE(kPerUserMetrics,
@@ -2921,7 +2930,7 @@ BASE_FEATURE(kPerUserMetrics,
 // Allows Files App to find and execute tasks using App Service for ARC apps.
 BASE_FEATURE(kArcFileTasksUseAppService,
              "ArcFileTasksUseAppService",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3866,6 +3875,11 @@ bool IsPerDeskShelfEnabled() {
   return base::FeatureList::IsEnabled(kPerDeskShelf);
 }
 
+bool IsPeripheralNotificationEnabled() {
+  return base::FeatureList::IsEnabled(kPeripheralNotification) &&
+         IsPeripheralCustomizationEnabled();
+}
+
 bool IsPersonalizationJellyEnabled() {
   return chromeos::features::IsJellyEnabled();
 }
@@ -3893,6 +3907,10 @@ bool IsPhoneHubPingOnBubbleOpenEnabled() {
 
 bool IsPhoneHubEnabled() {
   return base::FeatureList::IsEnabled(kPhoneHub);
+}
+
+bool IsPhoneHubAttestationRetriesEnabled() {
+  return base::FeatureList::IsEnabled(kPhoneHubAttestationRetries);
 }
 
 bool IsPhoneHubCallNotificationEnabled() {

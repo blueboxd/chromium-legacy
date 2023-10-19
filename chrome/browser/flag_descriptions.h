@@ -113,9 +113,6 @@ extern const char kCdmStorageDatabaseDescription[];
 extern const char kCdmStorageDatabaseMigrationName[];
 extern const char kCdmStorageDatabaseMigrationDescription[];
 
-extern const char kChromeRootStoreEnabledName[];
-extern const char kChromeRootStoreEnabledDescription[];
-
 extern const char kClickToCallName[];
 extern const char kClickToCallDescription[];
 
@@ -179,9 +176,6 @@ extern const char kGainmapHdrImagesDescription[];
 
 extern const char kAvifGainmapHdrImagesName[];
 extern const char kAvifGainmapHdrImagesDescription[];
-
-extern const char kIdentityStatusConsistencyName[];
-extern const char kIdentityStatusConsistencyDescription[];
 
 extern const char kTangibleSyncName[];
 extern const char kTangibleSyncDescription[];
@@ -467,9 +461,6 @@ extern const char
 
 extern const char kCreateShortcutIgnoresManifestName[];
 extern const char kCreateShortcutIgnoresManifestDescription[];
-
-extern const char kDisableSlowMSAAInGraphiteName[];
-extern const char kDisableSlowMSAAInGraphiteDescription[];
 
 extern const char kDisableProcessReuse[];
 extern const char kDisableProcessReuseDescription[];
@@ -795,6 +786,9 @@ extern const char kEnablePerfettoSystemTracingDescription[];
 extern const char kEnablePeripheralCustomizationName[];
 extern const char kEnablePeripheralCustomizationDescription[];
 
+extern const char kEnablePeripheralNotificationName[];
+extern const char kEnablePeripheralNotificationDescription[];
+
 extern const char kEnablePixelCanvasRecordingName[];
 extern const char kEnablePixelCanvasRecordingDescription[];
 
@@ -942,8 +936,8 @@ extern const char kFedCmWithoutThirdPartyCookiesDescription[];
 extern const char kFedCmWithoutWellKnownEnforcementName[];
 extern const char kFedCmWithoutWellKnownEnforcementDescription[];
 
-extern const char kWebIdentityMDocsName[];
-extern const char kWebIdentityMDocsDescription[];
+extern const char kWebIdentityDigitalCredentialsName[];
+extern const char kWebIdentityDigitalCredentialsDescription[];
 
 extern const char kFileHandlingIconsName[];
 extern const char kFileHandlingIconsDescription[];
@@ -1941,9 +1935,6 @@ extern const char kTranslateForceTriggerOnEnglishDescription[];
 extern const char kTreatInsecureOriginAsSecureName[];
 extern const char kTreatInsecureOriginAsSecureDescription[];
 
-extern const char kPrivateStateTokensName[];
-extern const char kPrivateStateTokensDescription[];
-
 extern const char kTailoredSecurityRetryForSyncUsersName[];
 extern const char kTailoredSecurityRetryForSyncUsersDescription[];
 
@@ -2612,6 +2603,10 @@ extern const char kTouchDragAndContextMenuDescription[];
 extern const char kTranslateMessageUIName[];
 extern const char kTranslateMessageUIDescription[];
 
+extern const char kUnifiedPasswordManagerLocalPasswordsAndroidNoMigrationName[];
+extern const char
+    kUnifiedPasswordManagerLocalPasswordsAndroidNoMigrationDescription[];
+
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
 
@@ -3096,6 +3091,9 @@ extern const char kAmbientModeThrottleAnimationDescription[];
 
 extern const char kApnRevampName[];
 extern const char kApnRevampDescription[];
+
+extern const char kAppInstallServiceUriName[];
+extern const char kAppInstallServiceUriDescription[];
 
 extern const char kAppLaunchAutomationName[];
 extern const char kAppLaunchAutomationDescription[];

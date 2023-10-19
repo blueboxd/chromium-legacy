@@ -126,6 +126,7 @@ chromium-metrics-reviews@google.com.
   <variant name=".CvcSave"/>
   <variant name=".DesktopSiteGlobalDefaultOptOut"/>
   <variant name=".DesktopSiteGlobalOptIn"/>
+  <variant name=".DesktopSiteWindowSetting"/>
   <variant name=".DownloadIncognitoWarning"/>
   <variant name=".DownloadProgress"/>
   <variant name=".ExternalNavigation"/>
@@ -6066,16 +6067,6 @@ chromium-metrics-reviews@google.com.
     feature. When enabled, the feature will show the logo of the default search
     engine in the omnibox. These events record the performance of fetching
     non-Google logos.
-  </summary>
-</histogram>
-
-<histogram name="SingleWebsitePreferences.NavigatedFromToReset"
-    enum="SettingsNavigationSources" expires_after="M114">
-  <owner>peconn@chromium.org</owner>
-  <owner>peter@chromium.org</owner>
-  <summary>
-    Logs which way had the user navigated into settings screens when they press
-    &quot;Clear and Reset&quot; button in settings of a single website.
   </summary>
 </histogram>
 

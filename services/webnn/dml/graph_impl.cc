@@ -66,29 +66,24 @@ DML_TENSOR_DATA_TYPE GetTensorDataType(Operand::DataType type) {
   }
 }
 
-// TODO(crbug.com/1273291): Removes this function when all operators are
-// implemented in the `union Operation`.
-std::string OpKindToString(Operator::Kind kind) {
+std::string OpKindToString(mojom::ElementWiseBinary::Kind kind) {
   switch (kind) {
-    case Operator::Kind::kAdd:
+    case mojom::ElementWiseBinary::Kind::kAdd:
       return "add";
-    case Operator::Kind::kSub:
+    case mojom::ElementWiseBinary::Kind::kSub:
       return "sub";
-    case Operator::Kind::kMul:
+    case mojom::ElementWiseBinary::Kind::kMul:
       return "mul";
-    case Operator::Kind::kDiv:
+    case mojom::ElementWiseBinary::Kind::kDiv:
       return "div";
-    case Operator::Kind::kMax:
+    case mojom::ElementWiseBinary::Kind::kMax:
       return "max";
-    case Operator::Kind::kMin:
+    case mojom::ElementWiseBinary::Kind::kMin:
       return "min";
-    case Operator::Kind::kPow:
+    case mojom::ElementWiseBinary::Kind::kPow:
       return "pow";
-    case Operator::Kind::kGemm:
-      return "gemm";
-    case Operator::Kind::kReshape:
-      return "reshape";
   }
+  NOTREACHED_NORETURN();
 }
 
 std::string OpTagToString(Operation::Tag tag) {
@@ -99,6 +94,8 @@ std::string OpTagToString(Operation::Tag tag) {
       return "concat";
     case Operation::Tag::kConv2d:
       return "conv2d";
+    case Operation::Tag::kElementWiseBinary:
+      return "element-wise binary";
     case Operation::Tag::kPool2d:
       return "pool2d";
     case Operation::Tag::kResample2d:
@@ -314,6 +311,53 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForClamp(
   return base::ok();
 }
 
+base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForConcat(
+    const IdToOperandMap& id_to_operand_map,
+    const mojom::ConcatPtr& concat,
+    GraphBuilder& graph_builder,
+    IdToNodeOutputMap& id_to_node_output_map) {
+  const auto& input_operand_ids = concat->input_operand_ids;
+  size_t input_num = input_operand_ids.size();
+
+  std::vector<const NodeOutput*> input_node_outputs;
+  std::vector<DML_TENSOR_DESC> input_dml_tensor_descs;
+  input_node_outputs.reserve(input_num);
+  input_dml_tensor_descs.reserve(input_num);
+
+  for (const auto& input_operand_id : input_operand_ids) {
+    const NodeOutput* input_node_output =
+        GetNodeOutputForOperand(id_to_node_output_map, input_operand_id);
+    input_node_outputs.push_back(input_node_output);
+    input_dml_tensor_descs.push_back(
+        input_node_output->GetTensorDesc().GetDMLTensorDesc());
+  }
+
+  uint64_t output_id = concat->output_operand_id;
+  auto output_tensor_desc =
+      CreateOutputTensorDesc(id_to_operand_map, output_id);
+
+  DML_JOIN_OPERATOR_DESC concat_operator_desc{
+      .InputCount = base::checked_cast<uint32_t>(input_dml_tensor_descs.size()),
+      .InputTensors = input_dml_tensor_descs.data(),
+      .OutputTensor = &output_tensor_desc.GetDMLTensorDesc(),
+      .Axis = concat->axis};
+
+  const OperatorNode* concat_node = graph_builder.CreateOperatorNode(
+      DML_OPERATOR_JOIN, &concat_operator_desc, input_node_outputs);
+  if (!concat_node) {
+    return base::unexpected(
+        mojom::Error::New(mojom::Error::Code::kUnknownError,
+                          "Failed to create concat operator."));
+  }
+
+  const NodeOutput* node_output = graph_builder.CreateNodeOutput(
+      concat_node, std::move(output_tensor_desc), 0);
+  // The output id must be unique in the map.
+  CHECK(id_to_node_output_map.try_emplace(output_id, node_output).second);
+
+  return base::ok();
+}
+
 base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForConv2d(
     const IdToOperandMap& id_to_operand_map,
     const mojom::Conv2dPtr& conv2d,
@@ -480,19 +524,20 @@ const OperatorNode* CreateBinaryOperator(
 
 base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForBinary(
     const IdToOperandMap& id_to_operand_map,
-    const OperatorPtr& operation,
+    const mojom::ElementWiseBinaryPtr& operation,
     GraphBuilder& graph_builder,
     IdToNodeOutputMap& id_to_node_output_map) {
   // The input a and b tensor descriptions may be broadcated.
   const NodeOutput* input_a_node_output =
-      GetNodeOutputForInputOperand(operation, id_to_node_output_map, 0);
+      GetNodeOutputForOperand(id_to_node_output_map, operation->lhs_operand);
   auto input_a_tensor_desc = input_a_node_output->GetTensorDesc();
   const NodeOutput* input_b_node_output =
-      GetNodeOutputForInputOperand(operation, id_to_node_output_map, 1);
+      GetNodeOutputForOperand(id_to_node_output_map, operation->rhs_operand);
   auto input_b_tensor_desc = input_b_node_output->GetTensorDesc();
 
+  uint64_t output_id = operation->output_operand;
   const auto output_tensor_desc =
-      GetTensorDescForOutputOperand(operation, id_to_operand_map);
+      CreateOutputTensorDesc(id_to_operand_map, output_id);
 
   auto output_dimensions = output_tensor_desc.GetDimensions();
   if (input_a_tensor_desc.GetDimensions() != output_dimensions) {
@@ -506,31 +551,31 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForBinary(
   std::array<const NodeOutput*, 2> input_node_outputs = {input_a_node_output,
                                                          input_b_node_output};
   switch (operation->kind) {
-    case mojom::Operator::Kind::kAdd: {
+    case mojom::ElementWiseBinary::Kind::kAdd: {
       binary_node = CreateBinaryOperator<DML_ELEMENT_WISE_ADD_OPERATOR_DESC>(
           input_a_tensor_desc, input_b_tensor_desc, output_tensor_desc,
           graph_builder, DML_OPERATOR_ELEMENT_WISE_ADD, input_node_outputs);
       break;
     }
-    case mojom::Operator::Kind::kDiv: {
+    case mojom::ElementWiseBinary::Kind::kDiv: {
       binary_node = CreateBinaryOperator<DML_ELEMENT_WISE_DIVIDE_OPERATOR_DESC>(
           input_a_tensor_desc, input_b_tensor_desc, output_tensor_desc,
           graph_builder, DML_OPERATOR_ELEMENT_WISE_DIVIDE, input_node_outputs);
       break;
     }
-    case mojom::Operator::Kind::kMax: {
+    case mojom::ElementWiseBinary::Kind::kMax: {
       binary_node = CreateBinaryOperator<DML_ELEMENT_WISE_MAX_OPERATOR_DESC>(
           input_a_tensor_desc, input_b_tensor_desc, output_tensor_desc,
           graph_builder, DML_OPERATOR_ELEMENT_WISE_MAX, input_node_outputs);
       break;
     }
-    case mojom::Operator::Kind::kMin: {
+    case mojom::ElementWiseBinary::Kind::kMin: {
       binary_node = CreateBinaryOperator<DML_ELEMENT_WISE_MIN_OPERATOR_DESC>(
           input_a_tensor_desc, input_b_tensor_desc, output_tensor_desc,
           graph_builder, DML_OPERATOR_ELEMENT_WISE_MIN, input_node_outputs);
       break;
     }
-    case mojom::Operator::Kind::kMul: {
+    case mojom::ElementWiseBinary::Kind::kMul: {
       binary_node =
           CreateBinaryOperator<DML_ELEMENT_WISE_MULTIPLY_OPERATOR_DESC>(
               input_a_tensor_desc, input_b_tensor_desc, output_tensor_desc,
@@ -538,7 +583,7 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForBinary(
               input_node_outputs);
       break;
     }
-    case mojom::Operator::Kind::kSub: {
+    case mojom::ElementWiseBinary::Kind::kSub: {
       binary_node =
           CreateBinaryOperator<DML_ELEMENT_WISE_SUBTRACT_OPERATOR_DESC>(
               input_a_tensor_desc, input_b_tensor_desc, output_tensor_desc,
@@ -546,7 +591,7 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForBinary(
               input_node_outputs);
       break;
     }
-    case mojom::Operator::Kind::kPow: {
+    case mojom::ElementWiseBinary::Kind::kPow: {
       DML_ELEMENT_WISE_POW_OPERATOR_DESC element_wise_operator_desc{
           .InputTensor = &input_a_tensor_desc.GetDMLTensorDesc(),
           .ExponentTensor = &input_b_tensor_desc.GetDMLTensorDesc(),
@@ -556,9 +601,6 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForBinary(
           input_node_outputs);
       break;
     }
-    default:
-      LOG(ERROR) << "This operator type is not supported";
-      NOTREACHED_NORETURN();
   }
   if (!binary_node) {
     return base::unexpected(mojom::Error::New(
@@ -566,8 +608,10 @@ base::expected<void, mojom::ErrorPtr> CreateOperatorNodeForBinary(
         "Failed to create " + OpKindToString(operation->kind) + " operator."));
   }
 
-  CreateNodeOutput(operation, graph_builder, binary_node,
-                   std::move(output_tensor_desc), id_to_node_output_map);
+  const NodeOutput* node_output = graph_builder.CreateNodeOutput(
+      binary_node, std::move(output_tensor_desc), 0);
+  // The output id must be unique in the map.
+  CHECK(id_to_node_output_map.try_emplace(output_id, node_output).second);
 
   return base::ok();
 }
@@ -856,17 +900,6 @@ base::expected<void, mojom::ErrorPtr> CreateGenericOperator(
   // message.
   base::expected<void, mojom::ErrorPtr> create_operator_result;
   switch (operation->kind) {
-    case Operator::Kind::kAdd:
-    case Operator::Kind::kDiv:
-    case Operator::Kind::kMax:
-    case Operator::Kind::kMin:
-    case Operator::Kind::kMul:
-    case Operator::Kind::kPow:
-    case Operator::Kind::kSub: {
-      create_operator_result = CreateOperatorNodeForBinary(
-          id_to_operand_map, operation, graph_builder, id_to_node_output_map);
-      break;
-    }
     case Operator::Kind::kReshape: {
       CreateNodeOutputForReshape(id_to_operand_map, operation, graph_builder,
                                  id_to_node_output_map);
@@ -1338,10 +1371,22 @@ void GraphImpl::CreateAndBuild(
             id_to_node_output_map);
         break;
       }
+      case Operation::Tag::kConcat: {
+        create_operator_result = CreateOperatorNodeForConcat(
+            id_to_operand_map, operation->get_concat(), graph_builder,
+            id_to_node_output_map);
+        break;
+      }
       case Operation::Tag::kConv2d: {
         create_operator_result = CreateOperatorNodeForConv2d(
             id_to_operand_map, operation->get_conv2d(), graph_builder,
             id_to_node_output_map);
+        break;
+      }
+      case mojom::Operation::Tag::kElementWiseBinary: {
+        create_operator_result = CreateOperatorNodeForBinary(
+            id_to_operand_map, operation->get_element_wise_binary(),
+            graph_builder, id_to_node_output_map);
         break;
       }
       case Operation::Tag::kPool2d: {

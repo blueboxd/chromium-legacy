@@ -990,6 +990,36 @@
     "owners": ["gastonr@microsoft.com", "gerchiko@microsoft.com", "yshalivskyy@microsoft.com"]
   },
   {
+    "prefix": "fluent-overlay-scrollbar",
+    "platforms": ["Win"],
+    "bases": ["virtual/fluent-non-overlay-scrollbar/hover-over-scrollbar-thumb.html"],
+    "args": ["--enable-features=FluentOverlayScrollbar",
+             "--enable-threaded-compositing",
+             "--disable-smooth-scrolling"],
+    "expires": "Jul 1, 2024",
+    "owners": ["gastonr@microsoft.com", "gerchiko@microsoft.com", "yshalivskyy@microsoft.com"]
+  },
+  {
+    "prefix": "fluent-overlay-scrollbar-dark-mode",
+    "platforms": ["Win"],
+    "bases": ["virtual/fluent-non-overlay-scrollbar/hover-over-scrollbar-thumb.html"],
+    "args": ["--enable-features=FluentOverlayScrollbar",
+             "--enable-threaded-compositing",
+             "--blink-settings=preferredColorScheme=0,forceDarkModeEnabled=true"],
+    "expires": "Jul 1, 2024",
+    "owners": ["gastonr@microsoft.com", "gerchiko@microsoft.com", "yshalivskyy@microsoft.com"]
+  },
+  {
+    "prefix": "fluent-overlay-scrollbar-hc",
+    "platforms": ["Win"],
+    "bases": ["virtual/fluent-non-overlay-scrollbar/hover-over-scrollbar-thumb.html"],
+    "args": ["--enable-features=FluentOverlayScrollbar",
+             "--enable-threaded-compositing",
+             "--force-high-contrast"],
+    "expires": "Jul 1, 2024",
+    "owners": ["gastonr@microsoft.com", "gerchiko@microsoft.com", "yshalivskyy@microsoft.com"]
+  },
+  {
     "prefix": "text-antialias",
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
     "bases": [],
@@ -1937,6 +1967,23 @@
     "args": [
       "--enable-blink-features=NoVarySearchPrefetch,SpeculationRulesNoVarySearchHint",
       "--enable-features=PrefetchUseContentRefactor:block_until_head_eager_prefetch/true",
+      "--disable-threaded-compositing", "--disable-threaded-animation"
+    ],
+    "expires": "Jul 1, 2024"
+  },
+  {
+    "prefix": "prefetch-reusable",
+    "owners": ["hiroshige@chromium.org"],
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/speculation-rules/prefetch",
+      "http/tests/inspector-protocol/prefetch"
+    ],
+    "exclusive_tests": "ALL",
+    "args": [
+      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesDocumentRules,NoVarySearchPrefetch,SpeculationRulesNoVarySearchHint,SpeculationRulesEagerness,SpeculationRulesDocumentRulesSelectorMatches",
+      "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor:block_until_head_eager_prefetch/true,PrefetchRedirects,PrefetchReusable",
+      "--bypass-prefetch-proxy-for-host=not-web-platform.test",
       "--disable-threaded-compositing", "--disable-threaded-animation"
     ],
     "expires": "Jul 1, 2024"

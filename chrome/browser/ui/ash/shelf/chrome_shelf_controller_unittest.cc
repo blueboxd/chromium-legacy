@@ -67,7 +67,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
-#include "chrome/browser/apps/app_service/package_id.h"
 #include "chrome/browser/apps/app_service/policy_util.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
@@ -119,7 +118,6 @@
 #include "chrome/browser/ui/ash/shelf/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_test_util.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
-#include "chrome/browser/ui/ash/shelf/chrome_shelf_item_factory.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
@@ -160,6 +158,7 @@
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
+#include "components/services/app_service/public/cpp/package_id.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut_registry_cache.h"
 #include "components/services/app_service/public/cpp/stub_icon_loader.h"
@@ -440,21 +439,6 @@ class TestV2AppShelfItemController : public ash::ShelfItemDelegate {
   void Close() override {}
 };
 
-// A fake that uses a testing profile.
-class FakeChromeShelfItemFactory : public ChromeShelfItemFactory {
- public:
-  explicit FakeChromeShelfItemFactory(Profile* profile)
-      : ChromeShelfItemFactory(), profile_(profile) {}
-  FakeChromeShelfItemFactory(const FakeChromeShelfItemFactory&) = delete;
-  FakeChromeShelfItemFactory& operator=(const FakeChromeShelfItemFactory&) =
-      delete;
-  ~FakeChromeShelfItemFactory() override = default;
-
- private:
-  Profile* GetPrimaryProfile() override { return profile_; }
-  const raw_ptr<Profile, ExperimentalAsh> profile_;
-};
-
 // Simulates selection of the shelf item.
 void SelectItem(ash::ShelfItemDelegate* delegate) {
   std::unique_ptr<ui::Event> event = std::make_unique<ui::MouseEvent>(
@@ -496,10 +480,9 @@ void UpdateAppRegistryCache(Profile* profile,
 
   apps.push_back(std::move(app));
 
-  apps::AppServiceProxyFactory::GetForProfile(profile)
-      ->AppRegistryCache()
-      .OnApps(std::move(apps), apps::AppType::kChromeApp,
-              false /* should_notify_initialized */);
+  apps::AppServiceProxyFactory::GetForProfile(profile)->OnApps(
+      std::move(apps), apps::AppType::kChromeApp,
+      false /* should_notify_initialized */);
 }
 
 }  // namespace
@@ -665,9 +648,8 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest,
     std::unique_ptr<TestV2AppShelfItemController> controller =
         std::make_unique<TestV2AppShelfItemController>(app_id);
     test_controller_ = controller.get();
-    ash::ShelfID id = shelf_controller_->InsertAppItem(
-        std::move(controller), ash::STATUS_RUNNING, model_->item_count(),
-        ash::TYPE_APP);
+    ash::ShelfID id = shelf_controller_->CreateAppItem(
+        std::move(controller), ash::STATUS_RUNNING, /*pinned=*/false);
     ASSERT_TRUE(IsPlatformApp(id));
   }
 
@@ -716,7 +698,6 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest,
     app_registry_cache_observer_.Reset();
     arc_test_.TearDown();
     shelf_controller_ = nullptr;
-    shelf_item_factory_.reset();
     BrowserWithTestWindowTest::TearDown();
     ash::ConciergeClient::Shutdown();
     app_list::AppListSyncableServiceFactory::SetUseInTesting(false);
@@ -735,11 +716,8 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest,
 
   // Create an uninitialized controller instance.
   ChromeShelfController* CreateShelfController() {
-    shelf_item_factory_ =
-        std::make_unique<FakeChromeShelfItemFactory>(profile());
-    model_->SetShelfItemFactory(shelf_item_factory_.get());
-    shelf_controller_ = std::make_unique<ChromeShelfController>(
-        profile(), model_.get(), shelf_item_factory_.get());
+    shelf_controller_ =
+        std::make_unique<ChromeShelfController>(profile(), model_.get());
     shelf_controller_->SetProfileForTest(profile());
     shelf_controller_->SetShelfControllerHelperForTest(
         std::make_unique<ShelfControllerHelper>(profile()));
@@ -759,7 +737,6 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest,
   // Destroy the controller instance and clear the local pointer.
   void ResetShelfController() {
     shelf_controller_.reset();
-    shelf_item_factory_.reset();
   }
 
   // Destroy and recreate the controller; clear and reinitialize the ShelfModel.
@@ -1392,7 +1369,6 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest,
 
   ArcAppTest arc_test_;
   bool auto_start_arc_test_ = false;
-  std::unique_ptr<ChromeShelfItemFactory> shelf_item_factory_;
   std::unique_ptr<ChromeShelfController> shelf_controller_;
   std::unique_ptr<ash::ShelfModel> model_;
 
@@ -2103,8 +2079,7 @@ TEST_F(ChromeShelfControllerLacrosOnlyTest, WithoutAppService) {
 
   ChromeShelfPrefs::SkipPinnedAppsFromSyncForTest();
   ash::ShelfModel model;
-  FakeChromeShelfItemFactory shelf_item_factory(controller_profile);
-  ChromeShelfController(controller_profile, &model, &shelf_item_factory).Init();
+  ChromeShelfController(controller_profile, &model).Init();
 }
 
 TEST_F(ChromeShelfControllerWithArcTest, ArcAppsHiddenFromLaunchCanBePinned) {
@@ -2567,10 +2542,9 @@ TEST_F(ChromeShelfControllerTest, V1AppRunPinCloseUnpin) {
   apps::AppPtr app =
       std::make_unique<apps::App>(apps::AppType::kChromeApp, extension1_->id());
   apps.push_back(std::move(app));
-  apps::AppServiceProxyFactory::GetForProfile(profile())
-      ->AppRegistryCache()
-      .OnApps(std::move(apps), apps::AppType::kChromeApp,
-              /*should_notify_initialized=*/false);
+  apps::AppServiceProxyFactory::GetForProfile(profile())->OnApps(
+      std::move(apps), apps::AppType::kChromeApp,
+      /*should_notify_initialized=*/false);
 
   InitShelfController();
 
@@ -4966,7 +4940,7 @@ TEST_F(ChromeShelfControllerTest, MultipleAppIconLoaders) {
   shelf_controller_->CreateAppItem(
       std::make_unique<AppServiceAppWindowShelfItemController>(
           shelf_id3, shelf_controller_->app_service_app_window_controller()),
-      ash::STATUS_RUNNING);
+      ash::STATUS_RUNNING, /*pinned=*/false);
   EXPECT_EQ(0, app_icon_loader1->fetch_count());
   EXPECT_EQ(0, app_icon_loader1->clear_count());
   EXPECT_EQ(0, app_icon_loader2->fetch_count());
@@ -4975,7 +4949,7 @@ TEST_F(ChromeShelfControllerTest, MultipleAppIconLoaders) {
   shelf_controller_->CreateAppItem(
       std::make_unique<AppServiceAppWindowShelfItemController>(
           shelf_id2, shelf_controller_->app_service_app_window_controller()),
-      ash::STATUS_RUNNING);
+      ash::STATUS_RUNNING, /*pinned=*/false);
   EXPECT_EQ(0, app_icon_loader1->fetch_count());
   EXPECT_EQ(0, app_icon_loader1->clear_count());
   EXPECT_EQ(1, app_icon_loader2->fetch_count());
@@ -4984,7 +4958,7 @@ TEST_F(ChromeShelfControllerTest, MultipleAppIconLoaders) {
   shelf_controller_->CreateAppItem(
       std::make_unique<AppServiceAppWindowShelfItemController>(
           shelf_id1, shelf_controller_->app_service_app_window_controller()),
-      ash::STATUS_RUNNING);
+      ash::STATUS_RUNNING, /*pinned=*/false);
   EXPECT_EQ(1, app_icon_loader1->fetch_count());
   EXPECT_EQ(0, app_icon_loader1->clear_count());
   EXPECT_EQ(1, app_icon_loader2->fetch_count());
@@ -5790,10 +5764,9 @@ TEST_F(ChromeShelfControllerTest, DoNotShowInShelf) {
       std::make_unique<apps::App>(apps::AppType::kChromeApp, extension1_->id());
   app->show_in_shelf = false;
   apps.push_back(std::move(app));
-  apps::AppServiceProxyFactory::GetForProfile(profile())
-      ->AppRegistryCache()
-      .OnApps(std::move(apps), apps::AppType::kChromeApp,
-              false /* should_notify_initialized */);
+  apps::AppServiceProxyFactory::GetForProfile(profile())->OnApps(
+      std::move(apps), apps::AppType::kChromeApp,
+      false /* should_notify_initialized */);
 
   InitShelfController();
   EXPECT_EQ("Chrome, App2", GetPinnedAppStatus());
@@ -6224,11 +6197,6 @@ class ChromeShelfControllerPromiseAppsTest : public ChromeShelfControllerTest,
     return *image_with_effects.Get()->uncompressed.bitmap();
   }
 
-  apps::AppRegistryCache& app_cache() {
-    return apps::AppServiceProxyFactory::GetForProfile(profile())
-        ->AppRegistryCache();
-  }
-
   apps::PromiseAppRegistryCache* cache() {
     return apps::AppServiceProxyFactory::GetForProfile(profile())
         ->PromiseAppRegistryCache();
@@ -6419,8 +6387,9 @@ TEST_F(ChromeShelfControllerPromiseAppsTest, RemoveShelfItem) {
   app->readiness = apps::Readiness::kReady;
   std::vector<apps::AppPtr> apps;
   apps.push_back(std::move(app));
-  app_cache().OnApps(std::move(apps), app_type,
-                     /*should_notify_initialized=*/false);
+  apps::AppServiceProxyFactory::GetForProfile(profile())->OnApps(
+      std::move(apps), app_type,
+      /*should_notify_initialized=*/false);
 
   // Item should no longer be in the shelf.
   EXPECT_FALSE(model_->IsAppPinned(package_id.ToString()));

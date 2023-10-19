@@ -6,20 +6,23 @@ import './textarea.js';
 import '//resources/cr_elements/cr_button/cr_button.js';
 import '//resources/cr_elements/cr_hidden_style.css.js';
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
+import '//resources/cr_elements/cr_loading_gradient/cr_loading_gradient.js';
 import '//resources/cr_elements/icons.html.js';
 import '//resources/cr_elements/md_select.css.js';
 
 import {ColorChangeUpdater} from '//resources/cr_components/color_change_listener/colors_css_updater.js';
 import {CrButtonElement} from '//resources/cr_elements/cr_button/cr_button.js';
+import {CrScrollableMixin} from '//resources/cr_elements/cr_scrollable_mixin.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
-import {Length, Tone} from './compose.mojom-webui.js';
+import {ComposeDialogCallbackRouter, ComposeResponse, Length, Tone} from './compose.mojom-webui.js';
 import {ComposeApiProxy, ComposeApiProxyImpl} from './compose_api_proxy.js';
 import {ComposeTextareaElement} from './textarea.js';
 
 export interface ComposeAppElement {
   $: {
+    body: HTMLElement,
     insertButton: CrButtonElement,
     loading: HTMLElement,
     refreshButton: HTMLElement,
@@ -29,7 +32,8 @@ export interface ComposeAppElement {
   };
 }
 
-export class ComposeAppElement extends PolymerElement {
+const ComposeAppElementBase = CrScrollableMixin(PolymerElement);
+export class ComposeAppElement extends ComposeAppElementBase {
   static get is() {
     return 'compose-app';
   }
@@ -73,6 +77,7 @@ export class ComposeAppElement extends PolymerElement {
   }
 
   private apiProxy_: ComposeApiProxy = ComposeApiProxyImpl.getInstance();
+  private router_: ComposeDialogCallbackRouter = this.apiProxy_.getRouter();
   private input_: string;
   private isSubmitEnabled_: boolean;
   private loading_: boolean;
@@ -85,6 +90,9 @@ export class ComposeAppElement extends PolymerElement {
   constructor() {
     super();
     ColorChangeUpdater.forDocument().start();
+    this.router_.responseReceived.addListener((response: ComposeResponse) => {
+      this.composeResponseReceived_(response);
+    });
   }
 
   private onSubmit_() {
@@ -101,17 +109,21 @@ export class ComposeAppElement extends PolymerElement {
     this.isSubmitEnabled_ = this.$.textarea.validate();
   }
 
-  private async compose_() {
+  private compose_() {
     this.loading_ = true;
     this.result_ = undefined;
-    const response = await this.apiProxy_.compose(
+    this.apiProxy_.compose(
         {
           length: this.selectedLength_,
           tone: this.selectedTone_,
         },
         this.input_);
+  }
+
+  private composeResponseReceived_(response: ComposeResponse) {
     this.result_ = response.result || 'error';
     this.loading_ = false;
+    this.requestUpdateScroll();
   }
 }
 

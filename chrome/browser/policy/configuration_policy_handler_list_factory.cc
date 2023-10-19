@@ -1553,6 +1553,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kShowHumanPresenceSensorScreenEnabled,
     ash::prefs::kShowHumanPresenceSensorScreenEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kUserFeedbackWithLowLevelDebugDataAllowed,
+    ash::prefs::kUserFeedbackWithLowLevelDebugDataAllowed,
+    base::Value::Type::LIST },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX)
@@ -1839,6 +1842,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kKioskTroubleshootingToolsEnabled,
     prefs::kKioskTroubleshootingToolsEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kRemoteAccessHostAllowEnterpriseRemoteSupportConnections,
+    prefs::kRemoteAccessHostAllowEnterpriseRemoteSupportConnections,
+    base::Value::Type::BOOLEAN },
   { key::kRealTimeDownloadProtectionRequestAllowed,
     prefs::kRealTimeDownloadProtectionRequestAllowedByPolicy,
     base::Value::Type::BOOLEAN },
@@ -2030,6 +2036,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     policy::policy_prefs::kPPAPISharedImagesForVideoDecoderAllowed,
     base::Value::Type::BOOLEAN },
 #endif
+  { key::kIPv6ReachabilityOverrideEnabled,
+    prefs::kIPv6ReachabilityOverrideEnabled,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 

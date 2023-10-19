@@ -38,8 +38,6 @@ namespace {
 const char kRegisteredAlarms[] = "alarms";
 const char kAlarmGranularity[] = "granularity";
 
-const int kSecondsPerMinute = 60;
-
 // The minimum period between polling for alarms to run.
 const base::TimeDelta kDefaultMinPollPeriod() {
   return base::Days(1);
@@ -72,7 +70,7 @@ base::TimeDelta TimeDeltaFromDelay(double delay_in_minutes) {
 }
 
 AlarmManager::AlarmList AlarmsFromValue(const std::string extension_id,
-                                        bool is_unpacked,
+                                        base::TimeDelta min_delay,
                                         const base::Value::List& list) {
   AlarmManager::AlarmList alarms;
   const int max_to_create = std::min(base::saturated_cast<int>(list.size()),
@@ -90,10 +88,7 @@ AlarmManager::AlarmList AlarmsFromValue(const std::string extension_id,
         // No else branch. It's okay to ignore the failure since we have
         // minimum granularity.
       }
-      alarm.minimum_granularity = base::Seconds(
-          (is_unpacked ? alarms_api_constants::kDevDelayMinimum
-                       : alarms_api_constants::kReleaseDelayMinimum) *
-          kSecondsPerMinute);
+      alarm.minimum_granularity = min_delay;
       if (alarm.granularity < alarm.minimum_granularity)
         alarm.granularity = alarm.minimum_granularity;
       alarms.emplace_back(std::move(alarm));
@@ -338,11 +333,11 @@ void AlarmManager::WriteToStorage(const std::string& extension_id) {
 }
 
 void AlarmManager::ReadFromStorage(const std::string& extension_id,
-                                   bool is_unpacked,
+                                   base::TimeDelta min_delay,
                                    absl::optional<base::Value> value) {
   if (value && value->is_list()) {
     AlarmList alarm_states =
-        AlarmsFromValue(extension_id, is_unpacked, value->GetList());
+        AlarmsFromValue(extension_id, min_delay, value->GetList());
     for (auto& alarm : alarm_states)
       AddAlarmImpl(extension_id, std::move(alarm));
   }
@@ -450,10 +445,12 @@ void AlarmManager::OnExtensionLoaded(content::BrowserContext* browser_context,
   if (storage) {
     bool is_unpacked = Manifest::IsUnpackedLocation(extension->location());
     ready_actions_.insert(ReadyMap::value_type(extension->id(), ReadyQueue()));
+    base::TimeDelta min_delay = alarms_api_constants::GetMinimumDelay(
+        is_unpacked, extension->manifest_version());
     storage->GetExtensionValue(extension->id(), kRegisteredAlarms,
                                base::BindOnce(&AlarmManager::ReadFromStorage,
                                               weak_ptr_factory_.GetWeakPtr(),
-                                              extension->id(), is_unpacked));
+                                              extension->id(), min_delay));
   }
 }
 

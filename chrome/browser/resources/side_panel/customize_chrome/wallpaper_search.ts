@@ -16,15 +16,21 @@ import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_butto
 import {assert} from 'chrome://resources/js/assert.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {CustomizeChromeCombobox} from './combobox/customize_chrome_combobox.js';
 import {CustomizeChromePageHandlerInterface, DescriptorA, DescriptorB, Descriptors, WallpaperSearchResult} from './customize_chrome.mojom-webui.js';
 import {CustomizeChromeApiProxy} from './customize_chrome_api_proxy.js';
 import {getTemplate} from './wallpaper_search.html.js';
 
+export const DESCRIPTOR_C_VALUE =
+    ['#EF4837', '#0984E3', '#F9CC18', '#23CC6A', '#474747'];
+
 export interface WallpaperSearchElement {
   $: {
+    combobox: CustomizeChromeCombobox,
     descriptorMenuA: CrActionMenuElement,
     descriptorMenuB: CrActionMenuElement,
     descriptorMenuC: CrActionMenuElement,
+    descriptorMenuD: CrActionMenuElement,
     heading: SpHeading,
     submitButton: CrButtonElement,
   };
@@ -52,17 +58,29 @@ export class WallpaperSearchElement extends PolymerElement {
         type: Object,
         value: null,
       },
+      descriptorD_: {
+        type: Array,
+        value: DESCRIPTOR_C_VALUE,
+      },
       emptyContainers_: Object,
       results_: Object,
+      submitBtnText_: {
+        type: String,
+        computed: 'computeSubmitBtnText_(results_)',
+        value: 'Search',
+      },
     };
   }
 
   private descriptors_: Descriptors|null;
+  private descriptorD_: string[];
   private emptyContainers_: number[];
   private results_: WallpaperSearchResult[];
   private selectedDescriptorA_: string|null;
   private selectedDescriptorB_: string|null;
   private selectedDescriptorC_: string|null;
+  private selectedDescriptorD_: string|null;
+  private submitBtnText_: string;
 
   private pageHandler_: CustomizeChromePageHandlerInterface;
 
@@ -80,8 +98,17 @@ export class WallpaperSearchElement extends PolymerElement {
     this.$.heading.getBackButton().focus();
   }
 
+  private computeSubmitBtnText_() {
+    return this.results_ && this.results_.length > 0 ? 'Search Again' :
+                                                       'Search';
+  }
+
   private async onBackClick_() {
     this.dispatchEvent(new Event('back-click'));
+  }
+
+  private onComboboxDemoChange_() {
+    this.selectedDescriptorA_ = this.$.combobox.value || null;
   }
 
   private onDescriptorLabelClickA_(e: DomRepeatEvent<string>) {
@@ -99,6 +126,11 @@ export class WallpaperSearchElement extends PolymerElement {
     this.$.descriptorMenuC.close();
   }
 
+  private onDescriptorLabelClickD_(e: DomRepeatEvent<string>) {
+    this.selectedDescriptorD_ = e.model.item;
+    this.$.descriptorMenuC.close();
+  }
+
   private onDescriptorMenuClickA_(e: Event) {
     this.$.descriptorMenuA.showAt(e.target as HTMLElement);
   }
@@ -111,12 +143,17 @@ export class WallpaperSearchElement extends PolymerElement {
     this.$.descriptorMenuC.showAt(e.target as HTMLElement);
   }
 
+  private onDescriptorMenuClickD_(e: Event) {
+    this.$.descriptorMenuD.showAt(e.target as HTMLElement);
+  }
+
   private async onSearchClick_() {
     assert(this.descriptors_);
     const descriptorA = this.selectedDescriptorA_ ||
         getRandomDescriptorA(this.descriptors_.descriptorA);
     const {results} = await this.pageHandler_.getWallpaperSearchResults(
-        descriptorA, this.selectedDescriptorB_, this.selectedDescriptorC_);
+        descriptorA, this.selectedDescriptorB_, this.selectedDescriptorC_,
+        this.selectedDescriptorD_);
     this.results_ = results;
     this.emptyContainers_ = Array.from(
         {length: results.length > 0 ? 6 - results.length : 0}, () => 0);

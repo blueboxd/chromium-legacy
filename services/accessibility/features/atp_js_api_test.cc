@@ -110,6 +110,103 @@ class AtpJSApiTest : public testing::Test {
   base::RunLoop test_waiter_;
 };
 
+// Tests for generic ChromeEvents.
+class ChromeEventTest : public AtpJSApiTest {
+ public:
+  ChromeEventTest() = default;
+  ChromeEventTest(const ChromeEventTest&) = delete;
+  ChromeEventTest& operator=(const ChromeEventTest&) = delete;
+  ~ChromeEventTest() override = default;
+
+  mojom::AssistiveTechnologyType GetATTypeForTest() const override {
+    // Any type is fine.
+    return mojom::AssistiveTechnologyType::kChromeVox;
+  }
+
+  const std::vector<std::string> GetJSFilePathsToLoad() const override {
+    // TODO(b:266856702): Eventually ATP will load its own JS instead of us
+    // doing it in the test. Right now the service doesn't have enough
+    // permissions so we load support JS within the test.
+    return std::vector<std::string>{
+        "services/accessibility/features/mojo/test/mojom_test_support.js",
+        "services/accessibility/features/javascript/chrome_event.js",
+    };
+  }
+};
+
+TEST_F(ChromeEventTest, AddsRemovesAndCallsListeners) {
+  ExecuteJS(R"JS(
+    const remote = axtest.mojom.TestBindingInterface.getRemote();
+    let listenerAddedCallbackCount = 0;
+    const chromeEvent = new ChromeEvent(() => {
+      listenerAddedCallbackCount++;
+    });
+
+    let firstCallCount = 0;
+    const firstListener = (a, b) => {
+      if (a !== 'hello' && b !== 'world') {
+        remote.testComplete(/*success=*/false);
+      }
+      firstCallCount++;
+    };
+
+    // Add one listener and call it.
+    chromeEvent.addListener(firstListener);
+    if (listenerAddedCallbackCount !== 1) {
+      remote.testComplete(/*success=*/false);
+    }
+    chromeEvent.callListeners('hello', 'world');
+    if (firstCallCount !== 1) {
+      remote.testComplete(/*success=*/false);
+    }
+
+    let secondCallCount = 0;
+    const secondListener = (a, b) => {
+      if (a !== 'hello' && b !== 'world') {
+        remote.testComplete(/*success=*/false);
+      }
+      secondCallCount++;
+    };
+
+    // Add another listener and call all the listeners.
+    chromeEvent.addListener(secondListener);
+    if (listenerAddedCallbackCount !== 1) {
+      // Listener added callback should only be used once.
+      remote.testComplete(/*success=*/false);
+    }
+    chromeEvent.callListeners('hello', 'world');
+    if (firstCallCount !== 2) {
+      remote.testComplete(/*success=*/false);
+    }
+    if (secondCallCount !== 1) {
+      remote.testComplete(/*success=*/false);
+    }
+
+    // Remove a listener and call the listeners.
+    chromeEvent.removeListener(secondListener);
+    chromeEvent.callListeners('hello', 'world');
+    if (firstCallCount !== 3) {
+      remote.testComplete(/*success=*/false);
+    }
+    if (secondCallCount !== 1) {
+      remote.testComplete(/*success=*/false);
+    }
+
+    // Remove the first listener and call.
+    chromeEvent.removeListener(firstListener);
+    chromeEvent.callListeners('no one', 'is listening');
+    if (firstCallCount !== 3) {
+      remote.testComplete(/*success=*/false);
+    }
+    if (secondCallCount !== 1) {
+      remote.testComplete(/*success=*/false);
+    }
+
+    remote.testComplete(/*success=*/true);
+  )JS");
+  WaitForJSTestComplete();
+}
+
 class TtsJSApiTest : public AtpJSApiTest {
  public:
   TtsJSApiTest() = default;
@@ -601,6 +698,32 @@ TEST_F(AccessibilityPrivateJSApiTest, SetHighlightsEmptyRects) {
       }));
   ExecuteJS(R"JS(
     chrome.accessibilityPrivate.setHighlights([], '#FF0000');
+  )JS");
+  waiter.Run();
+}
+
+TEST_F(AccessibilityPrivateJSApiTest, SetVirtualKeyboardVisible) {
+  base::RunLoop waiter;
+  client_->SetVirtualKeyboardVisibleCallback(
+      base::BindLambdaForTesting([&waiter](bool is_visible) {
+        waiter.Quit();
+        ASSERT_EQ(is_visible, true);
+      }));
+  ExecuteJS(R"JS(
+    chrome.accessibilityPrivate.setVirtualKeyboardVisible(true);
+  )JS");
+  waiter.Run();
+}
+
+TEST_F(AccessibilityPrivateJSApiTest, SetVirtualKeyboardInvisible) {
+  base::RunLoop waiter;
+  client_->SetVirtualKeyboardVisibleCallback(
+      base::BindLambdaForTesting([&waiter](bool is_visible) {
+        waiter.Quit();
+        ASSERT_EQ(is_visible, false);
+      }));
+  ExecuteJS(R"JS(
+    chrome.accessibilityPrivate.setVirtualKeyboardVisible(false);
   )JS");
   waiter.Run();
 }

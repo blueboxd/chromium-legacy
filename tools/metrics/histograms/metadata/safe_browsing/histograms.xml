@@ -1117,7 +1117,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.HPRT.BackoffState" enum="BooleanEnabled"
+<histogram name="SafeBrowsing.HPRT.BackoffState" enum="BooleanBackoff"
     expires_after="2024-02-04">
   <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -1150,6 +1150,26 @@ chromium-metrics-reviews@google.com.
     lookup cache for this profile. Logged each time cleanup of expired entries
     is performed on the cache, which happens every 30 minutes. The value
     represents the count before cleanup and includes expired entries.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.HPRT.CacheDuration.InitialOnSet" units="ms"
+    expires_after="2024-04-16">
+  <owner>thefrog@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logs the cache duration that an item will have for a hash-prefix real-time
+    lookup. Logged when the item is added to the cache.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.HPRT.CacheDuration.RemainingOnHit" units="ms"
+    expires_after="2024-04-16">
+  <owner>thefrog@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logs the remaining cache duration that an item has for a hash-prefix
+    real-time lookup. Logged when there is a cache hit for the item.
   </summary>
 </histogram>
 
@@ -1326,7 +1346,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.HPRT.OhttpKeyService.BackoffState"
-    enum="BooleanEnabled" expires_after="2024-02-04">
+    enum="BooleanBackoff" expires_after="2024-02-04">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1400,17 +1420,26 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.HPRT.ThreatInfoSize" units="verdicts"
-    expires_after="2024-02-04">
+<histogram name="SafeBrowsing.HPRT.ThreatInfoSize{SourceDetails}"
+    units="verdicts" expires_after="2024-02-04">
   <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Logs the number of unsafe threat type verdicts received in the check
     response (including cached results) that are relevant to hash-prefix
-    real-time checks. Logged each time a lookup request completes without errors
-    or when the request does not need to be sent because all the results are in
-    the local cache.
+    real-time checks. {SourceDetails}
   </summary>
+  <token key="SourceDetails">
+    <variant name=""
+        summary="Logged each time a lookup request completes without errors
+                 or when the request does not need to be sent because all the
+                 results are in the local cache."/>
+    <variant name=".LocalCache"
+        summary="Logged each time a lookup request does not need to be sent
+                 because all the results are in the local cache."/>
+    <variant name=".NetworkRequest"
+        summary="Logged each time a lookup request completes without errors."/>
+  </token>
 </histogram>
 
 <histogram name="SafeBrowsing.HPRTExperiment.Redirects.AllChecksEligible"
@@ -1981,7 +2010,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.RT.Backoff.State" enum="BooleanEnabled"
+<histogram name="SafeBrowsing.RT.Backoff.State" enum="BooleanBackoff"
     expires_after="2024-02-11">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>

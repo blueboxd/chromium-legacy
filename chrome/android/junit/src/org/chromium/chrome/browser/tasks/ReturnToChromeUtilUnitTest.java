@@ -91,7 +91,6 @@ import org.chromium.url.JUnitTestGURLs;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {ShadowHomepageManager.class, ShadowHomepagePolicyManager.class})
-@EnableFeatures({ChromeFeatureList.START_SURFACE_WITH_ACCESSIBILITY})
 @CommandLineFlags.Add({BaseSwitches.DISABLE_LOW_END_DEVICE_MODE})
 public class ReturnToChromeUtilUnitTest {
     /** Shadow for {@link HomepageManager}. */
@@ -919,9 +918,7 @@ public class ReturnToChromeUtilUnitTest {
     @Test
     @EnableFeatures({ChromeFeatureList.SURFACE_POLISH})
     @DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    // clang-format off
     public void testIsScrollableMvtEnabledWhenSurfacePolishEnabled_tablets() {
-        // clang-format on
         Assert.assertTrue(ChromeFeatureList.sSurfacePolish.isEnabled());
         Assert.assertFalse(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID));
@@ -940,9 +937,7 @@ public class ReturnToChromeUtilUnitTest {
         ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID,
         ChromeFeatureList.START_SURFACE_ON_TABLET
     })
-    // clang-format off
     public void testIsScrollableMvtEnabled_SurfacePolishDisabled_ScrollableMvtEnabled_tablets() {
-        // clang-format on
         Assert.assertFalse(ChromeFeatureList.sSurfacePolish.isEnabled());
         Assert.assertTrue(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID));
@@ -963,9 +958,7 @@ public class ReturnToChromeUtilUnitTest {
         ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID
     })
     @EnableFeatures({ChromeFeatureList.START_SURFACE_ON_TABLET})
-    // clang-format off
     public void testIsScrollableMvtEnabled_SurfacePolishDisabled_ScrollableMvtDisabled_tablets() {
-        // clang-format on
         Assert.assertFalse(ChromeFeatureList.sSurfacePolish.isEnabled());
         Assert.assertFalse(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID));
@@ -982,9 +975,7 @@ public class ReturnToChromeUtilUnitTest {
     @Test
     @EnableFeatures({ChromeFeatureList.SURFACE_POLISH})
     @DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID})
-    // clang-format off
     public void testIsScrollableMvtEnabledWhenSurfacePolishEnabled_phones() {
-        // clang-format on
         Assert.assertTrue(ChromeFeatureList.sSurfacePolish.isEnabled());
         Assert.assertFalse(
                 ChromeFeatureList.isEnabled(
@@ -1006,9 +997,7 @@ public class ReturnToChromeUtilUnitTest {
     @Test
     @DisableFeatures({ChromeFeatureList.SURFACE_POLISH})
     @EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID})
-    // clang-format off
     public void testIsScrollableMvtEnabled_SurfacePolishDisabled_ScrollableMvtEnabled_phones() {
-        // clang-format on
         Assert.assertFalse(ChromeFeatureList.sSurfacePolish.isEnabled());
         Assert.assertTrue(
                 ChromeFeatureList.isEnabled(
@@ -1028,9 +1017,7 @@ public class ReturnToChromeUtilUnitTest {
         ChromeFeatureList.SURFACE_POLISH,
         ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID
     })
-    // clang-format off
     public void testIsScrollableMvtEnabled_SurfacePolishDisabled_ScrollableMvtDisabled_phones() {
-        // clang-format on
         Assert.assertFalse(ChromeFeatureList.sSurfacePolish.isEnabled());
         Assert.assertFalse(
                 ChromeFeatureList.isEnabled(

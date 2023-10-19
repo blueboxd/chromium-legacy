@@ -1731,6 +1731,12 @@ def make_v8_set_return_value(cg_context):
                 if cg_context.member_like.identifier == "frameElement" else
                 "${blink_receiver}->contentWindow()->GetFrame()"),
             T("DCHECK(IsA<LocalFrame>(blink_frame));"),
+            CxxUnlikelyIfNode(
+                cond=T("UNLIKELY(!blink_frame->IsAttached())"),
+                body=[
+                    T("bindings::V8SetReturnValue(${info}, nullptr);"),
+                    T("return;")
+                ]),
             T("v8::Local<v8::Value> v8_value;"),
             CxxUnlikelyIfNode(cond=F(
                 "!ToV8Traits<{}>::ToV8("
@@ -5151,22 +5157,6 @@ ${prototype_object}->Delete(
 """
         nodes.append(FormatNode(pattern, property_name=property_name))
 
-    if class_like.identifier == "SharedStorage":
-        pattern = """\
-// Temporary @@asyncIterator support for SharedStorage
-// TODO(https://crbug.com/1087157): Replace with proper bindings support.
-// @@asyncIterator == "{property_name}"
-{{
-  v8::Local<v8::Value> v8_value = ${prototype_object}->Get(
-      ${v8_context}, V8AtomicString(${isolate}, "{property_name}"))
-      .ToLocalChecked();
-  ${prototype_object}->DefineOwnProperty(
-      ${v8_context}, v8::Symbol::GetAsyncIterator(${isolate}), v8_value,
-      v8::DontEnum).ToChecked();
-}}
-"""
-        nodes.append(TextNode(_format(pattern, property_name="entries")))
-
     return SequenceNode(nodes) if nodes else None
 
 
@@ -5343,24 +5333,6 @@ def make_install_interface_template(cg_context, function_name, class_name,
       V8AtomicString(${isolate}, "prototype"), v8::kErrorPrototype);
   ${interface_function_template}->Inherit(
       intrinsic_error_prototype_interface_template);
-}
-"""))
-
-    if class_like.identifier == "SharedStorageIterator":
-        body.append(
-            T("""\
-// Temporary @@asyncIterator support for SharedStorage
-// TODO(https://crbug.com/1087157): Replace with proper bindings support.
-{
-  v8::Local<v8::FunctionTemplate>
-      intrinsic_iterator_prototype_interface_template =
-      v8::FunctionTemplate::New(${isolate}, nullptr, v8::Local<v8::Value>(),
-                                v8::Local<v8::Signature>(), 0,
-                                v8::ConstructorBehavior::kThrow);
-  intrinsic_iterator_prototype_interface_template->SetIntrinsicDataProperty(
-      V8AtomicString(${isolate}, "prototype"), v8::kAsyncIteratorPrototype);
-  ${interface_function_template}->Inherit(
-      intrinsic_iterator_prototype_interface_template);
 }
 """))
 

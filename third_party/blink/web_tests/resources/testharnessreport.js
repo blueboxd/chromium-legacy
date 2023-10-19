@@ -275,7 +275,12 @@
             return true;
         }
         if (location.pathname.startsWith('/wpt_internal/') ||
-            location.pathname.startsWith('/html/')) {
+            location.pathname.startsWith('/html/') ||
+            location.pathname.startsWith('/css/css-') ||
+            location.pathname.startsWith('/editing/') ||
+            location.pathname.startsWith('/fetch/') ||
+            location.pathname.startsWith('/service-workers/') ||
+            location.pathname.startsWith('/websockets/')) {
             return true;
         }
         return false;

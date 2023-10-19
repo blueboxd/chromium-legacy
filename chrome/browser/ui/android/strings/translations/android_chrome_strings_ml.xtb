@@ -285,6 +285,7 @@
 <translation id="2571834852878229351">നിങ്ങളുടേതായ പാസ്‌വേഡ് സൃഷ്ടിക്കൂ</translation>
 <translation id="2573452357057307036">Chrome നിങ്ങളുടെ ഡിഫോൾട്ട് ബ്രൗസറായി സജ്ജീകരിക്കുന്നത് എങ്ങനെയെന്ന് അറിയുക</translation>
 <translation id="2574249610672786438">Chrome ഉപയോഗിക്കുന്നിടത്തെല്ലാം നിങ്ങളുടെ ടാബുകൾ കാണാൻ, നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും സൈൻ ഇൻ ചെയ്യുക</translation>
+<translation id="2578337197553672982">പ്രായപൂർത്തിയാകാത്തവർക്കുള്ള Google ഉള്ളടക്കം</translation>
 <translation id="2581165646603367611">ഇത്, Chrome പ്രധാനമായി കണക്കാക്കാത്ത സൈറ്റുകളുടെ കുക്കികളും കാഷെയും മറ്റ് വിവരങ്ങളും മായ്‌ക്കും.</translation>
 <translation id="2587052924345400782">ഏറ്റവും പുതിയ പതിപ്പ് ലഭ്യമാണ്</translation>
 <translation id="2593272815202181319">മോണോസ്പെ‌യ്‌സ്</translation>
@@ -352,7 +353,6 @@
 <translation id="2909615210195135082">Google അറിയിപ്പുകൾ പ്ലാറ്റ്‌ഫോം</translation>
 <translation id="2912296070571964914">നിങ്ങൾക്ക് താൽപ്പര്യമുള്ള വിഷയങ്ങൾ മാനേജ് ചെയ്യുക</translation>
 <translation id="2912345083818861431">തുറന്നിരിക്കുന്ന അദൃശ്യ ടാബുകൾ കാണാൻ സ്ക്രീൻ ലോക്ക് ഉപയോഗിക്കുക</translation>
-<translation id="2922568440285376746">Google ഉപയോഗിച്ച് ചിത്രത്തിലുള്ളവ തിരയൂ <ph name="BEGIN_NEW" />പുതിയത്<ph name="END_NEW" /></translation>
 <translation id="2923908459366352541">പേര് അസാധുവാണ്</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> സ്‌റ്റോറേജ്</translation>
 <translation id="2932222164150889403">നിങ്ങളുടെ കീബോഡ് മാറില്ല</translation>
@@ -687,7 +687,6 @@
 <translation id="4684427112815847243">എല്ലാം സമന്വയിപ്പിക്കുക</translation>
 <translation id="4685741273709472646">ഡ്രോപ്പ്ഡൗൺ ലിസ്റ്റിൽ നിന്ന് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="4687718960473379118">സൈറ്റ് നിർദ്ദേശിത പരസ്യം</translation>
-<translation id="4689792375321623175">Google ഉപയോഗിച്ച് ചിത്രം തിരയൂ <ph name="BEGIN_NEW" />പുതിയത്<ph name="END_NEW" /></translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> പേയ്‌മെന്റ് രീതികളും}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> പേയ്‌മെന്റ് രീതികളും}}</translation>
 <translation id="4699172675775169585">കാഷെ ചെയ്‌ത ചിത്രങ്ങളും ഫയലുകളും</translation>
 <translation id="4710167854527459075">ഏറ്റവും പുതിയത് ആദ്യം</translation>
@@ -701,6 +700,7 @@
 <translation id="4742970037960872810">ഹൈലൈറ്റ് നീക്കം ചെയ്യുക</translation>
 <translation id="4743664893327841597">നിങ്ങൾ വിലാസ ബാറിലോ തിരയൽ ബോക്‌സിലോ ടൈപ്പ് ചെയ്യുന്ന കാര്യങ്ങൾ ഡിഫോൾട്ട് തിരയൽ യന്ത്രത്തിലേക്ക് അയയ്‌ക്കുന്നു</translation>
 <translation id="4749960740855309258">പുതിയൊരു ടാബ് തുറക്കുക</translation>
+<translation id="4750356170202299988">പ്രായപൂർത്തിയാകാത്തവർക്കുള്ള ഉള്ളടക്കം</translation>
 <translation id="4758061975920522644">ചിത്രം മാത്രം പങ്കിടുക</translation>
 <translation id="4759238208242260848">ഡൌണ്‍ലോഡുകള്‍</translation>
 <translation id="4763480195061959176">വീഡിയോ</translation>
@@ -1182,6 +1182,7 @@
 <translation id="7187993566681480880">നിങ്ങൾ സൈൻ ഇൻ ആയിരിക്കുമ്പോൾ Chrome-ൽ നിങ്ങളെ സുരക്ഷിതരാക്കുകയും മറ്റ് Google ആപ്പുകളിൽ നിങ്ങളുടെ സുരക്ഷ മെച്ചപ്പെടുത്താൻ ഉപയോഗിക്കുകയും ചെയ്യും.</translation>
 <translation id="7191430249889272776">ടാബ് പശ്ചാത്തലത്തിൽ തുറന്നു.</translation>
 <translation id="7196215469483532480">സ്വകാര്യതാ ഗൈഡിന്റെ വിശദീകരണം മുഴുവൻ ഉയരത്തിൽ തുറന്നു</translation>
+<translation id="7205672015775254816">പ്രായപൂർത്തിയാകാത്തവർക്കുള്ള Google ഉള്ളടക്കം - ഓഫാണ്</translation>
 <translation id="7207760545532569765">പുതിയ പശ്ചാത്തല ടാബുകളായി <ph name="TAB_COUNT" /> ടാബുകൾ പുനഃസ്ഥാപിക്കുക.</translation>
 <translation id="7217781228893594884">നിങ്ങൾ Chrome-ൽ നിന്ന് പുറത്തുകടക്കുമ്പോൾ അദൃശ്യ ടാബുകൾ ലോക്ക് ചെയ്യും</translation>
 <translation id="7221869452894271364">ഈ പേജ് വീണ്ടും ലോഡ് ചെയ്യുക</translation>
@@ -1329,6 +1330,7 @@
 <translation id="7876243839304621966">എല്ലാം നീക്കംചെയ്യുക</translation>
 <translation id="7886917304091689118">Chrome-ൽ റൺ ചെയ്യുന്നു</translation>
 <translation id="7887174313503389866">പ്രധാന സ്വകാര്യതാ, സുരക്ഷാ നിയന്ത്രണങ്ങളെ കുറിച്ചുള്ള മാർഗ്ഗനിർദ്ദേശങ്ങൾ അവലോകനം ചെയ്യൂ. കൂടുതൽ ഓപ്ഷനുകൾക്ക്, വ്യക്തിഗത ക്രമീകരണത്തിലേക്ക് പോകുക.</translation>
+<translation id="7896724475402191389">പ്രായപൂർത്തിയാകാത്തവർക്കുള്ള ഉള്ളടക്കം - ഓഫാണ്</translation>
 <translation id="7903184275147100332">ഇതിന് ഒരു മിനിറ്റ് എടുത്തേക്കാം</translation>
 <translation id="7914399737746719723">ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്തു</translation>
 <translation id="7919123827536834358">ഈ ഭാഷകൾ സ്വയമേവ വിവർത്തനം ചെയ്യുക</translation>

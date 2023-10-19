@@ -10,12 +10,12 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/exclusions/exclusion_space.h"
+#include "third_party/blink/renderer/core/layout/geometry/bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/margin_strut.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
-#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_appeal.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
@@ -165,7 +165,7 @@ class CORE_EXPORT NGConstraintSpace final {
       delete rare_data_;
   }
 
-  const NGExclusionSpace& ExclusionSpace() const { return exclusion_space_; }
+  const ExclusionSpace& GetExclusionSpace() const { return exclusion_space_; }
 
   TextDirection Direction() const {
     return static_cast<TextDirection>(bitfields_.direction);
@@ -729,7 +729,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
   // Return true if there were any earlier floats that may affect the current
   // layout.
-  bool HasFloats() const { return !ExclusionSpace().IsEmpty(); }
+  bool HasFloats() const { return !GetExclusionSpace().IsEmpty(); }
 
   bool HasClearanceOffset() const {
     return HasRareData() && rare_data_->ClearanceOffset() != LayoutUnit::Min();
@@ -1656,7 +1656,7 @@ class CORE_EXPORT NGConstraintSpace final {
     RareData* rare_data_;
   };
 
-  NGExclusionSpace exclusion_space_;
+  ExclusionSpace exclusion_space_;
   Bitfields bitfields_;
 };
 

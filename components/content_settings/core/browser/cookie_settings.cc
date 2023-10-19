@@ -95,17 +95,35 @@ void CookieSettings::SetCookieSetting(const GURL& primary_url,
       primary_url, GURL(), ContentSettingsType::COOKIES, setting);
 }
 
+bool CookieSettings::IsAllowedByTpcdMetadataGrant(
+    const GURL& url,
+    const GURL& first_party_url) const {
+  if (!ShouldConsider3pcdMetadataGrantsSettings()) {
+    return false;
+  }
+
+  base::AutoLock lock(tpcd_lock_);
+  const auto& entry = base::ranges::find_if(
+      settings_for_3pcd_metadata_grants_,
+      [&](const ContentSettingPatternSource& entry) {
+        CHECK(IsAllowed(
+            content_settings::ValueToContentSetting(entry.setting_value)));
+        return entry.primary_pattern.Matches(url) &&
+               entry.secondary_pattern.Matches(first_party_url);
+      });
+  return entry != settings_for_3pcd_metadata_grants_.end();
+}
+
 void CookieSettings::SetTemporaryCookieGrantForHeuristic(
+    const GURL& url,
     const GURL& first_party_url,
-    const GURL& third_party_url,
     const base::TimeDelta& ttl) {
   ContentSettingConstraints constraints;
   constraints.set_lifetime(ttl);
 
   host_content_settings_map_->SetContentSettingDefaultScope(
-      first_party_url, third_party_url,
-      ContentSettingsType::TPCD_HEURISTICS_GRANTS, CONTENT_SETTING_ALLOW,
-      constraints);
+      url, first_party_url, ContentSettingsType::TPCD_HEURISTICS_GRANTS,
+      CONTENT_SETTING_ALLOW, constraints);
 }
 
 void CookieSettings::SetCookieSettingForUserBypass(
@@ -265,16 +283,7 @@ ContentSetting CookieSettings::GetContentSetting(
     ContentSettingsType content_type,
     content_settings::SettingInfo* info) const {
   if (content_type == ContentSettingsType::TPCD_METADATA_GRANTS) {
-    base::AutoLock lock(tpcd_lock_);
-    const auto& entry = base::ranges::find_if(
-        settings_for_3pcd_metadata_grants_,
-        [&](const ContentSettingPatternSource& entry) {
-          CHECK(IsAllowed(
-              content_settings::ValueToContentSetting(entry.setting_value)));
-          return entry.primary_pattern.Matches(primary_url) &&
-                 entry.secondary_pattern.Matches(secondary_url);
-        });
-    return entry != settings_for_3pcd_metadata_grants_.end()
+    return IsAllowedByTpcdMetadataGrant(primary_url, secondary_url)
                ? CONTENT_SETTING_ALLOW
                : CONTENT_SETTING_BLOCK;
   }
@@ -337,11 +346,6 @@ bool CookieSettings::ShouldBlockThirdPartyCookiesInternal() {
 }
 
 bool CookieSettings::MitigationsEnabledFor3pcdInternal() {
-  // Mitigations shouldn't be enabled in incognito;
-  if (is_incognito_) {
-    return false;
-  }
-
   // Mitigations won't be enabled when Third Party Cookies Blocking is enabled
   // by `features::kForceThirdPartyCookieBlocking` which is intended to be used
   // via command-lines by developers for testing.
@@ -351,7 +355,7 @@ bool CookieSettings::MitigationsEnabledFor3pcdInternal() {
 
   if (tracking_protection_settings_ &&
       tracking_protection_settings_->IsTrackingProtection3pcdEnabled()) {
-    // Mitigations should be on iff the user has not chosen to block all 3PC.
+    // Mitigations should be on iff we are not blocking all 3PC in 3PCD.
     return !tracking_protection_settings_->AreAllThirdPartyCookiesBlocked();
   }
 

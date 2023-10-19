@@ -284,10 +284,6 @@ BASE_FEATURE(kTpcdMetadataGrants,
              "TpcdMetadataGrants",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kTpcdReadHeuristicsGrants,
-             "TpcdReadHeuristicsGrants",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kAlpsParsing, "AlpsParsing", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAlpsClientHintParsing,
@@ -319,9 +315,10 @@ BASE_FEATURE(kPlatformKeyProbeSHA256,
              "PlatformKeyProbeSHA256",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Disabled because of https://crbug.com/1489696.
 BASE_FEATURE(kEnableGetNetworkConnectivityHintAPI,
              "EnableGetNetworkConnectivityHintAPI",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Prefetch to follow normal semantics instead of 5-minute rule
@@ -480,5 +477,11 @@ BASE_FEATURE(kSpdyHeadersToHttpResponseVerifyCorrectness,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kReceiveEcn, "ReceiveEcn", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// TODO(crbug.com/634470): Remove this feature flag in January 2024 if the new
+// limit sticks.
+BASE_FEATURE(kNewCertPathBuilderIterationLimit,
+             "NewCertPathBuilderIterationLimit",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace net::features

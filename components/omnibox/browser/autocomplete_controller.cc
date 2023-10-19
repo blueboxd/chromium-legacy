@@ -212,6 +212,11 @@ void AutocompleteController::ExtendMatchSubtypes(
         subtypes->emplace(omnibox::SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_QUERIES);
       }
     } else if (match.provider->type() ==
+               AutocompleteProvider::TYPE_QUERY_TILE) {
+      DCHECK(is_android);
+      // QueryTiles are now shown in zero-prefix context on Android.
+      subtypes->emplace(omnibox::SUBTYPE_ZERO_PREFIX_QUERY_TILE);
+    } else if (match.provider->type() ==
                AutocompleteProvider::TYPE_ON_DEVICE_HEAD) {
       // This subtype indicates a match from an on-device head provider.
       subtypes->emplace(omnibox::SUBTYPE_SUGGEST_2G_LITE);
@@ -503,7 +508,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   // signals to the controller so it doesn't realize that anything was
   // cleared or changed.  Even if the default match hasn't changed, we
   // need the edit model to update the display.
-  UpdateResult(false, true);
+  UpdateResult(false, true, true);
 
   sync_pass_done_ = true;
 
@@ -571,10 +576,8 @@ void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
     match.provider->DeleteMatch(match);
   }
 
-  OnProviderUpdate(true, nullptr);
-
-  // If we're not done, we might attempt to redisplay the deleted match. Make
-  // sure we aren't displaying it by removing any old entries.
+  // Removes deleted match. Does not re-score URLs so that we don't wait on the
+  // posted task, therefore notifying listeners as soon as possible.
   ExpireCopiedEntries();
 }
 
@@ -594,7 +597,7 @@ void AutocompleteController::ExpireCopiedEntries() {
   // The first true makes UpdateResult() clear out the results and
   // regenerate them, thus ensuring that no results from the previous
   // result set remain.
-  UpdateResult(true, false);
+  UpdateResult(true, false, false);
 }
 
 void AutocompleteController::OnProviderUpdate(
@@ -621,7 +624,7 @@ void AutocompleteController::OnProviderUpdate(
   CheckIfDone();
 
   if (updated_matches || done_)
-    UpdateResult(false, false);
+    UpdateResult(false, false, true);
 }
 
 void AutocompleteController::AddProviderAndTriggeringLogs(
@@ -879,7 +882,8 @@ void AutocompleteController::InitializeSyncProviders(int provider_types) {
 
 void AutocompleteController::UpdateResult(
     bool regenerate_result,
-    bool force_notify_default_match_changed) {
+    bool force_notify_default_match_changed,
+    bool score_urls) {
   // Cancel the scoring model when updating `internal_result_`.
   CancelUrlScoringModel();
 
@@ -1002,7 +1006,7 @@ void AutocompleteController::UpdateResult(
 
   // When sync ML scoring is enabled, run ML scoring in the sync pass and other
   // async update passes. Otherwise, only run ML scoring after all async passes.
-  if (!disable_ml_ &&
+  if (!disable_ml_ && score_urls &&
       (OmniboxFieldTrial::IsMlSyncBatchUrlScoringEnabled() ||
        (done_ && sync_pass_done_ &&
         OmniboxFieldTrial::IsMlUrlScoringEnabled())) &&
@@ -1304,7 +1308,8 @@ void AutocompleteController::UpdateAssistedQueryStats(
         subtypes.contains(omnibox::SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_URLS) ||
         subtypes.contains(
             omnibox::SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_QUERIES) ||
-        subtypes.contains(omnibox::SUBTYPE_ZERO_PREFIX)) {
+        subtypes.contains(omnibox::SUBTYPE_ZERO_PREFIX) ||
+        subtypes.contains(omnibox::SUBTYPE_ZERO_PREFIX_QUERY_TILE)) {
       num_zero_prefix_suggestions_shown++;
     }
 
@@ -1788,7 +1793,7 @@ void AutocompleteController::OnUrlScoringModelDone(
       match_itr->RecordAdditionalInfo("ml legacy relevance",
                                       match_itr->relevance);
       match_itr->RecordAdditionalInfo(
-          "ml model output", (prediction_and_match_itr_heap.top().first * 100));
+          "ml model output", prediction_and_match_itr_heap.top().first);
       match_itr->relevance = relevance_heap.top();
     }
     relevance_heap.pop();

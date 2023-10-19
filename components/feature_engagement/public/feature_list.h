@@ -165,6 +165,8 @@ DEFINE_VARIATION_PARAM(kIPHRequestDesktopSiteOptInFeature,
                        "IPH_RequestDesktopSiteOptIn");
 DEFINE_VARIATION_PARAM(kIPHRequestDesktopSiteExceptionsGenericFeature,
                        "IPH_RequestDesktopSiteExceptionsGeneric");
+DEFINE_VARIATION_PARAM(kIPHRequestDesktopSiteWindowSettingFeature,
+                       "IPH_RequestDesktopSiteWindowSetting");
 DEFINE_VARIATION_PARAM(kIPHShoppingListMenuItemFeature,
                        "IPH_ShoppingListMenuItem");
 DEFINE_VARIATION_PARAM(kIPHShoppingListSaveFlowFeature,
@@ -326,6 +328,8 @@ DEFINE_VARIATION_PARAM(kIPHSideSearchPageActionLabelFeature,
                        "IPH_SideSearchPageActionLabel");
 DEFINE_VARIATION_PARAM(kIPHTabAudioMutingFeature, "IPH_TabAudioMuting");
 DEFINE_VARIATION_PARAM(kIPHTabSearchFeature, "IPH_TabSearch");
+DEFINE_VARIATION_PARAM(kIPHTrackingProtectionOffboardingFeature,
+                       "IPH_TrackingProtectionOffboarding");
 DEFINE_VARIATION_PARAM(kIPHTrackingProtectionOnboardingFeature,
                        "IPH_TrackingProtectionOnboarding");
 DEFINE_VARIATION_PARAM(kIPHWebUITabStripFeature, "IPH_WebUITabStrip");
@@ -497,6 +501,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHRequestDesktopSiteDefaultOnFeature),
         VARIATION_ENTRY(kIPHRequestDesktopSiteOptInFeature),
         VARIATION_ENTRY(kIPHRequestDesktopSiteExceptionsGenericFeature),
+        VARIATION_ENTRY(kIPHRequestDesktopSiteWindowSettingFeature),
         VARIATION_ENTRY(kIPHShoppingListMenuItemFeature),
         VARIATION_ENTRY(kIPHShoppingListSaveFlowFeature),
         VARIATION_ENTRY(kIPHTabGroupsQuicklyComparePagesFeature),

@@ -46,6 +46,11 @@ class FatalCrashEventsObserver
                                    base::Time /* creation_time */,
                                    uint64_t /* offset */)>;
 
+  // UMA name for recording the reason that an unuploaded crash should not be
+  // reported.
+  static constexpr char kUmaUnuploadedCrashShouldNotReportReason[] =
+      "Browser.ERP.UnuploadedCrashShouldNotReportReason";
+
   // Create a `FatalCrashEventsObserver` instance.
   static std::unique_ptr<FatalCrashEventsObserver> Create();
 
@@ -74,6 +79,15 @@ class FatalCrashEventsObserver
   // a crash is uploaded, it is outside the purview of this class.
   class ReportedLocalIdManager {
    public:
+    // The result of `ShouldReport`.
+    enum class ShouldReportResult : uint8_t {
+      kYes = 0u,
+      kNegativeTimestamp,
+      kHasBeenReported,
+      kCrashTooOldAndMaxNumOfSavedLocalIdsReached,
+      kMaxValue = kCrashTooOldAndMaxNumOfSavedLocalIdsReached
+    };
+
     static std::unique_ptr<ReportedLocalIdManager> Create(
         base::FilePath save_file_path);
     ReportedLocalIdManager(const ReportedLocalIdManager&) = delete;
@@ -83,11 +97,15 @@ class FatalCrashEventsObserver
     // Returns true if a crash with the local ID has already been reported.
     bool HasBeenReported(const std::string& local_id) const;
 
-    // Returns true unless the local ID is already in the reported Local IDs or
-    // the timestamp is no later than the earliest timestamp corresponding to
-    // reported local IDs.
-    bool ShouldReport(const std::string& local_id,
-                      int64_t capture_timestamp_us);
+    // Returns a value to indicate that the timestamp is negative, the local ID
+    // is already in the reported Local IDs or the timestamp is no later than
+    // the earliest timestamp corresponding to reported local IDs. Otherwise,
+    // returns kYes.
+    //
+    // Not a const method because it calls `GetEarliestLocalIdEntry`, which
+    // involves cleaning up saved local IDs.
+    ShouldReportResult ShouldReport(const std::string& local_id,
+                                    int64_t capture_timestamp_us);
 
     // Updates local ID. Does nothing and returns false if a crash with the
     // given local ID and capture timestamp should not be reported. Otherwise,

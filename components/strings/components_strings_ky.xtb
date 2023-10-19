@@ -966,6 +966,7 @@
 <translation id="2977665033722899841">Учурда <ph name="ROW_NAME" /> тандалган. <ph name="ROW_CONTENT" /></translation>
 <translation id="2978824962390592855">Опера</translation>
 <translation id="2979424420072875974">Жазуучулар булактары</translation>
+<translation id="2980742331521553164">Бул картанын CVC коду шифрленип, тезирээк төлөө үчүн Google аккаунтуңузда сакталат</translation>
 <translation id="2983666748527428214">Жашыруун өтмөктү ачуу</translation>
 <translation id="2985306909656435243">Эгер иштетилсе, форманы тезирээк толтуруу үчүн карточкаңыздын көчүрмөсүн Chromium ушул түзмөккө сактап коёт.</translation>
 <translation id="2985398929374701810">Дарегин туура киргизиңиз</translation>
@@ -1954,6 +1955,7 @@
 <translation id="4989163558385430922">Баарын көрүү</translation>
 <translation id="4989542687859782284">Жеткиликсиз</translation>
 <translation id="4989809363548539747">Бул плагин колдоого алынбайт</translation>
+<translation id="4990226362263043042">Капталдагы тилкедеги таржымал</translation>
 <translation id="4990241977441916452">Конверт A2</translation>
 <translation id="4992066212339426712">Үнүн чыгаруу</translation>
 <translation id="4995216769782533993">Картаңыздын чоо-жайын бул сайт менен бөлүшүү үчүн коопсуздук кодун ырастаңыз</translation>
@@ -2221,6 +2223,7 @@
 <translation id="5541086400771735334">7-электрондук каттар кутусу</translation>
 <translation id="5541546772353173584">Электрондук почта дарегин кошуу</translation>
 <translation id="5543722831081909240">180 градус</translation>
+<translation id="5544512018309093956">Капталдагы тилкедеги таржымал</translation>
 <translation id="555128936272638662">Мобилдик жана зымсыз түзмөктөр үчүн аксессуарлар</translation>
 <translation id="5551890439174915351">100 x 200 мм.</translation>
 <translation id="5552137475244467770">Chrome Интернетке жарыяланган тизмелерден сырсөздөрүңүздү маал-маалы менен текшерип турат. Мындай учурда сырсөздөрүңүз менен колдонуучу аттарыңыз шифрленет. Аларды эч ким, анын ичинде Google да окуй албайт.</translation>
@@ -3396,6 +3399,7 @@
 <translation id="79338296614623784">Жарактуу телефон номерин киргизиңиз</translation>
 <translation id="7934414805353235750"><ph name="URL" /> корголгон мазмунду ойноткону жатат. Түзмөгүңүздүн аныктыгы Google аркылуу текшерилет.</translation>
 <translation id="7935318582918952113">DOM дистиллери</translation>
+<translation id="7937163678541954811">Бул картанын CVC коду шифрленип, тезирээк төлөө үчүн түзмөгүңүздө сакталат</translation>
 <translation id="7937554595067888181">Мөөнөтү <ph name="EXPIRATION_DATE_ABBR" /> бүтөт</translation>
 <translation id="7938958445268990899">Сервердин тастыктамасы али жарактуу эмес.</translation>
 <translation id="7939713744218886332">Дүйнөлүк ашкана</translation>

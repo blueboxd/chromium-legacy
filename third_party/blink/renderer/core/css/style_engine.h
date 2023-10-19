@@ -676,6 +676,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
 
   RuleSet* DefaultViewTransitionStyle() const;
+  void UpdateViewTransitionsOptIn();
 
   const ActiveStyleSheetVector& ActiveUserStyleSheets() const {
     return active_user_style_sheets_;
@@ -806,6 +807,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool UserKeyframeStyleShouldOverride(
       const StyleRuleKeyframes* new_rule,
       const StyleRuleKeyframes* existing_rule) const;
+  void AddViewTransitionsRules(const ActiveStyleSheetVector& sheets);
 
   CounterStyleMap& EnsureUserCounterStyleMap();
 
@@ -1031,6 +1033,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // The set of IDs for which ::view-transition-group pseudo elements are
   // generated during a ViewTransition.
   Vector<AtomicString> view_transition_names_;
+
+  // The @view-transitions rule currently applying to the document.
+  Member<StyleRuleViewTransitions> view_transitions_rule_;
 
   // Cache for sharing StyleFetchedImage between CSSValues referencing the same
   // URL.

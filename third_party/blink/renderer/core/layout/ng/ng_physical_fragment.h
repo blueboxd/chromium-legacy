@@ -452,17 +452,17 @@ class CORE_EXPORT NGPhysicalFragment
   // returns |nullptr| for the historical reasons. TODO(kojii): We may change
   // this in future. Use |IsLineBox()| instead of testing this is |nullptr|.
   const LayoutObject* GetLayoutObject() const {
-    return IsCSSBox() ? layout_object_ : nullptr;
+    return IsCSSBox() ? layout_object_.Get() : nullptr;
   }
   // TODO(kojii): We should not have mutable version at all, the use of this
   // function should be eliminiated over time.
   LayoutObject* GetMutableLayoutObject() const {
-    return IsCSSBox() ? layout_object_ : nullptr;
+    return IsCSSBox() ? layout_object_.Get() : nullptr;
   }
   // Similar to |GetLayoutObject|, but returns the |LayoutObject| of its
   // container for |!IsCSSBox()| fragments instead of |nullptr|.
   const LayoutObject* GetSelfOrContainerLayoutObject() const {
-    return layout_object_;
+    return layout_object_.Get();
   }
 
   const FragmentData* GetFragmentData() const;
@@ -626,7 +626,7 @@ class CORE_EXPORT NGPhysicalFragment
     const NGLink* buffer_;
   };
 
-  const NGBreakToken* BreakToken() const { return break_token_; }
+  const NGBreakToken* BreakToken() const { return break_token_.Get(); }
 
   base::span<const NGLink> Children() const;
 
@@ -741,7 +741,7 @@ class CORE_EXPORT NGPhysicalFragment
       const ComputedStyle& container_style,
       const NGFragmentItem& line,
       bool has_hanging,
-      const NGInlineCursor& cursor,
+      const InlineCursor& cursor,
       TextHeightType height_type,
       PhysicalRect* overflow) const;
 
@@ -759,7 +759,7 @@ class CORE_EXPORT NGPhysicalFragment
                                 const PhysicalOffset& additional_offset,
                                 NGOutlineType outline_type,
                                 const LayoutBoxModelObject* containing_block,
-                                NGInlineCursor* cursor) const;
+                                InlineCursor* cursor) const;
   void AddOutlineRectsForDescendant(
       const NGLink& descendant,
       OutlineRectCollector& collector,

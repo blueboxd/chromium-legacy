@@ -73,6 +73,21 @@ public class BookmarkManagerCoordinator
         }
     };
 
+    private final class DragAndCancelAdapter extends DragReorderableRecyclerViewAdapter {
+        DragAndCancelAdapter(Context context, ModelList modelList) {
+            super(context, modelList);
+        }
+
+        @Override
+        public boolean onFailedToRecycleView(@NonNull ViewHolder holder) {
+            if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()
+                    && holder.itemView instanceof CancelableAnimator cancelable) {
+                cancelable.cancelAnimation();
+            }
+            return super.onFailedToRecycleView(holder);
+        }
+    }
+
     private final ObservableSupplierImpl<Boolean> mBackPressStateSupplier =
             new ObservableSupplierImpl<>();
     private final ViewGroup mMainView;
@@ -132,7 +147,7 @@ public class BookmarkManagerCoordinator
 
         ModelList modelList = new ModelList();
         DragReorderableRecyclerViewAdapter dragReorderableRecyclerViewAdapter =
-                new DragReorderableRecyclerViewAdapter(context, modelList);
+                new DragAndCancelAdapter(context, modelList);
         mRecyclerView =
                 mSelectableListLayout.initializeRecyclerView(dragReorderableRecyclerViewAdapter);
 
@@ -220,12 +235,18 @@ public class BookmarkManagerCoordinator
         dragReorderableRecyclerViewAdapter.registerType(ViewType.SHOPPING_FILTER,
                 BookmarkManagerCoordinator::buildShoppingFilterView,
                 BookmarkManagerViewBinder::bindShoppingFilterView);
-        dragReorderableRecyclerViewAdapter.registerDraggableType(ViewType.IMPROVED_BOOKMARK_VISUAL,
-                this::buildAndInitVisualImprovedBookmarkRow, ImprovedBookmarkRowViewBinder::bind,
-                (viewHolder, itemTouchHelper) -> {}, mMediator.getDraggabilityProvider());
-        dragReorderableRecyclerViewAdapter.registerDraggableType(ViewType.IMPROVED_BOOKMARK_COMPACT,
-                this::buildAndInitCompactImprovedBookmarkRow, ImprovedBookmarkRowViewBinder::bind,
-                (viewHolder, itemTouchHelper) -> {}, mMediator.getDraggabilityProvider());
+        dragReorderableRecyclerViewAdapter.registerDraggableType(
+                ViewType.IMPROVED_BOOKMARK_VISUAL,
+                this::buildVisualImprovedBookmarkRow,
+                ImprovedBookmarkRowViewBinder::bind,
+                (viewHolder, itemTouchHelper) -> {},
+                mMediator.getDraggabilityProvider());
+        dragReorderableRecyclerViewAdapter.registerDraggableType(
+                ViewType.IMPROVED_BOOKMARK_COMPACT,
+                this::buildVisualImprovedBookmarkRow,
+                ImprovedBookmarkRowViewBinder::bind,
+                (viewHolder, itemTouchHelper) -> {},
+                mMediator.getDraggabilityProvider());
         dragReorderableRecyclerViewAdapter.registerType(ViewType.SEARCH_BOX,
                 this::buildSearchBoxRow, BookmarkSearchBoxRowViewBinder.createViewBinder());
 
@@ -371,15 +392,13 @@ public class BookmarkManagerCoordinator
         return inflate(parent, R.layout.shopping_filter_row);
     }
 
-    ImprovedBookmarkRow buildAndInitCompactImprovedBookmarkRow(ViewGroup parent) {
+    ImprovedBookmarkRow buildCompactImprovedBookmarkRow(ViewGroup parent) {
         ImprovedBookmarkRow row = ImprovedBookmarkRow.buildView(parent.getContext(), false);
-        row.setSelectionDelegate(mSelectionDelegate);
         return row;
     }
 
-    ImprovedBookmarkRow buildAndInitVisualImprovedBookmarkRow(ViewGroup parent) {
+    ImprovedBookmarkRow buildVisualImprovedBookmarkRow(ViewGroup parent) {
         ImprovedBookmarkRow row = ImprovedBookmarkRow.buildView(parent.getContext(), true);
-        row.setSelectionDelegate(mSelectionDelegate);
         return row;
     }
 

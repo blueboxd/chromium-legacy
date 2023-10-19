@@ -930,6 +930,7 @@ group("webgpu_cts_scripts") {
 group("telemetry_gpu_common_data") {
   testonly = true
   data = [
+    "//chrome/VERSION",
     "//content/test/data/gpu/",
     "//content/test/gpu/gpu_path_util/",
     "//content/test/gpu/gpu_tests/",
@@ -3149,7 +3150,7 @@ test("content_unittests") {
       ]
       sources += [
         "../browser/media/capture/desktop_capture_device_unittest.cc",
-        "../browser/renderer_host/media/crop_id_web_contents_helper_unittest.cc",
+        "../browser/renderer_host/media/sub_capture_target_id_web_contents_helper_unittest.cc",
       ]
     }
   }

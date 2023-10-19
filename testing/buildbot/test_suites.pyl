@@ -2158,7 +2158,6 @@
       },
       'ozone_unittests': {},
       'perfetto_unittests': {},
-      'service_manager_unittests': {},
       'services_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.services_unittests.filter',
@@ -2635,6 +2634,27 @@
           '--flag-specific=webgpu-swiftshader-with-backend-validation',
           '--timeout-ms=30000',
         ],
+      },
+    },
+
+    'gpu_dawn_webgpu_compat_cts': {
+      'webgpu_cts_compat_tests': {
+        'telemetry_test_name': 'webgpu_compat_cts',
+        'mixins': [
+          'has_native_resultdb_integration',
+          'webgpu_telemetry_cts',
+        ],
+        'args': [
+          '--extra-browser-args=--use-angle=gl --use-webgpu-adapter=opengles --enable-webgpu-developer-features',
+        ],
+        'ci_only': True,
+        'swarming': {
+          'shards': 14,
+        },
+        'android_swarming': {
+          'shards': 36,
+        },
+        'experiment_percentage': 100,
       },
     },
 
@@ -4235,8 +4255,8 @@
     },
 
     'linux_lacros_chrome_browsertests_non_version_skew': {
-      'lacros_chrome_browsertests_run_in_series': {
-        'test': 'lacros_chrome_browsertests_run_in_series',
+      'lacros_chrome_browsertests': {
+        'test': 'lacros_chrome_browsertests',
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter',
         ],
@@ -4247,7 +4267,7 @@
     },
 
     'linux_lacros_chrome_browsertests_version_skew': {
-      'lacros_chrome_browsertests_run_in_series': {
+      'lacros_chrome_browsertests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter;../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
         ],
@@ -4539,7 +4559,6 @@
       'ppapi_unittests': {},
       'printing_unittests': {},
       'remoting_unittests': {},
-      'service_manager_unittests': {},
       'snapshot_unittests': {},
       'sync_integration_tests': {
         'swarming': {
@@ -4574,7 +4593,6 @@
       'pdf_unittests': {},
       'printing_unittests': {},
       'remoting_unittests': {},
-      'service_manager_unittests': {},
       'snapshot_unittests': {},
       'sync_integration_tests': {
         'swarming': {
@@ -6240,6 +6258,12 @@
       'gpu_dawn_perf_smoke_isolated_scripts',
       'gpu_dawn_webgpu_blink_web_tests',
       'gpu_dawn_webgpu_blink_web_tests_force_swiftshader',
+    ],
+
+    'gpu_dawn_compat_telemetry_tests': [
+      'gpu_dawn_webgpu_compat_cts',
+      'gpu_dawn_webgpu_cts',
+      'gpu_dawn_web_platform_webgpu_cts_force_swiftshader',
     ],
 
     'gpu_dawn_integration_asan_gtests_passthrough': [

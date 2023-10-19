@@ -367,10 +367,6 @@ const char kEnableBookmarksAccountStorageName[] =
 const char kEnableBookmarksAccountStorageDescription[] =
     "Enable bookmarks account storage and related UI features.";
 
-const char kEnableCBDSignOutName[] = "Enable Clear Browsing Data Sign-out";
-const char kEnableCBDSignOutDescription[] =
-    "Offer signed-in user to sign-out from Clear Browsing Data settings.";
-
 const char kEnableCompromisedPasswordsMutingName[] =
     "Enable the muting of compromised passwords in the Password Manager";
 const char kEnableCompromisedPasswordsMutingDescription[] =
@@ -460,13 +456,6 @@ const char kEnableUserPolicyForSigninOrSyncConsentLevelName[] =
 const char kEnableUserPolicyForSigninOrSyncConsentLevelDescription[] =
     "Enable the fetch and application of user policies when signed-in only or "
     "signed-in+sync with a managed account.";
-
-const char kEnableVariationsGoogleGroupFilteringName[] =
-    "Enables filtering experiments by Google group membership";
-const char kEnableVariationsGoogleGroupFilteringDescription[] =
-    "Enables filtering of experiments by Google group membership. This feature "
-    "is experimental and is used only for dogfooding, and only for users who "
-    "are signed in and have Chrome Sync enabled.";
 
 const char kEnableWebChannelsName[] = "Enable WebFeed";
 const char kEnableWebChannelsDescription[] =
@@ -1035,12 +1024,6 @@ const char kEnableLensInNTPDescription[] =
     "When enabled, use Lens to search for images from your device camera "
     "menu when Google is the selected search engine, accessible from the"
     "new tab page.";
-
-const char kEnableLensContextMenuAltTextName[] =
-    "Enable alternate text for Google Lens in Context Menu";
-const char kEnableLensContextMenuAltTextDescription[] =
-    "When enabled, use the alternate text for the search image with Google "
-    "Lens context menu string.";
 
 const char kEnableLensInOmniboxCopiedImageName[] =
     "Enable Google Lens in the Omnibox for Copied Images";

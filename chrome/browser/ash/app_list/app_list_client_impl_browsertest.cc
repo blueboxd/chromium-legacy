@@ -30,7 +30,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/apps/app_service/package_id.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
@@ -77,6 +76,7 @@
 #include "components/app_constants/constants.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/package_id.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -443,14 +443,12 @@ class AppListClientImplBrowserPromiseAppTest
     extensions::PlatformAppBrowserTest::TearDownOnMainThread();
   }
 
-  apps::PromiseAppRegistryCache* cache() {
-    return apps::AppServiceProxyFactory::GetForProfile(profile())
-        ->PromiseAppRegistryCache();
+  apps::AppServiceProxy* app_service_proxy() {
+    return apps::AppServiceProxyFactory::GetForProfile(profile());
   }
 
-  apps::AppRegistryCache* app_cache() {
-    return &apps::AppServiceProxyFactory::GetForProfile(profile())
-                ->AppRegistryCache();
+  apps::PromiseAppRegistryCache* cache() {
+    return app_service_proxy()->PromiseAppRegistryCache();
   }
 
   // AppListModelUpdaterObserver:
@@ -518,8 +516,8 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserPromiseAppTest,
 
   std::vector<apps::AppPtr> apps;
   apps.push_back(std::move(app));
-  app_cache()->OnApps(std::move(apps), apps::AppType::kArc,
-                      /*should_notify_initialized=*/false);
+  app_service_proxy()->OnApps(std::move(apps), apps::AppType::kArc,
+                              /*should_notify_initialized=*/false);
 
   EXPECT_EQ(1, GetAndResetUpdateCount());
   EXPECT_FALSE(model_updater->FindItem(kTestPackageId.ToString()));

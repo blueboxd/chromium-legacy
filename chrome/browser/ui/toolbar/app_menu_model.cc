@@ -53,6 +53,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/profiles/profile_view_utils.h"
+#include "chrome/browser/ui/safety_hub/menu_notification_service_factory.h"
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
@@ -1470,6 +1471,23 @@ void AppMenuModel::Build() {
 #endif
   }
 
+  if (base::FeatureList::IsEnabled(features::kSafetyHub) &&
+      !browser_->profile()->IsGuestSession() &&
+      !browser_->profile()->IsIncognitoProfile()) {
+    auto* safety_hub_menu_notification_service =
+        SafetyHubMenuNotificationServiceFactory::GetForProfile(
+            browser_->profile());
+    absl::optional<MenuNotificationEntry> notification =
+        safety_hub_menu_notification_service->GetNotificationToShow();
+    if (notification.has_value()) {
+      const auto safety_hub_icon = ui::ImageModel::FromVectorIcon(
+          kSafetyHubIcon, ui::kColorMenuIcon, kDefaultIconSize);
+      AddItemWithIcon(notification->command, notification->label,
+                      safety_hub_icon);
+      need_separator = true;
+    }
+  }
+
   if (AddGlobalErrorMenuItems() || need_separator)
     AddSeparator(ui::NORMAL_SEPARATOR);
 
@@ -1588,6 +1606,11 @@ void AppMenuModel::Build() {
       AddItemWithStringId(IDC_SHOW_SEARCH_COMPANION, IDS_SHOW_SEARCH_COMPANION);
     }
 #endif
+    if (features::IsTabOrganization()) {
+      AddItemWithStringId(IDC_ORGANIZE_TABS, IDS_TAB_ORGANIZE_MENU);
+      SetIsNewFeatureAt(GetIndexOfCommandId(IDC_ORGANIZE_TABS).value(), true);
+    }
+
     AddItemWithStringId(IDC_SHOW_TRANSLATE, IDS_SHOW_TRANSLATE);
 
     CreateFindAndEditSubMenu();
@@ -1732,6 +1755,7 @@ void AppMenuModel::Build() {
     SetCommandIcon(this, IDC_VIEW_PASSWORDS, kKeyOpenChromeRefreshIcon);
     SetCommandIcon(this, IDC_ZOOM_MENU, kZoomInIcon);
     SetCommandIcon(this, IDC_PRINT, kPrintMenuIcon);
+    SetCommandIcon(this, IDC_ORGANIZE_TABS, kPaintbrushIcon);
     SetCommandIcon(this, IDC_SHOW_TRANSLATE, kTranslateIcon);
     SetCommandIcon(this, IDC_FIND_AND_EDIT_MENU, kSearchMenuIcon);
     SetCommandIcon(this, IDC_SAVE_AND_SHARE_MENU, kFileSaveChromeRefreshIcon);

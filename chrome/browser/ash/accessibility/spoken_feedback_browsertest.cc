@@ -595,10 +595,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ShelfIconFocusForward) {
   // pinned apps in user preference will be removed.
   EnableChromeVox();
   sm_.Call([controller, title]() {
-    controller->InsertAppItem(
+    controller->CreateAppItem(
         std::make_unique<AppShortcutShelfItemController>(ShelfID("FakeApp")),
-        STATUS_CLOSED, controller->shelf_model()->item_count(), TYPE_PINNED_APP,
-        base::ASCIIToUTF16(title));
+        STATUS_CLOSED, /*pinned=*/true, base::ASCIIToUTF16(title));
   });
 
   // Focus on the shelf.
@@ -693,17 +692,15 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem) {
   sm_.Call([this]() {
     // Add three Shelf buttons. Wait for the change on ShelfModel to reach ash.
     ChromeShelfController* controller = ChromeShelfController::instance();
-    const int base_index = controller->shelf_model()->item_count();
     const std::string title("MockApp");
     const std::string id("FakeApp");
     const int insert_app_num = 3;
     for (int i = 0; i < insert_app_num; i++) {
       std::string app_title = title + base::NumberToString(i);
       std::string app_id = id + base::NumberToString(i);
-      controller->InsertAppItem(
+      controller->CreateAppItem(
           std::make_unique<AppShortcutShelfItemController>(ShelfID(app_id)),
-          STATUS_CLOSED, base_index + i, TYPE_PINNED_APP,
-          base::ASCIIToUTF16(app_title));
+          STATUS_CLOSED, /*pinned=*/true, base::ASCIIToUTF16(app_title));
     }
 
     // Enable the function of speaking text under mouse.
@@ -789,9 +786,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   std::vector<apps::AppPtr> apps;
   apps.push_back(std::move(app));
   apps::AppServiceProxyFactory::GetForProfile(GetProfile())
-      ->AppRegistryCache()
-      .OnApps(std::move(apps), apps::AppType::kBuiltIn,
-              false /* should_notify_initialized */);
+      ->OnApps(std::move(apps), apps::AppType::kBuiltIn,
+               false /* should_notify_initialized */);
 
   // Create and add a test app to the shelf model.
   ShelfItem item;
@@ -875,9 +871,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   std::vector<apps::AppPtr> apps;
   apps.push_back(std::move(app));
   apps::AppServiceProxyFactory::GetForProfile(GetProfile())
-      ->AppRegistryCache()
-      .OnApps(std::move(apps), apps::AppType::kBuiltIn,
-              false /* should_notify_initialized */);
+      ->OnApps(std::move(apps), apps::AppType::kBuiltIn,
+               false /* should_notify_initialized */);
 
   // Create and add a test app to the shelf model.
   ShelfItem item;

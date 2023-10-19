@@ -261,7 +261,7 @@ void LogDownloadedBlocklistedEntriesCountFromAccountStoreAfterUnlock(
       blocklist_entries_count);
 }
 
-void LogPasswordSettingsReauthResult(ReauthResult result) {
+void LogPasswordSettingsReauthResult(device_reauth::ReauthResult result) {
   base::UmaHistogramEnumeration(
       "PasswordManager.ReauthToAccessPasswordInSettings", result);
 }
@@ -304,6 +304,10 @@ void LogGenerationDialogChoice(GenerationDialogChoice choice,
     case PasswordGenerationType::kManual:
       base::UmaHistogramEnumeration(
           "KeyboardAccessory.GenerationDialogChoice.Manual", choice);
+      break;
+    case PasswordGenerationType::kTouchToFill:
+      base::UmaHistogramEnumeration(
+          "PasswordManager.TouchToFill.PasswordGeneration.UserChoice", choice);
       break;
   };
 }  // namespace metrics_util

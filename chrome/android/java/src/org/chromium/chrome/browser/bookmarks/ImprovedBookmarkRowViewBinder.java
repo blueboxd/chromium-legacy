@@ -32,7 +32,10 @@ public class ImprovedBookmarkRowViewBinder {
         } else if (key == ImprovedBookmarkRowProperties.START_ICON_TINT) {
             row.setStartIconTint(model.get(ImprovedBookmarkRowProperties.START_ICON_TINT));
         } else if (key == ImprovedBookmarkRowProperties.START_ICON_DRAWABLE) {
-            row.setStartIconDrawable(model.get(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE));
+            row.setStartIconDrawable(null);
+            model.get(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE)
+                    .onAvailable(row::setStartIconDrawable);
+            model.get(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE).get();
         } else if (key == ImprovedBookmarkRowProperties.ACCESSORY_VIEW) {
             row.setAccessoryView(model.get(ImprovedBookmarkRowProperties.ACCESSORY_VIEW));
         } else if (key == ImprovedBookmarkRowProperties.LIST_MENU_BUTTON_DELEGATE) {
@@ -54,8 +57,6 @@ public class ImprovedBookmarkRowViewBinder {
         } else if (key == ImprovedBookmarkRowProperties.ROW_LONG_CLICK_LISTENER) {
             row.setRowLongClickListener(
                     model.get(ImprovedBookmarkRowProperties.ROW_LONG_CLICK_LISTENER));
-        } else if (key == BookmarkManagerProperties.BOOKMARK_ID) {
-            row.setItem(model.get(BookmarkManagerProperties.BOOKMARK_ID));
         } else if (key == ImprovedBookmarkRowProperties.END_IMAGE_VISIBILITY) {
             int endImageVisibility = model.get(ImprovedBookmarkRowProperties.END_IMAGE_VISIBILITY);
             assert endImageVisibility != ImageVisibility.FOLDER_DRAWABLE;

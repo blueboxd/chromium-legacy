@@ -99,6 +99,8 @@
 
 namespace blink {
 
+using mojom::blink::FormControlType;
+
 namespace {
 
 const unsigned kMaxEmailFieldLength = 254;
@@ -2103,7 +2105,7 @@ bool HTMLInputElement::SetupDateTimeChooserParameters(
   if (!GetDocument().View())
     return false;
 
-  parameters.type = type();
+  parameters.type = input_type_->type();
   parameters.minimum = Minimum();
   parameters.maximum = Maximum();
   parameters.required = IsRequired();

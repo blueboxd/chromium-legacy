@@ -7,7 +7,7 @@
 
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_layout_opportunity.h"
+#include "third_party/blink/renderer/core/layout/exclusions/layout_opportunity.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -36,7 +36,7 @@ class CORE_EXPORT NGLineWidths {
 
   // Compute the line widths. Returns `false` if the `node` is not _simple_.
   bool Set(const NGInlineNode& node,
-           base::span<const NGLayoutOpportunity> opportunities,
+           base::span<const LayoutOpportunity> opportunities,
            const NGInlineBreakToken* break_token = nullptr);
 
  private:

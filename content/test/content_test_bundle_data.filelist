@@ -3074,8 +3074,6 @@ data/accessibility/html/form-expected-fuchsia.txt
 data/accessibility/html/form-expected-mac.txt
 data/accessibility/html/form-expected-uia-win.txt
 data/accessibility/html/form-expected-win.txt
-data/accessibility/html/form-validation-message-after-hide-timeout-expected-blink.txt
-data/accessibility/html/form-validation-message-after-hide-timeout.html
 data/accessibility/html/form-validation-message-expected-auralinux.txt
 data/accessibility/html/form-validation-message-expected-blink.txt
 data/accessibility/html/form-validation-message-expected-fuchsia.txt
@@ -6556,6 +6554,7 @@ data/post_message.html
 data/post_message2.html
 data/preloading/preloading_decider.html
 data/prerender/cross_origin_prerender.html
+data/prerender/cross_origin_srcdoc_sandboxed_postmessage.html
 data/prerender/doc-with-display-none-iframe.html
 data/prerender/duplicate_prerenders.html
 data/prerender/image_loading_lazy.html

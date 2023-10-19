@@ -53,7 +53,7 @@
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/first_run/first_run.h"
-#import "ios/chrome/browser/geolocation/geolocation_logger.h"
+#import "ios/chrome/browser/geolocation/model/geolocation_logger.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/mailto_handler/mailto_handler_service.h"
 #import "ios/chrome/browser/mailto_handler/mailto_handler_service_factory.h"
@@ -358,6 +358,9 @@ void InjectNTP(Browser* browser) {
 
 // YES if the Settings view is being dismissed.
 @property(nonatomic, assign) BOOL dismissingSettings;
+
+// The state of the scene controlled by this object.
+@property(nonatomic, weak, readonly) SceneState* sceneState;
 
 @end
 
@@ -1353,6 +1356,7 @@ void InjectNTP(Browser* browser) {
       self.mainInterface.browser->GetBrowserState()->GetPrefs());
 }
 
+// YES if incognito mode is forced by enterprise policy.
 - (BOOL)isIncognitoForced {
   return IsIncognitoModeForced(
       self.incognitoInterface.browser->GetBrowserState()->GetPrefs());
@@ -1562,25 +1566,6 @@ void InjectNTP(Browser* browser) {
                      self.isProcessingTabSwitcherCommand = NO;
                    });
   }
-}
-
-// TODO(crbug.com/779791) : Remove showing settings from MainController.
-- (void)showAutofillSettingsFromViewController:
-    (UIViewController*)baseViewController {
-  DCHECK(!self.signinCoordinator)
-      << "self.signinCoordinator: "
-      << base::SysNSStringToUTF8([self.signinCoordinator description]);
-  if (self.settingsNavigationController) {
-    return;
-  }
-
-  Browser* browser = self.mainInterface.browser;
-  self.settingsNavigationController =
-      [SettingsNavigationController autofillProfileControllerForBrowser:browser
-                                                               delegate:self];
-  [baseViewController presentViewController:self.settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
 }
 
 - (void)showPrivacySettingsFromViewController:

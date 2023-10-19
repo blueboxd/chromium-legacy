@@ -224,6 +224,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/region_capture_crop_id.h"
+#include "third_party/blink/renderer/platform/restriction_target_id.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/bidi_paragraph.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -607,7 +608,8 @@ bool Element::IsFocusableStyle() const {
   // following DCHECK can be removed.
   DCHECK(
       !GetDocument().IsActive() || GetDocument().InStyleRecalc() ||
-      !GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*this));
+      !GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*this))
+      << *this;
 
   if (LayoutObject* layout_object = GetLayoutObject()) {
     return layout_object->StyleRef().IsFocusable();
@@ -4315,13 +4317,6 @@ absl::optional<TextDirection> Element::ResolveAutoDirectionality(
       }
     }
 
-    // TODO(https://crbug.com/576815): Once we have final spec text for
-    // https://github.com/whatwg/html/issues/3699 we should recheck the
-    // relative order of this check and the "Skip elements with valid
-    // dir attribute" check above, and add tests for the case that
-    // exercises both.  (Note that if the order is switched, this test
-    // needs to consider the dir attribute on the slot element rather
-    // than just jumping to its shadow host.)
     if (slot && RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
       ShadowRoot* root = slot->ContainingShadowRoot();
       return root->host().CachedDirectionality();
@@ -4885,31 +4880,48 @@ void Element::SetRegionCaptureCropId(
   ElementRareDataVector& rare_data = EnsureElementRareData();
   CHECK(!rare_data.GetRegionCaptureCropId());
 
-  LayoutObject* layout_object = GetLayoutObject();
-  const bool should_force_stacking_context =
-      layout_object && !layout_object->IsStackingContext();
-
   // Propagate efficient form through the rendering pipeline.
   rare_data.SetRegionCaptureCropId(std::move(crop_id));
 
-  if (layout_object) {
-    // If we forced a stacking context, we need to reattach to the layout tree.
-    // There is no corresponding style change.
-    if (RuntimeEnabledFeatures::ElementCaptureEnabled()) {
-      if (should_force_stacking_context) {
-        SetForceReattachLayoutTree();
-      }
-    }
-
-    // The crop ID needs to be propagated to the paint system by the time that
-    // capture begins. The API requires the implementation to propagate the
-    // token right away, so we force invalidate here.
+  // If a LayoutObject does not yet exist, this full paint invalidation
+  // will occur automatically after it is created.
+  if (LayoutObject* layout_object = GetLayoutObject()) {
+    // The SubCaptureTarget ID needs to be propagated to the paint system.
     layout_object->SetShouldDoFullPaintInvalidation();
   }
 }
 
 const RegionCaptureCropId* Element::GetRegionCaptureCropId() const {
   return HasRareData() ? GetElementRareData()->GetRegionCaptureCropId()
+                       : nullptr;
+}
+
+void Element::SetRestrictionTargetId(std::unique_ptr<RestrictionTargetId> id) {
+  CHECK(RuntimeEnabledFeatures::ElementCaptureEnabled());
+
+  ElementRareDataVector& rare_data = EnsureElementRareData();
+  CHECK(!rare_data.GetRestrictionTargetId());
+
+  // Propagate efficient form through the rendering pipeline.
+  // This has the intended side effect of forcing the element
+  // into its own stacking context during rendering.
+  rare_data.SetRestrictionTargetId(std::move(id));
+
+  // By forcing reattachment, we ensure that the element would now be
+  // picked up as in its own stacking context.
+  // There is no corresponding style change.
+  SetForceReattachLayoutTree();
+
+  // If a LayoutObject does not yet exist, this full paint invalidation
+  // will occur automatically after it is created.
+  if (LayoutObject* layout_object = GetLayoutObject()) {
+    // The SubCaptureTarget ID needs to be propagated to the paint system.
+    layout_object->SetShouldDoFullPaintInvalidation();
+  }
+}
+
+const RestrictionTargetId* Element::GetRestrictionTargetId() const {
+  return HasRareData() ? GetElementRareData()->GetRestrictionTargetId()
                        : nullptr;
 }
 

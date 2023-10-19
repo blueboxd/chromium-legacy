@@ -169,7 +169,9 @@
 <translation id="2152882202543497059"><ph name="NUMBER" /> сүрөт</translation>
 <translation id="2157660087437850958">быйтыкча тандагыч</translation>
 <translation id="2157959690810728433">КЕЗЕККЕ КОЮЛДУ</translation>
+<translation id="2158450850127366833">{NUM_ROOL_APPS,plural,offset:2 =1{Администраторуңуз <ph name="APP_NAME_1" /> колдонмосун сиз тутумга кирген сайын автоматтык түрдө ачыла тургандай кылып тууралады.}=2{Администраторуңуз <ph name="APP_NAME_1" /> жана <ph name="APP_NAME_2" /> колдонмолорун сиз тутумга кирген сайын автоматтык түрдө ачыла тургандай кылып тууралады.}=3{Администраторуңуз <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> жана <ph name="APP_NAME_3" /> колдонмолорун сиз тутумга кирген сайын автоматтык түрдө ачыла тургандай кылып тууралады.}other{Администраторуңуз <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> жана дагы # колдонмону сиз тутумга кирген сайын автоматтык түрдө ачыла тургандай кылып тууралады.}}</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Кайталоо</translation>
+<translation id="215916044711630446">APN кошуу баскычы өчүрүлдү</translation>
 <translation id="2161394479394250669">Басып чыгарууну токтотуу</translation>
 <translation id="2161656808144014275">Текст</translation>
 <translation id="2163937499206714165">Караңгы теманы күйгүзүү</translation>
@@ -337,7 +339,6 @@
 <translation id="3604713164406837697">Тушкагазды өзгөртүп алыңыз</translation>
 <translation id="360565022852130722">WiFi тармагынын WEP 802.1x протоколунун коопсуздугу начар</translation>
 <translation id="3606583719724308068">HTTPS вебсайттары үчүн күтүү убакыты жогору</translation>
-<translation id="3607216139080387279">Көшөгөнү көрсөтүү</translation>
 <translation id="361575905210396100">Пикириңиз үчүн рахмат</translation>
 <translation id="3632579075709132555">Купуялык экранын өчүрүү/күйгүзүү</translation>
 <translation id="3651050199673793219">Температураны өлчөө бирдигин тандоо</translation>
@@ -349,7 +350,6 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> сын-пикир)</translation>
 <translation id="3748026146096797577">Интернет жок</translation>
 <translation id="3749289110408117711">Файлдын аталышы</translation>
-<translation id="3766934827878963937">1 саатка</translation>
 <translation id="3771294271822695279">Видео файлдар</translation>
 <translation id="3784455785234192852">Кулпулоо</translation>
 <translation id="380097101658023925">rgb башкаруу элементтери</translation>
@@ -400,6 +400,7 @@
 <translation id="4117637339509843559">Караңгы режим</translation>
 <translation id="4130035430755296270">Дагы башка калыптарды көрүү үчүн үстүнө алып келиңиз</translation>
 <translation id="4131410914670010031">Ак-кара</translation>
+<translation id="4143820682073026914">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> автоматтык түрдө ачылды}other{# колдонмо автоматтык түрдө ачылды}}</translation>
 <translation id="4145784616224233563">HTTP тармактык коргоосу</translation>
 <translation id="4147897805161313378">Google Фото</translation>
 <translation id="4150201353443180367">Көрсөтүү</translation>
@@ -445,6 +446,7 @@
 <translation id="445059817448385655">Эски сырсөз</translation>
 <translation id="4453205916657964690">Көмөкчү тармактын маскасы</translation>
 <translation id="4454245904991689773">Төмөнкүгө скандоо:</translation>
+<translation id="4456812688969919973">APN сактоо баскычы өчүрүлдү</translation>
 <translation id="4469288414739283461">Жер көшөгөсү</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Демейкиден башка тармактын шлюзуна ping сурамы жөнөтүлгөн жок</translation>
@@ -692,7 +694,6 @@
 <translation id="629550705077076970">баскычтопту күңүрт кылуу</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> сыноосу жокко чыгарылды</translation>
 <translation id="631063167932043783">Мүмкүнчүлүктөр колдонмосу</translation>
-<translation id="6318437367327684789">ар дайым</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> түзмөгүндө орнотулган программаны жаңыртуу</translation>
 <translation id="6321407676395378991">Көшөгөнү күйгүзүү</translation>
 <translation id="6324916366299863871">Кыска жолду түзөтүү</translation>
@@ -716,6 +717,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Начар (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Аккаунттун параметрлерине өтүү</translation>
+<translation id="6462978824459367242">APN кошуу баскычы иштетилди</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Бет кайра скандалсынбы?}=1{{PAGE_NUMBER} бет кайра скандалсынбы?}other{{PAGE_NUMBER} бет кайра скандалсынбы?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" /> башкарат</translation>
@@ -1054,6 +1056,7 @@
 <translation id="902638246363752736">Баскычтоп параметрлери</translation>
 <translation id="9028832514430399253">Көшөгө параметрлерин тандоо үчүн өчүрүү/күйгүзүү которгучун күйгүзүңүз</translation>
 <translation id="9039663905644212491">PEAP</translation>
+<translation id="9049868303458988905">APN сактоо баскычы иштетилди</translation>
 <translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">DNS дааналыгын күтүү убакыты узакка созулат</translation>
 <translation id="9065203028668620118">Түзөтүү</translation>
@@ -1069,11 +1072,9 @@
 <translation id="9111102763498581341">Кулпуну ачуу</translation>
 <translation id="9122602430962285795">Кайра туташуу үчүн Параметрлерге өтүңүз</translation>
 <translation id="9126720536733509015">Бир нече бетти бир PDF файлына сактаңыз</translation>
-<translation id="9133104754938025929">Батареянын кубатын үнөмдөө үчүн көшөгө түзмөк кубатталып жатканда гана иштейт.</translation>
 <translation id="9133772297793293778">Баскычтоптон 1-4 өзгөрткүчтөрүн жана башка 1 баскычты басыңыз. Түзөтүү режиминен чыгуу үчүн alt + esc баскычтарын бирге басыңыз.</translation>
 <translation id="9137526406337347448">Google кызматтары</translation>
 <translation id="9138630967333032450">Сол жактагы Shift баскычы</translation>
-<translation id="9143347780818904997"><ph name="MINUTES" /> мүнөткө</translation>
 <translation id="9149391708638971077">Эстутумду сыноо</translation>
 <translation id="9161276708550942948">боштук</translation>
 <translation id="9173638680043580060">Бир мүнөткө жетпеген убакыт калды</translation>

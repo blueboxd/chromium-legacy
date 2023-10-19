@@ -285,6 +285,7 @@ Chỉ những người có cụm mật khẩu của bạn mới đọc được 
 <translation id="2571834852878229351">Tự tạo mật khẩu</translation>
 <translation id="2573452357057307036">Tìm hiểu cách đặt Chrome làm trình duyệt mặc định</translation>
 <translation id="2574249610672786438">Để xem các thẻ của bạn trên bất cứ thiết bị nào mà bạn có dùng Chromium, hãy đăng nhập trên tất cả thiết bị.</translation>
+<translation id="2578337197553672982">Nội dung của Google dành cho người trẻ</translation>
 <translation id="2581165646603367611">Thao tác này sẽ xóa cookie, bộ nhớ đệm và các dữ liệu khác của các trang web mà Chrome cho rằng không quan trọng.</translation>
 <translation id="2587052924345400782">Đã có phiên bản mới hơn</translation>
 <translation id="2593272815202181319">Monospace</translation>
@@ -352,7 +353,6 @@ Chỉ những người có cụm mật khẩu của bạn mới đọc được 
 <translation id="2909615210195135082">Nền tảng thông báo của Google</translation>
 <translation id="2912296070571964914">Quản lý các chủ đề mà bạn quan tâm</translation>
 <translation id="2912345083818861431">Dùng phương thức khóa màn hình để xem các thẻ ẩn danh đang mở</translation>
-<translation id="2922568440285376746">Tìm trong ảnh bằng Google <ph name="BEGIN_NEW" />Mới<ph name="END_NEW" /></translation>
 <translation id="2923908459366352541">Tên không hợp lệ</translation>
 <translation id="2932150158123903946">Bộ nhớ Google <ph name="APP_NAME" /></translation>
 <translation id="2932222164150889403">Bàn phím của bạn sẽ không thay đổi</translation>
@@ -687,7 +687,6 @@ Tài khoản Google của bạn có thể có các dạng nhật ký duyệt web
 <translation id="4684427112815847243">Đồng bộ hóa mọi thứ</translation>
 <translation id="4685741273709472646">Chọn từ danh sách thả xuống</translation>
 <translation id="4687718960473379118">Quảng cáo do trang web đề xuất</translation>
-<translation id="4689792375321623175">Tìm hình ảnh bằng Google <ph name="BEGIN_NEW" />Mới<ph name="END_NEW" /></translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tùy chọn khác}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tùy chọn khác}}</translation>
 <translation id="4699172675775169585">Tệp và hình ảnh được lưu trong bộ nhớ đệm</translation>
 <translation id="4710167854527459075">Mới nhất xếp trước</translation>
@@ -701,6 +700,7 @@ Tài khoản Google của bạn có thể có các dạng nhật ký duyệt web
 <translation id="4742970037960872810">Xóa nội dung được làm nổi bật</translation>
 <translation id="4743664893327841597">Nội dung bạn nhập vào thanh địa chỉ hoặc hộp tìm kiếm sẽ được gửi đến công cụ tìm kiếm mặc định của bạn</translation>
 <translation id="4749960740855309258">Mở thẻ mới</translation>
+<translation id="4750356170202299988">Nội dung dành cho người trẻ</translation>
 <translation id="4758061975920522644">Chỉ chia sẻ hình ảnh</translation>
 <translation id="4759238208242260848">Tệp đã tải xuống</translation>
 <translation id="4763480195061959176">video</translation>
@@ -1182,6 +1182,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7187993566681480880">Giúp bạn an toàn trên Chrome và có thể dùng để tăng cường bảo mật cho bạn trong các ứng dụng khác của Google sau khi đăng nhập.</translation>
 <translation id="7191430249889272776">Thẻ được mở dưới nền.</translation>
 <translation id="7196215469483532480">Đã mở nội dung giải thích hướng dẫn về quyền riêng tư trên toàn màn hình</translation>
+<translation id="7205672015775254816">Nội dung của Google dành cho người trẻ – tắt</translation>
 <translation id="7207760545532569765">Khôi phục <ph name="TAB_COUNT" /> thẻ dưới dạng các thẻ nền mới.</translation>
 <translation id="7217781228893594884">Các thẻ ẩn danh sẽ bị khoá khi bạn rời khỏi Chrome</translation>
 <translation id="7221869452894271364">Tải lại trang này</translation>
@@ -1329,6 +1330,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7876243839304621966">Xóa tất cả</translation>
 <translation id="7886917304091689118">Đang chạy trong Chrome</translation>
 <translation id="7887174313503389866">Xem hướng dẫn về các chế độ kiểm soát quan trọng đối với quyền riêng tư và tính bảo mật. Để có thêm lựa chọn, hãy chuyển đến từng phần cài đặt cụ thể.</translation>
+<translation id="7896724475402191389">Nội dung dành cho người trẻ – tắt</translation>
 <translation id="7903184275147100332">Quá trình này có thể mất ít phút</translation>
 <translation id="7914399737746719723">Đã cài đặt ứng dụng</translation>
 <translation id="7919123827536834358">Tự động dịch những ngôn ngữ này</translation>

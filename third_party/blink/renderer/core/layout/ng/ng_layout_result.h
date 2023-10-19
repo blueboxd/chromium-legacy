@@ -10,10 +10,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
+#include "third_party/blink/renderer/core/layout/exclusions/exclusion_space.h"
+#include "third_party/blink/renderer/core/layout/geometry/bfc_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/ng_flex_data.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_appeal.h"
@@ -31,9 +31,9 @@
 
 namespace blink {
 
+class ExclusionSpace;
 class NGBoxFragmentBuilder;
 class NGColumnSpannerPath;
-class NGExclusionSpace;
 class NGFragmentBuilder;
 class NGLineBoxFragmentBuilder;
 
@@ -200,7 +200,7 @@ class CORE_EXPORT NGLayoutResult final
   const NGColumnSpannerPath* ColumnSpannerPath() const {
     if (rare_data_) {
       if (const RareData::BlockData* data = rare_data_->GetBlockData())
-        return data->column_spanner_path;
+        return data->column_spanner_path.Get();
     }
     return nullptr;
   }
@@ -221,16 +221,16 @@ class CORE_EXPORT NGLayoutResult final
     if (!rare_data_) {
       return nullptr;
     }
-    return rare_data_->early_break;
+    return rare_data_->early_break.Get();
   }
 
-  const NGExclusionSpace& ExclusionSpace() const {
+  const ExclusionSpace& GetExclusionSpace() const {
     if (bitfields_.has_rare_data_exclusion_space) {
       DCHECK(rare_data_);
       return rare_data_->exclusion_space;
     }
 
-    return space_.ExclusionSpace();
+    return space_.GetExclusionSpace();
   }
 
   EStatus Status() const { return static_cast<EStatus>(bitfields_.status); }
@@ -605,9 +605,9 @@ class CORE_EXPORT NGLayoutResult final
  private:
   friend class MutableForOutOfFlow;
 
-  static NGExclusionSpace MergeExclusionSpaces(
+  static ExclusionSpace MergeExclusionSpaces(
       const NGLayoutResult& other,
-      const NGExclusionSpace& new_input_exclusion_space,
+      const ExclusionSpace& new_input_exclusion_space,
       LayoutUnit bfc_line_offset,
       LayoutUnit block_offset_delta);
 
@@ -910,7 +910,7 @@ class CORE_EXPORT NGLayoutResult final
       LayoutUnit minimal_space_shortage = kIndefiniteSize;
     };
     LayoutUnit block_size_for_fragmentation = kIndefiniteSize;
-    NGExclusionSpace exclusion_space;
+    ExclusionSpace exclusion_space;
     scoped_refptr<SerializedScriptValue> custom_layout_data;
 
     LayoutUnit annotation_overflow;

@@ -55,11 +55,6 @@ template("_invoke_jni_zero") {
       inputs = []
     }
     inputs += rebase_path([
-                            "../../build/action_helpers.py",
-                            "../../build/android/gyp/util/__init__.py",
-                            "../../build/android/gyp/util/build_utils.py",
-                            "../../build/gn_helpers.py",
-                            "../../build/zip_helpers.py",
                             "codegen/placeholder_gen_jni_java.py",
                             "codegen/proxy_impl_java.py",
                             "common.py",
@@ -239,8 +234,7 @@ template("generate_jni_impl") {
         _jni_generator_include = invoker.jni_generator_include
         _jni_generator_include_deps = []
       } else {
-        _jni_generator_include =
-            "//base/android/jni_generator/jni_generator_helper.h"
+        _jni_generator_include = "//third_party/jni_zero/jni_zero_helper.h"
         _jni_generator_include_deps = [
           # Using //base/android/jni_generator/jni_generator_helper.h introduces
           # a dependency on buildflags targets indirectly through

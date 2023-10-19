@@ -49,27 +49,25 @@ import org.chromium.ui.base.ViewAndroidDelegate;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 @Batch(Batch.PER_CLASS)
-@CommandLineFlags.
-Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.DISABLE_NATIVE_INITIALIZATION})
+@CommandLineFlags.Add({
+    ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+    ChromeSwitches.DISABLE_NATIVE_INITIALIZATION
+})
 public class TouchToFillPasswordGenerationModuleTest {
     private TouchToFillPasswordGenerationCoordinator mCoordinator;
     private final ArgumentCaptor<BottomSheetObserver> mBottomSheetObserverCaptor =
             ArgumentCaptor.forClass(BottomSheetObserver.class);
 
-    @Rule
-    public MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
+    @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
+
     @Rule
     public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
             new ActivityScenarioRule<>(TestActivity.class);
 
-    @Mock
-    private WebContents mWebContents;
-    @Mock
-    private BottomSheetController mBottomSheetController;
-    @Mock
-    private TouchToFillPasswordGenerationCoordinator.Delegate mDelegate;
-    @Mock
-    private KeyboardVisibilityDelegate mKeyboardVisibilityDelegate;
+    @Mock private WebContents mWebContents;
+    @Mock private BottomSheetController mBottomSheetController;
+    @Mock private TouchToFillPasswordGenerationCoordinator.Delegate mDelegate;
+    @Mock private KeyboardVisibilityDelegate mKeyboardVisibilityDelegate;
     @Mock private PrefService mPrefService;
 
     private static final String sTestEmailAddress = "test@email.com";
@@ -85,9 +83,13 @@ public class TouchToFillPasswordGenerationModuleTest {
                 .onActivity(
                         activity -> {
                             setUpBottomSheetController();
-                            mContent = (ViewGroup) LayoutInflater
-                                .from(activity)
-                                .inflate(R.layout.touch_to_fill_password_generation, null);
+                            mContent =
+                                    (ViewGroup)
+                                            LayoutInflater.from(activity)
+                                                    .inflate(
+                                                            R.layout
+                                                                    .touch_to_fill_password_generation,
+                                                            null);
                             TouchToFillPasswordGenerationView touchToFillPasswordGenerationView =
                                     new TouchToFillPasswordGenerationView(activity, mContent);
                             activity.setContentView(mContent);
@@ -125,7 +127,7 @@ public class TouchToFillPasswordGenerationModuleTest {
 
         mCoordinator.hideFromNative();
         verify(mBottomSheetController).hideContent(any(), anyBoolean());
-        verify(mDelegate).onDismissed();
+        verify(mDelegate).onDismissed(/* passwordAccepted= */ false);
     }
 
     @Test
@@ -144,7 +146,7 @@ public class TouchToFillPasswordGenerationModuleTest {
         Button acceptPasswordButton = mContent.findViewById(R.id.use_password_button);
         acceptPasswordButton.performClick();
         verify(mBottomSheetController).hideContent(any(), anyBoolean());
-        verify(mDelegate).onDismissed();
+        verify(mDelegate).onDismissed(/* passwordAccepted= */ true);
     }
 
     @Test
@@ -193,7 +195,7 @@ public class TouchToFillPasswordGenerationModuleTest {
         Button rejectPasswordButton = mContent.findViewById(R.id.reject_password_button);
         rejectPasswordButton.performClick();
         verify(mBottomSheetController).hideContent(any(), anyBoolean());
-        verify(mDelegate).onDismissed();
+        verify(mDelegate).onDismissed(/* passwordAccepted= */ false);
     }
 
     @Test

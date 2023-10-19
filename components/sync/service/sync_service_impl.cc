@@ -1258,7 +1258,9 @@ void SyncServiceImpl::PassphraseTypeChanged(PassphraseType passphrase_type) {
     // too. Payments should not be enabled when auto fill data type disabled.
     // TODO(crbug.com/1435431): This can be removed once kPayments is decoupled
     // from kAutofill.
-    GetUserSettings()->SetSelectedType(UserSelectableType::kPayments, false);
+    if (!base::FeatureList::IsEnabled(kSyncDecoupleAddressPaymentSettings)) {
+      GetUserSettings()->SetSelectedType(UserSelectableType::kPayments, false);
+    }
   }
   sync_prefs_.SetCachedPassphraseType(passphrase_type);
 }
@@ -2045,7 +2047,13 @@ SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusForImpl(
     return ModelTypeDownloadStatus::kWaitingForUpdates;
   }
 
-  if (engine_->IsNextPollTimeInThePast()) {
+  // Wait for the poll request only during browser startup (i.e. when there were
+  // not completed sync cycles). IsNextPollTimeInThePast() uses base::Time which
+  // while poll scheduler uses base::TimeTicks. They may diverge in sleep mode
+  // (TimeTicks may be paused) and it's possible that the actual timer for
+  // polling will take longer. This might result in a long-standing
+  // `kWaitingForUpdates` status.
+  if (!HasCompletedSyncCycle() && engine_->IsNextPollTimeInThePast()) {
     DVLOG(1) << "Waiting for updates due an upcoming poll request";
     LogWaitingForUpdatesReasonIfNeeded(
         DownloadStatusWaitingForUpdatesReason::kPollRequestScheduled, type,

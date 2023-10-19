@@ -133,6 +133,10 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, ExtensionControlledIndicator) {
   RunTest("settings/extension_controlled_indicator_test.js", "mocha.run()");
 }
 
+IN_PROC_BROWSER_TEST_F(SettingsTest, FileSystemSettingsSiteDetails) {
+  RunTest("settings/file_system_site_details_test.js", "mocha.run()");
+}
+
 IN_PROC_BROWSER_TEST_F(SettingsTest, FileSystemSettingsList) {
   RunTest("settings/file_system_site_list_test.js", "mocha.run()");
 }
@@ -888,13 +892,23 @@ class SettingsPrivacyPageTest : public SettingsBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list2_;
 };
 
+// TODO(crbug.com/1491942): This fails with the field trial testing config.
+class SettingsPrivacyPageTestNoTestingConfig : public SettingsPrivacyPageTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SettingsPrivacyPageTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch("disable-field-trial-config");
+  }
+};
+
 // TODO(crbug.com/1351019): Flaky on Linux Tests(dbg).
 #if BUILDFLAG(IS_LINUX)
 #define MAYBE_PrivacyPage DISABLED_PrivacyPage
 #else
 #define MAYBE_PrivacyPage PrivacyPage
 #endif
-IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTest, MAYBE_PrivacyPage) {
+IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTestNoTestingConfig,
+                       MAYBE_PrivacyPage) {
   RunTest("settings/privacy_page_test.js", "runMochaSuite('PrivacyPage')");
 }
 

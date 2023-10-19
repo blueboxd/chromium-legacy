@@ -29,7 +29,6 @@
 #include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "extensions/buildflags/buildflags.h"
-#include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_setting_override.h"
 #include "net/cookies/cookie_util.h"
@@ -164,7 +163,8 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
       disabled_features.push_back(net::features::kTpcdMetadataGrants);
     }
 
-    enabled_features.push_back({net::features::kTpcdReadHeuristicsGrants, {}});
+    enabled_features.push_back({features::kTpcdHeuristicsGrants,
+                                {{"TpcdReadHeuristicsGrants", "true"}}});
 #if BUILDFLAG(IS_IOS)
     enabled_features.push_back({kImprovedCookieControls, {}});
     disabled_features.push_back(net::features::kTpcdSupportSettings);
@@ -206,7 +206,7 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
     tracking_protection_settings_ =
         std::make_unique<privacy_sandbox::TrackingProtectionSettings>(
             &prefs_,
-            /*onboarding_service=*/nullptr);
+            /*onboarding_service=*/nullptr, /*is_incognito=*/false);
     cookie_settings_ = new CookieSettings(settings_map_.get(), &prefs_,
                                           tracking_protection_settings_.get(),
                                           false, "chrome-extension");
@@ -1523,6 +1523,7 @@ TEST_P(CookieSettingsTest, GetCookieSetting3pcdMetadataGrants) {
   EXPECT_EQ(cookie_settings_->GetCookieSetting(
                 url, top_level_url, GetCookieSettingOverrides(), nullptr),
             SettingWith3pcdMetadataGrantEligibleOverride());
+
   histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 1);
   histogram_tester.ExpectBucketCount(
       kAllowedRequestsHistogram,
@@ -1535,14 +1536,20 @@ TEST_P(CookieSettingsTest, GetCookieSetting3pcdMetadataGrants) {
   EXPECT_EQ(cookie_settings_->GetCookieSetting(
                 top_level_url, url, GetCookieSettingOverrides(), nullptr),
             CONTENT_SETTING_BLOCK);
+  EXPECT_FALSE(
+      cookie_settings_->IsAllowedByTpcdMetadataGrant(top_level_url, url));
 
   // Invalid pairs where a |third_url| is used.
   EXPECT_EQ(cookie_settings_->GetCookieSetting(
                 url, third_url, GetCookieSettingOverrides(), nullptr),
             CONTENT_SETTING_BLOCK);
+  EXPECT_FALSE(cookie_settings_->IsAllowedByTpcdMetadataGrant(third_url, url));
+
   EXPECT_EQ(cookie_settings_->GetCookieSetting(
                 third_url, top_level_url, GetCookieSettingOverrides(), nullptr),
             CONTENT_SETTING_BLOCK);
+  EXPECT_FALSE(
+      cookie_settings_->IsAllowedByTpcdMetadataGrant(top_level_url, third_url));
 }
 
 TEST_P(CookieSettingsTest, GetCookieSetting3pcdHeuristicsGrants) {
@@ -1556,19 +1563,20 @@ TEST_P(CookieSettingsTest, GetCookieSetting3pcdHeuristicsGrants) {
 
   prefs_.SetInteger(prefs::kCookieControlsMode,
                     static_cast<int>(CookieControlsMode::kBlockThirdParty));
+  prefs_.SetBoolean(prefs::kTrackingProtection3pcdEnabled, true);
 
   // Expect that cookies are blocked before setting the temporary grant.
   EXPECT_EQ(
-      cookie_settings_->GetCookieSetting(first_party_url, third_party_url,
+      cookie_settings_->GetCookieSetting(third_party_url, first_party_url,
                                          GetCookieSettingOverrides(), nullptr),
       CONTENT_SETTING_BLOCK);
 
   cookie_settings_->SetTemporaryCookieGrantForHeuristic(
-      first_party_url, third_party_url, expiration);
+      third_party_url, first_party_url, expiration);
 
   // Expect that cookies are now allowed, and the histogram has been updated.
   EXPECT_EQ(
-      cookie_settings_->GetCookieSetting(first_party_url, third_party_url,
+      cookie_settings_->GetCookieSetting(third_party_url, first_party_url,
                                          GetCookieSettingOverrides(), nullptr),
       CONTENT_SETTING_ALLOW);
   // Expect 2 total requests for the two calls to GetCookieSetting.
@@ -1583,7 +1591,7 @@ TEST_P(CookieSettingsTest, GetCookieSetting3pcdHeuristicsGrants) {
 
   // Expect that cookies are blocked again after the grant expires.
   EXPECT_EQ(
-      cookie_settings_->GetCookieSetting(first_party_url, third_party_url,
+      cookie_settings_->GetCookieSetting(third_party_url, first_party_url,
                                          GetCookieSettingOverrides(), nullptr),
       CONTENT_SETTING_BLOCK);
 }

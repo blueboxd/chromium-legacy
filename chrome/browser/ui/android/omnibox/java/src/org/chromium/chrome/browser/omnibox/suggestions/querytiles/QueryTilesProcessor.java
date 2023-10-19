@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.suggestions.querytiles;
 
 import android.content.Context;
+import android.graphics.drawable.BitmapDrawable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -72,8 +73,30 @@ public class QueryTilesProcessor extends BaseCarouselSuggestionProcessor {
         super.populateModel(match, model, matchIndex);
 
         List<ListItem> tileList = model.get(BaseCarouselSuggestionViewProperties.TILES);
-        var tileModel = new PropertyModel();
+        var tileModel =
+                new PropertyModel.Builder(QueryTileViewProperties.ALL_UNIQUE_KEYS)
+                        .with(QueryTileViewProperties.TITLE, match.getDisplayText())
+                        .with(
+                                QueryTileViewProperties.ON_FOCUS_VIA_SELECTION,
+                                () ->
+                                        mSuggestionHost.setOmniboxEditingText(
+                                                match.getFillIntoEdit()))
+                        .with(
+                                QueryTileViewProperties.ON_CLICK,
+                                v ->
+                                        mSuggestionHost.onSuggestionClicked(
+                                                match, matchIndex, match.getUrl()))
+                        .build();
         tileList.add(
                 new ListItem(BaseCarouselSuggestionItemViewBuilder.ViewType.QUERY_TILE, tileModel));
+
+        if (mImageSupplier != null && match.getImageUrl().isValid()) {
+            mImageSupplier.fetchImage(
+                    match.getImageUrl(),
+                    image ->
+                            tileModel.set(
+                                    QueryTileViewProperties.IMAGE,
+                                    new BitmapDrawable(mContext.getResources(), image)));
+        }
     }
 }

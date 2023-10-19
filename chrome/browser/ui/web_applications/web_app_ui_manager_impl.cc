@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/commands/launch_web_app_command.h"
-#include "chrome/browser/ui/web_applications/isolated_web_apps/isolated_web_app_installer_coordinator.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
@@ -61,6 +60,13 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
+
+#if !BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/apps/link_capturing/enable_link_capturing_infobar_delegate.h"
+#include "chrome/browser/infobars/confirm_infobar_creator.h"
+#include "components/infobars/content/content_infobar_manager.h"
+#include "components/infobars/core/infobar.h"
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 #if !BUILDFLAG(IS_MAC)
 #include "ui/aura/window.h"
@@ -466,21 +472,21 @@ void WebAppUiManagerImpl::PresentUserUninstallDialog(
 
 void WebAppUiManagerImpl::LaunchIsolatedWebAppInstaller(
     const base::FilePath& bundle_path) {
-  auto installer = std::make_unique<IsolatedWebAppInstallerCoordinator>(
-      profile_, bundle_path);
-  IsolatedWebAppInstallerCoordinator* installer_ptr = installer.get();
-  isolated_web_app_installers_.insert(std::move(installer));
-
-  installer_ptr->Show(base::BindOnce(
-      &WebAppUiManagerImpl::OnIsolatedWebAppInstallerClosed,
-      weak_ptr_factory_.GetWeakPtr(), base::Unretained(installer_ptr)));
+  ::web_app::LaunchIsolatedWebAppInstaller(profile_, bundle_path);
 }
 
-void WebAppUiManagerImpl::OnIsolatedWebAppInstallerClosed(
-    IsolatedWebAppInstallerCoordinator* installer,
-    absl::optional<webapps::AppId> result) {
-  isolated_web_app_installers_.erase(
-      isolated_web_app_installers_.find(installer));
+void WebAppUiManagerImpl::MaybeCreateEnableSupportedLinksInfobar(
+    content::WebContents* web_contents,
+    const std::string& launch_name) {
+#if !BUILDFLAG(IS_CHROMEOS)
+  std::unique_ptr<apps::EnableLinkCapturingInfoBarDelegate> delegate =
+      apps::EnableLinkCapturingInfoBarDelegate::MaybeCreate(web_contents,
+                                                            launch_name);
+  if (delegate) {
+    infobars::ContentInfoBarManager::FromWebContents(web_contents)
+        ->AddInfoBar(CreateConfirmInfoBar(std::move(delegate)));
+  }
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 }
 
 void WebAppUiManagerImpl::OnBrowserAdded(Browser* browser) {

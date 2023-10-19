@@ -59,9 +59,14 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/anchor_position_scroll_data.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_child.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_worklet.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope_proxy.h"
 #include "third_party/blink/renderer/core/layout/custom_scrollbar.h"
 #include "third_party/blink/renderer/core/layout/forms/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/forms/layout_text_control.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -71,11 +76,6 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_child.h"
-#include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
-#include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet.h"
-#include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet_global_scope_proxy.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -3106,7 +3106,7 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
          !containing_block->IsOutOfFlowPositioned() &&
          !containing_block->IsLayoutNGGrid() &&
          !containing_block->IsFlexibleBoxIncludingNG() &&
-         !containing_block->IsLayoutNGCustom();
+         !containing_block->IsLayoutCustom();
 }
 
 LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
@@ -3286,7 +3286,7 @@ bool LayoutBox::ShouldBeConsideredAsReplaced() const {
 // loaded algorithm.
 bool LayoutBox::IsCustomItem() const {
   NOT_DESTROYED();
-  auto* parent_layout_box = DynamicTo<LayoutNGCustom>(Parent());
+  auto* parent_layout_box = DynamicTo<LayoutCustom>(Parent());
   return parent_layout_box && parent_layout_box->IsLoaded();
 }
 
@@ -3484,7 +3484,7 @@ RecalcLayoutOverflowResult LayoutBox::RecalcChildLayoutOverflowNG() {
     const auto& fragment =
         To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
     if (fragment.HasItems()) {
-      for (NGInlineCursor cursor(fragment); cursor; cursor.MoveToNext()) {
+      for (InlineCursor cursor(fragment); cursor; cursor.MoveToNext()) {
         const NGPhysicalBoxFragment* child =
             cursor.Current()->PostLayoutBoxFragment();
         if (!child || !child->GetLayoutObject()->IsBox())
@@ -4067,7 +4067,7 @@ TextDirection LayoutBox::ResolvedDirection() const {
   NOT_DESTROYED();
   if (IsInline() && IsAtomicInlineLevel() &&
       IsInLayoutNGInlineFormattingContext()) {
-    NGInlineCursor cursor;
+    InlineCursor cursor;
     cursor.MoveTo(*this);
     if (cursor) {
       return cursor.Current().ResolvedDirection();
@@ -4361,7 +4361,7 @@ void ForEachAnchorQueryOnContainer(const LayoutBox& box, Function func) {
   if (!inline_container->HasInlineFragments()) {
     return;
   }
-  NGInlineCursor cursor;
+  InlineCursor cursor;
   cursor.MoveTo(*container);
   for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
     if (const NGPhysicalBoxFragment* fragment =

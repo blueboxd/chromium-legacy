@@ -238,7 +238,6 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
                         ChromeFeatureList.ADVANCED_PERIPHERALS_SUPPORT_TAB_STRIP)
                     && mTabHoverCardViewStub.getParent() != null) {
                 mTabHoverCardViewStub.inflate();
-                // TODO (crbug.com/1483432): Update view background on low-end devices.
             }
             getActiveStripLayoutHelper().onHoverEnter(x);
         }
@@ -424,6 +423,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
                         mModelSelectorButton,
                         multiInstanceManager,
                         dragDropDelegate,
+                        managerHost.getBrowserControlsManager(),
                         toolbarContainerView);
         mIncognitoHelper =
                 new StripLayoutHelper(
@@ -435,6 +435,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
                         mModelSelectorButton,
                         multiInstanceManager,
                         dragDropDelegate,
+                        managerHost.getBrowserControlsManager(),
                         toolbarContainerView);
 
         tabHoverCardViewStub.setOnInflateListener((viewStub, view) -> {

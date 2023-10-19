@@ -1617,8 +1617,8 @@
           'dimensions': {
             'device_type': 'crosshatch',
           },
-          # TODO(crbug.com/1462745): Temporarily increase the shard to 3 for the network issue.
-          'shards': 3,
+          # TODO(crbug.com/1462745): Temporarily increase the shard to 5 for the network issue.
+          'shards': 5,
         },
       },
       # Keep this same as android-oreo-x86-rel above
@@ -1634,7 +1634,7 @@
       'android-chrome-pie-x86-wpt-android-specific': {
         'args': [
           '--test-list',
-          '../../third_party/blink/web_tests/TestLists/Default.txt'
+          '../../third_party/blink/web_tests/TestLists/android.filter'
         ]
       },
       'android-chrome-pie-x86-wpt-fyi-rel': {
@@ -3308,7 +3308,7 @@
       },
     },
   },
-  'lacros_chrome_browsertests_run_in_series': {
+  'lacros_chrome_browsertests': {
     'modifications': {
       'linux-lacros-asan-lsan-rel': {
         'swarming': {
@@ -3317,7 +3317,7 @@
       },
     },
   },
-  'lacros_chrome_browsertests_run_in_series Lacros version skew testing ash beta': {
+  'lacros_chrome_browsertests Lacros version skew testing ash beta': {
     'modifications': {
       'linux-lacros-asan-lsan-rel': {
         'swarming': {
@@ -3326,7 +3326,7 @@
       },
     },
   },
-  'lacros_chrome_browsertests_run_in_series Lacros version skew testing ash canary': {
+  'lacros_chrome_browsertests Lacros version skew testing ash canary': {
     'modifications': {
       'linux-lacros-asan-lsan-rel': {
         'swarming': {
@@ -3335,7 +3335,7 @@
       },
     },
   },
-  'lacros_chrome_browsertests_run_in_series Lacros version skew testing ash dev': {
+  'lacros_chrome_browsertests Lacros version skew testing ash dev': {
     'modifications': {
       'linux-lacros-asan-lsan-rel': {
         'swarming': {
@@ -3344,7 +3344,7 @@
       },
     },
   },
-  'lacros_chrome_browsertests_run_in_series Lacros version skew testing ash stable': {
+  'lacros_chrome_browsertests Lacros version skew testing ash stable': {
     'modifications': {
       'linux-lacros-asan-lsan-rel': {
         'swarming': {
@@ -4176,7 +4176,7 @@
       'android-chrome-pie-x86-wpt-android-specific': {
         'args': [
           '--test-list',
-          '../../third_party/blink/web_tests/TestLists/Default.txt'
+          '../../third_party/blink/web_tests/TestLists/android.filter'
         ]
       },
       'android-webview-pie-x86-wpt-fyi-rel': {

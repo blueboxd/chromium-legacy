@@ -24,7 +24,7 @@
 #include "chrome/browser/ash/app_list/app_list_client_impl.h"
 #include "chrome/browser/ash/arc/util/arc_window_watcher.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
-#include "chrome/browser/ash/display/variable_refresh_rate_controller.h"
+#include "chrome/browser/ash/display/refresh_rate_controller.h"
 #include "chrome/browser/ash/game_mode/game_mode_controller.h"
 #include "chrome/browser/ash/geolocation/system_geolocation_source.h"
 #include "chrome/browser/ash/login/signin/signin_error_notifier_factory.h"
@@ -67,7 +67,6 @@
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/shelf/app_service/exo_app_type_resolver.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
-#include "chrome/browser/ui/ash/shelf/chrome_shelf_item_factory.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/ui/ash/tab_cluster_ui_client.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
@@ -120,8 +119,6 @@ class ChromeShelfControllerInitializer
   ~ChromeShelfControllerInitializer() override {
     if (!chrome_shelf_controller_)
       session_manager::SessionManager::Get()->RemoveObserver(this);
-    if (chrome_shelf_item_factory_)
-      ash::ShelfModel::Get()->SetShelfItemFactory(nullptr);
   }
 
   // session_manager::SessionManagerObserver:
@@ -133,11 +130,8 @@ class ChromeShelfControllerInitializer
 
     if (session_manager::SessionManager::Get()->session_state() ==
         session_manager::SessionState::ACTIVE) {
-      chrome_shelf_item_factory_ = std::make_unique<ChromeShelfItemFactory>();
-      ash::ShelfModel::Get()->SetShelfItemFactory(
-          chrome_shelf_item_factory_.get());
       chrome_shelf_controller_ = std::make_unique<ChromeShelfController>(
-          nullptr, ash::ShelfModel::Get(), chrome_shelf_item_factory_.get());
+          nullptr, ash::ShelfModel::Get());
       chrome_shelf_controller_->Init();
 
       session_manager::SessionManager::Get()->RemoveObserver(this);
@@ -145,7 +139,6 @@ class ChromeShelfControllerInitializer
   }
 
  private:
-  std::unique_ptr<ChromeShelfItemFactory> chrome_shelf_item_factory_;
   std::unique_ptr<ChromeShelfController> chrome_shelf_controller_;
 };
 
@@ -350,10 +343,9 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit(Profile* profile,
   ash_web_view_factory_ = std::make_unique<AshWebViewFactoryImpl>();
 
   game_mode_controller_ = std::make_unique<game_mode::GameModeController>();
-  variable_refresh_rate_controller_ =
-      std::make_unique<ash::VariableRefreshRateController>(
-          ash::Shell::Get()->display_configurator(),
-          chromeos::PowerManagerClient::Get(), game_mode_controller_.get());
+  refresh_rate_controller_ = std::make_unique<ash::RefreshRateController>(
+      ash::Shell::Get()->display_configurator(), ash::PowerStatus::Get(),
+      game_mode_controller_.get());
 
   // Initialize TabScrubberChromeOS after the Ash Shell has been initialized.
   TabScrubberChromeOS::GetInstance();
@@ -400,7 +392,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   tab_cluster_ui_client_.reset();
 
   // Initialized in PostProfileInit (which may not get called in some tests).
-  variable_refresh_rate_controller_.reset();
+  refresh_rate_controller_.reset();
   game_mode_controller_.reset();
   ash_web_view_factory_.reset();
   network_portal_notification_controller_.reset();

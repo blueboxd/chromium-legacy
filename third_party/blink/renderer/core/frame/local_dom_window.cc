@@ -309,7 +309,7 @@ TrustedTypePolicyFactory* LocalDOMWindow::GetTrustedTypesForWorld(
   DCHECK(IsMainThread());
   auto iter = trusted_types_map_.find(&world);
   if (iter != trusted_types_map_.end())
-    return iter->value;
+    return iter->value.Get();
   return trusted_types_map_
       .insert(&world, MakeGarbageCollected<TrustedTypePolicyFactory>(
                           GetExecutionContext()))
@@ -379,7 +379,7 @@ ContentSecurityPolicy* LocalDOMWindow::GetContentSecurityPolicyForWorld(
   int32_t world_id = world->GetWorldId();
   auto it = isolated_world_csp_map_->find(world_id);
   if (it != isolated_world_csp_map_->end())
-    return it->value;
+    return it->value.Get();
 
   ContentSecurityPolicy* policy =
       IsolatedWorldCSP::Get().CreateIsolatedWorldCSP(*this, world_id);
@@ -800,7 +800,7 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
 
   GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());
 
-  return document_;
+  return document_.Get();
 }
 
 void LocalDOMWindow::EnqueueWindowEvent(Event& event, TaskType task_type) {
@@ -1634,7 +1634,7 @@ double LocalDOMWindow::scrollY() const {
 }
 
 DOMVisualViewport* LocalDOMWindow::visualViewport() {
-  return visualViewport_;
+  return visualViewport_.Get();
 }
 
 const AtomicString& LocalDOMWindow::name() const {
@@ -1938,17 +1938,17 @@ CustomElementRegistry* LocalDOMWindow::customElements() const {
     custom_elements_ = MakeGarbageCollected<CustomElementRegistry>(this);
     custom_elements_->AssociatedWith(*document_);
   }
-  return custom_elements_;
+  return custom_elements_.Get();
 }
 
 CustomElementRegistry* LocalDOMWindow::MaybeCustomElements() const {
-  return custom_elements_;
+  return custom_elements_.Get();
 }
 
 External* LocalDOMWindow::external() {
   if (!external_)
     external_ = MakeGarbageCollected<External>();
-  return external_;
+  return external_.Get();
 }
 
 bool LocalDOMWindow::isSecureContext() const {

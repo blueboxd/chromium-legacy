@@ -5,6 +5,7 @@
 #include "content/browser/devtools/devtools_instrumentation.h"
 
 #include "base/containers/adapters.h"
+#include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/traced_value.h"
 #include "components/download/public/common/download_create_info.h"
@@ -48,6 +49,7 @@
 #include "devtools_instrumentation.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_inclusion_status.h"
@@ -510,6 +512,31 @@ std::unique_ptr<protocol::Audits::InspectorIssue> BuildBounceTrackingIssue(
   return issue;
 }
 
+std::unique_ptr<protocol::Audits::InspectorIssue>
+BuildCookieDeprecationMetadataIssue(
+    const blink::mojom::CookieDeprecationMetadataIssueDetailsPtr&
+        issue_details) {
+  auto metadata_issue_details =
+      protocol::Audits::CookieDeprecationMetadataIssueDetails::Create()
+          .SetAllowedSites(std::make_unique<protocol::Array<protocol::String>>(
+              issue_details->allowed_sites))
+          .Build();
+
+  auto protocol_issue_details =
+      protocol::Audits::InspectorIssueDetails::Create()
+          .SetCookieDeprecationMetadataIssueDetails(
+              std::move(metadata_issue_details))
+          .Build();
+
+  auto issue = protocol::Audits::InspectorIssue::Create()
+                   .SetCode(protocol::Audits::InspectorIssueCodeEnum::
+                                CookieDeprecationMetadataIssue)
+                   .SetDetails(std::move(protocol_issue_details))
+                   .Build();
+
+  return issue;
+}
+
 void UpdateChildFrameTrees(FrameTreeNode* ftn, bool update_target_info) {
   if (auto* agent_host = WebContentsDevToolsAgentHost::GetFor(
           WebContentsImpl::FromFrameTreeNode(ftn))) {
@@ -570,7 +597,9 @@ void WillSwapFrameTreeNode(FrameTreeNode& old_node, FrameTreeNode& new_node) {
   scoped_refptr<RenderFrameDevToolsAgentHost> previous_host =
       static_cast<RenderFrameDevToolsAgentHost*>(
           RenderFrameDevToolsAgentHost::GetFor(&new_node));
-  previous_host->SetFrameTreeNode(nullptr);
+  // Disconnect old host entirely, so it detaches from renderer and does not
+  // cause problem if renderer comes back from the BFCache.
+  previous_host->DisconnectWebContents();
   host->SetFrameTreeNode(&new_node);
 }
 
@@ -1686,6 +1715,18 @@ std::unique_ptr<protocol::Array<protocol::String>> BuildWarningReasons(
         protocol::Audits::CookieWarningReasonEnum::WarnThirdPartyPhaseout);
   }
 
+  // This warning only affects cookies when the corresponding feature is
+  // enabled, therefore we should only create an issue for it then.
+  if (base::FeatureList::IsEnabled(
+          net::features::kCookieSameSiteConsidersRedirectChain) &&
+      status.HasWarningReason(
+          net::CookieInclusionStatus::
+              WARN_CROSS_SITE_REDIRECT_DOWNGRADE_CHANGES_INCLUSION)) {
+    warning_reasons->push_back(
+        protocol::Audits::CookieWarningReasonEnum::
+            WarnCrossSiteRedirectDowngradeChangesInclusion);
+  }
+
   return warning_reasons;
 }
 
@@ -1811,6 +1852,10 @@ void BuildAndReportBrowserInitiatedIssue(
              blink::mojom::InspectorIssueCode::kBounceTrackingIssue) {
     issue =
         BuildBounceTrackingIssue(info->details->bounce_tracking_issue_details);
+  } else if (info->code == blink::mojom::InspectorIssueCode::
+                               kCookieDeprecationMetadataIssue) {
+    issue = BuildCookieDeprecationMetadataIssue(
+        info->details->cookie_deprecation_metadata_issue_details);
   } else if (info->code == blink::mojom::InspectorIssueCode::
                                kFederatedAuthUserInfoRequestIssue) {
     issue = BuildFederatedAuthUserInfoRequestIssue(

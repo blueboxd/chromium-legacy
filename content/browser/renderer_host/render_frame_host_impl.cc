@@ -315,10 +315,6 @@ BASE_FEATURE(kEvictOnAXEvents,
              "EvictOnAXEvents",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kUnblockSpeechSynthesisForBFCache,
-             "UnblockSpeechSynthesisForBFCache",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 }  // namespace features
 
 namespace content {
@@ -1773,25 +1769,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // If this was the last active frame in the SiteInstanceGroup, the
   // DecrementActiveFrameCount call will trigger the deletion of the
   // SiteInstanceGroup's proxies.
-  {
-    SCOPED_CRASH_KEY_BOOL("Bug1470312", "is_main_frame", is_main_frame());
-    SCOPED_CRASH_KEY_BOOL(
-        "Bug1470312", "is_sandboxed",
-        policy_container_host_
-            ? IsSandboxed(network::mojom::WebSandboxFlags::kOrigin)
-            : false);
-    SCOPED_CRASH_KEY_BOOL(
-        "Bug1470312", "sig_is_notifying_observers",
-        GetSiteInstance()->group()->is_notifying_observers_for_debugging());
-    SCOPED_CRASH_KEY_STRING256("Bug1470312", "origin",
-                               GetLastCommittedOrigin().GetDebugString());
-    SCOPED_CRASH_KEY_STRING256("Bug1470312", "origin_from_url",
-                               GetLastCommittedURL().GetWithEmptyPath().spec());
-    SCOPED_CRASH_KEY_STRING256(
-        "Bug1470312", "site_info",
-        GetSiteInstance()->GetSiteInfo().GetDebugString());
-    GetSiteInstance()->group()->DecrementActiveFrameCount();
-  }
+  GetSiteInstance()->group()->DecrementActiveFrameCount();
 
   // Once a RenderFrame is created in the renderer, there are three possible
   // clean-up paths:
@@ -6674,6 +6652,13 @@ void RenderFrameHostImpl::FullscreenStateChanged(
 
 bool RenderFrameHostImpl::CanUseWindowingControls(
     base::StringPiece js_api_name) {
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  mojo::ReportBadMessage(
+      base::StrCat({js_api_name,
+                    " API is only supported on Desktop platforms. This "
+                    "excludes mobile platforms."}));
+  return false;
+#else
   if (!base::FeatureList::IsEnabled(
           blink::features::kDesktopPWAsAdditionalWindowingControls)) {
     mojo::ReportBadMessage(base::StrCat(
@@ -6699,11 +6684,18 @@ bool RenderFrameHostImpl::CanUseWindowingControls(
     return false;
   }
   return true;
+#endif
 }
 
-#if defined(USE_AURA)
 void RenderFrameHostImpl::Maximize() {
-  if (!CanUseWindowingControls("window.maximize")) {
+  const std::string js_api_name = "window.maximize";
+#if !defined(USE_AURA)
+  // TODO(laurila, crbug.com/1466851): Enable on Mac, when it's supported.
+  mojo::ReportBadMessage(
+      base::StrCat({js_api_name, " API is not supported on MacOS yet."}));
+#endif
+
+  if (!CanUseWindowingControls(js_api_name)) {
     return;
   }
 
@@ -6711,7 +6703,15 @@ void RenderFrameHostImpl::Maximize() {
 }
 
 void RenderFrameHostImpl::Minimize() {
-  if (!CanUseWindowingControls("window.minimize")) {
+  const std::string js_api_name = "window.minimize";
+
+#if !defined(USE_AURA)
+  // TODO(laurila, crbug.com/1466851): Enable on Mac, when it's supported.
+  mojo::ReportBadMessage(
+      base::StrCat({js_api_name, " API is not supported on MacOS yet."}));
+#endif
+
+  if (!CanUseWindowingControls(js_api_name)) {
     return;
   }
 
@@ -6719,22 +6719,27 @@ void RenderFrameHostImpl::Minimize() {
 }
 
 void RenderFrameHostImpl::Restore() {
+  const std::string js_api_name = "window.restore";
+
+#if !defined(USE_AURA)
+  // TODO(laurila, crbug.com/1466851): Enable on Mac, when it's supported.
+  mojo::ReportBadMessage(
+      base::StrCat({js_api_name, " API is not supported on MacOS yet."}));
+#endif
+
   if (!CanUseWindowingControls("window.restore")) {
     return;
   }
 
   delegate_->Restore();
 }
-#endif
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 void RenderFrameHostImpl::SetResizable(bool resizable) {
   if (!CanUseWindowingControls("window.setResizable")) {
     return;
   }
   GetContentClient()->browser()->SetCanResizeFromWebAPI(&GetPage(), resizable);
 }
-#endif
 
 void RenderFrameHostImpl::RegisterProtocolHandler(const std::string& scheme,
                                                   const GURL& url,
@@ -10478,16 +10483,30 @@ void RenderFrameHostImpl::CommitNavigation(
     // specified.
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         keep_alive_loader_factory;
-    if (blink::features::IsKeepAliveURLLoaderServiceEnabled() &&
-        subresource_proxying_factory_bundle) {
+    if (subresource_proxying_factory_bundle &&
+        base::FeatureList::IsEnabled(
+            blink::features::kKeepAliveInBrowserMigration)) {
       // Also setting up URLLoaderFactory for keepalive using the same loader
       // factories.
       GetStoragePartition()->GetKeepAliveURLLoaderService()->BindFactory(
           keep_alive_loader_factory.InitWithNewPipeAndPassReceiver(),
           subresource_proxying_factory_bundle,
           navigation_request->GetPolicyContainerHost());
-      navigation_request->SetSubresourceProxyingFactoryBundle(
-          subresource_proxying_factory_bundle);
+    }
+    // Set up the fetchlater loader factory. It is used to proxy FetchLater
+    // requests via the browser process.
+    // See
+    // https://docs.google.com/document/d/1U8XSnICPY3j-fjzG35UVm6zjwL6LvX6ETU3T8WrzLyQ/edit
+    mojo::PendingAssociatedRemote<blink::mojom::FetchLaterLoaderFactory>
+        fetch_later_loader_factory;
+    if (subresource_proxying_factory_bundle &&
+        base::FeatureList::IsEnabled(blink::features::kFetchLaterAPI)) {
+      GetStoragePartition()
+          ->GetKeepAliveURLLoaderService()
+          ->BindFetchLaterLoaderFactory(
+              fetch_later_loader_factory.InitWithNewEndpointAndPassReceiver(),
+              subresource_proxying_factory_bundle,
+              navigation_request->GetPolicyContainerHost());
     }
 
     mojom::NavigationClient* navigation_client =
@@ -10548,7 +10567,8 @@ void RenderFrameHostImpl::CommitNavigation(
         std::move(subresource_overrides), std::move(controller),
         std::move(container_info),
         std::move(subresource_proxying_loader_factory_for_renderer),
-        std::move(keep_alive_loader_factory), std::move(resource_cache_remote),
+        std::move(keep_alive_loader_factory),
+        std::move(fetch_later_loader_factory), std::move(resource_cache_remote),
         manifest_policy, std::move(policy_container), *document_token,
         devtools_navigation_token);
     navigation_request->frame_tree_node()
@@ -11977,13 +11997,6 @@ void RenderFrameHostImpl::GetSpeechSynthesis(
         GetProcess()->GetBrowserContext(), this);
   }
   speech_synthesis_impl_->AddReceiver(std::move(receiver));
-
-  if (!base::FeatureList::IsEnabled(
-          features::kUnblockSpeechSynthesisForBFCache)) {
-    // Blocklist SpeechSynthesis for BackForwardCache when the flag is off.
-    OnBackForwardCacheDisablingFeatureUsed(
-        BackForwardCacheDisablingFeature::kSpeechSynthesis);
-  }
 }
 
 void RenderFrameHostImpl::GetSensorProvider(
@@ -13089,8 +13102,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
     document_associated_data_->set_devtools_navigation_token(
         navigation_request->devtools_navigation_token());
-    document_associated_data_->set_subresource_proxying_factory_bundle(
-        navigation_request->TakeSubresourceProxyingFactoryBundle());
 
     const absl::optional<FencedFrameProperties>& fenced_frame_properties =
         navigation_request->ComputeFencedFrameProperties();
@@ -13582,6 +13593,8 @@ void RenderFrameHostImpl::SendCommitNavigation(
         subresource_proxying_loader_factory,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         keep_alive_loader_factory,
+    mojo::PendingAssociatedRemote<blink::mojom::FetchLaterLoaderFactory>
+        fetch_later_loader_factory,
     mojo::PendingRemote<blink::mojom::ResourceCache> resource_cache_remote,
     const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
     blink::mojom::PolicyContainerPtr policy_container,
@@ -13700,7 +13713,8 @@ void RenderFrameHostImpl::SendCommitNavigation(
       std::move(subresource_loader_factories), std::move(subresource_overrides),
       std::move(controller), std::move(container_info),
       std::move(subresource_proxying_loader_factory),
-      std::move(keep_alive_loader_factory), document_token,
+      std::move(keep_alive_loader_factory),
+      std::move(fetch_later_loader_factory), document_token,
       devtools_navigation_token, permissions_policy,
       std::move(policy_container), std::move(code_cache_host),
       std::move(resource_cache_remote), std::move(cookie_manager_info),
@@ -15915,17 +15929,6 @@ void RenderFrameHostImpl::BindFileBackedBlobFactory(
         receiver) {
   FileBackedBlobFactoryImpl::CreateForCurrentDocument(this,
                                                       std::move(receiver));
-}
-
-void RenderFrameHostImpl::BindFetchLaterLoaderFactory(
-    mojo::PendingAssociatedReceiver<blink::mojom::FetchLaterLoaderFactory>
-        receiver) {
-  GetStoragePartition()
-      ->GetKeepAliveURLLoaderService()
-      ->BindFetchLaterLoaderFactory(
-          std::move(receiver),
-          document_associated_data_->subresource_proxying_factory_bundle(),
-          policy_container_host());
 }
 
 bool RenderFrameHostImpl::ShouldChangeRenderFrameHostOnSameSiteNavigation()

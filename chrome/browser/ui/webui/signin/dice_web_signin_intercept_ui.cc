@@ -80,6 +80,13 @@ DiceWebSigninInterceptUI::DiceWebSigninInterceptUI(content::WebUI* web_ui)
       {"test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS},
       {"test_loader_util.js", IDR_WEBUI_JS_TEST_LOADER_UTIL_JS},
       {"test_loader.html", IDR_WEBUI_TEST_LOADER_HTML},
+      // Resources for the Chrome signin sub page: chrome_signin/.
+      {chrome::kChromeUIDiceWebSigninInterceptChromeSigninSubPage,
+       IDR_SIGNIN_DICE_WEB_SIGNIN_INTERCEPT_CHROME_SIGNIN_CHROME_SIGNIN_HTML},
+      {"chrome_signin/chrome_signin_app.js",
+       IDR_SIGNIN_DICE_WEB_SIGNIN_INTERCEPT_CHROME_SIGNIN_CHROME_SIGNIN_APP_JS},
+      {"chrome_signin/chrome_signin_app.html.js",
+       IDR_SIGNIN_DICE_WEB_SIGNIN_INTERCEPT_CHROME_SIGNIN_CHROME_SIGNIN_APP_HTML_JS},
   };
   source->AddResourcePaths(kResources);
 

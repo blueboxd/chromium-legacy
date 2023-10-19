@@ -13,7 +13,10 @@
 #include "third_party/blink/renderer/core/html/html_marquee_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
 #include "third_party/blink/renderer/core/layout/forms/layout_fieldset.h"
+#include "third_party/blink/renderer/core/layout/geometry/fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
@@ -23,25 +26,22 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/list/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/mathml/math_fraction_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/mathml/math_layout_utils.h"
+#include "third_party/blink/renderer/core/layout/mathml/math_operator_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/mathml/math_padded_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/mathml/math_radical_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/mathml/math_row_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/mathml/math_scripts_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/mathml/math_space_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/mathml/math_token_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/mathml/math_under_over_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
-#include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
-#include "third_party/blink/renderer/core/layout/ng/custom/ng_custom_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/ng_flex_layout_algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_fraction_layout_algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_layout_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_operator_layout_algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_padded_layout_algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_radical_layout_algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_row_layout_algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_scripts_layout_algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_space_layout_algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_token_layout_algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_under_over_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -124,24 +124,24 @@ NOINLINE void DetermineMathMLAlgorithmAndRun(
   auto* element = box.GetNode();
   if (element) {
     if (IsA<MathMLSpaceElement>(element)) {
-      CreateAlgorithmAndRun<NGMathSpaceLayoutAlgorithm>(params, callback);
+      CreateAlgorithmAndRun<MathSpaceLayoutAlgorithm>(params, callback);
       return;
     } else if (IsA<MathMLFractionElement>(element) &&
                IsValidMathMLFraction(params.node)) {
-      CreateAlgorithmAndRun<NGMathFractionLayoutAlgorithm>(params, callback);
+      CreateAlgorithmAndRun<MathFractionLayoutAlgorithm>(params, callback);
       return;
     } else if (IsA<MathMLRadicalElement>(element) &&
                IsValidMathMLRadical(params.node)) {
-      CreateAlgorithmAndRun<NGMathRadicalLayoutAlgorithm>(params, callback);
+      CreateAlgorithmAndRun<MathRadicalLayoutAlgorithm>(params, callback);
       return;
     } else if (IsA<MathMLPaddedElement>(element)) {
-      CreateAlgorithmAndRun<NGMathPaddedLayoutAlgorithm>(params, callback);
+      CreateAlgorithmAndRun<MathPaddedLayoutAlgorithm>(params, callback);
       return;
     } else if (IsA<MathMLTokenElement>(element)) {
       if (IsOperatorWithSpecialShaping(params.node))
-        CreateAlgorithmAndRun<NGMathOperatorLayoutAlgorithm>(params, callback);
+        CreateAlgorithmAndRun<MathOperatorLayoutAlgorithm>(params, callback);
       else if (IsTextOnlyToken(params.node))
-        CreateAlgorithmAndRun<NGMathTokenLayoutAlgorithm>(params, callback);
+        CreateAlgorithmAndRun<MathTokenLayoutAlgorithm>(params, callback);
       else
         CreateAlgorithmAndRun<NGBlockLayoutAlgorithm>(params, callback);
       return;
@@ -149,14 +149,14 @@ NOINLINE void DetermineMathMLAlgorithmAndRun(
                IsValidMathMLScript(params.node)) {
       if (IsA<MathMLUnderOverElement>(element) &&
           !IsUnderOverLaidOutAsSubSup(params.node)) {
-        CreateAlgorithmAndRun<NGMathUnderOverLayoutAlgorithm>(params, callback);
+        CreateAlgorithmAndRun<MathUnderOverLayoutAlgorithm>(params, callback);
       } else {
-        CreateAlgorithmAndRun<NGMathScriptsLayoutAlgorithm>(params, callback);
+        CreateAlgorithmAndRun<MathScriptsLayoutAlgorithm>(params, callback);
       }
       return;
     }
   }
-  CreateAlgorithmAndRun<NGMathRowLayoutAlgorithm>(params, callback);
+  CreateAlgorithmAndRun<MathRowLayoutAlgorithm>(params, callback);
 }
 
 template <typename Callback>
@@ -172,8 +172,8 @@ NOINLINE void DetermineAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
     CreateAlgorithmAndRun<NGTableRowLayoutAlgorithm>(params, callback);
   } else if (box.IsTableSection()) {
     CreateAlgorithmAndRun<NGTableSectionLayoutAlgorithm>(params, callback);
-  } else if (box.IsLayoutNGCustom()) {
-    CreateAlgorithmAndRun<NGCustomLayoutAlgorithm>(params, callback);
+  } else if (box.IsLayoutCustom()) {
+    CreateAlgorithmAndRun<CustomLayoutAlgorithm>(params, callback);
   } else if (box.IsMathML()) {
     DetermineMathMLAlgorithmAndRun(box, params, callback);
   } else if (box.IsLayoutNGGrid()) {
@@ -322,8 +322,8 @@ const NGLayoutResult* NGBlockNode::Layout(
   // pointer to the value previous shared vector.
   if (const NGLayoutResult* previous_result =
           box_->GetCachedLayoutResult(break_token)) {
-    constraint_space.ExclusionSpace().PreInitialize(
-        previous_result->GetConstraintSpaceForCaching().ExclusionSpace());
+    constraint_space.GetExclusionSpace().PreInitialize(
+        previous_result->GetConstraintSpaceForCaching().GetExclusionSpace());
   }
 
   NGLayoutCacheStatus cache_status;
@@ -357,7 +357,7 @@ const NGLayoutResult* NGBlockNode::Layout(
         To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
     // If we have fragment items, and we're not done (more fragments to follow),
     // be sure to miss the cache for any subsequent fragments, lest finalization
-    // be missed (which could cause trouble for NGInlineCursor when walking the
+    // be missed (which could cause trouble for InlineCursor when walking the
     // items).
     bool clear_trailing_results =
         new_fragment.BreakToken() && new_fragment.HasItems();
@@ -1550,7 +1550,7 @@ void NGBlockNode::CopyFragmentItemsToLayoutBox(
         previous_break_token->ConsumedBlockSizeForLegacy();
   }
   bool initial_container_is_flipped = Style().IsFlippedBlocksWritingMode();
-  for (NGInlineCursor cursor(container, items); cursor; cursor.MoveToNext()) {
+  for (InlineCursor cursor(container, items); cursor; cursor.MoveToNext()) {
     if (const NGPhysicalBoxFragment* child = cursor.Current().BoxFragment()) {
       // Replaced elements and inline blocks need Location() set relative to
       // their block container. Similarly for block-in-inline anonymous wrapper
@@ -1705,8 +1705,7 @@ bool NGBlockNode::HasNonVisibleBlockOverflow() const {
 }
 
 bool NGBlockNode::IsCustomLayoutLoaded() const {
-  DCHECK(box_->IsLayoutNGCustom());
-  return To<LayoutNGCustom>(box_.Get())->IsLoaded();
+  return To<LayoutCustom>(box_.Get())->IsLoaded();
 }
 
 MathScriptType NGBlockNode::ScriptType() const {

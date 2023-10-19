@@ -38,6 +38,8 @@
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/scoped_float_container_stacker.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/splitview/auto_snap_controller.h"
+#include "ash/wm/splitview/split_view_overview_session.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
@@ -72,7 +74,7 @@ constexpr int kKeyboardHoldScrollingDp = 15;
 // Tries to end overview. Returns true if overview is successfully ended, or
 // just was not active in the first place.
 bool EndOverview(OverviewEndAction action) {
-  return Shell::Get()->overview_controller()->EndOverview(action);
+  return OverviewController::Get()->EndOverview(action);
 }
 
 // Returns the window to be activated when the given `overview_item` is
@@ -629,7 +631,7 @@ void OverviewSession::RemoveDropTargets() {
 void OverviewSession::InitiateDrag(OverviewItemBase* item,
                                    const gfx::PointF& location_in_screen,
                                    bool is_touch_dragging) {
-  if (Shell::Get()->overview_controller()->IsInStartAnimation() ||
+  if (OverviewController::Get()->IsInStartAnimation() ||
       SplitViewController::Get(Shell::GetPrimaryRootWindow())
           ->IsDividerAnimating()) {
     return;
@@ -842,7 +844,7 @@ void OverviewSession::OnStartingAnimationComplete(bool canceled,
   }
 
   UpdateAccessibilityFocus();
-  Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
+  OverviewController::Get()->DelayedUpdateRoundedCornersAndShadow();
 
   // The stacker object may be already created if a drag has started prior to
   // this.
@@ -900,6 +902,24 @@ void OverviewSession::OnWindowActivating(
     RestoreWindowActivation(false);
     EndOverview(OverviewEndAction::kAppListActivatedInClamshell);
     return;
+  }
+
+  if (auto* split_view_overview_session =
+          RootWindowController::ForWindow(gained_active)
+              ->split_view_overview_session()) {
+    base::AutoReset<bool> ignore(&ignore_activations_, true);
+    if (auto* auto_snap_controller =
+            split_view_overview_session->auto_snap_controller();
+        auto_snap_controller &&
+        auto_snap_controller->OnWindowActivatingFromOverview(reason,
+                                                             gained_active)) {
+      // If `SplitViewOverviewSession` created `AutoSnapController`, let it
+      // handle `OnWindowActivatingFromOverview()` first in case it needs to
+      // auto snap the window, before we fall through to `EndOverview()`.
+      RestoreWindowActivation(false);
+      EndOverview(OverviewEndAction::kWindowActivating);
+      return;
+    }
   }
 
   // Do not cancel overview mode if the window activation happens when split
@@ -1064,7 +1084,7 @@ bool OverviewSession::IsWindowActiveWindowBeforeOverview(
 }
 
 bool OverviewSession::HandleContinuousScrollIntoOverview(float y_offset) {
-  if (Shell::Get()->overview_controller()->is_continuous_scroll_in_progress()) {
+  if (OverviewController::Get()->is_continuous_scroll_in_progress()) {
     CHECK_EQ(enter_exit_overview_type_,
              OverviewEnterExitType::kContinuousAnimationEnterOnScrollUpdate);
 
@@ -1433,8 +1453,9 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
       // finished for performance reasons. During the animation, the focused
       // window prior to entering overview still has focus so stop events from
       // reaching it. See https://crbug.com/951324 for more details.
-      if (shell->overview_controller()->IsInStartAnimation())
+      if (OverviewController::Get()->IsInStartAnimation()) {
         break;
+      }
       return;
     }
   }
@@ -1504,8 +1525,9 @@ void OverviewSession::OnSplitViewStateChanged(
     SplitViewController::State previous_state,
     SplitViewController::State state) {
   // Do nothing if overview is being shutdown.
-  if (!Shell::Get()->overview_controller()->InOverviewSession())
+  if (!OverviewController::Get()->InOverviewSession()) {
     return;
+  }
 
   RefreshNoWindowsWidgetBoundsOnEachGrid(/*animate=*/false);
 }

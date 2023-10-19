@@ -2539,7 +2539,6 @@ targets.legacy_basic_suite(
         "perfetto_unittests": None,
         # TODO(crbug.com/1459686): Enable this.
         # "rust_gtest_interop_unittests": None,
-        "service_manager_unittests": None,
         "services_unittests": targets.legacy_test_config(
             args = [
                 "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.services_unittests.filter",
@@ -3102,6 +3101,30 @@ targets.legacy_basic_suite(
                 # Increase the timeout when using backend validation layers (crbug.com/1208253)
                 "--timeout-ms=30000",
             ],
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
+    name = "gpu_dawn_webgpu_compat_cts",
+    tests = {
+        "webgpu_cts_compat_tests": targets.legacy_test_config(
+            telemetry_test_name = "webgpu_compat_cts",
+            mixins = [
+                "has_native_resultdb_integration",
+                "webgpu_telemetry_cts",
+            ],
+            args = [
+                "--extra-browser-args=--use-angle=gl --use-webgpu-adapter=opengles --enable-webgpu-developer-features",
+            ],
+            ci_only = True,
+            swarming = targets.swarming(
+                shards = 14,
+            ),
+            android_swarming = targets.swarming(
+                shards = 36,
+            ),
+            experiment_percentage = 100,
         ),
     },
 )
@@ -4980,8 +5003,8 @@ targets.legacy_basic_suite(
 targets.legacy_basic_suite(
     name = "linux_lacros_chrome_browsertests_non_version_skew",
     tests = {
-        "lacros_chrome_browsertests_run_in_series": targets.legacy_test_config(
-            test = "lacros_chrome_browsertests_run_in_series",
+        "lacros_chrome_browsertests": targets.legacy_test_config(
+            test = "lacros_chrome_browsertests",
             args = [
                 "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter",
             ],
@@ -4995,7 +5018,7 @@ targets.legacy_basic_suite(
 targets.legacy_basic_suite(
     name = "linux_lacros_chrome_browsertests_version_skew",
     tests = {
-        "lacros_chrome_browsertests_run_in_series": targets.legacy_test_config(
+        "lacros_chrome_browsertests": targets.legacy_test_config(
             args = [
                 "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter;../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
             ],
@@ -5358,7 +5381,6 @@ targets.legacy_basic_suite(
         "ppapi_unittests": None,
         "printing_unittests": None,
         "remoting_unittests": None,
-        "service_manager_unittests": None,  # https://crbug.com/843134
         "snapshot_unittests": None,
         "sync_integration_tests": targets.legacy_test_config(
             swarming = targets.swarming(
@@ -5396,7 +5418,6 @@ targets.legacy_basic_suite(
         "pdf_unittests": None,
         "printing_unittests": None,
         "remoting_unittests": None,
-        "service_manager_unittests": None,  # https://crbug.com/843134
         "snapshot_unittests": None,
         "sync_integration_tests": targets.legacy_test_config(
             swarming = targets.swarming(

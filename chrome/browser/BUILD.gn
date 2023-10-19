@@ -1217,6 +1217,8 @@ static_library("browser") {
     "policy/javascript_policy_handler.h",
     "policy/messaging_layer/public/report_client.cc",
     "policy/messaging_layer/public/report_client.h",
+    "policy/messaging_layer/upload/configuration_file_controller.cc",
+    "policy/messaging_layer/upload/configuration_file_controller.h",
     "policy/messaging_layer/upload/dm_server_uploader.cc",
     "policy/messaging_layer/upload/dm_server_uploader.h",
     "policy/messaging_layer/upload/encrypted_reporting_client.cc",
@@ -1834,6 +1836,8 @@ static_library("browser") {
     "tpcd/heuristics/opener_heuristic_tab_helper.h",
     "tpcd/heuristics/opener_heuristic_utils.cc",
     "tpcd/heuristics/opener_heuristic_utils.h",
+    "tpcd/metadata/devtools_observer.cc",
+    "tpcd/metadata/devtools_observer.h",
     "tpcd/metadata/updater_service.cc",
     "tpcd/metadata/updater_service.h",
     "tpcd/metadata/updater_service_factory.cc",
@@ -2180,6 +2184,7 @@ static_library("browser") {
     "//components/component_updater",
     "//components/component_updater/installer_policies",
     "//components/compose:buildflags",
+    "//components/compose/core/browser",
     "//components/compose/core/browser:features",
     "//components/consent_auditor",
     "//components/content_capture/browser",
@@ -2297,6 +2302,7 @@ static_library("browser") {
     "//components/optimization_guide/optimization_guide_internals/webui",
     "//components/origin_trials:browser",
     "//components/origin_trials:common",
+    "//components/os_crypt/async/browser",
     "//components/os_crypt/sync",
     "//components/page_image_service",
     "//components/page_info/core:proto",
@@ -2350,6 +2356,7 @@ static_library("browser") {
     "//components/reporting/client:report_queue_provider",
     "//components/reporting/encryption:encryption_module",
     "//components/reporting/encryption:encryption_module_interface",
+    "//components/reporting/encryption:primitives",
     "//components/reporting/encryption:verification",
     "//components/reporting/proto:configuration_file_proto",
     "//components/reporting/proto:record_constants",
@@ -3950,8 +3957,6 @@ static_library("browser") {
       "lifetime/application_lifetime_desktop.h",
       "lifetime/browser_close_manager.cc",
       "lifetime/browser_close_manager.h",
-      "manta/manta_service.cc",
-      "manta/manta_service.h",
       "manta/manta_service_factory.cc",
       "manta/manta_service_factory.h",
       "media/capture_access_handler_base.cc",
@@ -4167,8 +4172,6 @@ static_library("browser") {
       "performance_manager/policies/background_tab_loading_policy.h",
       "performance_manager/policies/background_tab_loading_policy_helpers.cc",
       "performance_manager/policies/background_tab_loading_policy_helpers.h",
-      "performance_manager/policies/heuristic_memory_saver_policy.cc",
-      "performance_manager/policies/heuristic_memory_saver_policy.h",
       "performance_manager/policies/high_efficiency_mode_policy.cc",
       "performance_manager/policies/high_efficiency_mode_policy.h",
       "performance_manager/policies/page_discarding_helper.cc",
@@ -4609,6 +4612,7 @@ static_library("browser") {
       "//chrome/browser/ui/color:color_headers",
       "//chrome/browser/ui/webui/access_code_cast:mojo_bindings",
       "//chrome/browser/ui/webui/downloads:mojo_bindings",
+      "//chrome/browser/ui/webui/hats:hats_ui",
       "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
       "//chrome/browser/ui/webui/new_tab_page_third_party:mojo_bindings",
       "//chrome/browser/ui/webui/side_panel/bookmarks:mojo_bindings",
@@ -7942,14 +7946,27 @@ static_library("browser") {
       "compose/chrome_compose_client.h",
       "compose/compose_enabling.cc",
       "compose/compose_enabling.h",
+      "compose/compose_session.cc",
+      "compose/compose_session.h",
     ]
 
     deps += [
+      ":compose_optimization_guide_proto",
       "//chrome/common/compose",
+      "//chrome/common/compose:mojo_bindings",
       "//components/autofill/core/common",
       "//components/compose/core/browser",
       "//components/compose/proto",
+      "//components/optimization_guide/core",
+      "//components/optimization_guide/proto:optimization_guide_proto",
     ]
+  }
+}
+
+if (enable_compose) {
+  proto_library("compose_optimization_guide_proto") {
+    sources = [ "compose/proto/compose_optimization_guide.proto" ]
+    cc_generator_options = "lite=true:"
   }
 }
 
@@ -8109,8 +8126,6 @@ grit("resources") {
       "//chrome/browser/resources/chromeos/arc_account_picker:web_components",
       "//chrome/browser/resources/chromeos/crostini_installer:html_wrapper_files",
       "//chrome/browser/resources/chromeos/crostini_upgrader:html_wrapper_files",
-      "//chrome/browser/resources/chromeos/edu_coexistence:edu_coexistence_controller",
-      "//chrome/browser/resources/chromeos/edu_coexistence:web_components",
       "//chrome/browser/resources/chromeos/emulator:web_components",
       "//chrome/browser/resources/chromeos/gaia_action_buttons:web_components",
       "//chrome/browser/resources/chromeos/password_change:html_wrapper_files",
@@ -8280,6 +8295,7 @@ static_library("test_support") {
     "//components/policy/core/browser:test_support",
     "//components/prefs:test_support",
     "//components/reporting/client:test_support",
+    "//components/reporting/proto:configuration_file_proto",
     "//components/reporting/proto:record_constants",
     "//components/reporting/proto:record_proto",
     "//components/reporting/proto:status_proto",

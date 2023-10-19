@@ -343,11 +343,6 @@ class BrowserAutofillManager : public AutofillManager,
     fast_checkout_delegate_ = std::move(fast_checkout_delegate);
   }
 
-  void set_test_addresses(
-      std::vector<autofill::AutofillProfile> test_addresses) {
-    test_addresses_ = test_addresses;
-  }
-
   // Returns the field corresponding to |form| and |field| that can be
   // autofilled. Returns NULL if the field cannot be autofilled.
   [[nodiscard]] AutofillField* GetAutofillField(const FormData& form,
@@ -765,8 +760,6 @@ class BrowserAutofillManager : public AutofillManager,
 
   // Have we logged whether Autofill is enabled for this page load?
   bool has_logged_autofill_enabled_ = false;
-  // Have we logged an address suggestions count metric for this page?
-  bool has_logged_address_suggestions_count_ = false;
   // Have we shown Autofill suggestions at least once?
   bool did_show_suggestions_ = false;
   // Has the user manually edited at least one form field among the autofillable
@@ -799,9 +792,6 @@ class BrowserAutofillManager : public AutofillManager,
 
   // Helper class to generate Autofill suggestions.
   std::unique_ptr<AutofillSuggestionGenerator> suggestion_generator_;
-
-  // Test addresses used to allow developers to test their forms.
-  std::vector<autofill::AutofillProfile> test_addresses_;
 
   // Collected information about the autofill form where a credit card will be
   // filled.

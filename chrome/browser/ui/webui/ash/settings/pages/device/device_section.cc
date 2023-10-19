@@ -1043,7 +1043,7 @@ DeviceSection::DeviceSection(Profile* profile,
   if (night_light_controller) {
     NightLightController::GetInstance()->AddObserver(this);
     OnNightLightEnabledChanged(
-        NightLightController::GetInstance()->GetEnabled());
+        NightLightController::GetInstance()->IsNightLightEnabled());
   }
 }
 
@@ -1557,7 +1557,7 @@ void DeviceSection::OnGetDisplayLayoutInfo(
   }
 
   // Night Light on settings.
-  if (NightLightController::GetInstance()->GetEnabled()) {
+  if (NightLightController::GetInstance()->IsNightLightEnabled()) {
     updater.AddSearchTags(GetDisplayNightLightOnSearchConcepts());
   } else {
     updater.RemoveSearchTags(GetDisplayNightLightOnSearchConcepts());
@@ -1720,6 +1720,8 @@ void DeviceSection::AddCustomizeButtonsPageStrings(
        IDS_SETTINGS_CUSTOMIZE_BUTTONS_DIALOG_CANCEL},
       {"buttonRemappingDialogSaveLabel",
        IDS_SETTINGS_CUSTOMIZE_BUTTONS_DIALOG_SAVE},
+      {"buttonRenamingDialogInputCharCount",
+       IDS_SETTINGS_CUSTOMIZE_BUTTONS_RENAMING_DIALOG_INPUT_CHARACTER_COUNT},
       {"buttonRenamingDialogTitle",
        IDS_SETTINGS_CUSTOMIZE_BUTTONS_RENAMING_DIALOG_TITLE},
       {"customizeButtonSubpageDescription",

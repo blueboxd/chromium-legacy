@@ -729,7 +729,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     if (RuntimeEnabledFeatures::ElementCaptureEnabled()) {
       if (Element* element = DynamicTo<Element>(GetNode())) {
-        return element->GetRegionCaptureCropId();
+        return element->GetRestrictionTargetId();
       }
     }
     return false;
@@ -956,9 +956,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectButton);
   }
-  bool IsLayoutNGCustom() const {
+  bool IsLayoutCustom() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGCustom);
+    return IsOfType(kLayoutObjectCustom);
   }
   bool IsLayoutNGGrid() const {
     NOT_DESTROYED();
@@ -1768,7 +1768,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   Node* GetNode() const {
     NOT_DESTROYED();
-    return IsAnonymous() ? nullptr : node_;
+    return IsAnonymous() ? nullptr : node_.Get();
   }
 
   Node* NonPseudoNode() const {
@@ -3468,6 +3468,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectButton,
     kLayoutObjectCanvas,
     kLayoutObjectCounter,
+    kLayoutObjectCustom,
     kLayoutObjectCustomScrollbarPart,
     kLayoutObjectEmbeddedObject,
     kLayoutObjectFieldset,
@@ -3485,7 +3486,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectMultiColumnSet,
     kLayoutObjectMultiColumnSpannerPlaceholder,
     kLayoutObjectNGBlockFlow,
-    kLayoutObjectNGCustom,
     kLayoutObjectNGFlexibleBox,
     kLayoutObjectNGGrid,
     kLayoutObjectOutsideListMarker,

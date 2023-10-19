@@ -98,6 +98,7 @@ suite('<apn-detail-dialog>', () => {
     assertEquals(
         apnDetailDialog.i18n('apnDetailAddApnDialogTitle'),
         apnDetailDialogTitle.innerText);
+    assertEquals('polite', apnDetailDialogTitle.ariaLive);
     assertTrue(!!apnDetailDialog.shadowRoot!.querySelector('#apnInput'));
     assertTrue(!!apnDetailDialog.shadowRoot!.querySelector('#usernameInput'));
     assertTrue(!!apnDetailDialog.shadowRoot!.querySelector('#passwordInput'));
@@ -441,10 +442,18 @@ suite('<apn-detail-dialog>', () => {
           assertTrue(!!apnDefaultTypeCheckbox);
           apnDefaultTypeCheckbox.checked = defaultType;
 
+          assertEquals(
+              'apnDetailApnTypesLabel',
+              apnDefaultTypeCheckbox.getAttribute('aria-describedby'));
+
           const apnAttachTypeCheckbox =
               apnDetailDialog.shadowRoot!.querySelector<CrCheckboxElement>(
                   '#apnAttachTypeCheckbox');
           assertTrue(!!apnAttachTypeCheckbox);
+          assertEquals(
+              'apnDetailApnTypesLabel',
+              apnAttachTypeCheckbox.getAttribute('aria-describedby'));
+
           apnAttachTypeCheckbox.checked = attachType;
         };
 

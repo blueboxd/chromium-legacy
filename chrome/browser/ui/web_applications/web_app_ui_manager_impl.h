@@ -8,11 +8,9 @@
 #include <stddef.h>
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
-#include "base/containers/unique_ptr_adapters.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -52,7 +50,6 @@ enum class WebappUninstallSource;
 namespace web_app {
 
 class AppLock;
-class IsolatedWebAppInstallerCoordinator;
 
 // Implementation of WebAppUiManager that depends upon //c/b/ui.
 // Allows //c/b/web_applications code to call into //c/b/ui without directly
@@ -143,6 +140,10 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   void LaunchIsolatedWebAppInstaller(
       const base::FilePath& bundle_path) override;
 
+  void MaybeCreateEnableSupportedLinksInfobar(
+      content::WebContents* web_contents,
+      const std::string& launch_name) override;
+
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
@@ -188,17 +189,10 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
       UninstallCompleteCallback uninstall_complete_callback,
       webapps::UninstallResultCode uninstall_code);
 
-  void OnIsolatedWebAppInstallerClosed(
-      IsolatedWebAppInstallerCoordinator* installer,
-      absl::optional<webapps::AppId> result);
-
   const raw_ptr<Profile> profile_;
   std::map<webapps::AppId, std::vector<base::OnceClosure>>
       windows_closed_requests_map_;
   std::map<webapps::AppId, size_t> num_windows_for_apps_map_;
-  std::set<std::unique_ptr<IsolatedWebAppInstallerCoordinator>,
-           base::UniquePtrComparator>
-      isolated_web_app_installers_;
   bool started_ = false;
 
   base::WeakPtrFactory<WebAppUiManagerImpl> weak_ptr_factory_{this};

@@ -386,6 +386,7 @@ static_library("test_support") {
     "//components/network_time:network_time_test_support",
     "//components/omnibox/browser:test_support",
     "//components/optimization_guide/content/browser:test_support",
+    "//components/os_crypt/async/browser:test_support",
     "//components/os_crypt/sync",
     "//components/password_manager/core/browser:test_support",
     "//components/password_manager/core/browser/features:password_features",
@@ -1104,6 +1105,7 @@ if (is_android) {
       "//chrome/browser/privacy_budget:browser_tests",
       "//chrome/browser/profiling_host:profiling_browsertests",
       "//chrome/browser/segmentation_platform:test_utils",
+      "//chrome/browser/tpcd/heuristics:browser_tests",
       "//chrome/browser/ui/android/hats/test:test_support",
       "//chrome/browser/webaudio:browser_tests",
       "//components/autofill/content/renderer:test_support",
@@ -1602,6 +1604,8 @@ if (!is_android) {
       "//chrome/browser/segmentation_platform:test_utils",
       "//chrome/browser/sharing/proto",
       "//chrome/browser/storage_access_api",
+      "//chrome/browser/top_level_storage_access_api:permissions",
+      "//chrome/browser/tpcd/heuristics:browser_tests",
       "//chrome/browser/ui/color:color_headers",
       "//chrome/browser/ui/side_panel:side_panel_enums",
       "//chrome/browser/ui/tabs:tab_enums",
@@ -2207,6 +2211,7 @@ if (!is_android) {
       "../browser/media/webrtc/region_capture_browsertest.cc",
       "../browser/media/webrtc/same_origin_observer_browsertest.cc",
       "../browser/media/webrtc/test_stats_dictionary_unittest.cc",
+      "../browser/tpcd/metadata/devtools_observer_browsertest.cc",
       "../browser/tpcd/metadata/updater_service_browsertest.cc",
       "../browser/tpcd/support/tpcd_support_browsertest.cc",
 
@@ -2307,6 +2312,7 @@ if (!is_android) {
       "../browser/optimization_guide/page_content_annotations_service_browsertest.cc",
       "../browser/optimization_guide/page_text_observer_browsertest.cc",
       "../browser/origin_trials/origin_trials_browsertest.cc",
+      "../browser/os_crypt/os_crypt_async_browsertest.cc",
       "../browser/page_load_metrics/observers/ad_metrics/ad_density_intervention_browsertest.cc",
       "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/ad_metrics/large_sticky_ad_intervention_browsertest.cc",
@@ -2340,7 +2346,6 @@ if (!is_android) {
       "../browser/performance_manager/page_load_tracker_decorator_browsertest.cc",
       "../browser/performance_manager/page_node_browsertest.cc",
       "../browser/performance_manager/policies/bfcache_policy_browsertest.cc",
-      "../browser/performance_manager/policies/heuristic_memory_saver_browsertest.cc",
       "../browser/performance_manager/policies/page_discarding_helper_browsertest.cc",
       "../browser/performance_manager/user_tuning/resource_usage_tab_helper_browsertest.cc",
       "../browser/performance_timeline_browsertest.cc",
@@ -2649,6 +2654,7 @@ if (!is_android) {
       "../browser/ui/webauthn/authenticator_dialog_browsertest.cc",
       "../browser/ui/webui/app_service_internals/app_service_internals_browsertest.cc",
       "../browser/ui/webui/autofill_and_password_manager_internals/autofill_internals_ui_browsertest.cc",
+      "../browser/ui/webui/chrome_content_browser_client_webui_part_browsertest.cc",
       "../browser/ui/webui/chrome_url_data_manager_browsertest.cc",
       "../browser/ui/webui/chrome_web_ui_controller_factory_browsertest.cc",
       "../browser/ui/webui/chrome_webui_navigation_browsertest.cc",
@@ -2806,7 +2812,7 @@ if (!is_android) {
         "../browser/accessibility/live_translate_controller_browsertest.cc",
 
         # These tests also run on Lacros, as part of
-        # lacros_chrome_browsertests_run_in_series below.
+        # lacros_chrome_browsertests below.
         "../browser/media/webrtc/capture_handle_browsertest.cc",
         "../browser/media/webrtc/webrtc_getdisplaymedia_browsertest.cc",
         "../browser/ui/autofill/autofill_context_menu_manager_browsertest.cc",
@@ -4253,6 +4259,8 @@ if (!is_android) {
         "../browser/ash/login/app_mode/test/kiosk_remote_command_browsertest.cc",
         "../browser/ash/login/app_mode/test/kiosk_sku_browsertest.cc",
         "../browser/ash/login/app_mode/test/kiosk_update_browsertest.cc",
+        "../browser/ash/login/app_mode/test/managed_guest_session_test_helpers.cc",
+        "../browser/ash/login/app_mode/test/managed_guest_session_test_helpers.h",
         "../browser/ash/login/app_mode/test/new_aura_window_watcher.cc",
         "../browser/ash/login/app_mode/test/new_aura_window_watcher.h",
         "../browser/ash/login/app_mode/test/test_app_data_load_waiter.cc",
@@ -5161,7 +5169,6 @@ if (!is_android) {
     if (enable_webui_tab_strip) {
       sources += [
         "../browser/ui/views/frame/webui_tab_strip_field_trial_browsertest.cc",
-        "../browser/ui/webui/tab_strip/chrome_content_browser_client_tab_strip_part_browsertest.cc",
         "../browser/ui/webui/tab_strip/tab_strip_ui_browsertest.cc",
       ]
     }
@@ -5332,7 +5339,7 @@ if (is_chromeos_lacros) {
 
   # This test target is intended for lacros chrome specific tests that depend
   # on crosapi.
-  test("lacros_chrome_browsertests_run_in_series") {
+  test("lacros_chrome_browsertests") {
     use_xvfb = use_xvfb_in_this_config
 
     configs += [ "//build/config:precompiled_headers" ]
@@ -5415,6 +5422,7 @@ if (is_chromeos_lacros) {
       "../browser/speech/extension_api/tts_extension_api_lacros_browsertest.cc",
       "../browser/sync/test/lacros/sync_apps_toggle_sharing_lacros_browsertest.cc",
       "../browser/sync/test/lacros/sync_custom_passphrase_sharing_lacros_browsertest.cc",
+      "../browser/sync/test/lacros/trusted_vault_keys_sharing_lacros_browsertest.cc",
       "../browser/ui/autofill/autofill_context_menu_manager_lacros_browsertest.cc",
       "../browser/ui/browser_navigator_browsertest.cc",
       "../browser/ui/browser_navigator_browsertest.h",
@@ -6085,6 +6093,7 @@ test("unit_tests") {
     "../browser/policy/messaging_layer/public/report_client_test_util.cc",
     "../browser/policy/messaging_layer/public/report_client_test_util.h",
     "../browser/policy/messaging_layer/public/report_client_unittest.cc",
+    "../browser/policy/messaging_layer/upload/configuration_file_controller_unittest.cc",
     "../browser/policy/messaging_layer/upload/dm_server_uploader_unittest.cc",
     "../browser/policy/messaging_layer/upload/encrypted_reporting_client_unittest.cc",
     "../browser/policy/messaging_layer/upload/event_upload_size_controller_unittest.cc",
@@ -6677,6 +6686,7 @@ test("unit_tests") {
     "//components/reporting/encryption:test_support",
     "//components/reporting/encryption:testing_primitives",
     "//components/reporting/encryption:verification",
+    "//components/reporting/proto:configuration_file_proto",
     "//components/reporting/proto:upload_tracker_proto",
     "//components/reporting/resources:resource_manager",
     "//components/reporting/storage:storage_uploader_interface",
@@ -6713,6 +6723,7 @@ test("unit_tests") {
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/core:unsafe_resource",
     "//components/segmentation_platform/embedder",
+    "//components/segmentation_platform/embedder/default_model",
     "//components/segmentation_platform/embedder/default_model:default_model_test_base",
     "//components/segmentation_platform/internal:internal",
     "//components/segmentation_platform/public",
@@ -7839,7 +7850,6 @@ test("unit_tests") {
     sources += [
       # Urgent discarding from performance_manager, high-efficiency mode, and
       # the High-PMF discard policy aren't supported on Android.
-      "../browser/performance_manager/policies/heuristic_memory_saver_policy_unittest.cc",
       "../browser/performance_manager/policies/high_efficiency_mode_policy_unittest.cc",
       "../browser/performance_manager/policies/page_discarding_helper_unittest.cc",
       "../browser/performance_manager/policies/urgent_page_discarding_policy_unittest.cc",
@@ -8714,7 +8724,6 @@ test("unit_tests") {
       "../browser/extensions/extension_user_script_loader_unittest.cc",
       "../browser/extensions/extension_util_unittest.cc",
       "../browser/extensions/extension_web_ui_unittest.cc",
-      "../browser/extensions/external_install_error_unittest.cc",
       "../browser/extensions/external_policy_loader_unittest.cc",
       "../browser/extensions/external_provider_impl_unittest.cc",
       "../browser/extensions/forced_extensions/force_installed_metrics_unittest.cc",
@@ -9788,6 +9797,7 @@ test("unit_tests") {
     sources += [
       "../browser/supervised_user/supervised_user_browser_utils_unittest.cc",
       "../browser/supervised_user/supervised_user_google_auth_navigation_throttle_unittest.cc",
+      "../browser/supervised_user/supervised_user_navigation_throttle_unittest.cc",
     ]
     deps += [ "//components/supervised_user/core/browser:fetcher" ]
 

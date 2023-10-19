@@ -50,6 +50,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -83,6 +84,7 @@ using password_manager::util::IsRendererRecognizedCredentialForm;
 
 namespace autofill {
 
+using form_util::ExtractOption;
 using form_util::FindFormByRendererId;
 using form_util::FindFormControlByRendererId;
 using form_util::FindFormControlsByRendererId;
@@ -329,7 +331,7 @@ void AnnotateFieldsWithSignatures(
 // fields, both of which are cached in the Document.
 bool HasPasswordField(const WebLocalFrame& frame) {
   auto ContainsPasswordField = [&](const auto& fields) {
-    return base::Contains(fields, blink::FormControlType::kInputPassword,
+    return base::Contains(fields, blink::mojom::FormControlType::kInputPassword,
                           &WebFormControlElement::FormControlTypeForAutofill);
   };
 
@@ -521,7 +523,7 @@ mojom::SubmissionReadinessState CalculateSubmissionReadiness(
     // block a form submission. Note: Don't use |check_status !=
     // kNotCheckable|, a radio button is considered a "checkable" element too,
     // but it should block a submission.
-    return field.form_control_type == FormControlType::kInputCheckbox;
+    return field.form_control_type == mojom::FormControlType::kInputCheckbox;
   };
 
   for (size_t i = username_index + 1; i < password_index; ++i) {
@@ -1707,7 +1709,8 @@ void PasswordAutofillAgent::ShowSuggestionPopup(
   FormData form;
   FormFieldData field;
   form_util::FindFormAndFieldForFormControlElement(
-      user_input, field_data_manager_.get(), &form, &field);
+      user_input, field_data_manager_.get(), /*extract_options=*/{}, &form,
+      &field);
 
   int options = 0;
   if (show_all)
@@ -1769,6 +1772,9 @@ void PasswordAutofillAgent::ClearPreview(WebInputElement* username,
         base::checked_cast<unsigned>(username->Value().length()));
   }
   if (!password->IsNull() && !password->SuggestedValue().IsEmpty()) {
+    if (base::FeatureList::IsEnabled(blink::features::kPasswordStrongLabel)) {
+      password->SetShouldShowStrongPasswordLabel(false);
+    }
     password->SetSuggestedValue(WebString());
     password->SetAutofillState(password_autofill_state_);
   }
@@ -2213,18 +2219,17 @@ bool PasswordAutofillAgent::IsPasswordFieldFilledByUser(
     const WebFormControlElement& element) const {
   FieldRendererId element_id = form_util::GetFieldRendererId(element);
   return element.FormControlTypeForAutofill() ==
-             blink::FormControlType::kInputPassword &&
+             blink::mojom::FormControlType::kInputPassword &&
          (field_data_manager_->DidUserType(element_id) ||
           field_data_manager_->WasAutofilledOnUserTrigger(element_id));
 }
 
 void PasswordAutofillAgent::NotifyPasswordManagerAboutClearedForm(
     const WebFormElement& cleared_form) {
-  const auto extract_mask = static_cast<form_util::ExtractMask>(
-      form_util::EXTRACT_VALUE | form_util::EXTRACT_OPTIONS);
+  const auto extract_options = {ExtractOption::kValue, ExtractOption::kOptions};
   FormData form_data;
   if (WebFormElementToFormData(cleared_form, WebFormControlElement(),
-                               field_data_manager_.get(), extract_mask,
+                               field_data_manager_.get(), extract_options,
                                &form_data, /*field=*/nullptr)) {
     GetPasswordManagerDriver().PasswordFormCleared(form_data);
   }

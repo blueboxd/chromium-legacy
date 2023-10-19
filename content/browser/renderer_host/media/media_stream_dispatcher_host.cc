@@ -37,7 +37,7 @@
 #include "url/origin.h"
 
 #if !BUILDFLAG(IS_ANDROID)
-#include "content/browser/media/capture/crop_id_web_contents_helper.h"
+#include "content/browser/media/capture/sub_capture_target_id_web_contents_helper.h"
 #endif
 
 namespace content {
@@ -109,8 +109,8 @@ bool MayCrop(const GlobalRoutingID& capturing_id,
     return false;
   }
 
-  CropIdWebContentsHelper* const helper =
-      CropIdWebContentsHelper::FromWebContents(captured_wc);
+  SubCaptureTargetIdWebContentsHelper* const helper =
+      SubCaptureTargetIdWebContentsHelper::FromWebContents(captured_wc);
   if (!helper) {
     // No crop-IDs were ever produced on this WebContents.
     // Any non-zero crop-ID should be rejected on account of being
@@ -121,7 +121,10 @@ bool MayCrop(const GlobalRoutingID& capturing_id,
 
   // * crop_id.is_zero() = uncrop-request.
   // * !crop_id.is_zero() = crop-request.
-  return crop_id.is_zero() || helper->IsAssociatedWithCropId(crop_id);
+  // TODO(crbug.com/1418194): Extend to support other types.
+  return crop_id.is_zero() ||
+         helper->IsAssociatedWith(
+             crop_id, SubCaptureTargetIdWebContentsHelper::Type::kCropTarget);
 }
 
 MediaStreamDispatcherHost::CropCallback WrapCropCallback(
@@ -130,9 +133,9 @@ MediaStreamDispatcherHost::CropCallback WrapCropCallback(
   return base::BindOnce(
       [](MediaStreamDispatcherHost::CropCallback callback,
          mojo::ReportBadMessageCallback bad_message_callback,
-         media::mojom::CropRequestResult result) {
+         media::mojom::ApplySubCaptureTargetResult result) {
         if (result ==
-            media::mojom::CropRequestResult::kNonIncreasingCropVersion) {
+            media::mojom::ApplySubCaptureTargetResult::kNonIncreasingVersion) {
           std::move(bad_message_callback).Run("Non-increasing crop-version.");
           // Intentionally avoid returning. Instead, continue execution and
           // invoke the callback. If the callback were allowed to "drop" that
@@ -693,7 +696,7 @@ void MediaStreamDispatcherHost::OnCropValidationComplete(
 
   if (!crop_id_passed_validation) {
     std::move(callback).Run(
-        media::mojom::CropRequestResult::kInvalidCropTarget);
+        media::mojom::ApplySubCaptureTargetResult::kInvalidTarget);
     return;
   }
 

@@ -9,10 +9,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/mathml/mathml_paint_info.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/ng_mathml_paint_info.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/physical_fragment_rare_data.h"
@@ -166,7 +166,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   }
 
   const NGTableFragmentData::ColumnGeometries* TableColumnGeometries() const {
-    return rare_data_->table_column_geometries_;
+    return rare_data_->table_column_geometries_.Get();
   }
 
   const NGTableBorders* TableCollapsedBorders() const {
@@ -428,7 +428,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
     return GetRareField(FieldId::kMathMLPaintInfo);
   }
-  const NGMathMLPaintInfo& GetMathMLPaintInfo() const {
+  const MathMLPaintInfo& GetMathMLPaintInfo() const {
     return *rare_data_->GetField(FieldId::kMathMLPaintInfo)
                 ->mathml_paint_info.get();
   }

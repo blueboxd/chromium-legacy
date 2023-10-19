@@ -1173,19 +1173,18 @@ ContextResult WebGPUDecoderImpl::Initialize(
 bool WebGPUDecoderImpl::IsFeatureExposed(wgpu::FeatureName feature) const {
   switch (feature) {
     case wgpu::FeatureName::TimestampQuery:
-    case wgpu::FeatureName::TimestampQueryInsidePasses:
-    case wgpu::FeatureName::PipelineStatisticsQuery:
+    case wgpu::FeatureName::ChromiumExperimentalTimestampQueryInsidePasses:
+    case wgpu::FeatureName::ChromiumExperimentalPipelineStatisticsQuery:
     case wgpu::FeatureName::ChromiumExperimentalDp4a:
     case wgpu::FeatureName::ChromiumExperimentalReadWriteStorageTexture:
     case wgpu::FeatureName::ChromiumExperimentalSubgroups:
     case wgpu::FeatureName::ChromiumExperimentalSubgroupUniformControlFlow:
-    // TODO(dawn:1664): Enable Float32Filterable by default once it is tested.
-    case wgpu::FeatureName::Float32Filterable:
     case wgpu::FeatureName::ShaderF16:
       return allow_unsafe_apis_;
     case wgpu::FeatureName::DawnMultiPlanarFormats:
     case wgpu::FeatureName::Depth32FloatStencil8:
     case wgpu::FeatureName::DepthClipControl:
+    case wgpu::FeatureName::Float32Filterable:
     case wgpu::FeatureName::TextureCompressionBC:
     case wgpu::FeatureName::TextureCompressionETC2:
     case wgpu::FeatureName::TextureCompressionASTC:

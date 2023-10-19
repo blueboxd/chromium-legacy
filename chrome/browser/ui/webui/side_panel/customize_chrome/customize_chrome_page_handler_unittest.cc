@@ -1027,14 +1027,15 @@ TEST_F(CustomizeChromePageHandlerWithWallpaperSearchTest,
       CustomizeChromePageHandler::GetWallpaperSearchResultsCallback>
       callback;
 
-  handler().GetWallpaperSearchResults("foo", "bar", "baz", callback.Get());
-  EXPECT_EQ("foo bar baz", request.query());
+  handler().GetWallpaperSearchResults("foo", "bar", "baz", "qux",
+                                      callback.Get());
+  EXPECT_EQ("foo bar baz qux", request.query());
 
   chrome_intelligence_modelexecution_proto::WallpaperSearchResponse response;
 
   // Create test bitmap 1 and add it to response.
   SkBitmap bitmap1;
-  bitmap1.allocN32Pixels(32, 32);
+  bitmap1.allocN32Pixels(64, 32);
   bitmap1.eraseColor(SK_ColorRED);
   std::vector<unsigned char> encoded1;
   gfx::PNGCodec::EncodeBGRASkBitmap(bitmap1, /*discard_transparency=*/false,
@@ -1069,15 +1070,17 @@ TEST_F(CustomizeChromePageHandlerWithWallpaperSearchTest,
 
   // Check that resized encoded versions of the original bitmaps is what we
   // get back.
+  // The first bitmap's width should be twice the height to be the same aspect
+  // ratio as the original image.
   auto resized_bitmap1 = skia::ImageOperations::Resize(
-      bitmap1, skia::ImageOperations::RESIZE_GOOD, 200, 200);
+      bitmap1, skia::ImageOperations::RESIZE_GOOD, 200, 100);
   std::vector<unsigned char> resized_encoded1;
   gfx::PNGCodec::EncodeBGRASkBitmap(
       resized_bitmap1, /*discard_transparency=*/false, &resized_encoded1);
   EXPECT_EQ(images[0]->image, base::Base64Encode(resized_encoded1));
 
   auto resized_bitmap2 = skia::ImageOperations::Resize(
-      bitmap2, skia::ImageOperations::RESIZE_GOOD, 200, 200);
+      bitmap2, skia::ImageOperations::RESIZE_GOOD, 100, 100);
   std::vector<unsigned char> resized_encoded2;
   gfx::PNGCodec::EncodeBGRASkBitmap(
       resized_bitmap2, /*discard_transparency=*/false, &resized_encoded2);
@@ -1102,8 +1105,8 @@ TEST_F(CustomizeChromePageHandlerWithWallpaperSearchTest,
   testing::NiceMock<base::MockCallback<
       CustomizeChromePageHandler::GetWallpaperSearchResultsCallback>>
       callback;
-  handler().GetWallpaperSearchResults("foo", absl::nullopt, "bar",
-                                      callback.Get());
+  handler().GetWallpaperSearchResults("foo", absl::nullopt, absl::nullopt,
+                                      "bar", callback.Get());
 
   EXPECT_EQ("foo bar", request.query());
 }
@@ -1131,7 +1134,7 @@ TEST_F(CustomizeChromePageHandlerWithWallpaperSearchTest,
       callback;
 
   handler().GetWallpaperSearchResults("foo", absl::nullopt, absl::nullopt,
-                                      callback.Get());
+                                      absl::nullopt, callback.Get());
   EXPECT_EQ("foo", request.query());
 
   std::vector<side_panel::mojom::WallpaperSearchResultPtr> images;
@@ -1165,7 +1168,7 @@ TEST_F(CustomizeChromePageHandlerWithWallpaperSearchTest,
       callback;
 
   handler().GetWallpaperSearchResults("foo", absl::nullopt, absl::nullopt,
-                                      callback.Get());
+                                      absl::nullopt, callback.Get());
   EXPECT_EQ("foo", request.query());
 
   chrome_intelligence_modelexecution_proto::WallpaperSearchResponse response;
@@ -1223,7 +1226,7 @@ TEST_F(CustomizeChromePageHandlerWithWallpaperSearchTest,
       callback;
 
   handler().GetWallpaperSearchResults("foo", absl::nullopt, absl::nullopt,
-                                      callback.Get());
+                                      absl::nullopt, callback.Get());
   EXPECT_EQ("foo", request.query());
 
   chrome_intelligence_modelexecution_proto::WallpaperSearchResponse response;

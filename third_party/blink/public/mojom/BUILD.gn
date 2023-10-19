@@ -88,6 +88,7 @@ mojom("mojom_platform") {
     "file_system_access/file_system_access_transfer_token.mojom",
     "filesystem/file_system.mojom",
     "font_access/font_access.mojom",
+    "forms/form_control_type.mojom",
     "geolocation/geolocation_service.mojom",
     "hid/hid.mojom",
     "hyphenation/hyphenation.mojom",
@@ -1358,10 +1359,6 @@ mojom("mojom_core") {
   enabled_features = []
   if (use_aura) {
     enabled_features += [ "use_aura" ]
-  }
-
-  if (is_android || is_ios) {
-    enabled_features += [ "is_android_or_ios" ]
   }
 
   shared_cpp_typemaps = [

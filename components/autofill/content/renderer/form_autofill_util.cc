@@ -87,7 +87,6 @@ using blink::mojom::GenericIssueErrorType;
 // https://chromium-review.googlesource.com/c/chromium/src/+/4543002.
 namespace autofill::form_util {
 
-using Type = blink::FormControlType;
 using ::autofill::mojom::ButtonTitleType;
 
 struct ShadowFieldData {
@@ -960,11 +959,12 @@ ButtonTitleList InferButtonTitlesForForm(const WebFormElement& web_form) {
        item = input_elements.NextItem()) {
     DCHECK(item.IsFormControlElement());
     WebFormControlElement control_element = item.To<WebFormControlElement>();
-    Type type = control_element.FormControlTypeForAutofill();
-    bool is_submit_type =
-        type == Type::kInputSubmit || type == Type::kButtonSubmit;
-    bool is_button_type =
-        type == Type::kInputButton || type == Type::kButtonButton;
+    blink::mojom::FormControlType type =
+        control_element.FormControlTypeForAutofill();
+    bool is_submit_type = type == blink::mojom::FormControlType::kInputSubmit ||
+                          type == blink::mojom::FormControlType::kButtonSubmit;
+    bool is_button_type = type == blink::mojom::FormControlType::kInputButton ||
+                          type == blink::mojom::FormControlType::kButtonButton;
     if (!is_submit_type && !is_button_type) {
       continue;
     }
@@ -1101,9 +1101,10 @@ std::vector<WebFormControlElement>::iterator SearchInSortedVector(
 bool ShouldSkipFillField(const FormFieldData& field,
                          const WebFormControlElement& element,
                          const WebFormControlElement& trigger_element) {
-  // Skip all non-modifiable elements, except select fields because some
-  // synthetic select element use a hidden select element.
+  // Skip all checkable or non-modifiable elements, except select fields because
+  // some synthetic select element use a hidden select element.
   if (!element.IsEnabled() || element.IsReadOnly() ||
+      IsCheckableElement(element) ||
       (!IsWebElementFocusableForAutofill(element) &&
        !IsSelectElement(element))) {
     return true;
@@ -1169,23 +1170,20 @@ bool ShouldSkipFillField(const FormFieldData& field,
 void FillFormField(const FormFieldData& data,
                    bool is_initiating_node,
                    blink::WebFormControlElement* field) {
+  CHECK(!IsCheckableElement(*field));
   WebInputElement input_element = field->DynamicTo<WebInputElement>();
   WebAutofillState new_autofill_state = data.is_autofilled
                                             ? WebAutofillState::kAutofilled
                                             : WebAutofillState::kNotFilled;
-  if (IsCheckableElement(input_element)) {
-    input_element.SetChecked(IsChecked(data.check_status), true,
-                             new_autofill_state);
-  } else {
-    std::u16string value = data.value;
-    if (IsTextInput(input_element) || IsMonthInput(input_element)) {
-      // If the maxlength attribute contains a negative value, maxLength()
-      // returns the default maxlength value.
-      value = std::move(value).substr(0, input_element.MaxLength());
-    }
-    field->SetAutofillValue(blink::WebString::FromUTF16(value),
-                            new_autofill_state);
+
+  std::u16string value = data.value;
+  if (IsTextInput(input_element) || IsMonthInput(input_element)) {
+    // If the maxlength attribute contains a negative value, maxLength()
+    // returns the default maxlength value.
+    value = std::move(value).substr(0, input_element.MaxLength());
   }
+  field->SetAutofillValue(blink::WebString::FromUTF16(value),
+                          new_autofill_state);
   // Changing the field's value might trigger JavaScript, which is capable of
   // destroying the frame.
   if (!field->GetDocument().GetFrame()) {
@@ -1211,6 +1209,7 @@ void FillFormField(const FormFieldData& data,
 void PreviewFormField(const FormFieldData& data,
                       bool is_initiating_node,
                       blink::WebFormControlElement* field) {
+  CHECK(!IsCheckableElement(*field));
   // Preview input, textarea and select fields. For input fields, excludes
   // checkboxes and radio buttons, as there is no provision for
   // setSuggestedCheckedValue in WebInputElement.
@@ -1354,7 +1353,8 @@ void MatchLabelsAndFields(
       }
     } else if (control.IsFormControlElement()) {
       WebFormControlElement form_control = control.To<WebFormControlElement>();
-      if (form_control.FormControlTypeForAutofill() == Type::kInputHidden) {
+      if (form_control.FormControlTypeForAutofill() ==
+          blink::mojom::FormControlType::kInputHidden) {
         continue;
       }
       // Typical case: look up |field_data| in |field_set|.
@@ -1496,7 +1496,7 @@ void MaybeEmitInputAssignedAutocompleteValueToIdOrNameAttributesDevtoolsIssue(
 // Optionally, |optional_field| is set to the FormFieldData that corresponds to
 // |form_control_element|.
 //
-// |field_data_manager| and |extract_mask| are only passed to
+// |field_data_manager| and |extract_options| are only passed to
 // WebFormControlElementToFormField().
 bool OwnedOrUnownedFormToFormData(
     const WebFrame* frame,
@@ -1505,7 +1505,7 @@ bool OwnedOrUnownedFormToFormData(
     const WebVector<WebFormControlElement>& control_elements,
     const std::vector<blink::WebElement>& iframe_elements,
     const FieldDataManager* field_data_manager,
-    ExtractMask extract_mask,
+    DenseSet<ExtractOption> extract_options,
     FormData* form,
     FormFieldData* optional_field) {
   DCHECK(form);
@@ -1545,7 +1545,7 @@ bool OwnedOrUnownedFormToFormData(
     form->fields.emplace_back();
     shadow_fields.emplace_back();
     WebFormControlElementToFormField(
-        form_element, control_element, field_data_manager, extract_mask,
+        form_element, control_element, field_data_manager, extract_options,
         &form->fields.back(), &shadow_fields.back());
     fields_extracted[i] = true;
 
@@ -1878,10 +1878,10 @@ bool ExtractFormData(const WebFormElement& form_element,
                      FormData* data) {
   return WebFormElementToFormData(
       form_element, WebFormControlElement(), &field_data_manager,
-      static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
-                                          form_util::EXTRACT_OPTION_TEXT |
-                                          form_util::EXTRACT_OPTIONS),
-      data, /*field=*/nullptr);
+      {ExtractOption::kValue, ExtractOption::kOptionText,
+       ExtractOption::kOptions},
+      data,
+      /*field=*/nullptr);
 }
 
 bool IsSomeControlElementVisible(
@@ -1924,8 +1924,8 @@ GURL GetDocumentUrlWithoutAuth(const WebDocument& document) {
 }
 
 bool IsMonthInput(const WebInputElement& element) {
-  return !element.IsNull() &&
-         element.FormControlTypeForAutofill() == Type::kInputMonth;
+  return !element.IsNull() && element.FormControlTypeForAutofill() ==
+                                  blink::mojom::FormControlType::kInputMonth;
 }
 
 // All text fields, including password fields, should be extracted.
@@ -1938,18 +1938,18 @@ bool IsSelectOrSelectListElement(const WebFormControlElement& element) {
 }
 
 bool IsSelectElement(const WebFormControlElement& element) {
-  return !element.IsNull() &&
-         element.FormControlTypeForAutofill() == Type::kSelectOne;
+  return !element.IsNull() && element.FormControlTypeForAutofill() ==
+                                  blink::mojom::FormControlType::kSelectOne;
 }
 
 bool IsSelectListElement(const WebFormControlElement& element) {
-  return !element.IsNull() &&
-         element.FormControlTypeForAutofill() == Type::kSelectList;
+  return !element.IsNull() && element.FormControlTypeForAutofill() ==
+                                  blink::mojom::FormControlType::kSelectList;
 }
 
 bool IsTextAreaElement(const WebFormControlElement& element) {
-  return !element.IsNull() &&
-         element.FormControlTypeForAutofill() == Type::kTextArea;
+  return !element.IsNull() && element.FormControlTypeForAutofill() ==
+                                  blink::mojom::FormControlType::kTextArea;
 }
 
 bool IsTextAreaElementOrTextInput(const WebFormControlElement& element) {
@@ -1980,35 +1980,35 @@ bool IsAutofillableElement(const WebFormControlElement& element) {
           base::FeatureList::IsEnabled(features::kAutofillEnableSelectList));
 }
 
-FormControlType ToAutofillFormControlType(blink::FormControlType type) {
+FormControlType ToAutofillFormControlType(blink::mojom::FormControlType type) {
   switch (type) {
-    case blink::FormControlType::kInputCheckbox:
+    case blink::mojom::FormControlType::kInputCheckbox:
       return FormControlType::kInputCheckbox;
-    case blink::FormControlType::kInputEmail:
+    case blink::mojom::FormControlType::kInputEmail:
       return FormControlType::kInputEmail;
-    case blink::FormControlType::kInputMonth:
+    case blink::mojom::FormControlType::kInputMonth:
       return FormControlType::kInputMonth;
-    case blink::FormControlType::kInputNumber:
+    case blink::mojom::FormControlType::kInputNumber:
       return FormControlType::kInputNumber;
-    case blink::FormControlType::kInputPassword:
+    case blink::mojom::FormControlType::kInputPassword:
       return FormControlType::kInputPassword;
-    case blink::FormControlType::kInputRadio:
+    case blink::mojom::FormControlType::kInputRadio:
       return FormControlType::kInputRadio;
-    case blink::FormControlType::kInputSearch:
+    case blink::mojom::FormControlType::kInputSearch:
       return FormControlType::kInputSearch;
-    case blink::FormControlType::kInputTelephone:
+    case blink::mojom::FormControlType::kInputTelephone:
       return FormControlType::kInputTelephone;
-    case blink::FormControlType::kInputText:
+    case blink::mojom::FormControlType::kInputText:
       return FormControlType::kInputText;
-    case blink::FormControlType::kInputUrl:
+    case blink::mojom::FormControlType::kInputUrl:
       return FormControlType::kInputUrl;
-    case blink::FormControlType::kSelectOne:
+    case blink::mojom::FormControlType::kSelectOne:
       return FormControlType::kSelectOne;
-    case blink::FormControlType::kSelectMultiple:
+    case blink::mojom::FormControlType::kSelectMultiple:
       return FormControlType::kSelectMultiple;
-    case blink::FormControlType::kSelectList:
+    case blink::mojom::FormControlType::kSelectList:
       return FormControlType::kSelectList;
-    case blink::FormControlType::kTextArea:
+    case blink::mojom::FormControlType::kTextArea:
       return FormControlType::kTextArea;
     default:
       NOTREACHED_NORETURN();
@@ -2044,7 +2044,8 @@ bool IsWebElementVisible(const blink::WebElement& element) {
 
 uint64_t GetMaxLength(const blink::WebFormControlElement& element) {
   if (IsTextInput(element.DynamicTo<WebInputElement>()) ||
-      element.FormControlTypeForAutofill() == Type::kTextArea) {
+      element.FormControlTypeForAutofill() ==
+          blink::mojom::FormControlType::kTextArea) {
     auto max_length = element.MaxLength();
     static_assert(uint64_t{std::numeric_limits<decltype(max_length)>::max()} <=
                   FormFieldData::kDefaultMaxLength);
@@ -2139,7 +2140,7 @@ void WebFormControlElementToFormField(
     const WebFormElement& form_element,
     const WebFormControlElement& element,
     const FieldDataManager* field_data_manager,
-    ExtractMask extract_mask,
+    DenseSet<ExtractOption> extract_options,
     FormFieldData* field,
     ShadowFieldData* shadow_data) {
   DCHECK(field);
@@ -2243,7 +2244,7 @@ void WebFormControlElementToFormField(
                    input_element.IsChecked());
   } else if (IsTextAreaElement(element)) {
     // Nothing more to do in this case.
-  } else if (extract_mask & EXTRACT_OPTIONS) {
+  } else if (extract_options.contains(ExtractOption::kOptions)) {
     // Set option strings on the field if available.
     DCHECK(IsSelectOrSelectListElement(element));
     WebVector<WebElement> element_list_items =
@@ -2251,7 +2252,7 @@ void WebFormControlElementToFormField(
     FilterOptionElementsAndGetOptionStrings(element_list_items,
                                             &field->options);
   }
-  if (extract_mask & EXTRACT_BOUNDS) {
+  if (extract_options.contains(ExtractOption::kBounds)) {
     if (auto* local_frame = element.GetDocument().GetFrame()) {
       if (auto* render_frame =
               content::RenderFrame::FromWebFrame(local_frame)) {
@@ -2259,7 +2260,7 @@ void WebFormControlElementToFormField(
       }
     }
   }
-  if (extract_mask & EXTRACT_DATALIST) {
+  if (extract_options.contains(ExtractOption::kDatalist)) {
     if (WebInputElement input = element.DynamicTo<WebInputElement>();
         !input.IsNull()) {
       GetDataListSuggestions(input, &field->datalist_values,
@@ -2267,13 +2268,14 @@ void WebFormControlElementToFormField(
     }
   }
 
-  if (!(extract_mask & EXTRACT_VALUE))
+  if (!extract_options.contains(ExtractOption::kValue)) {
     return;
+  }
 
   std::u16string value = element.Value().Utf16();
 
   if (IsSelectOrSelectListElement(element) &&
-      (extract_mask & EXTRACT_OPTION_TEXT)) {
+      extract_options.contains(ExtractOption::kOptionText)) {
     // Convert the |element| value to text if requested.
     WebVector<WebElement> list_items =
         GetListItemsForSelectOrSelectList(element);
@@ -2321,7 +2323,7 @@ bool WebFormElementToFormData(
     const blink::WebFormElement& form_element,
     const blink::WebFormControlElement& form_control_element,
     const FieldDataManager* field_data_manager,
-    ExtractMask extract_mask,
+    DenseSet<ExtractOption> extract_options,
     FormData* form,
     FormFieldData* field) {
   WebLocalFrame* frame = form_element.GetDocument().GetFrame();
@@ -2355,7 +2357,7 @@ bool WebFormElementToFormData(
   return OwnedOrUnownedFormToFormData(
       frame, form_element, &form_control_element,
       form_element.GetFormControlElements(), owned_iframes, field_data_manager,
-      extract_mask, form, field);
+      extract_options, form, field);
 }
 
 WebFormElement GetOwningForm(const WebFormControlElement& form_control) {
@@ -2414,7 +2416,7 @@ bool UnownedFormElementsToFormData(
     const blink::WebFormControlElement* element,
     const blink::WebDocument& document,
     const FieldDataManager* field_data_manager,
-    ExtractMask extract_mask,
+    DenseSet<ExtractOption> extract_options,
     FormData* form,
     FormFieldData* field) {
   blink::WebLocalFrame* frame = document.GetFrame();
@@ -2428,13 +2430,13 @@ bool UnownedFormElementsToFormData(
 
   return OwnedOrUnownedFormToFormData(
       frame, WebFormElement(), element, control_elements, iframe_elements,
-      field_data_manager, extract_mask, form, field);
+      field_data_manager, extract_options, form, field);
 }
 
 bool FindFormAndFieldForFormControlElement(
     const WebFormControlElement& element,
     const FieldDataManager* field_data_manager,
-    ExtractMask extract_mask,
+    DenseSet<ExtractOption> extract_options,
     FormData* form,
     FormFieldData* field) {
   DCHECK(!element.IsNull());
@@ -2442,8 +2444,7 @@ bool FindFormAndFieldForFormControlElement(
   if (!IsAutofillableElement(element))
     return false;
 
-  extract_mask =
-      static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTIONS | extract_mask);
+  extract_options.insert_all({ExtractOption::kValue, ExtractOption::kOptions});
   WebFormElement form_element = GetOwningForm(element);
 
   if (form_element.IsNull()) {
@@ -2455,20 +2456,11 @@ bool FindFormAndFieldForFormControlElement(
         GetUnownedIframeElements(document);
     return UnownedFormElementsToFormData(control_elements, iframe_elements,
                                          &element, document, field_data_manager,
-                                         extract_mask, form, field);
+                                         extract_options, form, field);
   }
 
   return WebFormElementToFormData(form_element, element, field_data_manager,
-                                  extract_mask, form, field);
-}
-
-bool FindFormAndFieldForFormControlElement(
-    const WebFormControlElement& element,
-    const FieldDataManager* field_data_manager,
-    FormData* form,
-    FormFieldData* field) {
-  return FindFormAndFieldForFormControlElement(
-      element, field_data_manager, form_util::EXTRACT_NONE, form, field);
+                                  extract_options, form, field);
 }
 
 std::optional<FormData> FindFormForContentEditable(

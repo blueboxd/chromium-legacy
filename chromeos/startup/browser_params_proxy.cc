@@ -339,4 +339,12 @@ bool BrowserParamsProxy::IsCrosBatterySaverAvailable() const {
   return BrowserInitParams::Get()->is_cros_battery_saver_available;
 }
 
+bool BrowserParamsProxy::IsAppInstallServiceUriEnabled() const {
+  return BrowserInitParams::Get()->is_app_install_service_uri_enabled;
+}
+
+bool BrowserParamsProxy::IsDeskProfilesEnabled() const {
+  return BrowserInitParams::Get()->is_desk_profiles_enabled;
+}
+
 }  // namespace chromeos

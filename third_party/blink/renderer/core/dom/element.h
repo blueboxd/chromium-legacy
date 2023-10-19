@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/region_capture_crop_id.h"
+#include "third_party/blink/renderer/platform/restriction_target_id.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -598,8 +599,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // The definition is in node_computed_style.h.
   inline const ComputedStyle* GetComputedStyle() const;
 
+  using Node::DetachLayoutTree;
   void AttachLayoutTree(AttachContext&) override;
-  void DetachLayoutTree(bool performing_reattach = false) override;
+  void DetachLayoutTree(bool performing_reattach) override;
 
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&);
   virtual bool LayoutObjectIsNeeded(const DisplayStyle&) const;
@@ -660,17 +662,25 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void SetNeedsCompositingUpdate();
 
-  // Assigns a crop-ID to the element. It's an error to try to call this
-  // if the element already has a crop-ID attached (even if attempting to
-  // set the same crop-ID again).
-  //
-  // Not all element types have a region capture crop-ID, however using it here
-  // allows access to the element rare data struct. Currently, once an element
-  // is marked for region capture it cannot be unmarked.
-  void SetRegionCaptureCropId(std::unique_ptr<RegionCaptureCropId> crop_id);
+  // Associates the element with a RegionCaptureCropId, which is the object
+  // internally backing a CropTarget.
+  // This method may be called at most once. The ID must be non-null.
+  void SetRegionCaptureCropId(std::unique_ptr<RegionCaptureCropId> id);
 
-  // Returns a pointer to the crop-ID if one was set; nullptr otherwise.
+  // If SetRegionCaptureCropId(id) was previously called on `this`,
+  // returns the non-empty `id` which it previously provided.
+  // Otherwise, returns a nullptr.
   const RegionCaptureCropId* GetRegionCaptureCropId() const;
+
+  // Associates the element with a RestrictionTargetId, which is the object
+  // internally backing a RestrictionTarget.
+  // This method may be called at most once. The ID must be non-null.
+  void SetRestrictionTargetId(std::unique_ptr<RestrictionTargetId> id);
+
+  // If SetRestrictionTargetId(id) was previously called on `this`,
+  // returns the non-empty `id` which it previously provided.
+  // Otherwise, returns a nullptr.
+  const RestrictionTargetId* GetRestrictionTargetId() const;
 
   ShadowRoot* attachShadow(const ShadowRootInit*, ExceptionState&);
 

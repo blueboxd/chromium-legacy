@@ -823,20 +823,6 @@ class CONTENT_EXPORT NavigationRequest
   // Must only be called after ReadyToCommitNavigation().
   scoped_refptr<PolicyContainerHost> TakePolicyContainerHost();
 
-  // Stores in this navigation a refptr to the proxying URLLoaderFactory used by
-  // multiple different subresource loading.
-  //
-  // Must only be called after ReadyToCommitNavigation().
-  void SetSubresourceProxyingFactoryBundle(
-      scoped_refptr<network::SharedURLLoaderFactory>
-          subresource_proxying_factory_bundle);
-
-  // Moves this navigation's subresource proxying factory out of this instance.
-  //
-  // Must only be called after ReadyToCommitNavigation().
-  scoped_refptr<network::SharedURLLoaderFactory>
-  TakeSubresourceProxyingFactoryBundle();
-
   CrossOriginEmbedderPolicyReporter* coep_reporter() {
     return coep_reporter_.get();
   }
@@ -2370,6 +2356,10 @@ class CONTENT_EXPORT NavigationRequest
   // only valid in conjunction with it.
   const int initiator_process_id_ = ChildProcessHost::kInvalidUniqueID;
 
+  // The initiator Document's token, if it is present when this
+  // NavigationRequest was created.
+  absl::optional<blink::DocumentToken> initiator_document_token_;
+
   // The sandbox flags of the navigation's initiator, if any.
   // WebSandboxFlags::kNone otherwise.
   const network::mojom::WebSandboxFlags sandbox_flags_initiator_;
@@ -2534,10 +2524,6 @@ class CONTENT_EXPORT NavigationRequest
   // Messages to be printed on the console in the target RenderFrameHost of this
   // NavigationRequest.
   std::vector<ConsoleMessage> console_messages_;
-
-  // The initiator Document's token, if it is present when this
-  // NavigationRequest was created.
-  absl::optional<blink::DocumentToken> initiator_document_token_;
 
   // Indicates that this navigation is for PDF content in a renderer.
   bool is_pdf_ = false;

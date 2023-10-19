@@ -406,6 +406,12 @@
     {
       name: "BackfaceVisibilityInterop",
     },
+    // This is a killswitch for the fix for crbug.com/954591 and should be
+    // removable a few weeks after M120 ships.
+    {
+      name: "BackfaceVisibilityNewInheritance",
+      status: "stable",
+    },
     {
       name: "BackForwardCache",
       base_feature: "none",
@@ -1824,6 +1830,10 @@
       status: "test",
     },
     {
+      name: "FluentOverlayScrollbars",
+      base_feature: "none",
+    },
+    {
       name: "FluentScrollbars",
       base_feature: "none",
     },
@@ -2362,6 +2372,12 @@
       name: "MediaCaptureBackgroundBlur",
       origin_trial_feature_name: "MediaCaptureBackgroundBlur",
       status: "experimental",
+      implied_by: ["MediaCaptureCameraControls"],
+      base_feature: "none",
+    },
+    {
+      name: "MediaCaptureCameraControls",
+      status: "experimental",
       base_feature: "none",
     },
     {
@@ -2442,7 +2458,7 @@
     },
     {
       name: "MediaStreamTrackGetFrameStats",
-      status: "test",
+      status: "stable",
       base_feature: "none",
     },
     {
@@ -2839,6 +2855,10 @@
       base_feature: "none",
     },
     {
+      name: "PasswordStrongLabel",
+      status: "experimental",
+    },
+    {
       name: "PastingBlocksSVGUseNonLocalHrefs",
       status: "stable",
     },
@@ -2932,12 +2952,6 @@
       public: true,
       status: "stable",
       base_feature: "none",
-    },
-    // See https://crbug.com/1324111
-    {
-      name: "PermissionsPolicyUnload",
-      origin_trial_feature_name: "PermissionsPolicyUnload",
-      status: "stable",
     },
     {
       name: "PermissionsRequestRevoke",
@@ -4197,6 +4211,10 @@
       origin_trial_feature_name: "WebCodecs"
     },
     {
+      name: "WebCodecsContentHint",
+      status: "experimental",
+    },
+    {
       name: "WebCodecsDequeueEvent",
       status: "stable",
       base_feature: "none",
@@ -4264,7 +4282,7 @@
       public: true,
     },
     {
-      name: "WebIdentityMDocs",
+      name: "WebIdentityDigitalCredentials",
       depends_on: ["FedCm"],
       public: true,
       status: "test",

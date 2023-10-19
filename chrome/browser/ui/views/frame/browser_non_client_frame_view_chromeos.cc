@@ -650,22 +650,28 @@ void BrowserNonClientFrameViewChromeOS::OnTabletModeToggled(bool enabled) {
 
   ImmersiveModeController* immersive_mode_controller =
       browser_view()->immersive_mode_controller();
-  const bool was_enabled = immersive_mode_controller->IsEnabled();
+  ExclusiveAccessManager* exclusive_access_manager =
+      browser_view()->browser()->exclusive_access_manager();
 
-  // If the current immersive mode state is not what it should be after the
-  // tablet mode has been toggled, toggle fullscreen mode to update the
-  // immersive mode. Note that it should not call
-  // ImmersiveModeController::SetEnabled since it won't update fullscreen mode.
-  if (ShouldEnableImmersiveModeController() != was_enabled) {
-    browser_view()
-        ->browser()
-        ->exclusive_access_manager()
-        ->fullscreen_controller()
+  const bool was_immersive = immersive_mode_controller->IsEnabled();
+  const bool was_fullscreen =
+      exclusive_access_manager->context()->IsFullscreen();
+
+  // If fullscreen mode is not what it should be, toggle fullscreen mode.
+  if (ShouldEnableFullscreenMode() != was_fullscreen) {
+    exclusive_access_manager->fullscreen_controller()
         ->ToggleBrowserFullscreenMode();
   }
 
-  // Do not relayout if immersive mode has not changed.
-  if (was_enabled == immersive_mode_controller->IsEnabled()) {
+  // Set immersive mode to what it should be. Note that we need to call this
+  // after updating fullscreen mode since it may override immersive mode to not
+  // wanted state (e.g. Non TabStrip frame with tablet mode enabled).
+  immersive_mode_controller->SetEnabled(ShouldEnableImmersiveModeController());
+
+  // Do not relayout if neither of immersive mode nor fullscreen mode has
+  // changed because the non client frame area will not change.
+  if (was_immersive == immersive_mode_controller->IsEnabled() &&
+      was_fullscreen == exclusive_access_manager->context()->IsFullscreen()) {
     return;
   }
 
@@ -1228,6 +1234,10 @@ bool BrowserNonClientFrameViewChromeOS::ShouldEnableImmersiveModeController()
     // Tabbed browsers do not support immersive mode in tablet mode. We use the
     // web ui touchable tabstrip, which has its own sliding mechanism to view
     // the tabs.
+    // TODO(elkurin): TabStrip supports imemrsive mode now, but this code is
+    // needed to keep the expected behavior to disable immersive mode on
+    // entering tablet mode. We should remove this and explicitly exit immersive
+    // mode on this scenario for the readability.
     if (browser_view()->GetSupportsTabStrip())
       return false;
 
@@ -1240,6 +1250,35 @@ bool BrowserNonClientFrameViewChromeOS::ShouldEnableImmersiveModeController()
   }
 
   // In clamshell mode, we want immersive mode if fullscreen.
+  return frame()->IsFullscreen();
+}
+
+bool BrowserNonClientFrameViewChromeOS::ShouldEnableFullscreenMode() const {
+  // In kiosk mode, we always want to be fullscreen.
+  if (chromeos::IsKioskSession()) {
+    return true;
+  }
+
+  // If user cannot exit fullscreen, we always want to be fullscreen. This must
+  // comes before the tablet mode condition since there is a case where the user
+  // is not allowed to exit fullscreen while tablet mode (LockedFullscreen).
+  if (!CanUserExitFullscreen()) {
+    return true;
+  }
+
+  if (chromeos::TabletState::Get()->InTabletMode()) {
+    // Tabbed browsers do not support immersive mode in tablet mode. We use the
+    // web ui touchable tabstrip, which has its own sliding mechanism to view
+    // the tabs.
+    // TODO(elkurin): TabStrip supports imemrsive mode now, but this code is
+    // needed to keep the expected behavior to disable immersive mode on
+    // entering tablet mode. We should remove this and explicitly exit immersive
+    // mode on this scenario for the readability.
+    if (browser_view()->GetSupportsTabStrip()) {
+      return false;
+    }
+  }
+
   return frame()->IsFullscreen();
 }
 

@@ -1297,13 +1297,13 @@ void PartitionAllocSupport::ReconfigureAfterTaskRunnerInit(
     // multiplier value with the corresponding feature param.
 #if BUILDFLAG(IS_ANDROID)
     ::partition_alloc::ThreadCacheRegistry::Instance().SetThreadCacheMultiplier(
-        base::features::kThreadCacheMultiplierForAndroid.Get());
+        base::features::GetThreadCacheMultiplierForAndroid());
 #else   // BUILDFLAG(IS_ANDROID)
     ::partition_alloc::ThreadCacheRegistry::Instance().SetThreadCacheMultiplier(
-        base::features::kThreadCacheMultiplier.Get());
+        base::features::GetThreadCacheMultiplier());
 #endif  // BUILDFLAG(IS_ANDROID)
   } else {
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
     // If kEnableConfigurableThreadCacheMultiplier is not enabled, lower
     // thread cache limits on Android low end device to avoid stranding too much
     // memory in the caches.
@@ -1313,7 +1313,7 @@ void PartitionAllocSupport::ReconfigureAfterTaskRunnerInit(
           .SetThreadCacheMultiplier(
               ::partition_alloc::ThreadCache::kDefaultMultiplier / 2.);
     }
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
   }
 
   // Renderer processes are more performance-sensitive, increase thread cache
@@ -1322,7 +1322,7 @@ void PartitionAllocSupport::ReconfigureAfterTaskRunnerInit(
       base::FeatureList::IsEnabled(
           base::features::kPartitionAllocLargeThreadCacheSize)) {
     largest_cached_size_ =
-        size_t(base::features::kPartitionAllocLargeThreadCacheSizeValue.Get());
+        size_t(base::features::GetPartitionAllocLargeThreadCacheSizeValue());
 
 #if BUILDFLAG(IS_ANDROID)
     // Use appropriately lower amount for Android devices with 3GB or less.
@@ -1332,7 +1332,7 @@ void PartitionAllocSupport::ReconfigureAfterTaskRunnerInit(
     if (base::SysInfo::AmountOfPhysicalMemoryMB() < 3.2 * 1024) {
       largest_cached_size_ = size_t(
           base::features::
-              kPartitionAllocLargeThreadCacheSizeValueForLowRAMAndroid.Get());
+              GetPartitionAllocLargeThreadCacheSizeValueForLowRAMAndroid());
     }
 #endif  // BUILDFLAG(IS_ANDROID)
 

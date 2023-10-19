@@ -51,10 +51,10 @@
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/mathml/layout_mathml_block.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_mathml_block.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_disable_side_effects_scope.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
@@ -795,7 +795,7 @@ LayoutBlock* LayoutBlock::CreateAnonymousWithParentAndDisplay(
     layout_block = MakeGarbageCollected<LayoutNGGrid>(/* element */ nullptr);
   } else if (new_display == EDisplay::kBlockMath) {
     layout_block =
-        MakeGarbageCollected<LayoutNGMathMLBlock>(/* element */ nullptr);
+        MakeGarbageCollected<LayoutMathMLBlock>(/* element */ nullptr);
   } else {
     DCHECK(new_display == EDisplay::kBlock ||
            new_display == EDisplay::kFlowRoot);

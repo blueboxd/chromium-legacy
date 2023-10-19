@@ -10,7 +10,7 @@ import {waitUntil} from '../../common/js/test_error_reporting.js';
 import {str, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FileData, State, Volume} from '../../externs/ts/state.js';
-import {VolumeInfo} from '../../externs/volume_info.js';
+import type {VolumeInfo} from '../../externs/volume_info.js';
 import {constants} from '../../foreground/js/constants.js';
 import {convertEntryToFileData} from '../ducks/all_entries.js';
 import {createFakeVolumeMetadata, setUpFileManagerOnWindow, setupStore, waitDeepEquals} from '../for_tests.js';
@@ -201,9 +201,9 @@ export async function testAddDriveVolume(done: () => void) {
   const {sharedDriveDisplayRoot, computersDisplayRoot, fakeEntries} =
       driveVolumeInfo;
   const fakeSharedWithMeEntry =
-      fakeEntries[VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME];
+      fakeEntries[VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME]!;
   const fakeOfflineEntry =
-      fakeEntries[VolumeManagerCommon.RootType.DRIVE_OFFLINE];
+      fakeEntries[VolumeManagerCommon.RootType.DRIVE_OFFLINE]!;
   driveFakeRootEntryList.addEntry(driveVolumeEntry);
   driveFakeRootEntryList.addEntry(sharedDriveDisplayRoot);
   driveFakeRootEntryList.addEntry(computersDisplayRoot);
@@ -399,6 +399,50 @@ export async function testAddDisabledDriveVolume(done: () => void) {
         driveVolumeEntry && driveVolumeEntry.disabled === true && driveVolume &&
         driveVolume.isDisabled === true;
   });
+
+  done();
+}
+
+/** Tests that archive volume can be added correctly. */
+export async function testAddArchiveVolume(done: () => void) {
+  const initialState = getEmptyState();
+  const store = setupStore(initialState);
+
+  const {volumeManager} = window.fileManager;
+  const volumeInfo = MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.ARCHIVE, 'test', 'test.zip');
+  // Archive's source should be File.
+  // @ts-ignore: access private variable to customize the source.
+  volumeInfo.source_ = VolumeManagerCommon.Source.FILE;
+  volumeManager.volumeInfoList.add(volumeInfo);
+  const volumeEntry = new VolumeEntry(volumeInfo);
+  const volumeMetadata = createFakeVolumeMetadata(volumeInfo);
+
+  // Dispatch an action to add the archive volume.
+  store.dispatch(addVolume({volumeInfo, volumeMetadata}));
+
+  // Expect the volume will be added from the store.
+  const myFilesFileData = createMyFilesDataWithEntryList();
+  const want: Partial<State> = {
+    allEntries: {
+      // My Files entry list.
+      [myFilesFileData.entry.toURL()]: myFilesFileData,
+      // Archive.
+      [volumeEntry.toURL()]: {
+        ...convertEntryToFileData(volumeEntry),
+        isEjectable: true,
+      },
+    },
+    volumes: {
+      [volumeInfo.volumeId]: {
+        ...convertVolumeInfoAndMetadataToVolume(volumeInfo, volumeMetadata),
+      },
+    },
+  };
+  await waitDeepEquals(store, want, (state) => ({
+                                      allEntries: state.allEntries,
+                                      volumes: state.volumes,
+                                    }));
 
   done();
 }

@@ -337,11 +337,6 @@ extern const char
 extern const char kEnableAutofillAddressSavePromptName[];
 extern const char kEnableAutofillAddressSavePromptDescription[];
 
-// Title and description for the flag to enable sign-out in Clear Browser Data
-// settings.
-extern const char kEnableCBDSignOutName[];
-extern const char kEnableCBDSignOutDescription[];
-
 // Title and description for the flag to enable the discover feed discofeed
 // endpoint.
 extern const char kEnableDiscoverFeedDiscoFeedEndpointName[];
@@ -900,11 +895,6 @@ extern const char kEnableLensInKeyboardDescription[];
 // the device camera from the ntp.
 extern const char kEnableLensInNTPName[];
 extern const char kEnableLensInNTPDescription[];
-
-// Title and description for the flag to enable using alternate Lens context
-// menu string.
-extern const char kEnableLensContextMenuAltTextName[];
-extern const char kEnableLensContextMenuAltTextDescription[];
 
 // Title and description for the flag to enable using Lens to search using
 // copied images in the omnibox.

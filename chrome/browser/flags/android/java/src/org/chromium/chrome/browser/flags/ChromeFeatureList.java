@@ -298,7 +298,6 @@ public abstract class ChromeFeatureList {
             "SafeBrowsingHashPrefixRealTimeLookups";
     public static final String HIDE_TAB_ON_TAB_SWITCHER = "HideTabOnTabSwitcher";
     public static final String HISTORY_JOURNEYS = "Journeys";
-    public static final String IDENTITY_STATUS_CONSISTENCY = "IdentityStatusConsistency";
     public static final String INCOGNITO_DOWNLOADS_WARNING = "IncognitoDownloadsWarning";
     public static final String INCOGNITO_NTP_REVAMP = "IncognitoNtpRevamp";
     public static final String INCOGNITO_REAUTHENTICATION_FOR_ANDROID =
@@ -623,7 +622,7 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sAccountReauthenticationRecentTimeWindow =
             new CachedFlag(ACCOUNT_REAUTHENTICATION_RECENT_TIME_WINDOW, true);
     public static final CachedFlag sStartSurfaceWithAccessibility =
-            new CachedFlag(START_SURFACE_WITH_ACCESSIBILITY, false);
+            new CachedFlag(START_SURFACE_WITH_ACCESSIBILITY, true);
     public static final CachedFlag sStoreHoursAndroid = new CachedFlag(STORE_HOURS, false);
     public static final CachedFlag sSurfacePolish = new CachedFlag(SURFACE_POLISH, false);
     public static final CachedFlag sTabDragDropAsWindowAndroid =

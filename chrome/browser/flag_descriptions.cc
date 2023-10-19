@@ -148,11 +148,6 @@ const char kClipboardWellFormedHtmlSanitizationWriteDescription[] =
     "New sanitization routine when writing HTML to clipboard with the async "
     "clipboard web API.";
 
-const char kChromeRootStoreEnabledName[] = "Chrome Root Store";
-const char kChromeRootStoreEnabledDescription[] =
-    "Enable use of Chrome Root Store over platform roots. "
-    "On some platforms this may also enable Chrome Cert Verifier.";
-
 const char kContentLanguagesInLanguagePickerName[] =
     "Content languages in language picker";
 const char kContentLanguagesInLanguagePickerDescription[] =
@@ -218,10 +213,6 @@ const char kAvifGainmapHdrImagesDescription[] =
     "If enabled, and the 'Gainmap HDR image rendering' flag is also enabled, "
     "Chrome uses the gainmap (if present) in AVIF images to render the HDR "
     "version on HDR displays and the SDR version on SDR displays.";
-
-const char kIdentityStatusConsistencyName[] = "Identity Status Consistency";
-const char kIdentityStatusConsistencyDescription[] =
-    "If enabled, always show identity status - even for signed-out users";
 
 const char kTangibleSyncName[] = "Tangible Sync";
 const char kTangibleSyncDescription[] =
@@ -803,11 +794,6 @@ const char kCreateShortcutIgnoresManifestDescription[] =
     "the current page, ignoring any web app manifest information that may be "
     "available.";
 
-const char kDisableSlowMSAAInGraphiteName[] = "Disable Slow MSAA in Graphite";
-const char kDisableSlowMSAAInGraphiteDescription[] =
-    "Configure Graphite to use single sampling if the device is detected as "
-    "having slow MSAA.";
-
 const char kDeviceForceScheduledRebootName[] =
     "Enable DeviceScheduledReboot policy for all sessions.";
 const char kDeviceForceScheduledRebootDescription[] =
@@ -1189,6 +1175,12 @@ const char kEnablePeripheralCustomizationName[] =
 const char kEnablePeripheralCustomizationDescription[] =
     "Enable peripheral customization to allow users to customize buttons on "
     "their peripherals.";
+
+const char kEnablePeripheralNotificationName[] =
+    "Enable peripheral notification";
+const char kEnablePeripheralNotificationDescription[] =
+    "Enable peripheral notification to notify users when a input device is "
+    "connected to the user's chromebook for the first time.";
 
 const char kExperimentalRgbKeyboardPatternsName[] =
     "Enable experimental RGB Keyboard patterns support";
@@ -1650,9 +1642,9 @@ const char kFedCmIdpSigninStatusDescription[] =
     "Enables the FedCM IDP sign-in status API that allows IDPs to notify the "
     "browser about the user's sign-in status.";
 
-const char kWebIdentityMDocsName[] = "MDocs";
-const char kWebIdentityMDocsDescription[] =
-    "Allows relying parties to request the presentation of ISO mdocs.";
+const char kWebIdentityDigitalCredentialsName[] = "DigitalCredentials";
+const char kWebIdentityDigitalCredentialsDescription[] =
+    "Enables the three-party verifier/holder/issuer identity model.";
 
 const char kFileHandlingIconsName[] = "File Handling Icons";
 const char kFileHandlingIconsDescription[] =
@@ -3318,11 +3310,6 @@ const char kTreatInsecureOriginAsSecureDescription[] =
     "specified e.g. \"http://example.com\". For the definition of secure "
     "contexts, see https://w3c.github.io/webappsec-secure-contexts/";
 
-const char kPrivateStateTokensName[] = "Enable Private State Tokens";
-const char kPrivateStateTokensDescription[] =
-    "Enables the prototype Private State Token API "
-    "(https://github.com/wicg/trust-token-api).";
-
 const char kTailoredSecurityRetryForSyncUsersName[] =
     "Enable Tailored Security retry for sync users";
 const char kTailoredSecurityRetryForSyncUsersDescription[] =
@@ -3692,13 +3679,6 @@ const char kUseIDNA2008NonTransitionalName[] =
 const char kUseIDNA2008NonTransitionalDescription[] =
     "Enables IDNA 2008 in Non-Transitional Mode in URL processing, allowing "
     "deviation characters in domain names.";
-
-const char kEnableVariationsGoogleGroupFilteringName[] =
-    "Enables filtering experiments by Google group membership";
-const char kEnableVariationsGoogleGroupFilteringDescription[] =
-    "Enables filtering of experiments by Google group membership. This feature "
-    "is experimental and is used only for dogfooding, and only for users who "
-    "are signed in and have Chrome Sync enabled.";
 
 const char kEnablePasswordSharingName[] = "Enables password sharing";
 const char kEnablePasswordSharingDescription[] =
@@ -4462,6 +4442,17 @@ const char kTranslateMessageUIName[] = "Translate Message UI";
 const char kTranslateMessageUIDescription[] =
     "Controls whether the Translate Message UI will be shown instead of the "
     "Translate InfoBar.";
+
+const char kUnifiedPasswordManagerLocalPasswordsAndroidNoMigrationName[] =
+    "Google Mobile Services for passwords for users with empty local password "
+    "storage";
+const char
+    kUnifiedPasswordManagerLocalPasswordsAndroidNoMigrationDescription[] =
+        "Uses Google Mobile Services to store and retrieve passwords."
+        "This only applies for users with no passwords saved locally and "
+        "default password settings."
+        "Warning: Highly experimental. May lead to loss of passwords and "
+        "impact performance.";
 
 const char kUpdateMenuBadgeName[] = "Force show update menu badge";
 const char kUpdateMenuBadgeDescription[] =
@@ -5355,6 +5346,10 @@ const char kApnRevampName[] = "APN Revamp";
 const char kApnRevampDescription[] =
     "Enables the ChromeOS APN Revamp, which updates cellular network APN "
     "system UI and related infrastructure.";
+
+const char kAppInstallServiceUriName[] = "Enable app install service URI";
+const char kAppInstallServiceUriDescription[] =
+    "Allows app installs to be invoked from a specific URI.";
 
 const char kAppLaunchAutomationName[] = "Enable app launch automation";
 const char kAppLaunchAutomationDescription[] =

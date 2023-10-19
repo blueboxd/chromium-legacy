@@ -904,19 +904,19 @@
   <message name="IDS_OS_SETTINGS_DEVICE_MENU_ITEM_DESCRIPTION_3_WORDS" desc="Description for the Device menu item in the left menu which lists relevant settings in this page. This includes 3 words from a predefined set of words.">
     <ph name="DESCRIPTION_ITEM_1">$1<ex>Keyboard</ex></ph>, <ph name="DESCRIPTION_ITEM_2">$2<ex>mouse</ex></ph>, <ph name="DESCRIPTION_ITEM_3">$3<ex>print</ex></ph>
   </message>
-  <message name="IDS_OS_SETTINGS_DEVICE_MENU_ITEM_DESCRIPTION_KEYBOARD" desc="Label for keyboard settings in the Device menu item description in the left menu.">
+  <message name="IDS_OS_SETTINGS_DEVICE_MENU_ITEM_DESCRIPTION_KEYBOARD" desc="Description for keyboard settings in the Device menu item description in the left menu.">
     keyboard
   </message>
-  <message name="IDS_OS_SETTINGS_DEVICE_MENU_ITEM_DESCRIPTION_MOUSE" desc="Label for mouse settings in the Device menu item description in the left menu.">
+  <message name="IDS_OS_SETTINGS_DEVICE_MENU_ITEM_DESCRIPTION_MOUSE" desc="Description for mouse settings in the Device menu item description in the left menu.">
     mouse
   </message>
-  <message name="IDS_OS_SETTINGS_DEVICE_MENU_ITEM_DESCRIPTION_TOUCHPAD" desc="Label for touchpad settings in the Device menu item description in the left menu.">
+  <message name="IDS_OS_SETTINGS_DEVICE_MENU_ITEM_DESCRIPTION_TOUCHPAD" desc="Description for touchpad settings in the Device menu item description in the left menu.">
     touchpad
   </message>
-  <message name="IDS_OS_SETTINGS_DEVICE_MENU_ITEM_DESCRIPTION_PRINT" desc="Label for print settings in the Device menu item description in the left menu.">
+  <message name="IDS_OS_SETTINGS_DEVICE_MENU_ITEM_DESCRIPTION_PRINT" desc="Description for print settings in the Device menu item description in the left menu.">
     print
   </message>
-  <message name="IDS_OS_SETTINGS_DEVICE_MENU_ITEM_DESCRIPTION_DISPLAY" desc="Label for display settings in the Device menu item description in the left menu.">
+  <message name="IDS_OS_SETTINGS_DEVICE_MENU_ITEM_DESCRIPTION_DISPLAY" desc="Description for display settings in the Device menu item description in the left menu.">
     display
   </message>
 
@@ -2816,6 +2816,9 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_CUSTOMIZE_BUTTONS_SUBPAGE_DESCRIPTION" desc="In customize buttons subpage, the description label above customize buttons to describe the actions user can perform.">
     Click additional buttons on your <ph name="DEVICE_NAME">$1<ex>MX Anywhere 2S</ex></ph> to add or locate buttons.
   </message>
+  <message name="IDS_SETTINGS_CUSTOMIZE_BUTTONS_RENAMING_DIALOG_INPUT_CHARACTER_COUNT" desc="Character count of the button renaming dialog input that shows up the current and maximum character count.">
+    <ph name="CURRENT_CHARACTER_COUNT">$1<ex>15</ex></ph>/<ph name="MAX_CHARACTER_COUNT">$2<ex>64</ex></ph>
+  </message>
 
   <!-- Bluetooth page (OS settings) -->
   <message name="IDS_SETTINGS_BLUETOOTH_CONNECTED" desc="In Bluetooth device list, this label is shown below a device which is already connected.">
@@ -3894,7 +3897,7 @@ Press an assigned switch or key to remove assignment.
     On
   </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUMMARY_STATE_TURNING_ON" desc="Sublabel for Hotspot summary row, when Hotspot is turning on.">
-    Turning On...
+    Turning on...
   </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUMMARY_STATE_OFF" desc="Sublabel for Hotspot summary row, when Hotspot is off.">
     Off
@@ -6024,6 +6027,15 @@ Press &amp; hold keyboard keys to see accent marks and special characters. This 
       Help improve ChromeOS features and performance. Data is aggregated and highly protected.
     </message>
   </if>
+  <message name="IDS_OS_SETTINGS_PRIVACY_TITLE" desc="Name of the privacy settings page.">
+    Security and Privacy
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_PRIVACY_TITLE" desc="Name of the privacy settings page.">
+    Privacy and security
+  </message>
+  <message name="IDS_OS_SETTINGS_PRIVACY_MENU_ITEM_DESCRIPTION" desc="Description for the Privacy menu item in the left menu.">
+    Lock screen, controls
+  </message>
   <message name="IDS_SETTINGS_ENABLE_LOGGING_TOGGLE_DESC" desc="The description of the checkbox to enable/disable crash and user metrics logging in ChromeOS for user of the device.">
     Automatically sends crash reports as well as diagnostic and usage data to Google
   </message>

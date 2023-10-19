@@ -200,6 +200,19 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHTrackingProtectionOffboardingFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger =
+        EventConfig("iph_tracking_protection_offboarding_triggered",
+                    Comparator(GREATER_THAN_OR_EQUAL, 0), 0, 0);
+    config->used = EventConfig("iph_tracking_protection_offboarding_used",
+                               Comparator(ANY, 0), 0, 0);
+    return config;
+  }
+
   if (kIPHTrackingProtectionOnboardingFeature.name == feature->name) {
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
@@ -1391,6 +1404,21 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
         EventConfig("restore_tabs_promo_used", Comparator(EQUAL, 0), 14, 14);
     config->event_configs.insert(EventConfig(
         "restore_tabs_on_first_run_show_promo", Comparator(EQUAL, 1), 14, 14));
+    return config;
+  }
+
+  if (kIPHRequestDesktopSiteWindowSettingFeature.name == feature->name) {
+    // A config that allows the RDS window setting IPH to be shown at most once
+    // in 3 years per device.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->used = EventConfig("request_desktop_site_window_setting_iph_shown",
+                               Comparator(EQUAL, 0), 1080, 1080);
+    config->trigger =
+        EventConfig("request_desktop_site_window_setting_iph_trigger",
+                    Comparator(EQUAL, 0), 1080, 1080);
     return config;
   }
 

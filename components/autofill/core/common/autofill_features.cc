@@ -90,12 +90,6 @@ BASE_FEATURE(kAutofillContentEditables,
              "AutofillContentEditables",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, the payment methods sync toggle is decoupled from autofill.
-// TODO(crbug.com/1435431): Cleanup when launched.
-BASE_FEATURE(kAutofillDecoupleAddressPaymentSyncSettings,
-             "AutofillDecoupleAddressPaymentSyncSettings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Crowdsourcing already prefers PHONE_HOME_CITY_AND_NUMBER over
 // PHONE_HOME_WHOLE_NUMBER. With this feature, local heuristics do the same.
 BASE_FEATURE(kAutofillDefaultToCityAndNumber,
@@ -242,6 +236,12 @@ BASE_FEATURE(kAutofillEnableSupportForLandmark,
 // TODO(crbug.com/1165780): Remove once shared labels are launched.
 BASE_FEATURE(kAutofillEnableSupportForParsingWithSharedLabels,
              "AutofillEnableSupportForParsingWithSharedLabels",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls if heuristic field parsing should be performed on email-only forms.
+// TODO(crbug.com/1493145): Remove when/if launched.
+BASE_FEATURE(kAutofillEnableEmailHeuristicOnlyAddressForms,
+             "AutofillEnableEmailHeuristicOnlyAddressForms",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls if Chrome support filling and importing apartment numbers.

@@ -213,7 +213,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="KeyboardAccessory.GenerationDialogChoice.{GenerationType}"
-    enum="GenerationDialogChoice" expires_after="M121">
+    enum="GenerationDialogChoice" expires_after="M124">
   <owner>ioanap@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3092,7 +3092,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ReauthToAccessPasswordInSettings"
-    enum="PasswordManager.ReauthResult" expires_after="M121">
+    enum="DeviceReauth.ReauthResult" expires_after="M121">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3561,6 +3561,19 @@ chromium-metrics-reviews@google.com.
     The final outcome that closes the Touch To Fill sheet (e.g. credentials
     filling, settings opened, failed reauth, sheet dismissal). Recorded once for
     each closing.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.TouchToFill.PasswordGeneration.UserChoice"
+    enum="GenerationDialogChoice" expires_after="2024-06-01">
+  <owner>atsvirchkova@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Records whether the user chose to use the proposed automatically generated
+    password in the bottom sheet. The metric is recorded only when the password
+    generation bottom sheet was automatically triggered (not triggered by using
+    manual password generation or from the keyboard accessory). The metric is
+    logged when the bottom sheet is dismissed.
   </summary>
 </histogram>
 

@@ -1252,8 +1252,8 @@ targets.generated_script(
 )
 
 targets.windowed_test_launcher(
-    name = "lacros_chrome_browsertests_run_in_series",
-    label = "//chrome/test:lacros_chrome_browsertests_run_in_series",
+    name = "lacros_chrome_browsertests",
+    label = "//chrome/test:lacros_chrome_browsertests",
     args = [
         "--test-launcher-jobs=1",
     ],
@@ -1800,11 +1800,6 @@ targets.console_test_launcher(
 targets.generated_script(
     name = "services_junit_tests",
     label = "//services:services_junit_tests",
-)
-
-targets.console_test_launcher(
-    name = "service_manager_unittests",
-    label = "//services/service_manager/tests:service_manager_unittests",
 )
 
 targets.windowed_test_launcher(

@@ -192,7 +192,6 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
             @NonNull Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier,
             @NonNull BackPressManager backPressManager,
             @NonNull Supplier<CustomTabActivityTabController> tabController) {
-        // clang-format off
         super(activity, null, shareDelegateSupplier, tabProvider,
                 profileSupplier, bookmarkModelSupplier, tabBookmarkerSupplier,
                 contextualSearchManagerSupplier, tabModelSelectorSupplier,
@@ -207,7 +206,6 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 isInOverviewModeSupplier, isWarmOnResumeSupplier, appMenuDelegate,
                 statusBarColorProvider, intentRequestTracker, new OneshotSupplierImpl<>(),
                 ephemeralTabCoordinatorSupplier, false, backPressManager, null);
-        // clang-format on
         mToolbarCoordinator = customTabToolbarCoordinator;
         mNavigationController = customTabNavigationController;
         mIntentDataProvider = intentDataProvider;
@@ -533,18 +531,26 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
      * Runs a set of deferred startup tasks.
      */
     void onDeferredStartup() {
-        new OneShotCallback<>(mProfileSupplier, mCallbackController.makeCancelable((profile) -> {
-            Profile regularProfile = profile.getOriginalProfile();
+        new OneShotCallback<>(
+                mProfileSupplier,
+                mCallbackController.makeCancelable(
+                        (profile) -> {
+                            Profile regularProfile = profile.getOriginalProfile();
 
-            boolean didShowPrompt = RequestDesktopUtils.maybeShowDefaultEnableGlobalSettingMessage(
-                    regularProfile, mMessageDispatcher, mActivity);
-            if (!didShowPrompt && mAppMenuCoordinator != null) {
-                mDesktopSiteSettingsIPHController = DesktopSiteSettingsIPHController.create(
-                        mActivity, mWindowAndroid, mActivityTabProvider, regularProfile,
-                        getToolbarManager().getMenuButtonView(),
-                        mAppMenuCoordinator.getAppMenuHandler());
-            }
-        }));
+                            boolean didShowPrompt =
+                                    RequestDesktopUtils.maybeShowDefaultEnableGlobalSettingMessage(
+                                            regularProfile, mMessageDispatcher, mActivity);
+                            if (!didShowPrompt && mAppMenuCoordinator != null) {
+                                mDesktopSiteSettingsIPHController =
+                                        DesktopSiteSettingsIPHController.create(
+                                                mActivity,
+                                                mWindowAndroid,
+                                                mActivityTabProvider,
+                                                regularProfile,
+                                                getToolbarManager().getMenuButtonView(),
+                                                mAppMenuCoordinator.getAppMenuHandler());
+                            }
+                        }));
     }
 
     CustomTabHeightStrategy getCustomTabSizeStrategyForTesting() {

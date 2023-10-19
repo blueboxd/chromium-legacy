@@ -60,6 +60,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
@@ -93,7 +94,6 @@ import java.util.List;
 
 /** Tests for {@link StripLayoutHelper}. */
 @RunWith(BaseRobolectricTestRunner.class)
-// clang-format off
 @EnableFeatures({ChromeFeatureList.TAB_STRIP_REDESIGN})
 @Config(
         manifest = Config.NONE,
@@ -101,7 +101,6 @@ import java.util.List;
         shadows = {ShadowAppCompatResources.class})
 @LooperMode(Mode.LEGACY)
 public class StripLayoutHelperTest {
-    // clang-format on
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Mock
@@ -121,6 +120,7 @@ public class StripLayoutHelperTest {
     @Mock
     private View mToolbarContainerView;
     @Mock private DragAndDropDelegate mDragDropDelegate;
+    @Mock private BrowserControlsStateProvider mBrowserControlsStateProvider;
     @Mock private ActivityInfo mActivityInfo;
     @Mock
     private PackageManager mPackageManager;
@@ -2297,6 +2297,7 @@ public class StripLayoutHelperTest {
                         mModelSelectorBtn,
                         mMultiInstanceManager,
                         mDragDropDelegate,
+                        mBrowserControlsStateProvider,
                         mToolbarContainerView);
         // Initialize StackScroller
         stripLayoutHelper.onContextChanged(mActivity);
@@ -2472,7 +2473,8 @@ public class StripLayoutHelperTest {
                         eq(mToolbarContainerView),
                         eq(mMultiInstanceManager),
                         eq(mDragDropDelegate),
-                        any(TabDropTarget.class));
+                        any(TabDropTarget.class),
+                        eq(mBrowserControlsStateProvider));
 
         // Windup
         clearTabDragSourceMock();

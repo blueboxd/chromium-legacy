@@ -1321,7 +1321,6 @@ component("base") {
       "android/jni_android.h",
       "android/jni_array.cc",
       "android/jni_array.h",
-      "android/jni_generator/jni_generator_helper.h",
       "android/jni_registrar.cc",
       "android/jni_registrar.h",
       "android/jni_string.cc",
@@ -1694,6 +1693,8 @@ component("base") {
       # Add stuff that doesn't work in NaCl.
       sources += [
         # PartitionAlloc uses SpinLock, which doesn't work in NaCl (see below).
+        "allocator/miracle_parameter.cc",
+        "allocator/miracle_parameter.h",
         "allocator/partition_alloc_features.cc",
         "allocator/partition_alloc_features.h",
         "allocator/partition_alloc_support.cc",
@@ -4249,18 +4250,8 @@ if (is_android || is_robolectric) {
 }  # is_android || is_robolectric
 
 if (is_android) {
-  java_library("jni_java") {
-    supports_android = true
-    sources = [
-      "android/java/src/org/chromium/base/annotations/AccessedByNative.java",
-      "android/java/src/org/chromium/base/annotations/CalledByNative.java",
-      "android/java/src/org/chromium/base/annotations/CalledByNativeForTesting.java",
-      "android/java/src/org/chromium/base/annotations/CalledByNativeUnchecked.java",
-      "android/java/src/org/chromium/base/annotations/JNINamespace.java",
-      "android/java/src/org/chromium/base/annotations/NativeClassQualifiedName.java",
-      "android/java/src/org/chromium/base/annotations/NativeMethods.java",
-    ]
-
+  # TODO(smaier): delete this once deps have been correctly added everywhere.
+  java_group("jni_java") {
     public_deps = [
       # Public because @CheckDiscard is added to generated *Jni.java files.
       "//build/android:build_java",
@@ -4334,8 +4325,7 @@ if (is_android) {
       "//third_party/android_deps:guava_android_java",
       "//third_party/androidx:androidx_annotation_annotation_experimental_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
-      "//third_party/androidx:androidx_collection_collection_java",
-      "//third_party/androidx:androidx_core_core_java",
+      "//third_party/jni_zero:jni_zero_java",
     ]
 
     sources = [
@@ -4365,6 +4355,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/Flag.java",
       "android/java/src/org/chromium/base/ImportantFileWriterAndroid.java",
       "android/java/src/org/chromium/base/IntStringCallback.java",
+      "android/java/src/org/chromium/base/IntentUtils.java",
       "android/java/src/org/chromium/base/JNIUtils.java",
       "android/java/src/org/chromium/base/JavaExceptionReporter.java",
       "android/java/src/org/chromium/base/JavaHandlerThread.java",
@@ -4448,6 +4439,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/metrics/UmaRecorderHolder.java",
       "android/java/src/org/chromium/base/supplier/DestroyableObservableSupplier.java",
       "android/java/src/org/chromium/base/supplier/LazyOneshotSupplier.java",
+      "android/java/src/org/chromium/base/supplier/LazyOneshotSupplierImpl.java",
       "android/java/src/org/chromium/base/supplier/ObservableSupplier.java",
       "android/java/src/org/chromium/base/supplier/ObservableSupplierImpl.java",
       "android/java/src/org/chromium/base/supplier/OneShotCallback.java",
@@ -4480,10 +4472,6 @@ if (is_android) {
       ]
     } else {
       sources += [ "test/android/javatests/src/stub/org/chromium/base/test/ClangProfiler.java" ]
-    }
-
-    if (!is_cronet_build) {
-      sources += [ "android/java/src/org/chromium/base/IntentUtils.java" ]
     }
 
     resources_package = "org.chromium.base"
@@ -4815,6 +4803,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/shared_preferences/KnownPreferenceKeyRegistriesTest.java",
       "android/junit/src/org/chromium/base/shared_preferences/SharedPreferencesManagerTest.java",
       "android/junit/src/org/chromium/base/shared_preferences/StrictPreferenceKeyCheckerTest.java",
+      "android/junit/src/org/chromium/base/supplier/LazyOneshotSupplierImplTest.java",
       "android/junit/src/org/chromium/base/supplier/ObservableSupplierImplTest.java",
       "android/junit/src/org/chromium/base/supplier/OneShotCallbackTest.java",
       "android/junit/src/org/chromium/base/supplier/OneshotSupplierImplTest.java",

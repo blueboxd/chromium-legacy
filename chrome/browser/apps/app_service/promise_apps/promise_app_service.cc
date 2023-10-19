@@ -12,7 +12,6 @@
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/app_service/package_id.h"
 #include "chrome/browser/apps/app_service/package_id_util.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_almanac_connector.h"
@@ -25,6 +24,7 @@
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "components/services/app_service/public/cpp/package_id.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "google_apis/google_api_keys.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -180,6 +180,7 @@ void PromiseAppService::OnAppUpdate(const apps::AppUpdate& update) {
   // Delete the promise app.
   PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id.value());
   promise_app->status = PromiseStatus::kSuccess;
+  promise_app->installed_app_id = update.AppId();
   OnPromiseApp(std::move(promise_app));
 }
 
@@ -214,12 +215,15 @@ void PromiseAppService::OnGetPromiseAppInfoCompleted(
   // promise app item. When an icon is requested, the PromiseAppIconCache will
   // fallback to returning a placeholder icon.
   if (!promise_app_info.has_value() ||
+      !promise_app_info->GetName().has_value() ||
       promise_app_info->GetIcons().size() == 0) {
-    PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);
-    promise_app->should_show = true;
-    promise_app_registry_cache_->OnPromiseApp(std::move(promise_app));
+    SetPromiseAppReadyToShow(package_id);
     return;
   }
+
+  PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);
+  promise_app->name = promise_app_info->GetName().value();
+  promise_app_registry_cache_->OnPromiseApp(std::move(promise_app));
 
   pending_download_count_[package_id] = promise_app_info->GetIcons().size();
 
@@ -271,9 +275,7 @@ void PromiseAppService::OnIconDownloaded(
   pending_download_count_.erase(package_id);
 
   // Update the promise app so it can show to the user.
-  PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);
-  promise_app->should_show = true;
-  promise_app_registry_cache_->OnPromiseApp(std::move(promise_app));
+  SetPromiseAppReadyToShow(package_id);
 }
 
 bool PromiseAppService::IsRegisteredInAppRegistryCache(
@@ -302,6 +304,12 @@ bool PromiseAppService::IsRegisteredInAppRegistryCache(
         return;
       });
   return is_registered;
+}
+
+void PromiseAppService::SetPromiseAppReadyToShow(const PackageId& package_id) {
+  PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);
+  promise_app->should_show = true;
+  promise_app_registry_cache_->OnPromiseApp(std::move(promise_app));
 }
 
 }  // namespace apps

@@ -582,7 +582,7 @@ BASE_FEATURE(kUseWritePixelsYUV,
 // hardware video decoders.
 BASE_FEATURE(kUseMultiPlaneFormatForHardwareVideo,
              "UseMultiPlaneFormatForHardwareVideo",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_FUCHSIA)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -759,11 +759,6 @@ BASE_FEATURE(kSuspendMutedAudio,
 // Enables using the media history store to store media engagement metrics.
 BASE_FEATURE(kUseMediaHistoryStore,
              "UseMediaHistoryStore",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Use R16 texture for 9-16 bit channel instead of half-float conversion by CPU.
-BASE_FEATURE(kUseR16Texture,
-             "use-r16-texture",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the Unified Autoplay policy by overriding the platform's default
@@ -1652,7 +1647,7 @@ BASE_FEATURE(kTheoraVideoCodec,
 // allowed through the web in Chrome, but may be enabled by the local file app.
 BASE_FEATURE(kCrOSLegacyMediaFormats,
              "CrOSLegacyMediaFormats",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 #endif
 

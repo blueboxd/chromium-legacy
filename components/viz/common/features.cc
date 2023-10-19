@@ -301,6 +301,14 @@ BASE_FEATURE(kEnableADPFRendererMain,
              "EnableADPFRendererMain",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, Chrome verifies that Renderer threads do not belong to the
+// Browser process asynchronously via a mojo call to the Browser before
+// including them into the ADPF(Android Dynamic Performance Framework) hint
+// session.
+BASE_FEATURE(kEnableADPFAsyncThreadsVerification,
+             "EnableADPFAsyncThreadsVerification",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, surface activation and draw do not block on dependencies.
 BASE_FEATURE(kDrawImmediatelyWhenInteractive,
              "DrawImmediatelyWhenInteractive",
@@ -316,6 +324,13 @@ BASE_FEATURE(kDrawImmediatelyWhenInteractive,
 // cases in production.
 BASE_FEATURE(kInvalidateLocalSurfaceIdPreCommit,
              "InvalidateLocalSurfaceIdPreCommit",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// On mac, when the RenderWidgetHostViewMac is hidden, also hide the
+// DelegatedFrameHost. Among other things, it unlocks the compositor frames,
+// which can saves hundreds of MiB of memory with bfcache entries.
+BASE_FEATURE(kHideDelegatedFrameHostMac,
+             "HideDelegatedFrameHostMac",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsDelegatedCompositingEnabled() {

@@ -74,7 +74,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/companion/visual_search/features.h"
-#include "chromeos/ui/wm/features.h"
 #include "components/assist_ranker/predictor_config_definitions.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -166,7 +165,6 @@
 #include "components/translate/core/browser/translate_ranker_impl.h"
 #include "components/translate/core/common/translate_util.h"
 #include "components/ui_devtools/switches.h"
-#include "components/variations/service/google_groups_updater_service.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
 #include "components/viz/common/features.h"
@@ -3280,23 +3278,6 @@ const FeatureEntry::FeatureVariation
 };
 
 #if !BUILDFLAG(IS_ANDROID)
-const FeatureEntry::FeatureParam kHeuristicMemorySaverAggressive[] = {
-    {"threshold_percent", "30"},
-    {"minimum_time_in_background", "30m"}};
-const FeatureEntry::FeatureParam kHeuristicMemorySaverBalanced[] = {
-    {"threshold_percent", "15"},
-    {"minimum_time_in_background", "60m"}};
-const FeatureEntry::FeatureParam kHeuristicMemorySaverConservative[] = {
-    {"threshold_percent", "5"},
-    {"minimum_time_in_background", "120m"}};
-const FeatureEntry::FeatureVariation kHeuristicMemorySaverVariations[] = {
-    {"Aggressive", kHeuristicMemorySaverAggressive,
-     std::size(kHeuristicMemorySaverAggressive), nullptr},
-    {"Balanced", kHeuristicMemorySaverBalanced,
-     std::size(kHeuristicMemorySaverBalanced), nullptr},
-    {"Conservative", kHeuristicMemorySaverConservative,
-     std::size(kHeuristicMemorySaverConservative), nullptr},
-};
 
 const FeatureEntry::FeatureParam
     kHighEfficiencyMultistateModeShowRecommendedBadge[] = {
@@ -7521,11 +7502,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(switches::kTangibleSync,
                                     kTangibleSyncVariations,
                                     "TangibleSyncVariations")},
-
-    {"identity-status-consistency",
-     flag_descriptions::kIdentityStatusConsistencyName,
-     flag_descriptions::kIdentityStatusConsistencyDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(switches::kIdentityStatusConsistency)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
     {"gainmap-hdr-images", flag_descriptions::kGainmapHdrImagesName,
@@ -7707,6 +7683,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePeripheralCustomizationName,
      flag_descriptions::kEnablePeripheralCustomizationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kPeripheralCustomization)},
+
+    {"enable-peripheral-notification",
+     flag_descriptions::kEnablePeripheralNotificationName,
+     flag_descriptions::kEnablePeripheralNotificationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kPeripheralNotification)},
 
     {"enable-accessibility-accelerators-notifications-timeout",
      flag_descriptions::kAccessibilityAcceleratorNotificationsTimeoutName,
@@ -8256,10 +8237,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableMediaFoundationVideoCaptureDescription, kOsWin,
      FEATURE_VALUE_TYPE(media::kMediaFoundationVideoCapture)},
 #endif  // BUILDFLAG(IS_WIN)
-
-    {"private-state-tokens", flag_descriptions::kPrivateStateTokensName,
-     flag_descriptions::kPrivateStateTokensDescription, kOsAll,
-     FEATURE_VALUE_TYPE(network::features::kPrivateStateTokens)},
 
 #if !BUILDFLAG(IS_ANDROID)
     {"copy-link-to-text", flag_descriptions::kCopyLinkToTextName,
@@ -8961,9 +8938,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFedCmWithoutWellKnownEnforcementDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kFedCmWithoutWellKnownEnforcement)},
 
-    {"web-identity-mdocs", flag_descriptions::kWebIdentityMDocsName,
-     flag_descriptions::kWebIdentityMDocsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kWebIdentityMDocs)},
+    {"web-identity-digital-credentials",
+     flag_descriptions::kWebIdentityDigitalCredentialsName,
+     flag_descriptions::kWebIdentityDigitalCredentialsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kWebIdentityDigitalCredentials)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"bluetooth-sessionized-metrics",
@@ -9115,11 +9093,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUsePassthroughCommandDecoderDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kDefaultPassthroughCommandDecoder)},
 #endif  // BUILDFLAG(ENABLE_VALIDATING_COMMAND_DECODER)
-
-    {"disable-slow-msaa-in-graphite",
-     flag_descriptions::kDisableSlowMSAAInGraphiteName,
-     flag_descriptions::kDisableSlowMSAAInGraphiteDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kDisableSlowMSAAInGraphite)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"focus-follows-cursor", flag_descriptions::kFocusFollowsCursorName,
@@ -9945,14 +9918,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-    {"heuristic-memory-saver-mode",
-     flag_descriptions::kHeuristicMemorySaverName,
-     flag_descriptions::kHeuristicMemorySaverDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         performance_manager::features::kHeuristicMemorySaver,
-         kHeuristicMemorySaverVariations,
-         "HeuristicMemorySaver")},
-
     {"memory-saver-multi-state-mode",
      flag_descriptions::kHighEfficiencyMultistateModeAvailableName,
      flag_descriptions::kHighEfficiencyMultistateModeAvailableDescription,
@@ -10081,14 +10046,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnablePasswordsAccountStorage)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
-    {"chrome-root-store-enabled",
-     flag_descriptions::kChromeRootStoreEnabledName,
-     flag_descriptions::kChromeRootStoreEnabledDescription,
-     kOsAndroid | kOsLinux | kOsCrOS | kOsLacros,
-     FEATURE_VALUE_TYPE(net::features::kChromeRootStoreUsed)},
-#endif  // BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
 
 #if BUILDFLAG(IS_ANDROID)
     {"policy-logs-page-android", flag_descriptions::kPolicyLogsPageAndroidName,
@@ -10360,11 +10317,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePreferencesAccountStorageName,
      flag_descriptions::kEnablePreferencesAccountStorageDescription, kOsAll,
      FEATURE_VALUE_TYPE(syncer::kEnablePreferencesAccountStorage)},
-
-    {"enable-variations-google-group-filtering",
-     flag_descriptions::kEnableVariationsGoogleGroupFilteringName,
-     flag_descriptions::kEnableVariationsGoogleGroupFilteringDescription,
-     kOsAll, FEATURE_VALUE_TYPE(kVariationsGoogleGroupFiltering)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"app-launch-automation", flag_descriptions::kAppLaunchAutomationName,
@@ -11018,6 +10970,24 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kUseServerPredictionsOnSaveParsing)},
+
+#if BUILDFLAG(IS_ANDROID)
+    {"upm-local-no-migration",
+     flag_descriptions::
+         kUnifiedPasswordManagerLocalPasswordsAndroidNoMigrationName,
+     flag_descriptions::
+         kUnifiedPasswordManagerLocalPasswordsAndroidNoMigrationDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::
+             kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration)},
+#endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"app-install-service-uri", flag_descriptions::kAppInstallServiceUriName,
+     flag_descriptions::kAppInstallServiceUriDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kAppInstallServiceUri)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

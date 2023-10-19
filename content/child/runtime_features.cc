@@ -311,8 +311,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 #if BUILDFLAG(IS_ANDROID)
     {wf::EnableWebNFC, raw_ref(features::kWebNfc), kSetOnlyIfOverridden},
 #endif
-    {wf::EnableWebIdentityMDocs, raw_ref(features::kWebIdentityMDocs),
-     kDefault},
+    {wf::EnableWebIdentityDigitalCredentials,
+     raw_ref(features::kWebIdentityDigitalCredentials), kDefault},
     {wf::EnableWebOTP, raw_ref(features::kWebOTP), kSetOnlyIfOverridden},
     {wf::EnableWebOTPAssertionFeaturePolicy,
      raw_ref(features::kWebOTPAssertionFeaturePolicy), kSetOnlyIfOverridden},
@@ -560,6 +560,8 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
   // They're moved here to distinguish them from actual base checks
   WebRuntimeFeatures::EnableOverlayScrollbars(ui::IsOverlayScrollbarEnabled());
   WebRuntimeFeatures::EnableFluentScrollbars(ui::IsFluentScrollbarEnabled());
+  WebRuntimeFeatures::EnableFluentOverlayScrollbars(
+      ui::IsFluentOverlayScrollbarEnabled());
 
   // TODO(rodneyding): This is a rare case for a stable feature
   // Need to investigate more to determine whether to refactor it.

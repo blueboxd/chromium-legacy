@@ -602,8 +602,11 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kPcieBillboardNotification);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kPerDeskShelf);
 COMPONENT_EXPORT(ASH_CONSTANTS)
+COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kPeripheralNotification);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kPerUserMetrics);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kPhoneHub);
+COMPONENT_EXPORT(ASH_CONSTANTS)
+BASE_DECLARE_FEATURE(kPhoneHubAttestationRetries);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kPhoneHubCameraRoll);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::FeatureParam<base::TimeDelta>
@@ -1092,6 +1095,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPasspointSettingsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPcieBillboardNotificationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPciguardUiEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPerDeskShelfEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool isPeripheralNotificationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubCameraRollEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsPhoneHubFeatureSetupErrorHandlingEnabled();
@@ -1102,12 +1106,14 @@ bool IsPhoneHubOnboardingNotifierRevampEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsPhoneHubPingOnBubbleOpenEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubAttestationRetriesEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubCallNotificationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPinAutosubmitBackfillFeatureEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPinAutosubmitFeatureEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPipDoubleTapToResizeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPipPinchToResizeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPipTiltEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPipTuckEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool ArePostLoginGlanceablesEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPrivacyIndicatorsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLocalPrinterObservingEnabled();

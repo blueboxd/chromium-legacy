@@ -37,6 +37,9 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/back_forward_cache_test_util.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/preloading/prefetch/prefetch_features.h"
+#include "content/browser/preloading/prefetch/prefetch_service.h"
+#include "content/browser/preloading/prefetch/prefetch_test_utils.h"
 #include "content/browser/preloading/preloading.h"
 #include "content/browser/preloading/preloading_attempt_impl.h"
 #include "content/browser/preloading/preloading_data_impl.h"
@@ -397,6 +400,10 @@ class PrerenderBrowserTest : public ContentBrowserTest,
     prerender_helper_->AddPrerenderAsync(prerendering_url);
   }
 
+  void AddPrefetchAsync(const GURL& prefetch_url) {
+    prerender_helper_->AddPrefetchAsync(prefetch_url);
+  }
+
   void AddMultiplePrerenderAsync(const std::vector<GURL>& prerendering_urls) {
     prerender_helper_->AddPrerendersAsync(prerendering_urls, absl::nullopt,
                                           std::string());
@@ -722,6 +729,22 @@ class PrerenderBrowserTest : public ContentBrowserTest,
 
   const base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
+  std::string GetBodyTextContent() {
+    base::RunLoop loop;
+    base::Value result;
+    web_contents()->GetPrimaryMainFrame()->ExecuteJavaScriptForTests(
+        base::UTF8ToUTF16(std::string("document.body.textContent.trim()")),
+        base::BindOnce(
+            [](base::RunLoop* loop, base::Value* result, base::Value value) {
+              *result = std::move(value);
+              loop->QuitClosure().Run();
+            },
+            &loop, &result));
+    loop.Run();
+    CHECK(result.is_string());
+    return result.GetString();
+  }
+
   // Stores all the navigation_ids for all navigations. This is used to check
   // that we record UKMs for correct SourceIds.
   std::vector<int64_t> navigation_ids_;
@@ -840,6 +863,140 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SpeculationRulesPrerender) {
   histogram_tester().ExpectTotalCount(
       "Prerender.Experimental.ActivationIPCDelay", 1u);
 }
+
+enum class PrerenderingResult { kSuccess, kFailed };
+enum class BodySize { kSmall, kLarge };
+
+class PrerenderAndPrefetchBrowserTest
+    : public PrerenderBrowserTest,
+      public testing::WithParamInterface<
+          std::tuple<PrerenderingResult, BodySize, PrefetchReusableForTests>> {
+ private:
+  void SetUp() override {
+    switch (std::get<2>(GetParam())) {
+      case PrefetchReusableForTests::kDisabled:
+        sub_feature_list_.InitAndDisableFeature(features::kPrefetchReusable);
+        break;
+      case PrefetchReusableForTests::kEnabled:
+        // Set the limit to the size of `/find_in_long_page.html` - 1, to check
+        // that exceeding the limit by 1 byte disallows reuse.
+        sub_feature_list_.InitWithFeaturesAndParameters(
+            {{features::kPrefetchReusable,
+              {{features::kPrefetchReusableBodySizeLimit.name, "112262"}}}},
+            {});
+        break;
+    }
+    PrerenderBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    PrerenderBrowserTest::TearDown();
+    sub_feature_list_.Reset();
+  }
+
+  base::test::ScopedFeatureList sub_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(PrerenderAndPrefetchBrowserTest,
+                       SpeculationRulesPrefetchThenPrerender) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl =
+      std::get<1>(GetParam()) == BodySize::kSmall
+          ? GetUrl("/simple_page.html?prerender")
+          : GetUrl("/find_in_long_page.html?prerender");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  ASSERT_EQ(web_contents()->GetLastCommittedURL(), kInitialUrl);
+
+  // Start prefetching `kPrerenderingUrl` and wait for its completion.
+  PrefetchService* prefetch_service = PrefetchService::GetFromFrameTreeNodeId(
+      current_frame_host()->GetFrameTreeNodeId());
+  ASSERT_TRUE(prefetch_service);
+  base::RunLoop run_loop;
+  prefetch_service->SetOnPrefetchResponseCompletedForTesting(
+      base::BindRepeating(
+          [](base::RunLoop* run_loop, const GURL& url,
+             base::WeakPtr<PrefetchContainer> prefetch_container) {
+            CHECK(prefetch_container);
+            CHECK_EQ(prefetch_container->GetURL(), url);
+            run_loop->Quit();
+          },
+          &run_loop, kPrerenderingUrl));
+  ASSERT_EQ(GetRequestCount(kPrerenderingUrl), 0);
+  AddPrefetchAsync(kPrerenderingUrl);
+  run_loop.Run();
+  ASSERT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+
+  // Start prerendering `kPrerenderingUrl`.
+  int host_id = AddPrerender(kPrerenderingUrl);
+  ASSERT_NE(host_id, RenderFrameHost::kNoFrameTreeNodeId);
+  WaitForPrerenderLoadCompletion(host_id);
+  ASSERT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+
+  switch (std::get<0>(GetParam())) {
+    case PrerenderingResult::kSuccess:
+      EXPECT_TRUE(HasHostForUrl(kPrerenderingUrl));
+      break;
+    case PrerenderingResult::kFailed:
+      // Cancel prerendered page.
+      ASSERT_TRUE(web_contents_impl()->CancelPrerendering(
+          FrameTreeNode::GloballyFindByID(host_id),
+          PrerenderFinalStatus::kCancelAllHostsForTesting));
+      EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
+      break;
+  }
+
+  // Start main navigation.
+  NavigationHandleObserver activation_observer(web_contents(),
+                                               kPrerenderingUrl);
+  NavigatePrimaryPage(kPrerenderingUrl);
+
+  switch (std::get<0>(GetParam())) {
+    case PrerenderingResult::kSuccess:
+      // Main navigation activates the prerendered page even for the large page.
+      ExpectFinalStatusForSpeculationRule(PrerenderFinalStatus::kActivated);
+      EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+      break;
+    case PrerenderingResult::kFailed:
+      // Main navigation shouldn't activate prerendered page (because it's
+      // canceled).
+      ExpectFinalStatusForSpeculationRule(
+          PrerenderFinalStatus::kCancelAllHostsForTesting);
+
+      if (std::get<1>(GetParam()) == BodySize::kSmall &&
+          std::get<2>(GetParam()) == PrefetchReusableForTests::kEnabled) {
+        // The prefetched result should be still used for navigation for small
+        // body, because it fits within PrefetchDataPipeTee buffer limit.
+        EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+      } else {
+        // The prefetched result can't be used for navigation for large body
+        // due to PrefetchDataPipeTee buffer limit.
+        EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 2);
+      }
+      break;
+  }
+
+  switch (std::get<1>(GetParam())) {
+    case BodySize::kSmall:
+      EXPECT_EQ(GetBodyTextContent(), "Basic html test.");
+      break;
+
+    case BodySize::kLarge:
+      //  `document.body.textContent.trim().length` for
+      //  `/find_in_long_page.html`
+      EXPECT_EQ(GetBodyTextContent().size(), 102076u);
+      break;
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PrerenderAndPrefetchBrowserTest,
+    testing::Combine(testing::Values(PrerenderingResult::kSuccess,
+                                     PrerenderingResult::kFailed),
+                     testing::Values(BodySize::kSmall, BodySize::kLarge),
+                     testing::ValuesIn(PrefetchReusableValuesForTests())));
 
 // Tests that the speculationrules-triggered prerender would be destroyed after
 // its initiator navigates away.
@@ -2335,6 +2492,78 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SessionHistoryAfterActivation) {
     EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
               capturer.navigation_type());
     EXPECT_FALSE(capturer.is_same_document());
+  }
+}
+
+class PrerenderOopsifBrowserTest : public PrerenderBrowserTest {
+ public:
+  PrerenderOopsifBrowserTest() {
+    feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kIsolateSandboxedIframes,
+          {{"grouping", "per-origin"}}}},
+        {/* disabled_features */});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Test for crbug.com/1470312.
+// Prior to the CL that introduced this test, if IsolatedSandboxedIframes are
+// enabled, and an isolated frame sends the parent a postMessage, then the
+// proxies were attached to the active page and not the prerendered  mainframe.
+// These were proxies that were created on demand when processing the
+// postMessage. (to ensure the recipient can reply to the sender frame, or to a
+// frame that the sender could reach). This led to a CHECK failure in
+// ~BrowsingContextInstance(). This test verifies that problem has been
+// resolved.
+IN_PROC_BROWSER_TEST_F(PrerenderOopsifBrowserTest,
+                       OopsifSrcdocSandboxIframeWithPostmessage) {
+  // Navigate to an initial page.
+  const GURL kInitialUrl =
+      GetUrl("/prerender/cross_origin_prerender.html?initial");
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  EXPECT_TRUE(AddTestUtilJS(current_frame_host()));
+
+  // Start a prerender.
+  const GURL kPrerenderingUrl =
+      GetUrl("/prerender/cross_origin_srcdoc_sandboxed_postmessage.html");
+  int host_id = AddPrerender(kPrerenderingUrl);
+  RenderFrameHost* prerender_frame_host = GetPrerenderedMainFrameHost(host_id);
+  EXPECT_TRUE(AddTestUtilJS(prerender_frame_host));
+  // Create a srcdoc iframe in the prerendered page.
+  EXPECT_TRUE(ExecJs(prerender_frame_host, "createSrcdoc();"));
+  base::RunLoop().RunUntilIdle();
+
+  // Load another same-origin iframe to ensure loading the srcdoc iframe
+  // starts and then it's deferred until activation.
+  const GURL kSameOriginSubframeUrl =
+      GetUrl("/prerender/cross_origin_prerender.html");
+  ASSERT_EQ("LOADED",
+            EvalJs(prerender_frame_host,
+                   JsReplace("add_iframe($1)", kSameOriginSubframeUrl)));
+
+  // Activate.
+  NavigatePrimaryPage(kPrerenderingUrl);
+  ASSERT_EQ(web_contents()->GetLastCommittedURL(), kPrerenderingUrl);
+
+  // Verify postMessage from srcdoc to mainframe completed.
+  RenderFrameHostImpl* main_frame =
+      static_cast<RenderFrameHostImpl*>(web_contents()->GetPrimaryMainFrame());
+  EXPECT_TRUE(ExecJs(
+      main_frame,
+      "Promise.all([child_response_promise, prerender_handler_promise]);"));
+
+  // OOPSIFs only process-isolate if the parent gets site isolation, which in
+  // this case doesn't happen on Android.
+  if (AreAllSitesIsolatedForTesting()) {
+    RenderFrameHostImpl* sandboxed_render_frame_host =
+        main_frame->child_at(0)->current_frame_host();
+    EXPECT_TRUE(sandboxed_render_frame_host->GetSiteInstance()
+                    ->GetSiteInfo()
+                    .is_sandboxed());
+    ASSERT_NE(main_frame->GetProcess(),
+              sandboxed_render_frame_host->GetProcess());
   }
 }
 
@@ -11506,13 +11735,9 @@ INSTANTIATE_TEST_SUITE_P(All,
 // prediction and the navigation. For this test, we actually simulate the back
 // button press events.
 // TODO(https://crbug.com/1059468): Flaky on ChromeOS.
-#if BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_BackButtonNavigation DISABLED_BackButtonNavigation
-#else
-#define MAYBE_BackButtonNavigation BackButtonNavigation
-#endif
+// TODO(https://crbug.com/1493726): Also flaky on other platforms after r1208618
 IN_PROC_BROWSER_TEST_P(PrerenderSessionHistoryBrowserTest,
-                       MAYBE_BackButtonNavigation) {
+                       DISABLED_BackButtonNavigation) {
   const GURL url1 = GetUrl("/title1.html");
   const GURL url2 = GetCrossSiteUrl("/title2.html");
   PerformInitialNavigations(web_contents_impl(), url1, url2);

@@ -318,6 +318,7 @@ bool SharedContextState::InitializeGanesh(
   GrContextOptions options = GetDefaultGrContextOptions();
 
   options.fAllowMSAAOnNewIntel = !gles2::MSAAIsSlow(workarounds);
+  options.fReduceOpsTaskSplitting = GrContextOptions::Enable::kNo;
   options.fPersistentCache = cache;
   options.fShaderErrorHandler = this;
   if (gpu_preferences.force_max_texture_size)

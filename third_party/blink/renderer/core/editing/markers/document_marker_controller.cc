@@ -509,7 +509,7 @@ DocumentMarkerList* DocumentMarkerController::FindMarkers(
   auto it = marker_map->find(key);
   if (it != marker_map->end()) {
     DCHECK(it->value);
-    return it->value;
+    return it->value.Get();
   }
   return nullptr;
 }
@@ -648,7 +648,7 @@ DocumentMarkerGroup* DocumentMarkerController::GetMarkerGroupForMarker(
   if (marker) {
     auto it = marker_groups_.find(marker);
     if (it != marker_groups_.end()) {
-      return it->value;
+      return it->value.Get();
     }
   }
   return nullptr;
@@ -817,7 +817,7 @@ DocumentMarkerVector DocumentMarkerController::Markers() const {
 }
 
 void DocumentMarkerController::ApplyToMarkersOfType(
-    base::FunctionRef<void(WeakMember<Text>, DocumentMarker*)> func,
+    base::FunctionRef<void(const Text&, DocumentMarker*)> func,
     DocumentMarker::MarkerType type) {
   if (!PossiblyHasMarkers(type)) {
     return;
@@ -828,7 +828,7 @@ void DocumentMarkerController::ApplyToMarkersOfType(
     DocumentMarkerList* list = node_markers.value;
     const HeapVector<Member<DocumentMarker>>& markers = list->GetMarkers();
     for (auto& marker : markers) {
-      func(node_markers.key, marker);
+      func(*node_markers.key, marker);
     }
   }
 }

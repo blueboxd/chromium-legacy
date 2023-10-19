@@ -80,6 +80,10 @@ const char kChromeUIDevUiLoaderURL[] = "chrome://dev-ui-loader/";
 const char kChromeUIDiceWebSigninInterceptHost[] = "signin-dice-web-intercept";
 const char kChromeUIDiceWebSigninInterceptURL[] =
     "chrome://signin-dice-web-intercept/";
+const char kChromeUIDiceWebSigninInterceptChromeSigninURL[] =
+    "chrome://signin-dice-web-intercept/chrome-signin";
+const char kChromeUIDiceWebSigninInterceptChromeSigninSubPage[] =
+    "chrome-signin";
 const char kChromeUIDownloadInternalsHost[] = "download-internals";
 const char kChromeUIDownloadsHost[] = "downloads";
 const char kChromeUIDownloadsURL[] = "chrome://downloads/";
@@ -440,6 +444,7 @@ bool IsSystemWebUIHost(base::StringPiece host) {
     kChromeUIAssistantOptInHost,
     kChromeUIBluetoothPairingHost,
     kChromeUIBorealisCreditsHost,
+    kChromeUIBorealisInstallerHost,
     kChromeUICertificateManagerHost,
     kChromeUICloudUploadHost,
     kChromeUICrostiniCreditsHost,

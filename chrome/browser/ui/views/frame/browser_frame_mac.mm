@@ -87,7 +87,7 @@ API_AVAILABLE(macos(10.12.2))
 
 @implementation BrowserWindowTouchBarViewsDelegate {
   raw_ptr<Browser> _browser;
-  NSWindow* __weak _window;
+  NSWindow* __unsafe_unretained _window;
   BrowserWindowTouchBarController* __strong _touchBarController;
 }
 

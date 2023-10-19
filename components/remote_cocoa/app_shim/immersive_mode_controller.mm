@@ -74,7 +74,7 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
 // NSWindow to the overlay view widget's NSWindow. The delegate will be used to
 // help with input routing.
 @interface ImmersiveModeMapper : NSObject <ImmersiveModeDelegate>
-@property(weak) NSWindow* originalHostingWindow;
+@property(assign) NSWindow* originalHostingWindow;
 @end
 
 @implementation ImmersiveModeMapper
@@ -235,26 +235,30 @@ ImmersiveModeController::~ImmersiveModeController() {
   }
 }
 
-void ImmersiveModeController::Enable() {
+void ImmersiveModeControllerCocoa::Init() {
   DCHECK(!enabled_);
   enabled_ = true;
-  [browser_window_ addTitlebarAccessoryViewController:
-                       immersive_mode_titlebar_view_controller_];
+  if (@available(macOS 10.10, *)) {
+    [browser_window_ addTitlebarAccessoryViewController:
+                         immersive_mode_titlebar_view_controller_];
+  }
 
-  // Keep the overlay content view's size in sync with its parent view.
-  overlay_content_view_.translatesAutoresizingMaskIntoConstraints = NO;
-  [overlay_content_view_.heightAnchor
-      constraintEqualToAnchor:overlay_content_view_.superview.heightAnchor]
-      .active = YES;
-  [overlay_content_view_.widthAnchor
-      constraintEqualToAnchor:overlay_content_view_.superview.widthAnchor]
-      .active = YES;
-  [overlay_content_view_.centerXAnchor
-      constraintEqualToAnchor:overlay_content_view_.superview.centerXAnchor]
-      .active = YES;
-  [overlay_content_view_.centerYAnchor
-      constraintEqualToAnchor:overlay_content_view_.superview.centerYAnchor]
-      .active = YES;
+  if (@available(macOS 10.11, *)) {
+    // Keep the overlay content view's size in sync with its parent view.
+    overlay_content_view_.translatesAutoresizingMaskIntoConstraints = NO;
+    [overlay_content_view_.heightAnchor
+        constraintEqualToAnchor:overlay_content_view_.superview.heightAnchor]
+        .active = YES;
+    [overlay_content_view_.widthAnchor
+        constraintEqualToAnchor:overlay_content_view_.superview.widthAnchor]
+        .active = YES;
+    [overlay_content_view_.centerXAnchor
+        constraintEqualToAnchor:overlay_content_view_.superview.centerXAnchor]
+        .active = YES;
+    [overlay_content_view_.centerYAnchor
+        constraintEqualToAnchor:overlay_content_view_.superview.centerYAnchor]
+        .active = YES;
+  }
 }
 
 void ImmersiveModeController::FullscreenTransitionCompleted() {

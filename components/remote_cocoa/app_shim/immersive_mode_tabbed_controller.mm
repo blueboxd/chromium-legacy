@@ -18,16 +18,18 @@ ImmersiveModeTabbedController::ImmersiveModeTabbedController(
     : ImmersiveModeController(browser_window, overlay_window) {
   tab_window_ = tab_window;
 
-  browser_window.titleVisibility = NSWindowTitleHidden;
+  if(@available(macOS 10.10,*)) {
+    browser_window.titleVisibility = NSWindowTitleHidden;
 
-  tab_titlebar_view_controller_ =
-      [[NSTitlebarAccessoryViewController alloc] init];
-  tab_titlebar_view_controller_.view = [[NSView alloc] init];
+    tab_titlebar_view_controller_ =
+        [[NSTitlebarAccessoryViewController alloc] init];
+    tab_titlebar_view_controller_.view = [[NSView alloc] init];
 
-  // The view is pinned to the opposite side of the traffic lights. A view long
-  // enough is able to paint underneath the traffic lights. This also works with
-  // RTL setups.
-  tab_titlebar_view_controller_.layoutAttribute = NSLayoutAttributeTrailing;
+    // The view is pinned to the opposite side of the traffic lights. A view
+    // long enough is able to paint underneath the traffic lights. This also
+    // works with RTL setups.
+    tab_titlebar_view_controller_.layoutAttribute = NSLayoutAttributeTrailing;
+  }
 }
 
 ImmersiveModeTabbedController::~ImmersiveModeTabbedController() {
@@ -68,19 +70,21 @@ void ImmersiveModeTabbedController::Enable() {
       tab_window_.frame.size.height;
 
   // Keep the tab content view's size in sync with its parent view.
-  tab_content_view_.translatesAutoresizingMaskIntoConstraints = NO;
-  [tab_content_view_.heightAnchor
-      constraintEqualToAnchor:tab_content_view_.superview.heightAnchor]
-      .active = YES;
-  [tab_content_view_.widthAnchor
-      constraintEqualToAnchor:tab_content_view_.superview.widthAnchor]
-      .active = YES;
-  [tab_content_view_.centerXAnchor
-      constraintEqualToAnchor:tab_content_view_.superview.centerXAnchor]
-      .active = YES;
-  [tab_content_view_.centerYAnchor
-      constraintEqualToAnchor:tab_content_view_.superview.centerYAnchor]
-      .active = YES;
+  if (@available(macOS 10.11, *)) {
+    tab_content_view_.translatesAutoresizingMaskIntoConstraints = NO;
+    [tab_content_view_.heightAnchor
+        constraintEqualToAnchor:tab_content_view_.superview.heightAnchor]
+        .active = YES;
+    [tab_content_view_.widthAnchor
+        constraintEqualToAnchor:tab_content_view_.superview.widthAnchor]
+        .active = YES;
+    [tab_content_view_.centerXAnchor
+        constraintEqualToAnchor:tab_content_view_.superview.centerXAnchor]
+        .active = YES;
+    [tab_content_view_.centerYAnchor
+        constraintEqualToAnchor:tab_content_view_.superview.centerYAnchor]
+        .active = YES;
+  }
 
   ObserveChildWindows(tab_window_);
 
@@ -144,11 +148,13 @@ void ImmersiveModeTabbedController::UpdateToolbarVisibility(
   LayoutWindowWithAnchorView(tab_window_, tab_content_view_);
 }
 
-void ImmersiveModeTabbedController::AddController() {
-  NSWindow* window = browser_window();
-  if (![window.titlebarAccessoryViewControllers
-          containsObject:tab_titlebar_view_controller_]) {
-    [window addTitlebarAccessoryViewController:tab_titlebar_view_controller_];
+void ImmersiveModeTabbedControllerCocoa::AddController() {
+  if (@available(macOS 10.10, *)) {
+    NSWindow* window = browser_window();
+    if (![window.titlebarAccessoryViewControllers
+            containsObject:tab_titlebar_view_controller_]) {
+      [window addTitlebarAccessoryViewController:tab_titlebar_view_controller_];
+    }
   }
 }
 

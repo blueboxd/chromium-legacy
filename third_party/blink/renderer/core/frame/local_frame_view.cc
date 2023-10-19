@@ -3287,6 +3287,19 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
     return;
   }
 
+  auto LayoutForPrinting = [&layout_view]() {
+    Document& document = layout_view->GetDocument();
+    document.MarkViewportUnitsDirty();
+    layout_view->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
+        layout_invalidation_reason::kPrintingChanged);
+    document.UpdateStyleAndLayout(DocumentUpdateReason::kPrinting);
+  };
+
+  // Need to update computed style before we can set the initial containing
+  // block size. A zoom factor may have been set, and it shouldn't be applied
+  // when printing, e.g. when resolving @page margins.
+  frame_->GetDocument()->UpdateStyleAndLayoutTree();
+
   // Set up the initial containing block size for pagination. This is defined as
   // the page area size of the *first* page. [1] The size of the first page may
   // not be fully known yet, e.g. if the first page is named [2] and given a
@@ -3303,15 +3316,14 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
   layout_view->SetInitialContainingBlockSizeForPagination(
       initial_containing_block_size);
 
-  layout_view->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
-      layout_invalidation_reason::kPrintingChanged);
-  frame_->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kPrinting);
+  LayoutForPrinting();
 
   const auto& first_page = To<NGPhysicalBoxFragment>(
       *layout_view->GetPhysicalFragment(0)->Children()[0]);
-  if (const AtomicString& page_name = first_page.PageName()) {
+  const AtomicString& first_page_name = first_page.PageName();
+  if (first_page_name) {
     PhysicalSize new_size =
-        layout_view->PageAreaSize(/* page_index */ 0u, page_name);
+        layout_view->PageAreaSize(/* page_index */ 0u, first_page_name);
     if (new_size != initial_containing_block_size) {
       // If the first page was named (this isn't something we can detect without
       // laying out first), and the size of the first page is different from
@@ -3320,16 +3332,7 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
       // again.
       layout_view->SetInitialContainingBlockSizeForPagination(new_size);
 
-      // Make sure that everything that should respond to an initial containing
-      // block change actually responds (elements using viewport units, for
-      // instance).
-      frame_->GetDocument()->LayoutViewportWasResized();
-
-      layout_view
-          ->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
-              layout_invalidation_reason::kPrintingChanged);
-      frame_->GetDocument()->UpdateStyleAndLayout(
-          DocumentUpdateReason::kPrinting);
+      LayoutForPrinting();
     }
   }
 
@@ -3362,16 +3365,12 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
     // Re-layout and apply the same scale factor to all pages. PageScaleFactor()
     // has already been set to honor any scale factor from print settings. That
     // has to be included as well.
-    //
-    // Note that we deliberately don't set a new initial containing block size
-    // here. But should we? EdgeHTML does it. Gecko doesn't. WebKit is buggy
-    // (uses the initial block based on the browser frame size).
     layout_view->SetPageScaleFactor(layout_view->PageScaleFactor() *
                                     overall_scale_factor);
-    layout_view->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
-        layout_invalidation_reason::kPrintingChanged);
-    frame_->GetDocument()->UpdateStyleAndLayout(
-        DocumentUpdateReason::kPrinting);
+    PhysicalSize new_size =
+        layout_view->PageAreaSize(/* page_index */ 0u, first_page_name);
+    layout_view->SetInitialContainingBlockSizeForPagination(new_size);
+    LayoutForPrinting();
   }
 
   if (TextAutosizer* text_autosizer = frame_->GetDocument()->GetTextAutosizer())

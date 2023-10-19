@@ -3953,7 +3953,6 @@ Detta kan omfatta information om installerad programvara, filer, webbläsaren oc
 <translation id="4110485659976215879">Återställ varning</translation>
 <translation id="4110490973560452005">Nedladdningen är klar: <ph name="FILE_NAME" />. Stega till nedladdningsfältet med Skift+F6.</translation>
 <translation id="4112194537011183136"><ph name="DEVICE_NAME" /> (offline)</translation>
-<translation id="411318099524508025">Du har uppgraderats till <ph name="NAME" />.</translation>
 <translation id="4113743276555482284">Filens lösenord</translation>
 <translation id="4114524937989710624">Förslag på filer visas så att du enkelt ska kunna fortsätta med det du gjorde senast på Google Drive.
         <ph name="BREAK" />
@@ -4036,7 +4035,7 @@ Detta kan omfatta information om installerad programvara, filer, webbläsaren oc
 <translation id="4181841719683918333">Språk</translation>
 <translation id="4182339886482390129">Förbättrad säker webbsökning gör mer för att skydda dig mot farliga webbplatser, nedladdningar och tillägg</translation>
 <translation id="4184803915913850597">HID-enhet (<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />)</translation>
-<translation id="4186749321808907788"><ph name="QUERY_NAME" /> – <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> Sök</translation>
+<translation id="4186749321808907788"><ph name="QUERY_NAME" /> – sökning på <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="4187424053537113647">Konfigurerar <ph name="APP_NAME" /> …</translation>
 <translation id="4190492351494485814">Under den första konfigureringen måste du ansluta till internet så att filerna kan synkroniseras med din Chromebook</translation>
 <translation id="4190828427319282529">Markera objekt med tangentbordsfokus</translation>
@@ -9074,6 +9073,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8324784016256120271">Webbplatser får se din webbaktivitet på olika webbplatser med hjälp av cookies och till exempel anpassa annonser</translation>
 <translation id="8325413836429495820">Får inte se urklippet</translation>
 <translation id="8326478304147373412">PKCS #7, certifikatkedja</translation>
+<translation id="832684045355488000">Du har uppgraderats till <ph name="NAME" />.</translation>
 <translation id="8327386430364625757">Matematiskt teckensnitt</translation>
 <translation id="8327538105740918488">Du kan alltid ändra lösenordet senare. Det sparas i <ph name="GOOGLE_PASSWORD_MANAGER" /> för <ph name="EMAIL" />.</translation>
 <translation id="8327676037044516220">Behörigheter och innehållsinställningar</translation>

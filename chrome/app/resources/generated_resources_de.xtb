@@ -651,7 +651,7 @@ Berechtigungen, die du Apps bereits gewährt hast, gelten möglicherweise für d
 <translation id="1523279371236772909">Im letzten Monat angesehen</translation>
 <translation id="1523978563989812243">Sprachausgabe-Engines</translation>
 <translation id="1524430321211440688">Tastatur</translation>
-<translation id="1524563461097350801">Nein danke</translation>
+<translation id="1524563461097350801">Nein, danke</translation>
 <translation id="1525740877599838384">Zur Standortbestimmung nur WLAN nutzen</translation>
 <translation id="152629053603783244">Linux neu starten</translation>
 <translation id="1526560967942511387">Unbenanntes Dokument</translation>
@@ -3935,7 +3935,6 @@ Dazu gehören beispielsweise installierte Software, Dateien, dein Browser und da
 <translation id="4110485659976215879">Warnung wiederherstellen</translation>
 <translation id="4110490973560452005">Download abgeschlossen: <ph name="FILE_NAME" />. Drücke Umschalttaste + F6, um zum Bereich mit der Downloadleiste zu wechseln.</translation>
 <translation id="4112194537011183136"><ph name="DEVICE_NAME" /> (offline)</translation>
-<translation id="411318099524508025">Das Upgrade auf <ph name="NAME" /> ist abgeschlossen.</translation>
 <translation id="4113743276555482284">Dateipasswort</translation>
 <translation id="4114524937989710624">Dir werden Dateivorschläge angezeigt, damit du bei Google Drive einfacher dort weitermachen kannst, wo du zuletzt aufgehört hast.
         <ph name="BREAK" />
@@ -7967,7 +7966,7 @@ Du hast # weitere gehackte Passwörter. Der Google Passwortmanager empfiehlt, d
 <translation id="747114903913869239">Fehler: Erweiterung kann nicht entschlüsselt werden.</translation>
 <translation id="7471520329163184433">Langsamer</translation>
 <translation id="747312361841682912">Angezeigte Daten löschen</translation>
-<translation id="7473891865547856676">Nein danke</translation>
+<translation id="7473891865547856676">Nein, danke</translation>
 <translation id="747459581954555080">Alle wiederherstellen</translation>
 <translation id="747507174130726364">{NUM_DAYS,plural, =1{Sofortige Rückgabe erforderlich}other{<ph name="DEVICE_TYPE" /> innerhalb von {NUM_DAYS} Tagen zurückgeben}}</translation>
 <translation id="7475671414023905704">Netscape-URL für vergessene Passwörter</translation>
@@ -8196,7 +8195,7 @@ Du hast # weitere gehackte Passwörter. Der Google Passwortmanager empfiehlt, d
 <translation id="7657218410916651670"><ph name="BEGIN_LINK_GOOGLE" />Andere Arten von Aktivitäten<ph name="END_LINK_GOOGLE" /> können in deinem Google-Konto gespeichert werden, wenn du angemeldet bist. Du kannst sie jederzeit löschen.</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7659154729610375585">Inkognitomodus trotzdem beenden?</translation>
-<translation id="7659336857671800422">Datenschutz-Leitfaden überprüfen</translation>
+<translation id="7659336857671800422">Datenschutz-Leitfaden durchgehen</translation>
 <translation id="7659584679870740384">Du bist nicht zur Verwendung dieses Geräts berechtigt. Bitte den Administrator um eine Anmeldeberechtigung.</translation>
 <translation id="7660146600670077843">Klicke mit der rechten Maustaste auf einen Tab und wähle „Tab neuer Gruppe hinzufügen“ aus</translation>
 <translation id="7661259717474717992">Speichern und Lesen von Cookiedaten zulassen</translation>
@@ -9052,6 +9051,7 @@ Speichere deine Schlüsseldatei an einem sicheren Ort. Du benötigst die Datei, 
 <translation id="8324784016256120271">Websites können Cookies verwenden, um deine Browseraktivitäten auf anderen Websites aufzuzeichnen und damit zum Beispiel Werbung zu personalisieren</translation>
 <translation id="8325413836429495820">Dürfen nicht auf meine Zwischenablage zugreifen</translation>
 <translation id="8326478304147373412">PKCS #7, Zertifikatkette</translation>
+<translation id="832684045355488000">Das Upgrade auf „<ph name="NAME" />“ ist abgeschlossen</translation>
 <translation id="8327386430364625757">Mathematische Schriftart</translation>
 <translation id="8327538105740918488">Du kannst das Passwort jederzeit ändern. Es wird für <ph name="EMAIL" /> im <ph name="GOOGLE_PASSWORD_MANAGER" /> gespeichert.</translation>
 <translation id="8327676037044516220">Berechtigungen und Inhaltseinstellungen</translation>
@@ -9645,7 +9645,7 @@ Speichere deine Schlüsseldatei an einem sicheren Ort. Du benötigst die Datei, 
 <translation id="8811923271770626905">Diese Erweiterung kann im Hintergrund ausgeführt werden</translation>
 <translation id="8812593354822910461">Auch Browserdaten (<ph name="URL" />) löschen, wodurch du von <ph name="DOMAIN" /> abgemeldet wirst. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">Anmeldung unter <ph name="USERNAME" /> nicht möglich</translation>
-<translation id="8813872945700551674">Elternteil um Genehmigung von <ph name="EXTENSION_NAME" /> bitten</translation>
+<translation id="8813872945700551674">Eltern um Genehmigung von „<ph name="EXTENSION_NAME" />“ bitten</translation>
 <translation id="8813937837706331325">Mittlere Einsparungen</translation>
 <translation id="8814190375133053267">WLAN</translation>
 <translation id="8814319344131658221">Für welche Sprachen die Rechtschreibprüfung verfügbar ist, hängt von deinen Spracheinstellungen ab</translation>
@@ -9955,7 +9955,7 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="9050135202879860719">Melde dich auf deinem <ph name="DEVICE_TYPE" /> mit einem Passwort an</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9052404922357793350">Weiterhin blockieren</translation>
-<translation id="90528604757378587">Hintergrundaktivitäten und einige visuelle Effekte wie flüssiges Scrollen können eingeschränkt sein.</translation>
+<translation id="90528604757378587">Hintergrundaktivitäten und einige visuelle Effekte wie optimiertes Scrollen können eingeschränkt sein.</translation>
 <translation id="9053563360605707198">Beidseitig drucken</translation>
 <translation id="9055636786322918818">RC4-Verschlüsselung durchsetzen. Mit dieser Option ist ein höheres Risiko verbunden, da RC4-Verschlüsselungen nicht sicher sind.</translation>
 <translation id="9056788090206401048">Damit sich dein Passkey auf einem anderen Gerät verwenden lässt, muss Bluetooth aktiviert sein. Du kannst dies jederzeit in den Einstellungen verwalten.</translation>

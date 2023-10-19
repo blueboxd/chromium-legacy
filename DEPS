@@ -314,7 +314,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'src_internal_revision': '50690b1a5bb929b633cf14f26c9f55a414d7a1a1',
+  'src_internal_revision': '8053459e1d28c939e6c59f25f038c77c64540b66',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
@@ -334,7 +334,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'd7470394271b6a6856e28ec905b19a12100f2797',
+  'pdfium_revision': '6e55da0c45788fdc22fa3aab7ead414fc42b74c1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -449,7 +449,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'ec2cc40563739fa6e6ff0e12c58ac0fdbe0a132f',
+  'dawn_revision': 'deb3b674b26854204c8082ed93926207e42d3cf2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -849,7 +849,7 @@ deps = {
 
   'src/clank': {
     'url': Var('chrome_git') + '/clank/internal/apps.git' + '@' +
-    '256d55244f0c48892677b6707e5d08dbe680e042',
+    '46299254f8cf1e65c111376dd514e22419d93671',
     'condition': 'checkout_android and checkout_src_internal',
   },
 
@@ -1465,7 +1465,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '41cdffd71c9948f63c7ad36e1fb0ff519aa7a37e',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '985b9a6f70e13f3db741fed121e4dcc3046ad494',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'a622de35ac311c5ad390a7af80724634e5dc61ed',
 
   'src/third_party/icu4j': {
       'packages': [
@@ -4251,7 +4251,7 @@ deps = {
 
   'src/ios_internal':  {
       'url': Var('chrome_git') + '/chrome/ios_internal.git' + '@' +
-        '4c62f76b9d5a4d40694bbf40e9b557a4e395cb47',
+        '75fdd01ec66965420e31d00af762bc6df29cd424',
       'condition': 'checkout_ios and checkout_src_internal',
   },
 

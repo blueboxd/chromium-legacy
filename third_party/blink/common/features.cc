@@ -977,6 +977,8 @@ const base::FeatureParam<int> kInterestGroupStorageMaxStoragePerOwner{
     &kInterestGroupStorage, "max_storage_per_owner", 10 * 1024 * 1024};
 const base::FeatureParam<int> kInterestGroupStorageMaxGroupsPerOwner{
     &kInterestGroupStorage, "max_groups_per_owner", 1000};
+const base::FeatureParam<int> kInterestGroupStorageMaxNegativeGroupsPerOwner{
+    &kInterestGroupStorage, "max_negative_groups_per_owner", 20000};
 const base::FeatureParam<int> kInterestGroupStorageMaxOpsBeforeMaintenance{
     &kInterestGroupStorage, "max_ops_before_maintenance", 1000};
 
@@ -1061,6 +1063,12 @@ const base::FeatureParam<int> kLCPPFontURLPredictorMaxUrlLength{
 
 const base::FeatureParam<int> kLCPPFontURLPredictorMaxUrlCountPerOrigin{
     &kLCPPFontURLPredictor, "lcpp_max_font_url_count_per_origin", 10};
+
+const base::FeatureParam<double> kLCPPFontURLPredictorFrequencyThreshold{
+    &kLCPPFontURLPredictor, "lcpp_font_url_frequency_threshold", 0.5};
+
+const base::FeatureParam<int> kLCPPFontURLPredictorMaxPreloadCount{
+    &kLCPPFontURLPredictor, "lcpp_max_font_url_to_preload", 5};
 
 // Enables reporting as LCP of the time the first frame of a video was painted.
 BASE_FEATURE(kLCPVideoFirstFrame,
@@ -1448,9 +1456,9 @@ BASE_FEATURE(kProduceCompileHints2,
 const base::FeatureParam<int> kProduceCompileHintsOnIdleDelayParam{
     &kProduceCompileHints2, "delay-in-ms", 10000};
 const base::FeatureParam<double> kProduceCompileHintsNoiseLevel{
-    &kProduceCompileHints2, "noise probability", 0.5};
+    &kProduceCompileHints2, "noise-probability", 0.5};
 const base::FeatureParam<double> kProduceCompileHintsDataProductionLevel{
-    &kProduceCompileHints2, "data production probability", 0.005};
+    &kProduceCompileHints2, "data-production-probability", 0.005};
 BASE_FEATURE(kForceProduceCompileHints,
              "ForceProduceCompileHints",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1675,9 +1683,9 @@ const base::FeatureParam<int> kSharedStorageSelectURLBitBudgetPerPageLoad = {
     &kSharedStorageSelectURLLimit, "SharedStorageSelectURLBitBudgetPerPageLoad",
     12};
 const base::FeatureParam<int>
-    kSharedStorageSelectURLBitBudgetPerOriginPerPageLoad = {
+    kSharedStorageSelectURLBitBudgetPerSitePerPageLoad = {
         &kSharedStorageSelectURLLimit,
-        "SharedStorageSelectURLBitBudgetPerOriginPerPageLoad", 6};
+        "SharedStorageSelectURLBitBudgetPerSitePerPageLoad", 6};
 
 BASE_FEATURE(kSharedStorageAPIM118,
              "SharedStorageAPIM118",

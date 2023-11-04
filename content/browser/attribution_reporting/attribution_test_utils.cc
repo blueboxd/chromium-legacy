@@ -14,7 +14,6 @@
 #include "base/check.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
-#include "base/functional/function_ref.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
@@ -30,12 +29,10 @@
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/test_utils.h"
 #include "components/attribution_reporting/trigger_registration.h"
-#include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
-#include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/os_registration.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/public/browser/attribution_data_model.h"
@@ -79,34 +76,6 @@ absl::optional<base::Time> GetReportWindowTimeForTesting(
     return absl::nullopt;
   }
   return source_time + *declared_window;
-}
-
-AttributionConfig::RateLimitConfig RateLimitWith(
-    base::FunctionRef<void(AttributionConfig::RateLimitConfig&)> f) {
-  AttributionConfig::RateLimitConfig limit;
-  f(limit);
-  return limit;
-}
-
-AttributionConfig::EventLevelLimit EventLevelLimitWith(
-    base::FunctionRef<void(content::AttributionConfig::EventLevelLimit&)> f) {
-  content::AttributionConfig::EventLevelLimit limit;
-  f(limit);
-  return limit;
-}
-
-AttributionConfig::AggregateLimit AggregateLimitWith(
-    base::FunctionRef<void(content::AttributionConfig::AggregateLimit&)> f) {
-  content::AttributionConfig::AggregateLimit limit;
-  f(limit);
-  return limit;
-}
-
-AttributionConfig AttributionConfigWith(
-    base::FunctionRef<void(AttributionConfig&)> f) {
-  AttributionConfig limit;
-  f(limit);
-  return limit;
 }
 
 // Builds an impression with default values. This is done as a builder because
@@ -272,10 +241,7 @@ StoredSource SourceBuilder::BuildStored() const {
       registration_.event_report_windows.value_or(
           *attribution_reporting::EventReportWindows::CreateWindows(
               base::Milliseconds(0), {registration_.expiry})),
-      ComputeReportWindowTime(
-          GetReportWindowTimeForTesting(
-              registration_.aggregatable_report_window, source_time_),
-          expiry_time),
+      source_time_ + registration_.aggregatable_report_window,
       registration_.max_event_level_reports, registration_.priority,
       registration_.filter_data, registration_.debug_key,
       registration_.aggregation_keys, attribution_logic_, active_state_,

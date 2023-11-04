@@ -158,6 +158,7 @@ export {SettingsGuestOsSharedPathsElement} from './guest_os/guest_os_shared_path
 export {SettingsGuestOsSharedUsbDevicesElement} from './guest_os/guest_os_shared_usb_devices.js';
 export {EsimInstallErrorDialogElement} from './internet_page/esim_install_error_dialog.js';
 export {SettingsHotspotSubpageElement} from './internet_page/hotspot_subpage.js';
+export {SettingsInternetKnownNetworksPageElement} from './internet_page/internet_known_networks_subpage.js';
 export {SettingsInternetSubpageMenuElement} from './internet_page/internet_subpage_menu.js';
 export {NetworkAlwaysOnVpnElement} from './internet_page/network_always_on_vpn.js';
 export {NetworkDeviceInfoDialogElement} from './internet_page/network_device_info_dialog.js';
@@ -196,6 +197,7 @@ export {SettingsSwitchAccessSetupGuideDialogElement} from './os_a11y_page/switch
 export {SettingsSwitchAccessSubpageElement} from './os_a11y_page/switch_access_subpage.js';
 export {PdfOcrUserSelection, SettingsTextToSpeechSubpageElement} from './os_a11y_page/text_to_speech_subpage.js';
 export {SettingsTtsVoiceSubpageElement} from './os_a11y_page/tts_voice_subpage.js';
+export {SettingsAndroidAppsSubpageElement} from './os_apps_page/android_apps_subpage.js';
 export {AppManagementAppDetailViewElement} from './os_apps_page/app_management_page/app_detail_view.js';
 export {AppManagementAppDetailsItem} from './os_apps_page/app_management_page/app_details_item.js';
 export {AppManagementAppItemElement} from './os_apps_page/app_management_page/app_item.js';

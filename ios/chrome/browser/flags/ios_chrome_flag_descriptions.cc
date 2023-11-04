@@ -286,9 +286,9 @@ const char kCredentialProviderExtensionPromoDescription[] =
     "When enabled, Credential Provider Extension promo will be "
     "presented to eligible users.";
 
-const char kDBVideoInSettingsName[] =
+const char kDefaultBrowserVideoInSettingsName[] =
     "Show default browser video in settings experiment";
-const char kDBVideoInSettingsDescription[] =
+const char kDefaultBrowserVideoInSettingsDescription[] =
     "When enabled, default browser video will be displayed to user in "
     "settings.";
 
@@ -607,6 +607,12 @@ const char kIOSForceTranslateEnabledName[] = "Allow force translate on iOS.";
 const char kIOSForceTranslateEnabledDescription[] =
     "Enable the translate feature when language detection failed.";
 
+const char kIOSIncognitoDownloadsWarningName[] =
+    "Enable Incognito downloads warning on iOS";
+const char kIOSIncognitoDownloadsWarningDescription[] =
+    "When enabled, users will be warned that downloaded files are saved on the "
+    "device and might be seen by other users even if they are in Incognito.";
+
 const char kIOSNewPostRestoreExperienceName[] = "New Post Restore Experience";
 const char kIOSNewPostRestoreExperienceDescription[] =
     "When enabled, a prompt will be presented after a device restore to "
@@ -845,6 +851,12 @@ const char kOmniboxOnDeviceTailSuggestionsName[] =
 const char kOmniboxOnDeviceTailSuggestionsDescription[] =
     "Google tail non personalized search suggestions provided by a compact on "
     "device model.";
+
+const char kOmniboxPopulateShortcutsDatabaseName[] =
+    "Omnibox shortcuts database";
+const char kOmniboxPopulateShortcutsDatabaseDescription[] =
+    "Enables storing successful query/match in the omnibox shortcut database "
+    "to provider better suggestions ranking.";
 
 const char kOmniboxReportAssistedQueryStatsName[] =
     "Omnibox Assisted Query Stats param";

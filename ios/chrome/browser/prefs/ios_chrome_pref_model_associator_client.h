@@ -8,7 +8,7 @@
 #include <string>
 
 #include "components/sync_preferences/pref_model_associator_client.h"
-#include "ios/chrome/browser/sync/prefs/ios_chrome_syncable_prefs_database.h"
+#include "ios/chrome/browser/sync/model/prefs/ios_chrome_syncable_prefs_database.h"
 
 class IOSChromePrefModelAssociatorClient
     : public sync_preferences::PrefModelAssociatorClient {
@@ -23,9 +23,6 @@ class IOSChromePrefModelAssociatorClient
   ~IOSChromePrefModelAssociatorClient() override;
 
   // sync_preferences::PrefModelAssociatorClient implementation.
-  bool IsMergeableListPreference(const std::string& pref_name) const override;
-  bool IsMergeableDictionaryPreference(
-      const std::string& pref_name) const override;
   base::Value MaybeMergePreferenceValues(
       const std::string& pref_name,
       const base::Value& local_value,

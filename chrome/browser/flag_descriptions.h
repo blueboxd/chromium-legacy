@@ -110,6 +110,9 @@ extern const char kCOLRV1FontsDescription[];
 extern const char kCdmStorageDatabaseName[];
 extern const char kCdmStorageDatabaseDescription[];
 
+extern const char kCdmStorageDatabaseMigrationName[];
+extern const char kCdmStorageDatabaseMigrationDescription[];
+
 extern const char kChromeRootStoreEnabledName[];
 extern const char kChromeRootStoreEnabledDescription[];
 
@@ -958,6 +961,9 @@ extern const char kWebIdentityMDocsDescription[];
 extern const char kFileHandlingIconsName[];
 extern const char kFileHandlingIconsDescription[];
 
+extern const char kFileSystemAccessLockingSchemeName[];
+extern const char kFileSystemAccessLockingSchemeDescription[];
+
 extern const char kFileSystemObserverName[];
 extern const char kFileSystemObserverDescription[];
 
@@ -1306,6 +1312,9 @@ extern const char kOmniboxCacheSuggestionResourcesDescription[];
 
 extern const char kOmniboxCalcProviderName[];
 extern const char kOmniboxCalcProviderDescription[];
+
+extern const char kOmniboxCompanyEntityIconAdjustmentName[];
+extern const char kOmniboxCompanyEntityIconAdjustmentDescription[];
 
 extern const char kOmniboxConsumesImeInsetsName[];
 extern const char kOmniboxConsumesImeInsetsDescription[];
@@ -1969,15 +1978,14 @@ extern const char kPrivateStateTokensDescription[];
 extern const char kTailoredSecurityRetryForSyncUsersName[];
 extern const char kTailoredSecurityRetryForSyncUsersDescription[];
 
+extern const char kTPCPhaseOutFacilitatedTestingName[];
+extern const char kTPCPhaseOutFacilitatedTestingDescription[];
+
 extern const char kTrackingProtection3pcdName[];
 extern const char kTrackingProtection3pcdDescription[];
 
 extern const char kTrackingProtectionOnboardingForceEligibilityName[];
 extern const char kTrackingProtectionOnboardingForceEligibilityDescription[];
-
-extern const char kTrackingProtectionOnboardingResetEligibilityForTestingName[];
-extern const char
-    kTrackingProtectionOnboardingResetEligibilityForTestingDescription[];
 
 extern const char kUnifiedPasswordManagerAndroidName[];
 extern const char kUnifiedPasswordManagerAndroidDescription[];
@@ -2553,9 +2561,6 @@ extern const char
 
 extern const char kSafeBrowsingHashPrefixRealTimeLookupsName[];
 extern const char kSafeBrowsingHashPrefixRealTimeLookupsDescription[];
-
-extern const char kSafeModeForCachedFlagsName[];
-extern const char kSafeModeForCachedFlagsDescription[];
 
 extern const char kSafeSitesFilterBehaviorPolicyAndroidName[];
 extern const char kSafeSitesFilterBehaviorPolicyAndroidDescription[];
@@ -3167,6 +3172,9 @@ extern const char kArcSwitchToKeyMintDaemonDesc[];
 
 extern const char kArcSwitchToKeyMintOnTName[];
 extern const char kArcSwitchToKeyMintOnTDesc[];
+
+extern const char kArcSwitchToKeyMintOnTOverrideName[];
+extern const char kArcSwitchToKeyMintOnTOverrideDesc[];
 
 extern const char kArcSyncInstallPriorityName[];
 extern const char kArcSyncInstallPriorityDescription[];

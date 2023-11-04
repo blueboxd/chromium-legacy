@@ -211,7 +211,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  //   'ApnSubpage', 'apn_subpage_tests.js',
  //   {enabled: ['ash::features::kApnRevamp']}
  // ],
- ['AppsPage', 'apps_page_test.js'],
  ['AppManagementFileHandlingItem', 'app_management/file_handling_item_test.js'],
  ['AppManagementManagedApps', 'app_management/managed_apps_test.js'],
  ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
@@ -306,13 +305,22 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ],
  [
    'DevicePagePerDeviceKeyboardRemapKeys',
-   'device_page/per_device_keyboard_remap_keys_test.js',
-   {enabled: ['ash::features::kInputDeviceSettingsSplit']}
+   'device_page/per_device_keyboard_remap_keys_test.js', {
+     enabled: [
+       'ash::features::kInputDeviceSettingsSplit',
+       'ash::features::kAltClickAndSixPackCustomization'
+     ]
+   }
  ],
  [
    'DevicePagePerDeviceKeyboardSubsection',
    'device_page/per_device_keyboard_subsection_test.js',
-   {enabled: ['ash::features::kInputDeviceSettingsSplit']},
+   {
+     enabled: [
+       'ash::features::kInputDeviceSettingsSplit',
+       'ash::features::kAltClickAndSixPackCustomization'
+     ]
+   },
  ],
  [
    'DevicePagePerDeviceMouse', 'device_page/per_device_mouse_test.js',
@@ -386,14 +394,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ['GuestOsSharedPaths', 'guest_os/guest_os_shared_paths_test.js'],
  ['GuestOsSharedUsbDevices', 'guest_os/guest_os_shared_usb_devices_test.js'],
  [
-   'InternetKnownNetworksSubpage', 'internet_known_networks_subpage_tests.js', {
-     enabled: [
-       'ash::features::kPasspointARCSupport',
-       'ash::features::kPasspointSettings',
-     ]
-   }
- ],
- [
    'InternetPage', 'internet_page_tests.js', {
      enabled: [
        'ash::features::kApnRevamp',
@@ -437,6 +437,15 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'internet_page/internet_detail_subpage_tests.js', {
      enabled: [
        'ash::features::kApnRevamp',
+       'ash::features::kPasspointARCSupport',
+       'ash::features::kPasspointSettings',
+     ]
+   }
+ ],
+ [
+   'InternetPageInternetKnownNetworksSubpage',
+   'internet_page/internet_known_networks_subpage_test.js', {
+     enabled: [
        'ash::features::kPasspointARCSupport',
        'ash::features::kPasspointSettings',
      ]
@@ -721,6 +730,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'OsAppsPageAppNotificationsPageAppNotificationsSubpage',
    'os_apps_page/app_notifications_page/app_notifications_subpage_test.js'
  ],
+ ['OsAppsPage', 'os_apps_page/os_apps_page_test.js'],
  [
    'OsAppsPageManageIsolatedWebAppsPageManageIsolatedWebAppsSubpage',
    'os_apps_page/manage_isolated_web_apps_page/manage_isolated_web_apps_subpage_test.js'
@@ -949,6 +959,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'parental_controls_page/parental_controls_page_test.js'
  ],
  [
+   'OsPeopleAccountManagerSettingsCard',
+   'os_people_page/account_manager_settings_card_test.js',
+ ],
+ [
    'OsPeoplePageAccountManagerSubpage',
    'os_people_page/account_manager_subpage_test.js',
    {disabled: ['ash::features::kLacrosOnly']},
@@ -965,7 +979,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ],
  [
    'PersonalizationPageWithPersonalizationHub',
-   'personalization_page_with_personalization_hub_test.js',
+   'personalization_page/personalization_page_with_personalization_hub_test.js',
  ],
  [
    'SettingsSchedulerSlider',
@@ -1003,6 +1017,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'SystemPreferencesPageSearchAndAssistantSettingsCard',
    'os_search_page/search_and_assistant_settings_card_test.js',
+   {enabled: ['ash::features::kOsSettingsRevampWayfinding']},
+ ],
+ [
+   'SystemPreferencesPageStartupSettingsCard',
+   'system_preferences_page/startup_settings_card_test.js',
    {enabled: ['ash::features::kOsSettingsRevampWayfinding']},
  ],
  [

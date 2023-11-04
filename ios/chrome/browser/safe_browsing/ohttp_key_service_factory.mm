@@ -41,7 +41,9 @@ std::unique_ptr<KeyedService> OhttpKeyServiceFactory::BuildServiceInstanceFor(
   }
   if (!base::FeatureList::IsEnabled(safe_browsing::kHashRealTimeOverOhttp) &&
       !safe_browsing::hash_realtime_utils::
-          IsHashRealTimeLookupEligibleInSession()) {
+          IsHashRealTimeLookupEligibleInSessionAndLocation(
+              safe_browsing::hash_realtime_utils::GetCountryCode(
+                  GetApplicationContext()->GetVariationsService()))) {
     return nullptr;
   }
   ChromeBrowserState* chrome_browser_state =

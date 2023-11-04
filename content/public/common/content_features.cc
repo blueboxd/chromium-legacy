@@ -153,8 +153,18 @@ BASE_FEATURE(kCacheControlNoStoreEnterBackForwardCache,
              "CacheControlNoStoreEnterBackForwardCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// This serves as an overall kill switch to kill CdmStorageDatabase. If
+// disabled, which it is by default, no operations will be routed through the
+// CdmStorage* path, even in the migration code that lives in MediaLicense* code
+// path.
 BASE_FEATURE(kCdmStorageDatabase,
              "CdmStorageDatabase",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// This guards between using the MediaLicense* code path and the CdmStorage*
+// code path for storing Cdm data. This will be disabled by default.
+BASE_FEATURE(kCdmStorageDatabaseMigration,
+             "CdmStorageDatabaseMigration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Clear the window.name property for the top-level cross-site navigations that
@@ -174,13 +184,16 @@ BASE_FEATURE(kCookieDeprecationFacilitatedTesting,
              "CookieDeprecationFacilitatedTesting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Set whether to enable cookie deprecation API in incognito mode.
-//
-// TODO(linnan): Consider renaming to "enable_otr_profiles" to include
-// guest profiles as well.
+// Set whether to enable cookie deprecation API for off-the-record profiles.
 const base::FeatureParam<bool>
-    kCookieDeprecationFacilitatedTestingEnableIncognito{
-        &kCookieDeprecationFacilitatedTesting, "enable_incognito", false};
+    kCookieDeprecationFacilitatedTestingEnableOTRProfiles{
+        &kCookieDeprecationFacilitatedTesting, "enable_otr_profiles", false};
+
+// The experiment label for the cookie deprecation (Mode A/B) study.
+const base::FeatureParam<std::string> kCookieDeprecationLabel{
+    &kCookieDeprecationFacilitatedTesting, kCookieDeprecationLabelName, ""};
+
+const char kCookieDeprecationLabelName[] = "label";
 
 // Enables Blink cooperative scheduling.
 BASE_FEATURE(kCooperativeScheduling,

@@ -705,7 +705,7 @@ BASE_FEATURE(kFeatureManagementDriveFsBulkPinning,
 // the files and open in web apps, but not to open/read/write CSE files locally.
 BASE_FEATURE(kDriveFsShowCSEFiles,
              "DriveFsShowCSEFiles",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables support for the dropdown panel.
 BASE_FEATURE(kDropdownPanel,
@@ -883,6 +883,14 @@ BASE_FEATURE(kEnterpriseReportingUI,
 BASE_FEATURE(kEphemeralNetworkPolicies,
              "kEphemeralNetworkPolicies",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether the DeviceEphemeralNetworkPoliciesEnabled policy is
+// respected.
+// This is on-by-default, only intended to be used as a kill switch in case we
+// find some issue with the policy processing.
+BASE_FEATURE(kEphemeralNetworkPoliciesEnabledPolicy,
+             "EphemeralNetworkPoliciesEnabledPolicy",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables Device End Of Lifetime warning notifications.
 BASE_FEATURE(kEolWarningNotifications,
@@ -2021,12 +2029,6 @@ BASE_FEATURE(kPasspointSettings,
 // (This feature is only available for consumer users)
 BASE_FEATURE(kPasswordlessGaiaForConsumers,
              "PasswordlessGaiaForConsumers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// This feature allows the user to select between setup the local password and
-// Gaia password after the passwordless sign-in in OOBE.
-BASE_FEATURE(kPasswordSelectionInOobe,
-             "PasswordSelectionInOobe",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables a notification warning users that their Thunderbolt device is not
@@ -3693,6 +3695,10 @@ bool AreEphemeralNetworkPoliciesEnabled() {
   return base::FeatureList::IsEnabled(kEphemeralNetworkPolicies);
 }
 
+bool CanEphemeralNetworkPoliciesBeEnabledByPolicy() {
+  return base::FeatureList::IsEnabled(kEphemeralNetworkPoliciesEnabledPolicy);
+}
+
 bool IsNearbyKeepAliveFixEnabled() {
   return base::FeatureList::IsEnabled(kNearbyKeepAliveFix);
 }
@@ -3852,11 +3858,6 @@ bool IsParentAccessJellyEnabled() {
 
 bool IsPasswordlessGaiaEnabledForConsumers() {
   return base::FeatureList::IsEnabled(kPasswordlessGaiaForConsumers);
-}
-
-bool IsPasswordSelectionEnabledInOobe() {
-  return base::FeatureList::IsEnabled(kPasswordSelectionInOobe) &&
-         AreLocalPasswordsEnabledForConsumers();
 }
 
 bool IsPcieBillboardNotificationEnabled() {

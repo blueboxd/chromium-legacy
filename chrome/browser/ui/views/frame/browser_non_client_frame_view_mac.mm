@@ -548,7 +548,8 @@ CGFloat BrowserNonClientFrameViewMac::FullscreenBackingBarHeight() const {
 
 int BrowserNonClientFrameViewMac::TopUIFullscreenYOffset() const {
   if (!browser_view()->GetTabStripVisible() ||
-      !browser_view()->IsFullscreen()) {
+      !browser_view()->IsFullscreen() ||
+      browser_view()->UsesImmersiveFullscreenMode()) {
     return 0;
   }
 

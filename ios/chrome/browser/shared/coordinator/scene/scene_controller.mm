@@ -69,7 +69,7 @@
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent_observer_bridge.h"
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/promos_manager/promos_manager_factory.h"
-#import "ios/chrome/browser/screenshot/screenshot_delegate.h"
+#import "ios/chrome/browser/screenshot/model/screenshot_delegate.h"
 #import "ios/chrome/browser/sessions/session_saving_scene_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/shared/coordinator/default_browser_promo/non_modal_default_browser_promo_scheduler_scene_agent.h"
@@ -1488,6 +1488,12 @@ void InjectNTP(Browser* browser) {
     }
   }
 
+  if (_signedInAccountsVC) {
+    // Don't handle intents if the user has the Signed In Accounts view
+    // controller presented on the screen.
+    return NO;
+  }
+
   return YES;
 }
 
@@ -1509,12 +1515,13 @@ void InjectNTP(Browser* browser) {
 }
 
 - (void)showHistory {
+  CHECK(!self.currentInterface.incognito)
+      << "Current interface is incognito and should NOT show history. Call "
+         "this on regular interface.";
   self.historyCoordinator = [[HistoryCoordinator alloc]
       initWithBaseViewController:self.currentInterface.viewController
                          browser:self.mainInterface.browser];
-  self.historyCoordinator.loadStrategy =
-      self.currentInterface.incognito ? UrlLoadStrategy::ALWAYS_IN_INCOGNITO
-                                      : UrlLoadStrategy::NORMAL;
+  self.historyCoordinator.loadStrategy = UrlLoadStrategy::NORMAL;
   self.historyCoordinator.delegate = self;
   [self.historyCoordinator start];
 }

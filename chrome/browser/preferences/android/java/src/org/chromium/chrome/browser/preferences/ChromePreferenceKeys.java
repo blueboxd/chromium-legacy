@@ -108,9 +108,6 @@ public final class ChromePreferenceKeys {
      */
     public static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
 
-    /** Number of attempts that have been made to download a survey. */
-    public static final KeyPrefix CHROME_SURVEY_DOWNLOAD_ATTEMPTS =
-            new KeyPrefix("Chrome.Survey.DownloadAttempts.*");
     /**
      * Key prefix used to indicate the timestamps when the survey prompt is displayed for a
      * certain survey.
@@ -303,11 +300,6 @@ public final class ChromePreferenceKeys {
      */
     public static final String FLAGS_CRASH_STREAK_BEFORE_CACHE =
             "Chrome.Flags.CrashStreakBeforeCache";
-
-    /**
-     * Cached value of the native SafeModeForCachedFlags feature flag.
-     */
-    public static final String FLAGS_SAFE_MODE_ENABLED = "Chrome.Flags.SafeModeEnabled";
 
     /**
      * How many runs of Safe Mode for Cached Flags are left before trying a normal run.
@@ -986,7 +978,6 @@ public final class ChromePreferenceKeys {
                 BLUETOOTH_NOTIFICATION_IDS,
                 BOOKMARKS_SORT_ORDER,
                 BOOKMARKS_VISUALS_PREF,
-                CHROME_SURVEY_DOWNLOAD_ATTEMPTS.pattern(),
                 CHROME_SURVEY_PROMPT_DISPLAYED_TIMESTAMP.pattern(),
                 CLIPBOARD_SHARED_URI,
                 CLIPBOARD_SHARED_URI_TIMESTAMP,
@@ -1026,7 +1017,6 @@ public final class ChromePreferenceKeys {
                 FLAGS_CRASH_STREAK_BEFORE_CACHE,
                 FLAGS_FIELD_TRIAL_PARAM_CACHED.pattern(),
                 FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS,
-                FLAGS_SAFE_MODE_ENABLED,
                 FLAGS_SAFE_MODE_RUNS_LEFT,
                 HOMEPAGE_CUSTOM_GURL,
                 HOMEPAGE_LOCATION_POLICY_GURL,

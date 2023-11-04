@@ -29,6 +29,7 @@
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/metrics/address_rewriter_in_profile_subset_metrics.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/granular_filling_metrics.h"
 #include "components/autofill/core/browser/metrics/suggestions_list_metrics.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -343,8 +344,8 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       break;
     }
     case PopupItemId::kDeleteAddressProfile:
-      // TODO(crbug.com/1459990): call the manager to display the delete address
-      // profile dialog.
+      ShowDeleteAddressProfileDialog(
+          suggestion.GetPayload<Suggestion::BackendId>().value());
       break;
     case PopupItemId::kClearForm:
       // This serves as a clear form or undo autofill suggestion, depending on
@@ -556,13 +557,6 @@ void AutofillExternalDelegate::RegisterDeletionCallback(
   deletion_callback_ = std::move(deletion_callback);
 }
 
-void AutofillExternalDelegate::Reset() {
-  // We should not affect UI on the active page due to a prerendered page.
-  if (!manager_->driver().IsPrerendering()) {
-    manager_->client().HideAutofillPopup(PopupHidingReason::kNavigation);
-  }
-}
-
 base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
@@ -579,6 +573,18 @@ void AutofillExternalDelegate::ShowEditAddressProfileDialog(
   }
 }
 
+void AutofillExternalDelegate::ShowDeleteAddressProfileDialog(
+    const std::string& guid) {
+  AutofillProfile* profile =
+      manager_->client().GetPersonalDataManager()->GetProfileByGUID(guid);
+  if (profile) {
+    manager_->client().ShowDeleteAddressProfileDialog(
+        *profile,
+        base::BindOnce(&AutofillExternalDelegate::OnDeleteDialogClosed,
+                       GetWeakPtr(), guid));
+  }
+}
+
 void AutofillExternalDelegate::OnAddressEditorClosed(
     AutofillClient::SaveAddressProfileOfferUserDecision decision,
     AutofillProfile profile) {
@@ -589,6 +595,22 @@ void AutofillExternalDelegate::OnAddressEditorClosed(
       pdm_observation_.Observe(pdm);
     }
     pdm->UpdateProfile(profile);
+    return;
+  }
+  manager_->driver().RendererShouldTriggerSuggestions(
+      query_field_.global_id(),
+      AutofillSuggestionTriggerSource::kShowPromptAfterDialogClosed);
+}
+
+void AutofillExternalDelegate::OnDeleteDialogClosed(const std::string& guid,
+                                                    bool user_accepted_delete) {
+  autofill_metrics::LogDeleteAddressProfileDialogClosed(user_accepted_delete);
+  if (user_accepted_delete) {
+    PersonalDataManager* pdm = manager_->client().GetPersonalDataManager();
+    if (!pdm_observation_.IsObserving()) {
+      pdm_observation_.Observe(pdm);
+    }
+    pdm->RemoveByGUID(guid);
     return;
   }
   manager_->driver().RendererShouldTriggerSuggestions(

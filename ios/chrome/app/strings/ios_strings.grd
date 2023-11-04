@@ -638,8 +638,8 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_BULK_UPLOAD_BOOKMARK_TITLE" desc="The text appears as a note in a confirmation dialog where the user can choose to save some data to their Google Account. When data is saved to the Google Account, it's backed up safely and is available on any device where they're signed in to Chrome. This switch label explains how many  bookmarks are saved locally.">
         {count, plural,
-          =1 {{count} Bookmark}
-          other {{count} Bookmarks}}
+          =1 {{count} bookmark}
+          other {{count} bookmarks}}
       </message>
       <message name="IDS_IOS_BULK_UPLOAD_BUTTON_TITLE" desc="The text is the primary button in a confirmation dialog where the user can choose to save some data to their Google Account. When data is saved to the Google Account, it's backed up safely and is available on any device where they're signed in to Chrome.">
         Save in Account
@@ -659,8 +659,8 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_BULK_UPLOAD_PASSWORD_TITLE" desc="The text appears as a note in a confirmation dialog where the user can choose to save some data to their Google Account. When data is saved to the Google Account, it's backed up safely and is available on any device where they're signed in to Chrome. This switch label explains how many passwords are saved locally.">
         {count, plural,
-          =1 {{count} Password}
-          other {{count} Passwords}}
+          =1 {{count} password}
+          other {{count} passwords}}
       </message>
       <message name="IDS_IOS_BULK_UPLOAD_ON_THIS_DEVICE_SETTINGS_HEADER" desc="The text appears as a note in a confirmation dialog where the user can choose to save some data to their Google Account. When data is saved to the Google Account, it's backed up safely and is available on any device where they're signed in to Chrome. This note explains where the user can go to view and manage individual items. like individual bookmarks or passwords.">
         You can also view and manage these items in your bookmarks, Reading List, or password manager.
@@ -992,13 +992,16 @@ See your search engine’s instructions for deleting your search history, if app
         Switch in Settings…
       </message>
       <message name="IDS_IOS_DEFAULT_BROWSER_VIDEO_PROMO_PRIMARY_BUTTON_TEXT" desc="Text of button that will take users to iOS settings, where they can change the default browser. Used in the video default browser promo [iOS only]">
-        Open Settings
+        Go to Settings…
       </message>
       <message name="IDS_IOS_DEFAULT_BROWSER_VIDEO_PROMO_STEP_1" desc="Text of the row indicating the first step of the instruction to set Chrome as default browser [iOS only]">
         Open "Settings."
       </message>
       <message name="IDS_IOS_DEFAULT_BROWSER_VIDEO_PROMO_SECONDARY_BUTTON_TEXT" desc="Text of button that will dismiss the video default browser promo [iOS only]">
         No, Thanks
+      </message>
+      <message name="IDS_IOS_DEFAULT_BROWSER_VIDEO_PROMO_TERTIARY_BUTTON_TEXT" desc="Text of button that will snooze/remind the user later about the video default browser promo [iOS only]">
+        Remind Me Later
       </message>
       <message name="IDS_IOS_DETECT_ADDRESSES_SETTING_TITLE" desc="Title of the setting to enable address detection in web pages [iOS only]">
         Detect Addresses
@@ -1762,7 +1765,7 @@ See your search engine’s instructions for deleting your search history, if app
         See More
       </message>
       <message name="IDS_IOS_MAGIC_STACK_EDIT_MODAL_TITLE" desc="The title of the edit modal for the Magic Stack. [Length: 10em]">
-        Edit Cards
+        Edit Carousel
       </message>
       <message name="IDS_IOS_MANAGE_YOUR_GOOGLE_ACCOUNT_TITLE" desc="Title for the view in the Settings to open 'Google Account' web page.">
         Manage Your Google Account
@@ -2197,6 +2200,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PARCEL_TRACKING_INFOBAR_PACKAGE_UNTRACKED_SUBTITLE" desc="Text for the subtitle string of the infobar that is displayed after a package is untracked.">
         This package has been successfully untracked.
       </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_OPT_IN_ENABLE_TRACKING" desc="Text for the button that allows the user to enable parcel tracking.">
+        Enable Tracking
+      </message>
       <message name="IDS_IOS_PARCEL_TRACKING_OPT_IN_PRIMARY_ACTION" desc="Text for the primary action string of the parcel tracking opt-in half-sheet screen.">
         Always Track Detected Packages
       </message>
@@ -2227,9 +2233,6 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_PASSWORD" desc="The action button to use the selected credentials to fill the username and password fields on the webpage.">
         Use Password
       </message>
-      <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_NO_THANKS" desc="The action button to dismiss the password bottom sheet and revert to using the keyboard to fill in username and password information on the webpage.">
-        No Thanks
-      </message>
       <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_NO_USERNAME" desc="Text shown for an option in a list of the user's saved passwords, when the user did not save a username along with the password.">
         No Username ••••••••
       </message>
@@ -2239,14 +2242,14 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_SHOW_DETAILS" desc="The password bottom sheet's long press menu item to open the password details page, which displays more information, like username, password and associated website.">
         Show Details
       </message>
+      <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_KEYBOARD" desc="The action button to dismiss the password bottom sheet and revert to using the keyboard to fill in username and password information on the webpage.">
+              Use Keyboard
+            </message>
       <message name="IDS_IOS_PAYMENT_BOTTOM_SHEET_CONTINUE" desc="The action button to use the selected credit card to fill the payment fields on the webpage.">
         Continue
       </message>
       <message name="IDS_IOS_PAYMENT_BOTTOM_SHEET_MANAGE_PAYMENT_METHODS" desc="The payment bottom sheet's long press menu item to open all payment methods view.">
         Manage Payment Methods
-      </message>
-      <message name="IDS_IOS_PAYMENT_BOTTOM_SHEET_NO_THANKS" desc="The action button to dismiss the payment bottom sheet and return to the webpage without autofilling a credit card." meaning="A button to cancel the filling of a credit card info and dismiss the payment bottom sheet.">
-        No Thanks
       </message>
       <message name="IDS_IOS_PAYMENT_BOTTOM_SHEET_SHOW_DETAILS" desc="The payment bottom sheet's long press menu item to open the credit card details view.">
         Show Details
@@ -3137,6 +3140,18 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_PASSWORD_SHARING_PASSWORD_PICKER_NEXT_BUTTON" desc="Button text for the confirm action in the password picker view in the password sharing flow. [iOS only]">
         Next
+      </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_STATUS_PROGRESS_TITLE" desc="Title text on the sharing status view when it is in progress. [iOS only]">
+        Sharing Password
+      </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_SUCCESS_FOOTNOTE" desc="Footnote text on the sharing status view when it succeeds describing how to revoke access to the shared password. [iOS only]">
+        To stop others from using your password, <ph name="BEGIN_LINK">BEGIN_LINK</ph>change it on <ph name="WEBSITE">$1<ex>amazon.com</ex></ph><ph name="END_LINK">END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_SUCCESS_SUBTITLE" desc="Subtitle text on the sharing status view when it succeeds describing that the recipient can now use the shared password. [iOS only]">
+        <ph name="USERNAME">$1<ex>johndoe</ex></ph> can now use your username and password when they use Google Password Manager to sign in to <ph name="WEBSITE">$2<ex>amazon.com</ex></ph>. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_SUCCESS_TITLE" desc="Title text on the sharing status view when it succeeded. [iOS only]">
+        Password Shared
       </message>
       <message name="IDS_IOS_PASSWORD_SHARING_TITLE" desc="Title of the password sharing bottom sheet view. [iOS only]">
         Share Password
@@ -4618,8 +4633,17 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_IOS_PARCEL_TRACKING_CONTEXT_MENU_TITLE" desc="Title for the long-press context menu of the parcel tracking module.">
           This card helps you keep track of your packages and give you important delivery updates.
       </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_CONTEXT_MENU_UNTRACK" desc="Title for the untrack parcel option of the parcel tracking module.">
+          Untrack this package
+      </message>
       <message name="IDS_IOS_PARCEL_TRACKING_MODULE_HIDE_ALERT_TITLE" desc="Title for the alert dialog warning the user they are about to hide the parcel tracking module.">
-          Hiding this Card will Turn Off Auto-Tracking for Future Packages
+          Hiding this Card will Remove All Your Package Tracking Data
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_MODULE_HIDE_ALERT_CANCEL" desc="Title for the item to cancel disabling the Parcel Tracking feature. ">
+          Cancel
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_UNTRACK_SNACKBAR_TITLE" desc="Title for the snackbar indicating a parcel has been untracked. ">
+          Stopped tracking this package
       </message>
       <message name="IDS_IOS_PARCEL_TRACKING_CARRIER_FEDEX" desc="Name of FEDEX Carrier">
           FEDEX

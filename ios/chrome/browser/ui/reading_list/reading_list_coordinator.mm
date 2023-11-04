@@ -44,7 +44,7 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
@@ -641,7 +641,7 @@
     self.shouldShowSignInPromo = _signinPromoViewMediator.showSpinner;
   } else {
     const std::string lastSignedInGaiaId =
-        _prefService->GetString(prefs::kGoogleServicesLastGaiaId);
+        _prefService->GetString(prefs::kGoogleServicesLastSyncingGaiaId);
     // If the last signed-in user did not remove data during sign-out, don't
     // show the signin promo.
     self.shouldShowSignInPromo = lastSignedInGaiaId.empty();

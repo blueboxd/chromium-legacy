@@ -27,7 +27,7 @@
 #import "ios/chrome/browser/app_launcher/model/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
-#import "ios/chrome/browser/credential_provider_promo/features.h"
+#import "ios/chrome/browser/credential_provider_promo/model/features.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/external_app_util.h"
@@ -96,6 +96,7 @@
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
 #import "ios/chrome/browser/shared/public/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/shared/public/commands/toolbar_commands.h"
+#import "ios/chrome/browser/shared/public/commands/unit_conversion_commands.h"
 #import "ios/chrome/browser/shared/public/commands/web_content_commands.h"
 #import "ios/chrome/browser/shared/public/commands/whats_new_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -110,7 +111,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator_delegate.h"
-#import "ios/chrome/browser/sync/sync_error_browser_agent.h"
+#import "ios/chrome/browser/sync/model/sync_error_browser_agent.h"
 #import "ios/chrome/browser/tab_insertion/model/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
@@ -200,6 +201,7 @@
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator.h"
+#import "ios/chrome/browser/ui/unit_conversion/unit_conversion_coordinator.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #import "ios/chrome/browser/ui/webui/net_export_coordinator.h"
@@ -284,6 +286,7 @@ enum class ToolbarKind {
     SnapshotGeneratorDelegate,
     StoreKitCoordinatorDelegate,
     ToolbarAccessoryCoordinatorDelegate,
+    UnitConversionCommands,
     URLLoadingDelegate,
     WebContentCommands,
     WebNavigationNTPDelegate,
@@ -471,6 +474,10 @@ enum class ToolbarKind {
 
 // Coordinator for Text Zoom.
 @property(nonatomic, strong) TextZoomCoordinator* textZoomCoordinator;
+
+// Coordinator in charge of presenting a unit converter.
+@property(nonatomic, strong)
+    UnitConversionCoordinator* unitConversionCoordinator;
 
 // Opens downloaded Vcard.
 @property(nonatomic, strong) VcardCoordinator* vcardCoordinator;
@@ -669,6 +676,9 @@ enum class ToolbarKind {
   [self.priceNotificationsViewCoordiantor stop];
   self.priceNotificationsViewCoordiantor = nil;
 
+  [self.unitConversionCoordinator stop];
+  self.unitConversionCoordinator = nil;
+
   [self.viewController clearPresentedStateWithCompletion:completion
                                           dismissOmnibox:dismissOmnibox];
 }
@@ -825,6 +835,7 @@ enum class ToolbarKind {
     @protocol(DefaultBrowserPromoCommands),
     @protocol(MiniMapCommands),
     @protocol(ParcelTrackingOptInCommands),
+    @protocol(UnitConversionCommands),
   ];
 
   for (Protocol* protocol in protocols) {
@@ -1386,6 +1397,9 @@ enum class ToolbarKind {
 
   [self.parcelTrackingOptInCoordinator stop];
   self.parcelTrackingOptInCoordinator = nil;
+
+  [self.unitConversionCoordinator stop];
+  self.unitConversionCoordinator = nil;
 }
 
 // Starts independent mediators owned by this coordinator.
@@ -2247,6 +2261,25 @@ enum class ToolbarKind {
   return textZoomCoordinator;
 }
 
+#pragma mark - UnitConversionCommands
+
+- (void)presentUnitConversionForSourceUnit:(NSUnit*)sourceUnit
+                           sourceUnitValue:(double)sourceUnitValue
+                                  location:(CGPoint)location {
+  self.unitConversionCoordinator = [[UnitConversionCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                      sourceUnit:sourceUnit
+                 sourceUnitValue:sourceUnitValue
+                        location:location];
+  [self.unitConversionCoordinator start];
+}
+
+- (void)hideUnitConversion {
+  [self.unitConversionCoordinator stop];
+  self.unitConversionCoordinator = nil;
+}
+
 #pragma mark - URLLoadingDelegate
 
 - (void)animateOpenBackgroundTabFromParams:(const UrlLoadParams&)params
@@ -2558,8 +2591,8 @@ enum class ToolbarKind {
   [self.storeKitCoordinator start];
 }
 
-- (void)showDialogForPassKitPass:(PKPass*)pass {
-  if (self.passKitCoordinator.pass) {
+- (void)showDialogForPassKitPasses:(NSArray<PKPass*>*)passes {
+  if (self.passKitCoordinator.passes) {
     // Another pass is being displayed -- early return (this is unexpected).
     return;
   }
@@ -2568,7 +2601,7 @@ enum class ToolbarKind {
       [[PassKitCoordinator alloc] initWithBaseViewController:self.viewController
                                                      browser:self.browser];
 
-  self.passKitCoordinator.pass = pass;
+  self.passKitCoordinator.passes = passes;
   [self.passKitCoordinator start];
 }
 

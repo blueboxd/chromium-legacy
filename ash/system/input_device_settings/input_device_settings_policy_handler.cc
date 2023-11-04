@@ -17,6 +17,7 @@ mojom::InputDeviceSettingsPolicyPtr GetBooleanPreferencePolicy(
     const std::string& pref_name) {
   mojom::InputDeviceSettingsPolicyPtr policy;
 
+  CHECK(pref_service);
   const auto* pref = pref_service->FindPreference(pref_name);
   if (!pref) {
     return policy;
@@ -35,6 +36,36 @@ mojom::InputDeviceSettingsPolicyPtr GetBooleanPreferencePolicy(
     CHECK(value->is_bool());
     policy = mojom::InputDeviceSettingsPolicy::New(
         mojom::PolicyStatus::kRecommended, value->GetBool());
+  }
+
+  return policy;
+}
+
+mojom::InputDeviceSettingsFkeyPolicyPtr GetFkeyPreferencePolicy(
+    const PrefService* pref_service) {
+  mojom::InputDeviceSettingsFkeyPolicyPtr policy;
+
+  const auto* pref =
+      pref_service->FindPreference(prefs::kExtendedFkeysModifier);
+  if (!pref) {
+    return policy;
+  }
+
+  if (pref->IsManaged()) {
+    auto* value = pref->GetValue();
+    CHECK(value && value->is_int());
+    policy = mojom::InputDeviceSettingsFkeyPolicy::New(
+        mojom::PolicyStatus::kManaged,
+        static_cast<ui::mojom::ExtendedFkeysModifier>(value->GetInt()));
+
+    // Prefs with recommended values must use `GetRecommendedValue` instead
+    // of `IsRecommended` as `IsRecommended` may return false even if the pref
+    // has a recommended value.
+  } else if (auto* value = pref->GetRecommendedValue(); value) {
+    CHECK(value->is_int());
+    policy = mojom::InputDeviceSettingsFkeyPolicy::New(
+        mojom::PolicyStatus::kRecommended,
+        static_cast<ui::mojom::ExtendedFkeysModifier>(value->GetInt()));
   }
 
   return policy;
@@ -77,6 +108,11 @@ void InputDeviceSettingsPolicyHandler::Initialize(PrefService* local_state,
         base::BindRepeating(
             &InputDeviceSettingsPolicyHandler::OnKeyboardPoliciesChanged,
             base::Unretained(this)));
+    pref_change_registrar_.Add(
+        prefs::kExtendedFkeysModifier,
+        base::BindRepeating(
+            &InputDeviceSettingsPolicyHandler::OnKeyboardPoliciesChanged,
+            base::Unretained(this)));
   }
 
   RefreshKeyboardPolicies(/*notify=*/false);
@@ -87,12 +123,17 @@ void InputDeviceSettingsPolicyHandler::RefreshKeyboardPolicies(bool notify) {
   if (has_user_prefs_) {
     keyboard_policies_.top_row_are_fkeys_policy = GetBooleanPreferencePolicy(
         pref_change_registrar_.prefs(), prefs::kSendFunctionKeys);
+
+    keyboard_policies_.extended_fkeys_policy =
+        GetFkeyPreferencePolicy(pref_change_registrar_.prefs());
   }
 
-  keyboard_policies_.enable_meta_fkey_rewrites_policy =
-      GetBooleanPreferencePolicy(
-          pref_change_registrar_local_state_.prefs(),
-          prefs::kDeviceSwitchFunctionKeysBehaviorEnabled);
+  if (pref_change_registrar_local_state_.prefs()) {
+    keyboard_policies_.enable_meta_fkey_rewrites_policy =
+        GetBooleanPreferencePolicy(
+            pref_change_registrar_local_state_.prefs(),
+            prefs::kDeviceSwitchFunctionKeysBehaviorEnabled);
+  }
 
   if (notify) {
     keyboard_policy_callback_.Run();

@@ -8,6 +8,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_CONTENT_FEATURES_H_
 #define CONTENT_PUBLIC_COMMON_CONTENT_FEATURES_H_
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
@@ -46,12 +48,16 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBrowserVerifiedUserActivationMouse);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCacheControlNoStoreEnterBackForwardCache);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCdmStorageDatabase);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kCdmStorageDatabaseMigration);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kClearCrossSiteCrossBrowsingContextGroupWindowName);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCompositeBGColorAnimation);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCookieDeprecationFacilitatedTesting);
 CONTENT_EXPORT extern const base::FeatureParam<bool>
-    kCookieDeprecationFacilitatedTestingEnableIncognito;
+    kCookieDeprecationFacilitatedTestingEnableOTRProfiles;
+CONTENT_EXPORT extern const base::FeatureParam<std::string>
+    kCookieDeprecationLabel;
+CONTENT_EXPORT extern const char kCookieDeprecationLabelName[];
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCooperativeScheduling);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCrashReporting);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kDevicePosture);

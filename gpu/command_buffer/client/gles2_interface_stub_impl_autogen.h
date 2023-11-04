@@ -1121,6 +1121,9 @@ void GLES2InterfaceStub::FramebufferTextureMultiviewOVR(
     GLint /* baseViewIndex */,
     GLsizei /* numViews */) {}
 void GLES2InterfaceStub::MaxShaderCompilerThreadsKHR(GLuint /* count */) {}
+void GLES2InterfaceStub::TexImage2DSharedImageCHROMIUM(
+    GLuint /* texture */,
+    const GLbyte* /* mailbox */) {}
 GLuint GLES2InterfaceStub::CreateAndTexStorage2DSharedImageCHROMIUM(
     const GLbyte* /* mailbox */) {
   return 0;
@@ -1136,6 +1139,10 @@ void GLES2InterfaceStub::ConvertRGBAToYUVAMailboxesINTERNAL(
     GLenum /* subsampling */,
     const GLbyte* /* mailboxes */) {}
 void GLES2InterfaceStub::ConvertYUVAMailboxesToRGBINTERNAL(
+    GLint /* src_x */,
+    GLint /* src_y */,
+    GLsizei /* width */,
+    GLsizei /* height */,
     GLenum /* planes_yuv_color_space */,
     GLenum /* plane_config */,
     GLenum /* subsampling */,

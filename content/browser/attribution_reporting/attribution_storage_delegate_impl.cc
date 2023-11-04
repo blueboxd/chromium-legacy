@@ -27,6 +27,7 @@
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
+#include "content/browser/attribution_reporting/attribution_constants.h"
 #include "content/browser/attribution_reporting/attribution_features.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
@@ -347,7 +348,8 @@ absl::optional<base::Time> AttributionStorageDelegateImpl::GetReportWindowTime(
     return absl::nullopt;
   }
 
-  return source_time + std::clamp(*declared_window, base::Hours(1),
+  return source_time + std::clamp(*declared_window,
+                                  attribution_reporting::kMinReportWindow,
                                   attribution_reporting::kMaxSourceExpiry);
 }
 
@@ -422,16 +424,10 @@ EventReportWindows AttributionStorageDelegateImpl::GetDefaultEventReportWindows(
   std::vector<base::TimeDelta> end_times;
   switch (source_type) {
     case SourceType::kNavigation:
-      end_times = {
-          config_.event_level_limit.first_navigation_report_window_deadline,
-          config_.event_level_limit.second_navigation_report_window_deadline};
+      end_times = {kDefaultNavigationReportWindow1,
+                   kDefaultNavigationReportWindow2};
       break;
     case SourceType::kEvent:
-      if (kVTCEarlyReportingWindows.Get()) {
-        end_times = {
-            config_.event_level_limit.first_event_report_window_deadline,
-            config_.event_level_limit.second_event_report_window_deadline};
-      }
       break;
   }
 

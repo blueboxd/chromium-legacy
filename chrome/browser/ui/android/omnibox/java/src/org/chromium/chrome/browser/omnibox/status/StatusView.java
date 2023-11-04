@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.status;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RotateDrawable;
@@ -22,6 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,6 +32,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.TooltipCompat;
 
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.components.browser_ui.widget.ChromeTransitionDrawable;
@@ -105,28 +108,39 @@ public class StatusView extends LinearLayout {
 
         configureAccessibilityDescriptions();
 
-        // Set tooltip text in StatusView.
-        setTooltipText(mStatusIconView.getContext().getString(R.string.accessibility_menu_info));
+        if (ChromeFeatureList.sSurfacePolish.isEnabled()) {
+            // Set Icon background size
+            ViewGroup.LayoutParams params = mIconBackground.getLayoutParams();
+            int iconBackgroundSize = getResources().getDimensionPixelSize(
+                    R.dimen.location_bar_status_icon_bg_size_polish);
+            params.width = iconBackgroundSize;
+            params.height = iconBackgroundSize;
+        }
     }
 
     /**
-     * Only set tooltip and hover highlight text when StatusIconView is visible.
+     * Set tooltip text resource id.
+     * @param tooltipTextResId tooltip text resource id.
      */
-    // @TODO(crbug.com/1481178): Move this to StatusViewBinder and StatusProperties.
-    public void setHoverActionOnVisibilityChange() {
-        if (isSearchEngineStatusIconVisible()) {
-            // Set tooltip text.
-            setTooltipText(
-                    mStatusIconView.getContext().getString(R.string.accessibility_menu_info));
-
-            // Set hover highlight.
-            setBackground(
-                    AppCompatResources.getDrawable(getContext(), R.drawable.status_view_ripple));
+    public void setTooltipText(@StringRes int tooltipTextResId) {
+        if (tooltipTextResId != Resources.ID_NULL) {
+            setTooltipText(mStatusIconView.getContext().getString(tooltipTextResId));
         } else {
             setTooltipText(null);
+        }
+    }
+
+    /**
+     * Set hover highlight resource id.
+     * @param hoverHighlightResId background hover highlight resource id.
+     */
+    public void setHoverHighlight(@DrawableRes int hoverHighlightResId) {
+        if (hoverHighlightResId != Resources.ID_NULL && isSearchEngineStatusIconVisible()) {
+            setBackground(AppCompatResources.getDrawable(getContext(), hoverHighlightResId));
+        } else {
             setBackground(null);
         }
-    };
+    }
 
     /**
      * Return whether search engine status icon is visible.
@@ -293,9 +307,6 @@ public class StatusView extends LinearLayout {
 
     private void setStatusIconVisibility(int visibility) {
         mStatusIconView.setVisibility(visibility);
-
-        // Set tooltip text and hover highlight when search engine StatusIcon is visible.
-        setHoverActionOnVisibilityChange();
     }
 
     /** Returns a rotated version of the icon passed in. */
@@ -371,10 +382,14 @@ public class StatusView extends LinearLayout {
     void setStatusIconAlpha(float alpha) {
         if (mIconView == null) return;
         mIconView.setAlpha(alpha);
+
+        if (mIconBackground != null && mIconBackground.getVisibility() == VISIBLE) {
+            mIconBackground.setAlpha(alpha);
+        }
     }
 
     /** Specify the status icon visibility. */
-    void setStatusIconShown(boolean showIcon) {
+    public void setStatusIconShown(boolean showIcon) {
         if (mStatusIconView == null) return;
         // Check if layout was requested before changing our child view.
         boolean wasLayoutPreviouslyRequested = isLayoutRequested();

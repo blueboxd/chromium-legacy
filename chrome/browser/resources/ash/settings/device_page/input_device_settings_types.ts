@@ -104,6 +104,10 @@ export type InputDeviceType = Keyboard|Touchpad|Mouse|PointingStick;
 
 export type InputDeviceSettingsPolicy =
     InputDeviceSettingsTypes.InputDeviceSettingsPolicy;
+
+export type InputDeviceSettingsFkeyPolicy =
+    InputDeviceSettingsTypes.InputDeviceSettingsFkeyPolicy;
+
 export type KeyboardPolicies = InputDeviceSettingsTypes.KeyboardPolicies;
 export type MousePolicies = InputDeviceSettingsTypes.MousePolicies;
 
@@ -146,6 +150,11 @@ export type StaticShortcutAction =
     InputDeviceSettingsTypes.StaticShortcutAction;
 export const StaticShortcutAction =
     InputDeviceSettingsTypes.StaticShortcutAction;
+
+export type CustomizationRestriction =
+    InputDeviceSettingsTypes.CustomizationRestriction;
+export const CustomizationRestriction =
+    InputDeviceSettingsTypes.CustomizationRestriction;
 
 export interface KeyboardObserverInterface {
   // Fired when the keyboard list is updated.

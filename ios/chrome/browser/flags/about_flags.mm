@@ -73,7 +73,7 @@
 #import "ios/chrome/browser/bring_android_tabs/model/features.h"
 #import "ios/chrome/browser/browsing_data/model/browsing_data_features.h"
 #import "ios/chrome/browser/crash_report/model/features.h"
-#import "ios/chrome/browser/credential_provider_promo/features.h"
+#import "ios/chrome/browser/credential_provider_promo/model/features.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/find_in_page/util.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
@@ -1205,9 +1205,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDefaultBrowserTriggerCriteriaExperiment)},
     {"default-browser-video-in-settings",
-     flag_descriptions::kDBVideoInSettingsName,
-     flag_descriptions::kDBVideoInSettingsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kDBVideoInSettings)},
+     flag_descriptions::kDefaultBrowserVideoInSettingsName,
+     flag_descriptions::kDefaultBrowserVideoInSettingsDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kDefaultBrowserVideoInSettings)},
     {"fullscreen-promo-on-omnibox-copy-paste",
      flag_descriptions::kFullScreenPromoOnOmniboxCopyPasteName,
      flag_descriptions::kFullScreenPromoOnOmniboxCopyPasteDescription,
@@ -1671,6 +1671,14 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableVirtualCardsDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableVirtualCards)},
+    {"ios-incognito-downloads-warning",
+     flag_descriptions::kIOSIncognitoDownloadsWarningName,
+     flag_descriptions::kIOSIncognitoDownloadsWarningDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kIOSIncognitoDownloadsWarning)},
+    {"omnibox-shortcuts-database-ios",
+     flag_descriptions::kOmniboxPopulateShortcutsDatabaseName,
+     flag_descriptions::kOmniboxPopulateShortcutsDatabaseDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kOmniboxPopulateShortcutsDatabase)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

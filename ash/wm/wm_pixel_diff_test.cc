@@ -81,11 +81,12 @@ TEST_F(WmPixelDiffTest, OverviewAndDesksBarBasic) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "overview_and_desks_bar_basic",
-      /*revision_number=*/9, desk_widget, overview_widget1, overview_widget2,
+      /*revision_number=*/10, desk_widget, overview_widget1, overview_widget2,
       overview_widget3));
 }
 
-TEST_F(WmPixelDiffTest, OverviewTabletSnap) {
+// TODO(crbug.com/1479278): Test is flaky.
+TEST_F(WmPixelDiffTest, DISABLED_OverviewTabletSnap) {
   UpdateDisplay("1600x1000");
 
   ShellTestApi().SetTabletModeEnabledForTest(true);
@@ -118,7 +119,7 @@ TEST_F(WmPixelDiffTest, OverviewTabletSnap) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "overview_tablet_snap",
-      /*revision_number=*/1, snapped_window_widget, overview_widget2,
+      /*revision_number=*/2, snapped_window_widget, overview_widget2,
       overview_widget3));
 }
 
@@ -159,7 +160,7 @@ TEST_F(WmPixelDiffTest, WindowCycleBasic) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "window_cycle_basic",
-      /*revision_number=*/9, widget));
+      /*revision_number=*/8, widget));
 }
 
 }  // namespace ash

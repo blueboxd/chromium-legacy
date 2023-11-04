@@ -698,17 +698,6 @@ TEST_F(AttributionStorageTest, ReportTimes) {
               kSourceTime + base::Days(4),
       },
       {
-          .desc = "clamp-aggregatable-report-window",
-          .expiry = base::Days(4),
-          .aggregatable_report_window = base::Days(30),
-          .expected_expiry_time = kSourceTime + base::Days(4),
-          .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(0), {base::Days(4)}),
-          .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(4),
-      },
-      {
           .desc = "all",
           .expiry = base::Days(9),
           .event_report_window = base::Days(7),
@@ -728,7 +717,8 @@ TEST_F(AttributionStorageTest, ReportTimes) {
     reg.event_report_windows =
         attribution_reporting::EventReportWindows::CreateSingularWindow(
             test_case.event_report_window.value_or(reg.expiry));
-    reg.aggregatable_report_window = test_case.aggregatable_report_window;
+    reg.aggregatable_report_window =
+        test_case.aggregatable_report_window.value_or(reg.expiry);
 
     storage()->StoreSource(
         StorableSource(reporting_origin, std::move(reg),
@@ -1283,15 +1273,15 @@ TEST_F(AttributionStorageTest, DeleteAllNullDeleteBegin) {
 }
 
 TEST_F(AttributionStorageTest, MaxAttributionsBetweenSites) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = 2;
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = 2;
+    return r;
+  }());
 
   SourceBuilder source_builder = TestAggregatableSourceProvider().GetBuilder();
   storage()->StoreSource(source_builder.Build());
@@ -1342,15 +1332,15 @@ TEST_F(AttributionStorageTest, MaxAttributionsBetweenSites) {
 
 TEST_F(AttributionStorageTest,
        MaxAttributionReportsBetweenSites_IgnoresSourceType) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = 1;
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = 1;
+    return r;
+  }());
 
   storage()->StoreSource(
       SourceBuilder().SetSourceType(SourceType::kNavigation).Build());
@@ -1444,15 +1434,15 @@ TEST_F(AttributionStorageTest,
 }
 
 TEST_F(AttributionStorageTest, NeverAttributeImpression_RateLimitsChanged) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = 1;
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = 1;
+    return r;
+  }());
 
   delegate()->set_randomized_response(
       std::vector<AttributionStorageDelegate::FakeReport>{});
@@ -1474,15 +1464,15 @@ TEST_F(AttributionStorageTest, NeverAttributeImpression_RateLimitsChanged) {
 
 TEST_F(AttributionStorageTest,
        NeverAttributeSource_AggregatableReportStoredAndRateLimitsChanged) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = 2;
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = 2;
+    return r;
+  }());
 
   SourceBuilder builder = TestAggregatableSourceProvider().GetBuilder();
 
@@ -1890,15 +1880,15 @@ TEST_F(AttributionStorageTest, MultipleImpressions_CorrectDeactivation) {
 }
 
 TEST_F(AttributionStorageTest, FalselyAttributeImpression_ReportStored) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = 2;
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = 2;
+    return r;
+  }());
 
   const base::Time fake_report_time = base::Time::Now() + kReportDelay;
   const base::Time fake_trigger_time = fake_report_time - base::Microseconds(1);
@@ -3067,14 +3057,14 @@ TEST_F(AttributionStorageTest, MaybeCreateAndStoreReport_ReturnsNewReport) {
 // This is tested more thoroughly by the `RateLimitTable` unit tests. Here just
 // ensure that the rate limits are consulted at all.
 TEST_F(AttributionStorageTest, MaxReportingOriginsPerSource) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins = 2;
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = std::numeric_limits<int64_t>::max();
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins = 2;
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = std::numeric_limits<int64_t>::max();
+    return r;
+  }());
 
   auto result = storage()->StoreSource(
       SourceBuilder()
@@ -3104,14 +3094,15 @@ TEST_F(AttributionStorageTest, MaxReportingOriginsPerSource) {
 // This is tested more thoroughly by the `RateLimitTable` unit tests. Here just
 // ensure that the rate limits are consulted at all.
 TEST_F(AttributionStorageTest, MaxReportingOriginsPerAttribution) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = base::TimeDelta::Max();
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins = 2;
-        r.max_attributions = std::numeric_limits<int64_t>::max();
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = base::TimeDelta::Max();
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = 2;
+    r.max_attributions = std::numeric_limits<int64_t>::max();
+    return r;
+  }());
 
   const auto origin1 = *SuitableOrigin::Deserialize("https://r1.test");
   const auto origin2 = *SuitableOrigin::Deserialize("https://r2.test");
@@ -3840,15 +3831,15 @@ TEST_F(AttributionStorageTest, AggregationCoordinator_RoundTrip) {
 
 TEST_F(AttributionStorageTest, MaxAttributions_BoundedBySourceTimeWindow) {
   constexpr base::TimeDelta kTimeWindow = base::Days(1);
-  delegate()->set_rate_limits(
-      RateLimitWith([kTimeWindow](AttributionConfig::RateLimitConfig& r) {
-        r.time_window = kTimeWindow;
-        r.max_source_registration_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attribution_reporting_origins =
-            std::numeric_limits<int64_t>::max();
-        r.max_attributions = 1;
-      }));
+  delegate()->set_rate_limits([kTimeWindow]() {
+    AttributionConfig::RateLimitConfig r;
+    r.time_window = kTimeWindow;
+    r.max_source_registration_reporting_origins =
+        std::numeric_limits<int64_t>::max();
+    r.max_attribution_reporting_origins = std::numeric_limits<int64_t>::max();
+    r.max_attributions = 1;
+    return r;
+  }());
 
   storage()->StoreSource(SourceBuilder().SetExpiry(base::Days(7)).Build());
 
@@ -4009,10 +4000,11 @@ TEST_F(AttributionStorageTest, MaximumAggregatableReportsPerSource) {
 }
 
 TEST_F(AttributionStorageTest, MaxSourceReportingOriginsPerSite) {
-  delegate()->set_rate_limits(
-      RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
-        r.max_reporting_origins_per_source_reporting_site = 1;
-      }));
+  delegate()->set_rate_limits([]() {
+    AttributionConfig::RateLimitConfig r;
+    r.max_reporting_origins_per_source_reporting_site = 1;
+    return r;
+  }());
 
   auto store_source = [&](std::string source, std::string reporting) {
     return storage()

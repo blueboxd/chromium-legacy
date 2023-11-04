@@ -9,6 +9,7 @@
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
 #include "base/export_template.h"
 #include "base/values.h"
+#include "ui/events/ash/mojom/extended_fkeys_modifier.mojom-shared.h"
 #include "ui/events/devices/input_device.h"
 
 class AccountId;
@@ -63,6 +64,13 @@ ASH_EXPORT bool ShouldPersistSetting(
     bool force_persistence,
     const base::Value::Dict* existing_settings_dict);
 
+ASH_EXPORT bool ShouldPersistFkeySetting(
+    const mojom::InputDeviceSettingsFkeyPolicyPtr& policy,
+    base::StringPiece setting_key,
+    absl::optional<ui::mojom::ExtendedFkeysModifier> new_value,
+    ui::mojom::ExtendedFkeysModifier default_value,
+    const base::Value::Dict* existing_settings_dict);
+
 // Templates exported for each valid value type.
 extern template EXPORT_TEMPLATE_DECLARE(ASH_EXPORT) bool ShouldPersistSetting(
     base::StringPiece setting_key,
@@ -108,6 +116,13 @@ ASH_EXPORT std::vector<mojom::ButtonRemappingPtr>
 ConvertListToButtonRemappingArray(const base::Value::List& list);
 
 ASH_EXPORT bool IsKeyboardPretendingToBeMouse(const ui::InputDevice& device);
+
+// Returns whether the given keyboard is ChromeOS layout keyboard.
+ASH_EXPORT bool IsChromeOSKeyboard(const mojom::Keyboard& keyboard);
+
+// This helper function checks the customization restriction.
+ASH_EXPORT mojom::CustomizationRestriction GetCustomizationRestriction(
+    const ui::InputDevice& device);
 
 }  // namespace ash
 

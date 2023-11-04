@@ -615,8 +615,6 @@ class CORE_EXPORT LocalFrame final
 
   void ResumeSubresourceLoading();
 
-  void AnimateSnapFling(base::TimeTicks monotonic_time);
-
   ClientHintsPreferences& GetClientHintsPreferences() {
     return client_hints_preferences_;
   }
@@ -888,6 +886,8 @@ class CORE_EXPORT LocalFrame final
 
   // Sets a ResourceCache hosted by another frame in a different renderer.
   void SetResourceCacheRemote(mojo::PendingRemote<mojom::blink::ResourceCache>);
+
+  bool IsSameOrigin();
 
  private:
   friend class FrameNavigationDisabler;

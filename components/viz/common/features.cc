@@ -252,13 +252,6 @@ BASE_FEATURE(kOnBeginFrameThrottleVideo,
              "OnBeginFrameThrottleVideo",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When this feature is enabled, unsolicited compositor frame submission is
-// treated as the client wishes to receive subsequent BeginFrame events, as if
-// CompositorFrameSink::SetNeedsBeginFrame(true) is called.
-BASE_FEATURE(kAutoNeedsBeginFrame,
-             "AutoNeedsBeginFrame",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSharedBitmapToSharedImage,
              "SharedBitmapToSharedImage",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -317,7 +310,7 @@ BASE_FEATURE(kDrawImmediatelyWhenInteractive,
 // cases in production.
 BASE_FEATURE(kInvalidateLocalSurfaceIdPreCommit,
              "InvalidateLocalSurfaceIdPreCommit",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsDelegatedCompositingEnabled() {
   return base::FeatureList::IsEnabled(kDelegatedCompositing);
@@ -455,10 +448,6 @@ bool ShouldRendererAllocateImages() {
 
 bool IsOnBeginFrameAcksEnabled() {
   return base::FeatureList::IsEnabled(features::kOnBeginFrameAcks);
-}
-
-bool IsAutoNeedsBeginFrameEnabled() {
-  return base::FeatureList::IsEnabled(features::kAutoNeedsBeginFrame);
 }
 
 bool ShouldDrawImmediatelyWhenInteractive() {

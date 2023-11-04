@@ -564,9 +564,9 @@ void GpuServiceImpl::UpdateGPUInfo() {
       TRACE_ID_LOCAL(this), now);
 }
 
-void GpuServiceImpl::UpdateGPUInfoGL() {
+void GpuServiceImpl::UpdateGPUInfoGL(gl::GLDisplay* display) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  gpu::CollectGraphicsInfoGL(&gpu_info_, GetContextState()->display());
+  gpu::CollectGraphicsInfoGL(&gpu_info_, display);
   gpu_host_->DidUpdateGPUInfo(gpu_info_);
 }
 
@@ -1146,7 +1146,8 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
 
   auto channel_token = base::UnguessableToken::Create();
   gpu::GpuChannel* gpu_channel = gpu_channel_manager_->EstablishChannel(
-      channel_token, client_id, client_tracing_id, is_gpu_host);
+      channel_token, client_id, client_tracing_id, is_gpu_host, gpu_extra_info_,
+      gpu_memory_buffer_factory_.get());
 
   if (!gpu_channel) {
     // This returns a null handle, which is treated by the client as a failure
@@ -1269,7 +1270,7 @@ void GpuServiceImpl::GpuSwitched(gl::GpuPreference active_gpu_heuristic) {
     ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched(
         active_gpu_heuristic);
   }
-  GpuServiceImpl::UpdateGPUInfoGL();
+  GpuServiceImpl::UpdateGPUInfoGL(GetContextState()->display());
 }
 
 void GpuServiceImpl::DisplayAdded() {
@@ -1371,7 +1372,7 @@ void GpuServiceImpl::OnBackgroundedOnMainThread() {
     visibility_changed_callback_.Run(false);
     if (gpu_preferences_.enable_gpu_benchmarking_extension) {
       ++gpu_info_.visibility_callback_call_count;
-      UpdateGPUInfoGL();
+      UpdateGPUInfoGL(GetContextState()->display());
     }
   }
 }
@@ -1393,7 +1394,7 @@ void GpuServiceImpl::OnForegroundedOnMainThread() {
     visibility_changed_callback_.Run(true);
     if (gpu_preferences_.enable_gpu_benchmarking_extension) {
       ++gpu_info_.visibility_callback_call_count;
-      UpdateGPUInfoGL();
+      UpdateGPUInfoGL(GetContextState()->display());
     }
   }
   gpu_channel_manager_->OnApplicationForegounded();

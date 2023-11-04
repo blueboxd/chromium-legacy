@@ -55,6 +55,9 @@ constexpr char kPointingStickDeviceSettingsDictPref[] =
     "settings.pointing_stick.devices";
 constexpr char kTouchpadDeviceSettingsDictPref[] = "settings.touchpad.devices";
 
+// Dictionary pref containing the internal keyboard's settings.
+constexpr char kKeyboardInternalSettings[] = "settings.keyboard.internal";
+
 // Pref which contains a list of previously seen imposter keyboards that we know
 // to be valid (ie false positives).
 constexpr char kKeyboardDeviceImpostersListPref[] =
@@ -87,6 +90,15 @@ constexpr char kSixPackKeyDelete[] = "delete";
 constexpr char kSixPackKeyInsert[] = "insert";
 constexpr char kKeyboardSettingF11[] = "f11";
 constexpr char kKeyboardSettingF12[] = "f12";
+
+constexpr char kKeyboardUpdateSettingsMetricInfo[] =
+    "settings.keyboard.update_settings_info";
+constexpr char kMouseUpdateSettingsMetricInfo[] =
+    "settings.mouse.update_settings_info";
+constexpr char kTouchpadUpdateSettingsMetricInfo[] =
+    "settings.touchpad.update_settings_info";
+constexpr char kPointingStickUpdateSettingsMetricInfo[] =
+    "settings.pointing_stick.update_settings_info";
 
 // Mouse settings dictionary keys.
 constexpr char kMouseSettingSwapRight[] = "swap_right";

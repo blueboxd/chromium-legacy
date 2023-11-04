@@ -15,17 +15,21 @@
 namespace exo {
 namespace {
 
-// If in ReactiveFrameSubmission mode and the remote side supports
-// AutoNeedsBeginFrame, notifies the remote side to pause BeginFrame requests
-// after the client hasn't produced frames for kPauseBeginFrameThreshold frames.
-// Using a number so that the feature kicks in relatively quickly, but it is
-// also not overly sensitive when the system occasionally drops frames.
+// If in ReactiveFrameSubmission and AutoNeedsBeginFrame mode, notifies the
+// remote side to pause BeginFrame requests after the client hasn't produced
+// frames for kPauseBeginFrameThreshold frames. Using a number so that the
+// feature kicks in relatively quickly, but it is also not overly sensitive when
+// the system occasionally drops frames.
 constexpr int32_t kPauseBeginFrameThreshold = 5;
 
 }  // namespace
 
 BASE_FEATURE(kExoReactiveFrameSubmission,
              "ExoReactiveFrameSubmission",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kExoAutoNeedsBeginFrame,
+             "ExoAutoNeedsBeginFrame",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 ////////////////////////////////////////////////////////////////////////////////

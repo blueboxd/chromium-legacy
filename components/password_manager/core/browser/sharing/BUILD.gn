@@ -31,6 +31,7 @@ source_set("sharing") {
     "//base",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser:password_form",
+    "//components/password_manager/core/browser/features:password_features",
     "//components/prefs",
     "//components/signin/public/identity_manager",
     "//components/sync/base",
@@ -43,6 +44,7 @@ source_set("sharing") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("test_support") {

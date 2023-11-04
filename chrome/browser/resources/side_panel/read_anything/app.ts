@@ -333,8 +333,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         loadTimeData.getString('readAnythingLoadingMessage');
     this.emptyStateSubheading_ = '';
     this.hasContent_ = false;
-    this.synth.cancel();
-    this.onSpeechStopped();
+    if (this.isReadAloudEnabled_) {
+      this.synth.cancel();
+      this.onSpeechStopped();
+    }
   }
 
   // TODO(crbug.com/1474951): Handle focus changes for speech, including
@@ -460,6 +462,23 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     utterance.volume = defaultUtteranceSettings.volume;
     utterance.pitch = defaultUtteranceSettings.pitch;
     utterance.rate = defaultUtteranceSettings.rate;
+
+    // TODO(crbug.com/1474951): Add tests for pause button
+    utterance.onstart = event => {
+      const toolbar = this.shadowRoot?.getElementById('toolbar');
+      assert(toolbar);
+      if (toolbar instanceof ReadAnythingToolbar) {
+        toolbar.showVoicePreviewPlaying(event.utterance.voice);
+      }
+    };
+
+    utterance.onend = () => {
+      const toolbar = this.shadowRoot?.getElementById('toolbar');
+      assert(toolbar);
+      if (toolbar instanceof ReadAnythingToolbar) {
+        toolbar.showVoicePreviewDone();
+      }
+    };
 
     this.synth.speak(utterance);
   }

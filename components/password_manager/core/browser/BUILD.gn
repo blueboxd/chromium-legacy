@@ -27,6 +27,7 @@ source_set("sql_builder") {
     "//base",
     "//sql",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("browser") {
@@ -169,24 +170,15 @@ static_library("browser") {
     "password_store.cc",
     "password_store.h",
     "password_store_backend.h",
-    "password_store_backend_error.cc",
-    "password_store_backend_error.h",
     "password_store_backend_metrics_recorder.cc",
     "password_store_backend_metrics_recorder.h",
     "password_store_built_in_backend.cc",
     "password_store_built_in_backend.h",
-    "password_store_change.cc",
-    "password_store_change.h",
-    "password_store_consumer.cc",
-    "password_store_consumer.h",
     "password_store_factory_util.cc",
     "password_store_factory_util.h",
-    "password_store_interface.h",
     "password_store_signin_notifier.h",
     "password_store_sync.cc",
     "password_store_sync.h",
-    "password_store_util.cc",
-    "password_store_util.h",
     "password_sync_util.cc",
     "password_sync_util.h",
     "password_ui_utils.cc",
@@ -235,9 +227,11 @@ static_library("browser") {
   ]
 
   all_dependent_configs = [ ":password_reuse_detection_config" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   public_deps = [
     ":password_form",
+    ":password_store_interface",
     ":sql_builder",
     "//base",
     "//components/password_manager/core/browser/affiliation",
@@ -392,6 +386,30 @@ source_set("password_form") {
     "//components/signin/public/base",
     "//url",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+source_set("password_store_interface") {
+  sources = [
+    "interactions_stats.cc",
+    "interactions_stats.h",
+    "password_store_backend_error.cc",
+    "password_store_backend_error.h",
+    "password_store_change.cc",
+    "password_store_change.h",
+    "password_store_consumer.cc",
+    "password_store_consumer.h",
+    "password_store_interface.h",
+    "password_store_util.cc",
+    "password_store_util.h",
+  ]
+  deps = [
+    ":password_form",
+    "//base",
+    "//components/keyed_service/core",
+    "//url",
+  ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 if (is_android) {
@@ -428,6 +446,7 @@ static_library("password_hash_data") {
     "//crypto",
     "//google_apis",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("hash_password_manager") {
@@ -442,6 +461,7 @@ static_library("hash_password_manager") {
     "//components/password_manager/core/common",
     "//components/prefs",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("test_support") {
@@ -555,7 +575,6 @@ source_set("unit_tests") {
     "password_access_authenticator_unittest.cc",
     "password_account_storage_settings_watcher_unittest.cc",
     "password_autofill_manager_unittest.cc",
-    "password_bubble_experiment_unittest.cc",
     "password_change_success_tracker_impl_unittest.cc",
     "password_counter_unittest.cc",
     "password_feature_manager_impl_unittest.cc",

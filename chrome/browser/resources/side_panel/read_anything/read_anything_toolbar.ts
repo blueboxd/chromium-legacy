@@ -7,6 +7,7 @@ import '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import '//resources/cr_elements/cr_icons.css.js';
 import '//resources/cr_elements/icons.html.js';
 import '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import '//resources/cr_elements/md_select.css.js';
 import './icons.html.js';
 
 import {AnchorAlignment, CrActionMenuElement, ShowAtPositionConfig} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
@@ -31,6 +32,12 @@ export interface ReadAnythingToolbar {
     voiceSelectionMenu: CrActionMenuElement,
     fontTemplate: DomRepeat,
   };
+}
+
+interface VoiceDropdown {
+  voice: SpeechSynthesisVoice;
+  selected: boolean;
+  previewPlaying: boolean;
 }
 
 interface MenuStateItem<T> {
@@ -230,22 +237,11 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     },
   ];
 
-  private voiceSelectionOptions_: Array<MenuStateItem<SpeechSynthesisVoice>> =
-      [];
+  private voiceSelectionOptions_: Array<MenuStateItem<VoiceDropdown>> = [];
 
   private rateOptions_: number[] = [0.5, 0.8, 1, 1.2, 1.5, 2, 3, 4];
 
   private textStyleOptions_: MenuButton[] = [
-    {
-      id: 'font-size',
-      icon: 'read-anything:font-size',
-      menuToOpen: () => this.$.fontSizeMenu,
-    },
-    {
-      id: 'font',
-      icon: 'read-anything:font',
-      menuToOpen: () => this.$.fontMenu,
-    },
     {
       id: 'color',
       icon: 'read-anything:color',
@@ -278,14 +274,28 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
   override connectedCallback() {
     super.connectedCallback();
     this.isReadAloudEnabled_ = chrome.readingMode.isReadAloudEnabled;
+    if (this.isReadAloudEnabled_) {
+      this.textStyleOptions_.unshift(
+          {
+            id: 'font-size',
+            icon: 'read-anything:font-size',
+            menuToOpen: () => this.$.fontSizeMenu,
+          },
+          {
+            id: 'font',
+            icon: 'read-anything:font',
+            menuToOpen: () => this.$.fontMenu,
+          },
+      );
+
+      const shadowRoot = this.shadowRoot;
+      assert(shadowRoot);
+      const toolbar = shadowRoot.getElementById('toolbar-container');
+      assert(toolbar);
+      new ResizeObserver(this.onToolbarResize_).observe(toolbar);
+    }
 
     this.updateFonts();
-
-    const shadowRoot = this.shadowRoot;
-    assert(shadowRoot);
-    const toolbar = shadowRoot.getElementById('toolbar-container');
-    assert(toolbar);
-    new ResizeObserver(this.onToolbarResize_).observe(toolbar);
   }
 
   private onToolbarResize_(entries: ResizeObserverEntry[]) {
@@ -294,17 +304,31 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     ReadAnythingToolbar.maybeUpdateMoreOptions(toolbar);
   }
 
-  restoreSettingsFromPrefs(colorSuffix?: string) {
-    const fontNodes = Array.from(this.$.fontMenu.children);
-    fontNodes.forEach((element) => {
-      if (element instanceof HTMLButtonElement) {
-        if (!element.innerText) {
-          return;
-        }
-        // Update the font of each button to be the same as the font text.
-        element.style.fontFamily = element.innerText;
+  private setFontForFontOptions_() {
+    let fontOptions: Element[];
+    if (this.isReadAloudEnabled_) {
+      fontOptions = Array.from(this.$.fontMenu.children);
+    } else {
+      const shadowRoot = this.shadowRoot;
+      assert(shadowRoot);
+      const select =
+          shadowRoot.getElementById('font-select') as HTMLSelectElement;
+      assert(select);
+      fontOptions = Array.from(select.options);
+    }
+
+    fontOptions.forEach(element => {
+      assert(element instanceof HTMLElement);
+      if (!element.innerText) {
+        return;
       }
+      // Update the font of each button to be the same as the font text.
+      element.style.fontFamily = element.innerText;
     });
+  }
+
+  restoreSettingsFromPrefs(colorSuffix?: string) {
+    this.setFontForFontOptions_();
 
     if (this.isReadAloudEnabled_) {
       const speechRate = parseFloat(chrome.readingMode.speechRate.toFixed(1));
@@ -366,6 +390,33 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     ReadAnythingToolbar.maybeUpdateMoreOptions(toolbar);
   }
 
+  showVoicePreviewPlaying(voice: SpeechSynthesisVoice|null) {
+    if (!voice) {
+      return;
+    }
+    this.voiceSelectionOptions_ = this.voiceSelectionOptions_.map(
+        ({data, ...rest}) => ({
+          ...rest,
+          data: {
+            voice: data.voice,
+            selected: data.selected,
+            previewPlaying: this.voicesAreEqual_(data.voice, voice),
+          },
+        }));
+  }
+
+  showVoicePreviewDone() {
+    this.voiceSelectionOptions_ =
+        this.voiceSelectionOptions_.map(({data, ...rest}) => ({
+                                          ...rest,
+                                          data: {
+                                            voice: data.voice,
+                                            selected: data.selected,
+                                            previewPlaying: false,
+                                          },
+                                        }));
+  }
+
   updateUiForPausing() {
     const shadowRoot = this.shadowRoot;
     assert(shadowRoot);
@@ -411,19 +462,37 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     this.openMenu_(this.$.rateMenu, event.target as HTMLElement);
   }
 
+  private voicesAreEqual_(
+      voice1?: SpeechSynthesisVoice, voice2?: SpeechSynthesisVoice): boolean {
+    if (!voice1 || !voice2) {
+      return false;
+    }
+    return voice1.default === voice2.default && voice1.lang === voice2.lang &&
+        voice1.localService === voice2.localService &&
+        voice1.name === voice2.name && voice1.voiceURI === voice2.voiceURI;
+  }
+
   // TODO(crbug.com/1474951): Add unit tests
   private onVoiceSelectionMenuClick_(event: MouseEvent) {
     if (this.contentPage) {
       const voices = this.contentPage.getVoices();
+      const selectedVoice = this.contentPage.getSpeechSynthesisVoice();
+
       this.voiceSelectionOptions_ = Object.entries(voices).reduce(
-          (aggregateVoiceList: Array<MenuStateItem<SpeechSynthesisVoice>>,
+          (aggregateVoiceList: Array<MenuStateItem<VoiceDropdown>>,
            [_, voiceListForLang]) =>
               ([
                 ...aggregateVoiceList,
                 ...(voiceListForLang).map(speechSynthesisVoice => ({
                                             title: speechSynthesisVoice.name,
                                             icon: '',
-                                            data: speechSynthesisVoice,
+                                            data: {
+                                              voice: speechSynthesisVoice,
+                                              selected: this.voicesAreEqual_(
+                                                  selectedVoice,
+                                                  speechSynthesisVoice),
+                                              previewPlaying: false,
+                                            },
                                             callback: () => {},
                                           })),
               ]),
@@ -502,23 +571,32 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
   }
 
   private onVoiceSelectClick_(
-      event: DomRepeatEvent<MenuStateItem<SpeechSynthesisVoice>>) {
+      event: DomRepeatEvent<MenuStateItem<VoiceDropdown>>) {
     // TODO(crbug.com/1474951): Save voice to prefs.
     if (this.contentPage) {
-      this.contentPage.setSpeechSynthesisVoice(event.model.item.data);
+      const selectedVoice = event.model.item.data.voice;
+      this.contentPage.setSpeechSynthesisVoice(selectedVoice);
+      this.voiceSelectionOptions_ = this.voiceSelectionOptions_.map(
+          ({data, ...rest}) => ({
+            ...rest,
+            data: {
+              voice: data.voice,
+              selected: this.voicesAreEqual_(selectedVoice, data.voice),
+              previewPlaying: false,
+            },
+          }));
     }
   }
 
   private onVoicePreviewClick_(
-      event: DomRepeatEvent<MenuStateItem<SpeechSynthesisVoice>>) {
+      event: DomRepeatEvent<MenuStateItem<VoiceDropdown>>) {
     // Because the preview button is layered onto the voice-selection button,
     // the onVoiceSelectClick_() listener is also subscribed to this event. This
     // line is to make sure that the voice-selection callback is not triggered.
     event.stopImmediatePropagation();
 
     if (this.contentPage) {
-      this.contentPage.previewSpeechSynthesisVoice(
-          event.model.item.data as SpeechSynthesisVoice);
+      this.contentPage.previewSpeechSynthesisVoice(event.model.item.data.voice);
     }
   }
 
@@ -548,6 +626,14 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     this.setCheckMarkForMenu_(this.$.fontMenu, event.model.index);
 
     this.closeMenus_();
+  }
+
+  private onFontSelectValueChange_(event: Event) {
+    const fontName = (event.target as HTMLSelectElement).value;
+    chrome.readingMode.onFontChange(fontName);
+    if (this.contentPage) {
+      this.contentPage.updateFont(fontName);
+    }
   }
 
   private onRateClick_(event: DomRepeatEvent<number>) {

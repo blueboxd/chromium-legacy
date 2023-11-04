@@ -829,9 +829,6 @@ crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscree
 # Fractional paint offsets lead to 1px bleed with position sticky.
 crbug.com/1136079 external/wpt/css/css-position/sticky/position-sticky-fractional-offset.html [ Failure ]
 
-# Temporary failure see: https://github.com/w3c/csswg-drafts/issues/9052
-crbug.com/1466293 external/wpt/css/css-position/sticky/position-sticky-margins.html [ Failure ]
-
 # ====== Layout team owned tests from here ======
 
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Failure ]
@@ -1248,8 +1245,6 @@ crbug.com/591099 external/wpt/css/css-text/shaping/shaping-010.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-011.html [ Failure ]
 crbug.com/591099 [ Mac ] fast/backgrounds/quirks-mode-line-box-backgrounds.html [ Failure ]
 crbug.com/591099 [ Win ] fast/backgrounds/quirks-mode-line-box-backgrounds.html [ Failure ]
-crbug.com/591099 [ Linux ] fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
-crbug.com/591099 [ Win ] fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
 crbug.com/835484 fast/css/outline-narrowLine.html [ Failure ]
 crbug.com/591099 [ Mac ] fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-under.html [ Failure ]
 crbug.com/591099 [ Win ] fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-under.html [ Failure ]
@@ -1263,11 +1258,6 @@ crbug.com/591099 fast/writing-mode/auto-sizing-orthogonal-flows.html [ Failure ]
 crbug.com/591099 fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
 crbug.com/835484 paint/invalidation/outline/inline-focus.html [ Failure ]
 crbug.com/591099 paint/invalidation/scroll/fixed-under-composited-fixed-scrolled.html [ Failure ]
-
-# CSS counters failures to be fixed with the new implementation
-crbug.com/990657 fast/css/counters/adding-nodes.html [ Failure ]
-crbug.com/990657 fast/css/counters/counter-reset-000.html [ Failure ]
-crbug.com/990657 fast/css/counters/nesting.html [ Failure ]
 
 # CSS Text failures
 crbug.com/750990 external/wpt/css/css-text/text-transform/text-transform-upperlower-105.html [ Failure ]
@@ -1285,11 +1275,13 @@ crbug.com/1219058 external/wpt/css/css-text/letter-spacing/letter-spacing-nestin
 crbug.com/1219058 external/wpt/css/css-text/letter-spacing/letter-spacing-bidi-001.html [ Failure ]
 crbug.com/1219058 external/wpt/css/css-text/letter-spacing/letter-spacing-end-of-line-001.html [ Failure ]
 crbug.com/1098801 external/wpt/css/css-text/overflow-wrap/overflow-wrap-normal-keep-all-001.html [ Failure ]
-crbug.com/1008029 external/wpt/css/css-text/white-space/pre-wrap-012.html [ Failure ]
-crbug.com/1008029 external/wpt/css/css-text/white-space/pre-wrap-013.html [ Failure ]
 crbug.com/1219041 external/wpt/css/css-text/white-space/text-space-collapse-preserve-breaks-001.xht [ Failure ]
 crbug.com/1219041 external/wpt/css/css-text/white-space/text-space-collapse-discard-001.xht [ Failure ]
 crbug.com/1219041 external/wpt/css/css-text/white-space/text-space-trim-trim-inner-001.xht [ Failure ]
+
+# css counters failures to be fixed with new implementation.
+crbug.com/990657 external/wpt/css/css-contain/contain-style-counters-005.html [ Failure ]
+crbug.com/990657 fast/css/containment/style-contain-dialogue-element.html [ Failure ]
 
 # LayoutNG ref-tests that need to be updated (cannot be rebaselined).
 crbug.com/591099 [ Win ] virtual/text-antialias/ellipsis-with-self-painting-layer.html [ Failure ]
@@ -1824,9 +1816,7 @@ crbug.com/970200 external/wpt/css/css-text/text-indent/text-indent-tab-positions
 crbug.com/1030452 external/wpt/css/css-text/text-transform/text-transform-upperlower-016.html [ Failure ]
 
 crbug.com/1008029 [ Mac ] external/wpt/css/css-text/white-space/pre-wrap-018.html [ Failure ]
-crbug.com/1008029 external/wpt/css/css-text/white-space/pre-wrap-019.html [ Failure ]
 crbug.com/1008029 external/wpt/css/css-text/white-space/textarea-pre-wrap-012.html [ Failure ]
-crbug.com/1008029 external/wpt/css/css-text/white-space/textarea-pre-wrap-013.html [ Failure ]
 
 # Handling of trailing other space separator
 crbug.com/1129834 external/wpt/css/css-text/white-space/trailing-other-space-separators-001.html [ Failure ]
@@ -3040,15 +3030,6 @@ crbug.com/626703 external/wpt/css/selectors/selectors-4/lang-015.html [ Failure 
 crbug.com/626703 external/wpt/css/css-color/system-color-hightlights-vs-getSelection-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/mediacapture-record/MediaRecorder-mimetype.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/text/reftests/opacity.svg [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-align-center-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-align-center-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-align-center-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-align-end-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-align-end-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-align-end-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-align-left-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-align-left-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-align-right-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-box/margin-trim/flex-column-style-change-triggers-layout-block-end.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-box/margin-trim/flex-column-style-change-triggers-layout-block-start.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-box/margin-trim/flex-column-style-change-triggers-layout-block.html [ Failure ]
@@ -3530,12 +3511,14 @@ crbug.com/1463891 external/wpt/css/css-text/text-spacing-trim/text-spacing-trim-
 crbug.com/1463891 external/wpt/css/css-text/text-spacing-trim/text-spacing-trim-colon-001.html?class=halt,vrl [ Failure ]
 crbug.com/1463891 external/wpt/css/css-text/text-spacing-trim/text-spacing-trim-dot-001.html?class=halt,htb [ Failure ]
 crbug.com/1463891 external/wpt/css/css-text/text-spacing-trim/text-spacing-trim-dot-001.html?class=halt,vrl [ Failure ]
+crbug.com/1463891 external/wpt/css/css-text/text-spacing-trim/text-spacing-trim-space-all-001.html?class=chws [ Failure ]
 crbug.com/1463891 virtual/css-text-spacing-trim/external/wpt/css/css-text/text-spacing-trim/text-spacing-trim-001.html?class=halt,htb [ Pass ]
 crbug.com/1463891 virtual/css-text-spacing-trim/external/wpt/css/css-text/text-spacing-trim/text-spacing-trim-001.html?class=halt,vrl [ Pass ]
 crbug.com/1463891 virtual/css-text-spacing-trim/external/wpt/css/css-text/text-spacing-trim/text-spacing-trim-colon-001.html?class=halt,htb [ Pass ]
 crbug.com/1463891 virtual/css-text-spacing-trim/external/wpt/css/css-text/text-spacing-trim/text-spacing-trim-colon-001.html?class=halt,vrl [ Pass ]
 crbug.com/1463891 virtual/css-text-spacing-trim/external/wpt/css/css-text/text-spacing-trim/text-spacing-trim-dot-001.html?class=halt,htb [ Pass ]
 crbug.com/1463891 virtual/css-text-spacing-trim/external/wpt/css/css-text/text-spacing-trim/text-spacing-trim-dot-001.html?class=halt,vrl [ Pass ]
+crbug.com/1463891 virtual/css-text-spacing-trim/external/wpt/css/css-text/text-spacing-trim/text-spacing-trim-space-all-001.html?class=chws [ Pass ]
 
 # Implement text-decoration correctly for vertical text
 crbug.com/1133806 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
@@ -3621,7 +3604,6 @@ crbug.com/849670 http/tests/devtools/service-workers/service-worker-v8-cache.js 
 # ====== Tests from enabling .any.js/.worker.js tests begin here ======
 crbug.com/709227 external/wpt/html/browsers/history/the-location-interface/per-global.window.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/path-objects/2d.path.stroke.prune.arc.worker.html [ Failure ]
-crbug.com/709227 external/wpt/html/canvas/offscreen/path-objects/2d.path.stroke.prune.closed.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/path-objects/2d.path.stroke.prune.curve.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/path-objects/2d.path.stroke.prune.line.worker.html [ Failure ]
 
@@ -5655,6 +5637,7 @@ crbug.com/1090628 external/wpt/infrastructure/reftest/reftest_match_fail-print.h
 crbug.com/1090628 external/wpt/infrastructure/reftest/reftest_mismatch_fail-print.html [ Failure ]
 crbug.com/1090628 external/wpt/infrastructure/reftest/reftest_mismatch_page_margins-print.html [ Failure ]
 crbug.com/1090628 external/wpt/css/printing/fragmented-inline-block-002-print.html [ Failure ]
+crbug.com/1487479 external/wpt/css/printing/remote-origin-iframe-print.html [ Failure ]
 
 crbug.com/1367113 fast/dom/shadow/event-path-load.html [ Crash Failure Pass Timeout ]
 crbug.com/1367113 http/tests/security/cors-check-for-cached-image.html [ Crash Failure Pass Timeout ]
@@ -6214,6 +6197,8 @@ crbug.com/1475772 [ Win ] external/wpt/credential-management/fedcm-hosteddomain.
 
 crbug.com/1404951 [ Win ] external/wpt/credential-management/fedcm-nonce-is-optional.https.html [ Pass Timeout ]
 
+crbug.com/1480054 [ Win ] external/wpt/credential-management/fedcm-loginhint.https.html [ Pass Timeout ]
+
 # We skip these tests in the base test suite in NeverFixTests, but we do want
 # to run them in the virtual test suite.
 crbug.com/1373766 virtual/fedcm-multi-idp/external/wpt/credential-management/fedcm-multi-idp/* [ Pass ]
@@ -6761,5 +6746,14 @@ crbug.com/1486131 [ Linux ] external/wpt/html/browsers/history/the-history-inter
 crbug.com/1481694 [ Win11 ] accessibility/selection-change-notification-on-selection-removed.html [ Failure ]
 crbug.com/1486616 [ Linux ] fast/sub-pixel/sub-pixel-composited-layers.html [ Failure Pass ]
 crbug.com/1487880 [ Linux ] external/wpt/html/semantics/interactive-elements/the-details-element/toggleEvent.html [ Failure Pass ]
-crbug.com/1487886 [ Linux ] external/wpt/long-animation-frame/tentative/loaf-trusted-types.html [ Timeout Pass ]
+crbug.com/1487886 [ Linux ] external/wpt/long-animation-frame/tentative/loaf-trusted-types.html [ Pass Timeout ]
 crbug.com/1487899 [ Linux ] fast/canvas/canvas-toBlob-jpeg-medium-quality.html [ Failure Pass ]
+
+# TODO(crbug.com/1399685): These tests should be added to exclusive_tests in
+# VirtualTestSuites fsa-locking-scheme but linting prevents this.
+external/wpt/fs/FileSystemFileHandle-cross-primitive-locking.https.tentative.worker.html [ Skip Failure ]
+external/wpt/fs/FileSystemFileHandle-sync-access-handle-lock-modes.https.tentative.worker.html [ Skip Failure ]
+external/wpt/fs/FileSystemFileHandle-writable-file-stream-lock-modes.https.tentative.worker.html [ Skip Failure ]
+
+# Gardener 2023-10-02
+crbug.com/1481694 [ Win10.20h2 ] accessibility/selection-change-notification-on-selection-removed.html [ Failure ]

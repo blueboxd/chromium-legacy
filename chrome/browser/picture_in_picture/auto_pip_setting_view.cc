@@ -13,7 +13,7 @@
 // Represents the bubble top border offset, with respect to the
 // Picture-in-Picture window title bar. Used to allow the Bubble to overlap the
 // title bar.
-constexpr int kBubbleTopOffset = -2;
+constexpr int kBubbleTopOffset = -4;
 
 // Used to set the control view buttons corner radius.
 constexpr int kControlViewButtonCornerRadius = 20;
@@ -29,11 +29,6 @@ constexpr int kLayoutBetweenChildSpacing = 8;
 constexpr int kDescriptionViewWidth = 280;
 constexpr int kDescriptionViewHeight = 32;
 
-// Short AutoPiP Description. To be displayed below the Bubble title.
-// TODO(crbug.com/1465529): Localize this.
-constexpr char16_t kAutopipDescription[] =
-    u"Enter picture-in-picture if you switch tabs on certain sites.";
-
 // Bubble fixed width.
 constexpr int kBubbleFixedWidth = 320;
 
@@ -47,7 +42,7 @@ constexpr int kBubbleBorderMdShadowElevation = 2;
 constexpr gfx::Insets kBubbleMargins = gfx::Insets::TLBR(0, 20, 15, 20);
 
 // Bubble title margins.
-constexpr gfx::Insets kBubbleTitleMargins = gfx::Insets::TLBR(15, 15, 10, 15);
+constexpr gfx::Insets kBubbleTitleMargins = gfx::Insets::TLBR(15, 20, 10, 20);
 
 // Maximum origin text width, for cases where the origin needs to be
 // elided.
@@ -115,7 +110,9 @@ void AutoPipSettingView::InitBubble() {
           .SetHorizontalAlignment(gfx::ALIGN_LEFT)
           .SetElideBehavior(gfx::NO_ELIDE)
           .SetMultiLine(true)
-          .SetText(std::u16string(kAutopipDescription))
+          .SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT)
+          .SetText(l10n_util::GetStringUTF16(
+              IDS_AUTO_PICTURE_IN_PICTURE_DESCRIPTION))
           .Build());
   autopip_description_->SetSize(
       gfx::Size(kDescriptionViewWidth, kDescriptionViewHeight));
@@ -195,6 +192,8 @@ void AutoPipSettingView::InitBubbleTitleView(const GURL& origin) {
           .SetHorizontalAlignment(gfx::ALIGN_LEFT)
           .SetElideBehavior(gfx::NO_ELIDE)
           .SetMultiLine(false)
+          .SetTextContext(views::style::CONTEXT_DIALOG_TITLE)
+          .SetTextStyle(views::style::STYLE_PRIMARY)
           .SetText(l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT,
                                               origin_text_))
           .Build());

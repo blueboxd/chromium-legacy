@@ -6263,7 +6263,7 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
             raster_context_provider, ContextGL(), media_video_frame,
             params.target, texture->Object(), adjusted_internalformat,
             params.format, params.type, params.level, unpack_premultiply_alpha_,
-            unpack_flip_y_)) {
+            unpack_flip_y_, /*allow_shared_image_for_direct_upload=*/true)) {
       texture->UpdateLastUploadedFrame(metadata);
       return;
     }
@@ -6280,7 +6280,7 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
             raster_context_provider, ContextGL(), media_video_frame,
             params.target, texture->Object(), adjusted_internalformat,
             params.format, params.type, params.level, unpack_premultiply_alpha_,
-            unpack_flip_y_)) {
+            unpack_flip_y_, /*allow_shared_image_for_direct_upload=*/true)) {
       texture->UpdateLastUploadedFrame(metadata);
       return;
     }

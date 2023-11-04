@@ -4876,39 +4876,41 @@ bool BrowserView::IsFeaturePromoActive(const base::Feature& iph_feature) const {
              iph_feature, user_education::FeaturePromoStatus::kContinued);
 }
 
-bool BrowserView::CanShowFeaturePromo(const base::Feature& iph_feature) const {
-  return initialized_ && feature_promo_controller_ &&
-         feature_promo_controller_->CanShowPromo(iph_feature);
+user_education::FeaturePromoResult BrowserView::CanShowFeaturePromo(
+    const base::Feature& iph_feature) const {
+  if (!initialized_) {
+    return user_education::FeaturePromoResult::kError;
+  }
+
+  if (!feature_promo_controller_) {
+    return user_education::FeaturePromoResult::kBlockedByContext;
+  }
+
+  return feature_promo_controller_->CanShowPromo(iph_feature);
 }
 
-bool BrowserView::MaybeShowFeaturePromo(
-    const base::Feature& iph_feature,
-    user_education::FeaturePromoController::BubbleCloseCallback close_callback,
-    user_education::FeaturePromoSpecification::FormatParameters body_params,
-    user_education::FeaturePromoSpecification::FormatParameters title_params) {
+user_education::FeaturePromoResult BrowserView::MaybeShowFeaturePromo(
+    user_education::FeaturePromoParams params) {
   // Trying to show a promo before the browser is initialized can result in a
   // failure to retrieve accelerators, which can cause issues for screen reader
   // users.
   if (!initialized_) {
-    LOG(ERROR) << "Attempting to show IPH " << iph_feature.name
+    LOG(ERROR) << "Attempting to show IPH " << params.feature->name
                << " before browser initialization; IPH will not be shown.";
-    return false;
+    return user_education::FeaturePromoResult::kError;
   }
-  return feature_promo_controller_ &&
-         feature_promo_controller_->MaybeShowPromo(
-             iph_feature, std::move(close_callback), body_params, title_params);
+
+  if (!feature_promo_controller_) {
+    return user_education::FeaturePromoResult::kBlockedByContext;
+  }
+
+  return feature_promo_controller_->MaybeShowPromo(std::move(params));
 }
 
 bool BrowserView::MaybeShowStartupFeaturePromo(
-    const base::Feature& iph_feature,
-    user_education::FeaturePromoController::StartupPromoCallback promo_callback,
-    user_education::FeaturePromoController::BubbleCloseCallback close_callback,
-    user_education::FeaturePromoSpecification::FormatParameters body_params,
-    user_education::FeaturePromoSpecification::FormatParameters title_params) {
+    user_education::FeaturePromoParams params) {
   return feature_promo_controller_ &&
-         feature_promo_controller_->MaybeShowStartupPromo(
-             iph_feature, std::move(promo_callback), std::move(close_callback),
-             body_params, title_params);
+         feature_promo_controller_->MaybeShowStartupPromo(std::move(params));
 }
 
 bool BrowserView::CloseFeaturePromo(

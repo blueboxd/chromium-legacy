@@ -295,6 +295,11 @@ crbug.com/624256 [ android ] Pixel_SolidColorBackground [ Failure ]
 # Mark all webview tests as RetryOnFailure due to Nexus 5x driver bug.
 crbug.com/950932 [ android-webview-instrumentation android-nexus-5x ] * [ RetryOnFailure ]
 
+# Flakes on Nexus 5X due to timeout.
+crbug.com/1488026 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4 [ RetryOnFailure ]
+crbug.com/1302406 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
+crbug.com/1302406 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4_FourColors_Rot_180 [ RetryOnFailure ]
+
 # Mark 1 webview test as Failure. This test is failing instead of flaking. It
 # might have the same Nexus 5x driver bug as crbug.com/950932 but that
 # should have made this test flaky instead of always failing. Need to
@@ -380,17 +385,11 @@ crbug.com/1471713 [ chromeos chromeos-board-amd64-generic ] Pixel_PrecisionRound
 crbug.com/1468826 [ ventura angle-opengl amd-0x67ef asan ] Pixel_WebGPUDisplayP3 [ Failure ]
 crbug.com/1468826 [ ventura angle-opengl amd-0x67ef asan ] Pixel_WebGPUToDataURL [ Failure ]
 
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_BackgroundImage [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_CSSFilterEffects [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_CSSFilterEffects_NoOverlays [ Failure ]
-crbug.com/1469875 [ amd-0x679e graphite-enabled mac-x86_64 monterey no-asan ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled amd release no-asan ] Pixel_SVGHuge [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled apple ] Pixel_SVGHuge [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled intel release no-asan ] Pixel_SVGHuge [ Failure ]
-crbug.com/1469875 [ apple-angle-metal-renderer:-apple-m2 graphite-enabled mac-arm64 no-asan ventura ] Pixel_WebGPUImportVideoFrame [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
-crbug.com/1469875 [ apple-angle-metal-renderer:-apple-m2 graphite-enabled mac-arm64 no-asan ventura ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
-crbug.com/1469875 [ apple graphite-enabled mac-arm64 no-asan ventura ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
+crbug.com/1469875 [ mac graphite-enabled intel release asan ] Pixel_CSSFilterEffects [ Failure ]
+crbug.com/1469875 [ mac graphite-enabled intel release asan ] Pixel_CSSFilterEffects_NoOverlays [ Failure ]
 
 crbug.com/1474611 [ mac nvidia angle-opengl graphite-disabled ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ Failure ]
 crbug.com/1477318 [ mac ] Pixel_WebGLPreservedAfterTabSwitch [ RetryOnFailure ]

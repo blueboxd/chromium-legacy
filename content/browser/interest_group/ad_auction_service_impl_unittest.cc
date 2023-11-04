@@ -130,17 +130,6 @@ const uint8_t kTestPublicKey[] = {
     0x7d, 0x50, 0xa5, 0x8b, 0x01, 0x68, 0x3e, 0x60, 0x05, 0x2d,
 };
 
-constexpr blink::InterestGroup::AdditionalBidKey kAdditionalBidKey1 = {
-    0x7d, 0x4d, 0x0e, 0x7f, 0x61, 0x53, 0xa6, 0x9b, 0x62, 0x42, 0xb5,
-    0x22, 0xab, 0xbe, 0xe6, 0x85, 0xfd, 0xa4, 0x42, 0x0f, 0x88, 0x34,
-    0xb1, 0x08, 0xc3, 0xbd, 0xae, 0x36, 0x9e, 0xf5, 0x49, 0xfa};
-constexpr blink::InterestGroup::AdditionalBidKey kAdditionalBidKey2 = {
-    0x10, 0x0f, 0xdf, 0x47, 0xfb, 0x94, 0xf1, 0x53, 0x6a, 0x4f, 0x7c,
-    0x3f, 0xda, 0x27, 0x38, 0x3f, 0xa0, 0x33, 0x75, 0xa8, 0xf5, 0x27,
-    0xc5, 0x37, 0xe6, 0xf1, 0x70, 0x3c, 0x47, 0xf9, 0x4f, 0x86};
-constexpr char kAdditionalBidKey2Base64[] =
-    "EA/fR/uU8VNqT3w/2ic4P6Azdaj1J8U35vFwPEf5T4Y=";
-
 // Returns a basic bidder script that sends reports to
 // kOriginStringA/report_bidder.
 std::string BasicBiddingReportScript() {
@@ -703,6 +692,8 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
         /*enabled_features=*/{blink::features::kInterestGroupStorage,
                               blink::features::kAdInterestGroupAPI,
                               blink::features::kFledge,
+                              blink::features::
+                                  kFledgeClearOriginJoinedAdInterestGroups,
                               blink::features::kFledgeNegativeTargeting},
         /*disabled_features=*/{});
     fenced_frame_feature_list_.InitAndEnableFeatureWithParameters(
@@ -899,6 +890,26 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
     interest_service.set_disconnect_handler(run_loop.QuitClosure());
     interest_service->LeaveInterestGroup(
         owner, name, base::BindOnce([](bool failed_well_known_check) {
+          ADD_FAILURE() << "This callback should not be invoked.";
+        }));
+    run_loop.Run();
+  }
+
+  // Calls ClearOriginJoinedInterestGroups() with the provided parameters, and
+  // expects the pipe to be closed, as happens when the renderer makes an
+  // invalid call.
+  void ClearOriginJoinedInterestGroupsAndExpectPipeClosed(
+      const url::Origin& owner,
+      RenderFrameHost* rfh = nullptr) {
+    mojo::Remote<blink::mojom::AdAuctionService> interest_service;
+    AdAuctionServiceImpl::CreateMojoService(
+        rfh ? rfh : main_rfh(), interest_service.BindNewPipeAndPassReceiver());
+
+    base::RunLoop run_loop;
+    interest_service.set_disconnect_handler(run_loop.QuitClosure());
+    interest_service->ClearOriginJoinedInterestGroups(
+        owner, /*interest_groups_to_keep=*/{},
+        base::BindOnce([](bool failed_well_known_check) {
           ADD_FAILURE() << "This callback should not be invoked.";
         }));
     run_loop.Run();
@@ -1215,9 +1226,21 @@ TEST_F(AdAuctionServiceImplTest, JoinMassiveInterestGroupFails) {
   ASSERT_EQ(groups.size(), 0u);
 }
 
-// Non-HTTPS interest groups should be rejected, and result in the pipe being
-// closed.
-TEST_F(AdAuctionServiceImplTest, LeaveInterestGroupOriginNotHttps) {
+// Trying to leave Non-HTTPS interest groups should not be possible, and result
+// in the pipe being closed. Can't check there's an HTTP group that isn't left,
+// since it should be impossible to join one in the first place.
+TEST_F(AdAuctionServiceImplTest, LeaveClearInterestGroupOriginNotHttps) {
+  const GURL kHttpUrl = GURL("http://a.test/");
+  const url::Origin kHttpOrigin = url::Origin::Create(kHttpUrl);
+
+  NavigateAndCommit(kUrlA);
+  LeaveInterestGroupAndExpectPipeClosed(kHttpOrigin, kInterestGroupName);
+  ClearOriginJoinedInterestGroupsAndExpectPipeClosed(kHttpOrigin);
+}
+
+// Non-HTTPS interest origins should not be able to leave groups should be
+// rejected, and result in the pipe being closed.
+TEST_F(AdAuctionServiceImplTest, LeaveClearInterestGroupFrameNotHttps) {
   const GURL kHttpUrl = GURL("http://a.test/");
   const url::Origin kHttpOrigin = url::Origin::Create(kHttpUrl);
 
@@ -1229,6 +1252,12 @@ TEST_F(AdAuctionServiceImplTest, LeaveInterestGroupOriginNotHttps) {
   // The request should be rejected.
   NavigateAndCommit(kHttpUrl);
   LeaveInterestGroupAndExpectPipeClosed(kOriginA, kInterestGroupName);
+  EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
+
+  // Clearing shouldn't leave the IG, even if it's incorrectly executed, since
+  // the joining origin is wrong, but still make sure there's no effect, just in
+  // case.
+  ClearOriginJoinedInterestGroupsAndExpectPipeClosed(kOriginA);
   EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
 }
 
@@ -1456,30 +1485,6 @@ TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
       blink::AuctionServerRequestFlagsEnum::kOmitAds));
   EXPECT_TRUE(group.auction_server_request_flags.Has(
       blink::AuctionServerRequestFlagsEnum::kIncludeFullAds));
-}
-
-// The server JSON updates additionalBidKey for negative interest groups.
-TEST_F(AdAuctionServiceImplTest, UpdateAdditionalBidKey) {
-  // Extra whitespace here to show base64 decode is forgiving.
-  network_responder_->RegisterUpdateResponse(
-      kUpdateUrlPath, base::StringPrintf(R"({"additionalBidKey": "%s "})",
-                                         kAdditionalBidKey2Base64));
-
-  blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
-  interest_group.additional_bid_key = kAdditionalBidKey1;
-  JoinInterestGroupAndFlush(interest_group);
-  EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
-
-  UpdateInterestGroupNoFlush();
-  task_environment()->RunUntilIdle();
-
-  std::vector<StorageInterestGroup> groups =
-      GetInterestGroupsForOwner(kOriginA);
-  ASSERT_EQ(groups.size(), 1u);
-  const auto& group = groups[0].interest_group;
-  EXPECT_EQ(group.name, kInterestGroupName);
-  EXPECT_EQ(*group.additional_bid_key, kAdditionalBidKey2);
 }
 
 // Only set the ads field -- the other fields shouldn't be changed.
@@ -2406,97 +2411,6 @@ TEST_F(AdAuctionServiceImplTest, UpdateInvalidJSONIgnored) {
   ASSERT_EQ(group.ads->size(), 1u);
   EXPECT_EQ(group.ads.value()[0].render_url.spec(),
             "https://example.com/render");
-}
-
-// An InterestGroup can't have both ads and an additionalBidKey.
-TEST_F(AdAuctionServiceImplTest, UpdateAdsOnNegativeInterestGroupFails) {
-  blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
-  interest_group.additional_bid_key = kAdditionalBidKey1;
-  JoinInterestGroupAndFlush(interest_group);
-  EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
-
-  network_responder_->RegisterUpdateResponse(kUpdateUrlPath, R"({
-    "ads": [{"renderURL": "https://example.com/new_render"}]
-  })");
-
-  UpdateInterestGroupNoFlush();
-  task_environment()->RunUntilIdle();
-
-  // Check that the additionalBidKey didn't change.
-  std::vector<StorageInterestGroup> groups =
-      GetInterestGroupsForOwner(kOriginA);
-  ASSERT_EQ(groups.size(), 1u);
-  const auto& group = groups[0].interest_group;
-  ASSERT_TRUE(group.additional_bid_key.has_value());
-  EXPECT_EQ(*group.additional_bid_key, kAdditionalBidKey1);
-
-  // And that the ads weren't set.
-  EXPECT_FALSE(group.ads.has_value());
-}
-
-// An InterestGroup can't have both ads and an additionalBidKey.
-TEST_F(AdAuctionServiceImplTest, UpdateAdsAndAdditionalBidKeyAlwaysFails) {
-  blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
-  JoinInterestGroupAndFlush(interest_group);
-  EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
-
-  network_responder_->RegisterUpdateResponse(
-      kUpdateUrlPath, base::StringPrintf(R"({
-          "ads": [{"renderURL": "https://example.com/new_render"}],
-          "additionalBidKey": "%s"
-      })",
-                                         kAdditionalBidKey2Base64));
-
-  UpdateInterestGroupNoFlush();
-  task_environment()->RunUntilIdle();
-
-  // Check that neither field changed.
-  std::vector<StorageInterestGroup> groups =
-      GetInterestGroupsForOwner(kOriginA);
-  ASSERT_EQ(groups.size(), 1u);
-  const auto& group = groups[0].interest_group;
-  EXPECT_FALSE(group.additional_bid_key.has_value());
-  EXPECT_FALSE(group.ads.has_value());
-}
-
-// An InterestGroup can't have both ads and an additionalBidKey.
-TEST_F(AdAuctionServiceImplTest,
-       UpdateAdditionalBidKeyOnAdsInterestGroupFails) {
-  blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
-  interest_group.bidding_url = kBiddingLogicUrlA;
-  interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
-  interest_group.trusted_bidding_signals_keys.emplace();
-  interest_group.trusted_bidding_signals_keys->push_back("key1");
-  interest_group.ads.emplace();
-  blink::InterestGroup::Ad ad(
-      /*render_url=*/GURL("https://example.com/render"),
-      /*metadata=*/absl::nullopt);
-  interest_group.ads->emplace_back(std::move(ad));
-  JoinInterestGroupAndFlush(interest_group);
-  EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
-
-  network_responder_->RegisterUpdateResponse(
-      kUpdateUrlPath, base::StringPrintf(R"({"additionalBidKey": "%s"})",
-                                         kAdditionalBidKey2Base64));
-
-  UpdateInterestGroupNoFlush();
-  task_environment()->RunUntilIdle();
-
-  // Check that the ads didn't change.
-  std::vector<StorageInterestGroup> groups =
-      GetInterestGroupsForOwner(kOriginA);
-  ASSERT_EQ(groups.size(), 1u);
-  const auto& group = groups[0].interest_group;
-  ASSERT_TRUE(group.ads.has_value());
-  ASSERT_EQ(group.ads->size(), 1u);
-  EXPECT_EQ(group.ads.value()[0].render_url.spec(),
-            "https://example.com/render");
-
-  // And the additionalBidKey wasn't set.
-  EXPECT_FALSE(group.additional_bid_key.has_value());
 }
 
 // UpdateJSONParserCrash fails on Android or with the Rust parser because in
@@ -6873,12 +6787,14 @@ TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
       kUpdateUrlPath, base::StringPrintf(R"({"biddingLogicURL": "%s%s"})",
                                          kOriginStringC, kNewBiddingUrlPath));
 
-  NavigateAndCommit(kUrlC);
-
+  // Join an interest group for origin C from an origin A URL. Do it manually
+  // to bypass permissions checks. It's important to join it from an A URL to
+  // make sure that the ClearOriginJoinedInterestGroups() has no effect,
+  // in addition to the pipe being closed.
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.owner = kOriginC;
   interest_group.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
-  JoinInterestGroupAndFlush(interest_group);
+  manager_->JoinInterestGroup(interest_group, kUrlA);
 
   NavigateAndCommit(kUrlA);
   EXPECT_EQ(1, GetJoinCount(kOriginC, kInterestGroupName));
@@ -6910,6 +6826,9 @@ TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
             base::StringPrintf("%s%s", kOriginStringC, kBiddingUrlPath));
 
   LeaveInterestGroupAndExpectPipeClosed(kOriginC, kInterestGroupName, subframe);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kInterestGroupName));
+
+  ClearOriginJoinedInterestGroupsAndExpectPipeClosed(kOriginC, subframe);
   EXPECT_EQ(1, GetJoinCount(kOriginC, kInterestGroupName));
 }
 

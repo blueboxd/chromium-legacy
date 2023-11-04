@@ -2404,10 +2404,6 @@ void LocalFrame::ResumeSubresourceLoading() {
   pause_handle_receivers_.Clear();
 }
 
-void LocalFrame::AnimateSnapFling(base::TimeTicks monotonic_time) {
-  GetEventHandler().AnimateSnapFling(monotonic_time);
-}
-
 SmoothScrollSequencer* LocalFrame::CreateNewSmoothScrollSequence() {
   if (!IsLocalRoot()) {
     return LocalFrameRoot().CreateNewSmoothScrollSequence();
@@ -3638,6 +3634,15 @@ void LocalFrame::SetResourceCacheRemote(
     mojo::PendingRemote<mojom::blink::ResourceCache> remote) {
   CHECK(GetDocument());
   GetDocument()->Fetcher()->SetResourceCache(std::move(remote));
+}
+
+bool LocalFrame::IsSameOrigin() {
+  const SecurityOrigin* security_origin =
+      GetSecurityContext()->GetSecurityOrigin();
+  const SecurityOrigin* top_security_origin =
+      Tree().Top().GetSecurityContext()->GetSecurityOrigin();
+
+  return security_origin->IsSameOriginWith(top_security_origin);
 }
 
 }  // namespace blink

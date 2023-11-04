@@ -51,6 +51,11 @@ enum RpContext {
   kContinue
 };
 
+enum RpMode {
+  kButton,
+  kWidget
+};
+
 // The details of a single logout request from an identity provider.
 struct LogoutRpsRequest {
   // URL to which the request will be sent. The origin is validated to
@@ -146,6 +151,19 @@ struct IdentityProviderGetParameters {
   // TODO(crbug.com/1335237): consider moving this up to IdentityProviderConfig
   // when/if we support the Context API for Multiple IdPs at a time.
   RpContext context;
+
+  // Controls the UX of the FedCM prompt: modality, behavior when the
+  // user is signed-out, etc.
+  RpMode mode;
+};
+
+// The error which occurred during the retrieval of a token.
+struct TokenError {
+  // Type of error which resulted in an IdentityCredential not being created.
+  string? code;
+
+  // String URL where the user can learn more information about the error.
+  string? url;
 };
 
 // Create a federated sign-in request using the specified provider.
@@ -160,12 +178,14 @@ interface FederatedAuthRequest {
   //   A null URL is returned if the token request failed or did not occur due
   //   to an error earlier in the flow.
   // - Raw content of the token.
+  // - The error which occurred during the retrieval of a token.
   // - Whether the account was automatically selected.
   RequestToken(array<IdentityProviderGetParameters> idp_get_params,
       CredentialMediationRequirement requirement) =>
       (RequestTokenStatus status,
       url.mojom.Url? selected_identity_provider_config_url,
       string? token,
+      TokenError? error,
       bool is_account_auto_selected);
 
   // Requests user info to be generated, given an IDP config.

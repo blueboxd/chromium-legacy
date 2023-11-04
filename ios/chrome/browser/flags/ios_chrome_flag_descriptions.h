@@ -236,8 +236,8 @@ extern const char kCredentialProviderExtensionPromoName[];
 extern const char kCredentialProviderExtensionPromoDescription[];
 
 // Title and description for default browser video in settings experiment.
-extern const char kDBVideoInSettingsName[];
-extern const char kDBVideoInSettingsDescription[];
+extern const char kDefaultBrowserVideoInSettingsName[];
+extern const char kDefaultBrowserVideoInSettingsDescription[];
 
 // Title and description for the flag to enable the default browser blue dot
 // promo.
@@ -511,6 +511,10 @@ extern const char kIOSEditMenuHideSearchWebDescription[];
 extern const char kIOSForceTranslateEnabledName[];
 extern const char kIOSForceTranslateEnabledDescription[];
 
+// Title and description for the flag to enable Incognito downloads education.
+extern const char kIOSIncognitoDownloadsWarningName[];
+extern const char kIOSIncognitoDownloadsWarningDescription[];
+
 // Title and description for the flag to enable the new iOS post-restore
 // sign-in prompt.
 extern const char kIOSNewPostRestoreExperienceName[];
@@ -725,6 +729,10 @@ extern const char kOmniboxOnDeviceTailSuggestionsDescription[];
 // Title and description for the flag to control Omnibox on-focus suggestions.
 extern const char kOmniboxOnFocusSuggestionsName[];
 extern const char kOmniboxOnFocusSuggestionsDescription[];
+
+// Title and description for storing query/match in the shortcuts database.
+extern const char kOmniboxPopulateShortcutsDatabaseName[];
+extern const char kOmniboxPopulateShortcutsDatabaseDescription[];
 
 // Title and description for assisted query stats param reporting.
 extern const char kOmniboxReportAssistedQueryStatsName[];

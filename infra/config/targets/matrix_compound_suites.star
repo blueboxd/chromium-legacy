@@ -273,32 +273,27 @@ targets.legacy_matrix_compound_suite(
                 "CROS_JACUZZI_RELEASE_LKGM",
             ],
         ),
-        "gpu_mediapipe_validating_telemetry_tests": targets.legacy_matrix_config(
+        "gpu_mediapipe_passthrough_telemetry_tests": targets.legacy_matrix_config(
             variants = [
                 "CROS_JACUZZI_RELEASE_LKGM",
             ],
         ),
-        "gpu_validating_telemetry_tests": targets.legacy_matrix_config(
+        "gpu_passthrough_telemetry_tests": targets.legacy_matrix_config(
             variants = [
                 "CROS_JACUZZI_RELEASE_LKGM",
             ],
         ),
-        "gpu_webcodecs_validating_telemetry_test": targets.legacy_matrix_config(
+        "gpu_webcodecs_telemetry_test": targets.legacy_matrix_config(
             variants = [
                 "CROS_JACUZZI_RELEASE_LKGM",
             ],
         ),
-        "gpu_webgl_conformance_validating_telemetry_tests": targets.legacy_matrix_config(
+        "gpu_webgl_conformance_gles_passthrough_telemetry_tests": targets.legacy_matrix_config(
             variants = [
                 "CROS_JACUZZI_RELEASE_LKGM",
             ],
         ),
         "gpu_webgl2_conformance_gles_passthrough_telemetry_tests": targets.legacy_matrix_config(
-            variants = [
-                "CROS_JACUZZI_RELEASE_LKGM",
-            ],
-        ),
-        "gpu_webgl2_conformance_validating_telemetry_tests": targets.legacy_matrix_config(
             variants = [
                 "CROS_JACUZZI_RELEASE_LKGM",
             ],
@@ -483,7 +478,7 @@ targets.legacy_matrix_compound_suite(
                 "SIM_IPAD_AIR_5TH_GEN_17_0",
             ],
         ),
-        "ios_eg2_tests_parallel": targets.legacy_matrix_config(
+        "ios_eg2_tests": targets.legacy_matrix_config(
             mixins = [
                 "xcode_parallelization",
             ],
@@ -492,7 +487,7 @@ targets.legacy_matrix_compound_suite(
                 "SIM_IPAD_AIR_5TH_GEN_17_0",
             ],
         ),
-        "ios_eg2_cq_tests_parallel": targets.legacy_matrix_config(
+        "ios_eg2_cq_tests": targets.legacy_matrix_config(
             mixins = [
                 "xcode_parallelization",
             ],
@@ -575,7 +570,7 @@ targets.legacy_matrix_compound_suite(
                 "SIM_IPHONE_14_17_0",
             ],
         ),
-        "ios_eg2_cq_tests_parallel": targets.legacy_matrix_config(
+        "ios_eg2_cq_tests": targets.legacy_matrix_config(
             mixins = [
                 "xcode_parallelization",
             ],
@@ -590,7 +585,7 @@ targets.legacy_matrix_compound_suite(
                 "SIM_IPAD_PRO_6TH_GEN_17_0",
             ],
         ),
-        "ios_eg2_tests_parallel": targets.legacy_matrix_config(
+        "ios_eg2_tests": targets.legacy_matrix_config(
             mixins = [
                 "xcode_parallelization",
             ],
@@ -694,7 +689,7 @@ targets.legacy_matrix_compound_suite(
                 "SIM_IPHONE_14_PLUS_17_0",
             ],
         ),
-        "ios_eg2_tests_parallel": targets.legacy_matrix_config(
+        "ios_eg2_tests": targets.legacy_matrix_config(
             mixins = [
                 "xcode_parallelization",
             ],
@@ -705,7 +700,7 @@ targets.legacy_matrix_compound_suite(
                 "SIM_IPAD_PRO_6TH_GEN_17_0",
             ],
         ),
-        "ios_eg2_cq_tests_parallel": targets.legacy_matrix_config(
+        "ios_eg2_cq_tests": targets.legacy_matrix_config(
             mixins = [
                 "xcode_parallelization",
             ],
@@ -827,7 +822,7 @@ targets.legacy_matrix_compound_suite(
                 "SIM_IPHONE_14_17_0",
             ],
         ),
-        "ios_eg2_cq_tests_parallel": targets.legacy_matrix_config(
+        "ios_eg2_cq_tests": targets.legacy_matrix_config(
             mixins = [
                 "xcode_parallelization",
             ],
@@ -858,7 +853,7 @@ targets.legacy_matrix_compound_suite(
                 "SIM_IPAD_AIR_5TH_GEN_17_0",
             ],
         ),
-        "ios_eg2_cq_tests_parallel": targets.legacy_matrix_config(
+        "ios_eg2_cq_tests": targets.legacy_matrix_config(
             mixins = [
                 "xcode_parallelization",
             ],

@@ -1142,7 +1142,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                          l10n_util::GetStringFUTF16(
                              IDS_SETTINGS_PAYMENTS_MANAGE_CREDIT_CARDS,
                              base::UTF8ToUTF16(chrome::kPaymentMethodsURL)));
-  html_source->AddString("manageCreditCardsUrl",
+  html_source->AddString("managePaymentMethodsUrl",
                          autofill::payments::GetManageInstrumentsUrl().spec());
   html_source->AddString("addressesAndPaymentMethodsLearnMoreURL",
                          chrome::kAddressesAndPaymentMethodsLearnMoreURL);
@@ -2608,6 +2608,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_TOGGLE_SUB_LABEL},
     {"trackingProtectionDoNotTrackToggleSubLabel",
      IDS_SETTINGS_TRACKING_PROTECTION_DO_NOT_TRACK_TOGGLE_SUB_LABEL},
+    {"trackingProtectionSitesAllowedCookiesTitle",
+     IDS_SETTINGS_TRACKING_PROTECTION_SITES_ALLOWED_COOKIES_TITLE},
+    {"trackingProtectionSitesAllowedCookiesDescription",
+     IDS_SETTINGS_TRACKING_PROTECTION_SITES_ALLOWED_COOKIES_DESCRIPTION},
     {"siteSettingsCategoryFederatedIdentityApi",
      IDS_SITE_SETTINGS_TYPE_FEDERATED_IDENTITY_API},
     {"siteSettingsCategoryHandlers", IDS_SITE_SETTINGS_TYPE_HANDLERS},
@@ -2922,8 +2926,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS},
     {"siteSettingsCustomizedBehaviorsDescription",
      IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS_DESCRIPTION},
-    {"siteSettings3pcdBehaviorsDescription",
-     IDS_SETTINGS_SITE_SETTINGS_3PCD_BEHAVIORS_DESCRIPTION},
     {"siteSettingsCustomizedBehaviorsDescriptionShort",
      IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS_DESCRIPTION_SHORT},
     {"siteSettingsAdsDescription", IDS_SETTINGS_SITE_SETTINGS_ADS_DESCRIPTION},
@@ -3275,9 +3277,9 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
       "trackingProtectionBulletTwoDescription",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_TRACKING_PROTECTION_BULLET_TWO_DESCRIPTION,
-          base::ASCIIToUTF16(chrome::kTrackingProtectionHelpCenterURL)));
+          base::ASCIIToUTF16(chrome::kUserBypassHelpCenterURL)));
   html_source->AddString("trackingProtectionThirdPartyCookiesLearnMoreUrl",
-                         chrome::kUserBypassHelpCenterURL);
+                         chrome::kManage3pcHelpCenterURL);
 
   // These ones cannot be constexpr because we need to check base::FeatureList.
   static webui::LocalizedString kSensorsLocalizedStrings[] = {
@@ -3379,8 +3381,6 @@ void AddSiteDataPageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_SITE_DATA_PAGE_BLOCK_RADIO_SUB_LABEL},
       {"siteDataPageCustomizedBehaviorHeading",
        IDS_SETTINGS_SITE_DATA_PAGE_CUSTOMIZED_BEHAVIOR_HEADING},
-      {"siteDataPageCustomized3pcdHeading",
-       IDS_SETTINGS_SITE_SETTINGS_3PCD_BEHAVIORS},
       {"siteDataPageCustomizedBehaviorDescription",
        IDS_SETTINGS_SITE_DATA_PAGE_CUSTOMIZED_BEHAVIOR_DESCRIPTION},
       {"siteDataPageAllowExceptionsSubHeading",

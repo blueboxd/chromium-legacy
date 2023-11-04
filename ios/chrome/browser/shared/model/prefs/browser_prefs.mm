@@ -74,6 +74,7 @@
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
 #import "ios/chrome/browser/ntp/set_up_list_prefs.h"
 #import "ios/chrome/browser/ntp_tiles/tab_resumption/tab_resumption_prefs.h"
+#import "ios/chrome/browser/parcel_tracking/parcel_tracking_prefs.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prerender/prerender_pref.h"
 #import "ios/chrome/browser/push_notification/push_notification_service.h"
@@ -158,6 +159,12 @@ const char kObsoleteIosSettingsSigninPromoDisplayedCount[] =
 inline constexpr char kPrivacySandboxManuallyControlled[] =
     "privacy_sandbox.manually_controlled";
 
+// Deprecated 10/2023.
+// Boolean whether has requested sync to be enabled. This is set early in the
+// sync setup flow, after the user has pressed "turn on sync" but before they
+// have accepted the confirmation dialog.
+inline constexpr char kSyncRequested[] = "sync.requested";
+
 }  // namespace
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -175,6 +182,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   set_up_list_prefs::RegisterPrefs(registry);
   tab_resumption_prefs::RegisterPrefs(registry);
   safety_check_prefs::RegisterPrefs(registry);
+  RegisterParcelTrackingPrefs(registry);
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   component_updater::RegisterComponentUpdateServicePrefs(registry);
@@ -544,6 +552,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 false);
   // Preference related to feed.
   registry->RegisterTimePref(kActivityBucketLastReportedDateKey, base::Time());
+  registry->RegisterBooleanPref(kSyncRequested, false);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -645,15 +654,17 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   prefs->ClearPref(kDataSaverEnabled);
 
   // Added 10/2022.
-  if (prefs->HasPrefPath(prefs::kGoogleServicesLastAccountIdDeprecated)) {
+  if (prefs->HasPrefPath(
+          prefs::kGoogleServicesLastSyncingAccountIdDeprecated)) {
     std::string account_id =
-        prefs->GetString(prefs::kGoogleServicesLastAccountIdDeprecated);
-    prefs->ClearPref(prefs::kGoogleServicesLastAccountIdDeprecated);
+        prefs->GetString(prefs::kGoogleServicesLastSyncingAccountIdDeprecated);
+    prefs->ClearPref(prefs::kGoogleServicesLastSyncingAccountIdDeprecated);
     DCHECK(!base::Contains(account_id, '@'))
-        << "kGoogleServicesLastAccountId is not expected to be an email: "
+        << "kGoogleServicesLastSyncingAccountId is not expected to be an "
+           "email: "
         << account_id;
     if (!account_id.empty()) {
-      prefs->SetString(prefs::kGoogleServicesLastGaiaId, account_id);
+      prefs->SetString(prefs::kGoogleServicesLastSyncingGaiaId, account_id);
     }
   }
 
@@ -694,6 +705,9 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
                      base::Time::FromNSDate(value));
     }
   }
+
+  // Added 10/2023.
+  prefs->ClearPref(kSyncRequested);
 }
 
 void MigrateObsoleteUserDefault(void) {

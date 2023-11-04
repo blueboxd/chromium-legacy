@@ -43,7 +43,6 @@
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
-#include "components/autofill/core/browser/ui/suggestion_selection.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -965,6 +964,25 @@ TEST_F(PersonalDataManagerTest,
 }
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 
+// Test that server IBANs can be added and automatically loaded/cached.
+TEST_F(PersonalDataManagerTest, AddAndReloadServerIbans) {
+  Iban server_iban1 = test::GetServerIban();
+  Iban server_iban2 = test::GetServerIban2();
+
+  GetServerDataTable()->SetServerIbans({server_iban1, server_iban2});
+  std::vector<const Iban*> expected_ibans = {&server_iban1, &server_iban2};
+  personal_data_->Refresh();
+  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+  ExpectSameElements(expected_ibans, personal_data_->GetServerIbans());
+
+  // Reset the PersonalDataManager. This tests that the personal data was saved
+  // to the web database, and that we can load the IBANs from the web database.
+  ResetPersonalDataManager();
+
+  // Verify that we've reloaded the IBANs from the web database.
+  ExpectSameElements(expected_ibans, personal_data_->GetServerIbans());
+}
+
 TEST_F(PersonalDataManagerTest, NoIbansAddedIfDisabled) {
   prefs::SetAutofillCreditCardEnabled(prefs_.get(), false);
 
@@ -992,41 +1010,40 @@ TEST_F(PersonalDataManagerTest, AddingIbanUpdatesPref) {
 }
 
 TEST_F(PersonalDataManagerTest, AddLocalIbans) {
-  Iban iban0;
-  iban0.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue)));
-  iban0.set_nickname(u"Nickname for Iban");
-
   Iban iban1;
-  iban1.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue_1)));
-  iban1.set_nickname(u"Nickname 1");
+  iban1.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue)));
+  iban1.set_nickname(u"Nickname for Iban");
 
-  Iban iban1_1 = iban1;
-  iban1_1.set_nickname(u"Nickname 1_1");
+  Iban iban2;
+  iban2.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue_1)));
+  iban2.set_nickname(u"Original nickname");
 
-  // Add two test IBANs to the database. `iban1_1` has the same value
-  // as `iban1` but with a different nickname. Verify that only `iban1` is
-  // added.
-  std::string guid = personal_data_->AddIban(iban0);
-  // Adding the IBAN as a local IBAN would have set its GUID.
-  EXPECT_NE(guid, "");
+  Iban iban2_with_different_nickname = iban2;
+  iban2_with_different_nickname.set_nickname(u"Different nickname");
 
+  // Attempt to add all three IBANs to the database. The first two should add
+  // successfully, but the third should get skipped because its value is
+  // identical to `iban2`.
+  std::string guid = personal_data_->AddIban(iban1);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  // Should set identifier and record_type manually here as `iban0` has been
+  // Should set identifier and record_type manually here as `iban1` has been
   // passed by value above in `AddIban`, and `AddIban` method sets identifier
-  // and record_type to the given `iban0`.
-  iban0.set_identifier(Iban::Guid(guid));
-  iban0.set_record_type(Iban::kLocalIban);
-
-  guid = personal_data_->AddIban(iban1);
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+  // and record_type to the given `iban1`.
   iban1.set_identifier(Iban::Guid(guid));
   iban1.set_record_type(Iban::kLocalIban);
 
-  personal_data_->AddIban(iban1_1);
+  guid = personal_data_->AddIban(iban2);
+  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+  iban2.set_identifier(Iban::Guid(guid));
+  iban2.set_record_type(Iban::kLocalIban);
 
-  std::vector<Iban*> ibans;
-  ibans.push_back(&iban0);
-  ibans.push_back(&iban1);
+  // Do not add `PersonalDataProfileTaskWaiter(*personal_data_).Wait()` for this
+  // `AddIban` operation, as it will be terminated prematurely for
+  // `iban2_with_different_nickname` due to the presence of an IBAN with the
+  // same value.
+  personal_data_->AddIban(iban2_with_different_nickname);
+
+  std::vector<Iban*> ibans = {&iban1, &iban2};
   ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 }
 
@@ -1047,9 +1064,16 @@ TEST_F(PersonalDataManagerTest, UpdateLocalIbans) {
   std::vector<Iban*> ibans = {&iban};
   ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 
-  // Update the `iban` with new value and nickname.
-  iban.set_nickname(u"Another nickname");
+  // Update the `iban` with new value.
   iban.SetRawInfo(IBAN_VALUE, u"GB98 MIDL 0700 9312 3456 78");
+  personal_data_->UpdateIban(iban);
+  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+
+  ibans = {&iban};
+  ExpectSameElements(ibans, personal_data_->GetLocalIbans());
+
+  // Update the `iban` with new nickname.
+  iban.set_nickname(u"Another nickname");
   personal_data_->UpdateIban(iban);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
@@ -1076,6 +1100,9 @@ TEST_F(PersonalDataManagerTest, RemoveLocalIbans) {
 
   RemoveByGUIDFromPersonalDataManager(guid);
   EXPECT_TRUE(personal_data_->GetLocalIbans().empty());
+
+  // Verify that removal of a GUID that doesn't exist won't crash.
+  RemoveByGUIDFromPersonalDataManager(guid);
 }
 
 // Ensure that new IBANs can be updated and saved via

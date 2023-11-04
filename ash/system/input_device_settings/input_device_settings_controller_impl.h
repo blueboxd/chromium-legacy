@@ -28,6 +28,7 @@
 #include "ui/events/devices/keyboard_device.h"
 
 class AccountId;
+class PrefChangeRegistrar;
 class PrefRegistrySimple;
 
 namespace ash {
@@ -171,6 +172,23 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   void RefreshStoredLoginScreenPointingStickSettings();
   void RefreshStoredLoginScreenTouchpadSettings();
 
+  // Refreshes all internal settings. Called whenever prefs are updated.
+  void RefreshInternalPointingStickSettings();
+  void RefreshInternalTouchpadSettings();
+
+  // Updates the default settings based on the most recently connected device.
+  // This is called whenever a device is connected/disconnected or if settings
+  // are updated.
+  void RefreshMouseDefaultSettings();
+  void RefreshKeyboardDefaultSettings();
+  void RefreshTouchpadDefaultSettings();
+
+  // Refreshes all cached settings which includes defaults and login screen
+  // settings.
+  void RefreshCachedMouseSettings();
+  void RefreshCachedKeyboardSettings();
+  void RefreshCachedTouchpadSettings();
+
   mojom::Mouse* FindMouse(DeviceId id);
   mojom::Touchpad* FindTouchpad(DeviceId id);
   mojom::Keyboard* FindKeyboard(DeviceId id);
@@ -214,6 +232,7 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
 
   raw_ptr<PrefService> active_pref_service_ = nullptr;  // Not owned.
   absl::optional<AccountId> active_account_id_;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   // Boolean which notes whether or not there is a settings update in progress.
   bool settings_refresh_pending_ = false;

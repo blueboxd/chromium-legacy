@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_education/common/feature_promo_lifecycle.h"
@@ -52,48 +53,46 @@ FeaturePromoControllerCommon::FeaturePromoControllerCommon(
 
 FeaturePromoControllerCommon::~FeaturePromoControllerCommon() {
   // Inform any pending startup promos that they were not shown.
-  for (auto& [feature, callback] : startup_promos_)
-    std::move(callback).Run(*feature, false);
+  for (auto& [feature, callback] : startup_promos_) {
+    if (callback) {
+      std::move(callback).Run(*feature, FeaturePromoResult::kCanceled);
+    }
+  }
 }
 
-bool FeaturePromoControllerCommon::CanShowPromo(
+FeaturePromoResult FeaturePromoControllerCommon::CanShowPromo(
     const base::Feature& iph_feature) const {
-  return CanShowPromoCommon(iph_feature, false) &&
-         feature_engagement_tracker_->WouldTriggerHelpUI(iph_feature);
+  auto result = CanShowPromoCommon(iph_feature, false);
+  if (result && !feature_engagement_tracker_->WouldTriggerHelpUI(iph_feature)) {
+    result = FeaturePromoResult::kBlockedByConfig;
+  }
+  return result;
 }
 
-bool FeaturePromoControllerCommon::MaybeShowPromo(
-    const base::Feature& iph_feature,
-    BubbleCloseCallback close_callback,
-    FeaturePromoSpecification::FormatParameters body_params,
-    FeaturePromoSpecification::FormatParameters title_params) {
-  return MaybeShowPromoCommon(iph_feature,
-                              /* for_demo =*/false, std::move(close_callback),
-                              std::move(body_params), std::move(title_params));
+FeaturePromoResult FeaturePromoControllerCommon::MaybeShowPromo(
+    FeaturePromoParams params) {
+  return MaybeShowPromoCommon(std::move(params), /* for_demo =*/false);
 }
 
 bool FeaturePromoControllerCommon::MaybeShowStartupPromo(
-    const base::Feature& iph_feature,
-    StartupPromoCallback promo_callback,
-    BubbleCloseCallback close_callback,
-    FeaturePromoSpecification::FormatParameters body_params,
-    FeaturePromoSpecification::FormatParameters title_params) {
+    FeaturePromoParams params) {
+  const base::Feature* const iph_feature = &params.feature.get();
+
   // If the promo is currently running, fail.
-  if (GetCurrentPromoFeature() == &iph_feature) {
+  if (GetCurrentPromoFeature() == iph_feature) {
     return false;
   }
 
   // If the promo is already queued, fail.
-  if (base::Contains(startup_promos_, &iph_feature))
+  if (base::Contains(startup_promos_, iph_feature)) {
     return false;
+  }
 
   // Queue the promo.
-  startup_promos_.emplace(&iph_feature, std::move(promo_callback));
+  startup_promos_.emplace(iph_feature, std::move(params.startup_callback));
   feature_engagement_tracker_->AddOnInitializedCallback(base::BindOnce(
       &FeaturePromoControllerCommon::OnFeatureEngagementTrackerInitialized,
-      weak_ptr_factory_.GetWeakPtr(), base::Unretained(&iph_feature),
-      std::move(close_callback), std::move(body_params),
-      std::move(title_params)));
+      weak_ptr_factory_.GetWeakPtr(), std::move(params)));
 
   // The promo has been successfully queued. Once the FE backend is initialized,
   // MaybeShowPromo() will be called to see if the promo should actually be
@@ -101,29 +100,22 @@ bool FeaturePromoControllerCommon::MaybeShowStartupPromo(
   return true;
 }
 
-bool FeaturePromoControllerCommon::MaybeShowPromoForDemoPage(
-    const base::Feature& iph_feature,
-    BubbleCloseCallback close_callback,
-    FeaturePromoSpecification::FormatParameters body_params,
-    FeaturePromoSpecification::FormatParameters title_params) {
-  return MaybeShowPromoCommon(iph_feature,
-                              /* for_demo =*/true, std::move(close_callback),
-                              std::move(body_params), std::move(title_params));
+FeaturePromoResult FeaturePromoControllerCommon::MaybeShowPromoForDemoPage(
+    FeaturePromoParams params) {
+  return MaybeShowPromoCommon(std::move(params), /* for_demo =*/true);
 }
 
-bool FeaturePromoControllerCommon::MaybeShowPromoCommon(
-    const base::Feature& iph_feature,
-    bool for_demo,
-    BubbleCloseCallback close_callback,
-    FeaturePromoSpecification::FormatParameters body_params,
-    FeaturePromoSpecification::FormatParameters title_params) {
+FeaturePromoResult FeaturePromoControllerCommon::MaybeShowPromoCommon(
+    FeaturePromoParams params,
+    bool for_demo) {
   // Perform common checks.
   const FeaturePromoSpecification* spec = nullptr;
   std::unique_ptr<FeaturePromoLifecycle> lifecycle = nullptr;
   ui::TrackedElement* anchor_element = nullptr;
-  if (!CanShowPromoCommon(iph_feature, for_demo, &spec, &lifecycle,
-                          &anchor_element)) {
-    return false;
+  auto result = CanShowPromoCommon(params.feature.get(), for_demo, &spec,
+                                   &lifecycle, &anchor_element);
+  if (!result) {
+    return result;
   }
   CHECK(spec);
   CHECK(lifecycle);
@@ -153,8 +145,8 @@ bool FeaturePromoControllerCommon::MaybeShowPromoCommon(
       CheckScreenReaderPromptAvailable(for_demo || in_iph_demo_mode_);
 
   if (!for_demo &&
-      !feature_engagement_tracker_->ShouldTriggerHelpUI(iph_feature)) {
-    return false;
+      !feature_engagement_tracker_->ShouldTriggerHelpUI(params.feature.get())) {
+    return FeaturePromoResult::kBlockedByConfig;
   }
 
   // If the tracker says we should trigger, but we have a promo
@@ -164,17 +156,18 @@ bool FeaturePromoControllerCommon::MaybeShowPromoCommon(
 
   // Try to show the bubble and bail out if we cannot.
   auto bubble = ShowPromoBubbleImpl(
-      *spec, anchor_element, std::move(body_params), std::move(title_params),
-      screen_reader_available, /* is_critical_promo =*/false);
+      *spec, anchor_element, std::move(params.body_params),
+      std::move(params.title_params), screen_reader_available,
+      /* is_critical_promo =*/false);
   if (!bubble) {
     current_promo_.reset();
     if (!for_demo) {
-      feature_engagement_tracker_->Dismissed(iph_feature);
+      feature_engagement_tracker_->Dismissed(params.feature.get());
     }
-    return false;
+    return FeaturePromoResult::kError;
   }
 
-  bubble_closed_callback_ = std::move(close_callback);
+  bubble_closed_callback_ = std::move(params.close_callback);
 
   if (for_demo) {
     current_promo_->OnPromoShownForDemo(std::move(bubble));
@@ -183,7 +176,7 @@ bool FeaturePromoControllerCommon::MaybeShowPromoCommon(
                                  feature_engagement_tracker_);
   }
 
-  return true;
+  return result;
 }
 
 std::unique_ptr<HelpBubble> FeaturePromoControllerCommon::ShowCriticalPromo(
@@ -269,7 +262,9 @@ bool FeaturePromoControllerCommon::EndPromo(const base::Feature& iph_feature,
                                             CloseReason close_reason) {
   const auto it = startup_promos_.find(&iph_feature);
   if (it != startup_promos_.end()) {
-    std::move(it->second).Run(iph_feature, false);
+    if (it->second) {
+      std::move(it->second).Run(iph_feature, FeaturePromoResult::kCanceled);
+    }
     startup_promos_.erase(it);
     return true;
   }
@@ -348,11 +343,10 @@ bool FeaturePromoControllerCommon::CheckScreenReaderPromptAvailable(
 }
 
 void FeaturePromoControllerCommon::OnFeatureEngagementTrackerInitialized(
-    const base::Feature* iph_feature,
-    BubbleCloseCallback close_callback,
-    FeaturePromoSpecification::FormatParameters body_params,
-    FeaturePromoSpecification::FormatParameters title_params,
+    FeaturePromoParams params,
     bool tracker_initialized_successfully) {
+  const base::Feature* const iph_feature = &params.feature.get();
+
   // If the promo has been canceled, do not proceed.
   const auto it = startup_promos_.find(iph_feature);
   if (it == startup_promos_.end()) {
@@ -364,15 +358,18 @@ void FeaturePromoControllerCommon::OnFeatureEngagementTrackerInitialized(
   startup_promos_.erase(it);
 
   // Try to start the promo, assuming the tracker was successfully initialized.
-  bool success = false;
+  FeaturePromoResult result;
   if (tracker_initialized_successfully) {
-    success = MaybeShowPromo(*iph_feature, std::move(close_callback),
-                             std::move(body_params), std::move(title_params));
+    result = MaybeShowPromo(std::move(params));
+  } else {
+    result = FeaturePromoResult::kError;
   }
-  std::move(callback).Run(*iph_feature, success);
+  if (callback) {
+    std::move(callback).Run(*iph_feature, result);
+  }
 }
 
-bool FeaturePromoControllerCommon::CanShowPromoCommon(
+FeaturePromoResult FeaturePromoControllerCommon::CanShowPromoCommon(
     const base::Feature& iph_feature,
     bool for_demo,
     const FeaturePromoSpecification** spec_out,
@@ -384,20 +381,29 @@ bool FeaturePromoControllerCommon::CanShowPromoCommon(
   // in demo mode, as the IPH may be queued for startup specifically because it
   // is being demoed.
   if (!for_demo && base::Contains(startup_promos_, &iph_feature)) {
-    return false;
+    return FeaturePromoResult::kBlockedByPromo;
   }
 
   const FeaturePromoSpecification* spec =
       registry()->GetParamsForFeature(iph_feature);
   if (!spec) {
-    return false;
+    return FeaturePromoResult::kError;
+  }
+
+  // When not bypassing the normal gating systems, don't try to show promos for
+  // disabled features. This prevents us from calling into the Feature
+  // Engagement tracker more times than necessary, emitting unnecessary logging
+  // events when features are disabled.
+  if (!for_demo && !in_iph_demo_mode_ &&
+      !base::FeatureList::IsEnabled(iph_feature)) {
+    return FeaturePromoResult::kFeatureDisabled;
   }
 
   // Fetch the anchor element. For now, assume all elements are Views.
   ui::TrackedElement* const anchor_element =
       spec->GetAnchorElement(GetAnchorContext());
   if (!anchor_element) {
-    return false;
+    return FeaturePromoResult::kBlockedByUi;
   }
 
   const bool is_high_priority =
@@ -414,28 +420,19 @@ bool FeaturePromoControllerCommon::CanShowPromoCommon(
   // Demo mode does not override high-priority promos, as in many cases they are
   // legally mandated.
   if (high_priority_already_showing) {
-    return false;
+    return FeaturePromoResult::kBlockedByPromo;
   }
 
   // Some contexts and anchors are not appropriate for showing normal promos.
   if (!CanShowPromoForElement(anchor_element)) {
-    return false;
+    return FeaturePromoResult::kBlockedByUi;
   }
 
   // Can't show a standard promo if another IPH is running or another help
   // bubble is visible.
   if (!is_high_priority &&
       (current_promo_ || bubble_factory_registry_->is_any_bubble_showing())) {
-    return false;
-  }
-
-  // When not bypassing the normal gating systems, don't try to show promos for
-  // disabled features. This prevents us from calling into the Feature
-  // Engagement tracker more times than necessary, emitting unnecessary logging
-  // events when features are disabled.
-  if (!for_demo && !in_iph_demo_mode_ &&
-      !base::FeatureList::IsEnabled(iph_feature)) {
-    return false;
+    return FeaturePromoResult::kBlockedByPromo;
   }
 
   // Check the lifecycle, but only if not in demo mode. This is especially
@@ -444,8 +441,8 @@ bool FeaturePromoControllerCommon::CanShowPromoCommon(
     auto lifecycle = std::make_unique<FeaturePromoLifecycle>(
         storage_service_, GetAppId(), &iph_feature, spec->promo_type(),
         spec->promo_subtype());
-    if (!lifecycle->CanShow()) {
-      return false;
+    if (const auto result = lifecycle->CanShow(); !result) {
+      return result;
     }
     if (lifecycle_out) {
       *lifecycle_out = std::move(lifecycle);
@@ -468,7 +465,7 @@ bool FeaturePromoControllerCommon::CanShowPromoCommon(
   }
 
   // Success - the promo can show.
-  return true;
+  return FeaturePromoResult::Success();
 }
 
 std::unique_ptr<HelpBubble> FeaturePromoControllerCommon::ShowPromoBubbleImpl(
@@ -804,5 +801,10 @@ FeaturePromoControllerCommon::BlockActiveWindowCheckForTesting() {
   return std::make_unique<base::AutoReset<bool>>(&active_window_check_blocked_,
                                                  true);
 }
+
+FeaturePromoParams::FeaturePromoParams(const base::Feature& iph_feature)
+    : feature(iph_feature) {}
+FeaturePromoParams::FeaturePromoParams(FeaturePromoParams&& other) = default;
+FeaturePromoParams::~FeaturePromoParams() = default;
 
 }  // namespace user_education

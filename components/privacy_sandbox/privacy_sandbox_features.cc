@@ -6,6 +6,11 @@
 
 namespace privacy_sandbox {
 
+// Show the Tracking Protection onboarding flow if not already onboarded.
+BASE_FEATURE(kPrivacySandboxSuppressDialogOnNonNormalBrowsers,
+             "PrivacySandboxSuppressDialogOnNonNormalBrowsers",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kPrivacySandboxSettings4,
              "PrivacySandboxSettings4",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -119,11 +124,6 @@ BASE_FEATURE(kPrivacySandboxProactiveTopicsBlocking,
 // Show the Tracking Protection onboarding flow if not already onboarded.
 BASE_FEATURE(kTrackingProtectionOnboardingForceEligibility,
              "TrackingProtectionOnboardingForceEligibility",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Resets the tracking protection Onboarding eligibility.
-BASE_FEATURE(kTrackingProtectionOnboardingResetEligibilityForTesting,
-             "TrackingProtectionOnboardingResetEligibilityForTesting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace privacy_sandbox

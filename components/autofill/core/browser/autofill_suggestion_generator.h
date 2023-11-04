@@ -39,6 +39,15 @@ class PersonalDataManager;
 // address profile Autofill.
 class AutofillSuggestionGenerator {
  public:
+  // As of November 2018, displaying 10 suggestions cover at least 99% of the
+  // indices clicked by our users. The suggestions will also refine as they
+  // type.
+  static constexpr size_t kMaxUniqueSuggestedProfilesCount = 10;
+
+  // As of November 2018, 50 profiles should be more than enough to cover at
+  // least 99% of all times the dropdown is shown.
+  static constexpr size_t kMaxSuggestedProfilesCount = 50;
+
   AutofillSuggestionGenerator(AutofillClient* autofill_client,
                               PersonalDataManager* personal_data);
   ~AutofillSuggestionGenerator();
@@ -64,9 +73,9 @@ class AutofillSuggestionGenerator {
       AutofillSuggestionTriggerSource trigger_source);
 
   // Returns a list of profiles that will be displayed as suggestions to the
-  // user. This involved many steps from fetching the profiles to matching with
-  // `field_contents`, and deduplicating based on `field_types`, which are the
-  // relevant types for the current suggestion.
+  // user, sorted by their relevance. This involves many steps from fetching the
+  // profiles to matching with `field_contents`, and deduplicating based on
+  // `field_types`, which are the relevant types for the current suggestion.
   std::vector<const AutofillProfile*> GetProfilesToSuggest(
       const AutofillType& type,
       const std::u16string& field_contents,
@@ -129,13 +138,11 @@ class AutofillSuggestionGenerator {
   static std::vector<Suggestion> GetPromoCodeSuggestionsFromPromoCodeOffers(
       const std::vector<const AutofillOfferData*>& promo_code_offers);
 
-  // Remove credit cards that are expired at |comparison_time| and not used
-  // since |min_last_used| from |cards|. The relative ordering of |cards| is
-  // maintained.
-  static void RemoveExpiredCreditCardsNotUsedSinceTimestamp(
-      base::Time comparison_time,
+  // Removes expired local credit cards not used since `min_last_used` from
+  // `cards`. The relative ordering of `cards` is maintained.
+  static void RemoveExpiredLocalCreditCardsNotUsedSinceTimestamp(
       base::Time min_last_used,
-      std::vector<CreditCard*>* cards);
+      std::vector<CreditCard*>& cards);
 
   // Return a nickname for the |card| to display. This is generally the nickname
   // stored in |card|, unless |card| exists as a local and a server copy. In
@@ -172,6 +179,50 @@ class AutofillSuggestionGenerator {
                                         bool card_linked_offer_available) const;
 
  private:
+  // Dedupes the given profiles based on if one is a subset of the other for
+  // suggestions represented by `field_types`. The function returns at most
+  // `kMaxUniqueSuggestedProfilesCount` profiles. `field_types` stores all of
+  // the ServerFieldTypes relevant for the current suggestions, including that
+  // of the field on which the user is currently focused.
+  std::vector<const AutofillProfile*> DeduplicatedProfilesForSuggestions(
+      const std::vector<const AutofillProfile*>& matched_profiles,
+      const AutofillType& trigger_field_type,
+      const ServerFieldTypeSet& field_types,
+      const AutofillProfileComparator& comparator);
+
+  // Matches based on prefix search, and limits number of profiles.
+  // Returns the top matching profiles based on prefix search. At most
+  // `kMaxSuggestedProfilesCount` are returned.
+  std::vector<const AutofillProfile*> GetPrefixMatchedProfiles(
+      const std::vector<AutofillProfile*>& profiles,
+      const AutofillType& trigger_field_type,
+      const std::u16string& raw_field_contents,
+      const std::u16string& field_contents_canon,
+      bool field_is_autofilled);
+
+  // Removes profiles that haven't been used after `min_last_used` from
+  // |profiles|. The relative ordering of `profiles` is maintained.
+  void RemoveProfilesNotUsedSinceTimestamp(
+      base::Time min_last_used,
+      std::vector<AutofillProfile*>& profiles);
+
+  // In addition to just getting the values out of the profile, this function
+  // handles type-specific formatting.
+  std::u16string GetProfileSuggestionMainText(const AutofillProfile* profile,
+                                              const AutofillType& type);
+
+  // Creates nested/child suggestions for `suggestion` with the `profile`
+  // information. Uses `trigger_field_type_group` to define what group filling
+  // suggestion to add (name, address or phone). The existence of child
+  // suggestions defines whether the autofill popup will have submenus.
+  // `last_targeted_fields` specified the last set of fields target by the user.
+  // When not present, we default to full form.
+  void AddGranularFillingChildSuggestions(
+      FieldTypeGroup trigger_field_type_group,
+      absl::optional<ServerFieldTypeSet> last_targeted_fields,
+      const AutofillProfile& profile,
+      Suggestion& suggestion);
+
   // Return the texts shown as the first line of the suggestion, based on the
   // `credit_card` and the focused field `type`. The first index in the pair
   // represents the main text, and the second index represents the minor text.

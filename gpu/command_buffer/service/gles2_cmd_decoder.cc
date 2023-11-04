@@ -1115,6 +1115,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   void DoCreateAndConsumeTextureINTERNAL(GLuint client_id,
                                          const volatile GLbyte* key);
+  void DoTexImage2DSharedImageCHROMIUM(GLuint client_id,
+                                       const volatile GLbyte* mailbox);
   void DoCreateAndTexStorage2DSharedImageINTERNAL(
       GLuint client_id,
       const volatile GLbyte* mailbox);
@@ -1126,7 +1128,11 @@ class GLES2DecoderImpl : public GLES2Decoder,
       GLenum plane_config,
       GLenum subsampling,
       const volatile GLbyte* mailboxes_in);
-  void DoConvertYUVAMailboxesToRGBINTERNAL(GLenum yuv_color_space,
+  void DoConvertYUVAMailboxesToRGBINTERNAL(GLint src_x,
+                                           GLint src_y,
+                                           GLsizei width,
+                                           GLsizei height,
+                                           GLenum yuv_color_space,
                                            GLenum plane_config,
                                            GLenum subsampling,
                                            const volatile GLbyte* mailboxes_in);
@@ -17122,6 +17128,13 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
   texture_ref = texture_manager()->Consume(client_id, texture);
 }
 
+void GLES2DecoderImpl::DoTexImage2DSharedImageCHROMIUM(
+    GLuint client_id,
+    const volatile GLbyte* mailbox_data) {
+  // TODO(crbug.com/1410164): Implement.
+  NOTREACHED();
+}
+
 void GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
     GLuint client_id,
     const volatile GLbyte* mailbox_data) {
@@ -17228,6 +17241,10 @@ void GLES2DecoderImpl::DoConvertRGBAToYUVAMailboxesINTERNAL(
 }
 
 void GLES2DecoderImpl::DoConvertYUVAMailboxesToRGBINTERNAL(
+    GLint src_x,
+    GLint src_y,
+    GLsizei width,
+    GLsizei height,
     GLenum yuv_color_space,
     GLenum plane_config,
     GLenum subsampling,

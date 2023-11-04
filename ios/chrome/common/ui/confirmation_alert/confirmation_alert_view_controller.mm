@@ -18,6 +18,7 @@
 namespace {
 
 const CGFloat kDefaultActionsBottomMargin = 10;
+const CGFloat kActionButtonImageInsets = 10;
 // Gradient height.
 const CGFloat kGradientHeight = 40.;
 const CGFloat kScrollViewBottomInsets = 20;
@@ -133,6 +134,8 @@ const CGFloat kFaviconBadgeSideLength = 24;
   }
 
   if (self.underTitleView) {
+    self.underTitleView.accessibilityIdentifier =
+        kConfirmationAlertUnderTitleViewAccessibilityIdentifier;
     [stackSubviews addObject:self.underTitleView];
   }
 
@@ -823,11 +826,18 @@ const CGFloat kFaviconBadgeSideLength = 24;
   [secondaryActionButton setTitleColor:titleColor
                               forState:UIControlStateNormal];
 
-  // TODO(crbug.com/1418068): Replace with UIButtonConfiguration when min
-  // deployment target is iOS 15.
-  UIEdgeInsets contentInsets =
-      UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
-  SetContentEdgeInsets(secondaryActionButton, contentInsets);
+  UIButtonConfiguration* buttonConfiguration =
+      secondaryActionButton.configuration
+          ? secondaryActionButton.configuration
+          : [UIButtonConfiguration plainButtonConfiguration];
+  buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
+      kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
+
+  if (self.secondaryActionImage) {
+    buttonConfiguration.image = self.secondaryActionImage;
+    buttonConfiguration.imagePadding = kActionButtonImageInsets;
+  }
+  secondaryActionButton.configuration = buttonConfiguration;
 
   secondaryActionButton.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleBody];

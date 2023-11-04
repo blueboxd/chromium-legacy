@@ -18,6 +18,7 @@
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync_preferences/syncable_prefs_database.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_pref_names.h"
@@ -288,6 +289,11 @@ enum {
   kPinnedActions = 100232,
   kPinnedSearchCompanionMigrationComplete = 100233,
   kTouchpadInternalSettings = 100234,
+  kPointingStickInternalSettings = 100235,
+  kMouseDefaultSettings = 100236,
+  kKeyboardDefaultChromeOSSettings = 100237,
+  kKeyboardDefaultNonChromeOSSettings = 100238,
+  kTouchpadDefaultSettings = 100239,
   // See components/sync_preferences/README.md about adding new entries here.
   // vvvvv IMPORTANT! vvvvv
   // Note to the reviewer: IT IS YOUR RESPONSIBILITY to ensure that new syncable
@@ -577,6 +583,14 @@ const auto& SyncablePreferences() {
         {ash::prefs::kFilesAppUIPrefsMigrated,
          {syncable_prefs_ids::kFilesAppUIPrefsMigrated, syncer::OS_PREFERENCES,
           false, sync_preferences::MergeBehavior::kNone}},
+        {ash::prefs::kKeyboardDefaultChromeOSSettings,
+         {syncable_prefs_ids::kKeyboardDefaultChromeOSSettings,
+          syncer::OS_PREFERENCES, false,
+          sync_preferences::MergeBehavior::kNone}},
+        {ash::prefs::kKeyboardDefaultNonChromeOSSettings,
+         {syncable_prefs_ids::kKeyboardDefaultNonChromeOSSettings,
+          syncer::OS_PREFERENCES, false,
+          sync_preferences::MergeBehavior::kNone}},
         {ash::prefs::kLaunchPaletteOnEjectEvent,
          {syncable_prefs_ids::kLaunchPaletteOnEjectEvent,
           syncer::OS_PREFERENCES, false,
@@ -601,6 +615,9 @@ const auto& SyncablePreferences() {
          {syncable_prefs_ids::kMouseAcceleration,
           syncer::OS_PRIORITY_PREFERENCES, false,
           sync_preferences::MergeBehavior::kNone}},
+        {ash::prefs::kMouseDefaultSettings,
+         {syncable_prefs_ids::kMouseDefaultSettings, syncer::OS_PREFERENCES,
+          false, sync_preferences::MergeBehavior::kNone}},
         {ash::prefs::kMouseReverseScroll,
          {syncable_prefs_ids::kMouseReverseScroll,
           syncer::OS_PRIORITY_PREFERENCES, false,
@@ -630,6 +647,10 @@ const auto& SyncablePreferences() {
         {ash::prefs::kPointingStickAcceleration,
          {syncable_prefs_ids::kPointingStickAcceleration,
           syncer::OS_PRIORITY_PREFERENCES, false,
+          sync_preferences::MergeBehavior::kNone}},
+        {ash::prefs::kPointingStickInternalSettings,
+         {syncable_prefs_ids::kPointingStickInternalSettings,
+          syncer::OS_PREFERENCES, false,
           sync_preferences::MergeBehavior::kNone}},
         {ash::prefs::kPointingStickSensitivity,
          {syncable_prefs_ids::kPointingStickSensitivity,
@@ -742,6 +763,9 @@ const auto& SyncablePreferences() {
          {syncable_prefs_ids::kTouchpadAcceleration,
           syncer::OS_PRIORITY_PREFERENCES, false,
           sync_preferences::MergeBehavior::kNone}},
+        {ash::prefs::kTouchpadDefaultSettings,
+         {syncable_prefs_ids::kTouchpadDefaultSettings, syncer::OS_PREFERENCES,
+          false, sync_preferences::MergeBehavior::kNone}},
         {ash::prefs::kTouchpadHapticClickSensitivity,
          {syncable_prefs_ids::kTouchpadHapticClickSensitivity,
           syncer::OS_PRIORITY_PREFERENCES, false,

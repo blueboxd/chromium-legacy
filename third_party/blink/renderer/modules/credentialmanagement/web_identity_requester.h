@@ -31,6 +31,7 @@ class MODULES_EXPORT WebIdentityRequester final
   void OnRequestToken(mojom::blink::RequestTokenStatus status,
                       const absl::optional<KURL>& selected_idp_config_url,
                       const WTF::String& token,
+                      const mojom::blink::TokenErrorPtr error,
                       bool is_account_auto_selected);
 
   // Invoked at most once per token request.
@@ -39,7 +40,8 @@ class MODULES_EXPORT WebIdentityRequester final
   void AppendGetCall(
       ScriptPromiseResolver* resolver,
       const HeapVector<Member<IdentityProviderConfig>>& providers,
-      mojom::blink::RpContext rp_context);
+      mojom::blink::RpContext rp_context,
+      mojom::blink::RpMode rp_mode);
   void InsertScopedAbortState(
       std::unique_ptr<ScopedAbortState> scoped_abort_state);
 

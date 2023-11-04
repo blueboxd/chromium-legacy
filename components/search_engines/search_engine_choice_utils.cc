@@ -5,10 +5,10 @@
 #include "components/search_engines/search_engine_choice_utils.h"
 
 #include "base/check_deref.h"
+#include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "base/values.h"
 #include "components/country_codes/country_codes.h"
 #include "components/policy/core/common/policy_service.h"
@@ -16,6 +16,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_engines_switches.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/signin/public/base/signin_switches.h"
 
 namespace search_engines {
@@ -104,16 +105,23 @@ const base::flat_set<int> GetEeaChoiceCountries() {
 
 }  // namespace
 
+const char kSearchEngineChoiceScreenNavigationConditionsHistogram[] =
+    "Search.ChoiceScreenNavigationConditions";
+
+const char kSearchEngineChoiceScreenProfileInitConditionsHistogram[] =
+    "Search.ChoiceScreenProfileInitConditions";
+
 const char kSearchEngineChoiceScreenEventsHistogram[] =
     "Search.ChoiceScreenEvents";
 
 bool ShouldShowUpdatedSettings(PrefService& profile_prefs) {
   return base::FeatureList::IsEnabled(switches::kSearchEngineChoice) &&
-         IsEeaChoiceCountry(GetSearchEngineChoiceCountryId(profile_prefs));
+         IsEeaChoiceCountry(GetSearchEngineChoiceCountryId(&profile_prefs));
 }
 
 bool ShouldShowChoiceScreen(const policy::PolicyService& policy_service,
-                            const ProfileProperties& profile_properties) {
+                            const ProfileProperties& profile_properties,
+                            TemplateURLService* template_url_service) {
   if (!base::FeatureList::IsEnabled(switches::kSearchEngineChoice)) {
     return false;
   }
@@ -134,23 +142,65 @@ bool ShouldShowChoiceScreen(const policy::PolicyService& policy_service,
     return true;
   }
 
+  // TODO(b/302687046): Change `template_url_service` to a reference once the
+  // code is updated on iOS side.
+  if (template_url_service) {
+    // A custom search engine will have a `prepopulate_id` of 0.
+    const int kCustomSearchEnginePrepopulateId = 0;
+    const TemplateURL* default_search_engine =
+        template_url_service->GetDefaultSearchProvider();
+    // Don't show the dialog if the user as a custom search engine set a
+    // default.
+    if (default_search_engine->prepopulate_id() ==
+        kCustomSearchEnginePrepopulateId) {
+      RecordChoiceScreenProfileInitCondition(
+          SearchEngineChoiceScreenConditions::kHasCustomSearchEngine);
+      return false;
+    }
+  }
+
   PrefService& prefs = CHECK_DEREF(profile_properties.pref_service.get());
 
   // The timestamp indicates that the user has already made a search engine
   // choice in the choice screen.
   if (prefs.GetInt64(
           prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp)) {
+    RecordChoiceScreenProfileInitCondition(
+        SearchEngineChoiceScreenConditions::kAlreadyCompleted);
     return false;
   }
 
-  if (!IsEeaChoiceCountry(GetSearchEngineChoiceCountryId(prefs))) {
+  if (!IsEeaChoiceCountry(GetSearchEngineChoiceCountryId(&prefs))) {
+    RecordChoiceScreenProfileInitCondition(
+        SearchEngineChoiceScreenConditions::kNotInRegionalScope);
     return false;
   }
 
-  return IsSearchEngineChoiceScreenAllowedByPolicy(policy_service);
+  // Initially exclude users with this type of override. Consult b/302675777 for
+  // next steps.
+  if (prefs.HasPrefPath(prefs::kSearchProviderOverrides)) {
+    RecordChoiceScreenProfileInitCondition(
+        SearchEngineChoiceScreenConditions::kSearchProviderOverride);
+    return false;
+  }
+
+  if (!IsSearchEngineChoiceScreenAllowedByPolicy(policy_service)) {
+    RecordChoiceScreenProfileInitCondition(
+        SearchEngineChoiceScreenConditions::kControlledByPolicy);
+    return false;
+  }
+
+  RecordChoiceScreenProfileInitCondition(
+      SearchEngineChoiceScreenConditions::kEligible);
+  return true;
 }
 
-int GetSearchEngineChoiceCountryId(PrefService& profile_prefs) {
+int GetSearchEngineChoiceCountryId(PrefService* profile_prefs) {
+  // Prefs are sometimes null in unit tests.
+  if (!profile_prefs) {
+    CHECK_IS_TEST();
+  }
+
   int command_line_country = country_codes::CountryStringToCountryID(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kSearchEngineChoiceCountry));
@@ -158,11 +208,18 @@ int GetSearchEngineChoiceCountryId(PrefService& profile_prefs) {
     return command_line_country;
   }
 
-  return country_codes::GetCountryIDFromPrefs(&profile_prefs);
+  return country_codes::GetCountryIDFromPrefs(profile_prefs);
 }
 
 bool IsEeaChoiceCountry(int country_id) {
   return GetEeaChoiceCountries().contains(country_id);
+}
+
+void RecordChoiceScreenProfileInitCondition(
+    SearchEngineChoiceScreenConditions condition) {
+  base::UmaHistogramEnumeration(
+      search_engines::kSearchEngineChoiceScreenProfileInitConditionsHistogram,
+      condition);
 }
 
 void RecordChoiceScreenEvent(SearchEngineChoiceScreenEvents event) {

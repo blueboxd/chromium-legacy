@@ -21,6 +21,7 @@
 #import "components/sync/base/features.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/tests_hook.h"
+#import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_service.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
@@ -38,6 +39,7 @@
 #import "ios/chrome/browser/safety_check/ios_chrome_safety_check_manager_factory.h"
 #import "ios/chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
+#import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -53,6 +55,7 @@
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
+#import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -60,7 +63,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
@@ -71,6 +74,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack_half_sheet_table_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/magic_stack_parcel_list_half_sheet_table_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/types.h"
@@ -93,6 +97,7 @@
 #import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state.h"
 #import "ui/base/l10n/l10n_util_mac.h"
@@ -104,6 +109,7 @@
     MagicStackHalfSheetTableViewControllerDelegate,
     SafetyCheckViewDelegate,
     SetUpListDefaultBrowserPromoCoordinatorDelegate,
+    MagicStackParcelListHalfSheetTableViewControllerDelegate,
     SetUpListViewDelegate>
 
 @property(nonatomic, strong)
@@ -140,6 +146,14 @@
   // The edit half sheet for toggling all Magic Stack modules.
   MagicStackHalfSheetTableViewController*
       _magicStackHalfSheetTableViewController;
+
+  // The parcel list half sheet to see all tracked parcels.
+  MagicStackParcelListHalfSheetTableViewController*
+      _parcelListHalfSheetTableViewController;
+
+  // The coordinator used to present a modal alert for the parcel tracking
+  // module.
+  AlertCoordinator* _parcelTrackingAlertCoordinator;
 }
 
 - (void)start {
@@ -196,6 +210,10 @@
       IdentityManagerFactory::GetForBrowserState(
           self.browser->GetBrowserState());
 
+  commerce::ShoppingService* shoppingService =
+      commerce::ShoppingServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+
   self.contentSuggestionsMediator = [[ContentSuggestionsMediator alloc]
            initWithLargeIconService:largeIconService
                      largeIconCache:cache
@@ -206,6 +224,7 @@
                         syncService:syncService
               authenticationService:authenticationService
                     identityManager:identityManager
+                    shoppingService:shoppingService
                             browser:self.browser];
   self.contentSuggestionsMediator.feedDelegate = self.feedDelegate;
   self.contentSuggestionsMediator.promosManager = promosManager;
@@ -266,6 +285,8 @@
       dismissViewControllerAnimated:NO
                          completion:nil];
   _magicStackHalfSheetTableViewController = nil;
+  [self dismissParcelListHalfSheet];
+  [self dismissParcelTrackingAlertCoordinator];
   _started = NO;
 }
 
@@ -320,6 +341,11 @@
     case ContentSuggestionsModuleType::kCompactedSetUpList:
       [self.contentSuggestionsMediator disableSetUpList];
       break;
+    case ContentSuggestionsModuleType::kParcelTracking:
+    case ContentSuggestionsModuleType::kParcelTrackingSeeMore: {
+      [self presentParcelTrackingAlertCoordinator];
+      break;
+    }
     default:
       break;
   }
@@ -348,6 +374,30 @@
                                   completion:nil];
 }
 
+- (void)showMagicStackParcelList {
+  _parcelListHalfSheetTableViewController =
+      [[MagicStackParcelListHalfSheetTableViewController alloc]
+          initWithParcels:[self.contentSuggestionsMediator
+                                  parcelTrackingItems]];
+  _parcelListHalfSheetTableViewController.delegate = self;
+
+  UINavigationController* navViewController = [[UINavigationController alloc]
+      initWithRootViewController:_parcelListHalfSheetTableViewController];
+
+  navViewController.modalPresentationStyle = UIModalPresentationPageSheet;
+  UISheetPresentationController* presentationController =
+      navViewController.sheetPresentationController;
+  presentationController.prefersEdgeAttachedInCompactHeight = YES;
+  presentationController.widthFollowsPreferredContentSizeWhenEdgeAttached = YES;
+  presentationController.detents = @[
+    UISheetPresentationControllerDetent.mediumDetent,
+    UISheetPresentationControllerDetent.largeDetent
+  ];
+  [self.viewController presentViewController:navViewController
+                                    animated:YES
+                                  completion:nil];
+}
+
 #pragma mark - MagicStackHalfSheetTableViewControllerDelegate
 
 - (void)dismissMagicStackHalfSheet {
@@ -355,6 +405,37 @@
       dismissViewControllerAnimated:YES
                          completion:nil];
   _magicStackHalfSheetTableViewController = nil;
+}
+
+#pragma mark - MagicStackParcelListHalfSheetTableViewControllerDelegate
+
+- (void)dismissParcelListHalfSheet {
+  [_parcelListHalfSheetTableViewController.presentingViewController
+      dismissViewControllerAnimated:YES
+                         completion:nil];
+  _parcelListHalfSheetTableViewController = nil;
+}
+
+- (void)untrackParcel:(NSString*)parcelID carrier:(ParcelType)carrier {
+  [self.contentSuggestionsMediator untrackParcel:parcelID];
+
+  id<SnackbarCommands> snackbarHandler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), SnackbarCommands);
+  __weak __typeof(self) weakSelf = self;
+  [snackbarHandler
+      showSnackbarWithMessage:
+          l10n_util::GetNSString(IDS_IOS_PARCEL_TRACKING_UNTRACK_SNACKBAR_TITLE)
+                   buttonText:l10n_util::GetNSString(
+                                  IDS_IOS_SNACKBAR_ACTION_UNDO)
+                messageAction:^{
+                  __strong __typeof(weakSelf) strongSelf = weakSelf;
+                  if (!strongSelf) {
+                    return;
+                  }
+                  [strongSelf.contentSuggestionsMediator trackParcel:parcelID
+                                                             carrier:carrier];
+                }
+             completionAction:nil];
 }
 
 #pragma mark - Public methods
@@ -711,6 +792,51 @@
                           params:params
                       originView:view];
   [self.sharingCoordinator start];
+}
+
+// Presents the parcel tracking alert modal.
+- (void)presentParcelTrackingAlertCoordinator {
+  _parcelTrackingAlertCoordinator = [[AlertCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                           title:
+                               l10n_util::GetNSString(
+                                   IDS_IOS_PARCEL_TRACKING_MODULE_HIDE_ALERT_TITLE)
+                         message:
+                             l10n_util::GetNSStringF(
+                                 IDS_IOS_PARCEL_TRACKING_MODULE_HIDE_ALERT_DESCRIPTION,
+                                 base::SysNSStringToUTF16(l10n_util::GetNSString(
+                                     IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_TITLE)))];
+
+  __weak ContentSuggestionsCoordinator* weakSelf = self;
+  __weak ContentSuggestionsMediator* weakMediator =
+      self.contentSuggestionsMediator;
+  [_parcelTrackingAlertCoordinator
+      addItemWithTitle:
+          l10n_util::GetNSStringF(
+              IDS_IOS_PARCEL_TRACKING_CONTEXT_MENU_DESCRIPTION,
+              base::SysNSStringToUTF16(l10n_util::GetNSString(
+                  IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_TITLE)))
+                action:^{
+                  [weakMediator disableParcelTracking];
+                  [weakSelf dismissParcelTrackingAlertCoordinator];
+                }
+                 style:UIAlertActionStyleDefault];
+  [_parcelTrackingAlertCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_PARCEL_TRACKING_MODULE_HIDE_ALERT_CANCEL)
+                action:^{
+                  [weakSelf dismissParcelTrackingAlertCoordinator];
+                }
+                 style:UIAlertActionStyleCancel];
+
+  [_parcelTrackingAlertCoordinator start];
+}
+
+// Dismisses the parcel tracking alert modal.
+- (void)dismissParcelTrackingAlertCoordinator {
+  [_parcelTrackingAlertCoordinator stop];
+  _parcelTrackingAlertCoordinator = nil;
 }
 
 @end

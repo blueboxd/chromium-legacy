@@ -3969,15 +3969,6 @@
 
     'ios_eg2_cq_tests': {
       'ios_chrome_integration_eg2tests_module': {
-        'swarming': {
-          'shards': 8,
-        },
-      },
-      'ios_web_shell_eg2tests_module': {},
-    },
-
-    'ios_eg2_cq_tests_parallel': {
-      'ios_chrome_integration_eg2tests_module': {
         'mixins': [
           'ios_parallel_simulators',
         ],
@@ -3989,32 +3980,6 @@
     },
 
     'ios_eg2_tests': {
-      'ios_chrome_bookmarks_eg2tests_module': {},
-      'ios_chrome_settings_eg2tests_module': {
-        'swarming': {
-          'shards': 6,
-        },
-      },
-      'ios_chrome_signin_eg2tests_module': {
-        'swarming': {
-          'shards': 6,
-        },
-      },
-      'ios_chrome_smoke_eg2tests_module': {},
-      'ios_chrome_ui_eg2tests_module': {
-        'swarming': {
-          'shards': 12,
-        },
-      },
-      'ios_chrome_web_eg2tests_module': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
-      'ios_showcase_eg2tests_module': {},
-    },
-
-    'ios_eg2_tests_parallel': {
       'ios_chrome_bookmarks_eg2tests_module': {},
       'ios_chrome_settings_eg2tests_module': {
         'mixins': [
@@ -6948,32 +6913,27 @@
           'CROS_JACUZZI_RELEASE_LKGM',
         ],
       },
-      'gpu_mediapipe_validating_telemetry_tests': {
+      'gpu_mediapipe_passthrough_telemetry_tests': {
         'variants': [
           'CROS_JACUZZI_RELEASE_LKGM',
         ],
       },
-      'gpu_validating_telemetry_tests': {
+      'gpu_passthrough_telemetry_tests': {
         'variants': [
           'CROS_JACUZZI_RELEASE_LKGM',
         ],
       },
-      'gpu_webcodecs_validating_telemetry_test': {
+      'gpu_webcodecs_telemetry_test': {
         'variants': [
           'CROS_JACUZZI_RELEASE_LKGM',
         ],
       },
-      'gpu_webgl_conformance_validating_telemetry_tests': {
+      'gpu_webgl_conformance_gles_passthrough_telemetry_tests': {
         'variants': [
           'CROS_JACUZZI_RELEASE_LKGM',
         ],
       },
       'gpu_webgl2_conformance_gles_passthrough_telemetry_tests': {
-        'variants': [
-          'CROS_JACUZZI_RELEASE_LKGM',
-        ],
-      },
-      'gpu_webgl2_conformance_validating_telemetry_tests': {
         'variants': [
           'CROS_JACUZZI_RELEASE_LKGM',
         ],
@@ -7143,7 +7103,7 @@
           'SIM_IPAD_AIR_5TH_GEN_17_0',
         ],
       },
-      'ios_eg2_tests_parallel': {
+      'ios_eg2_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7152,7 +7112,7 @@
           'SIM_IPAD_AIR_5TH_GEN_17_0',
         ],
       },
-      'ios_eg2_cq_tests_parallel': {
+      'ios_eg2_cq_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7218,7 +7178,7 @@
           'SIM_IPHONE_14_17_0',
         ],
       },
-      'ios_eg2_cq_tests_parallel': {
+      'ios_eg2_cq_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7233,7 +7193,7 @@
           'SIM_IPAD_PRO_6TH_GEN_17_0',
         ],
       },
-      'ios_eg2_tests_parallel': {
+      'ios_eg2_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7327,7 +7287,7 @@
           'SIM_IPHONE_14_PLUS_17_0',
         ],
       },
-      'ios_eg2_tests_parallel': {
+      'ios_eg2_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7338,7 +7298,7 @@
           'SIM_IPAD_PRO_6TH_GEN_17_0',
         ],
       },
-      'ios_eg2_cq_tests_parallel': {
+      'ios_eg2_cq_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7450,7 +7410,7 @@
           'SIM_IPHONE_14_17_0',
         ],
       },
-      'ios_eg2_cq_tests_parallel': {
+      'ios_eg2_cq_tests': {
         'mixins': [
           'xcode_parallelization',
         ],
@@ -7478,7 +7438,7 @@
           'SIM_IPAD_AIR_5TH_GEN_17_0',
         ],
       },
-      'ios_eg2_cq_tests_parallel': {
+      'ios_eg2_cq_tests': {
         'mixins': [
           'xcode_parallelization',
         ],

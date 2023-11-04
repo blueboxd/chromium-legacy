@@ -1,11 +1,12 @@
-<style include="cr-icons">
+<style include="cr-icons md-select">
   iron-icon {
     --icon-size: 16px;
     height: var(--icon-size);
     width: var(--icon-size);
-    padding: 0 8px 0 0;
   }
   cr-icon-button {
+    --cr-icon-button-icon-size: 16px;
+    --cr-icon-button-size: 24px;
     margin: 10px 4px;
   }
   :host-context([chrome-refresh-2023]) #play-pause {
@@ -14,8 +15,6 @@
     color: var(--color-side-panel-entry-icon);
   }
   :host-context([chrome-refresh-2023]) cr-icon-button {
-    --cr-icon-button-icon-size: 16px;
-    --cr-icon-button-size: 24px;
     color: var(--color-sys-on-surface-subtle);
   }
   :host-context([chrome-refresh-2023]) .dropdown-item:focus {
@@ -41,6 +40,7 @@
   }
   .dropdown-voice-selection p {
     margin: 8px 0;
+    display: inline;
   }
   /* TODO(b/1465029): Investigate why chrome refresh colors don't always
      work on first launch. */
@@ -49,6 +49,12 @@
   }
   .back, .section {
     font-weight: bold;
+  }
+  .item-invisible-true {
+    visibility: hidden;
+  }
+  .display-false {
+    display: none;
   }
   #font-size-decrease {
     margin-left: 16px;
@@ -65,10 +71,27 @@
   #toolbar-container {
     overflow: visible;
     white-space: nowrap;
-    max-height: 50px;
+    max-height: 60px;
   }
   #more, cr-icon-button#moreOptionsMenu {
     display: none;
+  }
+  .separator {
+    display: inline;
+    width: 20px;
+    height: 0px;
+    transform: rotate(-90deg);
+    margin: 10px 4px;
+  }
+  .md-select {
+    --md-select-width: fit-content;
+    margin: 10px 8px;
+  }
+  :host-context([chrome-refresh-2023]) .md-select {
+    --md-select-text-color: var(--cr-primary-text-color);
+  }
+  :host-context([chrome-refresh-2023]) .md-select option {
+    --md-select-option-bg-color: var(--color-sys-base-container-elevated);
   }
 </style>
 <div id="toolbar-container" class="toolbar-container">
@@ -111,6 +134,31 @@
       on-click="onHighlightClick_">
     </cr-icon-button>
   </span>
+
+  <template is="dom-if" if="[[!isReadAloudEnabled_]]">
+    <select id="font-select" class="md-select"
+            on-change="onFontSelectValueChange_">
+      <template id="fontTemplate" is="dom-repeat" items="[[fontOptions_]]">
+        <option value="[[item]]">[[item]]</option>
+      </template>
+    </select>
+    <hr class="separator">
+    <cr-icon-button
+        id="font-size-decrease-old"
+        class="toolbar-button"
+        iron-icon="read-anything:font-size-decrease-old"
+        on-click="onFontSizeDecreaseClick_">
+    </cr-icon-button>
+    <cr-icon-button
+        id="font-size-increase-old"
+        class="toolbar-button"
+        iron-icon="read-anything:font-size-increase-old"
+        on-click="onFontSizeIncreaseClick_">
+    </cr-icon-button>
+  </template>
+
+  <hr class="separator">
+
   <template is="dom-repeat" items="[[textStyleOptions_]]">
     <cr-icon-button
       class="toolbar-button"
@@ -147,15 +195,22 @@
     <template is="dom-repeat" items="[[voiceSelectionOptions_]]">
       <!--  TODO(crbug.com/1474951): show a header for each locale group before
             listing the languages of the locale -->
-      <!--  TODO(crbug.com/1474951): show currently selected language -->
-      <!--  TODO(crbug.com/1474951): allow user to change language -->
       <button class="dropdown-item dropdown-voice-selection"
         on-click="onVoiceSelectClick_">
-        <p>[[item.title]]</p>
-        <!-- TODO(crbug.com/1474951): Show pause button when a preview is
-                      playing -->
-        <cr-icon-button on-click="onVoicePreviewClick_" class="button-image"
+        <span>
+          <iron-icon
+          class$="button-image item-invisible-[[!item.data.selected]]"
+            icon="read-anything:check-mark"></iron-icon>
+          <p>[[item.title]]</p>
+        </span>
+        <cr-icon-button on-click="onVoicePreviewClick_"
+          class$="button-image display-[[!item.data.previewPlaying]]"
           iron-icon="read-anything-20:play-circle"></cr-icon-button>
+        <!-- TODO(crbug.com/1474951) Pause the preview when pause button is
+                   pressed -->
+        <cr-icon-button on-click="onVoicePreviewClick_"
+          class$="button-image display-[[item.data.previewPlaying]]"
+          iron-icon="read-anything-20:pause-circle"></cr-icon-button>
       </button>
     </template>
   </cr-action-menu>

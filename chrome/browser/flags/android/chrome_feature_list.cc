@@ -248,6 +248,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDrawEdgeToEdge,
     &kDrawNativeEdgeToEdge,
     &kDrawWebEdgeToEdge,
+    &kEarlyInitializeStartupMetrics,
     &kEmptyStates,
     &kExperimentsForAgsa,
     &kExploreSites,
@@ -303,7 +304,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRequestDesktopSiteDefaultsDowngrade,
     &kRequestDesktopSiteDefaultsLogging,
     &kRestoreTabsOnFRE,
-    &kSafeModeForCachedFlags,
     &kSearchEnginesPromoV3,
     &kShowScrollableMVTOnNTPAndroid,
     &kFeedPositionAndroid,
@@ -783,6 +783,10 @@ BASE_FEATURE(kDrawWebEdgeToEdge,
              "DrawWebEdgeToEdge",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kEarlyInitializeStartupMetrics,
+             "EarlyInitializeStartupMetrics",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kEmptyStates, "EmptyStates", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExperimentsForAgsa,
@@ -994,10 +998,6 @@ BASE_FEATURE(kRequestDesktopSiteDefaultsLogging,
 BASE_FEATURE(kRestoreTabsOnFRE,
              "RestoreTabsOnFRE",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSafeModeForCachedFlags,
-             "SafeModeForCachedFlags",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kScrollToTLDOptimization,
              "ScrollToTLDOptimization",

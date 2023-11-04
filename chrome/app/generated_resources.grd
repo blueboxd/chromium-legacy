@@ -6790,6 +6790,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ADD_USERNAME_TITLE" desc="The title of the add username bubble when username was not detected.">
         Add username?
       </message>
+      <message name="IDS_ADD_USERNAME" desc="Confirmation button in the add username bubble.">
+        Add Username
+      </message>
+      <message name="IDS_ADD_USERNAME_BODY" desc="Body text in the add username bubble.">
+        To help Google Password Manager save your sing-in info, add your username for this site
+      </message>
       <message name="IDS_UPDATE_PASSWORD" desc="The title of the save password bubble when a password can be updated.">
         Update password?
       </message>
@@ -9919,6 +9925,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       <message name="IDS_PICTURE_IN_PICTURE_NEXT_SLIDE_CONTROL_ACCESSIBLE_TEXT" desc="Accessible text label used for the controls button in the Picture-in-Picture window. The button invokes next slide action.">
         Next slide
       </message>
+      <message name="IDS_AUTO_PICTURE_IN_PICTURE_DESCRIPTION" desc="Auto Picture-in-Picture description displayed in the permissions prompt UI">
+        Enter picture-in-picture automatically, so you can use it on top of other tabs and windows.
+      </message>
 
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_WAITING_FOR_SOCKET_SLOT" desc="Status text when Chrome is at its connection limit, and is waiting for a URL request to complete to free up a connection.">
@@ -10257,6 +10266,15 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       </message>
       <message name="IDS_TAB_ORGANIZATION_DISMISS" desc="The label for the button that dismisses the tab organization UI">
         Dismiss
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE" desc="The header text for the not started state in the tab organization UI" translateable="false">
+        Organize tabs
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_BODY" desc="The body text for the not started state in the tab organization UI" translateable="false">
+        You can organize your tabs anytime
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON" desc="The label for the button in the not started state of the tab organization UI" translateable="false">
+        Organize tabs
       </message>
 
       <!-- Strings for Window Titles in Menus -->
@@ -16018,7 +16036,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
 
     <!-- Experimental enterprise plus_addresses feature strings -->
-    <message name="IDS_PLUS_ADDRESS_MODAL_TITLE" desc="Title for the experimental enterprise plus addresses feature modal" translateable="false" formatter_data="android_java">
+    <message name="IDS_PLUS_ADDRESS_MODAL_TITLE" desc="Title for the experimental enterprise plus addresses feature modal" translateable="false">
       Lorem Ipsum
     </message>
     <message name="IDS_PLUS_ADDRESS_MODAL_PLUS_ADDRESS_LABEL" desc="Label for the upper portion of the plus addresses modal" translateable="false" formatter_data="android_java">

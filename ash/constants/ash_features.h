@@ -306,6 +306,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kEnterpriseReportingUI);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kEphemeralNetworkPolicies);
 COMPONENT_EXPORT(ASH_CONSTANTS)
+BASE_DECLARE_FEATURE(kEphemeralNetworkPoliciesEnabledPolicy);
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::FeatureParam<double> kFastPairLowPowerActiveSeconds;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::FeatureParam<double> kFastPairLowPowerInactiveSeconds;
@@ -597,8 +599,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kPasspointARCSupport);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kPasspointSettings);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kPasswordlessGaiaForConsumers);
-COMPONENT_EXPORT(ASH_CONSTANTS)
-BASE_DECLARE_FEATURE(kPasswordSelectionInOobe);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kPcieBillboardNotification);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kPerDeskShelf);
@@ -970,6 +970,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsEcheShorterScanningDutyCycleEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool AreEphemeralNetworkPoliciesEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool CanEphemeralNetworkPoliciesBeEnabledByPolicy();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFullscreenAfterUnlockAllowed();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFullscreenAlertBubbleEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBlockFwupdClientEnabled();
@@ -1080,7 +1082,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOsSyncConsentRevampEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOverviewDeskNavigationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsParentAccessJellyEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPasswordlessGaiaEnabledForConsumers();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPasswordSelectionEnabledInOobe();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPasspointARCSupportEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPasspointSettingsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPcieBillboardNotificationEnabled();

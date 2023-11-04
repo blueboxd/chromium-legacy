@@ -11,6 +11,7 @@
 #include "ash/system/input_device_settings/input_device_settings_defaults.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "ash/system/input_device_settings/input_device_tracker.h"
+#include "ash/system/input_device_settings/settings_updated_metrics_info.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/account_id/account_id.h"
@@ -107,8 +108,10 @@ class TouchpadPrefHandlerTest : public AshTestBase {
 
   // testing::Test:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kInputDeviceSettingsSplit);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kInputDeviceSettingsSplit,
+         features::kAltClickAndSixPackCustomization},
+        {});
     AshTestBase::SetUp();
     InitializePrefService();
     pref_handler_ = std::make_unique<TouchpadPrefHandlerImpl>();
@@ -128,6 +131,11 @@ class TouchpadPrefHandlerTest : public AshTestBase {
         prefs::kTouchpadDeviceSettingsDictPref);
     pref_service_->registry()->RegisterDictionaryPref(
         prefs::kTouchpadInternalSettings);
+    pref_service_->registry()->RegisterDictionaryPref(
+        prefs::kTouchpadDefaultSettings);
+    pref_service_->registry()->RegisterDictionaryPref(
+        prefs::kTouchpadUpdateSettingsMetricInfo);
+
     // We are using these test constants as a a way to differentiate values
     // retrieved from prefs or default touchpad settings.
     pref_service_->registry()->RegisterIntegerPref(prefs::kTouchpadSensitivity,
@@ -311,6 +319,17 @@ class TouchpadPrefHandlerTest : public AshTestBase {
     touchpad->settings = settings.Clone();
     pref_handler_->UpdateLoginScreenTouchpadSettings(local_state(), account_id,
                                                      *touchpad);
+  }
+
+  void CallUpdateDefaultTouchpadSettings(
+      const std::string& device_key,
+      const mojom::TouchpadSettings& settings) {
+    mojom::TouchpadPtr touchpad = mojom::Touchpad::New();
+    touchpad->settings = settings.Clone();
+    touchpad->device_key = device_key;
+
+    pref_handler_->UpdateDefaultTouchpadSettings(pref_service_.get(),
+                                                 *touchpad);
   }
 
   mojom::TouchpadSettingsPtr CallInitializeTouchpadSettings(
@@ -767,6 +786,79 @@ TEST_F(TouchpadPrefHandlerTest, SimulateRightClickSettingFlagDisabled) {
       settings_dict->contains(prefs::kTouchpadSettingSimulateRightClick));
 }
 
+TEST_F(TouchpadPrefHandlerTest, RememberDefaultsFromLastUpdatedSettings) {
+  mojom::TouchpadSettingsPtr settings =
+      CallInitializeTouchpadSettings(kTouchpadKey1);
+  settings->reverse_scrolling = !kDefaultReverseScrolling;
+  settings->sensitivity = 1;
+  CallUpdateTouchpadSettings(kTouchpadKey1, *settings);
+  CallUpdateDefaultTouchpadSettings(kTouchpadKey1, *settings);
+
+  mojom::TouchpadSettingsPtr settings2 =
+      CallInitializeTouchpadSettings(kTouchpadKey2);
+  EXPECT_EQ(*settings2, *settings);
+
+  settings2->sensitivity = 5;
+  CallUpdateDefaultTouchpadSettings(kTouchpadKey2, *settings2);
+
+  mojom::TouchpadSettingsPtr settings_duplicate =
+      CallInitializeTouchpadSettings(kTouchpadKey1);
+  EXPECT_EQ(*settings, *settings_duplicate);
+}
+
+TEST_F(TouchpadPrefHandlerTest, SettingsUpdateMetricTest) {
+  const auto settings1 = CallInitializeTouchpadSettings(kTouchpadKey1);
+
+  // When its the first device of the type the category should be kFirstEver.
+  {
+    const auto& metric_dict =
+        pref_service_->GetDict(prefs::kTouchpadUpdateSettingsMetricInfo);
+    ASSERT_TRUE(metric_dict.contains(kTouchpadKey1));
+
+    auto metrics_info = SettingsUpdatedMetricsInfo::FromDict(
+        *metric_dict.FindDict(kTouchpadKey1));
+    ASSERT_TRUE(metrics_info);
+    EXPECT_EQ(SettingsUpdatedMetricsInfo::Category::kFirstEver,
+              metrics_info->category());
+  }
+
+  // When its taken off the the defaults, the category should be kDefault.
+  {
+    CallUpdateDefaultTouchpadSettings(kTouchpadKey1, *settings1);
+    CallInitializeTouchpadSettings(kTouchpadKey2);
+    const auto& metric_dict =
+        pref_service_->GetDict(prefs::kTouchpadUpdateSettingsMetricInfo);
+    ASSERT_TRUE(metric_dict.contains(kTouchpadKey2));
+
+    auto metrics_info = SettingsUpdatedMetricsInfo::FromDict(
+        *metric_dict.FindDict(kTouchpadKey2));
+    ASSERT_TRUE(metrics_info);
+    EXPECT_EQ(SettingsUpdatedMetricsInfo::Category::kDefault,
+              metrics_info->category());
+  }
+
+  // When its taken from synced prefs on a different device, category should
+  // match.
+  {
+    auto devices_dict =
+        pref_service_->GetDict(prefs::kTouchpadDeviceSettingsDictPref).Clone();
+    devices_dict.Set(kTouchpadKey3, base::Value::Dict());
+    pref_service_->SetDict(prefs::kTouchpadDeviceSettingsDictPref,
+                           std::move(devices_dict));
+
+    CallInitializeTouchpadSettings(kTouchpadKey3);
+    const auto& metric_dict =
+        pref_service_->GetDict(prefs::kTouchpadUpdateSettingsMetricInfo);
+    ASSERT_TRUE(metric_dict.contains(kTouchpadKey3));
+
+    auto metrics_info = SettingsUpdatedMetricsInfo::FromDict(
+        *metric_dict.FindDict(kTouchpadKey3));
+    ASSERT_TRUE(metrics_info);
+    EXPECT_EQ(SettingsUpdatedMetricsInfo::Category::kSynced,
+              metrics_info->category());
+  }
+}
+
 class TouchpadSettingsPrefConversionTest
     : public TouchpadPrefHandlerTest,
       public testing::WithParamInterface<
@@ -847,9 +939,13 @@ INSTANTIATE_TEST_SUITE_P(
             {0, 5, ui::mojom::SimulateRightClickModifier::kSearch}}));
 
 TEST_P(TouchpadSettingsSimulateRightClickTest, SimulateRightClickSetting) {
-  CallInitializeTouchpadSettings(kTouchpadKey1);
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kAltClickAndSixPackCustomization);
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        features::kAltClickAndSixPackCustomization);
+    CallInitializeTouchpadSettings(kTouchpadKey1);
+  }
+
   SetSimulateRightClickPrefs(alt_count, search_count);
   const auto settings = CallInitializeTouchpadSettings(kTouchpadKey1);
   EXPECT_EQ(expected, settings->simulate_right_click);
@@ -857,9 +953,13 @@ TEST_P(TouchpadSettingsSimulateRightClickTest, SimulateRightClickSetting) {
 
 TEST_P(TouchpadSettingsSimulateRightClickTest,
        SimulateRightClickSettingInternal) {
-  CallInitializeTouchpadSettings(kTouchpadKey1, /*is_external=*/false);
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kAltClickAndSixPackCustomization);
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        features::kAltClickAndSixPackCustomization);
+    CallInitializeTouchpadSettings(kTouchpadKey1, /*is_external=*/false);
+  }
+
   SetSimulateRightClickPrefs(alt_count, search_count);
   const auto settings =
       CallInitializeTouchpadSettings(kTouchpadKey1, /*is_external=*/false);

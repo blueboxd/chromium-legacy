@@ -2009,6 +2009,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.PasswordManager.WidgetPromo.Action"
+    enum="PromoWithInstructionsAction" expires_after="2024-03-12">
+  <owner>noemies@google.com</owner>
+  <owner>bling-transactions@google.com</owner>
+  <summary>
+    [iOS Only] Tracks the actions taken by the user on the Password Manager
+    widget promo.
+  </summary>
+</histogram>
+
 <histogram name="IOS.Permission.Modal.Events" enum="IOSPermissionEvent"
     expires_after="2024-01-10">
   <owner>ewannpv@chromium.org</owner>
@@ -2639,6 +2649,36 @@ chromium-metrics-reviews@google.com.
     settings are accessible from Settings. It gives information about the state
     of the Save to Photos &quot;default account&quot; settings i.e. whether the
     user opted-in to skip the account picker.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SaveToPhotos.UploadFailureLatency" units="ms"
+    expires_after="2024-03-29">
+  <owner>qpubert@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <summary>
+    Logged when the Photos service completes an image upload with failure. It
+    records the time elapsed between the moment the upload request is submitted
+    to the service and the moment the service calls the provided completion
+    callback. In particular, this includes the time necessary to create a
+    destination album if necessary, upload the media item and add it to the
+    destination album. See IOS.SaveToPhotos.UploadSuccessLatency for recording
+    of successful completion.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SaveToPhotos.UploadSuccessLatency" units="ms"
+    expires_after="2024-03-29">
+  <owner>qpubert@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <summary>
+    Logged when the Photos service completes an image upload with success. It
+    records the time elapsed between the moment the upload request is submitted
+    to the service and the moment the service calls the provided completion
+    callback. In particular, this includes the time necessary to create a
+    destination album if necessary, upload the media item and add it to the
+    destination album. See IOS.SaveToPhotos.UploadFailureLatency for recording
+    of unsuccessful completion.
   </summary>
 </histogram>
 

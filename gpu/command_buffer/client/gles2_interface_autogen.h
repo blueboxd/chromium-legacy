@@ -855,6 +855,8 @@ virtual void FramebufferTextureMultiviewOVR(GLenum target,
                                             GLint baseViewIndex,
                                             GLsizei numViews) = 0;
 virtual void MaxShaderCompilerThreadsKHR(GLuint count) = 0;
+virtual void TexImage2DSharedImageCHROMIUM(GLuint texture,
+                                           const GLbyte* mailbox) = 0;
 virtual GLuint CreateAndTexStorage2DSharedImageCHROMIUM(
     const GLbyte* mailbox) = 0;
 virtual void BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
@@ -864,7 +866,11 @@ virtual void ConvertRGBAToYUVAMailboxesINTERNAL(GLenum planes_yuv_color_space,
                                                 GLenum plane_config,
                                                 GLenum subsampling,
                                                 const GLbyte* mailboxes) = 0;
-virtual void ConvertYUVAMailboxesToRGBINTERNAL(GLenum planes_yuv_color_space,
+virtual void ConvertYUVAMailboxesToRGBINTERNAL(GLint src_x,
+                                               GLint src_y,
+                                               GLsizei width,
+                                               GLsizei height,
+                                               GLenum planes_yuv_color_space,
                                                GLenum plane_config,
                                                GLenum subsampling,
                                                const GLbyte* mailboxes) = 0;
